@@ -31,7 +31,7 @@ float	AntecedentDecideThresholdForNi = 0.90;
 
 float	CFSimThreshold = 0.80;
 
-float	SVM_FREQ_SD = 114.23868;	/* for np (20040117-smfix) */
+float	SVM_FREQ_SD = 113.47293;	/* for np (20040204-smfix) */
 float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
@@ -3975,23 +3975,19 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    if (OptUseSmfix == TRUE) {
 			specify_sm_from_cf(sp, cpm_ptr);
 		    }
-		    record_match_ex(sp, cpm_ptr);
 		}
-		else {
-		    /* 格フレームの保存 */
-		    RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
-		}
+
+		record_match_ex(sp, cpm_ptr);
 
 		/* 格解析の結果を feature へ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 	    }
 	    ClearEllipsisMGR(&maxem);
 
-	    /* 格フレームの保存 *
+	    /* 格フレームの保存 */
 	    if (cpm_ptr->cmm[0].score > 0) {
 		RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
 	    }
-	    */
 	}
 
 	PreserveCPM(sp_new, sp);
