@@ -222,7 +222,9 @@ sub parse {
     return 1 if $this->{OPTION} !~ /\-tab/;
 
     # 構文解析結果を処理する。
-    my( $mrph_num, $bnst_num, $f_string );
+    my $mrph_num = 0;
+    my $bnst_num = 0;
+    my $f_string = "";
     ( $this->{COMMENT} ) = ( $buf =~ s/^(\#[^\n]*?)\n// );     # 最初のコメント( # S-ID:1 )を取り除く
     for( split( /\n/,$buf ) ){
 	chomp;
