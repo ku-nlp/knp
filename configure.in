@@ -37,14 +37,6 @@ if test "$with_included_juman" = yes; then
 	else
 	    AC_MSG_ERROR("jumanrc.sample is not found.")
 	fi
-    else
-	if test ! -f "$RCPATH"; then
-	    if test -f "$RCPATH/jumanrc.sample"; then
-		RCPATH="$RCPATH/jumanrc.sample"
-	    else
-		AC_MSG_ERROR("jumanrc.sample is not found.")
-	    fi
-	fi
     fi
     AC_MSG_RESULT("$RCPATH")
     RCPATH_CFLAGS="-DRC_DEFAULT=\"\\\"$RCPATH\"\\\""

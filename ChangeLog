@@ -1,3 +1,145 @@
+2001-05-08  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* configure.in: RCPATH 指定時の不要な test の廃止
+
+2001-05-02  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_sm.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	格解析: 入力側の格割り当て関数の更新
+	省略解析: 改良
+
+2001-03-06  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	格フレーム辞書がないとき "Cannot open CF DATA" というエラーが出ないよ
+	うにした。
+
+2001-02-20  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/context.c, system/case_analysis.c: 格解析
+	  ガ格, ヲ格, ニ格がうまっていて、対応付けされていない「〜は」をガガと
+	  推定する。
+
+2001-02-16  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/feature.c, system/lib_sm.c, system/main.c, system/case_match.c, system/case_print.c, system/context.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	省略解析の改良
+	  候補の範囲を制限
+	  スコア計算の簡単化
+
+	格解析
+	  主体マッチのスコアアップ
+
+2001-02-06  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/dpnd_analysis.c, system/extern.h, system/main.c, system/case_print.c, system/const.h, system/context.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_analysis.c:
+	格解析:
+	  複合名詞の解析: ニ格追加
+	  case_analysis() から最大マッチの格フレームを選ぶ関数 (find_best_cf()) を分離。
+
+	省略解析:
+	  スコア調整など変更点多数。
+
+2001-02-01  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/feature.c, rule/mrph_basic.rule, system/const.h, rule/bnst_basic.rule:
+	固有名詞認識ルールの修正。
+	「修飾」を与えるルールの追加。
+	「これまで」:時間 のルール修正など。
+
+2001-01-30  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/ipal.c: OR の格フレームに対応。
+
+2001-01-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c, system/main.c, system/proper.c, system/context.c, system/extern.h, system/feature.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/case_analysis.c, system/case_data.c:
+	NTT の意味属性の取得方法の変更。単語が固有名詞意味属性しか持たないとき
+	だけ固有名詞意味属性を与える。
+
+	格解析の改良。
+	  複合名詞をごまかしながら解析。
+	  直接係る格要素がないときは、格フレームの OR をとる。
+
+	省略解析の改良。
+
+2001-01-27  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_type.phrase, rule/mrph_basic.rule, system/dpnd_analysis.c, juman/jumanrc.sample:
+	「〜するのは〜だ」にボーナス
+	「する，または」の扱い修正
+	その他，ルールの細かい修正
+
+2001-01-27  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c: 品詞の曖昧性のある形態素に <品曖> をマーク。
+
+	* rule/bnst_basic.rule, rule/mrph_basic.rule, rule/mrph_homo.rule:
+	固有名詞認識ルールを追加。
+
+2001-01-10  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* INSTALL: JUMAN がインストールされていないときの記述を追加。
+
+	* system/tools.c, system/bind_juman.c, system/configfile.c, system/db.c, system/extern.h, system/lib_print.c, system/main.c, system/Makefile.am:
+	Windows 版を作るための修正。
+
+	* system/lib_sm.c, system/read_data.c, system/case_print.c, system/const.h, system/context.c, system/feature.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c:
+	格解析が同点の場合、格フレームの割り当てのうまりぐあいがよい方を優先。
+	ヘ格の格要素を格フレームのニ格にマッチ。
+	「〜化」, 「〜的だ」のときの格フレーム取得を改良。
+	feature function 「&意味素付与」を追加。
+	文脈解析の高度化。
+
+	* dict/Makefile.orig: ディレクトリ、コマンドの場所などを修正。
+
+2001-01-05  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* system/para_similarity.c, rule/kakari_uke.rule, rule/mrph_basic.rule, rule/mrph_homo.rule, system/feature.c, system/para_dpnd.c, rule/bnst_basic.rule, rule/bnst_etc.rule, rule/bnst_type.phrase:
+	rule/bnst_basic.rule
+	<的>，<スルナル>，<タリ>追加
+
+	rule/bnst_type.phrase
+	「書くべきは」等の修正，その他
+
+	rule/kakari_uke.rule
+	「ID:（〜は）もちろん」修正
+
+	rule/mrph_basic.rule
+	「と聞く」
+	「良くも悪くも」など
+	時相名詞，助数辞とその後
+
+	system/feature.c
+	&文字列照合:
+
+	system/para_dpnd.c
+	GAPの扱い少し修正
+
+2000-12-14  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/extern.h, system/lib_bgh.c, system/main.c, system/bind_juman.c, system/const.h:
+	-j オプションで、原文を入力として受け付けるようにした (内部で形態素解
+	析を行う)。
+
+	デバッグメッセージの追加。
+
+2000-12-10  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/unsupervised.c, system/read_rule.c, system/regexp.c, system/tools.c, system/noun.c, system/para_similarity.c, system/path.h, system/read_data.c, system/lib_print.c, system/main.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/context.c, system/corpus.c, system/configfile.c, system/const.h, system/bind_juman.c, system/case_ipal.c, system/case_match.c, system/Makefile.am, juman/Makefile.am, juman/juman.h, juman/juman_lib.c, dict/src/Makefile.am, dict/Makefile.am, dict/Makefile.orig, INSTALL, README, configure.in, ChangeLog:
+	奥乃先生バージョン (NTT default)。
+
+	* system/regexp.c, system/configfile.c, system/context.c, system/extern.h, juman/juman.h, system/case_ipal.c:
+	Windows (cygwin) でコンパイルできない問題に対処。
+	jumanrc にルールに関する記述がなくても、デフォルトのルールを読むように
+	した。
+
+	* rule/Makefile.am:
+	bnst_type.rule を修正前と修正後で diff をとれるようにした (make diff)。
+
+	* docs/manual.short, docs/manual.tex, dict/Makefile.orig, dict/src/Makefile.am, configure.in, dict/Makefile.am, ChangeLog, INSTALL, README:
+	ドキュメント, Makefile.am などをちょっと整備。
+
 2000-12-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/para_similarity.c: 並列の類似度を NTT シソーラスでとる場合に閾値(0.4)を設けて、それ以下だ
