@@ -645,7 +645,8 @@ sub bnst_cond2
 		}
 
 		# 形態素のfeatureが指定されている場合
-		if ($feature[$i]{lastfeature}) {
+		if ($k == $data[0][0]{end}[$i] &&
+		    $feature[$i]{lastfeature}) {
 		    if ($mrph[0][0][$k]{result}) {
 			$mrph[0][0][$k]{result} =~ s/\]$/$feature[$i]{lastfeature}\]/;
 		    }
