@@ -440,16 +440,7 @@ extern int	EX_match_subject;
 		static void timeout_function(int sig)
 /*==================================================================*/
 {
-    int i;
-
-    fprintf(stderr, ";; Parse timeout.\n;; %s (", current_sentence_data.KNPSID);
-    for (i = 0; i < current_sentence_data.Mrph_num; i++)
-	fprintf(stderr, "%s", current_sentence_data.mrph_data[i].Goi2);
-    fprintf(stderr, ")\n");
-
-    close_all();
-    exit(100);
-    /* longjmp(timeout, 1); */
+    longjmp(timeout, 1);
 }
 
 /*==================================================================*/
@@ -768,12 +759,12 @@ PARSED:
 	/* タイムアウト時 */
 
 	if (setjmp(timeout)) {
-#ifdef DEBUG
+	    /* timeoutした文をstderrに出力 */
 	    fprintf(stderr, ";; Parse timeout.\n;; %s (", sp->KNPSID);
 	    for (i = 0; i < sp->Mrph_num; i++)
 		fprintf(stderr, "%s", sp->mrph_data[i].Goi2);
 	    fprintf(stderr, ")\n");
-#endif
+
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
@@ -785,6 +776,10 @@ PARSED:
 	    else
 		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
+
+	    /* とりあえず終わることに */
+	    close_all();
+	    exit(100);
 	}
 
 	/* 格フレームの初期化 */
