@@ -418,7 +418,7 @@ sub bnst_cond2
 	for ($j = 0; $j < @{$part[$i]}; $j++) {
 	    next unless ($data[$i][$j]);
 
-	    # 末尾が"，"なら"＝"，それ以外なら"，＝"を付与
+	    # 末尾が"，|．"なら"＝"，それ以外なら"，＝"を付与
 	    # ※ 以下の問題を解決するため
 	    #      1. 連体形の文節がそれだけでは正しくJUMANされない
 	    #      2. 単に"＝"を付与すると"同じ"が語幹になる
@@ -428,7 +428,7 @@ sub bnst_cond2
 	    $knp_input = $l_context . $data[$i][$j]{phrase} . $r_context;
 
 	    if($bnstrule_flag){
-		if ($knp_input =~ /，$/) {
+		if ($knp_input =~ /(，|．|、|。)$/) {
 		    $knp_input .= "＝";
 		} else {
 		    $knp_input .= "，＝";
