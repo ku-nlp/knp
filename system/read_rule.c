@@ -437,7 +437,7 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
     if (ExistEtcRule)
 	usage();
     ExistEtcRule = flag;
-    if (flag == IsMrphRule) {
+    if (flag == IsMrphRule || flag == IsMrph2Rule) {
 	EtcRuleArray = (MrphRule *)malloc_data(sizeof(MrphRule)*EtcRule_MAX, "init_etc_rule");
     }
     else if (flag == IsBnstRule) {
@@ -452,6 +452,9 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
     if (ExistEtcRule == IsMrphRule) {
 	assign_mrph_feature((MrphRule *)r_ptr, size);
     }
+    else if (ExistEtcRule == IsMrph2Rule) {
+	assign_mrph_string_feature((MrphRule *)r_ptr, size);
+    }
     else if (ExistEtcRule == IsBnstRule) {
 	assign_bnst_feature((BnstRule *)r_ptr, size, mode);
     }
@@ -461,7 +464,7 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 void read_etc_rule(char *file_name, void *rp, int *count, int max)
 /*==================================================================*/
 {
-    if (ExistEtcRule == IsMrphRule) {
+    if (ExistEtcRule == IsMrphRule || ExistEtcRule == IsMrph2Rule) {
 	read_mrph_rule(file_name, (MrphRule *)rp, count, max);
     }
     else if (ExistEtcRule == IsBnstRule) {

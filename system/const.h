@@ -56,10 +56,11 @@
 #define NERule_MAX	512
 #define CNRule_MAX	512
 #define Helpsys_MAX	512
-#define EtcRule_MAX	512
+#define EtcRule_MAX	1024
 
 #define IsMrphRule	1
 #define IsBnstRule	2
+#define IsMrph2Rule	3
 
 #ifndef SMALL
 #define ALL_CASE_FRAME_MAX 	1536
