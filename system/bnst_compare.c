@@ -1,6 +1,6 @@
 /*====================================================================
 
-			  文節間類似度の計算
+		       文節間の比較・類似度計算
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -153,10 +153,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     level1 = (char *)check_feature(ptr1->f, "レベル");
     level2 = (char *)check_feature(ptr2->f, "レベル");
 
-    if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
-    else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
+    if (level1 == NULL) return TRUE;		/* なし:何でも -> T */
+    else if (level2 == NULL) return FALSE;	/* 何でも:なし -> F */
     else if (levelcmp(level1 + strlen("レベル:"), 
-		      level2 + strlen("レベル:")) <= 0)	/* ptr1 <= ptr2 ならOK */
+		      level2 + strlen("レベル:")) <= 0)	/* ptr1 <= ptr2 -> T */
 	return TRUE;
     else return FALSE;
 }
@@ -170,10 +170,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     level1 = cp;
     level2 = (char *)check_feature(ptr2->f, "レベル");
 
-    if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
-    else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
+    if (level1 == NULL) return TRUE;		/* なし:何でも -> T */
+    else if (level2 == NULL) return FALSE;	/* 何でも:なし -> F */
     else if (levelcmp(level1, level2 + strlen("レベル:")) <= 0)
-	return TRUE;				/* ptr1 <= ptr2 ならOK */
+	return TRUE;				/* cp <= ptr2 -> T */
     else return FALSE;
 }
 
