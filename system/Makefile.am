@@ -46,8 +46,6 @@ knp_SOURCES = \
 	japanese.c \
 	japanese.h \
 	configfile.c \
-	noun.c \
-	bind_juman.c \
 	thesaurus.c \
 	hash.c \
 	hash.h \

@@ -147,8 +147,6 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
-	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
-	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-svm"))     OptDiscMethod = OPT_SVM;
 	else if (str_eq(argv[0], "-svmmodel")) {
@@ -415,7 +413,6 @@ extern float	AssignReferentThreshold;
     init_scase();	/* 表層格辞書オープン */
 
     if (OptDisc == OPT_DISC) {
-	/* init_noun();	 * 名詞辞書オープン */
 #ifdef USE_SVM
 	if (OptDiscMethod == OPT_SVM) {
 	    if (!init_svm()) {	/* SVM */
@@ -463,15 +460,8 @@ extern float	AssignReferentThreshold;
     close_thesaurus();
     close_scase();
 
-    if (OptDisc == OPT_DISC)
-	close_noun();
-
 #ifdef DB3DEBUG
     db_teardown();
-#endif
-
-#ifdef INTEGRATE_JUMAN
-    CloseJuman();
 #endif
 }
 
@@ -793,15 +783,7 @@ PARSED:
 
 	success = 0;
 
-#ifdef INTEGRATE_JUMAN
-	if (OptJuman == OPT_JUMAN) {
-	    if ((Jumanfp = JumanSentence(Infp)) == NULL) break;
-	    if ((flag = one_sentence_analysis(sp, Jumanfp)) == EOF) break;
-	}
-	else
-#endif
-	    if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
-
+	if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
 	if (flag == FALSE) continue;
 
 	/************/
