@@ -1,3 +1,23 @@
+2004-07-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/Makefile.am:
+	allターゲットをtransターゲットにした
+
+2004-07-25  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule:
+	<連体修飾>の追加
+	体言止の用言扱いルールの整理
+
+	* rule/bnst_etc.rule:
+	辞書定義文解析用のルールにコメントを追加
+
+	* rule/bnst_type.phrase:
+	学生Gや(，) を<係:連体>から<係:連体:ヤ>に変更（辞書定義文の解析で利用）
+
+	* rule/rule_trans.pl:
+	JUMAN，KNPでサーバを利用しないように変更
+
 2004-07-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
