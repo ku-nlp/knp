@@ -1,3 +1,22 @@
+2004-01-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule:
+	格解析: 接頭辞の扱いの不都合を修正
+
+	* system/context.c: -relation-noun修正
+
+	* system/context.h: SVM_FREQ_SD更新
+
+2004-01-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c:
+	外の関係まわりのbug fix.
+
+2004-01-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c:
+	格解析マッチングのbug fix.
+
 2004-01-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_match.c, system/const.h, system/context.c, system/extern.h:
