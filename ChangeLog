@@ -1,3 +1,8 @@
+2003-10-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/read_data.c:
+	解析済データの入力をタグ単位付きに変更
+
 2003-10-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
