@@ -98,6 +98,7 @@ char *EtcRuleFile = NULL;
 
 jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
+char *Opt_jumanrc = NULL;
 
 /*==================================================================*/
 			     void usage()
@@ -108,7 +109,7 @@ int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand] [-mrule|-brule filename]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
-	    "           [-timeout second]\n");
+	    "           [-timeout second] [-r rcfile]\n");
     exit(1);    
 }
 
@@ -247,6 +248,11 @@ int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
 	}
+	else if (str_eq(argv[0], "-r")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    Opt_jumanrc = argv[0];
+	}
 	else {
 	    usage();
 	}
@@ -263,12 +269,13 @@ int	ParseTimeout = DEFAULT_PARSETIMEOUT;
     int i;
 
     /* rcfile をさがす順
-       1. $HOME/.jumanrc
-       2. RC_DEFAULT (Makefile)
+       1. -r で指定されたファイル
+       2. $HOME/.jumanrc
+       3. RC_DEFAULT (Makefile)
        → rcfileがなければエラー
     */
 
-    set_jumanrc_fileptr(NULL, TRUE);
+    set_jumanrc_fileptr(Opt_jumanrc, TRUE);
     init_knp();
     grammar(NULL);				/* 文法辞書 */
     katuyou(NULL);				/* 活用辞書 */
@@ -316,25 +323,11 @@ int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 	else if ((RULE+i)->type == NePhraseAuxRuleType) {
 	    read_mrph_rule((RULE+i)->file, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
 	}
-	/* 複合名詞ルール (JUMAN only) */
-	else if ((RULE+i)->type == NePhraseRuleType) {
-	    read_mrph_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
-	}
 	/* 文脈処理のルール */
 	else if ((RULE+i)->type == ContextRuleType) {
 	    read_bnst_rule((RULE+i)->file, ContRuleArray, &ContRuleSize, ContRule_MAX);
 	}
     }
-
-    /*
-    if (OptHelpsys == TRUE) {
-	read_mrph_rule(HELPSYS_FILE, HelpsysArray,
-		       &CurHelpsysSize, Helpsys_MAX);
-    						 対話的ヘルプシステム用ルール 
-    }
-
-    read_etc_rule(EtcRuleFile, EtcRuleArray, &CurEtcRuleSize, EtcRule_MAX);
-    */
 }
 
 /*==================================================================*/
