@@ -32,6 +32,7 @@ int 		Revised_para_num;
 
 int 		Sen_num;			/* 文カウント 1〜 */
 char		Comment[DATA_LEN];		/* コメント行 */
+char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
 
 char  		key_str[DBM_KEY_MAX], cont_str[DBM_CON_MAX];
@@ -58,6 +59,7 @@ int		OptInhibit;
 int		OptCheck;
 int		OptNE;
 int		OptHelpsys;
+int		OptCFMode;
 char		OptIgnoreChar;
 
 /* Server Client Extention */
@@ -112,6 +114,7 @@ jmp_buf timeout;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
+    OptCFMode = EXAMPLE;
     /* デフォルトで禁止するオプション */
     OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
     OptCheck = FALSE;
@@ -123,6 +126,7 @@ jmp_buf timeout;
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
 	if (str_eq(argv[0], "-case"))        OptAnalysis = OPT_CASE;
 	else if (str_eq(argv[0], "-case2"))  OptAnalysis = OPT_CASE2;
+	else if (str_eq(argv[0], "-cfsm"))   OptCFMode = SEMANTIC_MARKER;
 	else if (str_eq(argv[0], "-dpnd"))   OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))   OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-disc"))   OptAnalysis = OPT_DISC;
@@ -323,12 +327,13 @@ void stand_alone_mode()
 
 		if (setjmp(timeout)) {
 		    /* タイムアウト時 */
+#ifdef DEBUG
 		    fprintf(stderr, "Parse timeout.\n(");
 		    for (i = 0; i < Mrph_num; i++)
 			fprintf(stderr, "%s", mrph_data[i].Goi);
 		    fprintf(stderr, ")\n");
-
-		    fprintf(Outfp, ";; Parse timeout.\n");
+#endif
+		    ErrorComment = strdup("Parse timeout");
 		    when_no_dpnd_struct();
 		    dpnd_info_to_bnst(&(Best_mgr.dpnd));
 		    if (OptAnalysis != OPT_DISC) print_result();
@@ -482,7 +487,7 @@ void stand_alone_mode()
 			} while (relation_error <= 3 &&
 					 d_struct_error <= 3 &&
 					 detect_para_scope(Revised_para_num, TRUE) == TRUE);
-			fprintf(Outfp, ";; Cannot detect consistent CS scopes.\n");
+			ErrorComment = strdup("Cannot detect consistent CS scopes");
 			init_mask_matrix();
 		  ParaOK:
 		}
@@ -496,7 +501,7 @@ void stand_alone_mode()
 		alarm(PARSETIMEOUT);
 
 		if (detect_dpnd_case_struct() == FALSE) {
-		    fprintf(Outfp, ";; Cannot detect dependency structure.\n");
+		    ErrorComment = strdup("Cannot detect dependency structure");
 		    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
 						   すべて文節が隣に係ると扱う */
 		}
