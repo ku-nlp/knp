@@ -542,6 +542,8 @@ char *Opt_jumanrc = NULL;
 	/**************/
 
 	if (OptInput == OPT_PARSED) {
+	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
+	    para_recovery();
 	    after_decide_dpnd();
 	    goto PARSED;
 	}
@@ -637,7 +639,7 @@ char *Opt_jumanrc = NULL;
 	/* 係り受け情報を bnst 構造体に記憶 */
 	dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
 	para_recovery();
-	
+
 	/* 固有名詞認識処理 */
 
 	if (OptNE != OPT_NORMAL)

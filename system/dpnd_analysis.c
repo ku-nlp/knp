@@ -543,8 +543,8 @@ extern FILE  *Outfp;
 		     void decide_dpnd(DPND dpnd)
 /*==================================================================*/
 {
-    int i, count, possibilities[32], default_pos, d_possibility;
-    int corpus_possibilities_flag[32], MaskFlag = 0;
+    int i, count, possibilities[BNST_MAX], default_pos, d_possibility;
+    int corpus_possibilities_flag[BNST_MAX], MaskFlag = 0;
     char *cp;
     BNST_DATA *b_ptr;
     
