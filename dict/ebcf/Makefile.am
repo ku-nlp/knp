@@ -1,10 +1,16 @@
 SUBDIRS = .
 
-if CF_EXIST
 dicdir = $(pkgdatadir)/dict/ebcf
+
+if CF_EXIST
 nodist_dic_DATA = cf.db cf.dat
+else
+nodist_dic_DATA = 
 endif
 
+if CF_NOUN_EXIST
+nodist_dic_DATA += noun.db noun.dat
+endif
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
 IPALV2_FILE = /share/dict/ipal/orig/dousi2/dousi2.txt
@@ -41,4 +47,17 @@ cf.db: cf.dat
 		@MAKE_DB_COMMAND@ $@ -append / < cf.idx; \
 	fi
 
-CLEANFILES = cf.db cf.dat cf.idx
+noun.knpdict:
+	true
+
+noun.dat: noun.knpdict
+	if [ -f noun.knpdict ]; then \
+		@CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
+	fi
+
+noun.db: noun.dat
+	if [ -f noun.idx ]; then \
+		@MAKE_DB_COMMAND@ $@ -append / < noun.idx; \
+	fi
+
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx

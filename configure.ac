@@ -145,9 +145,18 @@ else
 fi
 AC_MSG_RESULT([$cf_exist])
 
+AC_MSG_CHECKING([Case Frame (noun)])
+if test -f "$packagesrcdir/dict/ebcf/noun.knpdict"; then
+    cf_noun_exist=yes
+else
+    cf_noun_exist=no
+fi
+AC_MSG_RESULT([$cf_noun_exist])
+
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
 AM_CONDITIONAL(NTT_EXIST, test "$ntt_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
+AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 
 
 AC_SUBST(KNP_LIBS)
