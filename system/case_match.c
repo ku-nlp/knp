@@ -27,11 +27,12 @@ int     SM_match_unknown = 10;			 	/* データ未知     */
 int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11};
 /* int 	EX_match_score[] = {10, 10, 10, 10, 10, 10, 10, 10}; */
 							/* 用例対応スコア */
-int     EX_match_unknown = 7; /* 10; */			/* データ未知     */
+int     EX_match_unknown = 8; /* 10; */			/* データ未知     */
 int     EX_match_sentence = 10;				/* 格要素 -- 文   */
 int     EX_match_tim = 5;				/* 格要素 -- 時間 */
-int     EX_match_qua = 10;				/* 格要素 -- 数量 */
+int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
+int	EX_match_subject = 0;
 
 int	Thesaurus = USE_BGH;
 
@@ -286,10 +287,19 @@ extern float ntt_code_match(char *c1, char *c2);
 				       "数量", SM_CODE_SIZE)) {
 	    score = EX_match_qua;
 	}
+	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
+				       "主体", SM_CODE_SIZE)) {
+	    score = EX_match_subject;
+	}
 
 	/* 用例がどちらか一方でもなかったら */
-	if (*exd == '\0' || exp == NULL || *exp == '\0') {
+	if (*exd == '\0') {
 	    if (score < 0) {
+		score = EX_match_unknown;
+	    }
+	}
+	else if (exp == NULL || *exp == '\0') {
+	    if (cfp->sm[as2] == NULL) {
 		score = EX_match_unknown;
 	    }
 	}
@@ -586,7 +596,7 @@ extern float ntt_code_match(char *c1, char *c2);
 
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
-	int renkaku, mikaku, verb, gaflag = 0;
+	int renkaku, mikaku, verb, gaflag = 0, sotoflag = 0;
 
 	if (cfd->pp[target][target_pp] == -2) {
 	    renkaku = 1;
@@ -608,13 +618,20 @@ extern float ntt_code_match(char *c1, char *c2);
 	}
 
 	/* すでにガ格に割り当てられているか (ガガ解析用) */
-	for (i = 0; i < cfp->element_num; i++) {
-	    if (list2.flag[i] != UNASSIGNED && 
-		cfp->pp[i][1] == END_M && 
-		cfp->pp[i][0] == pp_kstr_to_code("ガ")) {
-		gaflag = 1;
-		break;
+	if (OptCaseFlag & OPT_CASE_GAGA) {
+	    for (i = 0; i < cfp->element_num; i++) {
+		if (list2.flag[i] != UNASSIGNED && 
+		    cfp->pp[i][1] == END_M && 
+		    cfp->pp[i][0] == pp_kstr_to_code("ガ")) {
+		    gaflag = 1;
+		    break;
+		}
 	    }
+	}
+
+	/* 外の関係解析 */
+	if (OptCaseFlag & OPT_CASE_SOTO) {
+	    sotoflag = 1;
 	}
 
 	for (i = 0; i < cfp->element_num; i++) {
@@ -632,6 +649,7 @@ extern float ntt_code_match(char *c1, char *c2);
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
+		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外ノ関係")) ||
 		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("ガ２")) ||
 		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
