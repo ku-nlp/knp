@@ -13,14 +13,21 @@
 KNP_DIR  := /share/tool/knp
 TEMPDIR  := /tmp
 MAKE_DB  := ../system/make_db
+IPAL_CMD := ../system/ipal
 
 BGH_FILE    := /share/dict/bgh/monitor/sakuin
 EDR_FILE    := /share/dict/EDR/tdict/jwd/JWD.DIC
+
 IPALV1_FILE := /share/dict/ipal/orig/dousi1/dousi1.txt
 IPALV2_FILE := /share/dict/ipal/orig/dousi2/dousi2.txt
 IPALA1_FILE := /share/dict/ipal/orig/keiyou/keiyou1.txt
 IPALA2_FILE := /share/dict/ipal/orig/keiyou/keiyou2.txt
 IPALN_DIR   := /share/dict/ipal_noun_31/3.1/data
+
+WORD2CODE   := /share/dict/ntt/data/word2code
+SM2CODE     := /share/dict/ntt/data/sm2code
+CODE2SM     := /share/dict/ntt/data/code2sm
+SMP2SMG     := /share/dict/ntt/data/smp2smg
 
 KNP_SYS  := $(KNP_DIR)/system
 KNP_DICT := $(KNP_DIR)/dict
@@ -30,12 +37,6 @@ KNP_DICT := $(KNP_DIR)/dict
 #----------------------------------------
 
 RMF       := rm -f
-
-#----------------------------------------
-#	Suffixes
-#----------------------------------------
-
-O         := o
 
 #----------------------------------------
 #	Default Targets
@@ -54,8 +55,8 @@ make_dir :
 	if [ ! -d scase ]; then \
 		mkdir scase; \
 	fi
-	if [ ! -d ipal ]; then \
-		mkdir ipal; \
+	if [ ! -d cf ]; then \
+		mkdir cf; \
 	fi
 	if [ ! -d sm ]; then \
 		mkdir sm; \
@@ -73,17 +74,17 @@ make_database :
 		src/edr.pl < "$(EDR_FILE)" > scase/scase.dat; \
 	fi
 	if [ -f "$(IPALV1_FILE)" -a "$(IPALV2_FILE)" ]; then \
-		cat $(IPALV1_FILE) $(IPALV2_FILE) | src/ipalv.pl > ipal/ipalv.dat; \
+		cat $(IPALV1_FILE) $(IPALV2_FILE) | src/ipalv.pl > cf/ipalv.dat; \
 	fi
 	if [ -f "$(IPALA1_FILE)" -a "$(IPALA2_FILE)" ]; then \
-		src/ipala.pl $(IPALA1_FILE) $(IPALA2_FILE) > ipal/ipala.dat; \
+		src/ipala.pl $(IPALA1_FILE) $(IPALA2_FILE) > cf/ipala.dat; \
 	fi
 	if [ -n "$(IPALN_DIR)" -a -d "$(IPALN_DIR)" ]; then \
-		cat $(IPALN_DIR)/n31.* | src/ipals.pl | src/ipals_add_voice.pl > ipal/ipals.dat; \
+		cat $(IPALN_DIR)/n31.* | src/ipals.pl | src/ipals_add_voice.pl > cf/ipals.dat; \
 	fi
-	if [ -f ipal/ipalv.dat -o -f ipal/ipals.dat -o -f ipal/ipala.dat ]; then \
-		cat ipal/ipalv.dat ipal/ipals.dat ipal/ipala.dat | src/ipal ipal/ipal.idx ipal/ipal.dat; \
-		cat ipal/ipalv.dat ipal/ipals.dat ipal/ipala.dat | src/ipal2scase.pl >> scase/scase.dat; \
+	if [ -f cf/ipalv.dat -o -f cf/ipals.dat -o -f cf/ipala.dat ]; then \
+		cat cf/ipalv.dat cf/ipals.dat cf/ipala.dat | $(IPAL_CMD) cf/ipal.idx cf/ipal.dat; \
+		cat cf/ipalv.dat cf/ipals.dat cf/ipala.dat | src/ipal2scase.pl >> scase/scase.dat; \
 	fi
 
 #----------------------------------------
@@ -95,29 +96,29 @@ make_hashdb :
 		$(MAKE_DB) $(TEMPDIR)/bgh < bgh/bgh.dat; \
 		mv $(TEMPDIR)/bgh bgh/bgh; \
 	fi
-	if [ -f sm/word2code.dat ]; then \
-		$(MAKE_DB) $(TEMPDIR)/word2code < sm/word2code.dat; \
+	if [ -f $(WORD2CODE) ]; then \
+		$(MAKE_DB) $(TEMPDIR)/word2code < $(WORD2CODE); \
 		mv $(TEMPDIR)/word2code sm/word2code; \
 	fi
-	if [ -f sm/sm2code.dat ]; then \
-		$(MAKE_DB) $(TEMPDIR)/sm2code < sm/sm2code.dat; \
+	if [ -f $(SM2CODE) ]; then \
+		$(MAKE_DB) $(TEMPDIR)/sm2code < $(SM2CODE); \
 		mv $(TEMPDIR)/sm2code sm/sm2code; \
 	fi
-	if [ -f sm/code2sm.dat ]; then \
-		$(MAKE_DB) $(TEMPDIR)/code2sm < sm/code2sm.dat; \
+	if [ -f $(CODE2SM) ]; then \
+		$(MAKE_DB) $(TEMPDIR)/code2sm < $(CODE2SM); \
 		mv $(TEMPDIR)/code2sm sm/code2sm; \
 	fi
-	if [ -f sm/smp2smg.dat ]; then \
-		$(MAKE_DB) $(TEMPDIR)/smp2smg -append / < sm/smp2smg.dat; \
+	if [ -f $(SMP2SMG) ]; then \
+		$(MAKE_DB) $(TEMPDIR)/smp2smg -append / < $(SMP2SMG); \
 		mv $(TEMPDIR)/smp2smg sm/smp2smg; \
 	fi
 	if [ -f scase/scase.dat ]; then \
 		$(MAKE_DB) $(TEMPDIR)/scase -or < scase/scase.dat; \
 		mv $(TEMPDIR)/scase scase/scase; \
 	fi
-	if [ -f ipal/ipal.idx ]; then \
-		$(MAKE_DB) $(TEMPDIR)/ipal -append / < ipal/ipal.idx; \
-		mv $(TEMPDIR)/ipal ipal/ipal; \
+	if [ -f cf/ipal.idx ]; then \
+		$(MAKE_DB) $(TEMPDIR)/ipal -append / < cf/ipal.idx; \
+		mv $(TEMPDIR)/ipal cf/ipal; \
 	fi
 
 #----------------------------------------
@@ -129,6 +130,6 @@ clean : clean_db
 clean_db :
 	$(RMF) bgh/*
 	$(RMF) scase/*
-	$(RMF) ipal/* 
+	$(RMF) cf/* 
 
 #=============================================================================
