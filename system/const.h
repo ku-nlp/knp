@@ -151,7 +151,7 @@
 #define UNASSIGNED	-1
 #define NIL_ASSIGNED	-2
 
-#define END_M		-1
+#define END_M		-10
 
 #define CONTINUE	-1
 #define GUARD		'\n'
@@ -630,6 +630,8 @@ typedef struct cf_def {
     char 	ipal_id[128];				/* IPALのID */
     char 	imi[128];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
+    int		weight[CF_ELEMENT_MAX];
+    BNST_DATA	*pred_b_ptr;
 } CASE_FRAME;
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
@@ -671,9 +673,9 @@ typedef struct {
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
 
-#define	SOTO_SCORE		10
-#define	OPTIONAL_CASE_SCORE	20
-#define	SOTO_ADD_SCORE		30
+#define	SOTO_SCORE		7 /* 10 */
+#define	OPTIONAL_CASE_SCORE	2
+#define	SOTO_ADD_SCORE		5
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ

@@ -80,7 +80,7 @@ struct PP_STR_TO_CODE {
     {"につく", "ニツク", 26},
     {"にとる", "ニトル", 27},
     {"にくわえる", "ニクワエル", 28},
-    {"にかぎる", "ニカギリル", 29},
+    {"にかぎる", "ニカギル", 29},
     {"につづく", "ニツヅク", 30},
     {"にあわせる", "ニアワセル", 31},
     {"にくらべる", "ニクラベル", 32},
@@ -111,10 +111,10 @@ int pp_kstr_to_code(char *cp)
     if (str_eq(cp, "ニトッテ"))		/* 「待つ」 IPALのバグ ?? */
       return pp_kstr_to_code("ニヨッテ");
     else if (str_eq(cp, "ノ"))		/* 格要素でなくなる場合 */
-      return -1;
+      return END_M;
 
     /* fprintf(stderr, "Invalid string (%s) in PP !\n", cp); */
-    return -1;
+    return END_M;
 }
 
 int pp_hstr_to_code(char *cp)
@@ -123,7 +123,7 @@ int pp_hstr_to_code(char *cp)
     for (i = 0; PP_str_to_code[i].hstr; i++)
       if (str_eq(PP_str_to_code[i].hstr, cp))
 	return PP_str_to_code[i].code;
-    return -1;
+    return END_M;
 }
 
 char *pp_code_to_kstr(int num)
@@ -395,7 +395,7 @@ char *sm_code_to_str(int code)
 /*==================================================================*/
 {
     int i, j;
-    int topic_score, topic_score_sum = 0, topic_slot[2], distance_cost = 0;
+    int one_topic_score, topic_score, topic_score_sum = 0, topic_slot[2], distance_cost = 0;
     char *cp;
 
     /* 格構造解析のメイン関数 */
@@ -473,9 +473,10 @@ char *sm_code_to_str(int code)
 
 	    topic_slot[0] = 0;
 	    topic_slot[1] = 0;
+	    one_topic_score = 0;
 
 	    /* 係り側を探す */
-	    for (j = 0; j < i; j++) {
+	    for (j = i-1; j >= 0; j--) {
 		if (dpnd.head[j] != i) {
 		    continue;
 		}
@@ -486,19 +487,18 @@ char *sm_code_to_str(int code)
 		    else {
 			topic_slot[0]++;
 		    }
+		    sscanf(cp, "%*[^:]:%d", &topic_score);
+		    one_topic_score += topic_score;
 		}
 	    }
 
-	    if ((topic_slot[0] == 1 || topic_slot[1] == 1) && 
-		(topic_slot[0] < 2 && topic_slot[1] < 2)) {
-		sscanf(cp, "%*[^:]:%d", &topic_score);
-		/* とりあえず、時間は topic_score 点にしてみる */
-		Work_mgr.score += topic_score*topic_slot[0]+topic_score*topic_slot[1];
-		if (OptDisplay == OPT_DEBUG) {
-		    topic_score_sum += topic_score*topic_slot[0]+topic_score*topic_slot[1];
-		}
+	    if (topic_slot[0] > 0 || topic_slot[1] > 0) {
+		one_topic_score += 20;
 	    }
-
+	    Work_mgr.score += one_topic_score;
+	    if (OptDisplay == OPT_DEBUG) {
+		topic_score_sum += one_topic_score;
+	    }
 	}
     }
 

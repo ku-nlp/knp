@@ -284,6 +284,22 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
+      int check_examples(unsigned char *cp, unsigned char *list)
+/*==================================================================*/
+{
+    if (!list) {
+	return FALSE;
+    }
+
+    while (list = extract_ipal_str(list, ipal_str_buf)) {
+	if (str_eq(cp, ipal_str_buf)) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 		int check_agentive(unsigned char *cp)
 /*==================================================================*/
 {
@@ -534,7 +550,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    /* IPALデータの読みだし */
 	    match = sscanf(pre_pos, "%d:%d", &address, &size);
 	    if (match != 2) {
-		fprintf(stderr, "CaseFrame Dictionary Index error\n");
+		fprintf(stderr, "CaseFrame Dictionary Index error (it seems version 1.).\n");
 		exit(1);
 	    }
 	    

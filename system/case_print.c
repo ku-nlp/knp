@@ -16,16 +16,24 @@ extern FILE  *Outfp;
 /*==================================================================*/
 {
     char *cp;
+    int i;
 
     /* 係タイプの出力 */
     if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係")) != NULL) {
-	if (cpm_ptr->cf.pp[num][0] < 0) {
-	    /* 3 は strlen("係:") */
-	    fprintf(Outfp, "《%s》", cp+3);
+	fprintf(Outfp, "《");
+	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
+	    if (i) {
+		fprintf(Outfp, "/");
+	    }
+	    if (cpm_ptr->cf.pp[num][i] < 0) {
+		/* 3 は strlen("係:") */
+		fprintf(Outfp, "--");
+	    }
+	    else {
+		fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
+	    }
 	}
-	else {
-	    fprintf(Outfp, "《%s》", pp_code_to_kstr(cpm_ptr->cf.pp[num][0]));
-	}
+	fprintf(Outfp, "》");
     }
 }
 
@@ -186,7 +194,7 @@ extern FILE  *Outfp;
 
 	    /* 格ごとのスコアを表示 */
 	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
-		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]/10);
+		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]);
 
 	    /* 用例による解析の場合
 	       最大マッチのコードを求める 
@@ -227,7 +235,7 @@ extern FILE  *Outfp;
 	
 	fprintf(Outfp, " : 《");
 	
-	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= -1; j++) {
+	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
 	    if (j != 0) fprintf(Outfp,  "/");
 	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
 	}
@@ -264,7 +272,9 @@ extern FILE  *Outfp;
 	*/
 
 	/* 意味素による解析の場合 */
-	fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	if (i_ptr->DATA+i_ptr->imisosei[i]) {
+	    fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	}
 
 	/* 意味素コードを書く場合
 	fprintf(Outfp, " [");
