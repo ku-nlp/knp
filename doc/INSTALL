@@ -1,0 +1,47 @@
+This file describes required resources and installation instructions.
+
+
+Required resources
+------------------
+
+1) gcc and gmake to compile a whole system
+
+2) nkf (network kanji filter) and jperl (perl patched for Japanese)
+	to compile dictionary-database 
+
+3) JUMAN (ftp://pine.kyoto-u.ac.jp/pub/juman/juman3.2.tar.gz)
+
+4) Bunrui Goi Hyou (Word List by Semantic Principles)
+	A FD version is available (3,500yen) from
+		Dai Nippon Tosho 
+	        Tel. +81-03-3561-8679
+
+5) EDR Japanese Word Dictionary (http://www.iijnet.or.jp/edr)
+
+6) IPA Lexicon, called IPAL (see ftp://ftp.mgt.ipa.go.jp/pub/ipal/README.E)
+
+(You can run the parser without these dictionaries tentatively.)
+
+
+Installation instructions
+-------------------------
+
+1) set the following variables in "knp2.0b3/system/Makefile" and 
+	"knp2.0b3/dict/Makefile".
+	
+	KNP_DIR
+	JUMANLIB
+        RCPATH
+	BGH_FILE
+	EDR_FILE
+	IPALV1_FILE
+	IPALV2_FILE
+	IPALA1_FILE
+	IPALA2_FILE
+	IPALN_DIR
+
+2) do `gmake all' to compile a parsing program and dictionary-database
+	(it takes quite a long time to compile the database.)
+
+Sadao Kurohashi
+kuro@kuee.kyoto-u.ac.jp

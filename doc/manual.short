@@ -1,0 +1,104 @@
+
+
+		  KN parser (Kurohashi-Nagao parser)
+			Version 2.0, Dec. 1996
+	
+	 Copyright (C) 1993, 1994, 1995, 1996 Sadao Kurohashi
+
+
+1. INTRODUCTION
+
+This parser detects dependency/case structures of Japanese sentences.
+
+First it detects the scopes of the coordinations in a sentence by
+checking the similarity between two conjuncts.  Then according to your
+choice, the parser detects its dependency structure or its case
+structure.  In the case of dependency structure analysis, the unique
+structure of a sentence is detected by heuristic rules.  In the case
+of case structure analysis, the unique structure is also detected
+using example sentences in the case-frame dictionary.  (However,
+because the current case-frame dictionary contains less than 1,000
+verbs, case structure analysis is not so useful at present.)
+
+As for details of the algorithm, please look at papers which you can
+get by ftp in the same way as this system.
+
+
+2. INPUTS 
+
+The parser receives morph-string of a sentence output by `juman -e -B'
+from standard input.  JUMAN is a morphological analyzer developed in
+Nagao Lab., which can be gotten by ftp in the same way as this system. 
+(This system needs the latest version of JUMAN (JUMAN3.1). If you have
+an old one, please get the latest version.)
+
+The normal way of using this system is `juman -e -B | knp', inputing
+every sentence from standard input.
+
+
+3. OPTIONS
+
+The following options are available:
+
+-bnst	Convert morph-string of a sentence into bunsetsu-string. 
+
+-dpnd	Detect the unique dependency structure of an input sentence 
+	by heuristic rules (default). 
+
+-case	Detect the unique case structure of an input sentence using 
+	example sentences in the case-frame dictionary. 
+
+-tab	Show the output as JUMAN (each line for each word), inserting 
+	bunsetsu boundaries and the id of their head bunsetsu's. 
+
+-tree	Show the visual tree for the dependency structure of a 
+	sentence (default). 
+
+-sexp	Show the S-expression for the dependency structure of a
+	sentence (please look at examples in the file "EXAMPLE"). 
+	Head/dependent relations between bunsetsu-data are expressed 
+	by a nesting list, where a bunsetsu-data is followed by its 
+	governing bunsetsu-data sequence.
+	  A bunsetsu-data is a list containing:
+		- order of the bunsetsu, 
+		- morph-string (a sequence of morph-data), 
+		- features given to the bunsetsu, and 
+		- the result of case analysis (if -case is given).
+	  The result of case analysis is given to a predicative bunsetsu,
+	consisting of: 
+		- address of its proper case-frame in the dictionary, 
+		- voice, and 
+		- the case-correspondence. 
+	  The case-correspondence is also a list.  Its first element 	
+	indicates the case slot in the dictionary which corresponds to
+	a predicate's modifying bunsetsu, if any (if none, marked by
+	`*').  Its second element indicates the case slot which
+	corresponds to a predicate's first child bunsetsu. Its third
+	element indicates the case slot which corresponds to a
+	predicate's second child bunsetsu. And so forth.  
+
+-normal	Show only the visual tree or the S-expression of a sentence 
+	(default).  
+
+-detail	Show results of case structure analysis in detail 
+	(meaning of each verb and correspondences of case components 
+	in a sentence to case slots in the case-frame dictionary). 
+
+-debug	Show all information during the analysis, including the 
+	process of detecting corrdinations. 
+
+-expand Without this option, a bunsetsu (Bd) depending on both heads
+	(Bh1, Bh2) in conjuncts is treated as depending on a para-node
+	governing a corrdination. If this option is given, Bd is 
+	treated as directly depending on Bh1 and Bh2. 
+
+
+4. PROBLEMS and BUGS
+
+Any comments, suggestions, and bug reports on the current system are
+welcome.  When reporting bugs, please include details of your machine
+environment that will allow me to reproduce the bug.
+
+
+Sadao Kurohashi
+kuro@kuee.kyoto-u.ac.jp
