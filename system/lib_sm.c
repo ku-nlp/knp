@@ -28,10 +28,10 @@ char  		cont_str[DBM_CON_MAX];
 
     /* 単語 <=> 意味素コード */
     if (DICT[SM_DB]) {
-	filename = (char *)check_dict_filename(DICT[SM_DB], TRUE);
+	filename = check_dict_filename(DICT[SM_DB], TRUE);
     }
     else {
-	filename = (char *)check_dict_filename(SM_DB_NAME, FALSE);
+	filename = check_dict_filename(SM_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -88,10 +88,10 @@ char  		cont_str[DBM_CON_MAX];
 
     /* 意味素コード => 意味素 */
     if (DICT[CODE2SM_DB]) {
-	filename = (char *)check_dict_filename(DICT[CODE2SM_DB], TRUE);
+	filename = check_dict_filename(DICT[CODE2SM_DB], TRUE);
     }
     else {
-	filename = (char *)check_dict_filename(CODE2SM_DB_NAME, FALSE);
+	filename = check_dict_filename(CODE2SM_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -117,10 +117,10 @@ char  		cont_str[DBM_CON_MAX];
 
     /* 固有名詞体系 <=> 一般名詞体系 */
     if (DICT[SMP2SMG_DB]) {
-	filename = (char *)check_dict_filename(DICT[SMP2SMG_DB], TRUE);
+	filename = check_dict_filename(DICT[SMP2SMG_DB], TRUE);
     }
     else {
-	filename = (char *)check_dict_filename(SMP2SMG_DB_NAME, FALSE);
+	filename = check_dict_filename(SMP2SMG_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -774,7 +774,7 @@ char  		cont_str[DBM_CON_MAX];
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] != -2 && 
+	if (cpm_ptr->elem_b_num[i] > -2 && 
 	    num >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
 	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
@@ -800,7 +800,7 @@ char  		cont_str[DBM_CON_MAX];
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] != -2 && 
+	if (cpm_ptr->elem_b_num[i] > -2 && 
 	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
 	    /* o すでに主体付与されていない

@@ -1229,7 +1229,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	if (num != NIL_ASSIGNED && /* ³ä¤êÅö¤Æ¤¬¤¢¤ë */
-	    (cpm_ptr->elem_b_num[i] == -2 || /* ¾ÊÎ¬ */
+	    (cpm_ptr->elem_b_num[i] <= -2 || /* ¾ÊÎ¬ */
 	     cpm_ptr->cf.pp[i][0] < 0)) { /* ¡Á¤Ï, Ï¢ÂÎ½¤¾þ */
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
@@ -1272,9 +1272,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* ¾ÊÎ¬²òÀÏ¤Î·ë²Ì¤Ï½ü¤¯
 	   »Ø¼¨»ì¤Î²òÀÏ¤ò¤¹¤ë¾ì¹ç¤Ï¡¢»Ø¼¨»ì¤ò½ü¤¯ */
-	if (cpm_ptr->elem_b_num[i] == -2 || 
-	    (OptDemo == TRUE && 
-	     check_feature(cpm_ptr->elem_b_ptr[i]->f, "¾ÊÎ¬²òÀÏÂÐ¾Ý»Ø¼¨»ì"))) {
+	if (cpm_ptr->elem_b_num[i] <= -2) {
 	    continue;
 	}
 
@@ -1401,7 +1399,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	else {
 	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
 	    sprintf(buffer, "%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
+		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 	/* ¾ÊÎ¬ */
+		    cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* ¾È±þ */
 		    cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
 		    word ? word : "(null)", 
 		    cpm_ptr->elem_b_ptr[num]->num != -1 ? cpm_ptr->elem_b_ptr[num]->num : 
@@ -1411,7 +1410,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    strcat(feature_buffer, buffer);
 
 	    /* ¾ÊÎ¬¤Î¾ì¹ç (ÆÃ¼ì¥¿¥°°Ê³°) */
-	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {
+	    if (em_ptr && cpm_ptr->elem_b_num[num] <= -2) {
 		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
 			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
 			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");

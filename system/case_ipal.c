@@ -47,17 +47,17 @@ int	PrintDeletedSM = 0;
     char *index_db_filename, *data_filename;
 
     if (DICT[CF_DATA]) {
-	data_filename = (char *)check_dict_filename(DICT[CF_DATA], TRUE);
+	data_filename = check_dict_filename(DICT[CF_DATA], TRUE);
     }
     else {
-	data_filename = (char *)check_dict_filename(CF_DAT_NAME, FALSE);
+	data_filename = check_dict_filename(CF_DAT_NAME, FALSE);
     }
 
     if (DICT[CF_INDEX_DB]) {
-	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB], TRUE);
+	index_db_filename = check_dict_filename(DICT[CF_INDEX_DB], TRUE);
     }
     else {
-	index_db_filename = (char *)check_dict_filename(CF_DB_NAME, FALSE);
+	index_db_filename = check_dict_filename(CF_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -909,8 +909,11 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
     }
-    else if ((vtype = check_feature(b_ptr->f, "サ変名詞格解析"))) {
+    else if ((vtype = check_feature(b_ptr->f, "サ変"))) {
 	vtype = "動";
+    }
+    else if ((vtype = check_feature(b_ptr->f, "名詞的形容詞語幹"))) {
+	vtype = "形";
     }
     else if ((vtype = check_feature(b_ptr->f, "準用言"))) {
 	;
@@ -1103,10 +1106,8 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
     }
     /* 「〜化」, 「〜的だ」 で 名詞+接尾辞(自立語) の形のもの
        (準用言ではない … 「〜年」などの時間を除く) */
-    /* ★ そのうち ルール化する */
     else if (b_ptr->jiritu_num > 1 && !strcmp(Class[L_Jiritu_M(b_ptr)->Hinshi][0].id, "接尾辞") && 
 	     !check_feature(b_ptr->f, "準用言")) {
-	assign_cfeature(&(b_ptr->f), "名詞+接尾辞");
 	sprintf(buffer[0], "%s%s", (b_ptr->jiritu_ptr+b_ptr->jiritu_num-2)->Goi, L_Jiritu_M(b_ptr)->Goi);
 	verb = buffer[0];
 
@@ -1215,10 +1216,10 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	/* 正解コーパスを入力したときに自立語がない場合がある */
 	if (b_ptr->jiritu_ptr != NULL && 
 	    ((!(b_ptr->internal_num > 0 && 
-		check_feature(b_ptr->internal->f, "サ変名詞格解析") && 
-		check_feature(b_ptr->f, "用言:動")) && /* サ変動詞の場合は文節内部の方で格解析 */
+		check_feature(b_ptr->internal->f, "非用言格解析") && 
+		check_feature(b_ptr->f, "用言:動")) && /* (複合)サ変動詞の場合は文節内部の方で格解析 */
 	      check_feature(b_ptr->f, "用言")) || /* 準用言はとりあえず対象外 */
-	     (check_feature(b_ptr->f, "サ変名詞格解析") && b_ptr->internal_num == 0))) { /* 複合名詞ではないサ変名詞 */
+	     (check_feature(b_ptr->f, "非用言格解析") && b_ptr->internal_num == 0))) { /* 複合名詞ではないサ変名詞, 形容詞語幹 */
 
 	    /* 以下の2つの処理はfeatureレベルで起動している
 	       set_pred_voice(b_ptr); ヴォイス
@@ -1232,9 +1233,9 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	    b_ptr->cf_num = 0;
 	}
 
-	/* 文節内部のサ変名詞の解析用 */
+	/* 文節内部のサ変名詞, 形容詞語幹の解析用 */
 	for (j = 0; j < b_ptr->internal_num; j++) {
-	    if (check_feature((b_ptr->internal+j)->f, "サ変名詞格解析")) {
+	    if (check_feature((b_ptr->internal+j)->f, "非用言格解析")) {
 		start = Case_frame_num;
 		make_case_frames(sp, b_ptr->internal+j);
 	    }
@@ -1334,12 +1335,14 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	suffix_num = 0;
 
 	for (j = 1; j <= bp->jiritu_num; j++) {
-	    /* 名詞 or 副詞であれば */
+	    /* 名詞, 副詞, 形容詞語幹であれば */
 	    /* 複合名詞であり、Head の直前が数詞でない
 	       (「６１連勝」などを除く) */
 	    if ((!strcmp(Class[(bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi][0].id, "名詞") && 
 		 strcmp(Class[(bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi][(bp->jiritu_ptr+bp->jiritu_num-j)->Bunrui].id, "数詞")) || 
-		!strcmp(Class[(bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi][0].id, "副詞")) {
+		!strcmp(Class[(bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi][0].id, "副詞") || 
+		(!strcmp(Class[(bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi][0].id, "形容詞") && 
+		 !strcmp(Form[(bp->jiritu_ptr+bp->jiritu_num-j)->Katuyou_Kata][(bp->jiritu_ptr+bp->jiritu_num-j)->Katuyou_Kei].name, "語幹"))) {
 		if (bp->internal_num == 0) {
 		    bp->internal = (BNST_DATA *)malloc_data(sizeof(BNST_DATA), "make_internal_bnst");
 		    bp->internal_max = 1;

@@ -255,8 +255,11 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	vtype += 5;
 	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
-    else if (check_feature(b_ptr->f, "サ変名詞格解析")) {
+    else if (check_feature(b_ptr->f, "サ変")) {
 	strcpy(cpm_ptr->cf.pred_type, "動");
+    }
+    else if (check_feature(b_ptr->f, "名詞的形容詞語幹")) {
+	strcpy(cpm_ptr->cf.pred_type, "形");
     }
     else if (check_feature(b_ptr->f, "準用言")) {
 	strcpy(cpm_ptr->cf.pred_type, "準");
@@ -372,12 +375,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
     /* 子供を格要素に */
     for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
-	/* 「〜化」, 「〜的だ」を除く */
-	if (b_ptr->child[i]->num == -1 && 
-	    (check_feature(b_ptr->f, "名詞+接尾辞") || 
-	     !check_feature(b_ptr->f, "サ変名詞格解析"))) {
-	    continue;
-	}
 	if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i], TRUE))) {
 	    /* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
 	       「みかんを三個食べる」 の場合はそのまま両方格要素になる

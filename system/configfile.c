@@ -526,7 +526,7 @@ int knp_dict_file_already_defined = 0;
 #ifdef KNP_RULE
 	Knprule_Dirname = strdup(KNP_RULE);
 #else
-	fprintf(stderr, "Please specify rule directory in .knprc\n");
+	fprintf(stderr, ";; Please specify rule directory in .knprc\n");
 	exit(0);
 #endif
     }

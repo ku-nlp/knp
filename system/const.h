@@ -107,10 +107,6 @@
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
 #define OPT_ENTITY	4
-#define OPT_NESM	2
-#define OPT_NE		3
-#define OPT_NE_SIMPLE	4
-#define OPT_JUMAN	2
 #define OPT_SVM		2
 #define OPT_DT		3
 
@@ -436,32 +432,7 @@ typedef struct _RuleVector {
 #define	PROPER_DB	8
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
-#define	NOUN_DB		11
 #define	CODE2SM_DB	12
-
-/*====================================================================
-			     固有名詞解析
-====================================================================*/
-
-struct _pos_s {
-    int Location;
-    int Person;
-    int Organization;
-    int Artifact;
-    int Others;
-    char Type[9];
-    int Count;
-};
-
-typedef struct {
-    struct _pos_s XB;
-    struct _pos_s AX;
-    struct _pos_s AnoX;
-    struct _pos_s XnoB;
-    struct _pos_s self;
-    struct _pos_s selfSM;
-    struct _pos_s Case;
-} NamedEntity;
 
 /*====================================================================
 			      基本データ
@@ -480,9 +451,6 @@ typedef struct {
     char	type;
     FEATUREptr	f;
     char 	*SM;				/* 追加 */
-    NamedEntity	NE;				/* 追加 */
-    NamedEntity	eNE;				/* 追加 */
-    struct _pos_s	Case[23];		/* 追加 */
 } MRPH_DATA;
 
 typedef struct cf_def *CF_ptr;

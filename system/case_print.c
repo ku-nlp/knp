@@ -27,6 +27,10 @@ int	EX_PRINT_NUM = 10;
 	fputs("《省》", Outfp);
 	return;
     }
+    else if (cpm_ptr->elem_b_num[num] == -3) {
+	fputs("《照》", Outfp);
+	return;
+    }
     else if (flag == FALSE && cpm_ptr->elem_b_num[num] == -1) {
 	fputs("《--》", Outfp);
 	return;
@@ -377,7 +381,7 @@ struct _sort_kv {
 	    word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
 	    if (word) {
 		/* 省略の場合は * を付与 */
-		fprintf(Outfp, " %s:%s%s", word, relation, cpm_ptr->elem_b_num[i] == -2 ? "*" : "");
+		fprintf(Outfp, " %s:%s%s", word, relation, cpm_ptr->elem_b_num[i] <= -2 ? "*" : "");
 		free(word);
 	    }
 	}
