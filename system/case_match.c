@@ -586,7 +586,7 @@ extern float ntt_code_match(char *c1, char *c2);
 
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
-	int renkaku, mikaku, verb;
+	int renkaku, mikaku, verb, gaflag = 0;
 
 	if (cfd->pp[target][target_pp] == -2) {
 	    renkaku = 1;
@@ -607,6 +607,16 @@ extern float ntt_code_match(char *c1, char *c2);
 	    verb = 0;
 	}
 
+	/* すでにガ格に割り当てられているか (ガガ解析用) */
+	for (i = 0; i < cfp->element_num; i++) {
+	    if (list2.flag[i] != UNASSIGNED && 
+		cfp->pp[i][1] == END_M && 
+		cfp->pp[i][0] == pp_kstr_to_code("ガ")) {
+		gaflag = 1;
+		break;
+	    }
+	}
+
 	for (i = 0; i < cfp->element_num; i++) {
 
 	    /* "〜は" --> "が，を，に" と 対応可
@@ -616,11 +626,13 @@ extern float ntt_code_match(char *c1, char *c2);
 		((mikaku &&
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("ヲ"))) ||
+		   cfp->pp[i][0] == pp_kstr_to_code("ヲ")
+		   )) ||
 		 (renkaku &&
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
+		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("ガ２")) ||
 		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
 		if (elmnt_score != 0 || flag == EXAMPLE) {
