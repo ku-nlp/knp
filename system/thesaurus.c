@@ -218,13 +218,12 @@ int	ParaThesaurus = USE_BGH;
     *result_num = strlen(result_code) / code_unit;
 
     if (*result_num > 0) {
+	char feature_buffer[BNST_LENGTH_MAX + 4];
 	if (flag == USE_NTT) {
-	    char feature_buffer[BNST_LENGTH_MAX + SM_CODE_SIZE * SM_ELEMENT_MAX + 4];
-	    sprintf(feature_buffer, "SM:%s:%s", str_buffer, result_code);
+	    sprintf(feature_buffer, "SM:%s", str_buffer);
 	    assign_cfeature(&(ptr->f), feature_buffer);
 	}
 	else if (flag == USE_BGH) {
-	    char feature_buffer[BNST_LENGTH_MAX + 4];
 	    sprintf(feature_buffer, "BGH:%s", str_buffer);
 	    assign_cfeature(&(ptr->f), feature_buffer);
 	}

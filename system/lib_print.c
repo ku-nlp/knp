@@ -1014,6 +1014,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
+	sm2feature(sp);
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {

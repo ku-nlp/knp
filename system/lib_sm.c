@@ -864,6 +864,23 @@ char  		cont_str[DBM_CON_MAX];
     }
 }
 
+/*==================================================================*/
+		  void sm2feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *cp, feature_buffer[BNST_LENGTH_MAX + 4];
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	/* thesaurus.c: get_bnst_code() で与えられたfeatureを上書き */
+	if (cp = check_feature((sp->tag_data + i)->f, "SM")) {
+	    
+	    sprintf(feature_buffer, "SM:%*s:%s", strlen(cp) - 3, cp + 3, (sp->tag_data + i)->SM_code);
+	    assign_cfeature(&((sp->tag_data + i)->f), feature_buffer);
+	}
+    }
+}
+
 /*====================================================================
                                END
 ====================================================================*/

@@ -272,6 +272,7 @@ extern void fix_sm_person(SENTENCE_DATA *sp);
 extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void sm2feature(SENTENCE_DATA *sp);
 
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
