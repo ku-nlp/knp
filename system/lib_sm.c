@@ -56,6 +56,11 @@ int		SMP2SMGExist;
 {
     int i, pos;
 
+    if (SMExist == FALSE) {
+	fprintf(stderr, "Can not open Database <%s>.\n", SM_DB_NAME);
+	exit(1);
+    }
+
     key.dptr = cp;
     if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
 	fprintf(stderr, "Too long key <%s>.\n", cp);
@@ -81,6 +86,7 @@ int		SMP2SMGExist;
     }
 
     pos = 0;
+    /* 意味素を付与する品詞 */
     for (i = 0; cont_str[i]; i+=12) {
 	if (cont_str[i] == '3' ||	/* 名 */
 	    cont_str[i] == '4' ||	/* 名(形式) */
@@ -89,7 +95,9 @@ int		SMP2SMGExist;
 	    cont_str[i] == '7' ||	/* サ変 */
 	    cont_str[i] == '9' ||	/* 時詞 */
 	    cont_str[i] == 'a' ||	/* 代名 */
-	    cont_str[i] == 'n') {	/* 固 */
+	    cont_str[i] == 'l' ||	/* 接頭 */
+	    cont_str[i] == 'm' ||	/* 接辞 */
+	    cont_str[i] == '2') {	/* 固 */
 	    strncpy(cont_str+pos, cont_str+i, 12);
 	    pos += 12;
 	}
