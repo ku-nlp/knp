@@ -14,6 +14,7 @@ libjuman_a_SOURCES = \
 	grammar.c \
 	iotool.c \
 	juman.h \
+	juman_lib.c \
 	katuyou.c \
 	lisp.c \
 	pat.c \

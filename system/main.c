@@ -791,7 +791,7 @@ extern int	SOTO_SCORE;
 	close_case_pred();
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	close_optional_case();
-    /* close_dic_for_rule(); */
+    CloseJuman();
 }
 
 /*==================================================================*/

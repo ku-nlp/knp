@@ -412,6 +412,7 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 
     for (i = 0; *(def+i); i++) {
 	fprintf(stderr, "ÄêµÁÊ¸[%s] %d: %s\n", bp->Jiritu_Go, i, *(def+i));
+	GetJumanResult(*(def+i));
     }
 }
 
