@@ -160,13 +160,13 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 }
 
 /*==================================================================*/
-  void set_parent(PARA_MANAGER *parent_ptr, PARA_MANAGER *child_ptr)
+  int set_parent(PARA_MANAGER *parent_ptr, PARA_MANAGER *child_ptr)
 /*==================================================================*/
 {
     int i, j, i_num, j_num;
 
     if (child_ptr->parent) {
-	if (child_ptr->parent == parent_ptr) return;
+	if (child_ptr->parent == parent_ptr) return TRUE;
 
 	for (i = 0; i < child_ptr->parent->para_num; i++) {
 	    i_num = child_ptr->parent->para_data_num[i];
@@ -183,7 +183,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 		    (j_num < i_num &&
 		     (para_rel_matrix[j_num][i_num] == REL_POS ||
 		      para_rel_matrix[j_num][i_num] == REL_IN2)))
-		  return;
+		  return TRUE;
 
 		/* 新しい親が直接の親 */
 
@@ -200,9 +200,9 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 		    parent_ptr->child[parent_ptr->child_num++] = child_ptr;
 		    if (parent_ptr->child_num >= PARA_PART_MAX) {
 			fprintf(stderr, ";; Too many para!\n");
-			exit(1);
+			return FALSE;
 		    }
-		    return;
+		    return TRUE;
 		}
 	    }
 	}
@@ -217,9 +217,10 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	parent_ptr->child[parent_ptr->child_num++] = child_ptr;
 	if (parent_ptr->child_num >= PARA_PART_MAX) {
 	    fprintf(stderr, ";; Too many para!\n");
-	    exit(1);
+	    return FALSE;
 	}
     }
+    return TRUE;
 }
 
 /*==================================================================*/
@@ -320,7 +321,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	    m_ptr->para_data_num[m_ptr->para_num++] = i;
 	    if (m_ptr->para_num >= PARA_PART_MAX) {
 		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
-		exit(1);
+		return FALSE;
 	    }
 	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].max_path[0];
 	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].key_pos;
@@ -335,7 +336,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 		m_ptr->para_data_num[m_ptr->para_num++] = j;
 		if (m_ptr->para_num >= PARA_PART_MAX) {
 		    fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
-		    exit(1);
+		    return FALSE;
 		}
 		m_ptr->start[m_ptr->part_num] = sp->para_data[j].key_pos+1;
 		m_ptr->end[m_ptr->part_num++] = sp->para_data[j].jend_pos;
@@ -361,8 +362,11 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 		  para_rel_matrix[i][j] == REL_IN1)) ||
 		(j < i &&
 		 (para_rel_matrix[j][i] == REL_POS ||
-		  para_rel_matrix[j][i] == REL_IN2)))
-	      set_parent(m_ptr2, m_ptr1);
+		  para_rel_matrix[j][i] == REL_IN2))) {
+		if (set_parent(m_ptr2, m_ptr1) == FALSE) {
+		    return FALSE;
+		}
+	    }
 	}
     }
 

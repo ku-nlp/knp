@@ -493,7 +493,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    
 	    sp->Para_num ++;
 	    if (sp->Para_num >= PARA_MAX) {
-		fprintf(stderr, "Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
+		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
 	    }
 	}
