@@ -193,6 +193,7 @@
 /*====================================================================
 		       Client/Server  動作モード
 ====================================================================*/
+
 #define STAND_ALONE_MODE 0
 #define SERVER_MODE      1
 #define CLIENT_MODE      2
@@ -342,6 +343,7 @@ typedef struct {
     FEATUREptr f;
 } DicForRule;
 
+/* 形態素列規則, 文節列規則の集まりを扱うための構造体 */
 typedef struct {
     void	*RuleArray;
     int		CurRuleSize;
@@ -350,6 +352,36 @@ typedef struct {
     int		breakmode;
     int		direction;
 } GeneralRuleType;
+
+/* KNP のルールファイル指定用 (.jumanrc) */
+#ifndef DEF_GRAM_FILE
+#define         DEF_GRAM_FILE           "文法ファイル"
+#endif
+
+#define		DEF_KNP_FILE		"KNPルールファイル"
+#define		DEF_KNP_DIR		"KNPルールディレクトリ"
+
+typedef struct _RuleVector {
+    char	*file;
+    int		type;
+    int		mode;
+    int		breakmode;
+    int		direction;
+} RuleVector;
+
+#define RuleIncrementStep 10
+
+/* 読み込み方法 */
+#define HomoRuleType 1
+#define MorphRuleType 2
+#define BnstRuleType 3
+#define DpndRuleType 4
+#define KoouRuleType 5
+#define NeMorphRuleType 6
+#define NePhrasePreRuleType 7
+#define NePhraseRuleType 8
+#define NePhraseAuxRuleType 9
+#define ContextRuleType 10
 
 /*====================================================================
 			     固有名詞解析
