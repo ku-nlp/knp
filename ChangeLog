@@ -1,3 +1,72 @@
+2000-01-11  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_data.c, system/case_match.c, system/case_analysis.c:
+	格解析の改良。
+	提題の扱いの改良, マッチングの bug fix。
+
+2000-01-09  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/kakari_uke.rule, rule/bnst_etc.rule, rule/bnst_trivial.phrase:
+	「〜ことになる」などといった表現のルールの追加。
+	係り受けの壁の追加。
+
+	* system/case_analysis.c: 格解析において、提題のスコアの扱いを改良。
+
+	* system/proper.c, system/feature.c, system/main.c, system/case_print.c, system/const.h, system/case_ipal.c, system/case_match.c, system/case_analysis.c:
+	Cf_match_mgr, Case_frame_array を格解析するときにのみ、確保するように
+	変更。
+	格フレームごとに用例自体を EX_PRINT_NUM 個記録。
+	格解析を行ったときの表示を改良。
+	形態素ごとの意味素, "&意味素" Feature Function を固有名詞解析のときの
+	み使うように変更。
+
+2000-01-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h: 1.30 から 1.31 への変更のマージ。
+
+	* system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h:
+	格解析で、マッチした格要素ごとに類似度を表示するようにした。
+
+	* rule/rule_trans.pl: 句点などを扱えなかった問題を修正。
+
+2000-01-07  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h: 格フレームに関する変数群の数を増やさない枝でもコンパイルが通るようにし
+	た。
+
+2000-01-07  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* system/regexp.c, system/dpnd_analysis.c, system/main.c, system/proper.c, system/read_data.c, system/read_rule.c:
+	cleanup for regexpmrph/bnst
+
+2000-01-07  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c, system/case_ipal.c, system/const.h, system/ipal.c, system/lib_bgh.c:
+	SM_CODE_MAX の撲滅。
+	格フレームの格の個数を 20 個にした。(CF_ELEMENT_NUM)
+	格フレームの用例, 意味素の数を 256 個にした。(EX_ELEMENT_MAX, SM_ELEMENT_MAX)
+	格フレームのデータのサイズを 12800 にした。(IPAL_DATA_SIZE)
+	BGH コードをとるときの bug を fix。
+
+2000-01-07  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_etc.rule, rule/rule_trans.pl:
+	bnst_etc.rule : some test for dictionary definition analysis
+	rule_trans.pl : bug fix for mrph_rule translation
+
+2000-01-07  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/kakari_uke.rule, rule/rule_trans.pl: rule_trans.pl の bug fix。
+	連格の係り先の壁として、形副名詞を追加。
+
+2000-01-06  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c, system/main.c, system/case_ipal.c, system/case_match.c, system/const.h, system/dpnd_analysis.c, system/lib_bgh.c, system/case_analysis.c, system/case_data.c:
+	格解析において、格としての複合辞を原形の読みに統一。
+	用例の類似のマッチングを NTT でもできるようにした。
+
+	* system/case_ipal.c: bug fix.
+
 2000-01-05  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* rule/bnst_basic.rule: 形副名詞の形態素からの伝播。
