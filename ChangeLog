@@ -11,6 +11,9 @@
 	係り受け解析に失敗時に、文の情報を正しく保存できていなかったのを修
 	正
 
+	* rule/bnst_type.phrase:
+	「〜を〜に」の整理
+
 2003-04-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
