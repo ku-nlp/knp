@@ -1,3 +1,16 @@
+2004-06-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	位置カテゴリの与え方の不整合を修正
+
+2004-06-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule:
+	「意味素:多少」などをもつ語は先行詞にしないようにした
+
+	* rule/bnst_etc.rule:
+	「格要素」featureを追加
+
 2004-06-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule:
