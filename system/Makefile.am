@@ -16,8 +16,6 @@ knp_SOURCES = \
 	case_match.c \
 	case_print.c \
 	const.h \
-	context.c \
-	corpus.c \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \
@@ -44,13 +42,10 @@ knp_SOURCES = \
 	regexp.c \
 	tools.c \
 	tree_conv.c \
-	unsupervised.c \
 	db.c \
 	japanese.c \
 	japanese.h \
-	configfile.c \
-	noun.c \
-	bind_juman.c
+	configfile.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 

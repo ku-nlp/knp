@@ -644,23 +644,6 @@ int	Thesaurus = USE_NTT;
 	    verb = 0;
 	}
 
-	/* すでにガ格に割り当てられているか (ガガ解析用) */
-	if (OptCaseFlag & OPT_CASE_GAGA) {
-	    for (i = 0; i < cfp->element_num; i++) {
-		if (list2.flag[i] != UNASSIGNED && 
-		    cfp->pp[i][1] == END_M && 
-		    cfp->pp[i][0] == pp_kstr_to_code("ガ")) {
-		    gaflag = 1;
-		    break;
-		}
-	    }
-	}
-
-	/* 外の関係解析 */
-	if (OptCaseFlag & OPT_CASE_SOTO) {
-	    sotoflag = 1;
-	}
-
 	for (i = 0; i < cfp->element_num; i++) {
 
 	    /* "〜は" --> "が，を，に" と 対応可

@@ -39,7 +39,7 @@
 #ifdef _WIN32
 #include        "japanese.h"
 #include        <stdarg.h>
-#include        <winbase.h>
+#include        <windows.h>
 /* あとで 競合するらしいので undef (tricky?) */
 #undef          TRUE  
 #undef          FALSE

@@ -46,19 +46,13 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 char		G_Feature[100][64];		/* FEATUREの変数格納 */
 
 int 		OptAnalysis;
-int		OptDisc;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
-int		OptInhibit;
-int		OptCheck;
 int		OptNE;
-int		OptLearn;
-int		OptCaseFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
-char		*OptOptionalCase = NULL;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -81,39 +75,23 @@ extern TYPE     Type[TYPE_NO];
 extern FORM     Form[TYPE_NO][FORM_NO];
 int CLASS_num;
 
-char *ClauseDBname = NULL;
-char *ClauseCDBname = NULL;
-char *CasePredicateDBname = NULL;
-char *OptionalCaseDBname = NULL;
-
 jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 char *Opt_jumanrc = NULL;
 
-extern int	DISTANCE_STEP;
-extern int	RENKAKU_STEP;
-extern int	STRONG_V_COST;
-extern int	ADJACENT_TOUTEN_COST;
-extern int	LEVELA_COST;
-extern int	TEIDAI_STEP;
-extern int	EX_match_qua;
-extern int	EX_match_unknown;
-extern int	EX_match_sentence;
-extern int	EX_match_tim;
-extern int	SOTO_SCORE;
 
 /*==================================================================*/
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst]\n" 
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
 	    "           [-thesaurus [BGH|NTT]] (Default:NTT)\n"
-	    "           [-para [BGH|NTT]] (Default:BGH)\n");
+	    "           [-para [BGH|NTT]] (Default:NTT)\n");
     exit(1);    
 }
 
@@ -124,19 +102,12 @@ extern int	SOTO_SCORE;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
-    OptDisc = OPT_NORMAL;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
-    /* デフォルトで禁止するオプション */
-    OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
-    OptCheck = FALSE;
     OptNE = OPT_NORMAL;
-    OptLearn = FALSE;
-    OptCaseFlag = 0;
-    /*    OptIgnoreChar = (char)NULL;*/
     OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
@@ -146,7 +117,6 @@ extern int	SOTO_SCORE;
 	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
-	else if (str_eq(argv[0], "-disc"))    OptDisc     = OPT_DISC;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
@@ -156,59 +126,13 @@ extern int	SOTO_SCORE;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
-	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
-	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
 	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
-	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    OptIgnoreChar = *argv[0];
 	}
-	else if (str_eq(argv[0], "-cdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	}
-	else if (str_eq(argv[0], "-ccdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseCDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_C_CLAUSE;
-	}
-	else if (str_eq(argv[0], "-kdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	}
-	else if (str_eq(argv[0], "-bdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	}
-	else if (str_eq(argv[0], "-odb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    OptionalCaseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
-	} 
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -219,17 +143,6 @@ extern int	SOTO_SCORE;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    strcpy(OptHostname,argv[0]);
-	}
-	else if (str_eq(argv[0], "-optionalcase")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    /* 
-	    if ((case2num(argv[0])) == -1) {
-		fprintf(stderr, "Error: Case %s is invalid!\n", argv[0]);
-		usage();
-	    }
-	    */
-	    OptOptionalCase = argv[0];
 	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
@@ -275,82 +188,12 @@ extern int	SOTO_SCORE;
 	    if (argc < 1) usage();
 	    VerboseLevel = atoi(argv[0]);
 	}
-	/* 格解析用オプション */
-	else if (str_eq(argv[0], "-soto")) {
-	    OptCaseFlag |= OPT_CASE_SOTO;
-	}
-	else if (str_eq(argv[0], "-gaga")) {
-	    OptCaseFlag |= OPT_CASE_GAGA;
-	}
-	/* 以下コスト調整用 */
-	else if (str_eq(argv[0], "-dcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    DISTANCE_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-rcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    RENKAKU_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-svcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    STRONG_V_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-atcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ADJACENT_TOUTEN_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-lacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    LEVELA_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-tscost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    TEIDAI_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-quacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_qua = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-unknowncost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_unknown = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sentencecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_sentence = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-timecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_tim = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sotocost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_SCORE = atoi(argv[0]);
-	}
 	else {
 	    usage();
 	}
     }
     if (argc != 0) {
 	usage();
-    }
-
-    /* 文脈解析のときは必ず格解析を行う
-       解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptDisc == OPT_DISC && 
-	(OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2)) {
-	OptAnalysis = OPT_CASE;
     }
 }
 
@@ -437,23 +280,12 @@ extern int	SOTO_SCORE;
 
     /* 初期化 */
 
-    init_hash();
     init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
-
-    if (OptDisc == OPT_DISC)
-	init_noun();	/* 名詞辞書オープン */
-
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	init_clause();
-    if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
-	init_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
-	init_optional_case();
 
     current_sentence_data.mrph_data = mrph_data;
     current_sentence_data.bnst_data = bnst_data;
@@ -475,10 +307,6 @@ extern int	SOTO_SCORE;
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
 	init_proper(&current_sentence_data);
-    }
-
-    if (OptDisc == OPT_DISC) {
-	InitAnaphoraList();
     }
 }
 
@@ -668,10 +496,6 @@ extern int	SOTO_SCORE;
     }
     alarm(0);
 
-    /* コーパスベース時の評価値計算 */
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	optional_case_evaluation(sp);
-
 PARSED:
 
     /* 係り受け情報を bnst 構造体に記憶 */
@@ -689,18 +513,7 @@ PARSED:
 
     memo_by_program(sp);	/* メモへの書き込み */
 
-	/* チェック用 */
-    if (OptCheck == TRUE)
-	CheckCandidates(sp);
-
-    if (OptLearn == TRUE)
-	fprintf(Outfp, ";;;OK 決定 %d %s %d\n", sp->Best_mgr->ID, sp->KNPSID ? sp->KNPSID : "", sp->Best_mgr->score);
-
-	/* 実験 */
-    if (OptCheck == TRUE)
-	CheckChildCaseFrame(sp);
-
-	/* 認識した固有名詞を保存しておく */
+    /* 認識した固有名詞を保存しておく */
     if (OptNE != OPT_NORMAL) {
 	preserveNE(sp);
 	if (OptDisplay == OPT_DEBUG)
@@ -750,10 +563,7 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptDisc != OPT_DISC) 
-		print_result(sp);
-	    else
-		copy_sentence(sp);
+	    print_result(sp);
 	    fflush(Outfp);
 	}
 
@@ -774,28 +584,19 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptDisc == OPT_DISC) {
-	    /* 中身は保存しておくので */
-	    for (i = 0; i < sp->Mrph_num; i++)
-		(sp->mrph_data+i)->f = NULL;
-	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++)
-		(sp->bnst_data+i)->f = NULL;
-	}
-	else {
-	    for (i = 0; i < sp->Mrph_num; i++) 
-		clear_feature(&(sp->mrph_data[i].f));
-	    for (i = 0; i < sp->Bnst_num; i++) {
-		clear_feature(&(sp->bnst_data[i].f));
-		if (sp->bnst_data[i].internal_num) {
-		    sp->bnst_data[i].internal_num = 0;
-		    sp->bnst_data[i].internal_max = 0;
-		    free(sp->bnst_data[i].internal);
-		}
+	for (i = 0; i < sp->Mrph_num; i++) 
+	    clear_feature(&(sp->mrph_data[i].f));
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    clear_feature(&(sp->bnst_data[i].f));
+	    if (sp->bnst_data[i].internal_num) {
+		sp->bnst_data[i].internal_num = 0;
+		sp->bnst_data[i].internal_max = 0;
+		free(sp->bnst_data[i].internal);
 	    }
-	    /* New_Bnstはもともとpointer */
-	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
-		(sp->bnst_data+i)->f = NULL;
 	}
+	/* New_Bnstはもともとpointer */
+	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+	    (sp->bnst_data+i)->f = NULL;
 
 	/**************/
 	/* メイン解析 */
@@ -806,15 +607,6 @@ PARSED:
 	if (flag == FALSE) continue;
 
 	/************/
-	/* 文脈解析 */
-	/************/
-
-	if (OptDisc == OPT_DISC) {
-	    make_dpnd_tree(sp);
-	    discourse_analysis(sp);
-	}
-
-	/************/
 	/* 結果表示 */
 	/************/
 
@@ -822,9 +614,6 @@ PARSED:
 	    print_mrphs(sp, 0);
 	} else {
 	    print_result(sp);
-
-	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-		unsupervised_debug_print(sp);
 	}
 	fflush(Outfp);
 
@@ -836,17 +625,8 @@ PARSED:
     close_sm();
     close_scase();
 
-    if (OptDisc == OPT_DISC)
-	close_noun();
     if (OptNE != OPT_NORMAL)
 	close_proper();
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	close_clause();
-    if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))
-	close_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	close_optional_case();
-    CloseJuman();
 }
 
 /*==================================================================*/

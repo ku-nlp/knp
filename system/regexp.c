@@ -427,41 +427,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-	   int mrph_check_function(char *rule, char *data)
-/*==================================================================*/
-{
-    int i;
-    char *value;
-
-    if (!strncmp(rule, "&語彙:", 6)) {
-	/* データベースを使う場合 */
-	if (DicForRuleDBExist == TRUE) {
-	    value = (char *)get_rulev(data);
-	    if (value) {
-		if (strstr(value, rule+6)) {
-		    free(value);
-		    return TRUE;
-		}
-		free(value);
-	    }
-	}
-	/* データベースを使わない場合 */
-	else {
-	    for (i = 0; i < CurDicForRuleVSize; i++) {
-		if (str_eq(DicForRuleVArray[i].key, data) && check_feature(DicForRuleVArray[i].f, rule+6))
-		    return TRUE;
-	    }
-	    return FALSE;
-	}
-    }
-    else {
-	fprintf(stderr, "Invalid Mrph-Feature-Function (%s)\n", rule);
-	return FALSE;
-    }
-    return FALSE;
-}
-
-/*==================================================================*/
      int rule_Goi_cmp(char flg, char *r_string[], char *d_string)
 /*==================================================================*/
 {
@@ -469,25 +434,19 @@ const REGEXPBNST RegexpBnstInitValue = {
     int i, tmp_ret = FALSE;
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
-      return TRUE;
+	return TRUE;
     else {
 	for (i = 0; r_string[i]; i++) {
-	    /* 関数呼び出し */
-	    if (r_string[i][0] == '&')
-		if (mrph_check_function(r_string[i], d_string)) {
-		    tmp_ret = TRUE;
-		    break;
-		}
-	    if (str_eq(r_string[i],d_string)) {
+	    if (str_eq(r_string[i], d_string)) {
 		tmp_ret = TRUE;
 		break;
 	    }
 	}
 	if ((flg == MAT_FLG && tmp_ret == TRUE) ||
 	    (flg == NOT_FLG && tmp_ret == FALSE))
-	  return TRUE;
+	    return TRUE;
 	else 
-	  return FALSE;
+	    return FALSE;
     }
 }
 

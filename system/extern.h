@@ -42,16 +42,12 @@ extern char		G_Feature[][64];
 extern TOTAL_MGR	Op_Best_mgr;
 
 extern int 		OptAnalysis;
-extern int		OptDisc;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
 extern int 		OptExpandP;
 extern int 		OptInhibit;
-extern int		OptCheck;
 extern int		OptNE;
-extern int		OptLearn;
-extern int		OptCaseFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern char		*OptOptionalCase;
@@ -82,22 +78,9 @@ extern int 		CurCNauxRuleSize;
 extern BnstRule		ContRuleArray[];
 extern int 		ContRuleSize;
 
-extern DicForRule	*DicForRuleVArray;
-extern int		CurDicForRuleVSize;
-extern DicForRule	*DicForRulePArray;
-extern int		CurDicForRulePSize;
-
-void			*EtcRuleArray;
-int			CurEtcRuleSize;
-
-extern int DicForRuleDBExist;
-
 extern char 		*Case_name[];
 
 /* 関数プロトタイプ */
-
-/* bind_juman.c */
-extern void CloseJuman();
 
 /* case_analysis.c */
 extern void realloc_cmm();
@@ -142,34 +125,6 @@ extern char *check_rule_filename(char *file);
 extern void read_rc(FILE *in);
 extern void init_configfile();
 extern void server_read_rc(FILE *fp);
-
-/* context.c */
-extern void InitAnaphoraList();
-extern void ClearSentences(SENTENCE_DATA *sp);
-extern void discourse_analysis(SENTENCE_DATA *sp);
-extern void copy_sentence(SENTENCE_DATA *sp);
-extern void MakeInternalBnst(SENTENCE_DATA *sp);
-
-/* corpus.c */
-extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 
-					      char *case1, int h, CHECK_DATA *list, 
-					      CORPUS_DATA *corpus);
-extern int subordinate_level_check_special(char *cp, BNST_DATA *ptr2);
-extern int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag);
-extern int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, 
-				     BNST_DATA *ptr2, CORPUS_DATA *corpus);
-extern int init_clause();
-extern int init_case_pred();
-extern int init_optional_case();
-extern void optional_case_evaluation(SENTENCE_DATA *sp);
-extern void CheckChildCaseFrame(SENTENCE_DATA *sp);
-extern void unsupervised_debug_print(SENTENCE_DATA *sp);
-extern void close_clause();
-extern void close_case_pred();
-extern void close_optional_case();
 
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
@@ -328,9 +283,6 @@ extern void init_bnst_tree_property(SENTENCE_DATA *sp);
 
 extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 extern int ParseSentence(SENTENCE_DATA *s, char *input);
-
-/* unsupervised.c */
-extern void CheckCandidates(SENTENCE_DATA *sp);
 
 /* KNP 初期化 */
 extern char *Knprule_Dirname;

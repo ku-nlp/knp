@@ -82,8 +82,6 @@
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
-#define	TBLSIZE	1024
-
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -92,7 +90,6 @@
 #define OPT_DPND	2
 #define OPT_BNST	3
 #define OPT_AssignF	4
-#define OPT_DISC	5
 #define OPT_RAW		1
 #define OPT_PARSED	2
 #define OPT_TREE	1
@@ -104,15 +101,6 @@
 #define OPT_DEBUG	3
 #define OPT_NESM	2
 #define OPT_NE		3
-
-#define OPT_INHIBIT_CLAUSE		0x0001
-#define OPT_INHIBIT_C_CLAUSE		0x0002
-#define OPT_INHIBIT_OPTIONAL_CASE	0x0010
-#define OPT_INHIBIT_CASE_PREDICATE	0x0100
-#define OPT_INHIBIT_BARRIER		0x1000
-
-#define	OPT_CASE_SOTO	1
-#define	OPT_CASE_GAGA	2
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -709,7 +697,7 @@ typedef struct _PreservedNamedEntity {
 } PreservedNamedEntity;
 
 /*====================================================================
-			       文脈処理
+			     文データ構造
 ====================================================================*/
 
 typedef struct sentence {
@@ -729,12 +717,6 @@ typedef struct sentence {
     char		*KNPSID;
     char		*Comment;
 } SENTENCE_DATA;
-
-typedef struct anaphora_list {
-    char	*key;
-    int		count;
-    struct anaphora_list *next;
-} ALIST;
 
 /*====================================================================
                                END

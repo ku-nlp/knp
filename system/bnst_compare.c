@@ -9,7 +9,7 @@
 ====================================================================*/
 #include "knp.h"
 
-int ParaThesaurus = USE_BGH;
+int ParaThesaurus = USE_NTT;
 
 /*==================================================================*/
               int str_part_cmp(char *c1, char *c2)

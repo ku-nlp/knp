@@ -13,8 +13,6 @@ int Bnst_start[MRPH_MAX];
 int ArticleID = 0;
 int preArticleID = 0;
 
-extern char CorpusComment[BNST_MAX][DATA_LEN];
-
 /*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
@@ -261,9 +259,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		    if (OptNE != OPT_NORMAL) {
 			clearNE();
 		    }
-		    if (OptDisc == OPT_DISC) {
-			ClearSentences(sp);
-		    }
 		}
 		preArticleID = ArticleID;
 	    }
@@ -273,9 +268,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
 	    OptInput = OPT_PARSED;
-	    if (OptDisc == OPT_DISC) {
-		OptAnalysis = OPT_CASE2;
-	    }
 	    sp->Bnst_num = 0;
 	    for (i = 0; i < MRPH_MAX; i++) Bnst_start[i] = 0;
 	    if (sscanf(input_buffer, "* %d%c", 
@@ -706,8 +698,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     /* clear_feature(&(b_ptr->f));
        mainの文ごとのループの先頭で処理に移動 */
-
-    CorpusComment[b_ptr->num][0] = '\0';
 
     return b_ptr;
 }

@@ -78,9 +78,9 @@ int knp_dict_file_already_defined = 0;
 /*==================================================================*/
 {
 #ifdef  _WIN32
-    /* MS Windws のばあいは,juman.ini を見に行くように変更 
+    /* MS Windows のばあいは,juman.ini を見に行くように変更 
      dicfile == gramfile */
-    GetPrivateProfileString("juman","dicfile","",Jumangram_Dirname,sizeof(Jumangram_Dirname),"juman.ini");
+    GetPrivateProfileString("juman","dicfile","",Jumangram_Dirname,FILENAME_MAX,"juman.ini");
 #else
     CELL *cell1,*cell2;
     char *dicttype;
@@ -258,6 +258,84 @@ int knp_dict_file_already_defined = 0;
 	}
     }
 #endif
+
+    /* jumanrc にルールが指定されていない場合のデフォルトルール */
+    if (CurrentRuleNum == 0) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Setting default rules ... ");
+	}
+
+	RuleNumMax = 8;
+	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
+
+	/* mrph_homo 同形異義語 */
+	(RULE+CurrentRuleNum)->file = strdup("mrph_homo");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = HomoRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* mrph_basic 形態素 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("mrph_basic");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = MorphRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* bnst_basic 文節 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = BnstRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+	/* bnst_type 文節 逆方向 BREAK */
+	(RULE+CurrentRuleNum)->file = strdup("bnst_type");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NORMAL;
+	(RULE+CurrentRuleNum)->type = BnstRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+	/* bnst_etc 文節 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("bnst_etc");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = BnstRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+	/* kakari_uke 係り受け */
+	(RULE+CurrentRuleNum)->file = strdup("kakari_uke");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = DpndRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* koou 呼応 */
+	(RULE+CurrentRuleNum)->file = strdup("koou");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = KoouRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* ne-juman 固有表現句 */
+	(RULE+CurrentRuleNum)->file = strdup("ne-juman");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = NePhraseRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "done.\n");
+	}
+    }
 }
 
 /*==================================================================*/
@@ -303,8 +381,12 @@ int knp_dict_file_already_defined = 0;
     struct stat sb;
 
     if (!Knprule_Dirname) {
+#ifdef KNP_RULE
+	Knprule_Dirname = strdup(KNP_RULE);
+#else
 	fprintf(stderr, "Please specify rule directory in .jumanrc\n");
 	exit(0);
+#endif
     }
 
     fullname = (char *)malloc_data(strlen(Knprule_Dirname)+strlen(file)+7, "check_rule_filename");

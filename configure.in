@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(system/knp.h)
 PACKAGE=knp
-VERSION=2.1
+VERSION=2.0
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AM_CONFIG_HEADER(config.h)
@@ -12,7 +12,7 @@ AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
 AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=yes]])
-AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library [default=no]])
+AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (2.X) [default=no]])
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
@@ -21,7 +21,7 @@ JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
 AC_ARG_WITH(rcpath, [  --with-rcpath           use specified rcpath], 
 RCPATH=$with_rcpath, RCPATH="")
 
-SUBDIRS="system rule docs perl"
+SUBDIRS="system rule docs perl dict"
 
 packagesrcdir=`cd $srcdir && pwd`
 
@@ -74,8 +74,6 @@ AC_SUBST(JUMAN_CFLAGS)
 
 AC_ARG_ENABLE(debug, 
 	[  --disable-debug         build a non-debugging version [default=no]])
-AC_ARG_ENABLE(small, 
-	[  --enable-small          make a small version [default=no]])
 
 AC_MSG_CHECKING("debug version")
 if test ! "x$enable_debug" = "xno"; then
@@ -84,11 +82,6 @@ if test ! "x$enable_debug" = "xno"; then
     enable_debug=yes
 fi
 AC_MSG_RESULT("$enable_debug")
-
-if test "x$enable_small" = "xyes"; then
-    dnl    AC_DEFINE(SMALL)
-    ETC_CFLAGS="-DSMALL $ETC_CFLAGS"
-fi
 
 AC_PREFIX_DEFAULT("$packagesrcdir")
 KNP_DIR=$packagesrcdir
@@ -106,7 +99,7 @@ if ( test "x$with_berkeley_db" != xyes -a \( "x$with_gdbm" = x -o "x$with_gdbm" 
 fi
 
 if ( test "x$with_berkeley_db" = xyes ); then
-    AC_CHECK_LIB(db, db_open, DB_LIBS="-ldb $DB_LIBS", 
+    AC_SEARCH_LIBS(db_open, db2 db, , 
 	         AC_MSG_ERROR(not found.))
 fi
 
@@ -143,4 +136,6 @@ juman/Makefile
 rule/Makefile
 docs/Makefile
 perl/Makefile
+dict/Makefile
+dict/src/Makefile
 ])

@@ -955,11 +955,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
        if (OptAnalysis == OPT_AssignF && !PM_Memo[0]) return;
     */
 
-    /* Barrier Matrix の出力
-    if (!(OptInhibit & OPT_INHIBIT_BARRIER))
-	print_barrier(sp->Bnst_num);
-	*/
-
     /* ヘッダの出力 */
 
     if (sp->Comment) {
@@ -1022,9 +1017,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     if (((OptAnalysis == OPT_CASE || 
 	 OptAnalysis == OPT_CASE2) && 
 	 (OptDisplay == OPT_DETAIL || 
-	  OptDisplay == OPT_DEBUG)) || 
-	(OptDisc == OPT_DISC && 
-	 VerboseLevel >= VERBOSE1)) {
+	  OptDisplay == OPT_DEBUG))) {
 
 	print_case_result(sp);
 

@@ -3,15 +3,22 @@
 基本的なインストール方法
 ========================
 
-JUMAN のディレクトリを指定するとき:
+JUMAN のライブラリのディレクトリを指定してください。
 
-1) ./configure --with-jumanlib-dir=/home/kawahara/Laboratory/knp/juman
+JUMAN が /share/tool/juman にインストールされている場合は、JUMAN のラ
+イブラリは /share/tool/juman/lib にあるので、次のように指定してくださ
+い。
+
+1) ./configure --with-jumanlib-dir=/share/tool/juman/lib
 2) make
 
-同梱されている JUMAN を使用するとき:
 
-1) ./configure --with-included-juman
-2) make
+configure オプション
+====================
+
+デフォルトでは ハッシュデータベースとして GDBM を使用します。GDBM のほ
+かには、Berkeley DB (Version 2.X) を使用できます。Berkeley DB を使う場
+合には、configure のオプションに --with-berkeley-db を指定してください。
 
 
 コンパイルオプション
