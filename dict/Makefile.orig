@@ -1,3 +1,4 @@
+# -*- Makefile -*-
 #=============================================================================
 #
 #	GNU make "Makefile" for KN-PARSER (Dictionary Database)
@@ -98,7 +99,9 @@ database_ipal :
 #	Target(2): make_hashdb
 #----------------------------------------
 
-make_hashdb : hashdb_bgh hashdb_word2code hashdb_sm2code hashdb_code2sm hashdb_smp2smg hashdb_scase hashdb_rsk
+make_hashdb : hashdb_bgh hashdb_sm hashdb_scase hashdb_rsk hashdb_ipal
+
+hashdb_sm : hashdb_word2code hashdb_sm2code hashdb_code2sm hashdb_smp2smg
 
 hashdb_bgh :
 	if [ -f bgh/bgh.dat ]; then \
@@ -158,5 +161,7 @@ clean_db :
 	$(RMF) bgh/bgh$(DBEXT)
 	$(RMF) scase/scase$(DBEXT)
 	$(RMF) sm/word2code$(DBEXT) sm/sm2code$(DBEXT) sm/code2sm$(DBEXT) sm/smp2smg$(DBEXT)
+	$(RMF) rsk/rsk$(DBEXT)
+	$(RMF) cf/ipal$(DBEXT)
 
 #=============================================================================

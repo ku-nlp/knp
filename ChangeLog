@@ -1,26 +1,34 @@
-2001-05-08  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+2001-05-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule: 固有表現, 修飾語ルールの更新
+
+	* dict/Makefile.orig: 意味素DB を作る target を作成
+
+2001-05-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* configure.in: RCPATH 指定時の不要な test の廃止
 
-2001-05-02  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+	* dict/Makefile.orig: DB 作成部分の独立した target を作成
+
+2001-05-02  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_sm.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
 	格解析: 入力側の格割り当て関数の更新
 	省略解析: 改良
 
-2001-03-06  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+2001-03-06  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
 	格フレーム辞書がないとき "Cannot open CF DATA" というエラーが出ないよ
 	うにした。
 
-2001-02-20  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+2001-02-20  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/context.c, system/case_analysis.c: 格解析
 	  ガ格, ヲ格, ニ格がうまっていて、対応付けされていない「〜は」をガガと
 	  推定する。
 
-2001-02-16  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+2001-02-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/feature.c, system/lib_sm.c, system/main.c, system/case_match.c, system/case_print.c, system/context.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
 	省略解析の改良
@@ -30,7 +38,7 @@
 	格解析
 	  主体マッチのスコアアップ
 
-2001-02-06  kawahara@pine.kuee.kyoto-u.ac.jp  <kawahara@pine.kuee.kyoto-u.ac.jp>
+2001-02-06  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c, system/dpnd_analysis.c, system/extern.h, system/main.c, system/case_print.c, system/const.h, system/context.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_analysis.c:
 	格解析:
