@@ -25,6 +25,7 @@
 #                 {katuyou2}	: i番目の形態素の活用形
 #                 {katuyou2_id}	: i番目の形態素の活用形番号
 #                 {imis}	: i番目の形態素の意味
+#                 {fstring}	: i番目の形態素の全てのfeature
 #                 {feature}[j]	: i番目の形態素のj番目のfeature
 #
 # $this->{BNST_NUM}	: 文節数
@@ -261,6 +262,7 @@ sub parse {
 	      $this->{MRPH}[$mrph_num]{katuyou2_id},
 	      $this->{MRPH}[$mrph_num]{imis},
 	      $f_string ) = split;
+	    $this->{MRPH}[$mrph_num]{fstring} = $f_string;
 	    $f_string =~ s/^\<|\>$//g;
 	    @{$this->{MRPH}[$mrph_num]{feature}} = split(/\>\</, $f_string);
 	    $mrph_num++;
