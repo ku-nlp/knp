@@ -78,6 +78,7 @@ extern int 	Case_frame_num;
 extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
 extern FORM     Form[TYPE_NO][FORM_NO];
+int CLASS_num;
 
 #include "extern.h"
 
@@ -206,7 +207,7 @@ jmp_buf timeout;
 			void init_juman(void)
 /*==================================================================*/
 {
-    int i, j; 
+    int i;
 
     set_jumanrc_fileptr(NULL, TRUE);
     set_jumangram_dirname();
@@ -214,24 +215,8 @@ jmp_buf timeout;
     grammar(NULL);				/* 文法辞書 */
     katuyou(NULL);				/* 活用辞書 */
 
-    /* 品詞 活用の出力
-
-    for (i = 1; Class[i][0].id; i++) {
-	printf("%s", Class[i][0].id);
-	for (j = 1; Class[i][j].id; j++) {
-	    printf(" %s", Class[i][j].id);
-	}
-	printf("\n");
-    }
-    for (i = 1; Type[i].name; i++) {
-	printf("%s", Type[i].name);
-	for (j = 1; Form[i][j].name; j++) {
-	    printf(" %s(%s)", Form[i][j].name, Form[i][j].gobi);
-	}
-	printf("\n");
-    }
-    exit(1);
-    */
+    for (i = 1; Class[i][0].id; i++);
+    CLASS_num = i;
 }
 
 /*==================================================================*/

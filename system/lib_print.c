@@ -50,7 +50,11 @@ char pos2symbol(char *hinshi, char *bunrui)
 /*==================================================================*/
 {
     fprintf(Outfp, "%s %s %s ", m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi);
-    
+
+    if (m_ptr->Hinshi >= CLASS_num) {
+	fprintf(Outfp, "\n;; Hinshi number is invalid. (%d)\n", m_ptr->Hinshi);
+	exit(1);
+    }
     fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][0].id);
     fprintf(Outfp, "%d ", m_ptr->Hinshi);
 	

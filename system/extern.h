@@ -67,6 +67,7 @@ extern enum OPTION3	Option3;
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     	Type[TYPE_NO];
 extern FORM     	Form[TYPE_NO][FORM_NO];
+extern int 		CLASS_num;
 
 extern HomoRule 	HomoRuleArray[];
 extern int 		CurHomoRuleSize;
