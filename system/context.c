@@ -2206,10 +2206,10 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
     }
 
     for (i = 0; tp->child[i]; i++) {
-	/* ノ格, 連体の子供をチェック */
+	/* ノ格, 連体の(直接の)子供をチェック (複合名詞の2つ以上前はみていない) */
 	if ((check_feature(tp->child[i]->f, "係:ノ格") || 
 	     check_feature(tp->child[i]->f, "係:連体") || 
-	     tp->child[i]->bnum == tp->bnum) && 
+	     check_feature(tp->child[i]->f, "係:隣")) && 
 	    CheckAppropriateCandidate(s, cs, cpm_ptr, tp->child[i], -2, cf_ptr, n, loc)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					     tp->child[i], cf_ptr, n, loc, s, tp->child[i]->pred_b_ptr);
