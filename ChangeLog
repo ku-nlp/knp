@@ -1,5 +1,11 @@
 2004-11-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* rule/bnst_basic.rule, system/feature.c:
+	修飾語の認識の改良
+	「からっと」「カリッと」など
+
+2004-11-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/configfile.c: 格フレーム類似度DBをknprcで指定可能にした
 
 2004-11-08  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
