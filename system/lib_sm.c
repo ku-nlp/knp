@@ -87,7 +87,7 @@ int		SMP2SMGExist;
 
     pos = 0;
     /* 意味素を付与する品詞 */
-    for (i = 0; cont_str[i]; i+=12) {
+    for (i = 0; cont_str[i]; i+=SM_CODE_SIZE) {
 	if (cont_str[i] == '3' ||	/* 名 */
 	    cont_str[i] == '4' ||	/* 名(形式) */
 	    cont_str[i] == '5' ||	/* 名(形動) */
@@ -98,8 +98,8 @@ int		SMP2SMGExist;
 	    cont_str[i] == 'l' ||	/* 接頭 */
 	    cont_str[i] == 'm' ||	/* 接辞 */
 	    cont_str[i] == '2') {	/* 固 */
-	    strncpy(cont_str+pos, cont_str+i, 12);
-	    pos += 12;
+	    strncpy(cont_str+pos, cont_str+i, SM_CODE_SIZE);
+	    pos += SM_CODE_SIZE;
 	}
     }
     cont_str[pos] = '\0';
