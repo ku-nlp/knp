@@ -26,7 +26,7 @@ AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui 
 			  BGH_FILE="$withval")
 
 
-SUBDIRS="system rule docs perl dict"
+SUBDIRS="system rule docs dict"
 
 packagesrcdir=`cd $srcdir && pwd`
 
@@ -187,7 +187,6 @@ system/Makefile
 svm/Makefile
 rule/Makefile
 docs/Makefile
-perl/Makefile
 dict/Makefile
 dict/src/Makefile
 dict/scode/Makefile
