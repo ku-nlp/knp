@@ -203,6 +203,8 @@ extern FILE  *Outfp;
     /* 意味マーカのマッチング度の計算 */
 
     int i, j, k, tmp_score, score = -100, ex_score = -100;
+    int thesaurus = USE_BGH, step;
+    char *exd, *exp;
 
     if (flag == SEMANTIC_MARKER) {
 	
@@ -238,7 +240,18 @@ extern FILE  *Outfp;
     }
 
     else if (flag == EXAMPLE) {
-	
+
+	if (thesaurus == USE_BGH) {
+	    exd = cfd->ex[as1];
+	    exp = cfp->ex[as2];
+	    step = BGH_CODE_SIZE;
+	}
+	else if (thesaurus == USE_NTT) {
+	    exd = cfd->ex2[as1];
+	    exp = cfp->ex2[as2];
+	    step = SM_CODE_SIZE;
+	}
+
 	/* 特別 : 格要素 -- 文 */
 	if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
 				  "補文", SM_CODE_SIZE)) {
@@ -256,15 +269,15 @@ extern FILE  *Outfp;
 	}
 
 	/* 用例がどちらか一方でもなかったら */
-	if (cfd->ex[as1][0] == '\0' || cfp->ex[as2][0] == '\0') 
+	if (*exd == '\0' || *exp == '\0') 
 	    return EX_match_unknown;
 
 	/* 用例のマッチング */
-	for (j = 0; cfp->ex[as2][j]; j+=BGH_CODE_SIZE) {
-	    for (i = 0; cfd->ex[as1][i]; i+=BGH_CODE_SIZE) {
+	for (j = 0; exp[j]; j+=step) {
+	    for (i = 0; exd[i]; i+=step) {
 		tmp_score = 
-		    EX_match_score[_ex_match_score(cfp->ex[as2]+j, 
-						   cfd->ex[as1]+i)];
+		    EX_match_score[_ex_match_score(exp+j, 
+						   exd+i)];
 		if (tmp_score > ex_score) ex_score = tmp_score;
 	    }
 	}

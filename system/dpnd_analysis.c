@@ -219,7 +219,7 @@ extern FILE  *Outfp;
 {
     int i;
 
-    return TRUE;
+    return FALSE;
 
     if (Possibility == 1 || new->dflt < best->dflt) {
 	return TRUE;

@@ -482,8 +482,7 @@ char *Opt_jumanrc = NULL;
 
 	for (i = 0; i < sp->Bnst_num; i++) {
 	    get_bgh_code(sp->bnst_data+i);		/* シソーラス */
-	    if (SMExist == TRUE)
-		get_sm_code(sp->bnst_data+i);		/* 意味素 */
+	    get_sm_code(sp->bnst_data+i);		/* 意味素 */
 	}
 
 	/* 文節へのFEATURE付与 */

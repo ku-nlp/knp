@@ -10,6 +10,28 @@
 
 char fukugoji_string[64];
 
+char *FukugojiTable[] = {"を除く", "をのぞく", 
+			 "を通じる", "をつうじる", 
+			 "を通ずる", "をつうずる", 
+			 "を含める", "をふくめる", 
+			 "を始める", "をはじめる", 
+			 "に絡む", "にからむ", 
+			 "に沿う", "にそう", 
+			 "に向ける", "にむける", 
+			 "に伴う", "にともなう", 
+			 "に基づく", "にもとづく", 
+			 "に対する", "にたいする", 
+			 "に関する", "にかんする", 
+			 "に代わる", "にかわる", 
+			 "に加える", "にくわえる", 
+			 "に限る", "にかぎる", 
+			 "に続く", "につづく", 
+			 "に合わせる", "にあわせる", 
+			 "に比べる", "にくらべる", 
+			 "に並ぶ", "にならぶ", 
+			 "に限るぬ", "にかぎるぬ", 
+			 ""};
+
 /*==================================================================*/
 	     char *make_fukugoji_string(BNST_DATA *b_ptr)
 /*==================================================================*/
@@ -28,6 +50,13 @@ char fukugoji_string[64];
 	    continue;
 	strcat(fukugoji_string, 
 	       (b_ptr->mrph_ptr+i)->Goi);
+    }
+
+    /* 原形の読みに統一 */
+    for (i = 0; *(FukugojiTable[i]); i+=2) {
+	if (str_eq(fukugoji_string, FukugojiTable[i])) {
+	    strcpy(fukugoji_string, FukugojiTable[i+1]);
+	}
     }
 
     return fukugoji_string;
@@ -163,6 +192,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
+    strcpy(c_ptr->ex2[c_ptr->element_num], b_ptr->SM_code);
 }
 
 /*==================================================================*/

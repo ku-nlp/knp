@@ -166,15 +166,29 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 }
 
 /*==================================================================*/
-void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
+void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag)
 /*==================================================================*/
 {
     /* 例の読みだし */
 
     unsigned char *point, *point2;
-    int i;
-    char *code;
+    int i, max;
+    char *code, *destination;
     extern char *get_bgh();
+    extern char *get_sm();
+    char *(*get_code)();
+
+    /* 引くリソースによって関数などをセット */
+    if (flag == USE_BGH) {
+	get_code = get_bgh;
+	destination = c_ptr->ex[num];
+	max = EX_ELEMENT_MAX*BGH_CODE_SIZE;
+    }
+    else if (flag == USE_NTT) {
+	get_code = get_sm;
+	destination = c_ptr->ex2[num];
+	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
+    }
 
     point = cp;
     c_ptr->ex[num][0] = '\0';
@@ -188,12 +202,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		break;
 	    }
 	}
-	code = get_bgh(point2);
+	code = (char *)get_code(point2);
 	if (code) {
-	    strcat(c_ptr->ex[num], code);
+	    strcat(destination, code);
 	    free(code);
 	}
-	if (strlen(c_ptr->ex[num]) >= EX_ELEMENT_MAX*10) {
+	if (strlen(destination) >= max) {
 	    fprintf(stderr, "Too many EX <%s>.\n", ipal_str_buf);
 	    break;
 	}
@@ -232,7 +246,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
 	_make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, USE_BGH);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, USE_NTT);
 	j++;
     }
 
@@ -241,7 +256,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     for (i = 0; i < 5 && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j);
-	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j);
+	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH);
+	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_NTT);
 
 	/* 能動 : Agentive ガ格を任意的とする場合
 	if (cf_ptr->voice == FRAME_ACTIVE &&
@@ -340,7 +356,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     if (!address_str)
 	return f_num;
 
-    if (vtype = check_feature(b_ptr->f, "用言"))
+    if (vtype = (char *)check_feature(b_ptr->f, "用言"))
 	vtype += 5;
 
     for (cp = pre_pos = address_str; ; cp++) {

@@ -104,10 +104,10 @@ int		SMP2SMGExist;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[SM_CODE_SIZE*SM_CODE_MAX+1];
 
-    str_buffer[BNST_LENGTH_MAX-1] = GUARD;
-
     /* 初期化 */
     *(ptr->SM_code) = '\0';
+
+    if (SMExist == FALSE) return;
 
     /* 
        複合語の扱い
@@ -115,7 +115,8 @@ int		SMP2SMGExist;
 		各形態素列に対してまず表記列で調べ，次に読み列で調べる
     */
 
-    if (SMExist == FALSE) return;
+    str_buffer[BNST_LENGTH_MAX-1] = GUARD;
+
     /* ptr->SM_num はinit_bnstで0に初期化されている */
 
     for (stop = 0; stop < ptr->fuzoku_num; stop++) 

@@ -560,6 +560,9 @@ typedef struct {
 #define IPAL_FIELD_NUM	27	/* 65 */
 #define IPAL_DATA_SIZE	5000	/* 1026 */
 
+#define USE_BGH	1
+#define	USE_NTT	2
+
 typedef struct {
     int point[IPAL_FIELD_NUM];
     unsigned char DATA[IPAL_DATA_SIZE];
@@ -596,7 +599,8 @@ typedef struct cf_def {
     char	sm[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE]; 	
 							/* 意味マーカ */
     int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
-    char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*10];	/* 例 */
+    char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*BGH_CODE_SIZE];
+    							/* 例 */
     char	ex2[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
