@@ -166,8 +166,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 {
     U_CHAR input_buffer[DATA_LEN];
-    U_CHAR imi_buffer[IMI_MAX];
-    MRPH_DATA  *m_ptr = mrph_data, *ptr;
+    MRPH_DATA  *m_ptr = mrph_data;
     int homo_num, offset, mrph_item, i,len;
 #ifdef _WIN32
     char *EUCbuffer;
@@ -349,9 +348,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
-    char *cp;
     char h_buffer[62], b_buffer[62], kata_buffer[62], kei_buffer[62];
-    int i, num;
+    int num;
 
     m_ptr->Hinshi = 0;
     m_ptr->Bunrui = 0;
@@ -457,7 +455,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
      void assign_mrph_feature_new(MrphRule *s_r_ptr, int r_size,
 				  MRPH_DATA *s_m_ptr, int m_length,
-				  int mode, int break_mode)
+				  int mode, int break_mode, int direction)
 /*==================================================================*/
 {
     /* ¡ú¡ú¶á¤¤¾­Íè½¤Àµ 99/11/02¡ú¡ú
@@ -489,13 +487,15 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     if (mode == RLOOP_MRM) {
 	for (i = 0; i < m_length; i++) {
 	    r_ptr = s_r_ptr;
+	    m_ptr = s_m_ptr+(i*direction);
 	    for (j = 0; j < r_size; j++, r_ptr++) {
 		if ((match_length = 
-		     regexpmrphrule_match_M(r_ptr, s_m_ptr+i, i, m_length-i))
+		     regexpmrphrule_match_M(r_ptr, m_ptr, 
+					    direction == LtoR ? i : m_length-i, 
+					    direction == LtoR ? m_length-i : i))
 		    != -1) {
 		    for (k = i; k < i + match_length; k++) {
-			m_ptr = s_m_ptr + k;
-			assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+			assign_feature(&((s_m_ptr + k)->f), &(r_ptr->f), s_m_ptr + k);
 		    }
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
@@ -526,12 +526,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	for (j = 0; j < r_size; j++, r_ptr++) {
 	    feature_break_mode = break_feature(r_ptr->f);
 	    for (i = 0; i < m_length; i++) {
+		m_ptr = s_m_ptr+(i*direction);
 		if ((match_length = 
-		     regexpmrphrule_match_M(r_ptr, s_m_ptr+i, i, m_length-i))
+		     regexpmrphrule_match_M(r_ptr, m_ptr, 
+					    direction == LtoR ? i : m_length-i, 
+					    direction == LtoR ? m_length-i : i))
 		    != -1) {
 		    for (k = i; k < i + match_length; k++) {
-			m_ptr = s_m_ptr + k;
-			assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+			assign_feature(&((s_m_ptr + k)->f), &(r_ptr->f), s_m_ptr + k);
 		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
@@ -584,8 +586,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     for (i = 0; i < GeneralRuleNum; i++) {
 	if ((GeneralRuleArray+i)->type == flag) {
-	    assign_function((GeneralRuleArray+i)->RuleArray, (GeneralRuleArray+i)->CurRuleSize, 
-			    data, size, (GeneralRuleArray+i)->mode, (GeneralRuleArray+i)->breakmode);
+	    assign_function((GeneralRuleArray+i)->RuleArray, 
+			    (GeneralRuleArray+i)->CurRuleSize, 
+			    data, size, 
+			    (GeneralRuleArray+i)->mode, 
+			    (GeneralRuleArray+i)->breakmode, 
+			    (GeneralRuleArray+i)->direction);
 	}
     }
 }
