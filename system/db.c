@@ -6,11 +6,7 @@
 
     $Id$
 ====================================================================*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include "dbm.h"
+#include "knp.h"
 
 #ifdef GDBM
 

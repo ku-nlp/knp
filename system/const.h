@@ -746,6 +746,7 @@ typedef struct sentence {
     int			Mrph_num;
     int			Bnst_num;
     int			New_Bnst_num;
+    int			Max_New_Bnst_num;
     int			Para_M_num;	/* 並列管理マネージャ数 */
     int			Para_num;	/* 並列構造数 */
     MRPH_DATA		*mrph_data;

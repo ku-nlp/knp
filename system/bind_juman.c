@@ -47,10 +47,11 @@ FILE *w2c, *w2p, *rfc, *rfp;
 			  void CloseJuman()
 /*==================================================================*/
 {
+    int status;
     if (JumanAlive) {
 	fclose(rfc);
 	fclose(w2c);
-	wait();
+	wait(&status);
 	JumanAlive = 0;
     }
 }

@@ -794,6 +794,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     BNST_DATA	*b_ptr = NULL;
     
     sp->Bnst_num = 0;
+    sp->Max_New_Bnst_num = 0;
     prev_stat = MRPH_SUFX;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {

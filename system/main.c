@@ -6,16 +6,6 @@
 ====================================================================*/
 #include "knp.h"
 
-/* Server Client Extention */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <errno.h>
-
 SENTENCE_DATA	current_sentence_data;
 SENTENCE_DATA	sentence_data[256];
 
@@ -860,7 +850,7 @@ PARSED:
 		}
 	    }
 	    /* New_Bnstはもともとpointer */
-	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
+	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }
 	}

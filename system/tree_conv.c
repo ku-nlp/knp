@@ -199,6 +199,9 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	fprintf(stderr, "Too many nodes in expanding para top .\n");
 	exit(1);
     }
+    if (sp->Max_New_Bnst_num < sp->New_Bnst_num) {
+	sp->Max_New_Bnst_num = sp->New_Bnst_num;
+    }
     *new_ptr = *end_ptr;	/* ¥³¥Ô¡¼ */
 
     /*

@@ -8,9 +8,7 @@
  *  japanese.c 
  */
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "knp.h"
 #include "japanese.h"
 
 static int stable[][2] = {

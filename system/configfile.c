@@ -7,8 +7,6 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 
 extern char Jumangram_Dirname[];
 extern int LineNoForError, LineNo;

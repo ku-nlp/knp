@@ -73,7 +73,9 @@ typedef DBM* DBM_FILE;
 
 #else
 
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
 #include <db.h>
 
 typedef DB *DBM_FILE;

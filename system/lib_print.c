@@ -8,7 +8,6 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
-#include <time.h>
 
 #define PREFIX_MARK "T_P"
 #define CONWRD_MARK "T_C"
