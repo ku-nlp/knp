@@ -10,8 +10,6 @@
 #include "knp.h"
 
 DBM_FILE	sm_db;
-DBM_FILE	sm_add_db;  //  usr が定義する
-DBM_FILE	sm_del_db;  //
 DBM_FILE	sm2code_db;
 DBM_FILE	code2sm_db;
 DBM_FILE	smp2smg_db;
