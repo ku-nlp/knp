@@ -1,3 +1,15 @@
+2001-08-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_sm.c: 意味素を引く関数の修正
+	意味素がなく、すべての文字がカタカナの場合はひらがなに変換して辞書引き
+	意味素がなく、「お鍋」のような一単語の場合は「お」を削除して辞書引き
+
+2001-08-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/context.c, system/extern.h, system/main.c, system/proper.c, system/tools.c:
+	指示詞の解析を追加
+	固有表現認識の並列処理を追加
+
 2001-08-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule: 固有表現認識ルールの整理
