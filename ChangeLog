@@ -1,3 +1,9 @@
+2002-11-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/main.c:
+	省略ガ格閾値を指定可能にした(-disc-ga-th)
+	-detailの格解析スコア表示を少しまともにした
+
 2002-11-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_data.c: bug fix.
