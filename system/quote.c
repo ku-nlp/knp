@@ -12,7 +12,7 @@
 QUOTE_DATA quote_data;
 
 /*==================================================================*/
-                         void init_quote()
+		  void init_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -23,8 +23,8 @@ QUOTE_DATA quote_data;
     }
 
     for (i = 0; i < sp->Bnst_num; i++)
-      for (j = 0; j < sp->Bnst_num; j++)
-	Quote_matrix[i][j] = 1;
+	for (j = 0; j < sp->Bnst_num; j++)
+	    Quote_matrix[i][j] = 1;
 }
 
 /*==================================================================*/
@@ -40,7 +40,7 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         int check_quote() 
+		  int check_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /*
@@ -61,7 +61,7 @@ QUOTE_DATA quote_data;
 	    /* 最大数を越えないかチェック(最後の要素が番人なので、それを変えては
 	       いけない) */
 	    if (k >= QUOTE_MAX-1) {
-		fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
 	    }
 	    s_num ++;
@@ -72,7 +72,7 @@ QUOTE_DATA quote_data;
 	    /* 「『‥ を扱うため上のことを繰り返す */
 	    if (check_feature(sp->bnst_data[i].f, "括弧始２")) {
 		if (k >= QUOTE_MAX-1) {
-		    fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		    fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		    return CONTINUE;
 		}
 		s_num ++;
@@ -83,6 +83,10 @@ QUOTE_DATA quote_data;
 	}
 	if (check_feature(sp->bnst_data[i].f, "括弧終")) {
 	    if (s_num == -1) {
+		if (k >= QUOTE_MAX-1) {
+		    fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
+		    return CONTINUE;
+		}
 		quote_data.out_num[k] = i; /* 括弧終が多い場合 */
 		k++;
 	    } else {
@@ -125,7 +129,7 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         void mask_quote() 
+		  void mask_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, l, start, end;
@@ -182,19 +186,19 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         int quote() 
+		     int quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int quote_p = FALSE;
 
-    init_quote();
+    init_quote(sp);
 
-    if (quote_p = check_quote()) {	/* 鈎括弧の検出 */
+    if (quote_p = check_quote(sp)) {	/* 鈎括弧の検出 */
 	if (quote_p == CONTINUE) return quote_p;
 
 	if (OptDisplay == OPT_DEBUG) print_quote();
 
-	mask_quote();			/* 行列の書き換え */
+	mask_quote(sp);			/* 行列の書き換え */
     }
 
     return quote_p;

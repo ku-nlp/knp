@@ -842,6 +842,29 @@
 	return FALSE;
     }
 
+    else if (!strncmp(rule, "&文節意味素:", strlen("&文節意味素:"))) {
+	cp = rule + strlen("&文節意味素:");
+	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
+	if (*cp & 0x80) {
+	    if (SM2CODEExist == TRUE)
+		cp = (char *)sm2code(cp);
+	    else
+		cp = NULL;
+	    flag = SM_NO_EXPAND_NE;
+	}
+	else {
+	    flag = SM_CHECK_FULL;
+	}
+
+	if (cp) {
+	    for (i = 0; ((BNST_DATA *)ptr2)->SM_code[i]; i+=SM_CODE_SIZE) {
+		if (_sm_match_score(cp, &(((BNST_DATA *)ptr2)->SM_code[i]), flag))
+		    return TRUE;
+	    }
+	}
+	return FALSE;
+    }
+
     /* 形態素の長さ */
     
     else if (!strncmp(rule, "&形態素長:", strlen("&形態素長:"))) {
@@ -1064,37 +1087,21 @@
 	return TRUE;
     }
 
+    else if (!strncmp(rule, "&時間", strlen("&時間"))) {
+	if (sm_time_match(((BNST_DATA *)ptr2)->SM_code)) {
+	    return TRUE;
+	}
+	else {
+	    return FALSE;
+	}
+    }
+
     else {
 #ifdef DEBUG
 	fprintf(stderr, "Invalid Feature-Function (%s)\n", rule);
 #endif
 	return TRUE;
     }
-}
-
-/*==================================================================*/
-     int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
-			       void *p1, void *p2)
-/*==================================================================*/
-{
-    /* fr : ルール側のFEATURE_PATTERN,
-       fd : データ側のFEATURE
-       p1 : ルール側の構造体(MRPH_DATA,BNST_DATAなど)
-       p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
-    */
-
-    int i, value;
-
-    /* PATTERNがなければマッチ */
-    if (fr->fp[0] == NULL) return TRUE;
-
-    /* ORの各条件を調べる */
-    for (i = 0; fr->fp[i]; i++) {
-	value = feature_AND_match(fr->fp[i], fd, p1, p2);
-	if (value == TRUE) 
-	    return TRUE;
-    }
-    return FALSE;
 }
 
 /*==================================================================*/
@@ -1126,6 +1133,31 @@
 	fp = fp->next;
     }
     return TRUE;
+}
+
+/*==================================================================*/
+int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
+			  void *p1, void *p2)
+/*==================================================================*/
+{
+    /* fr : ルール側のFEATURE_PATTERN,
+       fd : データ側のFEATURE
+       p1 : ルール側の構造体(MRPH_DATA,BNST_DATAなど)
+       p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
+    */
+
+    int i, value;
+
+    /* PATTERNがなければマッチ */
+    if (fr->fp[0] == NULL) return TRUE;
+
+    /* ORの各条件を調べる */
+    for (i = 0; fr->fp[i]; i++) {
+	value = feature_AND_match(fr->fp[i], fd, p1, p2);
+	if (value == TRUE) 
+	    return TRUE;
+    }
+    return FALSE;
 }
 
 /*====================================================================

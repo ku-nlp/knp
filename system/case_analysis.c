@@ -158,7 +158,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-     int case_analysis(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /*
@@ -170,7 +170,7 @@ char *pp_code_to_hstr(int num)
     */
 
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    int i, j, frame_num, max_score, default_score;
+    int i, j, frame_num, default_score;
     CF_MATCH_MGR tempcmm;
     
     /* 初期化 */
@@ -181,7 +181,7 @@ char *pp_code_to_hstr(int num)
 
     /* 入力文側の格要素設定 */
     cf_ptr->voice = b_ptr->voice;
-    default_score = make_data_cframe(cpm_ptr);
+    default_score = make_data_cframe(sp, cpm_ptr);
 
     /* 格フレーム解析スキップ
     if (cf_ptr->element_num == 0) {
@@ -208,7 +208,7 @@ char *pp_code_to_hstr(int num)
 
     /* 格要素なしの時の実験 98/12/16 */
     if (cf_ptr->element_num == 0) {
-	case_frame_match(cf_ptr, Cf_match_mgr, OptCFMode);
+	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode);
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
@@ -227,7 +227,7 @@ char *pp_code_to_hstr(int num)
 	       オプションで選択       (1999/06/15)
 	       */
 
-	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
+	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode);
 
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
 	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
@@ -253,7 +253,7 @@ char *pp_code_to_hstr(int num)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	print_data_cframe(cf_ptr);
+	print_data_cframe(cpm_ptr);
 	print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num);
     }
 
@@ -261,22 +261,22 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-      int all_case_analysis(BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
+int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 /*==================================================================*/
 {
     CF_PRED_MGR *cpm_ptr;
     int i;
     int one_case_point;
 
-    /* 準用言は辞書にないだろうけど… */
     if (b_ptr->para_top_p != TRUE && 
 	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
-	 check_feature(b_ptr->f, "準用言")) && 
+	 check_feature(b_ptr->f, "準用言") || 
+	 check_feature(L_Jiritu_M(b_ptr)->f, "サ変")) && 
 	!check_feature(b_ptr->f, "複合辞")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
 
-	one_case_point = case_analysis(cpm_ptr, b_ptr);
+	one_case_point = case_analysis(sp, cpm_ptr, b_ptr);
 
 	/* 解析不成功(入力側に必須格が残る)場合にその依存構造の解析を
 	   やめる場合
@@ -292,7 +292,7 @@ char *pp_code_to_hstr(int num)
     }
 
     for (i = 0; b_ptr->child[i]; i++)
-	if (all_case_analysis(b_ptr->child[i], t_ptr) == FALSE)
+	if (all_case_analysis(sp, b_ptr->child[i], t_ptr) == FALSE)
 	    return FALSE;
 
     return TRUE;
@@ -307,6 +307,7 @@ char *pp_code_to_hstr(int num)
     dst->element_num = src->element_num;
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	dst->oblig[i] = src->oblig[i];
+	dst->adjacent[i] = src->adjacent[i];
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
 	}
@@ -366,7 +367,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-		  void call_case_analysis(DPND dpnd)
+	void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, j, k;
@@ -377,11 +378,11 @@ char *pp_code_to_hstr(int num)
 
     /* 依存構造木作成 */
 
-    dpnd_info_to_bnst(&dpnd);
-    make_dpnd_tree();
+    dpnd_info_to_bnst(sp, &dpnd);
+    make_dpnd_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
-	print_kakari();
+	print_kakari(sp);
 
     /* 格解析作業領域の初期化 */
 	
@@ -395,7 +396,7 @@ char *pp_code_to_hstr(int num)
     
     /* 格解析呼び出し */
 
-    if (all_case_analysis(sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
+    if (all_case_analysis(sp, sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
 	Possibility++;
     else
 	return;
@@ -510,50 +511,62 @@ char *pp_code_to_hstr(int num)
         
     /* 後処理 */
 
-    if (Work_mgr.score > Best_mgr.score ||
-	(Work_mgr.score == Best_mgr.score && 
-	 compare_dpnd(&Work_mgr, &Best_mgr) == TRUE))
-	copy_mgr(&Best_mgr, &Work_mgr);
+    if (Work_mgr.score > sp->Best_mgr->score ||
+	(Work_mgr.score == sp->Best_mgr->score && 
+	 compare_dpnd(sp, &Work_mgr, sp->Best_mgr) == TRUE))
+	copy_mgr(sp->Best_mgr, &Work_mgr);
 }
 
 /*==================================================================*/
-		     void record_case_analysis()
+	     void record_case_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, num;
+    int i, j, num;
     char feature_buffer[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
-    CF_MATCH_MGR *cmm_ptr;
-    CASE_FRAME *cf_ptr;
-    BNST_DATA *pred_b_ptr;
 
-    /* 格解析の結果(Best_mgrが管理)をfeatureとして用言文節に与える */
+    /* 格解析の結果(Best_mgrが管理)をfeatureとして格要素文節に与える */
 
-    for (j = 0; j < Best_mgr.pred_num; j++) {
+    for (j = 0; j < sp->Best_mgr->pred_num; j++) {
 
-	cpm_ptr = &(Best_mgr.cpm[j]);
+	cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
 	/* 格フレームがない場合 */
-	if (cpm_ptr->result_num == 0) {
+	if (cpm_ptr->result_num == 0 || 
+	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
+	    cpm_ptr->cmm[0].score == -2) {
 	    continue;
 	}
 
-	cmm_ptr = &(cpm_ptr->cmm[0]);
-	cf_ptr = cmm_ptr->cf_ptr;
-	pred_b_ptr = cpm_ptr->pred_b_ptr;
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	    if (num == NIL_ASSIGNED) {
+		if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
+		    sprintf(feature_buffer, "格関係%d:外の関係", cpm_ptr->pred_b_ptr->num);
+		}
+		else {
+		    sprintf(feature_buffer, "格関係%d:×", cpm_ptr->pred_b_ptr->num);
+		}
+	    }
+	    else if (num >= 0) {
+		sprintf(feature_buffer, "格関係%d:%s", cpm_ptr->pred_b_ptr->num, 
+			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+	    }
+	    /* else: UNASSIGNED はないはず */
 
-	for (i = 0; i < cf_ptr->element_num; i++) {
-	    num = cmm_ptr->result_lists_p[0].flag[i];
+	    sprintf(feature_buffer, "%s:%s", feature_buffer, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
 
-	    /* 対応関係 */
-	    if (num != UNASSIGNED && cmm_ptr->score != -2) {
-		sprintf(feature_buffer, "格関係:%d:%s", pred_b_ptr->num, 
-			pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]));
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[num]->f), feature_buffer);
+	    /* feature を格要素文節に与える */
+	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+	    }
+	    /* 文節内部の要素の場合 */
+	    else {
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->parent->f), feature_buffer);
 	    }
 	}
     }
-}	    
+}
 
 /*====================================================================
                                END

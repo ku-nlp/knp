@@ -13,7 +13,7 @@ int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
 
 /*==================================================================*/
-		       void assign_dpnd_rule()
+	       void assign_dpnd_rule(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int 	i, j;
@@ -42,7 +42,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		       void calc_dpnd_matrix()
+	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, value, first_uke_flag;
@@ -68,7 +68,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		    int relax_dpnd_matrix(int num)
+	       int relax_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 係り先がない場合の緩和
@@ -117,7 +117,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-	 int check_uncertain_d_condition(DPND *dp, int gvnr)
+int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 /*==================================================================*/
 {
     /* 後方チ(ェック)の d の係り受けを許す条件
@@ -165,7 +165,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-	  int compare_dpnd(TOTAL_MGR *new, TOTAL_MGR *best)
+ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new, TOTAL_MGR *best)
 /*==================================================================*/
 {
     int i;
@@ -177,9 +177,9 @@ static int dpndID = 0;
     } else {
 	for (i = sp->Bnst_num - 2; i >= 0; i--) {
 	    if (new->dpnd.dflt[i] < best->dpnd.dflt[i]) 
-	      return TRUE;
+		return TRUE;
 	    else if (new->dpnd.dflt[i] > best->dpnd.dflt[i]) 
-	      return FALSE;
+		return FALSE;
 	}
     }
 
@@ -188,7 +188,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		   void dpnd_info_to_bnst(DPND *dp)
+	 void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
     /* 係り受けに関する種々の情報を DPND から BNST_DATA にコピー */
@@ -216,7 +216,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		       void para_postprocess()
+	       void para_postprocess(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -232,7 +232,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		    void dpnd_evaluation(DPND dpnd)
+	  void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, j, k, one_score, score, rentai, vacant_slot_num;
@@ -308,7 +308,7 @@ static int dpndID = 0;
 		if ((cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
 		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
 			/* 優先規則 */
-			optional_score = CorpusExampleDependencyCalculation(d_ptr, cp+3, i, &(dpnd.check[j]), &dpnd.op[j]);
+			optional_score = CorpusExampleDependencyCalculation(sp, d_ptr, cp+3, i, &(dpnd.check[j]), &dpnd.op[j]);
 			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr, &dpnd.op[j]); */
 
 			/* one_score += optional_score*10; */
@@ -495,15 +495,15 @@ static int dpndID = 0;
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	dpnd_info_to_bnst(&dpnd);
-	make_dpnd_tree();
-	print_kakari();
+	dpnd_info_to_bnst(sp, &dpnd);
+	make_dpnd_tree(sp);
+	print_kakari(sp);
     }
 
-    if (score > Best_mgr.score) {
-	Best_mgr.dpnd = dpnd;
-	Best_mgr.score = score;
-	Best_mgr.ID = dpndID;
+    if (score > sp->Best_mgr->score) {
+	sp->Best_mgr->dpnd = dpnd;
+	sp->Best_mgr->score = score;
+	sp->Best_mgr->ID = dpndID;
 	Possibility++;
     }
 
@@ -518,7 +518,7 @@ static int dpndID = 0;
 	    }
 	}
 	else {
-	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, KNPSID, score);
+	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, sp->KNPSID ? sp->KNPSID : "", score);
 	    for (i = 0;i < sp->Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
@@ -530,7 +530,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		     void decide_dpnd(DPND dpnd)
+	    void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, count, possibilities[BNST_MAX], default_pos, d_possibility;
@@ -564,12 +564,12 @@ static int dpndID = 0;
 	    }
 
 	if (OptAnalysis == OPT_DPND ||
-	    OptAnalysis == OPT_CASE2 ||
-	    OptAnalysis == OPT_DISC) {
-	    dpnd_evaluation(dpnd);
+	    OptAnalysis == OPT_CASE2) {
+	    dpnd_evaluation(sp, dpnd);
 	} 
-	else if (OptAnalysis == OPT_CASE) {
-	    call_case_analysis(dpnd);
+	else if (OptAnalysis == OPT_CASE || 
+		 OptAnalysis == OPT_DISC) {
+	    call_case_analysis(sp, dpnd);
 	}
 	return;
     }
@@ -594,7 +594,7 @@ static int dpndID = 0;
 	    /* 並列の場合は一意に決まっているので、候補を挙げるのは意味がない */
 	    dpnd.check[dpnd.pos].num = 1;
 	    dpnd.check[dpnd.pos].pos[0] = i;
-	    decide_dpnd(dpnd);
+	    decide_dpnd(sp, dpnd);
 	    return;
 	} else if (Mask_matrix[dpnd.pos][i] == 3) {
 	    dpnd.head[dpnd.pos] = i;
@@ -602,7 +602,7 @@ static int dpndID = 0;
 
 	    dpnd.check[dpnd.pos].num = 1;
 	    dpnd.check[dpnd.pos].pos[0] = i;
-	    decide_dpnd(dpnd);
+	    decide_dpnd(sp, dpnd);
 	    return;
 	}
     }
@@ -614,7 +614,7 @@ static int dpndID = 0;
         dpnd.type[dpnd.pos] = 'D';
         dpnd.dflt[dpnd.pos] = 0;
 	dpnd.check[dpnd.pos].num = 1;
-        decide_dpnd(dpnd);
+        decide_dpnd(sp, dpnd);
         return;
     }
 
@@ -630,7 +630,7 @@ static int dpndID = 0;
 	    dpnd.mask[i]) {
 
 	    if (d_possibility && Dpnd_matrix[dpnd.pos][i] == 'd') {
-		if (check_uncertain_d_condition(&dpnd, i)) {
+		if (check_uncertain_d_condition(sp, &dpnd, i)) {
 		    possibilities[count] = i;
 		    count++;
 		}
@@ -684,7 +684,7 @@ static int dpndID = 0;
 	    }
 	    dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
 	    dpnd.dflt[dpnd.pos] = 0;
-	    decide_dpnd(dpnd);
+	    decide_dpnd(sp, dpnd);
 	} 
 
 	/* すべての可能性をつくり出す場合 */
@@ -695,7 +695,7 @@ static int dpndID = 0;
 		dpnd.head[dpnd.pos] = possibilities[i];
 		dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
 		dpnd.dflt[dpnd.pos] = abs(default_pos - 1 - i);
-		decide_dpnd(dpnd);
+		decide_dpnd(sp, dpnd);
 	    }
 	}
     } 
@@ -710,31 +710,31 @@ static int dpndID = 0;
 	    dpnd.dflt[dpnd.pos] = 10;
 	    dpnd.check[dpnd.pos].num = 1;
 	    dpnd.check[dpnd.pos].pos[0] = sp->Bnst_num - 1;
-	    decide_dpnd(dpnd);
+	    decide_dpnd(sp, dpnd);
 	}
     }
 }
 
 /*==================================================================*/
-		      void when_no_dpnd_struct()
+	     void when_no_dpnd_struct(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
 
-    Best_mgr.dpnd.head[sp->Bnst_num - 1] = -1;
+    sp->Best_mgr->dpnd.head[sp->Bnst_num - 1] = -1;
 
     for (i = sp->Bnst_num - 2; i >= 0; i--) {
-	Best_mgr.dpnd.head[i] = i + 1;
-	Best_mgr.dpnd.type[i] = 'D';
-	Best_mgr.dpnd.check[i].num = 1;
-	Best_mgr.dpnd.check[i].pos[0] = i + 1;
+	sp->Best_mgr->dpnd.head[i] = i + 1;
+	sp->Best_mgr->dpnd.type[i] = 'D';
+	sp->Best_mgr->dpnd.check[i].num = 1;
+	sp->Best_mgr->dpnd.check[i].pos[0] = i + 1;
     }
 
-    Best_mgr.score = 0;
+    sp->Best_mgr->score = 0;
 }
 
 /*==================================================================*/
-		       int after_decide_dpnd()
+	       int after_decide_dpnd(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -745,10 +745,9 @@ static int dpndID = 0;
 
     /* 依存構造決定後 格解析を行う場合 */
 
-    if (OptAnalysis == OPT_CASE2 ||
-	OptAnalysis == OPT_DISC) {	
-	Best_mgr.score = -10000;
-	call_case_analysis(Best_mgr.dpnd);
+    if (OptAnalysis == OPT_CASE2) {
+	sp->Best_mgr->score = -10000;
+	call_case_analysis(sp, sp->Best_mgr->dpnd);
     }
 
     if (Possibility != 0) {
@@ -756,10 +755,10 @@ static int dpndID = 0;
 	    OptAnalysis == OPT_CASE2 ||
 	    OptAnalysis == OPT_DISC) {
 	    /* 格解析の結果を用言文節へ */
-	    for (i = 0; i < Best_mgr.pred_num; i++)
-		Best_mgr.cpm[i].pred_b_ptr->cpm_ptr = &(Best_mgr.cpm[i]);
+	    for (i = 0; i < sp->Best_mgr->pred_num; i++)
+		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);
 	    /* 格解析の結果をfeatureへ */
-	    record_case_analysis();
+	    record_case_analysis(sp);
 	    /* 主格を feature へ(固有名詞認識処理用)
 	    assign_agent();
 	    */
@@ -771,16 +770,16 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-		    int detect_dpnd_case_struct()
+	    int detect_dpnd_case_struct(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
     DPND dpnd;
-    
-    Best_mgr.score = -10000; /* スコアは「より大きい」時に入れ換えるので，
-				初期値は十分小さくしておく */
-    Best_mgr.dflt = 0;
-    Best_mgr.ID = -1;
+
+    sp->Best_mgr->score = -10000; /* スコアは「より大きい」時に入れ換えるので，
+				    初期値は十分小さくしておく */
+    sp->Best_mgr->dflt = 0;
+    sp->Best_mgr->ID = -1;
     Possibility = 0;
     dpndID = 0;
 
@@ -804,15 +803,15 @@ static int dpndID = 0;
 
     /* 依存構造解析 --> 格構造解析 */
     
-    decide_dpnd(dpnd);
+    decide_dpnd(sp, dpnd);
 
     /* 構造決定後の処理 */
 
-    return after_decide_dpnd();
+    return after_decide_dpnd(sp);
 }
 
 /*==================================================================*/
-		      void memo_by_program(void)
+	       void memo_by_program(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /*
@@ -824,10 +823,10 @@ static int dpndID = 0;
     /* 緩和をメモに記録する場合
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
-	if (Best_mgr.dpnd.type[i] == 'd') {
+	if (sp->Best_mgr->dpnd.type[i] == 'd') {
 	    strcat(PM_Memo, " 緩和d");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
-	} else if (Best_mgr.dpnd.type[i] == 'R') {
+	} else if (sp->Best_mgr->dpnd.type[i] == 'R') {
 	    strcat(PM_Memo, " 緩和R");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
 	}
@@ -837,7 +836,7 @@ static int dpndID = 0;
     /* 遠い係り受けをメモに記録する場合
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
-	if (Best_mgr.dpnd.head[i] > i + 3 &&
+	if (sp->Best_mgr->dpnd.head[i] > i + 3 &&
 	    !check_feature(sp->bnst_data[i].f, "ハ") &&
 	    !check_feature(sp->bnst_data[i].f, "読点") &&
 	    !check_feature(sp->bnst_data[i].f, "用言") &&

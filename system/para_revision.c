@@ -37,7 +37,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 };
 
 /*==================================================================*/
-		void print_restrict_matrix(int key_pos)
+      void print_restrict_matrix(SENTENCE_DATA *sp, int key_pos)
 /*==================================================================*/
 {
     int i, j;
@@ -45,13 +45,14 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     fprintf(Outfp, "<< restrict matrix >>\n");	
     for ( i=0; i<=key_pos; i++ ) {
 	for ( j=key_pos+1; j<sp->Bnst_num; j++ )
-	  fprintf(Outfp, "%3d", restrict_matrix[i][j]);
+	    fprintf(Outfp, "%3d", restrict_matrix[i][j]);
 	fputc('\n', Outfp);
     }
 }
 
 /*==================================================================*/
-	void set_restrict_matrix(int a1, int a2, int a3, 
+	void set_restrict_matrix(SENTENCE_DATA *sp, 
+				 int a1, int a2, int a3, 
 				 int b1, int b2, int b3,
 				 int flag)
 /*==================================================================*/
@@ -118,14 +119,14 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     
     if (OptDisplay == OPT_DEBUG) {
 	if ( flag == REVISE_SPRE || flag == REVISE_PRE )
-	  print_matrix(PRINT_RSTR, a2);
+	    print_matrix(sp, PRINT_RSTR, a2);
 	else if ( flag == REVISE_SPOS || flag == REVISE_POS )
-	  print_matrix(PRINT_RSTR, b2);
+	    print_matrix(sp, PRINT_RSTR, b2);
     }
 }
 
 /*==================================================================*/
-		void revise_para_rel(int pre, int pos)
+      void revise_para_rel(SENTENCE_DATA *sp, int pre, int pos)
 /*==================================================================*/
 {
     /* 並列構造間の関係による修正 */
@@ -145,28 +146,28 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 
     /* 後だけ強並列 -> 前を修正 */
     if ( ptr1->status != 's' && ptr2->status == 's' ) {
-	set_restrict_matrix(a1, a2, a3, b1, b2, b3, REVISE_SPRE);
+	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_SPRE);
 	Revised_para_num = pre;
     }
     /* 前だけ強並列 -> 後を修正 */
     else if ( ptr1->status == 's' && ptr2->status != 's' ) {
-	set_restrict_matrix(a1, a2, a3, b1, b2, b3, REVISE_SPOS);
+	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_SPOS);
 	Revised_para_num = pos;
     }
     /* スコア比較 -> 前を修正 */
     else if ( ptr1->max_score <= ptr2->max_score ) {
-	set_restrict_matrix(a1, a2, a3, b1, b2, b3, REVISE_PRE);
+	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_PRE);
 	Revised_para_num = pre;
     }
     /* スコア比較 -> 後を修正 */
     else {
-	set_restrict_matrix(a1, a2, a3, b1, b2, b3, REVISE_POS);
+	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_POS);
 	Revised_para_num = pos;
     }
 }
 
 /*==================================================================*/
-	     void revise_para_kakari(int num, int *array)
+   void revise_para_kakari(SENTENCE_DATA *sp, int num, int *array)
 /*==================================================================*/
 {
     /* 係り受け誤りによる修正 */
@@ -191,7 +192,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 
     /* 前部の制限 */
 
-    if (_check_para_d_struct(0, ptr->key_pos, FALSE, 0, NULL) == FALSE) {
+    if (_check_para_d_struct(sp, 0, ptr->key_pos, FALSE, 0, NULL) == FALSE) {
 	for (k = ptr->key_pos; D_found_array[k] == TRUE; k--)
 	  ;
 	for (i = 0; i <= k; i++)
@@ -202,15 +203,15 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     /* 後部の制限 */	
 
     for (j = ptr->key_pos + 2; j < sp->Bnst_num; j++)
-      if (_check_para_d_struct(ptr->key_pos + 1, j, FALSE, 0, NULL) == FALSE)
-	for (i = 0; i <= ptr->key_pos; i++) {
-	    restrict_matrix[i][j] = 0;
-	}
+	if (_check_para_d_struct(sp, ptr->key_pos + 1, j, FALSE, 0, NULL) == FALSE)
+	    for (i = 0; i <= ptr->key_pos; i++) {
+		restrict_matrix[i][j] = 0;
+	    }
     
     Revised_para_num = num;
 
     if (OptDisplay == OPT_DEBUG)
-      print_matrix(PRINT_RSTD, ptr->key_pos);
+	print_matrix(sp, PRINT_RSTD, ptr->key_pos);
 }
 
 /*====================================================================

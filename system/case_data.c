@@ -8,6 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
+int SOTO_SCORE = 7;
+
 char fukugoji_string[64];
 
 char *FukugojiTable[] = {"を除く", "をのぞく", 
@@ -85,9 +87,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
-    else if (check_feature(b_ptr->f, "係:ガ格") || 
-	     (!check_feature(cpm_ptr->pred_b_ptr->f, "用言:判") &&
-	      check_feature(b_ptr->f, "係:ノ格"))) {
+    else if (check_feature(b_ptr->f, "係:ガ格")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("が");
 	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
@@ -105,7 +105,16 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
-
+    else if (check_feature(b_ptr->f, "係:ノ格") && 
+	     !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	/* 隣接しない場合は? */
+	/* 類似度に閾値を設けて、単なる修飾を区別する必要がある */
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
+	c_ptr->oblig[c_ptr->element_num] = FALSE;
+	return b_ptr;
+    }
     else if (check_feature(b_ptr->f, "係:ニ格")) {
 	/* ニ格で時間なら時間格 */
 	if (check_feature(b_ptr->f, "時間")) {
@@ -140,12 +149,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("で");
 	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	if (check_feature(b_ptr->f, "デモ")) {
-	    c_ptr->pp[c_ptr->element_num][1] = -1;
-	    c_ptr->pp[c_ptr->element_num][2] = END_M;
-	}
-	else if (check_feature(b_ptr->f, "デ") && 
-		 check_feature(b_ptr->f, "ハ")) {
+	if (check_feature(b_ptr->f, "デモ") || 
+	    check_feature(b_ptr->f, "デハ")) {
 	    c_ptr->pp[c_ptr->element_num][1] = -1;
 	    c_ptr->pp[c_ptr->element_num][2] = END_M;
 	}
@@ -225,17 +230,28 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     else if (check_feature(b_ptr->f, "複合辞") && 
 	     check_feature(b_ptr->f, "係:連用") && 
 	     b_ptr->child[0]) {
-	c_ptr->pp[c_ptr->element_num][0] = 
-	    pp_hstr_to_code(make_fukugoji_string(b_ptr));
+	int fc = pp_hstr_to_code(make_fukugoji_string(b_ptr));
+	if (fc == END_M) {
+	    return NULL;
+	}
+	c_ptr->pp[c_ptr->element_num][0] = fc;
 	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
     }
-    /* 係:連用, 〜を〜に */
-    else if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("に");
-	c_ptr->pp[c_ptr->element_num][1] = END_M;
-	c_ptr->oblig[c_ptr->element_num] = TRUE;
+    else if (check_feature(b_ptr->f, "係:連体") &&
+	     !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	/* 「〜からの」: カラ格 */
+	if (check_feature(b_ptr->f, "カラ")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("から");
+	}
+	/* 「〜への」: ヘ格, ニ格 */
+	else if (check_feature(b_ptr->f, "ヘ")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("へ");
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
+	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else {
@@ -296,7 +312,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 }
 
 /*==================================================================*/
-	      int make_data_cframe(CF_PRED_MGR *cpm_ptr)
+    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
@@ -343,13 +359,18 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		}
 	    }
 	} else {
-	    if (b_ptr->parent && 
-		b_ptr->parent->parent) {
-		if (!check_feature(b_ptr->parent->parent->f, "外の関係")) {
+	    cel_b_ptr = b_ptr;
+	    while (cel_b_ptr->parent->para_type == PARA_NORMAL) {
+		cel_b_ptr = cel_b_ptr->parent;
+	    }
+
+	    if (cel_b_ptr->parent && 
+		cel_b_ptr->parent->parent) {
+		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係")) {
 		    _make_data_cframe_pp(cpm_ptr, NULL);
-		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent->parent);
-		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent->parent);
-		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent->parent;
+		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
+		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
+		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
 		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 		    cpm_ptr->cf.element_num ++;
@@ -389,20 +410,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
     }
 
-    /* 「〜を〜に」 のときは自分もニ格で格要素にする */
-    if (check_feature(b_ptr->f, "ID:（〜を）〜に") && _make_data_cframe_pp(cpm_ptr, b_ptr)) {
-	_make_data_cframe_sm(cpm_ptr, b_ptr);
-	_make_data_cframe_ex(cpm_ptr, b_ptr);
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
-	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = b_ptr->num;
-	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	cpm_ptr->cf.element_num ++;
-	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
-	    cpm_ptr->cf.element_num = 0;
-	    return score;
-	}
-    }
-
     /* 用言が並列のとき、格要素を expand する */
     if (b_ptr->para_type == PARA_NORMAL && 
 	b_ptr->parent && 
@@ -428,6 +435,22 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		    return score;
 		}
 	    }
+	}
+    }
+
+    /* 複合名詞のとき */
+    if (b_ptr->internal_num) {
+	/* とりあえず後から 2 つめの形態素を扱う */
+	_make_data_cframe_pp(cpm_ptr, NULL);
+	_make_data_cframe_sm(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
+	_make_data_cframe_ex(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->internal+b_ptr->internal_num-1;
+	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.element_num ++;
+	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+	    cpm_ptr->cf.element_num = 0;
+	    return score;
 	}
     }
 

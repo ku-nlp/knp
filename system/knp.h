@@ -6,6 +6,7 @@
 
     $Id$
 ====================================================================*/
+#include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <juman.h>

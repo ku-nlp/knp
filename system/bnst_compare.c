@@ -73,9 +73,36 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     if (! *(ptr1->BGH_code) || ! *(ptr2->BGH_code))
 	return -1;
 
-    for (i = 0; ptr1->BGH_code[i]; i+=10)
-      for (j = 0; ptr2->BGH_code[j]; j+=10) {
+    for (i = 0; ptr1->BGH_code[i]; i+=BGH_CODE_SIZE)
+      for (j = 0; ptr2->BGH_code[j]; j+=BGH_CODE_SIZE) {
 	  point = bgh_code_match(ptr1->BGH_code+i, ptr2->BGH_code+j);
+	  if (max_point < point) max_point = point;
+      }
+    
+    if (max_point < 3) 
+	return 0;
+    else
+	return (max_point-2);
+}
+
+/*==================================================================*/
+          int ntt_match(BNST_DATA *ptr1, BNST_DATA *ptr2)
+/*==================================================================*/
+{
+    /* 返り値
+       	一方でも分類語彙表コードがない場合 	: -1
+	3桁未満の一致				: 0
+	3桁以上一致している場合			: (一致桁数 - 2)
+     */
+
+    int i, j, point, max_point = 0;
+
+    if (! *(ptr1->SM_code) || ! *(ptr2->SM_code))
+	return -1;
+
+    for (i = 0; ptr1->SM_code[i]; i+=SM_CODE_SIZE)
+      for (j = 0; ptr2->SM_code[j]; j+=SM_CODE_SIZE) {
+	  point = (int)(ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE)*BGH_CODE_SIZE);
 	  if (max_point < point) max_point = point;
       }
     
@@ -157,7 +184,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-		   int calc_match(int pre, int pos)
+	 int calc_match(SENTENCE_DATA *sp, int pre, int pos)
 /*==================================================================*/
 {
     int		i, j, part_mt_point, bgh_mt_point, point = 0;
@@ -289,8 +316,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    } else {
 
 		/* 分類語彙表による類似度 */
-	    
-		bgh_mt_point = bgh_match(ptr1, ptr2) * 2; 
+
+		bgh_mt_point = bgh_match(ptr1, ptr2) * 2;
+		/* bgh_mt_point = ntt_match(ptr1, ptr2) * 2; (for NTT) */
 
 		/* 自立語の部分一致 (少なくとも一方の分類語彙表コードがない場合) */
 	    
@@ -358,14 +386,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-                    void calc_match_matrix()
+	      void calc_match_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
     
     for (i = 0; i < sp->Bnst_num; i++) 
-      for (j = i+1; j < sp->Bnst_num; j++)
-	match_matrix[i][j] = calc_match(i, j);
+	for (j = i+1; j < sp->Bnst_num; j++)
+	    match_matrix[i][j] = calc_match(sp, i, j);
 }
 
 /*====================================================================

@@ -115,7 +115,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 }
 
 /*==================================================================*/
-		      void print_mrphs(int flag)
+	    void print_mrphs(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
     int		i, j;
@@ -359,20 +359,20 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    ------------------------------------------------------- */
 	}
     }
-    fputc(')', Outfp);	/* 文節終り */    
+    fputc(')', Outfp);	/* 文節終わり */
 }
 
 /*==================================================================*/
-		    void print_sentence_slim(void)
+	     void print_sentence_slim(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
 
-    init_bnst_tree_property();
+    init_bnst_tree_property(sp);
 
     fputc('(', Outfp);
     for ( i=0; i<sp->Bnst_num; i++ )
-      print_bnst(&(sp->bnst_data[i]), NULL);
+	print_bnst(&(sp->bnst_data[i]), NULL);
     fputc(')', Outfp);
     fputc('\n', Outfp);
 }
@@ -382,7 +382,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 ====================================================================*/
 
 /*==================================================================*/
-    void print_M_bnst(int b_num, int max_length, int *para_char)
+void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 /*==================================================================*/
 {
     BNST_DATA *ptr = &(sp->bnst_data[b_num]);
@@ -442,7 +442,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 }
 
 /*==================================================================*/
-		 void print_matrix(int type, int key_pos)
+     void print_matrix(SENTENCE_DATA *sp, int type, int key_pos)
 /*==================================================================*/
 {
     int i, j, space, length;
@@ -452,18 +452,18 @@ char pos2symbol(char *hinshi, char *bunrui)
     PARA_DATA *ptr;
 
     for ( i=0; i<sp->Bnst_num; i++ )
-      for ( j=0; j<sp->Bnst_num; j++ )
-	path_matrix[i][j] = 0;
+	for ( j=0; j<sp->Bnst_num; j++ )
+	    path_matrix[i][j] = 0;
     
     /* パスのマーク付け(PARA) */
 
     if (type == PRINT_PARA) {
-	for ( i=0; i<Para_num; i++ ) {
+	for ( i=0; i<sp->Para_num; i++ ) {
 	    ptr = &sp->para_data[i];
 	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ )
-	      path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
-		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
-		  -1 : 'a' + i;
+		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
+		    -1 : 'a' + i;
 	}
     }
 
@@ -488,19 +488,19 @@ char pos2symbol(char *hinshi, char *bunrui)
     }
 
     if (type == PRINT_PARA)
-      fprintf(Outfp, "<< PARA MATRIX >>\n");
+	fprintf(Outfp, "<< PARA MATRIX >>\n");
     else if (type == PRINT_DPND)
-      fprintf(Outfp, "<< DPND MATRIX >>\n");
+	fprintf(Outfp, "<< DPND MATRIX >>\n");
     else if (type == PRINT_MASK)
-      fprintf(Outfp, "<< MASK MATRIX >>\n");
+	fprintf(Outfp, "<< MASK MATRIX >>\n");
     else if (type == PRINT_QUOTE)
-      fprintf(Outfp, "<< QUOTE MATRIX >>\n");
+	fprintf(Outfp, "<< QUOTE MATRIX >>\n");
     else if (type == PRINT_RSTR)
-      fprintf(Outfp, "<< RESTRICT MATRIX for PARA RELATION>>\n");
+	fprintf(Outfp, "<< RESTRICT MATRIX for PARA RELATION>>\n");
     else if (type == PRINT_RSTD)
-      fprintf(Outfp, "<< RESTRICT MATRIX for DEPENDENCY STRUCTURE>>\n");
+	fprintf(Outfp, "<< RESTRICT MATRIX for DEPENDENCY STRUCTURE>>\n");
     else if (type == PRINT_RSTQ)
-      fprintf(Outfp, "<< RESTRICT MATRIX for QUOTE SCOPE>>\n");
+	fprintf(Outfp, "<< RESTRICT MATRIX for QUOTE SCOPE>>\n");
 
     print_line(max_length, over_flag);
     for ( i=0; i<(max_length-sp->Bnst_num*3); i++ ) fputc(' ', Outfp);
@@ -509,7 +509,7 @@ char pos2symbol(char *hinshi, char *bunrui)
     print_line(max_length, over_flag);
 
     for ( i=0; i<sp->Bnst_num; i++ ) {
-	print_M_bnst(i, max_length, &para_char);
+	print_M_bnst(sp, i, max_length, &para_char);
 	for ( j=i+1; j<sp->Bnst_num; j++ ) {
 
 	    if (type == PRINT_PARA) {
@@ -549,7 +549,7 @@ char pos2symbol(char *hinshi, char *bunrui)
     print_line(max_length, over_flag);
     
     if (type == PRINT_PARA) {
-	for (i = 0; i < Para_num; i++) {
+	for (i = 0; i < sp->Para_num; i++) {
 	    fprintf(Outfp, "%c(%c):%4.1f(%4.1f) ", 
 		    sp->para_data[i].para_char, 
 		    sp->para_data[i].status, 
@@ -560,21 +560,34 @@ char pos2symbol(char *hinshi, char *bunrui)
     }
 }
 
+/*==================================================================*/
+	void assign_para_similarity_feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char buffer[DATA_LEN];
+
+    for (i = 0; i < sp->Para_num; i++) {
+	sprintf(buffer, "並列類似度:%.3f", sp->para_data[i].max_score);
+	assign_cfeature(&(sp->bnst_data[sp->para_data[i].key_pos].f), buffer);
+    }
+}
+
 /*====================================================================
 	                並列構造間の関係表示
 ====================================================================*/
 
 /*==================================================================*/
-	     void print_para_manager(PARA_MANAGER *m_ptr, int level)
+void print_para_manager(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int level)
 /*==================================================================*/
 {
     int i, j;
     
     for (i = 0; i < level * 5; i++)
-      fputc(' ', Outfp);
+	fputc(' ', Outfp);
 
     for (i = 0; i < m_ptr->para_num; i++)
-      fprintf(Outfp, " %c", sp->para_data[m_ptr->para_data_num[i]].para_char);
+	fprintf(Outfp, " %c", sp->para_data[m_ptr->para_data_num[i]].para_char);
     fputc(':', Outfp);
 
     for (i = 0; i < m_ptr->part_num; i++) {
@@ -593,18 +606,18 @@ char pos2symbol(char *hinshi, char *bunrui)
     fputc('\n', Outfp);
 
     for (i = 0; i < m_ptr->child_num; i++)
-      print_para_manager(m_ptr->child[i], level+1);
+	print_para_manager(sp, m_ptr->child[i], level+1);
 }
 
 /*==================================================================*/
-		      void print_para_relation()
+	     void print_para_relation(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
     
-    for (i = 0; i < Para_M_num; i++)
-      if (sp->para_manager[i].parent == NULL)
-	print_para_manager(&sp->para_manager[i], 0);
+    for (i = 0; i < sp->Para_M_num; i++)
+	if (sp->para_manager[i].parent == NULL)
+	    print_para_manager(sp, &sp->para_manager[i], 0);
 }
 
 /*====================================================================
@@ -618,7 +631,7 @@ static int max_width;			/* 木の最大幅 */
 {
     int i, num = 1;
     for (i=0; i<n; i++)
-      num = num*2;
+	num = num*2;
     return(num);
 }
 
@@ -636,7 +649,7 @@ static int max_width;			/* 木の最大幅 */
     if (ptr->para_type == PARA_NORMAL || 
 	ptr->para_type == PARA_INCOMP ||
 	ptr->to_para_p == TRUE)
-      ptr->space += 1;
+	ptr->space += 1;
     ptr->space += (depth2-1)*8;
 }
 
@@ -649,11 +662,11 @@ static int max_width;			/* 木の最大幅 */
     calc_self_space(ptr, depth2);
 
     if ( ptr->space > max_width )
-      max_width = ptr->space;
+	max_width = ptr->space;
 
     if ( ptr->child[0] )
-      for ( i=0; ptr->child[i]; i++ )
-	calc_tree_width(ptr->child[i], depth2+1);
+	for ( i=0; ptr->child[i]; i++ )
+	    calc_tree_width(ptr->child[i], depth2+1);
 }
 
 /*==================================================================*/
@@ -827,7 +840,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-			 void print_kakari()
+		 void print_kakari(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 依存構造木の表示 */
@@ -850,7 +863,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 ====================================================================*/
 
 /*==================================================================*/
-                         void check_bnst()
+		  void check_bnst(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int 	i, j;
@@ -917,14 +930,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-			 void print_result()
+		 void print_result(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k;
     char *date_p, time_string[64];
     time_t t;
     struct tm *tms;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     /* 時間の取得 */
     t = time(NULL);
@@ -950,8 +962,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* ヘッダの出力 */
 
-    if (Comment[0]) {
-	fprintf(Outfp, "%s", Comment);
+    if (sp->Comment) {
+	fprintf(Outfp, "%s", sp->Comment);
     } else {
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
@@ -977,7 +989,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     if (PM_Memo[0]) {
-	if (strstr(Comment, "MEMO")) {
+	if (sp->Comment && strstr(sp->Comment, "MEMO")) {
 	    fprintf(Outfp, "%s", PM_Memo);
 	} else {
 	    fprintf(Outfp, " MEMO:%s", PM_Memo);
@@ -999,31 +1011,23 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
-	print_mrphs(1);
+	print_mrphs(sp, 1);
     } else {
-	make_dpnd_tree();
-	print_kakari();
+	make_dpnd_tree(sp);
+	print_kakari(sp);
     }
 
     /* 格解析を行なった場合の出力 */
 
-    if ((OptAnalysis == OPT_CASE || 
+    if (((OptAnalysis == OPT_CASE || 
 	 OptAnalysis == OPT_CASE2 ||
 	 OptAnalysis == OPT_DISC) &&
 	(OptDisplay == OPT_DETAIL || 
-	 OptDisplay == OPT_DEBUG)) {
+	 OptDisplay == OPT_DEBUG)) || 
+	(OptAnalysis == OPT_DISC && 
+	 VerboseLevel >= VERBOSE1)) {
 
-	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibility:%d/%d ■\n", 
-		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
-
-	/* 上記出力の最後の引数(依存構造の数)は1にしている．
-	   ちゃんと扱ってない */
-	
-	for (i = tm->pred_num-1; i >= 0; i--) {
-	    print_data_cframe(&(tm->cpm[i]));
-	    for (j = 0; j < tm->cpm[i].result_num; j++)
-		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
-	}
+	print_case_result(sp);
 
 	/* 次の解析のために初期化しておく */
 	tm->pred_num = 0;

@@ -32,7 +32,7 @@ float	norm[] = {
 extern QUOTE_DATA quote_data;
 
 /*==================================================================*/
-		  void mask_quote_scope(int key_pos)
+	void mask_quote_scope(SENTENCE_DATA *sp, int key_pos)
 /*==================================================================*/
 {
     int i, j, k, l, start, end;
@@ -78,11 +78,11 @@ extern QUOTE_DATA quote_data;
     }
 
     if (k && OptDisplay == OPT_DEBUG)
-	print_matrix(PRINT_RSTQ, key_pos);
+	print_matrix(sp, PRINT_RSTQ, key_pos);
 }
 
 /*==================================================================*/
-		int bnst_match(int pos1, int pos2)
+	int bnst_match(SENTENCE_DATA *sp, int pos1, int pos2)
 /*==================================================================*/
 {
     int flag1, flag2;
@@ -121,7 +121,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	 int calc_static_level_penalty(int key_pos, int pos)
+int calc_static_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos)
 /*==================================================================*/
 {
     int minus_score = 0;
@@ -129,17 +129,17 @@ extern QUOTE_DATA quote_data;
     int level2 = sp->bnst_data[pos].sp_level;
 
     if (level1 <= level2)
-      minus_score = MINUS * (level2 - level1 + 1);
+	minus_score = MINUS * (level2 - level1 + 1);
 
     return minus_score;
 }
 /*==================================================================*/
-   int calc_dynamic_level_penalty(int key_pos, int pos1, int pos2)
+int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos2)
 /*==================================================================*/
 {
     if (sp->bnst_data[pos1].sp_level == sp->bnst_data[pos2].sp_level &&
-	bnst_match(pos1, pos2) &&
-	!bnst_match(pos1, key_pos))
+	bnst_match(sp, pos1, pos2) &&
+	!bnst_match(sp, pos1, key_pos))
 	return 0;
     else if (check_feature(sp->bnst_data[pos1].f, "提題") &&
 	     check_feature(sp->bnst_data[pos2].f, "提題"))
@@ -150,7 +150,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	      int plus_bonus_score(int jend_pos, int type)
+   int plus_bonus_score(SENTENCE_DATA *sp, int jend_pos, int type)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr;
@@ -173,7 +173,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-      void dp_search_scope(int key_pos, int iend_pos, int jend_pos)
+void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 /*==================================================================*/
 {
     int i, j, current_max, score_upward, score_sideway;
@@ -204,9 +204,9 @@ extern QUOTE_DATA quote_data;
 
 	    for (i=iend_pos-1; i>=0; i--) {
 		score_upward = match_matrix[i][j] + maxsco_array[i+1]
-		  - calc_dynamic_level_penalty(key_pos, i, j);
+		    - calc_dynamic_level_penalty(sp, key_pos, i, j);
 		score_sideway = score_matrix[i][j+1] 
-		  - PENALTY - penalty_table[j];
+		    - PENALTY - penalty_table[j];
 		
 		if (score_upward >= score_sideway) {
 		    score_matrix[i][j] = score_upward;
@@ -240,7 +240,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	  void _detect_para_scope(PARA_DATA *ptr, int jend_pos)
+void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
 /*==================================================================*/
 {
     int i, j, flag, nth;
@@ -313,12 +313,12 @@ extern QUOTE_DATA quote_data;
     /* DP MATCHING  */
     /*		    */
 
-    dp_search_scope(key_pos, iend_pos, jend_pos);
+    dp_search_scope(sp, key_pos, iend_pos, jend_pos);
 
 
     /* 最大パスの検出 */
 
-    ending_bonus_score = plus_bonus_score(jend_pos, ptr->type);
+    ending_bonus_score = plus_bonus_score(sp, jend_pos, ptr->type);
     for (i = iend_pos; i >= 0; i--) {
 	current_score = 
 	    (float)(score_matrix[i][key_pos+1] + ending_bonus_score)
@@ -380,7 +380,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	 int detect_para_scope(int para_num, int restrict_p)
+int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 /*==================================================================*/
 {
     int i, j, k;
@@ -407,15 +407,15 @@ extern QUOTE_DATA quote_data;
 	    for (j = i + 1; j < sp->Bnst_num; j++)
 		restrict_matrix[i][j] = 1;
 
-    mask_quote_scope(key_pos);
+    mask_quote_scope(sp, key_pos);
 
     for (k = 0; k < sp->Bnst_num; k++) {
 	penalty_table[k] = (k == key_pos) ? 
-	  0 : calc_static_level_penalty(key_pos, k);
+	  0 : calc_static_level_penalty(sp, key_pos, k);
     }
 
     for (j = key_pos+1; j < sp->Bnst_num; j++)
-	_detect_para_scope(para_ptr, j);
+	_detect_para_scope(sp, para_ptr, j);
 
     if (para_ptr->status == 'x') {
 	;
@@ -433,17 +433,17 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-		     void detect_all_para_scope()
+	    void detect_all_para_scope(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
 
-    for (i = 0; i < Para_num; i++) 
-	detect_para_scope(i, FALSE);
+    for (i = 0; i < sp->Para_num; i++) 
+	detect_para_scope(sp, i, FALSE);
 }
 
 /*==================================================================*/
-			 int check_para_key()
+		int check_para_key(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -453,9 +453,9 @@ extern QUOTE_DATA quote_data;
 
 	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "並キ")) != NULL) {
 
-	    sp->bnst_data[i].para_num = Para_num;
-	    sp->para_data[Para_num].para_char = 'a'+ Para_num;
-	    sp->para_data[Para_num].key_pos = i;
+	    sp->bnst_data[i].para_num = sp->Para_num;
+	    sp->para_data[sp->Para_num].para_char = 'a'+ sp->Para_num;
+	    sp->para_data[sp->Para_num].key_pos = i;
 
 	    type[0] = NULL;
 	    condition[0] = NULL;
@@ -468,20 +468,20 @@ extern QUOTE_DATA quote_data;
 	    } else if (!strncmp(type, "？", 2)) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
-	    sp->para_data[Para_num].type = sp->bnst_data[i].para_key_type;
+	    sp->para_data[sp->Para_num].type = sp->bnst_data[i].para_key_type;
 	    
 	    /* 「〜はもちろん」などの場合の"並キ:名-1:...."の処理 */
 	    if (*(type+2)) {
-		sp->para_data[Para_num].iend_pos = i + atoi(type+2);
+		sp->para_data[sp->Para_num].iend_pos = i + atoi(type+2);
 	    } else {
-		sp->para_data[Para_num].iend_pos = i;
+		sp->para_data[sp->Para_num].iend_pos = i;
 	    }
 
-	    string2feature_pattern(&(sp->para_data[Para_num].f_pattern),condition);
+	    string2feature_pattern(&(sp->para_data[sp->Para_num].f_pattern),condition);
 	    
-	    Para_num ++;
-	    if (Para_num >= PARA_MAX) {
-		fprintf(stderr, "Too many para (%s)!\n", Comment);
+	    sp->Para_num ++;
+	    if (sp->Para_num >= PARA_MAX) {
+		fprintf(stderr, "Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
 	    }
 	}
@@ -490,7 +490,7 @@ extern QUOTE_DATA quote_data;
 	}
     }
 
-    if (Para_num == 0) return 0;
+    if (sp->Para_num == 0) return 0;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
@@ -505,12 +505,12 @@ extern QUOTE_DATA quote_data;
 	}
     }
 
-    return Para_num;
+    return sp->Para_num;
 }
 
 
 /*==================================================================*/
-		 int farthest_child(BNST_DATA *b_ptr)
+       int farthest_child(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /* 一番遠い子供の文節番号を返す
@@ -528,7 +528,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-			void para_recovery()
+		void para_recovery(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 並列構造の情報の再現 */
@@ -536,25 +536,25 @@ extern QUOTE_DATA quote_data;
     int		i, j;
     BNST_DATA	*b_ptr;
 
-    Para_num = 0;
-    Para_M_num = 0;
+    sp->Para_num = 0;
+    sp->Para_M_num = 0;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
-	    sp->para_data[Para_num].key_pos = i;
-	    sp->para_data[Para_num].jend_pos = b_ptr->dpnd_head;
+	    sp->para_data[sp->Para_num].key_pos = i;
+	    sp->para_data[sp->Para_num].jend_pos = b_ptr->dpnd_head;
 	    for (j = i - 1; 
 		 j >= 0 && 
 		     (sp->bnst_data[j].dpnd_head < i ||
 		      (sp->bnst_data[j].dpnd_head == i &&
 		       sp->bnst_data[j].dpnd_type != 'P'));
 		 j--);
-	    sp->para_data[Para_num].max_path[0] = j + 1;
-	    sp->para_data[Para_num].status = 'n';
-	    Para_num++;
+	    sp->para_data[sp->Para_num].max_path[0] = j + 1;
+	    sp->para_data[sp->Para_num].status = 'n';
+	    sp->Para_num++;
 	}
     }
-    detect_para_relation();
+    detect_para_relation(sp);
 }
 
 /*====================================================================

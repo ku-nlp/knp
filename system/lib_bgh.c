@@ -19,14 +19,17 @@ int		BGHExist;
     char *filename;
 
     if (DICT[BGH_DB]) {
-	filename = (char *)check_dict_filename(DICT[BGH_DB]);
+	filename = (char *)check_dict_filename(DICT[BGH_DB], TRUE);
     }
     else {
-	filename = strdup(BGH_DB_NAME);
+	filename = (char *)check_dict_filename(BGH_DB_NAME, FALSE);
     }
 
     if ((bgh_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	BGHExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open BGH dictionary <%s>.\n", filename);
+#endif
     } else {
 	BGHExist = TRUE;
     }
@@ -45,7 +48,10 @@ int		BGHExist;
                     char *get_bgh(char *cp)
 /*==================================================================*/
 {
-    return db_get(bgh_db, cp);
+    if (BGHExist == TRUE)
+	return db_get(bgh_db, cp);
+    else
+	return NULL;
 }
 
 /*==================================================================*/
@@ -87,10 +93,10 @@ int		BGHExist;
 }
 
 /*==================================================================*/
-             void get_bgh_code(BNST_DATA *ptr)
+		  void get_bgh_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, stop, i, overflow_flag = 0;
+    int strt, end, stop, i;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[BNST_LENGTH_MAX];
 
@@ -214,13 +220,13 @@ int		BGHExist;
     if (c1[0] == c2[0]) {
 	point = 1;
 	for (i = 1; c1[i] == c2[i] && i < BGH_CODE_SIZE; i++)
-	  if (i != 5 && i != 7 && i != 8)
-	    point ++;
+	    if (i != 5 && i != 7 && i != 8)
+		point ++;
     }
     else if (c1[0] != '4' && c2[0] != '4' && c1[1] == c2[1]) {
 	point = 2;
 	for (i = 2; c1[i] == c2[i] && i < 4; i++)	
-	  point ++;
+	    point ++;
     }	     
 
     return point;

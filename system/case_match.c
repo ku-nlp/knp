@@ -32,11 +32,9 @@ int     EX_match_sentence = 10;				/* 格要素 -- 文   */
 int     EX_match_tim = 5;				/* 格要素 -- 時間 */
 int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
-int	EX_match_subject = 0;
+int	EX_match_subject = 6;
 
-int	Thesaurus = USE_BGH;
-
-extern float ntt_code_match(char *c1, char *c2);
+int	Thesaurus = USE_NTT;
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
@@ -127,7 +125,7 @@ extern float ntt_code_match(char *c1, char *c2);
 		return 0;
 	    }
 	    else {
-		for (cp = (char *)smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
+		for (cp = (char *)_smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
 		    if (*(cp+SM_CODE_SIZE) == '/')
 			*(cp+SM_CODE_SIZE) = '\0';
 		    else if (str_eq(cp+SM_CODE_SIZE, " side-effect"))
@@ -163,7 +161,7 @@ extern float ntt_code_match(char *c1, char *c2);
 {
     /* 例の分類語彙表コードのマッチング度の計算 */
 
-    int  match = 0;
+    int match = 0;
 
     /* 単位の項目は無視 */
     if (!strncmp(cp1, "11960", 5) || !strncmp(cp2, "11960", 5))
@@ -181,10 +179,30 @@ extern float ntt_code_match(char *c1, char *c2);
 }
 
 /*==================================================================*/
+	int cf_match_element(char *d, char *target, int unit)
+/*==================================================================*/
+{
+    int i;
+
+    if (d == NULL) {
+	return FALSE;
+    }
+
+    for (i = 0; *(d+i); i += unit) {
+	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
  int cf_match_both_element(char *d, char *p, char *target, int unit)
 /*==================================================================*/
 {
     int i, j;
+
+    /* 両方に target が存在するかチェック */
 
     if (p == NULL) {
 	return FALSE;
@@ -204,6 +222,29 @@ extern float ntt_code_match(char *c1, char *c2);
 }
 
 /*==================================================================*/
+	 int elmnt_match_score_each_sm(char *smd, char *smp)
+/*==================================================================*/
+{
+    /* 意味素 : 格要素 -- 補文 */
+    if (cf_match_both_element(smd, smp, "補文", SM_CODE_SIZE)) {
+	return EX_match_sentence;
+    }
+    /* 意味素 : 格要素 -- 時間 */
+    else if (cf_match_both_element(smd, smp, "時間", SM_CODE_SIZE)) {
+	return EX_match_tim;
+    }
+    /* 意味素 : 格要素 -- 数量 */
+    else if (cf_match_both_element(smd, smp, "数量", SM_CODE_SIZE)) {
+	return EX_match_qua;
+    }
+    /* 意味素 : 格要素 -- 主体 */
+    else if (cf_match_both_element(smd, smp, "主体", SM_CODE_SIZE)) {
+	return EX_match_subject;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	   int elmnt_match_score(int as1, CASE_FRAME *cfd,
 				 int as2, CASE_FRAME *cfp, int flag)
 /*==================================================================*/
@@ -211,9 +252,7 @@ extern float ntt_code_match(char *c1, char *c2);
     /* 意味マーカのマッチング度の計算 */
 
     int i, j, k, tmp_score, score = -100, ex_score = -100;
-    int step;
     char *exd, *exp;
-    int (*match_function)();
     int *match_score;
 
     if (flag == SEMANTIC_MARKER) {
@@ -260,37 +299,15 @@ extern float ntt_code_match(char *c1, char *c2);
 	if (Thesaurus == USE_BGH) {
 	    exd = cfd->ex[as1];
 	    exp = cfp->ex[as2];
-	    step = BGH_CODE_SIZE;
-	    match_function = _ex_match_score;
 	    match_score = EX_match_score;
 	}
 	else if (Thesaurus == USE_NTT) {
 	    exd = cfd->ex2[as1];
 	    exp = cfp->ex2[as2];
-	    step = SM_CODE_SIZE;
-	    match_function = _sm_match_score;
 	    match_score = EX_match_score;
 	}
 
-	/* 特別 : 格要素 -- 文 */
-	if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				  "補文", SM_CODE_SIZE)) {
-	    score = EX_match_sentence;
-	}
-	/* 特別 : 格要素 -- 時間 */
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "時間", SM_CODE_SIZE)) {
-	    score = EX_match_tim;
-	}
-	/* 特別 : 格要素 -- 数量 */
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "数量", SM_CODE_SIZE)) {
-	    score = EX_match_qua;
-	}
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "主体", SM_CODE_SIZE)) {
-	    score = EX_match_subject;
-	}
+	score = elmnt_match_score_each_sm(cfd->sm[as1], cfp->sm[as2]);
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0') {
@@ -304,18 +321,15 @@ extern float ntt_code_match(char *c1, char *c2);
 	    }
 	}
 	else {
+	    float rawscore;
+
+	    rawscore = CalcSimilarity(exd, exp);
 	    /* 用例のマッチング */
-	    for (j = 0; exp[j]; j+=step) {
-		for (i = 0; exd[i]; i+=step) {
-		    /* とりあえず… */
-		    if (Thesaurus == USE_BGH) {
-			tmp_score = *(match_score+match_function(exp+j, exd+i));
-		    }
-		    else if (Thesaurus == USE_NTT) {
-			tmp_score = *(match_score+(int)(ntt_code_match(exp+j, exd+i)*7));
-		    }
-		    if (tmp_score > ex_score) ex_score = tmp_score;
-		}
+	    if (Thesaurus == USE_BGH) {
+		ex_score = *(match_score+(int)rawscore);
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		ex_score = *(match_score+(int)(rawscore*7));
 	    }
 	}
 
@@ -484,6 +498,12 @@ extern float ntt_code_match(char *c1, char *c2);
 
     /* 明示されている格助詞の処理 */
     if (target >= 0) {
+	for (i = 0; cfd->pp[target][i] != END_M; i++) {
+	    if (cfd->pp[target][i] < 0) {
+		multi_pp = 1;
+		break;
+	    }
+	}
 	ec_match_flag = 0;
 	for (i = 0; i < cfp->element_num; i++) {
 	    if (list2.flag[i] == UNASSIGNED) {
@@ -572,10 +592,16 @@ extern float ntt_code_match(char *c1, char *c2);
 		}
 	    }
 	}
-	/* return; */
-	list1.flag[target] = UNASSIGNED;
-	target = -1;
-	multi_pp = 1;
+	/* multi_pp のときは list1.flag[target] を UNASSIGNED にして、
+	   明示格を先にチェックする場合と非明示格を先にチェックする場合
+	   の両方をチェックする */
+	if (multi_pp) {
+	    list1.flag[target] = UNASSIGNED;
+	    target = -1;
+	}
+	else {
+	    return;
+	}
     }
 
     /* 明示されていない格助詞のチェック */
@@ -694,13 +720,14 @@ extern float ntt_code_match(char *c1, char *c2);
 }
 
 /*==================================================================*/
-void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
+void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 /*==================================================================*/
 {
     /* 格フレームのマッチング */
 
     LIST assign_d_list, assign_p_list;
     int i;
+    CASE_FRAME *cfd = &(cpm_ptr->cf);
 
     /* 初期化 */
 
@@ -730,8 +757,10 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
 
     cmm_ptr->score = Current_max_score;
     cmm_ptr->result_num = Current_max_num;
-    for (i = 0; i < Current_max_num; i++)
+    for (i = 0; i < Current_max_num; i++) {
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
+	cmm_ptr->result_lists_d[i] = Current_max_list1[i];
+    }
 
     /* tentative */
     if (cmm_ptr->cf_ptr->concatenated_flag == 1) {

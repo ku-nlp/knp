@@ -81,6 +81,8 @@
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
+#define	TBLSIZE	1024
+
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -110,6 +112,9 @@
 
 #define	OPT_CASE_SOTO	1
 #define	OPT_CASE_GAGA	2
+
+typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
+	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
 
 #define PARA_KEY_O          0
 #define PARA_KEY_N          1	/* 体言の並列 */
@@ -404,6 +409,7 @@ typedef struct _RuleVector {
 #define	PROPER_DB	8
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
+#define	NOUN_DB		11
 
 /*====================================================================
 			     固有名詞解析
@@ -499,6 +505,10 @@ typedef struct tnode_b {
 
     FEATUREptr	f;
     DpndRule	*dpnd_rule;
+
+    int		internal_num;
+    int		internal_max;
+    struct tnode_b *internal;
 } BNST_DATA;
 
 /* 並列構造データ */
@@ -528,18 +538,6 @@ typedef struct node_para_manager {
     BNST_DATA	*bnst_ptr;
     char 	status;
 } PARA_MANAGER;
-
-typedef struct sentence {
-    int 		Sen_num;	/* 文番号 1〜 */
-    int			Mrph_num;
-    int			Bnst_num;
-    int			New_Bnst_num;
-    MRPH_DATA		*mrph_data;
-    BNST_DATA	 	*bnst_data;
-    PARA_DATA		*para_data;
-    PARA_MANAGER	*para_manager;
-    struct sentence	*next;
-} SENTENCE_DATA;
 
 typedef struct _check {
     int num;
@@ -627,6 +625,7 @@ typedef struct {
 typedef struct cf_def {
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
+    int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
     char	*sm[CF_ELEMENT_MAX]; 	
 							/* 意味マーカ */
@@ -660,6 +659,7 @@ typedef struct {
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
+    LIST	result_lists_d[MAX_MATCH_MAX];
 } CF_MATCH_MGR;
 
 /* 文と(用言に対する複数の可能な)格フレームの対応付け結果の記録 */
@@ -686,9 +686,8 @@ typedef struct {
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
 
-#define	SOTO_SCORE		7 /* 10 */
 #define	OPTIONAL_CASE_SCORE	2
-#define	SOTO_ADD_SCORE		5
+#define	SOTO_ADD_SCORE		3
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ
@@ -706,6 +705,34 @@ typedef struct _PreservedNamedEntity {
     int Type;
     struct _PreservedNamedEntity *next;
 } PreservedNamedEntity;
+
+/*====================================================================
+			       文脈処理
+====================================================================*/
+
+typedef struct sentence {
+    int 		Sen_num;	/* 文番号 1〜 */
+    int			Mrph_num;
+    int			Bnst_num;
+    int			New_Bnst_num;
+    int			Para_M_num;	/* 並列管理マネージャ数 */
+    int			Para_num;	/* 並列構造数 */
+    MRPH_DATA		*mrph_data;
+    BNST_DATA	 	*bnst_data;
+    PARA_DATA		*para_data;
+    PARA_MANAGER	*para_manager;
+    CF_PRED_MGR		*cpm;
+    CASE_FRAME		*cf;
+    TOTAL_MGR		*Best_mgr;
+    char		*KNPSID;
+    char		*Comment;
+} SENTENCE_DATA;
+
+typedef struct anaphora_list {
+    char	*key;
+    int		count;
+    struct anaphora_list *next;
+} ALIST;
 
 /*====================================================================
                                END

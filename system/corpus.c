@@ -114,6 +114,9 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
     char *type1, *type2, *cp, *token, *type, *level1, *level2, *sparse;
     char parallel1, parallel2, touten1, touten2, touten;
     int score, offset, i, score2;
+    BNST_DATA *bnst_data;
+
+    bnst_data = ptr1-ptr1->num;
 
     /* para_flag == TRUE  : 並列を考慮 (並列解析まえの呼び出しでは意味がない)
        para_flag == FALSE : 並列を無視 */
@@ -171,9 +174,9 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	token = strtok(cp, "|");
 	while (token) {
 	    for (i = ptr1->num+1; i < ptr2->num; i++) {
-		type = (char *)check_feature((sp->bnst_data+i)->f, "ID");
+		type = (char *)check_feature((bnst_data+i)->f, "ID");
 		if (type) {
-		    if ((char *)check_feature((sp->bnst_data+i)->f, "読点"))
+		    if ((char *)check_feature((bnst_data+i)->f, "読点"))
 			touten = ',';
 		    else
 			touten = ' ';
@@ -262,6 +265,39 @@ int init_case_pred()
 void close_case_pred()
 {
     db_close(cp_db);
+}
+
+/* 自立語 : 文節 feature の制限 */
+int check_feature_for_optional_case(FEATURE *f)
+{
+    if ((char *)check_feature(f, "指示詞") || 
+	(char *)check_feature(f, "相対名詞"))
+	return TRUE;
+    return FALSE;
+}
+
+/* 自立語 : 自立語の制限 */
+int check_JiritsuGo_for_optional_case(char *cp)
+{
+     if (!strcmp(cp, "なる") || 
+	 !strcmp(cp, "ない") || 
+	 !strcmp(cp, "する") ||
+	 !strcmp(cp, "ある")) {
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/* 自立語 : 形態素の制限 */
+int check_Morph_for_optional_case(MRPH_DATA *m)
+{
+    /* 副詞的名詞 */
+    if (m->Hinshi == 6 && m->Bunrui == 9)
+	return TRUE;
+    /* 形式名詞 */
+    else if (m->Hinshi == 6 && m->Bunrui == 8)
+	return TRUE;
+    return FALSE;
 }
 
 /* 格から述語への係り受け頻度を調べる関数 */
@@ -634,7 +670,7 @@ void close_optional_case()
 }
 
 /* 任意格からの係り受け頻度を調べる関数 */
-int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus)
+int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus)
 {
     int i, j, k, score, flag, pos1, pos2, firstscore = 0, special = 0, smcore = 0;
     int fukugojiflag = 0;
@@ -816,54 +852,21 @@ int check_optional_case(char *scase)
     }
 }
 
-/* 自立語 : 文節 feature の制限 */
-int check_feature_for_optional_case(FEATURE *f)
-{
-    if ((char *)check_feature(f, "指示詞") || 
-	(char *)check_feature(f, "相対名詞"))
-	return TRUE;
-    return FALSE;
-}
-
-/* 自立語 : 自立語の制限 */
-int check_JiritsuGo_for_optional_case(char *cp)
-{
-     if (!strcmp(cp, "なる") || 
-	 !strcmp(cp, "ない") || 
-	 !strcmp(cp, "する") ||
-	 !strcmp(cp, "ある")) {
-	return TRUE;
-    }
-    return FALSE;
-}
-
-/* 自立語 : 形態素の制限 */
-int check_Morph_for_optional_case(MRPH_DATA *m)
-{
-    /* 副詞的名詞 */
-    if (m->Hinshi == 6 && m->Bunrui == 9)
-	return TRUE;
-    /* 形式名詞 */
-    else if (m->Hinshi == 6 && m->Bunrui == 8)
-	return TRUE;
-    return FALSE;
-}
-
 /* 事例情報を用いた構文木の選択するか否か */
-void optional_case_evaluation()
+void optional_case_evaluation(SENTENCE_DATA *sp)
 {
     int i;
     int appropriate = 0;
 
     /* 普通の Best 解と、事例を用いた場合の Best 解が同じならば return */
-    if (Op_Best_mgr.ID < 0 || Best_mgr.ID == Op_Best_mgr.ID)
+    if (Op_Best_mgr.ID < 0 || sp->Best_mgr->ID == Op_Best_mgr.ID)
 	return;
 
     /* 学習時でなければ */
     if (!OptLearn) {
 	for (i = 0;i < sp->Bnst_num; i++) {
 	    /* 事例を用いた文節 */
-	    if (Op_Best_mgr.dpnd.op[i].flag && Best_mgr.dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
+	    if (Op_Best_mgr.dpnd.op[i].flag && sp->Best_mgr->dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
 
 		/* 係り先が異なり、事例を用いていればデータ出力 */
 		if (Op_Best_mgr.dpnd.op[i].data)
@@ -876,7 +879,7 @@ void optional_case_evaluation()
 		/* 読点がなければ */
 		else {
 		    /* 事例を用いたときのほうが近いとき */
-		    if (Op_Best_mgr.dpnd.head[i] < Best_mgr.dpnd.head[i])
+		    if (Op_Best_mgr.dpnd.head[i] < sp->Best_mgr->dpnd.head[i])
 			appropriate++;
 		    /* 事例を用いたときのほうが遠いとき */
 		    else
@@ -888,10 +891,10 @@ void optional_case_evaluation()
 	/* 事例を用いたときのスコアが大きく、
 	   かつ appropriate が 0 以上だったら適用 */
 	/* 
-	   if (Op_Best_mgr.score > Best_mgr.score && appropriate >= 0) {
+	   if (Op_Best_mgr.score > sp->Best_mgr->score && appropriate >= 0) {
 	   */
-	if (Op_Best_mgr.score > Best_mgr.score) {
-	    Best_mgr = Op_Best_mgr;
+	if (Op_Best_mgr.score > sp->Best_mgr->score) {
+	    *(sp->Best_mgr) = Op_Best_mgr;
 	    return;
 	}
     }
@@ -999,9 +1002,9 @@ int temp_corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	return FALSE;
 }
 
-void CheckChildCaseFrame() {
+void CheckChildCaseFrame(SENTENCE_DATA *sp) {
     int i, j;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     for (i = sp->Bnst_num-1; i > 0; i--) {
 	if (!check_feature((sp->bnst_data+i)->f, "用言"))
@@ -1129,7 +1132,7 @@ char *get_unsupervised_data(DBM_FILE db, char *key, char c, char p) {
 }
 
 /* 意味素の係り受け頻度を調べる関数 */
-float CorpusSMDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target)
+float CorpusSMDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target)
 {
     int i, j, k, flag, pos1, pos2, special = 0, smcore = 0;
     int fukugojiflag = 0;
@@ -1257,7 +1260,7 @@ float get_unsupervised_num(DBM_FILE db, char *cp1, char *case1, char *cp2, char 
 }
 
 /* 事例の係り受け頻度を返す関数 */
-float CorpusExampleDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target) {
+float CorpusExampleDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target) {
     int i, k, score, flag, pos1, pos2, count, special = 0;
     int fukugojiflag = 0;
     char *cp1, *cp2, *cp;
@@ -1411,7 +1414,7 @@ float CorpusExampleDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *
 }
 
 /* 係り先リストが与えられたときに、指定された係り先のスコアを計算する関数 */
-int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHECK_DATA *list, CORPUS_DATA *corpus)
+int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, int h, CHECK_DATA *list, CORPUS_DATA *corpus)
 {
     int i, flag;
     float score, currentscore = -1, totalscore = 0;
@@ -1436,12 +1439,12 @@ int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHEC
 	    flag = 0;
 
 	/* 自立語のスコアを計算する */
-	score = CorpusExampleDependencyFrequency(ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
+	score = CorpusExampleDependencyFrequency(sp, ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
 	totalscore += score;
 	*(candidates_score+i) = score;
 
 	/* 意味素のスコアを計算する */
-	smscore = CorpusSMDependencyFrequency(ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
+	smscore = CorpusSMDependencyFrequency(sp, ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
 	totalsmscore += smscore;
 	*(candidates_smscore+i) = smscore;
 
@@ -1531,23 +1534,23 @@ int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHEC
     return (int)(lastscore*10);
 }
 
-void unsupervised_debug_print() {
+void unsupervised_debug_print(SENTENCE_DATA *sp) {
     int i;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	/* 事例を用いた文節 */
-	if (Best_mgr.dpnd.op[i].flag) {
+	if (sp->Best_mgr->dpnd.op[i].flag) {
 	    /* 出力して free */
-	    if (Best_mgr.dpnd.op[i].data) {
-		fprintf(Outfp, "; %s(%d) %s\n", (sp->bnst_data+i)->Jiritu_Go, i, Best_mgr.dpnd.op[i].data);
-		if (*(Best_mgr.dpnd.op[i].candidatesdata))
-		    fprintf(Outfp, ";        %s\n", Best_mgr.dpnd.op[i].candidatesdata);
-		free(Best_mgr.dpnd.op[i].data);
-		Best_mgr.dpnd.op[i].data = NULL;
+	    if (sp->Best_mgr->dpnd.op[i].data) {
+		fprintf(Outfp, "; %s(%d) %s\n", (sp->bnst_data+i)->Jiritu_Go, i, sp->Best_mgr->dpnd.op[i].data);
+		if (*(sp->Best_mgr->dpnd.op[i].candidatesdata))
+		    fprintf(Outfp, ";        %s\n", sp->Best_mgr->dpnd.op[i].candidatesdata);
+		free(sp->Best_mgr->dpnd.op[i].data);
+		sp->Best_mgr->dpnd.op[i].data = NULL;
 	    }
-	    if (Best_mgr.dpnd.op[i].candidatesdata) {
-		free(Best_mgr.dpnd.op[i].candidatesdata);
-		Best_mgr.dpnd.op[i].candidatesdata = NULL;
+	    if (sp->Best_mgr->dpnd.op[i].candidatesdata) {
+		free(sp->Best_mgr->dpnd.op[i].candidatesdata);
+		sp->Best_mgr->dpnd.op[i].candidatesdata = NULL;
 	    }
 	}
     }

@@ -19,15 +19,28 @@ int		ScaseDicExist;
     char *filename;
 
     if (DICT[SCASE_DB]) {
-	filename = (char *)check_dict_filename(DICT[SCASE_DB]);
+	filename = (char *)check_dict_filename(DICT[SCASE_DB], FALSE);
     }
     else {
-	filename = strdup(SCASE_DB_NAME);
+	filename = (char *)check_dict_filename(SCASE_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
     if ((scase_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 	ScaseDicExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open SCASE dictionary <%s>.\n", filename);
+#endif
     } else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
 	ScaseDicExist = TRUE;
     }
     free(filename);
@@ -68,7 +81,7 @@ int		ScaseDicExist;
 /*==================================================================*/
 {
     int strt, end, last, stop, i, overflow_flag = 0;
-    char *cp, *ans, *anscp, str_buffer[BNST_LENGTH_MAX];
+    char *cp, *ans, *anscp, str_buffer[2*BNST_LENGTH_MAX], *vtype, *predicate;
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
@@ -76,8 +89,9 @@ int		ScaseDicExist;
     /* init_bnst でもしている */
 
     if (ScaseDicExist == TRUE &&
-	(check_feature(ptr->f, "用言:動") ||
-	 check_feature(ptr->f, "用言:形"))) {
+	(vtype = check_feature(ptr->f, "用言")) && 
+	strcmp(vtype, "用言:判")) {
+	vtype += 5;
 
 	/* まず付属語を固定，自立語を減らしていく */
 
@@ -103,7 +117,25 @@ int		ScaseDicExist;
 		    return;
 		}
 
-		if ((ans = get_scase(str_buffer)) != NULL) {
+		/* 用言タイプを含まない辞書の場合 */
+		ans = get_scase(str_buffer);
+		if (ans == NULL) {
+		    predicate = strdup(str_buffer);
+		    if (ptr->num > 0) {
+			cp = check_feature((ptr-1)->f, "係");
+			if (cp) {
+			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1)), cp+3, predicate, vtype);
+			    ans = get_scase(str_buffer);
+			}
+		    }
+		    if (ans == NULL) {
+			/* 用言タイプを含む辞書の場合 */
+			sprintf(str_buffer, "%s:%s", predicate, vtype);
+			ans = get_scase(str_buffer);
+		    }
+		    free(predicate);
+		}
+		if (ans != NULL) {
 		    cp = ptr->SCASE_code;
 		    anscp = ans;
 		    for (i = 0; i < 11; i++) *cp++ = *anscp++;

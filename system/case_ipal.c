@@ -46,17 +46,17 @@ int	IPALExist;
     char *index_db_filename, *data_filename;
 
     if (DICT[CF_DATA]) {
-	data_filename = (char *)check_dict_filename(DICT[CF_DATA]);
+	data_filename = (char *)check_dict_filename(DICT[CF_DATA], TRUE);
     }
     else {
-	data_filename = strdup(IPAL_DAT_NAME);
+	data_filename = (char *)check_dict_filename(IPAL_DAT_NAME, FALSE);
     }
 
     if (DICT[CF_INDEX_DB]) {
-	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB]);
+	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB], TRUE);
     }
     else {
-	index_db_filename = strdup(IPAL_DB_NAME);
+	index_db_filename = (char *)check_dict_filename(IPAL_DB_NAME, FALSE);
     }
 
     if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {
@@ -76,32 +76,62 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-			   void init_cf2()
+		 void clear_mgr_cf(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; i < CPM_MAX; i++) {
+	for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	    if (Thesaurus == USE_BGH) {
+		free(sp->Best_mgr->cpm[i].cf.ex[j]);
+		sp->Best_mgr->cpm[i].cf.ex[j] = NULL;
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		free(sp->Best_mgr->cpm[i].cf.ex2[j]);
+		sp->Best_mgr->cpm[i].cf.ex2[j] = NULL;
+	    }
+	    free(sp->Best_mgr->cpm[i].cf.sm[j]);
+	    sp->Best_mgr->cpm[i].cf.sm[j] = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+		 void init_mgr_cf(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; i < CPM_MAX; i++) {
+	for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	    if (Thesaurus == USE_BGH) {
+		sp->Best_mgr->cpm[i].cf.ex[j] = 
+		    (char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		sp->Best_mgr->cpm[i].cf.ex2[j] = 
+		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+	    }
+	    sp->Best_mgr->cpm[i].cf.sm[j] = 
+		(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+	}
+    }
+}
+
+/*==================================================================*/
+		   void init_cf2(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2 || 
 	OptAnalysis == OPT_DISC) {
-	int i, j;
 
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
 	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
-	for (i = 0; i < CPM_MAX; i++) {
-	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
-		if (Thesaurus == USE_BGH) {
-		    Best_mgr.cpm[i].cf.ex[j] = 
-			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
-		}
-		else if (Thesaurus == USE_NTT) {
-		    Best_mgr.cpm[i].cf.ex2[j] = 
-			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-		}
-		Best_mgr.cpm[i].cf.sm[j] = 
-		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-	    }
-	}
+	init_mgr_cf(sp);
     }
 }
 
@@ -191,6 +221,11 @@ void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     unsigned char *point;
     int pp_num = 0;
 
+    if (!strcmp(cp+strlen(cp)-2, "＠")) {
+	c_ptr->adjacent[num] = TRUE;
+	*(cp+strlen(cp)-2) = '\0';
+    }
+
     if (!strcmp(cp+strlen(cp)-2, "＊"))
 	c_ptr->oblig[num] = FALSE;
     else
@@ -221,7 +256,8 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     while (point = extract_ipal_str(point, ipal_str_buf)) {
         if (ipal_str_buf[0] == '-') {
 	    if (c_ptr->sm_false[num] == NULL) {
-		c_ptr->sm_false[num] = (int *)malloc_data(sizeof(int)*SM_ELEMENT_MAX);
+		c_ptr->sm_false[num] = (int *)malloc_data(sizeof(int)*SM_ELEMENT_MAX, 
+							  "_make_ipal_cframe_sm");
 		for (i = 0; i < sm_num; i++) {
 		    c_ptr->sm_false[num][i] = FALSE;
 		}
@@ -238,7 +274,13 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    fprintf(stderr, "Not enough sm_num !!\n");
 	    break;
 	}
-	strcat(buf, (char *)sm2code(ipal_str_buf));
+
+	if (!strncmp(ipal_str_buf, "数量", 4)) {
+	    strcat(buf, (char *)sm2code("数量"));
+	}
+	else {
+	    strcat(buf, (char *)sm2code(ipal_str_buf));
+	}
     }
     c_ptr->sm[num] = strdup(buf);
 
@@ -320,7 +362,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    }
 	    else {
 		/* "...\0" の 4 つ分増やす */
-		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4));
+		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4), 
+							   "_make_ipal_cframe_ex");
 		strncpy(c_ptr->examples[num], cp, length);
 		*(c_ptr->examples[num]+length) = '\0';
 		strcat(c_ptr->examples[num], "...");
@@ -388,6 +431,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 各格要素の処理 */
 
     for (i = 0; i < CASE_MAX_NUM && j < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
+	cf_ptr->adjacent[j] = FALSE;
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j, USE_NTT_WITH_STORE);
 	if (Thesaurus == USE_BGH) {
@@ -606,7 +650,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 }
 
 /*==================================================================*/
-	  int make_ipal_cframe(BNST_DATA *b_ptr, int start)
+ int make_ipal_cframe(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start)
 /*==================================================================*/
 {
     int f_num = 0, plus_num, i, j;
@@ -730,16 +774,16 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 }
 
 /*==================================================================*/
-	       void make_case_frames(BNST_DATA *b_ptr)
+      void make_case_frames(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    if ((b_ptr->cf_num = make_ipal_cframe(b_ptr, Case_frame_num)) == 0) {
+    if ((b_ptr->cf_num = make_ipal_cframe(sp, b_ptr, Case_frame_num)) == 0) {
 	make_default_cframe(b_ptr, Case_frame_num);
     }
 }
 
 /*==================================================================*/
-		      void set_pred_caseframe()
+	      void set_pred_caseframe(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, start[BNST_MAX];
@@ -748,16 +792,16 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
     Case_frame_num = 0;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	/* 準用言は辞書にないだろうけど… */
 	if (check_feature(b_ptr->f, "用言") ||
-	    check_feature(b_ptr->f, "準用言")) {
+	    check_feature(b_ptr->f, "準用言") || 
+	    check_feature(b_ptr->f, "サ変名詞格解析")) {
 
 	    /* 以下の2つの処理はfeatureレベルで起動している */
 	    /* set_pred_voice(b_ptr); ヴォイス */
 	    /* get_scase_code(b_ptr); 表層格 */
 
 	    start[i] = Case_frame_num;
-	    make_case_frames(b_ptr);
+	    make_case_frames(sp, b_ptr);
 	}
 	else {
 	    start[i] = -1;
