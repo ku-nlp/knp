@@ -637,7 +637,12 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
 	cf_ptr->sm[i][0] = '\0';
-	cf_ptr->ex[i][0] = '\0';
+	if (Thesaurus == USE_BGH) {
+	    cf_ptr->ex[i][0] = '\0';
+	}
+	else if (Thesaurus == USE_NTT) {
+	    cf_ptr->ex2[i][0] = '\0';
+	}
     }
 
     return 1;
