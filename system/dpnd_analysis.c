@@ -108,6 +108,7 @@ extern FILE  *Outfp;
 		else if (value == CORPUS_POSSIBILITY_1) {
 		    if (OptCheck == TRUE && first_uke_flag) {
 			Dpnd_matrix[i][j] = CORPUS_POSSIBILITY_1_FLAG;
+			/* Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k]; */
 			first_uke_flag = 0;
 		    }
 		    else
