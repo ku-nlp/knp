@@ -1,3 +1,72 @@
+1999-12-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/extern.h, system/read_rule.c, system/main.c:
+	ヘルプシステム用オプションの撲滅。
+
+	* system/main.c: サーバ動作時において、文節化のみを行う場合に success = 1 とした。
+
+1999-12-16  Sadao KUROHASHI  <kuro@zinnia.Language.Media.Laboratory>
+
+	* rule/bnst_type.phrase, rule/mrph_basic.rule: ruleのbugfix
+
+1999-12-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/configfile.c, system/main.c:
+	サーバ動作時に、クライアントから .jumanrc を読むことができるようにした。
+
+1999-12-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c: .jumanrc を引き数で指定できるようにした。
+
+1999-12-06  Koji Nobumoto  <nobumoto@zinnia.Language.Media.Laboratory>
+
+	* system/main.c, system/const.h, system/context.c: clear_context() を追加
+
+1999-12-03  Koji Nobumoto  <nobumoto@zinnia.Language.Media.Laboratory>
+
+	* system/context.c: context.c line 146
+
+1999-12-02  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/regexp.c, system/tree_conv.c, system/unsupervised.c, system/proper.c, system/quote.c, system/read_data.c, system/read_rule.c, system/para_analysis.c, system/para_dpnd.c, system/para_relation.c, system/para_revision.c, system/para_similarity.c, system/koou.c, system/lib_print.c, system/lib_ps.c, system/lib_scase.c, system/main.c, system/corpus.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/case_analysis.c, system/const.h, system/context.c:
+	文脈処理のために過去の解析結果をまじめに保存。
+
+	* rule/kakari_uke.rule: バグ修正。
+
+1999-11-27  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_rule.c, system/const.h, system/dpnd_analysis.c:
+	係り受けルールで一意に決めるためのフラグを扱う機構の追加。
+
+	* rule/kakari_uke.rule: 冗長な表現の削除。
+
+	* system/feature.c: コメント増強。
+
+	* juman/Makefile.am, juman/Makefile.in: EXTRA_DIST に追加。
+
+1999-11-25  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/Makefile.in, system/Makefile.am, rule/Makefile.in, juman/Makefile.am, juman/Makefile.in, docs/Makefile.in, configure.in, Makefile.in, configure:
+	configure.in 周辺の整理。
+
+1999-11-24  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* juman/Makefile: 誤った commit の修正。
+
+	* rule/Makefile.am, rule/Makefile.in, juman/zentohan.c, juman/pat.c, juman/pat.h, juman/patfile.c, juman/juman.h, juman/jumanrc.sample, juman/katuyou.c, juman/lisp.c, juman/getid.c, juman/grammar.c, juman/iotool.c, juman/Makefile.in, juman/VERSION, juman/connect.c, juman/Makefile, juman/Makefile.am, docs/Makefile.am, docs/Makefile.in:
+	JUMAN を同梱と、多少のファイル追加。
+
+	* system/Makefile.in, system/Makefile.am, configure, Makefile.in, Makefile.am, INSTALL, configure.in:
+	JUMAN を同梱した。
+
+1999-11-22  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* Makefile.am, Makefile.in: Makefile.am のバグ修正。
+
+	* system/feature.c: check_type() に NULL が渡されて core dump する問題の対策。
+
+	* ChangeLog: ChangeLog 修正。
+
 1999-11-18  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* Makefile.in: Makefile.am の変更に伴なう変更。
