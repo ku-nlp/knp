@@ -1,3 +1,11 @@
+2004-06-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule:
+	「ゆく」を付属動詞候補基本に追加
+
+	* system/read_data.c:
+	同形異義語の意味情報が別の語に付与されていたbugを修正
+
 2004-04-15  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/contet.c:
