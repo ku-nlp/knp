@@ -520,10 +520,7 @@ extern int	EX_match_subject;
     /* 形態素の読み込み */
 
     if ((flag = read_mrph(sp, input)) == EOF) return EOF;
-    if (flag == FALSE) { /* EOSしかない空の文 */
-	sp->Sen_num--;
-	return FALSE;
-    }
+    if (flag == FALSE) return FALSE; /* EOSしかない空の文 */
 
     /* 形態素への意味情報付与 (固有表現解析のとき) */
 
@@ -831,7 +828,10 @@ PARSED:
 	success = 0;
 
 	if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
-	if (flag == FALSE) continue;
+	if (flag == FALSE) { /* 解析失敗時には文の数を増やさない */
+	    sp->Sen_num--;	    
+	    continue;
+	}
 
 	/************/
 	/* 文脈解析 */
