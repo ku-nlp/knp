@@ -606,7 +606,7 @@ typedef struct tnode_t {
     char 	dpnd_type;
     int		dpnd_dflt;	/* いらない? */
     /* 表層格データ */
-    char 	SCASE_code[SCASE_CODE_SIZE];	/* dummy */
+    char 	SCASE_code[SCASE_CODE_SIZE];
     /* 並列構造 */
     int 	para_num;
     char   	para_key_type;
@@ -878,9 +878,10 @@ typedef struct ellipsis_svm_features {
 #ifdef DISC_USE_DIST
     int		c_distance;
     int		c_dist_bnst;
+#else
+    int		c_location[LOC_NUMBER];
 #endif
     int		c_fs_flag;
-    int		c_location[LOC_NUMBER];
     int		c_topic_flag;
     int		c_no_topic_flag;
     int		c_in_cnoun_flag;

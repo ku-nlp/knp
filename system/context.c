@@ -1142,8 +1142,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 #ifdef DISC_USE_DIST
     f->c_distance = ef->c_distance;
     f->c_dist_bnst = ef->c_dist_bnst;
-#endif
-    f->c_fs_flag = ef->c_fs_flag;
+#else
     f->c_location[0] = ef->c_location == LOC_PARENTV ? 1 : 0;
     f->c_location[1] = ef->c_location == LOC_PARENTV_MC ? 1 : 0;
     f->c_location[2] = ef->c_location == LOC_CHILDPV ? 1 : 0;
@@ -1165,6 +1164,8 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->c_location[18] = ef->c_location == LOC_S2_SC ? 1 : 0;
     f->c_location[19] = ef->c_location == LOC_S2_OTHERS ? 1 : 0;
     f->c_location[20] = ef->c_location == LOC_OTHERS ? 1 : 0;
+#endif
+    f->c_fs_flag = ef->c_fs_flag;
     f->c_topic_flag = ef->c_topic_flag;
     f->c_no_topic_flag = ef->c_no_topic_flag;
     f->c_in_cnoun_flag = ef->c_in_cnoun_flag;
