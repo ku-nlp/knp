@@ -175,6 +175,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     Mrph_num = 0;
     homo_num = 0;
     Comment[0] = '\0';
+    ErrorComment = NULL;
     PM_Memo[0] = '\0';
     input_buffer[DATA_LEN-1] = '\n';
 
