@@ -767,7 +767,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     TAG_DATA *check_b_ptr;
     
     /* 解析済: 構造は与えられたもの1つのみ */
-    if (OptInput == OPT_PARSED) {
+    if (OptInput & OPT_PARSED) {
 	Possibility = 1;
     }
 

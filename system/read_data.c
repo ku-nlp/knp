@@ -295,7 +295,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	/* 解析済みの場合 */
 
 	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
-	    OptInput = OPT_PARSED;
+	    OptInput |= OPT_PARSED;
 	    if (OptEllipsis) {
 		OptAnalysis = OPT_CASE2;
 	    }
@@ -315,7 +315,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
 	/* 文節行 */
 	else if (input_buffer[0] == '*') {
-	    if (OptInput != OPT_PARSED || 
+	    if (OptInput == OPT_RAW || 
 		sscanf(input_buffer, "* %d%c", 
 		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
 		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2) {
@@ -327,7 +327,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
 	/* タグ単位行 */
 	else if (input_buffer[0] == '+') {
-	    if (OptInput != OPT_PARSED || 
+	    if (OptInput == OPT_RAW || 
 		sscanf(input_buffer, "+ %d%c", 
 		       &Tag_dpnd[sp->Tag_num],
 		       &Tag_type[sp->Tag_num]) != 2) {
@@ -344,6 +344,11 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    /* 形態素が一つもないとき */
 	    if (sp->Mrph_num == 0) {
 		return FALSE;
+	    }
+
+	    /* タグ単位のない解析済の場合 */
+	    if ((OptInput & OPT_PARSED) && sp->Tag_num == 0) {
+		OptInput |= OPT_INPUT_BNST;
 	    }
 
 	    if (homo_num) {	/* 前に同形異義語セットがあれば処理する */

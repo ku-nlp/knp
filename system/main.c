@@ -615,7 +615,8 @@ extern int	EX_match_subject;
     if (OptAnalysis == OPT_BNST) return TRUE;
 
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
-    if (OptInput == OPT_RAW) {
+    if (OptInput == OPT_RAW || 
+	(OptInput & OPT_INPUT_BNST)) {
 	make_tag_units(sp);
     }
     else {
@@ -677,7 +678,7 @@ extern int	EX_match_subject;
     /* 本格的解析 */
     /**************/
 
-    if (OptInput == OPT_PARSED) {
+    if (OptInput & OPT_PARSED) {
 	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
 	para_recovery(sp);
 	after_decide_dpnd(sp);
@@ -781,7 +782,8 @@ PARSED:
     para_recovery(sp);
 
     if (OptExpress != OPT_NOTAG) {
-	if (OptInput == OPT_RAW) {
+	if (OptInput == OPT_RAW || 
+	    (OptInput & OPT_INPUT_BNST)) {
 	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
 	}
 	else {

@@ -97,8 +97,9 @@
 #define OPT_ELLIPSIS	1
 #define OPT_DEMO	2
 #define OPT_REL_NOUN	4
-#define OPT_RAW		1
-#define OPT_PARSED	2
+#define OPT_RAW		0
+#define OPT_PARSED	1
+#define OPT_INPUT_BNST	2
 #define OPT_TREE	1
 #define OPT_TREEF	2
 #define OPT_SEXP	3

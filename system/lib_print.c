@@ -988,7 +988,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
 
-    if (OptInput != OPT_PARSED) {
+    if (OptInput == OPT_RAW) {
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " KNP:%s", date_p);
 	else if (time_string[0])
