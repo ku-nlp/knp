@@ -2,8 +2,10 @@ SUBDIRS = .
 
 EXTRA_DIST = sm2code.dat
 
+if BGH_EXIST
 dicdir = $(pkgdatadir)/dict/scode/bgh
 nodist_dic_DATA = bgh.db sm2code.db
+endif
 
 bgh.dat:
 	if [ ! -f bgh.dat -a -f "@BGH_FILE@" ]; then \

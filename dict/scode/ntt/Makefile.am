@@ -1,16 +1,25 @@
 SUBDIRS = .
 
+EXTRA_DIST = transform.cpp
+
+if NTT_EXIST
 dicdir = $(pkgdatadir)/dict/scode/ntt
 nodist_dic_DATA = word2code.db sm2code.db code2sm.db smp2smg.db
+endif
 
 usr_word2code.dat:
 	touch $@
 
+word2code.orig:
+	true
+
 transform: transform.cpp
-	g++ transform.cpp -o transform
+	$(CXX) $< -o $@
 
 word2code.dat: transform usr_word2code.dat sm2code.dat word2code.orig
-	./transform usr_word2code.dat sm2code.dat word2code.orig > word2code.dat
+	if [ -f word2code.orig ]; then \
+		./transform usr_word2code.dat sm2code.dat word2code.orig > word2code.dat; \
+	fi
 
 word2code.db: word2code.dat
 	if [ -f $< ]; then \

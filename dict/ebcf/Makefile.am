@@ -1,7 +1,9 @@
 SUBDIRS = .
 
+if CF_EXIST
 dicdir = $(pkgdatadir)/dict/ebcf
 nodist_dic_DATA = cf.db cf.dat
+endif
 
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt

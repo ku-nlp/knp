@@ -41,14 +41,14 @@ AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
 
-AC_MSG_CHECKING("debug version")
+AC_MSG_CHECKING([debug version])
 if test "x$enable_debug" = xyes; then
     dnl    AC_DEFINE(DEBUG)
     ETC_CFLAGS="-DDEBUG $ETC_CFLAGS"
 else
     enable_debug=no
 fi
-AC_MSG_RESULT("$enable_debug")
+AC_MSG_RESULT([$enable_debug])
 
 KNP_DICT="$datadir/knp/dict"
 KNP_RULE="$datadir/knp/rule"
@@ -104,9 +104,42 @@ MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
 CF_COMMAND="$packagesrcdir/system/ipal"
 
-if test x"$BGH_FILE" = x; then
-    BGH_FILE=/share/dict/bgh/monitor/sakuin
+AC_MSG_CHECKING([Bunrui Goi Hyou (BGH)])
+if test x"$BGH_FILE" != x; then
+    bgh_exist=yes
+else
+    if test -f "$packagesrcdir/dict/scode/bgh/bgh.dat"; then
+	bgh_exist=yes
+    elif test -f /share/dict/bgh/monitor/sakuin; then
+	bgh_exist=yes
+	BGH_FILE=/share/dict/bgh/monitor/sakuin
+    else
+	bgh_exist=no
+	BGH_FILE=
+    fi
 fi
+AC_MSG_RESULT([$bgh_exist])
+
+AC_MSG_CHECKING([Goi Taikei (NTT)])
+if test -f "$packagesrcdir/dict/scode/ntt/word2code.orig"; then
+    ntt_exist=yes
+else
+    ntt_exist=no
+fi
+AC_MSG_RESULT([$ntt_exist])
+
+AC_MSG_CHECKING([Case Frame])
+if test -f "$packagesrcdir/dict/ebcf/cf.knpdict"; then
+    cf_exist=yes
+else
+    cf_exist=no
+fi
+AC_MSG_RESULT([$cf_exist])
+
+AM_CONDITIONAL(BGH_EXIST, test "bgh_exist" = yes)
+AM_CONDITIONAL(NTT_EXIST, test "ntt_exist" = yes)
+AM_CONDITIONAL(CF_EXIST, test "cf_exist" = yes)
+
 
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
