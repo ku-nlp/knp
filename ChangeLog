@@ -14,6 +14,9 @@
 	* rule/Makefile.am:
 	*.dataをdistターゲットの対象にした
 
+	* system/dpnd_analysis.c:
+	-debug時にtreeが表示されていなかったbugを修正
+
 2003-08-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: 決定木用のオプションを整理
