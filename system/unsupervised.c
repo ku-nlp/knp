@@ -37,7 +37,7 @@ void CheckCandidates() {
 		/* ¸õÊä¤É¤â */
 		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
 		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
-		    fprintf(stderr, "Too long string <$s> in CheckCandidates.\n", buffer);
+		    fprintf(stderr, "Too long string <%s> in CheckCandidates.\n", buffer);
 		    return;
 		}
 		strcat(buffer, buffer2);
