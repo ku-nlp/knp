@@ -1,4 +1,4 @@
-#! /usr/local/bin/jperl -- -*-Perl-*-
+#!/usr/bin/env jperl
 
 # KNPルールファイルの括弧([, ], <, >)を変換
 
