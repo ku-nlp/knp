@@ -72,7 +72,7 @@ int CLASS_num;
 
 jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
-char *Opt_jumanrc = NULL;
+char *Opt_knprc = NULL;
 
 extern int	SOTO_THRESHOLD;
 extern int	DISTANCE_STEP;
@@ -219,7 +219,7 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
-	    Opt_jumanrc = argv[0];
+	    Opt_knprc = argv[0];
 	}
 	else if (str_eq(argv[0], "-v")) {
 	    argv++; argc--;
@@ -227,21 +227,8 @@ extern float	AssignReferentThreshold;
 	    VerboseLevel = atoi(argv[0]);
 	}
 	/* 格解析用オプション */
-	else if (str_eq(argv[0], "-soto")) {
-	    OptCaseFlag |= OPT_CASE_SOTO;
-	}
-	else if (str_eq(argv[0], "-gaga")) {
-	    OptCaseFlag |= OPT_CASE_GAGA;
-	}
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
-	}
-	else if (str_eq(argv[0], "-soto-old")) {
-	    OptCaseFlag |= OPT_CASE_SOTO_OLD;
-	}
-	else if (str_eq(argv[0], "-soto-no")) {
-	    OptCaseFlag |= OPT_CASE_SOTO;
-	    OptCaseFlag |= OPT_CASE_SOTO_NO;
 	}
 	else if (str_eq(argv[0], "-disc-or-cf")) {
 	    OptDisc = OPT_DISC;
@@ -348,13 +335,11 @@ extern float	AssignReferentThreshold;
 
     /* rcfile をさがす順
        1. -r で指定されたファイル
-       2. $HOME/.jumanrc
-       3. RC_DEFAULT (Makefile)
+       2. $HOME/.knprc
+       3. KNP_RC_DEFAULT (compile時)
        → rcfileがなければエラー
     */
 
-    set_jumanrc_fileptr(Opt_jumanrc, TRUE);
-    read_rc(Jumanrc_Fileptr);
     grammar(NULL);				/* 文法辞書 */
     katuyou(NULL);				/* 活用辞書 */
 
@@ -423,7 +408,7 @@ extern float	AssignReferentThreshold;
     db_setup();
 #endif
     init_hash();
-    init_configfile();	/* 各種ファイル設定初期化 */
+    init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_thesaurus();	/* シソーラスオープン */
@@ -488,33 +473,6 @@ extern float	AssignReferentThreshold;
 #ifdef INTEGRATE_JUMAN
     CloseJuman();
 #endif
-}
-
-/*==================================================================*/
-	       void check_candidates(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j;
-    TOTAL_MGR *tm = sp->Best_mgr;
-    char buffer[DATA_LEN], buffer2[SMALL_DATA_LEN], *cp;
-
-    /* 各文節ごとにチェック用の feature を与える */
-    for (i = 0; i < sp->Bnst_num; i++)
-	if (tm->dpnd.check[i].num != -1) {
-	    /* 係り側 -> 係り先 */
-	    sprintf(buffer, "候補");
-	    for (j = 0; j < tm->dpnd.check[i].num; j++) {
-		/* 候補たち */
-		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
-		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
-		    fprintf(stderr, ";; Too long string <%s> (%d) in CheckCandidates.\n", 
-			    buffer, tm->dpnd.check[i].num);
-		    return;
-		}
-		strcat(buffer, buffer2);
-	    }
-	    assign_cfeature(&(sp->bnst_data[i].f), buffer);
-	}
 }
 
 /*==================================================================*/
@@ -587,7 +545,7 @@ extern float	AssignReferentThreshold;
        ※ ルール適用後に意味素を引かないのは:
            => 意味素はルールで使うかもしれないので、ルール適用前に与えておく */
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "用言:動") && 
+	if (!check_feature((sp->bnst_data+i)->f, "体言") && 
 	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
 	}
@@ -739,8 +697,8 @@ PARSED:
     SENTENCE_DATA *sp = &current_sentence_data;
 
     /* 格解析の準備 */
-    init_cf2(sp);
-    init_case_analysis();
+    init_case_analysis_cpm(sp);
+    init_case_analysis_cmm();
 
     /* ルール読み込み
        Server Mode において、読み込むルールの変更がありえるので、ここで行う */
@@ -888,7 +846,7 @@ PARSED:
     static void sig_child()
 	{
 	    int status;
-	    while(wait3(&status, WNOHANG, NULL) > 0) {}; 
+	    while(waitpid(-1, &status, WNOHANG) > 0) {}; 
 	    signal(SIGCHLD, sig_child); 
 	}
 
@@ -998,8 +956,6 @@ PARSED:
 		    if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
 		    if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
 		    if (strstr(buf, "-expand")) OptExpandP = TRUE;
-		    /* 引数とるのは困るんだなぁ..
-		       とおもいつつかなり強引... */
 		    if ((p = strstr(buf, "-i")) != NULL) {
 			p += 3;
 			while(*p != '\0' && (*p == ' ' || *p == '\t')) p++;

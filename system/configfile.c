@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     jumanrc 関連
+			   設定ファイル関連
 
                                                S.Kurohashi 1999.11.13
 
@@ -20,15 +20,6 @@ int RuleNumMax = 0;
 char *DICT[DICT_MAX];
 int knp_dict_file_already_defined = 0;
 
-/*==================================================================*/
-			void init_configfile()
-/*==================================================================*/
-{
-    int i;
-    for (i = 0; i < DICT_MAX; i++) {
-	DICT[i] = NULL;
-    }
-}
 
 /*==================================================================*/
 	    void check_duplicated(int value, char *string)
@@ -36,7 +27,7 @@ int knp_dict_file_already_defined = 0;
 {
     /* 値が 0 でないときはエラー */
     if (value) {
-	fprintf(stderr, "%s is duplicately specified in .jumanrc\n", string);
+	fprintf(stderr, "%s is duplicately specified in .knprc\n", string);
 	exit(0);	
     }
 }
@@ -78,6 +69,47 @@ int knp_dict_file_already_defined = 0;
 }
 
 /*==================================================================*/
+		   FILE *find_rc_file(char *opfile)
+/*==================================================================*/
+{
+    FILE *fp;
+
+    if (opfile) {
+	if ((fp = fopen(opfile, "r")) == NULL) {
+	    fprintf(stderr, "not found rc file <%s>.\n", opfile);
+	    exit(1);
+	}
+    }
+    else {
+	char *user_home, *filename;
+
+	if((user_home = getenv("HOME")) == NULL) {
+	    filename = NULL;
+	}
+	else {
+	    filename = (char *)malloc_data(strlen(user_home)+strlen("/.knprc")+1, "find_rc_file");
+	    sprintf(filename, "%s/.knprc" , user_home);
+	}
+
+	if (filename == NULL || (fp = fopen(filename, "r")) == NULL) {
+#ifdef KNP_RC_DEFAULT
+	    if ((fp = fopen(KNP_RC_DEFAULT, "r")) == NULL) {
+		fprintf(stderr, "not found <.knprc> and KNP_RC_DEFAULT(<%s>).\n", KNP_RC_DEFAULT);
+		exit(1);
+	    }
+#else
+	    fprintf(stderr, "not found <.knprc> in your home directory.\n");
+	    exit(1);
+#endif
+	}
+	if (filename) {
+	    free(filename);
+	}
+    }
+    return fp;
+}
+
+/*==================================================================*/
 			void read_rc(FILE *in)
 /*==================================================================*/
 {
@@ -105,9 +137,9 @@ int knp_dict_file_already_defined = 0;
 	LineNoForError = LineNo;
 	cell1 = s_read(in);
 
-	if (!strcmp(DEF_GRAM_FILE, _Atom(car(cell1)))) {
+	if (!strcmp(DEF_JUMAN_GRAM_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    } else 
 		strcpy(Jumangram_Dirname, _Atom(cell2));
@@ -115,7 +147,7 @@ int knp_dict_file_already_defined = 0;
 	/* KNP ルールディレクトリ */
 	else if (!strcmp(DEF_KNP_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else
@@ -203,7 +235,7 @@ int knp_dict_file_already_defined = 0;
 			(RULE+CurrentRuleNum)->direction = RtoL;
 		    }
 		    else {
-			fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cell2)));
+			fprintf(stderr, "%s is invalid in .knprc\n", _Atom(car(cell2)));
 			exit(0);
 		    }
 		    cell2 = cdr(cell2);
@@ -211,7 +243,7 @@ int knp_dict_file_already_defined = 0;
 
 		/* ルールのタイプが指定されていないとき */
 		if (!(RULE+CurrentRuleNum)->type) {
-		    fprintf(stderr, "Rule type for \'%s\' is not specified in .jumanrc\n", 
+		    fprintf(stderr, "Rule type for \'%s\' is not specified in .knprc\n", 
 			    (RULE+CurrentRuleNum)->file);
 		    exit(0);
 		}
@@ -227,7 +259,7 @@ int knp_dict_file_already_defined = 0;
 	/* KNP 辞書ディレクトリ */
 	else if (!strcmp(DEF_KNP_DICT_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else
@@ -263,7 +295,7 @@ int knp_dict_file_already_defined = 0;
 		    DICT[SMP2SMG_DB] = strdup(_Atom(car(car(cell1))));
 		}
 		else {
-		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cdr(car(cell1)))));
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(car(cdr(car(cell1)))));
 		    exit(0);
 		}
 		cell1 = cdr(cell1);
@@ -271,7 +303,7 @@ int knp_dict_file_already_defined = 0;
 	}
 	else if (!strcmp(DEF_CASE_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else {
@@ -288,14 +320,14 @@ int knp_dict_file_already_defined = 0;
 		    }
 		}
 		else {
-		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(cell2));
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
 		    exit(0);
 		}
 	    }
 	}
 	else if (!strcmp(DEF_PARA_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else {
@@ -318,7 +350,7 @@ int knp_dict_file_already_defined = 0;
 		    }
 		}
 		else {
-		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(cell2));
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
 		    exit(0);
 		}
 	    }
@@ -327,7 +359,7 @@ int knp_dict_file_already_defined = 0;
 	    int n = 0, cn;
 
 	    if (Null(cdr(cell1))) {
-		fprintf(stderr, "error in .jumanrc: %s\n", _Atom(car(cell1)));
+		fprintf(stderr, "error in .knprc: %s\n", _Atom(car(cell1)));
 		exit(0);
 	    }
 
@@ -335,7 +367,7 @@ int knp_dict_file_already_defined = 0;
 	    while (!Null(car(cell1))) {
 		cn = pp_kstr_to_code(_Atom(car(cell1)));
 		if (cn == END_M) {
-		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cell1)));
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(car(cell1)));
 		    exit(0);
 		}
 		DiscAddedCases[n++] = cn;
@@ -346,7 +378,7 @@ int knp_dict_file_already_defined = 0;
 #ifdef USE_SVM
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else if (ModelFile) {
@@ -364,7 +396,7 @@ int knp_dict_file_already_defined = 0;
 #endif
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc\n");
+		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else {
@@ -377,7 +409,7 @@ int knp_dict_file_already_defined = 0;
     }
 #endif
 
-    /* jumanrc にルールが指定されていない場合のデフォルトルール */
+    /* knprc にルールが指定されていない場合のデフォルトルール */
     if (CurrentRuleNum == 0) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Setting default rules ... ");
@@ -442,14 +474,6 @@ int knp_dict_file_already_defined = 0;
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* ne-juman 固有表現句 */
-	(RULE+CurrentRuleNum)->file = strdup("ne-juman");
-	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
-	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
-	(RULE+CurrentRuleNum)->type = NePhraseRuleType;
-	(RULE+CurrentRuleNum)->direction = LtoR;
-	CurrentRuleNum++;
-
 	if (OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "done.\n");
 	}
@@ -502,7 +526,7 @@ int knp_dict_file_already_defined = 0;
 #ifdef KNP_RULE
 	Knprule_Dirname = strdup(KNP_RULE);
 #else
-	fprintf(stderr, "Please specify rule directory in .jumanrc\n");
+	fprintf(stderr, "Please specify rule directory in .knprc\n");
 	exit(0);
 #endif
     }
@@ -557,7 +581,7 @@ int knp_dict_file_already_defined = 0;
 #ifdef KNP_DICT
 	Knpdict_Dirname = strdup(KNP_DICT);
 #else
-	fprintf(stderr, "Please specify dict directory in .jumanrc\n");
+	fprintf(stderr, "Please specify dict directory in .knprc\n");
 	exit(0);
 #endif
     }
@@ -588,6 +612,18 @@ int knp_dict_file_already_defined = 0;
 	}
     }
     return fullname;
+}
+
+/*==================================================================*/
+		  void init_configfile(char *opfile)
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < DICT_MAX; i++) {
+	DICT[i] = NULL;
+    }
+
+    read_rc(find_rc_file(opfile));
 }
 
 /*====================================================================
