@@ -48,12 +48,16 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 }
 
 /*==================================================================*/
-		  int comp_sm(char *cpp, char *cpd)
+	     int comp_sm(char *cpp, char *cpd, int start)
 /*==================================================================*/
 {
+    /* start からチェックする
+       普通は 1 
+       品詞ごとチェックするときは 0 */
+
     int i;
 
-    for (i = 1; i < SM_CODE_SIZE; i++) {
+    for (i = start; i < SM_CODE_SIZE; i++) {
 	if (cpp[i] == '*')
 	    return i;
 	else if (cpd[i] == '*')
@@ -65,7 +69,7 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 }
 
 /*==================================================================*/
-	      int _sm_match_score(char *cpp, char *cpd, int flag)
+	 int _sm_match_score(char *cpp, char *cpd, int flag)
 /*==================================================================*/
 {
     /*
@@ -79,10 +83,14 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
     /* 
        flag == SM_EXPAND_NE    : 固有名詞意味属性を一般名詞意味属性に変換する
        flag == SM_NO_EXPAND_NE : 固有名詞意味属性を一般名詞意味属性に変換しない
+       flag == SM_CHECK_FULL   : コードの一文字目からチェックする
      */
 
     int i, current_score, score = 0;
     char *cp;
+
+    if (flag == SM_CHECK_FULL)
+	return comp_sm(cpp, cpd, 0);
 
     if (cpp[0] == 'x') {
 	if (cpd[0] == 'x')
@@ -106,7 +114,7 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 
     /* データが固有名詞のとき */
     if (cpd[0] == '2') {
-	if (flag == SM_EXPAND_NE) {
+	if (flag == SM_EXPAND_NE && cpp[0] != '2') {
 	    if (SMP2SMGExist == FALSE) {
 		fprintf(stderr, ";;; Cannot open smp2smg table!\n");
 		return 0;
@@ -122,7 +130,7 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 			fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
 				*(cp+SM_CODE_SIZE), "_sm_match_score");
 		    else {
-			current_score = comp_sm(cpp, cp);
+			current_score = comp_sm(cpp, cp, 1);
 			if (current_score > score)
 			    score = current_score;
 		    }
@@ -130,11 +138,16 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 		return score;
 	    }
 	}
+	else if (flag == SM_NO_EXPAND_NE && cpp[0] == '2')
+	    return comp_sm(cpp, cpd, 1);
 	else
 	    return 0;
     }
+    /* 両方とも一般名詞のとき */
+    else if (cpp[0] != '2')
+	return comp_sm(cpp, cpd, 1);
     else
-	return comp_sm(cpp, cpd);
+	return 0;
 }
 
 /*==================================================================*/
