@@ -20,15 +20,17 @@
     len = len1 < len2 ? len1 : len2;
     
     pre = 0;
-    while (len > pre && *(c1+pre) == *(c2+pre)) 
+    while (len > pre && *(c1 + pre) == *(c2 + pre)) {
 	pre++;
+    }
 
     post = 0;
-    while (len > post && *(c1+len1-post-1) == *(c2+len2-post-1))
+    while (len > post && *(c1 + len1 - post - 1) == *(c2 + len2 - post - 1)) {
 	post++;
+    }
     
     match = pre > post ? pre : post;
-    match % 2 ? match -= 1 : NULL;
+    if (match % 2) match -= 1;
     return match;
 }
 
@@ -38,12 +40,22 @@
 {
     int	i;
 
+    /* 一致する付属語があれば真 */
+
     if (ptr == NULL) return 0;
-    for (i = 0; i < ptr->fuzoku_num; i++) 
-      if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
-	  (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
-	  (cp == NULL  || str_eq((ptr->fuzoku_ptr+i)->Goi, cp)))
-	return 1;
+    for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
+	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
+	    if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr + i)->Hinshi) &&
+		(Bunrui == 0 || Bunrui == (ptr->mrph_ptr + i)->Bunrui) &&
+		(cp == NULL  || str_eq((ptr->mrph_ptr + i)->Goi, cp))) {
+		return 1;
+	    }
+	}
+	/* 自立語など */
+	else {
+	    return 0;
+	}
+    }
     return 0;
 }
 
@@ -54,11 +66,19 @@ int check_fuzoku_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
     int	i;
 
     if (ptr == NULL) return 0;
-    for (i = 0; i < ptr->fuzoku_num; i++) 
-      if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
-	  (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
-	  (cp == NULL  || strstr((ptr->fuzoku_ptr+i)->Goi, cp)))
-	return 1;
+    for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
+	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
+	    if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr + i)->Hinshi) &&
+		(Bunrui == 0 || Bunrui == (ptr->mrph_ptr + i)->Bunrui) &&
+		(cp == NULL  || strstr((ptr->mrph_ptr + i)->Goi, cp))) {
+		return 1;
+	    }
+	}
+	/* 自立語など */
+	else {
+	    return 0;
+	}
+    }
     return 0;
 }
 
@@ -70,9 +90,9 @@ int check_bnst_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
 
     if (ptr == NULL) return 0;
     for (i = 0; i < ptr->mrph_num; i++) 
-      if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr+i)->Hinshi) &&
-	  (Bunrui == 0 || Bunrui == (ptr->mrph_ptr+i)->Bunrui) &&
-	  (cp == NULL  || strstr((ptr->mrph_ptr+i)->Goi, cp)))
+      if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr + i)->Hinshi) &&
+	  (Bunrui == 0 || Bunrui == (ptr->mrph_ptr + i)->Bunrui) &&
+	  (cp == NULL  || strstr((ptr->mrph_ptr + i)->Goi, cp)))
 	return 1;
     return 0;
 }
@@ -81,8 +101,8 @@ int check_bnst_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
 int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 /*==================================================================*/
 {
-    if ((str_eq(ptr1->Jiritu_Go, cp) && check_fuzoku(ptr2, 0, 0, cp)) ||
-	(str_eq(ptr2->Jiritu_Go, cp) && check_fuzoku(ptr1, 0, 0, cp)))
+    if ((str_eq(ptr1->head_ptr->Goi, cp) && check_fuzoku(ptr2, 0, 0, cp)) || 
+	(str_eq(ptr2->head_ptr->Goi, cp) && check_fuzoku(ptr1, 0, 0, cp)))
 	return 1;
     else 
 	return 0;
@@ -168,7 +188,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     char *level1, *level2;
 
     level1 = cp;
-    level2 = (char *)check_feature(ptr2->f, "レベル");
+    level2 = check_feature(ptr2->f, "レベル");
 
     if (level1 == NULL) return TRUE;		/* なし:何でも -> T */
     else if (level2 == NULL) return FALSE;	/* 何でも:なし -> F */
@@ -306,10 +326,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		point += 2;
 		for (i = 0; i < ptr1->mrph_num; i++) 
 		    for (j = 0; j < ptr2->mrph_num; j++) 
-			if (str_eq((ptr1->mrph_ptr+i)->Goi, 
-				   (ptr2->mrph_ptr+j)->Goi) &&
-			    check_feature((ptr1->mrph_ptr+i)->f, "カウンタ") &&
-			    check_feature((ptr2->mrph_ptr+j)->f, "カウンタ")) {
+			if (str_eq((ptr1->mrph_ptr + i)->Goi, 
+				   (ptr2->mrph_ptr + j)->Goi) &&
+			    check_feature((ptr1->mrph_ptr + i)->f, "カウンタ") &&
+			    check_feature((ptr2->mrph_ptr + j)->f, "カウンタ")) {
 			    point += 5;
 			    goto Counter_check;
 			}
@@ -335,6 +355,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 	    /* 自立語の一致 */
 	
+	    /* if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) { */
 	    if (str_eq(ptr1->Jiritu_Go, ptr2->Jiritu_Go)) {
 		point += 10;
 		
@@ -359,7 +380,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		    mt_point = 0;
 		    if (check_feature(ptr1->f, "体言") &&
 			check_feature(ptr2->f, "体言"))
-			part_mt_point = str_part_cmp(ptr1->Jiritu_Go, ptr2->Jiritu_Go);
+			part_mt_point = str_part_cmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi);
 		}
 
 		/* シソーラスと部分一致の得点は最大10 */
@@ -371,13 +392,34 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    }
 	}
 
-	/* 付属語の一致 */
-	
-	for (i = 0; i < ptr1->fuzoku_num; i++) 
-	    for (j = 0; j < ptr2->fuzoku_num; j++) 
-	      if (str_eq((ptr1->fuzoku_ptr+i)->Goi, 
-			 (ptr2->fuzoku_ptr+j)->Goi))
-		  point += 2; /* 3 */
+	/* 主辞形態素より後, 接尾辞以外の付属語の一致 */
+
+	for (i = ptr1->mrph_num - 1; i >= 0 ; i--) {
+	    if (check_feature((ptr1->mrph_ptr + i)->f, "付属") && 
+		ptr1->mrph_ptr + i > ptr1->head_ptr) {
+		if (!strcmp(Class[(ptr1->mrph_ptr + i)->Hinshi][0].id, "接尾辞")) {
+		    continue;
+		}
+		for (j = ptr2->mrph_num - 1; j >= 0 ; j--) {
+		    if (check_feature((ptr2->mrph_ptr + j)->f, "付属") && 
+			ptr2->mrph_ptr + j > ptr2->head_ptr) {
+			if (!strcmp(Class[(ptr2->mrph_ptr + j)->Hinshi][0].id, "接尾辞")) {
+			    continue;
+			}
+			if (str_eq((ptr1->mrph_ptr + i)->Goi, 
+				   (ptr2->mrph_ptr + j)->Goi)) {
+			    point += 2; /* 3 */
+			}
+		    }
+		    else {
+			break;
+		    }
+		}
+	    }
+	    else {
+		break;
+	    }
+	}
 
 	if ((check_feature(ptr1->f, "〜れる") &&
 	     check_feature(ptr2->f, "〜られる")) ||

@@ -12,9 +12,7 @@
 				MACRO
 ====================================================================*/
 
-#define debug(s, d)    fprintf(stderr, "%s %d\n", s, d)
 #define str_eq(c1, c2) ( ! strcmp(c1, c2) )
-#define sizeof_char(cp) (sizeof(cp) / sizeof(char *))
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 
 #ifdef _WIN32
@@ -25,9 +23,9 @@
 				LENGTH
 ====================================================================*/
 #define	MRPH_MAX	200
-
 #define	BNST_MAX	64
 #define	BNST_LENGTH_MAX	256
+#define	TAG_MAX		200
 #define	PARA_MAX	32
 #define PARA_PART_MAX	32
 #define WORD_LEN_MAX	128
@@ -80,6 +78,7 @@
 
 #define DATA_LEN	5120
 #define SMALL_DATA_LEN	128
+#define SMALL_DATA_LEN2	256
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
@@ -126,10 +125,6 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define PARA_KEY_P          2	/* 用言の並列 */
 #define PARA_KEY_A          4	/* 体言か用言か分からない並列 */
 #define PARA_KEY_I          3	/* GAPのある並列 ？？ */
-
-#define BNST_RULE_INDP	1
-#define BNST_RULE_SUFX	2
-#define BNST_RULE_SKIP	3
 
 #define PRINT_PARA	0
 #define PRINT_DPND	1
@@ -421,6 +416,7 @@ typedef struct _RuleVector {
 #define NePhraseRuleType 8
 #define NePhraseAuxRuleType 9
 #define ContextRuleType 10
+#define TagRuleType 11
 
 /* 辞書の最大数 */
 #define DICT_MAX	12
@@ -452,7 +448,6 @@ typedef struct {
     int 	Katuyou_Kata;
     int  	Katuyou_Kei;
     char	Imi[IMI_MAX];
-    char	type;
     FEATUREptr	f;
     char 	*SM;				/* 追加 */
 } MRPH_DATA;
@@ -462,14 +457,39 @@ typedef struct cpm_def *CPM_ptr;
 /* 文節データ */
 typedef struct tnode_b *Treeptr_B;
 typedef struct tnode_b {
-  /* 番号 */
+    int		type;
+    /* 番号 */
     int 	num;
-  /* 形態素データ */
-    int		mrph_num,   settou_num,  jiritu_num,  fuzoku_num;
-    MRPH_DATA 	*mrph_ptr,  *settou_ptr, *jiritu_ptr, *fuzoku_ptr;
-  /* 自立語データ */
-    char 	Jiritu_Go[WORD_LEN_MAX];
-  /* 並列構造 */
+    /* 形態素データ */
+    int		mrph_num;
+    MRPH_DATA 	*mrph_ptr, *head_ptr;
+    /* 意味情報 */
+    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
+    int		BGH_num;
+    char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
+    int         SM_num;
+    /* 格解析データ */
+    int 	voice;
+    int 	cf_num;		/* その用言に対する格フレームの数 */
+    CF_ptr 	cf_ptr;		/* 格フレーム管理配列(Case_frame_array)
+				   でのその用言の格フレームの位置 */
+    CPM_ptr     cpm_ptr;	/* 格解析の結果の保持 */
+    /* feature */
+    FEATUREptr	f;
+    /* 木構造ポインタ */
+    Treeptr_B 	parent;
+    Treeptr_B 	child[PARA_PART_MAX];
+    struct tnode_b *pred_b_ptr;
+    /* tree表示用 */
+    int  	length;
+    int 	space;
+    /* 係り受け情報 (処理が確定後コピー) */
+    int		dpnd_head;	/* 係り先の文節番号 */
+    char 	dpnd_type;	/* 係りのタイプ : D, P, I, A */
+    int		dpnd_dflt;	/* defaultの係り先文節番号 */
+    /* 表層格データ */
+    char 	SCASE_code[SCASE_CODE_SIZE];	/* 表層格 */
+    /* 並列構造 */
     int 	para_num;	/* 対応する並列構造データ番号 */
     char   	para_key_type;  /* 名|述|？ featureからコピー */
     char	para_top_p;	/* TRUE -> PARA */
@@ -478,38 +498,12 @@ typedef struct tnode_b {
 				   dpnd_typeなどとは微妙に異なる */
     char	to_para_p;	/* コピー */
     int 	sp_level;	/* 並列構造に対するバリア */
-  /* 意味情報 */
-    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
-    int		BGH_num;
-    char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
-    int         SM_num;
-  /* 用言データ */
-    char 	SCASE_code[SCASE_CODE_SIZE];	/* 表層格 */
-    int 	voice;
-    int 	cf_num;		/* その用言に対する格フレームの数 */
-    CF_ptr 	cf_ptr;		/* 格フレーム管理配列(Case_frame_array)
-				   でのその用言の格フレームの位置 */
-    CPM_ptr     cpm_ptr;	/* 格解析の結果の保持 */
-  /* 係り受け情報 (処理が確定後コピー) */
-    int		dpnd_head;	/* 係り先の文節番号 */
-    char 	dpnd_type;	/* 係りのタイプ : D, P, I, A */
-    int		dpnd_dflt;	/* defaultの係り先文節番号 */
-    char 	dpnd_int[32];	/* 文節係り先内部の位置，今は未処理 */
-    char 	dpnd_ext[32];	/* 他の文節係り先可能性，今は未処理 */
-  /* ETC. */
-    int  	length;
-    int 	space;
-  /* 木構造ポインタ */
-    Treeptr_B 	parent;
-    Treeptr_B 	child[PARA_PART_MAX];
 
-    FEATUREptr	f;
+    char 	Jiritu_Go[BNST_LENGTH_MAX];
     DpndRule	*dpnd_rule;
 
-    int		internal_num;
-    int		internal_max;
-    struct tnode_b *internal;
-    struct tnode_b *pred_b_ptr;
+    struct tnode_t *tag_ptr;
+    int		tag_num;
 } BNST_DATA;
 
 /* 並列構造データ */
@@ -560,6 +554,52 @@ typedef struct {
 /*====================================================================
 				格解析
 ====================================================================*/
+
+typedef struct tnode_t {
+    int		type;
+    /* 番号 */
+    int 	num;
+    /* 形態素データ */
+    int		mrph_num;
+    MRPH_DATA 	*mrph_ptr, *head_ptr;
+    /* 意味情報 */
+    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
+    int		BGH_num;
+    char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
+    int         SM_num;
+    /* 格解析データ */
+    int 	voice;
+    int 	cf_num;
+    CF_ptr 	cf_ptr;
+    CPM_ptr     cpm_ptr;
+    /* feature */
+    FEATUREptr	f;
+    /* 木構造ポインタ */
+    struct tnode_t	*parent;
+    struct tnode_t	*child[PARA_PART_MAX];
+    struct tnode_t	*pred_b_ptr;
+    /* tree表示用 */
+    int  	length;
+    int 	space;
+    /* 係り受け情報 */
+    int		dpnd_head;
+    char 	dpnd_type;
+    int		dpnd_dflt;	/* いらない? */
+    /* 表層格データ */
+    char 	SCASE_code[SCASE_CODE_SIZE];	/* dummy */
+    /* 並列構造 */
+    int 	para_num;
+    char   	para_key_type;
+    char	para_top_p;
+    char	para_type;
+    char	to_para_p;
+    /* 所属する文節番号 */
+    int 	bnum;
+    int		inum;
+    /* 形態素データ */
+    int		settou_num, jiritu_num, fuzoku_num;
+    MRPH_DATA 	*settou_ptr, *jiritu_ptr, *fuzoku_ptr;
+} TAG_DATA;
 
 #define CASE_MAX_NUM	20
 #define CASE_TYPE_NUM	50
@@ -632,12 +672,11 @@ typedef struct cf_def {
     char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];
-    char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
     int		etcflag;				/* 格フレームが OR かどうか */
     char	*feature;
     int		weight[CF_ELEMENT_MAX];
     int		samecase[CF_ELEMENT_MAX][2];
-    BNST_DATA	*pred_b_ptr;
+    TAG_DATA	*pred_b_ptr;
 } CASE_FRAME;
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
@@ -664,8 +703,8 @@ typedef struct {
 /* 文と(用言に対する複数の可能な)格フレームの対応付け結果の記録 */
 typedef struct cpm_def {
     CASE_FRAME 	cf;				/* 入力文の格構造 */
-    BNST_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
-    BNST_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
+    TAG_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
+    TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
     int 	score;				/* スコア最大値(=cmm[0].score) */
     int 	result_num;			/* 記憶する格フレーム数 */
@@ -697,10 +736,13 @@ typedef struct sentence {
     int			Bnst_num;
     int			New_Bnst_num;
     int			Max_New_Bnst_num;
+    int			Tag_num;
+    int			New_Tag_num;
     int			Para_M_num;	/* 並列管理マネージャ数 */
     int			Para_num;	/* 並列構造数 */
     MRPH_DATA		*mrph_data;
     BNST_DATA	 	*bnst_data;
+    TAG_DATA	 	*tag_data;
     PARA_DATA		*para_data;
     PARA_MANAGER	*para_manager;
     CF_PRED_MGR		*cpm;

@@ -89,6 +89,40 @@
 }
 
 /*==================================================================*/
+	     void print_tags(SENTENCE_DATA *sp, int flag)
+/*==================================================================*/
+{
+    int		i, j;
+    MRPH_DATA	*m_ptr;
+    TAG_DATA	*t_ptr;
+
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (flag == 1) {
+	    fprintf(Outfp, "%c %d%c", t_ptr->bnum < 0 ? '+' : '*', 
+		    t_ptr->dpnd_head, t_ptr->dpnd_type);
+	    if (t_ptr->f) {
+		fputc(' ', Outfp);
+		print_feature(t_ptr->f, Outfp);
+	    }
+	    fputc('\n', Outfp);
+	}
+	else {
+	    fprintf(Outfp, "%c\n", t_ptr->bnum < 0 ? '+' : '*');
+	}
+
+	for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
+	    print_mrph(m_ptr);
+	    if (m_ptr->f) {
+		fputc(' ', Outfp);
+		print_feature(m_ptr->f, Outfp);
+	    }
+	    fputc('\n', Outfp);
+	}
+    }
+    fputs("EOS\n", Outfp);
+}
+
+/*==================================================================*/
 	    void print_mrphs(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
@@ -103,13 +137,6 @@
 	    if (b_ptr->f) {
 		fprintf(Outfp, " ");
 		print_feature(b_ptr->f, Outfp);
-	    }
-
-	    /* 内部文節を格解析した結果のfeatureを出力 */
-	    for (j = 0; j < b_ptr->internal_num; j++) {
-		if (cp = check_feature((b_ptr->internal+j)->f, "格解析結果")) {
-		    print_one_feature(cp, Outfp);
-		}
 	    }
 	    fprintf(Outfp, "\n");
 	}
@@ -131,7 +158,7 @@
 }
 
 /*==================================================================*/
-		   void _print_bnst(BNST_DATA *ptr)
+		   void _print_bnst(TAG_DATA *ptr)
 /*==================================================================*/
 {
     int i;
@@ -257,8 +284,7 @@
 
 	/* 係り受け情報の表示 (追加:97/10/29) */
 
-	fprintf(Outfp, "(type:%c int:%s ext:%s) ",
-		ptr->dpnd_type, ptr->dpnd_int, ptr->dpnd_ext);
+	fprintf(Outfp, "(type:%c) ", ptr->dpnd_type);
 
 	fputc('(', Outfp);
 	for (i=0, m_ptr=ptr->mrph_ptr; i < ptr->mrph_num; i++, m_ptr++) {
@@ -830,8 +856,16 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     if (OptExpress == OPT_TREE || OptExpress == OPT_TREEF) {
 	max_width = 0;
-	calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
-	show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
+
+	if (OptAnalysis == OPT_CASE ||
+	    OptAnalysis == OPT_CASE2) {
+	    calc_tree_width((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1);
+	    show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1, NULL, 0);
+	}
+	else {
+	    calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
+	    show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
+	}
     }
     else if (OptExpress == OPT_SEXP) {
 	show_sexp((sp->bnst_data + sp->Bnst_num -1), 0, 0);
@@ -857,23 +891,17 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	ptr = &sp->bnst_data[i];
 	
 	b_buffer[0] = '\0';
-	if (ptr->settou_ptr) {
-	    for (j = 0; j < ptr->settou_num; j++ ) {
-		strcat(b_buffer, (ptr->settou_ptr + j)->Goi2);
-		strcat(b_buffer, " ");
-	    } 
-	    strcat(b_buffer, ": ");
-	}
-	for (j = 0; j < ptr->jiritu_num; j++ ) {
-	    strcat(b_buffer, (ptr->jiritu_ptr + j)->Goi2);
-	    strcat(b_buffer, " ");
-	}
-	if (ptr->fuzoku_ptr) {
-	    strcat(b_buffer, ": ");
-	    for (j = 0; j < ptr->fuzoku_num; j++ ) {
-		strcat(b_buffer, (ptr->fuzoku_ptr + j)->Goi2);
-		strcat(b_buffer, " ");
+
+	for (j = 0; j < ptr->mrph_num; j++) {
+	    if (ptr->mrph_ptr + j == ptr->head_ptr) {
+		strcat(b_buffer, "[");
+		strcat(b_buffer, (ptr->mrph_ptr + j)->Goi2);
+		strcat(b_buffer, "]");
 	    }
+	    else {
+		strcat(b_buffer, (ptr->mrph_ptr + j)->Goi2);
+	    }
+	    strcat(b_buffer, " ");
 	}
 	fprintf(Outfp, "%-20s", b_buffer);
 
@@ -972,13 +1000,23 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
-	print_mrphs(sp, 1);
+	if (OptAnalysis == OPT_CASE || 
+	    OptAnalysis == OPT_CASE2) {
+	    print_tags(sp, 1);
+	}
+	else {
+	    print_mrphs(sp, 1);
+	}
     }
     else if (OptExpress == OPT_PA) {
 	print_pa_structure(sp);
     }
     else {
 	make_dpnd_tree(sp);
+	if (OptAnalysis == OPT_CASE || 
+	    OptAnalysis == OPT_CASE2) {
+	    bnst_to_tag_tree(sp);
+	}
 	print_kakari(sp);
     }
 

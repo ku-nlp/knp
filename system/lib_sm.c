@@ -364,7 +364,7 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
-		  void merge_smp2smg(BNST_DATA *bp)
+		   void merge_smp2smg(BNST_DATA *bp)
 /*==================================================================*/
 {
     int i;
@@ -780,9 +780,9 @@ char  		cont_str[DBM_CON_MAX];
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
 	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
 	    /* 固有→一般変換しておく */
-	    merge_smp2smg(cpm_ptr->elem_b_ptr[i]);
+	    merge_smp2smg((BNST_DATA *)cpm_ptr->elem_b_ptr[i]);
 	    /* <場所>のみに限定する */
-	    sm_fix(cpm_ptr->elem_b_ptr[i], "101*********20**********");
+	    sm_fix((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "101*********20**********");
 	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Ｔ固有一般展開禁止");
 	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "非主体");
 	    break;
@@ -819,7 +819,7 @@ char  		cont_str[DBM_CON_MAX];
 		 (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
 		  (sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
 		   sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))))) {
-		assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
+		assign_sm((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "主体");
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
 	    }
 	    break;

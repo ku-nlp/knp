@@ -22,7 +22,22 @@
 	sp->bnst_data[i].para_type = PARA_NIL;
 	sp->bnst_data[i].to_para_p = FALSE;
     }
-}   
+}
+
+/*==================================================================*/
+	    void init_tag_tree_property(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < TAG_MAX; i++) {
+	sp->tag_data[i].parent = NULL;
+	sp->tag_data[i].child[0] = NULL;
+	sp->tag_data[i].para_top_p = FALSE;
+	sp->tag_data[i].para_type = PARA_NIL;
+	sp->tag_data[i].to_para_p = FALSE;
+    }
+}
 
 /*==================================================================*/
 BNST_DATA *t_add_node(BNST_DATA *parent, BNST_DATA *child, int pos)
@@ -172,7 +187,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     }
 }
 
-/*==================================================================*/;
+/*==================================================================*/
 void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
@@ -375,6 +390,106 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     incomplete_para_expand(sp->bnst_data + sp->Bnst_num - 1);*/	/* 部分並列の展開 */
 
     return TRUE;
+}
+
+/*==================================================================*/
+	  void para_info_to_tag(BNST_DATA *bp, TAG_DATA *tp)
+/*==================================================================*/
+{
+    tp->para_num = bp->para_num;
+    tp->para_key_type = bp->para_key_type;
+    tp->para_top_p = bp->para_top_p;
+    tp->para_type = bp->para_type;
+    tp->to_para_p = bp->to_para_p;
+}
+
+/*==================================================================*/
+	       int bnst_to_tag_tree(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    BNST_DATA *bp;
+    TAG_DATA *tp;
+
+    /* 文節の木構造からタグ単位の木構造へ変換 */
+
+    init_tag_tree_property(sp);
+    sp->New_Tag_num = 0;
+
+    /* new bnst -> tag */
+    for (i = 0; i < sp->New_Bnst_num; i++) {
+	bp = sp->bnst_data + sp->Bnst_num + i;
+
+	/* new領域にcopy */
+	*(sp->tag_data + sp->Tag_num + sp->New_Tag_num) = *(bp->tag_ptr + bp->tag_num - 1);
+	sp->New_Tag_num++;
+
+	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1;
+
+	para_info_to_tag(bp, tp);
+	tp->child[0] = NULL;
+
+	/* <PARA>のときはheadのみ */
+	if (bp->para_top_p == TRUE) {
+	    bp->tag_ptr = tp;
+	    bp->tag_num = 1;
+	}
+	else {
+	    if (bp->tag_num > 1) {
+		(bp->tag_ptr + bp->tag_num - 2)->parent = tp;
+		t_add_node((BNST_DATA *)tp, 
+			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 2), -1);
+
+		/* 文節内 */
+		for (j = 0; j < bp->tag_num - 2; j++) {
+		    (bp->tag_ptr + j)->parent = bp->tag_ptr + j + 1;
+		    t_add_node((BNST_DATA *)(bp->tag_ptr + j + 1), 
+			       (BNST_DATA *)(bp->tag_ptr + j), -1);
+		}
+		/* bp->tag_ptr の最後のひとつは間違っている (<PARA>の方) */
+	    }
+	    else {
+		bp->tag_ptr = tp;
+	    }
+	}
+    }
+
+    sp->New_Tag_num = 0;
+
+    /* 親と子のリンクつけ (new) */
+    for (i = 0; i < sp->New_Bnst_num; i++) {
+	bp = sp->bnst_data + sp->Bnst_num + i;
+	sp->New_Tag_num++;
+	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1;
+
+	tp->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;	/* <PARA>へ */
+	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
+		   (BNST_DATA *)tp, -1);
+    }
+
+    /* orig */
+    for (i = sp->Bnst_num - 1; i >= 0; i--) {
+	bp = sp->bnst_data + i;
+
+	para_info_to_tag(bp, bp->tag_ptr + bp->tag_num - 1);
+
+	if (i == sp->Bnst_num - 1) continue;
+
+	/* <PARA>のときはheadのみだが、tag_ptr, tag_numの変更はしない */
+	if (bp->para_top_p == FALSE) {
+	    /* 文節内 */
+	    for (j = 0; j < bp->tag_num - 1; j++) {
+		(bp->tag_ptr + j)->parent = bp->tag_ptr + j + 1;
+		t_add_node((BNST_DATA *)(bp->tag_ptr + j + 1), 
+			   (BNST_DATA *)(bp->tag_ptr + j), -1);
+	    }
+	}
+
+	/* 親と子 */
+	(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;
+	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
+		   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+    }
 }
 
 /*====================================================================

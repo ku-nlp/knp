@@ -397,7 +397,10 @@
 		assign_sm((BNST_DATA *)ptr, (*fpp2)->cp + strlen("&意味素付与:"));
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&複合辞格解析", strlen("&複合辞格解析"))) {
-		assign_cfeature(&(((BNST_DATA *)ptr)->f), make_fukugoji_string((BNST_DATA *)ptr+1));
+		cp = make_fukugoji_string((TAG_DATA *)ptr + 1);
+		if (cp) {
+		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp);
+		}
 	    }
 	    /*
 	    else if (!strncmp((*fpp2)->cp, "&辞書", strlen("&辞書"))) {
@@ -933,6 +936,8 @@
     /* &自立語一致 : 自立語が同じかどうか */
     
     else if (!strncmp(rule, "&自立語一致", strlen("&自立語一致"))) {
+	/* if (!strcmp(((BNST_DATA *)ptr1)->head_ptr->Goi, 
+	   ((BNST_DATA *)ptr2)->head_ptr->Goi)) { */
 	if (!strcmp(((BNST_DATA *)ptr1)->Jiritu_Go, 
 		    ((BNST_DATA *)ptr2)->Jiritu_Go)) {
 	    return TRUE;

@@ -181,6 +181,10 @@ int knp_dict_file_already_defined = 0;
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = MorphRuleType;
 		    }
+		    else if (!strcmp(_Atom(car(cell2)), "タグ単位")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
+			(RULE+CurrentRuleNum)->type = TagRuleType;
+		    }
 		    else if (!strcmp(_Atom(car(cell2)), "文節")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = BnstRuleType;

@@ -80,15 +80,15 @@ int		ScaseDicExist;
 		 void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, last, stop, i, overflow_flag = 0;
-    char *cp, *ans, *anscp, str_buffer[2*BNST_LENGTH_MAX], *vtype, *predicate, voice[3];
+    int strt, end, i;
+    char *cp, *ans, *anscp, str_buffer[2 * BNST_LENGTH_MAX], *vtype, *predicate, voice[3];
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
     for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
     /* init_bnst でもしている */
 
-    if (ScaseDicExist == TRUE &&
+    if (ScaseDicExist == TRUE && 
 	(vtype = check_feature(ptr->f, "用言")) && 
 	strcmp(vtype, "用言:判")) {
 	vtype += 5;
@@ -104,65 +104,55 @@ int		ScaseDicExist;
 	    voice[0] = '\0';
 	}
 
-	/* まず付属語を固定，自立語を減らしていく */
+	/* まず付属語を固定，自立語を減らしていく
+	   ★ case_ipal と同じにする */
 
-	for (stop = 0; stop < ptr->fuzoku_num; stop++) 
-	    if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助詞"))
-		break;
+	end = ptr->head_ptr - ptr->mrph_ptr;
 
-	for (last = stop; last >= 0; last--) {
-	    end = ptr->settou_num + ptr->jiritu_num + last;
-	    for (strt=0 ; strt<(ptr->settou_num + ptr->jiritu_num); strt++) {
-		*str_buffer = '\0';
-		for (i = strt; i < end; i++) {
-		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi);
-		    if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
-			overflow_flag = 1;
-			overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_scase_code");
-			break;
-		    }
-		}
-
-		if (overflow_flag) {
-		    overflow_flag = 0;
+	for (strt = 0 ; strt <= end; strt++) {
+	    *str_buffer = '\0';
+	    for (i = strt; i <= end; i++) {
+		if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi) + 2 > BNST_LENGTH_MAX) {
+		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_scase_code");
 		    return;
 		}
+		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi);
+	    }
 
-		/* 用言タイプを含まない辞書の場合 */
-		ans = get_scase(str_buffer);
-		if (ans == NULL) {
-		    /* 用言タイプを含む辞書の場合 */
-		    predicate = strdup(str_buffer);
-		    if (ptr->num > 0) {
-			cp = check_feature((ptr-1)->f, "係");
-			if (cp && (ptr-1)->jiritu_ptr != NULL) {
-			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1))->Goi, cp+3, predicate, vtype);
-			    if (voice[0]) strcat(str_buffer, voice);
-			    ans = get_scase(str_buffer);
-			}
-		    }
-		    if (ans == NULL) {
-			sprintf(str_buffer, "%s:%s", predicate, vtype);
+	    /* 用言タイプを含まない辞書の場合 */
+	    ans = get_scase(str_buffer);
+	    if (ans == NULL) {
+		/* 用言タイプを含む辞書の場合 */
+		predicate = strdup(str_buffer);
+		if (ptr->num > 0) {
+		    cp = check_feature((ptr - 1)->f, "係");
+		    if (cp) {
+			sprintf(str_buffer, "%s:%s:%s:%s", (ptr - 1)->head_ptr->Goi, cp + 3, predicate, vtype);
 			if (voice[0]) strcat(str_buffer, voice);
 			ans = get_scase(str_buffer);
 		    }
-		    /* DEBUG 表示 */
-		    if (OptDisplay == OPT_DEBUG) {
-			if (ans != NULL) {
-			    char print_buffer[2*BNST_LENGTH_MAX];
-			    sprintf(print_buffer, "SCASEUSE:%s", str_buffer);
-			    assign_cfeature(&(ptr->f), print_buffer);
-			}
+		}
+		if (ans == NULL) {
+		    sprintf(str_buffer, "%s:%s", predicate, vtype);
+		    if (voice[0]) strcat(str_buffer, voice);
+		    ans = get_scase(str_buffer);
+		}
+		/* DEBUG 表示 */
+		if (OptDisplay == OPT_DEBUG) {
+		    if (ans != NULL) {
+			char print_buffer[2 * BNST_LENGTH_MAX];
+			sprintf(print_buffer, "SCASEUSE:%s", str_buffer);
+			assign_cfeature(&(ptr->f), print_buffer);
 		    }
-		    free(predicate);
 		}
-		if (ans != NULL) {
-		    cp = ptr->SCASE_code;
-		    anscp = ans;
-		    for (i = 0; i < SCASE_CODE_SIZE; i++) *cp++ = *anscp++;
-		    free(ans);
-		    goto Match;
-		}
+		free(predicate);
+	    }
+	    if (ans != NULL) {
+		cp = ptr->SCASE_code;
+		anscp = ans;
+		for (i = 0; i < SCASE_CODE_SIZE; i++) *cp++ = *anscp++;
+		free(ans);
+		goto Match;
 	    }
 	}
     }

@@ -36,34 +36,35 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 			 ""};
 
 /*==================================================================*/
-	     char *make_fukugoji_string(BNST_DATA *b_ptr)
+	     char *make_fukugoji_string(TAG_DATA *b_ptr)
 /*==================================================================*/
 {
     int i, fc;
     char buf[SMALL_DATA_LEN];
+    TAG_DATA *pre_b_ptr = b_ptr - 1;
 
     /* 付属語がないとき */
-    if (b_ptr->num < 1 || (b_ptr-1)->fuzoku_num == 0) {
+    if (b_ptr->num < 1 || pre_b_ptr->fuzoku_num == 0) {
 	return NULL;
     }
 
     buf[0] = '\0';
 
     /* 前の文節の助詞 */
-    strcat(buf, ((b_ptr-1)->fuzoku_ptr+(b_ptr-1)->fuzoku_num-1)->Goi);
+    strcat(buf, (pre_b_ptr->fuzoku_ptr + pre_b_ptr->fuzoku_num - 1)->Goi);
 
     /* この文節 */
     for (i = 0; i < b_ptr->jiritu_num; i++) {
-	if (!strcmp(Class[(b_ptr->jiritu_ptr+i)->Hinshi][0].id, "特殊")) /* 特殊以外 */
+	if (!strcmp(Class[(b_ptr->jiritu_ptr + i)->Hinshi][0].id, "特殊")) /* 特殊以外 */
 	    continue;
 	strcat(buf, 
-	       (b_ptr->jiritu_ptr+i)->Goi);
+	       (b_ptr->jiritu_ptr + i)->Goi);
     }
 
     /* 原形の読みに統一 */
-    for (i = 0; *(FukugojiTable[i]); i+=2) {
+    for (i = 0; *(FukugojiTable[i]); i += 2) {
 	if (str_eq(buf, FukugojiTable[i])) {
-	    strcpy(buf, FukugojiTable[i+1]);
+	    strcpy(buf, FukugojiTable[i + 1]);
 	    break;
 	}
     }
@@ -77,7 +78,7 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 }
 
 /*==================================================================*/
-int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, 
+int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, 
 				  int *pp_num, char *fcp)
 /*==================================================================*/
 {
@@ -108,7 +109,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr,
 }
 
 /*==================================================================*/
-BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag)
+TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 /*==================================================================*/
 {
     int pp_num = 0, cc;
@@ -215,7 +216,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 }
 
 /*==================================================================*/
-   void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+   void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr)
 /*==================================================================*/
 {
     int sm_num = 0, size;
@@ -277,7 +278,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 }
 
 /*==================================================================*/
-   void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+   void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr)
 /*==================================================================*/
 {
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
@@ -288,15 +289,16 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
     else if (Thesaurus == USE_NTT) {
 	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->SM_code);
     }
-    strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->Jiritu_Go);
+
+    strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->head_ptr->Goi);
 }
 
 /*==================================================================*/
     int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
-    BNST_DATA *cel_b_ptr;
+    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
+    TAG_DATA *cel_b_ptr;
     int i, child_num, first, closest, orig_child_num = -1;
     char *vtype = NULL;
 
@@ -359,7 +361,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		cpm_ptr->cf.element_num ++;
+		cpm_ptr->cf.element_num++;
 	    }
 	}
 	/* 用言が並列のとき */
@@ -387,7 +389,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		cpm_ptr->cf.element_num ++;
+		cpm_ptr->cf.element_num++;
 	    }
 	}
     }
@@ -395,44 +397,41 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
     for (child_num = 0; b_ptr->child[child_num]; child_num++);
 
     /* 自分(用言)が複合名詞内 */
-    if (b_ptr->num == -1) {
-	BNST_DATA *t_ptr;
+    if (b_ptr->inum > 0) {
+	TAG_DATA *t_ptr;
 
 	/* 自分(用言)が複合名詞内のときの親 : 被連体修飾詞扱い */
-	if (b_ptr->parent->num == -1) {
-	    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
-	    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
-	    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
-	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
-	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-	    cpm_ptr->cf.element_num ++;
+	_make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
+	_make_data_cframe_sm(cpm_ptr, b_ptr->parent);
+	_make_data_cframe_ex(cpm_ptr, b_ptr->parent);
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
+	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	cpm_ptr->cf.element_num++;
 
-	    t_ptr = b_ptr->parent;
-	    while (t_ptr->num == -1) {
-		if (t_ptr->cpm_ptr) { /* 別の格解析対象 */
-		    t_ptr = NULL;
-		    break;
-		}
-		t_ptr = t_ptr->parent;
+	t_ptr = b_ptr->parent;
+	while (1) {
+	    if (t_ptr->cpm_ptr) { /* 別の格解析対象 */
+		t_ptr = NULL;
+		break;
 	    }
-	}
-	else {
-	    t_ptr = b_ptr->parent;
+	    if (t_ptr->inum == 0) {
+		break;
+	    }
+	    t_ptr = t_ptr->parent;
 	}
 
-	/* ... n2 n1 = n 
-	   複合名詞内の最初の用言(格解析対象)に対して nの子供をとってくる */
+	/* ... n3 n2 n1
+	   複合名詞内の(うしろからみて)最初の用言(格解析対象)に対して
+	   n1の子供をとってくる */
 	if (t_ptr) {
-	    /* 並列の場合 */
-	    if (t_ptr->para_top_p == TRUE) {
-		t_ptr = t_ptr->child[0];
-	    }
 	    orig_child_num = child_num;
 	    for (i = 0; t_ptr->child[i]; i++) {
-		b_ptr->child[orig_child_num+i] = t_ptr->child[i];
-		child_num++;
+		/* 文節内部以外 */
+		if (t_ptr->child[i]->inum == 0) {
+		    b_ptr->child[child_num++] = t_ptr->child[i];
+		}
 	    }
 	}
     }
@@ -446,18 +445,18 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    if (check_feature(cel_b_ptr->f, "数量") && 
 		(check_feature(cel_b_ptr->f, "係:ガ格") || check_feature(cel_b_ptr->f, "係:ヲ格")) && 
 		cel_b_ptr->num > 0 && 
-		(check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "係:隣接") || 
-		 check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "係:同格未格")) && 
-		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "数量") && 
-		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "時間")) {
-		_make_data_cframe_sm(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
-		_make_data_cframe_ex(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
-		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->bnst_data+cel_b_ptr->num-1;
+		(check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:隣接") || 
+		 check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:同格未格")) && 
+		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "数量") && 
+		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "時間")) {
+		_make_data_cframe_sm(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
+		_make_data_cframe_ex(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
+		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->tag_data + cel_b_ptr->num - 1;
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 	    }
 	    else {
 		/* 直前格のマーク (厳しい版: 完全に直前のみ) */
-		if (i == 0 && b_ptr->num == b_ptr->child[i]->num+1 && 
+		if (i == 0 && b_ptr->num == b_ptr->child[i]->num + 1 && 
 		    !check_feature(b_ptr->f, "Ｔ用言同文節")) {
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
 		}
@@ -472,7 +471,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    /* 格が明示されていないことをマーク */
 	    if (check_feature(cel_b_ptr->f, "係:未格") || 
 		check_feature(cel_b_ptr->f, "係:ノ格") || 
-		cel_b_ptr->num == -1) {
+		cel_b_ptr->inum > 0) {
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 	    }
 	    else {
@@ -480,7 +479,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    }
 
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	    cpm_ptr->cf.element_num ++;
+	    cpm_ptr->cf.element_num++;
 	}
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
@@ -504,7 +503,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = child_num;
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
-	    cpm_ptr->cf.element_num ++;
+	    cpm_ptr->cf.element_num++;
 	}
     }
 
@@ -536,7 +535,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 
 		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = child_num;
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		    cpm_ptr->cf.element_num ++;
+		    cpm_ptr->cf.element_num++;
 		}
 		if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 		    cpm_ptr->cf.element_num = 0;
@@ -555,14 +554,11 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
     if (OptCaseFlag & OPT_CASE_NO && 
 	closest > -1 && 
 	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
-	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "数量") && 
-	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "時間") && 
-	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")
-	/* !check_feature(cpm_ptr->elem_b_ptr[closest]->f, "数量") && 
-	!check_feature(cpm_ptr->elem_b_ptr[closest]->f, "時間") */
-	) {
-	BNST_DATA *bp;
-	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
+	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "数量") && 
+	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "時間") && 
+	check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "係:ノ格")) {
+	TAG_DATA *bp;
+	bp = sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1;
 
 	/* 割り当てる格は格フレームによって動的に変わる */
 	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("未");
@@ -588,7 +584,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    return closest;
 	}
 	/* 直前格でニ格で <時間> のときは削除しない */
-	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num+1 && 
+	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num + 1 && 
 		 check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:ニ格")) {
 	    return closest;
 	}

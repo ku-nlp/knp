@@ -62,7 +62,7 @@ int	EX_PRINT_NUM = 10;
 	fprintf(Outfp, "%s", cmm_ptr->cf_ptr->entry);
     }
     else {
-	fprintf(Outfp, "%s", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi);
     }
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
@@ -156,9 +156,6 @@ struct _sort_kv {
     /* 得点, 意味の表示 */
 
     fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->cf_id);
-
-    if (cmm_ptr->cf_ptr->concatenated_flag == 1)
-	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->cf_id);
 
     if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);
@@ -349,7 +346,7 @@ struct _sort_kv {
 
     for (p = sp->Best_mgr->pred_num-1; p >= 0; p--) {
 	cpm_ptr = &(sp->Best_mgr->cpm[p]);
-	fprintf(Outfp, "%2d %s", sp->Best_mgr->pred_num-1-p, L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fprintf(Outfp, "%2d %s", sp->Best_mgr->pred_num-1-p, cpm_ptr->pred_b_ptr->head_ptr->Goi);
 
 	/* 入力側の各格要素の記述 */
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {

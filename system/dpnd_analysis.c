@@ -197,7 +197,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 
-	if (i == sp->Bnst_num - 1){		/* 最後の文節 */
+	if (i == sp->Bnst_num - 1) {		/* 最後の文節 */
 	    b_ptr->dpnd_head = -1;
 	    b_ptr->dpnd_type = 'D';
 	} else if (dp->type[i] == 'd' || dp->type[i] == 'R') {
@@ -208,9 +208,44 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    b_ptr->dpnd_type = dp->type[i];
 	}
 	b_ptr->dpnd_dflt = dp->dflt[i];
+    }
+}
 
-	strcpy(b_ptr->dpnd_int, "0");	/* 文節係り先内部の位置，今は未処理 */
-	strcpy(b_ptr->dpnd_ext, "");	/* 他の文節係り先可能性，今は未処理 */
+/*==================================================================*/
+	  void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
+/*==================================================================*/
+{
+    /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
+
+    int		i, last_b;
+    TAG_DATA	*t_ptr;
+
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	/* もっとも近い文節行を記憶 */
+	if (t_ptr->bnum >= 0) {
+	    last_b = t_ptr->bnum;
+	}
+
+	/* 文末 */
+	if (i == sp->Tag_num - 1) {
+	    t_ptr->dpnd_head = -1;
+	    t_ptr->dpnd_type = 'D';
+	}
+	/* 隣にかける */
+	else if (t_ptr->inum != 0) {
+	    t_ptr->dpnd_head = t_ptr->num + 1;
+	    t_ptr->dpnd_type = 'D';
+	}
+	/* 文節内最後のタグ単位 (inum == 0) */
+	else {
+	    t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + (sp->bnst_data + dp->head[last_b])->tag_num - 1)->num;
+	    if (dp->type[last_b] == 'd' || dp->type[last_b] == 'R') {
+		t_ptr->dpnd_type = 'D';
+	    }
+	    else {
+		t_ptr->dpnd_type = dp->type[last_b];
+	    }
+	}
     }
 }
 
@@ -527,10 +562,15 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     /* 文頭まで解析が終わったら評価関数をよぶ */
 
     if (dpnd.pos == -1) {
-	/* 前の文節の係り受けに従う場合 */
+	/* 無格従属: 前の文節の係り受けに従う場合 */
 	for (i = 0; i < sp->Bnst_num -1; i++)
 	    if (dpnd.head[i] < 0) {
-		dpnd.head[i] = dpnd.head[i+dpnd.head[i]];
+		if (i >= dpnd.head[i + dpnd.head[i]]) {
+		    fprintf(stderr, ";; Invalid dependency (%d -> %d)\n", 
+			    i, dpnd.head[i + dpnd.head[i]]);
+		    return;
+		}
+		dpnd.head[i] = dpnd.head[i + dpnd.head[i]];
 		dpnd.check[i].pos[0] = dpnd.head[i];
 	    }
 
@@ -549,8 +589,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     /* (前の係りによる)非交差条件の設定 (dpnd.mask が 0 なら係れない) */
 
-    if (dpnd.pos < sp->Bnst_num -2)
-	for (i = dpnd.pos + 2; i < dpnd.head[dpnd.pos+1]; i++)
+    if (dpnd.pos < sp->Bnst_num - 2)
+	for (i = dpnd.pos + 2; i < dpnd.head[dpnd.pos + 1]; i++)
 	    dpnd.mask[i] = 0;
     
     /* 並列構造のキー文節, 部分並列の文節<I>
@@ -708,7 +748,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 /*==================================================================*/
 {
     int i, j, lastflag = -1;
-    BNST_DATA *check_b_ptr;
+    TAG_DATA *check_b_ptr;
     
 
     if (OptInput == OPT_PARSED) {

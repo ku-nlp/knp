@@ -93,35 +93,6 @@ int		BGHExist;
 }
 
 /*==================================================================*/
-	    char *meishi_setubi(BNST_DATA *ptr, char *cp)
-/*==================================================================*/
-{
-    /* ¢ß¢ß ª»§√§∆§§§ §§ */
-
-    int i, flag = 0;		/* case_print §«ª»Õ— */
-
-    *cp = '\0';    
-    for (i = 0; i < ptr->fuzoku_num; i++) {
-
-	if (!strcmp(Class[(ptr->fuzoku_ptr + i)->Hinshi][0].id, "¿‹»¯º≠") &&
-	    !strcmp(Class[(ptr->fuzoku_ptr + i)->Hinshi]
-		    [(ptr->fuzoku_ptr + i)->Bunrui].id, "ÃæªÏ¿≠ÃæªÏ¿‹»¯º≠")) {
-	    strcat(cp, (ptr->fuzoku_ptr + i)->Goi);
-	    flag = 1;
-	}	
-	else if (flag == 1)
-	  break;
-	else
-	  strcat(cp, (ptr->fuzoku_ptr + i)->Goi);
-    }    
-    
-    if (flag == 0)
-      *cp = '\0';
-
-    return cp;
-}
-
-/*==================================================================*/
 		int bgh_code_match(char *c1, char *c2)
 /*==================================================================*/
 {

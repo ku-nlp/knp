@@ -26,7 +26,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 					   ルール内形態素パターンに 1 */
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
-    char fname[256];
+    char fname[SMALL_DATA_LEN2];
 
     /* 処理する最大数を越えていれば、最大数個だけチェックする */
     if (homo_num > HOMO_MAX) {
@@ -373,7 +373,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
-	    m_ptr->type = 0;
+
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
 
@@ -539,6 +539,95 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
+			TAG_DATA *s_b_ptr, int b_length,
+			int mode, int break_mode, int direction)
+/*==================================================================*/
+{
+    /* ある範囲(文全体,文節内など)に対してタグ単位のマッチングを行う */
+
+    int i, j, k, match_length, feature_break_mode;
+    BnstRule *r_ptr;
+    TAG_DATA *b_ptr;
+
+    /* 逆方向に適用する場合はデータのおしりをさしておく必要がある */
+    if (direction == RtoL)
+	s_b_ptr += b_length-1;
+    
+    /* MRM
+       	1.self_patternの先頭の文節位置
+	  2.ルール
+	    3.self_patternの末尾の文節位置
+	の順にループが回る (3のループはregexpbnstrule_matchの中)
+	
+	break_mode == RLOOP_BREAK_NORMAL
+	    2のレベルでbreakする
+	break_mode == RLOOP_BREAK_JUMP
+	    2のレベルでbreakし，self_pattern長だけ1のループを進める
+     */
+
+    if (mode == RLOOP_MRM) {
+	for (i = 0; i < b_length; i++) {
+	    r_ptr = s_r_ptr;
+	    b_ptr = s_b_ptr+(i*direction);
+	    for (j = 0; j < r_size; j++, r_ptr++) {
+		if ((match_length = 
+		     regexptagrule_match(r_ptr, b_ptr, 
+					 direction == LtoR ? i : b_length-i-1, 
+					 direction == LtoR ? b_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_b_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_b_ptr+i*direction+k);
+		    feature_break_mode = break_feature(r_ptr->f);
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_NORMAL) {
+			break;
+		    } else if (break_mode == RLOOP_BREAK_JUMP ||
+			       feature_break_mode == RLOOP_BREAK_JUMP) {
+			i += match_length - 1;
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    /* RMM
+       	1.ルール
+	  2.self_patternの先頭の文節位置
+	    3.self_patternの末尾の文節位置
+	の順にループが回る (3のループはregexpbnstrule_matchの中)
+	
+	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
+	    2のレベルでbreakする (※この使い方は考えにくいが)
+    */
+
+    else if (mode == RLOOP_RMM) {
+	r_ptr = s_r_ptr;
+	for (j = 0; j < r_size; j++, r_ptr++) {
+	    feature_break_mode = break_feature(r_ptr->f);
+	    for (i = 0; i < b_length; i++) {
+		b_ptr = s_b_ptr+(i*direction);
+		if ((match_length = 
+		     regexptagrule_match(r_ptr, b_ptr, 
+					 direction == LtoR ? i : b_length-i-1, 
+					 direction == LtoR ? b_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_b_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_b_ptr+i*direction+k);
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			break_mode == RLOOP_BREAK_JUMP ||
+			feature_break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_JUMP) {
+			break;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 			 BNST_DATA *s_b_ptr, int b_length,
 			 int mode, int break_mode, int direction)
@@ -628,54 +717,27 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-     void _assign_general_feature(void *data, int size, int flag)
+     void assign_general_feature(void *data, int size, int flag)
 /*==================================================================*/
 {
     int i;
     void (*assign_function)();
 
-    /* 形態素か文節かについての場合分け */
+    /* 形態素, タグ単位, 文節の場合分け */
     if (flag == MorphRuleType) {
 	assign_function = assign_mrph_feature;
+    }
+    else if (flag == TagRuleType) {
+	assign_function = assign_tag_feature;
     }
     else if (flag == BnstRuleType) {
 	assign_function = assign_bnst_feature;
     }
 
     for (i = 0; i < GeneralRuleNum; i++) {
-	if ((GeneralRuleArray+i)->type == flag) {
-	    assign_function((GeneralRuleArray+i)->RuleArray, 
-			    (GeneralRuleArray+i)->CurRuleSize, 
-			    data, size, 
-			    (GeneralRuleArray+i)->mode, 
-			    (GeneralRuleArray+i)->breakmode, 
-			    (GeneralRuleArray+i)->direction);
-	}
-    }
-}
-
-/*==================================================================*/
-       void assign_general_feature(SENTENCE_DATA *sp, int flag)
-/*==================================================================*/
-{
-    int i, size;
-    void (*assign_function)();
-    void *data;
-
-    /* 形態素か文節かについての場合分け */
-    if (flag == MorphRuleType) {
-	assign_function = assign_mrph_feature;
-	data = sp->mrph_data;
-	size = sp->Mrph_num;
-    }
-    else if (flag == BnstRuleType) {
-	assign_function = assign_bnst_feature;
-	data = sp->bnst_data;
-	size = sp->Bnst_num;
-    }
-
-    for (i = 0; i < GeneralRuleNum; i++) {
-	if ((GeneralRuleArray+i)->type == flag) {
+	/* タグ単位の場合は文節ルールでもよい */
+	if ((GeneralRuleArray + i)->type == flag || 
+	    (flag == TagRuleType && (GeneralRuleArray + i)->type == BnstRuleType)) {
 	    assign_function((GeneralRuleArray+i)->RuleArray, 
 			    (GeneralRuleArray+i)->CurRuleSize, 
 			    data, size, 
@@ -705,16 +767,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     b_ptr->mrph_ptr = m_ptr;
-
     b_ptr->mrph_num = 0;
-    b_ptr->settou_num = 0;
-    b_ptr->jiritu_num = 0;
-    b_ptr->fuzoku_num = 0;
-    b_ptr->settou_ptr = NULL;
-    b_ptr->jiritu_ptr = NULL;
-    b_ptr->fuzoku_ptr = NULL;
 
-    b_ptr->Jiritu_Go[0] = '\0';
     b_ptr->BGH_num = 0;
     b_ptr->SM_num = 0;
 
@@ -740,45 +794,67 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-	 void push_prfx(BNST_DATA *b_ptr, MRPH_DATA *m_ptr)
+	void make_Jiritu_Go(SENTENCE_DATA *sp, BNST_DATA *ptr)
 /*==================================================================*/
 {
-    if (b_ptr->settou_num == 0) 
-	b_ptr->settou_ptr = m_ptr;
-    b_ptr->settou_num++;
-    b_ptr->mrph_num++;
-}
+    MRPH_DATA *mp;
 
-/*==================================================================*/
-	 void push_indp(BNST_DATA *b_ptr, MRPH_DATA *m_ptr)
-/*==================================================================*/
-{
-    if (b_ptr->jiritu_num == 0)
-	b_ptr->jiritu_ptr = m_ptr;
+    ptr->Jiritu_Go[0] = '\0';
 
-    if ((strlen(b_ptr->Jiritu_Go) + strlen(m_ptr->Goi)) >= WORD_LEN_MAX) {
-	fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)\n",
-		b_ptr->Jiritu_Go, m_ptr->Goi);
-    } else {
-	strcat(b_ptr->Jiritu_Go, m_ptr->Goi);
+    /* 主辞より前の部分で接頭辞以外を自立語としておいておく */
+    for (mp = ptr->mrph_ptr; mp <= ptr->head_ptr; mp++) {
+	if (!check_feature(mp->f, "接頭")) {
+	    if (strlen(ptr->Jiritu_Go) + strlen(mp->Goi) + 2 > BNST_LENGTH_MAX) {
+		fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
+			sp->Comment ? sp->Comment : "", ptr->mrph_ptr);
+		return;
+	    }
+	    strcat(ptr->Jiritu_Go, mp->Goi);
+	}
     }
-    b_ptr->jiritu_num++;
-    b_ptr->mrph_num++;
 }
 
 /*==================================================================*/
-	 void push_sufx(BNST_DATA *b_ptr, MRPH_DATA *m_ptr)
+		 void decide_head_ptr(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    if (b_ptr->fuzoku_num == 0) 
-	b_ptr->fuzoku_ptr = m_ptr;
-    b_ptr->fuzoku_num++;
-    b_ptr->mrph_num++;
+    int i;
+
+    for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
+	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
+	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
+	    if (check_feature((ptr->mrph_ptr + i)->f, "有意味接尾辞")) {
+		ptr->head_ptr = ptr->mrph_ptr + i;
+		return;
+	    }
+	}
+	/* 最後の自立語 */
+	else {
+	    ptr->head_ptr = ptr->mrph_ptr + i;
+	    return;
+	}
+    }
+
+    /* 付属語しかない場合 */
+    ptr->head_ptr = ptr->mrph_ptr + ptr->mrph_num - 1;
 }
 
-#define MRPH_PRFX 0	/* 形態素列を文節にまとめる際の状態フラグ */
-#define MRPH_INDP 1
-#define MRPH_SUFX 2
+/*==================================================================*/
+      int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    int j;
+    MRPH_DATA *m_ptr;
+
+    for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
+	if ((b_ptr->length += strlen(m_ptr->Goi2)) > BNST_LENGTH_MAX) {
+	    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
+		    sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr);
+	    return FALSE;
+	}
+    }
+    return TRUE;
+}
 
 /*==================================================================*/
 		 int make_bunsetsu(SENTENCE_DATA *sp)
@@ -792,30 +868,15 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     sp->Max_New_Bnst_num = 0;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
-
 	if (check_feature(m_ptr->f, "文節始")) {
 	    if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
 	}
-	if (check_feature(m_ptr->f, "複合←") ||
-	    check_feature(m_ptr->f, "自立"))
-	    push_indp(b_ptr, m_ptr);
-	else if (check_feature(m_ptr->f, "接頭"))
-	    push_prfx(b_ptr, m_ptr);
-	else if (check_feature(m_ptr->f, "付属"))
-	    push_sufx(b_ptr, m_ptr);
-	else 
-	    fprintf(Outfp, ";; Invalid input \n");
+	b_ptr->mrph_num++;
     }
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num;
-					     j++, m_ptr++) {
-	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
-		BNST_LENGTH_MAX) {
-		fprintf(stderr, ";; Too big bnst (%s %s%s...)!\n", 
-			sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr, b_ptr->mrph_ptr+1);
-		return FALSE;
-	    }
+	if (calc_bnst_length(sp, b_ptr) == FALSE) {
+	    return FALSE;
 	}
     }
     return TRUE;
@@ -825,7 +886,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	       int make_bunsetsu_pm(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, prev_stat = MRPH_SUFX;
+    int i, j;
     char *cp;
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr = sp->bnst_data;
@@ -836,12 +897,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->num = b_ptr-sp->bnst_data;
 	    b_ptr->mrph_ptr = m_ptr;
 	    b_ptr->mrph_num = 1;
-	    b_ptr->jiritu_ptr = NULL;
-	    b_ptr->jiritu_num = 0;
-	    b_ptr->settou_ptr = NULL;
-	    b_ptr->settou_num = 0;
-	    b_ptr->fuzoku_ptr = NULL;
-	    b_ptr->fuzoku_num = 0;
 	    b_ptr->length = 0;
 	    b_ptr->cpm_ptr = NULL;
 	    b_ptr->voice = 0;
@@ -850,61 +905,137 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		*cp = 0;
 	    /* clear_feature(&(b_ptr->f));
 	       mainの文ごとのループの先頭で処理に移動 */
-	} else {
-	    b_ptr->mrph_num ++;
 	}
-
-	if (check_feature(m_ptr->f, "複合←") || check_feature(m_ptr->f, "自立")) {
-	    if (prev_stat == MRPH_SUFX || 
-		(prev_stat == MRPH_INDP && !check_feature(m_ptr->f, "複合←")) || !b_ptr->jiritu_ptr) {
-		b_ptr->jiritu_ptr = m_ptr;
-		b_ptr->jiritu_num = 0;
-	    }
-	    b_ptr->jiritu_num ++;
-	    prev_stat = MRPH_INDP;
-	}
-	else if (check_feature(m_ptr->f, "接頭")) {
-	    if (prev_stat != MRPH_PRFX || !b_ptr->settou_ptr) {
-		b_ptr->settou_ptr = m_ptr;
-		b_ptr->settou_num = 0;
-	    }
-	    b_ptr->settou_num ++;
-	    prev_stat = MRPH_PRFX;
-	}
-	else if (check_feature(m_ptr->f, "付属")) {
-	    if (!b_ptr->fuzoku_ptr) {
-		b_ptr->fuzoku_ptr = m_ptr;
-	    }
-	    b_ptr->fuzoku_num ++;
-	    prev_stat = MRPH_SUFX;
+	else {
+	    b_ptr->mrph_num++;
 	}
     }
-    
+
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	
 	assign_cfeature(&(b_ptr->f), "解析済");
-
-	for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num;
-					     j++, m_ptr++) {
-	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
-		BNST_LENGTH_MAX) {
-		fprintf(stderr, ";; Too big bunsetsu (%s...)!\n", 
-			b_ptr->mrph_ptr);
-		return FALSE;
-	    }
-	}
-
-	*b_ptr->Jiritu_Go = '\0';
-	for (j = 0; j < b_ptr->jiritu_num; j++) {
-	    if ((strlen(b_ptr->Jiritu_Go) + strlen((b_ptr->jiritu_ptr+j)->Goi)) >= WORD_LEN_MAX) {
-		fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)\n",
-			b_ptr->Jiritu_Go, (b_ptr->jiritu_ptr+j)->Goi);
-	    } else {
-		strcat(b_ptr->Jiritu_Go, (b_ptr->jiritu_ptr+j)->Goi);
-	    }
+	if (calc_bnst_length(sp, b_ptr) == FALSE) {
+	    return FALSE;
 	}
     }
     return TRUE;
+}
+
+/*==================================================================*/
+	   void push_tag_units(TAG_DATA *tp, MRPH_DATA *mp)
+/*==================================================================*/
+{
+    if (check_feature(mp->f, "接頭非独立語")) {
+	if (tp->settou_num == 0) {
+	    tp->settou_ptr = mp;
+	}
+	tp->settou_num++;
+    }
+    else if (check_feature(mp->f, "独立語")) {
+	if (tp->jiritu_num == 0) {
+	    tp->jiritu_ptr = mp;
+	}
+	tp->jiritu_num++;
+    }
+    else if (check_feature(mp->f, "接尾非独立語")) {
+	if (tp->fuzoku_num == 0) {
+	    tp->fuzoku_ptr = mp;
+	}
+	tp->fuzoku_num++;
+    }
+    tp->mrph_num++;
+}
+
+/*==================================================================*/
+		void make_tag_units(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k, settou_num = 0, count;
+    MRPH_DATA *mp, *settou_ptr;
+    TAG_DATA *tp = NULL;
+    BNST_DATA *bp = sp->bnst_data, *pre_bp;
+
+    sp->Tag_num = 0;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	mp = sp->mrph_data + i;
+
+	/* 付属から始まる文節のために (「と/いうと」)
+	   ※ jiritu_ptr に入ってしまう */
+	if (check_feature(mp->f, "タグ単位始")) {
+	    tp = sp->tag_data + sp->Tag_num;
+
+	    memset(tp, 0, sizeof(TAG_DATA));
+	    tp->num = sp->Tag_num;
+	    tp->mrph_ptr = mp;
+
+	    /* 文節区切りと一致するとき */
+	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
+		/* 遡ってinumを付与 */
+		if (sp->Tag_num > 0 && (tp - 1)->bnum < 0) {
+		    count = 0;
+		    for (j = sp->Tag_num - 2; j >= 0; j--) {
+			(sp->tag_data + j)->inum = ++count;
+			if ((sp->tag_data + j)->bnum >= 0) {
+			    break;
+			}
+		    }
+		}
+		tp->bnum = bp->num;
+		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
+		bp->tag_num = 1;
+		pre_bp = bp;
+		if (bp->num < sp->Bnst_num - 1) {
+		    bp++;
+		}
+		else {
+		    /* 最後の文節が終わった */
+		    bp = NULL;
+		}
+	    }
+	    else {
+		tp->bnum = -1;
+		pre_bp->tag_num++;
+	    }
+	    sp->Tag_num++;
+	}
+	push_tag_units(tp, mp);
+    }
+
+    if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
+	count = 0;
+	for (j = sp->Tag_num - 2; j >= 0; j--) {
+	    (sp->tag_data + j)->inum = ++count;
+	    if ((sp->tag_data + j)->bnum >= 0) {
+		break;
+	    }
+	}
+    }
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	tp = sp->tag_data + i;
+
+	decide_head_ptr((BNST_DATA *)tp);
+
+	/* BNST_DATAにcastしている tricky? */
+	get_bnst_code((BNST_DATA *)tp, USE_BGH);
+	get_bnst_code((BNST_DATA *)tp, USE_NTT);
+
+	if (tp->inum != 0) {
+	    /* case_analysis.rule で使っている */
+	    assign_cfeature(&(tp->f), "文節内");
+	}
+
+	/* 
+	if (tp->inum != 0) {
+	    assign_cfeature(&(tp->f), "係:文節内");
+	    } */
+
+	/* 各タグ単位の長さを計算しておく */
+	calc_bnst_length(sp, (BNST_DATA *)tp);
+    }
+
+    /* 文節ルールを適用する */
+    assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType);
 }
 
 /*====================================================================

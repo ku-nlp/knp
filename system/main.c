@@ -11,6 +11,7 @@ SENTENCE_DATA	sentence_data[SENTENCE_MAX];
 
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
 BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
+TAG_DATA 	tag_data[MRPH_MAX];		/* タグ単位データ */
 PARA_DATA 	para_data[PARA_MAX]; 		/* 並列データ */
 PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
@@ -372,7 +373,9 @@ extern float	AssignGaCaseThreshold;
 	    read_homo_rule((RULE+i)->file);
 	}
 	/* 形態素ルール or 文節ルール */
-	else if ((RULE+i)->type == MorphRuleType || (RULE+i)->type == BnstRuleType) {
+	else if ((RULE+i)->type == MorphRuleType || 
+		 (RULE+i)->type == TagRuleType || 
+		 (RULE+i)->type == BnstRuleType) {
 	    read_general_rule(RULE+i);
 	}
 	/* 係り受けルール */
@@ -398,7 +401,7 @@ extern float	AssignGaCaseThreshold;
 	OptAnalysis == OPT_CASE2) {
 	int i;
 
-	fprintf(stderr, ";; Parse timeout.\n;; (");
+	fprintf(stderr, ";; Parse timeout.\n;; %s (", current_sentence_data.KNPSID);
 	for (i = 0; i < current_sentence_data.Mrph_num; i++)
 	    fprintf(stderr, "%s", current_sentence_data.mrph_data[i].Goi2);
 	fprintf(stderr, ")\n");
@@ -444,9 +447,11 @@ extern float	AssignGaCaseThreshold;
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
     memset(bnst_data, 0, sizeof(BNST_DATA)*BNST_MAX);
+    memset(tag_data, 0, sizeof(MRPH_DATA)*TAG_MAX);
 
     current_sentence_data.mrph_data = mrph_data;
     current_sentence_data.bnst_data = bnst_data;
+    current_sentence_data.tag_data = tag_data;
     current_sentence_data.para_data = para_data;
     current_sentence_data.para_manager = para_manager;
     current_sentence_data.Sen_num = 0;	/* これだけは増えていく */
@@ -458,7 +463,6 @@ extern float	AssignGaCaseThreshold;
     current_sentence_data.Comment = NULL;
 
     for (i = 0; i < BNST_MAX; i++) {
-	 current_sentence_data.bnst_data[i].internal_num = 0;
 	 current_sentence_data.bnst_data[i].f = NULL;
     }
 
@@ -514,7 +518,7 @@ extern float	AssignGaCaseThreshold;
 
     assign_cfeature(&(sp->mrph_data[0].f), "文頭");
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
-    assign_general_feature(sp, MorphRuleType);
+    assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType);
 
     /* 形態素を文節にまとめる */
 
@@ -531,18 +535,20 @@ extern float	AssignGaCaseThreshold;
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	get_bnst_code(sp->bnst_data+i, USE_BGH);
-	get_bnst_code(sp->bnst_data+i, USE_NTT);
+	decide_head_ptr(sp->bnst_data + i);
+	make_Jiritu_Go(sp, sp->bnst_data + i);
+	get_bnst_code(sp->bnst_data + i, USE_BGH);
+	get_bnst_code(sp->bnst_data + i, USE_NTT);
     }
 
     /* 文節へのFEATURE付与 */
 
     assign_cfeature(&(sp->bnst_data[0].f), "文頭");
     if (sp->Bnst_num > 0)
-	assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
+	assign_cfeature(&(sp->bnst_data[sp->Bnst_num - 1].f), "文末");
     else
 	assign_cfeature(&(sp->bnst_data[0].f), "文末");
-    assign_general_feature(sp, BnstRuleType);
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, BnstRuleType);
 
     /* サ変動詞以外の動詞の意味素を引くのは意味がない
        ルール適用前には、featureがないためにチェックできない
@@ -572,7 +578,7 @@ extern float	AssignGaCaseThreshold;
 
 	/* 格解析を行うサ変名詞を含む文節に feature を与え、
 	   複合名詞をばらして格要素として認識する */
-	make_internal_bnst(sp);
+	make_tag_units(sp);
 
 	/* それぞれの用言の格フレームを取得 */
 	set_pred_caseframe(sp);
@@ -667,6 +673,7 @@ extern float	AssignGaCaseThreshold;
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
     signal(SIGALRM, timeout_function);
+    alarm(0);
     alarm(ParseTimeout);
     if (detect_dpnd_case_struct(sp) == FALSE) {
 	ErrorComment = strdup("Cannot detect dependency structure");
@@ -679,6 +686,11 @@ PARSED:
     /* 係り受け情報を bnst 構造体に記憶 */
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
+
+    if (OptAnalysis == OPT_CASE ||
+	OptAnalysis == OPT_CASE2) {
+	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+    }
 
     /* 並列構造をみて固有表現認識を行う */
     ne_para_analysis(sp);
@@ -726,7 +738,7 @@ PARSED:
 
 	if (setjmp(timeout)) {
 #ifdef DEBUG
-	    fprintf(stderr, ";; Parse timeout.\n;; (");
+	    fprintf(stderr, ";; Parse timeout.\n;; %s (", sp->KNPSID);
 	    for (i = 0; i < sp->Mrph_num; i++)
 		fprintf(stderr, "%s", sp->mrph_data[i].Goi2);
 	    fprintf(stderr, ")\n");
@@ -763,13 +775,6 @@ PARSED:
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
 	    }
-	    for (i = 0; i < sp->Bnst_num; i++) {
-		if (sp->bnst_data[i].internal_num) {
-		    sp->bnst_data[i].internal_num = 0;
-		    sp->bnst_data[i].internal_max = 0;
-		    sp->bnst_data[i].internal = NULL;
-		}
-	    }
 	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }
@@ -780,11 +785,6 @@ PARSED:
 	    }
 	    for (i = 0; i < sp->Bnst_num; i++) {
 		clear_feature(&(sp->bnst_data[i].f));
-		if (sp->bnst_data[i].internal_num) {
-		    sp->bnst_data[i].internal_num = 0;
-		    sp->bnst_data[i].internal_max = 0;
-		    free(sp->bnst_data[i].internal);
-		}
 	    }
 	    /* New_Bnstはもともとpointer */
 	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {

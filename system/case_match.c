@@ -341,18 +341,11 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
+int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
-    if (!check_feature(d->f, "·ÁÉûÌ¾»ì") && 
-	d->jiritu_ptr != NULL) {
-	if (d->jiritu_num > 1 && 
-	    check_feature((d->jiritu_ptr+d->jiritu_num-1)->f, "£Ô¸ÇÍ­ËöÈø")) {
-	    *pos = check_examples((d->jiritu_ptr+d->jiritu_num-2)->Goi, ex_list, ex_num);
-	}
-	else {
-	    *pos = check_examples(L_Jiritu_M(d)->Goi, ex_list, ex_num);
-	}
+    if (!check_feature(d->f, "·ÁÉûÌ¾»ì")) {
+	*pos = check_examples(d->head_ptr->Goi, ex_list, ex_num);
 	if (*pos >= 0) {
 	    return 1;
 	}
@@ -441,7 +434,6 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 
 	/* exact match */
 	if (ga_subject == 0 && 
-	    cfp->concatenated_flag == 0 && 
 	    cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
 			     cfp->ex_list[as2], cfp->ex_num[as2], pos)) {
 	    if (MatchPP(cfp->pp[as2][0], "³°¤Î´Ø·¸")) {
@@ -933,11 +925,6 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
     }
     else {
 	cmm_ptr->score = Current_max_score;
-    }
-
-    /* tentative */
-    if (cmm_ptr->cf_ptr->concatenated_flag == 1) {
-	cmm_ptr->score += 1;
     }
 
 #ifdef CASE_DEBUG

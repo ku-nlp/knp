@@ -109,7 +109,7 @@ extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPS
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag);
 extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
-extern char *make_print_string(BNST_DATA *bp, int flag);
+extern char *make_print_string(TAG_DATA *bp, int flag);
 extern void InitCPMcache();
 extern void ClearCPMcache();
 extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
@@ -117,11 +117,11 @@ extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
-extern char *make_fukugoji_string(BNST_DATA *b_ptr);
+extern char *make_fukugoji_string(TAG_DATA *b_ptr);
 extern int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
-extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
-extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
+extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr);
+extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr);
 
 /* case_ipal.c */
 extern void init_cf();
@@ -134,8 +134,6 @@ extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
-extern void make_internal_bnst(SENTENCE_DATA *sp);
-extern int find_upper_bnst_num(BNST_DATA *bp);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -144,7 +142,7 @@ extern int _ex_match_score(char *cp1, char *cp2);
 extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest);
 extern int cf_match_element(char *d, char *target, int flag);
 extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
-extern int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos);
+extern int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos);
 extern int check_case(CASE_FRAME *cf, int c);
 
 /* case_print.c */
@@ -175,6 +173,7 @@ extern DBM_FILE db_read_open(char *filename);
 
 /* dpnd_analysis.c */
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
+extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new, TOTAL_MGR *best);
 extern int after_decide_dpnd(SENTENCE_DATA *sp);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
@@ -221,7 +220,7 @@ extern int str_part_eq(char *dat, char *pat);
 
 /* lib_print.c */
 extern void print_kakari(SENTENCE_DATA *sp);
-extern void _print_bnst(BNST_DATA *ptr);
+extern void _print_bnst(TAG_DATA *ptr);
 extern void print_matrix(SENTENCE_DATA *sp, int type, int L_B);
 extern void print_result(SENTENCE_DATA *sp);
 extern void print_bnst(BNST_DATA *ptr, char *cp);
@@ -294,12 +293,13 @@ extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
 extern void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
 				MRPH_DATA *s_m_ptr, int m_length,
 				int mode, int break_mode, int direction);
-extern void assign_general_feature(SENTENCE_DATA *sp, int flag);
+extern void assign_general_feature(void *data, int size, int flag);
 extern int make_bunsetsu(SENTENCE_DATA *sp);
 extern int make_bunsetsu_pm(SENTENCE_DATA *sp);
 extern void print_mrphs(SENTENCE_DATA *sp, int flag);
 extern void assign_dpnd_rule(SENTENCE_DATA *sp);
-extern void _assign_general_feature(void *data, int size, int flag);
+extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
+extern void make_tag_units(SENTENCE_DATA *sp);
 
 /* read_rule.c */
 extern int case2num(char *cp);
@@ -319,6 +319,8 @@ extern int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr,
 				int bw_length, int fw_length);
 extern int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr,
 				int bw_length, int fw_length);
+extern int regexptagrule_match(BnstRule *r_ptr, TAG_DATA *d_ptr, 
+			       int bw_length, int fw_length);
 extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 
 /* thesaurus.c */

@@ -270,7 +270,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 {
     int i, j, frame_num = 0, pat_num;
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
+    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     CF_MATCH_MGR tempcmm;
 
     /* 格要素なしの時の実験 */
@@ -301,12 +301,6 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
     else {
 	/* 格フレーム設定 */
 	for (i = 0; i < b_ptr->cf_num; i++) {
-	    /* 前隣を結合したフレームなのにもかかわらず、
-	       前隣が自分に係らない構造の場合はスキップ */
-	    if ((b_ptr->cf_ptr + i)->concatenated_flag == 1 && 
-		b_ptr->num > 0 && (b_ptr-1)->dpnd_head != b_ptr->num) {
-		continue;
-	    }
 	    /* 格フレームが1個ではないとき */
 	    if (b_ptr->cf_num != 1) {
 		/* OR の格フレームを除く */
@@ -348,7 +342,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	    }
 
 	    /* スコア順にソート */
-	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
+	    for (j = cpm_ptr->result_num - 1; j >= 0; j--) {
 		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
 		    (cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && (
 			(closest > -1 && 
@@ -364,7 +358,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		    break;
 		}
 	    }
-	    if (cpm_ptr->result_num < CMM_MAX-1) {
+	    if (cpm_ptr->result_num < CMM_MAX - 1) {
 		cpm_ptr->result_num++;
 	    }
 	}
@@ -441,8 +435,8 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
 	    }
 	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
-	    for (i = cpm_ptr->tie_num-1; i >= 1; i--) {
-		for (j = i-1; j >= 0; j--) {
+	    for (i = cpm_ptr->tie_num - 1; i >= 1; i--) {
+		for (j = i - 1; j >= 0; j--) {
 		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score) {
 			tempcmm = cpm_ptr->cmm[i];
 			cpm_ptr->cmm[i] = cpm_ptr->cmm[j];
@@ -479,7 +473,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     /* 直前格要素を走査 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 複合名詞の一部: 直前としない */
-	if (cpm_ptr->elem_b_ptr[i]->num == -1) {
+	if (cpm_ptr->elem_b_ptr[i]->inum > 0) {
 	    return -1;
 	}
 	/* 「〜を〜に」 */
@@ -507,17 +501,17 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	/* 決定しない:
 	   1. 最近格要素が指示詞の場合 ★格だけマッチさせる?
 	   2. ガ格で意味素がないとき */
-	if (check_feature((sp->bnst_data+min)->f, "指示詞") || 
+	if (check_feature((sp->tag_data+min)->f, "指示詞") || 
 	    (Thesaurus == USE_NTT && 
-	     (sp->bnst_data+min)->SM_code[0] == '\0' && 
+	     (sp->tag_data+min)->SM_code[0] == '\0' && 
 	     MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))) {
 	    return -2;
 	}
 	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* 未格 */
-		  (cpm_ptr->pred_b_ptr->num == min+1 || 
-		   (cpm_ptr->pred_b_ptr->num == min+2 && /* 副詞がはさまっている場合 */
-		    (check_feature((sp->bnst_data+min+1)->f, "副詞") || 
-		     check_feature((sp->bnst_data+min+1)->f, "係:連用"))))) || 
+		  (cpm_ptr->pred_b_ptr->num == min + 1 || 
+		   (cpm_ptr->pred_b_ptr->num == min + 2 && /* 副詞がはさまっている場合 */
+		    (check_feature((sp->tag_data + min + 1)->f, "副詞") || 
+		     check_feature((sp->tag_data + min + 1)->f, "係:連用"))))) || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
@@ -545,11 +539,6 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 {
     int i, numbers[CF_ELEMENT_MAX];
     char str[70], token[3], *key;
-
-    /* 文節内 */
-    if (cpm_ptr->pred_b_ptr->num == -1) {
-	return NULL;
-    }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	numbers[i] = cpm_ptr->elem_b_ptr[i]->num;
@@ -664,7 +653,7 @@ CPM_CACHE *CPMcache[TBLSIZE];
 }
 
 /*==================================================================*/
-int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
 /*==================================================================*/
 {
     /*
@@ -679,7 +668,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     CF_PRED_MGR *cache_ptr;
 
     /* 初期化 */
-    cpm_ptr->pred_b_ptr = b_ptr;
+    cpm_ptr->pred_b_ptr = t_ptr;
     cpm_ptr->score = -1;
     cpm_ptr->result_num = 0;
     cpm_ptr->tie_num = 0;
@@ -717,45 +706,39 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 }
 
 /*==================================================================*/
-int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
+int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 /*==================================================================*/
 {
     CF_PRED_MGR *cpm_ptr;
     int i;
     int one_case_point;
 
-    if (b_ptr->para_top_p != TRUE && 
-	b_ptr->cf_num > 0 && /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
-	!check_feature(b_ptr->f, "ID:（弱連体）") && 
-	!check_feature(b_ptr->f, "複合辞") && 
-	!check_feature(b_ptr->f, "格解析なし")) {
+    /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
+    if (t_ptr->para_top_p != TRUE && 
+	t_ptr->cf_num > 0) {
 
-	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
+	if (t_mgr->pred_num >= CPM_MAX) {
+	    fprintf(stderr, ";; too many predicates in a sentence. (> %d)\n", CPM_MAX);
+	    exit(1);
+	}
 
-	one_case_point = case_analysis(sp, cpm_ptr, b_ptr);
+	cpm_ptr = &(t_mgr->cpm[t_mgr->pred_num]);
+
+	one_case_point = case_analysis(sp, cpm_ptr, t_ptr);
 
 	/* 解析不成功(入力側に必須格が残る)場合にその依存構造の解析を
 	   やめる場合
 	if (one_case_point == -1) return FALSE;
 	*/
 
-	t_ptr->score += one_case_point;
-
-	if (t_ptr->pred_num++ >= CPM_MAX) {
-	    fprintf(stderr, ";; too many predicates in a sentence.\n");
-	    exit(1);
-	}
+	t_mgr->score += one_case_point;
+	t_mgr->pred_num++;
     }
 
-    for (i = 0; b_ptr->child[i]; i++) {
-	if (all_case_analysis(sp, b_ptr->child[i], t_ptr) == FALSE) {
+    for (i = 0; t_ptr->child[i]; i++) {
+	if (all_case_analysis(sp, t_ptr->child[i], t_mgr) == FALSE) {
 	    return FALSE;
 	}
-    }
-
-    if (b_ptr->internal_num > 0 && 
-	all_case_analysis(sp, b_ptr->internal, t_ptr) == FALSE) {
-	return FALSE;
     }
 
     return TRUE;
@@ -817,7 +800,6 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->cf_id, src->cf_id);
     strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
-    dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
     if (src->feature) {
 	dst->feature = strdup(src->feature);
@@ -868,7 +850,6 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->cf_id, src->cf_id);
     strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
-    dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
     dst->feature = src->feature;
     dst->entry = src->entry;
@@ -935,7 +916,9 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     /* 依存構造木作成 */
 
     dpnd_info_to_bnst(sp, &dpnd);
+    dpnd_info_to_tag(sp, &dpnd);
     make_dpnd_tree(sp);
+    bnst_to_tag_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
 	print_kakari(sp);
@@ -952,30 +935,30 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     
     /* 格解析呼び出し */
 
-    if (all_case_analysis(sp, sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
+    if (all_case_analysis(sp, sp->tag_data + sp->Tag_num - 1, &Work_mgr) == TRUE)
 	Possibility++;
     else
 	return;
 
     /* ここで default との距離のずれ, 提題を処理 */
 
-    for (i = 0; i < sp->Bnst_num-1; i++) {
+    for (i = 0; i < sp->Bnst_num - 1; i++) {
 	/* ガ格 -> レベル:A (ルールでこの係り受けを許した場合は、
 	   ここでコストを与える) */
-	if (check_feature((sp->bnst_data+i)->f, "係:ガ格") && 
-	    check_feature((sp->bnst_data+dpnd.head[i])->f, "レベル:A")) {
+	if (check_feature((sp->bnst_data + i)->f, "係:ガ格") && 
+	    check_feature((sp->bnst_data + dpnd.head[i])->f, "レベル:A")) {
 	    distance_cost += LEVELA_COST;
 	}
 
 	if (dpnd.dflt[i] > 0) {
 	    /* 提題 */
-	    if (check_feature((sp->bnst_data+i)->f, "提題")) {
+	    if (check_feature((sp->bnst_data + i)->f, "提題")) {
 		distance_cost += dpnd.dflt[i];
 
 		/* 提題につられて遠くに係ってしまった文節の距離コスト */
-		for (j = 0; j < i-1; j++) {
+		for (j = 0; j < i - 1; j++) {
 		    if (dpnd.head[i] == dpnd.head[j]) {
-			for (k = j+1; k < i; k++) {
+			for (k = j + 1; k < i; k++) {
 			    if (Mask_matrix[j][k] && Quote_matrix[j][k] && Dpnd_matrix[j][k] && Dpnd_matrix[j][k] != 'd') {
 				distance_cost += dpnd.dflt[i]*TEIDAI_STEP;
 			    }
@@ -986,12 +969,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    }
 	    /* 提題以外 */
 	    /* 係り側が連用でないとき */
-	    if (!check_feature((sp->bnst_data+i)->f, "係:連用")) {
+	    if (!check_feature((sp->bnst_data + i)->f, "係:連用")) {
 		/* 自分に読点がなく、隣の強い用言 (連体以外) を越えているとき */
-		if (!check_feature((sp->bnst_data+i)->f, "読点")) {
-		    if (dpnd.head[i] > i+1 && 
-			subordinate_level_check("B", sp->bnst_data+i+1) && 
-			(cp = (char *)check_feature((sp->bnst_data+i+1)->f, "係"))) {
+		if (!check_feature((sp->bnst_data + i)->f, "読点")) {
+		    if (dpnd.head[i] > i + 1 && 
+			subordinate_level_check("B", sp->bnst_data + i + 1) && 
+			(cp = (char *)check_feature((sp->bnst_data + i + 1)->f, "係"))) {
 			if (strcmp(cp+3, "連体") && strcmp(cp+3, "連格")) {
 			    distance_cost += STRONG_V_COST;
 			}
@@ -1000,7 +983,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		/* 自分に読点があり*/
 		else {
 		    /* 隣に係るとき */
-		    if (dpnd.head[i] == i+1) {
+		    if (dpnd.head[i] == i + 1) {
 			distance_cost += ADJACENT_TOUTEN_COST;
 		    }
 		}
@@ -1008,8 +991,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
 	    /* デフォルトとの差 x 2 を距離のコストとする
 	       ただし、形容詞を除く連格の場合は x 1 */
-	    if (!check_feature((sp->bnst_data+i)->f, "係:連格") || 
-		check_feature((sp->bnst_data+i)->f, "用言:形")) {
+	    if (!check_feature((sp->bnst_data + i)->f, "係:連格") || 
+		check_feature((sp->bnst_data + i)->f, "用言:形")) {
 		distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
 	    }
 	    else {
@@ -1020,9 +1003,9 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     Work_mgr.score -= distance_cost;
 
-    for (i = sp->Bnst_num-1; i > 0; i--) {
+    for (i = sp->Bnst_num - 1; i > 0; i--) {
 	/* 文末から用言ごとに提題を処理する */
-	if ((cp = (char *)check_feature((sp->bnst_data+i)->f, "提題受"))) {
+	if ((cp = (char *)check_feature((sp->bnst_data + i)->f, "提題受"))) {
 
 	    /* topic_slot[0]	時間以外のハ格のスロット
 	       topic_slot[1]	「<<時間>>は」のスロット
@@ -1034,12 +1017,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    one_topic_score = 0;
 
 	    /* 係り側を探す */
-	    for (j = i-1; j >= 0; j--) {
+	    for (j = i - 1; j >= 0; j--) {
 		if (dpnd.head[j] != i) {
 		    continue;
 		}
-		if (check_feature((sp->bnst_data+j)->f, "提題")) {
-		    if (check_feature((sp->bnst_data+j)->f, "時間")) {
+		if (check_feature((sp->bnst_data + j)->f, "提題")) {
+		    if (check_feature((sp->bnst_data + j)->f, "時間")) {
 			topic_slot[1]++;
 		    }
 		    else {
@@ -1129,7 +1112,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
       void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    BNST_DATA *check_b_ptr;
+    TAG_DATA *check_b_ptr;
 
     if (cpm_ptr->cmm[0].cf_ptr->voice == FRAME_ACTIVE) {
 	cpm_ptr->pred_b_ptr->voice = 0;
@@ -1147,7 +1130,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
-	   char *make_print_string(BNST_DATA *bp, int flag)
+	   char *make_print_string(TAG_DATA *bp, int flag)
 /*==================================================================*/
 {
     int i, start = 0, end = 0, length = 0;
@@ -1162,21 +1145,21 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	/* 先頭をみる */
 	for (i = 0; i < bp->mrph_num; i++) {
 	    /* 付属の特殊を除く */
-	    if (strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "特殊") || 
-		check_feature((bp->mrph_ptr+i)->f, "自立")) {
+	    if (strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "特殊") || 
+		check_feature((bp->mrph_ptr + i)->f, "自立")) {
 		start = i;
 		break;
 	    }
 	}
 
 	/* 末尾をみる */
-	for (i = bp->mrph_num-1; i >= start; i--) {
+	for (i = bp->mrph_num - 1; i >= start; i--) {
 	    /* 特殊, 助詞, 助動詞, 判定詞を除く */
-	    if ((strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "特殊") || 
-		 check_feature((bp->mrph_ptr+i)->f, "自立")) && 
-		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "助詞") && 
-		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "助動詞") && 
-		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "判定詞")) {
+	    if ((strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "特殊") || 
+		 check_feature((bp->mrph_ptr + i)->f, "自立")) && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "助詞") && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "助動詞") && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "判定詞")) {
 		end = i;
 		break;
 	    }
@@ -1184,28 +1167,23 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
 	if (start > end) {
 	    start = bp->jiritu_ptr-bp->mrph_ptr;
-	    end = bp->settou_num+bp->jiritu_num-1;
+	    end = bp->settou_num+bp->jiritu_num - 1;
 	}
 
 	for (i = start; i <= end; i++) {
-	    length += strlen((bp->mrph_ptr+i)->Goi2);
+	    length += strlen((bp->mrph_ptr + i)->Goi2);
 	}
 	if (length == 0) {
 	    return NULL;
 	}
-	ret = (char *)malloc_data(length+1, "make_print_string");
+	ret = (char *)malloc_data(length + 1, "make_print_string");
 	*ret = '\0';
 	for (i = start; i <= end; i++) {
-	    strcat(ret, (bp->mrph_ptr+i)->Goi2);
+	    strcat(ret, (bp->mrph_ptr + i)->Goi2);
 	}
     }
     else {
-	if (bp->jiritu_ptr) {
-	    ret = strdup(L_Jiritu_M(bp)->Goi2);
-	}
-	else {
-	    ret = strdup(bp->mrph_ptr->Goi2);
-	}
+	ret = strdup(bp->head_ptr->Goi2);
     }
     return ret;
 }
@@ -1226,13 +1204,13 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
 		sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
 			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
-			L_Jiritu_M(cpm_ptr->elem_b_ptr[i])->Goi, 
+			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			pos == MATCH_NONE ? "NONE" : "SUBJECT");
 	    }
 	    else {
 		sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%d", 
 			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
-			L_Jiritu_M(cpm_ptr->elem_b_ptr[i])->Goi, 
+			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
 			cpm_ptr->cmm[0].result_lists_p[0].score[num]);
 	    }
@@ -1271,7 +1249,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		/* その他 => 外の関係
 		   複合名詞の前側: 保留
 		   用言直前のノ格: 保留 */
-		else if (!(cpm_ptr->elem_b_ptr[i]->num == -1 && 
+		else if (!(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
 			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
 			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("未")) {
 		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "外の関係")) < 0) {
@@ -1327,16 +1305,16 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
 	    if (OptDisc == OPT_DISC) {
-		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cf.pp[i][0], 
-				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+				  cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
 		if (lastflag > 0) {
 		    RegisterLastClause(sp->Sen_num, 
-				       L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+				       cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				       cpm_ptr->cf.pp[i][0], 
-				       cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+				       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
 		}
 	    }
 	}
@@ -1355,16 +1333,16 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	    /* 格関係の保存 (文脈解析用) */
 	    if (OptDisc == OPT_DISC) {
-		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+				  cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
 		if (lastflag > 0) {
 		    RegisterLastClause(sp->Sen_num, 
-				       L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+				       cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				       cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				       cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+				       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
 		}
 	    }
 	}
@@ -1420,8 +1398,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* 照応 */
 		    cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
 		    word ? word : "(null)", 
-		    cpm_ptr->elem_b_ptr[num]->num != -1 ? cpm_ptr->elem_b_ptr[num]->num : 
-		    find_upper_bnst_num(cpm_ptr->elem_b_ptr[num]));
+		    cpm_ptr->elem_b_ptr[num]->num);
 	    if (word) free(word);
 
 	    strcat(feature_buffer, buffer);
