@@ -50,11 +50,10 @@
 
 package KNP;
 require 5.000;
-use FileHandle;
+use Fork;
 use Juman;
 use strict;
 use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE );
-no strict 'refs';
 
 
 # プログラム内部で利用される大域変数
@@ -68,8 +67,6 @@ $KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
 $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
-my $FH        = "KNP00000";
-my $TIMEOUT   = 300;
 
 
 
@@ -95,7 +92,6 @@ sub new {
 	      MRPH     => [],
 	      BNST_NUM => 0,
 	      BNST     => [],
-	      PID      => 0,
 	      OPTION   => $option,
 	      PREVIOUS => [] };
 
@@ -113,7 +109,7 @@ sub new {
 # 呼び出した KNP を終了するメソッド
 sub DESTORY {
     my( $this ) = @_;
-    &kill_knp( $this ) if( $this->{PID} );
+    &kill_knp( $this ) if( $this->{KNP}->alive );
 }
 
 
@@ -131,14 +127,10 @@ sub parse {
 
     my $counter = 0;
   PARSE:
-    unless( $this->{PID} ){
-	# knp を fork する。
-	my( $pid, $write, $read ) = &fork( "$COMMAND $this->{OPTION}" );
-	$this->{PID}   = $pid;
-	$this->{WRITE} = $write;
-	$this->{READ}  = $read;
-    }
-    $this->{WRITE}->print( $JUMAN->parse( $input ) );
+    # knp を fork する。
+    $this->{KNP} = new Fork( $COMMAND, $this->{OPTION} ) unless $this->{KNP} && $this->{KNP}->alive;
+    my( @juman ) = $JUMAN->parse( $input );
+    $this->{KNP}->write( @juman );
     $counter++;
 
     # Parse ERROR などが発生した場合に原因を調べるため、構文解析した文
@@ -153,7 +145,7 @@ sub parse {
 	return 1;
     }
     my $buf = "";
-    while( $_ = &read( $this->{READ}, $TIMEOUT ) ){
+    while( $_ = $this->{KNP}->read ){
 	$buf .= $_;
 	last if( $buf =~ /\nEOS$/ || $this->{PATTERN} && /^$this->{PATTERN}/ );
     }
@@ -262,75 +254,8 @@ sub parse {
 sub kill_knp {
     my( $this ) = @_;
     $this->{PREVIOUS} = [];
-    $this->{WRITE}->close;
-    $this->{READ}->close;
-    sleep 1;
-    kill 15, $this->{PID};
-    sleep 1;
-    kill 9, $this->{PID};
-    $this->{PID} = 0;
+    $this->{KNP}->kill;
     1;
-}
-
-
-# 指定されたコマンドを fork して、
-#     (1) そのコマンドの PID
-#     (2) そのコマンドの標準入力のファイルハンドル
-#     (3) そのコマンドの標準出力および標準エラー出力のファイルハンドル
-# という3つの要素からなる配列を返す関数
-sub fork {
-    my $command = shift;
-
-    my $parent_read  = ++$FH;
-    my $child_write  = ++$FH;
-    pipe $parent_read, $child_write;
-
-    my $parent_write = ++$FH;
-    my $child_read   = ++$FH;
-    pipe $child_read, $parent_write;
-
-  FORK: {
-	if( my $pid = fork ){
-	    # 親プロセス側の処理
-	    close $child_read;
-	    close $child_write;
-	    $parent_write->autoflush(1);
-	    return ( $pid, $parent_write, $parent_read );
-	} elsif( defined $pid ){
-	    # 子プロセス側の処理
-	    close $parent_write;
-	    open \*STDIN, "<&$child_read";
-	    close $child_read;
-	    close $parent_read;
-	    open \*STDOUT, ">&$child_write";
-	    open \*STDERR, ">&$child_write";
-	    close $child_write;
-	    exec "$command";
-	    exit 0;
-	} elsif( $! =~ /No more process/ ){
-	    sleep 5;
-	    redo FORK;
-	} else {
-	    die "Can't fork: $!\n";
-	}
-    }
-}
-
-
-# 指定されたファイルハンドルから、タイムアウトつきで読み込みを行う関数
-sub read {
-    my( $fh, $timeout ) = @_;
-    my $buf;
-    $SIG{ALRM} = sub { die "SIGALRM is received\n"; };
-    eval {
-	alarm $timeout;
-	$buf = <$fh>;
-	alarm 0;
-    };
-    if( $@ =~ /SIGALRM is received/ ){
-	return undef;
-    }
-    $buf;
 }
 
 
