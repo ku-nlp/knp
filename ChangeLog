@@ -1,6 +1,16 @@
+2003-05-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.ac, svm/Makefile.am:
+	SVM model fileがあればインストールするようにした
+
+	* system/hash.c, system/ipal.c:
+	Windows用に、バイナリモードでファイルを開くようにした。
+
 2003-05-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac: 辞書存在判定部のbug fix.
+
+	* dict/scode/ntt/Makefile.am: 削除ファイルの追加
 
 2003-05-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
