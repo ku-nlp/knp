@@ -155,6 +155,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	m_ptr->Bunrui = (m_ptr+pref_mrph)->Bunrui;
 	m_ptr->Katuyou_Kata = (m_ptr+pref_mrph)->Katuyou_Kata;
 	m_ptr->Katuyou_Kei = (m_ptr+pref_mrph)->Katuyou_Kei;
+	strcpy(m_ptr->Imi, (m_ptr+pref_mrph)->Imi);
 
 	assign_feature(&(m_ptr->f), &((HomoRuleArray + pref_rule)->f), 
 		     m_ptr);
@@ -823,7 +824,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
 	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
 	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
-	    if (check_feature((ptr->mrph_ptr + i)->f, "有意味接尾辞")) {
+	    if (check_feature((ptr->mrph_ptr + i)->f, "有意味接尾辞") || 
+		check_feature((ptr->mrph_ptr + i)->f, "独立語")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
@@ -936,7 +938,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	}
 	tp->jiritu_num++;
     }
-    else if (check_feature(mp->f, "接尾非独立語")) {
+    else {
 	if (tp->fuzoku_num == 0) {
 	    tp->fuzoku_ptr = mp;
 	}
@@ -949,7 +951,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		void make_tag_units(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, settou_num = 0, count, flag;
+    int i, j, k, settou_num = 0, count;
+    char *flag;
     MRPH_DATA *mp, *settou_ptr;
     TAG_DATA *tp = NULL;
     BNST_DATA *bp = sp->bnst_data, *pre_bp;
