@@ -32,7 +32,7 @@ float	norm[] = {
 extern QUOTE_DATA quote_data;
 
 /*==================================================================*/
-		  void mask_quote_scope(int L_B_pos)
+		  void mask_quote_scope(int key_pos)
 /*==================================================================*/
 {
     int i, j, k, l, start, end;
@@ -46,7 +46,7 @@ extern QUOTE_DATA quote_data;
 
 	/* 後に括弧がある場合 */
 
-	if (L_B_pos < start) {
+	if (key_pos < start) {
 	    for (i = 0; i < start; i++)
 		for (j = start; j < end; j++)
 		    restrict_matrix[i][j] = 0;
@@ -54,7 +54,7 @@ extern QUOTE_DATA quote_data;
 
 	/* 前に括弧がある場合 (キーが括弧内の末尾の場合も) */
 
-	else if (end <= L_B_pos) {
+	else if (end <= key_pos) {
 	    for (i = start + 1; i <= end; i++)
 		for (j = end + 1; j < sp->Bnst_num; j++)
 		    restrict_matrix[i][j] = 0;
@@ -78,7 +78,7 @@ extern QUOTE_DATA quote_data;
     }
 
     if (k && OptDisplay == OPT_DEBUG)
-	print_matrix(PRINT_RSTQ, L_B_pos);
+	print_matrix(PRINT_RSTQ, key_pos);
 }
 
 /*==================================================================*/
@@ -121,11 +121,11 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	 int calc_static_level_penalty(int L_B_pos, int pos)
+	 int calc_static_level_penalty(int key_pos, int pos)
 /*==================================================================*/
 {
     int minus_score = 0;
-    int level1 = sp->bnst_data[L_B_pos].sp_level;
+    int level1 = sp->bnst_data[key_pos].sp_level;
     int level2 = sp->bnst_data[pos].sp_level;
 
     if (level1 <= level2)
@@ -134,12 +134,12 @@ extern QUOTE_DATA quote_data;
     return minus_score;
 }
 /*==================================================================*/
-   int calc_dynamic_level_penalty(int L_B_pos, int pos1, int pos2)
+   int calc_dynamic_level_penalty(int key_pos, int pos1, int pos2)
 /*==================================================================*/
 {
     if (sp->bnst_data[pos1].sp_level == sp->bnst_data[pos2].sp_level &&
 	bnst_match(pos1, pos2) &&
-	!bnst_match(pos1, L_B_pos))
+	!bnst_match(pos1, key_pos))
 	return 0;
     else if (check_feature(sp->bnst_data[pos1].f, "提題") &&
 	     check_feature(sp->bnst_data[pos2].f, "提題"))
@@ -150,12 +150,12 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	      int plus_bonus_score(int R_pos, int type)
+	      int plus_bonus_score(int jend_pos, int type)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr;
 
-    b_ptr = &sp->bnst_data[R_pos];
+    b_ptr = &sp->bnst_data[jend_pos];
 
     if (type == PARA_KEY_I) { 
 	return 0;
@@ -173,38 +173,38 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	     void dp_search_scope(int L_B_pos, int R_pos)
+      void dp_search_scope(int key_pos, int iend_pos, int jend_pos)
 /*==================================================================*/
 {
     int i, j, current_max, score_upward, score_sideway;
     
     /* ＤＰマッチング */
 
-    for (j = R_pos; j > L_B_pos; j--)  {
+    for (j = jend_pos; j > key_pos; j--)  {
 
 	/* 最右列の処理 */
 	
-	if (j == R_pos) {
-	    score_matrix[L_B_pos][R_pos] = match_matrix[L_B_pos][R_pos];
-	    prepos_matrix[L_B_pos][R_pos] = START_HERE;
-	    for (i=L_B_pos-1; i>=0; i--)
-	      score_matrix[i][R_pos] = - PENA_MAX;
+	if (j == jend_pos) {
+	    score_matrix[iend_pos][jend_pos] = match_matrix[iend_pos][jend_pos];
+	    prepos_matrix[iend_pos][jend_pos] = START_HERE;
+	    for (i=iend_pos-1; i>=0; i--)
+	      score_matrix[i][jend_pos] = - PENA_MAX;
 	}
 	
 	else {
 
 	    /* 最下行の処理 */
 
-	    score_sideway = score_matrix[L_B_pos][j+1] 
+	    score_sideway = score_matrix[iend_pos][j+1] 
 	      		    - PENALTY - penalty_table[j];
-	    score_matrix[L_B_pos][j] = score_sideway;
-	    prepos_matrix[L_B_pos][j] = L_B_pos;
+	    score_matrix[iend_pos][j] = score_sideway;
+	    prepos_matrix[iend_pos][j] = iend_pos;
 
 	    /* 他の行の処理:下からと左からのスコアを比較 */
 
-	    for (i=L_B_pos-1; i>=0; i--) {
+	    for (i=iend_pos-1; i>=0; i--) {
 		score_upward = match_matrix[i][j] + maxsco_array[i+1]
-		  - calc_dynamic_level_penalty(L_B_pos, i, j);
+		  - calc_dynamic_level_penalty(key_pos, i, j);
 		score_sideway = score_matrix[i][j+1] 
 		  - PENALTY - penalty_table[j];
 		
@@ -220,11 +220,11 @@ extern QUOTE_DATA quote_data;
 
 	/* 次の列のために最大値，最大位置を計算 */
 
-	current_max = score_matrix[L_B_pos][j];
-	maxpos_array[L_B_pos] = L_B_pos;
-	maxsco_array[L_B_pos] = score_matrix[L_B_pos][j];
+	current_max = score_matrix[iend_pos][j];
+	maxpos_array[iend_pos] = iend_pos;
+	maxsco_array[iend_pos] = score_matrix[iend_pos][j];
 
-	for (i=L_B_pos-1; i>=0; i--) {
+	for (i=iend_pos-1; i>=0; i--) {
 
 	    current_max -= (PENALTY + penalty_table[i]);
 	    if (current_max <= score_matrix[i][j]) {
@@ -240,11 +240,12 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	  void _detect_para_scope(PARA_DATA *ptr, int R_pos)
+	  void _detect_para_scope(PARA_DATA *ptr, int jend_pos)
 /*==================================================================*/
 {
     int i, j, flag, nth;
-    int L_B_pos = ptr->L_B;
+    int key_pos = ptr->key_pos;
+    int iend_pos = ptr->iend_pos;
     int ending_bonus_score;
     int max_pos = -1;
     float current_score, sim_threshold, new_threshold,
@@ -252,19 +253,19 @@ extern QUOTE_DATA quote_data;
     char *cp;
     FEATURE *fp;
 
-    /*							 */
-    /* スタート位置(R_pos)からの解析を本当に行うかどうか */
-    /*							 */
+    /*							    */
+    /* スタート位置(jend_pos)からの解析を本当に行うかどうか */
+    /*							    */
 
     /* 類似度が0なら中止 */
 
-    if (match_matrix[L_B_pos][R_pos] == 0) return;
+    if (match_matrix[iend_pos][jend_pos] == 0) return;
 
     /* restrict_matrixで可能性がない場合は中止 */
 
     flag = FALSE;
-    for (i = 0; i <= L_B_pos; i++) {
-	if (restrict_matrix[i][R_pos]) {
+    for (i = 0; i <= iend_pos; i++) {
+	if (restrict_matrix[i][jend_pos]) {
 	    flag = TRUE; break;
 	}
     }
@@ -272,8 +273,8 @@ extern QUOTE_DATA quote_data;
 
     /* 「〜，それを」という並列は中止 */
 
-    if (L_B_pos + 1 == R_pos &&	
-	check_feature(sp->bnst_data[R_pos].f, "指示詞"))
+    if (key_pos + 1 == jend_pos &&	
+	check_feature(sp->bnst_data[jend_pos].f, "指示詞"))
 	return;
 
     /* ルールによる制限(類似スコアの閾値を取得) */
@@ -287,9 +288,9 @@ extern QUOTE_DATA quote_data;
 	sim_threshold = 100.0;
 	nth = 0;
 	while (fp = (ptr->f_pattern).fp[nth]) {
-	    if (feature_AND_match(fp, sp->bnst_data[R_pos].f,
-				  sp->bnst_data + L_B_pos,
-				  sp->bnst_data + R_pos) == TRUE) {
+	    if (feature_AND_match(fp, sp->bnst_data[jend_pos].f,
+				  sp->bnst_data + key_pos,
+				  sp->bnst_data + jend_pos) == TRUE) {
 		if (cp = (char *)check_feature(fp, "&ST")) {
 		    sscanf(cp, "&ST:%f", &new_threshold);
 		} else {
@@ -304,29 +305,29 @@ extern QUOTE_DATA quote_data;
     }
 
     /* if (feature_pattern_match(&(ptr->f_pattern), 
-       sp->bnst_data[R_pos].f,
-       sp->bnst_data + L_B_pos,
-       sp->bnst_data + R_pos) == FALSE) */
+       sp->bnst_data[jend_pos].f,
+       sp->bnst_data + key_pos,
+       sp->bnst_data + jend_pos) == FALSE) */
 
     /*		    */
     /* DP MATCHING  */
     /*		    */
 
-    dp_search_scope(L_B_pos, R_pos);
+    dp_search_scope(key_pos, iend_pos, jend_pos);
 
 
     /* 最大パスの検出 */
 
-    ending_bonus_score = plus_bonus_score(R_pos, ptr->type);
-    for (i = L_B_pos; i >= 0; i--) {
+    ending_bonus_score = plus_bonus_score(jend_pos, ptr->type);
+    for (i = iend_pos; i >= 0; i--) {
 	current_score = 
-	    (float)(score_matrix[i][L_B_pos+1] + ending_bonus_score)
-	    / norm[R_pos - i + 1];
-	if (restrict_matrix[i][R_pos] && 
+	    (float)(score_matrix[i][key_pos+1] + ending_bonus_score)
+	    / norm[jend_pos - i + 1];
+	if (restrict_matrix[i][jend_pos] && 
 	    max_score < current_score) {
 	    max_score = current_score;
-	    pure_score = (float)score_matrix[i][L_B_pos+1]
-		/ norm[R_pos - i + 1];
+	    pure_score = (float)score_matrix[i][key_pos+1]
+		/ norm[jend_pos - i + 1];
 	    /* pure_score は末尾表現のボーナスを除いた値 */
 	    max_pos = i;
 	}
@@ -335,11 +336,13 @@ extern QUOTE_DATA quote_data;
     /* ▼ (a...)(b)という並列は扱えない．括弧の制限などでこうならざる
        をえない場合は，並列とは認めないことにする (暫定的) */
 
-    if (L_B_pos + 1 == R_pos && max_pos != L_B_pos) {
+    /* 「〜はもちろん」の扱いで話が変ってっきた？？？
+    if (key_pos + 1 == jend_pos && max_pos != key_pos) {
 	max_pos = i;
 	max_score = -100;
 	return;
     }
+    */
 
     /*
       閾値を越えて，まだstatusが x なら n に
@@ -367,9 +370,9 @@ extern QUOTE_DATA quote_data;
 	ptr->pure_score = pure_score;
 	ptr->max_path[0] = max_pos;
 	for (j = 0;; j++) {
-	    ptr->max_path[j+1] = prepos_matrix[ptr->max_path[j]][j+L_B_pos+1];
+	    ptr->max_path[j+1] = prepos_matrix[ptr->max_path[j]][j+key_pos+1];
 	    if (ptr->max_path[j+1] == START_HERE) {
-		ptr->R = j + L_B_pos + 1;
+		ptr->jend_pos = j + key_pos + 1;
 		break;
 	    }
 	}
@@ -382,7 +385,7 @@ extern QUOTE_DATA quote_data;
 {
     int i, j, k;
     PARA_DATA *para_ptr = &(sp->para_data[para_num]);
-    int L_B_pos = para_ptr->L_B;
+    int key_pos = para_ptr->key_pos;
 
     /* 
        restrict_p
@@ -404,21 +407,21 @@ extern QUOTE_DATA quote_data;
 	    for (j = i + 1; j < sp->Bnst_num; j++)
 		restrict_matrix[i][j] = 1;
 
-    mask_quote_scope(L_B_pos);
+    mask_quote_scope(key_pos);
 
     for (k = 0; k < sp->Bnst_num; k++) {
-	penalty_table[k] = (k == L_B_pos) ? 
-	  0 : calc_static_level_penalty(L_B_pos, k);
+	penalty_table[k] = (k == key_pos) ? 
+	  0 : calc_static_level_penalty(key_pos, k);
     }
 
-    for (j = L_B_pos+1; j < sp->Bnst_num; j++)
+    for (j = key_pos+1; j < sp->Bnst_num; j++)
 	_detect_para_scope(para_ptr, j);
 
     if (para_ptr->status == 'x') {
 	;
 	/*
 	fprintf(Outfp, ";; Cannot find proper CS for the key <");
-	print_bnst(sp->bnst_data + ptr->L_B, NULL);
+	print_bnst(sp->bnst_data + ptr->key_pos, NULL);
 	fprintf(Outfp, ">.\n");
 	*/
     } else if (para_ptr->status == 'n' &&
@@ -451,22 +454,29 @@ extern QUOTE_DATA quote_data;
 	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "並キ")) != NULL) {
 
 	    sp->bnst_data[i].para_num = Para_num;
+	    sp->para_data[Para_num].para_char = 'a'+ Para_num;
+	    sp->para_data[Para_num].key_pos = i;
 
 	    type[0] = NULL;
 	    condition[0] = NULL;
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
-	    sp->para_data[Para_num].para_char = 'a'+ Para_num;
-	    sp->para_data[Para_num].L_B = i;
-
-	    if (!strcmp(type, "名")) {
+	    if (!strncmp(type, "名", 2)) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_N	;
-	    } else if (!strcmp(type, "述")) {
+	    } else if (!strncmp(type, "述", 2)) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_P;
-	    } else if (!strcmp(type, "？")) {
+	    } else if (!strncmp(type, "？", 2)) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
 	    sp->para_data[Para_num].type = sp->bnst_data[i].para_key_type;
+	    
+	    /* 「〜はもちろん」などの場合の"並キ:名-1:...."の処理 */
+	    if (*(type+2)) {
+		sp->para_data[Para_num].iend_pos = i + atoi(type+2);
+	    } else {
+		sp->para_data[Para_num].iend_pos = i;
+	    }
+
 	    string2feature_pattern(&(sp->para_data[Para_num].f_pattern),condition);
 	    
 	    Para_num ++;
@@ -531,8 +541,8 @@ extern QUOTE_DATA quote_data;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
-	    sp->para_data[Para_num].L_B = i;
-	    sp->para_data[Para_num].R = b_ptr->dpnd_head;
+	    sp->para_data[Para_num].key_pos = i;
+	    sp->para_data[Para_num].jend_pos = b_ptr->dpnd_head;
 	    for (j = i - 1; 
 		 j >= 0 && 
 		     (sp->bnst_data[j].dpnd_head < i ||

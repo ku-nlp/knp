@@ -37,14 +37,14 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 };
 
 /*==================================================================*/
-		void print_restrict_matrix(int L_B_pos)
+		void print_restrict_matrix(int key_pos)
 /*==================================================================*/
 {
     int i, j;
     
     fprintf(Outfp, "<< restrict matrix >>\n");	
-    for ( i=0; i<=L_B_pos; i++ ) {
-	for ( j=L_B_pos+1; j<sp->Bnst_num; j++ )
+    for ( i=0; i<=key_pos; i++ ) {
+	for ( j=key_pos+1; j<sp->Bnst_num; j++ )
 	  fprintf(Outfp, "%3d", restrict_matrix[i][j]);
 	fputc('\n', Outfp);
     }
@@ -137,11 +137,11 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     ptr2 = &(sp->para_data[pos]);
 
     a1 = ptr1->max_path[0];
-    a2 = ptr1->L_B;
-    a3 = ptr1->R;
+    a2 = ptr1->key_pos;
+    a3 = ptr1->jend_pos;
     b1 = ptr2->max_path[0];
-    b2 = ptr2->L_B;
-    b3 = ptr2->R;
+    b2 = ptr2->key_pos;
+    b3 = ptr2->jend_pos;
 
     /* 後だけ強並列 -> 前を修正 */
     if ( ptr1->status != 's' && ptr2->status == 's' ) {
@@ -191,26 +191,26 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 
     /* 前部の制限 */
 
-    if (_check_para_d_struct(0, ptr->L_B, FALSE, 0, NULL) == FALSE) {
-	for (k = ptr->L_B; D_found_array[k] == TRUE; k--)
+    if (_check_para_d_struct(0, ptr->key_pos, FALSE, 0, NULL) == FALSE) {
+	for (k = ptr->key_pos; D_found_array[k] == TRUE; k--)
 	  ;
 	for (i = 0; i <= k; i++)
-	  for (j = ptr->L_B + 1; j < sp->Bnst_num; j++)
+	  for (j = ptr->key_pos + 1; j < sp->Bnst_num; j++)
 	    restrict_matrix[i][j] = 0;
     }
 
     /* 後部の制限 */	
 
-    for (j = ptr->L_B + 2; j < sp->Bnst_num; j++)
-      if (_check_para_d_struct(ptr->L_B + 1, j, FALSE, 0, NULL) == FALSE)
-	for (i = 0; i <= ptr->L_B; i++) {
+    for (j = ptr->key_pos + 2; j < sp->Bnst_num; j++)
+      if (_check_para_d_struct(ptr->key_pos + 1, j, FALSE, 0, NULL) == FALSE)
+	for (i = 0; i <= ptr->key_pos; i++) {
 	    restrict_matrix[i][j] = 0;
 	}
     
     Revised_para_num = num;
 
     if (OptDisplay == OPT_DEBUG)
-      print_matrix(PRINT_RSTD, ptr->L_B);
+      print_matrix(PRINT_RSTD, ptr->key_pos);
 }
 
 /*====================================================================

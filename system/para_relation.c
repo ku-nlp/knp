@@ -46,13 +46,13 @@ static int rel_matrix_strong[4][4] = {
     
     ptr1 = &(sp->para_data[p_num1]);
     a1 = ptr1->max_path[0];
-    a2 = ptr1->L_B;
-    a3 = ptr1->R;
+    a2 = ptr1->key_pos;
+    a3 = ptr1->jend_pos;
 
     ptr2 = &(sp->para_data[p_num2]);
     b1 = ptr2->max_path[0];
-    b2 = ptr2->L_B;
-    b3 = ptr2->R;
+    b2 = ptr2->key_pos;
+    b3 = ptr2->jend_pos;
 
     fprintf(Outfp, "%-10s ==> ", RESULT[para_rel_matrix[p_num1][p_num2]]);
 
@@ -102,11 +102,11 @@ static int rel_matrix_strong[4][4] = {
     int rel_pre, rel_pos;
 
     a1 = sp->para_data[pre_num].max_path[0];
-    a2 = sp->para_data[pre_num].L_B;
-    a3 = sp->para_data[pre_num].R;
+    a2 = sp->para_data[pre_num].key_pos;
+    a3 = sp->para_data[pre_num].jend_pos;
     b1 = sp->para_data[pos_num].max_path[0];
-    b2 = sp->para_data[pos_num].L_B;
-    b3 = sp->para_data[pos_num].R;
+    b2 = sp->para_data[pos_num].key_pos;
+    b3 = sp->para_data[pos_num].jend_pos;
 
     if (a3 < b1) return REL_NOT;
     
@@ -137,8 +137,8 @@ static int rel_matrix_strong[4][4] = {
 
     int pre_length, pos_length;
 
-    pre_length = sp->para_data[pre_num].R - sp->para_data[pre_num].L_B;
-    pos_length = sp->para_data[pos_num].L_B - sp->para_data[pos_num].max_path[0] + 1;
+    pre_length = sp->para_data[pre_num].jend_pos - sp->para_data[pre_num].key_pos;
+    pos_length = sp->para_data[pos_num].key_pos - sp->para_data[pos_num].max_path[0] + 1;
     
     if (pre_length * 3 <= pos_length * 4) return TRUE;
     else return FALSE;
@@ -324,9 +324,9 @@ static int rel_matrix_strong[4][4] = {
 		exit(1);
 	    }
 	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].max_path[0];
-	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].L_B;
-	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].L_B+1;
-	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].R;
+	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].key_pos;
+	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].key_pos+1;
+	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].jend_pos;
 	}	  
         for (j = i+1; j < Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
@@ -338,8 +338,8 @@ static int rel_matrix_strong[4][4] = {
 		    fprintf(stderr, "Too many para (%s)!\n", Comment);
 		    exit(1);
 		}
-		m_ptr->start[m_ptr->part_num] = sp->para_data[j].L_B+1;
-		m_ptr->end[m_ptr->part_num++] = sp->para_data[j].R;
+		m_ptr->start[m_ptr->part_num] = sp->para_data[j].key_pos+1;
+		m_ptr->end[m_ptr->part_num++] = sp->para_data[j].jend_pos;
 		break;
 	      default:
 		break;

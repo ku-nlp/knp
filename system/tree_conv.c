@@ -128,9 +128,9 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 {
     int i;
 
-    for (i = p_ptr->R - p_ptr->L_B - 1; i >= 0; i--) {
+    for (i = p_ptr->jend_pos - p_ptr->key_pos - 1; i >= 0; i--) {
 	if (sp->bnst_data + p_ptr->max_path[i] == b_ptr)
-	  return sp->bnst_data + p_ptr->L_B + i + 1;
+	  return sp->bnst_data + p_ptr->key_pos + i + 1;
     }
     return NULL;
 }

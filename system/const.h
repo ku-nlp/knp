@@ -508,7 +508,7 @@ typedef struct tnode_p {
     char 	para_char;
     int  	type;
     int  	max_num;
-    int         L_B, R, max_path[BNST_MAX];
+    int         key_pos, iend_pos, jend_pos, max_path[BNST_MAX];
     FEATURE_PATTERN f_pattern;	/* 末尾文節の条件 */
     float	max_score;	/* 類似性の最大値 */
     float	pure_score;	/* 末尾表現のボーナスを除いた値,強並列の基準 */

@@ -202,6 +202,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	       ・数量同士 -- 2 (続く名詞(助数辞)で評価)
 	       		※ 助数辞が一致しなくても類似することもある
 	       		例)「人口は八万七千人だったが、人口増加率は一位で、…」
+	       ・時間同士 -- 2			
 	       ・その他同士 -- 自立語の比較
 	    */
 
@@ -213,8 +214,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		flag1 = 2;
 	    } else if (check_feature(ptr1->f, "数量")) {
 		flag1 = 3;
+	    /* } else if (check_feature(ptr1->f, "時間")) {
+		flag1 = 4; */
 	    } else {
-		flag1 = 4;
+		flag1 = 5;
 	    }
 	    if (check_feature(ptr2->f, "人名")) {
 		flag2 = 0;
@@ -224,8 +227,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		flag2 = 2;
 	    } else if (check_feature(ptr2->f, "数量")) {
 		flag2 = 3;
+	    /* } else if (check_feature(ptr2->f, "時間")) {
+		flag2 = 4; */
 	    } else {
-		flag2 = 4;
+		flag2 = 5;
 	    }
 
 	    if (flag1 == 0 && flag2 == 0) {
@@ -260,6 +265,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		content_word_match = 0;
 	    }
 	    else if (flag1 == 4 && flag2 == 4) {
+		point += 2;
+		content_word_match = 0;
+	    }
+	    else if (flag1 == 5 && flag2 == 5) {
 		content_word_match = 1;
 	    }
 	    else {

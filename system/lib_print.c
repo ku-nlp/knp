@@ -442,7 +442,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 }
 
 /*==================================================================*/
-		 void print_matrix(int type, int L_B)
+		 void print_matrix(int type, int key_pos)
 /*==================================================================*/
 {
     int i, j, space, length;
@@ -460,9 +460,9 @@ char pos2symbol(char *hinshi, char *bunrui)
     if (type == PRINT_PARA) {
 	for ( i=0; i<Para_num; i++ ) {
 	    ptr = &sp->para_data[i];
-	    for ( j=ptr->L_B+1; j<=ptr->R; j++ )
-	      path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
-		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] ?
+	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ )
+	      path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
 		  -1 : 'a' + i;
 	}
     }
@@ -529,9 +529,9 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    } else if (type == PRINT_RSTR || 
 		       type == PRINT_RSTD ||
 		       type == PRINT_RSTQ) {
-		if (j <= L_B) 
+		if (j <= key_pos) 
 		    fprintf(Outfp, "--");
-		else if (L_B < i)
+		else if (key_pos < i)
 		    fprintf(Outfp, " |");
 		else
 		    fprintf(Outfp, "%2d", restrict_matrix[i][j]);

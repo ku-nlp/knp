@@ -115,9 +115,9 @@ static char tmp[64];
     if (type == PRINT_PARA) {
 	for (i = 0; i < Para_num; i++) {
 	    ptr = &sp->para_data[i];
-	    for (j = ptr->L_B+1; j <= ptr->R; j++)
-	      path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
-		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] ?
+	    for (j = ptr->key_pos+1; j <= ptr->jend_pos; j++)
+	      path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
 		  -1 : 'a' + i;
 	}
     }
