@@ -67,11 +67,11 @@ int		SMP2SMGExist;
     if (code) {
 	length = strlen(code);
 	/* °î¤ì¤¿¤é¡¢½Ì¤á¤ë (ËÐÌÇÂÐ¾Ý) */
-	if (length > SM_CODE_SIZE*SM_CODE_MAX) {
+	if (length > SM_CODE_SIZE*SM_ELEMENT_MAX) {
 #ifdef DEBUG
 	    fprintf(stderr, "Too long SM content <%s>.\n", code);
 #endif
-	    code[SM_CODE_SIZE*SM_CODE_MAX] = '\0';
+	    code[SM_CODE_SIZE*SM_ELEMENT_MAX] = '\0';
 	}
 
 	pos = 0;
@@ -102,7 +102,7 @@ int		SMP2SMGExist;
 {
     int strt, end, last, stop, i, overflow_flag = 0;
     char str_buffer[BNST_LENGTH_MAX], *code;
-    char feature_buffer[SM_CODE_SIZE*SM_CODE_MAX+1];
+    char feature_buffer[SM_CODE_SIZE*SM_ELEMENT_MAX+1];
 
     /* ½é´ü²½ */
     *(ptr->SM_code) = '\0';

@@ -204,12 +204,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	}
 	code = (char *)get_code(point2);
 	if (code) {
+	    if (strlen(destination) + strlen(code) >= max) {
+		fprintf(stderr, "Too many EX <%s>.\n", ipal_str_buf);
+		free(code);
+		break;
+	    }
 	    strcat(destination, code);
 	    free(code);
-	}
-	if (strlen(destination) >= max) {
-	    fprintf(stderr, "Too many EX <%s>.\n", ipal_str_buf);
-	    break;
 	}
     }
 }
@@ -253,7 +254,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     /* 各格要素の処理 */
 
-    for (i = 0; i < 5 && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
+    for (i = 0; i < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j);
 	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH);

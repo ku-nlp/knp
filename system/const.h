@@ -40,7 +40,6 @@
 
 #define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
-#define SM_CODE_MAX	128
 
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
@@ -65,10 +64,10 @@
 #define ALL_CASE_FRAME_MAX 	0
 #define IPAL_FRAME_MAX 		0
 #endif
-#define CF_ELEMENT_MAX 		10
+#define CF_ELEMENT_MAX 		20
 #define PP_ELEMENT_MAX		5
-#define SM_ELEMENT_MAX		128			/* SM_CODE_MAXとまとめるべき */
-#define EX_ELEMENT_MAX		128
+#define SM_ELEMENT_MAX		256
+#define EX_ELEMENT_MAX		256
 #define MAX_MATCH_MAX 		10
 
 #define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
@@ -430,7 +429,7 @@ typedef struct {
     char	Imi[IMI_MAX];
     char	type;
     FEATUREptr	f;
-    char 	SM[SM_CODE_SIZE*SM_CODE_MAX+1];	/* 追加 */
+    char 	SM[SM_ELEMENT_MAX*SM_CODE_SIZE+1];	/* 追加 */
     NamedEntity	NE;				/* 追加 */
     NamedEntity	eNE;				/* 追加 */
     struct _pos_s	Case[23];		/* 追加 */
@@ -458,9 +457,9 @@ typedef struct tnode_b {
     char	to_para_p;	/* コピー */
     int 	sp_level;	/* 並列構造に対するバリア */
   /* 意味情報 */
-    char 	BGH_code[500];
+    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
     int		BGH_num;
-    char 	SM_code[SM_CODE_SIZE*SM_CODE_MAX+1];
+    char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
   /* 用言データ */
     char 	SCASE_code[11];	/* 表層格 */
@@ -557,8 +556,9 @@ typedef struct {
 /*====================================================================
 				格解析
 ====================================================================*/
-#define IPAL_FIELD_NUM	27	/* 65 */
-#define IPAL_DATA_SIZE	5000	/* 1026 */
+#define IPAL_FIELD_NUM	72
+#define IPAL_DATA_SIZE	12800
+#define CASE_MAX_NUM	20
 
 #define USE_BGH	1
 #define	USE_NTT	2
@@ -574,9 +574,9 @@ typedef struct {
     int hyouki;			/* 表記 */
     int imi;			/* 意味 */
     int jyutugoso;		/* 述語素 */
-    int kaku_keishiki[5];	/* 格形式 */
-    int imisosei[5];		/* 意味素性 */
-    int meishiku[5];		/* 名詞句 */
+    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
+    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
+    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
     int sase;			/* 態１ */
     int rare;			/* 態２ */
     int tyoku_noudou1;		/* 態３ */

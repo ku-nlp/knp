@@ -131,6 +131,11 @@ int		BGHExist;
 	    code = get_bgh(str_buffer);
 	    /* あるとき */
 	    if (code) {
+		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
+		    strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
+		    ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
+		    fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
+		}
 		strcpy(ptr->BGH_code, code);
 		free(code);
 	    }
@@ -180,6 +185,11 @@ int		BGHExist;
 
 		code = get_bgh(str_buffer);
 		if (code) {
+		    if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
+			strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
+			ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
+			fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
+		    }
 		    strcpy(ptr->BGH_code, code);
 		    free(code);
 		}
@@ -205,6 +215,11 @@ int		BGHExist;
 
 	    code = get_bgh(str_buffer);
 	    if (code) {
+		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
+		    strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
+		    ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
+		    fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
+		}
 		strcpy(ptr->BGH_code, code);
 		free(code);
 	    }

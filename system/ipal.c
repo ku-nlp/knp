@@ -7,8 +7,9 @@
 #include <stdio.h>
 
 /* from ipal.h */
-#define IPAL_FIELD_NUM 27 /* 65 */
-#define IPAL_DATA_SIZE	5000 /* 1026 */
+#define IPAL_FIELD_NUM	72
+#define IPAL_DATA_SIZE	12800
+#define CASE_MAX_NUM	20
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -21,9 +22,9 @@ typedef struct {
     int hyouki;			/* É½µ­ */
     int imi;			/* °ÕÌ£ */
     int jyutugoso;		/* ½Ò¸ìÁÇ */
-    int kaku_keishiki[5];	/* ³Ê·Á¼° */
-    int imisosei[5];		/* °ÕÌ£ÁÇÀ­ */
-    int meishiku[5];		/* Ì¾»ì¶ç */
+    int kaku_keishiki[CASE_MAX_NUM];	/* ³Ê·Á¼° */
+    int imisosei[CASE_MAX_NUM];		/* °ÕÌ£ÁÇÀ­ */
+    int meishiku[CASE_MAX_NUM];		/* Ì¾»ì¶ç */
     int sase;			/* ÂÖ£± */
     int rare;			/* ÂÖ£² */
     int tyoku_noudou1;		/* ÂÖ£³ */
@@ -34,7 +35,7 @@ typedef struct {
     unsigned char DATA[IPAL_DATA_SIZE];
 } IPAL_FRAME;
 
-char buffer[5000];
+char buffer[IPAL_DATA_SIZE];
 
 IPAL_TRANS_FRAME ipal_frame;
 
@@ -93,7 +94,7 @@ main(int argc, char **argv)
 	pos = 0;
 	for (i = 0; i < IPAL_FIELD_NUM; i++, line++) {
 	    
-	    if (fgets(buffer, 5000, stdin) == NULL) {
+	    if (fgets(buffer, IPAL_DATA_SIZE, stdin) == NULL) {
 		if (i != 0) {
 		    fprintf(stderr, "Invalid data.\n");
 		    exit(1);
