@@ -1,3 +1,21 @@
+2003-03-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c: コンパイルできない不都合を修正
+
+	* system/case_data.c: 並列の連体修飾節の解析がおかしくなる場合があるのを修正
+
+	* configure.ac: TinySVMライブラリとリンクできない場合がある不都合を修正
+
+	* INSTALL: obsoleteな記述を修正
+
+2003-03-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* svm/svm.cc, svm/svm.h, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_dt.c, system/lib_sm.c, system/main.c, system/tree_conv.c:
+	省略解析の改良
+
+	* system/read_data.c:
+	形態素の意味情報が使われない場合があるのを修正 (thanks to tsuchiya@pine.kuee.kyoto-u.ac.jp)
+
 2003-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
