@@ -125,7 +125,7 @@ int	Thesaurus = USE_NTT;
 		return 0;
 	    }
 	    else {
-		for (cp = (char *)smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
+		for (cp = (char *)_smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
 		    if (*(cp+SM_CODE_SIZE) == '/')
 			*(cp+SM_CODE_SIZE) = '\0';
 		    else if (str_eq(cp+SM_CODE_SIZE, " side-effect"))
@@ -161,7 +161,7 @@ int	Thesaurus = USE_NTT;
 {
     /* 例の分類語彙表コードのマッチング度の計算 */
 
-    int  match = 0;
+    int match = 0;
 
     /* 単位の項目は無視 */
     if (!strncmp(cp1, "11960", 5) || !strncmp(cp2, "11960", 5))
@@ -201,6 +201,8 @@ int	Thesaurus = USE_NTT;
 /*==================================================================*/
 {
     int i, j;
+
+    /* 両方に target が存在するかチェック */
 
     if (p == NULL) {
 	return FALSE;
@@ -250,9 +252,7 @@ int	Thesaurus = USE_NTT;
     /* 意味マーカのマッチング度の計算 */
 
     int i, j, k, tmp_score, score = -100, ex_score = -100;
-    int step;
     char *exd, *exp;
-    int (*match_function)();
     int *match_score;
 
     if (flag == SEMANTIC_MARKER) {
@@ -299,15 +299,11 @@ int	Thesaurus = USE_NTT;
 	if (Thesaurus == USE_BGH) {
 	    exd = cfd->ex[as1];
 	    exp = cfp->ex[as2];
-	    step = BGH_CODE_SIZE;
-	    match_function = _ex_match_score;
 	    match_score = EX_match_score;
 	}
 	else if (Thesaurus == USE_NTT) {
 	    exd = cfd->ex2[as1];
 	    exp = cfp->ex2[as2];
-	    step = SM_CODE_SIZE;
-	    match_function = _sm_match_score;
 	    match_score = EX_match_score;
 	}
 
@@ -325,18 +321,15 @@ int	Thesaurus = USE_NTT;
 	    }
 	}
 	else {
+	    float rawscore;
+
+	    rawscore = CalcSimilarity(exd, exp);
 	    /* 用例のマッチング */
-	    for (j = 0; exp[j]; j+=step) {
-		for (i = 0; exd[i]; i+=step) {
-		    /* とりあえず… */
-		    if (Thesaurus == USE_BGH) {
-			tmp_score = *(match_score+match_function(exp+j, exd+i));
-		    }
-		    else if (Thesaurus == USE_NTT) {
-			tmp_score = *(match_score+(int)(ntt_code_match(exp+j, exd+i)*7));
-		    }
-		    if (tmp_score > ex_score) ex_score = tmp_score;
-		}
+	    if (Thesaurus == USE_BGH) {
+		ex_score = *(match_score+(int)rawscore);
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		ex_score = *(match_score+(int)(rawscore*7));
 	    }
 	}
 

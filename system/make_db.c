@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     num = 0;
     while (fgets(buffer, DBM_CON_MAX, stdin) != NULL) {
 
-	sscanf(buffer, "%s %s", key, content);
+	sscanf(buffer, "%s %[^\n]", key, content);
 
 	if ((num++ % 1000) == 0) fputc('*', stderr);
 

@@ -270,10 +270,10 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-		       char *smp2smg(char *cp)
+		       char *_smp2smg(char *cp)
 /*==================================================================*/
 {
-    char *code;
+    char *code, key[SM_CODE_SIZE+1];
 
     /* 値は長くても 52 bytes ぐらい */
 
@@ -281,8 +281,11 @@ int		SMP2SMGExist;
 	cont_str[0] = '\0';
 	return cont_str;
     }
-    
-    code = db_get(smp2smg_db, cp);
+
+    strncpy(key, cp, SM_CODE_SIZE);
+    key[SM_CODE_SIZE] = '\0';
+
+    code = db_get(smp2smg_db, key);
     if (code) {
 	strcpy(cont_str, code);
 	free(code);
@@ -291,6 +294,60 @@ int		SMP2SMGExist;
 	cont_str[0] = '\0';
     }
     return cont_str;
+}
+
+/*==================================================================*/
+		       char *smp2smg(char *cpd)
+/*==================================================================*/
+{
+    char *cp, *start, *ret = NULL;
+    int storep = 0, incflag;
+
+    if (SMP2SMGExist == FALSE) {
+	fprintf(stderr, ";;; Cannot open smp2smg table!\n");
+	return NULL;
+    }
+
+    start = _smp2smg(cpd);
+
+    for (cp = start; *cp; cp+=SM_CODE_SIZE) {
+	if (*(cp+SM_CODE_SIZE) == '/') {
+	    *(cp+SM_CODE_SIZE) = '\0';
+	    incflag = 1;
+	}
+	else {
+	    incflag = 0;
+	}
+
+	if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
+	    if (*(cp+SM_CODE_SIZE+12) == '/') {
+		cp+=13;		
+	    }
+	    else {
+		cp+=12;
+	    }   
+	    continue;
+	}
+
+	if (*(cp+SM_CODE_SIZE) != '\0') {
+	    fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
+		    *(cp+SM_CODE_SIZE), "smp2smg");
+	}
+	else {
+	    strncpy(start+storep, cp, SM_CODE_SIZE);
+	    storep+=SM_CODE_SIZE;
+	    if (incflag) {
+		cp++;
+	    }
+	}
+    }
+
+    if (storep) {
+	*(start+storep) = '\0';
+	ret = strdup(start);
+    }
+	
+    return ret;
 }
 
 /*==================================================================*/
@@ -310,7 +367,7 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-		float ntt_code_match(char *c1, char *c2)
+	      float _ntt_code_match(char *c1, char *c2)
 /*==================================================================*/
 {
     int i, d1, d2, min;
@@ -339,6 +396,78 @@ int		SMP2SMGExist;
 	}
     }
     return (float)2*min/(d1+d2);
+}
+
+/*==================================================================*/
+	  float ntt_code_match(char *c1, char *c2, int flag)
+/*==================================================================*/
+{
+    if (flag == SM_EXPAND_NE) {
+	float score, maxscore = 0;
+	char *cp1, *cp2;
+
+	if (*c1 == '2') {
+	    c1 = smp2smg(c1);
+	    if (!c1) {
+		return 0;
+	    }
+	}
+	if (*c2 == '2') {
+	    c2 = smp2smg(c2);
+	    if (!c2) {
+		return 0;
+	    }
+	}
+
+	for (cp1 = c1; *cp1; cp1+=SM_CODE_SIZE) {
+	    for (cp2 = c2; *cp2; cp2+=SM_CODE_SIZE) {
+		score = _ntt_code_match(cp1, cp2);
+		if (score > maxscore) {
+		    maxscore = score;
+		}
+	    }
+	}
+	return maxscore;
+    }
+    else {
+	return _ntt_code_match(c1, c2);
+    }
+}
+
+/*==================================================================*/
+	      float CalcSimilarity(char *exd, char *exp)
+/*==================================================================*/
+{
+    int i, j, step;
+    float score = 0, tempscore;
+
+    /* どちらかに用例のコードがないとき */
+    if (!(exd && exp && *exd && *exp)) {
+	return score;
+    }
+
+    if (Thesaurus == USE_BGH) {
+	step = BGH_CODE_SIZE;
+    }
+    else if (Thesaurus == USE_NTT) {
+	step = SM_CODE_SIZE;
+    }
+
+    /* 最大マッチスコアを求める */
+    for (j = 0; exp[j]; j+=step) {
+	for (i = 0; exd[i]; i+=step) {
+	    if (Thesaurus == USE_BGH) {
+		tempscore = (float)_ex_match_score(exp+j, exd+i);
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		tempscore = ntt_code_match(exp+j, exd+i, SM_EXPAND_NE);
+	    }
+	    if (tempscore > score) {
+		score = tempscore;
+	    }
+	}
+    }
+    return score;
 }
 
 /*==================================================================*/

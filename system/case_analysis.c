@@ -525,7 +525,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     char feature_buffer[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
 
-    /* 格解析の結果(Best_mgrが管理)をfeatureとして用言文節に与える */
+    /* 格解析の結果(Best_mgrが管理)をfeatureとして格要素文節に与える */
 
     for (j = 0; j < sp->Best_mgr->pred_num; j++) {
 
@@ -552,11 +552,18 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		sprintf(feature_buffer, "格関係%d:%s", cpm_ptr->pred_b_ptr->num, 
 			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
-	    else {
-		fprintf(stderr, "UNASSIGNED? %s\n", sp->KNPSID ? sp->KNPSID : "");
-		exit(1);
+	    /* else: UNASSIGNED はないはず */
+
+	    sprintf(feature_buffer, "%s:%s", feature_buffer, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
+
+	    /* feature を格要素文節に与える */
+	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 	    }
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+	    /* 文節内部の要素の場合 */
+	    else {
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->parent->f), feature_buffer);
+	    }
 	}
     }
 }

@@ -505,6 +505,10 @@ typedef struct tnode_b {
 
     FEATUREptr	f;
     DpndRule	*dpnd_rule;
+
+    int		internal_num;
+    int		internal_max;
+    struct tnode_b *internal;
 } BNST_DATA;
 
 /* 並列構造データ */

@@ -142,8 +142,11 @@ extern void init_configfile();
 extern void server_read_rc(FILE *fp);
 
 /* context.c */
+extern void InitAnaphoraList();
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
+extern void copy_sentence(SENTENCE_DATA *sp);
+extern void MakeInternalBnst(SENTENCE_DATA *sp);
 
 /* corpus.c */
 extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 
@@ -225,8 +228,8 @@ extern void close_scase();
 
 /* lib_sm.c */
 extern char *sm2code(char *cp);
-extern float ntt_code_match(char *c1, char *c2);
-extern char *smp2smg(char *cp);
+extern float ntt_code_match(char *c1, char *c2, int flag);
+extern float CalcSimilarity(char *exd, char *exp);
 extern int sm_time_match(char *c);
 extern void get_sm_code(BNST_DATA *ptr);
 extern void init_sm();

@@ -409,6 +409,8 @@ extern int	SOTO_SCORE;
 			   void init_all()
 /*==================================================================*/
 {
+    int i;
+
     /* 初期化 */
 
     init_hash();
@@ -440,6 +442,11 @@ extern int	SOTO_SCORE;
     current_sentence_data.Best_mgr = &Best_mgr;
     current_sentence_data.KNPSID = NULL;
     current_sentence_data.Comment = NULL;
+
+    for (i = 0; i < BNST_MAX; i++) {
+	 current_sentence_data.bnst_data[i].internal_num = 0;
+	 current_sentence_data.bnst_data[i].f = NULL;
+    }
 
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
@@ -531,8 +538,15 @@ extern int	SOTO_SCORE;
 
     if (OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 ||
-	OptAnalysis == OPT_DISC)
-	set_pred_caseframe(sp);		/* 用言の格フレーム */
+	OptAnalysis == OPT_DISC) {
+
+	/* 格解析を行うサ変名詞を含む文節に feature を与え、
+	   複合名詞をばらして格要素として認識する */
+	MakeInternalBnst(sp);
+
+	/* それぞれの用言の格フレームを取得 */
+	set_pred_caseframe(sp);
+    }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
@@ -712,8 +726,18 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptAnalysis != OPT_DISC) print_result(sp);
+	    if (OptAnalysis != OPT_DISC) 
+		print_result(sp);
+	    else
+		copy_sentence(sp);
 	    fflush(Outfp);
+	}
+
+	/* 格フレームの初期化 */
+	if (OptAnalysis == OPT_CASE || 
+	    OptAnalysis == OPT_CASE2 || 
+	    OptAnalysis == OPT_DISC) {
+	    clear_cf();
 	}
 
 	/* 初期化 */
@@ -737,8 +761,14 @@ PARSED:
 	else {
 	    for (i = 0; i < sp->Mrph_num; i++) 
 		clear_feature(&(sp->mrph_data[i].f));
-	    for (i = 0; i < sp->Bnst_num; i++) 
+	    for (i = 0; i < sp->Bnst_num; i++) {
 		clear_feature(&(sp->bnst_data[i].f));
+		if (sp->bnst_data[i].internal_num) {
+		    sp->bnst_data[i].internal_num = 0;
+		    sp->bnst_data[i].internal_max = 0;
+		    free(sp->bnst_data[i].internal);
+		}
+	    }
 	    /* New_Bnstはもともとpointer */
 	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
 		(sp->bnst_data+i)->f = NULL;
@@ -774,11 +804,6 @@ PARSED:
 		unsupervised_debug_print(sp);
 	}
 	fflush(Outfp);
-
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2) {
-	    clear_cf();
-	}
 
 	success = 1;	/* OK 成功 */
     }
@@ -976,7 +1001,7 @@ PARSED:
     int  port = DEFAULT_PORT;
     int  strnum = 0;
 
-	/* 文字列を送って ステータスコードを返す */  
+    /* 文字列を送って ステータスコードを返す */  
     int send_string(char *str)
 	{
 	    int len,result = 0;

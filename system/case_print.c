@@ -133,7 +133,7 @@
 	    num = cmm_ptr->result_lists_p[k].flag[i];
 
 	    if (cmm_ptr->cf_ptr->adjacent[i] == TRUE)
-		fputs(" ¡ö ", Outfp);
+		fputs(" ¡ý ", Outfp);
 	    else
 		fputs(" ¡ü ", Outfp);
 
