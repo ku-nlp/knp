@@ -6,7 +6,6 @@
 
     $Id$
 ====================================================================*/
-#include <juman.h>
 
 #ifdef USE_SVM
 #include <svm.h>
@@ -97,6 +96,8 @@
 #ifdef HAVE_GRP_H
 #include <grp.h>
 #endif
+
+#include <juman.h>
 
 #include "path.h"
 #include "const.h"
