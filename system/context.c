@@ -1715,8 +1715,12 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 
     if (cpm_ptr->cf.type == CF_NOUN) {
 	/* 名詞の場合: exact match or <sm> match */
-	if (ef->similarity > 1.0 || ef->match_sm_flag) {
+	if (ef->similarity > 1.0) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
+	}
+	else if (ef->match_sm_flag) {
+	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
+	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
 	    score = -1;
@@ -1828,8 +1832,12 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     if (cpm_ptr->cf.type == CF_NOUN) {
 	/* 名詞の場合: exact match or <sm> match */
-	if (ef->similarity > 1.0 || ef->match_sm_flag) {
+	if (ef->similarity > 1.0) {
 	    score = ef->similarity;
+	}
+	else if (ef->match_sm_flag) {
+	    score = ef->similarity;
+	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
 	    score = -1;
@@ -2215,6 +2223,40 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 }
 
 /*==================================================================*/
+	      TAG_DATA** ListPredChildren(TAG_DATA *tp)
+/*==================================================================*/
+{
+    int i, count = 0, size = PARA_PART_MAX;
+    TAG_DATA **ret;
+
+    ret = (TAG_DATA **)malloc_data(sizeof(TAG_DATA *) * size, "ListPredChildren");
+
+    for (i = 0; tp->child[i]; i++) {
+	ret[count++] = tp->child[i];
+    }
+
+    if (tp->para_type == PARA_NORMAL) {
+	TAG_DATA *tmp = tp->parent;
+	while (tmp && tmp->para_top_p) {
+	    for (i = 0; tmp->child[i]; i++) {
+		/* 並列の用言(自分を含む)を除く */
+		if (tmp->child[i]->para_type != PARA_NORMAL) {
+		    if (count >= size - 1) {
+			ret = (TAG_DATA **)realloc_data(ret, sizeof(TAG_DATA *) * (size <<= 1), 
+							"ListPredChildren");
+		    }
+		    ret[count++] = tmp->child[i];
+		}
+	    }
+	    tmp = tmp->parent;
+	}
+    }
+
+    ret[count] = NULL;
+    return ret;
+}
+
+/*==================================================================*/
 int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 			CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
 			TAG_DATA *bp, CASE_FRAME *cf_ptr, int n, int loc)
@@ -2227,30 +2269,51 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
     /* ★並列のNは? */
 
     int i, num;
+    TAG_DATA **children;
 
     /* 用言の格要素をチェック */
-    if (bp->cpm_ptr && bp->cpm_ptr->cmm[0].score != -2) {
-	for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	    num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	    if (num != UNASSIGNED && 
-		CheckAppropriateCandidate(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], cf_ptr, n, loc)) {
-		EllipsisDetectForVerbSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
-						 cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-						 bp->cpm_ptr->elem_b_ptr[num], 
-						 cf_ptr, n, loc, s, bp);
-		/* 省略を補ったものでなければ */
-		if (bp->cpm_ptr->elem_b_num[num] > -2) {
-		    Bcheck[cs - s][bp->cpm_ptr->elem_b_ptr[num]->num] = 1;
-		}
+    if (bp->cpm_ptr) {
+	if (bp->cpm_ptr->cmm[0].score != -2) {
+	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+		if (num != UNASSIGNED && 
+		    CheckAppropriateCandidate(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], cf_ptr, n, loc)) {
+		    EllipsisDetectForVerbSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
+						     cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						     bp->cpm_ptr->elem_b_ptr[num], 
+						     cf_ptr, n, loc, s, bp);
+		    /* 省略を補ったものでなければ */
+		    if (bp->cpm_ptr->elem_b_num[num] > -2) {
+			Bcheck[cs - s][bp->cpm_ptr->elem_b_ptr[num]->num] = 1;
+		    }
 
-		/* ノ格の子供をチェック */
-		SearchCompoundChild(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
-				    cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				    bp->cpm_ptr->elem_b_ptr[num], 
-				    cf_ptr, n, loc, bp->cpm_ptr->elem_b_num[num] <= -2 ? 1 : 0);
+		    /* ノ格の子供をチェック */
+		    SearchCompoundChild(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
+					cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					bp->cpm_ptr->elem_b_ptr[num], 
+					cf_ptr, n, loc, bp->cpm_ptr->elem_b_num[num] <= -2 ? 1 : 0);
+		}
 	    }
 	}
+
+	/* 格要素になっていない子供もチェック */
+	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
+	for (i = 0; children[i]; i++) {
+	    if (CheckAppropriateCandidate(s, cs, cpm_ptr, children[i], -2, cf_ptr, n, loc)) {
+		EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						 children[i], 
+						 cf_ptr, n, loc, s, bp);
+		Bcheck[cs - s][children[i]->num] = 1;
+		
+		/* ノ格の子供をチェック */
+		SearchCompoundChild(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				    children[i], 
+				    cf_ptr, n, loc, 0);
+	    }
+	}
+	free(children);
     }
+
     return 0;
 }
 
@@ -2270,7 +2333,7 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
     if (bp->para_top_p) {
 	/* bpと並列になっている要素をチェック
 	for (i = 0; bp->child[i]; i++) {
-	    if (bp->child[i]->para_type = PARA_NORMAL && 
+	    if (bp->child[i]->para_type == PARA_NORMAL && 
 		bp->child[i]->num != bp->num && 
 		!Bcheck[0][bp->child[i]->num]) {
 		EllipsisDetectForVerbSubcontract(s, s, em_ptr, cpm_ptr, cmm_ptr, l, 
@@ -2286,7 +2349,7 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 	    if (bp->child[i] == cpm_ptr->pred_b_ptr) continue;
 	    if (bp->child[i]->para_top_p) {
 		for (j = 0; bp->child[i]->child[j]; j++) {
-		    if (bp->child[i]->child[j]->para_type = PARA_NORMAL && 
+		    if (bp->child[i]->child[j]->para_type == PARA_NORMAL && 
 			!Bcheck[0][bp->child[i]->child[j]->num] && 
 			CheckAppropriateCandidate(s, s, cpm_ptr, bp->child[i]->child[j], -1, cf_ptr, n, loc)) {
 			EllipsisDetectForVerbSubcontract(s, s, em_ptr, cpm_ptr, cmm_ptr, l, 
