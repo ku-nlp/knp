@@ -49,24 +49,47 @@
 #include <tinysvm.h>
 #include "svm.h"
 
-char *ModelFile = NULL;	/* modelファイルの指定 */
+#define	PP_NUMBER	44
 
-TinySVM::Model model;
+char *SVMFile[PP_NUMBER];	/* modelファイルの指定 */
+
+TinySVM::Model *model[PP_NUMBER];
 
 int init_svm() {
-    if (!model.read(ModelFile)) {
-	return 0;
+    int i;
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	if (SVMFile[i]) {
+	    model[i] = new TinySVM::Model;
+	    if (!model[i]->read(SVMFile[i])) {
+		fprintf(stderr, ";; SVM initialization error (%s is corrupted?).\n", SVMFile[i]);
+		exit(1);
+	    }
+
+	    if (i == 0) { /* すべての格用 */
+		break;
+	    }
+	}
+	else {
+	    model[i] = NULL;
+	}
     }
     return 1;
 }
 
-double svm_classify(char *line) {
-    double dist;
+double svm_classify(char *line, int pp) {
+    TinySVM::Model *m;
     int i = 0;
 
-    while (isspace(line[i])) i++;
-    dist = model.classify((const char *)(line + i));
+    /* 0はすべての格用 */
+    if (model[0]) {
+	m = model[0];
+    }
+    else {
+	m = model[pp];
+    }
 
-    return dist;
+    while (isspace(line[i])) i++;
+    return m->classify((const char *)(line + i));
 }
 
