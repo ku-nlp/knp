@@ -1,3 +1,38 @@
+2003-04-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/dpnd_analysis.c: 不必要なエラーメッセージを削除
+
+2003-03-28  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/bnst_etc.rule, rule/kakari_uke.rule:
+	連体関係，「〜とみられる」の整理
+
+	* system/dpnd_analysis.c:
+	並列と提題の関係を整理
+
+2003-03-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_scase.c:
+	形容詞「〜的」の場合、「的」まで含めて表層格辞書を検索するようにした
+
+2003-03-27  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/bnst_etc.rule, rule/case_analysis.rule, rule/context.rule, rule/kakari_uke.rule, rule/mrph_basic.rule:
+	「〜ことにする」を一文節に．
+	「〜とみられる」の扱いを整理．
+
+	* system/feature.c: 使わない関数を削除，&伝搬を追加
+
+	* system/thesaurus.c: 例外処理
+
+	* system/bnst_compare.c: 判定詞関係の整理
+
+	* system/dpnd_analysis.c: 並列と提題の処理改善
+
+2003-03-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/knp.h: cygwinでコンパイルできない問題を修正
+
 2003-03-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, rule/case_analysis.rule:
