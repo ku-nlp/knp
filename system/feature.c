@@ -1026,13 +1026,6 @@
 	}
     }
 
-    /* &レベル禁止 : 用言のレベルチェック (係受レベル) --  tentative */
-
-    else if (!strncmp(rule, "&レベル禁止:", strlen("&レベル禁止:"))) {
-	/* 述語は係り受け可能か */
-	return subordinate_level_forbid(rule + strlen("&レベル禁止:"),
-					       (BNST_DATA *)ptr2);
-    }
 
     /* &節境界 : 節間の壁チェック */
 

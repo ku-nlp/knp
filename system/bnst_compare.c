@@ -178,22 +178,6 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-	int subordinate_level_forbid(char *cp, BNST_DATA *ptr2)
-/*==================================================================*/
-{
-    char *level1, *level2;
-
-    level1 = cp;
-    level2 = (char *)check_feature(ptr2->f, "レベル");
-
-    if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
-    else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
-    else if (levelcmp(level1, level2 + strlen("レベル:")) == 0)
-	return FALSE;				/* ptr1 == ptr2 なら禁止 */
-    else return TRUE;
-}
-
-/*==================================================================*/
 		  int levelcmp(char *cp1, char *cp2)
 /*==================================================================*/
 {
