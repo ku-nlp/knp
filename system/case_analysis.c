@@ -158,6 +158,19 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
+		     int MatchPP(int n, char *pp)
+/*==================================================================*/
+{
+    if (n < 0) {
+	return 0;
+    }
+    if (str_eq(pp_code_to_kstr(n), pp)) {
+	return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
@@ -190,34 +203,49 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
     */
 
-    /* 格フレーム設定 */
     frame_num = 0;
-    for (i = 0; i < b_ptr->cf_num; i++) {
-	/* 前隣を結合したフレームなのにもかかわらず、
-	   前隣が自分に係らない構造の場合はスキップ */
-  	if ((b_ptr->cf_ptr + i)->concatenated_flag == 1 && 
-  	    b_ptr->num > 0 && (b_ptr-1)->dpnd_head != b_ptr->num) {
-  	    continue;
-  	}
-	(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
-    }
-
-    /* 自立語がない場合など (用言は格フレームがなくでもデフォルトのものをもつ) 
-       all_case_analysis() でチェックすることにしたので意味ない
-     */
-    if (frame_num == 0) {
-	return -2;
-    }
 
     /* 格要素なしの時の実験 98/12/16 */
     if (cf_ptr->element_num == 0) {
+	/* 先頭の格フレーム 
+	   == この用言のすべての格フレームの OR、または
+	   格フレームが 1 つのときはそれそのもの にする予定 */
+	if (b_ptr->cf_num > 1) {
+	    for (i = 0; i < b_ptr->cf_num; i++) {
+		if ((b_ptr->cf_ptr+i)->flag == CF_SUM) {
+		    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
+		    break;
+		}
+	    }
+	}
+	else {
+	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr;
+	}
 	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode);
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
-	frame_num = 1;
     }
-    else { /* このelseはtentative */
+    else {
+	/* 格フレーム設定 */
+	for (i = 0; i < b_ptr->cf_num; i++) {
+	    /* 前隣を結合したフレームなのにもかかわらず、
+	       前隣が自分に係らない構造の場合はスキップ */
+	    if ((b_ptr->cf_ptr + i)->concatenated_flag == 1 && 
+		b_ptr->num > 0 && (b_ptr-1)->dpnd_head != b_ptr->num) {
+		continue;
+	    }
+	    /* OR の格フレームを除く */
+	    if ((b_ptr->cf_ptr+i)->flag == CF_SUM) {
+		continue;
+	    }
+	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
+	}
+
+	if (frame_num == 0) {
+	    return -2;
+	}
+
 	cpm_ptr->result_num = 0;
 	for (i = 0; i < frame_num; i++) {
 
@@ -334,6 +362,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->ipal_id, src->ipal_id);
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
+    dst->flag = src->flag;
 }
 
 /*==================================================================*/
@@ -411,7 +440,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     for (i = 0; i < sp->Bnst_num-1; i++) {
 	/* ガ格 -> レベル:A (ルールでこの係り受けを許した場合は、
-	   このでコストを与える) */
+	   ここでコストを与える) */
 	if (check_feature((sp->bnst_data+i)->f, "係:ガ格") && 
 	    check_feature((sp->bnst_data+dpnd.head[i])->f, "レベル:A")) {
 	    distance_cost += LEVELA_COST;
@@ -527,11 +556,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	     void record_case_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, num;
+    int i, j, num, lastflag = -1;
     char feature_buffer[DATA_LEN], relation[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
 
-    /* 格解析の結果(Best_mgrが管理)をfeatureとして格要素文節に与える */
+    /* 格解析の結果(Best_mgrが管理)をfeatureとして用言文節に与える */
 
     for (j = 0; j < sp->Best_mgr->pred_num; j++) {
 
@@ -562,9 +591,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		strcpy(relation, 
 		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 
-		/* ガ格に割り当てられ、格フレームに <主体> があれば、その格要素に <主体> を与える */
+		/* ガ格に割り当てられ、格フレームに <主体> があれば、その格要素に <主体> を与える
+		   ★ 用例数が少ないとき <主体> が必ず与えられていて問題 */
 		if (str_eq(pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), "ガ") && 
-		    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", SM_CODE_SIZE)) {
+		    check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
+		    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
 		    assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
 		}
 
@@ -572,12 +603,19 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		if (OptDisc == OPT_DISC) {
 		    RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
+				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+		    if ((lastflag < 0 || lastflag == j) && !check_feature(cpm_ptr->pred_b_ptr->f, "非主題")) {
+			RegisterLastClause(sp->Sen_num, 
+					   L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+					   cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
+					   cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+			lastflag = j;
+		    }
 		}
 	    }
 	    /* else: UNASSIGNED はないはず */
 
-	    /* feature を格要素文節に与える */
+	    /* feature を用言文節に与える */
 	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
 		sprintf(feature_buffer, "格関係%d:%s:%s", 
 			cpm_ptr->elem_b_ptr[i]->num, 

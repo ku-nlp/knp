@@ -226,14 +226,30 @@ void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	*(cp+strlen(cp)-2) = '\0';
     }
 
-    if (!strcmp(cp+strlen(cp)-2, "＊"))
+    if (!strcmp(cp+strlen(cp)-2, "＊")) {
 	c_ptr->oblig[num] = FALSE;
-    else
-	c_ptr->oblig[num] = TRUE;
+    }
+    else {
+	/* 未決定 (ひとつめの格を見て決める) */
+	c_ptr->oblig[num] = END_M;
+    }
 
     point = cp; 
-    while (point = extract_ipal_str(point, ipal_str_buf))
+    while (point = extract_ipal_str(point, ipal_str_buf)) {
+	if (pp_num == 0 && c_ptr->oblig[num] == END_M) {
+	    if (str_eq(ipal_str_buf, "ガ") || 
+		str_eq(ipal_str_buf, "ヲ") || 
+		str_eq(ipal_str_buf, "ニ") || 
+		str_eq(ipal_str_buf, "ヘ") || 
+		str_eq(ipal_str_buf, "ヨリ")) {
+		c_ptr->oblig[num] = TRUE;
+	    }
+	    else {
+		c_ptr->oblig[num] = FALSE;
+	    }
+	}
 	c_ptr->pp[num][pp_num++] = pp_kstr_to_code(ipal_str_buf);
+    }
     c_ptr->pp[num][pp_num] = END_M;
 }
     
@@ -415,6 +431,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     cf_ptr->concatenated_flag = 0;
     strcpy(cf_ptr->ipal_id, i_ptr->DATA+i_ptr->id); 
     strcpy(cf_ptr->imi, i_ptr->DATA+i_ptr->imi);
+    /* OR の格フレームは「述語素」に「和フレーム」と書いてある */
+    if (str_eq(i_ptr->DATA+i_ptr->jyutugoso, "和フレーム")) {
+	cf_ptr->flag = CF_SUM;
+    }
+    else {
+	cf_ptr->flag = CF_NORMAL;
+    }
 
     /* 格要素の追加 */
 
@@ -423,7 +446,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
-	_make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j, Thesaurus);	/* 現在無効 */
+	/* _make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j, Thesaurus); 現在無効 */
+	_make_ipal_cframe_sm(cf_ptr, "主体", j, USE_NTT_WITH_STORE);
 	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus);
 	j++;
     }
@@ -674,7 +698,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
        (準用言ではない … 「〜年」などの時間を除く) */
     /* ★ そのうち ルール化する */
     else if (b_ptr->jiritu_num > 1 && L_Jiritu_M(b_ptr)->Hinshi == 14 && 
-	     check_feature(b_ptr->f, "準用言")) {
+	     !check_feature(b_ptr->f, "準用言")) {
 	assign_cfeature(&(b_ptr->f), "名詞+接尾辞");
 	sprintf(buffer[0], "%s%s", (b_ptr->jiritu_ptr+b_ptr->jiritu_num-2)->Goi, L_Jiritu_M(b_ptr)->Goi);
 	verb = buffer[0];
@@ -782,6 +806,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 
     cf_ptr->ipal_address = -1;
     cf_ptr->element_num = num;
+    cf_ptr->ipal_id[0] = '\0';
+    cf_ptr->flag = CF_NORMAL;
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
@@ -889,7 +915,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	       void MakeInternalBnst(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, suffix_num;
     BNST_DATA *bp;
 
     /* 最後の自立語がサ変名詞のときに、それより前の名詞を
@@ -910,10 +936,16 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	    continue;
 	}
 
-	if (bp->jiritu_num > 1) {
+	/* 複合名詞であり、Head の直前が数詞でない
+	   (「６１連勝」などを除く) */
+	if (bp->jiritu_num > 1 && 
+	    !((bp->jiritu_ptr+bp->jiritu_num-2)->Bunrui == 7 && 
+	      (bp->jiritu_ptr+bp->jiritu_num-2)->Hinshi == 6)) {
+	    suffix_num = 0;
 	    for (j = 2; j <= bp->jiritu_num; j++) {
-		/* 名詞であれば */
-		if ((bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi == 6) {
+		/* 名詞 or 副詞であれば */
+		if ((bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi == 6 || 
+		    (bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi == 8) {
 		    if (bp->internal_num == 0) {
 			bp->internal = (BNST_DATA *)malloc_data(sizeof(BNST_DATA), "MakeInternalBnst");
 			bp->internal_max = 1;
@@ -926,31 +958,30 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		    assign_cfeature(&(bp->f), "内部文節");
 		    memset(bp->internal+bp->internal_num, 0, sizeof(BNST_DATA));
 		    (bp->internal+bp->internal_num)->num = -1;
-		    (bp->internal+bp->internal_num)->mrph_num = 1;
+		    (bp->internal+bp->internal_num)->mrph_num = suffix_num+1;
 		    (bp->internal+bp->internal_num)->mrph_ptr = bp->jiritu_ptr+bp->jiritu_num-j;
-		    (bp->internal+bp->internal_num)->jiritu_num = 1;
+		    (bp->internal+bp->internal_num)->jiritu_num = suffix_num+1;
 		    (bp->internal+bp->internal_num)->jiritu_ptr = bp->jiritu_ptr+bp->jiritu_num-j;
 		    strcpy((bp->internal+bp->internal_num)->Jiritu_Go, 
 			   (bp->internal+bp->internal_num)->jiritu_ptr->Goi);
+
+		    /* 文節ルールを適用する */
+		    _assign_general_feature(bp->internal+bp->internal_num, 1, BnstRuleType);
+
 		    get_bgh_code(bp->internal+bp->internal_num);
 		    get_sm_code(bp->internal+bp->internal_num);
+		    assign_time_feature(bp->internal+bp->internal_num);
 		    assign_cfeature(&((bp->internal+bp->internal_num)->f), "係:文節内");
 		    (bp->internal+bp->internal_num)->parent = bp;
 		    bp->internal_num++;
-		    break;
+		    break;	/* とりあえず、ひとつできれば終わる */
+		}
+		/* 接尾辞は保存しておいて、名詞が来たときにくっつける */
+		else if ((bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi == 14) {
+		    suffix_num++;
 		}
 	    }
 	}
-    }
-}
-
-/*==================================================================*/
-	void MergeCaseFrame(CASE_FRAME *dst, CASE_FRAME *src)
-/*==================================================================*/
-{
-    int i;
-    for (i = 0; i < CF_ELEMENT_MAX; i++) {
-	
     }
 }
 

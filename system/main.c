@@ -160,8 +160,6 @@ extern int	SOTO_SCORE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
 	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
-	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
-	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
@@ -352,9 +350,10 @@ extern int	SOTO_SCORE;
 
     /* 文脈解析のときは必ず格解析を行う
        解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptDisc == OPT_DISC && 
-	(OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2)) {
-	OptAnalysis = OPT_CASE;
+    if (OptDisc == OPT_DISC) {
+	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
+	    OptAnalysis = OPT_CASE;
+	}
     }
 }
 
@@ -459,6 +458,10 @@ extern int	SOTO_SCORE;
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
 	init_optional_case();
 
+    /* 形態素, 文節情報の初期化 */
+    memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
+    memset(bnst_data, 0, sizeof(BNST_DATA)*BNST_MAX);
+
     current_sentence_data.mrph_data = mrph_data;
     current_sentence_data.bnst_data = bnst_data;
     current_sentence_data.para_data = para_data;
@@ -477,7 +480,7 @@ extern int	SOTO_SCORE;
     }
 
     /* 固有名詞解析辞書オープン */
-    if (OptNE != OPT_NORMAL) {
+    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
 	init_proper(&current_sentence_data);
     }
 
@@ -503,9 +506,9 @@ extern int	SOTO_SCORE;
 
     if (OptNE != OPT_NORMAL && SMExist == TRUE) {
 	for (i = 0; i < sp->Mrph_num; i++) {
-	    code = (char *)get_sm(sp->mrph_data[i].Goi);
+	    code = get_sm(sp->mrph_data[i].Goi);
 	    if (code) {
-		strcpy(sp->mrph_data[i].SM, code);
+		sp->mrph_data[i].SM = strdup(code);
 		free(code);
 	    }
 	    assign_ntt_dict(sp, i);
@@ -549,13 +552,14 @@ extern int	SOTO_SCORE;
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	print_mrphs(sp, 0);
 
-	/* 時間属性を補助的に付与する */
+    /* 時間属性を補助的に付与する */
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (!check_feature((sp->bnst_data+i)->f, "時間") && 
-	    check_feature((sp->bnst_data+i)->f, "体言") && 
-	    sm_time_match((sp->bnst_data+i)->SM_code)) {
-	    assign_cfeature(&((sp->bnst_data+i)->f), "時間");
-	}
+	assign_time_feature(sp->bnst_data+i);
+    }
+
+    /* 固有名詞ルール */
+    if (OptNE == OPT_NE_SIMPLE) {
+	assign_ne_rule(sp);
     }
 
     /* FEATURE付与だけの場合 */
@@ -597,7 +601,7 @@ extern int	SOTO_SCORE;
     if (koou(sp) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_DPND, 0);
 
-	/* 鍵括弧の処理 */
+    /* 鍵括弧の処理 */
 
     if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_QUOTE, 0);
@@ -682,30 +686,25 @@ PARSED:
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-	/* 固有名詞認識処理 */
-
-    if (OptNE != OPT_NORMAL)
+    /* 固有名詞認識処理 */
+    if (OptNE == OPT_NE || OptNE == OPT_NESM)
 	NE_analysis(sp);
-    else
-	assign_mrph_feature(CNRuleArray, CurCNRuleSize,
-			    sp->mrph_data, sp->Mrph_num,
-			    RLOOP_RMM, FALSE, LtoR);
 
     memo_by_program(sp);	/* メモへの書き込み */
 
-	/* チェック用 */
+    /* チェック用 */
     if (OptCheck == TRUE)
 	CheckCandidates(sp);
 
     if (OptLearn == TRUE)
 	fprintf(Outfp, ";;;OK 決定 %d %s %d\n", sp->Best_mgr->ID, sp->KNPSID ? sp->KNPSID : "", sp->Best_mgr->score);
 
-	/* 実験 */
+    /* 実験 */
     if (OptCheck == TRUE)
 	CheckChildCaseFrame(sp);
 
-	/* 認識した固有名詞を保存しておく */
-    if (OptNE != OPT_NORMAL) {
+    /* 認識した固有名詞を保存しておく */
+    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
 	preserveNE(sp);
 	if (OptDisplay == OPT_DEBUG)
 	    printNE();
@@ -755,7 +754,7 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptDisc != OPT_DISC) 
+	    if (OptDisc != OPT_DISC)
 		print_result(sp);
 	    else
 		copy_sentence(sp);
@@ -781,14 +780,17 @@ PARSED:
 	/* FEATURE の初期化 */
 	if (OptDisc == OPT_DISC) {
 	    /* 中身は保存しておくので */
-	    for (i = 0; i < sp->Mrph_num; i++)
+	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
-	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+	    }
+	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
+	    }
 	}
 	else {
-	    for (i = 0; i < sp->Mrph_num; i++) 
+	    for (i = 0; i < sp->Mrph_num; i++) {
 		clear_feature(&(sp->mrph_data[i].f));
+	    }
 	    for (i = 0; i < sp->Bnst_num; i++) {
 		clear_feature(&(sp->bnst_data[i].f));
 		if (sp->bnst_data[i].internal_num) {
@@ -798,8 +800,18 @@ PARSED:
 		}
 	    }
 	    /* New_Bnstはもともとpointer */
-	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
+	    }
+	}
+
+	if (OptNE != OPT_NORMAL) {
+	    for (i = 0; i < sp->Mrph_num; i++) {
+		if (sp->mrph_data[i].SM != NULL) {
+		    free(sp->mrph_data[i].SM);
+		    sp->mrph_data[i].SM = NULL;
+		}
+	    }
 	}
 
 	/**************/
@@ -850,7 +862,7 @@ PARSED:
 
     if (OptDisc == OPT_DISC)
 	close_noun();
-    if (OptNE != OPT_NORMAL)
+    if (OptNE == OPT_NE || OptNE == OPT_NESM)
 	close_proper();
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	close_clause();

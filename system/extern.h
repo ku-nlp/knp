@@ -107,6 +107,7 @@ extern int pp_kstr_to_code(char *cp);
 extern int pp_hstr_to_code(char *cp);
 extern char *pp_code_to_kstr(int num);
 extern char *pp_code_to_hstr(int num);
+extern int MatchPP(int n, char *pp);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void record_case_analysis(SENTENCE_DATA *sp);
 
@@ -130,8 +131,7 @@ extern int comp_sm(char *cpp, char *cpd, int start);
 extern int _sm_match_score(char *cpp, char *cpd, int flag);
 extern int _ex_match_score(char *cp1, char *cp2);
 extern void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag);
-extern int cf_match_element(char *d, char *target, int unit);
-extern int elmnt_match_score_each_sm(char *smd, char *smp);
+extern int cf_match_element(char *d, char *target, int flag);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr);
@@ -147,7 +147,7 @@ extern void server_read_rc(FILE *fp);
 
 /* context.c */
 extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int pp, char *word);
+extern void RegisterPredicate(char *key, int pp, char *word, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
 extern void copy_sentence(SENTENCE_DATA *sp);
@@ -239,6 +239,8 @@ extern void get_sm_code(BNST_DATA *ptr);
 extern void init_sm();
 extern char *get_sm(char *cp);
 extern void close_sm();
+extern char *_smp2smg(char *cp);
+extern char *smp2smg(char *cpd, int flag);
 
 /* main.c */
 extern int main_analysis(SENTENCE_DATA *sp, FILE *input);
@@ -284,6 +286,7 @@ extern void NE_analysis(SENTENCE_DATA *sp);
 extern void preserveNE(SENTENCE_DATA *sp);
 extern void printNE();
 extern void close_proper();
+extern void assign_ne_rule(SENTENCE_DATA *sp);
 
 /* quote.c */
 extern int quote(SENTENCE_DATA *sp);
@@ -323,6 +326,7 @@ extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);
 extern void *realloc_data(void *ptr, size_t size, char *comment);
+extern int hash(unsigned char *key, int keylen);
 
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);

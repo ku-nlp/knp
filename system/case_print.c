@@ -107,7 +107,7 @@
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%3d点 [%.2f] ", cmm_ptr->score, cmm_ptr->sufficiency);
+    fprintf(Outfp, "★%3d点 ", (int)cmm_ptr->score);
 
     /* fprintf(Outfp, "<%s> ", cmm_ptr->cf_ptr->entry); */
 

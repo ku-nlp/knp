@@ -576,6 +576,26 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
+		void assign_ne_rule(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    /* 固有表現句ルール */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	assign_mrph_feature(CNRuleArray, CurCNRuleSize, 
+			    sp->bnst_data[i].mrph_ptr, 
+			    sp->bnst_data[i].mrph_num, 
+			    RLOOP_RMM, FALSE, LtoR);
+    }
+
+    /* 補助的ルール */
+    assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize,
+			sp->mrph_data, sp->Mrph_num,
+			RLOOP_RMM, FALSE, LtoR);
+}
+
+/*==================================================================*/
 		 void NE_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -714,14 +734,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize,
 			sp->mrph_data, sp->Mrph_num,
 			RLOOP_RMM, FALSE, LtoR);
-    for (i = 0; i < sp->Bnst_num; i++)
-	assign_mrph_feature(CNRuleArray, CurCNRuleSize, 
-			    sp->bnst_data[i].mrph_ptr, 
-			    sp->bnst_data[i].mrph_num, 
-			    RLOOP_RMM, FALSE, LtoR);
-    assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize,
-			sp->mrph_data, sp->Mrph_num,
-			RLOOP_RMM, FALSE, LtoR);
+    assign_ne_rule(sp);
 
     /* 並列処理
        並列句の数が 3 つ以上または、大きさが 2 文節以上のとき */

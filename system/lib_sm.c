@@ -125,6 +125,22 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
+		   int ne_check_all_sm(char *code)
+/*==================================================================*/
+{
+    int i;
+
+    /* すべての意味属性が固有名詞なら TRUE */
+
+    for (i = 0; *(code+i); i+=SM_CODE_SIZE) {
+	if (*(code+i) != '2') {
+	    return FALSE;
+	}
+    }
+    return TRUE;
+}
+
+/*==================================================================*/
 			char *get_sm(char *cp)
 /*==================================================================*/
 {
@@ -149,21 +165,30 @@ int		SMP2SMGExist;
 	}
 
 	pos = 0;
-	/* 意味素を付与する品詞 */
-	for (i = 0; code[i]; i+=SM_CODE_SIZE) {
-	    if (code[i] == '3' ||	/* 名 */
-		code[i] == '4' ||	/* 名(形式) */
-		code[i] == '5' ||	/* 名(形動) */
-		code[i] == '6' ||	/* 名(転生) */
-		code[i] == '7' ||	/* サ変 */
-		code[i] == '9' ||	/* 時詞 */
-		code[i] == 'a' ||	/* 代名 */
-		(code[i] == '2' && 	/* 固 */
-		 strncmp(code+i, "210", 3) && /* 姓 ではない */
-		 strncmp(code+i, "211", 3) && /* 名 ではない */
-		 strncmp(code+i, "2001030", 7))) { /* 大字 ではない */
-		strncpy(code+pos, code+i, SM_CODE_SIZE);
-		pos += SM_CODE_SIZE;
+
+	/* すべての意味属性が固有名詞のとき */
+	if (ne_check_all_sm(code) == TRUE) {
+	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
+		if (code[i] == '2' && 
+		    strncmp(code+i, "2001030", 7)) { /* 大字 ではない */
+		    strncpy(code+pos, code+i, SM_CODE_SIZE);
+		    pos += SM_CODE_SIZE;
+		}
+	    }
+	}
+	else {
+	    /* 意味素を付与する品詞 */
+	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
+		if (code[i] == '3' ||	/* 名 */
+		    code[i] == '4' ||	/* 名(形式) */
+		    code[i] == '5' ||	/* 名(形動) */
+		    code[i] == '6' ||	/* 名(転生) */
+		    code[i] == '7' ||	/* サ変 */
+		    code[i] == '9' ||	/* 時詞 */
+		    code[i] == 'a') {	/* 代名 */
+		    strncpy(code+pos, code+i, SM_CODE_SIZE);
+		    pos += SM_CODE_SIZE;
+		}
 	    }
 	}
 	code[pos] = '\0';
@@ -316,22 +341,15 @@ int		SMP2SMGExist;
     key[SM_CODE_SIZE] = '\0';
 
     code = db_get(smp2smg_db, key);
-    if (code) {
-	strcpy(cont_str, code);
-	free(code);
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-    return cont_str;
+    return code;
 }
 
 /*==================================================================*/
-		       char *smp2smg(char *cpd)
+		  char *smp2smg(char *cpd, int flag)
 /*==================================================================*/
 {
-    char *cp, *start, *ret = NULL;
-    int storep = 0, incflag;
+    char *cp, *start;
+    int storep = 0, inc, use = 1;
 
     if (SMP2SMGExist == FALSE) {
 	fprintf(stderr, ";;; Cannot open smp2smg table!\n");
@@ -340,44 +358,56 @@ int		SMP2SMGExist;
 
     start = _smp2smg(cpd);
 
+    if (start == NULL) {
+	return NULL;
+    }
+
     for (cp = start; *cp; cp+=SM_CODE_SIZE) {
+	use = 1;
 	if (*(cp+SM_CODE_SIZE) == '/') {
-	    *(cp+SM_CODE_SIZE) = '\0';
-	    incflag = 1;
+	    inc = 1;
 	}
-	else {
-	    incflag = 0;
-	}
-
-	if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
+	else if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
 	    if (*(cp+SM_CODE_SIZE+12) == '/') {
-		cp+=13;		
+		inc = 13;		
 	    }
+	    /* 今回で終わり */
 	    else {
-		cp+=12;
-	    }   
-	    continue;
+		inc = 0;
+	    }
+	    /* flag == FALSE の場合 side-effect を使わない */
+	    if (flag == FALSE) {
+		use = 0;
+	    }
 	}
-
-	if (*(cp+SM_CODE_SIZE) != '\0') {
+	else if (*(cp+SM_CODE_SIZE) != '\0') {
 	    fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
 		    *(cp+SM_CODE_SIZE), "smp2smg");
+	    inc = 1;
 	}
+	/* 今回で終わり '\0' */
 	else {
+	    inc = 0;
+	}
+
+	if (use) {
 	    strncpy(start+storep, cp, SM_CODE_SIZE);
 	    storep+=SM_CODE_SIZE;
-	    if (incflag) {
-		cp++;
-	    }
+	}
+	if (inc) {
+	    cp += inc;
+	}
+	else {
+	    break;
 	}
     }
 
     if (storep) {
 	*(start+storep) = '\0';
-	ret = strdup(start);
+	return start;
     }
-	
-    return ret;
+    free(start);
+    return NULL;
 }
 
 /*==================================================================*/
@@ -435,18 +465,24 @@ int		SMP2SMGExist;
     if (flag == SM_EXPAND_NE) {
 	float score, maxscore = 0;
 	char *cp1, *cp2;
+	int f1 = 0, f2 = 0;
 
 	if (*c1 == '2') {
-	    c1 = smp2smg(c1);
+	    c1 = smp2smg(c1, FALSE);
 	    if (!c1) {
 		return 0;
 	    }
+	    f1 = 1;
 	}
 	if (*c2 == '2') {
-	    c2 = smp2smg(c2);
+	    c2 = smp2smg(c2, FALSE);
 	    if (!c2) {
+		if (f1 == 1) {
+		    free(c1);
+		}
 		return 0;
 	    }
+	    f2 = 1;
 	}
 
 	for (cp1 = c1; *cp1; cp1+=SM_CODE_SIZE) {
@@ -456,6 +492,12 @@ int		SMP2SMGExist;
 		    maxscore = score;
 		}
 	    }
+	}
+	if (f1 == 1) {
+	    free(c1);
+	}
+	if (f2 == 1) {
+	    free(c2);
 	}
 	return maxscore;
     }
@@ -505,6 +547,10 @@ int		SMP2SMGExist;
 /*==================================================================*/
 {
     int i;
+
+    if (codes == NULL) {
+	return FALSE;
+    }
 
     for (i = 0; *(codes+i); i += SM_CODE_SIZE) {
 	if (_sm_match_score(pat, codes+i, SM_NO_EXPAND_NE) > 0) {
@@ -558,6 +604,17 @@ int		SMP2SMGExist;
     }
     else {
 	return FALSE;
+    }
+}
+
+/*==================================================================*/
+	       void assign_time_feature(BNST_DATA *bp)
+/*==================================================================*/
+{
+    /* <時間> の意味素しかもっていなければ <時間> を与える */
+    if (!check_feature(bp->f, "時間") && 
+	sm_time_match(bp->SM_code)) {
+	assign_cfeature(&(bp->f), "時間");
     }
 }
 

@@ -823,8 +823,7 @@
     /* &意味素: 意味素チェック */
 
     else if (!strncmp(rule, "&意味素:", strlen("&意味素:"))) {
-	if (OptNE == OPT_NORMAL || ((MRPH_DATA *)ptr2)->SM == NULL) {
-	    /* 現在、NE の解析を行うときのみこの Feature Function は有効 */
+	if (((MRPH_DATA *)ptr2)->SM == NULL) {
 	    return FALSE;
 	}
 

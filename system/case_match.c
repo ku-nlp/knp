@@ -9,7 +9,7 @@
 #include "knp.h"
 
 int 	Current_ec_score;	/* 明示されている格の得点 */
-int 	Current_max_score;	/* 明示されていない格の得点 */
+float 	Current_max_score;	/* 明示されていない格の得点 */
 float	Current_sufficiency;	/* 埋まりぐあい */
 int 	Current_max_m_e;	/* 要素数 */
 int 	Current_max_m_p;	/* 要素の位置 */
@@ -30,10 +30,11 @@ int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11};
 							/* 用例対応スコア */
 int     EX_match_unknown = 8; /* 10; */			/* データ未知     */
 int     EX_match_sentence = 10;				/* 格要素 -- 文   */
-int     EX_match_tim = 5;				/* 格要素 -- 時間 */
+int     EX_match_tim = 0;				/* 格要素 -- 時間 */
 int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
 int	EX_match_subject = 6;
+int	EX_match_modification = 0;
 
 int	Thesaurus = USE_NTT;
 
@@ -126,7 +127,12 @@ int	Thesaurus = USE_NTT;
 		return 0;
 	    }
 	    else {
-		for (cp = (char *)_smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
+		char *start;
+		start = _smp2smg(cpd);
+		if (start == NULL) {
+		    return score;
+		}
+		for (cp = start; *cp; cp+=SM_CODE_SIZE+1) {
 		    if (*(cp+SM_CODE_SIZE) == '/')
 			*(cp+SM_CODE_SIZE) = '\0';
 		    else if (str_eq(cp+SM_CODE_SIZE, " side-effect"))
@@ -141,6 +147,7 @@ int	Thesaurus = USE_NTT;
 			    score = current_score;
 		    }
 		}
+		free(start);
 		return score;
 	    }
 	}
@@ -180,31 +187,72 @@ int	Thesaurus = USE_NTT;
 }
 
 /*==================================================================*/
-	int cf_match_element(char *d, char *target, int unit)
+     int _cf_match_element(char *d, char *p, int start, int len)
 /*==================================================================*/
 {
-    int i;
+    int i, j;
+    char *code;
 
-    if (d == NULL) {
-	return FALSE;
-    }
-
-    for (i = 0; *(d+i); i += unit) {
-	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
-	    return TRUE;
+    for (i = 0; *(d+i); i += SM_CODE_SIZE) {
+	if (*(d+i) == '2') {
+	    /* 一般体系にマッピング 
+	       ※ side-effect を無視する */
+	    code = smp2smg(d+i, TRUE);
+	    if (code == NULL) {
+		continue;
+	    }
+	    for (j = 0; *(code+j); j += SM_CODE_SIZE) {
+		if (!strncmp(code+j+start, p+start, len)) {
+		    free(code);
+		    return TRUE;
+		}
+	    }
+	    free(code);
+	}
+	else {
+	    if (!strncmp(d+i+start, p+start, len)) {
+		return TRUE;
+	    }
 	}
     }
     return FALSE;
 }
 
 /*==================================================================*/
-int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
+	int cf_match_element(char *d, char *target, int flag)
 /*==================================================================*/
 {
-    int i, j, len;
+    char *code;
+
+    /* flag == TRUE  : その意味素と exact match
+       flag == FALSE : その意味素以下にあれば match */
+
+    if (d == NULL) {
+	return FALSE;
+    }
+
+    code = sm2code(target);
+
+    if (flag == TRUE) {
+	return _cf_match_element(d, code, 0, SM_CODE_SIZE);
+    }
+    else {
+	/* ※ コードが 2 文字以上ある必要がある */
+	return _cf_match_element(d, code, 1, sm_code_depth(code));
+    }
+}
+
+/*==================================================================*/
+ int cf_match_both_element(char *d, char *p, char *target, int flag)
+/*==================================================================*/
+{
+    int len;
     char *code;
 
     /* 両方に target が存在するかチェック */
+
+    /* flag == TRUE  : その意味素と exact match
+       flag == FALSE : その意味素以下にあれば match */
 
     if (p == NULL) {
 	return FALSE;
@@ -213,51 +261,47 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
     code = sm2code(target);
 
     if (flag == TRUE) {
-	for (i = 0; *(d+i); i += unit) {
-	    if (!strncmp(d+i, code, unit)) {
-		for (j = 0; *(p+j); j += unit) {
-		    if (!strncmp(p+j, code, unit)) {
-			return TRUE;
-		    }
-		}
-		return FALSE;
-	    }
+	if (_cf_match_element(d, code, 0, SM_CODE_SIZE) == TRUE && 
+	    _cf_match_element(p, code, 0, SM_CODE_SIZE) == TRUE) {
+	    return TRUE;
+	}
+	else {
+	    return FALSE;
 	}
     }
     else {
+	/* ※ コードが 2 文字以上ある必要がある */
 	len = sm_code_depth(code);
-	for (i = 0; *(d+i); i += unit) {
-	    if (!strncmp(d+i+1, code+1, len)) {
-		for (j = 0; *(p+j); j += unit) {
-		    if (!strncmp(p+j+1, code+1, len)) {
-			return TRUE;
-		    }
-		}
-		return FALSE;
-	    }
+	if (_cf_match_element(d, code, 1, len) == TRUE && 
+	    _cf_match_element(p, code, 1, len) == TRUE) {
+	    return TRUE;
+	}
+	else {
+	    return FALSE;
 	}
     }
-    return FALSE;
 }
 
 /*==================================================================*/
-	 int elmnt_match_score_each_sm(char *smd, char *smp)
+       int elmnt_match_score_each_sm(int as1, CASE_FRAME *cfd,
+				     int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     /* 意味素 : 格要素 -- 補文 */
-    if (cf_match_both_element(smd, smp, "補文", SM_CODE_SIZE, TRUE)) {
+    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "補文", TRUE)) {
 	return EX_match_sentence;
     }
     /* 意味素 : 格要素 -- 時間 */
-    else if (cf_match_both_element(smd, smp, "時間", SM_CODE_SIZE, TRUE)) {
+    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "時間", TRUE)) {
 	return EX_match_tim;
     }
     /* 意味素 : 格要素 -- 数量 */
-    else if (cf_match_both_element(smd, smp, "数量", SM_CODE_SIZE, TRUE)) {
+    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "数量", TRUE)) {
 	return EX_match_qua;
     }
-    /* 意味素 : 格要素 -- 主体 */
-    else if (cf_match_both_element(smd, smp, "主体", SM_CODE_SIZE, FALSE)) {
+    /* 意味素 : 格要素 -- 主体 (ガ格のみ) */
+    else if (MatchPP(cfp->pp[as2][0], "ガ") && 
+	     cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
 	return EX_match_subject;
     }
     return -100;
@@ -309,6 +353,11 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 
     else if (flag == EXAMPLE) {
 
+	/* 修飾格のとき */
+	if (MatchPP(cfd->pp[as1][0], "修飾")) {
+	    return EX_match_modification;
+	}
+
 	if (cfp->concatenated_flag == 0 && 
 	    !check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "形副名詞") && 
 	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->jiritu_ptr != NULL && 
@@ -327,7 +376,8 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 	    match_score = EX_match_score;
 	}
 
-	score = elmnt_match_score_each_sm(cfd->sm[as1], cfp->sm[as2]);
+	/* score = elmnt_match_score_each_sm(cfd->sm[as1], cfp->sm[as2]); */
+	score = elmnt_match_score_each_sm(as1, cfd, as2, cfp);
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0') {
@@ -336,8 +386,13 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 	    }
 	}
 	else if (exp == NULL || *exp == '\0') {
+	    /* 格フレーム側の用例の意味属性がないとき */
 	    if (cfp->sm[as2] == NULL) {
 		score = EX_match_unknown;
+	    }
+	    /* sm に match しないとき */
+	    else if (score < 0) {
+		score = 0;
 	    }
 	}
 	else {
@@ -372,14 +427,25 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 {
     /* フレームのマッチング度の計算(格明示部分を除く) */
 
-    int i, j, local_score;
+    int i, j;
     int local_m_e = 0;
     int local_m_p = 0;
     int local_c_e = 0;
     int pat_element = 0, dat_element = 0;
     int cf_element = 0;
+    float local_score;
     
     local_score = score;
+
+    /* ★ experimental (類似度が高い直前格にボーナス)
+    for (i = 0; i < cfd->element_num; i++) {
+	if (cfd->adjacent[i] == TRUE && 
+	    list1->flag[i] != NIL_ASSIGNED && 
+	    cfp->adjacent[list1->flag[i]] == TRUE && 
+	    list1->score[i] > 10) {
+	    local_score += 2;
+	}
+    } */
 
     /* 要素数，要素の位置，交差数 */
     for (i = 0; i < cfd->element_num; i++) {
@@ -411,26 +477,29 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 	}
     }
 
-    if (local_m_e < dat_element)
+    if (local_m_e < dat_element) {
 	local_score = -1;
-    else if (dat_element == 0 || pat_element == 0 || local_m_e == 0)
+    }
+    else if (dat_element == 0 || pat_element == 0 || local_m_e == 0) {
 	local_score = 0;
-    /* else */
+    }
+    else {
 	/* local_score = local_score * sqrt((double)local_m_e)
 	   / sqrt((double)dat_element * pat_element);*/
 
 	/* local_score = local_score * local_m_e
 	   / (dat_element * sqrt((double)pat_element)); */
 
-	/* local_score = local_score / sqrt((double)pat_element); */
+	local_score = local_score / sqrt((double)pat_element);
 
 	/* corpus based case analysis 00/01/04 */
 	/* local_score /= 10;	* 正規化しない,最大11に */
+    }
 
     /* corpus based case analysis 00/01/04 */
     /* 任意格に加点 */
     /* 並列の expand を行ったときのスコアを考慮する必要がある */
-    local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE;
+    /* local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE; */
 
     if (local_score > Current_max_score || 
 	(local_score == Current_max_score &&
@@ -727,15 +796,15 @@ int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 
 	/* 外の関係だと推定してボーナスを与える */
 	if (renkaku && verb) {
-	    elmnt_score = SOTO_ADD_SCORE;
+	    /* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
+	    elmnt_score = SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE;
 	    if (cfd->weight[target]) {
-		elmnt_score += OPTIONAL_CASE_SCORE;
 		elmnt_score /= cfd->weight[target];
-		elmnt_score -= OPTIONAL_CASE_SCORE; /* 任意格ボーナスの分 */
 	    }
+	    /* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
 	}
 	else if (mikaku) {
-	    elmnt_score -= OPTIONAL_CASE_SCORE;
+	    /* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
 	}
 	assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 	return;

@@ -104,6 +104,7 @@
 #define OPT_DEBUG	3
 #define OPT_NESM	2
 #define OPT_NE		3
+#define OPT_NE_SIMPLE	4
 #define OPT_JUMAN	2
 
 #define OPT_INHIBIT_CLAUSE		0x0001
@@ -583,6 +584,9 @@ typedef struct {
 #define	USE_BGH_WITH_STORE	5
 #define	USE_NTT_WITH_STORE	6
 
+#define	CF_NORMAL	0
+#define	CF_SUM		1	/* OR の格フレーム */
+
 typedef struct {
     int id;				/* ID */
     int yomi;				/* 読み */
@@ -630,13 +634,10 @@ typedef struct cf_def {
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
-    char	*sm[CF_ELEMENT_MAX]; 	
-							/* 意味マーカ */
+    char	*sm[CF_ELEMENT_MAX]; 			/* 意味マーカ */
     int         *sm_false[CF_ELEMENT_MAX];		/* 意味マーカのフラグ */
-    char 	*ex[CF_ELEMENT_MAX];
-    							/* 用例 (BGH) */
-    char	*ex2[CF_ELEMENT_MAX];
-							/* 用例 (NTT) */
+    char 	*ex[CF_ELEMENT_MAX];			/* 用例 (BGH) */
+    char	*ex2[CF_ELEMENT_MAX];			/* 用例 (NTT) */
     char	*examples[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
@@ -646,6 +647,7 @@ typedef struct cf_def {
     char 	*entry;					/* 用言の表記 */
     char 	imi[128];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
+    int		flag;					/* 格フレームが OR かどうか */
     int		weight[CF_ELEMENT_MAX];
     BNST_DATA	*pred_b_ptr;
 } CASE_FRAME;
@@ -659,7 +661,7 @@ typedef struct {
 /* 文と格フレームの対応付け結果の記録 */
 typedef struct {
     CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
-    int 	score;				/* スコア */
+    float 	score;				/* スコア */
     float	sufficiency;			/* 格フレームの埋まりぐあい */
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
@@ -739,15 +741,13 @@ typedef struct anaphora_list {
     struct anaphora_list *next;
 } ALIST;
 
-/* 格要素の構造体
-typedef struct case_component {
-    int		pp;
-    WORD	*data;
-} CASE_COMPONENT;
-*/
+#define	CREL	1	/* 格関係 */
+#define	EREL	2	/* 省略関係 */
+
 typedef struct case_component {
     char	*word;
     int		count;
+    int		flag;
     struct case_component *next;
 } CASE_COMPONENT;
 
