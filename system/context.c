@@ -15,6 +15,8 @@ int maxi, maxpos;
 char *maxtag, *maxfeatures;
 int Bcheck[BNST_MAX];
 
+/* #define USE_RAWSCORE */
+
 #define RANK0	0
 #define RANK1	1
 #define RANK2	2
@@ -29,6 +31,8 @@ float	AssignReferentThresholdDecided = 0.50;
 float	AssignGaCaseThreshold = 0.67;	/* ガ格を【主体一般】にする閾値 */
 float	AssignReferentThresholdHigh = 0.80;
 float	AssignReferentThresholdAnonymousThing = 0.90;
+
+float	AssignReferentThresholdForSVM = -0.95;
 
 int	EllipsisSubordinateClauseScore = 10;
 
@@ -635,7 +639,10 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	for (j = 0; j < (sp_new->cpm+i)->cf.element_num; j++) {
 	    /* 省略じゃない格要素 */
 	    if ((sp_new->cpm+i)->elem_b_num[j] != -2) {
-		(sp_new->cpm+i)->elem_b_ptr[j] = sp_new->bnst_data+((sp_new->cpm+i)->elem_b_ptr[j]-sp->bnst_data);
+		/* 内部文節じゃない */
+		if ((sp_new->cpm+i)->elem_b_ptr[j]->num != -1) {
+		    (sp_new->cpm+i)->elem_b_ptr[j] = sp_new->bnst_data+((sp_new->cpm+i)->elem_b_ptr[j]-sp->bnst_data);
+		}
 	    }
 	}
 
@@ -671,10 +678,6 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 	step = SM_CODE_SIZE;
     }
 
-    if (!exd[0]) {
-	return -1;
-    }
-
     if (check_feature(cand->f, "固有一般展開禁止")) {
 	expand = SM_NO_EXPAND_NE;
     }
@@ -682,8 +685,13 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 	expand = SM_EXPAND_NE;
     }
 
+    /* 意味素なし (格フレームの用例はある) 
+       候補にするために -1 を返す */
+    if (!exd[0] && cf_ptr->ex_list[n]) {
+	ex_score = -1;
+    }
     /* exact match */
-    if (cf_match_exactly(cand, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos)) {
+    else if (cf_match_exactly(cand, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos)) {
 	ex_score = 1.1;
     }
     else {
@@ -748,15 +756,6 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
     else {
 	return ex_score;
     }
-
-/*
-    if (ex_score > score) {
-	return ex_score;
-    }
-    else {
-	return score;
-    }
-*/
 }
 
 /*==================================================================*/
@@ -1095,18 +1094,18 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSI
 	case_ni = 1;
     }
 
-    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:-1 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:0 35:0 36:0 37:0 38:0 39:0 40:%d 41:%d 42:%d 43:%d", 
+    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:-1 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:0 38:0 39:0 40:0 41:0 42:0 43:%d 44:%d 45:%d 46:%d", 
 	    (float)-1, /* 1 */
 	    agentflag, /* 6 */
-	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 14-21 */
-	    headjikan, headsoutai, headkeifuku, headpred, /* 22-25 */
-	    anonymousp, firstp, untarget, /* 26-28 */
-	    case_ga, case_wo, case_ni, /* 29-31 */
-	    hobunflag, predabstract, /* 32-33 */
-	    strcmp(tag, ExtraTags[0]) == 0 ? 1 : 0, /* 40 */
-	    strcmp(tag, ExtraTags[1]) == 0 ? 1 : 0, /* 41 */
-	    strcmp(tag, ExtraTags[2]) == 0 ? 1 : 0, /* 42 */
-	    strcmp(tag, ExtraTags[3]) == 0 ? 1 : 0); /* 43 */
+	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 17-24 */
+	    headjikan, headsoutai, headkeifuku, headpred, /* 25-28 */
+	    anonymousp, firstp, untarget, /* 29-31 */
+	    case_ga, case_wo, case_ni, /* 32-34 */
+	    hobunflag, predabstract, /* 35-36 */
+	    strcmp(tag, ExtraTags[0]) == 0 ? 1 : 0, /* 43 */
+	    strcmp(tag, ExtraTags[1]) == 0 ? 1 : 0, /* 44 */
+	    strcmp(tag, ExtraTags[2]) == 0 ? 1 : 0, /* 45 */
+	    strcmp(tag, ExtraTags[3]) == 0 ? 1 : 0); /* 46 */
     score = svm_classify(feature_buffer);
 
     /* fprintf(stderr, "DEBUG %s %f %s\n", tag, (float)score, feature_buffer); */
@@ -1137,10 +1136,11 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     float addscore = 0;
     char feature_buffer[50000], *cp;
     int ac, pac, pcc, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
-    int exception = 0, pos = MATCH_NONE, casematch, candagent, scopeflag, passive;
+    int exception = 0, pos = MATCH_NONE, casematch, candagent, scopeflag, passive, headscope;
     int hobunflag, predabstract, tame, renkaku, soto1 = 0, soto2 = 0, soto3 = 0;
     int sahen1, sahen2, headjikan = 0, headsoutai = 0, headkeifuku = 0, headpred = 0;
     int anonymousp, firstp, untarget, case_ga = 0, case_wo = 0, case_ni = 0, smnone;
+    int important = 0;
     BNST_DATA *b_ptr;
 
     /* cs のときだけ意味がある */
@@ -1314,6 +1314,13 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 	scopeflag = 0;
     }
 
+    if (distance == 0 && bp->parent && bp->parent->num > cpm_ptr->pred_b_ptr->num) {
+	headscope = 1;
+    }
+    else {
+	headscope = 0;
+    }
+
     /* 受身 */
     if (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
 	check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
@@ -1432,6 +1439,7 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 	rawscore = CalcSimilarityForVerb(bp, cf_ptr, n, &pos);
     }
 
+    /* 意味素なし */
     if (rawscore < 0) {
 	smnone = 1;
     }
@@ -1465,16 +1473,19 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 	(distance == 1 && (topicflag || subtopicflag || pcc)) || /* 前文 */
 	(s->Sen_num == 1 && (topicflag || subtopicflag || firstsc)) || /* 先頭文 */
 	(pcc || mcc || firstsc)) { /* それ以外で主節の省略の指示対象 */
+	important = 1;
 
-	sprintf(feature_buffer, "1:%.3f 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d 12:%d 13:%d 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:%d 39:%d 40:%d 41:%d 42:%d 43:%d", 
+	sprintf(feature_buffer, "1:%.3f 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d 12:%d 13:%d 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:%d 39:%d 40:%d 41:%d 42:%d 43:%d 44:%d 45:%d 46:%d", 
 		rawscore, distance, s->Sen_num == 1 ? 1: 0, /* 1-3 */
-		topicflag, subtopicflag, agentflag, candagent, scopeflag, pac, ac, casematch, /* 4-11 */
-		sameflag, exception, passive, sahen1, sahen2, tame, renkaku, /* 12-18 */
-		soto1, soto2, soto3, /* 19-21 */
-		headjikan, headsoutai, headkeifuku, headpred, /* 22-25 */
-		anonymousp, firstp, untarget, /* 26-28 */
-		case_ga, case_wo, case_ni, /* 29-31 */
-		hobunflag, predabstract, 
+		topicflag, subtopicflag, agentflag, candagent, /* 4-7 */
+		scopeflag, headscope, pac, ac, casematch, /* 8-12 */
+		sameflag, exception, smnone, important, /* 13-16 */
+		passive, sahen1, sahen2, tame, renkaku, /* 17-21 */
+		soto1, soto2, soto3, /* 22-24 */
+		headjikan, headsoutai, headkeifuku, headpred, /* 25-28 */
+		anonymousp, firstp, untarget, /* 29-31 */
+		case_ga, case_wo, case_ni, /* 32-34 */
+		hobunflag, predabstract, /* 35-36 */
 		type == 1 ? 1 : 0, type == 2 ? 1 : 0, 
 		type == 3 ? 1 : 0, type == 4 ? 1 : 0, type == 5 ? 1 : 0, 
 		type > 5 ? 1 : 0, 
@@ -1509,10 +1520,10 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 		    distance, maxi, 
 		    score, rawscore);
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
+	    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
 		    bp->Jiritu_Go, 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-		    rawscore, type, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception);
+		    rawscore, type, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception, smnone, important);
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	}
     }
@@ -1530,6 +1541,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     char feature_buffer[DATA_LEN];
     int ac, pac, pcc, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
     int exception = 0, pos = MATCH_NONE, casematch, candagent, hobunflag, predabstract, smnone;
+    int important = 0;
 
     /* cs のときだけ意味がある */
     Bcheck[bp->num] = 1;
@@ -1723,6 +1735,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	rawscore = CalcSimilarityForVerb(bp, cf_ptr, n, &pos);
     }
 
+    /* 意味素なし */
     if (rawscore < 0) {
 	smnone = 1;
     }
@@ -1799,7 +1812,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 		score = weight*pascore*rawscore;
 	    }
 	}
-
+	important = 1;
     }
     /* 特別に N-V のセットのときは許す */
     else if (pascore > 1 && rawscore > 0.8) {
@@ -1807,7 +1820,8 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     }
     else {
 	/* 非重要要素 */
-	return;
+	score = -1;
+	/* return; */
     }
 
     /* 距離を加味
@@ -1834,10 +1848,10 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	    distance, maxi, 
 	    score, rawscore);
     assign_cfeature(&(em_ptr->f), feature_buffer);
-    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
+    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
 	    bp->Jiritu_Go, 
 	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-	    rawscore, type, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception);
+	    rawscore, type, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception, smnone, important);
     assign_cfeature(&(em_ptr->f), feature_buffer);
 }
 
@@ -1929,22 +1943,29 @@ void SearchCaseComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
     cmm_ptr->result_lists_d[0].flag[c_ptr->element_num] = n;
     cmm_ptr->result_lists_p[0].pos[n] = maxpos;
     /* cpm_ptr->cmm[0].result_lists_p[0].score[n] = -1; */
-    if (maxscore > 1) {
-	cmm_ptr->result_lists_p[0].score[n] = 12;
-    }
-    else {
-	if (OptSVM == OPT_SVM) {
-	    if (maxscore < 0) {
-		cmm_ptr->result_lists_p[0].score[n] = 0;
-	    }
-	    else {
-		cmm_ptr->result_lists_p[0].score[n] = maxscore*11;
-		/* cmm_ptr->result_lists_p[0].score[n] = *(EX_match_score+(int)(maxrawscore*7)); */
-	    }
+
+    if (OptSVM == OPT_SVM) {
+#ifdef USE_RAWSCORE
+	if (maxrawscore < 0) {
+	    cmm_ptr->result_lists_p[0].score[n] = 0;
+	}
+	else if (maxrawscore > 1.0) {
+	    cmm_ptr->result_lists_p[0].score[n] = EX_match_exact;
 	}
 	else {
-	    cmm_ptr->result_lists_p[0].score[n] = *(EX_match_score+(int)(maxscore*7));
+	    cmm_ptr->result_lists_p[0].score[n] = *(EX_match_score+(int)(maxrawscore*7));
 	}
+#else
+	if (maxscore < 0) {
+	    cmm_ptr->result_lists_p[0].score[n] = 0;
+	}
+	else {
+	    cmm_ptr->result_lists_p[0].score[n] = maxscore > 1 ? EX_match_exact : maxscore*11;
+	}
+#endif
+    }
+    else {
+	cmm_ptr->result_lists_p[0].score[n] = maxscore > 1 ? EX_match_exact : *(EX_match_score+(int)(maxscore*7));
     }
 
     c_ptr->pp[c_ptr->element_num][0] = cf_ptr->pp[n][0];
@@ -1997,7 +2018,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     BNST_DATA *bp;
 
     if (OptSVM == OPT_SVM) {
-	maxscore = -1;
+	maxscore = AssignReferentThresholdForSVM;
 	maxtag = NULL;
     }
     else {
@@ -2166,7 +2187,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 							     ExtraTags[i], cf_ptr, n);
 	}
 
-	if (maxscore > -1) {
+	if (maxscore > AssignReferentThresholdForSVM) {
 	    if (maxtag) {
 		if (str_eq(maxtag, "主体一般")) {
 		    sprintf(feature_buffer, "C用;【主体一般】;%s;-1;-1;1", 
@@ -2525,6 +2546,12 @@ void AppendCfFeature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 
+    /* 格フレームが <主体準> をもつかどうか */
+    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
+	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	assign_cfeature(&(em_ptr->f), feature_buffer);
+    }
+
     /* 格フレームが <補文> をもつかどうか */
     if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
 	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr(cf_ptr->pp[n][0]));
@@ -2576,8 +2603,11 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		    em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
 
 		    if (OptSVM == OPT_SVM) {
-			em_ptr->score += maxscore > 1.0 ? EX_match_exact : 11*maxscore;
-			/* em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxrawscore*7)); */
+#ifdef USE_RAWSCORE
+			em_ptr->score += maxrawscore > 1.0 ? EX_match_exact : maxrawscore < 0 ? 0 : *(EX_match_score+(int)(maxrawscore*7));
+#else
+			em_ptr->score += maxscore > 1.0 ? EX_match_exact : maxscore < 0 ? 0 : 11*maxscore;
+#endif
 		    }
 		    else {
 			if (maxscore == (float)EX_match_subject/11) {

@@ -256,7 +256,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
 	    return NULL;
 	}
-	else if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
+	else if (check_feature(b_ptr->f, "強時間") || 
+		 (closest == FALSE && check_feature(b_ptr->f, "時間"))) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    c_ptr->oblig[c_ptr->element_num] = FALSE;
 	    if (jiritsu_num > 1) {

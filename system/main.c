@@ -826,6 +826,12 @@ PARSED:
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
 	    }
+	    for (i = 0; i < sp->Bnst_num; i++) {
+		if (sp->bnst_data[i].internal_num) {
+		    sp->bnst_data[i].internal_num = 0;
+		    sp->bnst_data[i].internal_max = 0;
+		}
+	    }
 	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }

@@ -335,23 +335,28 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
     /* 直前格要素を走査 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	/* 複合名詞の一部: とりあえず直前格要素とする */
+	/* 複合名詞の一部: <時間>以外ならそのまま直前格要素とする */
 	if (cpm_ptr->elem_b_ptr[i]->num == -1) {
 	    if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間")) {
 		return -1;
 	    }
 	    return i;
 	}
+	/* 用言にもっとも近い格要素を探す 
+	   <回数>:無格 以外 */
 	else if (cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
-	    min < cpm_ptr->elem_b_ptr[i]->num) {
+		 min < cpm_ptr->elem_b_ptr[i]->num && 
+		 !(MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "φ") && 
+		   check_feature(cpm_ptr->elem_b_ptr[i]->f, "回数"))) {
 	    min = cpm_ptr->elem_b_ptr[i]->num;
 	    elem_b_num = i;
 	}
     }
 
-    /* 1. 一意にヲ格, ニ格であるとき
-       2. <主体>にマッチしない普通の格 (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))
-       3. 用言の直前の未格
+    /* 1. ヲ格, ニ格であるとき
+       2. 無格で<回数>でないもの
+       3. <主体>にマッチしない 1, 2 以外の格 (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))
+       4. 用言の直前の未格 (副詞がはさまってもよい)
        ★形容詞, 判定詞は?
        check_feature してもよい
        条件廃止: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
