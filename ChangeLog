@@ -1,3 +1,191 @@
+2000-04-07  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_rule.c:
+	-debugのファイル名表示のバグフィックス
+
+2000-03-30  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/kakari_uke.rule, rule/mrph_basic.rule, rule/Makefile.in, rule/bnst_basic.rule, rule/bnst_type.phrase:
+	連体の扱い，
+	ニ格，デ格の修飾の扱い
+
+	* system/quote.c:
+	括弧並列などのfeatureを見る部分を少し修正
+
+2000-03-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_rule.c, system/unsupervised.c, system/para_relation.c, system/para_revision.c, system/proper.c, system/quote.c, system/read_data.c, system/lib_print.c, system/main.c, system/para_analysis.c, system/para_dpnd.c, system/case_print.c, system/corpus.c, system/dpnd_analysis.c, system/extern.h, system/koou.c, system/case_match.c:
+	debug 時にルール読み込み状況を表示するようにした。
+	extern の整理。
+
+	* rule/Makefile.am: make rule, make trans でルールを作成できるようにした。
+
+2000-03-29  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.rule, rule/mrph_homo.rule, rule/Makefile.in, rule/bnst_basic.rule, rule/kakari_uke.rule:
+	mrph_homo.rule
+		動詞と名詞のhomoの扱い
+	mrph_basic.rule
+		動詞と名詞のhomoの扱い
+	bnst_basic.rule
+		並列末尾の手がかりの扱い
+	kakari_uke.rule
+		隣接，同格連体などの扱い
+
+	* system/feature.c:
+	関数 &末尾ひらがな を追加
+
+2000-03-28  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c: 用いる格フレーム辞書によって、Segmentation Fault する場合がある問題を
+	修正。
+
+2000-03-27  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule: 時間のルールの追加。
+	「もらえる」も「もらう」と同じく表層格を追加することにした。
+
+2000-03-17  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/rule_trans.pl: いらないコメント行を削除。
+
+2000-03-15  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c, system/main.c, system/unsupervised.c, system/feature.c, system/lib_bgh.c, system/lib_print.c, system/configfile.c, system/const.h, system/corpus.c, system/dpnd_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/case_analysis.c:
+	格フレームを動的に確保するように変更。
+	NTT の意味素のうち "接頭", "接尾" の品詞のものは与えないように変更。
+	その他 bug fix.
+
+2000-02-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/read_data.c, rule/mrph_homo.rule:
+	同形異義語のルールファイルに * を導入した。
+	"あった" などの表記に曖昧性のある語に暫定対応。
+
+	* rule/bnst_etc.rule, rule/bnst_type.phrase: 補文をマークするルールの追加。
+
+2000-02-23  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_scase.c, system/main.c, system/case_ipal.c:
+	格フレームを取ってくる処理の bug fix。
+
+2000-02-22  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/read_data.c, system/tree_conv.c:
+	文節の子供の数の溢れに対処。
+	同形異義語の数の溢れに対処。
+	"@" で始まる形態素行に対処。
+
+2000-02-22  Koji Nobumoto  <nobumoto@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/rule_trans.pl: use lib の個人的設定をコメントアウト
+	すみません
+
+2000-02-22  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/read_rule.c, system/tree_conv.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/proper.c, system/extern.h, system/feature.c, system/ipal.c, system/lib_bgh.c, system/lib_print.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c:
+	格解析のマージ。
+
+	* system/main.c, system/dpnd_analysis.c:
+	長い文を入力したときに、Segmentation Fault するバグを修正。
+	正解を入力したときのバグを修正。
+
+2000-02-20  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_print.c, system/const.h, system/dpnd_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_analysis.c:
+	格解析の改良。
+	格フレームのメモリ確保の効率化。これによりメモリ使用量が減少。
+
+2000-02-15  Koji Nobumoto  <nobumoto@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/rule_trans.pl: 形態素にたいして, juman 結果の数字指定の部分を残す指定(WORD12345)をしたとき,
+	その形態素についての feature の指定ができなかった点を修正.
+
+2000-02-07  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule: 外の関係から括弧をはずした。
+
+	* system/const.h, system/case_match.c, system/case_print.c, system/case_ipal.c, system/case_analysis.c, system/case_data.c:
+	格解析の改良。
+	「では」, 「でも」 などで複数の格の可能性を考えるようにした。
+	内部で PARA の expand を行うようにした。
+	その他もろもろの修正。
+
+2000-02-04  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/tree_conv.c, system/dpnd_analysis.c, system/main.c:
+	"係:連用" を PARA を expand する文節から除いた。
+	解析済みデータに対して格解析を行ったときの後処理を追加。
+
+	* system/tree_conv.c: PARA を expand する文節から "係:連用" を除いた。
+
+	* system/dpnd_analysis.c, system/main.c: 解析済みデータに対して格解析を行ったときの後処理を追加。
+
+	* system/case_ipal.c, system/case_analysis.c: 複合辞, 用例コード関連 bug fix。
+
+2000-02-03  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_data.c: 複合辞の扱いの修正。
+
+	* system/read_data.c: 解析済みデータを入力したときに、付属語、接頭語が扱われていない問題を修
+	正。
+
+2000-02-03  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/read_data.c:
+	解析済みデータを入力したときにも格解析の結果 (case2) をつけれるように
+	した。
+
+	* system/main.c, system/const.h, system/lib_print.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/case_analysis.c, system/case_data.c:
+	格解析の改良。
+	メモリの効率化。格フレームの用例の意味素コードは分類語彙表または NTT
+	のどちらかしか与えない。
+	外の関係の扱いの改良。
+	時間格の扱いの改良。
+	格フレーム辞書を引く用言に関する改良。(「（〜を）〜に」など)
+	debug 時の各種 bug fix。
+
+2000-02-02  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c: NTT の意味素コードマッチの変更。
+
+2000-02-02  Koji Nobumoto  <nobumoto@pine.kuee.kyoto-u.ac.jp>
+
+	* system/context.c: *** empty log message ***
+
+2000-01-30  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/case_data.c, system/main.c:
+	解析済みデータを入力したときにも格解析の結果 (case2) をつけれるように
+	した。
+
+2000-01-26  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c, system/read_rule.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/extern.h, system/ipal.c, system/lib_bgh.c, system/case_print.c, system/configfile.c, system/const.h, system/case_ipal.c:
+	.jumanrc で辞書ファイルを指定できるようする変更のマージ。
+	格フレーム辞書のインデックスの書式変更。
+
+	* configure.in: バグ修正。
+
+	* system/read_rule.c, system/extern.h, system/lib_bgh.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/case_ipal.c, system/configfile.c, system/const.h:
+	.jumanrc で辞書ファイルを指定できるようにした。
+
+2000-01-21  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/case_match.c, system/extern.h, system/lib_sm.c, system/case_ipal.c:
+	格解析の改良。
+	提題, 連体修飾の格のマッチをガ, ヲ格に制限。
+	使うシソーラスをオプションで選択可能にした。
+	NTT の意味素の類似度計算を行う関数の追加。
+
+2000-01-13  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/const.h, ChangeLog:
+	「なる」などの動詞を前隣の文節も合わせて、格フレーム辞書からとってくる
+	ことにした。
+	提題の bug fix。
+	読点+隣の用言に係るのはペナルティを与えた。
+
 2000-01-11  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/case_data.c, system/case_match.c, system/case_analysis.c:
