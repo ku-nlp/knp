@@ -1,3 +1,15 @@
+2003-05-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.ac: 辞書存在判定部のbug fix.
+
+2003-05-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/rule_conv.pl, rule/rule_trans.pl:
+	PATHのjperlを探すようにShebangを修正
+
+	* rule/Makefile.am:
+	すべてのphraseファイルを変換するようにtransターゲットを変更
+
 2003-05-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac, dict/ebcf/Makefile.am, dict/scode/bgh/Makefile.am, dict/scode/ntt/Makefile.am:
