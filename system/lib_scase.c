@@ -83,11 +83,6 @@ int		ScaseDicExist;
     int i;
     char *cp, *ans, *anscp, *str_buffer, *vtype, voice[3];
 
-    /* 入力は文節, タグ単位には対応していない */
-    if (ptr->type != IS_BNST_DATA) {
-	return;
-    }
-
     /* 初期化: init_bnst でもしている */
     for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
 
@@ -107,7 +102,12 @@ int		ScaseDicExist;
 	    strcpy(voice, ":PC");
 	}
 
-	str_buffer = make_pred_string(ptr->head_tag_ptr); /* 最後のタグ単位 (「〜のは」の場合は1つ前) */
+	if (ptr->type == IS_BNST_DATA) {
+	    str_buffer = make_pred_string(ptr->head_tag_ptr); /* 最後のタグ単位 (「〜のは」の場合は1つ前) */
+	}
+	else {
+	    str_buffer = make_pred_string(ptr);
+	}
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
 	if (voice[0]) strcat(str_buffer, voice);
