@@ -1215,6 +1215,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	/* 正解コーパスを入力したときに自立語がない場合がある */
 	if (b_ptr->jiritu_ptr != NULL && 
+	    !check_feature(b_ptr->f, "格解析なし") && 
 	    ((!(b_ptr->internal_num > 0 && 
 		check_feature(b_ptr->internal->f, "非用言格解析") && 
 		check_feature(b_ptr->f, "用言:動")) && /* (複合)サ変動詞の場合は文節内部の方で格解析 */
