@@ -9,7 +9,7 @@ extern int LineNoForError, LineNo;
 char *Knprule_Dirname = NULL;
 char *Knpdict_Dirname = NULL;
 
-RuleVector *RULE;
+RuleVector *RULE = NULL;
 int CurrentRuleNum = 0;
 int RuleNumMax = 0;
 
@@ -30,12 +30,17 @@ int RuleNumMax = 0;
 {
     if (CurrentRuleNum) {
 	free(RULE);
+	RULE = NULL;
 	CurrentRuleNum = 0;
 	RuleNumMax = 0;
     }
     if (Knprule_Dirname) {
 	free(Knprule_Dirname);
 	Knprule_Dirname = NULL;
+    }
+    if (Knpdict_Dirname) {
+	free(Knpdict_Dirname);
+	Knpdict_Dirname = NULL;
     }
 }
 
