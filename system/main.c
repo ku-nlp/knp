@@ -434,6 +434,10 @@ extern int	EX_match_subject;
     close_thesaurus();
     close_scase();
 
+    if (OptEllipsis) {
+	close_event();
+    }
+
 #ifdef DB3DEBUG
     db_teardown();
 #endif
@@ -473,6 +477,7 @@ extern int	EX_match_subject;
 	if (OptDiscMethod == OPT_DT) {
 	    init_dt();
 	}
+	init_event();
     }
 
     /* 形態素, 文節情報の初期化 */

@@ -1073,14 +1073,14 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     int max, i;
     char *buffer, *sbuf;
 
-    max = (sizeof(E_SVM_FEATURES) - sizeof(float)) / sizeof(int) + 1;
+    max = (sizeof(E_SVM_FEATURES) - 2 * sizeof(float)) / sizeof(int) + 2;
     sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
 			       "EllipsisSvmFeatures2String");
-    buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 10, 
+    buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
 				 "EllipsisSvmFeatures2String");
-    sprintf(buffer, "1:%.5f", esf->similarity);
-    for (i = 2; i <= max; i++) {
-	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - 2));
+    sprintf(buffer, "1:%.5f 2:%.5f", esf->similarity, esf->event);
+    for (i = 3; i <= max; i++) {
+	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - 3));
 	strcat(buffer, sbuf);
     }
     free(sbuf);
@@ -1122,6 +1122,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f = (E_SVM_FEATURES *)malloc_data(sizeof(E_SVM_FEATURES), "SetEllipsisFeatures");
 
     f->similarity = ef->similarity;
+    f->event = ef->event;
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
     }
@@ -1257,6 +1258,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos);
 
     if (vp) {
+	f->event = get_event_value(vs, vp, cs, cpm_ptr->pred_b_ptr);
+
 	f->c_pp = GetCandCase(vp->cpm_ptr, &(vp->cpm_ptr->cmm[0]), bp);
 
 	if ((level = check_feature(vp->f, "¥ì¥Ù¥ë"))) {
@@ -1269,6 +1272,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->c_n_modify_flag = check_feature(vp->f, "·¸:Ï¢³Ê") ? 1 : 0;
     }
     else {
+	f->event = -1;
+
 	f->c_pp = -1;
 	f->c_dep_p_level[0] = '\0';
 	f->c_dep_mc_flag = 0;

@@ -432,7 +432,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	13
+#define DICT_MAX	14
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -446,6 +446,7 @@ typedef struct _RuleVector {
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
 #define	CODE2SM_DB	12
+#define	EVENT_DB	13
 
 
 
@@ -827,6 +828,7 @@ typedef struct ellipsis_list {
 
 typedef struct ellipsis_features {
     float	similarity;
+    float	event;
     int		pos;
 
     int		c_pp;
@@ -860,6 +862,7 @@ typedef struct ellipsis_features {
 
 typedef struct ellipsis_svm_features {
     float	similarity;
+    float	event;
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST

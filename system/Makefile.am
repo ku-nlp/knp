@@ -47,7 +47,8 @@ knp_SOURCES = \
 	thesaurus.c \
 	hash.c \
 	hash.h \
-	bnst_compare.c
+	bnst_compare.c \
+	lib_event.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 

@@ -80,7 +80,7 @@ int		ScaseDicExist;
 		 void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, i;
+    int i;
     char *cp, *ans, *anscp, *str_buffer, *vtype, voice[3];
 
     /* 入力は文節, タグ単位には対応していない */

@@ -482,7 +482,8 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	}
 	/* 用言にもっとも近い格要素を探す 
 	   <回数>:無格 以外 */
-	else if (cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
+	else if (cpm_ptr->elem_b_num[i] > -2 && /* 省略の格要素じゃない */
+		 cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
 		 min < cpm_ptr->elem_b_ptr[i]->num && 
 		 !(MatchPP(cpm_ptr->cf.pp[i][0], "φ") && 
 		   check_feature(cpm_ptr->elem_b_ptr[i]->f, "回数"))) {

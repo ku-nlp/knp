@@ -214,6 +214,10 @@ extern void close_bgh();
 /* lib_dt.c */
 extern float dt_classify(char *data, int pp);
 
+/* lib_event.c */
+float get_event_value(SENTENCE_DATA *sp1, TAG_DATA *p1, 
+		      SENTENCE_DATA *sp2, TAG_DATA *p2);
+
 /* lib_lib.c */
 extern int str_part_eq(char *dat, char *pat);
 
