@@ -32,8 +32,6 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    1:係り受けOK
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
-char		G_Feature[100][64];		/* FEATUREの変数格納 */
-
 int 		OptAnalysis;
 int		OptDisc;
 int		OptDemo;

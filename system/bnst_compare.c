@@ -248,7 +248,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 	/* ただし，判定詞 -- 体言 の類似度は 0 */
 	if (check_feature(ptr1->f, "用言:判") &&
-	    !check_feature(ptr1->f, "用言:判:?") && /* 「〜で」を除く */
+	    !check_feature(ptr1->f, "並キ:？") && /* 「〜ではなく」「ですとか」を除く */
 	    check_feature(ptr2->f, "体言") &&
 	    !check_feature(ptr2->f, "用言:判")) return 0;
 	

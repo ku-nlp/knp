@@ -33,8 +33,6 @@ extern int 		Dpnd_matrix[][BNST_MAX];
 extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];
 
-extern char		G_Feature[][64];
-
 extern int 		OptAnalysis;
 extern int		OptDisc;
 extern int		OptDemo;

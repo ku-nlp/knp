@@ -269,6 +269,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	if (check_feature((sp->bnst_data + i)->f, "用言") &&
+	    !check_feature((sp->bnst_data + i)->f, "提題受:0") &&
 	    (sp->bnst_data + i)->para_num != -1 &&
 	    sp->para_data[(sp->bnst_data + i)->para_num].status != 'x') {
 	    

@@ -22,7 +22,6 @@
 			&表層:○格 -- ○格付与
 			&表層:^○格 -- ○格削除
 			&MEMO:○ -- MEMOへの書き込み
-			&#num:○ -- ○とnum番目の変数による新たなFEATUREを付与
 
 	(3) ルール構造体 <==照合==> 形態素または文節構造体
 	       	<○>は<○:…>というFEATUREがあればOK
@@ -36,8 +35,6 @@
 			&レベル:強 -- 受が係以上 (係受)
 			&レベル:l -- 自身がl以上 (係受)
 			&係側:○ -- 係に○ (係受)
-			&#num:○ -- <○:…>というFEATUREがあればOK
-			            <○:…>をnum番目の変数に格納
 
 	※ プログラム内で形態素または文節構造体にFEATUREを与える
 	場合は(2)のなかの assign_cfeature を用いる．
@@ -383,13 +380,6 @@
 		strcat(PM_Memo, " ");
 		strcat(PM_Memo, (*fpp2)->cp + strlen("&MEMO:"));
 	    }
-	    else if (!strncmp((*fpp2)->cp, "&#", strlen("&#"))) {
-		int gnum;
-		char fprefix[64], fname[64];
-		sscanf((*fpp2)->cp, "&#%d:%s", &gnum, fprefix);
-		sprintf(fname, "%s%s", fprefix, G_Feature[gnum]);
-		assign_cfeature(fpp1, fname);
-	    }
 	    else if (!strncmp((*fpp2)->cp, "&品詞変更:", strlen("&品詞変更:"))) {
 		change_mrph((MRPH_DATA *)ptr, *fpp2);
 	    }
@@ -402,11 +392,19 @@
 		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp);
 		}
 	    }
-	    /*
-	    else if (!strncmp((*fpp2)->cp, "&辞書", strlen("&辞書"))) {
-		assign_f_from_dic(fpp1, ((MRPH_DATA *)ptr)->Goi);
+	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
+		int dir;
+		char trans_feature[DATA_LEN];
+		sscanf((*fpp2)->cp, "&伝搬:%d:%s", &dir, trans_feature);
+
+
+		cp = check_feature(*fpp1, trans_feature);
+
+
+		if (cp) {
+		    assign_cfeature(&((((BNST_DATA *)ptr)+dir)->f), cp);
+		}
 	    }
-	    */
 	} else {			/* 追加の場合 */
 	    assign_cfeature(fpp1, (*fpp2)->cp);	
 	}
@@ -913,20 +911,6 @@
 	cp = rule + strlen("&係側:");
 	if ((*cp != '^' && check_feature(((BNST_DATA *)ptr1)->f, cp)) ||
 	    (*cp == '^' && !check_feature(((BNST_DATA *)ptr1)->f, cp))) {
-	    return TRUE;
-	} else {
-	    return FALSE;
-	}
-    }
-
-    /* &#? : FEATUREチェックと変数への格納 */
-    
-    else if (!strncmp(rule, "&#", strlen("&#"))) {
-	int gnum;
-	char fname[64];
-	sscanf(rule, "&#%d:%s", &gnum, fname);
-	if ((cp = check_feature(fd, fname))) {
-	    strcpy(G_Feature[gnum], cp);
 	    return TRUE;
 	} else {
 	    return FALSE;
