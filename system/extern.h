@@ -132,6 +132,7 @@ extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
+extern char *make_pred_string(TAG_DATA *t_ptr);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

@@ -552,10 +552,14 @@ extern int	EX_match_subject;
 
     if (OptAnalysis == OPT_BNST) return TRUE;
 
+    /* タグ単位作成 (-notag時もscaseを引くために行う) */
+    make_tag_units(sp);
+
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	decide_head_ptr(sp->bnst_data + i);
+	decide_head_tag_ptr(sp->bnst_data + i);
 	make_Jiritu_Go(sp, sp->bnst_data + i);
 	get_bnst_code(sp->bnst_data + i, USE_BGH);
 	get_bnst_code(sp->bnst_data + i, USE_NTT);
@@ -592,11 +596,6 @@ extern int	EX_match_subject;
     if (OptAnalysis == OPT_AssignF) return TRUE;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
-
-    /* タグ単位作成 */
-    if (OptExpress != OPT_NOTAG) {
-	make_tag_units(sp);
-    }
 
     /* それぞれの用言の格フレームを取得 */
     if (OptAnalysis == OPT_CASE ||

@@ -759,7 +759,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	       int after_decide_dpnd(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, lastflag = -1;
+    int i, j;
     TAG_DATA *check_b_ptr;
     
     /* 解析済: 構造は与えられたもの1つのみ */
@@ -789,10 +789,6 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		    check_b_ptr = check_b_ptr->parent;
 		}
 
-		if (lastflag < 0 && !check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "非主節")) {
-		    lastflag = i;
-		}
-
 		/* 各格要素の親用言を設定
 		   ※ 文脈解析のときに格フレームを決定してなくても格解析は行っているので
 		      これは成功する */
@@ -819,7 +815,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
 
 			/* 格解析の結果を featureへ */
-			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
+			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
+					     check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
 		    }
 		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
 			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {

@@ -120,7 +120,11 @@
 #define	OPT_DISC_CLASS_ONLY	4
 #define	OPT_DISC_FLAT	8
 
+#define	IS_BNST_DATA	1
+#define	IS_TAG_DATA	2
+
 #define	PP_NUMBER	44
+#define LOC_NUMBER	21
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -511,6 +515,7 @@ typedef struct tnode_b {
 
     struct tnode_t *tag_ptr;
     int		tag_num;
+    struct tnode_t *head_tag_ptr;
 } BNST_DATA;
 
 /* 並列構造データ */
@@ -858,6 +863,7 @@ typedef struct ellipsis_svm_features {
     int		c_dist_bnst;
 #endif
     int		c_fs_flag;
+    int		c_location[LOC_NUMBER];
     int		c_topic_flag;
     int		c_no_topic_flag;
     int		c_in_cnoun_flag;

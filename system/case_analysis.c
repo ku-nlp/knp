@@ -1256,7 +1256,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		   用言直前のノ格: 保留 */
 		else if (!(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
 			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
-			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("未")) {
+			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("未") && 
+			 MatchPP2(cpm_ptr->cf.pp[i], "外の関係")) { /* 「外の関係」の可能性あるもの */
 		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "外の関係")) < 0) {
 			add_cf_slot(cpm_ptr, "外の関係", i);
 		    }

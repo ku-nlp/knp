@@ -382,7 +382,19 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 			       m_ptr->Imi);
 
 	    if (mrph_item == 8) {
-		;
+		/* 意味情報をfeatureへ */
+		if (strcmp(m_ptr->Imi, "NIL")) {
+		    int pflag = 0;
+		    /* 通常 "" で括られている */
+		    if (*(m_ptr->Imi + strlen(m_ptr->Imi) - 1) == '\"') {
+			*(m_ptr->Imi + strlen(m_ptr->Imi) - 1) = '\0';
+			pflag = 1;
+		    }
+		    assign_cfeature(&(m_ptr->f), *(m_ptr->Imi) == '\"' ? m_ptr->Imi + 1 : m_ptr->Imi);
+		    if (pflag) {
+			*(m_ptr->Imi + strlen(m_ptr->Imi)) = '\"';
+		    }
+		}
 	    }
 	    else if (mrph_item == 7) {
 		strcpy(m_ptr->Imi, "NIL");
@@ -777,6 +789,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     BNST_DATA *b_ptr;
 
     b_ptr = sp->bnst_data + sp->Bnst_num;
+    b_ptr->type = IS_BNST_DATA;
     b_ptr->num = sp->Bnst_num;
     sp->Bnst_num++;
     if (sp->Bnst_num > BNST_MAX) {
@@ -844,7 +857,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
 	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
 	    if (check_feature((ptr->mrph_ptr + i)->f, "有意味接尾辞") || 
-		check_feature((ptr->mrph_ptr + i)->f, "独立語")) {
+		check_feature((ptr->mrph_ptr + i)->f, "独立無意味語")) { /* 「の」 */
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
@@ -858,6 +871,24 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     /* 付属語しかない場合 */
     ptr->head_ptr = ptr->mrph_ptr + ptr->mrph_num - 1;
+}
+
+/*==================================================================*/
+	       void decide_head_tag_ptr(BNST_DATA *ptr)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = ptr->tag_num - 1; i >= 0 ; i--) {
+	if (check_feature((ptr->tag_ptr + i)->head_ptr->f, "独立無意味語")) { /* 「の」 */
+	    continue;
+	}
+	ptr->head_tag_ptr = ptr->tag_ptr + i;
+	return;
+    }
+
+    ptr->head_tag_ptr = ptr->tag_ptr;
+    return;
 }
 
 /*==================================================================*/
@@ -915,6 +946,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	if (Bnst_start[i]) {
 	    if (i != 0) b_ptr++;
+	    b_ptr->type = IS_BNST_DATA;
 	    b_ptr->num = b_ptr-sp->bnst_data;
 	    b_ptr->mrph_ptr = m_ptr;
 	    b_ptr->mrph_num = 1;
@@ -951,7 +983,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	}
 	tp->settou_num++;
     }
-    else if (check_feature(mp->f, "独立語")) {
+    else if (check_feature(mp->f, "独立語") || 
+	     check_feature(mp->f, "独立接頭辞") || 
+	     check_feature(mp->f, "独立接尾辞") || 
+	     check_feature(mp->f, "独立無意味語")) {
 	if (tp->jiritu_num == 0) {
 	    tp->jiritu_ptr = mp;
 	}
@@ -1041,6 +1076,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     for (i = 0; i < sp->Tag_num; i++) {
 	tp = sp->tag_data + i;
+
+	tp->type = IS_TAG_DATA;
 
 	decide_head_ptr((BNST_DATA *)tp);
 

@@ -267,7 +267,7 @@ int	PrintDeletedSM = 0;
 		    fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
 		}
 		/* 溢れチェック */
-		else if (count >= CF_ELEMENT_MAX) {
+		else if (count >= CF_ELEMENT_MAX - 1) {
 		    break;
 		}
 		else {
@@ -1070,10 +1070,15 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 }
 
 /*==================================================================*/
-int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, char *verb)
+int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, char *in_verb)
 /*==================================================================*/
 {
     int f_num = 0, plus_num;
+    char *verb;
+
+    verb = (char *)malloc_data(strlen(in_verb) + 3, "make_ipal_cframe_subcontract");
+    strcpy(verb, in_verb);
+    free(in_verb);
 
     if (check_feature(t_ptr->f, "サ変止") || 
 	(check_feature(t_ptr->f, "非用言格解析") && 
@@ -1084,6 +1089,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0);
 
 	/* 受身の場合を考えないとき */
+	free(verb);
 	return f_num;
 
 	t_ptr->voice = VOICE_UNKNOWN;
@@ -1102,6 +1108,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	}
 	plus_num = _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, 0);
 	if (plus_num != 0) {
+	    free(verb);
 	    return f_num + plus_num;
 	}
 	*(verb + strlen(verb) - 2) = '\0';	/* みつからなかったらもとにもどす */
@@ -1110,17 +1117,55 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     if (t_ptr->voice == VOICE_UNKNOWN) {
 	/* 受身 */
 	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI);
+	free(verb);
 	return f_num;
     }
-    return _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice);
+
+    f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice);
+    free(verb);    
+    return f_num;
+}
+
+/*==================================================================*/
+	       char *make_pred_string(TAG_DATA *t_ptr)
+/*==================================================================*/
+{
+    char *buffer;
+
+    /* 用言タイプ, voiceの分(6)も確保しておく */
+
+    /* 「（〜を）〜に」 のときは 「する」 で探す */
+    if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
+	buffer = (char *)malloc_data(11, "make_pred_string"); /* 4 + 7 */
+	strcpy(buffer, "する");
+    }
+    /* 「形容詞+なる」など */
+    else if (check_feature(t_ptr->f, "Ｔ用言見出→")) {
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 7, 
+				     "make_pred_string");
+	strcpy(buffer, t_ptr->head_ptr->Goi2);
+	strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
+    }
+    /* 「形容詞語幹+的だ」など */
+    else if (check_feature(t_ptr->f, "Ｔ用言見出←")) {
+	buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(t_ptr->head_ptr->Goi) + 7, 
+				     "make_pred_string");
+	strcpy(buffer, (t_ptr->head_ptr - 1)->Goi2);
+	strcat(buffer, t_ptr->head_ptr->Goi);
+    }
+    else {
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 7, "make_pred_string");
+	strcpy(buffer, t_ptr->head_ptr->Goi);
+    }
+
+    return buffer;
 }
 
 /*==================================================================*/
  int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start)
 /*==================================================================*/
 {
-    int f_num = 0, i;
-    char *verb, buffer[3][WORD_LEN_MAX];
+    int f_num = 0;
 
     /* 自立語末尾語を用いて格フレーム辞書を引く */
 
@@ -1128,41 +1173,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	return f_num;
     }
 
-    /* 「（〜を）〜に」 のときは 「する」 で探す */
-    if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
-	sprintf(buffer[0], "する");
-	verb = buffer[0];
-    }
-    /* 「〜化」, 「〜的だ」 で 名詞+接尾辞(自立語) の形のもの
-       (準用言ではない … 「〜年」などの時間を除く) */
-    else if (t_ptr->jiritu_num > 1 && !strcmp(Class[L_Jiritu_M(t_ptr)->Hinshi][0].id, "接尾辞") && 
-	     !check_feature(t_ptr->f, "準用言")) {
-	sprintf(buffer[0], "%s%s", (t_ptr->jiritu_ptr + t_ptr->jiritu_num - 2)->Goi, L_Jiritu_M(t_ptr)->Goi);
-	verb = buffer[0];
-
-	/* 「形容詞+する」 */
-	if (check_feature(t_ptr->f, "形容詞スル")) {
-	    strcat(verb, "する");
-	}
-
-	f_num = make_ipal_cframe_subcontract(sp, t_ptr, start, verb);
-	if (f_num != 0) {
-	    Case_frame_num += f_num;
-	    return f_num;
-	}
-	strcpy(buffer[0], t_ptr->head_ptr->Goi);
-    }
-    else {
-	strcpy(buffer[0], t_ptr->head_ptr->Goi);
-	verb = buffer[0];
-    }
-
-    /* 「形容詞+する」 */
-    if (check_feature(t_ptr->f, "形容詞スル")) {
-	strcat(verb, "する");
-    }
-
-    f_num = make_ipal_cframe_subcontract(sp, t_ptr, start, verb);
+    f_num = make_ipal_cframe_subcontract(sp, t_ptr, start, make_pred_string(t_ptr));
     Case_frame_num += f_num;
 
     return f_num;
