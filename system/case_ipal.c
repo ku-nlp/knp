@@ -1467,6 +1467,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 {
     int i, num = 0, f_num = 0;
     CASE_FRAME *cf_ptr;
+    char *cp;
 
     cf_ptr = Case_frame_array + start;
 
@@ -1477,7 +1478,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 					  "make_default_cframe");
     }
 
-    if (check_feature(t_ptr->f, "用言:判")) {
+    cp = check_feature(t_ptr->f, "用言");
+    if (cp && !strcmp(cp, "用言:判")) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ＊", num, CF_PRED);
 	_make_ipal_cframe_sm(cf_ptr, "主体準", num++, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
@@ -1492,10 +1494,19 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	_make_ipal_cframe_pp(cf_ptr, "ヨリ＊", num++, CF_PRED);
 	cf_ptr->cf_address = -1;
 	cf_ptr->pred_type[0] = '\0';
+	if (cp) {
+	    if (!strcmp(cp, "用言:動")) {
+		strcpy(cf_ptr->pred_type, "判");
+	    }
+	    else if (!strcmp(cp, "用言:形")) {
+		strcpy(cf_ptr->pred_type, "形");
+	    }
+	}
     }
 
     cf_ptr->element_num = num;
     cf_ptr->etcflag = CF_NORMAL;
+    sprintf(cf_ptr->cf_id, "%s:%s0", t_ptr->head_ptr->Goi, cf_ptr->pred_type);
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
