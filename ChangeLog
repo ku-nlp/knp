@@ -4,6 +4,9 @@
 	名詞の関係解析で閾値を越えるものがみつかったら決定するように変更し
 	た。
 
+	* system/const.h, system/context.c, system/main.c:
+	twin-candidate modelのサポート。
+
 2003-10-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c, system/context.c, system/main.c:
