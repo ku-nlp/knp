@@ -1,3 +1,25 @@
+2002-11-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/main.c: 削除されたファイルへの対応
+
+	* configure.in: removed.
+
+	* configure.ac: added.
+	configure.inからconfigure.acへ名前変更
+	--with-juman-prefix 追加
+
+	* acconfig.h: removed.
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/configfile.c, system/const.h, system/context.c, system/lib_sm.c:
+	指示詞を照応解析した場合の格解析結果featureの変更 (D)
+	形容詞語幹の格解析
+
+	* system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_scase.c, system/path.h, system/read_rule.c:
+	不必要な関数, マクロの削除
+
+	* rule/case_analysis.rule, rule/context.rule:
+	形容詞語幹の格解析
+
 2002-11-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* knprc.sample:	デフォルト値の変更
