@@ -100,12 +100,7 @@ $pos_repr{"\\感動詞"} = "あっ";
 $pos_repr{"\\特殊:句点"} = "．";
 
 ######################################################################
-# use Juman
-# $juman = new Juman("-e -B"); 
 use KNP;
-# $knp = new KNP("-bnst -tab -r /home/kuro/.jumanrc");
-#use lib "/home/nobumoto/etc/lib/perl";
-#BEGIN { require "/home/nobumoto/etc/lib/perl/KNP.pm"};
 $knp = new KNP("-bnst -tab");
 ######################################################################
 $bnstrule_flag = 1;
