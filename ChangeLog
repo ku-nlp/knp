@@ -12,12 +12,13 @@
 	* system/configfile.c:
 	Windowsではknprcを見ないようにした
 
-	* rule/mrph_basic.rule: 
-	コメント追加
+	* rule/mrph_basic.rule: コメント追加
 
 	* perl/KNP.pm: Removed.
 
 	* perl: Imported knp-perl 0.3.91.
+
+	* Makefile.am, configure.ac: knp-perlのimportに伴う変更
 
 2003-05-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
