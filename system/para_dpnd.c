@@ -320,9 +320,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	    if (no_more_error == TRUE) break;
 	    else continue;
 	}	
-      cannnot_revise:
     }
 
+ cannnot_revise:
     /* チェック済みの印 */
     for (k = start_pos; k < m_ptr->end[m_ptr->part_num-1]; k++)
 	D_check_array[k] = TRUE;

@@ -802,15 +802,14 @@ extern int	EX_match_subject;
 		 detect_para_scope(sp, Revised_para_num, TRUE) == TRUE);
 	ErrorComment = strdup("Cannot detect consistent CS scopes");
 	init_mask_matrix(sp);
-    ParaOK:
     }
     else if (flag == CONTINUE)
 	return FALSE;
 
+ ParaOK:
     /********************/
     /* 依存・格構造解析 */
     /********************/
-
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 #ifndef _WIN32
