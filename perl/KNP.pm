@@ -50,6 +50,7 @@
 
 package KNP;
 require 5.000;
+use FileHandle;
 use Fork;
 use Juman;
 use strict;
@@ -68,6 +69,12 @@ $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
 
+
+
+sub BEGIN {
+    # 出力が二重にならないようにするためのおまじない
+    STDOUT->autoflush(1);
+}
 
 
 sub new {
