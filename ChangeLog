@@ -3,6 +3,9 @@
 	* system/lib_sm.c:
 	意味素固定: 格フレームにもっとも類似している意味素に決定
 
+	* system/case_match.c:
+	「行為」を「動作」に変更
+
 2004-01-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_match.c, system/const.h:
