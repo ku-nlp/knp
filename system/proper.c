@@ -111,7 +111,7 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
      void _store_NE(struct _pos_s *p, char *string, char *mtype)
 /*==================================================================*/
 {
-    char *token, type[256];
+    char *token, type[256];	/* ★ */
 
     if (mtype)
 	strcpy(p->Type, mtype);
@@ -160,7 +160,7 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 	 void store_NE(NamedEntity *np, char *feature, int i)
 /*==================================================================*/
 {
-    char type[256], mtype[256], class[256];
+    char type[256], mtype[256], class[256];	/* ★ */
     int offset;
 
     sscanf(feature, "%[^:]", type);
@@ -359,7 +359,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 /*==================================================================*/
 {
     int n, length, i, first = 0;
-    char buffer[256], element[5][13];
+    char buffer[256], element[5][13];	/* ★ */
 
     n = p->Location + p->Person + p->Organization + p->Artifact + p->Others;
 
@@ -486,7 +486,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 		 void store_NEC(char *feature, int i)
 /*==================================================================*/
 {
-    char type[256];
+    char type[256];	/* ★ */
     int j, offset;
     struct _pos_s ne;
 
@@ -509,7 +509,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 /*==================================================================*/
 {
     char *dic_content, *pre_pos, *cp, *sm, *type;
-    char code[13];
+    char code[SM_CODE_SIZE+1];
     int i, smn;
     NamedEntity ne[2];
     MRPH_DATA *mp;
@@ -604,7 +604,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 /*==================================================================*/
 {
     int i, j, k, h, pos, apos, flag = 0, match_tail;
-    char decision[9], *cp;
+    char decision[9], *cp;	/* ★ */
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
     BNST_DATA *b_ptr;
@@ -695,11 +695,12 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 {
     int i = 0;
 
-    while (TableNE[i++][0]) {
+    while (TableNE[i][0]) {
 	if (str_eq(cp, TableNE[i]))
 	    return i;
+	i++;
     }
-    return 0;
+    return -1;
 }
 
 /*==================================================================*/
@@ -741,6 +742,9 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     for (i = 0; i < Mrph_num; i++) {
 	if (cp = (char *)check_feature(mrph_data[i].f, "複固")) {
 	    code = ReturnNEcode(cp+strlen("複固:"));
+	    /* 保存しない固有名詞 */
+	    if (code == -1)
+		continue;
 	    /* 違う種類の固有名詞になるか、固有名詞が始まったとき */
 	    if (code != precode)
 		allocateNE(&pNE, code, i);
@@ -784,6 +788,8 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     MRPH_P *mp;
 
     code = ReturnNEcode(rule);
+    if (code == -1)
+	return FALSE;
 
     while (p) {
 	mp = p->mrph;
@@ -799,18 +805,48 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 			  int assign_agent()
 /*==================================================================*/
 {
-    int i, j, child;
+    int i, j, child, flag, num;
     char *cp;
-    char Childs[128], Case[128], SM[128];
+    char Childs[128], Case[128], SM[128];	/* ★ */
+    char sm[SM_CODE_SIZE+1];
+
+    sm[SM_CODE_SIZE] = '\0';
 
     for (i = 0; i < Bnst_num; i++) {
 	if (cp = (char *)check_feature(bnst_data[i].f, "深層格N1")) {
-	    sscanf(cp, "%*[^:]:%[^:]:%[^:]:%[^:]", 
+	    num = sscanf(cp, "%*[^:]:%[^:]:%[^:]:%[^:]", 
 		   Childs, Case, SM);
+	    /* 意味素がないときなど */
+	    if (num != 3)
+		continue;
+	    /* 格要素なしのとき */
+	    if (str_eq(Childs, "NIL")) 
+		continue;
+	    /* 格要素の番号 */
 	    child = atoi(Childs);
+	    flag = 0;
+	    for (j = 0; SM[j]; j+=SM_CODE_SIZE) {
+		if (SM[j] == '/')
+		    j++;
+		strncpy(sm, &(SM[j]), SM_CODE_SIZE);
+		/* 意味素が主体以下である場合 */
+		if (comp_sm(sm2code("主体"), sm, 1))
+		    flag |= 0x01;
+		/* 意味素が主体以下ではない場合 */
+		else
+		    flag |= 0x02;
+	    }
+
 	    /* 自立語全てに feature を与える */
-	    for (j = 0; j < bnst_data[child].jiritu_num; j++)
-		assign_cfeature(&((bnst_data[child].jiritu_ptr+j)->f), "主格");
+
+	    /* 主体もありうるとき */
+	    if ((flag & 0x03) == 0x03)
+		for (j = 0; j < bnst_data[child].jiritu_num; j++)
+		    assign_cfeature(&((bnst_data[child].jiritu_ptr+j)->f), "主体*");
+	    /* 主体しかとらないとき */
+	    else if (flag & 0x01)
+		for (j = 0; j < bnst_data[child].jiritu_num; j++)
+		    assign_cfeature(&((bnst_data[child].jiritu_ptr+j)->f), "主体");
 	}
     }
 }
