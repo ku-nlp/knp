@@ -60,7 +60,9 @@ int	IPALExist;
     }
 
     if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {
+#ifdef DEBUG
 	fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
+#endif
 	IPALExist = FALSE;
     }
     else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
