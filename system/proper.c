@@ -8,6 +8,11 @@
 ====================================================================*/
 #include "knp.h"
 
+/* Server Client extention */
+extern FILE  *Infp;
+extern FILE  *Outfp;
+extern int   OptMode;
+
 DBM_FILE	proper_db = NULL, properc_db = NULL, propercase_db = NULL;
 int		PROPERExist = 0;
 
@@ -603,7 +608,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 			  void NE_analysis()
 /*==================================================================*/
 {
-    int i, j, k, h, pos, apos, flag = 0, match_tail;
+    int i, j, k, h, pos, apos, flag = 0, match_tail, value;
     char decision[9], *cp;	/* ★ */
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
@@ -681,6 +686,24 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     	    if (regexpmrphrule_match(r_ptr, m_ptr) != -1) {
 		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
 		break;
+	    }
+	}
+    }
+
+    /* 照応処理 */
+    for (i = 0; i < Mrph_num; i++) {
+	if (value = check_correspond_NE_longest(i, "人名")) {
+	    for (j = 0; j < value; j++) {
+		assign_cfeature(&(mrph_data[i+j].f), "単固:人名");
+		assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
+	    }
+	}
+    }
+    for (i = 0; i < Mrph_num; i++) {
+	if (value = check_correspond_NE_longest(i, "地名")) {
+	    for (j = 0; j < value; j++) {
+		assign_cfeature(&(mrph_data[i+j].f), "単固:地名");
+		assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
 	    }
 	}
     }
@@ -765,18 +788,50 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     PreservedNamedEntity *p = pNE;
     MRPH_P *mp;
 
-    fprintf(stdout, "<固有名詞 スタック>\n");
+    fprintf(Outfp, "<固有名詞 スタック>\n");
 
     while (p) {
 	mp = p->mrph;
-	fprintf(stdout, "%d", p->Type);
+	fprintf(Outfp, "%d", p->Type);
 	while (mp) {
-	    fprintf(stdout, " %s", mp->data.Goi2);
+	    fprintf(Outfp, " %s", mp->data.Goi2);
 	    mp = mp->next;
 	}
 	putchar('\n');
 	p = p->next;
     }
+}
+
+/*==================================================================*/
+	 int check_correspond_NE_longest(int i, char *rule)
+/*==================================================================*/
+{
+    int code, old = i;
+    PreservedNamedEntity *p = pNE;
+    MRPH_P *mp;
+
+    code = ReturnNEcode(rule);
+    if (code == -1)
+	return 0;
+
+    while (p) {
+	mp = p->mrph;
+	if (code == p->Type && str_eq(mrph_data[i].Goi, mp->data.Goi)) {
+	    i++;
+	    mp = mp->next;
+	    while (mp && i < Mrph_num) {
+		if (str_eq(mrph_data[i].Goi, mp->data.Goi)) {
+		    i++;
+		    mp = mp->next;
+		}
+		else
+		    break;
+	    }
+	    return i-old;
+	}
+	p = p->next;
+    }
+    return 0;
 }
 
 /*==================================================================*/
