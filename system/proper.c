@@ -15,7 +15,7 @@
 #include "dbm.h"
 #include "extern.h"
 
-DBM_FILE	proper_db, properc_db;
+DBM_FILE	proper_db, properc_db, propercase_db;
 int		PROPERExist = 0;
 
 /*==================================================================*/
@@ -23,7 +23,8 @@ int		PROPERExist = 0;
 /*==================================================================*/
 {
     if ((proper_db = DBM_open(PROPER_DB_NAME, O_RDONLY, 0)) == NULL || 
-	(properc_db = DBM_open(PROPERC_DB_NAME, O_RDONLY, 0)) == NULL) {
+	(properc_db = DBM_open(PROPERC_DB_NAME, O_RDONLY, 0)) == NULL || 
+	(propercase_db = DBM_open(PROPERCASE_DB_NAME, O_RDONLY, 0)) == NULL) {
         /* 
 	   fprintf(stderr, "Can not open Database <%s>.\n", PROPER_DB_NAME);
 	   exit(1);
@@ -41,6 +42,7 @@ int		PROPERExist = 0;
     if (PROPERExist == TRUE) {
 	DBM_close(proper_db);
 	DBM_close(properc_db);
+	DBM_close(propercase_db);
     }
 }
 
@@ -128,10 +130,26 @@ int		PROPERExist = 0;
 }
 
 /*==================================================================*/
-	    void store_NE(NamedEntity *np, char *feature)
+		   char *check_class(MRPH_DATA *mp)
 /*==================================================================*/
 {
-    char type[256];
+    if (check_feature(mp->f, "かな漢字"))
+	return "かな漢字";
+    else if (check_feature(mp->f, "カタカナ"))
+	return "カタカナ";
+    else if (check_feature(mp->f, "英記号"))
+	return "英記号";
+    else if (check_feature(mp->f, "数字"))
+	return "数字";
+    return NULL;
+}
+
+/*==================================================================*/
+	 void store_NE(NamedEntity *np, char *feature, int i)
+/*==================================================================*/
+{
+    char type[256], *mtype;
+    int offset, pos, j;
 
     sscanf(feature, "%[^:]", type);
 
@@ -142,13 +160,49 @@ int		PROPERExist = 0;
 	_store_NE(&(np->BnoA), feature+strlen(type)+1);
     }
     else if (str_eq(type, "前")) {
-	_store_NE(&(np->before), feature+strlen(type)+1);
+	offset = strlen(type)+1;
+	sscanf(feature+offset, "%[^:]", type);
+
+	pos = -1;
+	for (j = i-1; j >= 0; j--) {
+	    if (check_feature(mrph_data[j].f, "自立") || 
+		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
+		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
+		pos = j;
+		break;
+	    }
+	}
+	if (pos != -1) {
+	    mtype = check_class(&(mrph_data[pos]));
+	    if (str_eq(type, mtype)) {
+		offset += strlen(type)+1;
+		_store_NE(&(np->before), feature+offset);
+	    }
+	}
     }
     else if (str_eq(type, "単語")) {
 	_store_NE(&(np->self), feature+strlen(type)+1);
     }
     else if (str_eq(type, "後")) {
-	_store_NE(&(np->after), feature+strlen(type)+1);
+	offset = strlen(type)+1;
+	sscanf(feature+offset, "%[^:]", type);
+
+	pos = -1;
+	for (j = i+1; j < Mrph_num; j++) {
+	    if (check_feature(mrph_data[j].f, "自立") || 
+		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
+		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
+		pos = j;
+		break;
+	    }
+	}
+	if (pos != -1) {
+	    mtype = check_class(&(mrph_data[pos]));
+	    if (str_eq(type, mtype)) {
+		offset += strlen(type)+1;
+		_store_NE(&(np->after), feature+offset);
+	    }
+	}
     }
 }
 
@@ -185,6 +239,7 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
     n1 = p1->Location + p1->Person + p1->Organization + p1->Artifact + p1->Others;
     n2 = p2->Location + p2->Person + p2->Organization + p2->Artifact + p2->Others;
 
+    /* 単語レベルの情報と意味素レベルの情報をマージする割り合いの計算 */
     ratio = merge_ratio(n1, n2);
 
     if (n1 || n2) {
@@ -279,21 +334,6 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 }
 
 /*==================================================================*/
-		   char *check_class(MRPH_DATA *mp)
-/*==================================================================*/
-{
-    if (check_feature(mp->f, "かな漢字"))
-	return "かな漢字";
-    else if (check_feature(mp->f, "カタカナ"))
-	return "カタカナ";
-    else if (check_feature(mp->f, "英記号"))
-	return "英記号";
-    else if (check_feature(mp->f, "数字"))
-	return "数字";
-    return NULL;
-}
-
-/*==================================================================*/
     struct _pos_s _merge_NE(struct _pos_s *p1, struct _pos_s *p2)
 /*==================================================================*/
 {
@@ -330,16 +370,39 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 }
 
 /*==================================================================*/
-		void assign_f_from_dic(MRPH_DATA *mp)
+		   char *get_proper_case(char *cp)
 /*==================================================================*/
 {
-    char *dic_content, *pre_pos, *cp, *sm;
+    char *dic_content, *pre_pos;
+
+    dic_content = get_proper(cp, propercase_db);
+    if (*dic_content != NULL) {
+	for (cp = pre_pos = dic_content; *cp; cp++) {
+	    if (*cp == '/') {
+		*cp = '\0';
+		/* store_NE(&ne[0], pre_pos); */
+		pre_pos = cp + 1;
+	    }
+	}
+	/* store_NE(&ne[0], pre_pos); */
+    }
+}
+
+/*==================================================================*/
+		   void assign_f_from_dic(int num)
+/*==================================================================*/
+{
+    char *dic_content, *pre_pos, *cp, *sm, *type;
     char code[13];
     int i, smn;
     NamedEntity ne[2];
+    MRPH_DATA *mp;
 
     code[12] = '\0';
 
+    mp = &(mrph_data[num]);
+
+    /* 初期化 */
     init_NE(&ne[0]);
     init_NE(&ne[1]);
 
@@ -349,15 +412,15 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 	for (cp = pre_pos = dic_content; *cp; cp++) {
 	    if (*cp == '/') {
 		*cp = '\0';
-		store_NE(&ne[0], pre_pos);
+		store_NE(&ne[0], pre_pos, num);
 		pre_pos = cp + 1;
 	    }
 	}
-	store_NE(&ne[0], pre_pos);
+	store_NE(&ne[0], pre_pos, num);
     }
 
     /* ここで入力形態素に意味素を与えておく */
-    sm = get_sm(mp->Goi);
+    sm = (char *)get_sm(mp->Goi);
 
     /* 意味素による検索 */
     if (*sm) {
@@ -374,21 +437,23 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 		for (cp = pre_pos = dic_content; *cp; cp++) {
 		    if (*cp == '/') {
 			*cp = '\0';
-			store_NE(&ne[1], pre_pos);
+			store_NE(&ne[1], pre_pos, num);
 			pre_pos = cp + 1;
 		    }
 		}
-		store_NE(&ne[1], pre_pos);
+		store_NE(&ne[1], pre_pos, num);
 	    }
 	}
     }
 
+    /* 文字種の取得 */
+    type = check_class(mp);
+
     /* 文字種による検索 */
-    cp = check_class(mp);
-    if (cp) {
-	dic_content = get_proper(cp, properc_db);
+    if (type) {
+	dic_content = get_proper(type, properc_db);
 	if (*dic_content != NULL) {
-	    store_NE(&ne[1], dic_content);
+	    store_NE(&ne[1], dic_content, num);
 	}
     }
 
