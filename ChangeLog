@@ -15,6 +15,10 @@
 	* rule/mrph_basic.rule: 
 	コメント追加
 
+	* perl/KNP.pm: Removed.
+
+	* perl: Imported knp-perl 0.3.91.
+
 2003-05-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: timeout時にその文を出力していない不都合を修正
