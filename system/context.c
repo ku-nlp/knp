@@ -1387,11 +1387,11 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 類似度計算 */
     f->pos = MATCH_NONE;
-    if (f->similarity = cpm_ptr->cf.type == CF_PRED) {
-	calc_similarity_word_cf_with_sm(bp, cf_ptr, n, &f->pos);
+    if (cpm_ptr->cf.type == CF_PRED) {
+	f->similarity = calc_similarity_word_cf_with_sm(bp, cf_ptr, n, &f->pos);
     }
     else {
-	calc_similarity_word_cf(bp, cf_ptr, n, &f->pos);
+	f->similarity = calc_similarity_word_cf(bp, cf_ptr, n, &f->pos);
 
 	/* 意味素マッチ (SVMには入っていない) */
 	f->match_sm_flag = cf_match_sm_thesaurus(bp, cf_ptr, n);
