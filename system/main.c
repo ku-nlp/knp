@@ -345,8 +345,6 @@ char *Opt_jumanrc = NULL;
     init_bgh();		/* シソーラスオープン */
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
-    init_case_analysis();
-    			/* 格解析の準備 */
 
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
@@ -383,6 +381,10 @@ char *Opt_jumanrc = NULL;
        sentence_data *sp = &current_sentence_data; */
 
     sp = &current_sentence_data;
+
+    /* 格解析の準備 */
+    init_cf2();
+    init_case_analysis();
 
     /* ルール読み込み */
     read_rules();

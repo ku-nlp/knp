@@ -15,6 +15,8 @@ extern int MAX_Case_frame_num;
 CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* 作業領域 */
 TOTAL_MGR	Work_mgr;
 
+#define	DISTANCE_STEP	5
+
 /*==================================================================*/
 			  void realloc_cmm()
 /*==================================================================*/
@@ -102,6 +104,7 @@ struct PP_STR_TO_CODE {
     {"時間", "時間", 37},	/* ニ格, 無格で時間であるものを時間という格として扱う */
     {"まで", "マデ", 38},	/* 明示されない格であるが、辞書側の格として表示するために
 				   書いておく */
+    {"修飾", "修飾", 39},
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
@@ -160,7 +163,8 @@ char *pp_code_to_hstr(int num)
     */
 
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    int i, frame_num, max_score, default_score;
+    int i, j, frame_num, max_score, default_score;
+    CF_MATCH_MGR tempcmm;
     
     /* 初期化 */
     cpm_ptr->pred_b_ptr = b_ptr;
@@ -204,6 +208,7 @@ char *pp_code_to_hstr(int num)
 	frame_num = 1;
     }
     else { /* このelseはtentative */
+	cpm_ptr->result_num = 0;
 	for (i = 0; i < frame_num; i++) {
 
 	    /* 選択可能
@@ -217,23 +222,22 @@ char *pp_code_to_hstr(int num)
 
 	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
 
-	    /* その格フレームとの対応付けがスコア最大であれば記憶 */
-
-	    if ((Cf_match_mgr+i)->score > cpm_ptr->score) {
-		cpm_ptr->score = (Cf_match_mgr+i)->score;
-		cpm_ptr->cmm[0] = *(Cf_match_mgr+i);
-		cpm_ptr->result_num = 1;
+	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
+	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
+		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score) {
+		    tempcmm = cpm_ptr->cmm[j];
+		    cpm_ptr->cmm[j] = cpm_ptr->cmm[j+1];
+		    cpm_ptr->cmm[j+1] = tempcmm;
+		}
+		else {
+		    break;
+		}
 	    }
-
-	    /* その格フレームとの対応付けがスコア最大と同点でも記憶 */
-
-	    else if ((Cf_match_mgr+i)->score == cpm_ptr->score) {
-		if (cpm_ptr->result_num >= CMM_MAX)
-		    /* fprintf(stderr, "Not enough cmm.\n") */ ;
-		else
-		    cpm_ptr->cmm[cpm_ptr->result_num++] = *(Cf_match_mgr+i);
+	    if (cpm_ptr->result_num < CMM_MAX-1) {
+		cpm_ptr->result_num++;
 	    }
 	}
+	cpm_ptr->score = cpm_ptr->cmm[0].score;
     }
 
     /* 外の関係のスコアを足す */
@@ -259,7 +263,7 @@ char *pp_code_to_hstr(int num)
 
     /* 準用言は辞書にないだろうけど… */
     if (b_ptr->para_top_p != TRUE && 
-	(check_feature(b_ptr->f, "用言") || 
+	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
 	 check_feature(b_ptr->f, "準用言")) && 
 	!check_feature(b_ptr->f, "複合辞")) {
 
@@ -358,7 +362,7 @@ char *pp_code_to_hstr(int num)
 		  void call_case_analysis(DPND dpnd)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, k;
     int one_topic_score, topic_score, topic_score_sum = 0, topic_slot[2], distance_cost = 0;
     char *cp;
 
@@ -403,6 +407,17 @@ char *pp_code_to_hstr(int num)
 	    /* 提題 */
 	    if (check_feature((sp->bnst_data+i)->f, "提題")) {
 		distance_cost += dpnd.dflt[i];
+
+		/* 提題につられて遠くに係ってしまった文節の距離コスト */
+		for (j = 0; j < i-1; j++) {
+		    if (dpnd.head[i] == dpnd.head[j]) {
+			for (k = j+1; k < i; k++) {
+			    if (Mask_matrix[j][k] && Quote_matrix[j][k] && Dpnd_matrix[j][k] && Dpnd_matrix[j][k] != 'd') {
+				distance_cost += dpnd.dflt[i];
+			    }
+			}
+		    }
+		}
 		continue;
 	    }
 	    /* 提題以外 */
@@ -431,7 +446,7 @@ char *pp_code_to_hstr(int num)
 	       ただし、形容詞を除く連格の場合は x 1 */
 	    if (!check_feature((sp->bnst_data+i)->f, "係:連格") || 
 		check_feature((sp->bnst_data+i)->f, "用言:形")) {
-		distance_cost += dpnd.dflt[i]*2;
+		distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
 	    }
 	    else {
 		distance_cost += dpnd.dflt[i];

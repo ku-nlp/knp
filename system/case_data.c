@@ -79,6 +79,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
+    else if (check_feature(b_ptr->f, "½¤¾þ")) {
+	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("½¤¾þ");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
+	c_ptr->oblig[c_ptr->element_num] = FALSE;
+	return b_ptr;
+    }
     else if (check_feature(b_ptr->f, "·¸:¥¬³Ê") || 
 	     (!check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:È½") &&
 	      check_feature(b_ptr->f, "·¸:¥Î³Ê"))) {
@@ -215,6 +221,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	return b_ptr;
     }
+    /* ·¸:Ï¢ÍÑ, Ê£¹ç¼­ */
     else if (check_feature(b_ptr->f, "Ê£¹ç¼­") && 
 	     check_feature(b_ptr->f, "·¸:Ï¢ÍÑ") && 
 	     b_ptr->child[0]) {
@@ -223,6 +230,13 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
+    }
+    /* ·¸:Ï¢ÍÑ, ¡Á¤ò¡Á¤Ë */
+    else if (check_feature(b_ptr->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë")) {
+	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤Ë");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
+	c_ptr->oblig[c_ptr->element_num] = TRUE;
+	return b_ptr;
     }
     else {
 	return NULL;
@@ -240,6 +254,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     if (check_feature(b_ptr->f, "ÊäÊ¸")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
 	       (char *)sm2code("ÊäÊ¸"));
+	sm_num++;
+    }
+    /* ½¤¾þ */
+    else if (check_feature(b_ptr->f, "½¤¾þ")) {
+	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
+	       (char *)sm2code("½¤¾þ"));
 	sm_num++;
     }
     else {
@@ -344,13 +364,39 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
 	if (cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i])) {
-	    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
-	    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
-	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
+	    /* ¡Ö¤ß¤«¤ó»°¸Ä¤ò¿©¤Ù¤ë¡× ¤Ò¤È¤ÄÁ°¤ÎÌ¾»ì¤ò³ÊÍ×ÁÇ¤È¤¹¤ë¤È¤­
+	       ¡Ö¤ß¤«¤ó¤ò»°¸Ä¿©¤Ù¤ë¡× ¤Î¾ì¹ç¤Ï¤½¤Î¤Þ¤ÞÎ¾Êý³ÊÍ×ÁÇ¤Ë¤Ê¤ë
+	     */
+	    if (check_feature(cel_b_ptr->f, "¿ôÎÌ") && 
+		(check_feature(cel_b_ptr->f, "·¸:¥¬³Ê") || check_feature(cel_b_ptr->f, "·¸:¥ò³Ê")) && 
+		cel_b_ptr->num > 0 && check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "·¸:ÎÙÀÜ")) {
+		_make_data_cframe_sm(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
+		_make_data_cframe_ex(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
+		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->bnst_data+cel_b_ptr->num-1;
+	    }
+	    else {
+		_make_data_cframe_sm(cpm_ptr, cel_b_ptr);
+		_make_data_cframe_ex(cpm_ptr, cel_b_ptr);
+		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
+	    }
 	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.element_num ++;
 	}
+	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+	    cpm_ptr->cf.element_num = 0;
+	    return score;
+	}
+    }
+
+    /* ¡Ö¡Á¤ò¡Á¤Ë¡× ¤Î¤È¤­¤Ï¼«Ê¬¤â¥Ë³Ê¤Ç³ÊÍ×ÁÇ¤Ë¤¹¤ë */
+    if (check_feature(b_ptr->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë") && _make_data_cframe_pp(cpm_ptr, b_ptr)) {
+	_make_data_cframe_sm(cpm_ptr, b_ptr);
+	_make_data_cframe_ex(cpm_ptr, b_ptr);
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
+	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = b_ptr->num;
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.element_num ++;
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
 	    return score;

@@ -8,7 +8,7 @@
 
 /* from ipal.h */
 #define IPAL_FIELD_NUM	72
-#define IPAL_DATA_SIZE	12800
+#define IPAL_DATA_SIZE	128000
 #define CASE_MAX_NUM	20
 
 typedef struct {
