@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(system/knp.h)
 PACKAGE=knp
-VERSION=2.0
+VERSION=3.0
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AM_CONFIG_HEADER(config.h)
@@ -12,21 +12,15 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
-AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=yes]])
+AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=no]])
 AC_ARG_WITH(berkeley-db2, [  --with-berkeley-db2     use Berkeley DB library (2.X) [default=no]])
 AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (3.X, 4.X) [default=no]])
-AC_ARG_WITH(internal-hash, [  --with-internal-hash    use internal hash DB [default=no]], 
-ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS")
-AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
-AC_ARG_WITH(integrate-juman, [  --with-integrate-juman  integrate JUMAN into KNP], 
-ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
+AC_ARG_WITH(internal-hash, [  --with-internal-hash    use internal hash DB [default=yes]])
 AC_ARG_WITH(svm, [  --with-svm              use TinySVM library [default=no]])
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
 JUMAN_LIB_DIR=$with_jumanlib_dir, JUMAN_LIB_DIR="")
 
-AC_ARG_WITH(rcpath, [  --with-rcpath           use specified rcpath], 
-RCPATH=$with_rcpath, RCPATH="")
 
 SUBDIRS="system rule docs perl dict"
 
@@ -39,41 +33,23 @@ if test "$with_svm" = yes; then
     KNP_LIBS="$KNP_LIBS -lsvm -ltinysvm"
 fi
 
-if test "$with_included_juman" = yes; then
-    SUBDIRS="juman $SUBDIRS"
-    JUMAN_LIB_DIR="../juman"
-    AC_MSG_CHECKING("rcpath")
-    if test -z "$RCPATH"; then
-	if test -f juman/jumanrc.sample; then
-	    RCPATH="$packagesrcdir/juman/jumanrc.sample"
-	elif test -f /share/tool/juman/jumanrc.sample; then
-	    RCPATH="/share/tool/juman/jumanrc.sample"
-	else
-	    AC_MSG_ERROR("jumanrc.sample is not found.")
-	fi
+AC_MSG_CHECKING("JUMAN library DIR")
+if test -z "$JUMAN_LIB_DIR"; then
+    if test -d /share/tool/juman/lib; then
+	JUMAN_LIB_DIR="/share/tool/juman/lib"
+    elif test -d ../juman/lib; then
+	JUMAN_LIB_DIR="$packagesrcdir/../juman/lib"
+   else
+	AC_MSG_ERROR("JUMAN is not found.")
     fi
-    AC_MSG_RESULT("$RCPATH")
-    RCPATH_CFLAGS="-DRC_DEFAULT=\"\\\"$RCPATH\"\\\""
 else
-    AC_MSG_CHECKING("JUMAN library DIR")
-    if test -z "$JUMAN_LIB_DIR"; then
-	if test -d /share/tool/juman/lib; then
-	    JUMAN_LIB_DIR="/share/tool/juman/lib"
-	elif test -d ../juman/lib; then
-	    JUMAN_LIB_DIR="$packagesrcdir/../juman/lib"
-	else
-	    AC_MSG_ERROR("JUMAN is not found.")
-	fi
-    else
-	if test ! -d $JUMAN_LIB_DIR; then
-	    AC_MSG_ERROR("JUMAN is not found.")
-	fi
+    if test ! -d $JUMAN_LIB_DIR; then
+	AC_MSG_ERROR("JUMAN is not found.")
     fi
-    AC_MSG_RESULT("$JUMAN_LIB_DIR")
-    RCPATH_CFLAGS=""
 fi
+AC_MSG_RESULT("$JUMAN_LIB_DIR")
 
-JUMAN_CFLAGS="-I$JUMAN_LIB_DIR $RCPATH_CFLAGS -DNUMERIC_P -DTHROUGH_P"
+JUMAN_CFLAGS="-I$JUMAN_LIB_DIR -DNUMERIC_P -DTHROUGH_P"
 JUMAN_LDFLAGS="-L$JUMAN_LIB_DIR"
 
 AC_SUBST(JUMAN_CFLAGS)
@@ -110,9 +86,11 @@ elif ( test "x$with_berkeley_db2" = xyes ); then
 elif ( test "x$with_berkeley_db" = xyes ); then
     AC_SEARCH_LIBS(db_create, db-3 db-4 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
-elif ( test "x$with_internal_hash" != xyes ); then
+elif ( test "x$with_gdbm" = xyes ); then
     AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
+else
+    ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS"    
 fi
 
 AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
@@ -125,7 +103,8 @@ MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 
-KNP_CFLAGS="$JUMAN_CFLAGS $SVM_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+RCPATH="$packagesrcdir/knprc.sample"
+KNP_CFLAGS="$JUMAN_CFLAGS $SVM_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RCPATH\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
@@ -134,7 +113,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
     sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h getopt.h \
-    sys/socket.h netinet/in.h netdb.h)
+    sys/socket.h netinet/in.h netdb.h windows.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T

@@ -3,42 +3,38 @@
 基本的なインストール方法
 ========================
 
-1) JUMAN のライブラリのディレクトリを指定してください。
+1) `./configure 'を実行してください。JUMANのライブラリのシステム標準ディ
+   レクトリ(/usr/lib など)以外にある場合は`./configure'にオプションを
+   与える必要があります。例えば、JUMANが /usr/local/juman 以下にインス
+   トールされている場合は、JUMANのライブラリは /usr/local/juman/lib に
+   あるので、次のように指定してください。
 
-JUMAN が /share/tool/juman にインストールされている場合は、JUMAN のラ
-イブラリは /share/tool/juman/lib にあるので、次のように指定してくださ
-い。
+     ./configure --with-jumanlib-dir=/usr/local/juman/lib
 
-    ./configure --with-jumanlib-dir=/share/tool/juman/lib
-
-JUMAN がインストールされていない場合や、インストールされている JUMAN
-ではコンパイルできない場合は、次のようにしてください。
-
-    ./configure --with-included-juman
-
-2) make
+2) `make'を実行してください。
 
 
 configure オプション
 ====================
 
-デフォルトでは ハッシュデータベースとして GDBM を使用します。GDBM のほ
-かには、Berkeley DB (Version 2.X) を使用できます。Berkeley DB を使う場
-合には、configure のオプションに --with-berkeley-db を指定してください。
+デフォルトでは、KNP独自のハッシュデータベースを使用しますが、
+`./configure'にオプションを与えることにより他のハッシュデータベースを
+用いることもできます。GDBMの場合は "--with-gdbm"、Berkeley DB(Version
+3.X以上)の場合は、"--with-berkeley-db" を指定してください。
 
 
 コンパイルオプション
 ====================
 
-configure 実行時に環境変数を設定しておくことにより、コンパイルやリンク
-に関するオプションを設定することができます。
+`./configure'実行時に環境変数を設定しておくことにより、コンパイルやリ
+ンクに関するオプションを設定することができます。
 
-csh 系を用いているなら
+csh系を用いているなら
 
     env CFLAGS=-g ./configure
 
-Bourne sh 系を用いているなら
+Bourne sh系を用いているなら
 
     CFLAGS=-g ./configure
 
-のようにして configure を実行してください。
+のようにして`./configure'を実行してください。
