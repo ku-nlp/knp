@@ -48,7 +48,7 @@ float	AssignGaCaseThreshold = 0.67;	/* ガ格を【主体一般】にする閾値 */
 float	AssignReferentThresholdHigh = 0.80;
 float	AssignReferentThresholdAnonymousThing = 0.90;
 
-float	AssignReferentThresholdForSVM = -0.9999;
+float	AssignReferentThresholdForLearning = 0;
 float	AntecedentDecideThreshold = 0.70;
 
 int	EllipsisSubordinateClauseScore = 10;
@@ -1849,7 +1849,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     BNST_DATA *bp;
 
     if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
-	maxscore = AssignReferentThresholdForSVM;
+	maxscore = AssignReferentThresholdForLearning;
 	maxtag = NULL;
     }
     else {
@@ -2047,7 +2047,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    return 0;
 	}
 
-	if (maxscore > AssignReferentThresholdForSVM) {
+	if (maxscore > AssignReferentThresholdForLearning) {
 	    if (maxtag) {
 		if (str_eq(maxtag, "不特定-人")) {
 		    sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
@@ -2157,10 +2157,12 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	     (cmm_ptr->result_lists_p[0].flag[n] == UNASSIGNED && /* 指示詞ではない */
 	      ((MatchPP(cf_ptr->pp[n][0], "ガ") && 
 		cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
-		(maxscore <= AssignGaCaseThreshold)) || 
+		maxpos != MATCH_SUBJECT && 
+		maxscore <= AssignGaCaseThreshold) || 
 	       (MatchPP(cf_ptr->pp[n][0], "ニ") && 
 		cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
 		!cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 
+		maxpos != MATCH_SUBJECT && 
 		maxscore <= AssignGaCaseThreshold && 
 		(check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
@@ -2775,10 +2777,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
     for (j = 0; j < sp->Best_mgr->pred_num; j++) {
 	cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
-	/* 格フレームがない場合 (ガ格ぐらい探してもいいかもしれない) */
+	/* 格フレームがない場合 (ガ格ぐらい探してもいいかもしれない) 
+	   格解析が失敗した場合 */
 	if (cpm_ptr->result_num == 0 || 
 	    cpm_ptr->cmm[0].cf_ptr->cf_address == -1 || 
-	    cpm_ptr->cmm[0].score == -2) {
+	    cpm_ptr->cmm[0].score < 0) {
 	    continue;
 	}
 
