@@ -10,7 +10,7 @@
 #include "knp.h"
 
 #define PENALTY		1 /* 2 */
-#define BONUS   	6
+#define BONUS   	2 /* 前は正規化の前に6 */
 #define MINUS   	7
 #define PENA_MAX   	1000
 #define ENOUGH_MINUS	-100.0
@@ -150,24 +150,30 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
 }
 
 /*==================================================================*/
-   int plus_bonus_score(SENTENCE_DATA *sp, int jend_pos, int type)
+   int plus_bonus_score(SENTENCE_DATA *sp, int jend_pos, PARA_DATA *p_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr;
 
     b_ptr = &sp->bnst_data[jend_pos];
 
-    if (type == PARA_KEY_I) { 
+    if (p_ptr->type == PARA_KEY_I) { 
 	return 0;
-    } else if (type == PARA_KEY_N) {
+    } 
+    else if (p_ptr->type == PARA_KEY_N) {
+        if (check_feature(sp->bnst_data[p_ptr->key_pos].f, "係:ト格") &&
+	    check_feature(b_ptr->f, "名並終点〜と〜と")) 
+	    return BONUS;
 	if (check_feature(b_ptr->f, "名並終点"))
 	    return BONUS;
 	else return 0;
-    } else if (type == PARA_KEY_P) {
+    }
+    else if (p_ptr->type == PARA_KEY_P) {
 	if (check_feature(b_ptr->f, "述並終点"))
 	    return BONUS;
 	else return 0;
-    } else {
+    }
+    else {
 	return 0;
     }
 }
@@ -318,20 +324,26 @@ void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
 
     /* 最大パスの検出 */
 
-    ending_bonus_score = plus_bonus_score(sp, jend_pos, ptr->type);
+    ending_bonus_score = plus_bonus_score(sp, jend_pos, ptr);
     for (i = iend_pos; i >= 0; i--) {
 	current_score = 
-	    (float)(score_matrix[i][key_pos+1] + ending_bonus_score)
-	    / norm[jend_pos - i + 1];
+	  (float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1]
+	  + ending_bonus_score;
+
 	if (restrict_matrix[i][jend_pos] && 
 	    max_score < current_score) {
 	    max_score = current_score;
-	    pure_score = (float)score_matrix[i][key_pos+1]
-		/ norm[jend_pos - i + 1];
+	    pure_score = 
+	      (float)score_matrix[i][key_pos+1]	/ norm[jend_pos - i + 1];
 	    /* pure_score は末尾表現のボーナスを除いた値 */
 	    max_pos = i;
 	}
     }
+
+
+    /* 類似度が0なら中止 01/07/12 */
+    if (max_score < 0.0) return;
+
 
     /* ▼ (a...)(b)という並列は扱えない．括弧の制限などでこうならざる
        をえない場合は，並列とは認めないことにする (暫定的) */
@@ -347,7 +359,7 @@ void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
     /*
       閾値を越えて，まだstatusが x なら n に
       閾値を越えて，statusが n なら スコア比較
-      閾値を越えなくての，参考のためスコアを記憶
+      閾値を越えなくても，参考のためスコアを記憶
     */
     flag = FALSE;
     if (sim_threshold <= pure_score &&

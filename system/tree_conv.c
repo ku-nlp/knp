@@ -91,6 +91,10 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	for (j = 0; j < sp->para_manager[i].part_num - 1; j++) {
 	    buffer[sp->para_manager[i].end[j]] = 
 		sp->para_manager[i].end[sp->para_manager[i].part_num - 1];
+
+	    printf(">>> (%d,%d) %d -> %d\n", i, j, sp->para_manager[i].end[j],
+		   sp->para_manager[i].end[sp->para_manager[i].part_num - 1]);
+
 	    for (k = sp->para_manager[i].start[j];
 		 k <= sp->para_manager[i].end[j]; k++)
 		if (Mask_matrix[k][sp->para_manager[i].end[j]] == 3) 

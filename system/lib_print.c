@@ -439,6 +439,10 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
     if (type == PRINT_PARA) {
 	for ( i=0; i<sp->Para_num; i++ ) {
 	    ptr = &sp->para_data[i];
+
+	    if (ptr->max_score < 0.0) continue;
+	    /* statusがxでもスコアがあれば参考のため表示 */
+
 	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ )
 		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
 		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?

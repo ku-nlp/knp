@@ -249,6 +249,13 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    !check_feature(ptr1->f, "用言:判:?") && /* 「〜で」を除く */
 	    check_feature(ptr2->f, "体言") &&
 	    !check_feature(ptr2->f, "用言:判")) return 0;
+	
+	/* 「ため」「せい」と他の体言に類似度を与えないように */
+
+	if ((check_feature(ptr1->f, "ため-せい") &&
+	     !check_feature(ptr2->f, "ため-せい")) ||
+	    (!check_feature(ptr1->f, "ため-せい") &&
+	     check_feature(ptr2->f, "ため-せい"))) return 0;
 
 	point += 2;
 
@@ -281,6 +288,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    } else {
 		flag1 = 5;
 	    }
+
 	    if (check_feature(ptr2->f, "人名")) {
 		flag2 = 0;
 	    } else if (check_feature(ptr2->f, "地名")) {
@@ -331,7 +339,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		content_word_match = 0;
 	    }
 	    else if (flag1 == 5 && flag2 == 5) {
-		content_word_match = 1;
+	        content_word_match = 1;
 	    }
 	    else {
 		content_word_match = 0;

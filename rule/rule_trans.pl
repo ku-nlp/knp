@@ -101,7 +101,9 @@ $pos_repr{"\\ÆÃ¼ì:¶çÅÀ"} = "¡¥";
 
 ######################################################################
 use KNP;
-$knp = new KNP("-bnst -tab");
+# $knp = new KNP("-bnst -tab");
+$knp = new KNP(-Server => "localhost", -JumanServer => "localhost",
+               -Option => "-bnst -tab");
 ######################################################################
 $bnstrule_flag = 1;
 $num = 0;
