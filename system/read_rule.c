@@ -42,9 +42,17 @@ int 	        ContRuleSize;
 MrphRule	NERuleArray[NERule_MAX];
 int 	        CurNERuleSize;
 
+MrphRule	CNpreRuleArray[CNRule_MAX];
+int 	        CurCNpreRuleSize;
+
 MrphRule	CNRuleArray[CNRule_MAX];
 int 	        CurCNRuleSize;
 
+MrphRule	CNauxRuleArray[CNRule_MAX];
+int 	        CurCNauxRuleSize;
+
+MrphRule        HelpsysArray[Helpsys_MAX];
+int             CurHelpsysSize;
 
 DicForRule	*DicForRuleVArray;
 int		CurDicForRuleVSize;
@@ -59,20 +67,19 @@ DBM_FILE dic_for_rulep_db;
 int DicForRuleDBExist = FALSE;
 
 /*==================================================================*/
-		void read_mrph_rule(char *file_neme)
+void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 /*==================================================================*/
 {
     FILE     *fp;
     CELL     *body_cell;
-    MrphRule  *rp = MrphRuleArray;
     
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
     
     LineNo = 1;
-    CurMrphRuleSize = 0;
+    *count = 0;
     
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -84,8 +91,8 @@ int DicForRuleDBExist = FALSE;
 
 	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
 
-	if (++CurMrphRuleSize == MrphRule_MAX) {
-	    fprintf(stderr, "Too many MrphRule.");
+	if (++(*count) == max) {
+	    fprintf(stderr, "Too many Rule for %s.\n", file_name);
 	    exit(1);
 	}
 	
@@ -424,20 +431,19 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-		void read_NE_rule(char *file_neme)
+void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 /*==================================================================*/
 {
     FILE     *fp;
     CELL     *body_cell;
-    MrphRule  *rp = NERuleArray;
     
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
     
     LineNo = 1;
-    CurNERuleSize = 0;
+    *count = 0;
     
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -449,45 +455,8 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
 
 	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
 
-	if (++CurNERuleSize == NERule_MAX) {
-	    fprintf(stderr, "Too many NERule.");
-	    exit(1);
-	}
-	
-	rp++;
-    }
-    
-    fclose(fp);
-}
-
-/*==================================================================*/
-		void read_CN_rule(char *file_neme)
-/*==================================================================*/
-{
-    FILE     *fp;
-    CELL     *body_cell;
-    MrphRule  *rp = CNRuleArray;
-    
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
-	exit(1);
-    }
-    
-    LineNo = 1;
-    CurCNRuleSize = 0;
-    
-    while (!s_feof(fp)) {
-	LineNoForError = LineNo;
-
-	body_cell = s_read(fp);
-	store_regexpmrphs(&(rp->pre_pattern), car(body_cell));
-	store_regexpmrphs(&(rp->self_pattern), car(cdr(body_cell)));
-	store_regexpmrphs(&(rp->post_pattern), car(cdr(cdr(body_cell))));
-
-	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
-
-	if (++CurCNRuleSize == CNRule_MAX) {
-	    fprintf(stderr, "Too many CNRule.");
+	if (++(*count) == max) {
+	    fprintf(stderr, "Too many Rule for %s.\n", file_name);
 	    exit(1);
 	}
 	

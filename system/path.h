@@ -19,8 +19,10 @@
 #define DPND_FILE  	KNP_RULE "/kakari_uke.data"
 #define NE_FILE  	KNP_RULE "/ne.data"
 #define NE_JUMAN_FILE  	KNP_RULE "/ne-juman.data"
+#define CN_PRE_FILE  	KNP_RULE "/compoundnoun-preliminary.data"
 #define CN_FILE  	KNP_RULE "/compoundnoun.data"
 #define CN_AUX_FILE  	KNP_RULE "/compoundnoun-auxiliary.data"
+#define HELPSYS_FILE    KNP_RULE "/mrph_helpsys.data"
 
 #define BGH_DB_NAME	KNP_DICT "/bgh/bgh"
 #define SM_DB_NAME	KNP_DICT "/sm/word2code"
