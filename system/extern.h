@@ -81,6 +81,8 @@ extern int	DiscAddedCases[];
 extern int	LocationLimit[];
 extern int	LocationOrder[][LOC_NUMBER];
 
+extern SMLIST	smlist[];
+
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;
@@ -286,6 +288,7 @@ extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void sm2feature(SENTENCE_DATA *sp);
+extern char *check_noun_sm(char *key);
 
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);

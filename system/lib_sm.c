@@ -20,6 +20,8 @@ int		SMP2SMGExist;
 
 char  		cont_str[DBM_CON_MAX];
 
+SMLIST smlist[TBLSIZE];
+
 /*==================================================================*/
 			   void init_ntt()
 /*==================================================================*/
@@ -815,6 +817,67 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
+	      void register_noun_sm(char *key, char *sm)
+/*==================================================================*/
+{
+    SMLIST *slp;
+
+    if (key == NULL) {
+	return;
+    }
+
+    slp = &(smlist[hash(key, strlen(key))]);
+    if (slp->key) {
+	SMLIST **slpp;
+	slpp = &slp;
+	do {
+	    if (!strcmp((*slpp)->key, key)) {
+		/* すでにあるsmを上書き */
+		free((*slpp)->sm);
+		(*slpp)->sm = strdup(sm);
+		return;
+	    }
+	    slpp = &((*slpp)->next);
+	} while (*slpp);
+	*slpp = (SMLIST *)malloc_data(sizeof(SMLIST), "register_noun_sm");
+	(*slpp)->key = strdup(key);
+	(*slpp)->sm = strdup(sm);
+	(*slpp)->next = NULL;
+    }
+    else {
+	slp->key = strdup(key);
+	slp->sm = strdup(sm);
+    }
+}
+
+/*==================================================================*/
+		    char *check_noun_sm(char *key)
+/*==================================================================*/
+{
+    SMLIST *slp;
+
+    slp = &(smlist[hash(key, strlen(key))]);
+    if (!slp->key) {
+	return NULL;
+    }
+    while (slp) {
+	if (!strcmp(slp->key, key)) {
+	    char *newsm;
+
+	    newsm = strdup(slp->sm);
+
+	    fprintf(stderr, ";; Cache hit!: %s [", key);
+	    codes2sm_print(stderr, newsm);
+	    fprintf(stderr, "]\n");
+
+	    return newsm;
+	}
+	slp = slp->next;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
    void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
@@ -845,15 +908,20 @@ char  		cont_str[DBM_CON_MAX];
 	    /* もっとも類似している意味属性に決定 */
 	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, sm_codes)) {
 		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* 意味素更新 */
-		    fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
-			    cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
-		    codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
-		    fprintf(stderr, "] -> [");
-		    codes2sm_print(stderr, new_code);
-		    fprintf(stderr, "]\n");
+		    if (VerboseLevel >= VERBOSE2) {
+			fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
+				cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
+			codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
+			fprintf(stderr, "] -> [");
+			codes2sm_print(stderr, new_code);
+			fprintf(stderr, "]\n");
+		    }
 
-		    strcpy(cpm_ptr->elem_b_ptr[i]->SM_code, new_code);
-		    cpm_ptr->elem_b_ptr[i]->SM_num = strlen(cpm_ptr->elem_b_ptr[i]->SM_code) / SM_CODE_SIZE;
+		    strcpy((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_code, new_code);
+		    (sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_num = strlen(new_code) / SM_CODE_SIZE;
+
+		    /* 意味素登録 */
+		    register_noun_sm(cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, new_code);
 		}
 		free(new_code);
 	    }
@@ -893,8 +961,8 @@ char  		cont_str[DBM_CON_MAX];
 		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || /* 組織名, 人名はすでに主体 */
 		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
 		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
-		assign_sm((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "主体");
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
+		assign_sm((BNST_DATA *)(sp->tag_data + cpm_ptr->elem_b_ptr[i]->num), "主体");
+		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "主体付与");
 	    }
 	    break;
 	}

@@ -985,6 +985,13 @@ typedef struct ellipsis_candidate {
     char	*tag;
 } E_CANDIDATE;
 
+/* 名詞と意味素の構造体 */
+typedef struct sm_list {
+    char	*key;		/* 名詞 */
+    char	*sm;		/* 意味素 */
+    struct sm_list *next;
+} SMLIST;
+
 /*====================================================================
                                END
 ====================================================================*/

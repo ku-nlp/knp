@@ -224,6 +224,9 @@ int	PrintDeletedSM = 0;
 
 	/* Best_mgrのcpm領域確保 */
 	init_mgr_cf(sp->Best_mgr);
+
+	/* 名詞-意味素HASHの初期化 */
+	memset(smlist, 0, sizeof(SMLIST)*TBLSIZE);
     }
 }
 

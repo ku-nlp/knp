@@ -49,6 +49,10 @@ int	ParaThesaurus = USE_BGH;
     /* 文字列の意味素コードを取得 */
 
     if (flag & USE_NTT) {
+	if (code = check_noun_sm(cp)) {
+	    return code;
+	}
+
 	exist = SMExist;
 	get_code = _get_ntt;
 	if (flag & USE_SUFFIX_SM) {
