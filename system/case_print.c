@@ -167,7 +167,10 @@ extern FILE  *Outfp;
 	    */
 
 	    if (num != UNASSIGNED && cfd->oblig[num] == FALSE)
-	      fprintf(Outfp, "*");
+		fprintf(Outfp, "*");
+
+	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
+		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]/10);
 
 	    /* 用例による解析の場合
 	       最大マッチのコードを求める 
@@ -218,12 +221,12 @@ extern FILE  *Outfp;
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	    if (i == 0)
-	      fprintf(Outfp, "(彼)");
+		fprintf(Outfp, "(彼)");
 	    else
-	      fprintf(Outfp, "(%s)", 
-		      i_ptr->DATA+i_ptr->meishiku[i-1]);
+		fprintf(Outfp, "(%s)", 
+			i_ptr->DATA+i_ptr->meishiku[i-1]);
 	} else
-	  fprintf(Outfp, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
+	    fprintf(Outfp, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
 	  
 	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
 	    fprintf(Outfp, "*");

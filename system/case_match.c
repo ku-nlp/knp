@@ -205,6 +205,8 @@ extern FILE  *Outfp;
     int i, j, k, tmp_score, score = -100, ex_score = -100;
     int thesaurus = USE_BGH, step;
     char *exd, *exp;
+    int (*match_function)();
+    int *match_score;
 
     if (flag == SEMANTIC_MARKER) {
 	
@@ -245,11 +247,15 @@ extern FILE  *Outfp;
 	    exd = cfd->ex[as1];
 	    exp = cfp->ex[as2];
 	    step = BGH_CODE_SIZE;
+	    match_function = _ex_match_score;
+	    match_score = EX_match_score;
 	}
 	else if (thesaurus == USE_NTT) {
 	    exd = cfd->ex2[as1];
 	    exp = cfp->ex2[as2];
 	    step = SM_CODE_SIZE;
+	    match_function = _sm_match_score;
+	    match_score = SM_match_score;
 	}
 
 	/* 特別 : 格要素 -- 文 */
@@ -275,9 +281,7 @@ extern FILE  *Outfp;
 	/* 用例のマッチング */
 	for (j = 0; exp[j]; j+=step) {
 	    for (i = 0; exd[i]; i+=step) {
-		tmp_score = 
-		    EX_match_score[_ex_match_score(exp+j, 
-						   exd+i)];
+		tmp_score = *(match_score+match_function(exp+j, exd+i));
 		if (tmp_score > ex_score) ex_score = tmp_score;
 	    }
 	}
@@ -458,6 +462,8 @@ extern FILE  *Outfp;
 			    ec_match_flag = 1;
 			    list1.flag[target] = i;
 			    list2.flag[i] = target;
+			    list1.score[target] = elmnt_score;
+			    list2.score[i] = elmnt_score;
 			    assign_list(cfd, list1, cfp, list2, 
 					score + elmnt_score, flag);
 			    list2.flag[i] = UNASSIGNED;
@@ -472,6 +478,8 @@ extern FILE  *Outfp;
 
 			    list1.flag[target] = i;
 			    list2.flag[i] = target;
+			    list1.score[target] = elmnt_score;
+			    list2.score[i] = elmnt_score;
 			    /* 対応付けをして，残りの格要素の処理に進む */
 			    assign_list(cfd, list1, cfp, list2, 
 					score + elmnt_score, flag);
@@ -544,6 +552,8 @@ extern FILE  *Outfp;
 		if (elmnt_score != 0 || flag == EXAMPLE) {
 		    list1.flag[target] = i;
 		    list2.flag[i] = target;
+		    list1.score[target] = elmnt_score;
+		    list2.score[i] = elmnt_score;
 		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 		    list2.flag[i] = UNASSIGNED;
 		}
@@ -575,10 +585,14 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     Current_max_m_e = 0;
     Current_max_m_p = 0;
     Current_max_c_e = 0;
-    for (i = 0; i < cfd->element_num; i++)
-      assign_d_list.flag[i] = UNASSIGNED;
-    for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++)
-      assign_p_list.flag[i] = UNASSIGNED;
+    for (i = 0; i < cfd->element_num; i++) {
+	assign_d_list.flag[i] = UNASSIGNED;
+	assign_d_list.score[i] = -1;
+    }
+    for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
+	assign_p_list.flag[i] = UNASSIGNED;
+	assign_p_list.score[i] = -1;
+    }
 
     /* 処理 */
 
@@ -588,12 +602,12 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     /* 後処理 */
 
     if (Current_max_num == MAX_MATCH_MAX)
-      fprintf(stderr, "Too many case matching result !\n");
+	fprintf(stderr, "Too many case matching result !\n");
 
     cmm_ptr->score = Current_max_score;
     cmm_ptr->result_num = Current_max_num;
     for (i = 0; i < Current_max_num; i++)
-      cmm_ptr->result_lists_p[i] = Current_max_list2[i];
+	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
 
 
 #ifdef CASE_DEBUG

@@ -191,7 +191,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     }
 
     point = cp;
-    c_ptr->ex[num][0] = '\0';
+    *destination = '\0';
     while (point = extract_ipal_str(point, ipal_str_buf)) {
 	
 	/* 「ＡのＢ」の「Ｂ」だけを処理 */
