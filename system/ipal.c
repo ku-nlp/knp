@@ -8,43 +8,26 @@
 #include <string.h>
 
 /* from ipal.h */
-#define IPAL_FIELD_NUM	72
-#define IPAL_DATA_SIZE	128000
+#define IPAL_FIELD_NUM	64
+#define IPAL_DATA_SIZE	256000
 #define CASE_MAX_NUM	20
 
 typedef struct {
-    int point[IPAL_FIELD_NUM];
+    /* int point[IPAL_FIELD_NUM]; */
     unsigned char DATA[IPAL_DATA_SIZE];
 } IPAL_TRANS_FRAME;
-
-typedef struct {
-    int id;			/* ID */
-    int yomi;			/* 読み */
-    int hyouki;			/* 表記 */
-    int imi;			/* 意味 */
-    int jyutugoso;		/* 述語素 */
-    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
-    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
-    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
-    int sase;			/* 態１ */
-    int rare;			/* 態２ */
-    int tyoku_noudou1;		/* 態３ */
-    int tyoku_ukemi1;		/* 態４ */
-    int tyoku_noudou2;		/* 態５ */
-    int tyoku_ukemi2;		/* 態６ */
-    int voice;			/* 態７ */
-    unsigned char DATA[IPAL_DATA_SIZE];
-} IPAL_FRAME;
 
 char buffer[IPAL_DATA_SIZE];
 
 IPAL_TRANS_FRAME ipal_frame;
+FILE *fp_idx, *fp_dat;
+
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
 		     unsigned char *hyouki, unsigned char *pp, 
 		     int address, int size, int flag)
 {
-    unsigned char output_buf[256];
+    unsigned char output_buf[IPAL_DATA_SIZE];
     unsigned char *point;
     int length = 0;
 
@@ -53,10 +36,10 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	fprintf(fp, "%s %d:%d\n", entry, address, size);
     }
 
-    for (point = hyouki; *point; point+=2) {
+    for (point = hyouki; *point; point++) {
 
-	if ((*point == 0xa1 && *(point+1) == 0xa4) || /* "，" */
-	    (*point == 0xa1 && *(point+1) == 0xbf)) { /* "／" */
+	/* 用例の区切り */
+	if (*point == ' ') {
 	    output_buf[length] = '\0';
 	    /* 読みと異なる場合に出力 */
 	    if (flag != 1 || strcmp(output_buf, entry)) {
@@ -70,8 +53,18 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    }
 	    length = 0;
 	} else {
-	    output_buf[length++] = *point;
-	    output_buf[length++] = *(point+1);
+	    if (*point == ':') {
+		output_buf[length++] = '\0';
+	    }
+	    else {
+		output_buf[length++] = *point;
+	    }
+
+	    /* 日本語ならもう1byte進める */
+	    if (*point & 0x80) {
+		output_buf[length++] = *(point+1);
+		point++;
+	    }
 	}
     }
     output_buf[length] = '\0';
@@ -85,11 +78,49 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
     }
 }
 
+void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest, 
+		 int writesize, int casenum, int *address, int flag) {
+    int i;
+    char *pp;
+
+    fprint_ipal_idx(fp_idx, 
+		    ipal_frame->DATA+point[1], 
+		    ipal_frame->DATA+point[2], 
+		    NULL, 
+		    *address, writesize, flag);
+
+    /* 「直前格要素-直前格-用言」で登録」 */
+    if (flag) { /* ORの格フレームを除く */
+	for (i = 0; i < casenum; i++) {
+	    if (closest[i] > 0 && 
+		*(ipal_frame->DATA+point[closest[i]]) != '\0') {
+		pp = strdup(ipal_frame->DATA+point[i*3+4]);
+		*(pp+strlen(pp)-1) = '\0'; /* *をけす */
+		fprint_ipal_idx(fp_idx, 
+				ipal_frame->DATA+point[2], /* 用言表記 */
+				ipal_frame->DATA+point[closest[i]], /* 直前格要素群 */
+				pp, 
+				*address, writesize, 0);
+		free(pp);
+	    }
+	}
+    }
+
+    /* データ書き出し */
+
+    if (fwrite(ipal_frame, writesize, 1, fp_dat) < 1) {
+	fprintf(stderr, "Error in fwrite.\n");
+	exit(1);
+    }
+
+    *address += writesize;
+}
+
 main(int argc, char **argv)
 {
-    FILE *fp_idx, *fp_dat;
-    char tag[256], *pp;
-    int i, line, pos, address = 0, writesize, flag, closest[CASE_MAX_NUM];
+    char tag[256], DATA[IPAL_DATA_SIZE], *pp, *token;
+    int i, line = 0, pos = 0, address = 0, flag = 1, item, casenum;
+    int closest[CASE_MAX_NUM], point[IPAL_FIELD_NUM];
 
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s index-filename data-filename\n", argv[0]);
@@ -104,98 +135,73 @@ main(int argc, char **argv)
 	exit(1);
     }
 
-    line = 0;
     while (1) {
-
-	/* データ読み込み */
-
-	pos = 0;
-	memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
-	for (i = 0; i < IPAL_FIELD_NUM; i++, line++) {
+	line++;
 	    
-	    if (fgets(buffer, IPAL_DATA_SIZE, stdin) == NULL) {
-		if (i != 0) {
-		    fprintf(stderr, "Invalid data.\n");
-		    exit(1);
-		} else {
-		    fclose(fp_idx);
-		    fclose(fp_dat);
-		    return 0;
-		}
-	    } else {
-		sscanf(buffer, "%s %[^\n]\n", tag, &(ipal_frame.DATA[pos]));
+	if (fgets(buffer, IPAL_DATA_SIZE, stdin) == NULL) {
+	    /* 最後のデータ */
+	    write_data(&ipal_frame, point, closest, 
+		       pos, casenum, &address, flag);
+	    fclose(fp_idx);
+	    fclose(fp_dat);
+	    return 0;
+	}
 
-		if (i == 0 && strcmp(tag, "ＩＤ")) {
-		    fprintf(stderr, "Invalid data (around line %d).\n", line);
-		    exit(1);
-		}
-		/* 直前格 */
-		else if (!strncmp(tag, "格", 2) && 
-			 !strncmp(&(ipal_frame.DATA[pos])+strlen(&(ipal_frame.DATA[pos]))-2, "＠", 2)) {
-		    closest[i-5] = i+40;
-		}
+	sscanf(buffer, "%s %[^\n]\n", tag, DATA);
+
+	if (!strcmp(tag, "ID")) {
+	    /* アドレス書き出し */
+
+	    if (line != 1) { /* 初回以外 */
+		write_data(&ipal_frame, point, closest, 
+			   pos, casenum, &address, flag);
 	    }
 
-	    ipal_frame.point[i] = pos;
-	    if (!strcmp(&(ipal_frame.DATA[pos]), "nil")) {
-		ipal_frame.DATA[pos] = '\0';
-		pos += 1;
-	    } else {
-		pos += strlen(&(ipal_frame.DATA[pos])) + 1;
+	    /* 初期化 */
+	    pos = 0;
+	    item = 0;
+	    casenum = 0;
+	    memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
+	}
+	else if (!strncmp(tag, "素性", 4)) {
+	    flag = 1;
+	    /* 要素をsplit */
+	    token = strtok(DATA, " ");
+	    while (token) {
+		if (!strcmp(token, "和フレーム")) {
+		    flag = 0;	/* 読みを登録しない */
+		    break;
+		}
+		token = strtok(NULL, " ");
 	    }
-	    if (pos > IPAL_DATA_SIZE) {
-		fprintf(stderr, "%d is small for IPAL record (%s).\n", 
-			IPAL_DATA_SIZE, ipal_frame.DATA);
+	}
+	else if (!strncmp(tag, "格", 2)) {
+	    casenum++;
+	    if (casenum > CASE_MAX_NUM) {
+		fprintf(stderr, "# of cases is more than MAX (%d).\n", CASE_MAX_NUM);
 		exit(1);
 	    }
-	}
-
-	writesize = sizeof(int)*IPAL_FIELD_NUM+pos;
-
-	if (!strcmp(ipal_frame.DATA+ipal_frame.point[4], "和フレーム")) {
-	    flag = 0;	/* 読みを登録しない */
-	}
-	else {
-	    flag = 1;
-	}
-
-	/* アドレス書き出し */
-
-	fprint_ipal_idx(fp_idx, 
-			ipal_frame.DATA+ipal_frame.point[1], 
-			ipal_frame.DATA+ipal_frame.point[2], 
-			NULL, 
-			address, writesize, flag);
-
-	for (i = 0; i < CASE_MAX_NUM; i++) {
-	    if (closest[i] > 0 && 
-		*(ipal_frame.DATA+ipal_frame.point[closest[i]]) != '\0') {
-		pp = strdup(ipal_frame.DATA+ipal_frame.point[i+5]);
-		*(pp+strlen(pp)-2) = '\0';
-		if (!strncmp(pp+strlen(pp)-2, "＊", 2)) {
-		    *(pp+strlen(pp)-2) = '\0';
-		}
-		fprint_ipal_idx(fp_idx, 
-				ipal_frame.DATA+ipal_frame.point[2], /* 用言表記 */
-				ipal_frame.DATA+ipal_frame.point[closest[i]], /* 直前格要素群 */
-				pp, 
-				address, writesize, 0);
-		free(pp);
+	    /* 直前格 */
+	    if (*(DATA+strlen(DATA)-1) == '*') {
+		closest[(item-4)/3] = item+1; /* この格の用例の位置 */
 	    }
 	}
 
-	/* データ書き出し */
-#ifdef BIG_ENDIAN
-	for (i = 0; i < IPAL_FIELD_NUM; i++) {
-	    ipal_frame.point[i] = tolend(ipal_frame.point[i]);
+	point[item] = pos;
+	strcpy(&(ipal_frame.DATA[pos]), DATA);
+	if (!strcmp(DATA, "nil")) {
+	    ipal_frame.DATA[pos] = '\0';
+	    pos += 1;
 	}
-#endif
-	if (fwrite(&ipal_frame, writesize, 1, fp_dat) < 1) {
-	    fprintf(stderr, "Error in fwrite.\n");
+	else {
+	    pos += strlen(DATA) + 1;
+	}
+	if (pos > IPAL_DATA_SIZE) {
+	    fprintf(stderr, "%d is small for IPAL record (%s).\n", 
+		    IPAL_DATA_SIZE, ipal_frame.DATA);
 	    exit(1);
 	}
-
-	address += writesize;
+	item++;
     }
 }
 

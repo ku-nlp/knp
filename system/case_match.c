@@ -890,7 +890,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	}
 
 	/* 動詞かどうか */
-	if (cfd->ipal_id[0] && str_eq(cfd->ipal_id, "動")) {
+	if (cfd->pred_type[0] && str_eq(cfd->pred_type, "動")) {
 	    verb = 1;
 	}
 	else {

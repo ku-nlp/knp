@@ -1,3 +1,8 @@
+2002-09-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern, system/ipal.c:
+	格フレーム辞書フォーマット変更
+
 2002-09-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/Makefile.am, system/case_analysis.c, system/case_data.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/main.c:

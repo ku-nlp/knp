@@ -170,6 +170,15 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define FRAME_POLITE		9
 #define FRAME_SPONTANE		10
 
+#define CF_CAUSATIVE_WO		1
+#define CF_CAUSATIVE_NI		2
+#define CF_PASSIVE_1		4
+#define CF_PASSIVE_2		8
+#define CF_PASSIVE_I		16
+#define CF_POSSIBLE		32
+#define CF_POLITE		64
+#define CF_SPONTANE		128
+
 #define UNASSIGNED	-1
 #define NIL_ASSIGNED	-2
 
@@ -639,21 +648,21 @@ typedef struct {
 } IPAL_FRAME_INDEX;
 
 typedef struct {
-    int id;			/* ID */
-    int yomi;			/* 読み */
-    int hyouki;			/* 表記 */
-    int imi;			/* 意味 */
-    int jyutugoso;		/* 述語素 */
-    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
-    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
-    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
-    int sase;			/* 態１ */
-    int rare;			/* 態２ */
-    int tyoku_noudou1;		/* 態３ */
-    int tyoku_ukemi1;		/* 態４ */
-    int tyoku_noudou2;		/* 態５ */
-    int tyoku_ukemi2;		/* 態６ */
-    int voice;			/* 態７ */
+    char *kaku_keishiki;	/* 格形式 */
+    char *meishiku;		/* 名詞句 */
+    char *imisosei;		/* 意味素性 */
+} CF_CASE_SLOT;
+
+typedef struct {
+    char *yomi;
+    char *hyoki;
+    char *feature;
+    char pred_type[3];
+    int voice;
+    int etcflag;
+    int casenum;
+    CF_CASE_SLOT cs[CASE_MAX_NUM];
+    int	samecase[CF_ELEMENT_MAX][2];
     unsigned char *DATA;
 } IPAL_FRAME;
 
@@ -683,11 +692,12 @@ typedef struct cf_def {
     int 	ipal_address;				/* IPALのアドレス */
     int 	ipal_size;				/* IPALのサイズ */
     char 	ipal_id[SMALL_DATA_LEN];		/* IPALのID */
+    char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
     int		etcflag;				/* 格フレームが OR かどうか */
-    char	feature[SMALL_DATA_LEN];
+    char	*feature;
     int		weight[CF_ELEMENT_MAX];
     int		samecase[CF_ELEMENT_MAX][2];
     BNST_DATA	*pred_b_ptr;

@@ -2248,7 +2248,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(etc_buffer, "%d文前", distance);
 	}
 
-	word = make_print_string(maxs->bnst_data+maxi);
+	word = make_print_string(maxs->bnst_data+maxi, 0);
 
 	/* 決定した省略関係 */
 	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 

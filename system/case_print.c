@@ -126,12 +126,12 @@ int	EX_PRINT_NUM = 10;
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->ipal_id+2);
+    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->ipal_id);
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
 
-    if (cmm_ptr->cf_ptr->feature[0]) {
+    if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);
     }
 
@@ -371,7 +371,7 @@ int	EX_PRINT_NUM = 10;
 		strcpy(relation, pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
 
-	    word = make_print_string(cpm_ptr->elem_b_ptr[i]);
+	    word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
 	    if (word) {
 		/* 省略の場合は * を付与 */
 		fprintf(Outfp, " %s:%s%s", word, relation, cpm_ptr->elem_b_num[i] == -2 ? "*" : "");

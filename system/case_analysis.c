@@ -804,10 +804,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     dst->ipal_address = src->ipal_address;
     dst->ipal_size = src->ipal_size;
     strcpy(dst->ipal_id, src->ipal_id);
+    strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
-    strcpy(dst->feature, src->feature);
+    dst->feature = strdup(src->feature);
     if (src->entry) {
 	dst->entry = strdup(src->entry);
     }
@@ -850,10 +851,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     dst->ipal_address = src->ipal_address;
     dst->ipal_size = src->ipal_size;
     strcpy(dst->ipal_id, src->ipal_id);
+    strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
-    strcpy(dst->feature, src->feature);
+    dst->feature = src->feature;
     dst->entry = src->entry;
     dst->pred_b_ptr = src->pred_b_ptr;
 }
@@ -1209,50 +1211,60 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
-		char *make_print_string(BNST_DATA *bp)
+	   char *make_print_string(BNST_DATA *bp, int flag)
 /*==================================================================*/
 {
     int i, start = 0, end = 0, length = 0;
     char *ret;
 
-    /* 先頭をみる */
-    for (i = 0; i < bp->mrph_num; i++) {
-	/* 付属の特殊を除く */
-	if ((bp->mrph_ptr+i)->Hinshi != 1 || 
-	    check_feature((bp->mrph_ptr+i)->f, "自立")) {
-	    start = i;
-	    break;
+    /*
+       flag == 1: 自立語列
+       flag == 0: 最後の自立語
+    */
+
+    if (flag) {
+	/* 先頭をみる */
+	for (i = 0; i < bp->mrph_num; i++) {
+	    /* 付属の特殊を除く */
+	    if ((bp->mrph_ptr+i)->Hinshi != 1 || 
+		check_feature((bp->mrph_ptr+i)->f, "自立")) {
+		start = i;
+		break;
+	    }
+	}
+
+	/* 末尾をみる */
+	for (i = bp->mrph_num-1; i >= start; i--) {
+	    /* 特殊, 助詞, 助動詞, 判定詞を除く */
+	    if (((bp->mrph_ptr+i)->Hinshi != 1 || 
+		 check_feature((bp->mrph_ptr+i)->f, "自立")) && 
+		(bp->mrph_ptr+i)->Hinshi != 4 && 
+		(bp->mrph_ptr+i)->Hinshi != 5 && 
+		(bp->mrph_ptr+i)->Hinshi != 9) {
+		end = i;
+		break;
+	    }
+	}
+
+	if (start > end) {
+	    start = bp->jiritu_ptr-bp->mrph_ptr;
+	    end = bp->settou_num+bp->jiritu_num-1;
+	}
+
+	for (i = start; i <= end; i++) {
+	    length += strlen((bp->mrph_ptr+i)->Goi2);
+	}
+	if (length == 0) {
+	    return NULL;
+	}
+	ret = (char *)malloc_data(length+1, "make_print_string");
+	*ret = '\0';
+	for (i = start; i <= end; i++) {
+	    strcat(ret, (bp->mrph_ptr+i)->Goi2);
 	}
     }
-
-    /* 末尾をみる */
-    for (i = bp->mrph_num-1; i >= start; i--) {
-	/* 特殊, 助詞, 助動詞, 判定詞を除く */
-	if (((bp->mrph_ptr+i)->Hinshi != 1 || 
-	     check_feature((bp->mrph_ptr+i)->f, "自立")) && 
-	    (bp->mrph_ptr+i)->Hinshi != 4 && 
-	    (bp->mrph_ptr+i)->Hinshi != 5 && 
-	    (bp->mrph_ptr+i)->Hinshi != 9) {
-	    end = i;
-	    break;
-	}
-    }
-
-    if (start > end) {
-	start = bp->jiritu_ptr-bp->mrph_ptr;
-	end = bp->settou_num+bp->jiritu_num-1;
-    }
-
-    for (i = start; i <= end; i++) {
-	length += strlen((bp->mrph_ptr+i)->Goi2);
-    }
-    if (length == 0) {
-	return NULL;
-    }
-    ret = (char *)malloc_data(length+1, "make_print_string");
-    *ret = '\0';
-    for (i = start; i <= end; i++) {
-	strcat(ret, (bp->mrph_ptr+i)->Goi2);
+    else {
+	ret = strdup(L_Jiritu_M(bp)->Goi2);
     }
     return ret;
 }
@@ -1307,7 +1319,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格フレームID */
-    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
+    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id);
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 
     /* 入力側の各格要素の記述 */
@@ -1399,7 +1411,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 
 	/* feature を用言文節に与える */
-	word = make_print_string(cpm_ptr->elem_b_ptr[i]);
+	word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
 	if (word) {
 	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
 		sprintf(feature_buffer, "格関係%d:%s:%s", 
@@ -1418,7 +1430,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格解析結果 ★buffer溢れ未対応★ */
-    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
+    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	if (num == UNASSIGNED) {
@@ -1431,7 +1443,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	}
 	else {
-	    word = make_print_string(cpm_ptr->elem_b_ptr[num]);
+	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
 	    if (word) {
 		sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 

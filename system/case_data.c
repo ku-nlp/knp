@@ -481,13 +481,13 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
-	strcpy(cpm_ptr->cf.ipal_id, vtype);
+	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
     else if (check_feature(b_ptr->f, "準用言")) {
-	strcpy(cpm_ptr->cf.ipal_id, "準");
+	strcpy(cpm_ptr->cf.pred_type, "準");
     }
     else {
-	cpm_ptr->cf.ipal_id[0] = '\0';
+	cpm_ptr->cf.pred_type[0] = '\0';
     }
 
     cpm_ptr->cf.pred_b_ptr = b_ptr;
