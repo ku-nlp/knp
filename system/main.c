@@ -21,6 +21,7 @@ BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
 PARA_DATA 	para_data[PARA_MAX]; 		/* 並列データ */
 PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
+TOTAL_MGR	Op_Best_mgr;
 
 int 		Mrph_num;			/* 形態素数 */
 int	 	Mrph_all_num;			/* 全形態素数 */
@@ -32,6 +33,7 @@ int 		Revised_para_num;
 
 int 		Sen_num;			/* 文カウント 1〜 */
 char		Comment[DATA_LEN];		/* コメント行 */
+char		SID[256];
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
 
@@ -59,8 +61,10 @@ int		OptInhibit;
 int		OptCheck;
 int		OptNE;
 int		OptHelpsys;
+int		OptLearn;
 int		OptCFMode;
 char		OptIgnoreChar;
+char		*OptOptionalCase = NULL;
 
 /* Server Client Extention */
 int		OptMode = STAND_ALONE_MODE;
@@ -99,8 +103,8 @@ jmp_buf timeout;
 /*==================================================================*/
 {
     fprintf(stderr, "Usage: knp "
-	    "[-case|dpnd|bnst|-disc] [-tree|sexp] [-normal|detail|debug] [-expand]\n"
-		"           [-C host:port] [-S] [-N port] \n");
+	    "[-case|dpnd|bnst|-disc] [-tree|sexp|-tab] [-normal|detail|debug] [-expand]\n"
+	    "           [-C host:port] [-S] [-N port] \n");
     exit(1);    
 }
 
@@ -120,6 +124,7 @@ jmp_buf timeout;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
     OptHelpsys = FALSE;
+    OptLearn = FALSE;
 /*    OptIgnoreChar = (char)NULL;*/
 	OptIgnoreChar = '\0';
 
@@ -140,6 +145,7 @@ jmp_buf timeout;
 	else if (str_eq(argv[0], "-expand")) OptExpandP = TRUE;
 	else if (str_eq(argv[0], "-S"))      OptMode    = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))  OptCheck = TRUE;
+	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
 	else if (str_eq(argv[0], "-nesm"))   OptNE = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))     OptNE = OPT_NE;
 	else if (str_eq(argv[0], "-helpsys")) OptHelpsys = TRUE;
@@ -191,14 +197,30 @@ jmp_buf timeout;
 	    if (argc < 1) usage();
 	    OptionalCaseDBname = argv[0];
 	    OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
-	} else if (str_eq(argv[0], "-N")) {
-	  argv++; argc--;	  
+	} 
+	else if (str_eq(argv[0], "-N")) {
+	  argv++; argc--;
+	  if (argc < 1) usage();
 	  OptPort = atol(argv[0]);
-	} else if (str_eq(argv[0], "-C")) {
+	}
+	else if (str_eq(argv[0], "-C")) {
 	  OptMode = CLIENT_MODE;
-	  argv++; argc--;	  
+	  argv++; argc--;
+	  if (argc < 1) usage();
 	  strcpy(OptHostname,argv[0]);
-	}else {
+	}
+	else if (str_eq(argv[0], "-optionalcase")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    /* 
+	    if ((case2num(argv[0])) == -1) {
+		fprintf(stderr, "Error: Case %s is invalid!\n", argv[0]);
+		usage();
+	    }
+	    */
+	    OptOptionalCase = argv[0];
+	}
+	else {
 	    usage();
 	}
     }
@@ -284,271 +306,278 @@ void init_all()
 {
     /* 初期化 */
 
-	init_juman();	/* JUMAN関係 */
-	init_ipal();	/* 格フレームオープン */
-	init_bgh();		/* シソーラスオープン */
-	init_sm();		/* NTT 辞書オープン */
-	init_scase();	/* 表層格辞書オープン */
-	if (OptNE != OPT_NORMAL)
-		init_proper();	/* 固有名詞解析辞書オープン */
-	if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-		init_clause();
-	if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
-		init_case_pred();
-	if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-		init_optional_case();
-	read_rules();	/* ルール読み込み */
-	/* init_dic_for_rule(); */
+    init_juman();	/* JUMAN関係 */
+    init_ipal();	/* 格フレームオープン */
+    init_bgh();		/* シソーラスオープン */
+    init_sm();		/* NTT 辞書オープン */
+    init_scase();	/* 表層格辞書オープン */
+    if (OptNE != OPT_NORMAL)
+	init_proper();	/* 固有名詞解析辞書オープン */
+    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
+	init_clause();
+    if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
+	init_case_pred();
+    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
+	init_optional_case();
+    read_rules();	/* ルール読み込み */
+    /* init_dic_for_rule(); */
 
 	/* メイン・ルーチン */
 
-	Mrph_num = 0;
-	Bnst_num = 0;
-	New_Bnst_num = 0;
-	Sen_num = 0;
+    Mrph_num = 0;
+    Bnst_num = 0;
+    New_Bnst_num = 0;
+    Sen_num = 0;
 }
 
 void stand_alone_mode()
 {
-	int i, j, flag, success = 1;
-	int relation_error, d_struct_error;
+    int i, j, flag, success = 1;
+    int relation_error, d_struct_error;
 
-	while ( 1 ) {
+    while ( 1 ) {
 
-		/* Server Mode の場合 前回の出力が成功してない場合は 
-		   ERROR とはく Server/Client モードの場合は,出力の同期をこれで行う */
-		if (!success && OptMode == SERVER_MODE) {
-		    fprintf(Outfp,"EOS ERROR\n");
-		    fflush(Outfp);
-		}
+	/* Server Mode の場合 前回の出力が成功してない場合は 
+	   ERROR とはく Server/Client モードの場合は,出力の同期をこれで行う */
+	if (!success && OptMode == SERVER_MODE) {
+	    fprintf(Outfp,"EOS ERROR\n");
+	    fflush(Outfp);
+	}
 
-		/* この段階では成功していない */
-		success = 0;
+	/* この段階では成功していない */
+	success = 0;
 
-		if (setjmp(timeout)) {
-		    /* タイムアウト時 */
+	if (setjmp(timeout)) {
+	    /* タイムアウト時 */
 #ifdef DEBUG
-		    fprintf(stderr, "Parse timeout.\n(");
-		    for (i = 0; i < Mrph_num; i++)
-			fprintf(stderr, "%s", mrph_data[i].Goi);
-		    fprintf(stderr, ")\n");
+	    fprintf(stderr, "Parse timeout.\n(");
+	    for (i = 0; i < Mrph_num; i++)
+		fprintf(stderr, "%s", mrph_data[i].Goi2);
+	    fprintf(stderr, ")\n");
 #endif
-		    ErrorComment = strdup("Parse timeout");
-		    when_no_dpnd_struct();
-		    dpnd_info_to_bnst(&(Best_mgr.dpnd));
-		    if (OptAnalysis != OPT_DISC) print_result();
-		    fflush(Outfp);
-		}
+	    ErrorComment = strdup("Parse timeout");
+	    when_no_dpnd_struct();
+	    dpnd_info_to_bnst(&(Best_mgr.dpnd));
+	    if (OptAnalysis != OPT_DISC) print_result();
+	    fflush(Outfp);
+	}
 
-		for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
-		for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
-		for (i = Bnst_num; i < Bnst_num + New_Bnst_num; i++)
-		    bnst_data[i].f = NULL;
+	for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
+	for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
+	for (i = Bnst_num; i < Bnst_num + New_Bnst_num; i++)
+	    bnst_data[i].f = NULL;
 
-		if ((flag = read_mrph(Infp)) == EOF) break;
+	if ((flag = read_mrph(Infp)) == EOF) break;
 
-		Sen_num++;
+	Sen_num++;
 
-		if (flag == FALSE) continue;
+	if (flag == FALSE) continue;
 
-		/* 形態素に意味素を与える */
-		if (SMExist == TRUE) {
-		    for (i = 0; i < Mrph_num; i++) {
-			strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
-			assign_ntt_dict(i);
-		    }
-		}
+	/* 形態素に意味素を与える */
+	if (SMExist == TRUE) {
+	    for (i = 0; i < Mrph_num; i++) {
+		strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+		assign_ntt_dict(i);
+	    }
+	}
 
-		/* 形態素への情報付与 --> 文節 */
+	/* 形態素への情報付与 --> 文節 */
 
-		assign_cfeature(&(mrph_data[0].f), "文頭");
-		assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
-		assign_mrph_feature(MrphRuleArray, CurMrphRuleSize);
-		if (OptHelpsys == TRUE)
-		    assign_mrph_feature(HelpsysArray, CurHelpsysSize);
+	assign_cfeature(&(mrph_data[0].f), "文頭");
+	assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
+	assign_mrph_feature(MrphRuleArray, CurMrphRuleSize);
+	if (OptHelpsys == TRUE)
+	    assign_mrph_feature(HelpsysArray, CurHelpsysSize);
 
-		if (OptAnalysis == OPT_PM) {
-		    if (make_bunsetsu_pm() == FALSE) continue;
-		} else {
-		    if (make_bunsetsu() == FALSE) continue;
-		}
+	if (OptAnalysis == OPT_PM) {
+	    if (make_bunsetsu_pm() == FALSE) continue;
+	} else {
+	    if (make_bunsetsu() == FALSE) continue;
+	}
 
-		if (OptAnalysis == OPT_BNST) {
-		    print_mrphs(0); continue;	/* 文節化だけの場合 */
-		}	
-		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-		    print_mrphs(0);
+	if (OptAnalysis == OPT_BNST) {
+	    print_mrphs(0); continue;	/* 文節化だけの場合 */
+	}	
+	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
+	    print_mrphs(0);
 	
-		/* 文節への情報付与 */
+	/* 文節への情報付与 */
 
-		assign_cfeature(&(bnst_data[0].f), "文頭");
-		if (Bnst_num > 0)
-		    assign_cfeature(&(bnst_data[Bnst_num-1].f), "文末");
-		else
-		    assign_cfeature(&(bnst_data[0].f), "文末");
+	assign_cfeature(&(bnst_data[0].f), "文頭");
+	if (Bnst_num > 0)
+	    assign_cfeature(&(bnst_data[Bnst_num-1].f), "文末");
+	else
+	    assign_cfeature(&(bnst_data[0].f), "文末");
 
-		assign_bnst_feature(BnstRule1Array, CurBnstRule1Size, LOOP_ALL);
-		/* 一般的FEATURE */
-		assign_bnst_feature(UkeRuleArray, CurUkeRuleSize, LOOP_BREAK);
-		/* 受けのFEATURE */
-		assign_bnst_feature(BnstRule2Array, CurBnstRule2Size, LOOP_ALL);
-		/* 例外的FEATURE */
+	assign_bnst_feature(BnstRule1Array, CurBnstRule1Size, LOOP_ALL);
+	/* 一般的FEATURE */
+	assign_bnst_feature(UkeRuleArray, CurUkeRuleSize, LOOP_BREAK);
+	/* 受けのFEATURE */
+	assign_bnst_feature(BnstRule2Array, CurBnstRule2Size, LOOP_ALL);
+	/* 例外的FEATURE */
 
-		assign_bnst_feature(KakariRuleArray, CurKakariRuleSize, LOOP_BREAK);
-		/* 係りのFEATURE */
-		assign_bnst_feature(BnstRule3Array, CurBnstRule3Size, LOOP_ALL);
-		/* 例外的FEATURE */	
+	assign_bnst_feature(KakariRuleArray, CurKakariRuleSize, LOOP_BREAK);
+	/* 係りのFEATURE */
+	assign_bnst_feature(BnstRule3Array, CurBnstRule3Size, LOOP_ALL);
+	/* 例外的FEATURE */	
 
 
-		if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
-		    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
-		    print_result();
-		    fflush(Outfp);
+	if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
+	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
+	    print_result();
+	    fflush(Outfp);
+	    continue;
+	}
+
+	assign_dpnd_rule();			/* 係り受け規則 */
+
+	Case_frame_num = 0;
+	set_pred_caseframe();			/* 用言の格フレーム */
+
+	for (i = 0; i < Bnst_num; i++) {
+	    get_bgh_code(bnst_data+i);		/* シソーラス */
+	    if (SMExist == TRUE)
+		get_sm_code(bnst_data+i);		/* 意味素 */
+	}
+
+	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
+	    check_bnst();
+
+	/* continue; 文節のみのチェックの場合 */
+
+	/*
+	  if (Bnst_num > 30) {
+	  fprintf(stdout, "Too long sentence (%d bnst)\n", Bnst_num);
+	  continue;
+	  }
+	  */
+
+	/* 本格的解析 */
+
+	calc_dpnd_matrix();			/* 依存可能性計算 */
+	if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_DPND, 0);
+
+	/* 呼応表現の処理 */
+
+	if (koou() == TRUE && OptDisplay == OPT_DEBUG)
+	    print_matrix(PRINT_DPND, 0);
+
+	/* 鍵括弧の処理 */
+
+	if ((flag = quote()) == TRUE && OptDisplay == OPT_DEBUG)
+	    print_matrix(PRINT_QUOTE, 0);
+
+	if (flag == CONTINUE) continue;
+
+	/* 係り受け関係がない場合の弛緩 */
+	
+	if (relax_dpnd_matrix() == TRUE && OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Relaxation ... \n");
+	    print_matrix(PRINT_DPND, 0);
+	}
+
+	/* 並列構造解析 */
+
+	init_mask_matrix();
+	Para_num = 0;	
+	Para_M_num = 0;
+	relation_error = 0;
+	d_struct_error = 0;
+	Revised_para_num = -1;
+
+	if ((flag = check_para_key()) > 0) {
+	    calc_match_matrix();		/* 文節間類似度計算 */
+	    detect_all_para_scope();	    	/* 並列構造推定 */
+	    do {
+		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+		    print_matrix(PRINT_PARA, 0);
+		    /*
+		      print_matrix2ps(PRINT_PARA, 0);
+		      exit(0);
+		      */
+		}
+		/* 並列構造間の重なり解析 */
+		if (detect_para_relation() == FALSE) {
+		    relation_error++;
 		    continue;
 		}
-
-		assign_dpnd_rule();			/* 係り受け規則 */
-
-		Case_frame_num = 0;
-		set_pred_caseframe();			/* 用言の格フレーム */
-
-		for (i = 0; i < Bnst_num; i++) {
-		    get_bgh_code(bnst_data+i);		/* シソーラス */
-		    if (SMExist == TRUE)
-			get_sm_code(bnst_data+i);		/* 意味素 */
-		}
-
-		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-		    check_bnst();
-
-		/* continue; 文節のみのチェックの場合 */
-
-		/*
-		if (Bnst_num > 30) {
-			fprintf(stdout, "Too long sentence (%d bnst)\n", Bnst_num);
-			continue;
-		}
-		*/
-
-		/* 本格的解析 */
-
-		calc_dpnd_matrix();			/* 依存可能性計算 */
-		if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_DPND, 0);
-
-		/* 呼応表現の処理 */
-
-		if (koou() == TRUE && OptDisplay == OPT_DEBUG)
-		    print_matrix(PRINT_DPND, 0);
-
-		/* 鍵括弧の処理 */
-
-		if ((flag = quote()) == TRUE && OptDisplay == OPT_DEBUG)
-		    print_matrix(PRINT_QUOTE, 0);
-
-		if (flag == CONTINUE) continue;
-
-		/* 係り受け関係がない場合の弛緩 */
-	
-		if (relax_dpnd_matrix() == TRUE && OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "Relaxation ... \n");
-		    print_matrix(PRINT_DPND, 0);
-		}
-
-		/* 並列構造解析 */
-
-		init_mask_matrix();
-		Para_num = 0;	
-		Para_M_num = 0;
-		relation_error = 0;
-		d_struct_error = 0;
-		Revised_para_num = -1;
-
-		if ((flag = check_para_key()) > 0) {
-		    calc_match_matrix();		/* 文節間類似度計算 */
-		    detect_all_para_scope();	    	/* 並列構造推定 */
-		    do {
-			if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
-			    print_matrix(PRINT_PARA, 0);
-			    /*
-			      print_matrix2ps(PRINT_PARA, 0);
-			      exit(0);
-			      */
-			}
-			/* 並列構造間の重なり解析 */
-			if (detect_para_relation() == FALSE) {
-			    relation_error++;
-			    continue;
-			}
-			if (OptDisplay == OPT_DEBUG) print_para_relation();
-			/* 並列構造内の依存構造チェック */
-			if (check_dpnd_in_para() == FALSE) {
-			    d_struct_error++;
-			    continue;
-			}
-			if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_MASK, 0);
-			goto ParaOK;		/* 並列構造解析成功 */
-		    } while (relation_error <= 3 &&
-			     d_struct_error <= 3 &&
-			     detect_para_scope(Revised_para_num, TRUE) == TRUE);
-		    ErrorComment = strdup("Cannot detect consistent CS scopes");
-		    init_mask_matrix();
-		ParaOK:
-		}
-		else if (flag == CONTINUE)
+		if (OptDisplay == OPT_DEBUG) print_para_relation();
+		/* 並列構造内の依存構造チェック */
+		if (check_dpnd_in_para() == FALSE) {
+		    d_struct_error++;
 		    continue;
-
-		/* 依存・格構造解析 */
-		para_postprocess();	/* 各conjunctのheadを提題の係り先に */
-
-		signal(SIGALRM, timeout_function);
-		alarm(PARSETIMEOUT);
-
-		if (detect_dpnd_case_struct() == FALSE) {
-		    ErrorComment = strdup("Cannot detect dependency structure");
-		    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
-						   すべて文節が隣に係ると扱う */
 		}
+		if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_MASK, 0);
+		goto ParaOK;		/* 並列構造解析成功 */
+	    } while (relation_error <= 3 &&
+		     d_struct_error <= 3 &&
+		     detect_para_scope(Revised_para_num, TRUE) == TRUE);
+	    ErrorComment = strdup("Cannot detect consistent CS scopes");
+	    init_mask_matrix();
+	ParaOK:
+	}
+	else if (flag == CONTINUE)
+	    continue;
 
-		alarm(0);
+	/* 依存・格構造解析 */
+	para_postprocess();	/* 各conjunctのheadを提題の係り先に */
 
-		dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
+	signal(SIGALRM, timeout_function);
+	alarm(PARSETIMEOUT);
 
-		/* 固有名詞認識処理 */
-		if (OptNE != OPT_NORMAL)
-		    NE_analysis();
-		else
-		    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
+	if (detect_dpnd_case_struct() == FALSE) {
+	    ErrorComment = strdup("Cannot detect dependency structure");
+	    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
+					   すべて文節が隣に係ると扱う */
+	}
 
-		memo_by_program();	/* メモへの書き込み */
+	alarm(0);
 
-		/* チェック用 */
-		if (OptCheck == TRUE)
-		    CheckCandidates();
+	/* 任意格の解析を行うとき */
+	if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
+	    optional_case_evaluation();
 
-		/* 結果表示 */
-		if (OptAnalysis != OPT_DISC) print_result();
-		fflush(Outfp);
+	dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
 
-		/* OK 成功 */
-		success = 1;
+	/* 固有名詞認識処理 */
+	if (OptNE != OPT_NORMAL)
+	    NE_analysis();
+	else
+	    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
 
-		/* 認識した固有名詞を保存しておく */
-		if (OptNE != OPT_NORMAL) {
-		    preserveNE();
-		    if (OptDisplay == OPT_DEBUG)
-			printNE();
-		}
+	memo_by_program();	/* メモへの書き込み */
 
-		/* 文脈解析 */
-		if (OptAnalysis == OPT_DISC) {
-		    discourse_analysis();
+	/* チェック用 */
+	if (OptCheck == TRUE)
+	    CheckCandidates();
 
-		    /* feature の初期化 */
-		    for (i = 0; i < MRPH_MAX; i++)
-			(mrph_data+i)->f = NULL;
-		    for (i = 0; i < BNST_MAX; i++)
-			(bnst_data+i)->f = NULL;
-		}
+	if (OptLearn == TRUE)
+	    printf(";;;OK 決定 %d %s %d\n", Best_mgr.ID, SID, Best_mgr.score);
+
+	/* 結果表示 */
+	if (OptAnalysis != OPT_DISC) print_result();
+	fflush(Outfp);
+
+	/* OK 成功 */
+	success = 1;
+
+	/* 認識した固有名詞を保存しておく */
+	if (OptNE != OPT_NORMAL) {
+	    preserveNE();
+	    if (OptDisplay == OPT_DEBUG)
+		printNE();
+	}
+
+	/* 文脈解析 */
+	if (OptAnalysis == OPT_DISC) {
+	    discourse_analysis();
+
+	    /* feature の初期化 */
+	    for (i = 0; i < MRPH_MAX; i++)
+		(mrph_data+i)->f = NULL;
+	    for (i = 0; i < BNST_MAX; i++)
+		(bnst_data+i)->f = NULL;
+	}
     }
 
     close_ipal();
@@ -569,289 +598,289 @@ void stand_alone_mode()
 /* サーバモード */
 void server_mode()
 {
-	int sfd,fd;
-	struct sockaddr_in sin;
+    int sfd,fd;
+    struct sockaddr_in sin;
 
-	/* シグナル処理 */
-	static void sig_child()
-		{
-			int status;
-			while(wait3(&status, WNOHANG, NULL) > 0) {}; 
-			signal(SIGCHLD, sig_child); 
-		}
-
-	static void sig_term()
-		{
-			shutdown(sfd,2);
-			shutdown(fd, 2);
-			exit(0);
-		}
-
-	signal(SIGHUP,  SIG_IGN);
-	signal(SIGPIPE, SIG_IGN);
-	signal(SIGTERM, sig_term);
-	signal(SIGINT,  sig_term);
-	signal(SIGQUIT, sig_term);
-	signal(SIGCHLD, sig_child);
-  
-	if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		fprintf(stderr,"Socket Error\n");
-		exit(1);
-	}
-  
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port        = htons(OptPort);
-	sin.sin_family      = AF_INET;
-	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-  
-	/* bind */  
-	if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		fprintf(stderr,"bind Error\n");
-		close(sfd);
-		exit(1);
-	}
-  
-	/* listen */  
-	if (listen(sfd, SOMAXCONN) < 0) {
-		fprintf(stderr,"listen Error\n");
-		close(sfd);
-		exit(1);
+    /* シグナル処理 */
+    static void sig_child()
+	{
+	    int status;
+	    while(wait3(&status, WNOHANG, NULL) > 0) {}; 
+	    signal(SIGCHLD, sig_child); 
 	}
 
-	/* accept loop */
-	while(1) {
-		int pid;
+    static void sig_term()
+	{
+	    shutdown(sfd,2);
+	    shutdown(fd, 2);
+	    exit(0);
+	}
 
-		if((fd = accept(sfd, NULL, NULL)) < 0) {
-			if (errno == EINTR) 
-				continue;
-			fprintf(stderr,"accept Error\n");
-			close(sfd);
-			exit(1);
-		}
+    signal(SIGHUP,  SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGTERM, sig_term);
+    signal(SIGINT,  sig_term);
+    signal(SIGQUIT, sig_term);
+    signal(SIGCHLD, sig_child);
+  
+    if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+	fprintf(stderr,"Socket Error\n");
+	exit(1);
+    }
+  
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_port        = htons(OptPort);
+    sin.sin_family      = AF_INET;
+    sin.sin_addr.s_addr = htonl(INADDR_ANY);
+  
+    /* bind */  
+    if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	fprintf(stderr,"bind Error\n");
+	close(sfd);
+	exit(1);
+    }
+  
+    /* listen */  
+    if (listen(sfd, SOMAXCONN) < 0) {
+	fprintf(stderr,"listen Error\n");
+	close(sfd);
+	exit(1);
+    }
+
+    /* accept loop */
+    while(1) {
+	int pid;
+
+	if((fd = accept(sfd, NULL, NULL)) < 0) {
+	    if (errno == EINTR) 
+		continue;
+	    fprintf(stderr,"accept Error\n");
+	    close(sfd);
+	    exit(1);
+	}
     
-		/* 子作り失敗 しくしく */
-		if((pid = fork()) < 0) {
-			fprintf(stderr,"Fork Error\n");
-			sleep(1);
-			continue;
-		}
-
-		/* 子供できちゃった */
-		if(pid == 0) {
-
-			/* ぉぃぉぃ そんなところで げろはくなぁ */
-			chdir("/tmp");
-
-			close(sfd);
-			Infp  = fdopen(fd, "r");
-			Outfp = fdopen(fd, "w");
-
-			/* 良い子に育つには 挨拶しましょうね.. */
-			fprintf(Outfp, "200 Running KNP Server\n");
-			fflush(Outfp);
-
-			/* オプション解析 */
-			while (1) {
-				char buf[1024];
-
-				fgets(buf,sizeof(buf),Infp);
-
-				/* QUIT */
-				if (strncasecmp(buf,"QUIT",4) == 0) {
-					fprintf(Outfp, "200 OK Quit\n");
-					fflush(Outfp);
-					exit(0);
-				}
-
-				/* RUN */
-				/* Option 解析は strstr なんかでかなりええかげん 
-				   つまり間違ったオプションはエラーにならん... */
-				if (strncasecmp(buf,"RUN",3) == 0) {
-					char *p;
-
-					if (strstr(buf, "-case"))   OptAnalysis = OPT_CASE;
-					if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
-					if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
-					if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
-					if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
-					if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
-					if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;
-					if (strstr(buf, "-normal")) OptDisplay = OPT_NORMAL;
-					if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
-					if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
-					if (strstr(buf, "-expand")) OptExpandP = TRUE;
-					if (strstr(buf, "-helpsys")) OptHelpsys = TRUE;
-					/* うーん 引数とるのは困るんだなぁ..
-					   とおもいつつかなり強引... */
-					if ((p = strstr(buf, "-i")) != NULL) {
-						p += 3;
-						while(*p != '\0' && (*p == ' ' || *p == '\t')) p++;
-						if (*p != '\0') OptIgnoreChar = *p;
-					} 
-					fprintf(Outfp,"200 OK option=[Analysis=%d Express=%d"
-							" Display=%d IgnoreChar=%c Helpsys=%d]\n",
-							OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar, OptHelpsys);
-					fflush(Outfp);
-					break;
-				} else {
-					fprintf(Outfp,"500 What?\n");
-					fflush(Outfp);
-				}
-			}
-
-			/* 解析 */
-			stand_alone_mode();
-
-			/* 後処理 */
-			shutdown(fd,2);
-			fclose(Infp);
-			fclose(Outfp);
-			close(fd);
-			exit(0); /* これしないと大変なことになるかも */
-		}
-
-		/* 親 */
-		close(fd);
+	/* 子作り失敗 しくしく */
+	if((pid = fork()) < 0) {
+	    fprintf(stderr,"Fork Error\n");
+	    sleep(1);
+	    continue;
 	}
-}  
+
+	/* 子供できちゃった */
+	if(pid == 0) {
+
+	    /* ぉぃぉぃ そんなところで げろはくなぁ */
+	    chdir("/tmp");
+
+	    close(sfd);
+	    Infp  = fdopen(fd, "r");
+	    Outfp = fdopen(fd, "w");
+
+	    /* 良い子に育つには 挨拶しましょうね.. */
+	    fprintf(Outfp, "200 Running KNP Server\n");
+	    fflush(Outfp);
+
+	    /* オプション解析 */
+	    while (1) {
+		char buf[1024];
+
+		fgets(buf,sizeof(buf),Infp);
+
+		/* QUIT */
+		if (strncasecmp(buf,"QUIT",4) == 0) {
+		    fprintf(Outfp, "200 OK Quit\n");
+		    fflush(Outfp);
+		    exit(0);
+		}
+
+		/* RUN */
+		/* Option 解析は strstr なんかでかなりええかげん 
+		   つまり間違ったオプションはエラーにならん... */
+		if (strncasecmp(buf,"RUN",3) == 0) {
+		    char *p;
+
+		    if (strstr(buf, "-case"))   OptAnalysis = OPT_CASE;
+		    if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
+		    if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
+		    if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
+		    if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
+		    if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
+		    if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;
+		    if (strstr(buf, "-normal")) OptDisplay = OPT_NORMAL;
+		    if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
+		    if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
+		    if (strstr(buf, "-expand")) OptExpandP = TRUE;
+		    if (strstr(buf, "-helpsys")) OptHelpsys = TRUE;
+		    /* うーん 引数とるのは困るんだなぁ..
+		       とおもいつつかなり強引... */
+		    if ((p = strstr(buf, "-i")) != NULL) {
+			p += 3;
+			while(*p != '\0' && (*p == ' ' || *p == '\t')) p++;
+			if (*p != '\0') OptIgnoreChar = *p;
+		    } 
+		    fprintf(Outfp,"200 OK option=[Analysis=%d Express=%d"
+			    " Display=%d IgnoreChar=%c Helpsys=%d]\n",
+			    OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar, OptHelpsys);
+		    fflush(Outfp);
+		    break;
+		} else {
+		    fprintf(Outfp,"500 What?\n");
+		    fflush(Outfp);
+		}
+	    }
+
+	    /* 解析 */
+	    stand_alone_mode();
+
+	    /* 後処理 */
+	    shutdown(fd,2);
+	    fclose(Infp);
+	    fclose(Outfp);
+	    close(fd);
+	    exit(0); /* これしないと大変なことになるかも */
+	}
+
+	/* 親 */
+	close(fd);
+    }
+}
 
 /* クライアントモード */
 void client_mode()
 {
-	struct sockaddr_in sin;
-	struct hostent *hp;
-	int fd;
-	FILE *fi,*fo;
-	char *p;
-	char buf[1024*8];
-	char option[1024];
-	int  port = DEFAULT_PORT;
-	int  strnum = 0;
+    struct sockaddr_in sin;
+    struct hostent *hp;
+    int fd;
+    FILE *fi,*fo;
+    char *p;
+    char buf[1024*8];
+    char option[1024];
+    int  port = DEFAULT_PORT;
+    int  strnum = 0;
 
 	/* 文字列を送って ステータスコードを返す */  
-	int send_string(char *str)
-		{
-			int len,result = 0;
-			char buf[1024];
+    int send_string(char *str)
+	{
+	    int len,result = 0;
+	    char buf[1024];
     
-			if (str != NULL){
-				fwrite(str,sizeof(char),strlen(str),fo);
-				fflush(fo);
-			}
+	    if (str != NULL){
+		fwrite(str,sizeof(char),strlen(str),fo);
+		fflush(fo);
+	    }
 
-			while (fgets(buf,sizeof(buf)-1,fi) != NULL){
-				len = strlen(buf);
-				if (len >= 3 && buf[3] == ' ') {
-					buf[3] = '\0';
-					result = atoi(&buf[0]);
-					break;
-				}
-			}
-
-			return result;
-		} 
-
-	/* host:port って形の場合 */
-	if ((p = strchr(OptHostname, ':')) != NULL) {
-		*p++ = '\0';
-		port = atoi(p);
-	}
-
-	/* あとは つなげる準備 */
-	if ((hp = gethostbyname(OptHostname)) == NULL) {
-		fprintf(stderr,"host unkown\n");
-		exit(1);
-	}
-  
-	while ((fd = socket(AF_INET,SOCK_STREAM,0 )) < 0 ){
-		fprintf(stderr,"socket error\n");
-		exit(1);
-	}
-  
-	sin.sin_family = AF_INET;
-	sin.sin_port   = htons(port);
-	sin.sin_addr = *((struct in_addr * )hp->h_addr);
-
-	if (connect(fd,(struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		fprintf(stderr,"connect error\n");
-		exit(1);
-	}
-
-	/* Server 用との 通信ハンドルを作成 */
-	if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
-		close (fd);
-		fprintf(stderr,"fd error\n");
-		exit(1);
-	}
-
-	/* 挨拶は元気な声で */
-	if (send_string(NULL) != 200) {
-		fprintf(stderr,"greet error\n");
-		exit(1);
-	}
-
-	/* オプション解析 もっと スマートなやり方ないかなぁ */
-	option[0] = '\0';
-	switch (OptAnalysis) {
-	  case OPT_CASE: strcat(option," -case"); break;
-	  case OPT_DPND: strcat(option," -dpnd"); break;
-	  case OPT_BNST: strcat(option," -bnst"); break;
-	}
-
-	switch (OptExpress) {
-	  case OPT_TREE: strcat(option," -tree"); break;
-	  case OPT_SEXP: strcat(option," -sexp"); break;
-	  case OPT_TAB:  strcat(option," -tab");  break;
-	}
-
-	switch (OptDisplay) {
-	  case OPT_NORMAL: strcat(option," -normal"); break;
-	  case OPT_DETAIL: strcat(option," -detail"); break;
-	  case OPT_DEBUG:  strcat(option," -debug");  break;
-	}
-    
-	if (OptExpandP) strcat(option," -expand");
-	if (!OptIgnoreChar) {
-		sprintf(buf," -i %c",OptIgnoreChar);
-		strcat(option,buf);
-	}
-
-	/* これから動作じゃ */
-	sprintf(buf,"RUN%s\n",option);
-	if (send_string(buf) != 200) {
-		fprintf(stderr,"argument error OK? [%s]\n",option);
-		close(fd);
-		exit(1);
-	}
-
-	/* あとは LOOP */
-	strnum = 0;
-	while (fgets(buf,sizeof(buf),stdin) != NULL) {
-		if (strncmp(buf,"EOS",3) == 0) {
-			if (strnum != 0) {
-				fwrite(buf,sizeof(char),strlen(buf),fo);
-				fflush(fo);
-				strnum = 0;
-				while (fgets(buf,sizeof(buf),fi) != NULL) {
-					fwrite(buf,sizeof(char),strlen(buf),stdout);
-					fflush(stdout);
-					if (strncmp(buf,"EOS",3) == 0)  break;
-				}
-			}
-		} else {
-			fwrite(buf,sizeof(char),strlen(buf),fo);
-			fflush(fo);
-			strnum++;
+	    while (fgets(buf,sizeof(buf)-1,fi) != NULL){
+		len = strlen(buf);
+		if (len >= 3 && buf[3] == ' ') {
+		    buf[3] = '\0';
+		    result = atoi(&buf[0]);
+		    break;
 		}
-	}
+	    }
 
-	/* 終了処理 */
-	fprintf(fo,"\n%c\nQUIT\n", EOf);
-	fclose(fo);
-	fclose(fi);
+	    return result;
+	} 
+
+    /* host:port って形の場合 */
+    if ((p = strchr(OptHostname, ':')) != NULL) {
+	*p++ = '\0';
+	port = atoi(p);
+    }
+
+    /* あとは つなげる準備 */
+    if ((hp = gethostbyname(OptHostname)) == NULL) {
+	fprintf(stderr,"host unkown\n");
+	exit(1);
+    }
+  
+    while ((fd = socket(AF_INET,SOCK_STREAM,0 )) < 0 ){
+	fprintf(stderr,"socket error\n");
+	exit(1);
+    }
+  
+    sin.sin_family = AF_INET;
+    sin.sin_port   = htons(port);
+    sin.sin_addr = *((struct in_addr * )hp->h_addr);
+
+    if (connect(fd,(struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	fprintf(stderr,"connect error\n");
+	exit(1);
+    }
+
+    /* Server 用との 通信ハンドルを作成 */
+    if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
+	close (fd);
+	fprintf(stderr,"fd error\n");
+	exit(1);
+    }
+
+    /* 挨拶は元気な声で */
+    if (send_string(NULL) != 200) {
+	fprintf(stderr,"greet error\n");
+	exit(1);
+    }
+
+    /* オプション解析 もっと スマートなやり方ないかなぁ */
+    option[0] = '\0';
+    switch (OptAnalysis) {
+    case OPT_CASE: strcat(option," -case"); break;
+    case OPT_DPND: strcat(option," -dpnd"); break;
+    case OPT_BNST: strcat(option," -bnst"); break;
+    }
+
+    switch (OptExpress) {
+    case OPT_TREE: strcat(option," -tree"); break;
+    case OPT_SEXP: strcat(option," -sexp"); break;
+    case OPT_TAB:  strcat(option," -tab");  break;
+    }
+
+    switch (OptDisplay) {
+    case OPT_NORMAL: strcat(option," -normal"); break;
+    case OPT_DETAIL: strcat(option," -detail"); break;
+    case OPT_DEBUG:  strcat(option," -debug");  break;
+    }
+    
+    if (OptExpandP) strcat(option," -expand");
+    if (!OptIgnoreChar) {
+	sprintf(buf," -i %c",OptIgnoreChar);
+	strcat(option,buf);
+    }
+
+    /* これから動作じゃ */
+    sprintf(buf,"RUN%s\n",option);
+    if (send_string(buf) != 200) {
+	fprintf(stderr,"argument error OK? [%s]\n",option);
 	close(fd);
-	exit(0);
+	exit(1);
+    }
+
+    /* あとは LOOP */
+    strnum = 0;
+    while (fgets(buf,sizeof(buf),stdin) != NULL) {
+	if (strncmp(buf,"EOS",3) == 0) {
+	    if (strnum != 0) {
+		fwrite(buf,sizeof(char),strlen(buf),fo);
+		fflush(fo);
+		strnum = 0;
+		while (fgets(buf,sizeof(buf),fi) != NULL) {
+		    fwrite(buf,sizeof(char),strlen(buf),stdout);
+		    fflush(stdout);
+		    if (strncmp(buf,"EOS",3) == 0)  break;
+		}
+	    }
+	} else {
+	    fwrite(buf,sizeof(char),strlen(buf),fo);
+	    fflush(fo);
+	    strnum++;
+	}
+    }
+
+    /* 終了処理 */
+    fprintf(fo,"\n%c\nQUIT\n", EOf);
+    fclose(fo);
+    fclose(fi);
+    close(fd);
+    exit(0);
 }
 
 
@@ -859,18 +888,18 @@ void client_mode()
 		   void main(int argc, char **argv)
 /*==================================================================*/
 {
-	option_proc(argc, argv);
+    option_proc(argc, argv);
 
     /* モードによって処理を分岐 */
-	if (OptMode == STAND_ALONE_MODE) {
-		init_all();
-		stand_alone_mode();
-	} else if (OptMode == SERVER_MODE) {
-		init_all();
-		server_mode();
-	} else if (OptMode == CLIENT_MODE) {
-		client_mode();
-	}
+    if (OptMode == STAND_ALONE_MODE) {
+	init_all();
+	stand_alone_mode();
+    } else if (OptMode == SERVER_MODE) {
+	init_all();
+	server_mode();
+    } else if (OptMode == CLIENT_MODE) {
+	client_mode();
+    }
 }
 
 /*====================================================================
