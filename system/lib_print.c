@@ -1025,20 +1025,26 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		  void prepare_entity(BNST_DATA *bp)
 /*==================================================================*/
 {
-    int count = 0, max = 0, i, flag = 0;
+    int count = 0, max = 0, i, flag = 0, neflag = 0;
     char *cp, **list, *str;
 
     /* 固有表現 */
     if ((cp = check_feature(bp->f, "人名"))) {
-	push_entity(&list, cp, count++, &max);
+	push_entity(&list, "【人名】", count++, &max);
+	push_entity(&list, "主体", count++, &max);
+	neflag = 1;
 	flag = 1;
     }
     else if ((cp = check_feature(bp->f, "組織名"))) {
-	push_entity(&list, cp, count++, &max);
+	push_entity(&list, "【組織名】", count++, &max);
+	push_entity(&list, "主体", count++, &max);
+	neflag = 1;
 	flag = 1;
     }
     else if ((cp = check_feature(bp->f, "地名"))) {
-	push_entity(&list, cp, count++, &max);
+	push_entity(&list, "【地名】", count++, &max);
+	push_entity(&list, "場所", count++, &max);
+	neflag = 1;
 	flag = 1;
     }
     else {
@@ -1060,31 +1066,32 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* NTT意味素 */
     if (bp->SM_code[0]) {
-	if (sm_match_check(sm2code("人"), bp->SM_code) || 
-	    sm_match_check(sm2code("動物"), bp->SM_code) || 
-	    sm_match_check(sm2code("組織"), bp->SM_code)) {
-	    push_entity(&list, "<主体>", count++, &max);
+	if (neflag == 0 && 
+	    (sm_match_check(sm2code("人"), bp->SM_code) || 
+	     sm_match_check(sm2code("動物"), bp->SM_code) || 
+	     sm_match_check(sm2code("組織"), bp->SM_code))) {
+	    push_entity(&list, "主体", count++, &max);
 	    flag = 1;
 	}
-	if (sm_match_check(sm2code("場所"), bp->SM_code)) {
-	    push_entity(&list, "<場所>", count++, &max);
+	if (neflag == 0 && 
+	    sm_match_check(sm2code("場所"), bp->SM_code)) {
+	    push_entity(&list, "場所", count++, &max);
 	    flag = 1;
 	}
 	if (sm_match_check(sm2code("自然物"), bp->SM_code) || 
 	    sm_match_check(sm2code("植物"), bp->SM_code)) {
-	    push_entity(&list, "<自然物>", count++, &max);
+	    push_entity(&list, "自然物", count++, &max);
 	    flag = 1;
 	}
 	if (sm_match_check(sm2code("人工物"), bp->SM_code)) {
-	    push_entity(&list, "<人工物>", count++, &max);
+	    push_entity(&list, "人工物", count++, &max);
 	    flag = 1;
 	}
 	if (sm_match_check(sm2code("事象"), bp->SM_code) || 
 	    sm_match_check(sm2code("行為"), bp->SM_code)) {
-	    push_entity(&list, "<事象>", count++, &max);
+	    push_entity(&list, "事象", count++, &max);
 	    flag = 1;
 	}
-
     }
 
 
@@ -1094,10 +1101,15 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	flag = 1;
     }
 
-    /* いままでのどれでもないときは、<抽象> を与える */
+    if ((cp = check_feature(bp->f, "数量"))) {
+	push_entity(&list, "数量", count++, &max);
+	flag = 1;
+    }
+
+    /* いままでのどれでもないときは、<抽象> を与える
     if (!flag && check_feature(bp->f, "体言")) {
 	push_entity(&list, "<抽象>", count++, &max);
-    }
+    } */
 
 
 

@@ -1,3 +1,6 @@
+2002-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+	* system/lib_print.c: 文節タイプの表示を修正
+
 2002-06-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/feature.c, system/main.c, system/para_relation.c, system/read_data.c:
