@@ -1216,8 +1216,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	if (num != NIL_ASSIGNED && /* ≥‰§Í≈ˆ§∆§¨§¢§Î */
-	    (cpm_ptr->elem_b_num[i] <= -2 || /* æ Œ¨ */
-	     cpm_ptr->cf.pp[i][0] < 0)) { /* °¡§œ, œ¢¬ŒΩ§æ˛ */
+	    cpm_ptr->elem_b_num[i] < 0) { /* æ Œ¨, °¡§œ, œ¢¬ŒΩ§æ˛ */
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
 		sprintf(feature_buffer, "•ﬁ•√•¡Õ—Œ„;%s:%s-%s", 
