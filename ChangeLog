@@ -1,4 +1,10 @@
+2001-11-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/context.c, system/corpus.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/lib_ps.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/para_analysis.c, system/para_dpnd.c, system/para_relation.c, system/para_revision.c, system/proper.c, system/quote.c, system/read_data.c, system/read_rule.c, system/regexp.c, system/tree_conv.c:
+	コードの整理
+
 2001-11-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/main.c:
 	ノ格, 外の関係, ガガ構文の格解析に対応
 
@@ -8,6 +14,7 @@
 	セスが残るバグを修正
 
 2001-09-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/context.c, system/db.c, system/dpnd_analysis.c, system/extern.h, system/main.c:
 	格解析においても、省略解析と同様に直前格要素を重視
 	格解析(-case)時に格解析結果をキャッシュ
