@@ -1,3 +1,8 @@
+2004-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	用言の格要素を見るときに複合名詞内もチェックするように修正
+
 2004-01-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_match.c: 意味属性マッチに<場所>を追加
