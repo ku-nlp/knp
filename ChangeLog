@@ -3,6 +3,9 @@
 	* system/main.c, system/read_data.c:
 	解析済データの入力をタグ単位付きに変更
 
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/const.h, system/extern.h:
+	格フレームの頻度を読み込むように変更
+
 2003-10-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
