@@ -123,7 +123,9 @@ AC_SUBST(KNP_CFLAGS)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h limits.h malloc.h sys/file.h unistd.h)
+AC_CHECK_HEADERS(stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
+    sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h getopt.h \
+    sys/socket.h netinet/in.h netdb.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T
