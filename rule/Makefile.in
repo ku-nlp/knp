@@ -280,6 +280,20 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
+rule:
+	if [ -x rule_conv.pl ]; then \
+	    ./rule_conv.pl *.rule; \
+	fi
+
+trans:
+	if [ -x rule_trans.pl ]; then \
+	    if [ -f bnst_type.rule ]; then \
+		cp -pf bnst_type.rule bnst_type.rule.old; \
+	    fi; \
+	    ./rule_trans.pl < bnst_type.phrase > bnst_type.rule; \
+	fi
+	$(MAKE) rule
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
