@@ -1,3 +1,8 @@
+2003-04-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/para_analysis.c, system/para_relation.c:
+	並列構造の個数が最大値を越えてもexitしないようにした
+
 2003-04-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
