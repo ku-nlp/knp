@@ -267,6 +267,39 @@ void close_case_pred()
     db_close(cp_db);
 }
 
+/* 自立語 : 文節 feature の制限 */
+int check_feature_for_optional_case(FEATURE *f)
+{
+    if ((char *)check_feature(f, "指示詞") || 
+	(char *)check_feature(f, "相対名詞"))
+	return TRUE;
+    return FALSE;
+}
+
+/* 自立語 : 自立語の制限 */
+int check_JiritsuGo_for_optional_case(char *cp)
+{
+     if (!strcmp(cp, "なる") || 
+	 !strcmp(cp, "ない") || 
+	 !strcmp(cp, "する") ||
+	 !strcmp(cp, "ある")) {
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/* 自立語 : 形態素の制限 */
+int check_Morph_for_optional_case(MRPH_DATA *m)
+{
+    /* 副詞的名詞 */
+    if (m->Hinshi == 6 && m->Bunrui == 9)
+	return TRUE;
+    /* 形式名詞 */
+    else if (m->Hinshi == 6 && m->Bunrui == 8)
+	return TRUE;
+    return FALSE;
+}
+
 /* 格から述語への係り受け頻度を調べる関数 */
 int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 {
@@ -817,39 +850,6 @@ int check_optional_case(char *scase)
 	else
 	    return FALSE;
     }
-}
-
-/* 自立語 : 文節 feature の制限 */
-int check_feature_for_optional_case(FEATURE *f)
-{
-    if ((char *)check_feature(f, "指示詞") || 
-	(char *)check_feature(f, "相対名詞"))
-	return TRUE;
-    return FALSE;
-}
-
-/* 自立語 : 自立語の制限 */
-int check_JiritsuGo_for_optional_case(char *cp)
-{
-     if (!strcmp(cp, "なる") || 
-	 !strcmp(cp, "ない") || 
-	 !strcmp(cp, "する") ||
-	 !strcmp(cp, "ある")) {
-	return TRUE;
-    }
-    return FALSE;
-}
-
-/* 自立語 : 形態素の制限 */
-int check_Morph_for_optional_case(MRPH_DATA *m)
-{
-    /* 副詞的名詞 */
-    if (m->Hinshi == 6 && m->Bunrui == 9)
-	return TRUE;
-    /* 形式名詞 */
-    else if (m->Hinshi == 6 && m->Bunrui == 8)
-	return TRUE;
-    return FALSE;
 }
 
 /* 事例情報を用いた構文木の選択するか否か */

@@ -57,7 +57,7 @@ int	NounExist = 0;
 	return NULL;
     }
 
-    ret = (char **)malloc_data(sizeof(char *)*msize);
+    ret = (char **)malloc_data(sizeof(char *)*msize, "GetDictDefinition");
 
     for (cp = startp = string; ; cp++) {
 	if (*cp == '/') {
@@ -71,7 +71,7 @@ int	NounExist = 0;
 	}
 
 	if (count >= msize-1) {
-	    ret = (char **)realloc_data(ret, sizeof(char *)*(msize <<= 1));
+	    ret = (char **)realloc_data(ret, sizeof(char *)*(msize <<= 1), "GetDictDefinition");
 	}
 
 	*(ret+count++) = strdup(startp);

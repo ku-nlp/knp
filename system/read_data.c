@@ -174,6 +174,18 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+		       int readtoeos(FILE *fp)
+/*==================================================================*/
+{
+    U_CHAR input_buffer[DATA_LEN];
+
+    while (1) {
+	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
+	if (str_eq(input_buffer, "EOS\n")) return FALSE;
+    }
+}
+
+/*==================================================================*/
 	     int read_mrph_file(FILE *fp, U_CHAR *buffer)
 /*==================================================================*/
 {
@@ -215,7 +227,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     sp->Mrph_num = 0;
     homo_num = 0;
-    Comment[0] = '\0';
     ErrorComment = NULL;
     PM_Memo[0] = '\0';
     input_buffer[DATA_LEN-1] = '\n';
@@ -239,8 +250,8 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
-	    strcpy(Comment, input_buffer);
-	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer));
+	    sp->Comment = strdup(input_buffer);
+	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer), "read_mrph");
 	    sscanf(input_buffer, "# %s", sp->KNPSID);
 
 	    /* 文章が変わったら固有名詞スタックをクリア */
@@ -329,7 +340,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    /* 最大数を越えないようにチェック */
 	    if (sp->Mrph_num >= MRPH_MAX) {
 		fprintf(stderr, "Too many mrph (%s %s%s...)!\n", 
-			Comment, sp->mrph_data, sp->mrph_data+1);
+			sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
 		sp->Mrph_num = 0;
 		return readtoeos(fp);
 	    }
@@ -357,7 +368,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    else {
 		fprintf(stderr, "Invalid input (%d items)<%s> !\n", 
 			mrph_item, input_buffer);
-		if (Comment[0]) fprintf(stderr, "(%s)\n", Comment);
+		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
 	    m_ptr->type = 0;
@@ -370,18 +381,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    sp->Mrph_num++;
 	    m_ptr++;
 	}
-    }
-}
-
-/*==================================================================*/
-		       int readtoeos(FILE *fp)
-/*==================================================================*/
-{
-    U_CHAR input_buffer[DATA_LEN];
-
-    while (1) {
-	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
-	if (str_eq(input_buffer, "EOS\n")) return FALSE;
     }
 }
 
@@ -671,7 +670,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     sp->Bnst_num++;
     if (sp->Bnst_num > BNST_MAX) {
 	fprintf(stderr, "Too many bnst (%s %s%s...)!\n", 
-		Comment, sp->mrph_data, sp->mrph_data+1);
+		sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
 	sp->Bnst_num = 0;
 	return NULL;
     }
@@ -840,7 +839,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
 		BNST_LENGTH_MAX) {
 		fprintf(stderr, "Too big bnst (%s %s%s...)!\n", 
-			Comment, b_ptr->mrph_ptr, b_ptr->mrph_ptr+1);
+			sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr, b_ptr->mrph_ptr+1);
 		return FALSE;
 	    }
 	}

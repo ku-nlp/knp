@@ -133,9 +133,6 @@ FILE *w2c, *w2p, *rfc, *rfp;
 	   int ParseSentence(SENTENCE_DATA *s, char *input)
 /*==================================================================*/
 {
-    char *cp, buffer[DATA_LEN];
-    int flag;
-
     if (!JumanAlive) {
 	ForkJuman();
     }

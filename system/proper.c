@@ -463,6 +463,20 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
+   int CheckJiritsuGoFeature(SENTENCE_DATA *sp, int i, char *type)
+/*==================================================================*/
+{
+    int j;
+
+    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
+    for (j = 0; j < sp->bnst_data[i].jiritu_num; j++) {
+	if (check_feature((sp->bnst_data[i].jiritu_ptr+j)->f, type))
+	    return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	  void assign_f_from_dic(SENTENCE_DATA *sp, int num)
 /*==================================================================*/
 {
@@ -780,19 +794,6 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
-   int CheckJiritsuGoFeature(SENTENCE_DATA *sp, int i, char *type)
-/*==================================================================*/
-{
-    int j;
-
-    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
-    for (j = 0; j < sp->bnst_data[i].jiritu_num; j++) {
-	if (check_feature((sp->bnst_data[i].jiritu_ptr+j)->f, type))
-	    return 1;
-    }
-    return 0;
-}
-/*==================================================================*/
    int NEassignAgentFromHead(SENTENCE_DATA *sp, int i, char *type)
 /*==================================================================*/
 {
@@ -836,7 +837,7 @@ void allocateMRPH(SENTENCE_DATA *sp, PreservedNamedEntity **p, int i)
     mp = &((*p)->mrph);
     while (*mp != NULL)
 	mp = &((*mp)->next);
-    *mp = (MRPH_P *)malloc_data(sizeof(MRPH_P));
+    *mp = (MRPH_P *)malloc_data(sizeof(MRPH_P), "allocateMRPH");
     (*mp)->data = sp->mrph_data[i];
     (*mp)->next = NULL;
 }
@@ -847,7 +848,7 @@ void allocateNE(SENTENCE_DATA *sp, PreservedNamedEntity **p, int code, int i)
 {
     while (*p != NULL)
 	p = &((*p)->next);
-    *p = (PreservedNamedEntity *)malloc_data(sizeof(PreservedNamedEntity));
+    *p = (PreservedNamedEntity *)malloc_data(sizeof(PreservedNamedEntity), "allocateNE");
     (*p)->mrph = NULL;
     (*p)->next = NULL;
     allocateMRPH(sp, p, i);

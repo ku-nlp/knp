@@ -106,16 +106,17 @@ int Bcheck[BNST_MAX];
 {
     int i, j;
 
-    s->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*MRPH_MAX);
-    s->bnst_data = (BNST_DATA *)malloc_data(sizeof(BNST_DATA)*BNST_MAX);
-    s->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*PARA_MAX);
-    s->para_manager = (PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*PARA_MAX);
-    s->Best_mgr = (TOTAL_MGR *)malloc_data(sizeof(TOTAL_MGR));
+    s->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*MRPH_MAX, "InitSentence");
+    s->bnst_data = (BNST_DATA *)malloc_data(sizeof(BNST_DATA)*BNST_MAX, "InitSentence");
+    s->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*PARA_MAX, "InitSentence");
+    s->para_manager = (PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*PARA_MAX, "InitSentence");
+    s->Best_mgr = (TOTAL_MGR *)malloc_data(sizeof(TOTAL_MGR), "InitSentence");
     s->Sen_num = 0;
     s->Mrph_num = 0;
     s->Bnst_num = 0;
     s->New_Bnst_num = 0;
     s->KNPSID = NULL;
+    s->Comment = NULL;
     s->cpm = NULL;
     s->cf = NULL;
 
@@ -138,7 +139,7 @@ int Bcheck[BNST_MAX];
 {
     /* 文解析結果の保持 */
 
-    int i, j, k, num, cfnum = 0;
+    int i, j, num, cfnum = 0;
     SENTENCE_DATA *sp_new;
 
     /* 一時的措置 */
@@ -442,7 +443,7 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
     /* 用言 cpm_ptr の cf_ptr->pp[n][0] 格が省略されている
        cf_ptr->ex[n] に似ている文節を探す */
 
-    int i, current = 1, bend, num;
+    int i, current = 1, bend;
     char feature_buffer[DATA_LEN];
     SENTENCE_DATA *s;
     BNST_DATA *bp;
@@ -521,13 +522,15 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 	return;
     }
 
-    sbuf = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA)*ssize);
+    sbuf = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA)*ssize, 
+					"EllipsisDetectForNoun");
 
     for (scount = 0; *(def+scount); scount++) {
 	fprintf(stderr, "定義文[%s] %d: %s\n", bp->Jiritu_Go, scount, *(def+scount));
 
 	if (scount >= ssize) {
-	    sbuf = (SENTENCE_DATA *)realloc_data(sbuf, sizeof(SENTENCE_DATA)*(ssize <<= 1));
+	    sbuf = (SENTENCE_DATA *)realloc_data(sbuf, sizeof(SENTENCE_DATA)*(ssize <<= 1), 
+						 "EllipsisDetectForNoun");
 	}
 	sp = sbuf+scount;
 

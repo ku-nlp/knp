@@ -170,7 +170,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     */
 
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    int i, j, frame_num, max_score, default_score;
+    int i, j, frame_num, default_score;
     CF_MATCH_MGR tempcmm;
     
     /* ½é´ü²½ */
@@ -253,7 +253,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	print_data_cframe(cf_ptr);
+	print_data_cframe(cpm_ptr);
 	print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num);
     }
 

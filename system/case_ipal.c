@@ -251,7 +251,8 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     while (point = extract_ipal_str(point, ipal_str_buf)) {
         if (ipal_str_buf[0] == '-') {
 	    if (c_ptr->sm_false[num] == NULL) {
-		c_ptr->sm_false[num] = (int *)malloc_data(sizeof(int)*SM_ELEMENT_MAX);
+		c_ptr->sm_false[num] = (int *)malloc_data(sizeof(int)*SM_ELEMENT_MAX, 
+							  "_make_ipal_cframe_sm");
 		for (i = 0; i < sm_num; i++) {
 		    c_ptr->sm_false[num][i] = FALSE;
 		}
@@ -356,7 +357,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    }
 	    else {
 		/* "...\0" の 4 つ分増やす */
-		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4));
+		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4), 
+							   "_make_ipal_cframe_ex");
 		strncpy(c_ptr->examples[num], cp, length);
 		*(c_ptr->examples[num]+length) = '\0';
 		strcat(c_ptr->examples[num], "...");

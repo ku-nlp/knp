@@ -68,7 +68,7 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
-	  int relax_dpnd_matrix(SENTENCE_DATA *sp, int num)
+	       int relax_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 係り先がない場合の緩和

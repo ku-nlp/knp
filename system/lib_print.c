@@ -949,8 +949,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* ヘッダの出力 */
 
-    if (Comment[0]) {
-	fprintf(Outfp, "%s", Comment);
+    if (sp->Comment) {
+	fprintf(Outfp, "%s", sp->Comment);
     } else {
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
@@ -976,7 +976,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     if (PM_Memo[0]) {
-	if (strstr(Comment, "MEMO")) {
+	if (sp->Comment && strstr(sp->Comment, "MEMO")) {
 	    fprintf(Outfp, "%s", PM_Memo);
 	} else {
 	    fprintf(Outfp, " MEMO:%s", PM_Memo);

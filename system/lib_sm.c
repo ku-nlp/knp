@@ -142,7 +142,7 @@ int		SMP2SMGExist;
              void get_sm_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, stop, i, overflow_flag = 0;
+    int strt, end, stop, i;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[SM_CODE_SIZE*SM_ELEMENT_MAX+1];
 

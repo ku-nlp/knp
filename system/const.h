@@ -716,8 +716,9 @@ typedef struct sentence {
     PARA_MANAGER	*para_manager;
     CF_PRED_MGR		*cpm;
     CASE_FRAME		*cf;
-    char		*KNPSID;
     TOTAL_MGR		*Best_mgr;
+    char		*KNPSID;
+    char		*Comment;
 } SENTENCE_DATA;
 
 /*====================================================================

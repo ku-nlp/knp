@@ -61,7 +61,7 @@ QUOTE_DATA quote_data;
 	    /* 最大数を越えないかチェック(最後の要素が番人なので、それを変えては
 	       いけない) */
 	    if (k >= QUOTE_MAX-1) {
-		fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
 	    }
 	    s_num ++;
@@ -72,7 +72,7 @@ QUOTE_DATA quote_data;
 	    /* 「『‥ を扱うため上のことを繰り返す */
 	    if (check_feature(sp->bnst_data[i].f, "括弧始２")) {
 		if (k >= QUOTE_MAX-1) {
-		    fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		    fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		    return CONTINUE;
 		}
 		s_num ++;
@@ -84,7 +84,7 @@ QUOTE_DATA quote_data;
 	if (check_feature(sp->bnst_data[i].f, "括弧終")) {
 	    if (s_num == -1) {
 		if (k >= QUOTE_MAX-1) {
-		    fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		    fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		    return CONTINUE;
 		}
 		quote_data.out_num[k] = i; /* 括弧終が多い場合 */

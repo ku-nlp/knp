@@ -16,8 +16,8 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-SENTENCE_DATA current_sentence_data;
-SENTENCE_DATA sentence_data[256];
+SENTENCE_DATA	current_sentence_data;
+SENTENCE_DATA	sentence_data[256];
 
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
 BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
@@ -28,10 +28,8 @@ TOTAL_MGR	Op_Best_mgr;
 
 int 		Revised_para_num;			
 
-char		Comment[DATA_LEN];		/* コメント行 */
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
-char            SID_box[256];
 
 char  		cont_str[DBM_CON_MAX];
 
@@ -81,11 +79,6 @@ extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
 extern FORM     Form[TYPE_NO][FORM_NO];
 int CLASS_num;
-
-#include "extern.h"
-
-extern void read_bnst_rule(char *file_neme, BnstRule *rp, 
-			   int *count, int max);
 
 char *ClauseDBname = NULL;
 char *ClauseCDBname = NULL;
@@ -443,8 +436,9 @@ extern int	SOTO_SCORE;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
-    current_sentence_data.KNPSID = NULL;
     current_sentence_data.Best_mgr = &Best_mgr;
+    current_sentence_data.KNPSID = NULL;
+    current_sentence_data.Comment = NULL;
 
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
@@ -584,7 +578,7 @@ extern int	SOTO_SCORE;
 
     if ((flag = check_para_key(sp)) > 0) {
 	calc_match_matrix(sp);		/* 文節間類似度計算 */
-	detect_all_para_scope(sp);	    	/* 並列構造推定 */
+	detect_all_para_scope(sp);    	/* 並列構造推定 */
 	do {
 	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
 		print_matrix(sp, PRINT_PARA, 0);
@@ -669,6 +663,8 @@ PARSED:
 	if (OptDisplay == OPT_DEBUG)
 	    printNE();
     }
+
+    return TRUE;
 }
 
 /*==================================================================*/
@@ -715,8 +711,17 @@ PARSED:
 	    fflush(Outfp);
 	}
 
-	/* FEATURE の初期化 */
+	/* 初期化 */
+	if (sp->KNPSID) {
+	    free(sp->KNPSID);
+	    sp->KNPSID = NULL;
+	}
+	if (sp->Comment) {
+	    free(sp->Comment);
+	    sp->Comment = NULL;
+	}
 
+	/* FEATURE の初期化 */
 	if (OptAnalysis == OPT_DISC) {
 	    /* 中身は保存しておくので */
 	    for (i = 0; i < sp->Mrph_num; i++)
