@@ -121,7 +121,6 @@
 #define	OPT_DISC_FLAT	8
 
 #define	PP_NUMBER	44
-#define LOC_NUMBER	7
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -396,7 +395,7 @@ typedef struct {
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
 #define		DEF_DISC_CASES		"KNP省略解析格"
-#define		DEF_DISC_OPTIONS	"KNP省略解析オプション"
+#define		DEF_DISC_ORDER		"KNP省略解析探索範囲"
 
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
 #define		DEF_DT_MODEL_FILE	"決定木ファイル"

@@ -74,6 +74,7 @@ extern char		*SVMFile[];
 extern char		*DTFile[];
 
 extern int	DiscAddedCases[];
+extern int	LocationLimit[];
 
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;

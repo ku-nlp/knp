@@ -16,33 +16,31 @@ char *maxtag, *maxfeatures;
 #define PREV_SENTENCE_MAX	3
 int Bcheck[PREV_SENTENCE_MAX][TAG_MAX];
 
-#define	PLOC_PV		0x0001
-#define	PLOC_PARENTV	0x0010
-#define	PLOC_CHILDV	0x0100
-#define	PLOC_CHILDPV	0x0300
-#define	PLOC_NPARENTV	0x0002	/* サ変名詞の親 */
-#define	PLOC_NPARENTCV	0x0006	/* サ変名詞の親の従属節 */
-#define	PLOC_NOTHERS	0x000e
+#define LOC_NUMBER	21
 
-#define	LOC_PARENTV	0x0002
-#define	LOC_PARENTV_MC	0x0003
-#define	LOC_CHILDPV	0x0200
-#define	LOC_CHILDV	0x0400
-#define	LOC_PARENTNPARENTV	0x0004
-#define	LOC_PARENTNPARENTV_MC	0x0005
-#define	LOC_PV		0x0008
-#define	LOC_PV_MC	0x0009
-#define	LOC_PARENTVPARENTV	0x0010
-#define	LOC_PARENTVPARENTV_MC	0x0011
-#define	LOC_MC		0x2001
-#define	LOC_SC		0x4000
-#define	LOC_PRE_OTHERS	0x8000
-#define	LOC_POST_OTHERS	0x9000
-#define	LOC_OTHERS	0x0000
+#define	LOC_PARENTV	0x000002
+#define	LOC_PARENTV_MC	0x000003
+#define	LOC_CHILDPV	0x000200
+#define	LOC_CHILDV	0x000400
+#define	LOC_PARENTNPARENTV	0x000004
+#define	LOC_PARENTNPARENTV_MC	0x000005
+#define	LOC_PV		0x000008
+#define	LOC_PV_MC	0x000009
+#define	LOC_PARENTVPARENTV	0x000010
+#define	LOC_PARENTVPARENTV_MC	0x000011
+#define	LOC_MC		0x002001
+#define	LOC_SC		0x004000
+#define	LOC_PRE_OTHERS	0x008000
+#define	LOC_POST_OTHERS	0x009000
+#define	LOC_S1_MC	0x012001
+#define	LOC_S1_SC	0x014000
+#define	LOC_S1_OTHERS	0x010000
+#define	LOC_S2_MC	0x022001
+#define	LOC_S2_SC	0x024000
+#define	LOC_S2_OTHERS	0x020000
+#define	LOC_OTHERS	0x000000
 
 /* LOC: 17文字が最大 */
-
-/* ※ 位置の数を変えたら、LOC_NUMBER(const.h)を変えること */
 
 char *ExtraTags[] = {"一人称", "不特定-人", "不特定-状況", ""};
 
@@ -68,6 +66,24 @@ char *CaseOrder[CASE_ORDER_MAX][4] = {
     {"ニ", "ヲ", "ガ", ""}, 
 };
 int DiscAddedCases[PP_NUMBER] = {END_M};
+
+int LocationOrder[][LOC_NUMBER] = {
+    {END_M}, 
+    {LOC_PARENTV_MC, LOC_PARENTNPARENTV_MC, LOC_PARENTNPARENTV, LOC_PARENTV, LOC_CHILDPV, 
+     LOC_PARENTVPARENTV_MC, LOC_S1_MC, LOC_CHILDV, LOC_MC, LOC_SC, LOC_PARENTVPARENTV, 
+     LOC_S2_MC, LOC_PV_MC, LOC_PRE_OTHERS, LOC_S1_SC, LOC_S1_OTHERS, LOC_POST_OTHERS, 
+     LOC_S2_OTHERS, END_M}, /* 18個 */
+    {LOC_CHILDV, LOC_PARENTVPARENTV, LOC_CHILDPV, LOC_PARENTV, LOC_PARENTNPARENTV, 
+     LOC_PRE_OTHERS, LOC_PV_MC, LOC_PARENTNPARENTV_MC, LOC_S1_MC, LOC_PARENTV_MC, 
+     LOC_SC, LOC_S1_OTHERS, LOC_S2_MC, LOC_MC, LOC_PV, LOC_PARENTVPARENTV_MC, 
+     LOC_S2_OTHERS, LOC_POST_OTHERS, END_M}, /* 18個 */
+    {LOC_CHILDPV, LOC_CHILDV, LOC_S1_MC, LOC_PARENTV_MC, LOC_PARENTV, LOC_PARENTNPARENTV, 
+     LOC_PARENTVPARENTV_MC, LOC_PRE_OTHERS, LOC_S1_SC, LOC_PV, LOC_PARENTNPARENTV_MC, 
+     LOC_S2_MC, LOC_S1_OTHERS, LOC_SC, LOC_MC, LOC_PV_MC, LOC_S2_SC, LOC_S2_OTHERS, 
+     LOC_POST_OTHERS, END_M}, /* 19個 */
+};
+
+int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 
 
 /*==================================================================*/
@@ -115,6 +131,24 @@ int DiscAddedCases[PP_NUMBER] = {END_M};
     }
     else if (loc == LOC_POST_OTHERS) {
 	return "POST_OTHERS";
+    }
+    else if (loc == LOC_S1_MC) {
+	return "S1_MC";
+    }
+    else if (loc == LOC_S1_SC) {
+	return "S1_SC";
+    }
+    else if (loc == LOC_S1_OTHERS) {
+	return "S1_OTHERS";
+    }
+    else if (loc == LOC_S2_MC) {
+	return "S2_MC";
+    }
+    else if (loc == LOC_S2_SC) {
+	return "S2_SC";
+    }
+    else if (loc == LOC_S2_OTHERS) {
+	return "S2_OTHERS";
     }
     else if (loc == LOC_OTHERS) {
 	return "OTHERS";
@@ -1204,7 +1238,7 @@ void SetEllipsisFeaturesForPred(E_FEATURES *f, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs, 
 				CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, 
-				TAG_DATA *bp, CASE_FRAME *cf_ptr, int n)
+				TAG_DATA *bp, CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
     E_FEATURES *f;
@@ -1237,52 +1271,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->c_distance = cs - s;
     f->c_dist_bnst = CountBnstDistance(s, bp->num, cs, cpm_ptr->pred_b_ptr->num);
     f->c_fs_flag = s->Sen_num == 1 ? 1 : 0;
-
-    f->c_location = -1;
-    if (f->c_distance == 0) {
-	/* 用言の親が<PARA>, その<PARA>用言の格要素 */
-	if (cpm_ptr->pred_b_ptr->parent && 
-	    cpm_ptr->pred_b_ptr->parent->para_top_p) {
-	    int i;
-
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-		    CheckPredicateChild(cpm_ptr->pred_b_ptr->parent->child[i], bp)) {
-		    f->c_location = PLOC_PV;
-		    break;
-		}
-	    }
-	}
-	/* 用言の親用言の格要素 */
-	else if (cpm_ptr->pred_b_ptr->parent && 
-		 CheckPredicateChild(cpm_ptr->pred_b_ptr->parent, bp)) {
-	    f->c_location = PLOC_PARENTV;
-	}
-	else {
-	    int i, j;
-
-	    for (i = 0; cpm_ptr->pred_b_ptr->child[i]; i++) {
-		/* 用言の子用言(<PARA>)の格要素 */
-		if (cpm_ptr->pred_b_ptr->child[i]->para_top_p) {
-		    for (j = 0; cpm_ptr->pred_b_ptr->child[i]->child[j]; j++) {
-			if (cpm_ptr->pred_b_ptr->child[i]->child[j]->para_type == PARA_NORMAL && 
-			    CheckPredicateChild(cpm_ptr->pred_b_ptr->child[i]->child[j], bp)) {
-			    f->c_location = PLOC_CHILDPV;
-			    goto LOC_DECIDED;
-			}
-		    }
-		}
-		/* 用言の子用言の格要素 */
-		else if (CheckPredicateChild(cpm_ptr->pred_b_ptr->child[i], bp)) {
-		    f->c_location = PLOC_CHILDV;
-		    break;
-		}
-	    }
-	}
-    }
-
-  LOC_DECIDED:
-
+    f->c_location = loc;
     f->c_topic_flag = check_feature(bp->f, "主題表現") ? 1 : 0;
     f->c_no_topic_flag = check_feature(bp->f, "準主題表現") ? 1 : 0;
     f->c_in_cnoun_flag = bp->inum != 0 ? 1 : 0;
@@ -1397,7 +1386,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     char *ecp, feature_buffer[DATA_LEN];
     float score;
 
-    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n);
+    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc);
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
 
@@ -1486,7 +1475,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     float score;
 
     /* 学習FEATURE */
-    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n);
+    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc);
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
     EllipsisSvmFeaturesString2Feature(em_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
@@ -1685,22 +1674,6 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 		return FALSE;
 	    }
 	}
-	/* 省略格がニ格のときの条件 */
-	else if (MatchPP(cf_ptr->pp[n][0], "ニ")) {
-	    if (s < cs || 
-		bp->num < cpm_ptr->pred_b_ptr->num || 
-		loc == LOC_PARENTV || 
-		loc == LOC_PARENTV_MC || 
-		loc == LOC_PV || 
-		loc == LOC_PV_MC || 
-		loc == LOC_PARENTNPARENTV || 
-		loc == LOC_PARENTNPARENTV_MC) {
-		return TRUE;
-	    }
-	    else {
-		return FALSE;
-	    }
-	}
     }
     return TRUE;
 }
@@ -1753,7 +1726,7 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
     }
     else {
 	if ((OptDiscFlag & OPT_DISC_BEST) || 
-	    (loc == LOC_OTHERS && s != cs) || 
+	    ((loc == LOC_OTHERS || loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
 	    (loc == LOC_PRE_OTHERS && s == cs && tp->num < cpm_ptr->pred_b_ptr->num) || 
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc);
@@ -1934,8 +1907,10 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	     CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    int i, flag = 0;
+    int i, flag = 0, dist;
     TAG_DATA *tp;
+
+    dist = cs - s;
 
     for (i = s->Tag_num - 1; i >= 0; i--) {
 	tp = s->tag_data + i;
@@ -1957,11 +1932,12 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
     }
 
     SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-			tp, cf_ptr, n, LOC_MC);
+			tp, cf_ptr, n, dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC);
 
     /* 文末にある体言(先行詞候補)は OK */
     if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC)) {
-	EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, LOC_MC);
+	EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, 
+					 dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC);
     }
 
     return 0;
@@ -1973,8 +1949,10 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		      CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    int i, j, start;
+    int i, j, start, dist;
     TAG_DATA *tp, *tp2;
+
+    dist = cs - s;
 
     for (i = s->Tag_num - 1; i >= 0; i--) {
 	tp = s->tag_data + i; 
@@ -1995,7 +1973,8 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		if (check_feature(tp2->f, "係:連用") && 
 		    subordinate_level_check("B", (BNST_DATA *)tp2)) {
 		    SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					tp2, cf_ptr, n, LOC_SC);
+					tp2, cf_ptr, n, 
+					dist == 2 ? LOC_S2_SC : dist == 1 ? LOC_S1_SC : LOC_SC);
 		}
 	    }
 	    break;
@@ -2019,7 +1998,7 @@ int SearchParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 
 	if (!(mccheck == 0 || 
 	      (mccheck > 0 && mcflag) || 
-	      !mcflag)) {
+	      (mccheck < 0 && !mcflag))) {
 	    return 0;
 	}
 
@@ -2134,7 +2113,7 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 
 	if (!(mccheck == 0 || 
 	      (mccheck > 0 && mcflag) || 
-	      !mcflag)) {
+	      (mccheck < 0 && !mcflag))) {
 	    return 0;
 	}
 
@@ -2183,7 +2162,7 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 
 	if (!(mccheck == 0 || 
 	      (mccheck > 0 && mcflag) || 
-	      !mcflag)) {
+	      (mccheck < 0 && !mcflag))) {
 	    return 0;
 	}
 
@@ -2335,7 +2314,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     /* 予備実験で決めた順番で探す */
 
-    /* 並列を吸収 */
+    /* (用言の)並列を吸収 */
     tp = cpm_ptr->pred_b_ptr;
     while (tp->para_type == PARA_NORMAL && 
 	   tp->parent && tp->parent->para_top_p) {
@@ -2344,318 +2323,118 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     /* 並列なら tp は <PARA> になる */
     ptp = tp;
 
-    if (MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	/* PARENTV_MC */
-	SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
+    if (!(MatchPP(cf_ptr->pp[n][0], "ガ") || 
+	  MatchPP(cf_ptr->pp[n][0], "ヲ") || 
+	  MatchPP(cf_ptr->pp[n][0], "ニ"))) {
+	fprintf(stderr, ";; Cannot handle <%s> of zero pronoun\n", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	return 0;
+    }
 
-	/* PARENTNPARENTV_MC ,PARENTNPARENTV */
-	SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTV */
-	SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* CHILDPV */
-	SearchChildPV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTVPARENTV_MC */
-	SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 前文MC */
-	if (cs - sentence_data > 0) {
-	    SearchMC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
+    for (j = 0; LocationOrder[cf_ptr->pp[n][0]][j] != END_M && 
+	     (LocationLimit[cf_ptr->pp[n][0]] == END_M || j < LocationLimit[cf_ptr->pp[n][0]]); j++) {
+	switch(LocationOrder[cf_ptr->pp[n][0]][j]) {
+	case LOC_PARENTV_MC:
+	    SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
+	    break;
+	case LOC_PARENTNPARENTV_MC:
+	    SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
+	    break;
+	case LOC_PARENTNPARENTV:
+	    SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
+	    break;
+	case LOC_PARENTV:
+	    SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
+	    break;
+	case LOC_CHILDPV:
+	    SearchChildPV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
+	    break;
+	case LOC_PARENTVPARENTV_MC:
+	    SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
+	    break;
+	case LOC_S1_MC:
+	    if (cs - sentence_data > 0) {
+		SearchMC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
 	    }
-	}
-
-	/* CHILDV */
-	SearchChildV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV_MC */ /* ★要チェック★ */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-		    check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 主節 */
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV_MC);
+	    break;
+	case LOC_CHILDV:
+	    SearchChildV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
+	    break;
+	case LOC_PV_MC: /* ★要チェック★ */
+	    if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
+		for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
+		    if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
+			cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
+			check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 主節 */
+			SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					    cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV_MC);
+		    }
 		}
 	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV (非主節) */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV);
+	    break;
+	case LOC_PV: /* ★要チェック★ */
+	    if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
+		for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
+		    if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
+			cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
+			!check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 非主節 */
+			SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					    cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV);
+		    }
 		}
 	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* MC */
-	SearchMC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* SC */
-	SearchSC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTVPARENTV */
-	SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 2文前MC */
-	if (cs - sentence_data > 1) {
-	    SearchMC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
+	    break;
+	case LOC_MC:
+	    SearchMC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
+	    break;
+	case LOC_SC:
+	    SearchSC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
+	    break;
+	case LOC_PARENTVPARENTV:
+	    SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
+	    break;
+	case LOC_S2_MC:
+	    if (cs - sentence_data > 1) {
+		SearchMC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
 	    }
-	}
-
-	/* CHILDVCHILDV */
-
-
-	/* PRE_OTHERS */
-	if (EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				    cf_ptr, n, LOC_PRE_OTHERS)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 前文SC */
-	if (cs - sentence_data > 0) {
-	    SearchSC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
+	    break;
+	case LOC_PRE_OTHERS:
+	    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
+				    cf_ptr, n, LOC_PRE_OTHERS); /* 中で ScoreCheck() している */
+	    break;
+	case LOC_S1_SC:
+	    if (cs - sentence_data > 0) {
+		SearchSC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
 	    }
-	}
-
-	/* 前文OTHERS */
-	if (cs - sentence_data > 0) {
-	    if (EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+	    break;
+	case LOC_S1_OTHERS:
+	    if (cs - sentence_data > 0) {
+		EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					(cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-					cf_ptr, n, LOC_OTHERS)) {
-		goto EvalAntecedent;
+					cf_ptr, n, LOC_S1_OTHERS); /* 中で ScoreCheck() している */
 	    }
-	}
-
-	/* POST_OTHERS */
-	if (EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				    cf_ptr, n, LOC_POST_OTHERS)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 2文前 */
-
-	if (cs - sentence_data > 1) {
-	    /* SearchSC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n); */
-
-	    /* 2文前のその他の要素 */
-	    if (EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					cf_ptr, n, LOC_OTHERS)) {
-		goto EvalAntecedent;
+	    break;
+	case LOC_POST_OTHERS:
+	    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
+				    cf_ptr, n, LOC_POST_OTHERS); /* 中で ScoreCheck() している */
+	    break;
+	case LOC_S2_SC:
+	    if (cs - sentence_data > 1) {
+		SearchSC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
 	    }
-	}
-    }
-    else if (MatchPP(cf_ptr->pp[n][0], "ヲ")) {
-	/* CHILDV */
-	SearchChildV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* CHILDPV */
-	SearchChildPV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* CHILDVCHILDV */
-
-	/* PARENTV */
-	SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTNPARENTV */
-	SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PRE_OTHERS 0.071 */
-	if (EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				    cf_ptr, n, LOC_PRE_OTHERS)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 前文MC 0.063 */
-	if (cs - sentence_data > 0) {
-	    SearchMC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
+	    break;
+	case LOC_S2_OTHERS:
+	    if (cs - sentence_data > 1) {
+		EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+					cf_ptr, n, LOC_S2_OTHERS); /* 中で ScoreCheck() している */
 	    }
+	    break;
+	default:
+	    fprintf(stderr, ";; Unknown location class (%s)\n", loc_code_to_str(LocationOrder[cf_ptr->pp[n][0]][j]));
 	}
-
-	/* PARENTVPARENTV 0.052 */
-	SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV_MC */ /* ★要チェック★ */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-		    check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 主節 */
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV_MC);
-		}
-	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV (非主節) */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV);
-		}
-	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* MC */
-	SearchMC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* SC */
-	SearchSC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
 	if (ScoreCheck(cf_ptr, n)) {
 	    goto EvalAntecedent;
 	}
     }
-    /* ニ */
-    else {
-	/* CHILDPV */
-	SearchChildPV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* CHILDV */
-	SearchChildV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* 前文MC */
-	if (cs - sentence_data > 0) {
-	    SearchMC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
-	    }
-	}
-
-	/* PARENTV */
-	SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTNPARENTV */
-	SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PARENTVPARENTV */
-	SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 0);
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV_MC */ /* ★要チェック★ */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-		    check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 主節 */
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV_MC);
-		}
-	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PV (非主節) */
-	if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
-		    SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV);
-		}
-	    }
-	}
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-
-	/* PRE_OTHERS */
-
-	/* 前文SC */
-	if (cs - sentence_data > 0) {
-	    SearchSC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    if (ScoreCheck(cf_ptr, n)) {
-		goto EvalAntecedent;
-	    }
-	}
-    }
-
 
     /* それ以外 */
 

@@ -359,6 +359,7 @@ int knp_dict_file_already_defined = 0;
 		}
 	    }
 	}
+	/* æ Œ¨≤Ú¿œ≥  */
 	else if (!strcmp(DEF_DISC_CASES, _Atom(car(cell1)))) {
 	    int n = 0, cn;
 
@@ -378,6 +379,30 @@ int knp_dict_file_already_defined = 0;
 		cell1 = cdr(cell1);
 	    }
 	    DiscAddedCases[n] = END_M;
+	}
+	/* æ Œ¨≤Ú¿œ√µ∫˜»œ∞œ */
+	else if (!strcmp(DEF_DISC_ORDER, _Atom(car(cell1)))) {
+	    int pp;
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(car(cell1)));
+		pp = pp_kstr_to_code(dicttype);
+		if (pp == 0 || pp == END_M) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", dicttype);
+		    exit(0);
+		}
+
+		LocationLimit[pp] = atoi(_Atom(car(cdr(car(cell1)))));
+		if (LocationLimit[pp] <= 0) {
+		    LocationLimit[pp] = END_M;
+		}
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Location category order limit ... %d for %s\n", LocationLimit[pp], dicttype);
+		}
+
+		cell1 = cdr(cell1);
+	    }
 	}
 #ifdef USE_SVM
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
