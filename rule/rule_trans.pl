@@ -215,7 +215,7 @@ while ( <STDIN> ) {
 	    print " ?*";
 	}
     }
-    print " )\n\t$feature\n)\n";
+    print " )\n\t$feature RID:$num\n)\n";
     print "$comment\n" if $comment;
     print "\n";
 }
