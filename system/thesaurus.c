@@ -284,7 +284,7 @@ int	ParaThesaurus = USE_BGH;
 	  char *get_most_similar_code(char *exd, char *exp)
 /*==================================================================*/
 {
-    int i, j, step, ret_sm_num = 0;
+    int i, j, step, ret_sm_num = 0, pre_i = -1;
     float score = 0, tempscore;
     char *ret_sm;
 
@@ -301,10 +301,11 @@ int	ParaThesaurus = USE_BGH;
     }
 
     ret_sm = (char *)malloc_data(sizeof(char)*strlen(exd)+1, "get_most_similar_code");
+    *ret_sm = '\0';
 
     /* 最大マッチスコアを求める */
-    for (j = 0; exp[j]; j+=step) {
-	for (i = 0; exd[i]; i+=step) {
+    for (i = 0; exd[i]; i+=step) {
+	for (j = 0; exp[j]; j+=step) {
 	    if (Thesaurus == USE_BGH) {
 		tempscore = (float)bgh_code_match_for_case(exp+j, exd+i);
 	    }
@@ -316,10 +317,13 @@ int	ParaThesaurus = USE_BGH;
 		strncpy(ret_sm, exd+i, step);
 		ret_sm_num = 1;
 		ret_sm[step] = '\0';
+		pre_i = i;
 	    }
-	    else if (tempscore == score) {
+	    else if (tempscore == score && 
+		     pre_i != i) { /* 重複を避けるため直前のiとは違うときのみ */
 		strncat(ret_sm, exd+i, step);
 		ret_sm_num++;
+		pre_i = i;
 	    }
 	}
     }
