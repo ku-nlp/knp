@@ -163,18 +163,6 @@ main(int argc, char **argv)
 	    casenum = 0;
 	    memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
 	}
-	else if (!strncmp(tag, "素性", 4)) {
-	    flag = 1;
-	    /* 要素をsplit */
-	    token = strtok(DATA, " ");
-	    while (token) {
-		if (!strcmp(token, "和フレーム")) {
-		    flag = 0;	/* 読みを登録しない */
-		    break;
-		}
-		token = strtok(NULL, " ");
-	    }
-	}
 	else if (!strncmp(tag, "格", 2)) {
 	    casenum++;
 	    if (casenum > CASE_MAX_NUM) {
@@ -189,6 +177,21 @@ main(int argc, char **argv)
 
 	point[item] = pos;
 	strcpy(&(ipal_frame.DATA[pos]), DATA);
+
+	/* ORの格フレームなら読みを登録しない */
+	if (!strncmp(tag, "素性", 4)) {
+	    flag = 1;
+	    /* 要素をsplit */
+	    token = strtok(DATA, " ");
+	    while (token) {
+		if (!strcmp(token, "和フレーム")) {
+		    flag = 0;	/* 読みを登録しない */
+		    break;
+		}
+		token = strtok(NULL, " ");
+	    }
+	}
+
 	if (!strcmp(DATA, "nil")) {
 	    ipal_frame.DATA[pos] = '\0';
 	    pos += 1;
