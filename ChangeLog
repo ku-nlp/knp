@@ -1,3 +1,11 @@
+2004-02-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c:
+	シソーラスにマッチした用例を表示する関数のbug fix.
+
+	* system/context.c:
+	名詞解析で係り先用言の連体修飾要素をとることができなかったのを修正
+
 2004-02-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* knprc.in: 省略解析探索範囲のデフォルトを変更
