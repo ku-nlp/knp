@@ -12,6 +12,7 @@ FILE *cf_fp;
 DBM_FILE cf_db;
 FILE *cf_noun_fp;
 DBM_FILE cf_noun_db;
+DBM_FILE cf_sim_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -23,6 +24,7 @@ unsigned char *cf_str_buf;
 
 int	CFExist;
 int	CFNounExist;
+int	CFSimExist;
 int	PrintDeletedSM = 0;
 
 /*==================================================================*/
@@ -92,6 +94,34 @@ int	PrintDeletedSM = 0;
     }
 
     free(data_filename);
+    free(index_db_filename);
+
+    /* 格フレーム類似度DB */
+
+    if (DICT[CF_SIM_DB]) {
+	index_db_filename = check_dict_filename(DICT[CF_SIM_DB], TRUE);
+    }
+    else {
+	index_db_filename = check_dict_filename(CF_SIM_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", index_db_filename);
+    }
+
+    if ((cf_sim_db = DB_open(index_db_filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	CFSimExist = FALSE;
+    } 
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	CFSimExist = TRUE;
+    }
+
     free(index_db_filename);
 }
 
@@ -863,6 +893,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     else {
 	cf_ptr->feature = NULL;
     }
+    cf_ptr->cf_similarity = 0;
 
 
     /* 格要素の追加 */
@@ -1485,6 +1516,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
 		start = Case_frame_num;
 		make_caseframes(sp, t_ptr, CF_PRED);
+		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレームはとりあえず、サ変名詞以外について */
 	    else if ((OptEllipsis & OPT_REL_NOUN) && 
@@ -1583,6 +1615,35 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
     }
     return -1;
+}
+
+/*==================================================================*/
+	    float get_cfs_similarity(char *cf1, char *cf2)
+/*==================================================================*/
+{
+    char *key, *value;
+    float ret;
+
+    if (CFSimExist == FALSE || cf1 == NULL || cf2 == NULL) {
+	return 0;
+    }
+
+    /* 同じとき */
+    if (!strcmp(cf1, cf2)) {
+	return 1.0;
+    }
+
+    key = (char *)malloc_data(sizeof(char) * (strlen(cf1) + strlen(cf2) + 2), 
+			      "get_cfs_similarity");
+    sprintf(key, "%s-%s", cf1, cf2);
+    value = db_get(cf_sim_db, key);
+    if (value) {
+	    ret = atof(value);
+	    free(value);
+    }
+    free(key);
+
+    return ret;
 }
 
 /*====================================================================

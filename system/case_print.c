@@ -86,8 +86,18 @@ int	PrintFrequency = 0;
     else
 	fputs("】", Outfp);
 
-    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.pred_type, 
-	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
+    fprintf(Outfp, " %s ", cpm_ptr->cf.pred_type);
+
+    if (OptUseSmfix == TRUE && 
+	cpm_ptr->pred_b_ptr->cf_num != cpm_ptr->pred_b_ptr->e_cf_num) {
+	fprintf(Outfp, "[%d/%d]", 
+		cpm_ptr->pred_b_ptr->e_cf_num, 
+		cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
+    }
+    else {
+	fprintf(Outfp, "[%d]", 
+		cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
+    }
 
     /* 格フレームを決定した方法 */
     if (cpm_ptr->decided == CF_DECIDED) {
@@ -166,12 +176,20 @@ struct _sort_kv {
 	return;
 
     /* 得点, 意味の表示 */
-
-    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", 
-	    cmm_ptr->score, cmm_ptr->pure_score[0], 
-	    sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
-					    &(cmm_ptr->result_lists_p[0])))), 
-	    cmm_ptr->cf_ptr->cf_id);
+    if (OptUseSmfix == TRUE) {
+	fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s (%.2f) ", 
+		cmm_ptr->score, cmm_ptr->pure_score[0], 
+		sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
+						&(cmm_ptr->result_lists_p[0])))), 
+		cmm_ptr->cf_ptr->cf_id, cmm_ptr->cf_ptr->cf_similarity);
+    }
+    else {
+	fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", 
+		cmm_ptr->score, cmm_ptr->pure_score[0], 
+		sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
+						&(cmm_ptr->result_lists_p[0])))), 
+		cmm_ptr->cf_ptr->cf_id);
+    }
 
     if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);

@@ -441,7 +441,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	16
+#define DICT_MAX	17
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -458,6 +458,7 @@ typedef struct _RuleVector {
 #define	EVENT_DB	13
 #define CF_NOUN_INDEX_DB	14
 #define CF_NOUN_DATA		15
+#define CF_SIM_DB	16
 
 
 
@@ -628,6 +629,7 @@ typedef struct tnode_t {
     /* 形態素データ */
     int		settou_num, jiritu_num, fuzoku_num;
     MRPH_DATA 	*settou_ptr, *jiritu_ptr, *fuzoku_ptr;
+    int 	e_cf_num;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -714,6 +716,7 @@ typedef struct cf_def {
     int		weight[CF_ELEMENT_MAX];
     int		samecase[CF_ELEMENT_MAX][2];
     TAG_DATA	*pred_b_ptr;
+    float	cf_similarity;
 } CASE_FRAME;
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
@@ -812,6 +815,15 @@ typedef struct predicate_anaphora_list {
     CASE_COMPONENT *cc[CASE_MAX_NUM];	/* 格要素のリスト */
     struct predicate_anaphora_list *next;
 } PALIST;
+
+/* 用言と格フレームIDの構造体 */
+typedef struct cf_list {
+    char	*key;		/* 用言 */
+    char	**cfid;		/* 格フレームID */
+    int		cfid_num;
+    int		cfid_max;
+    struct cf_list *next;
+} CFLIST;
 
 #define	ELLIPSIS_TAG_UNSPECIFIED_PEOPLE	-2	/* 不特定:人 */
 #define	ELLIPSIS_TAG_I_WE		-3	/* 1人称 */

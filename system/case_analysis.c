@@ -828,6 +828,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	dst->samecase[i][0] = src->samecase[i][0];
 	dst->samecase[i][1] = src->samecase[i][1];
     }
+    dst->cf_similarity = src->cf_similarity;
     /* weight, pred_b_ptr ¤ÏÌ¤ÀßÄê */
 }
 
@@ -873,6 +874,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	dst->samecase[i][1] = src->samecase[i][1];
     }
     dst->pred_b_ptr = src->pred_b_ptr;
+    dst->cf_similarity = src->cf_similarity;
 }
 
 /*==================================================================*/
@@ -1473,6 +1475,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	}
     }
+
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 }
 

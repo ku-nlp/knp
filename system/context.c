@@ -29,10 +29,13 @@ float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
 float	AntecedentDecideThresholdForNoun = 0.60;
 float	AntecedentDecideThresholdForNi = 0.90;
 
+float	CFSimThreshold = 0.80;
+
 float	SVM_FREQ_SD = 114.23868;	/* for np (20040117-smfix) */
 float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
+CFLIST cflist[TBLSIZE];
 
 E_CANDIDATE *ante_cands;
 int cand_num = 0;
@@ -174,10 +177,38 @@ int OptUseSmfix;
 }
 
 /*==================================================================*/
-		       void InitAnaphoraList()
+			  void ClearCFList()
+/*==================================================================*/
+{
+    int i, j;
+    CFLIST *cfp, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (cflist[i].key) {
+	    free(cflist[i].key);
+	}
+
+	for (j = 0; j < cflist[i].cfid_num; j++) {
+	    free(*(cflist[i].cfid + j));
+	}
+	free(cflist[i].cfid);
+
+	cfp = cflist[i].next;
+	while (cfp) {
+	    free(cfp->key);
+	    next = cfp->next;
+	    free(cfp);
+	    cfp = next;
+	}
+    }
+}
+
+/*==================================================================*/
+			void InitContextHash()
 /*==================================================================*/
 {
     memset(palist, 0, sizeof(PALIST)*TBLSIZE);
+    memset(cflist, 0, sizeof(CFLIST)*TBLSIZE);
 }
 
 /*==================================================================*/
@@ -457,6 +488,99 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 }
 
 /*==================================================================*/
+		    char *get_pred_id(char *cfid)
+/*==================================================================*/
+{
+    char verb[SMALL_DATA_LEN], type[SMALL_DATA_LEN], voice[SMALL_DATA_LEN];
+    char *ret;
+    int index;
+
+    /* with voice */
+    if (sscanf(cfid, "%[^:]:%[^:]:%[^0-9]%d", verb, type, voice, &index) == 4) {
+	ret = (char *)malloc_data(sizeof(char) * (strlen(verb) + strlen(type) + strlen(voice) + 3), 
+				  "get_pred_id");
+	sprintf(ret, "%s:%s:%s", verb, type, voice);
+    }
+    /* normal */
+    else if (sscanf(cfid, "%[^:]:%[^0-9]%d", verb, type, &index) == 3) {
+	ret = (char *)malloc_data(sizeof(char) * (strlen(verb) + strlen(type) + 2), 
+				  "get_pred_id");
+	sprintf(ret, "%s:%s", verb, type);
+    }
+    else {
+	fprintf(stderr, ";; Unknown cfid format (%s)!\n", cfid);
+	ret = NULL;
+    }
+
+    return ret;
+}
+
+/*==================================================================*/
+		     void RegisterCF(char *cfid)
+/*==================================================================*/
+{
+    char *key;
+    CFLIST *cfp;
+
+    if (cfid == NULL) {
+	return;
+    }
+
+    if ((key = get_pred_id(cfid)) == NULL) {
+	return;
+    }
+
+    cfp = &(cflist[hash(key, strlen(key))]);
+
+    if (cfp->key) {
+	CFLIST **cfpp;
+	cfpp = &cfp;
+	do {
+	    if (!strcmp((*cfpp)->key, key)) {
+		if ((*cfpp)->cfid_num >= (*cfpp)->cfid_max) {
+		    (*cfpp)->cfid = (char **)realloc_data((*cfpp)->cfid, 
+							  sizeof(char *) * ((*cfpp)->cfid_max <<= 1), 
+							  "RegisterCF");
+		}
+		*((*cfpp)->cfid + (*cfpp)->cfid_num++) = strdup(cfid);
+		return;
+	    }
+	    cfpp = &((*cfpp)->next);
+	} while (*cfpp);
+	*cfpp = (CFLIST *)malloc_data(sizeof(CFLIST), "RegisterCF");
+	cfp = *cfpp;
+    }
+
+    cfp->key = strdup(key);
+    cfp->cfid_num = 1;
+    cfp->cfid_max = 2;
+    cfp->cfid = (char **)malloc_data(sizeof(char *) * cfp->cfid_max, "RegisterCF");
+    *(cfp->cfid) = strdup(cfid);
+    cfp->next = NULL;
+
+    free(key);
+}
+
+/*==================================================================*/
+		      CFLIST *CheckCF(char *key)
+/*==================================================================*/
+{
+    CFLIST *cfp;
+
+    cfp = &(cflist[hash(key, strlen(key))]);
+    if (!cfp->key) {
+	return NULL;
+    }
+    while (cfp) {
+	if (!strcmp(cfp->key, key)) {
+	    return cfp;
+	}
+	cfp = cfp->next;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 		void ClearSentence(SENTENCE_DATA *s)
 /*==================================================================*/
 {
@@ -487,7 +611,8 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     }
     sp->Sen_num = 1;
     ClearAnaphoraList();
-    InitAnaphoraList();
+    ClearCFList();
+    InitContextHash();
 }
 
 /*==================================================================*/
@@ -2097,7 +2222,8 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
     else {
 	if ((OptDiscFlag & OPT_DISC_BEST) || 
 	    cpm_ptr->cf.type == CF_NOUN || 
-	    ((loc == LOC_OTHERS || loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
+	    loc == LOC_OTHERS || 
+	    ((loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
 	    (loc == LOC_PRE_OTHERS && s == cs && tp->num < cpm_ptr->pred_b_ptr->num) || 
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
@@ -2116,6 +2242,38 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 	}
     }
     return 0;
+}
+
+/*==================================================================*/
+	int CheckLocation(SENTENCE_DATA *s, SENTENCE_DATA *cs,
+			  CF_PRED_MGR *cpm_ptr, TAG_DATA *tp, int loc)
+/*==================================================================*/
+{
+    if (loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) {
+	if (s != cs) {
+	    return 1;
+	}
+	else {
+	    return 0;
+	}
+    }
+    else if (loc == LOC_PRE_OTHERS) {
+	if (s == cs && tp->num < cpm_ptr->pred_b_ptr->num) {
+	    return 1;
+	}
+	else {
+	    return 0;
+	}
+    }
+    else if (loc == LOC_POST_OTHERS) {
+	if (s == cs && tp->num > cpm_ptr->pred_b_ptr->num) {
+	    return 1;
+	}
+	else {
+	    return 0;
+	}
+    }
+    return 1;
 }
 
 /*==================================================================*/
@@ -2139,7 +2297,8 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
     else {
 	if ((OptDiscFlag & OPT_DISC_BEST) || 
 	    cpm_ptr->cf.type == CF_NOUN || 
-	    ((loc == LOC_OTHERS || loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
+	    loc == LOC_OTHERS || 
+	    ((loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
 	    (loc == LOC_PRE_OTHERS && s == cs && tp->num < cpm_ptr->pred_b_ptr->num) || 
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
@@ -2158,7 +2317,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 	tp2 = tp2->child[0];
     }
     SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-			tp2, cf_ptr, n, LOC_OTHERS);
+			tp2, cf_ptr, n, loc);
 
     if (!(OptDiscFlag & OPT_DISC_BEST) && 
 	ScoreCheck(cf_ptr, n)) {
@@ -2284,6 +2443,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED && 
+		    CheckLocation(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
 		    CheckAppropriateCandidate(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], cf_ptr, n, loc)) {
 		    EllipsisDetectForVerbSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
 						     cs, em_ptr, cpm_ptr, cmm_ptr, l, 
@@ -2884,8 +3044,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    }
 	    break;
 	case LOC_PRE_OTHERS:
-	    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				    cf_ptr, n, LOC_PRE_OTHERS); /* 中で ScoreCheck() している */
+	    EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
+				     cf_ptr, n, LOC_PRE_OTHERS, TRUE); /* 中で ScoreCheck() している */
 	    break;
 	case LOC_S1_SC:
 	    if (cs - sentence_data > 0) {
@@ -2894,14 +3054,14 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    break;
 	case LOC_S1_OTHERS:
 	    if (cs - sentence_data > 0) {
-		EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					(cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-					cf_ptr, n, LOC_S1_OTHERS); /* 中で ScoreCheck() している */
+		EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					 (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+					 cf_ptr, n, LOC_S1_OTHERS, TRUE); /* 中で ScoreCheck() している */
 	    }
 	    break;
 	case LOC_POST_OTHERS:
-	    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				    cf_ptr, n, LOC_POST_OTHERS); /* 中で ScoreCheck() している */
+	    EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
+				     cf_ptr, n, LOC_POST_OTHERS, TRUE); /* 中で ScoreCheck() している */
 	    break;
 	case LOC_S2_SC:
 	    if (cs - sentence_data > 1) {
@@ -2910,8 +3070,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    break;
 	case LOC_S2_OTHERS:
 	    if (cs - sentence_data > 1) {
-		EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					cf_ptr, n, LOC_S2_OTHERS); /* 中で ScoreCheck() している */
+		EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+					 cf_ptr, n, LOC_S2_OTHERS, TRUE); /* 中で ScoreCheck() している */
 	    }
 	    break;
 	default:
@@ -3484,10 +3644,42 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	}
 	else {
-	    frame_num = cpm_ptr->pred_b_ptr->cf_num;
-	    cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*frame_num, "FindBestCFforContext");
-	    for (l = 0; l < frame_num; l++) {
-		*(cf_array+l) = cpm_ptr->pred_b_ptr->cf_ptr+l;
+	    frame_num = 0;
+	    cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*cpm_ptr->pred_b_ptr->cf_num, 
+						  "FindBestCFforContext");
+
+	    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
+		CFLIST *cfp;
+		char *key;
+
+		key = get_pred_id(cpm_ptr->pred_b_ptr->cf_ptr->cf_id);
+		cfp = CheckCF(key);
+		free(key);
+
+		if (cfp) {
+		    for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
+			for (i = 0; i < cfp->cfid_num; i++) {
+			    if (((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_similarity = 
+				 get_cfs_similarity((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_id, 
+						    *(cfp->cfid + i))) > CFSimThreshold) {
+				*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
+				break;
+			    }
+			}
+		    }
+
+		    cpm_ptr->pred_b_ptr->e_cf_num = frame_num;
+		    fprintf(stderr, ";; ★ %s [%s] CF -> %d/%d\n", sp->KNPSID, 
+			    cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+			    frame_num, cpm_ptr->pred_b_ptr->cf_num);
+		}
+	    }
+
+	    if (frame_num == 0) {
+		frame_num = cpm_ptr->pred_b_ptr->cf_num;
+		for (l = 0; l < frame_num; l++) {
+		    *(cf_array+l) = cpm_ptr->pred_b_ptr->cf_ptr+l;
+		}
 	    }
 	}
     }
@@ -3785,11 +3977,21 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    }
 		    record_match_ex(sp, cpm_ptr);
 		}
+		else {
+		    /* 格フレームの保存 */
+		    RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
+		}
 
 		/* 格解析の結果を feature へ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 	    }
 	    ClearEllipsisMGR(&maxem);
+
+	    /* 格フレームの保存 *
+	    if (cpm_ptr->cmm[0].score > 0) {
+		RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
+	    }
+	    */
 	}
 
 	PreserveCPM(sp_new, sp);

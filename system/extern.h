@@ -16,6 +16,7 @@ extern char		*ErrorComment;
 extern char 		PM_Memo[];
 
 extern int		CFExist;
+extern int		CFSimExist;
 extern int		BGHExist;
 extern int		SMExist;
 extern int		SM2CODEExist;
@@ -142,6 +143,7 @@ extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, i
 extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr);
+extern float get_cfs_similarity(char *cf1, char *cf2);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

@@ -596,7 +596,7 @@ extern int	EX_match_subject;
     }
 
     if (OptEllipsis) {
-	InitAnaphoraList();
+	InitContextHash();
     }
 
 #ifndef _WIN32
