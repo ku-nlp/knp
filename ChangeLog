@@ -1,3 +1,7 @@
+2003-12-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c: 並列の格要素を最後に格解析結果に追加
+
 2003-12-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
