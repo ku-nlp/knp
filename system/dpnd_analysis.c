@@ -743,7 +743,8 @@ extern FILE  *Outfp;
 
 	/* 一意に決定する場合 */
 
-	if (b_ptr->dpnd_rule->barrier.fp[0] == NULL) {
+	if (b_ptr->dpnd_rule->barrier.fp[0] == NULL || 
+	    b_ptr->dpnd_rule->decide) {
 	    if (default_pos <= count) {
 		dpnd.head[dpnd.pos] = possibilities[default_pos - 1];
 		if (corpus_possibilities_flag[0] == TRUE) {

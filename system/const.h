@@ -320,6 +320,7 @@ typedef struct {
     char	    dpnd_type[DpndRule_G_MAX];
     FEATURE_PATTERN barrier;
     int 	    preference;
+    int		    decide;	/* 一意に決定するかどうか */
 } DpndRule;
 
 /* ボーナス規則 */

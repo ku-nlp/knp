@@ -309,6 +309,13 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	list2feature_pattern(&(rp->barrier), car(cdr(cdr(body_cell))));
 	rp->preference = atoi(_Atom(car(cdr(cdr(cdr(body_cell))))));
 
+	/* 一意に決定するかどうか */
+	if (!Null(car(cdr(cdr(cdr(cdr(body_cell)))))) && 
+	    str_eq(_Atom(car(cdr(cdr(cdr(cdr(body_cell)))))), "U"))
+	    rp->decide = 1;
+	else
+	    rp->decide = 0;
+
 	if (++CurDpndRuleSize == DpndRule_MAX) {
 	    fprintf(stderr, "Too many DpndRule.");
 	    exit(1);
