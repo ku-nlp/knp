@@ -487,6 +487,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
 	    }
 	}
 	else {
+	    c_ptr->pp[num][pp_num] = 0;
 	    c_ptr->pp_str[num] = strdup(cf_str_buf);
 	    c_ptr->oblig[num] = TRUE;
 	}
