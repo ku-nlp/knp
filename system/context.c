@@ -2447,7 +2447,9 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
     ret = (TAG_DATA **)malloc_data(sizeof(TAG_DATA *) * size, "ListPredChildren");
 
     for (i = 0; tp->child[i]; i++) {
-	ret[count++] = tp->child[i];
+	if (check_feature(tp->child[i]->f, "格要素")) { /* 連用要素は除く */
+	    ret[count++] = tp->child[i];
+	}
     }
 
     if (tp->para_type == PARA_NORMAL) {
@@ -2460,7 +2462,9 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 			ret = (TAG_DATA **)realloc_data(ret, sizeof(TAG_DATA *) * (size <<= 1), 
 							"ListPredChildren");
 		    }
-		    ret[count++] = tmp->child[i];
+		    if (check_feature(tmp->child[i]->f, "格要素")) {
+			ret[count++] = tmp->child[i];
+		    }
 		}
 	    }
 	    tmp = tmp->parent;
@@ -2577,11 +2581,11 @@ int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, 
 	/* 格要素になっていない子供もチェック */
 	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
 	for (i = 0; children[i]; i++) {
-	    if (!lc[0][children[i]->num]) {
-		lc[0][children[i]->num] = lc_num;
+	    if (!lc[dist][children[i]->num]) {
+		lc[dist][children[i]->num] = lc_num;
 	    }
 	    /* ノ格の子供をチェック */
-	    _SearchCompoundChild(children[i], lc[0], lc_num);
+	    _SearchCompoundChild(children[i], lc[dist], lc_num);
 	}
 	free(children);
     }
@@ -2854,9 +2858,12 @@ int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF
 	dist = (cs - s) + sent;
 	for (i = 0; i < ts->Tag_num; i++) {
 	    if (LC[dist][i] == loc) {
-		EllipsisDetectForVerbSubcontract(ts, cs, em_ptr, cpm_ptr, cmm_ptr, l, ts->tag_data + i, cf_ptr, n, loc, ts, (ts->tag_data + i)->pred_b_ptr);
-		if (dist < 3) {
-		    Bcheck[cs - s][i] = 1;
+		if (CheckAppropriateCandidate(ts, cs, cpm_ptr, ts->tag_data + i, -2, cf_ptr, n, loc, 
+					      FALSE)) {
+		    EllipsisDetectForVerbSubcontract(ts, cs, em_ptr, cpm_ptr, cmm_ptr, l, ts->tag_data + i, cf_ptr, n, loc, ts, (ts->tag_data + i)->pred_b_ptr);
+		    if (dist < 3) {
+			Bcheck[cs - s][i] = 1;
+		    }
 		}
 	    }
 	}
@@ -4207,9 +4214,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
     }
 
-    fprintf(stderr, ";;; %s for %s(%d):", cs->KNPSID ? cs->KNPSID : "?", tp->head_ptr->Goi, tp->num);
-    for (i = 0; i < cs->Tag_num; i++) {
-	fprintf(stderr, " %s(%d):%s", (cs->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[0][i]));
+    if (VerboseLevel >= VERBOSE2) {
+	fprintf(stderr, ";;; %s for %s(%d):", cs->KNPSID ? cs->KNPSID : "?", tp->head_ptr->Goi, tp->num);
+	for (i = 0; i < cs->Tag_num; i++) {
+	    fprintf(stderr, " %s(%d):%s", (cs->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[0][i]));
+	}
     }
 
     if (cs - sentence_data > 0) {
@@ -4221,8 +4230,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	    LC[1][i] = LOC_S1_OTHERS;
 	}
-	for (i = 0; i < (cs - 1)->Tag_num; i++) {
-	    fprintf(stderr, " %s(%d):%s", ((cs - 1)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[1][i]));
+
+	if (VerboseLevel >= VERBOSE2) {
+	    for (i = 0; i < (cs - 1)->Tag_num; i++) {
+		fprintf(stderr, " %s(%d):%s", ((cs - 1)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[1][i]));
+	    }
 	}
     }
 
@@ -4235,11 +4247,17 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	    LC[2][i] = LOC_S2_OTHERS;
 	}
-	for (i = 0; i < (cs - 2)->Tag_num; i++) {
-	    fprintf(stderr, " %s(%d):%s", ((cs - 2)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[2][i]));
+
+	if (VerboseLevel >= VERBOSE2) {
+	    for (i = 0; i < (cs - 2)->Tag_num; i++) {
+		fprintf(stderr, " %s(%d):%s", ((cs - 2)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[2][i]));
+	    }
 	}
     }
-    fprintf(stderr, "\n");
+
+    if (VerboseLevel >= VERBOSE2) {
+	fprintf(stderr, "\n");
+    }
 }
 
 /*==================================================================*/
@@ -4377,10 +4395,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		if (cpm_ptr->decided != CF_DECIDED) {
 		    after_case_analysis(sp, cpm_ptr);
 		    if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
-			assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
+			assign_ga_subject(sp_new, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		    }
 		    if (OptUseSmfix == TRUE) {
-			specify_sm_from_cf(sp, cpm_ptr);
+			specify_sm_from_cf(sp_new, cpm_ptr);
 		    }
 		}
 
