@@ -14,7 +14,7 @@ AC_PROG_INSTALL
 
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
-
+AC_SYS_LARGEFILE
 
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
