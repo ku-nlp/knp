@@ -866,9 +866,11 @@ SMLIST smlist[TBLSIZE];
 
 	    newsm = strdup(slp->sm);
 
-	    fprintf(stderr, ";; Cache hit!: %s [", key);
-	    codes2sm_print(stderr, newsm);
-	    fprintf(stderr, "]\n");
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(stderr, ";; Cache hit!: %s [", key);
+		codes2sm_print(stderr, newsm);
+		fprintf(stderr, "]\n");
+	    }
 
 	    return newsm;
 	}
