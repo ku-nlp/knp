@@ -73,7 +73,7 @@ char *OptionalCaseDBname = NULL;
 jmp_buf timeout;
 
 /*==================================================================*/
-	       void usage()
+			     void usage()
 /*==================================================================*/
 {
     fprintf(stderr, "Usage: knp "
@@ -112,7 +112,7 @@ jmp_buf timeout;
 	else if (str_eq(argv[0], "-debug"))  OptDisplay = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand")) OptExpandP = TRUE;
 	else if (str_eq(argv[0], "-check"))  OptCheck = TRUE;
-	else if (str_eq(argv[0], "-nenosm")) OptNE = OPT_NENOSM;
+	else if (str_eq(argv[0], "-nesm"))   OptNE = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))     OptNE = OPT_NE;
 	else if (str_eq(argv[0], "-cc"))     OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))     OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
@@ -237,23 +237,9 @@ jmp_buf timeout;
 }
 
 /*==================================================================*/
-			void make_bnst_data()
-/*==================================================================*/
-{
-    int i;
-
-    for (i = 0; i < BNST_MAX; i++) {
-	bnst_data[i].Jiritu_Go = (char *)malloc_data(WORD_LEN_MAX, "Jiritsu_Go");
-	bnst_data[i].Jiritu_Go_Size = WORD_LEN_MAX;
-    }
-}
-
-/*==================================================================*/
 	       static void timeout_function(int signal)
 /*==================================================================*/
 {
-    /* signal(SIGALRM, SIG_IGN);
-       sigignore(SIGALRM); */
     longjmp(timeout, 1);
 }
 
@@ -291,8 +277,6 @@ jmp_buf timeout;
     New_Bnst_num = 0;
     Sen_num = 0;
 
-    make_bnst_data();
-
     while ( 1 ) {
 
 	if (setjmp(timeout))
@@ -313,7 +297,7 @@ jmp_buf timeout;
 
 	assign_cfeature(&(mrph_data[0].f), "文頭");
 	assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
-	assign_mrph_prop();
+	assign_mrph_feature(MrphRuleArray, CurMrphRuleSize);
 
 	if (OptAnalysis == OPT_PM) {
 	    if (make_bunsetsu_pm() == FALSE) continue;
@@ -358,9 +342,8 @@ jmp_buf timeout;
 	set_pred_caseframe();			/* 用言の格フレーム */
 
 	/* 形態素に意味素を与える */
-	for (i = 0; i < Mrph_num; i++) {
+	for (i = 0; i < Mrph_num; i++)
 	    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
-	}
 
 	for (i = 0; i < Bnst_num; i++) {
 	  get_bgh_code(bnst_data+i);		/* シソーラス */
@@ -480,6 +463,13 @@ jmp_buf timeout;
 
 	if (OptAnalysis != OPT_DISC) print_result();
 	fflush(stdout);
+
+	/* 認識した固有名詞を保存しておく */
+	if (OptNE != OPT_NORMAL) {
+	    preserveNE();
+	    if (OptDisplay == OPT_DEBUG)
+		printNE();
+	}
 
 	/* 文脈解析 */
 
