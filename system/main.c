@@ -258,10 +258,11 @@ jmp_buf timeout;
 						/* 固有名詞ルール */
     }
 
-    read_mrph_rule(HELPSYS_FILE, HelpsysArray,
-		   &CurHelpsysSize, Helpsys_MAX);
+    if (OptHelpsys == TRUE) {
+	read_mrph_rule(HELPSYS_FILE, HelpsysArray,
+		       &CurHelpsysSize, Helpsys_MAX);
     						/* 対話的ヘルプシステム用ルール */
-
+    }
 
     read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
 		   &ContRuleSize, ContRule_MAX);
