@@ -4,4 +4,13 @@ snapshot:
 
 SUBDIRS = svm system rule dict docs perl
 
-EXTRA_DIST = autogen.sh knprc.sample
+knprcdir=$(sysconfdir)
+nodist_knprc_DATA = knprc
+dist_noinst_DATA = knprc.in
+CLEANFILES = knprc
+EXTRA_DIST = autogen.sh
+
+knprc: knprc.in
+	rm -f $@ $@.tmp
+	sed 's,@pkgdatadir\@,$(pkgdatadir),g; s,@datadir\@,$(datadir),' $< > $@.tmp
+	mv $@.tmp $@

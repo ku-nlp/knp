@@ -1,5 +1,8 @@
 SUBDIRS = .
 
+RULECONV = ./rule_conv.pl
+RULETRANS = ./rule_trans.pl
+
 EXTRA_DIST = \
 	rule_conv.pl \
 	rule_trans.pl \
@@ -13,9 +16,18 @@ EXTRA_DIST = \
 	mrph_homo.rule \
 	case_analysis.rule
 
+ruledir = $(pkgdatadir)/rule
+nodist_rule_DATA = bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
+
+.rule.data:
+	$(RULECONV) $<
+
+.phrase.rule:
+	$(RULETRANS) < $< > $@
+
 rule:
-	if [ -x rule_conv.pl ]; then \
-	    ./rule_conv.pl *.rule; \
+	if [ -x $(RULECONV) ]; then \
+	    $(RULECONV) *.rule; \
 	fi
 
 trans:

@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-dicdir = $(pkgdatadir)/ebcf
+dicdir = $(pkgdatadir)/dict/ebcf
 nodist_dic_DATA = cf.db cf.dat
 
 

@@ -56,11 +56,20 @@ fi
 AC_MSG_RESULT("$enable_debug")
 
 
-KNP_DIR=$packagesrcdir
-KNP_SYS="$KNP_DIR/system"
-KNP_DICT="$KNP_DIR/dict"
-KNP_RULE="$KNP_DIR/rule"
-RCPATH="$packagesrcdir/knprc.sample"
+KNP_DICT="$datadir/knp/dict"
+KNP_RULE="$datadir/knp/rule"
+RC_DEFAULT="$sysconfdir/knprc"
+
+# Set RC_DEFAULT in config.h.
+if test "x$prefix" = xNONE; then
+   prefix="${ac_default_prefix}"
+fi
+if test "x$exec_prefix" = xNONE; then
+   exec_prefix='${prefix}'
+fi
+
+eval KNP_DICT=`eval echo "$KNP_DICT"`
+eval KNP_RULE=`eval echo "$KNP_RULE"`
 
 
 # Checks for libraries.
@@ -103,7 +112,7 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
-KNP_CFLAGS="$SVM_CFLAGS $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RCPATH\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="$SVM_CFLAGS $JUMAN_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
