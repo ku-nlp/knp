@@ -72,6 +72,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     /* 多義性をマークするfeatureを与える */
 
+    assign_cfeature(&(m_ptr->f), "品曖");
     for (i = 0; i < homo_num; i++) {
 	if (uniq_flag[i] == 0) continue;
 	sprintf(fname, "品曖-%s", 
@@ -624,6 +625,33 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		    }
 		}
 	    }
+	}
+    }
+}
+
+/*==================================================================*/
+     void _assign_general_feature(void *data, int size, int flag)
+/*==================================================================*/
+{
+    int i;
+    void (*assign_function)();
+
+    /* 形態素か文節かについての場合分け */
+    if (flag == MorphRuleType) {
+	assign_function = assign_mrph_feature;
+    }
+    else if (flag == BnstRuleType) {
+	assign_function = assign_bnst_feature;
+    }
+
+    for (i = 0; i < GeneralRuleNum; i++) {
+	if ((GeneralRuleArray+i)->type == flag) {
+	    assign_function((GeneralRuleArray+i)->RuleArray, 
+			    (GeneralRuleArray+i)->CurRuleSize, 
+			    data, size, 
+			    (GeneralRuleArray+i)->mode, 
+			    (GeneralRuleArray+i)->breakmode, 
+			    (GeneralRuleArray+i)->direction);
 	}
     }
 }
