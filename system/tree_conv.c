@@ -407,7 +407,8 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	       int bnst_to_tag_tree(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, offset;
+    char *cp;
     BNST_DATA *bp;
     TAG_DATA *tp;
 
@@ -487,22 +488,23 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 
 	/* 親と子 */
 	if (bp->parent) {
-	    /* 「〜のは」の場合、ひとつ手前にかける */
-	    if (bp->parent->tag_num > 1 && 
-		!strcmp(Class[(bp->parent->tag_ptr + bp->parent->tag_num - 1)->mrph_ptr->Hinshi][0].id, "名詞")	&& 
-		!strcmp((bp->parent->tag_ptr + bp->parent->tag_num - 1)->mrph_ptr->Goi, "の")) {
-		(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 2;
-		t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 2), 
-			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+	    if ((!check_feature(bp->f, "タグ単位受無視")) && 
+		(cp = check_feature(bp->parent->f, "タグ単位受"))) {
+		offset = atoi(cp + 11);
+		if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
+		    offset = 0;
+		}
 	    }
 	    else {
-		(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;
-		t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
-			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+		offset = 0;
 	    }
+
+	    (bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset;
+	    t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset), 
+		       (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
 	}
 	else {
-	    fprintf(stderr, ";; %s(%d)'s parent does'nt exist.!\n", bp->Jiritu_Go, i);
+	    fprintf(stderr, ";; %s(%d)'s parent doesn't exist!\n", bp->Jiritu_Go, i);
 	}
     }
 }

@@ -217,7 +217,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 {
     /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
 
-    int		i, last_b;
+    int		i, last_b, offset;
+    char	*cp;
     TAG_DATA	*t_ptr;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
@@ -238,19 +239,20 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	}
 	/* 文節内最後のタグ単位 (inum == 0) */
 	else {
-	    /* 「〜のは」の場合、ひとつ手前にかける */
-	    if ((sp->bnst_data + dp->head[last_b])->tag_num > 1 && 
-		!strcmp(Class[((sp->bnst_data + dp->head[last_b])->tag_ptr + 
-			       (sp->bnst_data + dp->head[last_b])->tag_num - 1)->mrph_ptr->Hinshi][0].id, "名詞") && 
-		!strcmp(((sp->bnst_data + dp->head[last_b])->tag_ptr + 
-			 (sp->bnst_data + dp->head[last_b])->tag_num - 1)->mrph_ptr->Goi, "の")) {
-		t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
-				    (sp->bnst_data + dp->head[last_b])->tag_num - 2)->num;
+	    if ((!check_feature((sp->bnst_data + last_b)->f, "タグ単位受無視")) &&
+		(cp = check_feature((sp->bnst_data + dp->head[last_b])->f, "タグ単位受"))) {
+		offset = atoi(cp + 11);
+		if (offset > 0 || (sp->bnst_data + dp->head[last_b])->tag_num <= -1 * offset) {
+		    offset = 0;
+		}
 	    }
 	    else {
-		t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
-				    (sp->bnst_data + dp->head[last_b])->tag_num - 1)->num;
+		offset = 0;
 	    }
+
+	    t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+				(sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset)->num;
+
 	    if (dp->type[last_b] == 'd' || dp->type[last_b] == 'R') {
 		t_ptr->dpnd_type = 'D';
 	    }

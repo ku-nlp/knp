@@ -484,7 +484,15 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	   ※ 連格のとき(「〜したのは」)はすでに扱っている */
 	if (cpm_ptr->cf.type == CF_PRED && /* とりあえずサ変のときのみ */
 	    !check_feature(b_ptr->f, "係:連格")) {
-	    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
+	    if (!check_feature(b_ptr->parent->f, "外の関係") || 
+		check_feature(b_ptr->f, "用言:形")) {
+		_make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
+	    }
+	    else {
+		cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("外の関係");
+		cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
+		cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
+	    }
 	    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
 	    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
