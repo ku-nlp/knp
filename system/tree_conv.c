@@ -106,7 +106,10 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	for (i = j - 1; i >= 0; i--)
 	  if (buffer[i] == j) {
 	      sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
-	      if (child_num > T_CHILD_MAX) return FALSE;
+	      if (child_num >= PARA_PART_MAX) {
+		  child_num = PARA_PART_MAX-1;
+		  break;
+	      }
 	      sp->bnst_data[i].parent = sp->bnst_data + j;
 	      if (Mask_matrix[i][j] == 3) {
 		  sp->bnst_data[i].para_type = PARA_INCOMP;

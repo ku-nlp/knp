@@ -34,9 +34,9 @@
 #define SENTENCE_MAX	400
 #define PRINT_WIDTH	100
 #define PARENT_MAX	20
-#define T_CHILD_MAX	20
 #define BROTHER_MAX	20
 #define TEIDAI_TYPES	5
+#define HOMO_MAX	30
 
 #define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
@@ -493,7 +493,7 @@ typedef struct tnode_b {
     int 	space;
   /* 木構造ポインタ */
     Treeptr_B 	parent;
-    Treeptr_B 	child[T_CHILD_MAX];
+    Treeptr_B 	child[PARA_PART_MAX];
 
     FEATUREptr	f;
     DpndRule	*dpnd_rule;

@@ -26,12 +26,17 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     int i, j, k, flag, pref_mrph, pref_rule;
     int real_homo_num;
-    int uniq_flag[30];		/* 他と品詞が異なる形態素なら 1 */
+    int uniq_flag[HOMO_MAX];	/* 他と品詞が異なる形態素なら 1 */
     int matched_flag[10];	/* いずれかの形態素とマッチした
 				   ルール内形態素パターンに 1 */
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
     char fname[256];
+
+    /* 処理する最大数を越えていれば、最大数個だけチェックする */
+    if (homo_num > HOMO_MAX) {
+	homo_num = HOMO_MAX;
+    }
 
     /* 品詞(細分類)が異なる形態素だけを残し，uniq_flagを1にする */
 
@@ -167,7 +172,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     U_CHAR input_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, i,len;
+    int homo_num, offset, mrph_item, i, len, homo_flag;
 #ifdef _WIN32
     char *EUCbuffer;
 #endif
@@ -240,7 +245,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       &Best_mgr.dpnd.head[sp->Bnst_num],
 		       &Best_mgr.dpnd.type[sp->Bnst_num]) != 2)  {
 		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
-		return FALSE;
+		OptInput = OPT_RAW;
+		return readtoeos(fp);
 	    }
 	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
@@ -251,7 +257,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       &Best_mgr.dpnd.head[sp->Bnst_num],
 		       &Best_mgr.dpnd.type[sp->Bnst_num]) != 2) {
 		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
-		return FALSE;
+		return readtoeos(fp);
 	    }
 	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
@@ -273,8 +279,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	/* 通常の形態素 */
 
 	else {
+
+	    /* 同形異義語かどうか */
+	    if (input_buffer[0] == '@' && input_buffer[1] == ' ') {
+		homo_flag = 1;
+	    }
+	    else {
+		homo_flag = 0;
+	    }
 	    
-	    if (input_buffer[0] != '@' && homo_num) {
+	    if (homo_num && homo_flag == 0) {
 
 		/* 同形異義語マークがなければ，前に同形異義語セットがあれば
 	           lexical_disambiguationを呼んで処理 */		   
@@ -299,7 +313,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	       意味情報
 	    */
 
-	    offset = (input_buffer[0] == '@') ? 2 : 0;
+	    offset = homo_flag ? 2 : 0;
 	    mrph_item = sscanf(input_buffer + offset,
 			       "%s %s %s %*s %d %*s %d %*s %d %*s %d %s", 
 			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
@@ -317,14 +331,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		fprintf(stderr, "Invalid input (%d items)<%s> !\n", 
 			mrph_item, input_buffer);
 		if (Comment[0]) fprintf(stderr, "(%s)\n", Comment);
-		return FALSE;
+		return readtoeos(fp);
 	    }   
 	    m_ptr->type = 0;
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
 
 	    /* 同形異義語は一旦 sp->mrph_data にいれる */
-	    if (input_buffer[0] == '@')	homo_num++;
+	    if (homo_flag) homo_num++;
 
 	    sp->Mrph_num++;
 	    m_ptr++;
@@ -336,10 +350,10 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       int readtoeos(FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[1024+IMI_MAX];
+    U_CHAR input_buffer[DATA_LEN];
 
     while (1) {
-	if (fgets(input_buffer, 1024+IMI_MAX, fp) == NULL) return EOF;
+	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
 	if (str_eq(input_buffer, "EOS\n")) return FALSE;
     }
 }
