@@ -32,8 +32,8 @@ char  		cont_str[DBM_CON_MAX];
 
     // ファイル名を指定する
     if (DICT[SM_DB]) {   
-	filename = check_dict_filename(DICT[SM_DB], TRUE);  // .knprc で定義されているとき   → SM_ADD_DB は const.h で定義されている
-	                                                    //                                  DICT[SM_ADD_DB] は configfile.c で指定されている
+	filename = check_dict_filename(DICT[SM_DB], TRUE);  // .knprc で定義されているとき   → SM_DB は const.h で定義されている
+	                                                    //                                  DICT[SM_DB] は configfile.c で指定されている
     }
     else {
 	filename = check_dict_filename(SM_DB_NAME, FALSE);  // .knprc で定義されていないとき → path.h の default値(SM_DB_NAME) を使う
@@ -188,7 +188,7 @@ char  		cont_str[DBM_CON_MAX];
 {
 
     /* データベースから取り出した code を処理する */
-    int i, j, pos;
+    int i, pos;
     char *code;
 
     code = db_get(sm_db, cp);
