@@ -1,3 +1,10 @@
+2001-12-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_match.c, system/case_print.c, system/context.c:
+	格解析: 直前格のマッチだけでは格フレームが決まらない場合に全体のスコ
+	アをみるようにした。
+	省略解析: 受身ニ格の主体マッチの修正
+
 2001-12-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/Makefile.am, system/case_ipal.c, system/extern.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/thesaurus.c:
