@@ -39,27 +39,7 @@ int		BGHExist;
                     char *get_bgh(char *cp)
 /*==================================================================*/
 {
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", cp);
-	cont_str[0] = '\0';
-	return cont_str;
-    }  
-    
-    content = DBM_fetch(bgh_db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-
-    return cont_str;
+    return db_get(bgh_db, cp);
 }
 
 /*==================================================================*/
@@ -105,9 +85,13 @@ int		BGHExist;
 /*==================================================================*/
 {
     int strt, end, last, stop, i, overflow_flag = 0;
-    char str_buffer[BNST_LENGTH_MAX];    
+    char str_buffer[BNST_LENGTH_MAX], *code;
+    char feature_buffer[500];
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
+
+    /* 初期化 */
+    *(ptr->BGH_code) = '\0';
 
     /* 
        複合語の扱い
@@ -144,7 +128,12 @@ int		BGHExist;
 		return;
 	    }
 
-	    strcpy(ptr->BGH_code, get_bgh(str_buffer));
+	    code = get_bgh(str_buffer);
+	    /* あるとき */
+	    if (code) {
+		strcpy(ptr->BGH_code, code);
+		free(code);
+	    }
 	    if (*(ptr->BGH_code)) goto Match;
 
 	    /* 表記，最後原形 */
@@ -189,7 +178,11 @@ int		BGHExist;
 			   "ナノ形容詞"))) 
 		    str_buffer[strlen(str_buffer)-2] = NULL;
 
-		strcpy(ptr->BGH_code, get_bgh(str_buffer));
+		code = get_bgh(str_buffer);
+		if (code) {
+		    strcpy(ptr->BGH_code, code);
+		    free(code);
+		}
 		if (*(ptr->BGH_code)) goto Match;
 	    }
 
@@ -210,12 +203,19 @@ int		BGHExist;
 		return;
 	    }
 
-	    strcpy(ptr->BGH_code, get_bgh(str_buffer));
+	    code = get_bgh(str_buffer);
+	    if (code) {
+		strcpy(ptr->BGH_code, code);
+		free(code);
+	    }
 	    if (*(ptr->BGH_code)) goto Match;
 	}
     }
   Match:
-    ptr->BGH_num = strlen(ptr->BGH_code) / 10;
+    ptr->BGH_num = strlen(ptr->BGH_code) / BGH_CODE_SIZE;
+
+    sprintf(feature_buffer, "BGH:%s", ptr->BGH_code);
+    assign_cfeature(&(ptr->f), feature_buffer);
 }
 
 /*==================================================================*/
@@ -231,7 +231,7 @@ int		BGHExist;
 
     if (c1[0] == c2[0]) {
 	point = 1;
-	for (i = 1; c1[i] == c2[i] && i < 10; i++)
+	for (i = 1; c1[i] == c2[i] && i < BGH_CODE_SIZE; i++)
 	  if (i != 5 && i != 7 && i != 8)
 	    point ++;
     }
