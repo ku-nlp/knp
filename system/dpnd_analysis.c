@@ -769,8 +769,9 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	       int after_decide_dpnd(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i;
+    int i, j, lastflag = -1;
     BNST_DATA *check_b_ptr;
+    
 
     if (OptInput == OPT_PARSED) {
 	Possibility = 1;
@@ -798,9 +799,35 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    check_b_ptr->parent->cpm_ptr = &(sp->Best_mgr->cpm[i]);
 		    check_b_ptr = check_b_ptr->parent;
 		}
+
+		if (lastflag < 0 && !check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "非主節")) {
+		    lastflag = i;
+		}
+
+		/* 各格要素の親用言を設定
+		   ※ 文脈解析のときに格フレームを決定してなくても格解析は行っているので
+		      これは成功する */
+		for (j = 0; j < sp->Best_mgr->cpm[i].cf.element_num; j++) {
+		    /* 省略解析の結果 or 連体修飾は除く */
+		    if (sp->Best_mgr->cpm[i].elem_b_num[j] == -2 || 
+			sp->Best_mgr->cpm[i].elem_b_ptr[j]->num > sp->Best_mgr->cpm[i].pred_b_ptr->num) {
+			continue;
+		    }
+		    sp->Best_mgr->cpm[i].elem_b_ptr[j]->pred_b_ptr = sp->Best_mgr->cpm[i].pred_b_ptr;
+		}
+
+		/* 文脈解析のときは格フレーム決定している用言についてのみ */
+		if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
+		    assign_gaga_slot(sp, &(sp->Best_mgr->cpm[i]));
+		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+		    fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
+		    /* 格解析の結果を featureへ */
+		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), lastflag == i ? 1 : 0);
+		}
+		else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
+		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+		}
 	    }
-	    /* 格解析の結果をfeatureへ */
-	    record_case_analysis(sp);
 	    /* 主格を feature へ(固有名詞認識処理用)
 	    assign_agent();
 	    */

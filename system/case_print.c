@@ -8,6 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
+int	EX_PRINT_NUM = 10;
+
 /*==================================================================*/
 	void print_depend_type(CF_PRED_MGR *cpm_ptr, int num)
 /*==================================================================*/
@@ -41,15 +43,15 @@
 }
 
 /*==================================================================*/
-	      void print_data_cframe(CF_PRED_MGR *cpm_ptr)
+ void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr)
 /*==================================================================*/
 {
     int i;
 
     fputs("【", Outfp);
 
-    if (cpm_ptr->cmm[0].cf_ptr->entry) {
-	fprintf(Outfp, "%s", cpm_ptr->cmm[0].cf_ptr->entry);
+    if (cpm_ptr->result_num > 0 && cmm_ptr->cf_ptr->entry) {
+	fprintf(Outfp, "%s", cmm_ptr->cf_ptr->entry);
     }
     else {
 	fprintf(Outfp, "%s", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
@@ -64,7 +66,21 @@
     else
 	fputs("】", Outfp);
 
-    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.ipal_id, cpm_ptr->pred_b_ptr->cf_num);
+    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.ipal_id, 
+	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
+
+    /* 格フレームを決定した方法 */
+    if (OptDisc == OPT_DISC) {
+	if (cpm_ptr->decided == CF_DECIDED) {
+	    fputs(" D", Outfp);
+	}
+	else if (cpm_ptr->decided == CF_CAND_DECIDED) {
+	    fputs(" C", Outfp);
+	}
+	else {
+	    fputs(" U", Outfp);
+	}
+    }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 
@@ -108,14 +124,14 @@
    void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr)
 /*==================================================================*/
 {
-    int i, j, k, num;
+    int i, j, k, num, print_num;
 
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
 	return;
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%3d点 ", (int)cmm_ptr->score);
+    fprintf(Outfp, "★%6.2f点 ", cmm_ptr->score);
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
@@ -185,11 +201,51 @@
 		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 		if (i == 0)
 		    fprintf(Outfp, "(彼)");
-		else if (cmm_ptr->cf_ptr->examples[i])
+		else if (cmm_ptr->cf_ptr->ex_list[i]) {
+		    print_num = EX_PRINT_NUM < 0 ? cmm_ptr->cf_ptr->ex_num[i] : 
+			cmm_ptr->cf_ptr->ex_num[i] > EX_PRINT_NUM ? 
+			EX_PRINT_NUM : cmm_ptr->cf_ptr->ex_num[i];
+		    fputc('(', Outfp);
+		    for (j = 0; j < print_num; j++) {
+			if (j != 0) fputc('/', Outfp);
+			if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("【", Outfp);
+			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
+			if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("】", Outfp);
+		    }
+		    if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
+			fputs("/【", Outfp);
+			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
+			fputs("】", Outfp);
+		    }
+		    if (print_num != cmm_ptr->cf_ptr->ex_num[i])
+			fputs("...", Outfp);
+		    fputc(')', Outfp);
+		}
+		/* else if (cmm_ptr->cf_ptr->examples[i])
 		    fprintf(Outfp, "(%s)", 
-			    cmm_ptr->cf_ptr->examples[i]);
-	    } else if (cmm_ptr->cf_ptr->examples[i]) {
+			    cmm_ptr->cf_ptr->examples[i]); */
+	    } /* else if (cmm_ptr->cf_ptr->examples[i]) {
 		fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
+	    } */
+	    else if (cmm_ptr->cf_ptr->ex_list[i]) {
+		print_num = EX_PRINT_NUM < 0 ? cmm_ptr->cf_ptr->ex_num[i] : 
+		    cmm_ptr->cf_ptr->ex_num[i] > EX_PRINT_NUM ? 
+		    EX_PRINT_NUM : cmm_ptr->cf_ptr->ex_num[i];
+		fputc('(', Outfp);
+		for (j = 0; j < print_num; j++) {
+		    if (j != 0) fputc('/', Outfp);
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("【", Outfp);
+		    fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("】", Outfp);
+		}
+		if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
+		    fputs("/【", Outfp);
+		    fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
+		    fputs("】", Outfp);
+		}
+		if (print_num != cmm_ptr->cf_ptr->ex_num[i])
+		    fputs("...", Outfp);
+		fputc(')', Outfp);
 	    }
 	  
 	    if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
@@ -207,7 +263,7 @@
 
 /*==================================================================*/
 	  void print_good_crrspnds(CF_PRED_MGR *cpm_ptr,
-				   CF_MATCH_MGR *cmm_ptr,int ipal_num)
+				   CF_MATCH_MGR *cmm_ptr, int ipal_num)
 /*==================================================================*/
 {
     int i, j, *check;
@@ -258,9 +314,16 @@
        ちゃんと扱ってない */
 
     for (i = tm->pred_num-1; i >= 0; i--) {
-	print_data_cframe(&(tm->cpm[i]));
+	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));
 	for (j = 0; j < tm->cpm[i].result_num; j++) {
-	    print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
+	    if (OptDisc == OPT_DISC) {
+		print_crrspnd(tm->cpm[i].cmm[j].cpm ? tm->cpm[i].cmm[j].cpm : &(tm->cpm[i]), 
+			      &(tm->cpm[i].cmm[j]));
+		free(tm->cpm[i].cmm[j].cpm);
+	    }
+	    else {
+		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
+	    }
 	}
 	fputc('\n', Outfp);
     }

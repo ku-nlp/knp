@@ -11,6 +11,7 @@
 
 extern U_CHAR String[];
 extern FILE *Jumanrc_Fileptr;
+extern int Show_Opt1;
 extern int Show_Opt2;
 
 int JumanAlive = 0;
@@ -75,7 +76,7 @@ FILE *w2c, *w2p, *rfc, *rfp;
 	    String[length-1] = '\0';
 	}
 	juman_sent();
-	print_best_path(w2p);
+	print_homograph_path(w2p);
 	fputs("EOS\n", w2p);
 	fflush(w2p);
     }
@@ -113,6 +114,7 @@ FILE *w2c, *w2p, *rfc, *rfp;
 	close(pipeo[0]);
 
 	/* JUMAN の初期化 */
+	Show_Opt1 = Op_BB;
 	Show_Opt2 = Op_E;
 	rewind(Jumanrc_Fileptr);
 	if (!juman_init_rc(Jumanrc_Fileptr)) {

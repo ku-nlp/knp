@@ -130,8 +130,9 @@ int		BGHExist;
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "È½Äê»ì") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "½õÆ°»ì") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "ÆÃ¼ì") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "Æ°»ì") || /* ÍÑ¸À¤Î¤È¤­¤ÎÉÕÂ°¸ì¤ÎÆ°»ì¤òÇÓ½ü */
 	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "ÀÜÈø¼­") &&
-	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "Ì¾»ìÀ­Ì¾»ìÀÜÈø¼­")))
+	     strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "Ì¾»ìÀ­Ì¾»ìÀÜÈø¼­")))
 	    break;
 
     end = ptr->settou_num + ptr->jiritu_num + stop;

@@ -103,6 +103,7 @@ extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
 extern int	EllipsisSubordinateClauseScore;
+extern float	AssignReferentThreshold;
 
 /*==================================================================*/
 			     void usage()
@@ -139,7 +140,6 @@ extern int	EllipsisSubordinateClauseScore;
     OptJuman = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = 0;
-    /*    OptIgnoreChar = (char)NULL;*/
     OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
@@ -161,6 +161,8 @@ extern int	EllipsisSubordinateClauseScore;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
 	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
+	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
+	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
@@ -171,6 +173,12 @@ extern int	EllipsisSubordinateClauseScore;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    OptIgnoreChar = *argv[0];
+	}
+	else if (str_eq(argv[0], "-print-ex-all")) {
+	    EX_PRINT_NUM = -1;
+	}
+	else if (str_eq(argv[0], "-print-deleted-sm")) {
+	    PrintDeletedSM = 1;
 	}
 	else if (str_eq(argv[0], "-cdb")) {
 	    argv++; argc--;
@@ -351,6 +359,11 @@ extern int	EllipsisSubordinateClauseScore;
 	    if (argc < 1) usage();
 	    EX_match_subject = atoi(argv[0]);
 	}
+	else if (str_eq(argv[0], "-ellipsis-threshold")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    AssignReferentThreshold = (float)atof(argv[0]);
+	}
 	else {
 	    usage();
 	}
@@ -359,11 +372,11 @@ extern int	EllipsisSubordinateClauseScore;
 	usage();
     }
 
-    /* 文脈解析のときは必ず格解析を行う
+    /* 文脈解析のときは必ず格解析を行う (CASE2)
        解析済みデータのときは read_mrph() で CASE2 にしている */
     if (OptDisc == OPT_DISC) {
 	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
-	    OptAnalysis = OPT_CASE;
+	    OptAnalysis = OPT_CASE2;
 	}
     }
 }
@@ -459,8 +472,15 @@ extern int	EllipsisSubordinateClauseScore;
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
 
-    if (OptDisc == OPT_DISC)
+    if (OptDisc == OPT_DISC) {
 	init_noun();	/* 名詞辞書オープン */
+#ifdef USE_SVM
+	if (!init_svm()) {	/* SVM */
+	    fprintf(stderr, "SVM initialization error.\n");
+	    exit(1);
+	}
+#endif
+    }
 
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
@@ -515,14 +535,17 @@ extern int	EllipsisSubordinateClauseScore;
 
     /* 形態素への意味情報付与 */
 
-    if (OptNE != OPT_NORMAL && SMExist == TRUE) {
+    if ((OptNE == OPT_NE || OptNE == OPT_NESM) && SMExist == TRUE) {
 	for (i = 0; i < sp->Mrph_num; i++) {
 	    code = get_sm(sp->mrph_data[i].Goi);
 	    if (code) {
-		sp->mrph_data[i].SM = strdup(code);
+		strcpy(sp->mrph_data[i].SM, code);
 		free(code);
+		assign_ntt_dict(sp, i);
 	    }
-	    assign_ntt_dict(sp, i);
+	    else {
+		sp->mrph_data[i].SM[0] = '\0';
+	    }
 	}
     }
 
@@ -567,6 +590,8 @@ extern int	EllipsisSubordinateClauseScore;
     for (i = 0; i < sp->Bnst_num; i++) {
 	assign_sm_aux_feature(sp->bnst_data+i);
     }
+
+    fix_sm_person(sp);
 
     /* 固有名詞ルール */
     if (OptNE == OPT_NE_SIMPLE) {
@@ -813,15 +838,6 @@ PARSED:
 	    /* New_Bnstはもともとpointer */
 	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
-	    }
-	}
-
-	if (OptNE != OPT_NORMAL) {
-	    for (i = 0; i < sp->Mrph_num; i++) {
-		if (sp->mrph_data[i].SM != NULL) {
-		    free(sp->mrph_data[i].SM);
-		    sp->mrph_data[i].SM = NULL;
-		}
 	    }
 	}
 

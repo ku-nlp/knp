@@ -150,7 +150,11 @@ main(int argc, char **argv)
 			address, writesize, flag);
 
 	/* データ書き出し */
-
+#ifdef BIG_ENDIAN
+	for (i = 0; i < IPAL_FIELD_NUM; i++) {
+	    ipal_frame.point[i] = tolend(ipal_frame.point[i]);
+	}
+#endif
 	if (fwrite(&ipal_frame, writesize, 1, fp_dat) < 1) {
 	    fprintf(stderr, "Error in fwrite.\n");
 	    exit(1);
@@ -160,3 +164,6 @@ main(int argc, char **argv)
     }
 }
 
+int tolend(int i) {
+    return (i >> 24) | ((i >> 16) & 0xff) << 8 | ((i >> 8) & 0xff) << 16 | (i & 0xff) << 24;
+}

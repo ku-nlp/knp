@@ -11,9 +11,11 @@
 
 DBM_FILE	sm_db;
 DBM_FILE	sm2code_db;
+DBM_FILE	code2sm_db;
 DBM_FILE	smp2smg_db;
 int		SMExist;
 int		SM2CODEExist;
+int		CODE2SMExist;
 int		SMP2SMGExist;
 
 /*==================================================================*/
@@ -51,7 +53,7 @@ int		SMP2SMGExist;
     }
     free(filename);
 
-    /* 意味素 <=> 意味素コード */
+    /* 意味素 => 意味素コード */
     if (DICT[SM2CODE_DB]) {
 	filename = (char *)check_dict_filename(DICT[SM2CODE_DB], TRUE);
     }
@@ -77,6 +79,35 @@ int		SMP2SMGExist;
 	    fputs("done.\n", Outfp);
 	}
 	SM2CODEExist = TRUE;
+    }
+    free(filename);
+
+    /* 意味素コード => 意味素 */
+    if (DICT[CODE2SM_DB]) {
+	filename = (char *)check_dict_filename(DICT[CODE2SM_DB], TRUE);
+    }
+    else {
+	filename = (char *)check_dict_filename(CODE2SM_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
+    if ((code2sm_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	CODE2SMExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open NTT code2sm dictionary <%s>.\n", filename);
+#endif
+    }
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	CODE2SMExist = TRUE;
     }
     free(filename);
 
@@ -224,13 +255,15 @@ int		SMP2SMGExist;
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助動詞") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "動詞") || /* 用言のときの付属語の動詞を排除 */
 	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") &&
 	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
 	    break;
     }
 
     for (jiritu = 0; jiritu < ptr->jiritu_num; jiritu++) {
-	if (check_feature((ptr->jiritu_ptr + jiritu)->f, "Ｔ固有末尾")) {
+	if (check_feature((ptr->jiritu_ptr + jiritu)->f, "Ｔ固有末尾") && 
+	    jiritu != 0) {
 	    stop = 0;
 	    break;
 	}
@@ -286,7 +319,7 @@ int		SMP2SMGExist;
 			"ナ形容詞特殊") ||
 		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
 			"ナノ形容詞"))) 
-		str_buffer[strlen(str_buffer)-2] = NULL;
+		str_buffer[strlen(str_buffer)-2] = '\0';
 
 	    code = get_sm(str_buffer);
 
@@ -325,6 +358,31 @@ int		SMP2SMGExist;
     if (code) {
 	strcpy(cont_str, code);
 	free(code);
+    }
+    else {
+	cont_str[0] = '\0';
+    }
+    return cont_str;
+}
+
+/*==================================================================*/
+		       char *code2sm(char *cp)
+/*==================================================================*/
+{
+    char *sm;
+
+    /* sm と code は 1:1 対応 
+       -> cont_str は溢れない */
+
+    if (CODE2SMExist == FALSE) {
+	cont_str[0] = '\0';
+	return cont_str;
+    }
+
+    sm = db_get(code2sm_db, cp);
+    if (sm) {
+	strcpy(cont_str, sm);
+	free(sm);
     }
     else {
 	cont_str[0] = '\0';
@@ -419,6 +477,35 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
+		  void merge_smp2smg(BNST_DATA *bp)
+/*==================================================================*/
+{
+    int i;
+    char *p;
+
+    /* smp2smg の結果をくっつける */
+
+    if (bp->SM_code[0] == '\0') {
+	return;
+    }
+
+    for (i = 0; i < bp->SM_num; i++) {
+	if (bp->SM_code[i*SM_CODE_SIZE] == '2') {
+	    p = smp2smg(&(bp->SM_code[i*SM_CODE_SIZE]), FALSE);
+	    if (p) {
+		/* 溢れた場合 */
+		if ((strlen(bp->SM_code)+strlen(p))/SM_CODE_SIZE > SM_ELEMENT_MAX) {
+		    return;
+		}
+		strcat(bp->SM_code, p);
+		free(p);
+	    }
+	}
+    }
+    bp->SM_num = strlen(bp->SM_code)/SM_CODE_SIZE;
+}
+
+/*==================================================================*/
 		     int sm_code_depth(char *cp)
 /*==================================================================*/
 {
@@ -473,7 +560,8 @@ int		SMP2SMGExist;
     if (flag == SM_EXPAND_NE) {
 	float score, maxscore = 0;
 	char *cp1, *cp2;
-	int f1 = 0, f2 = 0;
+	int i, j;
+	int f1 = 0, f2 = 0, c1num = 1, c2num = 1;
 
 	if (*c1 == '2') {
 	    c1 = smp2smg(c1, FALSE);
@@ -481,6 +569,7 @@ int		SMP2SMGExist;
 		return 0;
 	    }
 	    f1 = 1;
+	    c1num = strlen(c1)/SM_CODE_SIZE;
 	}
 	if (*c2 == '2') {
 	    c2 = smp2smg(c2, FALSE);
@@ -491,10 +580,11 @@ int		SMP2SMGExist;
 		return 0;
 	    }
 	    f2 = 1;
+	    c2num = strlen(c2)/SM_CODE_SIZE;
 	}
 
-	for (cp1 = c1; *cp1; cp1+=SM_CODE_SIZE) {
-	    for (cp2 = c2; *cp2; cp2+=SM_CODE_SIZE) {
+	for (cp1 = c1, i = 0; i < c1num; cp1+=SM_CODE_SIZE, i++) {
+	    for (cp2 = c2, j = 0; j < c2num; cp2+=SM_CODE_SIZE, j++) {
 		score = _ntt_code_match(cp1, cp2);
 		if (score > maxscore) {
 		    maxscore = score;
@@ -509,13 +599,46 @@ int		SMP2SMGExist;
 	}
 	return maxscore;
     }
+    else if (flag == SM_EXPAND_NE_DATA) {
+	float score, maxscore = 0;
+	char *cp2;
+	int i;
+	int f2 = 0, c2num = 1;
+
+	/* PATTERN: 固有名詞 */
+	if (*c1 == '2') {
+	    return _ntt_code_match(c1, c2);
+	}
+
+	/* PATTERN: 普通名詞 */
+
+	if (*c2 == '2') {
+	    c2 = smp2smg(c2, FALSE);
+	    if (!c2) {
+		return 0;
+	    }
+	    f2 = 1;
+	    c2num = strlen(c2)/SM_CODE_SIZE;
+	}
+
+	for (cp2 = c2, i = 0; i < c2num; cp2+=SM_CODE_SIZE, i++) {
+	    score = _ntt_code_match(c1, cp2);
+	    if (score > maxscore) {
+		maxscore = score;
+	    }
+	}
+	if (f2 == 1) {
+	    free(c2);
+	}
+	return maxscore;
+    }
     else {
 	return _ntt_code_match(c1, c2);
     }
 }
 
 /*==================================================================*/
-	      float CalcSimilarity(char *exd, char *exp)
+	float CalcSimilarity(char *exd, char *exp, int expand)
 /*==================================================================*/
 {
     int i, j, step;
@@ -531,6 +654,9 @@ int		SMP2SMGExist;
     }
     else if (Thesaurus == USE_NTT) {
 	step = SM_CODE_SIZE;
+	if (expand != SM_NO_EXPAND_NE) {
+	    expand = SM_EXPAND_NE_DATA;
+	}
     }
 
     /* 最大マッチスコアを求める */
@@ -540,7 +666,7 @@ int		SMP2SMGExist;
 		tempscore = (float)_ex_match_score(exp+j, exd+i);
 	    }
 	    else if (Thesaurus == USE_NTT) {
-		tempscore = ntt_code_match(exp+j, exd+i, SM_EXPAND_NE);
+		tempscore = ntt_code_match(exp+j, exd+i, expand);
 	    }
 	    if (tempscore > score) {
 		score = tempscore;
@@ -548,6 +674,159 @@ int		SMP2SMGExist;
 	}
     }
     return score;
+}
+
+/*==================================================================*/
+	    float CalcWordSimilarity(char *exd, char *exp)
+/*==================================================================*/
+{
+    char *(*get_code)();
+    char *smd, *smp;
+    float score = 0;
+
+    if (Thesaurus == USE_BGH) {
+	get_code = get_bgh;
+    }
+    else if (Thesaurus == USE_NTT) {
+	get_code = get_sm;
+    }
+
+    smd = (char *)get_code(exd);	/* いちいちとりなおすことはない */
+    smp = (char *)get_code(exp);
+
+    if (smd && smp) {
+	score = CalcSimilarity(smd, smp, 0);
+    }
+
+    if (smd) {
+	free(smd);
+    }
+    if (smp) {
+	free(smp);
+    }
+    return score;
+}
+
+/*==================================================================*/
+	      int DeleteSpecifiedSM(char *sm, char *del)
+/*==================================================================*/
+{
+    int i, j, flag, pos = 0;
+    if (Thesaurus == USE_BGH) return 0;
+
+    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
+	flag = 1;
+	/* 固有ではないときを対象とする */
+	if (sm[i] != '2') {
+	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
+		if (!strncmp(sm+i+1, del+j+1, SM_CODE_SIZE-1)) {
+		    flag = 0;
+		    break;
+		}
+	    }
+	}
+	if (flag) {
+	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
+	    pos += SM_CODE_SIZE;
+	}
+    }
+    *(sm+pos) = '\0';
+    return 1;
+}
+
+/*==================================================================*/
+	       int DeleteMatchedSM(char *sm, char *del)
+/*==================================================================*/
+{
+    int i, j, flag, pos = 0;
+    if (Thesaurus == USE_BGH) return 0;
+
+    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
+	flag = 1;
+	/* 固有ではないときチェック */
+	if (sm[i] != '2') {
+	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
+		if (_sm_match_score(sm+i, del+j, SM_NO_EXPAND_NE) > 0) {
+		    flag = 0;
+		    break;
+		}
+	    }
+	}
+	if (flag) {
+	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
+	    pos += SM_CODE_SIZE;
+	}
+    }
+    *(sm+pos) = '\0';
+    return 1;
+}
+
+/*==================================================================*/
+float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
+/*==================================================================*/
+{
+
+    char *(*get_code)();
+    char *smp;
+    float score = 0;
+
+    if (Thesaurus == USE_BGH) {
+	get_code = get_bgh;
+    }
+    else if (Thesaurus == USE_NTT) {
+	get_code = get_sm;
+    }
+
+    if ((smp = (char *)get_code(exp)) == NULL) {
+	return 0;
+    }
+
+    if (del) {
+	DeleteSpecifiedSM(smp, del);
+    }
+
+    if (smd && smp[0]) {
+	score = CalcSimilarity(smd, smp, expand);
+    }
+
+    free(smp);
+    return score;
+}
+
+/*==================================================================*/
+ float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos)
+/*==================================================================*/
+{
+    int i;
+    float maxscore = 0, score;
+
+    for (i = 0; i < num; i++) {
+	score = CalcWordSimilarity(exd, *(exp+i));
+	if (maxscore < score) {
+	    maxscore = score;
+	    *pos = i;
+	}
+    }
+
+    return maxscore;
+}
+
+/*==================================================================*/
+float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand)
+/*==================================================================*/
+{
+    int i;
+    float maxscore = 0, score;
+
+    for (i = 0; i < num; i++) {
+	score = CalcSmWordSimilarity(smd, *(exp+i), del, expand);
+	if (maxscore < score) {
+	    maxscore = score;
+	    *pos = i;
+	}
+    }
+
+    return maxscore;
 }
 
 /*==================================================================*/
@@ -587,6 +866,37 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
+	       int sm_fix(BNST_DATA *bp, char *targets)
+/*==================================================================*/
+{
+    int i, j, pos = 0;
+    char *codes;
+
+    if (bp->SM_code[0] == '\0') {
+	return FALSE;
+    }
+
+    codes = bp->SM_code;
+
+    for (i = 0; *(codes+i); i += SM_CODE_SIZE) {
+	for (j = 0; *(targets+j); j += SM_CODE_SIZE) {
+	    if (_sm_match_score(targets+j, codes+i, SM_NO_EXPAND_NE) > 0) {
+		strncpy(codes+pos, codes+i, SM_CODE_SIZE);
+		pos += SM_CODE_SIZE;
+		break;
+	    }
+	}
+    }
+
+    /* match しない場合ってどんなとき? */
+    if (pos != 0) {
+	*(codes+pos) = '\0';
+	bp->SM_num = strlen(codes)/SM_CODE_SIZE;
+    }
+    return TRUE;
+}
+
+/*==================================================================*/
 	       int sm_all_match(char *c, char *target)
 /*==================================================================*/
 {
@@ -621,9 +931,12 @@ int		SMP2SMGExist;
 /*==================================================================*/
 {
     /* <時間> の意味素しかもっていなければ <時間> を与える */
-    if (!check_feature(bp->f, "時間") && 
-	sm_all_match(bp->SM_code, "1128********")) { /* 時間のコード */
-	assign_cfeature(&(bp->f), "時間");
+
+    if (sm_all_match(bp->SM_code, "1128********")) { /* 時間のコード */
+	assign_cfeature(&(bp->f), "強時間");
+	if (!check_feature(bp->f, "時間")) {
+	    assign_cfeature(&(bp->f), "時間");
+	}
     }
 }
 

@@ -323,7 +323,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	else {
 
 	    /* 同形異義語かどうか */
-	    if (input_buffer[0] == '@' && input_buffer[1] == ' ') {
+	    if (input_buffer[0] == '@' && input_buffer[1] == ' ' && input_buffer[2] != '@') {
 		homo_flag = 1;
 	    }
 	    else {
@@ -730,6 +730,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     b_ptr->length = 0;
     b_ptr->space = 0;
+
+    b_ptr->pred_b_ptr = NULL;
     
     for (i = 0, cp = b_ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
 
@@ -903,6 +905,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->length = 0;
 	    b_ptr->cpm_ptr = NULL;
 	    b_ptr->voice = 0;
+	    b_ptr->pred_b_ptr = NULL;
 	    for (j = 0, cp = b_ptr->SCASE_code; j < SCASE_CODE_SIZE; j++, cp++)
 		*cp = 0;
 	    /* clear_feature(&(b_ptr->f));

@@ -429,7 +429,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	para_ptr->status = 's';
     }
     
-    return TRUE;	/* 解析結果statusがxでも,一応TUREを返す */
+    return TRUE;	/* 解析結果statusがxでも,一応TRUEを返す */
 }
 
 /*==================================================================*/

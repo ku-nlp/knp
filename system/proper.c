@@ -27,9 +27,9 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 {
     int i;
 
-    if ((proper_db = DBM_open(PROPER_DB_NAME, O_RDONLY, 0)) == NULL || 
-	(properc_db = DBM_open(PROPERC_DB_NAME, O_RDONLY, 0)) == NULL || 
-	(propercase_db = DBM_open(PROPERCASE_DB_NAME, O_RDONLY, 0)) == NULL) {
+    if ((proper_db = DBM_open(check_dict_filename(PROPER_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
+	(properc_db = DBM_open(check_dict_filename(PROPERC_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
+	(propercase_db = DBM_open(check_dict_filename(PROPERCASE_DB_NAME, FALSE), O_RDONLY, 0)) == NULL) {
 	PROPERExist = FALSE;
     } else {
 	PROPERExist = TRUE;
@@ -741,7 +741,9 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     if (1) {
 	for (i = 0; i < sp->Bnst_num; i++) {
 	    /* 住所が入る並列はやめておく */
-	    if (CheckJiritsuGoFeature(sp, i, "住所") || !check_feature(sp->bnst_data[i].f, "体言") || !check_feature(sp->bnst_data[sp->bnst_data[i].dpnd_head].f, "体言"))
+	    if (CheckJiritsuGoFeature(sp, i, "住所") || 
+		!check_feature(sp->bnst_data[i].f, "体言") || 
+		(sp->bnst_data[i].dpnd_head > 0 && !check_feature(sp->bnst_data[sp->bnst_data[i].dpnd_head].f, "体言")))
 		continue;
 	    cp = (char *)check_feature(sp->bnst_data[i].f, "並結句数");
 	    if (cp) {

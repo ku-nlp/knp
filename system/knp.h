@@ -11,6 +11,15 @@
 #include <setjmp.h>
 #include <juman.h>
 #include <math.h>
+
+#ifdef USE_SVM
+#include <svm.h>
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "path.h"
 #include "const.h"
 #include "dbm.h"

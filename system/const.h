@@ -143,6 +143,7 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define VOICE_SHIEKI 	1
 #define VOICE_UKEMI 	2
 #define VOICE_MORAU 	3
+#define VOICE_UNKNOWN 	4
 
 #define FRAME_ACTIVE		1
 #define FRAME_PASSIVE_I		2
@@ -174,6 +175,7 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
 #define SM_CHECK_FULL	3
+#define	SM_EXPAND_NE_DATA	4
 
 #define RLOOP_MRM	0
 #define RLOOP_RMM	1
@@ -400,7 +402,7 @@ typedef struct _RuleVector {
 #define ContextRuleType 10
 
 /* 辞書の最大数 */
-#define DICT_MAX	11
+#define DICT_MAX	12
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -414,6 +416,7 @@ typedef struct _RuleVector {
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
 #define	NOUN_DB		11
+#define	CODE2SM_DB	12
 
 /*====================================================================
 			     固有名詞解析
@@ -513,6 +516,7 @@ typedef struct tnode_b {
     int		internal_num;
     int		internal_max;
     struct tnode_b *internal;
+    struct tnode_b *pred_b_ptr;
 } BNST_DATA;
 
 /* 並列構造データ */
@@ -576,7 +580,6 @@ typedef struct {
 ====================================================================*/
 #define IPAL_FIELD_NUM	72
 #define CASE_MAX_NUM	20
-#define	EX_PRINT_NUM	10
 
 #define	USE_NONE 0
 #define USE_BGH	1
@@ -587,6 +590,14 @@ typedef struct {
 
 #define	CF_NORMAL	0
 #define	CF_SUM		1	/* OR の格フレーム */
+#define	CF_GA_SEMI_SUBJECT	2
+
+#define	CF_UNDECIDED	0
+#define	CF_CAND_DECIDED	1
+#define	CF_DECIDED	2
+
+#define MATCH_SUBJECT	-1
+#define MATCH_NONE	-2
 
 typedef struct {
     int id;				/* ID */
@@ -636,9 +647,14 @@ typedef struct cf_def {
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
     char	*sm[CF_ELEMENT_MAX]; 			/* 意味マーカ */
-    int         *sm_false[CF_ELEMENT_MAX];		/* 意味マーカのフラグ */
+    char	*sm_delete[CF_ELEMENT_MAX];		/* 使用禁止意味マーカ */
+    int		sm_delete_size[CF_ELEMENT_MAX];
+    int		sm_delete_num[CF_ELEMENT_MAX];
     char 	*ex[CF_ELEMENT_MAX];			/* 用例 (BGH) */
     char	*ex2[CF_ELEMENT_MAX];			/* 用例 (NTT) */
+    char	**ex_list[CF_ELEMENT_MAX];
+    int		ex_size[CF_ELEMENT_MAX];
+    int		ex_num[CF_ELEMENT_MAX];
     char	*examples[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
@@ -648,7 +664,7 @@ typedef struct cf_def {
     char 	*entry;					/* 用言の表記 */
     char 	imi[128];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
-    int		flag;					/* 格フレームが OR かどうか */
+    int		etcflag;				/* 格フレームが OR かどうか */
     int		weight[CF_ELEMENT_MAX];
     BNST_DATA	*pred_b_ptr;
 } CASE_FRAME;
@@ -657,17 +673,21 @@ typedef struct cf_def {
 typedef struct {
     int  	flag[CF_ELEMENT_MAX];
     int		score[CF_ELEMENT_MAX];
+    int		pos[CF_ELEMENT_MAX];
 } LIST;
 
 /* 文と格フレームの対応付け結果の記録 */
 typedef struct {
     CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
     float 	score;				/* スコア */
+    int		pure_score[MAX_MATCH_MAX];	/* 正規化する前のスコア */
     float	sufficiency;			/* 格フレームの埋まりぐあい */
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
     LIST	result_lists_d[MAX_MATCH_MAX];
+
+    struct cpm_def	*cpm;
 } CF_MATCH_MGR;
 
 /* 文と(用言に対する複数の可能な)格フレームの対応付け結果の記録 */
@@ -679,9 +699,11 @@ typedef struct cpm_def {
     int 	score;				/* スコア最大値(=cmm[0].score) */
     int 	default_score;			/* 外の関係スコア (ルールで与えられている外の関係) */
     int 	result_num;			/* 記憶する格フレーム数 */
+    int		tie_num;
     CF_MATCH_MGR cmm[CMM_MAX];			/* スコア最大の格フレームとの
 						   対応付けを記録
 						   (同点の場合は複数) */
+    int		decided;
 } CF_PRED_MGR;
 
 /* 一文の解析結果の全記録 */
@@ -756,6 +778,7 @@ typedef struct case_component {
 typedef struct predicate_anaphora_list {
     char	*key;		/* 用言 */
     int		voice;
+    int		cf_addr;
     CASE_COMPONENT *cc[CASE_MAX_NUM];	/* 格要素のリスト */
     struct predicate_anaphora_list *next;
 } PALIST;
@@ -766,16 +789,19 @@ typedef struct ellipsis_component {
     float		score;
 } ELLIPSIS_COMPONENT;
 
+typedef struct ellipsis_cmm_list {
+    CF_MATCH_MGR	cmm;
+    CF_PRED_MGR		cpm;
+    int			element_num;			/* 入力側 */
+} ELLIPSIS_CMM;
+
 typedef struct ellipsis_list {
     CF_PRED_MGR		*cpm;
     float		score;
     ELLIPSIS_COMPONENT cc[CASE_MAX_NUM];	/* 省略格要素のリスト */
     FEATUREptr		f;
     int			result_num;
-    CF_MATCH_MGR cmm[CMM_MAX];
-    int			element_num;
-    BNST_DATA		*elem_b_ptr[CF_ELEMENT_MAX];
-    int			*elem_b_num[CF_ELEMENT_MAX];
+    ELLIPSIS_CMM	ecmm[CMM_MAX];
 } ELLIPSIS_MGR;
 
 /*====================================================================

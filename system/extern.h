@@ -95,6 +95,10 @@ extern char 		*Case_name[];
 
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
+extern int	EX_PRINT_NUM;
+extern int	PrintDeletedSM;
+extern int 	EX_match_score[];
+extern int	EX_match_exact;
 
 /* 関数プロトタイプ */
 
@@ -111,7 +115,8 @@ extern char *pp_code_to_kstr(int num);
 extern char *pp_code_to_hstr(int num);
 extern int MatchPP(int n, char *pp);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
-extern void record_case_analysis(SENTENCE_DATA *sp);
+extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag);
+extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
 extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
@@ -121,24 +126,26 @@ extern void set_pred_voice(BNST_DATA *b_ptr);
 extern void init_cf();
 extern void init_cf2(SENTENCE_DATA *sp);
 extern void close_cf();
-extern int check_examples(unsigned char *cp, unsigned char *list);
 extern void set_pred_caseframe(SENTENCE_DATA *sp);
 extern void clear_cf();
 extern void init_mgr_cf(SENTENCE_DATA *sp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern void MakeInternalBnst(SENTENCE_DATA *sp);
-extern void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
+extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
+extern int check_examples(char *cp, char **ex_list, int ex_num);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
 extern int _sm_match_score(char *cpp, char *cpd, int flag);
 extern int _ex_match_score(char *cp1, char *cp2);
-extern void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag);
+extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest);
 extern int cf_match_element(char *d, char *target, int flag);
+extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
+extern int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos);
 
 /* case_print.c */
-extern void print_data_cframe(CF_PRED_MGR *cpm_ptr);
-extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr,int ipal_num);
+extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
+extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int ipal_num);
 extern void print_case_result(SENTENCE_DATA *sp);
 
 /* configfile.c */
@@ -150,7 +157,7 @@ extern void server_read_rc(FILE *fp);
 
 /* context.c */
 extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int voice, int pp, char *word, int flag);
+extern void RegisterPredicate(char *key, int voice, int cf_addr, int pp, char *word, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
 extern void copy_sentence(SENTENCE_DATA *sp);
@@ -178,6 +185,7 @@ extern void close_optional_case();
 
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
+extern DBM_FILE db_read_open(char *filename);
 
 /* dpnd_analysis.c */
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
@@ -235,8 +243,11 @@ extern void close_scase();
 
 /* lib_sm.c */
 extern char *sm2code(char *cp);
+extern char *code2sm(char *cp);
 extern float ntt_code_match(char *c1, char *c2, int flag);
-extern float CalcSimilarity(char *exd, char *exp);
+extern float CalcSimilarity(char *exd, char *exp, int expand);
+extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
+extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 extern int sm_time_match(char *c);
 extern void get_sm_code(BNST_DATA *ptr);
 extern void init_sm();
@@ -244,6 +255,9 @@ extern char *get_sm(char *cp);
 extern void close_sm();
 extern char *_smp2smg(char *cp);
 extern char *smp2smg(char *cpd, int flag);
+extern int sm_fix(BNST_DATA *bp, char *targets);
+extern void merge_smp2smg(BNST_DATA *bp);
+extern int DeleteMatchedSM(char *sm, char *del);
 
 /* main.c */
 extern int main_analysis(SENTENCE_DATA *sp, FILE *input);

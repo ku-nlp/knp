@@ -8,8 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
-int 	Current_ec_score;	/* 明示されている格の得点 */
-float 	Current_max_score;	/* 明示されていない格の得点 */
+float 	Current_max_score;	/* 得点 */
+int 	Current_pure_score[MAX_MATCH_MAX];	/* 正規化する前の得点 */
 float	Current_sufficiency;	/* 埋まりぐあい */
 int 	Current_max_m_e;	/* 要素数 */
 int 	Current_max_m_p;	/* 要素の位置 */
@@ -26,12 +26,14 @@ int 	SM_match_score[] = {0, 10, 10, 10, 10, 10, 10, 10, 10,
 int     SM_match_unknown = 10;			 	/* データ未知     */
 
 int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11};
-/* int 	EX_match_score[] = {10, 10, 10, 10, 10, 10, 10, 10}; */
+/* int 	EX_match_score[] = {0, 0, 0, 1, 3, 5, 10, 11}; */
 							/* 用例対応スコア */
 int     EX_match_unknown = 8; /* 10; */			/* データ未知     */
 int     EX_match_sentence = 10;				/* 格要素 -- 文   */
-int     EX_match_tim = 0;				/* 格要素 -- 時間 */
-int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
+int     EX_match_tim = 0;				/* 格要素 -- 時間:時間格 */
+int     EX_match_tim2 = 12;				/* 格要素 -- 時間:その他の格 */
+int     EX_match_tim3 = 8;				/* 格要素 -- 時間:格選択時 */
+int     EX_match_qua = 9; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
 int	EX_match_subject = 8;
 int	EX_match_modification = 0;
@@ -132,19 +134,24 @@ int	Thesaurus = USE_NTT;
 		if (start == NULL) {
 		    return score;
 		}
-		for (cp = start; *cp; cp+=SM_CODE_SIZE+1) {
-		    if (*(cp+SM_CODE_SIZE) == '/')
-			*(cp+SM_CODE_SIZE) = '\0';
-		    else if (str_eq(cp+SM_CODE_SIZE, " side-effect"))
-			continue;
-
-		    if (*(cp+SM_CODE_SIZE) != '\0')
+		for (cp = start; *cp; cp+=SM_CODE_SIZE) {
+		    if (*cp == '/') {
+			cp++;
+		    }
+		    else if (cp != start) {
 			fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
-				*(cp+SM_CODE_SIZE), "_sm_match_score");
-		    else {
-			current_score = comp_sm(cpp, cp, 1);
-			if (current_score > score)
-			    score = current_score;
+				*cp, start);
+		    }
+
+		    /* 副作用フラグがある意味素変換は行わない */
+		    if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
+			cp += 12; /* " side-effect" の分進める */
+			continue;
+		    }
+
+		    current_score = comp_sm(cpp, cp, 1);
+		    if (current_score > score) {
+			score = current_score;
 		    }
 		}
 		free(start);
@@ -284,7 +291,7 @@ int	Thesaurus = USE_NTT;
 
 /*==================================================================*/
        int elmnt_match_score_each_sm(int as1, CASE_FRAME *cfd,
-				     int as2, CASE_FRAME *cfp)
+				     int as2, CASE_FRAME *cfp, int *pos)
 /*==================================================================*/
 {
     /* 意味素 : 格要素 -- 補文 */
@@ -293,7 +300,21 @@ int	Thesaurus = USE_NTT;
     }
     /* 意味素 : 格要素 -- 時間 */
     else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "時間", TRUE)) {
-	return EX_match_tim;
+	/* 格フレーム側が時間格の場合はスコアを低く */
+	if (MatchPP(cfp->pp[as2][0], "時間")) {
+	    return EX_match_tim;
+	}
+	/* 格フレーム:時間格以外, 入力側:格選択時
+	   格が曖昧なときは
+	   1. <時間>時間格 : <時間>時間格 (score == 0)
+	   2. 「用例」普通の格 : 「用例」普通の格
+	   3. <時間>普通の格 : <時間>普通の格 (here) */
+	else if (cfd->pp[as1][1] != END_M) {
+	    return EX_match_tim3;
+	}
+	else {
+	    return EX_match_tim2;
+	}
     }
     /* 意味素 : 格要素 -- 数量 */
     else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "数量", TRUE)) {
@@ -302,14 +323,35 @@ int	Thesaurus = USE_NTT;
     /* 意味素 : 格要素 -- 主体 (ガ格のみ) */
     else if (MatchPP(cfp->pp[as2][0], "ガ") && 
 	     cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
+	*pos = MATCH_SUBJECT;
 	return EX_match_subject;
     }
     return -100;
 }
 
 /*==================================================================*/
+int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
+/*==================================================================*/
+{
+    if (!check_feature(d->f, "形副名詞") && 
+	d->jiritu_ptr != NULL) {
+	if (d->jiritu_num > 1 && 
+	    check_feature((d->jiritu_ptr+d->jiritu_num-1)->f, "Ｔ固有末尾")) {
+	    *pos = check_examples((d->jiritu_ptr+d->jiritu_num-2)->Goi, ex_list, ex_num);
+	}
+	else {
+	    *pos = check_examples(L_Jiritu_M(d)->Goi, ex_list, ex_num);
+	}
+	if (*pos >= 0) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	   int elmnt_match_score(int as1, CASE_FRAME *cfd,
-				 int as2, CASE_FRAME *cfp, int flag)
+				 int as2, CASE_FRAME *cfp, int flag, int *pos)
 /*==================================================================*/
 {
     /* 意味マーカのマッチング度の計算 */
@@ -342,8 +384,6 @@ int	Thesaurus = USE_NTT;
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
 						       cfd->sm[as1]+i, SM_NO_EXPAND_NE)];
-		    if (tmp_score && (cfp->sm_false[as2] && cfp->sm_false[as2][j/SM_CODE_SIZE] == TRUE))
-			return -100;
 		    if (tmp_score > score) score = tmp_score;
 		}
 	    }
@@ -352,16 +392,26 @@ int	Thesaurus = USE_NTT;
     }
 
     else if (flag == EXAMPLE) {
+	int ga_subject;
 
 	/* 修飾格のとき */
 	if (MatchPP(cfd->pp[as1][0], "修飾")) {
 	    return EX_match_modification;
 	}
 
-	if (cfp->concatenated_flag == 0 && 
-	    !check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "形副名詞") && 
-	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->jiritu_ptr != NULL && 
-	    check_examples(L_Jiritu_M(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1])->Goi, cfp->examples[as2])) {
+	if (MatchPP(cfp->pp[as2][0], "ガ") && 
+	    cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
+	    ga_subject = 1;
+	}
+	else {
+	    ga_subject = 0;
+	}
+
+	/* exact match */
+	if (ga_subject == 0 && 
+	    cfp->concatenated_flag == 0 && 
+	    cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
+			     cfp->ex_list[as2], cfp->ex_num[as2], pos)) {
 	    return EX_match_exact;
 	}
 
@@ -376,7 +426,14 @@ int	Thesaurus = USE_NTT;
 	    match_score = EX_match_score;
 	}
 
-	score = elmnt_match_score_each_sm(as1, cfd, as2, cfp);
+	/* ガ格<主体>共通スコア */
+	if (ga_subject) {
+	    *pos = MATCH_SUBJECT;
+	    return EX_match_subject;
+	}
+	else {
+	    score = elmnt_match_score_each_sm(as1, cfd, as2, cfp, pos);
+	}
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0') {
@@ -400,7 +457,10 @@ int	Thesaurus = USE_NTT;
 	else {
 	    float rawscore;
 
-	    rawscore = CalcSimilarity(exd, exp);
+	    rawscore = CalcSmWordsSimilarity(exd, cfp->ex_list[as2], cfp->ex_num[as2], pos, 
+					     cfp->sm_delete[as2], 0);
+	    /* rawscore = CalcWordsSimilarity(cfd->ex_list[as1][0], cfp->ex_list[as2], cfp->ex_num[as2], pos); */
+	    /* rawscore = CalcSimilarity(exd, exp); */
 	    /* 用例のマッチング */
 	    if (Thesaurus == USE_BGH) {
 		ex_score = *(match_score+(int)rawscore);
@@ -422,6 +482,19 @@ int	Thesaurus = USE_NTT;
 }
 
 /*==================================================================*/
+	 int count_pat_element(CASE_FRAME *cfp, LIST *list2)
+/*==================================================================*/
+{
+    int i, pat_element = 0;
+    for (i = 0; i < cfp->element_num; i++) {
+	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED)) {
+	    pat_element++;
+	}
+    }
+    return pat_element;
+}
+
+/*==================================================================*/
 	    void eval_assign(CASE_FRAME *cfd, LIST *list1,
 			     CASE_FRAME *cfp, LIST *list2,
 			     int score)
@@ -433,10 +506,10 @@ int	Thesaurus = USE_NTT;
     int local_m_e = 0;
     int local_m_p = 0;
     int local_c_e = 0;
-    int pat_element = 0, dat_element = 0;
+    int pat_element, dat_element = 0;
     int cf_element = 0;
     float local_score;
-    
+
     local_score = score;
 
     /* ★ experimental (類似度が高い直前格にボーナス)
@@ -468,9 +541,7 @@ int	Thesaurus = USE_NTT;
 	    dat_element++;
 
     /* 格フレーム中の要素数(任意でマッチしていない要素以外) */
-    for (i = 0; i < cfp->element_num; i++)
-	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED))
-	    pat_element++;
+    pat_element = count_pat_element(cfp, list2);
 
     /* 格フレーム中の要素数 */
     for (i = 0; i < cfp->element_num; i++) {
@@ -516,6 +587,7 @@ int	Thesaurus = USE_NTT;
 	Current_max_list1[0] = *list1;
 	Current_max_list2[0] = *list2;
 	Current_max_score = local_score;
+	Current_pure_score[0] = score;
 	Current_sufficiency = (float)cf_element/cfp->element_num;
 	Current_max_m_e = local_m_e;
 	Current_max_m_p = local_m_p;
@@ -529,6 +601,7 @@ int	Thesaurus = USE_NTT;
 	     Current_max_num < MAX_MATCH_MAX) {
 	Current_max_list1[Current_max_num] = *list1;
 	Current_max_list2[Current_max_num] = *list2;
+	Current_pure_score[Current_max_num] = score;
 	Current_max_num++;
     }
 }
@@ -567,7 +640,7 @@ int	Thesaurus = USE_NTT;
     int target = -1;	/* データ側の処理対象の格要素 */
     int target_pp = 0;
     int elmnt_score, multi_pp = 0;
-    int i, j;
+    int i, j, pos;
 
 #ifdef CASE_DEBUG
     fprintf(Outfp, "dat");
@@ -616,8 +689,9 @@ int	Thesaurus = USE_NTT;
 			    (cfd->pp[target][target_pp] == pp_hstr_to_code("によって") &&
 			     cfp->pp[i][j] == pp_kstr_to_code("デ"))) {
 
+			    pos = MATCH_NONE;
 			    elmnt_score = 
-				elmnt_match_score(target, cfd, i, cfp, flag);
+				elmnt_match_score(target, cfd, i, cfp, flag, &pos);
 
 			    if (flag == EXAMPLE || 
 				(flag == SEMANTIC_MARKER && elmnt_score != 0)) {
@@ -632,6 +706,7 @@ int	Thesaurus = USE_NTT;
 				list2.flag[i] = target;
 				list1.score[target] = elmnt_score;
 				list2.score[i] = elmnt_score;
+				list2.pos[i] = pos;
 				assign_list(cfd, list1, cfp, list2, 
 					    score + elmnt_score, flag);
 				list2.flag[i] = UNASSIGNED;
@@ -648,6 +723,7 @@ int	Thesaurus = USE_NTT;
 				list2.flag[i] = target;
 				list1.score[target] = elmnt_score;
 				list2.score[i] = elmnt_score;
+				list2.pos[i] = pos;
 				/* 対応付けをして，残りの格要素の処理に進む */
 				assign_list(cfd, list1, cfp, list2, 
 					    score + elmnt_score, flag);
@@ -778,7 +854,8 @@ int	Thesaurus = USE_NTT;
 		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) ||
 		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("ガ２")) ||
 		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
-		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
+		pos = MATCH_NONE;
+		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag, &pos);
 		if (elmnt_score != 0 || flag == EXAMPLE) {
 		    if (cfd->weight[target]) {
 			elmnt_score /= cfd->weight[target];
@@ -787,6 +864,7 @@ int	Thesaurus = USE_NTT;
 		    list2.flag[i] = target;
 		    list1.score[target] = elmnt_score;
 		    list2.score[i] = elmnt_score;
+		    list2.pos[i] = pos;
 		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 		    list2.flag[i] = UNASSIGNED;
 		}
@@ -800,7 +878,12 @@ int	Thesaurus = USE_NTT;
 	/* 外の関係だと推定してボーナスを与える */
 	if (renkaku && verb) {
 	    /* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
-	    elmnt_score = SOTO_SCORE;
+	    if (OptDisc == OPT_DISC) {
+		elmnt_score = 0;
+	    }
+	    else {
+		elmnt_score = SOTO_SCORE;
+	    }
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
 	    }
@@ -839,7 +922,7 @@ int	Thesaurus = USE_NTT;
 }
 
 /*==================================================================*/
-void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
+int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest)
 /*==================================================================*/
 {
     /* 格フレームのマッチング */
@@ -864,6 +947,7 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	assign_p_list.flag[i] = UNASSIGNED;
 	assign_p_list.score[i] = -1;
+	assign_p_list.pos[i] = -1;
     }
 
     /* 処理 */
@@ -873,15 +957,31 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 
     /* 後処理 */
 
-    if (Current_max_num == MAX_MATCH_MAX)
-	fprintf(stderr, "Too many case matching result !\n");
+    if (Current_max_num == MAX_MATCH_MAX) {
+	fprintf(stderr, "; Too many case matching result !\n");
+    }
 
-    cmm_ptr->score = Current_max_score;
     cmm_ptr->sufficiency = Current_sufficiency;
     cmm_ptr->result_num = Current_max_num;
     for (i = 0; i < Current_max_num; i++) {
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
 	cmm_ptr->result_lists_d[i] = Current_max_list1[i];
+	cmm_ptr->pure_score[i] = Current_pure_score[i];
+    }
+
+    /* 直前格要素のスコアのみを用いるとき */
+    if (closest > -1) {
+	/* 直前格要素の割り当てがあることが条件 */
+	if (Current_max_list1[0].flag[closest] != NIL_ASSIGNED) {
+	    cmm_ptr->score = (float)Current_max_list1[0].score[closest];
+	}
+	else {
+	    cmm_ptr->score = -1;
+	    return 0;
+	}
+    }
+    else {
+	cmm_ptr->score = Current_max_score;
     }
 
     /* tentative */
@@ -892,6 +992,7 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 #ifdef CASE_DEBUG
     print_crrspnd(cfd, cmm_ptr);
 #endif
+    return 1;
 }
 
 /*====================================================================

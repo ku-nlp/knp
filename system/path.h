@@ -14,6 +14,7 @@
 #define BGH_DB_NAME	"bgh/bgh"
 #define SM_DB_NAME	"sm/word2code"
 #define SM2CODE_DB_NAME	"sm/sm2code"
+#define CODE2SM_DB_NAME	"sm/code2sm"
 #define SMP2SMG_DB_NAME	"sm/smp2smg"
 #define SCASE_DB_NAME	"scase/scase"
 #define IPAL_DB_NAME	"cf/ipal"

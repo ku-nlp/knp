@@ -68,11 +68,17 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, num, pp_num = 0, jiritsu_num = 0;
+    int i, num, pp_num = 0, jiritsu_num = 0, closest = FALSE;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
-    if (b_ptr && !check_feature(b_ptr->f, "数量")) {
-	jiritsu_num = b_ptr->jiritu_num;
+    if (b_ptr) {
+	/* 自立語の数 */
+	if (!check_feature(b_ptr->f, "数量")) {
+	    jiritsu_num = b_ptr->jiritu_num;
+	}
+
+	/* ★複合名詞のときは? */
+	closest = cpm_ptr->pred_b_ptr->num == b_ptr->num+1 ? TRUE : FALSE;
     }
 
     if (b_ptr == NULL) {	/* 埋め込み文の被修飾詞 */
@@ -113,21 +119,24 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	/* 隣接しない場合は? */
 	/* 類似度に閾値を設けて、単なる修飾を区別する必要がある */
 
-	/* <時間> なら時間格のみにする */
-	if (check_feature(b_ptr->f, "時間")) {
+	if (check_feature(b_ptr->f, "強時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	}
-	/* else if (check_feature(b_ptr->f, "地名")) {
-	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("で");
-	} */
-	else if (check_feature(b_ptr->f, "数量")) {
-	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("φ");
-	}
 	else {
+	    /* else if (check_feature(b_ptr->f, "地名")) {
+	       c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("で");
+	       } */
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
 	    /* A の B(サ変名詞) のときはヲ格も追加 */
 	    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析")) {
 		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
+	    }
+	    /* <時間>なら時間格追加 */
+	    if (check_feature(b_ptr->f, "時間")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    }
+	    if (check_feature(b_ptr->f, "数量")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("φ");
 	    }
 	}
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
@@ -136,7 +145,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
     else if (check_feature(b_ptr->f, "係:ニ格")) {
 	/* ニ格で時間なら時間格 */
-	if (check_feature(b_ptr->f, "時間")) {
+	if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    c_ptr->oblig[c_ptr->element_num] = FALSE;
 	    if (jiritsu_num > 1) {
@@ -151,7 +160,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ヨリ格")) {
-	if (check_feature(b_ptr->f, "時間")) {
+	if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("より");
 	    c_ptr->oblig[c_ptr->element_num] = FALSE;
@@ -182,7 +191,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:カラ格")) {
-	if (check_feature(b_ptr->f, "時間")) {
+	if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    if (jiritsu_num > 1) {
 		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("から");
@@ -196,13 +205,17 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ト格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("と");
-	c_ptr->pp[c_ptr->element_num][1] = END_M;
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("と");
+	/* 〜とが */
+	if (check_feature(b_ptr->f, "ガ")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:マデ格")) {
-	if (check_feature(b_ptr->f, "時間")) {
+	if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    if (jiritsu_num > 1) {
 		c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
@@ -210,14 +223,20 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	else {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("まで");
-	    c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	    if (check_feature(b_ptr->f, "時間")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    }
+	    /* 「〜人まで回復」とかをガ格に match させない */
+	    else if (!check_feature(b_ptr->f, "数量")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	    }
 	}
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:無格")) {
-	/* 無格で時間なら時間格 */
+	/* 無格で時間なら時間格 closest == FALSE && */
 	if (check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    if (jiritsu_num > 1) {
@@ -237,7 +256,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
 	    return NULL;
 	}
-	else if (check_feature(b_ptr->f, "時間")) {
+	else if (closest == FALSE && check_feature(b_ptr->f, "時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	    c_ptr->oblig[c_ptr->element_num] = FALSE;
 	    if (jiritsu_num > 1) {
@@ -263,10 +282,23 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	if (fc == END_M) {
 	    return NULL;
 	}
-	c_ptr->pp[c_ptr->element_num][0] = fc;
-	c_ptr->pp[c_ptr->element_num][1] = END_M;
+	c_ptr->pp[c_ptr->element_num][pp_num++] = fc;
+	/* 「〜によって」,「〜に対し」: ニ格も可 (★こういうのを扱う枠組みが必要) */
+	if (fc == 21 || fc == 22) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
+    }
+    /* （〜を）〜に
+       用言文節と格要素の同じものであるときのみ */
+    else if (cpm_ptr->pred_b_ptr->num == b_ptr->num && 
+	     check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
+	c_ptr->oblig[c_ptr->element_num] = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:連体") &&
 	     !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
@@ -314,20 +346,24 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
     /* 複合名詞 */
     else if (check_feature(b_ptr->f, "係:文節内")) {
-	/* 時間なら時間格のみにする
-	   ★ 「新旧交代」: ガ格 */
-	if (check_feature(b_ptr->f, "時間")) {
+	if (check_feature(b_ptr->f, "強時間")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
 	}
 	else {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
-	}
 
-	/* 地名ならとりあえずデ格を追加 */
-	if (check_feature(b_ptr->f, "地名")) {
-	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("で");
+	    /* 時間なら時間格を追加
+	       ★ 「新旧交代」: ガ格 */
+	    if (check_feature(b_ptr->f, "時間")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    }
+
+	    /* 地名ならとりあえずデ格を追加 */
+	    if (check_feature(b_ptr->f, "地名")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("で");
+	    }
 	}
 
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
@@ -420,6 +456,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     else if (Thesaurus == USE_NTT) {
 	strcpy(c_ptr->ex2[c_ptr->element_num], b_ptr->SM_code);
     }
+    strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->Jiritu_Go);
 }
 
 /*==================================================================*/
@@ -431,9 +468,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     int i, j, k, child_num;
     char *vtype = NULL;
 
-    if (vtype = (char *)check_feature(b_ptr->f, "用言")) {
+    if (vtype = check_feature(b_ptr->f, "用言")) {
 	vtype += 5;
 	strcpy(cpm_ptr->cf.ipal_id, vtype);
+    }
+    else if (check_feature(b_ptr->f, "準用言")) {
+	strcpy(cpm_ptr->cf.ipal_id, "準");
     }
     else {
 	cpm_ptr->cf.ipal_id[0] = '\0';
@@ -445,6 +485,21 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     /* 表層格 etc. の設定 */
 
     cpm_ptr->cf.element_num = 0;
+
+    /* 用言文節が「（〜を）〜に」のとき 
+       「する」の格フレームに対してニ格(同文節)を設定 */
+    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+	if (_make_data_cframe_pp(cpm_ptr, b_ptr)) {
+	    _make_data_cframe_sm(cpm_ptr, b_ptr);
+	    _make_data_cframe_ex(cpm_ptr, b_ptr);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
+	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	    cpm_ptr->cf.element_num ++;
+	}
+    }
+
     if (check_feature(b_ptr->f, "係:連格")) {
 
 	/* para_type == PARA_NORMAL は「Vし,Vした PARA N」のとき
@@ -509,7 +564,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    if (check_feature(cel_b_ptr->f, "数量") && 
 		(check_feature(cel_b_ptr->f, "係:ガ格") || check_feature(cel_b_ptr->f, "係:ヲ格")) && 
 		cel_b_ptr->num > 0 && check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "係:隣接") && 
-		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "数量")) {
+		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "数量") && 
+		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "時間")) {
 		_make_data_cframe_sm(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
 		_make_data_cframe_ex(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);
 		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->bnst_data+cel_b_ptr->num-1;
