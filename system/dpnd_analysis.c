@@ -58,10 +58,9 @@ extern FILE  *Outfp;
 		       void assign_dpnd_rule()
 /*==================================================================*/
 {
-    int 	i, j, k, flag;
+    int 	i, j;
     BNST_DATA	*b_ptr;
     DpndRule 	*r_ptr;
-    FEATURE	*f;
 
     for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = DpndRuleArray; j < CurDpndRuleSize; j++, r_ptr++) {
@@ -283,7 +282,7 @@ extern FILE  *Outfp;
 		    void dpnd_evaluation(DPND dpnd)
 /*==================================================================*/
 {
-    int i, j, k, one_score, score, flag, rentai, vacant_slot_num;
+    int i, j, k, one_score, score, rentai, vacant_slot_num;
     int topic_score, optional_flag = 0;
     int optional_score = 0, total_optional_score = 0;
     int scase_check[11], ha_check, un_count, pred_p;
@@ -559,10 +558,10 @@ extern FILE  *Outfp;
 	    }
 	}
 	else {
-	    fprintf(stdout, ";;;OK 候補 %d %s %d\n", dpndID, KNPSID, score);
+	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, KNPSID, score);
 	    for (i = 0;i < Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
-		    fprintf(stdout, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
+		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
 		}
 	    }
 	}
@@ -581,7 +580,7 @@ extern FILE  *Outfp;
     
     if (OptDisplay == OPT_DEBUG) {
 	if (dpnd.pos == Bnst_num - 1) {
-	    fprintf(Outfp, "------", dpnd.pos);
+	    fprintf(Outfp, "------");
 	    for (i = 0; i < Bnst_num; i++)
 	      fprintf(Outfp, "-%02d", i);
 	    fputc('\n', Outfp);
@@ -596,7 +595,7 @@ extern FILE  *Outfp;
 
     /* 文頭まで解析が終わったら評価関数をよぶ */
 
-    if (dpnd.pos == -1) {		
+    if (dpnd.pos == -1) {
 	/* 前の文節の係り受けに従う場合 */
 	for (i = 0; i < Bnst_num -1; i++)
 	    if (dpnd.head[i] < 0)
