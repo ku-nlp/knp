@@ -465,7 +465,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	       でなければ一つの格要素と考える */
 
 	    if (check_feature(g_ptr->f, "係:連格")) {
-		if (check_feature(sp->bnst_data[dpnd.head[i]].f, "外の関係")) {
+		if (check_feature(sp->bnst_data[dpnd.head[i]].f, "外の関係") || 
+		    check_feature(sp->bnst_data[dpnd.head[i]].f, "ルール外の関係")) {
 		    rentai = 0;
 		    one_score += 10;	/* 外の関係ならここで加点 */
 		} else {
