@@ -14,6 +14,7 @@ AC_PROG_MAKE_SET
 
 AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=yes]])
 AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (2.X) [default=no]])
+AC_ARG_WITH(berkeley-db3, [  --with-berkeley-db3     use Berkeley DB library (3.X) [default=no]])
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
 AC_ARG_WITH(integrate-juman, [  --with-integrate-juman  integrate JUMAN into KNP], 
 ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
@@ -96,13 +97,18 @@ LDFLAGS="$JUMAN_LDFLAGS $SVM_LDFLAGS -L/usr/local/lib $LDFLAGS"
 
 dnl Checks for libraries.
 
-if ( test "x$with_berkeley_db" != xyes -a \( "x$with_gdbm" = x -o "x$with_gdbm" = xyes \) ); then
-    AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
-	         AC_MSG_ERROR(not found.))
-fi
-
-if ( test "x$with_berkeley_db" = xyes ); then
+if ( test \( "x$with_berkeley_db" = xyes -a "x$with_berkeley_db3" = xyes \) \
+    -o \( "x$with_berkeley_db" = xyes -a "x$with_gdbm" = xyes \) \
+    -o \( "x$with_berkeley_db3" = xyes -a "x$with_gdbm" = xyes \) ); then
+    AC_MSG_ERROR("More than two DBs are specified.")    
+elif ( test "x$with_berkeley_db" = xyes ); then
     AC_SEARCH_LIBS(db_open, db2 db, , 
+	         AC_MSG_ERROR(not found.))
+elif ( test "x$with_berkeley_db3" = xyes ); then
+    AC_SEARCH_LIBS(db_create, db-3 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
+	         AC_MSG_ERROR(not found.))
+else
+    AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
 fi
 

@@ -1,4 +1,9 @@
+2001-09-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.in, system/db.c: BerkeleyDB 3.X に対応
+
 2001-08-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/bind_juman.c, system/configfile.c, system/const.h, system/db.c, system/dbm.h, system/japanese.c, system/knp.h, system/lib_print.c, system/main.c, system/read_data.c, system/tree_conv.c:
 	並列処理の途中で New_Bnst_num の値が変化する場合があり、feature を初期
 	化する際に問題になるので、New_Bnst_num の最大値を保持するように変更
