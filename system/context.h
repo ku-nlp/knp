@@ -5,6 +5,7 @@
 // #define	SVM_FREQ_SD	49.72895 /* for 2002_10_17 (cook-only) */
 // #define	SVM_FREQ_SD	29.98034 /* for 2002_11_19 (cook-only) */
 
+#define	SVM_FREQ_SD_NO	504.70998 /* for noun, np */
 
 #define	LOC_PARENTV	0x000002
 #define	LOC_PARENTV_MC	0x000003

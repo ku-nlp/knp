@@ -1222,7 +1222,12 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     }
     else {
 	/* É¸½àÊÐº¹¤Ç³ä¤ë */
-	f->frequency = (float)ef->frequency / SVM_FREQ_SD;
+	if (ef->p_pp == pp_kstr_to_code("¥Î")) {
+	    f->frequency = (float)ef->frequency / SVM_FREQ_SD_NO;
+	}
+	else {
+	    f->frequency = (float)ef->frequency / SVM_FREQ_SD;
+	}
     }
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
