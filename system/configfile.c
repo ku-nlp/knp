@@ -465,7 +465,7 @@ int knp_dict_file_already_defined = 0;
 	    fprintf(Outfp, "Setting default rules ... ");
 	}
 
-	RuleNumMax = 8;
+	RuleNumMax = 9;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
 	/* mrph_homo 同形異義語 */
@@ -522,6 +522,14 @@ int knp_dict_file_already_defined = 0;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = KoouRuleType;
 	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* case_analysis タグ単位 逆方向 */
+	(RULE+CurrentRuleNum)->file = strdup("case_analysis");
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = TagRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
 	if (OptDisplay == OPT_DEBUG) {
