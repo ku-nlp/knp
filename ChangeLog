@@ -1,3 +1,8 @@
+2003-04-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/dpnd_analysis.c, system/extern.h:
+	C++からincludeした場合の不都合を解消
+
 2003-04-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/context.c, system/dpnd_analysis.c, system/main.c:
