@@ -9,6 +9,8 @@
 
 	* system/main.c: timeout時にexitするようにした
 
+	* rule/Makefile.am: ruleパッケージ用のtargetを追加
+
 2003-04-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
