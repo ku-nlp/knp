@@ -31,7 +31,7 @@
 #define	PARA_MAX	32
 #define PARA_PART_MAX	32
 #define WORD_LEN_MAX	128
-#define SENTENCE_MAX	400
+#define SENTENCE_MAX	256
 #define PRINT_WIDTH	100
 #define PARENT_MAX	20
 #define BROTHER_MAX	20
@@ -261,7 +261,7 @@ typedef struct {
 ====================================================================*/
 
 #define NOT_FLG '^'
-#define MAT_FLG NULL
+#define MAT_FLG '\0'
 #define AST_FLG '*'
 #define QST_FLG '?'
 #define NOT_STR "^"

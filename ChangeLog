@@ -1,3 +1,7 @@
+2002-10-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h: gcc 3.2でコンパイルできないのを修正
+
 2002-10-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/path.h, system/thesaurus.c:
