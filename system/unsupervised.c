@@ -13,7 +13,8 @@ extern FILE  *Infp;
 extern FILE  *Outfp;
 extern int   OptMode;
 
-void CheckCandidates() {
+void CheckCandidates()
+{
     int i, j;
     TOTAL_MGR *tm = &Best_mgr;
     char buffer[DATA_LEN], buffer2[256], *cp;
@@ -37,7 +38,7 @@ void CheckCandidates() {
 		/* ¸õÊä¤É¤â */
 		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
 		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
-		    fprintf(stderr, "Too long string <%s> in CheckCandidates.\n", buffer);
+		    fprintf(stderr, "Too long string <%s> (%d) in CheckCandidates.\n", buffer, tm->dpnd.check[i].num);
 		    return;
 		}
 		strcat(buffer, buffer2);
