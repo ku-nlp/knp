@@ -1,3 +1,8 @@
+2004-11-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/para_dpnd.c:
+	gcc3.4 でエラーになる不具合を修正
+
 2004-11-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, system/feature.c:
