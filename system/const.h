@@ -94,15 +94,16 @@
 #define OPT_DPND	2
 #define OPT_BNST	3
 #define OPT_AssignF	4
-#define OPT_DISC	5
+#define OPT_ELLIPSIS	1
+#define OPT_DEMO	2
 #define OPT_RAW		1
 #define OPT_PARSED	2
 #define OPT_TREE	1
 #define OPT_TREEF	2
 #define OPT_SEXP	3
 #define OPT_TAB		4
-#define OPT_TAG		5
-#define OPT_PA		5
+#define OPT_NOTAG	5
+#define OPT_PA		6
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
@@ -849,6 +850,10 @@ typedef struct ellipsis_svm_features {
     float	similarity;
 
     int		c_pp[PP_NUMBER];
+#ifdef DISC_USE_DIST
+    int		c_distance;
+    int		c_dist_bnst;
+#endif
     int		c_fs_flag;
     int		c_topic_flag;
     int		c_no_topic_flag;

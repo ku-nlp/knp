@@ -811,7 +811,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
 		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
 		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
-		    if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
+		    if (!OptEllipsis || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
 			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
 			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));

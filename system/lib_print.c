@@ -1010,26 +1010,18 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2) {
-	    print_tags(sp, 1);
-	}
-	else {
-	    print_mrphs(sp, 1);
-	}
-    }
-    else if (OptExpress == OPT_TAG) {
 	print_tags(sp, 1);
+    }
+    else if (OptExpress == OPT_NOTAG) {
+	print_mrphs(sp, 1);
     }
     else if (OptExpress == OPT_PA) {
 	print_pa_structure(sp);
     }
     else {
+	/* tree出力 */
 	make_dpnd_tree(sp);
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2) {
-	    bnst_to_tag_tree(sp);
-	}
+	bnst_to_tag_tree(sp); /* タグ単位 */
 	print_kakari(sp);
     }
 
@@ -1039,7 +1031,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	 OptAnalysis == OPT_CASE2) && 
 	 (OptDisplay == OPT_DETAIL || 
 	  OptDisplay == OPT_DEBUG)) || 
-	(OptDisc == OPT_DISC && 
+	(OptEllipsis && 
 	 VerboseLevel >= VERBOSE1)) {
 
 	print_case_result(sp);

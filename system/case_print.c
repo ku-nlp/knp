@@ -325,7 +325,7 @@ struct _sort_kv {
 	}
 	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));
 	for (j = 0; j < tm->cpm[i].result_num; j++) {
-	    if (OptDisc == OPT_DISC) {
+	    if (OptEllipsis) {
 		print_crrspnd(tm->cpm[i].cmm[j].cpm ? tm->cpm[i].cmm[j].cpm : &(tm->cpm[i]), 
 			      &(tm->cpm[i].cmm[j]));
 		free(tm->cpm[i].cmm[j].cpm);
@@ -355,7 +355,7 @@ struct _sort_kv {
 	/* 入力側の各格要素の記述 */
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	    /* 指示詞の解析をする場合は、指示詞を除く */
-	    if (OptDemo == TRUE && 
+	    if ((OptEllipsis & OPT_DEMO) && 
 		check_feature(cpm_ptr->elem_b_ptr[i]->f, "省略解析対象指示詞")) {
 		continue;
 	    }

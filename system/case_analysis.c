@@ -334,7 +334,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
 
 	    /* DEBUG出力用: 下の print_good_crrspnds() で使う Cf_match_mgr のスコアを正規化 */
-	    if (OptDisplay == OPT_DEBUG && closest > -1 && OptDisc != OPT_DISC) {
+	    if (OptDisplay == OPT_DEBUG && closest > -1 && !OptEllipsis) {
 		pat_num = count_pat_element((Cf_match_mgr+i)->cf_ptr, &((Cf_match_mgr+i)->result_lists_p[0]));
 		if (!((Cf_match_mgr+i)->score < 0 || pat_num == 0)) {
 		    (Cf_match_mgr+i)->score = (Cf_match_mgr+i)->pure_score[0] / sqrt((double)pat_num);
@@ -398,7 +398,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 
     /* 文脈解析: 直前格要素のスコアが閾値以上なら格フレームを決定 */
     if (decide) {
-	if (OptDisc == OPT_DISC) {
+	if (OptEllipsis) {
 	    if (closest > -1 && cpm_ptr->score > 7) {
 		if (cpm_ptr->tie_num > 1) {
 		    cpm_ptr->decided = CF_CAND_DECIDED;
@@ -1309,7 +1309,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    strcpy(relation, "--");
 
 	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
-	    if (OptDisc == OPT_DISC) {
+	    if (OptEllipsis) {
 		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
@@ -1337,7 +1337,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 
 	    /* 格関係の保存 (文脈解析用) */
-	    if (OptDisc == OPT_DISC) {
+	    if (OptEllipsis) {
 		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 

@@ -33,8 +33,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
 int 		OptAnalysis;
-int		OptDisc;
-int		OptDemo;
+int		OptEllipsis;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
@@ -91,11 +90,14 @@ extern int	EX_match_subject;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
-	    "           [-tree|sexp|-tab]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|ellipsis|demonstrative|anaphora]\n" 
+#ifdef USE_SVM
+	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
+#endif
+	    "           [-tree|sexp|tab|notag]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
-	    "           [-C host:port] [-S|-F] [-N port]\n"
+	    "           [-C host:port] [-S|F] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
 	    "           [-scode [BGH|NTT]] (Default:NTT)\n"
 	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
@@ -109,8 +111,7 @@ extern int	EX_match_subject;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
-    OptDisc = OPT_NORMAL;
-    OptDemo = FALSE;
+    OptEllipsis = 0;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
@@ -132,13 +133,11 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
-	else if (str_eq(argv[0], "-disc"))    OptDisc     = OPT_DISC;
-	else if (str_eq(argv[0], "-demonstrative")) OptDemo = TRUE;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
-	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAG;
+	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
@@ -147,29 +146,42 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
+	else if (str_eq(argv[0], "-ellipsis")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	}
+	else if (str_eq(argv[0], "-demonstrative")) {
+	    OptEllipsis |= OPT_DEMO;
+	}
+	else if (str_eq(argv[0], "-anaphora")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	}
 #ifdef USE_SVM
-	else if (str_eq(argv[0], "-svm")) {
-	    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-svm")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscMethod = OPT_SVM;
 	}
-	else if (str_eq(argv[0], "-svm-only")) {
-	    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-svm-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscMethod = OPT_SVM;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
-	/* else if (str_eq(argv[0], "-svmmodel")) {
+	else if (str_eq(argv[0], "-demonstrative-svm")) {
+	    OptEllipsis |= OPT_DEMO;
 	    OptDiscMethod = OPT_SVM;
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ModelFile[0] = strdup(argv[0]);
-	    } */
+	}
+	else if (str_eq(argv[0], "-anaphora-svm")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscMethod = OPT_SVM;
+	}
 #endif
-	else if (str_eq(argv[0], "-dt")) {
-	    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-dt")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscMethod = OPT_DT;
 	}
-	else if (str_eq(argv[0], "-dt-only")) {
-	    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-dt-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscMethod = OPT_DT;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
@@ -249,16 +261,21 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
-	else if (str_eq(argv[0], "-disc-or-cf")) {
-	    OptDisc = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-or-cf")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
-	else if (str_eq(argv[0], "-disc-best")) {
-	    OptDisc = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-best")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_BEST;
 	}
-	else if (str_eq(argv[0], "-disc-flat")) {
-	    OptDisc = OPT_DISC;
+	else if (str_eq(argv[0], "-ellipsis-best-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	}
+	else if (str_eq(argv[0], "-ellipsis-flat")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_FLAT;
 	}
 	/* 以下コスト調整用 */
@@ -337,17 +354,17 @@ extern int	EX_match_subject;
 
     /* 文脈解析のときは必ず格解析を行う (CASE2)
        解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptDisc == OPT_DISC) {
+    if (OptEllipsis) {
+	if (OptExpress == OPT_NOTAG) {
+	    usage();
+	}
 	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
 	    OptAnalysis = OPT_CASE2;
 	}
-	if (OptExpress == OPT_TAG) {
-	    OptExpress = OPT_TAB;
-	}
     }
-    else if (OptExpress == OPT_TAG && 
+    else if (OptExpress == OPT_NOTAG && 
 	     (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
-	OptExpress = OPT_TAB;
+	usage();
     }
 }
 
@@ -440,13 +457,10 @@ extern int	EX_match_subject;
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
 
-    if (OptDisc == OPT_DISC) {
+    if (OptEllipsis) {
 #ifdef USE_SVM
 	if (OptDiscMethod == OPT_SVM) {
-	    if (!init_svm()) {	/* SVM */
-		fprintf(stderr, ";; SVM initialization error.\n");
-		exit(1);
-	    }
+	    init_svm();
 	}
 #endif
 	if (OptDiscMethod == OPT_DT) {
@@ -476,7 +490,7 @@ extern int	EX_match_subject;
 	 current_sentence_data.bnst_data[i].f = NULL;
     }
 
-    if (OptDisc == OPT_DISC) {
+    if (OptEllipsis) {
 	InitAnaphoraList();
     }
 }
@@ -583,16 +597,15 @@ extern int	EX_match_subject;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
 
+    /* タグ単位作成 */
+    if (OptExpress != OPT_NOTAG) {
+	make_tag_units(sp);
+    }
+
+    /* それぞれの用言の格フレームを取得 */
     if (OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2) {
-	/* タグ単位へ */
-	make_tag_units(sp);
-
-	/* それぞれの用言の格フレームを取得 */
 	set_pred_caseframe(sp);
-    }
-    else if (OptExpress == OPT_TAG) {
-	make_tag_units(sp);
     }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
@@ -698,9 +711,7 @@ PARSED:
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-    if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2 || 
-	OptExpress == OPT_TAG) {
+    if (OptExpress != OPT_NOTAG) {
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
     }
 
@@ -758,12 +769,10 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptAnalysis == OPT_CASE || 
-		OptAnalysis == OPT_CASE2 || 
-		OptExpress == OPT_TAG) {
+	    if (OptExpress != OPT_NOTAG) {
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	    }
-	    if (OptDisc != OPT_DISC)
+	    if (!OptEllipsis)
 		print_result(sp);
 	    else
 		PreserveCPM(PreserveSentence(sp), sp);
@@ -787,7 +796,7 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptDisc == OPT_DISC) {
+	if (OptEllipsis) {
 	    /* 中身は保存しておくので */
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
@@ -822,7 +831,7 @@ PARSED:
 	/* 文脈解析 */
 	/************/
 
-	if (OptDisc == OPT_DISC) {
+	if (OptEllipsis) {
 	    make_dpnd_tree(sp);
 	    DiscourseAnalysis(sp);
 	}
@@ -999,7 +1008,7 @@ PARSED:
 		    if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
 		    if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
 		    if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
-		    if (strstr(buf, "-disc"))   OptDisc    = OPT_DISC;
+		    if (strstr(buf, "-ellipsis")) OptEllipsis |= OPT_ELLIPSIS;
 		    if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
 		    if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
 		    if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;

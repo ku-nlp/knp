@@ -34,8 +34,7 @@ extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];
 
 extern int 		OptAnalysis;
-extern int		OptDisc;
-extern int		OptDemo;
+extern int		OptEllipsis;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
