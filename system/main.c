@@ -322,10 +322,17 @@ void stand_alone_mode()
 		success = 0;
 
 		if (setjmp(timeout)) {
+		    /* タイムアウト時 */
 		    fprintf(stderr, "Parse timeout.\n(");
 		    for (i = 0; i < Mrph_num; i++)
 			fprintf(stderr, "%s", mrph_data[i].Goi);
 		    fprintf(stderr, ")\n");
+
+		    fprintf(Outfp, ";; Parse timeout.\n");
+		    when_no_dpnd_struct();
+		    dpnd_info_to_bnst(&(Best_mgr.dpnd));
+		    if (OptAnalysis != OPT_DISC) print_result();
+		    fflush(Outfp);
 		}
 
 		for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
@@ -489,9 +496,9 @@ void stand_alone_mode()
 		alarm(PARSETIMEOUT);
 
 		if (detect_dpnd_case_struct() == FALSE) {
-			fprintf(Outfp, ";; Cannot detect dependency structure.\n");
-			when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
-									   すべて文節が隣に係ると扱う */
+		    fprintf(Outfp, ";; Cannot detect dependency structure.\n");
+		    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
+						   すべて文節が隣に係ると扱う */
 		}
 
 		alarm(0);
