@@ -237,12 +237,12 @@ static int X_pos, Y_pos, Wid, Hig;
 }
 
 /*==================================================================*/
-     void show_link2ps(int n1, int n2, int para_flag, int x_pos)
+void show_link2ps(int depth, char *ans_flag, int para_flag, int x_pos)
 /*==================================================================*/
 {
     int i;
     
-    if (n2 != 1) {
+    if (depth != 1) {
 
 	if (para_flag == PARA_NORMAL || para_flag == PARA_INCOMP) {
 	    write_kanji(stdout, "иб", X_pos, Y_pos); X_pos += Wid*2;
@@ -250,7 +250,7 @@ static int X_pos, Y_pos, Wid, Hig;
 	    write_kanji(stdout, "ибиб", X_pos, Y_pos); X_pos += Wid*4;
 	}
 
-	if (n1%2) {
+	if (ans_flag[depth-1] == '1') {
 	    write_kanji(stdout, "ий", X_pos, Y_pos); X_pos += Wid*2;
 	} else {
 	    write_kanji(stdout, "ид", X_pos, Y_pos); X_pos += Wid*2;
@@ -258,9 +258,9 @@ static int X_pos, Y_pos, Wid, Hig;
 
 	X_pos += Wid*2;
 
-	for (i = 2; i < n2; i++) {
+	for (i = depth - 1; i > 1; i--) {
 	    X_pos += Wid*4;
-	    if ((n1%(mylog(i)))/mylog(i-1)) {
+	    if (ans_flag[i-1] == '1') {
 		write_kanji(stdout, "ив", X_pos, Y_pos); X_pos += Wid*2;
 	    } else {
 		X_pos += Wid*2;
@@ -282,9 +282,9 @@ static int X_pos, Y_pos, Wid, Hig;
 
 	X_pos += Wid*2;
 
-	for (i = 2; i < n2; i++) {
+	for (i = depth - 1; i > 1; i--) {
 	    X_pos += Wid*4;
-	    if ((n1%(mylog(i)))/mylog(i-1)) {
+	    if (ans_flag[i-1] == '1') {
 		write_kanji(stdout, "ив", X_pos, Y_pos); X_pos += Wid*2;
 	    } else {
 		X_pos += Wid*2;
