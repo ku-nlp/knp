@@ -268,10 +268,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     int i;
     int one_case_point;
 
-    /* 準用言は辞書にないだろうけど… */
     if (b_ptr->para_top_p != TRUE && 
 	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
-	 check_feature(b_ptr->f, "準用言")) && 
+	 check_feature(b_ptr->f, "準用言") || 
+	 check_feature(L_Jiritu_M(b_ptr)->f, "サ変")) && 
 	!check_feature(b_ptr->f, "複合辞")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
@@ -307,6 +307,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     dst->element_num = src->element_num;
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	dst->oblig[i] = src->oblig[i];
+	dst->adjacent[i] = src->adjacent[i];
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
 	}

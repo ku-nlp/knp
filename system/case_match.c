@@ -32,9 +32,9 @@ int     EX_match_sentence = 10;				/* 格要素 -- 文   */
 int     EX_match_tim = 5;				/* 格要素 -- 時間 */
 int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
-int	EX_match_subject = 0;
+int	EX_match_subject = 6;
 
-int	Thesaurus = USE_BGH;
+int	Thesaurus = USE_NTT;
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
@@ -179,6 +179,24 @@ int	Thesaurus = USE_BGH;
 }
 
 /*==================================================================*/
+	int cf_match_element(char *d, char *target, int unit)
+/*==================================================================*/
+{
+    int i;
+
+    if (d == NULL) {
+	return FALSE;
+    }
+
+    for (i = 0; *(d+i); i += unit) {
+	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
  int cf_match_both_element(char *d, char *p, char *target, int unit)
 /*==================================================================*/
 {
@@ -199,6 +217,29 @@ int	Thesaurus = USE_BGH;
 	}
     }
     return FALSE;
+}
+
+/*==================================================================*/
+	 int elmnt_match_score_each_sm(char *smd, char *smp)
+/*==================================================================*/
+{
+    /* 意味素 : 格要素 -- 補文 */
+    if (cf_match_both_element(smd, smp, "補文", SM_CODE_SIZE)) {
+	return EX_match_sentence;
+    }
+    /* 意味素 : 格要素 -- 時間 */
+    else if (cf_match_both_element(smd, smp, "時間", SM_CODE_SIZE)) {
+	return EX_match_tim;
+    }
+    /* 意味素 : 格要素 -- 数量 */
+    else if (cf_match_both_element(smd, smp, "数量", SM_CODE_SIZE)) {
+	return EX_match_qua;
+    }
+    /* 意味素 : 格要素 -- 主体 */
+    else if (cf_match_both_element(smd, smp, "主体", SM_CODE_SIZE)) {
+	return EX_match_subject;
+    }
+    return 0;
 }
 
 /*==================================================================*/
@@ -270,25 +311,7 @@ int	Thesaurus = USE_BGH;
 	    match_score = EX_match_score;
 	}
 
-	/* 特別 : 格要素 -- 文 */
-	if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				  "補文", SM_CODE_SIZE)) {
-	    score = EX_match_sentence;
-	}
-	/* 特別 : 格要素 -- 時間 */
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "時間", SM_CODE_SIZE)) {
-	    score = EX_match_tim;
-	}
-	/* 特別 : 格要素 -- 数量 */
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "数量", SM_CODE_SIZE)) {
-	    score = EX_match_qua;
-	}
-	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
-				       "主体", SM_CODE_SIZE)) {
-	    score = EX_match_subject;
-	}
+	score = elmnt_match_score_each_sm(cfd->sm[as1], cfp->sm[as2]);
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0') {

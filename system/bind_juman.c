@@ -143,7 +143,7 @@ FILE *w2c, *w2p, *rfc, *rfp;
     /* 形態素解析結果を rfc から読んで s に入れる
        EOS で TRUE がかえる */
     main_analysis(s, rfc);
-#ifdef DEBUG
+#ifdef DEBUGMORE
     print_result(s);
     fputc('\n', Outfp);
 #endif

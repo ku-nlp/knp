@@ -411,6 +411,7 @@ extern int	SOTO_SCORE;
 {
     /* 初期化 */
 
+    init_hash();
     init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
@@ -443,6 +444,10 @@ extern int	SOTO_SCORE;
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
 	init_proper(&current_sentence_data);
+    }
+
+    if (OptAnalysis == OPT_DISC) {
+	InitAnaphoraList();
     }
 }
 

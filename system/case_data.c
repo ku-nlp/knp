@@ -232,13 +232,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
     }
-    /* 係:連用, 〜を〜に */
-    else if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("に");
-	c_ptr->pp[c_ptr->element_num][1] = END_M;
-	c_ptr->oblig[c_ptr->element_num] = TRUE;
-	return b_ptr;
-    }
     else {
 	return NULL;
     }
@@ -389,20 +382,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.element_num ++;
 	}
-	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
-	    cpm_ptr->cf.element_num = 0;
-	    return score;
-	}
-    }
-
-    /* 「〜を〜に」 のときは自分もニ格で格要素にする */
-    if (check_feature(b_ptr->f, "ID:（〜を）〜に") && _make_data_cframe_pp(cpm_ptr, b_ptr)) {
-	_make_data_cframe_sm(cpm_ptr, b_ptr);
-	_make_data_cframe_ex(cpm_ptr, b_ptr);
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
-	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = b_ptr->num;
-	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	cpm_ptr->cf.element_num ++;
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
 	    return score;

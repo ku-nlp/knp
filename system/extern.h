@@ -126,6 +126,8 @@ extern int comp_sm(char *cpp, char *cpd, int start);
 extern int _sm_match_score(char *cpp, char *cpd, int flag);
 extern int _ex_match_score(char *cp1, char *cp2);
 extern void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag);
+extern int cf_match_element(char *d, char *target, int unit);
+extern int elmnt_match_score_each_sm(char *smd, char *smp);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr);

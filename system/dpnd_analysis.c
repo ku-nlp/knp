@@ -564,11 +564,11 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    }
 
 	if (OptAnalysis == OPT_DPND ||
-	    OptAnalysis == OPT_CASE2 ||
-	    OptAnalysis == OPT_DISC) {
+	    OptAnalysis == OPT_CASE2) {
 	    dpnd_evaluation(sp, dpnd);
 	} 
-	else if (OptAnalysis == OPT_CASE) {
+	else if (OptAnalysis == OPT_CASE || 
+		 OptAnalysis == OPT_DISC) {
 	    call_case_analysis(sp, dpnd);
 	}
 	return;
@@ -745,8 +745,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     /* 依存構造決定後 格解析を行う場合 */
 
-    if (OptAnalysis == OPT_CASE2 ||
-	OptAnalysis == OPT_DISC) {	
+    if (OptAnalysis == OPT_CASE2) {
 	sp->Best_mgr->score = -10000;
 	call_case_analysis(sp, sp->Best_mgr->dpnd);
     }

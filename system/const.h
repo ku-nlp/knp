@@ -81,6 +81,8 @@
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
+#define	TBLSIZE	1024
+
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -619,6 +621,7 @@ typedef struct {
 typedef struct cf_def {
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
+    int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
     char	*sm[CF_ELEMENT_MAX]; 	
 							/* 意味マーカ */
@@ -680,7 +683,7 @@ typedef struct {
 } TOTAL_MGR;
 
 #define	OPTIONAL_CASE_SCORE	2
-#define	SOTO_ADD_SCORE		5
+#define	SOTO_ADD_SCORE		3
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ
@@ -720,6 +723,12 @@ typedef struct sentence {
     char		*KNPSID;
     char		*Comment;
 } SENTENCE_DATA;
+
+typedef struct anaphora_list {
+    char	*key;
+    int		count;
+    struct anaphora_list *next;
+} ALIST;
 
 /*====================================================================
                                END

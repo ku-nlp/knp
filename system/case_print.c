@@ -96,7 +96,7 @@
 
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
 	return;
-    
+
     /* 得点, 意味の表示 */
 
     fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
@@ -122,66 +122,71 @@
 	fprintf(Outfp, "(自発)");
 
     /* fprintf(Outfp, "%s\n", i_ptr->DATA+i_ptr->imi); */
-    fputc('\n', Outfp);
+    fputs("-----------------------------------\n", Outfp);
 
     /* 格要素対応の表示 */
 
     for (k = 0; k < cmm_ptr->result_num; k++) {
 	if (k != 0)
 	    fputs("---\n", Outfp);
-    for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
-	num = cmm_ptr->result_lists_p[k].flag[i];
-	if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
-	    fprintf(Outfp, " ● --");
-	}
-	else {
-	    fprintf(Outfp, " ● ");
-	    _print_bnst(cpm_ptr->elem_b_ptr[num]);
+	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
+	    num = cmm_ptr->result_lists_p[k].flag[i];
 
-	    /* 係タイプの出力 */
-	    print_depend_type(cpm_ptr, num);
+	    if (cmm_ptr->cf_ptr->adjacent[i] == TRUE)
+		fputs(" ＊ ", Outfp);
+	    else
+		fputs(" ● ", Outfp);
 
-	    if (num != UNASSIGNED && cpm_ptr->cf.oblig[num] == FALSE)
+	    if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
+		fputs("--", Outfp);
+	    }
+	    else {
+		_print_bnst(cpm_ptr->elem_b_ptr[num]);
+
+		/* 係タイプの出力 */
+		print_depend_type(cpm_ptr, num);
+
+		if (num != UNASSIGNED && cpm_ptr->cf.oblig[num] == FALSE)
+		    fputc('*', Outfp);
+
+		/* 格ごとのスコアを表示 */
+		if (cmm_ptr->result_lists_p[k].score[i] >= 0)
+		    fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[k].score[i]);
+	    }
+
+	    fprintf(Outfp, " : 《");
+
+	    for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
+		if (j != 0) fputc('/', Outfp);
+		fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+	    }
+	    fprintf(Outfp, "》");
+
+	    /* 用例の出力 */
+	    if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
+		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
+		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
+		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
+		if (i == 0)
+		    fprintf(Outfp, "(彼)");
+		else if (cmm_ptr->cf_ptr->examples[i])
+		    fprintf(Outfp, "(%s)", 
+			    cmm_ptr->cf_ptr->examples[i]);
+	    } else if (cmm_ptr->cf_ptr->examples[i]) {
+		fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
+	    }
+	  
+	    if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
 		fputc('*', Outfp);
 
-	    /* 格ごとのスコアを表示 */
-	    if (cmm_ptr->result_lists_p[k].score[i] >= 0)
-		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[k].score[i]);
+	    /* 意味素の出力 */
+	    if (cmm_ptr->cf_ptr->semantics[i]) {
+		fprintf(Outfp, "[%s]", cmm_ptr->cf_ptr->semantics[i]);
+	    }
+
+	    fputc('\n', Outfp);
 	}
-
-	fprintf(Outfp, " : 《");
-
-	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
-	    if (j != 0) fputc('/', Outfp);
-	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
-	}
-	fprintf(Outfp, "》");
-
-	/* 用例の出力 */
-	if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
-	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
-	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
-	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
-	    if (i == 0)
-		fprintf(Outfp, "(彼)");
-	    else if (cmm_ptr->cf_ptr->examples[i])
-		fprintf(Outfp, "(%s)", 
-			cmm_ptr->cf_ptr->examples[i]);
-	} else if (cmm_ptr->cf_ptr->examples[i]) {
-	    fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
-	}
-	  
-	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
-	    fputc('*', Outfp);
-
-	/* 意味素の出力 */
-	if (cmm_ptr->cf_ptr->semantics[i]) {
-	    fprintf(Outfp, "[%s]", cmm_ptr->cf_ptr->semantics[i]);
-	}
-
-	fputc('\n', Outfp);
     }
-}
 }
 
 /*==================================================================*/
@@ -229,6 +234,7 @@
     int i, j;
     TOTAL_MGR *tm = sp->Best_mgr;
 
+    fputs("<Case Structure Analysis Data>\n", Outfp);
     fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibility:%d/%d ■\n", 
 	    sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
 
@@ -240,7 +246,9 @@
 	for (j = 0; j < tm->cpm[i].result_num; j++) {
 	    print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
 	}
+	fputc('\n', Outfp);
     }
+    fputs("</Case Structure Analysis Data>\n", Outfp);
 }
 
 /*====================================================================

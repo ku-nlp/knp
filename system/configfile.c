@@ -58,6 +58,22 @@ int knp_dict_file_already_defined = 0;
 }
 
 /*==================================================================*/
+		    char *check_tilde(char *file)
+/*==================================================================*/
+{
+    char *home, *ret;
+
+    if (*file == '~' && (home = getenv("HOME"))) {
+	ret = (char *)malloc_data(strlen(home)+strlen(file), "check_tilde");
+	sprintf(ret, "%s%s", home, strchr(file, '/'));
+    }
+    else {
+	ret = strdup(file);
+    }
+    return ret;
+}
+
+/*==================================================================*/
 			void read_rc(FILE *in)
 /*==================================================================*/
 {
@@ -90,7 +106,7 @@ int knp_dict_file_already_defined = 0;
 		exit(0);
 	    }
 	    else
-		Knprule_Dirname = strdup(_Atom(cell2));
+		Knprule_Dirname = check_tilde(_Atom(cell2));
 	}
 	/* KNP ルールファイル */
 	else if (!strcmp(DEF_KNP_FILE, _Atom(car(cell1)))) {
@@ -202,7 +218,7 @@ int knp_dict_file_already_defined = 0;
 		exit(0);
 	    }
 	    else
-		Knpdict_Dirname = strdup(_Atom(cell2));
+		Knpdict_Dirname = check_tilde(_Atom(cell2));
 	}
 	/* KNP 辞書ファイル */
 	else if (!strcmp(DEF_KNP_DICT_FILE, _Atom(car(cell1))) && 
@@ -282,7 +298,7 @@ int knp_dict_file_already_defined = 0;
 {
     /* ルールファイル (*.data) の fullpath を返す関数 */
 
-    char *fullname;
+    char *fullname, *home;
     int status;
     struct stat sb;
 
@@ -301,8 +317,15 @@ int knp_dict_file_already_defined = 0;
 	/* dir + filename */
 	status = stat(fullname, &sb);
 	if (status < 0) {
-	    sprintf(fullname, "%s.data", file);
 	    /* filename + ".data" */
+	    if (*file == '~' && (home = getenv("HOME"))) {
+		free(fullname);
+		fullname = (char *)malloc_data(strlen(home)+strlen(file), "check_dict_filename");
+		sprintf(fullname, "%s%s.data", home, strchr(file, '/'));
+	    }
+	    else {
+		sprintf(fullname, "%s.data", file);
+	    }
 	    status = stat(fullname, &sb);
 	    if (status < 0) {
 		*(fullname+strlen(fullname)-5) = '\0';

@@ -221,6 +221,11 @@ void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     unsigned char *point;
     int pp_num = 0;
 
+    if (!strcmp(cp+strlen(cp)-2, "＠")) {
+	c_ptr->adjacent[num] = TRUE;
+	*(cp+strlen(cp)-2) = '\0';
+    }
+
     if (!strcmp(cp+strlen(cp)-2, "＊"))
 	c_ptr->oblig[num] = FALSE;
     else
@@ -426,6 +431,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 各格要素の処理 */
 
     for (i = 0; i < CASE_MAX_NUM && j < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
+	cf_ptr->adjacent[j] = FALSE;
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j, USE_NTT_WITH_STORE);
 	if (Thesaurus == USE_BGH) {
@@ -786,9 +792,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
     Case_frame_num = 0;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	/* 準用言は辞書にないだろうけど… */
 	if (check_feature(b_ptr->f, "用言") ||
-	    check_feature(b_ptr->f, "準用言")) {
+	    check_feature(b_ptr->f, "準用言") || 
+	    check_feature(L_Jiritu_M(b_ptr)->f, "サ変")) {
 
 	    /* 以下の2つの処理はfeatureレベルで起動している */
 	    /* set_pred_voice(b_ptr); ヴォイス */

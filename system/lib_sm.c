@@ -128,7 +128,10 @@ int		SMP2SMGExist;
 		code[i] == '7' ||	/* サ変 */
 		code[i] == '9' ||	/* 時詞 */
 		code[i] == 'a' ||	/* 代名 */
-		code[i] == '2') {	/* 固 */
+		(code[i] == '2' && 	/* 固 */
+		 strncmp(code+i, "210", 3) && /* 姓 ではない */
+		 strncmp(code+i, "211", 3) && /* 名 ではない */
+		 strncmp(code+i, "2001030", 7))) { /* 大字 ではない */
 		strncpy(code+pos, code+i, SM_CODE_SIZE);
 		pos += SM_CODE_SIZE;
 	    }
@@ -139,7 +142,7 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-             void get_sm_code(BNST_DATA *ptr)
+		   void get_sm_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
     int strt, end, stop, i;
