@@ -722,6 +722,17 @@
 	return TRUE;
     }
 
+    /* &末尾ひらがな : 末尾の一文字がひらがなか チェック (形態素レベル) */
+
+    if (!strcmp(rule, "&末尾ひらがな")) {
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;	/* 表記をチェック */
+	ucp += strlen(ucp)-2;
+	code = (*ucp)*0x100+*(ucp+1);
+	if (check_char_type(code) != TYPE_HIRAGANA)
+	    return FALSE;
+	return TRUE;
+    }
+
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
     if (!strcmp(rule, "&カタカナ")) {
