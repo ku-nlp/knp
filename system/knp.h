@@ -104,6 +104,14 @@
 #include "dbm.h"
 #include "extern.h"
 
+#ifdef USE_BOEHM_GC
+#include <gc.h>
+#define	malloc	GC_malloc
+#define	calloc	GC_calloc
+#define	realloc	GC_realloc
+#define	free
+#endif
+
 /*====================================================================
 				 END
 ====================================================================*/

@@ -1,7 +1,6 @@
 #ifdef INTERNAL_HASH
 
-#include <stdio.h>
-#include <string.h>
+#include "knp.h"
 #include "hash.h"
 
 

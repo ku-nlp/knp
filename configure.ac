@@ -20,6 +20,7 @@ AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
+AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
 AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui Goi Hyou (sakuin) is located (optional)]), 
@@ -47,6 +48,12 @@ if test "$with_svm" = yes; then
 fi
 AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
 AM_CONDITIONAL(SVM_MODEL_EXIST, test "x$svm_model_exist" = xyes)
+
+if test "$with_boehm_gc" = yes; then
+    KNP_LIBS="$KNP_LIBS -lgc -ldl"
+    ETC_CFLAGS="$ETC_CFLAGS -DUSE_BOEHM_GC"
+    MAKE_DB_LIBS="$MAKE_DB_LIBS -lgc -ldl"
+fi
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
 
