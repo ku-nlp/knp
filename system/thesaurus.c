@@ -157,7 +157,7 @@ int	ParaThesaurus = USE_BGH;
 
     for (; strt <= end; strt++) {
 
-	/* 表記のまま */
+	/* 表記のまま *
 	*str_buffer = '\0';
 	for (i = strt; i <= end; i++) {
 	    if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi2) + 2 > BNST_LENGTH_MAX) {
@@ -175,6 +175,7 @@ int	ParaThesaurus = USE_BGH;
 	}
 
 	if (*result_code) goto Match;
+	*/
 
 	/* 表記，最後原形 */
 
