@@ -522,6 +522,8 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
     }
 
     sp_new = sentence_data + sp->Sen_num - 1;
+
+    sp_new->available = sp->available;
     sp_new->Sen_num = sp->Sen_num;
 
     sp_new->Mrph_num = sp->Mrph_num;
@@ -3216,128 +3218,130 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 
     sp_new = PreserveSentence(sp);
 
-    /* 各用言をチェック (文末から) */
-    for (j = 0; j < sp->Best_mgr->pred_num; j++) {
-	cpm_ptr = &(sp->Best_mgr->cpm[j]);
+    if (sp->available) {
+	/* 各用言をチェック (文末から) */
+	for (j = 0; j < sp->Best_mgr->pred_num; j++) {
+	    cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
-	/* 格フレームがない場合 (ガ格ぐらい探してもいいかもしれない) 
-	   格解析が失敗した場合 */
-	if (cpm_ptr->result_num == 0 || 
-	    cpm_ptr->cmm[0].cf_ptr->cf_address == -1 || 
-	    cpm_ptr->cmm[0].score < 0) {
-	    continue;
-	}
-
-	/* 省略解析しない用言 */
-	if (check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
-	    continue;
-	}
-	/* 固有名詞は省略解析しない */
-	else if (check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
-		 check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "地名") || 
-		 check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "組織名")) {
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
-	    continue;
-	}
-
-	cmm_ptr = &(cpm_ptr->cmm[0]);
-	cf_ptr = cmm_ptr->cf_ptr;
-
-	/* その文の主節 */
-	if (lastflag == 1 && 
-	    !check_feature(cpm_ptr->pred_b_ptr->f, "非主節") && 
-	    !check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
-	    mainflag = 1;
-	    lastflag = 0;
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "主節");
-	}
-	else {
-	    mainflag = 0;
-	}
-
-	/* もっともスコアがよくなる順番で省略の指示対象を決定する */
-
-	maxem.score = -2;
-
-	for (i = 0; i < CASE_ORDER_MAX; i++) {
-	    if (cpm_ptr->decided == CF_DECIDED) {
-
-		/* 入力側格要素を設定
-		   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
-		   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
-		if (OptEllipsis & OPT_DEMO) {
-		    make_data_cframe(sp, cpm_ptr);
-		}
-
-		ClearEllipsisMGR(&workem);
-		score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0, 
-						  cpm_ptr->cmm[0].cf_ptr, 
-						  CaseOrder[i], mainflag);
-		/* 直接の格要素の正規化していないスコアを足す */
-		workem.score += cpm_ptr->cmm[0].pure_score[0];
-		workem.pure_score += workem.score;
-		workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
-								&(cpm_ptr->cmm[0].result_lists_p[0]))));
-		if (workem.score > maxem.score) {
-		    maxem = workem;
-		    maxem.result_num = cpm_ptr->result_num;
-		    for (k = 0; k < maxem.result_num; k++) {
-			maxem.ecmm[k].cmm = cpm_ptr->cmm[k];
-			maxem.ecmm[k].cpm = *cpm_ptr;
-			maxem.ecmm[k].element_num = cpm_ptr->cf.element_num;
-		    }
-		    workem.f = NULL;
-		}
-
-		/* 格フレームの追加エントリの削除 */
-		if (!(OptEllipsis & OPT_DEMO)) {
-		    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
-		}
+	    /* 格フレームがない場合 (ガ格ぐらい探してもいいかもしれない) 
+	       格解析が失敗した場合 */
+	    if (cpm_ptr->result_num == 0 || 
+		cpm_ptr->cmm[0].cf_ptr->cf_address == -1 || 
+		cpm_ptr->cmm[0].score < 0) {
+		continue;
 	    }
-	    /* 格フレーム未決定のとき */
+
+	    /* 省略解析しない用言 */
+	    if (check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
+		continue;
+	    }
+	    /* 固有名詞は省略解析しない */
+	    else if (check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
+		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "地名") || 
+		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "組織名")) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		continue;
+	    }
+
+	    cmm_ptr = &(cpm_ptr->cmm[0]);
+	    cf_ptr = cmm_ptr->cf_ptr;
+
+	    /* その文の主節 */
+	    if (lastflag == 1 && 
+		!check_feature(cpm_ptr->pred_b_ptr->f, "非主節") && 
+		!check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
+		mainflag = 1;
+		lastflag = 0;
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "主節");
+	    }
 	    else {
-		FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i], mainflag);
+		mainflag = 0;
 	    }
+
+	    /* もっともスコアがよくなる順番で省略の指示対象を決定する */
+
+	    maxem.score = -2;
+
+	    for (i = 0; i < CASE_ORDER_MAX; i++) {
+		if (cpm_ptr->decided == CF_DECIDED) {
+
+		    /* 入力側格要素を設定
+		       照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
+		       それ以外のときは下の DeleteFromCF() で省略要素をクリア */
+		    if (OptEllipsis & OPT_DEMO) {
+			make_data_cframe(sp, cpm_ptr);
+		    }
+
+		    ClearEllipsisMGR(&workem);
+		    score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0, 
+						      cpm_ptr->cmm[0].cf_ptr, 
+						      CaseOrder[i], mainflag);
+		    /* 直接の格要素の正規化していないスコアを足す */
+		    workem.score += cpm_ptr->cmm[0].pure_score[0];
+		    workem.pure_score += workem.score;
+		    workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
+								    &(cpm_ptr->cmm[0].result_lists_p[0]))));
+		    if (workem.score > maxem.score) {
+			maxem = workem;
+			maxem.result_num = cpm_ptr->result_num;
+			for (k = 0; k < maxem.result_num; k++) {
+			    maxem.ecmm[k].cmm = cpm_ptr->cmm[k];
+			    maxem.ecmm[k].cpm = *cpm_ptr;
+			    maxem.ecmm[k].element_num = cpm_ptr->cf.element_num;
+			}
+			workem.f = NULL;
+		    }
+
+		    /* 格フレームの追加エントリの削除 */
+		    if (!(OptEllipsis & OPT_DEMO)) {
+			DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
+		    }
+		}
+		/* 格フレーム未決定のとき */
+		else {
+		    FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i], mainflag);
+		}
+	    }
+
+	    /* もっとも score のよかった組み合わせを登録 */
+	    if (maxem.score > -2) {
+		cpm_ptr->score = maxem.score;
+		maxem.ecmm[0].cmm.score = maxem.score;
+		maxem.ecmm[0].cmm.pure_score[0] = maxem.pure_score;
+		/* cmm を復元 */
+		cpm_ptr->result_num = maxem.result_num;
+		for (k = 0; k < cpm_ptr->result_num; k++) {
+		    cpm_ptr->cmm[k] = maxem.ecmm[k].cmm;
+		    cpm_ptr->cmm[k].cpm = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), 
+								     "DiscourseAnalysis");
+		    *cpm_ptr->cmm[k].cpm = maxem.ecmm[k].cpm;
+		}
+		cpm_ptr->cf.element_num = maxem.ecmm[0].element_num;
+		for (k = 0; k < maxem.ecmm[0].element_num; k++) {
+		    cpm_ptr->elem_b_ptr[k] = maxem.ecmm[0].cpm.elem_b_ptr[k];
+		    cpm_ptr->elem_b_num[k] = maxem.ecmm[0].cpm.elem_b_num[k];
+		    cpm_ptr->elem_s_ptr[k] = maxem.ecmm[0].cpm.elem_s_ptr[k];
+		}
+		/* feature の伝搬 */
+		append_feature(&(cpm_ptr->pred_b_ptr->f), maxem.f);
+		maxem.f = NULL;
+
+		/* 文脈解析において格フレームを決定した場合 */
+		if (cpm_ptr->decided != CF_DECIDED) {
+		    after_case_analysis(sp, cpm_ptr);
+		    assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
+
+		    record_match_ex(sp, cpm_ptr);
+		}
+
+		/* 格解析の結果を feature へ */
+		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
+	    }
+	    ClearEllipsisMGR(&maxem);
 	}
 
-	/* もっとも score のよかった組み合わせを登録 */
-	if (maxem.score > -2) {
-	    cpm_ptr->score = maxem.score;
-	    maxem.ecmm[0].cmm.score = maxem.score;
-	    maxem.ecmm[0].cmm.pure_score[0] = maxem.pure_score;
-	    /* cmm を復元 */
-	    cpm_ptr->result_num = maxem.result_num;
-	    for (k = 0; k < cpm_ptr->result_num; k++) {
-		cpm_ptr->cmm[k] = maxem.ecmm[k].cmm;
-		cpm_ptr->cmm[k].cpm = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), 
-								 "DiscourseAnalysis");
-		*cpm_ptr->cmm[k].cpm = maxem.ecmm[k].cpm;
-	    }
-	    cpm_ptr->cf.element_num = maxem.ecmm[0].element_num;
-	    for (k = 0; k < maxem.ecmm[0].element_num; k++) {
-		cpm_ptr->elem_b_ptr[k] = maxem.ecmm[0].cpm.elem_b_ptr[k];
-		cpm_ptr->elem_b_num[k] = maxem.ecmm[0].cpm.elem_b_num[k];
-		cpm_ptr->elem_s_ptr[k] = maxem.ecmm[0].cpm.elem_s_ptr[k];
-	    }
-	    /* feature の伝搬 */
-	    append_feature(&(cpm_ptr->pred_b_ptr->f), maxem.f);
-	    maxem.f = NULL;
-
-	    /* 文脈解析において格フレームを決定した場合 */
-	    if (cpm_ptr->decided != CF_DECIDED) {
-		after_case_analysis(sp, cpm_ptr);
-		assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
-
-		record_match_ex(sp, cpm_ptr);
-	    }
-
-	    /* 格解析の結果を feature へ */
-	    record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
-	}
-	ClearEllipsisMGR(&maxem);
+	PreserveCPM(sp_new, sp);
     }
-
-    PreserveCPM(sp_new, sp);
     clear_cf(0);
 }
 

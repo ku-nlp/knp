@@ -762,19 +762,18 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     int i, j, lastflag = -1;
     TAG_DATA *check_b_ptr;
     
-
+    /* 解析済: 構造は与えられたもの1つのみ */
     if (OptInput == OPT_PARSED) {
 	Possibility = 1;
     }
 
-    /* 依存構造決定後 格解析を行う場合 */
-
-    if (OptAnalysis == OPT_CASE2) {
-	sp->Best_mgr->score = -10000;
-	call_case_analysis(sp, sp->Best_mgr->dpnd);
-    }
-
     if (Possibility != 0) {
+	/* 依存構造決定後 格解析を行う場合 */
+	if (OptAnalysis == OPT_CASE2) {
+	    sp->Best_mgr->score = -10000;
+	    call_case_analysis(sp, sp->Best_mgr->dpnd);
+	}
+
 	if (OptAnalysis == OPT_CASE ||
 	    OptAnalysis == OPT_CASE2) {
 	    /* 格解析の結果を用言文節へ */
@@ -831,7 +830,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    }
 	}
 	return TRUE;
-    } else { 
+    }
+    else { 
 	return FALSE;
     }
 }

@@ -516,6 +516,7 @@ extern int	EX_match_subject;
     int relation_error, d_struct_error;
 
     sp->Sen_num++;
+    sp->available = 1;
 
     /* 形態素の読み込み */
 
@@ -702,6 +703,7 @@ extern int	EX_match_subject;
     alarm(ParseTimeout);
 #endif
     if (detect_dpnd_case_struct(sp) == FALSE) {
+	sp->available = 0;
 	ErrorComment = strdup("Cannot detect dependency structure");
 	when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
 					   すべて文節が隣に係ると扱う */

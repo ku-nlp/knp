@@ -738,6 +738,7 @@ typedef struct {
 
 typedef struct sentence {
     int 		Sen_num;	/* Ê¸ÈÖ¹æ 1¡Á */
+    int			available;
     int			Mrph_num;
     int			Bnst_num;
     int			New_Bnst_num;
