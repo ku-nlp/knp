@@ -101,7 +101,7 @@ extern void calc_match_matrix(SENTENCE_DATA *sp);
 /* case_analysis.c */
 extern void realloc_cmm();
 extern void init_case_frame(CASE_FRAME *cf);
-extern void init_case_analysis();
+extern void init_case_analysis_cmm();
 extern int pp_kstr_to_code(char *cp);
 extern int pp_hstr_to_code(char *cp);
 extern char *pp_code_to_kstr(int num);
@@ -121,6 +121,7 @@ extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
+extern char *make_fukugoji_string(BNST_DATA *b_ptr);
 extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
 extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
@@ -128,16 +129,17 @@ extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
 
 /* case_ipal.c */
 extern void init_cf();
-extern void init_cf2(SENTENCE_DATA *sp);
+extern void init_case_analysis_cpm(SENTENCE_DATA *sp);
 extern void close_cf();
 extern void set_pred_caseframe(SENTENCE_DATA *sp);
 extern void clear_cf(int flag);
 extern void init_mgr_cf(TOTAL_MGR *tmp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
-extern void make_internal_bnst(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
+extern void make_internal_bnst(SENTENCE_DATA *sp);
+extern int find_upper_bnst_num(BNST_DATA *bp);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -159,8 +161,7 @@ extern void print_pa_structure(SENTENCE_DATA *sp);
 /* configfile.c */
 extern char *check_dict_filename(char *file, int flag);
 extern char *check_rule_filename(char *file);
-extern void read_rc(FILE *in);
-extern void init_configfile();
+extern void init_configfile(char *opfile);
 extern void server_read_rc(FILE *fp);
 
 /* context.c */
@@ -185,12 +186,14 @@ extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
 extern void para_postprocess(SENTENCE_DATA *sp);
 extern int detect_dpnd_case_struct(SENTENCE_DATA *sp);
 extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
+extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
 extern void assign_cfeature(FEATURE **fpp, char *fname);
 extern int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd, void *p1, void *p2);
+extern void print_one_feature(char *cp, FILE *filep);
 extern void print_feature(FEATURE *fp, FILE *filep);
 extern int comp_feature(char *data, char *pattern);
 extern void print_feature2(FEATURE *fp, FILE *filep);

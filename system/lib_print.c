@@ -9,13 +9,9 @@
 ====================================================================*/
 #include "knp.h"
 
-#define PREFIX_MARK "T_P"
-#define CONWRD_MARK "T_C"
-#define SUFFIX_MARK "T_S"
-
-extern char *check_feature();
-
-char pos2symbol(char *hinshi, char *bunrui)
+/*==================================================================*/
+	     char pos2symbol(char *hinshi, char *bunrui)
+/*==================================================================*/
 {
     if (!strcmp(hinshi, "特殊")) return ' ';
     else if (!strcmp(hinshi, "動詞")) return 'v';
@@ -80,7 +76,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 		  void print_mrph_f(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
-    char yomi_buffer[256];
+    char yomi_buffer[SMALL_DATA_LEN];
 
     sprintf(yomi_buffer, "(%s)", m_ptr->Yomi);
     fprintf(Outfp, "%-16.16s%-18.18s %-14.14s",
@@ -97,6 +93,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 /*==================================================================*/
 {
     int		i, j;
+    char *cp;
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr;
 
@@ -106,6 +103,13 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    if (b_ptr->f) {
 		fprintf(Outfp, " ");
 		print_feature(b_ptr->f, Outfp);
+	    }
+
+	    /* 内部文節を格解析した結果のfeatureを出力 */
+	    for (j = 0; j < b_ptr->internal_num; j++) {
+		if (cp = check_feature((b_ptr->internal+j)->f, "格解析結果")) {
+		    print_one_feature(cp, Outfp);
+		}
 	    }
 	    fprintf(Outfp, "\n");
 	}
@@ -934,11 +938,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
        if (OptAnalysis == OPT_AssignF && !PM_Memo[0]) return;
     */
 
-    /* Barrier Matrix の出力
-    if (!(OptInhibit & OPT_INHIBIT_BARRIER))
-	print_barrier(sp->Bnst_num);
-	*/
-
     /* ヘッダの出力 */
 
     if (sp->Comment) {
@@ -1003,7 +1002,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     void push_entity(char ***list, char *key, int count, int *max)
 /*==================================================================*/
 {
-    /* malloc と realloc 分けなくていいらしい */
     if (*max == 0) {
 	*max = ALLOCATION_STEP;
 	*list = (char **)malloc_data(sizeof(char *)*(*max), "push_entity");
@@ -1019,93 +1017,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		  void prepare_entity(BNST_DATA *bp)
 /*==================================================================*/
 {
-    int count = 0, max = 0, i, flag = 0, neflag = 0;
+    int count = 0, max = 0, i, flag = 0;
     char *cp, **list, *str;
-
-    /* 固有表現 */
-    if ((cp = check_feature(bp->f, "人名"))) {
-	push_entity(&list, "【人名】", count++, &max);
-	push_entity(&list, "主体", count++, &max);
-	neflag = 1;
-	flag = 1;
-    }
-    else if ((cp = check_feature(bp->f, "組織名"))) {
-	push_entity(&list, "【組織名】", count++, &max);
-	push_entity(&list, "主体", count++, &max);
-	neflag = 1;
-	flag = 1;
-    }
-    else if ((cp = check_feature(bp->f, "地名"))) {
-	push_entity(&list, "【地名】", count++, &max);
-	push_entity(&list, "場所", count++, &max);
-	neflag = 1;
-	flag = 1;
-    }
-    else {
-	/*
-	if ((cp = check_feature(bp->f, "人名疑"))) {
-	    push_entity(&list, cp, count++, &max);
-	    flag = 1;
-	}
-	if ((cp = check_feature(bp->f, "組織名疑"))) {
-	    push_entity(&list, cp, count++, &max);
-	    flag = 1;
-	}
-	if ((cp = check_feature(bp->f, "地名疑"))) {
-	    push_entity(&list, cp, count++, &max);
-	    flag = 1;
-	}
-	*/
-    }
-
-    /* NTT意味素 */
-    if (bp->SM_code[0]) {
-	if (neflag == 0 && 
-	    (sm_match_check(sm2code("人"), bp->SM_code) || 
-	     sm_match_check(sm2code("動物"), bp->SM_code) || 
-	     sm_match_check(sm2code("組織"), bp->SM_code))) {
-	    push_entity(&list, "主体", count++, &max);
-	    flag = 1;
-	}
-	if (neflag == 0 && 
-	    sm_match_check(sm2code("場所"), bp->SM_code)) {
-	    push_entity(&list, "場所", count++, &max);
-	    flag = 1;
-	}
-	if (sm_match_check(sm2code("自然物"), bp->SM_code) || 
-	    sm_match_check(sm2code("植物"), bp->SM_code)) {
-	    push_entity(&list, "自然物", count++, &max);
-	    flag = 1;
-	}
-	if (sm_match_check(sm2code("人工物"), bp->SM_code)) {
-	    push_entity(&list, "人工物", count++, &max);
-	    flag = 1;
-	}
-	if (sm_match_check(sm2code("事象"), bp->SM_code) || 
-	    sm_match_check(sm2code("行為"), bp->SM_code)) {
-	    push_entity(&list, "事象", count++, &max);
-	    flag = 1;
-	}
-    }
-
-
-    /* その他 */
-    if ((cp = check_feature(bp->f, "時間"))) {
-	push_entity(&list, "時間", count++, &max);
-	flag = 1;
-    }
-
-    if ((cp = check_feature(bp->f, "数量"))) {
-	push_entity(&list, "数量", count++, &max);
-	flag = 1;
-    }
-
-    /* いままでのどれでもないときは、<抽象> を与える
-    if (!flag && check_feature(bp->f, "体言")) {
-	push_entity(&list, "<抽象>", count++, &max);
-    } */
-
-
 
     /* モダリティ */
     flag = 0;
@@ -1200,20 +1113,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 {
     int i;
 
-    /* タグ付けから除くもの
-       こと: 形副名詞
-       その: 連体詞形態指示詞
-       それ: 指示詞
-       (〜と)して: 複合辞
-    */
-
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "形副名詞") || 
-	    check_feature((sp->bnst_data+i)->f, "連体詞形態指示詞") || 
-	    check_feature((sp->bnst_data+i)->f, "指示詞") || 
-	    check_feature((sp->bnst_data+i)->f, "複合辞")) {
-	    continue;
-	}
 	prepare_entity(sp->bnst_data+i);
     }
 }

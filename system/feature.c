@@ -47,6 +47,13 @@
 */
 
 /*==================================================================*/
+	    void print_one_feature(char *cp, FILE *filep)
+/*==================================================================*/
+{
+    fprintf(filep, "<%s>", cp); 
+}
+
+/*==================================================================*/
 	      void print_feature(FEATURE *fp, FILE *filep)
 /*==================================================================*/
 {
@@ -55,7 +62,7 @@
 
     while (fp) {
 	if (fp->cp && strncmp(fp->cp, "Ｔ", 2))
-	    fprintf(filep, "<%s>", fp->cp); 
+	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }
 }
@@ -69,7 +76,7 @@
 
     while (fp) {
 	if (fp->cp && strncmp(fp->cp, "Ｃ", 2) && !strncmp(fp->cp, "C", 1))
-	    fprintf(filep, "<%s>", fp->cp); 
+	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }
 }
@@ -362,6 +369,9 @@
 	    else if (!strncmp((*fpp2)->cp, "&意味素付与:", strlen("&意味素付与:"))) {
 		assign_sm((BNST_DATA *)ptr, (*fpp2)->cp + strlen("&意味素付与:"));
 	    }
+	    else if (!strncmp((*fpp2)->cp, "&複合辞格解析", strlen("&複合辞格解析"))) {
+		assign_cfeature(&(((BNST_DATA *)ptr)->f), make_fukugoji_string((BNST_DATA *)ptr+1));
+	    }
 	    /*
 	    else if (!strncmp((*fpp2)->cp, "&辞書", strlen("&辞書"))) {
 		assign_f_from_dic(fpp1, ((MRPH_DATA *)ptr)->Goi);
@@ -568,8 +578,6 @@
     int i, code, type, pretype, flag;
     char *cp;
     unsigned char *ucp; 
-    static BNST_DATA *pre1 = NULL, *pre2 = NULL;
-    static char *prerule = NULL;
 
     /* &記英数カ : 記英数カ チェック (句読点以外) (形態素レベル) */
 
@@ -946,8 +954,23 @@
 	return TRUE;
     }
 
+    /*
     else if (!strncmp(rule, "&時間", strlen("&時間"))) {
 	if (sm_all_match(((BNST_DATA *)ptr2)->SM_code, "1128********")) {
+	    return TRUE;
+	}
+	else {
+	    return FALSE;
+	}
+    } */
+
+    /* &態 : 態をチェック */
+
+    else if (!strncmp(rule, "&態:", strlen("&態:"))) {
+	cp = rule + strlen("&態:");
+	if ((!strcmp(cp, "能動") && ((BNST_DATA *)ptr2)->voice == 0) || 
+	    (!strcmp(cp, "受動") && ((BNST_DATA *)ptr2)->voice == VOICE_UKEMI) || 
+	    (!strcmp(cp, "使役") && ((BNST_DATA *)ptr2)->voice == VOICE_SHIEKI)) {
 	    return TRUE;
 	}
 	else {

@@ -50,6 +50,7 @@ knp_SOURCES = \
 	bind_juman.c \
 	thesaurus.c \
 	hash.c \
+	hash.h \
 	bnst_compare.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
@@ -59,6 +60,7 @@ make_db_SOURCES = \
 	db.c \
 	tools.c \
 	japanese.c \
-	hash.c
+	hash.c \
+	hash.h
 
 make_db_LDADD = @MAKE_DB_LIBS@

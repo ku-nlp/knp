@@ -60,18 +60,31 @@ int	PrintDeletedSM = 0;
 	index_db_filename = (char *)check_dict_filename(CF_DB_NAME, FALSE);
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", data_filename);
+    }
+
     if ((cf_fp = fopen(data_filename, "rb")) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
+	fprintf(stderr, ";; Cannot open CF DATA <%s>.\n", data_filename);
 #endif
 	CFExist = FALSE;
     }
     else if ((cf_db = DB_open(index_db_filename, O_RDONLY, 0)) == NULL) {
-	fprintf(stderr, "Cannot open CF INDEX Database <%s>.\n", index_db_filename);
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "done.\nOpening %s ... failed.\n", index_db_filename);
+	}
+	fprintf(stderr, ";; Cannot open CF INDEX Database <%s>.\n", index_db_filename);
 	/* 格フレーム DATA は読めるのに、DB が読めないときは終わる */
 	exit(1);
     } 
     else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "done.\nOpening %s ... done.\n", index_db_filename);
+	}
 	CFExist = TRUE;
     }
 
@@ -111,14 +124,15 @@ int	PrintDeletedSM = 0;
 }
 
 /*==================================================================*/
-		   void init_cf2(SENTENCE_DATA *sp)
+	    void init_case_analysis_cpm(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
 
 	/* 格フレーム領域確保 */
-	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
+	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, 
+						     "init_case_analysis_cpm");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
 	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
@@ -210,7 +224,7 @@ int	PrintDeletedSM = 0;
 	    if (!strcmp(token, "和フレーム")) {
 		CF_frame.etcflag |= CF_SUM;
 	    }
-	    else if (!strcmp(token, "★変化")) {
+	    else if (!strcmp(token, "格フレーム変化")) {
 		CF_frame.etcflag |= CF_CHANGE;
 	    }
 	    else if (!strcmp(token, "ヲ使役")) {
@@ -239,12 +253,14 @@ int	PrintDeletedSM = 0;
 		;
 	    }
 	    /* merged cases */
-	    else if ((cp = strchr(token, ':')) != NULL) {
+	    else if ((cp = strstr(token, "＝")) != NULL) {
 		buf = strdup(token);
 		cp = buf+(cp-token);
 		*cp = '\0';
+		/* if (!strncmp(buf+strlen(buf)-2, "格", 2)) *(buf+strlen(buf)-2) = '\0';
+		if (!strncmp(cp+strlen(cp+2), "格", 2)) *(cp+strlen(cp+2)) = '\0'; */
 		c1 = pp_kstr_to_code(buf);
-		c2 = pp_kstr_to_code(cp+1);
+		c2 = pp_kstr_to_code(cp+2);
 		free(buf);
 
 		if (c1 == END_M || c2 == END_M) {
@@ -783,6 +799,10 @@ BNST_DATA *get_quasi_closest_case_component(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 	return NULL;
     }
 
+    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+	return b_ptr;
+    }
+
     tp = sp->bnst_data+b_ptr->num-1;
 
     if (!check_feature(tp->f, "体言")) {
@@ -815,7 +835,12 @@ BNST_DATA *get_quasi_closest_case_component(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 {
     char *cp, *buffer;
 
-    if ((cp = check_feature(bp->f, "係"))) {
+    if (check_feature(bp->f, "ID:（〜を）〜に")) {
+	buffer = (char *)malloc_data(3, "feature2case");
+	strcpy(buffer, "ニ");
+	return buffer;
+    }
+    else if ((cp = check_feature(bp->f, "係"))) {
 	buffer = strdup(cp+3);
 	if (!strncmp(buffer+strlen(buffer)-2, "格", 2)) {
 	    *(buffer+strlen(buffer)-2) = '\0';
@@ -883,6 +908,9 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
+    }
+    else if ((vtype = check_feature(b_ptr->f, "サ変名詞格解析"))) {
+	vtype = "動";
     }
     else if ((vtype = check_feature(b_ptr->f, "準用言"))) {
 	;
@@ -1038,7 +1066,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	    strcat(verb, ":C");
 	}
 	else {
-	    strcat(verb, ":A");
+	    strcat(verb, ":P");
 	}
 	plus_num = _make_ipal_cframe_subcontract(sp, b_ptr, start+f_num, verb, 0);
 	if (plus_num != 0) {
@@ -1186,9 +1214,11 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	/* 正解コーパスを入力したときに自立語がない場合がある */
 	if (b_ptr->jiritu_ptr != NULL && 
-	    (check_feature(b_ptr->f, "用言") ||
-	     /* check_feature(b_ptr->f, "準用言") || */
-	     (check_feature(b_ptr->f, "サ変名詞格解析") && b_ptr->internal == NULL))) {
+	    ((!(b_ptr->internal_num > 0 && 
+		check_feature(b_ptr->internal->f, "サ変名詞格解析") && 
+		check_feature(b_ptr->f, "用言:動")) && /* サ変動詞の場合は文節内部の方で格解析 */
+	      check_feature(b_ptr->f, "用言")) || /* 準用言はとりあえず対象外 */
+	     (check_feature(b_ptr->f, "サ変名詞格解析") && b_ptr->internal_num == 0))) { /* 複合名詞ではないサ変名詞 */
 
 	    /* 以下の2つの処理はfeatureレベルで起動している
 	       set_pred_voice(b_ptr); ヴォイス
@@ -1202,6 +1232,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	    b_ptr->cf_num = 0;
 	}
 
+	/* 文節内部のサ変名詞の解析用 */
 	for (j = 0; j < b_ptr->internal_num; j++) {
 	    if (check_feature((b_ptr->internal+j)->f, "サ変名詞格解析")) {
 		start = Case_frame_num;
@@ -1332,6 +1363,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 		get_bnst_code(bp->internal+bp->internal_num, USE_NTT);
 
 		/* 文節ルールを適用する */
+		assign_cfeature(&((bp->internal+bp->internal_num)->f), "文節内");
 		_assign_general_feature(bp->internal+bp->internal_num, 1, BnstRuleType);
 		assign_cfeature(&((bp->internal+bp->internal_num)->f), "係:文節内");
 
@@ -1359,6 +1391,16 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	    }
 	}
     }
+}
+
+/*==================================================================*/
+		int find_upper_bnst_num(BNST_DATA *bp)
+/*==================================================================*/
+{
+    while (bp->num == -1) {
+	bp = bp->parent;
+    }
+    return bp->num;
 }
 
 /*==================================================================*/

@@ -59,7 +59,7 @@ int	TEIDAI_STEP	= 2;
 }
 
 /*==================================================================*/
-		      void init_case_analysis()
+		    void init_case_analysis_cmm()
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
@@ -68,7 +68,7 @@ int	TEIDAI_STEP	= 2;
 	/* 作業cmm領域確保 */
 	Cf_match_mgr = 
 	    (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
-					"init_case_analysis");
+					"init_case_analysis_cmm");
 
 	init_mgr_cf(&Work_mgr);
     }
@@ -490,6 +490,10 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    }
 	    return i;
 	}
+	/* 「〜を〜に」 */
+	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num) {
+	    return i;
+	}
 	/* 用言にもっとも近い格要素を探す 
 	   <回数>:無格 以外 */
 	else if (cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
@@ -536,7 +540,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
-	static int number_compare(const void *i, const void *j)
+       static int number_compare(const void *i, const void *j)
 /*==================================================================*/
 {
     /* sort function */
@@ -549,6 +553,11 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 {
     int i, numbers[CF_ELEMENT_MAX];
     char str[70], token[3], *key;
+
+    /* 文節内 */
+    if (cpm_ptr->pred_b_ptr->num == -1) {
+	return NULL;
+    }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	numbers[i] = cpm_ptr->elem_b_ptr[i]->num;
@@ -574,8 +583,6 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 typedef struct cpm_cache {
-/*    int	numbers[CF_ELEMENT_MAX];
-    int	predicate; */
     char *key;
     CF_PRED_MGR *cpm;
     struct cpm_cache *next;
@@ -622,6 +629,9 @@ CPM_CACHE *CPMcache[TBLSIZE];
     CPM_CACHE **ccpp;
 
     key = inputcc2num(cpm_ptr);
+    if (key == NULL) {
+	return;
+    }
     num = hash(key, strlen(key));
 
     ccpp = &(CPMcache[num]);
@@ -646,6 +656,9 @@ CPM_CACHE *CPMcache[TBLSIZE];
     CPM_CACHE *ccp;
 
     key = inputcc2num(cpm_ptr);
+    if (key == NULL) {
+	return NULL;
+    }
     num = hash(key, strlen(key));
 
     ccp = CPMcache[num];
@@ -669,6 +682,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
       入力側に必須格が残る場合(解析不成功)      -1
       解析成功                               score (0以上)
     */
+
     int closest;
     CF_PRED_MGR *cache_ptr;
 
@@ -722,10 +736,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     int one_case_point;
 
     if (b_ptr->para_top_p != TRUE && 
-	b_ptr->cf_num > 0 && 
-	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
-	 /* check_feature(b_ptr->f, "準用言") || */
-	 (check_feature(b_ptr->f, "サ変名詞格解析") && b_ptr->internal == NULL)) && 
+	b_ptr->cf_num > 0 && /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
+	!check_feature(b_ptr->f, "ID:（弱連体）") && 
 	!check_feature(b_ptr->f, "複合辞") && 
 	!check_feature(b_ptr->f, "格解析なし")) {
 
@@ -1256,10 +1268,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化");
     }
 
-    /* 格フレームID */
-    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->cf_id);
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
-
     /* 入力側の各格要素の記述 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 省略解析の結果は除く
@@ -1367,38 +1375,53 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    /* 格解析結果 ★buffer溢れ未対応★ */
-    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->cf_id);
+    /* 格解析結果 buffer溢れ注意 */
+    sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+
+	if (i != 0) {
+	    strcat(feature_buffer, ";");
+	}
+
+	/* 割り当てなし */
 	if (num == UNASSIGNED) {
+	    /* 例外タグ */
 	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
-		sprintf(buffer, ";%s/E/%s", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
 	    }
+	    /* 割り当てなし */
 	    else {
-		sprintf(buffer, ";%s/U", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+		sprintf(buffer, "%s/U/-/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
 	    }
+	    strcat(feature_buffer, buffer);
 	}
+	/* 割り当てあり */
 	else {
 	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
-	    if (word) {
-		sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
-			cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
-			word, cpm_ptr->elem_b_ptr[num]->num);
-		free(word);
-	    }
+	    sprintf(buffer, "%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
+		    cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
+		    word ? word : "(null)", 
+		    cpm_ptr->elem_b_ptr[num]->num != -1 ? cpm_ptr->elem_b_ptr[num]->num : 
+		    find_upper_bnst_num(cpm_ptr->elem_b_ptr[num]));
+	    if (word) free(word);
+
+	    strcat(feature_buffer, buffer);
 
 	    /* 省略の場合 (特殊タグ以外) */
 	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {
-		strcat(feature_buffer, buffer);
 		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
 			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
 			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
 	    }
+	    /* 同文内 */
+	    else {
+		sprintf(buffer, "/0/%s", sp->KNPSID ? sp->KNPSID+5 : "?");
+	    }
+	    strcat(feature_buffer, buffer);
 	}
-	strcat(feature_buffer, buffer);
     }
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 }

@@ -65,7 +65,7 @@
 #define ALL_CASE_FRAME_MAX 	0
 #endif
 #define CF_ELEMENT_MAX 		20
-#define PP_ELEMENT_MAX		5
+#define PP_ELEMENT_MAX		10
 #define SM_ELEMENT_MAX		256
 #define EX_ELEMENT_MAX		256
 #define MAX_MATCH_MAX 		10
@@ -84,6 +84,8 @@
 #define DEFAULT_PARSETIMEOUT	180
 
 #define	TBLSIZE	1024
+#define	NSEED	32	/* 乱数表の種類。2 の羃乗でなければならない。 */
+#define NSIZE	256
 
 /*====================================================================
 				DEFINE
@@ -112,11 +114,7 @@
 #define OPT_SVM		2
 #define OPT_DT		3
 
-#define	OPT_CASE_SOTO	1
-#define	OPT_CASE_GAGA	2
 #define	OPT_CASE_NO	4
-#define	OPT_CASE_SOTO_OLD	8
-#define	OPT_CASE_SOTO_NO	16
 
 #define	OPT_DISC_OR_CF	1
 
@@ -385,10 +383,8 @@ typedef struct {
     int		direction;
 } GeneralRuleType;
 
-/* KNP のルールファイル指定用 (.jumanrc) */
-#ifndef DEF_GRAM_FILE
-#define         DEF_GRAM_FILE           "文法ファイル"
-#endif
+/* KNP のルールファイル指定用 (.knprc) */
+#define		DEF_JUMAN_GRAM_FILE	"JUMAN文法ディレクトリ"
 
 #define		DEF_KNP_FILE		"KNPルールファイル"
 #define		DEF_KNP_DIR		"KNPルールディレクトリ"
@@ -658,7 +654,7 @@ typedef struct cf_def {
     int 	voice;					/* ヴォイス */
     int 	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
-    char 	cf_id[SMALL_DATA_LEN];		/* 格フレームのID */
+    char 	cf_id[SMALL_DATA_LEN];			/* 格フレームのID */
     char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];

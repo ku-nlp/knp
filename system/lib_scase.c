@@ -35,7 +35,7 @@ int		ScaseDicExist;
 	}
 	ScaseDicExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open SCASE dictionary <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open SCASE dictionary <%s>.\n", filename);
 #endif
     } else {
 	if (OptDisplay == OPT_DEBUG) {
@@ -81,7 +81,7 @@ int		ScaseDicExist;
 /*==================================================================*/
 {
     int strt, end, last, stop, i, overflow_flag = 0;
-    char *cp, *ans, *anscp, str_buffer[2*BNST_LENGTH_MAX], *vtype, *predicate;
+    char *cp, *ans, *anscp, str_buffer[2*BNST_LENGTH_MAX], *vtype, *predicate, voice[3];
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
@@ -92,6 +92,17 @@ int		ScaseDicExist;
 	(vtype = check_feature(ptr->f, "用言")) && 
 	strcmp(vtype, "用言:判")) {
 	vtype += 5;
+
+	if (ptr->voice == VOICE_UKEMI || 
+	    ptr->voice == VOICE_MORAU) {
+	    strcpy(voice, ":P");
+	}
+	else if (ptr->voice == VOICE_SHIEKI) {
+	    strcpy(voice, ":C");
+	}
+	else {
+	    voice[0] = '\0';
+	}
 
 	/* まず付属語を固定，自立語を減らしていく */
 
@@ -126,11 +137,13 @@ int		ScaseDicExist;
 			cp = check_feature((ptr-1)->f, "係");
 			if (cp && (ptr-1)->jiritu_ptr != NULL) {
 			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1))->Goi, cp+3, predicate, vtype);
+			    if (voice[0]) strcat(str_buffer, voice);
 			    ans = get_scase(str_buffer);
 			}
 		    }
 		    if (ans == NULL) {
 			sprintf(str_buffer, "%s:%s", predicate, vtype);
+			if (voice[0]) strcat(str_buffer, voice);
 			ans = get_scase(str_buffer);
 		    }
 		    /* DEBUG 表示 */

@@ -573,10 +573,17 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 
     cfnum = 0;
     for (i = 0; i < sp->Best_mgr->pred_num; i++) {
-	num = sp->Best_mgr->cpm[i].pred_b_ptr->num;	/* この用言の文節番号 */
 	*(sp_new->cpm+i) = sp->Best_mgr->cpm[i];
-	sp_new->bnst_data[num].cpm_ptr = sp_new->cpm+i;
-	(sp_new->cpm+i)->pred_b_ptr = sp_new->bnst_data+num;
+	num = sp->Best_mgr->cpm[i].pred_b_ptr->num;	/* この用言の文節番号 */
+	if (num != -1) {
+	    sp_new->bnst_data[num].cpm_ptr = sp_new->cpm+i;
+	    (sp_new->cpm+i)->pred_b_ptr = sp_new->bnst_data+num;
+	}
+	/* 内部文節 */
+	else {
+	    /* internalはfreeしない */
+	    (sp_new->cpm+i)->pred_b_ptr->cpm_ptr = sp_new->cpm+i;
+	}
 	for (j = 0; j < (sp_new->cpm+i)->cf.element_num; j++) {
 	    /* 省略じゃない格要素 */
 	    if ((sp_new->cpm+i)->elem_b_num[j] != -2) {
@@ -1633,15 +1640,16 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     score += addscore;
 
     if (score > maxscore) {
+	BNST_DATA *tp = bp;
 	maxscore = score;
 	maxs = s;
 	maxpos = pos;
-	if (bp->num < 0) {
-	    maxi = bp->parent->num;
+
+	/* 文節内の場合は親文節を探しにいく */
+	while (tp->num < 0) {
+	    tp = tp->parent;
 	}
-	else {
-	    maxi = bp->num;
-	}
+	maxi = tp->num;
     }
 
     /* 省略候補 (rawscore == 0 の場合も候補として出力) */
@@ -2483,12 +2491,12 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     /* 格を与えられた順番に */
     for (j = 0; cases[j] != END_M; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
-	    if ((cf_ptr->pp[i][0] == cases[j] && 
+	    if (((cf_ptr->pp[i][0] == cases[j] && 
 		 cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED) || 
 		(OptDemo == TRUE && /* 割り当てがあって、指示詞のとき */
 		 cmm_ptr->result_lists_p[0].flag[i] != UNASSIGNED && 
 		 cf_ptr->pp[i][0] == cases[j] && 
-		 check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞")) && 
+		 check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞"))) && 
 		!(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ"))) {
 		if ((MarkEllipsisCase(cpm_ptr, cf_ptr, i)) == 0) {
 		    continue;
@@ -2909,6 +2917,14 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 
 	for (i = 0; i < CASE_ORDER_MAX; i++) {
 	    if (cpm_ptr->decided == CF_DECIDED) {
+
+		/* 入力側格要素を設定
+		   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
+		   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
+		if (OptDemo == TRUE) {
+		    make_data_cframe(sp, cpm_ptr);
+		}
+
 		ClearEllipsisMGR(&workem);
 		score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 
 						  cpm_ptr->cmm[0].cf_ptr, 
@@ -2932,7 +2948,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		}
 
 		/* 格フレームの追加エントリの削除 */
-		DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]));
+		if (OptDemo == FALSE) {
+		    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]));
+		}
 		ClearAnaphoraList(banlist);
 	    }
 	    else {

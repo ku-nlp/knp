@@ -11,16 +11,24 @@
 int	EX_PRINT_NUM = 10;
 
 /*==================================================================*/
-	void print_depend_type(CF_PRED_MGR *cpm_ptr, int num)
+   void print_depend_type(CF_PRED_MGR *cpm_ptr, int num, int flag)
 /*==================================================================*/
 {
     int i;
 
-    /* 係タイプの出力 */
+    /* 係タイプの出力
+       flag == FALSE : 対応可能な格を出力しない
+    */
+
+
 
     /* 省略のとき */
     if (cpm_ptr->elem_b_num[num] == -2) {
 	fputs("《省》", Outfp);
+	return;
+    }
+    else if (flag == FALSE && cpm_ptr->elem_b_num[num] == -1) {
+	fputs("《--》", Outfp);
 	return;
     }
 
@@ -63,7 +71,7 @@ int	EX_PRINT_NUM = 10;
     else
 	fputs("】", Outfp);
 
-    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.cf_id, 
+    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.pred_type, 
 	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
 
     /* 格フレームを決定した方法 */
@@ -83,7 +91,7 @@ int	EX_PRINT_NUM = 10;
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
 
 	/* 係タイプの出力 */
-	print_depend_type(cpm_ptr, i);
+	print_depend_type(cpm_ptr, i, TRUE);
 
 	/* 意味マーカ */
 
@@ -117,11 +125,25 @@ int	EX_PRINT_NUM = 10;
     fputc('\n', Outfp);
 }
 
+struct _sort_kv {
+    int	key;
+    int	value;
+};
+
+/*==================================================================*/
+       static int number_compare(const void *i, const void *j)
+/*==================================================================*/
+{
+    /* sort function */
+    return ((const struct _sort_kv *)i)->value-((const struct _sort_kv *)j)->value;
+}
+
 /*==================================================================*/
    void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr)
 /*==================================================================*/
 {
-    int i, j, k, num, print_num;
+    int i, j, k, l, num, print_num;
+    struct _sort_kv elist[CF_ELEMENT_MAX];
 
     if (cmm_ptr->cf_ptr->cf_address == -1)	/* 格フレームがない場合 */
 	return;
@@ -162,7 +184,16 @@ int	EX_PRINT_NUM = 10;
     for (k = 0; k < cmm_ptr->result_num; k++) {
 	if (k != 0)
 	    fputs("---\n", Outfp);
+
+	/* 格をソートして出力 */
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
+	    elist[i].key = i;
+	    elist[i].value = cmm_ptr->cf_ptr->pp[i][0];
+	}
+	qsort(elist, cmm_ptr->cf_ptr->element_num, sizeof(struct _sort_kv), number_compare);
+
+	for (l = 0; l < cmm_ptr->cf_ptr->element_num; l++) {
+	    i = elist[l].key;
 	    num = cmm_ptr->result_lists_p[k].flag[i];
 
 	    if (cmm_ptr->cf_ptr->adjacent[i] == TRUE)
@@ -177,7 +208,7 @@ int	EX_PRINT_NUM = 10;
 		_print_bnst(cpm_ptr->elem_b_ptr[num]);
 
 		/* 係タイプの出力 */
-		print_depend_type(cpm_ptr, num);
+		print_depend_type(cpm_ptr, num, FALSE);
 
 		if (num != UNASSIGNED && cpm_ptr->cf.oblig[num] == FALSE)
 		    fputc('*', Outfp);
@@ -189,7 +220,7 @@ int	EX_PRINT_NUM = 10;
 
 	    fprintf(Outfp, " : 《");
 
-	    for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
+	    for (j = 0; cmm_ptr->cf_ptr->pp[i][j] != END_M; j++) {
 		if (j != 0) fputc('/', Outfp);
 		fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
 	    }
@@ -283,6 +314,9 @@ int	EX_PRINT_NUM = 10;
        ちゃんと扱ってない */
 
     for (i = tm->pred_num-1; i >= 0; i--) {
+	if (i != tm->pred_num-1) {
+	    fputc('\n', Outfp);
+	}
 	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));
 	for (j = 0; j < tm->cpm[i].result_num; j++) {
 	    if (OptDisc == OPT_DISC) {
@@ -294,7 +328,6 @@ int	EX_PRINT_NUM = 10;
 		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
 	    }
 	}
-	fputc('\n', Outfp);
     }
     fputs("</Case Structure Analysis Data>\n", Outfp);
 }
