@@ -55,13 +55,10 @@ int		BGHExist;
 }
 
 /*==================================================================*/
-                    char *get_bgh(char *cp)
+		       char *_get_bgh(char *cp)
 /*==================================================================*/
 {
-    if (BGHExist == TRUE)
-	return db_get(bgh_db, cp);
-    else
-	return NULL;
+    return db_get(bgh_db, cp);
 }
 
 /*==================================================================*/
@@ -91,135 +88,6 @@ int		BGHExist;
       *cp = '\0';
 
     return cp;
-}
-
-/*==================================================================*/
-	void overflowed_function(char *str, int max, char *function)
-/*==================================================================*/
-{
-    str[max-1] = '\0';
-    fprintf(stderr, "Too long key <%s> in %s.\n", str, function);
-    str[max-1] = GUARD;
-}
-
-/*==================================================================*/
-		  void get_bgh_code(BNST_DATA *ptr)
-/*==================================================================*/
-{
-    int strt, end, stop, i;
-    char str_buffer[BNST_LENGTH_MAX], *code;
-    char feature_buffer[BNST_LENGTH_MAX];
-
-    /* 初期化 */
-    *(ptr->BGH_code) = '\0';
-
-    if (BGHExist == FALSE) return;
-
-    /* 
-       複合語の扱い
-       		まず付属語を固定，自立語を減らしていく
-		各形態素列に対してまず表記列で調べ，次に読み列で調べる
-    */
-
-    str_buffer[BNST_LENGTH_MAX-1] = GUARD;
-
-    /* ptr->BGH_num はinit_bnstで0に初期化されている */
-
-    /* 「する」以外の付属語の動詞は削除する
-       「結婚し始める」: 「始める」は削除し、「結婚する」で検索
-       (分類語彙表ではサ変名詞は「する」付きで登録されている) */
-
-    for (stop = 0; stop < ptr->fuzoku_num; stop++) 
-	if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助詞") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助動詞") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") ||
-	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "動詞") && 
-	     strcmp((ptr->fuzoku_ptr + stop)->Goi, "する")) || 
-	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") &&
-	     strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
-	    break;
-
-    end = ptr->settou_num + ptr->jiritu_num + stop;
-    for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
-
-	/* 表記のまま */
-
-	*str_buffer = '\0';
-	for (i = strt; i < end; i++) {
-	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
-		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		return;
-	    }
-	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-	}
-
-	code = get_bgh(str_buffer);
-
-	/* あるとき */
-	if (code) {
-	    if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
-		strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
-		ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
-		fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
-	    }
-	    strcpy(ptr->BGH_code, code);
-	    free(code);
-	}
-	if (*(ptr->BGH_code)) goto Match;
-
-	/* 表記，最後原形 */
-
-	if (!str_eq((ptr->mrph_ptr + end - 1)->Goi,
-		    (ptr->mrph_ptr + end - 1)->Goi2)) {
-	    *str_buffer = '\0';
-	    for (i = strt; i < end - 1; i++) {
-		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-	    }
-
-	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
-		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		return;
-	    }
-	    strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
-
-	    /* ナ形容詞の場合は語幹で検索 */
-	    if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
-		       "形容詞") &&
-		(str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			"ナ形容詞") ||
-		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			"ナ形容詞特殊") ||
-		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			"ナノ形容詞"))) 
-		str_buffer[strlen(str_buffer)-2] = '\0';
-
-	    code = get_bgh(str_buffer);
-
-	    if (code) {
-		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
-		    strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
-		    ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
-		    fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
-		}
-		strcpy(ptr->BGH_code, code);
-		free(code);
-	    }
-	    if (*(ptr->BGH_code)) goto Match;
-	}
-    }
-
-  Match:
-    ptr->BGH_num = strlen(ptr->BGH_code) / BGH_CODE_SIZE;
-
-    if (ptr->BGH_num > 0) {
-	sprintf(feature_buffer, "BGH:%s", str_buffer);
-	assign_cfeature(&(ptr->f), feature_buffer);
-    }
 }
 
 /*==================================================================*/

@@ -574,7 +574,7 @@ extern float	AssignReferentThreshold;
     if ((OptNE == OPT_NE || OptNE == OPT_NESM) && SMExist == TRUE) {
 	char *code;
 	for (i = 0; i < sp->Mrph_num; i++) {
-	    code = get_sm(sp->mrph_data[i].Goi);
+	    code = get_str_code(sp->mrph_data[i].Goi, USE_NTT);
 	    if (code) {
 		strcpy(sp->mrph_data[i].SM, code);
 		free(code);
@@ -607,8 +607,8 @@ extern float	AssignReferentThreshold;
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	get_bgh_code(sp->bnst_data+i);
-	get_sm_code(sp->bnst_data+i);
+	get_bnst_code(sp->bnst_data+i, USE_BGH);
+	get_bnst_code(sp->bnst_data+i, USE_NTT);
     }
 
     /* 文節へのFEATURE付与 */

@@ -407,11 +407,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 例の読みだし */
 
     unsigned char *point, *point2;
-    int max, count = 0, length = 0;
+    int max, count = 0, length = 0, thesaurus = USE_NTT;
     char *code, **destination, *buf;
-    extern char *get_bgh();
-    extern char *get_sm();
-    char *(*get_code)();
 
     if (*cp == '\0') {
 	return;
@@ -419,12 +416,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     /* 引くリソースによって関数などをセット */
     if (flag & USE_BGH) {
-	get_code = get_bgh;
+	thesaurus = USE_BGH;
 	destination = &c_ptr->ex[num];
 	max = EX_ELEMENT_MAX*BGH_CODE_SIZE;
     }
     else if (flag & USE_NTT) {
-	get_code = get_sm;
+	thesaurus = USE_NTT;
 	destination = &c_ptr->ex2[num];
 	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
     }
@@ -447,7 +444,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	*/
 
 	if (*point2 != '\0') {
-	    code = (char *)get_code(point2);
+	    code = get_str_code(point2, thesaurus);
 	    if (code) {
 		if (strlen(buf) + strlen(code) >= max) {
 		    fprintf(stderr, "Too many EX <%s> (%2dth).\n", ipal_str_buf, count);
@@ -1158,8 +1155,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		    /* 文節ルールを適用する */
 		    _assign_general_feature(bp->internal+bp->internal_num, 1, BnstRuleType);
 
-		    get_bgh_code(bp->internal+bp->internal_num);
-		    get_sm_code(bp->internal+bp->internal_num);
+		    get_bnst_code(bp->internal+bp->internal_num, USE_BGH);
+		    get_bnst_code(bp->internal+bp->internal_num, USE_NTT);
 		    assign_sm_aux_feature(bp->internal+bp->internal_num);
 		    assign_cfeature(&((bp->internal+bp->internal_num)->f), "係:文節内");
 		    (bp->internal+bp->internal_num)->parent = bp;

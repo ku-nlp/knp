@@ -50,7 +50,8 @@ knp_SOURCES = \
 	japanese.h \
 	configfile.c \
 	noun.c \
-	bind_juman.c
+	bind_juman.c \
+	thesaurus.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 

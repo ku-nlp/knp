@@ -18,6 +18,7 @@ extern char 		PM_Memo[];
 extern char  		cont_str[];
 
 extern int		IPALExist;
+extern int		BGHExist;
 extern int		SMExist;
 extern int		SM2CODEExist;
 extern int		SMP2SMGExist;
@@ -176,8 +177,6 @@ extern void server_read_rc(FILE *fp);
 extern void InitAnaphoraList();
 extern void RegisterPredicate(char *key, int voice, int cf_addr, int pp, char *word, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
-extern void discourse_analysis(SENTENCE_DATA *sp);
-extern void copy_sentence(SENTENCE_DATA *sp);
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
 extern void DiscourseAnalysis(SENTENCE_DATA *sp);
@@ -239,10 +238,9 @@ extern void append_feature(FEATURE **fpp, FEATURE *afp);
 int koou(SENTENCE_DATA *sp);
 
 /* lib_bgh.c */
+extern char *_get_bgh(char *cp);
 extern int bgh_code_match(char *c1, char *c2);
 extern void overflowed_function(char *str, int max, char *function);
-extern char *get_bgh(char *cp);
-extern void get_bgh_code(BNST_DATA *ptr);
 extern void init_bgh();
 extern void close_bgh();
 
@@ -266,22 +264,17 @@ extern void init_scase();
 extern void close_scase();
 
 /* lib_sm.c */
+extern char *_get_sm(char *cp);
 extern char *sm2code(char *cp);
 extern char *code2sm(char *cp);
 extern float ntt_code_match(char *c1, char *c2, int flag);
-extern float CalcSimilarity(char *exd, char *exp, int expand);
-extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
-extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 extern int sm_time_match(char *c);
-extern void get_sm_code(BNST_DATA *ptr);
 extern void init_sm();
-extern char *get_sm(unsigned char *cp);
 extern void close_sm();
 extern char *_smp2smg(char *cp);
 extern char *smp2smg(char *cpd, int flag);
 extern int sm_fix(BNST_DATA *bp, char *targets);
 extern void merge_smp2smg(BNST_DATA *bp);
-extern int DeleteMatchedSM(char *sm, char *del);
 extern void assign_sm_aux_feature(BNST_DATA *bp);
 extern int sm_match_check(char *pat, char *codes);
 extern int assign_sm(BNST_DATA *bp, char *cp);
@@ -370,6 +363,14 @@ extern int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr,
 extern int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr,
 				int bw_length, int fw_length);
 extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
+
+/* thesaurus.c */
+extern char *get_str_code(unsigned char *cp, int flag);
+extern void get_bnst_code(BNST_DATA *ptr, int flag);
+extern float CalcSimilarity(char *exd, char *exp, int expand);
+extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
+extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
+extern int DeleteMatchedSM(char *sm, char *del);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);

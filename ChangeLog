@@ -1,3 +1,8 @@
+2001-12-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/case_ipal.c, system/extern.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/thesaurus.c:
+	シソーラスの検索を統一インタフェースに。
+
 2001-11-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 	
 	* system/main.c: サーバーモード時に、文脈解析できなかったのを修正
