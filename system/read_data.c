@@ -273,7 +273,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	/* 文末 */
 
 	else if (str_eq(input_buffer, "EOS\n")) {
-	    
+	    /* 形態素が一つもないとき */
+	    if (sp->Mrph_num == 0) {
+		return FALSE;
+	    }
+
 	    if (homo_num) {	/* 前に同形異義語セットがあれば処理する */
 		lexical_disambiguation(m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
