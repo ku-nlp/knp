@@ -4,7 +4,7 @@
 #		 KNPの形態素，文節ルールのtranslator
 #
 #					99/09/10 by kuro@i.kyoto-u.ac.jp
-#					99/12/22 last modified
+#					99/12/25 last modified
 ######################################################################
 #
 # 各行のnotation
@@ -135,6 +135,13 @@ while ( <STDIN> ) {
 	$pattern = $1; $feature = $2; $comment = $3;
     } elsif (/^([^\t]+)[\s\t]+([^\;\t]+)[\s\t]*$/) {
 	$pattern = $1; $feature = $2; $comment = "";
+
+    #
+    # ADDed on Dec/25th/1999
+    #
+    } elsif (/^([^\s]+)$/){
+	$pattern = $1; $feature = ""; $comment = "";
+
     } else {
 	print STDERR  "line $num is invalid; $_\n";
 	next;
@@ -159,11 +166,12 @@ while ( <STDIN> ) {
 
     # 前後の文脈の前後には空文字列を挿入(出力時は?*)
 
-    if ($bnstrule_flag) {
+#    if ($bnstrule_flag) {
 	unshift(@pres, "") if ($pres[0] ne "‥");
 	push(@poss, "") if ($poss[$#poss] ne "‥");
-    }
-    
+#    }
+
+
     @all = (@pres, @self, @poss);
 
     # 代表句をつくる
@@ -185,10 +193,20 @@ while ( <STDIN> ) {
 	if ($bnstrule_flag && 
 	    ($i == 0 || $i == (@all - 1))) {
 	    print " ?*";
+
+    #
+    #ADDed Dec/26th/1999
+    #
+	} elsif (($bnstrule_flag == 0) &&
+		 (($i == 0) && ($#pres <= 0)) || ($i == (@all -1)) && ($#poss <= 0) ){
+	    print " ?*";
+
 	} else {
 	    bnst_cond($all[$i], 1, $repr_str[$i-1], $repr_str[$i+1]);
 	}
     }
+
+
     print " )\n\t$feature\n)\n";
     print "$comment\n" if $comment;
     print "\n";
