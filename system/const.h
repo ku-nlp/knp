@@ -158,6 +158,7 @@
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
+#define SM_CHECK_FULL	3
 
 /*====================================================================
 				  ?
