@@ -179,42 +179,39 @@ int	ParaThesaurus = USE_BGH;
 
 	/* 表記，最後原形 */
 
-	if (!str_eq((ptr->mrph_ptr + end)->Goi, 
-		    (ptr->mrph_ptr + end)->Goi2)) {
-	    *str_buffer = '\0';
-	    for (i = strt; i < end; i++) {
-		if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi2) + 2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-	    }
-
-	    if (strlen(str_buffer) + strlen((ptr->mrph_ptr + end)->Goi) + 2 > BNST_LENGTH_MAX) {
+	*str_buffer = '\0';
+	for (i = strt; i < end; i++) {
+	    if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi2) + 2 > BNST_LENGTH_MAX) {
 		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
 		return;
 	    }
-	    strcat(str_buffer, (ptr->mrph_ptr + end)->Goi);
-
-	    /* ナ形容詞の場合は語幹で検索 */
-	    if (str_eq(Class[(ptr->mrph_ptr + end)->Hinshi][0].id, 
-		       "形容詞") && 
-		(str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-			"ナ形容詞") || 
-		 str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-			"ナ形容詞特殊") || 
-		 str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-			"ナノ形容詞")))
-		str_buffer[strlen(str_buffer) - 2] = '\0';
-
-	    code = get_str_code(str_buffer, flag | lookup_pos);
-
-	    if (code) {
-		strcpy(result_code, code);
-		free(code);
-	    }
-	    if (*result_code) goto Match;
+	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 	}
+
+	if (strlen(str_buffer) + strlen((ptr->mrph_ptr + end)->Goi) + 2 > BNST_LENGTH_MAX) {
+	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
+	    return;
+	}
+	strcat(str_buffer, (ptr->mrph_ptr + end)->Goi);
+
+	/* ナ形容詞の場合は語幹で検索 */
+	if (str_eq(Class[(ptr->mrph_ptr + end)->Hinshi][0].id, 
+		   "形容詞") && 
+	    (str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
+		    "ナ形容詞") || 
+	     str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
+		    "ナ形容詞特殊") || 
+	     str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
+		    "ナノ形容詞")))
+	    str_buffer[strlen(str_buffer) - 2] = '\0';
+
+	code = get_str_code(str_buffer, flag | lookup_pos);
+
+	if (code) {
+	    strcpy(result_code, code);
+	    free(code);
+	}
+	if (*result_code) goto Match;
     }
 
   Match:
