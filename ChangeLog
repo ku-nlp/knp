@@ -1,3 +1,8 @@
+2005-01-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c, system/feature.c:
+	形態素曖昧性をすべてfeatureに記述
+
 2005-01-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c, system/dpnd_analysis.c:
