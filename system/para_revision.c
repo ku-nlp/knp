@@ -47,7 +47,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     
     fprintf(Outfp, "<< restrict matrix >>\n");	
     for ( i=0; i<=L_B_pos; i++ ) {
-	for ( j=L_B_pos+1; j<Bnst_num; j++ )
+	for ( j=L_B_pos+1; j<sp->Bnst_num; j++ )
 	  fprintf(Outfp, "%3d", restrict_matrix[i][j]);
 	fputc('\n', Outfp);
     }
@@ -70,7 +70,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 	    else if ( (a2+1) == b1 ) rel_pre = 1;
 	    else if ( a1 < b1 )  rel_pre = 2;
 	    else                 rel_pre = 3;	
-	    for ( a3=a2+1; a3<Bnst_num; a3++ ) {
+	    for ( a3=a2+1; a3<sp->Bnst_num; a3++ ) {
 		if ( a3 < b1 ) {	/* 重複しない */
 		    restrict_matrix[a1][a3] = 1;
 		} else {
@@ -91,7 +91,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
       case REVISE_SPOS: case REVISE_POS:
 	for ( b1=0; b1<=b2; b1++ ) {
 	    if ( a3 < b1 ) {		/* 重複しない */
-		for ( b3=b2+1; b3<Bnst_num; b3++ ) {
+		for ( b3=b2+1; b3<sp->Bnst_num; b3++ ) {
 		    restrict_matrix[b1][b3] = 1;
 		}
 	    } else {
@@ -99,7 +99,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 		else if ( (a2+1) == b1 ) rel_pre = 1;
 		else if ( a1 < b1 )  rel_pre = 2;
 		else                 rel_pre = 3;	
-		for ( b3=b2+1; b3<Bnst_num; b3++ ) {
+		for ( b3=b2+1; b3<sp->Bnst_num; b3++ ) {
 		    if ( a3 < b2 )       rel_pos = 0;
 		    else if ( a3 == b2 ) rel_pos = 1;
 		    else if ( a3 < b3 )  rel_pos = 2;
@@ -136,8 +136,8 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     int a1, a2, a3, b1, b2, b3;
     PARA_DATA *ptr1, *ptr2;
 
-    ptr1 = &(para_data[pre]);
-    ptr2 = &(para_data[pos]);
+    ptr1 = &(sp->para_data[pre]);
+    ptr2 = &(sp->para_data[pos]);
 
     a1 = ptr1->max_path[0];
     a2 = ptr1->L_B;
@@ -175,10 +175,10 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
     /* 係り受け誤りによる修正 */
 
     int i, j, k;
-    PARA_DATA *ptr = para_data + num;
+    PARA_DATA *ptr = sp->para_data + num;
 
-    for (i = 0; i < Bnst_num; i++)
-      for (j = i + 1; j < Bnst_num; j++)
+    for (i = 0; i < sp->Bnst_num; i++)
+      for (j = i + 1; j < sp->Bnst_num; j++)
 	restrict_matrix[i][j] = 1;
 
     /* 並列のキーは無視
@@ -186,8 +186,8 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
        ▼並列のキーが多くなり，また並列として扱わない場合の係り先も指
        定するようになったので，この部分は削除
 
-    for (i = 0; i < Bnst_num; i++) {
-	if (D_check_array[i] == FALSE && check_feature(bnst_data[i].f, "並キ"))
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (D_check_array[i] == FALSE && check_feature(sp->bnst_data[i].f, "並キ"))
 	    D_check_array[i] = TRUE;
     }
     */
@@ -198,13 +198,13 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 	for (k = ptr->L_B; D_found_array[k] == TRUE; k--)
 	  ;
 	for (i = 0; i <= k; i++)
-	  for (j = ptr->L_B + 1; j < Bnst_num; j++)
+	  for (j = ptr->L_B + 1; j < sp->Bnst_num; j++)
 	    restrict_matrix[i][j] = 0;
     }
 
     /* 後部の制限 */	
 
-    for (j = ptr->L_B + 2; j < Bnst_num; j++)
+    for (j = ptr->L_B + 2; j < sp->Bnst_num; j++)
       if (_check_para_d_struct(ptr->L_B + 1, j, FALSE, 0, NULL) == FALSE)
 	for (i = 0; i <= ptr->L_B; i++) {
 	    restrict_matrix[i][j] = 0;

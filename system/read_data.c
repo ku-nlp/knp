@@ -125,7 +125,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (0 && OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Lexical Disambiguation "
 		    "(%dth mrph -> %dth homo by %dth rule : %s :", 
-		    m_ptr - mrph_data, pref_mrph, pref_rule, 
+		    m_ptr - sp->mrph_data, pref_mrph, pref_rule, 
 		    (m_ptr+pref_mrph)->Goi2);
 	    for (i = 0, loop_ptr = m_ptr; i < homo_num; i++, loop_ptr++)
 		if (uniq_flag[i]) 
@@ -150,7 +150,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 	if (1 || OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, ";; Cannot disambiguate lexical ambiguities"
-		    " (%dth mrph : %s ?", m_ptr - mrph_data,
+		    " (%dth mrph : %s ?", m_ptr - sp->mrph_data,
 		    (m_ptr+pref_mrph)->Goi2);
 	    for (i = 0, loop_ptr = m_ptr; i < homo_num; i++, loop_ptr++)
 		if (uniq_flag[i]) 
@@ -166,7 +166,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 {
     U_CHAR input_buffer[DATA_LEN];
-    MRPH_DATA  *m_ptr = mrph_data;
+    MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, i,len;
 #ifdef _WIN32
     char *EUCbuffer;
@@ -174,7 +174,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     preArticleID = ArticleID;
     ArticleID = 0;
-    Mrph_num = 0;
+    sp->Mrph_num = 0;
     homo_num = 0;
     Comment[0] = '\0';
     ErrorComment = NULL;
@@ -232,29 +232,29 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 	/* 解析済みの場合 */
 
-	else if (Mrph_num == 0 && input_buffer[0] == '*') {
+	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
 	    OptAnalysis = OPT_PM;
-	    Bnst_num = 0;
+	    sp->Bnst_num = 0;
 	    for (i = 0; i < MRPH_MAX; i++) Bnst_start[i] = 0;
 	    if (sscanf(input_buffer, "* %d%c", 
-		       &Best_mgr.dpnd.head[Bnst_num],
-		       &Best_mgr.dpnd.type[Bnst_num]) != 2)  {
+		       &Best_mgr.dpnd.head[sp->Bnst_num],
+		       &Best_mgr.dpnd.type[sp->Bnst_num]) != 2)  {
 		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
 		return FALSE;
 	    }
-	    Bnst_start[Mrph_num] = 1;
-	    Bnst_num++;
+	    Bnst_start[sp->Mrph_num] = 1;
+	    sp->Bnst_num++;
 	}
 	else if (input_buffer[0] == '*') {
 	    if (OptAnalysis != OPT_PM || 
 		sscanf(input_buffer, "* %d%c", 
-		       &Best_mgr.dpnd.head[Bnst_num],
-		       &Best_mgr.dpnd.type[Bnst_num]) != 2) {
+		       &Best_mgr.dpnd.head[sp->Bnst_num],
+		       &Best_mgr.dpnd.type[sp->Bnst_num]) != 2) {
 		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
 		return FALSE;
 	    }
-	    Bnst_start[Mrph_num] = 1;
-	    Bnst_num++;
+	    Bnst_start[sp->Mrph_num] = 1;
+	    sp->Bnst_num++;
 	}	    
 
 	/* 文末 */
@@ -263,7 +263,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    
 	    if (homo_num) {	/* 前に同形異義語セットがあれば処理する */
 		lexical_disambiguation(m_ptr - homo_num - 1, homo_num + 1);
-		Mrph_num -= homo_num;
+		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
 		homo_num = 0;
 	    }
@@ -280,16 +280,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	           lexical_disambiguationを呼んで処理 */		   
 
 		lexical_disambiguation(m_ptr - homo_num - 1, homo_num + 1);
-		Mrph_num -= homo_num;
+		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
 		homo_num = 0;
 	    }
 
 	    /* 最大数を越えないようにチェック */
-	    if (Mrph_num >= MRPH_MAX) {
+	    if (sp->Mrph_num >= MRPH_MAX) {
 		fprintf(stderr, "Too many mrph (%s %s%s...)!\n", 
-			Comment, mrph_data, mrph_data+1);
-		Mrph_num = 0;
+			Comment, sp->mrph_data, sp->mrph_data+1);
+		sp->Mrph_num = 0;
 		return readtoeos(fp);
 	    }
 
@@ -323,10 +323,10 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
 
-	    /* 同形異義語は一旦 mrph_data にいれる */
+	    /* 同形異義語は一旦 sp->mrph_data にいれる */
 	    if (input_buffer[0] == '@')	homo_num++;
 
-	    Mrph_num++;
+	    sp->Mrph_num++;
 	    m_ptr++;
 	}
     }
@@ -401,12 +401,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     MRPH_DATA	*m_ptr;
     
     for (j = 0, r_ptr = MrphRuleArray; j < CurMrphRuleSize; j++, r_ptr++) {
-	for (i = 0; i < Mrph_num; i++) {
-	    m_ptr = mrph_data + i;
+	for (i = 0; i < sp->Mrph_num; i++) {
+	    m_ptr = sp->mrph_data + i;
 
 	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
 		for (k = i; k < i + match_length; k++) {
-		    m_ptr = mrph_data + k;
+		    m_ptr = sp->mrph_data + k;
 		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
 		}
 	    }
@@ -423,12 +423,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     MRPH_DATA	*m_ptr;
 
     for (j = 0; j < size; j++, r_ptr++) {
-	for (i = 0; i < Mrph_num; i++) {
-	    m_ptr = mrph_data + i;
+	for (i = 0; i < sp->Mrph_num; i++) {
+	    m_ptr = sp->mrph_data + i;
 
 	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
 		for (k = i; k < i + match_length; k++) {
-		    m_ptr = mrph_data + k;
+		    m_ptr = sp->mrph_data + k;
 		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
 		}
 	    }
@@ -649,13 +649,13 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     /* 形態素か文節かについての場合分け */
     if (flag == MorphRuleType) {
 	assign_function = assign_mrph_feature_new;
-	data = mrph_data;
-	size = Mrph_num;
+	data = sp->mrph_data;
+	size = sp->Mrph_num;
     }
     else if (flag == BnstRuleType) {
 	assign_function = assign_bnst_feature_new;
-	data = bnst_data;
-	size = Bnst_num;
+	data = sp->bnst_data;
+	size = sp->Bnst_num;
     }
 
     for (i = 0; i < GeneralRuleNum; i++) {
@@ -678,13 +678,13 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     char *cp;
     BNST_DATA *b_ptr;
 
-    b_ptr = bnst_data + Bnst_num;
-    b_ptr->num = Bnst_num;
-    Bnst_num++;
-    if (Bnst_num > BNST_MAX) {
+    b_ptr = sp->bnst_data + sp->Bnst_num;
+    b_ptr->num = sp->Bnst_num;
+    sp->Bnst_num++;
+    if (sp->Bnst_num > BNST_MAX) {
 	fprintf(stderr, "Too many bnst (%s %s%s...)!\n", 
-		Comment, mrph_data, mrph_data+1);
-	Bnst_num = 0;
+		Comment, sp->mrph_data, sp->mrph_data+1);
+	sp->Bnst_num = 0;
 	return NULL;
     }
 
@@ -772,10 +772,10 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr = NULL;
     
-    Bnst_num = 0;
+    sp->Bnst_num = 0;
     prev_stat = MRPH_SUFX;
 
-    for (i = 0, m_ptr = mrph_data; i < Mrph_num; i++, m_ptr++) {
+    for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 
 	if (check_feature(m_ptr->f, "←複合") ||
 	    check_feature(m_ptr->f, "自立"))
@@ -793,14 +793,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (i == 0 && now_stat == MRPH_SUFX) {
 	    fprintf(Outfp, 
 		    ";; Invalid input (prefix and suffix)\"%s%s ... \"!\n",
-		    mrph_data[0].Goi2, mrph_data[1].Goi2);
+		    sp->mrph_data[0].Goi2, sp->mrph_data[1].Goi2);
 	    /* return FALSE; */
 	    now_stat = MRPH_INDP;
 	} else if (prev_stat == MRPH_PRFX &&
 		   now_stat == MRPH_SUFX) {
 	    fprintf(Outfp, 
 		    ";; Invalid input (prefix and suffix)\"... %s%s ... \"!\n",
-		    mrph_data[i-1].Goi2, mrph_data[i].Goi2);
+		    sp->mrph_data[i-1].Goi2, sp->mrph_data[i].Goi2);
 	    /* return FALSE; */
 	    now_stat = MRPH_INDP;
 	}
@@ -846,7 +846,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	prev_stat = now_stat;
     }    
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num;
 					     j++, m_ptr++) {
 	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
@@ -867,9 +867,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int i, j;
     char *cp;
     MRPH_DATA	*m_ptr;
-    BNST_DATA	*b_ptr = bnst_data;
+    BNST_DATA	*b_ptr = sp->bnst_data;
 
-    for (i = 0, m_ptr = mrph_data; i < Mrph_num; i++, m_ptr++) {
+    for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	if (Bnst_start[i]) {
 	    if (i != 0) b_ptr++;
 	    b_ptr->mrph_ptr = m_ptr;
@@ -889,7 +889,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	}
     }
     
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	
 	assign_cfeature(&(b_ptr->f), "解析済");
 

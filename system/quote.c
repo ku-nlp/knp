@@ -25,8 +25,8 @@ QUOTE_DATA quote_data;
 	quote_data.out_num[i] = -1;    
     }
 
-    for (i = 0; i < Bnst_num; i++)
-      for (j = 0; j < Bnst_num; j++)
+    for (i = 0; i < sp->Bnst_num; i++)
+      for (j = 0; j < sp->Bnst_num; j++)
 	Quote_matrix[i][j] = 1;
 }
 
@@ -58,9 +58,9 @@ QUOTE_DATA quote_data;
     k = 0;
     s_num = -1;
 
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num; i++) {
 
-	if (check_feature(bnst_data[i].f, "括弧始")) {
+	if (check_feature(sp->bnst_data[i].f, "括弧始")) {
 	    /* 最大数を越えないかチェック(最後の要素が番人なので、それを変えては
 	       いけない) */
 	    if (k >= QUOTE_MAX-1) {
@@ -73,7 +73,7 @@ QUOTE_DATA quote_data;
 	    k++;
 
 	    /* 「『‥ を扱うため上のことを繰り返す */
-	    if (check_feature(bnst_data[i].f, "括弧始２")) {
+	    if (check_feature(sp->bnst_data[i].f, "括弧始２")) {
 		if (k >= QUOTE_MAX-1) {
 		    fprintf(stderr, "Too many quote (%s) ...\n", Comment);
 		    return CONTINUE;
@@ -84,7 +84,7 @@ QUOTE_DATA quote_data;
 		k++;
 	    }
 	}
-	if (check_feature(bnst_data[i].f, "括弧終")) {
+	if (check_feature(sp->bnst_data[i].f, "括弧終")) {
 	    if (s_num == -1) {
 		quote_data.out_num[k] = i; /* 括弧終が多い場合 */
 		k++;
@@ -95,7 +95,7 @@ QUOTE_DATA quote_data;
 
 
 	    /* ‥』」 を扱うため上のことを繰り返す */
-	    if (check_feature(bnst_data[i].f, "括弧終２")) {
+	    if (check_feature(sp->bnst_data[i].f, "括弧終２")) {
 		if (s_num == -1) {
 		    quote_data.out_num[k] = i; /* 括弧終が多い場合 */
 		    k++;
@@ -114,7 +114,7 @@ QUOTE_DATA quote_data;
 	if (quote_data.in_num[i] == -1) 
 	    quote_data.in_num[i] = 0;
 	if (quote_data.out_num[i] == -1)
-	    quote_data.out_num[i] = Bnst_num - 1;
+	    quote_data.out_num[i] = sp->Bnst_num - 1;
 
 	/* 一文節の括弧を考慮しない場合
 	if (quote_data.in_num[i] != quote_data.out_num[i])
@@ -156,11 +156,11 @@ QUOTE_DATA quote_data;
 	    */
 
 	    if (Quote_matrix[i][end] &&
-		(check_feature(bnst_data[i].f, "係:連格") ||
-		 check_feature(bnst_data[i].f, "係:連体") ||
-		 check_feature(bnst_data[i].f, "係:ノ格") ||
-		 check_feature(bnst_data[i].f, "係:同格連体") ||
-		 check_feature(bnst_data[i].f, "係:括弧並列")))
+		(check_feature(sp->bnst_data[i].f, "係:連格") ||
+		 check_feature(sp->bnst_data[i].f, "係:連体") ||
+		 check_feature(sp->bnst_data[i].f, "係:ノ格") ||
+		 check_feature(sp->bnst_data[i].f, "係:同格連体") ||
+		 check_feature(sp->bnst_data[i].f, "係:括弧並列")))
 		;
 	    else 
 		Quote_matrix[i][end] = 0;
@@ -169,14 +169,14 @@ QUOTE_DATA quote_data;
 	/* 括弧の右のマスク */
 
 	for (i = start; i < end; i++)
-	    for (j = end + 1; j < Bnst_num; j++)
+	    for (j = end + 1; j < sp->Bnst_num; j++)
 		Quote_matrix[i][j] = 0;
 
 	/* 括弧内の句点の右上のマスク 
 	   (句点の右は開けておく --> 次の文末とPになる) */
 
 	for (l = start; l < end; l++)
-	    if (check_feature(bnst_data[l].f, "係:文末"))
+	    if (check_feature(sp->bnst_data[l].f, "係:文末"))
 		for (i = start; i < l; i++)
 		    for (j = l + 1; j <= end; j++)
 			Quote_matrix[i][j] = 0;

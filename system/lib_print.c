@@ -126,7 +126,7 @@ char pos2symbol(char *hinshi, char *bunrui)
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr;
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (flag == 1) {
 	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
 	    if (b_ptr->f) {
@@ -377,8 +377,8 @@ char pos2symbol(char *hinshi, char *bunrui)
     init_bnst_tree_property();
 
     fputc('(', Outfp);
-    for ( i=0; i<Bnst_num; i++ )
-      print_bnst(&(bnst_data[i]), NULL);
+    for ( i=0; i<sp->Bnst_num; i++ )
+      print_bnst(&(sp->bnst_data[i]), NULL);
     fputc(')', Outfp);
     fputc('\n', Outfp);
 }
@@ -391,7 +391,7 @@ char pos2symbol(char *hinshi, char *bunrui)
     void print_M_bnst(int b_num, int max_length, int *para_char)
 /*==================================================================*/
 {
-    BNST_DATA *ptr = &(bnst_data[b_num]);
+    BNST_DATA *ptr = &(sp->bnst_data[b_num]);
     int i, len, space, comma_p;
     char tmp[BNST_LENGTH_MAX], *cp = tmp;
 
@@ -417,7 +417,7 @@ char pos2symbol(char *hinshi, char *bunrui)
     }
 
     space = ptr->para_key_type ?
-      max_length-(Bnst_num-b_num-1)*3-2 : max_length-(Bnst_num-b_num-1)*3;
+      max_length-(sp->Bnst_num-b_num-1)*3-2 : max_length-(sp->Bnst_num-b_num-1)*3;
     len = comma_p ? 
       ptr->length - 1 : ptr->length;
 
@@ -457,15 +457,15 @@ char pos2symbol(char *hinshi, char *bunrui)
     int para_char = 0;     /* para_key の表示用 */
     PARA_DATA *ptr;
 
-    for ( i=0; i<Bnst_num; i++ )
-      for ( j=0; j<Bnst_num; j++ )
+    for ( i=0; i<sp->Bnst_num; i++ )
+      for ( j=0; j<sp->Bnst_num; j++ )
 	path_matrix[i][j] = 0;
     
     /* パスのマーク付け(PARA) */
 
     if (type == PRINT_PARA) {
 	for ( i=0; i<Para_num; i++ ) {
-	    ptr = &para_data[i];
+	    ptr = &sp->para_data[i];
 	    for ( j=ptr->L_B+1; j<=ptr->R; j++ )
 	      path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
 		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] ?
@@ -475,18 +475,18 @@ char pos2symbol(char *hinshi, char *bunrui)
 
     /* 長さの計算 */
 
-    for ( i=0; i<Bnst_num; i++ ) {
-	length = bnst_data[i].length + (Bnst_num-i-1)*3;
-        if ( bnst_data[i].para_key_type ) length += 2;
+    for ( i=0; i<sp->Bnst_num; i++ ) {
+	length = sp->bnst_data[i].length + (sp->Bnst_num-i-1)*3;
+        if ( sp->bnst_data[i].para_key_type ) length += 2;
 	if ( max_length < length )    max_length = length;
     }
     
     /* 印刷用の処理 */
 
     if ( 0 ) {
-	if ( PRINT_WIDTH < Bnst_num*3 ) {
+	if ( PRINT_WIDTH < sp->Bnst_num*3 ) {
 	    over_flag = 1;
-	    Bnst_num = PRINT_WIDTH/3;
+	    sp->Bnst_num = PRINT_WIDTH/3;
 	    max_length = PRINT_WIDTH;
 	} else if ( PRINT_WIDTH < max_length ) {
 	    max_length = PRINT_WIDTH;
@@ -509,14 +509,14 @@ char pos2symbol(char *hinshi, char *bunrui)
       fprintf(Outfp, "<< RESTRICT MATRIX for QUOTE SCOPE>>\n");
 
     print_line(max_length, over_flag);
-    for ( i=0; i<(max_length-Bnst_num*3); i++ ) fputc(' ', Outfp);
-    for ( i=0; i<Bnst_num; i++ ) fprintf(Outfp, "%2d ", i);
+    for ( i=0; i<(max_length-sp->Bnst_num*3); i++ ) fputc(' ', Outfp);
+    for ( i=0; i<sp->Bnst_num; i++ ) fprintf(Outfp, "%2d ", i);
     fputc('\n', Outfp);
     print_line(max_length, over_flag);
 
-    for ( i=0; i<Bnst_num; i++ ) {
+    for ( i=0; i<sp->Bnst_num; i++ ) {
 	print_M_bnst(i, max_length, &para_char);
-	for ( j=i+1; j<Bnst_num; j++ ) {
+	for ( j=i+1; j<sp->Bnst_num; j++ ) {
 
 	    if (type == PRINT_PARA) {
 		fprintf(Outfp, "%2d", match_matrix[i][j]);
@@ -557,10 +557,10 @@ char pos2symbol(char *hinshi, char *bunrui)
     if (type == PRINT_PARA) {
 	for (i = 0; i < Para_num; i++) {
 	    fprintf(Outfp, "%c(%c):%4.1f(%4.1f) ", 
-		    para_data[i].para_char, 
-		    para_data[i].status, 
-		    para_data[i].max_score,
-		    para_data[i].pure_score);
+		    sp->para_data[i].para_char, 
+		    sp->para_data[i].status, 
+		    sp->para_data[i].max_score,
+		    sp->para_data[i].pure_score);
 	}
 	fputc('\n', Outfp);
     }
@@ -580,19 +580,19 @@ char pos2symbol(char *hinshi, char *bunrui)
       fputc(' ', Outfp);
 
     for (i = 0; i < m_ptr->para_num; i++)
-      fprintf(Outfp, " %c", para_data[m_ptr->para_data_num[i]].para_char);
+      fprintf(Outfp, " %c", sp->para_data[m_ptr->para_data_num[i]].para_char);
     fputc(':', Outfp);
 
     for (i = 0; i < m_ptr->part_num; i++) {
 	if (m_ptr->start[i] == m_ptr->end[i]) {
 	    fputc('(', Outfp);
-	    print_bnst(&bnst_data[m_ptr->start[i]], NULL);
+	    print_bnst(&sp->bnst_data[m_ptr->start[i]], NULL);
 	    fputc(')', Outfp);
 	} else {
 	    fputc('(', Outfp);
-	    print_bnst(&bnst_data[m_ptr->start[i]], NULL);
+	    print_bnst(&sp->bnst_data[m_ptr->start[i]], NULL);
 	    fputc('-', Outfp);
-	    print_bnst(&bnst_data[m_ptr->end[i]], NULL);
+	    print_bnst(&sp->bnst_data[m_ptr->end[i]], NULL);
 	    fputc(')', Outfp);
 	}
     }
@@ -609,8 +609,8 @@ char pos2symbol(char *hinshi, char *bunrui)
     int i;
     
     for (i = 0; i < Para_M_num; i++)
-      if (para_manager[i].parent == NULL)
-	print_para_manager(&para_manager[i], 0);
+      if (sp->para_manager[i].parent == NULL)
+	print_para_manager(&sp->para_manager[i], 0);
 }
 
 /*====================================================================
@@ -758,7 +758,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     if (flag == 0) {
 	show_link(depth, ans_flag, ptr->para_type, ptr->to_para_p);
 	if (OptExpress == OPT_TREEF) {
-	fputc('\n', Outfp);
 	    print_some_feature(ptr->f, Outfp);
 	}
 	fputc('\n', Outfp);
@@ -841,11 +840,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     if (OptExpress == OPT_TREE || OptExpress == OPT_TREEF) {
 	max_width = 0;
-	calc_tree_width((bnst_data + Bnst_num -1), 1);
-	show_self((bnst_data + Bnst_num -1), 1, NULL, 0);
+	calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
+	show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
     }
     else if (OptExpress == OPT_SEXP) {
-	show_sexp((bnst_data + Bnst_num -1), 0, 0);
+	show_sexp((sp->bnst_data + sp->Bnst_num -1), 0, 0);
     }
 
     fprintf(Outfp, "EOS\n");
@@ -864,8 +863,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     BNST_DATA 	*ptr;
     char b_buffer[256];
 
-    for (i = 0; i < Bnst_num; i++) {
-	ptr = &bnst_data[i];
+    for (i = 0; i < sp->Bnst_num; i++) {
+	ptr = &sp->bnst_data[i];
 	
 	b_buffer[0] = '\0';
 	if (ptr->settou_ptr) {
@@ -952,7 +951,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* Barrier Matrix の出力
     if (!(OptInhibit & OPT_INHIBIT_BARRIER))
-	print_barrier(Bnst_num);
+	print_barrier(sp->Bnst_num);
 	*/
 
     /* ヘッダの出力 */
@@ -960,7 +959,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     if (Comment[0]) {
 	fprintf(Outfp, "%s", Comment);
     } else {
-	fprintf(Outfp, "# S-ID:%d", Sen_num);
+	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
 
     if (OptAnalysis != OPT_PM) {
@@ -994,7 +993,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* チェック用
     if (OptCheck == TRUE)
-	for (i = 0; i < Bnst_num; i++)
+	for (i = 0; i < sp->Bnst_num; i++)
 	    if (tm->dpnd.check[i].num != -1) {
 		fprintf(Outfp, ";;;(check) %2d %2d %d (%d)", i, tm->dpnd.head[i], tm->dpnd.check[i].num, tm->dpnd.check[i].def);
 		for (j = 0; j < tm->dpnd.check[i].num; j++)
@@ -1004,8 +1003,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    */
 
     /* 解析結果のメインの出力 */
-
-    /* dpnd_info_to_bnst(&(tm->dpnd)); 係り受け情報を bnst 構造体に記憶 */
 
     if (OptExpress == OPT_TAB) {
 	print_mrphs(1);
@@ -1023,7 +1020,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	 OptDisplay == OPT_DEBUG)) {
 
 	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibilty:%d/%d ■\n", 
-		Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
+		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
 
 	/* 上記出力の最後の引数(依存構造の数)は1にしている．
 	   ちゃんと扱ってない */

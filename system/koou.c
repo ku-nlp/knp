@@ -21,9 +21,9 @@ extern FILE  *Outfp;
 {
     int i ,j;
 
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num; i++) {
 	koou_m_p[i] = FALSE;
-	for (j = 0; j < Bnst_num; j++)
+	for (j = 0; j < sp->Bnst_num; j++)
 	    Koou_matrix[i][j] = 0;
     }
 }
@@ -38,12 +38,12 @@ extern FILE  *Outfp;
 
     flag = FALSE;
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = KoouRuleArray; j < CurKoouRuleSize; j++, r_ptr++) {
 	    if (_regexpbnst_match(r_ptr->start_pattern, b_ptr) == TRUE) {
 		if (OptDisplay == OPT_DEBUG) 
 		    fprintf(stderr, "Start (%d) %d\n", j, i);
-		for (k = i, c_ptr = b_ptr; k < Bnst_num; k++, c_ptr++) 
+		for (k = i, c_ptr = b_ptr; k < sp->Bnst_num; k++, c_ptr++) 
 		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr)
 			== TRUE) {
 			koou_m_p[i] = TRUE;
@@ -73,7 +73,7 @@ extern FILE  *Outfp;
     int i, j;
 
     for (i = si + 1; i < start; i++) {
-	for (j = end + 1; j < Bnst_num;j++) {
+	for (j = end + 1; j < sp->Bnst_num;j++) {
 	    Dpnd_matrix[i][j] = 0;
 	}
     }
@@ -98,11 +98,11 @@ extern FILE  *Outfp;
 {
     int i, j, f_start, f_end;
 
-    for (i = 0; i < Bnst_num; i++){
+    for (i = 0; i < sp->Bnst_num; i++){
 	if (koou_m_p[i] == TRUE) {
 	    f_start = -1;
 	    f_end = -1;
-	    for (j = i; j < Bnst_num; j++){
+	    for (j = i; j < sp->Bnst_num; j++){
 		if (Koou_matrix[i][j] > 0) {
 		    Dpnd_matrix[i][j] = (int)'D';
 		    if (Koou_matrix[i][j] == 1) {

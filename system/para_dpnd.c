@@ -19,10 +19,10 @@ extern FILE  *Outfp;
 		    int check_stop_extend(int num)
 /*==================================================================*/
 {
-    if (check_feature(bnst_data[num].f, "読点") ||
-	check_feature(bnst_data[num].f, "提題") ||
-	(check_feature(bnst_data[num].f, "係:デ格") &&
-	 check_feature(bnst_data[num].f, "ハ")))
+    if (check_feature(sp->bnst_data[num].f, "読点") ||
+	check_feature(sp->bnst_data[num].f, "提題") ||
+	(check_feature(sp->bnst_data[num].f, "係:デ格") &&
+	 check_feature(sp->bnst_data[num].f, "ハ")))
       return TRUE;
     else
       return FALSE;
@@ -36,11 +36,11 @@ extern FILE  *Outfp;
 
     int i;
 
-    if (para_data[m_ptr->para_data_num[0]].status == 's') 
+    if (sp->para_data[m_ptr->para_data_num[0]].status == 's') 
       return TRUE;
 
     for (i = m_ptr->start[0]; i <= m_ptr->end[0]; i++)
-      if (check_feature(bnst_data[i].f, "用言"))
+      if (check_feature(sp->bnst_data[i].f, "用言"))
 	return TRUE;
     return FALSE;
 }
@@ -100,7 +100,7 @@ extern FILE  *Outfp;
 		/* revise_para_kakariからの呼出(s_p == NULL)は表示なし */
 		if (OptDisplay == OPT_DEBUG && s_p) {
 		    fprintf(Outfp, ";; Cannot find a head for bunsetsu <");
-		    print_bnst(bnst_data + i, NULL);
+		    print_bnst(sp->bnst_data + i, NULL);
 		    fprintf(Outfp, ">.\n");
 		}
 		success_p = FALSE;
@@ -236,7 +236,7 @@ extern FILE  *Outfp;
     if (m_ptr->status == 's') {
 	noun_flag = 1; 
 	for (k = 0; k < m_ptr->part_num; k++)
-	    if (!check_feature(bnst_data[m_ptr->end[k]].f, "体言"))
+	    if (!check_feature(sp->bnst_data[m_ptr->end[k]].f, "体言"))
 		noun_flag = 0;
 	if (noun_flag) {
 	    for (k = 0; k < m_ptr->part_num - 1; k++)
@@ -333,10 +333,10 @@ extern FILE  *Outfp;
       Mask_matrix[i][m_ptr->end[k]] = 0;
     */
     for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-      for (j = m_ptr->end[k] + 1; j < Bnst_num; j++)
+      for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
 	Mask_matrix[i][j] = 0;
 
-    if (para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
+    if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
       for (i = 0; i < m_ptr->start[0]; i++)
 	Mask_matrix[i][m_ptr->end[0]] = 0;
     
@@ -346,7 +346,7 @@ extern FILE  *Outfp;
 	  for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
 	    Mask_matrix[i][j] = 0;
 	for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-	  for (j = m_ptr->end[k] + 1; j < Bnst_num; j++)
+	  for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
 	    Mask_matrix[i][j] = 0;
     }
     
@@ -356,7 +356,7 @@ extern FILE  *Outfp;
       for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
 	Mask_matrix[i][j] = 0;
     for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
-      for (j = m_ptr->end[k] + 1; j < Bnst_num; j++)
+      for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
 	Mask_matrix[i][j] = 0;
 
     /* 並列の係り先 */
@@ -386,8 +386,8 @@ extern FILE  *Outfp;
 {
     int i, j;
 
-    for (i = 0; i < Bnst_num; i++)
-      for (j = 0; j < Bnst_num; j++)
+    for (i = 0; i < sp->Bnst_num; i++)
+      for (j = 0; j < sp->Bnst_num; j++)
 	Mask_matrix[i][j] = 1;
 }
 
@@ -400,14 +400,14 @@ extern FILE  *Outfp;
     /* 初期化 */
 
     init_mask_matrix();
-    for (i = 0; i < Bnst_num; i++)
+    for (i = 0; i < sp->Bnst_num; i++)
       D_check_array[i] = FALSE;
 
     /* 並列構造内の係受けチェック，マスク */
     
     for (i = 0; i < Para_M_num; i++)
-      if (para_manager[i].parent == NULL)
-	if (check_para_d_struct(&para_manager[i]) == FALSE)
+      if (sp->para_manager[i].parent == NULL)
+	if (check_para_d_struct(&sp->para_manager[i]) == FALSE)
 	  return FALSE;
 
     return TRUE;

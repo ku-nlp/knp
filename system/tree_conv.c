@@ -16,11 +16,11 @@
     int i;
 
     for (i = 0; i < BNST_MAX; i++) {
-	bnst_data[i].parent = NULL;
-	bnst_data[i].child[0] = NULL;
-	bnst_data[i].para_top_p = FALSE;
-	bnst_data[i].para_type = PARA_NIL;
-	bnst_data[i].to_para_p = FALSE;
+	sp->bnst_data[i].parent = NULL;
+	sp->bnst_data[i].child[0] = NULL;
+	sp->bnst_data[i].para_top_p = FALSE;
+	sp->bnst_data[i].para_type = PARA_NIL;
+	sp->bnst_data[i].to_para_p = FALSE;
     }
 }   
 
@@ -84,36 +84,36 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
        係先を隣のheadから末尾のheadに変更する．
        また部分並列の係り先を末尾のheadに変更する．*/
 
-    for (i = 0; i < Bnst_num - 1; i++)
-	buffer[i] = bnst_data[i].dpnd_head;
+    for (i = 0; i < sp->Bnst_num - 1; i++)
+	buffer[i] = sp->bnst_data[i].dpnd_head;
 
     for (i = 0; i < Para_M_num; i++) {
-	for (j = 0; j < para_manager[i].part_num - 1; j++) {
-	    buffer[para_manager[i].end[j]] = 
-		para_manager[i].end[para_manager[i].part_num - 1];
-	    for (k = para_manager[i].start[j];
-		 k <= para_manager[i].end[j]; k++)
-		if (Mask_matrix[k][para_manager[i].end[j]] == 3) 
+	for (j = 0; j < sp->para_manager[i].part_num - 1; j++) {
+	    buffer[sp->para_manager[i].end[j]] = 
+		sp->para_manager[i].end[sp->para_manager[i].part_num - 1];
+	    for (k = sp->para_manager[i].start[j];
+		 k <= sp->para_manager[i].end[j]; k++)
+		if (Mask_matrix[k][sp->para_manager[i].end[j]] == 3) 
 		    buffer[k] = 
-			para_manager[i].end[para_manager[i].part_num - 1];
+			sp->para_manager[i].end[sp->para_manager[i].part_num - 1];
 	}
     }
 
     /* 依存構造木構造リンク付け */
 
-    for (j = Bnst_num - 1; j >= 0; j--) {
+    for (j = sp->Bnst_num - 1; j >= 0; j--) {
 	child_num = 0;
 	for (i = j - 1; i >= 0; i--)
 	  if (buffer[i] == j) {
-	      bnst_data[j].child[child_num++] = bnst_data + i;
+	      sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
 	      if (child_num > T_CHILD_MAX) return FALSE;
-	      bnst_data[i].parent = bnst_data + j;
+	      sp->bnst_data[i].parent = sp->bnst_data + j;
 	      if (Mask_matrix[i][j] == 3) {
-		  bnst_data[i].para_type = PARA_INCOMP;
+		  sp->bnst_data[i].para_type = PARA_INCOMP;
 	      }
 	      /* PARA_NORMALは展開時にセット */
 	  }
-	bnst_data[j].child[child_num] = NULL;
+	sp->bnst_data[j].child[child_num] = NULL;
     }
     
     return TRUE;
@@ -126,8 +126,8 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     int i;
 
     for (i = p_ptr->R - p_ptr->L_B - 1; i >= 0; i--) {
-	if (bnst_data + p_ptr->max_path[i] == b_ptr)
-	  return bnst_data + p_ptr->L_B + i + 1;
+	if (sp->bnst_data + p_ptr->max_path[i] == b_ptr)
+	  return sp->bnst_data + p_ptr->L_B + i + 1;
     }
     return NULL;
 }
@@ -146,9 +146,9 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
       strong_para_expand(m_ptr->child[i]);
 
 
-    p_ptr = para_data + m_ptr->para_data_num[0];
+    p_ptr = sp->para_data + m_ptr->para_data_num[0];
     if (p_ptr->status == 's') {
-	start_b_ptr = bnst_data + m_ptr->start[0];
+	start_b_ptr = sp->bnst_data + m_ptr->start[0];
 	for (i = m_ptr->start[0], b_ptr = start_b_ptr; i < m_ptr->end[0]; 
 	     i++, b_ptr++)
 	  for (j = 0; b_ptr->child[j]; j++)
@@ -181,12 +181,12 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     for (i = 0; i < m_ptr->child_num; i++)
       para_top_expand(m_ptr->child[i]);
 
-    end_ptr = bnst_data + m_ptr->end[m_ptr->part_num - 1];
-    pre_end_ptr = bnst_data + m_ptr->end[m_ptr->part_num - 2];
+    end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 1];
+    pre_end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 2];
 	
-    new_ptr = bnst_data + Bnst_num + New_Bnst_num;
-    New_Bnst_num++;
-    if ((Bnst_num + New_Bnst_num) > BNST_MAX) {
+    new_ptr = sp->bnst_data + sp->Bnst_num + sp->New_Bnst_num;
+    sp->New_Bnst_num++;
+    if ((sp->Bnst_num + sp->New_Bnst_num) > BNST_MAX) {
 	fprintf(stderr, "Too many nodes in expanding para top .\n");
 	exit(1);
     }
@@ -218,7 +218,7 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     end_ptr->para_top_p = TRUE;
     new_ptr->para_type = PARA_NORMAL;
     for (i = 0; i < m_ptr->part_num - 1; i++)
-      bnst_data[m_ptr->end[i]].para_type = PARA_NORMAL;
+      sp->bnst_data[m_ptr->end[i]].para_type = PARA_NORMAL;
 }
 
 /*==================================================================*/
@@ -295,9 +295,9 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	for ( i=0; para_ptr->child[i]; i++ )
 	  if (para_ptr->child[i]->para_type == PARA_NORMAL) {
 	      
-	      new_ptr = bnst_data + Bnst_num + New_Bnst_num;
-	      New_Bnst_num++;
-	      if ((Bnst_num + New_Bnst_num) > BNST_MAX) {
+	      new_ptr = sp->bnst_data + sp->Bnst_num + sp->New_Bnst_num;
+	      sp->New_Bnst_num++;
+	      if ((sp->Bnst_num + sp->New_Bnst_num) > BNST_MAX) {
 		  fprintf(stderr, 
 			  "Too many nodes in expanding incomplete para .\n");
 		  exit(1);
@@ -344,22 +344,22 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 
     init_bnst_tree_property();
 
-    New_Bnst_num = 0;    				/* 初期化 */
+    sp->New_Bnst_num = 0;    				/* 初期化 */
 
     if (make_simple_tree() == FALSE)			/* リンク付け */
 	return FALSE;
 	
     if (OptExpandP == TRUE) 
 	for (i = 0; i < Para_M_num; i++)		/* 強並列の展開 */
-	    if (para_manager[i].parent == NULL)
-		strong_para_expand(para_manager + i);    
+	    if (sp->para_manager[i].parent == NULL)
+		strong_para_expand(sp->para_manager + i);    
     for (i = 0; i < Para_M_num; i++) 			/* PARAの展開 */
-      if (para_manager[i].parent == NULL)
-	para_top_expand(para_manager + i);    
+      if (sp->para_manager[i].parent == NULL)
+	para_top_expand(sp->para_manager + i);    
     if (OptExpandP == TRUE) 
-      para_modifier_expand(bnst_data + Bnst_num - 1);	/* PARA修飾の展開 */
+      para_modifier_expand(sp->bnst_data + sp->Bnst_num - 1);	/* PARA修飾の展開 */
     /*
-    incomplete_para_expand(bnst_data + Bnst_num - 1);*/	/* 部分並列の展開 */
+    incomplete_para_expand(sp->bnst_data + sp->Bnst_num - 1);*/	/* 部分並列の展開 */
 
     return TRUE;
 }

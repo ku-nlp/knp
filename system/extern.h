@@ -6,16 +6,14 @@
 
     $Id$
 ====================================================================*/
+extern SENTENCE_DATA 	*sp;
+extern SENTENCE_DATA 	sentence_data[256];
+
 extern int		Process_type;
-extern int		Mrph_num;
-extern int		Mrph_all_num;
-extern int		Bnst_num;
-extern int		New_Bnst_num;
 extern int		Para_num;
 extern int		Para_M_num;
 extern int		Revised_para_num;
 
-extern int		Sen_num;
 extern char 		Comment[];
 extern char		KNPSID[];
 extern char		*ErrorComment;
@@ -31,10 +29,6 @@ DBM_FILE		sm_db;
 DBM_FILE		sm2code_db;
 DBM_FILE		smp2smg_db;
 
-extern MRPH_DATA 	mrph_data[];
-extern BNST_DATA 	bnst_data[];
-extern PARA_DATA	para_data[];
-extern PARA_MANAGER	para_manager[];
 extern NamedEntity	NE_data[];
 
 extern SENTENCE_DATA	sentence_data[];

@@ -59,7 +59,7 @@ extern QUOTE_DATA quote_data;
 
 	else if (end <= L_B_pos) {
 	    for (i = start + 1; i <= end; i++)
-		for (j = end + 1; j < Bnst_num; j++)
+		for (j = end + 1; j < sp->Bnst_num; j++)
 		    restrict_matrix[i][j] = 0;
 	}
 
@@ -67,13 +67,13 @@ extern QUOTE_DATA quote_data;
 
 	else {
 	    for (i = 0; i <= end; i++)
-		for (j = start; j < Bnst_num; j++)
+		for (j = start; j < sp->Bnst_num; j++)
 		    if (i < start || end < j)
 			restrict_matrix[i][j] = 0;
 
 	    /* 括弧の中に句点がある場合 */
 	    for (l = start; l < end; l++)
-		if (check_feature(bnst_data[l].f, "係:文末"))
+		if (check_feature(sp->bnst_data[l].f, "係:文末"))
 		    for (i = start; i <= l; i++)
 			for (j = l + 1; j <= end; j++)
 			    restrict_matrix[i][j] = 0;
@@ -90,8 +90,8 @@ extern QUOTE_DATA quote_data;
 {
     int flag1, flag2;
     char *cp1, *cp2;
-    BNST_DATA *ptr1 = &(bnst_data[pos1]);
-    BNST_DATA *ptr2 = &(bnst_data[pos2]);
+    BNST_DATA *ptr1 = &(sp->bnst_data[pos1]);
+    BNST_DATA *ptr2 = &(sp->bnst_data[pos2]);
 
     /*
       パスのスコア計算において区切りペナルティをcancelする条件
@@ -128,8 +128,8 @@ extern QUOTE_DATA quote_data;
 /*==================================================================*/
 {
     int minus_score = 0;
-    int level1 = bnst_data[L_B_pos].sp_level;
-    int level2 = bnst_data[pos].sp_level;
+    int level1 = sp->bnst_data[L_B_pos].sp_level;
+    int level2 = sp->bnst_data[pos].sp_level;
 
     if (level1 <= level2)
       minus_score = MINUS * (level2 - level1 + 1);
@@ -140,12 +140,12 @@ extern QUOTE_DATA quote_data;
    int calc_dynamic_level_penalty(int L_B_pos, int pos1, int pos2)
 /*==================================================================*/
 {
-    if (bnst_data[pos1].sp_level == bnst_data[pos2].sp_level &&
+    if (sp->bnst_data[pos1].sp_level == sp->bnst_data[pos2].sp_level &&
 	bnst_match(pos1, pos2) &&
 	!bnst_match(pos1, L_B_pos))
 	return 0;
-    else if (check_feature(bnst_data[pos1].f, "提題") &&
-	     check_feature(bnst_data[pos2].f, "提題"))
+    else if (check_feature(sp->bnst_data[pos1].f, "提題") &&
+	     check_feature(sp->bnst_data[pos2].f, "提題"))
 	return 0;
 			/* 「〜は」の場合は読点の有無,レベルを無視 */
     else
@@ -158,7 +158,7 @@ extern QUOTE_DATA quote_data;
 {
     BNST_DATA *b_ptr;
 
-    b_ptr = &bnst_data[R_pos];
+    b_ptr = &sp->bnst_data[R_pos];
 
     if (type == PARA_KEY_I) { 
 	return 0;
@@ -276,7 +276,7 @@ extern QUOTE_DATA quote_data;
     /* 「〜，それを」という並列は中止 */
 
     if (L_B_pos + 1 == R_pos &&	
-	check_feature(bnst_data[R_pos].f, "指示詞"))
+	check_feature(sp->bnst_data[R_pos].f, "指示詞"))
 	return;
 
     /* ルールによる制限(類似スコアの閾値を取得) */
@@ -290,9 +290,9 @@ extern QUOTE_DATA quote_data;
 	sim_threshold = 100.0;
 	nth = 0;
 	while (fp = (ptr->f_pattern).fp[nth]) {
-	    if (feature_AND_match(fp, bnst_data[R_pos].f,
-				  bnst_data + L_B_pos,
-				  bnst_data + R_pos) == TRUE) {
+	    if (feature_AND_match(fp, sp->bnst_data[R_pos].f,
+				  sp->bnst_data + L_B_pos,
+				  sp->bnst_data + R_pos) == TRUE) {
 		if (cp = (char *)check_feature(fp, "&ST")) {
 		    sscanf(cp, "&ST:%f", &new_threshold);
 		} else {
@@ -307,9 +307,9 @@ extern QUOTE_DATA quote_data;
     }
 
     /* if (feature_pattern_match(&(ptr->f_pattern), 
-       bnst_data[R_pos].f,
-       bnst_data + L_B_pos,
-       bnst_data + R_pos) == FALSE) */
+       sp->bnst_data[R_pos].f,
+       sp->bnst_data + L_B_pos,
+       sp->bnst_data + R_pos) == FALSE) */
 
     /*		    */
     /* DP MATCHING  */
@@ -384,7 +384,7 @@ extern QUOTE_DATA quote_data;
 /*==================================================================*/
 {
     int i, j, k;
-    PARA_DATA *para_ptr = &(para_data[para_num]);
+    PARA_DATA *para_ptr = &(sp->para_data[para_num]);
     int L_B_pos = para_ptr->L_B;
 
     /* 
@@ -403,25 +403,25 @@ extern QUOTE_DATA quote_data;
     para_ptr->manager_ptr = NULL;
 
     if (restrict_p == FALSE)
-	for (i = 0; i < Bnst_num; i++)
-	    for (j = i + 1; j < Bnst_num; j++)
+	for (i = 0; i < sp->Bnst_num; i++)
+	    for (j = i + 1; j < sp->Bnst_num; j++)
 		restrict_matrix[i][j] = 1;
 
     mask_quote_scope(L_B_pos);
 
-    for (k = 0; k < Bnst_num; k++) {
+    for (k = 0; k < sp->Bnst_num; k++) {
 	penalty_table[k] = (k == L_B_pos) ? 
 	  0 : calc_static_level_penalty(L_B_pos, k);
     }
 
-    for (j = L_B_pos+1; j < Bnst_num; j++)
+    for (j = L_B_pos+1; j < sp->Bnst_num; j++)
 	_detect_para_scope(para_ptr, j);
 
     if (para_ptr->status == 'x') {
 	;
 	/*
 	fprintf(Outfp, ";; Cannot find proper CS for the key <");
-	print_bnst(bnst_data + ptr->L_B, NULL);
+	print_bnst(sp->bnst_data + ptr->L_B, NULL);
 	fprintf(Outfp, ">.\n");
 	*/
     } else if (para_ptr->status == 'n' &&
@@ -449,28 +449,28 @@ extern QUOTE_DATA quote_data;
     int i;
     char *cp, type[16], condition[256];
 
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num; i++) {
 
-	if ((cp = (char *)check_feature(bnst_data[i].f, "並キ")) != NULL) {
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "並キ")) != NULL) {
 
-	    bnst_data[i].para_num = Para_num;
+	    sp->bnst_data[i].para_num = Para_num;
 
 	    type[0] = NULL;
 	    condition[0] = NULL;
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
-	    para_data[Para_num].para_char = 'a'+ Para_num;
-	    para_data[Para_num].L_B = i;
+	    sp->para_data[Para_num].para_char = 'a'+ Para_num;
+	    sp->para_data[Para_num].L_B = i;
 
 	    if (!strcmp(type, "名")) {
-		bnst_data[i].para_key_type = PARA_KEY_N	;
+		sp->bnst_data[i].para_key_type = PARA_KEY_N	;
 	    } else if (!strcmp(type, "述")) {
-		bnst_data[i].para_key_type = PARA_KEY_P;
+		sp->bnst_data[i].para_key_type = PARA_KEY_P;
 	    } else if (!strcmp(type, "？")) {
-		bnst_data[i].para_key_type = PARA_KEY_A;
+		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
-	    para_data[Para_num].type = bnst_data[i].para_key_type;
-	    string2feature_pattern(&(para_data[Para_num].f_pattern),condition);
+	    sp->para_data[Para_num].type = sp->bnst_data[i].para_key_type;
+	    string2feature_pattern(&(sp->para_data[Para_num].f_pattern),condition);
 	    
 	    Para_num ++;
 	    if (Para_num >= PARA_MAX) {
@@ -479,22 +479,22 @@ extern QUOTE_DATA quote_data;
 	    }
 	}
 	else {
-	    bnst_data[i].para_num = -1;
+	    sp->bnst_data[i].para_num = -1;
 	}
     }
 
     if (Para_num == 0) return 0;
 
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num; i++) {
 
-	if ((cp = (char *)check_feature(bnst_data[i].f, "区切")) != NULL) {
-	    if (check_feature(bnst_data[i].f, "読点")) {
-		sscanf(cp, "%*[^:]:%*d-%d", &(bnst_data[i].sp_level));
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "区切")) != NULL) {
+	    if (check_feature(sp->bnst_data[i].f, "読点")) {
+		sscanf(cp, "%*[^:]:%*d-%d", &(sp->bnst_data[i].sp_level));
 	    } else {
-		sscanf(cp, "%*[^:]:%d-%*d", &(bnst_data[i].sp_level));
+		sscanf(cp, "%*[^:]:%d-%*d", &(sp->bnst_data[i].sp_level));
 	    }
 	} else {
-	    bnst_data[i].sp_level = 0;
+	    sp->bnst_data[i].sp_level = 0;
 	}
     }
 

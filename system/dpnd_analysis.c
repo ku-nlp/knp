@@ -27,10 +27,10 @@ extern FILE  *Outfp;
 
 	/* breakする場合 : 各文節に各規則を適用 */
 
-	for (i = 0, b_ptr = bnst_data + Bnst_num - 1; i < Bnst_num;
+	for (i = 0, b_ptr = sp->bnst_data + sp->Bnst_num - 1; i < sp->Bnst_num;
 						      i++, b_ptr--)
 	    /* 文末の文節から順に処理．文頭からの場合は以下のループになる 
-	       for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++)
+	       for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
 	       */
 	    for (j = 0, loop_ptr = r_ptr; j < size; j++, loop_ptr++)
 		if (regexpbnstrule_match(loop_ptr, b_ptr) == TRUE ) {
@@ -43,10 +43,10 @@ extern FILE  *Outfp;
 	   (規則適用の結果が別の規則に副作用を与える) */
 
 	for (j = 0, loop_ptr = r_ptr; j < size; j++, loop_ptr++)
-	    for (i = 0, b_ptr = bnst_data + Bnst_num - 1; i < Bnst_num; 
+	    for (i = 0, b_ptr = sp->bnst_data + sp->Bnst_num - 1; i < sp->Bnst_num; 
 							  i++, b_ptr--)
 		/* 文末の文節から順に処理．文頭からの場合は以下のループになる 
-		   for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) 
+		   for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) 
 		*/
 		if (regexpbnstrule_match(loop_ptr, b_ptr) == TRUE ) {
 		    assign_feature(&(b_ptr->f), &(loop_ptr->f), b_ptr);
@@ -62,7 +62,7 @@ extern FILE  *Outfp;
     BNST_DATA	*b_ptr;
     DpndRule 	*r_ptr;
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = DpndRuleArray; j < CurDpndRuleSize; j++, r_ptr++) {
 
 	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, NULL) 
@@ -90,11 +90,11 @@ extern FILE  *Outfp;
     int i, j, k, value, first_uke_flag;
     BNST_DATA *k_ptr, *u_ptr;
 
-    for (i = 0; i < Bnst_num; i++) {
-	k_ptr = bnst_data + i;
+    for (i = 0; i < sp->Bnst_num; i++) {
+	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
-	for (j = i + 1; j < Bnst_num; j++) {
-	    u_ptr = bnst_data + j;
+	for (j = i + 1; j < sp->Bnst_num; j++) {
+	    u_ptr = sp->bnst_data + j;
 	    Dpnd_matrix[i][j] = 0;
 	    for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
 		value = feature_pattern_match(&(k_ptr->dpnd_rule->governor[k]),
@@ -140,15 +140,15 @@ extern FILE  *Outfp;
   
     relax_flag = FALSE;
 
-    for (i = 0; i < Bnst_num - 1  ; i++) {
+    for (i = 0; i < sp->Bnst_num - 1  ; i++) {
 	ok_flag = FALSE;
 	last_possibility = i;
-	for (j = i + 1; j < Bnst_num ; j++) {
+	for (j = i + 1; j < sp->Bnst_num ; j++) {
 	    if (Quote_matrix[i][j]) {
 		if (Dpnd_matrix[i][j] > 0) {
 		    ok_flag = TRUE;
 		    break;
-		} else if (check_feature(bnst_data[j].f, "係:文末")) {
+		} else if (check_feature(sp->bnst_data[j].f, "係:文末")) {
 		    last_possibility = j;
 		    break;
 		} else {
@@ -158,9 +158,9 @@ extern FILE  *Outfp;
 	}
 
 	if (ok_flag == FALSE) {
-	    if (check_feature(bnst_data[last_possibility].f, "文末") ||
-		check_feature(bnst_data[last_possibility].f, "係:文末") ||
-		check_feature(bnst_data[last_possibility].f, "括弧終")) {
+	    if (check_feature(sp->bnst_data[last_possibility].f, "文末") ||
+		check_feature(sp->bnst_data[last_possibility].f, "係:文末") ||
+		check_feature(sp->bnst_data[last_possibility].f, "括弧終")) {
 		Dpnd_matrix[i][last_possibility] = 'R';
 		relax_flag = TRUE;
 	    }
@@ -186,7 +186,7 @@ extern FILE  *Outfp;
     char *dpnd_cp, *gvnr_cp, *next_cp;
 
     next_D = 0;
-    for (i = gvnr + 1; i < Bnst_num ; i++) {
+    for (i = gvnr + 1; i < sp->Bnst_num ; i++) {
 	if (Mask_matrix[dp->pos][i] &&
 	    Quote_matrix[dp->pos][i] &&
 	    dp->mask[i] &&
@@ -195,15 +195,15 @@ extern FILE  *Outfp;
 	    break;
 	}
     }
-    dpnd_cp = (char *)check_feature(bnst_data[dp->pos].f, "係");
-    gvnr_cp = (char *)check_feature(bnst_data[gvnr].f, "係");
-    next_cp = (char *)check_feature(bnst_data[gvnr+1].f, "係");
+    dpnd_cp = (char *)check_feature(sp->bnst_data[dp->pos].f, "係");
+    gvnr_cp = (char *)check_feature(sp->bnst_data[gvnr].f, "係");
+    next_cp = (char *)check_feature(sp->bnst_data[gvnr+1].f, "係");
 
     if (next_D == 0 ||
 	gvnr + 2 < next_D ||
-	check_feature(bnst_data[gvnr].f, "読点") ||
+	check_feature(sp->bnst_data[gvnr].f, "読点") ||
 	(gvnr + 2 == next_D &&
-	 check_feature(bnst_data[gvnr+1].f, "体言") &&
+	 check_feature(sp->bnst_data[gvnr+1].f, "体言") &&
 	 ((dpnd_cp && next_cp && !strcmp(dpnd_cp, next_cp)) ||
 	  (gvnr_cp && next_cp && !strcmp(gvnr_cp, next_cp))))) {
 	/* fprintf(stderr, "%d -> %d OK\n", i, j); */
@@ -222,7 +222,7 @@ extern FILE  *Outfp;
     if (Possibility == 1 || new->dflt < best->dflt) {
 	return TRUE;
     } else {
-	for (i = Bnst_num - 2; i >= 0; i--) {
+	for (i = sp->Bnst_num - 2; i >= 0; i--) {
 	    if (new->dpnd.dflt[i] < best->dpnd.dflt[i]) 
 	      return TRUE;
 	    else if (new->dpnd.dflt[i] > best->dpnd.dflt[i]) 
@@ -243,9 +243,9 @@ extern FILE  *Outfp;
     int		i;
     BNST_DATA	*b_ptr;
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 
-	if (i == Bnst_num - 1){		/* 最後の文節 */
+	if (i == sp->Bnst_num - 1){		/* 最後の文節 */
 	    b_ptr->dpnd_head = -1;
 	    b_ptr->dpnd_type = 'D';
 	} else if (dp->type[i] == 'd' || dp->type[i] == 'R') {
@@ -268,12 +268,12 @@ extern FILE  *Outfp;
 {
     int i;
 
-    for (i = 0; i < Bnst_num; i++) {
-	if (check_feature((bnst_data + i)->f, "用言") &&
-	    (bnst_data + i)->para_num != -1 &&
-	    para_data[(bnst_data + i)->para_num].status != 'x') {
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data + i)->f, "用言") &&
+	    (sp->bnst_data + i)->para_num != -1 &&
+	    sp->para_data[(sp->bnst_data + i)->para_num].status != 'x') {
 	    
-	    assign_cfeature(&((bnst_data + i)->f), "提題受:30");
+	    assign_cfeature(&((sp->bnst_data + i)->f), "提題受:30");
 	}
     }
 }
@@ -307,8 +307,8 @@ extern FILE  *Outfp;
     */
 
     score = 0;
-    for (i = 1; i < Bnst_num; i++) {
-	g_ptr = bnst_data + i;
+    for (i = 1; i < sp->Bnst_num; i++) {
+	g_ptr = sp->bnst_data + i;
 
 	one_score = 0;
 	for (k = 0; k < 11; k++) scase_check[k] = 0;
@@ -323,7 +323,7 @@ extern FILE  *Outfp;
 	}
 
 	for (j = i-1; j >= 0; j--) {
-	    d_ptr = bnst_data + j;
+	    d_ptr = sp->bnst_data + j;
 
 	    if (dpnd.head[j] == i) {
 
@@ -355,7 +355,7 @@ extern FILE  *Outfp;
 
 			/* one_score += optional_score*10; */
 			/* 距離重み */ /* j が i に係っている */
-			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(Bnst_num-1-i)/(Bnst_num-1-j); */
+			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(sp->Bnst_num-1-i)/(sp->Bnst_num-1-j); */
 			if (optional_score > 0) {
 			    dpnd.op[j].flag = TRUE;
 			    dpnd.op[j].weight = optional_score;
@@ -474,7 +474,7 @@ extern FILE  *Outfp;
 	       でなければ一つの格要素と考える */
 
 	    if (check_feature(g_ptr->f, "係:連格")) {
-		if (check_feature(bnst_data[dpnd.head[i]].f, "外の関係")) {
+		if (check_feature(sp->bnst_data[dpnd.head[i]].f, "外の関係")) {
 		    rentai = 0;
 		    one_score += 10;	/* 外の関係ならここで加点 */
 		} else {
@@ -561,7 +561,7 @@ extern FILE  *Outfp;
 	}
 	else {
 	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, KNPSID, score);
-	    for (i = 0;i < Bnst_num; i++) {
+	    for (i = 0;i < sp->Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
 		}
@@ -581,14 +581,14 @@ extern FILE  *Outfp;
     BNST_DATA *b_ptr;
     
     if (OptDisplay == OPT_DEBUG) {
-	if (dpnd.pos == Bnst_num - 1) {
+	if (dpnd.pos == sp->Bnst_num - 1) {
 	    fprintf(Outfp, "------");
-	    for (i = 0; i < Bnst_num; i++)
+	    for (i = 0; i < sp->Bnst_num; i++)
 	      fprintf(Outfp, "-%02d", i);
 	    fputc('\n', Outfp);
 	}
 	fprintf(Outfp, "In %2d:", dpnd.pos);
-	for (i = 0; i < Bnst_num; i++)
+	for (i = 0; i < sp->Bnst_num; i++)
 	    fprintf(Outfp, " %2d", dpnd.head[i]);
 	fputc('\n', Outfp);
     }
@@ -599,7 +599,7 @@ extern FILE  *Outfp;
 
     if (dpnd.pos == -1) {
 	/* 前の文節の係り受けに従う場合 */
-	for (i = 0; i < Bnst_num -1; i++)
+	for (i = 0; i < sp->Bnst_num -1; i++)
 	    if (dpnd.head[i] < 0) {
 		dpnd.head[i] = dpnd.head[i+dpnd.head[i]];
 		dpnd.check[i].pos[0] = dpnd.head[i];
@@ -616,19 +616,19 @@ extern FILE  *Outfp;
 	return;
     }
 
-    b_ptr = bnst_data + dpnd.pos;
+    b_ptr = sp->bnst_data + dpnd.pos;
     dpnd.f[dpnd.pos] = b_ptr->f;
 
     /* (前の係りによる)非交差条件の設定 (dpnd.mask が 0 なら係れない) */
 
-    if (dpnd.pos < Bnst_num -2)
+    if (dpnd.pos < sp->Bnst_num -2)
 	for (i = dpnd.pos + 2; i < dpnd.head[dpnd.pos+1]; i++)
 	    dpnd.mask[i] = 0;
     
     /* 並列構造のキー文節, 部分並列の文節<I>
        (すでに行われた並列構造解析の結果をマークするだけ) */
 
-    for (i = dpnd.pos + 1; i < Bnst_num; i++) {
+    for (i = dpnd.pos + 1; i < sp->Bnst_num; i++) {
 	if (Mask_matrix[dpnd.pos][i] == 2) {
 	    dpnd.head[dpnd.pos] = i;
 	    dpnd.type[dpnd.pos] = 'P';
@@ -638,7 +638,7 @@ extern FILE  *Outfp;
 	    dpnd.check[dpnd.pos].pos[0] = i;
 
 	    if (OptCheck == TRUE)
-		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:PARA");
+		assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:PARA");
 	    decide_dpnd(dpnd);
 	    return;
 	} else if (Mask_matrix[dpnd.pos][i] == 3) {
@@ -649,7 +649,7 @@ extern FILE  *Outfp;
 	    dpnd.check[dpnd.pos].pos[0] = i;
 
 	    if (OptCheck == TRUE)
-		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:PARA");
+		assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:PARA");
 	    decide_dpnd(dpnd);
 	    return;
 	}
@@ -663,7 +663,7 @@ extern FILE  *Outfp;
         dpnd.dflt[dpnd.pos] = 0;
 	dpnd.check[dpnd.pos].num = 1;
 	if (OptCheck == TRUE)
-	    assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:無格従属");
+	    assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:無格従属");
         decide_dpnd(dpnd);
         return;
     }
@@ -674,7 +674,7 @@ extern FILE  *Outfp;
     
     count = 0;
     d_possibility = 1;
-    for (i = dpnd.pos + 1; i < Bnst_num; i++) {
+    for (i = dpnd.pos + 1; i < sp->Bnst_num; i++) {
 	if (Mask_matrix[dpnd.pos][i] &&
 	    Quote_matrix[dpnd.pos][i] &&
 	    dpnd.mask[i]) {
@@ -701,8 +701,8 @@ extern FILE  *Outfp;
 	    if (count &&
 		b_ptr->dpnd_rule->barrier.fp[0] &&
 		feature_pattern_match(&(b_ptr->dpnd_rule->barrier), 
-				      bnst_data[i].f,
-				      b_ptr, bnst_data + i) == TRUE)
+				      sp->bnst_data[i].f,
+				      b_ptr, sp->bnst_data + i) == TRUE)
 		break;
 	}
 	else {
@@ -723,9 +723,9 @@ extern FILE  *Outfp;
 	/* チェック用 */
 	if (OptCheck == TRUE) {
 	    if (!MaskFlag)
-		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:EXIST");
+		assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:EXIST");
 	    else
-		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:MASK");
+		assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:MASK");
 	}
 
 	dpnd.check[dpnd.pos].num = count;	/* 候補数 */
@@ -794,14 +794,14 @@ extern FILE  *Outfp;
        文末が並列にマスクされていなければ，文末に係るとする */
 
     else {
-	if (Mask_matrix[dpnd.pos][Bnst_num - 1]) {
-	    dpnd.head[dpnd.pos] = Bnst_num - 1;
+	if (Mask_matrix[dpnd.pos][sp->Bnst_num - 1]) {
+	    dpnd.head[dpnd.pos] = sp->Bnst_num - 1;
 	    dpnd.type[dpnd.pos] = 'D';
 	    dpnd.dflt[dpnd.pos] = 10;
 	    dpnd.check[dpnd.pos].num = 1;
-	    dpnd.check[dpnd.pos].pos[0] = Bnst_num - 1;
+	    dpnd.check[dpnd.pos].pos[0] = sp->Bnst_num - 1;
 	    if (OptCheck == TRUE)
-		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:NONE");
+		assign_cfeature(&(sp->bnst_data[dpnd.pos].f), "候補:NONE");
 	    decide_dpnd(dpnd);
 	}
     }
@@ -813,9 +813,9 @@ extern FILE  *Outfp;
 {
     int i;
 
-    Best_mgr.dpnd.head[Bnst_num - 1] = -1;
+    Best_mgr.dpnd.head[sp->Bnst_num - 1] = -1;
 
-    for (i = Bnst_num - 2; i >= 0; i--) {
+    for (i = sp->Bnst_num - 2; i >= 0; i--) {
 	Best_mgr.dpnd.head[i] = i + 1;
 	Best_mgr.dpnd.type[i] = 'D';
     }
@@ -842,7 +842,7 @@ extern FILE  *Outfp;
 
     /* 係り状態の初期化 */
 
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num; i++) {
 	dpnd.head[i] = -1;
 	dpnd.dflt[i] = 0;
 	dpnd.mask[i] = 1;
@@ -850,7 +850,7 @@ extern FILE  *Outfp;
 	memset(&(dpnd.op[i]), 0, sizeof(struct _optionalcase));
 	dpnd.f[i] = NULL;
     }
-    dpnd.pos = Bnst_num - 1;
+    dpnd.pos = sp->Bnst_num - 1;
     dpnd.flag = 0;
     dpnd.comment = NULL;
 
@@ -897,7 +897,7 @@ extern FILE  *Outfp;
 
     /* 緩和をメモに記録する場合
 
-    for (i = 0; i < Bnst_num - 1; i++) {
+    for (i = 0; i < sp->Bnst_num - 1; i++) {
 	if (Best_mgr.dpnd.type[i] == 'd') {
 	    strcat(PM_Memo, " 緩和d");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
@@ -910,15 +910,15 @@ extern FILE  *Outfp;
 
     /* 遠い係り受けをメモに記録する場合
 
-    for (i = 0; i < Bnst_num - 1; i++) {
+    for (i = 0; i < sp->Bnst_num - 1; i++) {
 	if (Best_mgr.dpnd.head[i] > i + 3 &&
-	    !check_feature(bnst_data[i].f, "ハ") &&
-	    !check_feature(bnst_data[i].f, "読点") &&
-	    !check_feature(bnst_data[i].f, "用言") &&
-	    !check_feature(bnst_data[i].f, "係:ガ格") &&
-	    !check_feature(bnst_data[i].f, "用言:無") &&
-	    !check_feature(bnst_data[i].f, "並キ") &&
-	    !check_feature(bnst_data[i+1].f, "括弧始")) {
+	    !check_feature(sp->bnst_data[i].f, "ハ") &&
+	    !check_feature(sp->bnst_data[i].f, "読点") &&
+	    !check_feature(sp->bnst_data[i].f, "用言") &&
+	    !check_feature(sp->bnst_data[i].f, "係:ガ格") &&
+	    !check_feature(sp->bnst_data[i].f, "用言:無") &&
+	    !check_feature(sp->bnst_data[i].f, "並キ") &&
+	    !check_feature(sp->bnst_data[i+1].f, "括弧始")) {
 	    strcat(PM_Memo, " 遠係");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
 	}

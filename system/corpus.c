@@ -151,9 +151,9 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	token = strtok(cp, "|");
 	while (token) {
 	    for (i = ptr1->num+1; i < ptr2->num; i++) {
-		type = (char *)check_feature((bnst_data+i)->f, "ID");
+		type = (char *)check_feature((sp->bnst_data+i)->f, "ID");
 		if (type) {
-		    if ((char *)check_feature((bnst_data+i)->f, "読点"))
+		    if ((char *)check_feature((sp->bnst_data+i)->f, "読点"))
 			touten = ',';
 		    else
 			touten = ' ';
@@ -717,7 +717,7 @@ int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHEC
 
     /* 候補すべてのスコアを計算する */
     for (i = 0; i < list->num; i++) {
-	score = CorpusExampleDependencyFrequency(ptr1, case1, bnst_data+list->pos[i]);
+	score = CorpusExampleDependencyFrequency(ptr1, case1, sp->bnst_data+list->pos[i]);
 	totalscore += score;
 
 	/* 今調べている Head であるとき */
@@ -907,7 +907,7 @@ void optional_case_evaluation()
 
     /* 学習時でなければ */
     if (!OptLearn) {
-	for (i = 0;i < Bnst_num; i++) {
+	for (i = 0;i < sp->Bnst_num; i++) {
 	    /* 事例を用いた文節 */
 	    if (Op_Best_mgr.dpnd.op[i].flag && Best_mgr.dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
 		/* 読点があれば */
@@ -1044,14 +1044,14 @@ void CheckChildCaseFrame() {
     int i, j;
     TOTAL_MGR *tm = &Best_mgr;
 
-    for (i = Bnst_num-1; i > 0; i--) {
-	if (!check_feature((bnst_data+i)->f, "用言"))
+    for (i = sp->Bnst_num-1; i > 0; i--) {
+	if (!check_feature((sp->bnst_data+i)->f, "用言"))
 	    continue;
 	for (j = 0; j < i; j++) {
 	    if (tm->dpnd.head[j] == i) {
-		assign_cfeature(&((bnst_data+i)->f), "子○");
+		assign_cfeature(&((sp->bnst_data+i)->f), "子○");
 		break;
-		/* check_feature((bnst_data+j)->f, "係") */
+		/* check_feature((sp->bnst_data+j)->f, "係") */
 	    }
 	}
     }

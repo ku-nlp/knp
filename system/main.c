@@ -16,6 +16,10 @@
 #include <sys/wait.h>
 #include <errno.h>
 
+SENTENCE_DATA *sp;
+SENTENCE_DATA current_sentence_data;
+SENTENCE_DATA sentence_data[256];
+
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
 BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
 PARA_DATA 	para_data[PARA_MAX]; 		/* 並列データ */
@@ -23,15 +27,10 @@ PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
 TOTAL_MGR	Op_Best_mgr;
 
-int 		Mrph_num;			/* 形態素数 */
-int	 	Mrph_all_num;			/* 全形態素数 */
-int 		Bnst_num;			/* 文節数 */
-int		New_Bnst_num;			/* 追加文節数 */
 int 		Para_num;			/* 並列構造数 */
 int 		Para_M_num;			/* 並列管理マネージャー数 */
 int 		Revised_para_num;			
 
-int 		Sen_num;			/* 文カウント 1〜 */
 char		Comment[DATA_LEN];		/* コメント行 */
 char		KNPSID[256];
 char		*ErrorComment = NULL;		/* エラーコメント */
@@ -344,8 +343,9 @@ int	ParseTimeout = DEFAULT_PARSETIMEOUT;
     longjmp(timeout, 1);
 }
 
-/* すべての初期化をひき受ける とってもせこい関数 */
-void init_all()
+/*==================================================================*/
+			   void init_all()
+/*==================================================================*/
 {
     /* 初期化 */
 
@@ -364,21 +364,27 @@ void init_all()
 	init_optional_case();
 
     read_rules();	/* ルール読み込み */
-    /* init_dic_for_rule(); */
 
-	/* メイン・ルーチン */
-
-    Mrph_num = 0;
-    Bnst_num = 0;
-    New_Bnst_num = 0;
-    Sen_num = 0;
+    current_sentence_data.mrph_data = mrph_data;
+    current_sentence_data.bnst_data = bnst_data;
+    current_sentence_data.para_data = para_data;
+    current_sentence_data.para_manager = para_manager;
+    current_sentence_data.Sen_num = 0;	/* これだけは増えていく */
+    current_sentence_data.Mrph_num = 0;
+    current_sentence_data.Bnst_num = 0;
+    current_sentence_data.New_Bnst_num = 0;
 }
 
-void stand_alone_mode()
+/*==================================================================*/
+		       void stand_alone_mode()
+/*==================================================================*/
 {
     int i, j, flag, success = 1;
     int relation_error, d_struct_error;
     char *code;
+
+    /* sentence_data *sp = &current_sentence_data; */
+    sp = &current_sentence_data;
 
     while ( 1 ) {
 
@@ -396,8 +402,8 @@ void stand_alone_mode()
 	    /* タイムアウト時 */
 #ifdef DEBUG
 	    fprintf(stderr, "Parse timeout.\n(");
-	    for (i = 0; i < Mrph_num; i++)
-		fprintf(stderr, "%s", mrph_data[i].Goi2);
+	    for (i = 0; i < sp->Mrph_num; i++)
+		fprintf(stderr, "%s", sp->mrph_data[i].Goi2);
 	    fprintf(stderr, ")\n");
 #endif
 	    ErrorComment = strdup("Parse timeout");
@@ -408,24 +414,24 @@ void stand_alone_mode()
 	}
 
 	/* FEATURE の初期化 */
-	for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
-	for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
-	for (i = Bnst_num; i < Bnst_num + New_Bnst_num; i++)
-	    bnst_data[i].f = NULL;
+	for (i = 0; i < sp->Mrph_num; i++) clear_feature(&(sp->mrph_data[i].f));
+	for (i = 0; i < sp->Bnst_num; i++) clear_feature(&(sp->bnst_data[i].f));
+	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+	    sp->bnst_data[i].f = NULL;
 
 	/* 読み込み */
 	if ((flag = read_mrph(Infp)) == EOF) break;
 
-	Sen_num++;
+	sp->Sen_num ++;
 
 	if (flag == FALSE) continue;
 
 	/* 形態素に意味素を与える */
 	if (SMExist == TRUE) {
-	    for (i = 0; i < Mrph_num; i++) {
-		code = (char *)get_sm(mrph_data[i].Goi);
+	    for (i = 0; i < sp->Mrph_num; i++) {
+		code = (char *)get_sm(sp->mrph_data[i].Goi);
 		if (code) {
-		    strcpy(mrph_data[i].SM, code);
+		    strcpy(sp->mrph_data[i].SM, code);
 		    free(code);
 		}
 		assign_ntt_dict(i);
@@ -434,8 +440,8 @@ void stand_alone_mode()
 
 	/* 形態素への情報付与 --> 文節 */
 
-	assign_cfeature(&(mrph_data[0].f), "文頭");
-	assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
+	assign_cfeature(&(sp->mrph_data[0].f), "文頭");
+	assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
 
 	/* 形態素ルールのみに情報付与 */
 	assign_general_feature(MorphRuleType);
@@ -452,11 +458,11 @@ void stand_alone_mode()
 
 	/* 文節への情報付与 */
 
-	assign_cfeature(&(bnst_data[0].f), "文頭");
-	if (Bnst_num > 0)
-	    assign_cfeature(&(bnst_data[Bnst_num-1].f), "文末");
+	assign_cfeature(&(sp->bnst_data[0].f), "文頭");
+	if (sp->Bnst_num > 0)
+	    assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
 	else
-	    assign_cfeature(&(bnst_data[0].f), "文末");
+	    assign_cfeature(&(sp->bnst_data[0].f), "文末");
 
 	/* 文節ルールのみに情報付与 */
 	assign_general_feature(BnstRuleType);
@@ -478,10 +484,10 @@ void stand_alone_mode()
 	Case_frame_num = 0;
 	set_pred_caseframe();			/* 用言の格フレーム */
 
-	for (i = 0; i < Bnst_num; i++) {
-	    get_bgh_code(bnst_data+i);		/* シソーラス */
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    get_bgh_code(sp->bnst_data+i);		/* シソーラス */
 	    if (SMExist == TRUE)
-		get_sm_code(bnst_data+i);		/* 意味素 */
+		get_sm_code(sp->bnst_data+i);		/* 意味素 */
 	}
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
@@ -490,8 +496,8 @@ void stand_alone_mode()
 	/* continue; 文節のみのチェックの場合 */
 
 	/*
-	  if (Bnst_num > 30) {
-	  fprintf(stdout, "Too long sentence (%d bnst)\n", Bnst_num);
+	  if (sp->Bnst_num > 30) {
+	  fprintf(stdout, "Too long sentence (%d bnst)\n", sp->Bnst_num);
 	  continue;
 	  }
 	  */
@@ -622,9 +628,9 @@ void stand_alone_mode()
 
 	    /* feature の初期化 */
 	    for (i = 0; i < MRPH_MAX; i++)
-		(mrph_data+i)->f = NULL;
+		(sp->mrph_data+i)->f = NULL;
 	    for (i = 0; i < BNST_MAX; i++)
-		(bnst_data+i)->f = NULL;
+		(sp->bnst_data+i)->f = NULL;
 	}
     }
 
@@ -643,9 +649,12 @@ void stand_alone_mode()
     /* close_dic_for_rule(); */
 }
 
-/* サーバモード */
-void server_mode()
+/*==================================================================*/
+			  void server_mode()
+/*==================================================================*/
 {
+    /* サーバモード */
+
     int sfd,fd;
     struct sockaddr_in sin;
 
@@ -793,9 +802,12 @@ void server_mode()
     }
 }
 
-/* クライアントモード */
-void client_mode()
+/*==================================================================*/
+			  void client_mode()
+/*==================================================================*/
 {
+    /* クライアントモード */
+
     struct sockaddr_in sin;
     struct hostent *hp;
     int fd;

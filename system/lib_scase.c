@@ -153,7 +153,7 @@ int		ScaseDicExist;
     int i;
     BNST_DATA  *b_ptr;
 
-    for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++)
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
 	if (check_feature(b_ptr->f, "用言") ||
 	    check_feature(b_ptr->f, "準用言")) {
 

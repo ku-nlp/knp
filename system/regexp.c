@@ -634,7 +634,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 			  r_ptr->pre_pattern->mrphsize - 1,
 			  r_ptr->pre_pattern->mrphsize,
 			  d_ptr - 1, 
-			  d_ptr - mrph_data,
+			  d_ptr - sp->mrph_data,
 			  BW_MATCHING, 
 			  PART_MATCHING, 
 			  SHORT_MATCHING) == -1)
@@ -644,7 +644,7 @@ const REGEXPBNST RegexpBnstInitValue = {
     /* 次にself_patternのlongest matchから順に，その後でpost_patternを調べる
        match_length は self_pattern の match の(可能性の)長さ */
 
-    match_length = Mrph_num - (d_ptr - mrph_data);
+    match_length = sp->Mrph_num - (d_ptr - sp->mrph_data);
 
     while (match_length > 0) {
 	if (r_ptr->self_pattern == NULL) {
@@ -669,7 +669,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    regexpmrphs_match(r_ptr->post_pattern->mrph, 
 			      r_ptr->post_pattern->mrphsize,
 			      d_ptr + match_length,
-			      Mrph_num - (d_ptr - mrph_data) - match_length,
+			      sp->Mrph_num - (d_ptr - sp->mrph_data) - match_length,
 			      FW_MATCHING, 
 			      PART_MATCHING, 
 			      SHORT_MATCHING) != -1) {
@@ -890,7 +890,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 			   r_ptr->pre_pattern->bnstsize - 1, 
 			   r_ptr->pre_pattern->bnstsize, 
 			   d_ptr - 1, 
-			   d_ptr - bnst_data, 
+			   d_ptr - sp->bnst_data, 
 			   BW_MATCHING, 
 			   PART_MATCHING, 
 			   SHORT_MATCHING) == TRUE) &&
@@ -898,7 +898,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	 regexpbnsts_match(r_ptr->post_pattern->bnst, 
 			   r_ptr->post_pattern->bnstsize, 
 			   d_ptr + 1, 
-			   Bnst_num - (d_ptr - bnst_data) - 1,
+			   sp->Bnst_num - (d_ptr - sp->bnst_data) - 1,
 			   FW_MATCHING, 
 			   PART_MATCHING, 
 			   SHORT_MATCHING) == TRUE)) {

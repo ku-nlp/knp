@@ -47,12 +47,12 @@ static int rel_matrix_strong[4][4] = {
     int a1, a2, a3, b1, b2, b3;
     PARA_DATA *ptr1, *ptr2;
     
-    ptr1 = &(para_data[p_num1]);
+    ptr1 = &(sp->para_data[p_num1]);
     a1 = ptr1->max_path[0];
     a2 = ptr1->L_B;
     a3 = ptr1->R;
 
-    ptr2 = &(para_data[p_num2]);
+    ptr2 = &(sp->para_data[p_num2]);
     b1 = ptr2->max_path[0];
     b2 = ptr2->L_B;
     b3 = ptr2->R;
@@ -60,20 +60,20 @@ static int rel_matrix_strong[4][4] = {
     fprintf(Outfp, "%-10s ==> ", RESULT[para_rel_matrix[p_num1][p_num2]]);
 
     if (a1 != a2)
-      print_bnst(&(bnst_data[a1]), NULL);
+      print_bnst(&(sp->bnst_data[a1]), NULL);
     fputc('(', Outfp);
-    print_bnst(&(bnst_data[a2]), NULL);
+    print_bnst(&(sp->bnst_data[a2]), NULL);
     fputc(')', Outfp);
-    print_bnst(&(bnst_data[a3]), NULL);
+    print_bnst(&(sp->bnst_data[a3]), NULL);
 
     fprintf(Outfp, " <=> ");
 
     if (b1 != b2)
-      print_bnst(&(bnst_data[b1]), NULL);
+      print_bnst(&(sp->bnst_data[b1]), NULL);
     fputc('(', Outfp);
-    print_bnst(&(bnst_data[b2]), NULL);
+    print_bnst(&(sp->bnst_data[b2]), NULL);
     fputc(')', Outfp);
-    print_bnst(&(bnst_data[b3]), NULL);
+    print_bnst(&(sp->bnst_data[b3]), NULL);
     fputc('\n', Outfp);
 }
 
@@ -86,12 +86,12 @@ static int rel_matrix_strong[4][4] = {
     Para_M_num = 0;
 
     for (i = 0; i <Para_num; i++) {
-	para_manager[i].para_num = 0;
-	para_manager[i].part_num = 0;
-	para_manager[i].parent = NULL;
-	para_manager[i].child_num = 0;
+	sp->para_manager[i].para_num = 0;
+	sp->para_manager[i].part_num = 0;
+	sp->para_manager[i].parent = NULL;
+	sp->para_manager[i].child_num = 0;
 
-	para_data[i].manager_ptr = NULL;
+	sp->para_data[i].manager_ptr = NULL;
     }
 }
 
@@ -104,12 +104,12 @@ static int rel_matrix_strong[4][4] = {
     int a1, a2, a3, b1, b2, b3;
     int rel_pre, rel_pos;
 
-    a1 = para_data[pre_num].max_path[0];
-    a2 = para_data[pre_num].L_B;
-    a3 = para_data[pre_num].R;
-    b1 = para_data[pos_num].max_path[0];
-    b2 = para_data[pos_num].L_B;
-    b3 = para_data[pos_num].R;
+    a1 = sp->para_data[pre_num].max_path[0];
+    a2 = sp->para_data[pre_num].L_B;
+    a3 = sp->para_data[pre_num].R;
+    b1 = sp->para_data[pos_num].max_path[0];
+    b2 = sp->para_data[pos_num].L_B;
+    b3 = sp->para_data[pos_num].R;
 
     if (a3 < b1) return REL_NOT;
     
@@ -123,7 +123,7 @@ static int rel_matrix_strong[4][4] = {
     else if (a3 < b3)  		rel_pos = 2;
     else                 	rel_pos = 3;
 
-    if (para_data[pos_num].status == 's') 
+    if (sp->para_data[pos_num].status == 's') 
       return rel_matrix_strong[rel_pre][rel_pos];
     else
       return rel_matrix_normal[rel_pre][rel_pos];
@@ -140,8 +140,8 @@ static int rel_matrix_strong[4][4] = {
 
     int pre_length, pos_length;
 
-    pre_length = para_data[pre_num].R - para_data[pre_num].L_B;
-    pos_length = para_data[pos_num].L_B - para_data[pos_num].max_path[0] + 1;
+    pre_length = sp->para_data[pre_num].R - sp->para_data[pre_num].L_B;
+    pos_length = sp->para_data[pos_num].L_B - sp->para_data[pos_num].max_path[0] + 1;
     
     if (pre_length * 3 <= pos_length * 4) return TRUE;
     else return FALSE;
@@ -268,9 +268,9 @@ static int rel_matrix_strong[4][4] = {
     /* 位置関係の決定，誤りの修正 */
 
     for (i = 0; i < Para_num; i++) {
-	if (para_data[i].status == 'x') continue;
+	if (sp->para_data[i].status == 'x') continue;
         for (j = i+1; j < Para_num; j++) {
-	    if (para_data[j].status == 'x') continue;
+	    if (sp->para_data[j].status == 'x') continue;
 	    if ((para_rel_matrix[i][j] = para_location(i, j)) == REL_BAD) {
 		if (OptDisplay == OPT_DEBUG)
 		  print_two_para_relation(i, j);
@@ -285,9 +285,9 @@ static int rel_matrix_strong[4][4] = {
     /* REL_POSで重なりの割合が大きい場合REL_PARに変更 */
 
     for (i = 0; i < Para_num; i++) {
-	if (para_data[i].status == 'x') continue;
+	if (sp->para_data[i].status == 'x') continue;
 	for (j = 0; j < Para_num; j++) {
-	    if (para_data[j].status == 'x') continue;
+	    if (sp->para_data[j].status == 'x') continue;
 	    if (para_rel_matrix[i][j] == REL_POS &&
 		para_brother_p(i, j) == TRUE) {
 		para_rel_matrix[i][j] = REL_PAR;
@@ -298,12 +298,12 @@ static int rel_matrix_strong[4][4] = {
     /* 左にREL_POS，右にREL_PREの場合，その間をREL_REVに変更 */
 
     for (i = 1; i < Para_num-1; i++) {
-	if (para_data[i].status == 'x') continue;
+	if (sp->para_data[i].status == 'x') continue;
 	for (j = 0; j < i; j++) {
-	    if (para_data[j].status == 'x') continue;
+	    if (sp->para_data[j].status == 'x') continue;
 	    if (para_rel_matrix[j][i] == REL_POS) {
 		for (k = i+1; k < Para_num; k++) {
-		    if (para_data[k].status == 'x') continue;
+		    if (sp->para_data[k].status == 'x') continue;
 		    if (para_rel_matrix[i][k] == REL_PRE) {
 			para_rel_matrix[j][k] = REL_REV;
 		    }
@@ -315,34 +315,34 @@ static int rel_matrix_strong[4][4] = {
     /* 兄弟関係のまとめ，MANAGERによる管理 */
 
     for (i = 0; i < Para_num; i++) {
-	if (para_data[i].status == 'x') continue;
-	if (para_data[i].manager_ptr) {
-	    m_ptr = para_data[i].manager_ptr;
+	if (sp->para_data[i].status == 'x') continue;
+	if (sp->para_data[i].manager_ptr) {
+	    m_ptr = sp->para_data[i].manager_ptr;
 	} else {
-	    m_ptr = &para_manager[Para_M_num++];
-	    para_data[i].manager_ptr = m_ptr;
+	    m_ptr = &sp->para_manager[Para_M_num++];
+	    sp->para_data[i].manager_ptr = m_ptr;
 	    m_ptr->para_data_num[m_ptr->para_num++] = i;
 	    if (m_ptr->para_num >= PARA_PART_MAX) {
 		fprintf(stderr, "Too many para (%s)!\n", Comment);
 		exit(1);
 	    }
-	    m_ptr->start[m_ptr->part_num] = para_data[i].max_path[0];
-	    m_ptr->end[m_ptr->part_num++] = para_data[i].L_B;
-	    m_ptr->start[m_ptr->part_num] = para_data[i].L_B+1;
-	    m_ptr->end[m_ptr->part_num++] = para_data[i].R;
+	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].max_path[0];
+	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].L_B;
+	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].L_B+1;
+	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].R;
 	}	  
         for (j = i+1; j < Para_num; j++) {
-	    if (para_data[j].status == 'x') continue;
+	    if (sp->para_data[j].status == 'x') continue;
 	    switch (para_rel_matrix[i][j]) {
 	      case REL_PAR:
-		para_data[j].manager_ptr = m_ptr;
+		sp->para_data[j].manager_ptr = m_ptr;
 		m_ptr->para_data_num[m_ptr->para_num++] = j;
 		if (m_ptr->para_num >= PARA_PART_MAX) {
 		    fprintf(stderr, "Too many para (%s)!\n", Comment);
 		    exit(1);
 		}
-		m_ptr->start[m_ptr->part_num] = para_data[j].L_B+1;
-		m_ptr->end[m_ptr->part_num++] = para_data[j].R;
+		m_ptr->start[m_ptr->part_num] = sp->para_data[j].L_B+1;
+		m_ptr->end[m_ptr->part_num++] = sp->para_data[j].R;
 		break;
 	      default:
 		break;
@@ -353,11 +353,11 @@ static int rel_matrix_strong[4][4] = {
     /* 親子関係のまとめ m_ptr1が子，m_ptr2が親の時に処理 */
 
     for (i = 0; i < Para_num; i++) {
-	if (para_data[i].status == 'x') continue;
-	m_ptr1 = para_data[i].manager_ptr;
+	if (sp->para_data[i].status == 'x') continue;
+	m_ptr1 = sp->para_data[i].manager_ptr;
         for (j = 0; j < Para_num; j++) {
-	    if (para_data[j].status == 'x') continue;
-	    m_ptr2 = para_data[j].manager_ptr;
+	    if (sp->para_data[j].status == 'x') continue;
+	    m_ptr2 = sp->para_data[j].manager_ptr;
 	    if ((i < j &&
 		 (para_rel_matrix[i][j] == REL_BIT ||
 		  para_rel_matrix[i][j] == REL_PRE ||
@@ -373,31 +373,31 @@ static int rel_matrix_strong[4][4] = {
     /* 範囲の修正 */
 
     for (i = 0; i < Para_M_num; i++)
-      if (para_manager[i].parent == NULL)
-	para_revise_scope(&para_manager[i]);    
+      if (sp->para_manager[i].parent == NULL)
+	para_revise_scope(&sp->para_manager[i]);    
 
     /* 強並列のマーク */
 
     for (i = 0; i < Para_M_num; i++) {
 	flag = TRUE;
-	for (j = 0; j < para_manager[i].para_num; j++) {
-	    if (para_data[para_manager[i].para_data_num[j]].status != 's') {
+	for (j = 0; j < sp->para_manager[i].para_num; j++) {
+	    if (sp->para_data[sp->para_manager[i].para_data_num[j]].status != 's') {
 		flag = FALSE;
 		break;
 	    }
 	}
-	para_manager[i].status = (flag == TRUE) ? 's' : 'w';
+	sp->para_manager[i].status = (flag == TRUE) ? 's' : 'w';
     }
 
     /* 並列解析結果をfeatureに */
 
     for (i = 0; i < Para_M_num; i++) {
-	for (j = 0; j < para_manager[i].part_num-1; j++) {
-	    sprintf(buffer1, "並結句数:%d", para_manager[i].part_num);
+	for (j = 0; j < sp->para_manager[i].part_num-1; j++) {
+	    sprintf(buffer1, "並結句数:%d", sp->para_manager[i].part_num);
 	    sprintf(buffer2, "並結文節数:%d", 
-		    para_manager[i].end[1] - para_manager[i].start[1] + 1);
-	    assign_cfeature(&(bnst_data[para_manager[i].end[j]].f), buffer1);
-	    assign_cfeature(&(bnst_data[para_manager[i].end[j]].f), buffer2);
+		    sp->para_manager[i].end[1] - sp->para_manager[i].start[1] + 1);
+	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer1);
+	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer2);
 	}
     }
 

@@ -428,7 +428,7 @@
 }
 
 /*==================================================================*/
-		    int check_type(BNST_DATA *bp)
+	      int whether_corpus_compare(BNST_DATA *bp)
 /*==================================================================*/
 {
     /* マッチすれば、FALSE をかえし、
@@ -665,6 +665,8 @@
     int i, code, type, pretype, flag;
     char *cp;
     unsigned char *ucp; 
+    static BNST_DATA *pre1 = NULL, *pre2 = NULL;
+    static char *prerule = NULL;
 
     /* &記英数カ : 記英数カ チェック (句読点以外) (形態素レベル) */
 
@@ -888,20 +890,41 @@
     /* &レベル : 用言のレベル比較 (係受レベル) */
 
     else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
-	if ((OptInhibit & OPT_INHIBIT_CLAUSE) || (check_type((BNST_DATA *)ptr1) == FALSE)) {
+	if ((OptInhibit & OPT_INHIBIT_CLAUSE) || (whether_corpus_compare((BNST_DATA *)ptr1) == FALSE)) {
 	    if (!strcmp(rule + strlen("&レベル:"), "強"))
 		/* 述語間の強弱の比較 */
 		return subordinate_level_comp((BNST_DATA *)ptr1, 
 					      (BNST_DATA *)ptr2);
 	    else
 		/* 述語は係り受け可能か */
-		    return subordinate_level_check(rule + strlen("&レベル:"),
-						   (BNST_DATA *)ptr2);
+		return subordinate_level_check(rule + strlen("&レベル:"),
+					       (BNST_DATA *)ptr2);
 	}
-	else
-		return corpus_clause_comp((BNST_DATA *)ptr1, 
-					  (BNST_DATA *)ptr2, 
-					  TRUE);
+	else {
+	    /* &レベル が連続してチェックされるのは無駄だね */
+	    if (prerule && 
+		!strncmp(prerule, "&レベル:", strlen("&レベル:")) && 
+		ptr1 == pre1 && 
+		ptr2 == pre2) {
+		return TRUE;
+	    }
+
+	    prerule = rule;
+	    pre1 = ptr1;
+	    pre2 = ptr2;
+
+	    return corpus_clause_comp((BNST_DATA *)ptr1, 
+				      (BNST_DATA *)ptr2, 
+				      TRUE);
+	}
+    }
+
+    /* &レベル禁止 : 用言のレベルチェック (係受レベル) --  tentative */
+
+    else if (!strncmp(rule, "&レベル禁止:", strlen("&レベル禁止:"))) {
+	/* 述語は係り受け可能か */
+	return subordinate_level_forbid(rule + strlen("&レベル禁止:"),
+					       (BNST_DATA *)ptr2);
     }
 
     /* &節境界 : 節間の壁チェック */
@@ -956,8 +979,8 @@
 					   (BNST_DATA *)ptr2);
 	    /* 統計的に処理しない */
 	    /* return FALSE; */
-	    /* 統計的に処理する
-	    return corpus_barrier_check((BNST_DATA *)ptr1, 
+	    /* 統計的に処理する */
+	    /* return corpus_barrier_check((BNST_DATA *)ptr1, 
 					(BNST_DATA *)ptr2); */
     }
 

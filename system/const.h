@@ -514,11 +514,10 @@ typedef struct node_para_manager {
 } PARA_MANAGER;
 
 typedef struct sentence {
-    /* 文番号 */
-    int 		sentence_num;
-    /* 文節データ */
+    int 		Sen_num;	/* 文番号 1〜 */
     int			Mrph_num;
     int			Bnst_num;
+    int			New_Bnst_num;
     MRPH_DATA		*mrph_data;
     BNST_DATA	 	*bnst_data;
     PARA_DATA		*para_data;

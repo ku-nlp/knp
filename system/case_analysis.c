@@ -257,12 +257,12 @@ char *sm_code_to_str(int code)
     Work_mgr.score = 0;
     Work_mgr.pred_num = 0;
     Work_mgr.dflt = 0;
-    for (i = 0; i < Bnst_num; i++)
+    for (i = 0; i < sp->Bnst_num; i++)
 	Work_mgr.dflt += dpnd.dflt[i];
     
     /* 格解析呼び出し */
 
-    if (all_case_analysis(bnst_data+Bnst_num-1, &Work_mgr) == TRUE)
+    if (all_case_analysis(sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
 	Possibility++;
     else
 	return;
