@@ -1,3 +1,11 @@
+2004-02-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_sm.c:
+	名詞の意味素固定を<主体>マッチのとき以外とした。
+
+	* system/context.c, system/extern.h, system/lib_event.c:
+	用言共起情報を格フレーム単位のものにした。
+
 2004-02-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
