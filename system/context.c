@@ -2112,11 +2112,13 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 /*==================================================================*/
   int CheckAppropriateCandidate(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 				CF_PRED_MGR *cpm_ptr, TAG_DATA *bp, int pp, 
-				CASE_FRAME *cf_ptr, int n, int loc)
+				CASE_FRAME *cf_ptr, int n, int loc, int flag)
 /*==================================================================*/
 {
     /* bp: candidate antecedent
        cpm_ptr->pred_b_ptr: target predicate */
+
+    /* flag == 1 (名詞のとき): 用言より後でもOKにする */
 
     if (Bcheck[cs - s][bp->num] || /* すでにチェックした */
 	!check_feature(bp->f, "先行詞候補") || 
@@ -2129,14 +2131,19 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 	return TRUE;
     }
 
-    if (!strcmp(bp->head_ptr->Goi, cpm_ptr->pred_b_ptr->head_ptr->Goi) || /* 用言と同じ表記はだめ */
-	(s == cs && /* 対象文 */
-	 ((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
-	   (cpm_ptr->cf.type == CF_PRED || bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head)) || /* 名詞: 親が同じとき以外はだめ */
-	  (!check_feature(bp->f, "係:連用") && 
-	   bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
-	  (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
-	  CheckCaseComponent(cpm_ptr, bp)))) { /* 元用言がその文節を格要素としてもたない */
+    /* 用言と同じ表記はだめ */
+    if (!strcmp(bp->head_ptr->Goi, cpm_ptr->pred_b_ptr->head_ptr->Goi)) {
+	return FALSE;
+    }
+
+    if (s == cs && /* 対象文 */
+	((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
+	  (cpm_ptr->cf.type == CF_PRED || 
+	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
+	 (!check_feature(bp->f, "係:連用") && 
+	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
+	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
+	 CheckCaseComponent(cpm_ptr, bp))) { /* 元用言がその文節を格要素としてもたない */
 	return FALSE;
     }
 
@@ -2214,7 +2221,7 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 
     /* 省略要素となるための条件 */
     if (tp->para_top_p == TRUE || 
-	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0)) {
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
 	if (!Bcheck[cs - s][tp->num]) {
 	    Bcheck[cs - s][tp->num] = 1;
 	}
@@ -2289,7 +2296,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 
     /* 省略要素となるための条件 */
     if (tp->para_top_p == TRUE || 
-	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0)) {
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
 	if (!Bcheck[cs - s][tp->num]) {
 	    Bcheck[cs - s][tp->num] = 1;
 	}
@@ -2349,7 +2356,7 @@ int EllipsisDetectOne(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
     }
 
     /* 省略要素となるための条件 */
-    if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0)) {
+    if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
 	EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, LOC_OTHERS, s, tp->pred_b_ptr);
 	if (ScoreCheck(cf_ptr, n)) {
 	    return 1;
@@ -2376,7 +2383,7 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	if ((check_feature(tp->child[i]->f, "係:ノ格") || 
 	     check_feature(tp->child[i]->f, "係:連体") || 
 	     check_feature(tp->child[i]->f, "係:隣")) && 
-	    CheckAppropriateCandidate(s, cs, cpm_ptr, tp->child[i], -2, cf_ptr, n, loc)) {
+	    CheckAppropriateCandidate(s, cs, cpm_ptr, tp->child[i], -2, cf_ptr, n, loc, FALSE)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					     tp->child[i], cf_ptr, n, loc, s, tp->child[i]->pred_b_ptr);
 	    /* 省略を補ったものでなければ */
@@ -2434,17 +2441,23 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 
     /* ★並列のNは? */
 
-    int i, num;
+    int i, num, flag;
     TAG_DATA **children;
 
     /* 用言の格要素をチェック */
     if (bp->cpm_ptr) {
 	if (bp->cpm_ptr->cmm[0].score != -2) {
+	    /* 名詞: 親用言の格要素は位置が後でも許すflag */
+	    flag = cpm_ptr->pred_b_ptr->dpnd_head == bp->cpm_ptr->pred_b_ptr->num ? TRUE : FALSE;
+
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED && 
-		    CheckLocation(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
-		    CheckAppropriateCandidate(s, cs, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], cf_ptr, n, loc)) {
+		    CheckLocation(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
+				  cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
+		    CheckAppropriateCandidate(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
+					      cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
+					      cf_ptr, n, loc, flag)) {
 		    EllipsisDetectForVerbSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
 						     cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 						     bp->cpm_ptr->elem_b_ptr[num], 
@@ -2466,7 +2479,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	/* 格要素になっていない子供もチェック */
 	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
 	for (i = 0; children[i]; i++) {
-	    if (CheckAppropriateCandidate(s, cs, cpm_ptr, children[i], -2, cf_ptr, n, loc)) {
+	    if (CheckAppropriateCandidate(s, cs, cpm_ptr, children[i], -2, cf_ptr, n, loc, FALSE)) {
 		EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 						 children[i], 
 						 cf_ptr, n, loc, s, bp);
@@ -2518,7 +2531,7 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 		for (j = 0; bp->child[i]->child[j]; j++) {
 		    if (bp->child[i]->child[j]->para_type == PARA_NORMAL && 
 			!Bcheck[0][bp->child[i]->child[j]->num] && 
-			CheckAppropriateCandidate(s, s, cpm_ptr, bp->child[i]->child[j], -1, cf_ptr, n, loc)) {
+			CheckAppropriateCandidate(s, s, cpm_ptr, bp->child[i]->child[j], -1, cf_ptr, n, loc, FALSE)) {
 			EllipsisDetectForVerbSubcontract(s, s, em_ptr, cpm_ptr, cmm_ptr, l, 
 							 bp->child[i]->child[j], cf_ptr, n, loc, s, 
 							 bp->child[i]->child[j]->pred_b_ptr);
@@ -2528,7 +2541,7 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 		}
 	    }
 	    else if (!Bcheck[0][bp->child[i]->num] && 
-		     CheckAppropriateCandidate(s, s, cpm_ptr, bp->child[i], -1, cf_ptr, n, loc)) {
+		     CheckAppropriateCandidate(s, s, cpm_ptr, bp->child[i], -1, cf_ptr, n, loc, FALSE)) {
 		EllipsisDetectForVerbSubcontract(s, s, em_ptr, cpm_ptr, cmm_ptr, l, 
 						 bp->child[i], cf_ptr, n, loc, s, bp->child[i]->pred_b_ptr);
 		Bcheck[0][bp->child[i]->num] = 1;
@@ -2583,7 +2596,7 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 			tp, cf_ptr, n, dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC);
 
     /* 文末にある体言(先行詞候補)は OK */
-    if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC)) {
+    if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC, FALSE)) {
 	EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, 
 					 dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC, s, tp->pred_b_ptr);
     }
