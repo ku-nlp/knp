@@ -220,8 +220,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	
 	/* 「的，」と「的だ」 */
 	(check_feature(ptr1->f, "並キ:名") && 
-	 check_feature(ptr1->f, "的") && 
-	 check_feature(ptr2->f, "的"))
+	 check_feature(ptr1->f, "類似計算:的") && 
+	 check_feature(ptr2->f, "類似計算:的"))
 	 /* check_bnst_substr(ptr1, 0, 0, "的") && 
 	    check_bnst_substr(ptr2, 0, 0, "的だ")) */
 	) {
