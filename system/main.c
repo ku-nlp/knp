@@ -99,8 +99,8 @@ extern float	AssignReferentThreshold;
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
-	    "           [-thesaurus [BGH|NTT]] (Default:NTT)\n"
-	    "           [-para-thesaurus [BGH|NTT]] (Default:BGH)\n");
+	    "           [-scode [BGH|NTT]] (Default:NTT)\n"
+	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
     exit(1);    
 }
 
@@ -185,7 +185,7 @@ extern float	AssignReferentThreshold;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
 	}
-	else if (str_eq(argv[0], "-thesaurus")) {
+	else if (str_eq(argv[0], "-scode")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    if (!strcasecmp(argv[0], "ntt")) {
@@ -198,7 +198,7 @@ extern float	AssignReferentThreshold;
 		usage();
 	    }
 	}
-	else if (str_eq(argv[0], "-para-thesaurus")) {
+	else if (str_eq(argv[0], "-para-scode")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    if (!strcasecmp(argv[0], "ntt")) {
