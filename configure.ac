@@ -20,6 +20,8 @@ AC_ARG_WITH(internal-hash, AC_HELP_STRING([--with-internal-hash], [use internal 
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (default=no)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
+AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file], [path where Bunrui Goi Hyou (sakuin) is located (optional)]), 
+			  BGH_FILE="$withval")
 
 
 SUBDIRS="system rule docs perl dict"
@@ -50,7 +52,6 @@ fi
 AC_MSG_RESULT("$enable_debug")
 
 
-AC_PREFIX_DEFAULT("$packagesrcdir")
 KNP_DIR=$packagesrcdir
 KNP_SYS="$KNP_DIR/system"
 KNP_DICT="$KNP_DIR/dict"
@@ -84,9 +85,18 @@ AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
 KNP_LIBS="$KNP_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 
+MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
+CF_COMMAND="$packagesrcdir/system/ipal"
+
+if test x"$BGH_FILE" = x; then
+    BGH_FILE=/share/dict/bgh/monitor/sakuin
+fi
+
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
-
+AC_SUBST(MAKE_DB_COMMAND)
+AC_SUBST(CF_COMMAND)
+AC_SUBST(BGH_FILE)
 
 KNP_CFLAGS="$SVM_CFLAGS $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RCPATH\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
@@ -134,6 +144,10 @@ docs/Makefile
 perl/Makefile
 dict/Makefile
 dict/src/Makefile
-dict/scase/Makefile
+dict/scode/Makefile
+dict/scode/bgh/Makefile
+dict/scode/ntt/Makefile
+dict/ebcf/Makefile
+dict/gcf/Makefile
 ])
 AC_OUTPUT

@@ -7,12 +7,12 @@
     $Id$
 ====================================================================*/
 
-#define BGH_DB_NAME		"bgh/bgh"
-#define SM2BGHCODE_DB_NAME	"bgh/sm2code"
-#define SM_DB_NAME		"sm/word2code"
-#define SM2CODE_DB_NAME		"sm/sm2code"
-#define CODE2SM_DB_NAME		"sm/code2sm"
-#define SMP2SMG_DB_NAME		"sm/smp2smg"
-#define SCASE_DB_NAME		"scase/scase"
-#define CF_DB_NAME		"cf/cf"
-#define CF_DAT_NAME		"cf/cf.dat"
+#define BGH_DB_NAME		"scode/bgh/bgh.db"
+#define SM2BGHCODE_DB_NAME	"scode/bgh/sm2code.db"
+#define SM_DB_NAME		"scode/ntt/word2code.db"
+#define SM2CODE_DB_NAME		"scode/ntt/sm2code.db"
+#define CODE2SM_DB_NAME		"scode/ntt/code2sm.db"
+#define SMP2SMG_DB_NAME		"scode/ntt/smp2smg.db"
+#define SCASE_DB_NAME		"gcf/scase.db"
+#define CF_DB_NAME		"ebcf/cf.db"
+#define CF_DAT_NAME		"ebcf/cf.dat"
