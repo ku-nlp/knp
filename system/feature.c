@@ -583,8 +583,11 @@
 	return TYPE_KATAKANA;
     }
     /* ひらがな */ /* 漢字 */
-    else if ((0xa4a0 < code && code < 0xa5a0) || (0xb0a0 < code || code == 0xa1b9)) {
-	return TYPE_KANAKANJI;
+    else if (0xa4a0 < code && code < 0xa5a0) {
+	return TYPE_HIRAGANA;
+    }
+    else if (0xb0a0 < code || code == 0xa1b9) {
+	return TYPE_KANJI;
     }
     /* 数字と "・", "．" */
     else if ((0xa3af < code && code < 0xa3ba) || code == 0xa1a5 || code == 0xa1a6) {
@@ -642,7 +645,21 @@
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
-	    if (check_char_type(code) != TYPE_KANAKANJI)
+	    code = check_char_type(code);
+	    if (!(code == TYPE_KANJI || code == TYPE_HIRAGANA))
+		return FALSE;
+	    ucp += 2;
+	}	    
+	return TRUE;
+    }
+
+    /* &ひらがな : ひらがな チェック (形態素レベル) */
+
+    if (!strcmp(rule, "&ひらがな")) {
+	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	while (*ucp) {
+	    code = (*ucp)*0x100+*(ucp+1);
+	    if (check_char_type(code) != TYPE_HIRAGANA)
 		return FALSE;
 	    ucp += 2;
 	}	    
@@ -885,6 +902,27 @@
 	    /* 統計的に処理する
 	    return corpus_barrier_check((BNST_DATA *)ptr1, 
 					(BNST_DATA *)ptr2); */
+    }
+
+    /* &境界特別 : 格と述語の壁チェック (事例, 臨時) */
+
+    else if (!strncmp(rule, "&境界特別:", strlen("&境界特別:"))) {
+	/* ルールによる壁 */
+	if (OptInhibit & OPT_INHIBIT_BARRIER) {
+	    /* 事例を使うとき */
+	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
+		return subordinate_level_check_special(rule + strlen("&境界特別:"),
+						       (BNST_DATA *)ptr2);
+	    }
+	    else {
+		return subordinate_level_check(rule + strlen("&境界特別:"),
+					       (BNST_DATA *)ptr2);
+	    }
+	}
+	else{
+	    return corpus_barrier_check((BNST_DATA *)ptr1, 
+					(BNST_DATA *)ptr2);
+	}
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */
