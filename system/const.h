@@ -755,9 +755,28 @@ typedef struct case_component {
 /* 用言と格要素の組の構造体 */
 typedef struct predicate_anaphora_list {
     char	*key;		/* 用言 */
+    int		voice;
     CASE_COMPONENT *cc[CASE_MAX_NUM];	/* 格要素のリスト */
     struct predicate_anaphora_list *next;
 } PALIST;
+
+typedef struct ellipsis_component {
+    SENTENCE_DATA	*s;
+    int			bnst;
+    float		score;
+} ELLIPSIS_COMPONENT;
+
+typedef struct ellipsis_list {
+    CF_PRED_MGR		*cpm;
+    float		score;
+    ELLIPSIS_COMPONENT cc[CASE_MAX_NUM];	/* 省略格要素のリスト */
+    FEATUREptr		f;
+    int			result_num;
+    CF_MATCH_MGR cmm[CMM_MAX];
+    int			element_num;
+    BNST_DATA		*elem_b_ptr[CF_ELEMENT_MAX];
+    int			*elem_b_num[CF_ELEMENT_MAX];
+} ELLIPSIS_MGR;
 
 /*====================================================================
                                END

@@ -615,7 +615,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		   ガガ格と解釈する */
 		else if (gagaok && 
 			 check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:未格") && 
-			 !check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間")) {
+			 !check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間") && 
+			 cpm_ptr->pred_b_ptr->num != cpm_ptr->elem_b_ptr[i]->num+1) { /* 用言の直前ではない (実は、もうひとつのガ格よりも前にあることを条件にしたい) */
 		    strcpy(relation, "ガガ(ハ)");
 		    sprintf(feature_buffer, "%s判定", relation);
 		    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
@@ -631,6 +632,20 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		}
 		else {
 		    strcpy(relation, "--");
+		}
+
+		/* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
+		if (OptDisc == OPT_DISC) {
+		    RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+				      cpm_ptr->pred_b_ptr->voice, 
+				      cpm_ptr->cf.pp[i][0], 
+				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+		    if (lastflag == j) {
+			RegisterLastClause(sp->Sen_num, 
+					   L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+					   cpm_ptr->cf.pp[i][0], 
+					   cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
+		    }
 		}
 	    }
 	    else if (num >= 0) {
@@ -648,6 +663,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		/* 格関係の保存 (文脈解析用) */
 		if (OptDisc == OPT_DISC) {
 		    RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+				      cpm_ptr->pred_b_ptr->voice, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
 				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
 		    if (lastflag == j) {

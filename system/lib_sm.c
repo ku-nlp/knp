@@ -200,7 +200,7 @@ int		SMP2SMGExist;
 		   void get_sm_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, stop, i;
+    int strt, end, stop, i, jiritu;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[SM_CODE_SIZE*SM_ELEMENT_MAX+1];
 
@@ -219,7 +219,7 @@ int		SMP2SMGExist;
 
     /* ptr->SM_num ¤Ïinit_bnst¤Ç0¤Ë½é´ü²½¤µ¤ì¤Æ¤¤¤ë */
 
-    for (stop = 0; stop < ptr->fuzoku_num; stop++) 
+    for (stop = 0; stop < ptr->fuzoku_num; stop++) {
 	if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "½õ»ì") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "È½Äê»ì") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "½õÆ°»ì") ||
@@ -227,9 +227,17 @@ int		SMP2SMGExist;
 	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "ÀÜÈø¼­") &&
 	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "Ì¾»ìÀ­Ì¾»ìÀÜÈø¼­")))
 	    break;
+    }
 
-    end = ptr->settou_num + ptr->jiritu_num + stop;
-    for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
+    for (jiritu = 0; jiritu < ptr->jiritu_num; jiritu++) {
+	if (check_feature((ptr->jiritu_ptr + jiritu)->f, "£Ô¸ÇÍ­ËöÈø")) {
+	    stop = 0;
+	    break;
+	}
+    }
+
+    end = ptr->settou_num + jiritu + stop;
+    for (strt =0 ; strt < (ptr->settou_num + jiritu); strt++) {
 
 	/* É½µ­¤Î¤Þ¤Þ */
 

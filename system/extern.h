@@ -150,7 +150,7 @@ extern void server_read_rc(FILE *fp);
 
 /* context.c */
 extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int pp, char *word, int flag);
+extern void RegisterPredicate(char *key, int voice, int pp, char *word, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
 extern void copy_sentence(SENTENCE_DATA *sp);

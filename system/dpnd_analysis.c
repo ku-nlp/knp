@@ -770,6 +770,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 /*==================================================================*/
 {
     int i;
+    BNST_DATA *check_b_ptr;
 
     if (OptInput == OPT_PARSED) {
 	Possibility = 1;
@@ -791,10 +792,11 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		/* ※ 暫定的
 		   並列のときに make_dpnd_tree() を呼び出すと cpm_ptr がなくなるので、
 		   ここでコピーしておく */
-		if (sp->Best_mgr->cpm[i].pred_b_ptr->parent && 
-		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->para_top_p == TRUE && 
-		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->cpm_ptr == NULL) {
-		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->cpm_ptr = &(sp->Best_mgr->cpm[i]);
+		check_b_ptr = sp->Best_mgr->cpm[i].pred_b_ptr;
+		while (check_b_ptr->parent && check_b_ptr->parent->para_top_p == TRUE && 
+		       check_b_ptr->parent->cpm_ptr == NULL) {
+		    check_b_ptr->parent->cpm_ptr = &(sp->Best_mgr->cpm[i]);
+		    check_b_ptr = check_b_ptr->parent;
 		}
 	    }
 	    /* 格解析の結果をfeatureへ */
