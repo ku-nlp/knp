@@ -46,3 +46,13 @@ diff:
 	    diff bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	    rm -f bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	fi
+
+CLEANFILES = bnst_type.rule $(nodist_rule_DATA)
+
+rulepack: $(CLEANFILES)
+	if [ ! -d rule ]; then \
+	    mkdir rule; \
+	    cp -p $(CLEANFILES) rule; \
+	    $(AMTAR) chof - rule | GZIP=$(GZIP_ENV) gzip -c > $(PACKAGE)-rule-`date +"%Y%m%d"`.tar.gz; \
+	    rm -rf rule; \
+	fi
