@@ -1,3 +1,9 @@
+2004-01-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	同じ位置カテゴリ内では、意味属性でマッチしたときにhead側を優先する
+	ことにした。
+
 2004-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
