@@ -1,5 +1,5 @@
 (JUMAN文法ディレクトリ
-	@datadir@/juman
+	@juman_prefix@/share/juman
 )
 
 (KNPルールディレクトリ

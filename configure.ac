@@ -39,11 +39,6 @@ if test "$with_svm" = yes; then
 fi
 AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
 
-if test x"$juman_prefix" != x; then
-    JUMAN_CFLAGS="-I$juman_prefix/include"
-    JUMAN_LDFLAGS="-L$juman_prefix/lib"
-fi
-
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
 
 AC_MSG_CHECKING("debug version")
@@ -54,7 +49,6 @@ else
     enable_debug=no
 fi
 AC_MSG_RESULT("$enable_debug")
-
 
 KNP_DICT="$datadir/knp/dict"
 KNP_RULE="$datadir/knp/rule"
@@ -70,6 +64,14 @@ fi
 
 eval KNP_DICT=`eval echo "$KNP_DICT"`
 eval KNP_RULE=`eval echo "$KNP_RULE"`
+
+if test x"$juman_prefix" != x; then
+    JUMAN_CFLAGS="-I$juman_prefix/include"
+    JUMAN_LDFLAGS="-L$juman_prefix/lib"
+else
+    eval juman_prefix=`eval echo "$prefix"`
+fi
+AC_SUBST(juman_prefix)
 
 
 # Checks for libraries.

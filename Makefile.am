@@ -12,5 +12,5 @@ EXTRA_DIST = autogen.sh
 
 knprc: knprc.in
 	rm -f $@ $@.tmp
-	sed 's,@pkgdatadir\@,$(pkgdatadir),g; s,@datadir\@,$(datadir),' $< > $@.tmp
+	sed 's,@pkgdatadir\@,$(pkgdatadir),g; s,@datadir\@,$(datadir),g; s,@juman_prefix\@,$(juman_prefix),g' $< > $@.tmp
 	mv $@.tmp $@
