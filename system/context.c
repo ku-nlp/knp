@@ -13,7 +13,7 @@ float maxrawscore;
 SENTENCE_DATA *maxs;
 int maxi, maxpos;
 char *maxtag, *maxfeatures;
-int Bcheck[BNST_MAX];
+int Bcheck[TAG_MAX];
 
 /* #define USE_RAWSCORE */
 
