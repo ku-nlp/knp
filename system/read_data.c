@@ -386,7 +386,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		      void assign_mrph_feature()
 /*==================================================================*/
 {
-    int i, j, k, pos, apos, flag, match_tail;
+    int i, j, k, pos, apos, flag = 0, match_tail;
     char decision[9];
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
@@ -397,36 +397,30 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	init_NE(&(mrph_data[i].eNE));
 	assign_f_from_dic(i);
 
+	/* 単語と文字種のコピー */
 	mrph_data[i].eNE.self = mrph_data[i].NE.self;
+	mrph_data[i].eNE.selfSM = mrph_data[i].NE.selfSM;
     }
 
     /* とりあえずすべての形態素にふっておこう */
     for (i = 0; i < Mrph_num; i++) {
 	/* 前の隣接語 (自立語, 名詞性名詞接尾辞, 名詞接頭辞だけ) */
-	pos = -1;
-	for (j = i-1; j >= 0; j--) {
-	    if (check_feature(mrph_data[j].f, "自立") || 
-		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
-		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
-		pos = j;
-		break;
-	    }
-	}
-	if (pos != -1)
-	    mrph_data[i].eNE.after = mrph_data[pos].NE.after;
+	/* if (check_feature(mrph_data[i-1].f, "自立") || 
+	    (mrph_data[i-1].Hinshi == 14 && mrph_data[i-1].Bunrui == 2) || 
+	    (mrph_data[i-1].Hinshi == 13 && mrph_data[i-1].Bunrui == 1)) { 
+	    mrph_data[i].eNE.AX = mrph_data[i-1].NE.AX;
+	} */
+	if (i > 0)
+	    mrph_data[i].eNE.AX = mrph_data[i-1].NE.AX;
 
 	/* 後の隣接語 (自立語, 名詞性名詞接尾辞, 名詞接頭辞だけ) */
-	pos = -1;
-	for (j = i+1; j < Mrph_num; j++) {
-	    if (check_feature(mrph_data[j].f, "自立") || 
-		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
-		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
-		pos = j;
-		break;
-	    }
-	}
-	if (pos != -1)
-	    mrph_data[i].eNE.before = mrph_data[pos].NE.before;
+	/* if (check_feature(mrph_data[i+1].f, "自立") || 
+	    (mrph_data[i+1].Hinshi == 14 && mrph_data[i+1].Bunrui == 2) || 
+	    (mrph_data[i+1].Hinshi == 13 && mrph_data[i+1].Bunrui == 1)) {
+	    mrph_data[i].eNE.XB = mrph_data[i+1].NE.XB;
+	} */
+	if (i < Mrph_num-1)
+	    mrph_data[i].eNE.XB = mrph_data[i+1].NE.XB;
 
 	/* A の B */
 	if (flag != 2 && mrph_data[i].Hinshi == 6 && check_feature(mrph_data[i].f, "自立")) {
@@ -437,8 +431,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    flag = 2;
 	}
 	else if (flag == 2 && mrph_data[i].Hinshi == 6 && check_feature(mrph_data[i].f, "自立")) {
-	    mrph_data[i].eNE.AnoB = mrph_data[apos].NE.AnoB;
-	    mrph_data[apos].eNE.BnoA = mrph_data[i].NE.BnoA;
+	    mrph_data[i].eNE.AnoX = mrph_data[apos].NE.AnoX;
+	    mrph_data[apos].eNE.XnoB = mrph_data[i].NE.XnoB;
 
 	    flag = 1;
 	    apos = i;
