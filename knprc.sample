@@ -2,9 +2,9 @@
 	/usr/local/share/juman
 )
 
-(KNPルールディレクトリ
-        /share/tool/knp/rule
-)
+; (KNPルールディレクトリ
+;         /share/tool/knp/rule
+; )
 
 (KNPルールファイル
 	(mrph_homo 同形異義語)
@@ -18,6 +18,6 @@
 	(case_analysis 文節 逆方向)
 )
 
-(KNP辞書ディレクトリ
-        /share/tool/knp/dict
-)
+; (KNP辞書ディレクトリ
+;         /share/tool/knp/dict
+; )
