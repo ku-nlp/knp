@@ -1,3 +1,8 @@
+2003-11-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	名詞の関係解析と省略解析を同時にするときのbug fix
+
 2003-10-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c: 名詞の関係解析で固有名詞文節も対象とすることに
