@@ -10,7 +10,8 @@ EXTRA_DIST = \
 	kakari_uke.rule \
 	koou.rule \
 	mrph_basic.rule \
-	mrph_homo.rule
+	mrph_homo.rule \
+	case_analysis.rule
 
 rule:
 	if [ -x rule_conv.pl ]; then \
