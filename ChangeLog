@@ -1,3 +1,8 @@
+2005-01-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule:
+	「サ変名詞+をする」のサ変名詞は省略解析しないのをやめた。
+
 2005-01-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_homo.rule, system/case_analysis.c, system/case_ipal.c, system/dpnd_analysis.c, system/extern.h, system/read_data.c:
