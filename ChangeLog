@@ -1,3 +1,13 @@
+2003-04-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c:
+	_WIN32環境でsignal()がないことに対する修正
+	係り受け解析に失敗したら、係り先候補数を出力しないことにした
+	形態素解析に失敗したときにsegmentation faultすることがあるバグを修正
+
+	* system/lib_sm.c:
+	カウンタの意味素を引くときに、NTTの名詞or接尾辞の意味素を使うようにした
+
 2003-04-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/dpnd_analysis.c: 不必要なエラーメッセージを削除
@@ -14,6 +24,9 @@
 	入力行が長すぎる場合に、次の行の解析がおかしくなる場合があった問題を修正
 
 	* svm/svm.cc: モデルファイルの存在をチェック
+
+	* system/lib_print.c:
+	treeを描くときにタグ単位になっていなかったのを修正
 
 2003-03-28  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
 
