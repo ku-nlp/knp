@@ -17,7 +17,7 @@ EXTRA_DIST = \
 	case_analysis.rule
 
 ruledir = $(pkgdatadir)/rule
-nodist_rule_DATA = bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
+dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
 
 .rule.data:
 	$(RULECONV) $<
@@ -51,9 +51,9 @@ diff:
 	    rm -f bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	fi
 
-CLEANFILES = bnst_type.rule $(nodist_rule_DATA)
+CLEANFILES = bnst_type.rule.old $(dist_rule_DATA)
 
-rulepack: $(CLEANFILES)
+rulepack: $(dist_rule_DATA)
 	if [ ! -d rule ]; then \
 	    mkdir rule; \
 	    cp -p $(CLEANFILES) rule; \
