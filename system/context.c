@@ -638,7 +638,9 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 
     /* 主体のマッチング (とりあえずガ格のときだけ) */
     if (cf_ptr->sm[n] && 
-	MatchPP(cf_ptr->pp[n][0], "ガ")) {
+	(MatchPP(cf_ptr->pp[n][0], "ガ") || 
+	 (MatchPP(cf_ptr->pp[n][0], "ニ") && 
+	  cf_ptr->voice == FRAME_PASSIVE_1))) {
 	int flag;
 	for (j = 0; cf_ptr->sm[n][j]; j+=step) {
 	    if (!strncmp(cf_ptr->sm[n]+j, sm2code("主体"), SM_CODE_SIZE)) {
@@ -2255,6 +2257,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	(MatchPP(cf_ptr->pp[n][0], "ニ") && 
 	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
 	 !cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 
+	 maxscore <= AssignGaCaseThreshold && 
 	 (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
 	  check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
 	  check_feature(cpm_ptr->pred_b_ptr->f, "追加受身") || 
@@ -2283,7 +2286,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	     MatchPP(cf_ptr->pp[n][0], "ヨリ") || 
 	     MatchPP(cf_ptr->pp[n][0], "カラ") || 
 	     MatchPP(cf_ptr->pp[n][0], "マデ") || 
-	     MatchPP(cf_ptr->pp[n][0], "ガ２")) {
+	     MatchPP(cf_ptr->pp[n][0], "ガ２") || 
+	     MatchPP(cf_ptr->pp[n][0], "ノ") || 
+	     MatchPP(cf_ptr->pp[n][0], "外の関係")) {
 	sprintf(feature_buffer, "省略処理なし-%s", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
@@ -2493,10 +2498,11 @@ int MarkEllipsisCase(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 {
     char feature_buffer[DATA_LEN];
 
-    /* 省略されている格をマーク */
+    /* 省略されている格をマーク
     sprintf(feature_buffer, "C省略-%s", 
 	    pp_code_to_kstr(cf_ptr->pp[n][0]));
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+    */
 
     /* <不特定:状況> をガ格としてとる判定詞 */
     if (check_feature(cpm_ptr->pred_b_ptr->f, "時間ガ省略") && 

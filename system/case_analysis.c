@@ -361,6 +361,9 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 		cflag = 1;
 	    }
 	    for (i = 1; i < cpm_ptr->result_num; i++) {
+		/* score が最高で、
+		   直前格要素が格フレームの直前格にマッチしているものがあれば(0番目をチェック)
+		   直前格要素が格フレームの直前格にマッチしていることが条件 */
 		if (cpm_ptr->cmm[i].score == top && 
 		    (cflag == 0 || CheckCfClosest(&(cpm_ptr->cmm[i]), closest) == TRUE)) {
 		    cpm_ptr->tie_num++;
@@ -381,6 +384,16 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 		    break;
 		}
 		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
+	    }
+	    /* すべてのスコアでsort */
+	    for (i = cpm_ptr->tie_num-1; i >= 1; i--) {
+		for (j = i-1; j >= 0; j--) {
+		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score) {
+			tempcmm = cpm_ptr->cmm[i];
+			cpm_ptr->cmm[i] = cpm_ptr->cmm[j];
+			cpm_ptr->cmm[j] = tempcmm;
+		    }
+		}
 	    }
 	}
 	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;

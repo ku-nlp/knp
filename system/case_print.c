@@ -126,7 +126,7 @@ int	EX_PRINT_NUM = 10;
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%6.2f点 (%d/%.3f) ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))));
+    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->ipal_id+2);
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);

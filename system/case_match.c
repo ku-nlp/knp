@@ -366,6 +366,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    return SM_match_unknown;
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
+	    /* 具体的な用例が書いてある場合 */
 	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), SM_CODE_SIZE)) {
 
 		for (k = 0; cfp->ex[as2][k]; k+=BGH_CODE_SIZE) {
@@ -380,6 +381,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		}
 	    }
 	    else {
+		/* 選択制限によるマッチ */
 		for (i = 0; cfd->sm[as1][i]; i+=SM_CODE_SIZE) {
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
