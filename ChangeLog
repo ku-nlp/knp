@@ -2,6 +2,9 @@
 
 	* dict/scode/ntt/usr_word2code.dat: New file.
 
+	* rule/Makefile.am:
+	allターゲットではtransのみを実行するように修正
+
 2004-10-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/bgh.pl:
