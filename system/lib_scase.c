@@ -11,12 +11,18 @@
 
 DBM_FILE	scase_db;
 int		ScaseDicExist;
+int		OptUseScase;
 
 /*==================================================================*/
 			  void init_scase()
 /*==================================================================*/
 {
     char *filename;
+
+    if (OptUseScase == FALSE) {
+	ScaseDicExist = FALSE;
+	return;
+    }
 
     if (DICT[SCASE_DB]) {
 	filename = check_dict_filename(DICT[SCASE_DB], FALSE);

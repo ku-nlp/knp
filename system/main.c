@@ -39,7 +39,6 @@ int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
 int		OptCheck;
-int		OptJuman;
 int		OptDiscPredMethod;
 int		OptDiscNounMethod;
 int		OptLearn;
@@ -119,7 +118,7 @@ extern int	EX_match_subject;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
-    OptJuman = OPT_NORMAL;
+    OptUseScase = TRUE;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
@@ -314,6 +313,9 @@ extern int	EX_match_subject;
 	    else {
 		usage();
 	    }
+	}
+	else if (str_eq(argv[0], "-no-scase")) {
+	    OptUseScase = FALSE;
 	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;

@@ -40,6 +40,7 @@ extern int 		OptExpress;
 extern int 		OptDisplay;
 extern int 		OptExpandP;
 extern int		OptCheck;
+extern int		OptUseScase;
 extern int		OptDiscPredMethod;
 extern int		OptDiscNounMethod;
 extern int		OptLearn;
