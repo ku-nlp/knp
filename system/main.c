@@ -101,6 +101,7 @@ extern int	EX_match_qua;
 extern int	EX_match_unknown;
 extern int	EX_match_sentence;
 extern int	EX_match_tim;
+extern int	EX_match_subject;
 extern int	EllipsisSubordinateClauseScore;
 
 /*==================================================================*/
@@ -345,6 +346,11 @@ extern int	EllipsisSubordinateClauseScore;
 	    if (argc < 1) usage();
 	    EllipsisSubordinateClauseScore = atoi(argv[0]);
 	}
+	else if (str_eq(argv[0], "-score-agent")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EX_match_subject = atoi(argv[0]);
+	}
 	else {
 	    usage();
 	}
@@ -559,7 +565,7 @@ extern int	EllipsisSubordinateClauseScore;
 
     /* 時間属性を補助的に付与する */
     for (i = 0; i < sp->Bnst_num; i++) {
-	assign_time_feature(sp->bnst_data+i);
+	assign_sm_aux_feature(sp->bnst_data+i);
     }
 
     /* 固有名詞ルール */

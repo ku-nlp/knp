@@ -579,7 +579,7 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-		      int sm_time_match(char *c)
+	       int sm_all_match(char *c, char *target)
 /*==================================================================*/
 {
     char *p, flag = 0;
@@ -590,8 +590,9 @@ int		SMP2SMGExist;
 	if (*p == '2') {
 	    continue;
 	}
-	/* 時間のコード */
-	if (!comp_sm("1128********", p, 1)) {
+
+	/* 意味素のチェック */
+	if (!comp_sm(target, p, 1)) {
 	    return FALSE;
 	}
 	else if (!flag) {
@@ -613,8 +614,21 @@ int		SMP2SMGExist;
 {
     /* <時間> の意味素しかもっていなければ <時間> を与える */
     if (!check_feature(bp->f, "時間") && 
-	sm_time_match(bp->SM_code)) {
+	sm_all_match(bp->SM_code, "1128********")) { /* 時間のコード */
 	assign_cfeature(&(bp->f), "時間");
+    }
+}
+
+/*==================================================================*/
+	      void assign_sm_aux_feature(BNST_DATA *bp)
+/*==================================================================*/
+{
+    /* <時間>属性を付与する */
+    assign_time_feature(bp);
+
+    /* <抽象>属性を付与する */
+    if (sm_all_match(bp->SM_code, "11**********")) {
+	assign_cfeature(&(bp->f), "抽象");
     }
 }
 

@@ -596,7 +596,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		    continue;
 	    }
 
-	    /* (cf_ptr+f_num)->entry = strdup(verb); */
+	    (cf_ptr+f_num)->entry = strdup(verb);
 
 	    /* Ç½Æ°ÂÖ */
 	    if (b_ptr->voice == NULL) {
@@ -907,6 +907,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	}
 	if ((Case_frame_array+i)->entry) {
 	    free((Case_frame_array+i)->entry);
+	    (Case_frame_array+i)->entry = NULL;
 	}
     }
 }
@@ -965,7 +966,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 
 		    get_bgh_code(bp->internal+bp->internal_num);
 		    get_sm_code(bp->internal+bp->internal_num);
-		    assign_time_feature(bp->internal+bp->internal_num);
+		    assign_sm_aux_feature(bp->internal+bp->internal_num);
 		    assign_cfeature(&((bp->internal+bp->internal_num)->f), "·¸:Ê¸ÀáÆâ");
 		    (bp->internal+bp->internal_num)->parent = bp;
 		    bp->internal_num++;

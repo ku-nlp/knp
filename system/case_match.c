@@ -33,7 +33,7 @@ int     EX_match_sentence = 10;				/* 格要素 -- 文   */
 int     EX_match_tim = 0;				/* 格要素 -- 時間 */
 int     EX_match_qua = 8; /* 10; */			/* 格要素 -- 数量 */
 int	EX_match_exact = 12;
-int	EX_match_subject = 6;
+int	EX_match_subject = 8;
 int	EX_match_modification = 0;
 
 int	Thesaurus = USE_NTT;
@@ -775,7 +775,7 @@ int	Thesaurus = USE_NTT;
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
-		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外ノ関係")) ||
+		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) ||
 		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("ガ２")) ||
 		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
@@ -810,7 +810,7 @@ int	Thesaurus = USE_NTT;
 	       下で cfp->element_num を戻しているので、
 	       同じ格が複数あるかどうかをチェックしていない */
 	    if (cfp->element_num < CF_ELEMENT_MAX) {
-		_make_ipal_cframe_pp(cfp, "外ノ関係", cfp->element_num);
+		_make_ipal_cframe_pp(cfp, "外の関係", cfp->element_num);
 		list1.flag[target] = cfp->element_num;
 		list1.score[target] = elmnt_score;
 		list2.flag[cfp->element_num] = target;

@@ -125,7 +125,10 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	else {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
-	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
+	    /* A の B(サ変名詞) のときはヲ格も追加 */
+	    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析")) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
+	    }
 	}
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
@@ -456,7 +459,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
 	    if (cel_b_ptr->parent && 
 		cel_b_ptr->parent->parent) {
-		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
+		if (!(check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
+		      check_feature(b_ptr->parent->parent->f, "外の関係可能性")) || 
 		    check_feature(b_ptr->f, "用言:形")) {
 		    _make_data_cframe_pp(cpm_ptr, NULL);
 		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);

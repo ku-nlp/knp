@@ -1129,7 +1129,7 @@
     }
 
     else if (!strncmp(rule, "&時間", strlen("&時間"))) {
-	if (sm_time_match(((BNST_DATA *)ptr2)->SM_code)) {
+	if (sm_all_match(((BNST_DATA *)ptr2)->SM_code, "1128********")) {
 	    return TRUE;
 	}
 	else {

@@ -47,23 +47,24 @@
     int i;
 
     fputs("¡Ú", Outfp);
-    /*
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "Ì¾»ì+ÀÜÈø¼­")) {
-	fprintf(Outfp, "%s+", 
-		(cpm_ptr->pred_b_ptr->jiritu_ptr+cpm_ptr->pred_b_ptr->jiritu_num-2)->Goi);
+
+    if (cpm_ptr->cmm[0].cf_ptr->entry) {
+	fprintf(Outfp, "%s", cpm_ptr->cmm[0].cf_ptr->entry);
     }
-    */
+    else {
+	fprintf(Outfp, "%s", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+    }
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-	fprintf(Outfp, "%s(»ÈÌò)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fputs("(»ÈÌò)¡Û", Outfp);
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-	fprintf(Outfp, "%s(¼õ¿È)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fputs("(¼õ¿È)¡Û", Outfp);
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-	fprintf(Outfp, "%s(»ÈÌòor¼õ¿È)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fputs("(»ÈÌòor¼õ¿È)¡Û", Outfp);
     else
-	fprintf(Outfp, "%s¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+	fputs("¡Û", Outfp);
 
-    fprintf(Outfp, " [%d]", cpm_ptr->pred_b_ptr->cf_num);
+    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.ipal_id, cpm_ptr->pred_b_ptr->cf_num);
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 
@@ -115,8 +116,6 @@
     /* ÆÀÅÀ, °ÕÌ£¤ÎÉ½¼¨ */
 
     fprintf(Outfp, "¡ú%3dÅÀ ", (int)cmm_ptr->score);
-
-    /* fprintf(Outfp, "<%s> ", cmm_ptr->cf_ptr->entry); */
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<Ê¸Àá·ë¹ç¥Õ¥ì¡¼¥à:%s> ", cmm_ptr->cf_ptr->ipal_id);

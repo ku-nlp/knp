@@ -111,7 +111,7 @@ struct PP_STR_TO_CODE {
 				   書いておく */
     {"修飾", "修飾", 40},
     {"が２", "ガ２", 41},
-    {"外の関係", "外ノ関係", 42},
+    {"外の関係", "外の関係", 42},
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
@@ -372,6 +372,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->flag = src->flag;
+    dst->entry = src->entry;
     dst->pred_b_ptr = src->pred_b_ptr;
 }
 
