@@ -60,7 +60,7 @@
 ;	(compoundnoun-auxiliary 固有表現句-AUX)
 ;	(ne-juman 固有表現句)
 ;	(mrph_helpsys 形態素)
-;	(context 文脈)
+	(context 文節 逆方向 ルールループ先行)
 )
 
 (KNP辞書ディレクトリ
