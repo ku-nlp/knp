@@ -42,6 +42,7 @@ int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 8;
+int	NOUN_THRESHOLD = 8; /* == EX_match_subject */
 int	CASE_ASSIGN_THRESHOLD = 0;
 
 /*==================================================================*/
@@ -937,9 +938,14 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			    match_result = 
 				elmnt_match_score(target, cfd, i, cfp, flag, &pos, &elmnt_score);
 
-			    if (!(cfp->pp[i][j] == pp_kstr_to_code("陸及楮溢") || 
-				  cfp->pp[i][j] == pp_kstr_to_code("用")) || 
-				elmnt_score >= SOTO_THRESHOLD) {
+			    if ((cfp->pp[i][j] != pp_kstr_to_code("陸及楮溢") && 
+				 cfp->pp[i][j] != pp_kstr_to_code("用") && 
+				 cfd->pred_b_ptr->cpm_ptr->cf.type != CF_NOUN) || 
+				((cfp->pp[i][j] == pp_kstr_to_code("陸及楮溢") || 
+				  cfp->pp[i][j] == pp_kstr_to_code("用")) &&
+				 elmnt_score >= SOTO_THRESHOLD) || 
+				(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_NOUN && 
+				 elmnt_score >= NOUN_THRESHOLD)) {
 				if ((flag == EXAMPLE) || 
 				/* if ((flag == EXAMPLE && 
 				   (match_result == TRUE || assign_flag == TRUE)) || */
