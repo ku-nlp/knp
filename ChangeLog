@@ -1,3 +1,9 @@
+2003-12-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_sm.c: bug fix.
+
+	* rule/case_analysis.rule: 格解析: 意味素<数量>をもつものはノ格としない
+
 2003-12-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule, system/case_data.c:
