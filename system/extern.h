@@ -87,10 +87,6 @@ extern int	EX_match_exact;
 
 /* 関数プロトタイプ */
 
-/* bind_juman.c */
-extern void CloseJuman();
-extern FILE *JumanSentence(FILE *fp);
-
 /* bnst_compare.c */
 extern int subordinate_level_check(char *cp, BNST_DATA *ptr2);
 extern int levelcmp(char *cp1, char *cp2);
@@ -265,10 +261,6 @@ extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
 extern void usage();
-
-/* noun.c */
-extern void init_noun();
-extern void close_noun();
 
 /* para_dpnd.c */
 extern int _check_para_d_struct(SENTENCE_DATA *sp, int str, int end,

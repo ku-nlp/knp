@@ -16,4 +16,3 @@
 #define SCASE_DB_NAME		"scase/scase"
 #define CF_DB_NAME		"cf/cf"
 #define CF_DAT_NAME		"cf/cf.dat"
-#define NOUN_DB_NAME		"rsk/rsk"

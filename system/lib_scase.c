@@ -19,10 +19,10 @@ int		ScaseDicExist;
     char *filename;
 
     if (DICT[SCASE_DB]) {
-	filename = (char *)check_dict_filename(DICT[SCASE_DB], FALSE);
+	filename = check_dict_filename(DICT[SCASE_DB], FALSE);
     }
     else {
-	filename = (char *)check_dict_filename(SCASE_DB_NAME, FALSE);
+	filename = check_dict_filename(SCASE_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {

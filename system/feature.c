@@ -482,28 +482,6 @@
 }
 
 /*==================================================================*/
-	int _check_function_NE(struct _pos_s *p, char *class)
-/*==================================================================*/
-{
-    if (str_eq(class, "地名")) {
-	return p->Location;
-    }
-    else if (str_eq(class, "人名")) {
-	return p->Person;
-    }
-    else if (str_eq(class, "組織名")) {
-	return p->Organization;
-    }
-    else if (str_eq(class, "固有名詞")) {
-	return p->Artifact;
-    }
-    else if (str_eq(class, "その他")) {
-	return p->Others;
-    }
-    return FALSE;
-}
-
-/*==================================================================*/
       int check_Bunrui_others(MRPH_DATA *mp, int flag)
 /*==================================================================*/
 {

@@ -19,10 +19,10 @@ int		BGHExist;
     char *filename;
 
     if (DICT[BGH_DB]) {
-	filename = (char *)check_dict_filename(DICT[BGH_DB], TRUE);
+	filename = check_dict_filename(DICT[BGH_DB], TRUE);
     }
     else {
-	filename = (char *)check_dict_filename(BGH_DB_NAME, FALSE);
+	filename = check_dict_filename(BGH_DB_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
