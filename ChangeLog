@@ -2,11 +2,13 @@
 
 	* knprc.sample:	デフォルト値の変更
 
-	* configure.in: JUMANまわりの修正
-
-	* juman/: removed.
+	* juman: removed.
 
 	* system/bind_juman.c, system/noun.c: removed.
+
+	* dict/scase, dict/scase/Makefile.am, dict/scase/scase.dat: added.
+
+	* configure.in: JUMANまわりの修正, ディレクトリ追加・削除への対応
 
 2002-11-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
