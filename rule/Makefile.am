@@ -30,6 +30,8 @@ rule:
 	    $(RULECONV) *.rule; \
 	fi
 
+all: trans
+
 trans:
 	if [ -x $(RULETRANS) ]; then \
 	    if [ -f bnst_type.rule ]; then \
@@ -42,6 +44,7 @@ trans:
 	    done; \
 	fi
 	$(MAKE) rule
+	$(MAKE) diff
 
 diff:
 	if [ -r bnst_type.rule.old -a -r bnst_type.rule ]; then \
