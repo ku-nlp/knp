@@ -74,11 +74,6 @@ $HOST         = "grape";
 sub BEGIN {
     # 出力が二重にならないようにするためのおまじない
     STDOUT->autoflush(1);
-    if( $HOST ){
-	require IO::Socket::INET;
-    } else {
-	require Fork;
-    }
 }
 
 
@@ -95,6 +90,12 @@ sub new {
 
     unless( $JUMAN ){
 	$JUMAN = new Juman( $JUMAN_OPTION, "grape:1" ) or die;
+    }
+
+    if( $HOST ){
+	require IO::Socket::INET or die;
+    } else {
+	require Fork or die;
     }
 
     $this = { ALL      => "",
