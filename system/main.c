@@ -96,14 +96,18 @@ char *ClauseCDBname = NULL;
 char *CasePredicateDBname = NULL;
 char *OptionalCaseDBname = NULL;
 
+char *EtcRuleFile = NULL;
+
 jmp_buf timeout;
 
 /*==================================================================*/
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp "
-	    "[-case|dpnd|bnst|-disc] [-tree|sexp|-tab] [-normal|detail|debug] [-expand]\n"
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
+	    "           [-tree|sexp|-tab]\n" 
+	    "           [-normal|detail|debug]\n" 
+	    "           [-expand] [-mrule|-brule filename]\n"
 	    "           [-C host:port] [-S] [-N port] \n");
     exit(1);    
 }
@@ -220,6 +224,18 @@ jmp_buf timeout;
 	    */
 	    OptOptionalCase = argv[0];
 	}
+	else if (str_eq(argv[0], "-mrule")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EtcRuleFile = argv[0];
+	    init_etc_rule(IsMrphRule);
+	}
+	else if (str_eq(argv[0], "-brule")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EtcRuleFile = argv[0];
+	    init_etc_rule(IsBnstRule);
+	}
 	else {
 	    usage();
 	}
@@ -292,6 +308,8 @@ jmp_buf timeout;
 
     read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
 		   &ContRuleSize, ContRule_MAX);
+
+    read_etc_rule(EtcRuleFile, EtcRuleArray, &CurEtcRuleSize, EtcRule_MAX);
 }
 
 /*==================================================================*/
@@ -319,6 +337,7 @@ void init_all()
 	init_case_pred();
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	init_optional_case();
+
     read_rules();	/* ルール読み込み */
     /* init_dic_for_rule(); */
 
@@ -398,8 +417,6 @@ void stand_alone_mode()
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(0); continue;	/* 文節化だけの場合 */
 	}	
-	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	    print_mrphs(0);
 	
 	/* 文節への情報付与 */
 
@@ -421,6 +438,10 @@ void stand_alone_mode()
 	assign_bnst_feature(BnstRule3Array, CurBnstRule3Size, LOOP_ALL);
 	/* 例外的FEATURE */	
 
+	assign_etc_feature(EtcRuleArray, CurEtcRuleSize, LOOP_ALL);
+
+	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
+	    print_mrphs(0);
 
 	if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
 	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
