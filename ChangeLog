@@ -1,3 +1,8 @@
+2003-10-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/dpnd_analysis.c, system/lib_print.c, system/main.c, system/read_data.c:
+	タグ単位のない解析済入力に再対応
+
 2003-10-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/read_data.c:
