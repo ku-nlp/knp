@@ -56,7 +56,7 @@ CLEANFILES = bnst_type.rule.old $(dist_rule_DATA)
 rulepack: $(dist_rule_DATA)
 	if [ ! -d rule ]; then \
 	    mkdir rule; \
-	    cp -p $(CLEANFILES) rule; \
+	    cp -p $(dist_rule_DATA) rule; \
 	    $(AMTAR) chof - rule | GZIP=$(GZIP_ENV) gzip -c > $(PACKAGE)-rule-`date +"%Y%m%d"`.tar.gz; \
 	    rm -rf rule; \
 	fi
