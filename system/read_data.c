@@ -212,7 +212,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    strcpy(Comment, input_buffer);
-	    sscanf(Comment, "# %s", SID);
+	    sscanf(Comment, "# %s", KNPSID);
 
 	    /* 文章が変わったら固有名詞スタックをクリア */
 	    if (OptNE != OPT_NORMAL) {

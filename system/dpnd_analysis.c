@@ -559,7 +559,7 @@ extern FILE  *Outfp;
 	    }
 	}
 	else {
-	    fprintf(stdout, ";;;OK ∏ı ‰ %d %s %d\n", dpndID, SID, score);
+	    fprintf(stdout, ";;;OK ∏ı ‰ %d %s %d\n", dpndID, KNPSID, score);
 	    for (i = 0;i < Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(stdout, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
