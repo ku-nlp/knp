@@ -4,6 +4,9 @@
 
 	* configure.ac: LARGEFILE対応
 
+	* system/context.c:
+	格フレームのキャッシュを常に行うように変更
+
 2004-02-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_sm.c:
