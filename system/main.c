@@ -212,6 +212,9 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscMethod = OPT_SVM;
 	}
+	else if (str_eq(argv[0], "-print-svm-features")) {
+	    PrintFeatures = 1;
+	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -241,6 +244,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
+	    PrintFeatures = 1;
 	}
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;

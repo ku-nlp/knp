@@ -81,6 +81,7 @@ extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;
 extern int	PrintFrequency;
 extern int	PrintDeletedSM;
+extern int	PrintFeatures;
 extern int 	EX_match_score[];
 extern int	EX_match_exact;
 

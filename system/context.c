@@ -15,6 +15,7 @@ int maxi, maxpos;
 char *maxtag, *maxfeatures;
 #define PREV_SENTENCE_MAX	3
 int Bcheck[PREV_SENTENCE_MAX][TAG_MAX];
+int PrintFeatures = 0;
 
 #define	LOC_PARENTV	0x000002
 #define	LOC_PARENTV_MC	0x000003
@@ -1144,7 +1145,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
     char *buffer;
 
     /* -learn 時のみ学習用featureを表示する */
-    if (OptLearn == FALSE) {
+    if (!PrintFeatures) {
 	return;
     }
 
