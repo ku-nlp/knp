@@ -6,6 +6,13 @@
 */
 /* $Id$ */
 
+#define DBM_CON_MAX 8192
+
+#define DBM_APPEND	1
+#define DBM_OVERRIDE	2
+#define DBM_AND		3
+#define DBM_OR		4
+
 #ifdef GDBM
 
 /*  for GDBM  */
@@ -14,9 +21,6 @@
 
 typedef GDBM_FILE DBM_FILE;
 #define DBM_BLOCK_SIZE 1024
-
-#define DBM_KEY_MAX 256
-#define DBM_CON_MAX 8192
 
 /*  functions  */
 
