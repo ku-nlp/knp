@@ -615,18 +615,17 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
     int i, j, step, expand;
     float score = 0, ex_score;
 
+    exp = cf_ptr->ex[n];
     if (Thesaurus == USE_BGH) {
 	exd = cand->BGH_code;
-	exp = cf_ptr->ex[n];
 	step = BGH_CODE_SIZE;
     }
     else if (Thesaurus == USE_NTT) {
 	exd = cand->SM_code;
-	exp = cf_ptr->ex2[n];
 	step = SM_CODE_SIZE;
     }
 
-    if (check_feature(cand->f, "∏«Õ≠∞Ï»Ã≈∏≥´∂ÿªﬂ")) {
+    if (check_feature(cand->f, "£‘∏«Õ≠∞Ï»Ã≈∏≥´∂ÿªﬂ")) {
 	expand = SM_NO_EXPAND_NE;
     }
     else {

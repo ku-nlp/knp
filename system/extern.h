@@ -134,11 +134,8 @@ extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
 extern char *make_print_string(BNST_DATA *bp, int flag);
 extern void InitCPMcache();
 extern void ClearCPMcache();
-extern void fix_sm_person(SENTENCE_DATA *sp);
 extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
-extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
-extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
@@ -251,7 +248,7 @@ int koou(SENTENCE_DATA *sp);
 /* lib_bgh.c */
 extern char *_get_bgh(char *cp);
 extern int bgh_code_match(char *c1, char *c2);
-extern void overflowed_function(char *str, int max, char *function);
+extern int bgh_code_match_for_case(char *cp1, char *cp2);
 extern void init_bgh();
 extern void close_bgh();
 
@@ -297,6 +294,9 @@ extern int sm_all_match(char *c, char *target);
 extern int sm_check_match_max(char *exd, char *exp, int expand, char *target);
 extern int delete_matched_sm(char *sm, char *del);
 extern int delete_specified_sm(char *sm, char *del);
+extern void fix_sm_person(SENTENCE_DATA *sp);
+extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
@@ -389,6 +389,7 @@ extern void get_bnst_code(BNST_DATA *ptr, int flag);
 extern float calc_similarity(char *exd, char *exp, int expand);
 extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
+extern void overflowed_function(char *str, int max, char *function);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);

@@ -851,10 +851,10 @@
 	    return FALSE;
     }
 
-    /* &意味素: 意味素チェック */
+    /* &意味素: 意味素チェック (形態素) */
 
     else if (!strncmp(rule, "&意味素:", strlen("&意味素:"))) {
-	if (((MRPH_DATA *)ptr2)->SM == NULL) {
+	if (Thesaurus != USE_NTT || ((MRPH_DATA *)ptr2)->SM == NULL) {
 	    return FALSE;
 	}
 
@@ -862,7 +862,7 @@
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
 	if (*cp & 0x80) {
 	    if (SM2CODEExist == TRUE)
-		cp = (char *)sm2code(cp);
+		cp = sm2code(cp);
 	    else
 		cp = NULL;
 	    flag = SM_NO_EXPAND_NE;
@@ -881,12 +881,18 @@
 	return FALSE;
     }
 
+    /* &文節意味素: 意味素チェック (文節) */
+
     else if (!strncmp(rule, "&文節意味素:", strlen("&文節意味素:"))) {
+	if (Thesaurus != USE_NTT) {
+	    return FALSE;
+	}
+
 	cp = rule + strlen("&文節意味素:");
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
 	if (*cp & 0x80) {
 	    if (SM2CODEExist == TRUE)
-		cp = (char *)sm2code(cp);
+		cp = sm2code(cp);
 	    else
 		cp = NULL;
 	    flag = SM_NO_EXPAND_NE;
@@ -900,6 +906,29 @@
 		if (_sm_match_score(cp, &(((BNST_DATA *)ptr2)->SM_code[i]), flag))
 		    return TRUE;
 	    }
+	}
+	return FALSE;
+    }
+
+    /* &文節全意味素: 文節のすべての意味素が指定意味素以下にあるかどうか */
+
+    else if (!strncmp(rule, "&文節全意味素:", strlen("&文節全意味素:"))) {
+	if (Thesaurus != USE_NTT) {
+	    return FALSE;
+	}
+
+	cp = rule + strlen("&文節全意味素:");
+	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
+	if (*cp & 0x80) {
+	    if (SM2CODEExist == TRUE)
+		cp = sm2code(cp);
+	    else
+		cp = NULL;
+	}
+
+	if (cp && ((BNST_DATA *)ptr2)->SM_code[0] && 
+	    sm_all_match(((BNST_DATA *)ptr2)->SM_code, cp)) {
+		return TRUE;
 	}
 	return FALSE;
     }

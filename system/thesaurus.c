@@ -270,7 +270,7 @@ int	ParaThesaurus = USE_BGH;
     for (j = 0; exp[j]; j+=step) {
 	for (i = 0; exd[i]; i+=step) {
 	    if (Thesaurus == USE_BGH) {
-		tempscore = (float)_ex_match_score(exp+j, exd+i);
+		tempscore = (float)bgh_code_match_for_case(exp+j, exd+i);
 	    }
 	    else if (Thesaurus == USE_NTT) {
 		tempscore = ntt_code_match(exp+j, exd+i, expand);

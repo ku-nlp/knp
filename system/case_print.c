@@ -89,16 +89,18 @@ int	EX_PRINT_NUM = 10;
 
 	fputc('[', Outfp);
 
-	if (cpm_ptr->cf.sm[i][0]) {
-	    fputs("SM:¡û", Outfp);
-	}
-	else {
-	    fputs("SM:¡ß", Outfp);
+	if (Thesaurus == USE_NTT) {
+	    if (cpm_ptr->cf.sm[i][0]) {
+		fputs("SM:¡û", Outfp);
+	    }
+	    else {
+		fputs("SM:¡ß", Outfp);
+	    }
 	}
 
 	/* Ê¬Îà¸ì×ÃÉ½¥³¡¼¥É */
 
-	if (Thesaurus == USE_BGH) {
+	else if (Thesaurus == USE_BGH) {
 	    if (cpm_ptr->cf.ex[i][0]) {
 		fputs("BGH:¡û", Outfp);
 	    }

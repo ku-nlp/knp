@@ -173,54 +173,41 @@ int	SOTO_THRESHOLD = 8;
 }
 
 /*==================================================================*/
-	      int _ex_match_score(char *cp1, char *cp2)
-/*==================================================================*/
-{
-    /* 例の分類語彙表コードのマッチング度の計算 */
-
-    int match = 0;
-
-    /* 単位の項目は無視 */
-    if (!strncmp(cp1, "11960", 5) || !strncmp(cp2, "11960", 5))
-	return 0;
-    
-    /* 比較 */
-    match = bgh_code_match(cp1, cp2);
-
-    /* 代名詞の項目は類似度を押さえる */
-    if ((!strncmp(cp1, "12000", 5) || !strncmp(cp2, "12000", 5)) &&
-	match > 3)
-	return 3;
-    
-    return match;
-}
-
-/*==================================================================*/
      int _cf_match_element(char *d, char *p, int start, int len)
 /*==================================================================*/
 {
     int i, j;
     char *code;
 
-    for (i = 0; *(d+i); i += SM_CODE_SIZE) {
-	if (*(d+i) == '2') {
-	    /* 一般体系にマッピング 
-	       ※ side-effect を無視する */
-	    code = smp2smg(d+i, TRUE);
-	    if (code == NULL) {
-		continue;
-	    }
-	    for (j = 0; *(code+j); j += SM_CODE_SIZE) {
-		if (!strncmp(code+j+start, p+start, len)) {
-		    free(code);
-		    return TRUE;
-		}
-	    }
-	    free(code);
-	}
-	else {
+    if (Thesaurus == USE_BGH) {
+	for (i = 0; *(d+i); i += BGH_CODE_SIZE) {
 	    if (!strncmp(d+i+start, p+start, len)) {
 		return TRUE;
+	    }
+	}
+    }
+    else if (Thesaurus == USE_NTT) {
+	for (i = 0; *(d+i); i += SM_CODE_SIZE) {
+	    /* 固有名詞体系 */
+	    if (*(d+i) == '2') {
+		/* 一般体系にマッピング 
+		   ※ side-effect を無視する */
+		code = smp2smg(d+i, TRUE);
+		if (code == NULL) {
+		    continue;
+		}
+		for (j = 0; *(code+j); j += SM_CODE_SIZE) {
+		    if (!strncmp(code+j+start, p+start, len)) {
+			free(code);
+			return TRUE;
+		    }
+		}
+		free(code);
+	    }
+	    else {
+		if (!strncmp(d+i+start, p+start, len)) {
+		    return TRUE;
+		}
 	    }
 	}
     }
@@ -242,12 +229,17 @@ int	SOTO_THRESHOLD = 8;
 
     code = sm2code(target);
 
-    if (flag == TRUE) {
-	return _cf_match_element(d, code, 0, SM_CODE_SIZE);
+    if (Thesaurus == USE_BGH) {
+	return _cf_match_element(d, code, 0, BGH_CODE_SIZE);
     }
-    else {
-	/* ※ コードが 2 文字以上ある必要がある */
-	return _cf_match_element(d, code, 1, sm_code_depth(code));
+    else if (Thesaurus == USE_NTT) {
+	if (flag == TRUE) {
+	    return _cf_match_element(d, code, 0, SM_CODE_SIZE);
+	}
+	else {
+	    /* ※ コードが 2 文字以上ある必要がある */
+	    return _cf_match_element(d, code, 1, sm_code_depth(code));
+	}
     }
 }
 
@@ -269,24 +261,36 @@ int	SOTO_THRESHOLD = 8;
 
     code = sm2code(target);
 
-    if (flag == TRUE) {
-	if (_cf_match_element(d, code, 0, SM_CODE_SIZE) == TRUE && 
-	    _cf_match_element(p, code, 0, SM_CODE_SIZE) == TRUE) {
+    if (Thesaurus == USE_BGH) {
+	if (_cf_match_element(d, code, 0, BGH_CODE_SIZE) == TRUE && 
+	    _cf_match_element(p, code, 0, BGH_CODE_SIZE) == TRUE) {
 	    return TRUE;
 	}
 	else {
 	    return FALSE;
 	}
     }
-    else {
-	/* ※ コードが 2 文字以上ある必要がある */
-	len = sm_code_depth(code);
-	if (_cf_match_element(d, code, 1, len) == TRUE && 
-	    _cf_match_element(p, code, 1, len) == TRUE) {
-	    return TRUE;
+    else if (Thesaurus == USE_NTT) {
+	if (flag == TRUE) {
+	    if (_cf_match_element(d, code, 0, SM_CODE_SIZE) == TRUE && 
+		_cf_match_element(p, code, 0, SM_CODE_SIZE) == TRUE) {
+		return TRUE;
+	    }
+	    else {
+		return FALSE;
+	    }
 	}
 	else {
-	    return FALSE;
+	    /* ※ コードが 2 文字以上ある必要がある
+	       1文字目(品詞)を無視して、与えられたコード以下にあるかどうかチェック */
+	    len = sm_code_depth(code);
+	    if (_cf_match_element(d, code, 1, len) == TRUE && 
+		_cf_match_element(p, code, 1, len) == TRUE) {
+		return TRUE;
+	    }
+	    else {
+		return FALSE;
+	    }
 	}
     }
 }
@@ -364,32 +368,29 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
     char *exd, *exp;
     int *match_score;
 
-    if (Thesaurus == USE_BGH) {
-	exd = cfd->ex[as1];
-	exp = cfp->ex[as2];
-	match_score = EX_match_score;
-    }
-    else if (Thesaurus == USE_NTT) {
-	exd = cfd->ex2[as1];
-	exp = cfp->ex2[as2];
-	match_score = EX_match_score;
-    }
+    exd = cfd->ex[as1];
+    exp = cfp->ex[as2];
+    match_score = EX_match_score;
 
     if (flag == SEMANTIC_MARKER) {
 	int tmp_score;
 
-	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2] == NULL || cfp->sm[as2][0] == '\0') 
+	if (SMExist == FALSE || 
+	    cfd->sm[as1][0] == '\0'|| 
+	    cfp->sm[as2] == NULL || 
+	    cfp->sm[as2][0] == '\0') {
 	    return SM_match_unknown;
+	}
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
 	    /* 具体的な用例が書いてある場合 */
-	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), SM_CODE_SIZE)) {
+	    if (!strncmp(cfp->sm[as2]+j, sm2code("→"), SM_CODE_SIZE)) {
 		tmp_score = (int)calc_similarity(exd, exp, 0);
 		if (tmp_score == 1) {
 		    return 10;
 		}
 	    }
-	    else if (SMExist == TRUE) {
+	    else {
 		/* 選択制限によるマッチ (NTTシソーラスがある場合) */
 		for (i = 0; cfd->sm[as1][i]; i+=SM_CODE_SIZE) {
 		    tmp_score = 
@@ -412,7 +413,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 
 	if (MatchPP(cfp->pp[as2][0], "ガ") && 
 	    (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
-	     (cfd->ex2[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
+	     (cfd->ex[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
 	      cf_match_element(cfp->sm[as2], "主体", TRUE)))) {
 	    ga_subject = 1;
 	}

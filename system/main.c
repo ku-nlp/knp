@@ -637,11 +637,6 @@ extern float	AssignReferentThreshold;
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	print_mrphs(sp, 0);
 
-    /* 時間属性を補助的に付与する */
-    for (i = 0; i < sp->Bnst_num; i++) {
-	assign_sm_aux_feature(sp->bnst_data+i);
-    }
-
     fix_sm_person(sp);
 
     /* 固有名詞ルール */

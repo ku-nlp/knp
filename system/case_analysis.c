@@ -44,7 +44,7 @@ int	TEIDAI_STEP	= 2;
 				    "init_case_frame");
 	}
 	else if (Thesaurus == USE_NTT) {
-	    cf->ex2[j] = 
+	    cf->ex[j] = 
 		(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, 
 				    "init_case_frame");
 	}
@@ -81,12 +81,7 @@ int	TEIDAI_STEP	= 2;
     int j;
 
     for (j = 0; j < CF_ELEMENT_MAX; j++) {
-	if (Thesaurus == USE_BGH) {
-	    free(cf->ex[j]);
-	}
-	else if (Thesaurus == USE_NTT) {
-	    free(cf->ex2[j]);
-	}
+	free(cf->ex[j]);
 	free(cf->sm[j]);
 	free(cf->ex_list[j][0]);
 	free(cf->ex_list[j]);
@@ -778,21 +773,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	else {
 	    dst->sm[i] = NULL;
 	}
-	if (Thesaurus == USE_BGH) {
-	    if (src->ex[i]) {
-		dst->ex[i] = strdup(src->ex[i]);
-	    }
-	    else {
-		dst->ex[i] = NULL;
-	    }
+	if (src->ex[i]) {
+	    dst->ex[i] = strdup(src->ex[i]);
 	}
-	else if (Thesaurus == USE_NTT) {
-	    if (src->ex2[i]) {
-		dst->ex2[i] = strdup(src->ex2[i]);
-	    }
-	    else {
-		dst->ex2[i] = NULL;
-	    }
+	else {
+	    dst->ex[i] = NULL;
 	}
 	if (src->ex_list[i]) {
 	    dst->ex_list[i] = (char **)malloc_data(sizeof(char *)*src->ex_size[i], 
@@ -860,12 +845,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    dst->sm[i][j] = src->sm[i][j];
 	} */
 	if (src->sm[i]) strcpy(dst->sm[i], src->sm[i]);
-	if (Thesaurus == USE_BGH) {
-	    if (src->ex[i]) strcpy(dst->ex[i], src->ex[i]);
-	}
-	else if (Thesaurus == USE_NTT) {
-	    if (src->ex2[i]) strcpy(dst->ex2[i], src->ex2[i]);
-	}
+	if (src->ex[i]) strcpy(dst->ex[i], src->ex[i]);
 	strcpy(dst->ex_list[i][0], src->ex_list[i][0]);
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
@@ -1124,91 +1104,6 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    cpm_ptr->cmm[0].result_lists_p[0].score[cpm_ptr->cmm[0].cf_ptr->element_num] = 0;
 	    cpm_ptr->cmm[0].cf_ptr->element_num++;
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "ガガ格作成");
-	}
-    }
-}
-
-/*==================================================================*/
-		void fix_sm_person(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i;
-
-    if (Thesaurus == USE_BGH) return;
-
-    /* 人名のとき: 
-       o 一般名詞体系の<主体>以下の意味素を削除
-       o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
-
-    for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "人名")) {
-	    /* 固有の意味素だけ残したい */
-	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
-	    assign_cfeature(&((sp->bnst_data+i)->f), "固有一般展開禁止");
-	}
-    }
-}
-
-/*==================================================================*/
-      void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    /* そのうち汎用化する
-       現在は <場所> のみ */
-
-    int i, num;
-
-    if (Thesaurus == USE_BGH) return;
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] != -2 && 
-	    num >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
-	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
-	    /* 固有→一般変換しておく */
-	    merge_smp2smg(cpm_ptr->elem_b_ptr[i]);
-	    /* <場所>のみに限定する */
-	    sm_fix(cpm_ptr->elem_b_ptr[i], "101*********20**********");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "固有一般展開禁止");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "非主体");
-	    break;
-	}
-    }
-}
-
-/*==================================================================*/
-   void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    int i, num;
-
-    if (Thesaurus == USE_BGH) return;
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] != -2 && 
-	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
-	    /* o すでに主体付与されていない
-	       o <用言:動>である 
-	       o 格フレームが<主体>をもつ, <主体準>ではない
-	       o 入力側が意味素がないか、
-	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
-	    */
-	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
-		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
-		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
-		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
-		 (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
-		  (sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
-		   sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))))) {
-		assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
-	    }
-	    break;
 	}
     }
 }

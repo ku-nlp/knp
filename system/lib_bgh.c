@@ -44,6 +44,37 @@ int		BGHExist;
 	BGHExist = TRUE;
     }
     free(filename);
+
+    /* 意味素 => 意味素コード */
+    if (Thesaurus == USE_BGH) {
+	if (DICT[SM2CODE_DB]) {
+	    filename = check_dict_filename(DICT[SM2CODE_DB], TRUE);
+	}
+	else {
+	    filename = check_dict_filename(SM2BGHCODE_DB_NAME, FALSE);
+	}
+
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Opening %s ... ", filename);
+	}
+
+	if ((sm2code_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("failed.\n", Outfp);
+	    }
+	    SM2CODEExist = FALSE;
+#ifdef DEBUG
+	    fprintf(stderr, "Cannot open BGH sm dictionary <%s>.\n", filename);
+#endif
+	}
+	else {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("done.\n", Outfp);
+	    }
+	    SM2CODEExist = TRUE;
+	}
+	free(filename);
+    }
 }
 
 /*==================================================================*/
@@ -114,6 +145,76 @@ int		BGHExist;
     }	     
 
     return point;
+}
+
+/*==================================================================*/
+	  int bgh_code_match_for_case(char *cp1, char *cp2)
+/*==================================================================*/
+{
+    /* 例の分類語彙表コードのマッチング度の計算 */
+
+    int match = 0;
+
+    /* 単位の項目は無視 */
+    if (!strncmp(cp1, "11960", 5) || !strncmp(cp2, "11960", 5))
+	return 0;
+    
+    /* 比較 */
+    match = bgh_code_match(cp1, cp2);
+
+    /* 代名詞の項目は類似度を押さえる */
+    if ((!strncmp(cp1, "12000", 5) || !strncmp(cp2, "12000", 5)) &&
+	match > 3)
+	return 3;
+    
+    return match;
+}
+
+/*==================================================================*/
+		  int comp_bgh(char *cpp, char *cpd)
+/*==================================================================*/
+{
+    int i;
+
+    if (cpp[0] == cpd[0]) {
+	for (i = 1; i < BGH_CODE_SIZE; i++) {
+	    if (cpp[i] == '*') {
+		return i;
+	    }
+	    else if (cpp[i] != cpd[i]) {
+		return 0;
+	    }
+	}
+    }
+    else if (cpp[0] != '4' && cpd[0] != '4' && cpp[1] == cpd[1]) {
+	for (i = 2; i < 4; i++) {
+	    if (cpp[i] == '*') {
+		return i;
+	    }
+	    else if (cpp[i] != cpd[i]) {
+		return 0;
+	    }
+	}
+    }	     
+    return BGH_CODE_SIZE;
+}
+
+/*==================================================================*/
+	     int bgh_match_check(char *pat, char *codes)
+/*==================================================================*/
+{
+    int i;
+
+    if (codes == NULL) {
+	return FALSE;
+    }
+
+    for (i = 0; *(codes+i); i += BGH_CODE_SIZE) {
+	if (comp_bgh(pat, codes+i) > 0) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
 }
 
 /*====================================================================

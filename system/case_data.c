@@ -415,43 +415,61 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
    void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int sm_num = 0;
+    int sm_num = 0, size;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
+
+    if (Thesaurus == USE_NTT) {
+	size = SM_CODE_SIZE;
+    }
+    else if (Thesaurus == USE_BGH) {
+	size = BGH_CODE_SIZE;
+    }
 
     /* 格要素 -- 文 */
     if (check_feature(b_ptr->f, "補文")) {
-	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-	       (char *)sm2code("補文"));
+	strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+	       sm2code("補文"));
 	sm_num++;
     }
     /* 修飾 */
     else if (check_feature(b_ptr->f, "修飾")) {
-	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-	       (char *)sm2code("修飾"));
+	strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+	       sm2code("修飾"));
 	sm_num++;
     }
     else {
 	if (check_feature(b_ptr->f, "時間")) {
-	    strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-		   (char *)sm2code("時間"));
+	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+		   sm2code("時間"));
 	    sm_num++;
 	}
 	if (check_feature(b_ptr->f, "数量")) {
-	    strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-		   (char *)sm2code("数量"));
+	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+		   sm2code("数量"));
 	    sm_num++;
 	}
+	/* 固有名詞 => 主体 */
 	if (check_feature(b_ptr->f, "人名") || 
 	    check_feature(b_ptr->f, "組織名")) {
-	    strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-		   (char *)sm2code("主体"));
+	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+		   sm2code("主体"));
 	    sm_num++;
 	}
 	
-	/* for (i = 0; i < b_ptr->SM_num; i++) */
-	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
-	       b_ptr->SM_code);
-	sm_num += strlen(b_ptr->SM_code)/SM_CODE_SIZE;
+	/* 主体 */
+	if (Thesaurus == USE_NTT) {
+	    /* いろいろ使えるので意味素すべてコピー */
+	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+		   b_ptr->SM_code);
+	    sm_num += strlen(b_ptr->SM_code)/size;	    
+	}
+	else if (Thesaurus == USE_BGH) {
+	    if (bgh_match_check(sm2code("主体"), b_ptr->BGH_code)) {
+		strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
+		       sm2code("主体"));
+		sm_num++;
+	    }
+	}
     }
 }
 
@@ -465,7 +483,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
     }
     else if (Thesaurus == USE_NTT) {
-	strcpy(c_ptr->ex2[c_ptr->element_num], b_ptr->SM_code);
+	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->SM_code);
     }
     strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->Jiritu_Go);
 }

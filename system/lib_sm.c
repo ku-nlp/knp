@@ -54,33 +54,35 @@ int		SMP2SMGExist;
     free(filename);
 
     /* 意味素 => 意味素コード */
-    if (DICT[SM2CODE_DB]) {
-	filename = (char *)check_dict_filename(DICT[SM2CODE_DB], TRUE);
-    }
-    else {
-	filename = (char *)check_dict_filename(SM2CODE_DB_NAME, FALSE);
-    }
-
-    if (OptDisplay == OPT_DEBUG) {
-	fprintf(Outfp, "Opening %s ... ", filename);
-    }
-
-    if ((sm2code_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("failed.\n", Outfp);
+    if (Thesaurus == USE_NTT) {
+	if (DICT[SM2CODE_DB]) {
+	    filename = check_dict_filename(DICT[SM2CODE_DB], TRUE);
 	}
-	SM2CODEExist = FALSE;
+	else {
+	    filename = check_dict_filename(SM2CODE_DB_NAME, FALSE);
+	}
+
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Opening %s ... ", filename);
+	}
+
+	if ((sm2code_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("failed.\n", Outfp);
+	    }
+	    SM2CODEExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open NTT sm dictionary <%s>.\n", filename);
+	    fprintf(stderr, "Cannot open NTT sm dictionary <%s>.\n", filename);
 #endif
-    }
-    else {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("done.\n", Outfp);
 	}
-	SM2CODEExist = TRUE;
+	else {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("done.\n", Outfp);
+	    }
+	    SM2CODEExist = TRUE;
+	}
+	free(filename);
     }
-    free(filename);
 
     /* 意味素コード => 意味素 */
     if (DICT[CODE2SM_DB]) {
@@ -668,6 +670,12 @@ int		SMP2SMGExist;
 	      void assign_sm_aux_feature(BNST_DATA *bp)
 /*==================================================================*/
 {
+    /* ルールに入れた */
+
+    if (Thesaurus != USE_NTT) {
+	return;
+    }
+
     /* <時間>属性を付与する */
     assign_time_feature(bp);
 
@@ -727,6 +735,91 @@ int		SMP2SMGExist;
     }
     *(sm+pos) = '\0';
     return 1;
+}
+
+/*==================================================================*/
+		void fix_sm_person(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    if (Thesaurus != USE_NTT) return;
+
+    /* 人名のとき: 
+       o 一般名詞体系の<主体>以下の意味素を削除
+       o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data+i)->f, "人名")) {
+	    /* 固有の意味素だけ残したい */
+	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
+	    assign_cfeature(&((sp->bnst_data+i)->f), "Ｔ固有一般展開禁止");
+	}
+    }
+}
+
+/*==================================================================*/
+      void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    /* そのうち汎用化する
+       現在は <場所> のみ */
+
+    int i, num;
+
+    if (Thesaurus != USE_NTT) return;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	/* 省略格要素ではない割り当てがあったとき */
+	if (cpm_ptr->elem_b_num[i] != -2 && 
+	    num >= 0 && 
+	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
+	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
+	    /* 固有→一般変換しておく */
+	    merge_smp2smg(cpm_ptr->elem_b_ptr[i]);
+	    /* <場所>のみに限定する */
+	    sm_fix(cpm_ptr->elem_b_ptr[i], "101*********20**********");
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Ｔ固有一般展開禁止");
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "非主体");
+	    break;
+	}
+    }
+}
+
+/*==================================================================*/
+   void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i, num;
+
+    if (Thesaurus != USE_NTT) return;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	/* 省略格要素ではない割り当てがあったとき */
+	if (cpm_ptr->elem_b_num[i] != -2 && 
+	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
+	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
+	    /* o すでに主体付与されていない
+	       o <用言:動>である 
+	       o 格フレームが<主体>をもつ, <主体準>ではない
+	       o 入力側が意味素がないか、
+	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
+	    */
+	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
+		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
+		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
+		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
+		 (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
+		  (sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
+		   sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))))) {
+		assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
+	    }
+	    break;
+	}
+    }
 }
 
 /*====================================================================

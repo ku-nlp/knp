@@ -87,14 +87,9 @@ int	PrintDeletedSM = 0;
 
     for (i = 0; i < CPM_MAX; i++) {
 	for (j = 0; j < CF_ELEMENT_MAX; j++) {
-	    if (Thesaurus == USE_BGH) {
-		free(sp->Best_mgr->cpm[i].cf.ex[j]);
-		sp->Best_mgr->cpm[i].cf.ex[j] = NULL;
-	    }
-	    else if (Thesaurus == USE_NTT) {
-		free(sp->Best_mgr->cpm[i].cf.ex2[j]);
-		sp->Best_mgr->cpm[i].cf.ex2[j] = NULL;
-	    }
+	    free(sp->Best_mgr->cpm[i].cf.ex[j]);
+	    sp->Best_mgr->cpm[i].cf.ex[j] = NULL;
+
 	    free(sp->Best_mgr->cpm[i].cf.sm[j]);
 	    sp->Best_mgr->cpm[i].cf.sm[j] = NULL;
 
@@ -253,7 +248,7 @@ int	PrintDeletedSM = 0;
 		free(buf);
 
 		if (c1 == END_M || c2 == END_M) {
-		    fprintf(stderr, ";; Can't understand <%s>\n", token);
+		    fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
 		}
 		/* 溢れチェック */
 		else if (count >= CF_ELEMENT_MAX) {
@@ -391,11 +386,18 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 意味マーカの読みだし */
 
     unsigned char *point;
-    int sm_num = 0, sm_print_num = 0, mlength, sm_delete_sm_max = 0;
+    int size, sm_num = 0, sm_print_num = 0, mlength, sm_delete_sm_max = 0;
     char buf[SM_ELEMENT_MAX*SM_CODE_SIZE], *sm_delete_sm = NULL, *temp, *str;
 
     if (*cp == '\0') {
 	return;
+    }
+
+    if (flag & USE_BGH) {
+	size = BGH_CODE_SIZE;
+    }
+    else if (flag & USE_NTT) {
+	size = SM_CODE_SIZE;
     }
 
     str = strdup(cp);
@@ -403,8 +405,9 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     point = cp;
     buf[0] = '\0';
     while ((point = extract_ipal_str(point, ipal_str_buf))) {
-	/* 使ってはいけない意味素 */
+	/* 使ってはいけない意味素 (NTT) */
         if (ipal_str_buf[0] == '-') {
+	    if (Thesaurus == USE_BGH) continue;
 	    if (c_ptr->sm_delete[num] == NULL) {
 		c_ptr->sm_delete_size[num] = SM_ELEMENT_MAX;
 		c_ptr->sm_delete[num] = (char *)malloc_data(
@@ -421,26 +424,6 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		else {
 		    sm_delete_sm = strdup("意味素削除");
 		}
-		/* 
-		if (!c_ptr->semantics[num] && (flag & STOREtoCF)) {
-		    if (PrintDeletedSM) {
-			c_ptr->semantics[num] = strdup(cp);
-		    }
-		    else {
-			* 禁止コードをひとつ分もどす *
-			if (*point == '\0') {
-			    loc = point-SM_CODE_SIZE-1;
-			}
-			else {
-			    loc = point-SM_CODE_SIZE-3;
-			}
-			c_ptr->semantics[num] = (char *)malloc_data(
-			    sizeof(char)*(loc-cp+11), "_make_ipal_cframe_sm");
-			strncpy(c_ptr->semantics[num], cp, loc-cp);
-			c_ptr->semantics[num][loc-cp] = '\0';
-			strcat(c_ptr->semantics[num], "意味素削除");
-		    }
-		} */
 	    }
 	    else if (c_ptr->sm_delete_num[num] >= c_ptr->sm_delete_size[num]) {
 		c_ptr->sm_delete[num] = (char *)realloc_data(c_ptr->sm_delete[num], 
@@ -448,7 +431,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		    "_make_ipal_cframe_sm");
 	    }
 
-	    /* codeが書いてあるとき */
+	    /* NTT codeが書いてあるとき */
 	    if (ipal_str_buf[1] == '1') {
 		strcat(c_ptr->sm_delete[num], &ipal_str_buf[1]);
 
@@ -472,6 +455,8 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    continue;
 	}
 
+	/* 普通の意味素 */
+
 	sm_num++;
 	sm_print_num++;
 	if (sm_num >= SM_ELEMENT_MAX){
@@ -481,7 +466,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
 	if (!strncmp(ipal_str_buf, "数量", 4)) {
 	    /* 前回も<数量>のときは入れない */
-	    if (sm_num > 1 && !strncmp(&buf[SM_CODE_SIZE*(sm_num-2)], sm2code("数量"), SM_CODE_SIZE)) {
+	    if (sm_num > 1 && !strncmp(&buf[size*(sm_num-2)], sm2code("数量"), size)) {
 		sm_num--;
 	    }
 	    else {
@@ -551,18 +536,17 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     }
 
     /* 引くリソースによって関数などをセット */
+    destination = &c_ptr->ex[num];
     if (flag & USE_BGH) {
 	thesaurus = USE_BGH;
-	destination = &c_ptr->ex[num];
 	max = EX_ELEMENT_MAX*BGH_CODE_SIZE;
     }
     else if (flag & USE_NTT) {
 	thesaurus = USE_NTT;
-	destination = &c_ptr->ex2[num];
 	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
     }
 
-    /* 最大値やめないといけませんな */
+    /* 最大値やめないといけません */
     buf = (char *)malloc_data(sizeof(char)*max, "_make_ipal_cframe_ex");
 
     point = cp;
@@ -694,8 +678,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
-	/* _make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j, Thesaurus); 現在無効 */
-	_make_ipal_cframe_sm(cf_ptr, "主体準", j, USE_NTT_WITH_STORE);
+	_make_ipal_cframe_sm(cf_ptr, "主体準", j, 
+			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus);
 	j++;
     }
@@ -708,12 +692,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    j--;
 	    continue;
 	}
-	_make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE);
+	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE);
+	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
 	/* 能動 : Agentive ガ格を任意的とする場合
@@ -939,12 +924,14 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
 		    /* ニ格がないとき */
 		    if ((c = check_cf_case(cf_ptr+f_num, "ニ")) < 0) {
 			_make_ipal_cframe_pp(cf_ptr+f_num, "ニ", (cf_ptr+f_num)->element_num);
-			_make_ipal_cframe_sm(cf_ptr+f_num, "主体準", (cf_ptr+f_num)->element_num, USE_NTT_WITH_STORE);
+			_make_ipal_cframe_sm(cf_ptr+f_num, "主体準", (cf_ptr+f_num)->element_num, 
+					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 			(cf_ptr+f_num)->element_num++;
 		    }
 		    /* ニ格はあるけど<主体>がないとき */
 		    else if (sm_match_check(sm2code("主体"), (cf_ptr+f_num)->sm[c]) == FALSE) {
-			_make_ipal_cframe_sm(cf_ptr+f_num, "主体準", c, USE_NTT_WITH_STORE);
+			_make_ipal_cframe_sm(cf_ptr+f_num, "主体準", c, 
+					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 		    }
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_1;
 		}
@@ -1141,7 +1128,8 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 
     if (check_feature(b_ptr->f, "用言:判")) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ＊", num);
-	_make_ipal_cframe_sm(cf_ptr, "主体", num++, USE_NTT_WITH_STORE);
+	_make_ipal_cframe_sm(cf_ptr, "主体準", num++, 
+			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 	cf_ptr->ipal_address = -1;	/* ★ 表示するためにこの値を変える必要がある */
 	strcpy(cf_ptr->pred_type, "判");
     }
@@ -1230,17 +1218,9 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 
     for (i = 0; i < end; i++) {
 	for (j = 0; j < CF_ELEMENT_MAX; j++) {
-	    if (Thesaurus == USE_BGH) {
-		if ((Case_frame_array+i)->ex[j]) {
-		    free((Case_frame_array+i)->ex[j]);
-		    (Case_frame_array+i)->ex[j] = NULL;
-		}
-	    }
-	    else if (Thesaurus == USE_NTT) {
-		if ((Case_frame_array+i)->ex2[j]) {
-		    free((Case_frame_array+i)->ex2[j]);
-		    (Case_frame_array+i)->ex2[j] = NULL;
-		}
+	    if ((Case_frame_array+i)->ex[j]) {
+		free((Case_frame_array+i)->ex[j]);
+		(Case_frame_array+i)->ex[j] = NULL;
 	    }
 	    if ((Case_frame_array+i)->sm[j]) {
 		free((Case_frame_array+i)->sm[j]);

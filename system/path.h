@@ -12,6 +12,7 @@
 #define RULEP_DIC_FILE	"rule/rulep.dic"
 
 #define BGH_DB_NAME	"bgh/bgh"
+#define SM2BGHCODE_DB_NAME	"bgh/sm2code"
 #define SM_DB_NAME	"sm/word2code"
 #define SM2CODE_DB_NAME	"sm/sm2code"
 #define CODE2SM_DB_NAME	"sm/code2sm"

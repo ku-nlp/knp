@@ -1,3 +1,8 @@
+2002-10-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/path.h, system/thesaurus.c:
+	分類語彙表を用いて格解析を行えるようにした
+
 2002-10-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/ipal.c: 受身, 使役の格フレームの扱いの不具合を解消
