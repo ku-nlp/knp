@@ -57,7 +57,7 @@
     hashdb = (HASH_FILE *)malloc_data(sizeof(HASH_FILE), "hash_read_open");
     hashdb->mode = HASH_READ_MODE;
 
-    if ((hashdb->fp = fopen(file, "r")) == NULL) {
+    if ((hashdb->fp = fopen(file, "rb")) == NULL) {
 	/* fprintf(stderr, ";; Cannot open file (%s) !!\n", file); */
 	return NULL;
     }
@@ -83,7 +83,7 @@
 							    "hash_write_open");
     memset(hashdb->hddata, 0, sizeof(HASH_DATA_UNIT_INTERNAL *)*HASH_TBLSIZE);
 
-    if ((hashdb->fp = fopen(file, "w")) == NULL) {
+    if ((hashdb->fp = fopen(file, "wb")) == NULL) {
 	fprintf(stderr, ";; Cannot open file (%s) !!\n", file);
 	exit(1);
     }

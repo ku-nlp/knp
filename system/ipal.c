@@ -121,7 +121,7 @@ main(int argc, char **argv)
 	fprintf(stderr, "Cannot open file (%s) !!\n", argv[1]);
 	exit(1);
     }
-    if ( (fp_dat = fopen(argv[2], "w")) == NULL ) {
+    if ( (fp_dat = fopen(argv[2], "wb")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", argv[2]);
 	exit(1);
     }
