@@ -908,7 +908,10 @@
 
     else if (!strncmp(rule, "&節境界:", strlen("&節境界:"))) {
 	if ((OptInhibit & OPT_INHIBIT_CLAUSE))
-	    /* return FALSE; */
+	    /* 
+	       1. ルールに書いてあるレベルより強いことをチェック
+	       2. 係り側より受け側のレベルが強いことをチェック
+	    */
 	    return (subordinate_level_check(rule + strlen("&節境界:"),
 					    (BNST_DATA *)ptr2) && 
 		    subordinate_level_comp((BNST_DATA *)ptr1, 
