@@ -1,10 +1,8 @@
 (文法ファイル
-
 	/share/tool/juman/dic
 )
 
 (辞書ファイル
-
 	/share/tool/juman/dic
 )
 
@@ -45,7 +43,7 @@
 (コスト幅 0)
 
 (KNPルールディレクトリ
-	/home/kawahara/Laboratory/knp/rule
+        /share/tool/knp/rule
 )
 
 (KNPルールファイル
@@ -60,11 +58,11 @@
 ;	(compoundnoun-preliminary 固有表現句-PRE)
 ;	(compoundnoun 固有表現句)
 ;	(compoundnoun-auxiliary 固有表現句-AUX)
-	(ne-juman 固有表現句)
+;	(ne-juman 固有表現句)
 ;	(mrph_helpsys 形態素)
 ;	(context 文脈)
 )
 
 (KNP辞書ディレクトリ
-	/home/kawahara/Laboratory/knp/dict
+        /share/tool/knp/dict
 )
