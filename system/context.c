@@ -1528,8 +1528,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* 用例の頻度 */
 
     if (vp) {
-	f->event1 = get_event_value(vs, vp, cs, cpm_ptr->pred_b_ptr);
-	f->event2 = get_event_value(cs, cpm_ptr->pred_b_ptr, vs, vp);
+	f->event1 = get_cf_event_value(vp->cpm_ptr->cmm[0].cf_ptr, cmm_ptr->cf_ptr);
+	f->event2 = get_cf_event_value(cmm_ptr->cf_ptr, vp->cpm_ptr->cmm[0].cf_ptr);
 
 	f->c_pp = GetCandCase(vp->cpm_ptr, &(vp->cpm_ptr->cmm[0]), bp);
 

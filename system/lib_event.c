@@ -194,6 +194,24 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
     return -1;
 }
 
+/*==================================================================*/
+      float get_cf_event_value(CASE_FRAME *cf1, CASE_FRAME *cf2)
+/*==================================================================*/
+{
+    char *buf;
+    float val;
+
+    if (EventDicExist == TRUE) {
+	buf = (char *)malloc_data(strlen(cf1->cf_id) + strlen(cf2->cf_id) + 2, 
+				  "get_cf_event_value");
+	sprintf(buf, "%s-%s", cf1->cf_id, cf2->cf_id);
+	val = get_event(buf);
+	free(buf);
+	return val;
+    }
+    return -1;
+}
+
 /*====================================================================
                                END
 ====================================================================*/
