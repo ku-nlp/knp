@@ -1,3 +1,16 @@
+2003-04-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	文末にあるサ変名詞が先行詞候補になっていないのを修正。
+	small bug fix.
+
+	* rule/context.rule:
+	「弱用言」featureの反映
+	数量を先行詞候補に入れた
+
+	* system/dpnd_analysis.c, system/read_data.c:
+	EOSがstderrに出るなど、エラー出力の不都合を修正
+
 2003-04-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: 形態素解析に失敗したときの扱いを修正
