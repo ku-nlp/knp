@@ -15,6 +15,24 @@ int	ParaThesaurus = USE_BGH;
 			void init_thesaurus()
 /*==================================================================*/
 {
+    int i;
+    char *filename;
+
+    /* tentative: 新しいシソーラスはNTTと排他的 */
+    if (Thesaurus != USE_BGH && Thesaurus != USE_NTT && 
+	ParaThesaurus == USE_NTT) {
+	ParaThesaurus = Thesaurus;
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Thesaurus for para analysis is forced to %s.\n", THESAURUS[ParaThesaurus].name);
+	}
+	
+    }
+    else if (ParaThesaurus != USE_BGH && ParaThesaurus != USE_NTT && 
+	     Thesaurus == USE_NTT) {
+	Thesaurus = ParaThesaurus;
+	fprintf(Outfp, "Thesaurus for case analysis is forced to %s.\n", THESAURUS[Thesaurus].name);
+    }
+
     if (Thesaurus == USE_BGH || ParaThesaurus == USE_BGH) {
 	init_bgh();
     }
@@ -22,12 +40,39 @@ int	ParaThesaurus = USE_BGH;
     if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
 	init_ntt();
     }
+
+    for (i = 0; i < THESAURUS_MAX; i++) {
+	if (i == USE_BGH || i == USE_NTT || THESAURUS[i].path == NULL) {
+	    continue;
+	}
+	filename = check_dict_filename(THESAURUS[i].path, TRUE);
+
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Opening %s ... ", filename);
+	}
+
+	if ((THESAURUS[i].db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("failed.\n", Outfp);
+	    }
+	    THESAURUS[i].exist = FALSE;
+	}
+	else {
+	    if (OptDisplay == OPT_DEBUG) {
+		fputs("done.\n", Outfp);
+	    }
+	    THESAURUS[i].exist = TRUE;
+	}
+	free(filename);
+    }
 }
 
 /*==================================================================*/
 			void close_thesaurus()
 /*==================================================================*/
 {
+    int i;
+
     if (Thesaurus == USE_BGH || ParaThesaurus == USE_BGH) {
 	close_bgh();
     }
@@ -35,16 +80,35 @@ int	ParaThesaurus = USE_BGH;
     if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
 	close_ntt();
     }
+
+    for (i = 0; i < THESAURUS_MAX; i++) {
+	if (i == USE_BGH || i == USE_NTT || THESAURUS[i].exist == FALSE) {
+	    continue;
+	}
+	DB_close(THESAURUS[i].db);
+    }
+}
+
+/*==================================================================*/
+	     char *get_code(char *cp, char *arg, int th)
+/*==================================================================*/
+{
+    if (th == USE_NTT) {
+	return _get_ntt(cp, arg);
+    }
+    else if (th == USE_BGH) {
+	return _get_bgh(cp, arg);
+    }
+    return db_get(THESAURUS[th].db, cp);
 }
 
 /*==================================================================*/
 	   char *get_str_code(unsigned char *cp, int flag)
 /*==================================================================*/
 {
-    int i, exist;
+    int i, th;
     char *code, arg = '\0';
     unsigned char *hira;
-    char *(*get_code)();
 
     /* 文字列の意味素コードを取得 */
 
@@ -53,8 +117,7 @@ int	ParaThesaurus = USE_BGH;
 	    return code;
 	}
 
-	exist = SMExist;
-	get_code = _get_ntt;
+	th = USE_NTT;
 	if (flag & USE_SUFFIX_SM) {
 	    arg = 'm';
 	}
@@ -63,13 +126,15 @@ int	ParaThesaurus = USE_BGH;
 	}
     }
     else if (flag & USE_BGH) {
-	exist = BGHExist;
-	get_code = _get_bgh;
+	th = USE_BGH;
+    }
+    else {
+	th = flag;
     }
 
-    if (exist == FALSE) return NULL;
+    if (THESAURUS[th].exist == FALSE) return NULL;
 
-    if ((code = get_code(cp, &arg))) {
+    if ((code = get_code(cp, &arg, th))) {
 	return code;
     }
 
@@ -82,7 +147,7 @@ int	ParaThesaurus = USE_BGH;
 	}
     }
     hira = katakana2hiragana(cp);
-    code = get_code(hira, &arg);
+    code = get_code(hira, &arg, th);
     free(hira);
     return code;
 }
@@ -97,6 +162,17 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
+		void get_bnst_code_all(BNST_DATA *ptr)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < THESAURUS_MAX; i++) {
+	get_bnst_code(ptr, i);
+    }
+}
+
+/*==================================================================*/
 	     void get_bnst_code(BNST_DATA *ptr, int flag)
 /*==================================================================*/
 {
@@ -107,23 +183,21 @@ int	ParaThesaurus = USE_BGH;
 
     /* 文節の意味素コードを取得 */
 
-    if (flag == USE_NTT) {
-	result_code = ptr->SM_code;
-	result_num = &ptr->SM_num;
-	exist = SMExist;
-	code_unit = SM_CODE_SIZE;
-    }
-    else if (flag == USE_BGH) {
+    if (flag == USE_BGH) {
 	result_code = ptr->BGH_code;
 	result_num = &ptr->BGH_num;
-	exist = BGHExist;
-	code_unit = BGH_CODE_SIZE;
     }
+    else {
+	result_code = ptr->SM_code;
+	result_num = &ptr->SM_num;
+    }
+    exist = THESAURUS[flag].exist;
+    code_unit = THESAURUS[flag].code_size;
+
+    if (exist == FALSE) return;
 
     /* 初期化 */
     *result_code = '\0';
-
-    if (exist == FALSE) return;
 
     /* 
        複合語の扱い
@@ -150,8 +224,9 @@ int	ParaThesaurus = USE_BGH;
 	end = ptr->head_ptr - ptr->mrph_ptr;
     }
 
-    /* カウンタのみで引く */
-    if (check_feature((ptr->head_ptr)->f, "カウンタ")) {
+    /* NTT: カウンタのみで引く */
+    if (flag == USE_NTT && 
+	check_feature((ptr->head_ptr)->f, "カウンタ")) {
 	lookup_pos = USE_SUFFIX_SM;
 	strt = end;
     }
@@ -226,15 +301,62 @@ int	ParaThesaurus = USE_BGH;
 
     if (*result_num > 0) {
 	char feature_buffer[BNST_LENGTH_MAX + 4];
-	if (flag == USE_NTT) {
-	    sprintf(feature_buffer, "SM:%s", str_buffer);
-	    assign_cfeature(&(ptr->f), feature_buffer);
-	}
-	else if (flag == USE_BGH) {
+
+	if (flag == USE_BGH) {
 	    sprintf(feature_buffer, "BGH:%s", str_buffer);
 	    assign_cfeature(&(ptr->f), feature_buffer);
 	}
+	else {
+	    sprintf(feature_buffer, "SM:%s", str_buffer);
+	    assign_cfeature(&(ptr->f), feature_buffer);
+	}
+
     }
+}
+
+/*==================================================================*/
+	       int code_depth(char *cp, int code_size)
+/*==================================================================*/
+{
+    int i;
+
+    /* 意味素コードの深さを返す関数 (0 .. code_size-1) */
+
+    for (i = 1; i < code_size; i++) {
+	if (*(cp + i) == '*') {
+	    return i - 1;
+	}
+    }
+    return code_size - 1;
+}
+
+/*==================================================================*/
+   float general_code_match(THESAURUS_FILE *th, char *c1, char *c2)
+/*==================================================================*/
+{
+    int i, d1, d2, min, l;
+
+    d1 = code_depth(c1, th->code_size);
+    d2 = code_depth(c2, th->code_size);
+
+    if (d1 + d2 == 0) {
+	return 0;
+    }
+
+    min = d1 < d2 ? d1 : d2;
+
+    if (min == 0) {
+	return 0;
+    }
+
+    l = 0;
+    for (i = 0; th->format[i]; i++) { /* 指定された桁数ごとにチェック */
+	if (strncmp(c1 + l, c2 + l, th->format[i])) {
+	    return (float) 2 * l / (d1 + d2);
+	}
+	l += th->format[i];
+    }
+    return (float) 2 * min / (d1 + d2);
 }
 
 /*==================================================================*/
@@ -251,15 +373,16 @@ int	ParaThesaurus = USE_BGH;
 	return score;
     }
 
-    if (Thesaurus == USE_BGH) {
-	step = BGH_CODE_SIZE;
+    if (Thesaurus == USE_NONE) {
+	return score;
     }
     else if (Thesaurus == USE_NTT) {
-	step = SM_CODE_SIZE;
 	if (expand != SM_NO_EXPAND_NE) {
 	    expand = SM_EXPAND_NE_DATA;
 	}
     }
+
+    step = THESAURUS[Thesaurus].code_size;
 
     /* 最大マッチスコアを求める */
     for (j = 0; exp[j]; j+=step) {
@@ -269,6 +392,9 @@ int	ParaThesaurus = USE_BGH;
 	    }
 	    else if (Thesaurus == USE_NTT) {
 		tempscore = ntt_code_match(exp+j, exd+i, expand);
+	    }
+	    else {
+		tempscore = general_code_match(&THESAURUS[Thesaurus], exp+j, exd+i);
 	    }
 	    if (tempscore > score) {
 		score = tempscore;
@@ -300,12 +426,11 @@ int	ParaThesaurus = USE_BGH;
 	return NULL;
     }
 
-    if (Thesaurus == USE_BGH) {
-	step = BGH_CODE_SIZE;
+    if (Thesaurus == USE_NONE) {
+	return NULL;
     }
-    else if (Thesaurus == USE_NTT) {
-	step = SM_CODE_SIZE;
-    }
+
+    step = THESAURUS[Thesaurus].code_size;
 
     ret_sm = (char *)malloc_data(sizeof(char)*strlen(exd)+1, "get_most_similar_code");
     *ret_sm = '\0';
@@ -318,6 +443,9 @@ int	ParaThesaurus = USE_BGH;
 	    }
 	    else if (Thesaurus == USE_NTT) {
 		tempscore = ntt_code_match(exp+j, exd+i, SM_NO_EXPAND_NE);
+	    }
+	    else {
+		tempscore = general_code_match(&THESAURUS[Thesaurus], exp+j, exd+i);
 	    }
 	    if (tempscore > score) {
 		score = tempscore;

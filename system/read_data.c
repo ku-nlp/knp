@@ -1091,8 +1091,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	decide_head_ptr((BNST_DATA *)tp);
 
 	/* BNST_DATAにcastしている tricky? */
-	get_bnst_code((BNST_DATA *)tp, USE_BGH);
-	get_bnst_code((BNST_DATA *)tp, USE_NTT);
+	get_bnst_code_all((BNST_DATA *)tp);
 
 	if (tp->inum != 0) {
 	    /* case_analysis.rule で使っている */

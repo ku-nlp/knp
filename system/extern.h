@@ -9,6 +9,7 @@
 
 extern int		Thesaurus;
 extern int		ParaThesaurus;
+extern THESAURUS_FILE	THESAURUS[];
 
 extern int		Revised_para_num;
 
@@ -278,7 +279,6 @@ extern void merge_smp2smg(BNST_DATA *bp);
 extern void assign_sm_aux_feature(BNST_DATA *bp);
 extern int sm_match_check(char *pat, char *codes, int expand);
 extern int assign_sm(BNST_DATA *bp, char *cp);
-extern int sm_code_depth(char *cp);
 extern int sm_all_match(char *c, char *target);
 extern int sm_check_match_max(char *exd, char *exp, int expand, char *target);
 extern int delete_matched_sm(char *sm, char *del);
@@ -359,7 +359,10 @@ extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 extern void init_thesaurus();
 extern void close_thesaurus();
 extern char *get_str_code(unsigned char *cp, int flag);
+extern void get_bnst_code_all(BNST_DATA *ptr);
 extern void get_bnst_code(BNST_DATA *ptr, int flag);
+extern int code_depth(char *cp, int code_size);
+extern float general_code_match(THESAURUS_FILE *th, char *c1, char *c2);
 extern float calc_similarity(char *exd, char *exp, int expand);
 extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);

@@ -8,6 +8,8 @@
     $Id$
 ====================================================================*/
 
+#include "dbm.h"
+
 /*====================================================================
 				MACRO
 ====================================================================*/
@@ -406,6 +408,7 @@ typedef struct {
 #define		DEF_KNP_DICT_DIR	"KNP辞書ディレクトリ"
 #define		DEF_KNP_DICT_FILE	"KNP辞書ファイル"
 
+#define		DEF_THESAURUS		"KNPシソーラス"
 #define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
@@ -463,6 +466,8 @@ typedef struct _RuleVector {
 #define CF_NOUN_DATA		15
 #define CF_SIM_DB	16
 
+/* シソーラスの最大数 */
+#define THESAURUS_MAX	3
 
 
 /*====================================================================
@@ -583,6 +588,15 @@ typedef struct {
     FEATURE	*f[BNST_MAX];	/* feature */
 } DPND;
 
+typedef struct thesaurus {
+    char	*path;
+    char	*name;
+    int		*format;
+    int		code_size;
+    int		exist;
+    DBM_FILE	db;
+} THESAURUS_FILE;
+
 /*====================================================================
 				格解析
 ====================================================================*/
@@ -638,7 +652,7 @@ typedef struct tnode_t {
 #define CASE_MAX_NUM	20
 #define CASE_TYPE_NUM	50
 
-#define	USE_NONE 0
+#define	USE_NONE -1
 #define USE_BGH	1
 #define	USE_NTT	2
 #define	STOREtoCF	4

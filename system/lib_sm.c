@@ -61,7 +61,7 @@ SMLIST smlist[TBLSIZE];
 	SMExist = TRUE;
     }
     free(filename);
-
+    THESAURUS[USE_NTT].exist = SMExist;
     
     /* 意味素 => 意味素コード */
     if (Thesaurus == USE_NTT) {
@@ -419,22 +419,6 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
-		     int sm_code_depth(char *cp)
-/*==================================================================*/
-{
-    int i;
-
-    /* 意味素コードの深さを返す関数 (0 .. SM_CODE_SIZE-1) */
-
-    for (i = 1; i < SM_CODE_SIZE; i++) {
-	if (*(cp+i) == '*') {
-	    return i-1;
-	}
-    }
-    return SM_CODE_SIZE-1;
-}
-
-/*==================================================================*/
 	      float _ntt_code_match(char *c1, char *c2)
 /*==================================================================*/
 {
@@ -445,8 +429,8 @@ SMLIST smlist[TBLSIZE];
 	return 0;
     }
 
-    d1 = sm_code_depth(c1);
-    d2 = sm_code_depth(c2);
+    d1 = code_depth(c1, SM_CODE_SIZE);
+    d2 = code_depth(c2, SM_CODE_SIZE);
 
     if (d1 + d2 == 0) {
 	return 0;

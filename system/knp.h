@@ -101,7 +101,6 @@
 
 #include "path.h"
 #include "const.h"
-#include "dbm.h"
 #include "extern.h"
 
 #ifdef USE_BOEHM_GC

@@ -44,6 +44,7 @@ int		BGHExist;
 	BGHExist = TRUE;
     }
     free(filename);
+    THESAURUS[USE_BGH].exist = BGHExist;
 
     /* 意味素 => 意味素コード */
     if (Thesaurus == USE_BGH) {

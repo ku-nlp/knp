@@ -136,7 +136,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-          int ntt_match(BNST_DATA *ptr1, BNST_DATA *ptr2)
+	    int sm_match(BNST_DATA *ptr1, BNST_DATA *ptr2)
 /*==================================================================*/
 {
     /* 返り値
@@ -144,15 +144,22 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	満点				: BGH_CODE_SIZE-2 == 8	
      */
 
-    int i, j;
+    int i, j, code_size;
     float point, max_point = 0;
 
     if (! *(ptr1->SM_code) || ! *(ptr2->SM_code))
 	return -1;
 
-    for (i = 0; ptr1->SM_code[i]; i+=SM_CODE_SIZE)
-	for (j = 0; ptr2->SM_code[j]; j+=SM_CODE_SIZE) {
-	    point = ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE);
+    code_size = THESAURUS[ParaThesaurus].code_size;
+
+    for (i = 0; ptr1->SM_code[i]; i+=code_size)
+	for (j = 0; ptr2->SM_code[j]; j+=code_size) {
+	    if (ParaThesaurus == USE_NTT) {
+		point = ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE);
+	    }
+	    else {
+		point = general_code_match(&THESAURUS[ParaThesaurus], ptr1->SM_code+i, ptr2->SM_code+j);
+	    }
 	    if (max_point < point) max_point = point;
 	}
 
@@ -370,15 +377,16 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 		/* シソーラスによる類似度 */
 
-		if (ParaThesaurus == USE_NTT) {
-		    mt_point = ntt_match(ptr1, ptr2) * 2;
-		}
-		else if (ParaThesaurus == USE_NONE) {
+		if (ParaThesaurus == USE_NONE) {
 		    mt_point = -1;
 		}
-		else {
+		else if (ParaThesaurus == USE_BGH) {
 		    mt_point = bgh_match(ptr1, ptr2) * 2;
 		}
+		else {
+		    mt_point = sm_match(ptr1, ptr2) * 2;
+		}
+
 
 		/* 自立語の部分一致 (少なくとも一方の意味属性コードがない場合) */
 	    

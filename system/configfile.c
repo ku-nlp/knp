@@ -19,6 +19,7 @@ int RuleNumMax = 0;
 
 char *DICT[DICT_MAX];
 int knp_dict_file_already_defined = 0;
+THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 
 
 /*==================================================================*/
@@ -65,6 +66,38 @@ int knp_dict_file_already_defined = 0;
     else {
 	ret = strdup(file);
     }
+    return ret;
+}
+
+/*==================================================================*/
+		       int *str2ints(char *str)
+/*==================================================================*/
+{
+    char *cp, *start, *token;
+    int *ret, ret_size = 1, count = 0;
+
+    if (str[0] == '\"') {
+	start = str + 1;
+	if (cp = strchr(start, '\"')) {
+	    *cp = '\0';
+	}
+    }
+    else {
+	start = str;
+    }
+
+    ret = (int *)malloc_data(sizeof(int) * ret_size, "str2ints");
+
+    token = strtok(start, ",");
+    while (token) {
+	if (count >= ret_size - 1) {
+	    ret = (int *)realloc_data(ret, sizeof(int) * (ret_size <<= 1), "str2ints");
+	}
+	*(ret + count++) = atoi(token);
+	token = strtok(NULL, ",");
+    }
+    *(ret + count) = 0;
+
     return ret;
 }
 
@@ -314,25 +347,38 @@ int knp_dict_file_already_defined = 0;
 		cell1 = cdr(cell1);
 	    }
 	}
+	else if (!strcmp(DEF_THESAURUS, _Atom(car(cell1)))) {
+	    int i;
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		THESAURUS[0].path = strdup(_Atom(car(car(cell1))));
+		THESAURUS[0].name = strdup(_Atom(car(cdr(car(cell1)))));
+		THESAURUS[0].format = str2ints(_Atom(car(cdr(cdr(car(cell1))))));
+		for (i = 0; THESAURUS[0].format[i]; i++) {
+		    THESAURUS[0].code_size += THESAURUS[0].format[i];
+		}
+		cell1 = cdr(cell1);
+	    }
+	}
 	else if (!strcmp(DEF_CASE_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
 		exit(0);
 	    }
 	    else {
-		if (!strcasecmp(_Atom(cell2), "ntt")) {
-		    Thesaurus = USE_NTT;
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Thesaurus for case analysis ... NTT\n");
+		int i;
+
+		Thesaurus = USE_NONE;
+		for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
+		    if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
+			Thesaurus = i;
+			if (OptDisplay == OPT_DEBUG) {
+			    fprintf(Outfp, "Thesaurus for case analysis ... %s\n", THESAURUS[i].name);
+			}
+			break;
 		    }
 		}
-		else if (!strcasecmp(_Atom(cell2), "bgh")) {
-		    Thesaurus = USE_BGH;
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Thesaurus for case analysis ... BGH\n");
-		    }
-		}
-		else {
+		if (Thesaurus == USE_NONE) {
 		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
 		    exit(0);
 		}
@@ -344,25 +390,19 @@ int knp_dict_file_already_defined = 0;
 		exit(0);
 	    }
 	    else {
-		if (!strcasecmp(_Atom(cell2), "ntt")) {
-		    ParaThesaurus = USE_NTT;
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Thesaurus for para analysis ... NTT\n");
+		int i;
+
+		ParaThesaurus = USE_NONE;
+		for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
+		    if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
+			ParaThesaurus = i;
+			if (OptDisplay == OPT_DEBUG) {
+			    fprintf(Outfp, "Thesaurus for para analysis ... %s\n", THESAURUS[i].name);
+			}
+			break;
 		    }
 		}
-		else if (!strcasecmp(_Atom(cell2), "bgh")) {
-		    ParaThesaurus = USE_BGH;
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Thesaurus for para analysis ... BGH\n");
-		    }
-		}
-		else if (!strcasecmp(_Atom(cell2), "none")) {
-		    ParaThesaurus = USE_NONE;
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Thesaurus for para analysis ... NONE\n");
-		    }
-		}
-		else {
+		if (ParaThesaurus == USE_NONE) {
 		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
 		    exit(0);
 		}
@@ -763,6 +803,19 @@ int knp_dict_file_already_defined = 0;
     for (i = 0; i < DICT_MAX; i++) {
 	DICT[i] = NULL;
     }
+
+    THESAURUS[0].path = NULL;
+    THESAURUS[0].name = NULL;
+    THESAURUS[0].format = NULL;
+    THESAURUS[0].exist = 0;
+    THESAURUS[1].path = NULL;
+    THESAURUS[1].name = strdup("BGH");
+    THESAURUS[1].format = NULL;
+    THESAURUS[1].code_size = BGH_CODE_SIZE;
+    THESAURUS[2].path = NULL;
+    THESAURUS[2].name = strdup("NTT");
+    THESAURUS[2].format = NULL;
+    THESAURUS[2].code_size = SM_CODE_SIZE;
 
     for (i = 0; i < PP_NUMBER; i++) {
 	DTFile[i] = NULL;

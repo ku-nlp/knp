@@ -255,7 +255,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	}
 	else {
 	    /* ※ コードが 2 文字以上ある必要がある */
-	    return _cf_match_element(d, code, 1, sm_code_depth(code));
+	    return _cf_match_element(d, code, 1, code_depth(code, SM_CODE_SIZE));
 	}
     }
 }
@@ -300,7 +300,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	else {
 	    /* ※ コードが 2 文字以上ある必要がある
 	       1文字目(品詞)を無視して、与えられたコード以下にあるかどうかチェック */
-	    len = sm_code_depth(code);
+	    len = code_depth(code, SM_CODE_SIZE);
 	    if (_cf_match_element(d, code, 1, len) == TRUE && 
 		_cf_match_element(p, code, 1, len) == TRUE) {
 		return TRUE;
