@@ -469,7 +469,7 @@ sub bnst_cond2
 		}
 	    }
 	    if (!$begin_check || !$end_check) {
-		print "CONTEXT ERROR\n";
+		print STDERR "CONTEXT ERROR\n";
 		return;
 	    }
 
@@ -511,14 +511,14 @@ sub bnst_cond2
 		for ($k = 0; $k < $data[0][0]{start}[$i]; $k++) {
 		    if ($mrph[0][0][$k]{result} ne $mrph[$i][$j][$k]{result}) {
 			$error_flag = 1;
-			break;
+			last;
 		    }
 		}
 		# ORの後の形態素列の一致
 		for ($k = $data[0][0]{end}[$i]+1; $k < @{$mrph[0][0]}; $k++) {
 		    if ($mrph[0][0][$k]{result} ne $mrph[$i][$j][$k]{result}) {
 			$error_flag = 1;
-			break;
+			last;
 		    }
 		}
 
@@ -587,7 +587,7 @@ sub bnst_cond2
 			    if ($conj_type[$m] =~ /$mrph[0][0][$k]{conj}/) {
 				$mrph[0][0][$k]{result} = " [* * ($conj_type[$m]) $mrph[0][0][$k]{conj2} *]";
 				$conj_flag = 1;
-				break;
+				last;
 			    }
 			}
 			if (!$conj_flag) {
@@ -649,7 +649,8 @@ sub bnst_cond2
 		}
 
 		# 形態素のfeatureが指定されている場合
-		if ($feature[$i]{lastfeature}) {
+ 		if ($k == $data[0][0]{end}[$i] &&
+		    $feature[$i]{lastfeature}) {
 		    if ($mrph[0][0][$k]{result}) {
 			$mrph[0][0][$k]{result} =~ s/\]$/$feature[$i]{lastfeature}\]/;
 		    }
