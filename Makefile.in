@@ -65,7 +65,7 @@ SHELL = sh
 
 man_MANS = knp.1
 
-EXTRA_DIST =  	knp.1 	rule/rule_conv.pl 	rule/rule_trans.pl 	rule/bnst_basic.rule 	rule/bnst_etc.rule 	rule/bnst_type.phrase 	rule/compoundnoun-auxiliary.rule 	rule/compoundnoun-preliminary.rule 	rule/compoundnoun.rule 	rule/context.rule 	rule/kakari_uke.rule 	rule/koou.rule 	rule/mrph_basic.rule 	rule/mrph_helpsys.rule 	rule/mrph_homo.rule 	rule/ne-juman.rule 	rule/ne.rule 
+EXTRA_DIST =  	docs/knp.1 	rule/rule_conv.pl 	rule/rule_trans.pl 	rule/bnst_basic.rule 	rule/bnst_etc.rule 	rule/bnst_type.phrase 	rule/compoundnoun-auxiliary.rule 	rule/compoundnoun-preliminary.rule 	rule/compoundnoun.rule 	rule/context.rule 	rule/kakari_uke.rule 	rule/koou.rule 	rule/mrph_basic.rule 	rule/mrph_helpsys.rule 	rule/mrph_homo.rule 	rule/ne-juman.rule 	rule/ne.rule 
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -300,7 +300,7 @@ distdir: $(DISTFILES)
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
 	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
-	$(mkinstalldirs) $(distdir)/rule
+	$(mkinstalldirs) $(distdir)/docs $(distdir)/rule
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
