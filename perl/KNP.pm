@@ -334,9 +334,9 @@ sub mrph {
 	    $this->{MRPH}[$i];
 	} else {
 	    my $x = shift;
-	    ( $x =~ /$MRPH_TYPE/o )
-		or warn( "KNP.pm (mrph): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
 	    unless( @_ ){
+		( $x =~ /$MRPH_TYPE/o )
+		    or warn( "KNP.pm (mrph): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
 		$this->{MRPH}[$i]{$x};
 	    } else {
 		my $j = shift;
@@ -369,9 +369,9 @@ sub bnst {
 	    $this->{BNST}[$i];
 	} else {
 	    my $x = shift;
-	    ( $x =~ /$BNST_TYPE/o )
-		or warn( "KNP.pm (bnst): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
 	    unless( @_ ){
+		( $x =~ /$BNST_TYPE/o )
+		    or warn( "KNP.pm (bnst): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
 		$this->{BNST}[$i]{$x};
 	    } else {
 		my $j = shift;
