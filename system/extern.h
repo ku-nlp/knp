@@ -57,6 +57,7 @@ extern int 		OptExpandP;
 extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
+extern int		OptHelpsys;
 extern char		OptIgnoreChar;
 
 extern enum OPTION1	Option1;
@@ -92,8 +93,14 @@ extern int		CurDpndRuleSize;
 extern MrphRule 	NERuleArray[];
 extern int 		CurNERuleSize;
 
+extern MrphRule 	CNpreRuleArray[];
+extern int 		CurCNpreRuleSize;
+
 extern MrphRule 	CNRuleArray[];
 extern int 		CurCNRuleSize;
+
+extern MrphRule 	CNauxRuleArray[];
+extern int 		CurCNauxRuleSize;
 
 extern BnstRule		ContRuleArray[];
 extern int 		ContRuleSize;
@@ -102,6 +109,9 @@ extern DicForRule	*DicForRuleVArray;
 extern int		CurDicForRuleVSize;
 extern DicForRule	*DicForRulePArray;
 extern int		CurDicForRulePSize;
+
+extern MrphRule         HelpsysArray[];
+extern int              CurHelpsysSize;
 
 extern int DicForRuleDBExist;
 
