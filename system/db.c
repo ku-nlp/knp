@@ -21,7 +21,7 @@ DBM_FILE db_read_open(char *filename)
 
     if (!(db = gdbm_open(filename, DBM_BLOCK_SIZE, GDBM_READER, 0444, 0))) {
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
-        exit(1);
+	return NULL;
     }
     return db;
 }
@@ -167,7 +167,7 @@ DBM_FILE db_read_open(char *filename)
 
     if ((errno = db_open(filename, DB_HASH, DB_RDONLY, 0444, NULL, &dbinfo, &db))) {
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
-        exit(1);
+	return NULL;
     }
     return db;
 }
