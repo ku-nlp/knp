@@ -1,3 +1,14 @@
+2003-04-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* Makefile.am, configure.ac, dict/ebcf/Makefile.am, dict/gcf/Makefile.am, dict/scode/bgh/Makefile.am, dict/scode/ntt/Makfile.am, rule/Makefile.am:
+	install targetの追加
+
+	* knprc.sample: Removed.
+
+	* knprc.in: Added.
+
+	* system/main.c: timeout時にexitするようにした
+
 2003-04-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
