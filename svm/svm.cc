@@ -67,14 +67,14 @@ int init_svm() {
 	    }
 
 	    if (i == 0) { /* すべての格用 */
-		break;
+		return 0;
 	    }
 	}
 	else {
 	    model[i] = NULL;
 	}
     }
-    return 1;
+    return 0;
 }
 
 double svm_classify(char *line, int pp) {
@@ -87,6 +87,11 @@ double svm_classify(char *line, int pp) {
     }
     else {
 	m = model[pp];
+    }
+
+    if (!m) {
+	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", i);
+	exit(1);
     }
 
     while (isspace(line[i])) i++;
