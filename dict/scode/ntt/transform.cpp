@@ -61,7 +61,10 @@ int main ( int argc, char *argv[] ) {
   read_sm2code();
   
   fin.open( filename_in.c_str() );
+  if( ! fin.is_open() ) exit(1);
+  
   fout.open( filename_out.c_str() );
+  if( ! fout.is_open() ) exit(1);
   
   while( getline( fin, line ) ) {
     if ( line.size() == 0 ) {
@@ -94,14 +97,14 @@ int main ( int argc, char *argv[] ) {
 	     ( sm_vec[i].substr( 0, 1 ) == "l" ) ||
 	     ( sm_vec[i].substr( 0, 1 ) == "m" ) ||
 	     ( sm_vec[i].substr( 0, 1 ) == "n" ) ) {
-	    sm_vec[i].erase( 0, 1 );
 	    hinsi_f = sm_vec[i].substr( 0, 1 );
+	    sm_vec[i].erase( 0, 1 );
 	}else {
 	    hinsi_f = "3";  //  品詞を指定していなければ，デフォルト 3 
 	}
-      
-	code = sm2code( sm_vec[i] );
 	
+	code = sm2code( sm_vec[i] );
+
 	if ( code == "NULL" ) {
 	    cerr << "invalid sm: " << sm_vec[i] << "\n";
 	}else {
