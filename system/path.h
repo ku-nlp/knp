@@ -7,23 +7,6 @@
     $Id$
 ====================================================================*/
 
-#define HOMO_FILE	KNP_RULE "/mrph_homo.data"
-#define MRPH_FILE	KNP_RULE "/mrph_basic.data"
-#define BNST1_FILE	KNP_RULE "/bnst_basic.data"
-#define UKE_FILE    	KNP_RULE "/bnst_uke.data"
-#define BNST2_FILE	KNP_RULE "/bnst_uke_ex.data"
-#define KAKARI_FILE 	KNP_RULE "/bnst_kakari.data"
-#define BNST3_FILE	KNP_RULE "/bnst_etc.data"
-#define CONT_FILE	KNP_RULE "/context.data"
-#define KOOU_FILE  	KNP_RULE "/koou.data"
-#define DPND_FILE  	KNP_RULE "/kakari_uke.data"
-#define NE_FILE  	KNP_RULE "/ne.data"
-#define NE_JUMAN_FILE  	KNP_RULE "/ne-juman.data"
-#define CN_PRE_FILE  	KNP_RULE "/compoundnoun-preliminary.data"
-#define CN_FILE  	KNP_RULE "/compoundnoun.data"
-#define CN_AUX_FILE  	KNP_RULE "/compoundnoun-auxiliary.data"
-#define HELPSYS_FILE    KNP_RULE "/mrph_helpsys.data"
-
 #define IPAL_DAT_NAME	KNP_DICT "/ipal/ipal.dat"
 #define RULEV_DIC_FILE	KNP_DICT "/rule/rulev.dic"
 #define RULEP_DIC_FILE	KNP_DICT "/rule/rulep.dic"

@@ -1,6 +1,6 @@
 /*====================================================================
 
-				EXTREN
+				EXTERN
 
                                                S.Kurohashi 93. 5.31
 
@@ -75,20 +75,6 @@ extern int 		CLASS_num;
 
 extern HomoRule 	HomoRuleArray[];
 extern int 		CurHomoRuleSize;
-extern MrphRule 	MrphRuleArray[];
-extern int 		CurMrphRuleSize;
-
-extern BnstRule	 	BnstRule1Array[];
-extern int 		CurBnstRule1Size;
-extern BnstRule	 	BnstRule2Array[];
-extern int 		CurBnstRule2Size;
-extern BnstRule	 	BnstRule3Array[];
-extern int 		CurBnstRule3Size;
-
-extern BnstRule		UkeRuleArray[];
-extern int 		CurUkeRuleSize;
-extern BnstRule		KakariRuleArray[];
-extern int 		CurKakariRuleSize;
 
 extern KoouRule		KoouRuleArray[];
 extern int		CurKoouRuleSize;
@@ -97,13 +83,10 @@ extern int		CurDpndRuleSize;
 
 extern MrphRule 	NERuleArray[];
 extern int 		CurNERuleSize;
-
 extern MrphRule 	CNpreRuleArray[];
 extern int 		CurCNpreRuleSize;
-
 extern MrphRule 	CNRuleArray[];
 extern int 		CurCNRuleSize;
-
 extern MrphRule 	CNauxRuleArray[];
 extern int 		CurCNauxRuleSize;
 
@@ -127,6 +110,16 @@ extern char 		*Case_name[];
 
 extern char *get_bgh(char *cp);
 extern char *db_get(DBM_FILE db, char *buf);
+
+/* KNP ½é´ü²½ */
+extern char Knprule_Dirname[];
+extern RuleVector *RULE;
+extern int CurrentRuleNum;
+extern int RuleNumMax;
+
+extern GeneralRuleType *GeneralRuleArray;
+extern int GeneralRuleNum;
+extern int GeneralRuleMax;
 
 /*====================================================================
 				 END

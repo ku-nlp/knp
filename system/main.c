@@ -131,30 +131,30 @@ jmp_buf timeout;
 	OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
-	if (str_eq(argv[0], "-case"))        OptAnalysis = OPT_CASE;
-	else if (str_eq(argv[0], "-case2"))  OptAnalysis = OPT_CASE2;
-	else if (str_eq(argv[0], "-cfsm"))   OptCFMode = SEMANTIC_MARKER;
-	else if (str_eq(argv[0], "-dpnd"))   OptAnalysis = OPT_DPND;
-	else if (str_eq(argv[0], "-bnst"))   OptAnalysis = OPT_BNST;
-	else if (str_eq(argv[0], "-disc"))   OptAnalysis = OPT_DISC;
-	else if (str_eq(argv[0], "-tree"))   OptExpress = OPT_TREE;
-	else if (str_eq(argv[0], "-treef"))  OptExpress = OPT_TREEF;
-	else if (str_eq(argv[0], "-sexp"))   OptExpress = OPT_SEXP;
-	else if (str_eq(argv[0], "-tab"))    OptExpress = OPT_TAB;
-	else if (str_eq(argv[0], "-normal")) OptDisplay = OPT_NORMAL;
-	else if (str_eq(argv[0], "-detail")) OptDisplay = OPT_DETAIL;
-	else if (str_eq(argv[0], "-debug"))  OptDisplay = OPT_DEBUG;
-	else if (str_eq(argv[0], "-expand")) OptExpandP = TRUE;
-	else if (str_eq(argv[0], "-S"))      OptMode    = SERVER_MODE;
-	else if (str_eq(argv[0], "-check"))  OptCheck = TRUE;
-	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
-	else if (str_eq(argv[0], "-nesm"))   OptNE = OPT_NESM;
-	else if (str_eq(argv[0], "-ne"))     OptNE = OPT_NE;
+	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
+	else if (str_eq(argv[0], "-case2"))   OptAnalysis = OPT_CASE2;
+	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
+	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
+	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
+	else if (str_eq(argv[0], "-disc"))    OptAnalysis = OPT_DISC;
+	else if (str_eq(argv[0], "-tree"))    OptExpress = OPT_TREE;
+	else if (str_eq(argv[0], "-treef"))   OptExpress = OPT_TREEF;
+	else if (str_eq(argv[0], "-sexp"))    OptExpress = OPT_SEXP;
+	else if (str_eq(argv[0], "-tab"))     OptExpress = OPT_TAB;
+	else if (str_eq(argv[0], "-normal"))  OptDisplay = OPT_NORMAL;
+	else if (str_eq(argv[0], "-detail"))  OptDisplay = OPT_DETAIL;
+	else if (str_eq(argv[0], "-debug"))   OptDisplay = OPT_DEBUG;
+	else if (str_eq(argv[0], "-expand"))  OptExpandP = TRUE;
+	else if (str_eq(argv[0], "-S"))       OptMode    = SERVER_MODE;
+	else if (str_eq(argv[0], "-check"))   OptCheck = TRUE;
+	else if (str_eq(argv[0], "-learn"))   OptLearn = TRUE;
+	else if (str_eq(argv[0], "-nesm"))    OptNE = OPT_NESM;
+	else if (str_eq(argv[0], "-ne"))      OptNE = OPT_NE;
 	else if (str_eq(argv[0], "-helpsys")) OptHelpsys = TRUE;
-	else if (str_eq(argv[0], "-cc"))     OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	else if (str_eq(argv[0], "-ck"))     OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	else if (str_eq(argv[0], "-cb"))     OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	else if (str_eq(argv[0], "-co"))     OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
+	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
+	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
+	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
+	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -256,8 +256,7 @@ jmp_buf timeout;
     int i;
 
     set_jumanrc_fileptr(NULL, TRUE);
-    set_jumangram_dirname();
-    /*read_jumanpathrc();*/			/* JUMAN辞書のパス */
+    init_knp();
     grammar(NULL);				/* 文法辞書 */
     katuyou(NULL);				/* 活用辞書 */
 
@@ -269,51 +268,60 @@ jmp_buf timeout;
 			void read_rules(void)
 /*==================================================================*/
 {
-    read_homo_rule(HOMO_FILE);			/* 同形異義語ルール */
-    read_mrph_rule(MRPH_FILE, MrphRuleArray, &CurMrphRuleSize, MrphRule_MAX);
-						/* 形態素ルール */
-    read_bnst_rule(BNST1_FILE, BnstRule1Array, 
-		   &CurBnstRule1Size, BnstRule_MAX);
-    						/* 文節の一般的ルール */
-    read_bnst_rule(UKE_FILE, UkeRuleArray, 
-		   &CurUkeRuleSize, UkeRule_MAX);
-    						/* 文節の受けルール */
-    read_bnst_rule(BNST2_FILE, BnstRule2Array, 
-		   &CurBnstRule2Size, BnstRule_MAX);
-    						/* 文節の例外ルール */
-    read_bnst_rule(KAKARI_FILE, KakariRuleArray, 
-		   &CurKakariRuleSize, KakariRule_MAX);
-    						/* 文節の係りルール */
-    read_bnst_rule(BNST3_FILE, BnstRule3Array, 
-		   &CurBnstRule3Size, BnstRule_MAX);
-    						/* 文節の例外ルール */
-    read_dpnd_rule(DPND_FILE);			/* 係り受けルール */
-    read_koou_rule(KOOU_FILE);			/* 呼応表現ルール */
-    if (OptNE != OPT_NORMAL) {
-	read_NE_rule(NE_FILE, NERuleArray, &CurNERuleSize, NERule_MAX);
-						/* 固有名詞ルール */
-	read_NE_rule(CN_PRE_FILE, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
-						/* 複合名詞準備ルール */
-	read_NE_rule(CN_FILE, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
-						/* 複合名詞ルール */
-	read_NE_rule(CN_AUX_FILE, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
-						/* 複合名詞補助ルール */
-    }
-    else {
-	read_NE_rule(NE_JUMAN_FILE, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
-						/* 固有名詞ルール */
+    int i;
+
+    for (i = 0; i < CurrentRuleNum; i++) {
+	/* 同形異義語ルール */
+	if ((RULE+i)->type == HomoRuleType) {
+	    read_homo_rule((RULE+i)->file);
+	}
+	/* 形態素ルール or 文節ルール */
+	else if ((RULE+i)->type == MorphRuleType || (RULE+i)->type == BnstRuleType) {
+	    read_general_rule(RULE+i);
+	}
+	/* 係り受けルール */
+	else if ((RULE+i)->type == DpndRuleType) {
+	    read_dpnd_rule((RULE+i)->file);
+	}
+	/* 呼応表現ルール */
+	else if ((RULE+i)->type == KoouRuleType) {
+	    read_koou_rule((RULE+i)->file);
+	}
+	/* 固有名詞ルール */
+	else if ((RULE+i)->type == NeMorphRuleType) {
+	    read_NE_rule((RULE+i)->file, NERuleArray, &CurNERuleSize, NERule_MAX);
+	}
+	/* 複合名詞準備ルール */
+	else if ((RULE+i)->type == NePhrasePreRuleType) {
+	    read_NE_rule((RULE+i)->file, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
+	}
+	/* 複合名詞ルール */
+	else if ((RULE+i)->type == NePhraseRuleType) {
+	    read_NE_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+	}
+	/* 複合名詞補助ルール */
+	else if ((RULE+i)->type == NePhraseAuxRuleType) {
+	    read_NE_rule((RULE+i)->file, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
+	}
+	/* 複合名詞ルール (JUMAN only) */ /* 重複注意 */
+	else if ((RULE+i)->type == NePhraseRuleType) {
+	    read_NE_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+	}
+	/* 文脈処理のルール */
+	else if ((RULE+i)->type == ContextRuleType) {
+	    read_bnst_rule((RULE+i)->file, ContRuleArray, &ContRuleSize, ContRule_MAX);
+	}
     }
 
+    /*
     if (OptHelpsys == TRUE) {
 	read_mrph_rule(HELPSYS_FILE, HelpsysArray,
 		       &CurHelpsysSize, Helpsys_MAX);
-    						/* 対話的ヘルプシステム用ルール */
+    						 対話的ヘルプシステム用ルール 
     }
 
-    read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
-		   &ContRuleSize, ContRule_MAX);
-
     read_etc_rule(EtcRuleFile, EtcRuleArray, &CurEtcRuleSize, EtcRule_MAX);
+    */
 }
 
 /*==================================================================*/
@@ -386,11 +394,13 @@ void stand_alone_mode()
 	    fflush(Outfp);
 	}
 
+	/* FEATURE の初期化 */
 	for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
 	for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
 	for (i = Bnst_num; i < Bnst_num + New_Bnst_num; i++)
 	    bnst_data[i].f = NULL;
 
+	/* 読み込み */
 	if ((flag = read_mrph(Infp)) == EOF) break;
 
 	Sen_num++;
@@ -413,9 +423,9 @@ void stand_alone_mode()
 
 	assign_cfeature(&(mrph_data[0].f), "文頭");
 	assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
-	assign_mrph_feature(MrphRuleArray, CurMrphRuleSize);
-	if (OptHelpsys == TRUE)
-	    assign_mrph_feature(HelpsysArray, CurHelpsysSize);
+
+	/* 形態素ルールのみに情報付与 */
+	assign_general_feature(MorphRuleType);
 
 	if (OptAnalysis == OPT_PM) {
 	    if (make_bunsetsu_pm() == FALSE) continue;
@@ -425,8 +435,8 @@ void stand_alone_mode()
 
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(0); continue;	/* 文節化だけの場合 */
-	}	
-	
+	}
+
 	/* 文節への情報付与 */
 
 	assign_cfeature(&(bnst_data[0].f), "文頭");
@@ -435,19 +445,10 @@ void stand_alone_mode()
 	else
 	    assign_cfeature(&(bnst_data[0].f), "文末");
 
-	assign_bnst_feature(BnstRule1Array, CurBnstRule1Size, LOOP_ALL);
-	/* 一般的FEATURE */
-	assign_bnst_feature(UkeRuleArray, CurUkeRuleSize, LOOP_BREAK);
-	/* 受けのFEATURE */
-	assign_bnst_feature(BnstRule2Array, CurBnstRule2Size, LOOP_ALL);
-	/* 例外的FEATURE */
+	/* 文節ルールのみに情報付与 */
+	assign_general_feature(BnstRuleType);
 
-	assign_bnst_feature(KakariRuleArray, CurKakariRuleSize, LOOP_BREAK);
-	/* 係りのFEATURE */
-	assign_bnst_feature(BnstRule3Array, CurBnstRule3Size, LOOP_ALL);
-	/* 例外的FEATURE */	
-
-	assign_etc_feature(EtcRuleArray, CurEtcRuleSize, LOOP_ALL);
+	/* assign_etc_feature(EtcRuleArray, CurEtcRuleSize, LOOP_ALL); */
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	    print_mrphs(0);

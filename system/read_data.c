@@ -393,6 +393,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     }
 }
 
+#if 0
 /*==================================================================*/
 		       void assign_mrph_prop()
 /*==================================================================*/
@@ -414,6 +415,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	}
     }
 }
+#endif
 
 /*==================================================================*/
 	 void assign_mrph_feature(MrphRule *r_ptr, int size)
@@ -453,7 +455,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_mrph_feature_new(MrphRule *r_ptr, int r_size,
+     void assign_mrph_feature_new(MrphRule *s_r_ptr, int r_size,
 				  MRPH_DATA *s_m_ptr, int m_length,
 				  int mode, int break_mode)
 /*==================================================================*/
@@ -469,6 +471,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
 
     int i, j, k, match_length, feature_break_mode;
+    MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
     
     /* MRM
@@ -485,6 +488,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     if (mode == RLOOP_MRM) {
 	for (i = 0; i < m_length; i++) {
+	    r_ptr = s_r_ptr;
 	    for (j = 0; j < r_size; j++, r_ptr++) {
 		if ((match_length = 
 		     regexpmrphrule_match_M(r_ptr, s_m_ptr+i, i, m_length-i))
@@ -518,6 +522,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     */
 
     else if (mode == RLOOP_RMM) {
+	r_ptr = s_r_ptr;
 	for (j = 0; j < r_size; j++, r_ptr++) {
 	    feature_break_mode = break_feature(r_ptr->f);
 	    for (i = 0; i < m_length; i++) {
@@ -536,6 +541,51 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		    }
 		}
 	    }
+	}
+    }
+}
+
+/*==================================================================*/
+     void assign_bnst_feature_new(BnstRule *r_ptr, int r_size,
+				  BNST_DATA *s_b_ptr, int m_length,
+				  int mode, int break_mode)
+/*==================================================================*/
+{
+    /* dummy (tentative) */
+
+    if (break_mode == RLOOP_BREAK_NONE)
+	break_mode = LOOP_ALL;
+    else if (break_mode == RLOOP_BREAK_NORMAL)
+	break_mode = LOOP_BREAK;
+    assign_bnst_feature(r_ptr, r_size, break_mode);
+}
+
+#define RuleCast(x, y) (x == MorphRuleType ? (MrphRule *)(y) : (BnstRule *)(y))
+
+/*==================================================================*/
+		void assign_general_feature(int flag)
+/*==================================================================*/
+{
+    int i, size;
+    void (*assign_function)();
+    void *data;
+
+    /* 形態素か文節かについての場合分け */
+    if (flag == MorphRuleType) {
+	assign_function = assign_mrph_feature_new;
+	data = mrph_data;
+	size = Mrph_num;
+    }
+    else if (flag == BnstRuleType) {
+	assign_function = assign_bnst_feature_new;
+	data = bnst_data;
+	size = Bnst_num;
+    }
+
+    for (i = 0; i < GeneralRuleNum; i++) {
+	if ((GeneralRuleArray+i)->type == flag) {
+	    assign_function((GeneralRuleArray+i)->RuleArray, (GeneralRuleArray+i)->CurRuleSize, 
+			    data, size, (GeneralRuleArray+i)->mode, (GeneralRuleArray+i)->breakmode);
 	}
     }
 }

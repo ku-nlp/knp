@@ -15,21 +15,6 @@ extern REGEXPMRPHS *regexpmrphs_alloc();
 HomoRule	HomoRuleArray[HomoRule_MAX];
 int 	        CurHomoRuleSize;
 
-MrphRule	MrphRuleArray[MrphRule_MAX];
-int 	        CurMrphRuleSize;
-
-BnstRule 	BnstRule1Array[BnstRule_MAX];
-int 		CurBnstRule1Size;
-BnstRule 	BnstRule2Array[BnstRule_MAX];
-int 		CurBnstRule2Size;
-BnstRule 	BnstRule3Array[BnstRule_MAX];
-int 		CurBnstRule3Size;
-
-BnstRule 	UkeRuleArray[UkeRule_MAX];
-int 	        CurUkeRuleSize;
-BnstRule 	KakariRuleArray[KakariRule_MAX];
-int 	        CurKakariRuleSize;
-
 KoouRule	KoouRuleArray[KoouRule_MAX];
 int		CurKoouRuleSize;
 
@@ -58,6 +43,10 @@ void		*EtcRuleArray = NULL;
 int		CurEtcRuleSize;
 int		ExistEtcRule = 0;
 
+GeneralRuleType	*GeneralRuleArray = NULL;
+int		GeneralRuleNum = 0;
+int		GeneralRuleMax = 0;
+
 DicForRule	*DicForRuleVArray;
 int		CurDicForRuleVSize;
 DicForRule	*DicForRulePArray;
@@ -76,15 +65,19 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 {
     FILE     *fp;
     CELL     *body_cell;
+
+    file_name = (char *)check_filename(file_name);
     
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
-    
+
+    free(file_name);
+
     LineNo = 1;
     *count = 0;
-    
+
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
 
@@ -119,22 +112,26 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-		void read_koou_rule(char *file_neme)
+		void read_koou_rule(char *file_name)
 /*==================================================================*/
 {
     FILE     *fp;
     CELL     *body_cell;
     REGEXPMRPHS *pattern_bp;
     KoouRule  *rp = KoouRuleArray;
+
+    file_name = (char *)check_filename(file_name);
     
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
-    
+
+    free(file_name);
+
     LineNo = 1;
     CurKoouRuleSize = 0;
-    
+
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
 
@@ -163,22 +160,26 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-		 void read_homo_rule(char *file_neme)
+		 void read_homo_rule(char *file_name)
 /*==================================================================*/
 {
     FILE     *fp;
     CELL     *body_cell;
     HomoRule  *rp = HomoRuleArray;
     FEATURE   **fpp;	
+
+    file_name = (char *)check_filename(file_name);
     
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
+
+    free(file_name);
     
     LineNo = 1;
     CurHomoRuleSize = 0;
-    
+
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
 
@@ -201,21 +202,25 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 
 
 /*==================================================================*/
-void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
+void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 /*==================================================================*/
 {
     FILE     *fp;
     CELL     *body_cell;
     FEATURE   **fpp;	
+
+    file_name = (char *)check_filename(file_name);
     
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
-    
+
+    free(file_name);
+
     LineNo = 1;
     *count = 0;
-    
+
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
 
@@ -237,7 +242,7 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-	      void read_dpnd_rule(char *file_neme)
+	      void read_dpnd_rule(char *file_name)
 /*==================================================================*/
 {
     int		i;
@@ -245,15 +250,19 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
     CELL	*body_cell, *loop_cell;
     DpndRule	*rp = DpndRuleArray;
     FEATURE	**fpp;	
-    
-    if ( (fp = fopen(file_neme, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_neme);
+
+    file_name = (char *)check_filename(file_name);
+
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
-    
+
+    free(file_name);
+
     LineNo = 1;
     CurDpndRuleSize = 0;
-    
+
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
 
@@ -371,7 +380,7 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-			  void close_dic_for_rule()
+		      void close_dic_for_rule()
 /*==================================================================*/
 {
     if (DicForRuleDBExist == TRUE) {
@@ -381,14 +390,14 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-                    char *get_rulev(char *cp)
+		      char *get_rulev(char *cp)
 /*==================================================================*/
 {
     return db_get(dic_for_rulev_db, cp);
 }
 
 /*==================================================================*/
-                    char *get_rulep(char *cp)
+		      char *get_rulep(char *cp)
 /*==================================================================*/
 {
     return db_get(dic_for_rulep_db, cp);
@@ -400,6 +409,8 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 {
     FILE     *fp;
     CELL     *body_cell;
+
+    file_name = (char *)check_filename(file_name);
     
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
@@ -426,7 +437,8 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 	
 	rp++;
     }
-    
+
+    free(file_name);
     fclose(fp);
 }
 
@@ -471,6 +483,36 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
     else if (ExistEtcRule == IsBnstRule) {
 	read_bnst_rule(file_name, (BnstRule *)rp, count, max);
     }
+}
+
+/*==================================================================*/
+	       void read_general_rule(RuleVector *rule)
+/*==================================================================*/
+{
+    if (GeneralRuleNum >= GeneralRuleMax) {
+	GeneralRuleMax += RuleIncrementStep;
+	GeneralRuleArray = (GeneralRuleType *)realloc(GeneralRuleArray, 
+						      sizeof(GeneralRuleType)*GeneralRuleMax);
+    }
+    (GeneralRuleArray+GeneralRuleNum)->type = rule->type;
+    (GeneralRuleArray+GeneralRuleNum)->mode = rule->mode;
+    (GeneralRuleArray+GeneralRuleNum)->breakmode = rule->breakmode;
+    (GeneralRuleArray+GeneralRuleNum)->direction = rule->direction;
+
+    if ((GeneralRuleArray+GeneralRuleNum)->type == MorphRuleType) {
+	(GeneralRuleArray+GeneralRuleNum)->RuleArray = 
+	    (MrphRule *)malloc_data(sizeof(MrphRule)*GeneralRule_MAX, "read_general_rule");
+	read_mrph_rule(rule->file, (MrphRule *)((GeneralRuleArray+GeneralRuleNum)->RuleArray), 
+		       &((GeneralRuleArray+GeneralRuleNum)->CurRuleSize), GeneralRule_MAX);
+    }
+    else if ((GeneralRuleArray+GeneralRuleNum)->type == BnstRuleType) {
+	(GeneralRuleArray+GeneralRuleNum)->RuleArray = 
+	    (BnstRule *)malloc_data(sizeof(BnstRule)*GeneralRule_MAX, "read_general_rule");
+	read_bnst_rule(rule->file, (BnstRule *)((GeneralRuleArray+GeneralRuleNum)->RuleArray), 
+		       &((GeneralRuleArray+GeneralRuleNum)->CurRuleSize), GeneralRule_MAX);
+    }
+
+    GeneralRuleNum++;
 }
 
 /*====================================================================

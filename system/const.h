@@ -43,10 +43,6 @@
 #define SM_CODE_MAX	100
 
 #define	HomoRule_MAX	128
-#define MrphRule_MAX	256
-#define BnstRule_MAX	256
-#define UkeRule_MAX	256
-#define KakariRule_MAX 	640
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
 #define DpndRule_MAX	124
@@ -57,6 +53,7 @@
 #define CNRule_MAX	512
 #define Helpsys_MAX	512
 #define EtcRule_MAX	1024
+#define GeneralRule_MAX	1024
 
 #define IsMrphRule	1
 #define IsBnstRule	2
@@ -344,6 +341,15 @@ typedef struct {
     char *key;
     FEATUREptr f;
 } DicForRule;
+
+typedef struct {
+    void	*RuleArray;
+    int		CurRuleSize;
+    int		type;
+    int		mode;
+    int		breakmode;
+    int		direction;
+} GeneralRuleType;
 
 /*====================================================================
 			     ∏«Õ≠ÃæªÏ≤Ú¿œ
