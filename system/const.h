@@ -96,6 +96,7 @@
 #define OPT_AssignF	4
 #define OPT_ELLIPSIS	1
 #define OPT_DEMO	2
+#define OPT_REL_NOUN	4
 #define OPT_RAW		1
 #define OPT_PARSED	2
 #define OPT_TREE	1
@@ -432,7 +433,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	14
+#define DICT_MAX	16
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -447,6 +448,8 @@ typedef struct _RuleVector {
 #define	PROPERCASE_DB	10
 #define	CODE2SM_DB	12
 #define	EVENT_DB	13
+#define CF_NOUN_INDEX_DB	14
+#define CF_NOUN_DATA		15
 
 
 
@@ -630,6 +633,9 @@ typedef struct tnode_t {
 #define	USE_SUFFIX_SM	8
 #define	USE_PREFIX_SM	16
 
+#define	CF_PRED	1
+#define	CF_NOUN	2
+
 #define	CF_NORMAL	0
 #define	CF_SUM		1	/* OR の格フレーム */
 #define	CF_GA_SEMI_SUBJECT	2
@@ -667,11 +673,13 @@ typedef struct {
 		(「〜れる」などの場合は受身,尊敬などにそれぞれ一つ)
  */
 typedef struct cf_def {
+    int		type;
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
     int 	sp[CF_ELEMENT_MAX];		 	/* 表層格 (入力側) */
+    char	*pp_str[CF_ELEMENT_MAX];
     char	*sm[CF_ELEMENT_MAX]; 			/* 意味マーカ */
     char	*sm_delete[CF_ELEMENT_MAX];		/* 使用禁止意味マーカ */
     int		sm_delete_size[CF_ELEMENT_MAX];
@@ -862,7 +870,9 @@ typedef struct ellipsis_features {
 
 typedef struct ellipsis_svm_features {
     float	similarity;
+#ifdef DISC_USE_EVENT
     float	event;
+#endif
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST

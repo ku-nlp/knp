@@ -1070,17 +1070,28 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 	char *EllipsisSvmFeatures2String(E_SVM_FEATURES *esf)
 /*==================================================================*/
 {
-    int max, i;
+    int max, i, prenum;
     char *buffer, *sbuf;
 
-    max = (sizeof(E_SVM_FEATURES) - 2 * sizeof(float)) / sizeof(int) + 2;
+#ifdef DISC_USE_EVENT
+    prenum = 2;
+#else
+    prenum = 1;
+#endif
+
+    max = (sizeof(E_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
     sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
 			       "EllipsisSvmFeatures2String");
     buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
 				 "EllipsisSvmFeatures2String");
+#ifdef DISC_USE_EVENT
     sprintf(buffer, "1:%.5f 2:%.5f", esf->similarity, esf->event);
-    for (i = 3; i <= max; i++) {
-	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - 3));
+#else
+    sprintf(buffer, "1:%.5f", esf->similarity);
+#endif
+
+    for (i = prenum + 1; i <= max; i++) {
+	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - prenum - 1));
 	strcat(buffer, sbuf);
     }
     free(sbuf);
@@ -1122,7 +1133,9 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f = (E_SVM_FEATURES *)malloc_data(sizeof(E_SVM_FEATURES), "SetEllipsisFeatures");
 
     f->similarity = ef->similarity;
+#ifdef DISC_USE_EVENT
     f->event = ef->event;
+#endif
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
     }
@@ -1439,7 +1452,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 
     /* 省略候補 */
     sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
-	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
+	    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
 	    ef->similarity, score);
@@ -1474,7 +1487,8 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 /*==================================================================*/
 {
 
-    if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
+    if (cpm_ptr->cf.type == CF_PRED && 
+	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
 	EllipsisDetectForVerbSubcontractExtraTagsWithLearning(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 							      tag, cf_ptr, n);
     }
@@ -1527,7 +1541,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     /* 省略候補 */
     sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
-	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
+	    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
 	    ef->similarity, ef->similarity);
@@ -1554,7 +1568,8 @@ int EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPS
 				     SENTENCE_DATA *vs, TAG_DATA *vp)
 /*==================================================================*/
 {
-    if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
+    if (cpm_ptr->cf.type == CF_PRED &&
+	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
 	_EllipsisDetectForVerbSubcontractWithLearning(s, cs, em_ptr, 
 						      cpm_ptr, cmm_ptr, l, 
 						      bp, cf_ptr, n, loc, vs, vp);
@@ -1598,7 +1613,8 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     cmm_ptr->result_lists_d[l].flag[d] = n;
     cmm_ptr->result_lists_p[l].pos[n] = maxpos;
 
-    if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
+    if (cpm_ptr->cf.type == CF_PRED && 
+	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
 	if (maxscore < 0) {
 	    cmm_ptr->result_lists_p[l].score[n] = 0;
 	}
@@ -1761,12 +1777,15 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
     }
     else {
 	if ((OptDiscFlag & OPT_DISC_BEST) || 
+	    cpm_ptr->cf.type == CF_NOUN || 
 	    ((loc == LOC_OTHERS || loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
 	    (loc == LOC_PRE_OTHERS && s == cs && tp->num < cpm_ptr->pred_b_ptr->num) || 
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
 	    Bcheck[cs - s][tp->num] = 1;
-	    if (!(OptDiscFlag & OPT_DISC_BEST) && ScoreCheck(cf_ptr, n)) {
+	    if (!(OptEllipsis & OPT_REL_NOUN) && 
+		!(OptDiscFlag & OPT_DISC_BEST) && 
+		ScoreCheck(cf_ptr, n)) {
 		return 1;
 	    }
 	}
@@ -2247,17 +2266,10 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     SENTENCE_DATA *s, *cs;
     TAG_DATA *tp, *tp2, *ptp;
 
-    if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
-	maxscore = 0;
-	maxtag = NULL;
-	maxs = NULL;
-	maxpos = MATCH_NONE;
-    }
-    else {
-	maxscore = 0;
-	maxs = NULL;
-	maxpos = MATCH_NONE;
-    }
+    maxscore = 0;
+    maxtag = NULL;
+    maxs = NULL;
+    maxpos = MATCH_NONE;
 
     cs = sentence_data + sp->Sen_num - 1;
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
@@ -2504,7 +2516,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     if (maxtag) {
 	if (str_eq(maxtag, "不特定-人")) {
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]));
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
 	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
@@ -2512,7 +2524,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]));
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
 	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_I_WE;
@@ -2520,7 +2532,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
 	else if (str_eq(maxtag, "不特定-状況")) {
 	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]));
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
 	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
@@ -2544,7 +2556,111 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	/* 決定した省略関係 */
 	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
 		word ? word : "?", 
-		pp_code_to_kstr(cf_ptr->pp[n][0]), 
+		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
+		distance, maxi, 
+		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
+		etc_buffer, maxi);
+	assign_cfeature(&(em_ptr->f), feature_buffer);
+	em_ptr->cc[cf_ptr->pp[n][0]].s = maxs;
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = maxi;
+	em_ptr->cc[cf_ptr->pp[n][0]].dist = distance;
+
+	/* 指示対象を格フレームに保存 */
+	AppendToCF(cpm_ptr, cmm_ptr, l, maxs->tag_data + maxi, cf_ptr, n, maxscore, maxpos, maxs);
+	return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, 
+			  CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
+			  CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    SENTENCE_DATA *cs;
+    char feature_buffer[DATA_LEN], etc_buffer[DATA_LEN];
+
+    maxscore = 0;
+    maxtag = NULL;
+    maxs = NULL;
+    maxpos = MATCH_NONE;
+
+    cs = sentence_data + sp->Sen_num - 1;
+    memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
+
+    /* best解を探す */
+
+    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+			    cs->tag_data + cs->Tag_num - 1, 
+			    cf_ptr, n, LOC_OTHERS);
+    /* 前文 */
+    if (cs - sentence_data > 0) {
+	EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				(cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+				cf_ptr, n, LOC_OTHERS);
+	/* 2文前 */
+	if (cs - sentence_data > 1) {
+	    EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+				    cf_ptr, n, LOC_OTHERS);
+	}
+    }
+
+    /* 閾値を越えるものが見つからなかった */
+    if (!ScoreCheck(cf_ptr, n)) {
+	/* 閾値を越えるものがなく、格フレームに<主体>があるとき */
+	if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	    maxtag = ExtraTags[1]; /* 不特定-人 */
+	}
+	else {
+	    return 0;
+	}
+    }
+
+    if (maxtag) {
+	if (str_eq(maxtag, "不特定-人")) {
+	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
+	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
+	    return 0;
+	}
+	else if (str_eq(maxtag, "一人称")) {
+	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
+	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_I_WE;
+	    return 1;
+	}
+	else if (str_eq(maxtag, "不特定-状況")) {
+	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
+	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
+	    return 1;
+	}
+    }
+    else if (maxs) {
+	int distance;
+	char *word;
+
+	word = make_print_string(maxs->tag_data + maxi, 0);
+
+	distance = cs - maxs;
+	if (distance == 0) {
+	    strcpy(etc_buffer, "同一文");
+	}
+	else if (distance > 0) {
+	    sprintf(etc_buffer, "%d文前", distance);
+	}
+
+	/* 決定した省略関係 */
+	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
+		word ? word : "?", 
+		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 		distance, maxi, 
 		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		etc_buffer, maxi);
@@ -2586,7 +2702,7 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
     if (check_feature(cpm_ptr->pred_b_ptr->f, "時間ガ省略") && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
 	sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
-		pp_code_to_kstr(cf_ptr->pp[n][0]));
+		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 	return 0;
     }
@@ -2709,6 +2825,42 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		}
 		else if (demoflag == 1) {
 		    ; /* 割り当てなしにする */
+		}
+	    }
+	}
+    }
+    return em_ptr->score;
+}
+
+/*==================================================================*/
+float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, 
+				CF_MATCH_MGR *cmm_ptr, int l, CASE_FRAME *cf_ptr)
+/*==================================================================*/
+{
+    int i, j, num, result, demoflag, toflag;
+    int count = 0;
+
+    for (i = 0; i < cf_ptr->element_num; i++) {
+	/* 割り当てなし => 省略 */
+	if ((OptEllipsis & OPT_REL_NOUN) && 
+	    cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED) {
+	    result = EllipsisDetectForNoun(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i);
+	    AppendCfFeature(em_ptr, cpm_ptr, cf_ptr, i);
+	    if (result) {
+		em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
+
+		/* 現在は、rule base */
+		if (0 && 
+		    (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+		    em_ptr->score += maxscore > 1.0 ? EX_match_exact : maxscore < 0 ? 0 : 11*maxscore;
+		}
+		else {
+		    if (maxpos == MATCH_SUBJECT) {
+			em_ptr->score += EX_match_subject;
+		    }
+		    else {
+			em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore * 7));
+		    }
 		}
 	    }
 	}
@@ -2900,8 +3052,14 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	i = 0;
 
 	    ClearEllipsisMGR(&workem);
-	    EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &cmm, i, 
-				      *(cf_array+l), order);
+
+	    if (cpm_ptr->cf.type == CF_NOUN) {
+		EllipsisDetectForNounMain(sp, &workem, cpm_ptr, &cmm, i, *(cf_array+l));
+	    }
+	    else {
+		EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &cmm, i, 
+					  *(cf_array+l), order);
+	    }
 
 	    if (0 && !CheckClosestAssigned(&cmm, i)) {
 		workem.score = -1;
@@ -2911,8 +3069,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		workem.score += cmm.pure_score[i];
 		workem.pure_score = workem.score;
 		/* 正規化 */
-		workem.score /= sqrt((double)(count_pat_element(cmm.cf_ptr, 
-							     &(cmm.result_lists_p[i]))));
+		if (cpm_ptr->cf.type == CF_PRED) {
+		    workem.score /= sqrt((double)(count_pat_element(cmm.cf_ptr, 
+								    &(cmm.result_lists_p[i]))));
+		}
 		cmm.score = workem.score;
 	    }
 	    /* 格解析失敗のとき -- 解析をひとつだけ結果に入れるために
@@ -3077,43 +3237,48 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
 	    maxem.score = -2;
 
-	    for (i = 0; i < CASE_ORDER_MAX; i++) {
-		if (cpm_ptr->decided == CF_DECIDED) {
+	    if (cpm_ptr->cf.type == CF_NOUN) {
+		FindBestCFforContext(sp, &maxem, cpm_ptr, NULL);
+	    }
+	    else {
+		for (i = 0; i < CASE_ORDER_MAX; i++) {
+		    if (cpm_ptr->decided == CF_DECIDED) {
 
-		    /* 入力側格要素を設定
-		       照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
-		       それ以外のときは下の DeleteFromCF() で省略要素をクリア */
-		    if (OptEllipsis & OPT_DEMO) {
-			make_data_cframe(sp, cpm_ptr);
-		    }
-
-		    ClearEllipsisMGR(&workem);
-		    score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0, 
-						      cpm_ptr->cmm[0].cf_ptr, CaseOrder[i]);
-		    /* 直接の格要素の正規化していないスコアを足す */
-		    workem.score += cpm_ptr->cmm[0].pure_score[0];
-		    workem.pure_score += workem.score;
-		    workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
-								    &(cpm_ptr->cmm[0].result_lists_p[0]))));
-		    if (workem.score > maxem.score) {
-			maxem = workem;
-			maxem.result_num = cpm_ptr->result_num;
-			for (k = 0; k < maxem.result_num; k++) {
-			    maxem.ecmm[k].cmm = cpm_ptr->cmm[k];
-			    maxem.ecmm[k].cpm = *cpm_ptr;
-			    maxem.ecmm[k].element_num = cpm_ptr->cf.element_num;
+			/* 入力側格要素を設定
+			   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
+			   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
+			if (OptEllipsis & OPT_DEMO) {
+			    make_data_cframe(sp, cpm_ptr);
 			}
-			workem.f = NULL;
-		    }
 
-		    /* 格フレームの追加エントリの削除 */
-		    if (!(OptEllipsis & OPT_DEMO)) {
-			DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
+			ClearEllipsisMGR(&workem);
+			score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0, 
+							  cpm_ptr->cmm[0].cf_ptr, CaseOrder[i]);
+			/* 直接の格要素の正規化していないスコアを足す */
+			workem.score += cpm_ptr->cmm[0].pure_score[0];
+			workem.pure_score += workem.score;
+			workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
+									&(cpm_ptr->cmm[0].result_lists_p[0]))));
+			if (workem.score > maxem.score) {
+			    maxem = workem;
+			    maxem.result_num = cpm_ptr->result_num;
+			    for (k = 0; k < maxem.result_num; k++) {
+				maxem.ecmm[k].cmm = cpm_ptr->cmm[k];
+				maxem.ecmm[k].cpm = *cpm_ptr;
+				maxem.ecmm[k].element_num = cpm_ptr->cf.element_num;
+			    }
+			    workem.f = NULL;
+			}
+
+			/* 格フレームの追加エントリの削除 */
+			if (!(OptEllipsis & OPT_DEMO)) {
+			    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
+			}
 		    }
-		}
-		/* 格フレーム未決定のとき */
-		else {
-		    FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
+		    /* 格フレーム未決定のとき */
+		    else {
+			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
+		    }
 		}
 	    }
 

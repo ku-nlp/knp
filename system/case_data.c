@@ -85,26 +85,37 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     int cc;
 
-    if (!strncmp(fcp, "解析格-", 7)) {
-	cc = pp_kstr_to_code(fcp+7);
-	if (cc == END_M) {
-	    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+7);
-	    exit(1);
+    /* 用言の項となるもの */
+    if (cpm_ptr->cf.type == CF_PRED) {
+	if (!strncmp(fcp, "解析格-", 7)) {
+	    cc = pp_kstr_to_code(fcp+7);
+	    if (cc == END_M) {
+		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+7);
+		exit(1);
+	    }
+	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;
+	    if (*pp_num >= PP_ELEMENT_MAX) {
+		fprintf(stderr, ";; not enough pp_num (%d)!\n", PP_ELEMENT_MAX);
+		exit(1);
+	    }
 	}
-	c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;
-	if (*pp_num >= PP_ELEMENT_MAX) {
-	    fprintf(stderr, ";; not enough pp_num (%d)!\n", PP_ELEMENT_MAX);
-	    exit(1);
+	else if (!strcmp(fcp, "必須格")) {
+	    c_ptr->oblig[c_ptr->element_num] = TRUE;
+	}
+	else if (!strcmp(fcp, "Ｔ用言同文節")) {	/* 「〜を〜に」のとき */
+	    if (cpm_ptr->pred_b_ptr->num != b_ptr->num) {
+		return FALSE;
+	    }
 	}
     }
-    else if (!strcmp(fcp, "必須格")) {
-	c_ptr->oblig[c_ptr->element_num] = TRUE;
-    }
-    else if (!strcmp(fcp, "Ｔ用言同文節")) {	/* 「〜を〜に」のとき */
-	if (cpm_ptr->pred_b_ptr->num != b_ptr->num) {
-	    return FALSE;
+    /* 名詞の項となるもの */
+    else {
+	if (!strcmp(fcp, "Ｔ名詞項")) {
+	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = 0;
+	    c_ptr->pp_str[c_ptr->element_num] = NULL;
 	}
     }
+
     return TRUE;
 }
 
@@ -129,7 +140,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	}
 
 	/* 「〜のNだ。」禁止 (★=>ルールへ) */
-	if (check_feature(b_ptr->f, "係:ノ格") && 
+	if (cpm_ptr->cf.type == CF_PRED && 
+	    check_feature(b_ptr->f, "係:ノ格") && 
 	    check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
 	    return NULL;
 	}
@@ -165,6 +177,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 		    *loop_cp = '\0';
 		    if (flag == 1 || check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
 			if (_make_data_from_feature_to_pp(cpm_ptr, b_ptr, &pp_num, loop_cp+1) == FALSE) {
+			    free(buffer);
 			    return NULL;
 			}
 		    }
@@ -195,8 +208,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    return NULL;
 	}
     }
-    /* 被連体修飾詞 */
-    else {
+    /* 被連体修飾詞 (とりあえず用言のときのみ) */
+    else if (cpm_ptr->cf.type == CF_PRED) {
 	fp = b_ptr->f;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
@@ -308,6 +321,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     int i, child_num, first, closest, orig_child_num = -1, renkaku_exception_p;
     char *vtype = NULL;
 
+    cpm_ptr->cf.type = CF_PRED;
     cpm_ptr->cf.voice = b_ptr->voice;
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
@@ -322,6 +336,10 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     }
     else if (check_feature(b_ptr->f, "準用言")) {
 	strcpy(cpm_ptr->cf.pred_type, "準");
+    }
+    else if (check_feature(b_ptr->f, "体言")) {
+	strcpy(cpm_ptr->cf.pred_type, "名");
+	cpm_ptr->cf.type = CF_NOUN;
     }
     else {
 	cpm_ptr->cf.pred_type[0] = '\0';
@@ -435,9 +453,10 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     if (b_ptr->inum > 0) {
 	TAG_DATA *t_ptr;
 
-	/* 連格のとき(「〜したのは」)はすでに扱っている */
-	if (!check_feature(b_ptr->f, "係:連格")) {
-	    /* 自分(用言)が複合名詞内のときの親 : 被連体修飾詞扱い */
+	/* 自分(用言)が複合名詞内のときの親 : 被連体修飾詞扱い
+	   ※ 連格のとき(「〜したのは」)はすでに扱っている */
+	if (cpm_ptr->cf.type == CF_PRED && /* とりあえずサ変のときのみ */
+	    !check_feature(b_ptr->f, "係:連格")) {
 	    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
 	    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
 	    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);

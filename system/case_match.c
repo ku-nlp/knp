@@ -523,6 +523,9 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
     int i, pat_element = 0;
+
+    /* すべての格が任意格だと 0 を返して 0 で除算してしまう */
+
     for (i = 0; i < cfp->element_num; i++) {
 	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED)) {
 	    pat_element++;

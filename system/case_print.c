@@ -36,17 +36,24 @@ int	EX_PRINT_NUM = 10;
     }
 
     fputs("《", Outfp);
-    for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
-	if (i) {
-	    fputc('/', Outfp);
-	}
-	if (cpm_ptr->cf.pp[num][i] < 0) {
-	    fputs("--", Outfp);
-	}
-	else {
-	    fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
+
+    if (cpm_ptr->cf.type == CF_PRED) {
+	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
+	    if (i) {
+		fputc('/', Outfp);
+	    }
+	    if (cpm_ptr->cf.pp[num][i] < 0) {
+		fputs("--", Outfp);
+	    }
+	    else {
+		fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
+	    }
 	}
     }
+    else {
+	fputs("--", Outfp);
+    }
+
     fputs("》", Outfp);
 }
 
@@ -232,10 +239,16 @@ struct _sort_kv {
 
 	    fprintf(Outfp, " : 《");
 
-	    for (j = 0; cmm_ptr->cf_ptr->pp[i][j] != END_M; j++) {
-		if (j != 0) fputc('/', Outfp);
-		fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+	    if (cmm_ptr->cf_ptr->type == CF_PRED) {
+		for (j = 0; cmm_ptr->cf_ptr->pp[i][j] != END_M; j++) {
+		    if (j != 0) fputc('/', Outfp);
+		    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+		}
 	    }
+	    else {
+		fprintf(Outfp, "%s", cmm_ptr->cf_ptr->pp_str[i]);
+	    }
+
 	    fprintf(Outfp, "》");
 
 	    /* 用例の出力 */

@@ -185,6 +185,9 @@ extern int	EX_match_subject;
 	    OptDiscMethod = OPT_DT;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
+	else if (str_eq(argv[0], "-relation-noun")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	}
 	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
@@ -431,6 +434,7 @@ extern int	EX_match_subject;
 /*==================================================================*/
 {
     close_cf();
+    close_noun_cf();
     close_thesaurus();
     close_scase();
 
@@ -465,6 +469,7 @@ extern int	EX_match_subject;
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
+    init_noun_cf();	/* 格フレーム(名詞)オープン */
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
 
@@ -605,10 +610,10 @@ extern int	EX_match_subject;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
 
-    /* それぞれの用言の格フレームを取得 */
+    /* 格フレーム取得 */
     if (OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2) {
-	set_pred_caseframe(sp);
+	set_caseframes(sp);
     }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)

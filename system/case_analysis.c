@@ -192,6 +192,11 @@ char *pp_code_to_hstr(int num)
     return PP_str_to_code[num].hstr;
 }
 
+char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
+{
+    return cpm_ptr->cf.type == CF_PRED ? pp_code_to_kstr(num) : "ノ";
+}
+
 /*==================================================================*/
 		    int MatchPPn(int n, int *list)
 /*==================================================================*/
@@ -751,12 +756,16 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 {
     int i, j;
 
+    dst->type = src->type;
     dst->element_num = src->element_num;
     for (i = 0; i < src->element_num; i++) {
 	dst->oblig[i] = src->oblig[i];
 	dst->adjacent[i] = src->adjacent[i];
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
+	}
+	if (src->pp_str[i]) {
+	    dst->pp_str[i] = strdup(src->pp_str[i]);
 	}
 	if (src->sm[i]) {
 	    dst->sm[i] = strdup(src->sm[i]);
@@ -827,6 +836,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 {
     int i, j;
 
+    dst->type = src->type;
     dst->element_num = src->element_num;
 /*    for (i = 0; i < CF_ELEMENT_MAX; i++) { */
     for (i = 0; i < src->element_num; i++) {
@@ -835,6 +845,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
 	}
+	dst->pp_str[i] = src->pp_str[i];	/* これを使う場合問題あり */
 	/* for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
 	    dst->sm[i][j] = src->sm[i][j];
 	} */
@@ -1066,7 +1077,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	return FALSE;
     }
 
-    _make_ipal_cframe_pp(cpm_ptr->cmm[0].cf_ptr, cstr, cpm_ptr->cmm[0].cf_ptr->element_num);
+    _make_ipal_cframe_pp(cpm_ptr->cmm[0].cf_ptr, cstr, cpm_ptr->cmm[0].cf_ptr->element_num, CF_PRED);
     cpm_ptr->cmm[0].result_lists_d[0].flag[num] = cpm_ptr->cmm[0].cf_ptr->element_num;
     cpm_ptr->cmm[0].result_lists_d[0].score[num] = 0;
     cpm_ptr->cmm[0].result_lists_p[0].flag[cpm_ptr->cmm[0].cf_ptr->element_num] = num;
@@ -1205,13 +1216,13 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
 		sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
-			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
 			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			pos == MATCH_NONE ? "NONE" : "SUBJECT");
 	    }
 	    else {
 		sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%d", 
-			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
 			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
 			cpm_ptr->cmm[0].result_lists_p[0].score[num]);
@@ -1255,7 +1266,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		/* その他 => 外の関係
 		   複合名詞の前側: 保留
 		   用言直前のノ格: 保留 */
-		else if (!(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
+		else if (cpm_ptr->cf.type == CF_PRED && 
+			 !(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
 			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
 			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("未") && 
 			 MatchPP2(cpm_ptr->cf.pp[i], "外の関係")) { /* 「外の関係」の可能性あるもの */
@@ -1393,7 +1405,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    /* 割り当てなし */
 	    else {
-		sprintf(buffer, "%s/U/-/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+		sprintf(buffer, "%s/U/-/-/-/-", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
 	    }
 	    strcat(feature_buffer, buffer);
 	}
@@ -1406,7 +1419,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    else {
 		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
-		sprintf(buffer, "%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		sprintf(buffer, "%s/%c/%s/%d", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 	/* 省略 */
 			cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* 照応 */
 			cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
