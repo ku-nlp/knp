@@ -30,12 +30,19 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 			  void init_proper()
 /*==================================================================*/
 {
+    int i;
+
     if ((proper_db = DBM_open(PROPER_DB_NAME, O_RDONLY, 0)) == NULL || 
 	(properc_db = DBM_open(PROPERC_DB_NAME, O_RDONLY, 0)) == NULL || 
 	(propercase_db = DBM_open(PROPERCASE_DB_NAME, O_RDONLY, 0)) == NULL) {
 	PROPERExist = FALSE;
     } else {
 	PROPERExist = TRUE;
+    }
+
+    for (i = 0; i < MRPH_MAX; i++) {
+	(sp->mrph_data+i)->SM = (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE+1, 
+						    "init_proper");
     }
 }
 

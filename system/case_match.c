@@ -24,7 +24,9 @@ int 	SM_match_score[] = {0, 100, 100, 100, 100, 100, 100, 100, 100,
   				/*{0, 5, 8, 10, 12};*/	/* ＳＭ対応スコア */
 int     SM_match_unknown = 10;			 	/* データ未知     */
 
-int 	EX_match_score[] = {0, 0, 50, 70, 80, 90, 100, 110}; 
+int 	EX_match_score[] = {0, 0, 50, 70, 80, 90, 100, 110};
+int 	EX2_match_score[] = {0, 50, 60, 70, 80, 90, 100, 100, 100, 
+			    100, 100, 100, 100};
 							/* 用例対応スコア */
 int     EX_match_unknown = 50; 				/* データ未知     */
 int     EX_match_sentence = 80;				/* 格要素 -- 文   */
@@ -273,6 +275,13 @@ extern FILE  *Outfp;
 				       "数量", SM_CODE_SIZE)) {
 	    score = EX_match_qua;
 	}
+
+	/* tentative
+	if (score > 0)
+	    return score;
+	else
+	    return EX_match_unknown;
+	*/
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0' || *exp == '\0') 

@@ -345,10 +345,13 @@ char *Opt_jumanrc = NULL;
     /* 初期化 */
 
     init_juman();	/* JUMAN関係 */
-    init_ipal();	/* 格フレームオープン */
+    init_cf();		/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
+    init_case_analysis();
+    			/* 格解析の準備 */
+
     if (OptNE != OPT_NORMAL)
 	init_proper();	/* 固有名詞解析辞書オープン */
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
@@ -449,7 +452,7 @@ char *Opt_jumanrc = NULL;
 
 	/* 形態素への意味情報付与 */
 
-	if (SMExist == TRUE) {
+	if (OptNE != OPT_NORMAL && SMExist == TRUE) {
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		code = (char *)get_sm(sp->mrph_data[i].Goi);
 		if (code) {
@@ -458,6 +461,9 @@ char *Opt_jumanrc = NULL;
 		}
 		assign_ntt_dict(i);
 	    }
+	}
+	else {
+	    sp->mrph_data[i].SM = NULL;
 	}
 
 	/* 形態素へのFEATURE付与 */
@@ -667,7 +673,7 @@ char *Opt_jumanrc = NULL;
 	success = 1;/* OK 成功 */
     }
 
-    close_ipal();
+    close_cf();
     close_bgh();
     close_sm();
     close_scase();

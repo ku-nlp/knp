@@ -11,9 +11,21 @@
 
 extern int Possibility;
 
-CF_MATCH_MGR	Cf_match_mgr[IPAL_FRAME_MAX * 5];	/* 作業領域 */
+CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* 作業領域 */
 TOTAL_MGR	Dflt_mgr;
 TOTAL_MGR	Work_mgr;
+
+/*==================================================================*/
+		      void init_case_analysis()
+/*==================================================================*/
+{
+    if (OptAnalysis == OPT_CASE || 
+	OptAnalysis == OPT_CASE2 || 
+	OptAnalysis == OPT_DISC) {
+	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*IPAL_FRAME_MAX*5, 
+						   "init_case_analysis");
+    }
+}
 
 /*====================================================================
 		       格助詞の文字−コード対応
@@ -278,7 +290,7 @@ char *sm_code_to_str(int code)
 /*==================================================================*/
 {
     int i;
-    int topic_score;
+    int topic_score, topic_score_sum = 0;
     char *cp;
 
     /* 格構造解析のメイン関数 */
@@ -317,10 +329,15 @@ char *sm_code_to_str(int code)
 		(sp->bnst_data+(sp->bnst_data+i)->dpnd_head)->f, "提題受"))) {
 	    sscanf(cp, "%*[^:]:%d", &topic_score);
 	    Work_mgr.score += topic_score;
+	    if (OptDisplay == OPT_DEBUG) {
+		topic_score_sum += topic_score;
+	    }
 	}
     }
 
-    /* fprintf(stdout, "■ %d点 (距離減点 %d点)\n", Work_mgr.score, Work_mgr.dflt*2); */
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(stdout, "■ %d点 (距離減点 %d点 提題スコア %d点)\n", Work_mgr.score, Work_mgr.dflt*2, topic_score_sum);
+    }
         
     /* 後処理 */
 

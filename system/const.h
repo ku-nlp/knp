@@ -429,7 +429,7 @@ typedef struct {
     char	Imi[IMI_MAX];
     char	type;
     FEATUREptr	f;
-    char 	SM[SM_ELEMENT_MAX*SM_CODE_SIZE+1];	/* 追加 */
+    char 	*SM;				/* 追加 */
     NamedEntity	NE;				/* 追加 */
     NamedEntity	eNE;				/* 追加 */
     struct _pos_s	Case[23];		/* 追加 */
@@ -559,9 +559,12 @@ typedef struct {
 #define IPAL_FIELD_NUM	72
 #define IPAL_DATA_SIZE	12800
 #define CASE_MAX_NUM	20
+#define	EX_PRINT_NUM	10
 
 #define USE_BGH	1
 #define	USE_NTT	2
+#define	STOREtoCF	4
+#define	USE_BGH_WITH_STORE	5
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -600,8 +603,10 @@ typedef struct cf_def {
 							/* 意味マーカ */
     int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
     char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*BGH_CODE_SIZE];
-    							/* 例 */
+    							/* 用例 (BGH) */
     char	ex2[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE];
+							/* 用例 (NTT) */
+    char	*examples[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
     char 	ipal_id[128];				/* IPALのID */

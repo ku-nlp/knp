@@ -11,8 +11,8 @@
 FILE *ipal_fp;
 DBM_FILE ipal_db;
 
-CASE_FRAME 	Case_frame_array[ALL_CASE_FRAME_MAX]; 	/* 格フレーム */
-int 	   	Case_frame_num;				/* 格フレーム数 */
+CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
+int 	   	Case_frame_num;			/* 格フレーム数 */
 
 IPAL_FRAME Ipal_frame;
 
@@ -23,32 +23,33 @@ int	IPALExist;
  */
 
 /*==================================================================*/
-			  void init_ipal()
+			    void init_cf()
 /*==================================================================*/
 {
+    if (OptAnalysis == OPT_CASE || 
+	OptAnalysis == OPT_CASE2 || 
+	OptAnalysis == OPT_DISC) {
 #ifdef _WIN32
-    if ((ipal_fp = fopen(IPAL_DAT_NAME, "rb")) == NULL) {
+	if ((ipal_fp = fopen(IPAL_DAT_NAME, "rb")) == NULL) {
 #else
-    if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
+	if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
 #endif
-
-	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2) {
 	    fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
+	    IPALExist = FALSE;
 	}
-	IPALExist = FALSE;
-    }
-    else if ((ipal_db = DBM_open(IPAL_DB_NAME, O_RDONLY, 0)) == NULL) {
-	fprintf(stderr, "Cannot open Database <%s>.\n", IPAL_DB_NAME);
-	exit(1);
-    } 
-    else {
-	IPALExist = TRUE;
+	else if ((ipal_db = DBM_open(IPAL_DB_NAME, O_RDONLY, 0)) == NULL) {
+	    fprintf(stderr, "Cannot open Database <%s>.\n", IPAL_DB_NAME);
+	    exit(1);
+	} 
+	else {
+	    IPALExist = TRUE;
+	}
+	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_ipal");
     }
 }
 
 /*==================================================================*/
-			  void close_ipal()
+			   void close_cf()
 /*==================================================================*/
 {
     if (IPALExist == TRUE) {
@@ -172,19 +173,19 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 例の読みだし */
 
     unsigned char *point, *point2;
-    int i, max;
+    int i, max, count = 0, length = 0;
     char *code, *destination;
     extern char *get_bgh();
     extern char *get_sm();
     char *(*get_code)();
 
     /* 引くリソースによって関数などをセット */
-    if (flag == USE_BGH) {
+    if (flag & USE_BGH) {
 	get_code = get_bgh;
 	destination = c_ptr->ex[num];
 	max = EX_ELEMENT_MAX*BGH_CODE_SIZE;
     }
-    else if (flag == USE_NTT) {
+    else if (flag & USE_NTT) {
 	get_code = get_sm;
 	destination = c_ptr->ex2[num];
 	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
@@ -211,6 +212,29 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    }
 	    strcat(destination, code);
 	    free(code);
+	}
+
+	count++;
+	if (flag & STOREtoCF && count == EX_PRINT_NUM) {
+	    length = point-cp-2;
+	}
+    }
+
+    if (flag & STOREtoCF) {
+	if (*cp) {
+	    if (count <= EX_PRINT_NUM) {
+		c_ptr->examples[num] = strdup(cp);
+	    }
+	    else {
+		/* "...\0" の 4 つ分増やす */
+		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4));
+		strncpy(c_ptr->examples[num], cp, length);
+		*(c_ptr->examples[num]+length) = '\0';
+		strcat(c_ptr->examples[num], "...");
+	    }
+	}
+	else {
+	    c_ptr->examples[num] = NULL;
 	}
     }
 }
@@ -257,7 +281,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     for (i = 0; i < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j);
-	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH);
+	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH_WITH_STORE);
 	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_NTT);
 
 	/* 能動 : Agentive ガ格を任意的とする場合
@@ -494,6 +518,18 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	if ((Case_frame_num += 1) > ALL_CASE_FRAME_MAX) {
 	    fprintf(stderr, "Not enough Case_frame_array !!\n");
 	    exit(1);
+	}
+    }
+}
+
+/*==================================================================*/
+			   void clean_cf()
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < Case_frame_num; i++) {
+	if ((Case_frame_array+i)->examples) {
+	    free((Case_frame_array+i)->examples);
 	}
     }
 }
