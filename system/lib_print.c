@@ -922,7 +922,7 @@ static int max_width;			/* 木の最大幅 */
 
     /* 解析結果のメインの出力 */
 
-    dpnd_info_to_bnst(&(tm->dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
+    /* dpnd_info_to_bnst(&(tm->dpnd)); 係り受け情報を bnst 構造体に記憶 */
 
     if (OptExpress == OPT_TAB) {
 	print_mrphs(1);
