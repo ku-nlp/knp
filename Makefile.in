@@ -11,6 +11,8 @@
 # PARTICULAR PURPOSE.
 
 
+SHELL = @SHELL@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -56,25 +58,17 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = @CC@
+KNP_LIBS = @KNP_LIBS@
 MAKEINFO = @MAKEINFO@
+MAKE_DB_LIBS = @MAKE_DB_LIBS@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+SUBDIRS = @SUBDIRS@
 VERSION = @VERSION@
-
-SUBDIRS = system
-SHELL = sh
-
-man_MANS = docs/knp.1
-
-EXTRA_DIST =  	docs/knp.1 	rule/rule_conv.pl 	rule/rule_trans.pl 	rule/bnst_basic.rule 	rule/bnst_etc.rule 	rule/bnst_type.phrase 	rule/compoundnoun-auxiliary.rule 	rule/compoundnoun-preliminary.rule 	rule/compoundnoun.rule 	rule/context.rule 	rule/kakari_uke.rule 	rule/koou.rule 	rule/mrph_basic.rule 	rule/mrph_helpsys.rule 	rule/mrph_homo.rule 	rule/ne-juman.rule 	rule/ne.rule 
-
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
-man1dir = $(mandir)/man1
-MANS = $(man_MANS)
-
-NROFF = nroff
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS acconfig.h aclocal.m4 config.h.in \
 configure configure.in install-sh missing mkinstalldirs
@@ -128,45 +122,6 @@ distclean-hdr:
 	-rm -f config.h
 
 maintainer-clean-hdr:
-
-install-man1:
-	$(mkinstalldirs) $(DESTDIR)$(man1dir)
-	@list='$(man1_MANS)'; \
-	l2='$(man_MANS)'; for i in $$l2; do \
-	  case "$$i" in \
-	    *.1*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
-	  if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
-	  else file=$$i; fi; \
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " $(INSTALL_DATA) $$file $(DESTDIR)$(man1dir)/$$inst"; \
-	  $(INSTALL_DATA) $$file $(DESTDIR)$(man1dir)/$$inst; \
-	done
-
-uninstall-man1:
-	@list='$(man1_MANS)'; \
-	l2='$(man_MANS)'; for i in $$l2; do \
-	  case "$$i" in \
-	    *.1*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " rm -f $(DESTDIR)$(man1dir)/$$inst"; \
-	  rm -f $(DESTDIR)$(man1dir)/$$inst; \
-	done
-install-man: $(MANS)
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-man1
-uninstall-man:
-	@$(NORMAL_UNINSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-man1
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -300,7 +255,6 @@ distdir: $(DISTFILES)
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
 	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
-	$(mkinstalldirs) $(distdir)/docs $(distdir)/rule
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -335,21 +289,20 @@ all-recursive-am: config.h
 install-exec-am:
 install-exec: install-exec-recursive
 
-install-data-am: install-man
+install-data-am:
 install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am: uninstall-man
+uninstall-am:
 uninstall: uninstall-recursive
-all-am: Makefile $(MANS) config.h
+all-am: Makefile config.h
 all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs)  $(DESTDIR)$(mandir)/man1
 
 
 mostlyclean-generic:
@@ -383,7 +336,6 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-install-man1 uninstall-man1 install-man uninstall-man \
 install-data-recursive uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \

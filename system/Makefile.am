@@ -1,4 +1,11 @@
-bin_PROGRAMS = knp
+SUBDIRS = .
+
+EXTRA_DIST = \
+	Makefile.orig \
+	ipal.c \
+	make_db.c
+
+noinst_PROGRAMS = knp ipal make_db
 
 knp_SOURCES = \
 	case_analysis.c \
@@ -41,9 +48,11 @@ knp_SOURCES = \
 	japanese.h \
 	configfile.c
 
-SHELL = sh
+knp_LDADD = -ljuman @KNP_LIBS@
 
-EXTRA_DIST = \
-	Makefile.orig \
-	ipal.c \
-	make_db.c
+make_db_SOURCES = \
+	make_db.c \
+	db.c \
+	tools.c
+
+make_db_LDADD = @MAKE_DB_LIBS@

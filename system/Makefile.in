@@ -11,6 +11,8 @@
 # PARTICULAR PURPOSE.
 
 
+SHELL = @SHELL@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -56,23 +58,33 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = @CC@
+KNP_LIBS = @KNP_LIBS@
 MAKEINFO = @MAKEINFO@
+MAKE_DB_LIBS = @MAKE_DB_LIBS@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-bin_PROGRAMS = knp
+SUBDIRS = .
+
+EXTRA_DIST =  	Makefile.orig 	ipal.c 	make_db.c
+
+
+noinst_PROGRAMS = knp ipal make_db
 
 knp_SOURCES =  	case_analysis.c 	case_data.c 	case_ipal.c 	case_match.c 	case_print.c 	const.h 	context.c 	corpus.c 	dbm.h 	dpnd_analysis.c 	extern.h 	feature.c 	knp.h 	koou.c 	lib_bgh.c 	lib_lib.c 	lib_print.c 	lib_ps.c 	lib_scase.c 	lib_sm.c 	main.c 	para_analysis.c 	para_dpnd.c 	para_relation.c 	para_revision.c 	para_similarity.c 	path.h 	proper.c 	quote.c 	read_data.c 	read_rule.c 	regexp.c 	tools.c 	tree_conv.c 	unsupervised.c 	db.c 	japanese.c 	japanese.h 	configfile.c
 
 
-SHELL = sh
+knp_LDADD = -ljuman @KNP_LIBS@
 
-EXTRA_DIST =  	Makefile.orig 	ipal.c 	make_db.c
+make_db_SOURCES =  	make_db.c 	db.c 	tools.c
 
+
+make_db_LDADD = @MAKE_DB_LIBS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(bin_PROGRAMS)
+PROGRAMS =  $(noinst_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
@@ -85,9 +97,16 @@ lib_bgh.o lib_lib.o lib_print.o lib_ps.o lib_scase.o lib_sm.o main.o \
 para_analysis.o para_dpnd.o para_relation.o para_revision.o \
 para_similarity.o proper.o quote.o read_data.o read_rule.o regexp.o \
 tools.o tree_conv.o unsupervised.o db.o japanese.o configfile.o
-knp_LDADD = $(LDADD)
 knp_DEPENDENCIES = 
 knp_LDFLAGS = 
+ipal_SOURCES = ipal.c
+ipal_OBJECTS =  ipal.o
+ipal_LDADD = $(LDADD)
+ipal_DEPENDENCIES = 
+ipal_LDFLAGS = 
+make_db_OBJECTS =  make_db.o db.o tools.o
+make_db_DEPENDENCIES = 
+make_db_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -102,14 +121,15 @@ GZIP_ENV = --best
 DEP_FILES =  .deps/case_analysis.P .deps/case_data.P .deps/case_ipal.P \
 .deps/case_match.P .deps/case_print.P .deps/configfile.P \
 .deps/context.P .deps/corpus.P .deps/db.P .deps/dpnd_analysis.P \
-.deps/feature.P .deps/japanese.P .deps/koou.P .deps/lib_bgh.P \
-.deps/lib_lib.P .deps/lib_print.P .deps/lib_ps.P .deps/lib_scase.P \
-.deps/lib_sm.P .deps/main.P .deps/para_analysis.P .deps/para_dpnd.P \
-.deps/para_relation.P .deps/para_revision.P .deps/para_similarity.P \
-.deps/proper.P .deps/quote.P .deps/read_data.P .deps/read_rule.P \
-.deps/regexp.P .deps/tools.P .deps/tree_conv.P .deps/unsupervised.P
-SOURCES = $(knp_SOURCES)
-OBJECTS = $(knp_OBJECTS)
+.deps/feature.P .deps/ipal.P .deps/japanese.P .deps/koou.P \
+.deps/lib_bgh.P .deps/lib_lib.P .deps/lib_print.P .deps/lib_ps.P \
+.deps/lib_scase.P .deps/lib_sm.P .deps/main.P .deps/make_db.P \
+.deps/para_analysis.P .deps/para_dpnd.P .deps/para_relation.P \
+.deps/para_revision.P .deps/para_similarity.P .deps/proper.P \
+.deps/quote.P .deps/read_data.P .deps/read_rule.P .deps/regexp.P \
+.deps/tools.P .deps/tree_conv.P .deps/unsupervised.P
+SOURCES = $(knp_SOURCES) ipal.c $(make_db_SOURCES)
+OBJECTS = $(knp_OBJECTS) ipal.o $(make_db_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -122,30 +142,14 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-mostlyclean-binPROGRAMS:
+mostlyclean-noinstPROGRAMS:
 
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 
-distclean-binPROGRAMS:
+distclean-noinstPROGRAMS:
 
-maintainer-clean-binPROGRAMS:
-
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
-	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
-	  else :; fi; \
-	done
-
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
-	done
+maintainer-clean-noinstPROGRAMS:
 
 .s.o:
 	$(COMPILE) -c $<
@@ -167,6 +171,69 @@ knp: $(knp_OBJECTS) $(knp_DEPENDENCIES)
 	@rm -f knp
 	$(LINK) $(knp_LDFLAGS) $(knp_OBJECTS) $(knp_LDADD) $(LIBS)
 
+ipal: $(ipal_OBJECTS) $(ipal_DEPENDENCIES)
+	@rm -f ipal
+	$(LINK) $(ipal_LDFLAGS) $(ipal_OBJECTS) $(ipal_LDADD) $(LIBS)
+
+make_db: $(make_db_OBJECTS) $(make_db_DEPENDENCIES)
+	@rm -f make_db
+	$(LINK) $(make_db_LDFLAGS) $(make_db_OBJECTS) $(make_db_LDADD) $(LIBS)
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" = "." && dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -177,9 +244,14 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
@@ -216,6 +288,16 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 
 DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
 
@@ -249,30 +331,30 @@ maintainer-clean-depend:
 	    >> .deps/$(*F).P; \
 	rm -f .deps/$(*F).pp
 info-am:
-info: info-am
+info: info-recursive
 dvi-am:
-dvi: dvi-am
+dvi: dvi-recursive
 check-am: all-am
-check: check-am
+check: check-recursive
 installcheck-am:
-installcheck: installcheck-am
-install-exec-am: install-binPROGRAMS
-install-exec: install-exec-am
+installcheck: installcheck-recursive
+install-exec-am:
+install-exec: install-exec-recursive
 
 install-data-am:
-install-data: install-data-am
+install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-install: install-am
-uninstall-am: uninstall-binPROGRAMS
-uninstall: uninstall-am
+install: install-recursive
+uninstall-am:
+uninstall: uninstall-recursive
 all-am: Makefile $(PROGRAMS)
-all-redirect: all-am
+all-redirect: all-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
-installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(bindir)
+installdirs: installdirs-recursive
+installdirs-am:
 
 
 mostlyclean-generic:
@@ -284,41 +366,47 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
+mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
+clean-am:  clean-noinstPROGRAMS clean-compile clean-tags clean-depend \
 		clean-generic mostlyclean-am
 
-clean: clean-am
+clean: clean-recursive
 
-distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
+distclean-am:  distclean-noinstPROGRAMS distclean-compile distclean-tags \
 		distclean-depend distclean-generic clean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 
-maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
 		maintainer-clean-depend maintainer-clean-generic \
 		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 
-.PHONY: mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
-maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+.PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir mostlyclean-depend \
-distclean-depend clean-depend maintainer-clean-depend info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+maintainer-clean-compile install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
