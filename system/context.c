@@ -16,6 +16,7 @@ int maxi, maxpos;
 char *maxtag, *maxfeatures;
 #define PREV_SENTENCE_MAX	3
 int Bcheck[PREV_SENTENCE_MAX][TAG_MAX];
+int **LC;
 int PrintFeatures = 0;
 
 char *ExtraTags[] = {"一人称", "不特定-人", "不特定-状況", ""};
@@ -121,6 +122,9 @@ int OptUseSmfix;
     }
     else if (loc == LOC_OTHERS) {
 	return "OTHERS";
+    }
+    else if (loc == END_M) {
+	return "NIL";
     }
     return NULL;
 }
@@ -2410,6 +2414,30 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 }
 
 /*==================================================================*/
+     int _SearchCompoundChild(TAG_DATA *tp, int *lc, int lc_num)
+/*==================================================================*/
+{
+    int i;
+
+    /* 並列を吸収 */
+    while (tp->para_top_p) {
+	tp = tp->child[0];
+    }
+
+    for (i = 0; tp->child[i]; i++) {
+	/* ノ格, 連体の(直接の)子供をチェック (複合名詞の2つ以上前はみていない) */
+	if (check_feature(tp->child[i]->f, "係:ノ格") || 
+	    check_feature(tp->child[i]->f, "係:連体") || 
+	    check_feature(tp->child[i]->f, "係:隣")) {
+	    if (!lc[tp->child[i]->num]) {
+		lc[tp->child[i]->num] = lc_num;
+	    }
+	}
+    }
+    return 1;
+}
+
+/*==================================================================*/
 	      TAG_DATA** ListPredChildren(TAG_DATA *tp)
 /*==================================================================*/
 {
@@ -2504,6 +2532,56 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 				    children[i], 
 				    cf_ptr, n, loc, 0);
 	    }
+	}
+	free(children);
+    }
+
+    return 0;
+}
+
+/*==================================================================*/
+int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, int dist)
+/*==================================================================*/
+{
+    /* cpm_ptr: 省略格要素をもつ用言
+       bp:      格要素の探索対象となっている用言文節
+    */
+
+    int i, num, sent;
+    TAG_DATA **children;
+
+    /* 用言の格要素をチェック */
+    if (bp->cpm_ptr) {
+	if (bp->cpm_ptr->cmm[0].score != -2) {
+	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+		if (num != UNASSIGNED) {
+		    if (bp->cpm_ptr->elem_b_num[num] > -2) {
+			sent = dist;
+		    }
+		    /* 省略 */
+		    else {
+			sent = dist + (cs - bp->cpm_ptr->elem_s_ptr[num]);
+		    }
+
+		    if (!lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num]) {
+			lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num] = lc_num;
+		    }
+
+		    /* ノ格の子供をチェック */
+		    _SearchCompoundChild(bp->cpm_ptr->elem_b_ptr[num], lc[sent], lc_num);
+		}
+	    }
+	}
+
+	/* 格要素になっていない子供もチェック */
+	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
+	for (i = 0; children[i]; i++) {
+	    if (!lc[0][children[i]->num]) {
+		lc[0][children[i]->num] = lc_num;
+	    }
+	    /* ノ格の子供をチェック */
+	    _SearchCompoundChild(children[i], lc[0], lc_num);
 	}
 	free(children);
     }
@@ -2619,6 +2697,75 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 }
 
 /*==================================================================*/
+int mark_all_children(SENTENCE_DATA *cs, TAG_DATA *tp, int **lc, int lc_num, int sent)
+/*==================================================================*/
+{
+    int i, j;
+
+    if (!lc[sent][tp->num]) {
+	lc[sent][tp->num] = lc_num;
+    }
+
+    _SearchCaseComponent(cs, tp, lc, lc_num, sent);
+
+    /*
+    for (i = 0; tp->child[i]; i++) {
+	if (tp->child[i]->para_top_p) {
+	    for (j = 0; tp->child[i]->child[j]; j++) {
+		if (tp->child[i]->child[j]->para_type == PARA_NORMAL) {
+		    if (check_feature(tp->child[i]->child[j]->f, "格要素")) {
+			if (!lc[tp->child[i]->child[j]->num]) {
+			    lc[tp->child[i]->child[j]->num] = lc_num;
+			}
+		    }
+		}
+		* ★ <PARA> のとき ★ *
+	    }
+	}
+	else if (check_feature(tp->child[i]->f, "格要素")) {
+	    if (!lc[tp->child[i]->num]) {
+		lc[tp->child[i]->num] = lc_num;
+	    }
+	}
+    }
+    */
+}
+
+/*==================================================================*/
+int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
+/*==================================================================*/
+{
+    int i, flag = 0;
+    TAG_DATA *tp;
+
+    for (i = s->Tag_num - 1; i >= 0; i--) {
+	tp = s->tag_data + i;
+	while (tp->para_top_p) {
+	    tp = tp->child[0];
+	}
+
+	if (check_mc(tp)) {
+	    flag = 1;
+	    break;
+	}
+    }
+
+    if (flag == 0) {
+	tp = s->tag_data + s->Tag_num - 1;
+	while (tp->para_top_p) {
+	    tp = tp->child[0];
+	}
+    }
+
+    /* 対象ではない */
+    if (ctp == NULL || tp->num != ctp->num) {
+	mark_all_children(s, tp, lc, dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC, dist);
+    }
+
+    return 0;
+}
+
+/*==================================================================*/
 	 int SearchSC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		      CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
 		      CASE_FRAME *cf_ptr, int n)
@@ -2656,6 +2803,64 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	}
     }
     return 0;
+}
+
+/*==================================================================*/
+  int _SearchSC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
+/*==================================================================*/
+{
+    int i, j, start;
+    TAG_DATA *tp, *tp2;
+
+    for (i = s->Tag_num - 1; i >= 0; i--) {
+	tp = s->tag_data + i; 
+	if (check_mc(tp)) {
+	    if (tp->para_top_p) {
+		/* 主節をチェックしないように */
+		start = 1;
+	    }
+	    else {
+		start = 0;
+	    }
+	    for (j = start; tp->child[j]; j++) {
+		tp2 = tp->child[j];
+		while (tp2->para_top_p) {
+		    tp2 = tp2->child[0];
+		}
+		/* レベルがBより強い従属節 */
+		if ((ctp == NULL || tp2->num != ctp->num) && /* 対象ではない */
+		    check_feature(tp2->f, "係:連用") && 
+		    subordinate_level_check("B", (BNST_DATA *)tp2)) {
+		    mark_all_children(s, tp2, lc, dist == 2 ? LOC_S2_SC : dist == 1 ? LOC_S1_SC : LOC_SC, dist);
+		}
+	    }
+	    break;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
+int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, 
+		   CF_MATCH_MGR *cmm_ptr, int l, TAG_DATA *tp, 
+		   CASE_FRAME *cf_ptr, int n, int loc)
+/*==================================================================*/
+{
+    int sent, i, dist;
+    SENTENCE_DATA *ts;
+
+    for (sent = 0; sent < 3; sent++) {
+	ts = s - sent;
+	dist = (cs - s) + sent;
+	for (i = 0; i < ts->Tag_num; i++) {
+	    if (LC[dist][i] == loc) {
+		EllipsisDetectForVerbSubcontract(ts, cs, em_ptr, cpm_ptr, cmm_ptr, l, ts->tag_data + i, cf_ptr, n, loc, ts, (ts->tag_data + i)->pred_b_ptr);
+		if (dist < 3) {
+		    Bcheck[cs - s][i] = 1;
+		}
+	    }
+	}
+    }
 }
 
 /*==================================================================*/
@@ -2703,6 +2908,38 @@ int SearchParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
+     int _SearchParentV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    if (tp->parent && 
+	check_feature(tp->parent->f, "用言")) {
+	int i;
+	TAG_DATA *tp2;
+
+	/* 親が<PARA>なら<P>の子供を全部チェック */
+	if (tp->parent->para_top_p) {
+	    for (i = 0; tp->parent->child[i]; i++) {
+		if (tp->parent->child[i]->para_type == PARA_NORMAL && 
+		    tp->parent->child[i]->num > tp->num) {
+
+		    /* <PARA>なら child[0]をみていく必要がある */
+		    tp2 = tp->parent->child[i];
+		    while (tp2->para_top_p) {
+			tp2 = tp2->child[0];
+		    }
+
+		    mark_all_children(s, tp2, lc, check_mc(tp2) ? LOC_PARENTV_MC : LOC_PARENTV, 0);
+		}
+	    }
+	}
+	else {
+	    mark_all_children(s, tp->parent, lc, check_mc(tp->parent) ? LOC_PARENTV_MC : LOC_PARENTV, 0);
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 int GoUpParaChild(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 		  CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
 		  TAG_DATA *tp, TAG_DATA *orig_tp, CASE_FRAME *cf_ptr, int n)
@@ -2737,6 +2974,32 @@ int GoUpParaChild(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 }
 
 /*==================================================================*/
+int _GoUpParaChild(SENTENCE_DATA *s, TAG_DATA *tp, TAG_DATA *orig_tp, int **lc)
+/*==================================================================*/
+{
+    int i;
+    TAG_DATA *tp2;
+
+    /* tp : <PARA> */
+
+    if (tp && tp->para_top_p) {
+	for (i = 0; tp->child[i]; i++) {
+	    if (tp->child[i]->num < orig_tp->num && /* 子供側 */
+		tp->child[i]->para_type == PARA_NORMAL) {
+
+		/* <PARA>でなくなるまでさかのぼる必要がある */
+		tp2 = tp->child[i];
+		while (tp2->para_top_p) {
+		    tp2 = tp2->child[0];
+		}
+
+		mark_all_children(s, tp2, lc, LOC_CHILDPV, 0);
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 int SearchChildPV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, 
 		  CF_MATCH_MGR *cmm_ptr, int l, TAG_DATA *tp, 
 		  CASE_FRAME *cf_ptr, int n)
@@ -2747,6 +3010,18 @@ int SearchChildPV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 	tp->parent->para_top_p) {
 	GoUpParaChild(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 		      tp->parent, tp, cf_ptr, n);
+    }
+    return 0;
+}
+
+/*==================================================================*/
+     int _SearchChildPV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    if (tp->para_type == PARA_NORMAL && 
+	tp->parent && 
+	tp->parent->para_top_p) {
+	_GoUpParaChild(s, tp->parent, tp, lc);
     }
     return 0;
 }
@@ -2765,6 +3040,23 @@ int SearchChildV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 	    if (check_feature(tp->child[i]->f, "用言")) {
 		SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				    tp->child[i], cf_ptr, n, LOC_CHILDV);
+	    }
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
+     int _SearchChildV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    /* 自分は<PARA>でないので並列ではない */
+    if (tp->para_type == PARA_NIL) {
+	int i;
+
+	for (i = 0; tp->child[i]; i++) {
+	    if (check_feature(tp->child[i]->f, "用言")) {
+		mark_all_children(s, tp->child[i], lc, LOC_CHILDV, 0);
 	    }
 	}
     }
@@ -2821,6 +3113,43 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 }
 
 /*==================================================================*/
+ int _SearchParentNParentV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    if (tp->parent && 
+	!tp->para_type && 
+	tp->parent->parent && 
+	!check_feature(tp->parent->f, "用言")) {
+	TAG_DATA *tp2;
+
+	if (check_feature(tp->parent->parent->f, "用言")) {
+	    if (tp->parent->parent->para_top_p) {
+		int i;
+
+		for (i = 0; tp->parent->parent->child[i]; i++) {
+		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
+			tp->parent->parent->child[i]->num > tp->parent->num) {
+
+			/* <PARA>なら child[0]をみていく必要がある */
+			tp2 = tp->parent->parent->child[i];
+			while (tp2->para_top_p) {
+			    tp2 = tp2->child[0];
+			}
+
+			mark_all_children(s, tp2, lc, check_mc(tp2) ? LOC_PARENTNPARENTV_MC : LOC_PARENTNPARENTV, 0);
+		    }
+		}
+	    }
+	    else {
+		mark_all_children(s, tp->parent->parent, lc, 
+				  check_mc(tp->parent->parent) ? LOC_PARENTNPARENTV_MC : LOC_PARENTNPARENTV, 0);
+	    }
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, 
 			 CF_MATCH_MGR *cmm_ptr, int l, TAG_DATA *tp, 
 			 CASE_FRAME *cf_ptr, int n, int mccheck)
@@ -2867,6 +3196,61 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 	}
     }
     return 0;
+}
+
+/*==================================================================*/
+ int _SearchParentVParentV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    if (tp->parent && 
+	!tp->para_type && 
+	tp->parent->parent && 
+	check_feature(tp->parent->f, "用言")) {
+	TAG_DATA *tp2;
+
+	if (check_feature(tp->parent->parent->f, "用言")) {
+	    if (tp->parent->parent->para_top_p) {
+		int i;
+
+		for (i = 0; tp->parent->parent->child[i]; i++) {
+		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
+			tp->parent->parent->child[i]->num > tp->parent->num) {
+
+			/* <PARA>なら child[0]をみていく必要がある */
+			tp2 = tp->parent->parent->child[i];
+			while (tp2->para_top_p) {
+			    tp2 = tp2->child[0];
+			}
+
+			mark_all_children(s, tp2, lc, check_mc(tp2) ? LOC_PARENTVPARENTV_MC : LOC_PARENTVPARENTV, 0);
+		    }
+		}
+	    }
+	    else {
+		mark_all_children(s, tp->parent->parent, lc, 
+				  check_mc(tp->parent->parent) ? LOC_PARENTVPARENTV_MC : LOC_PARENTVPARENTV, 0);
+	    }
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
+       int _SearchPV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
+/*==================================================================*/
+{
+    int i;
+
+    if (tp->para_type == PARA_NORMAL) {
+	/* <PARA>に係る要素 */
+	/* mark_all_children(tp->parent, lc, check_mc(tp->parent) ? LOC_PV_MC : LOC_PV); */
+	for (i = 0; tp->parent->child[i]; i++) {
+	    if (tp->parent->child[i]->num > tp->num && /* 親側 */
+		tp->parent->child[i]->para_type == PARA_NORMAL) {
+		mark_all_children(s, tp->parent->child[i], lc, check_mc(tp->parent->child[i]) ? LOC_PV_MC : LOC_PV, 0);
+	    }
+	}
+    }    
 }
 
 /*==================================================================*/
@@ -3006,103 +3390,23 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	     (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND) || 
 	      LocationLimit[cf_ptr->pp[n][0]] == END_M || j < LocationLimit[cf_ptr->pp[n][0]]); j++) {
 	switch(LocationOrder[cf_ptr->pp[n][0]][j]) {
-	case LOC_PARENTV_MC:
-	    SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
-	    break;
-	case LOC_PARENTNPARENTV_MC:
-	    SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
-	    break;
-	case LOC_PARENTNPARENTV:
-	    SearchParentNParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
-	    break;
-	case LOC_PARENTV:
-	    SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
-	    break;
-	case LOC_CHILDPV:
-	    SearchChildPV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	    break;
-	case LOC_PARENTVPARENTV_MC:
-	    SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
-	    break;
 	case LOC_S1_MC:
-	    if (cs - sentence_data > 0) {
-		SearchMC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    }
-	    break;
-	case LOC_CHILDV:
-	    SearchChildV(cs, em_ptr, cpm_ptr, cmm_ptr, l, cpm_ptr->pred_b_ptr, cf_ptr, n);
-	    break;
-	case LOC_PV_MC: /* ★要チェック★ */
-	    if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-		for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		    if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-			cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-			check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 主節 */
-			SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					    cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV_MC);
-		    }
-		}
-	    }
-	    break;
-	case LOC_PV: /* ★要チェック★ */
-	    if (cpm_ptr->pred_b_ptr->para_type == PARA_NORMAL) {
-		for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
-		    if (cpm_ptr->pred_b_ptr->parent->child[i]->num > cpm_ptr->pred_b_ptr->num && /* 親側 */
-			cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL && 
-			!check_mc(cpm_ptr->pred_b_ptr->parent->child[i])) { /* 非主節 */
-			SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					    cpm_ptr->pred_b_ptr->parent->child[i], cf_ptr, n, LOC_PV);
-		    }
-		}
-	    }
-	    break;
-	case LOC_MC:
-	    SearchMC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    break;
-	case LOC_SC:
-	    SearchSC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    break;
-	case LOC_PARENTVPARENTV:
-	    SearchParentVParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, -1);
-	    break;
-	case LOC_S2_MC:
-	    if (cs - sentence_data > 1) {
-		SearchMC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    }
-	    break;
-	case LOC_PRE_OTHERS:
-	    EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				     cf_ptr, n, LOC_PRE_OTHERS, TRUE); /* 中で ScoreCheck() している */
-	    break;
 	case LOC_S1_SC:
-	    if (cs - sentence_data > 0) {
-		SearchSC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    }
-	    break;
 	case LOC_S1_OTHERS:
 	    if (cs - sentence_data > 0) {
-		EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					 (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-					 cf_ptr, n, LOC_S1_OTHERS, TRUE); /* 中で ScoreCheck() している */
+		CheckMatchedLC(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, LocationOrder[cf_ptr->pp[n][0]][j]);
 	    }
 	    break;
-	case LOC_POST_OTHERS:
-	    EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, cs->tag_data + cs->Tag_num - 1, 
-				     cf_ptr, n, LOC_POST_OTHERS, TRUE); /* 中で ScoreCheck() している */
-	    break;
+	case LOC_S2_MC:
 	case LOC_S2_SC:
-	    if (cs - sentence_data > 1) {
-		SearchSC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, n);
-	    }
-	    break;
 	case LOC_S2_OTHERS:
 	    if (cs - sentence_data > 1) {
-		EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					 cf_ptr, n, LOC_S2_OTHERS, TRUE); /* 中で ScoreCheck() している */
+		CheckMatchedLC(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, LocationOrder[cf_ptr->pp[n][0]][j]);
 	    }
 	    break;
 	default:
-	    fprintf(stderr, ";; Unknown location class (%s)\n", loc_code_to_str(LocationOrder[cf_ptr->pp[n][0]][j]));
+	    CheckMatchedLC(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, LocationOrder[cf_ptr->pp[n][0]][j]);
+	    break;
 	}
 	if (ScoreCheck(cf_ptr, n)) {
 	    goto EvalAntecedent;
@@ -3866,6 +4170,79 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 }
 
 /*==================================================================*/
+      int mark_location_classes(SENTENCE_DATA *sp, TAG_DATA *tp)
+/*==================================================================*/
+{
+    int i;
+    SENTENCE_DATA *cs;
+
+    cs = sentence_data + sp->Sen_num - 1;
+
+    LC = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "mark_location_classes");
+    for (i = 0; i < sp->Sen_num; i++) {
+	LC[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "mark_location_classes");
+	memset(LC[i], 0, sizeof(int) * TAG_MAX);
+    }
+
+    LC[0][tp->num] = END_M; /* 自分は対象外 */
+    _SearchCaseComponent(cs, tp, LC, END_M, 0); /* 自分の子供は対象外 */
+    _SearchPV(cs, tp, LC);
+    _SearchParentV(cs, tp, LC);
+    _SearchParentNParentV(cs, tp, LC);
+    _SearchParentVParentV(cs, tp, LC);
+    _SearchChildPV(cs, tp, LC);
+    _SearchChildV(cs, tp, LC);
+    _SearchMC(cs, tp, LC, 0);
+    _SearchSC(cs, tp, LC, 0);
+
+    for (i = 0; i < cs->Tag_num; i++) {
+	if (LC[0][i] != 0) {
+	    continue;
+	}
+	if (i < tp->num) {
+	    LC[0][i] = LOC_PRE_OTHERS;
+	}
+	else {
+	    LC[0][i] = LOC_POST_OTHERS;
+	}
+    }
+
+    fprintf(stderr, ";;; %s for %s(%d):", cs->KNPSID ? cs->KNPSID : "?", tp->head_ptr->Goi, tp->num);
+    for (i = 0; i < cs->Tag_num; i++) {
+	fprintf(stderr, " %s(%d):%s", (cs->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[0][i]));
+    }
+
+    if (cs - sentence_data > 0) {
+	_SearchMC(cs - 1, NULL, LC, 1);
+	_SearchSC(cs - 1, NULL, LC, 1);
+	for (i = 0; i < (cs - 1)->Tag_num; i++) {
+	    if (LC[1][i] != 0) {
+		continue;
+	    }
+	    LC[1][i] = LOC_S1_OTHERS;
+	}
+	for (i = 0; i < (cs - 1)->Tag_num; i++) {
+	    fprintf(stderr, " %s(%d):%s", ((cs - 1)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[1][i]));
+	}
+    }
+
+    if (cs - sentence_data > 1) {
+	_SearchMC(cs - 2, NULL, LC, 2);
+	_SearchSC(cs - 2, NULL, LC, 2);
+	for (i = 0; i < (cs - 2)->Tag_num; i++) {
+	    if (LC[2][i] != 0) {
+		continue;
+	    }
+	    LC[2][i] = LOC_S2_OTHERS;
+	}
+	for (i = 0; i < (cs - 2)->Tag_num; i++) {
+	    fprintf(stderr, " %s(%d):%s", ((cs - 2)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[2][i]));
+	}
+    }
+    fprintf(stderr, "\n");
+}
+
+/*==================================================================*/
 	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -3910,6 +4287,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 		continue;
 	    }
+
+	    mark_location_classes(sp, cpm_ptr->pred_b_ptr);
 
 	    cmm_ptr = &(cpm_ptr->cmm[0]);
 	    cf_ptr = cmm_ptr->cf_ptr;
@@ -4016,6 +4395,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    if (cpm_ptr->cmm[0].score > 0) {
 		RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
 	    }
+
+	    for (i = 0; i < sp->Sen_num; i++) {
+		free(LC[i]);
+	    }
+	    free(LC);
 	}
 
 	PreserveCPM(sp_new, sp);
