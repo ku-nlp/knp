@@ -289,8 +289,8 @@ char *sm_code_to_str(int code)
 		  void call_case_analysis(DPND dpnd)
 /*==================================================================*/
 {
-    int i;
-    int topic_score, topic_score_sum = 0;
+    int i, j;
+    int topic_score, topic_score_sum = 0, topic_slot[2];
     char *cp;
 
     /* 格構造解析のメイン関数 */
@@ -321,17 +321,41 @@ char *sm_code_to_str(int code)
 	return;
 
     /* corpus based case analysis 00/01/04
-       ここでdefaultとの距離のずれ,提題を処理 */
+       ここで default との距離のずれ, 提題を処理 */
     Work_mgr.score -= Work_mgr.dflt * 2;
-    for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "提題") &&
-	    (cp = (char *)check_feature(
-		(sp->bnst_data+(sp->bnst_data+i)->dpnd_head)->f, "提題受"))) {
-	    sscanf(cp, "%*[^:]:%d", &topic_score);
-	    Work_mgr.score += topic_score;
-	    if (OptDisplay == OPT_DEBUG) {
-		topic_score_sum += topic_score;
+
+    for (i = sp->Bnst_num-1; i > 0; i--) {
+	/* 用言ごとに提題を処理する */
+	if (cp = (char *)check_feature((sp->bnst_data+i)->f, "提題受")) {
+
+	    /* topic_slot[0]	時間以外のハ格のスロット
+	       topic_slot[1]	「<<時間>>は」のスロット
+	       両方とも 1 以下しか許可しない
+	    */
+
+	    topic_slot[0] = 0;
+	    topic_slot[1] = 0;
+
+	    for (j = 0; (sp->bnst_data+i)->child[j]; j++) {
+		if (check_feature((sp->bnst_data+i)->child[j]->f, "提題")) {
+		    if (check_feature((sp->bnst_data+i)->child[j]->f, "時間")) {
+			topic_slot[1]++;
+		    }
+		    else {
+			topic_slot[0]++;
+		    }
+		}
 	    }
+
+	    if ((topic_slot[0] == 1 || topic_slot[1] == 1) && 
+		(topic_slot[0] < 2 && topic_slot[1] < 2)) {
+		sscanf(cp, "%*[^:]:%d", &topic_score);
+		Work_mgr.score += topic_score;
+		if (OptDisplay == OPT_DEBUG) {
+		    topic_score_sum += topic_score;
+		}
+	    }
+
 	}
     }
 
