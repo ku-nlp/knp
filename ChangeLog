@@ -1,3 +1,8 @@
+2003-12-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.h, system/context.c:
+	頻度の標準偏差を定数にした。
+
 2003-12-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/extern.h, system/lib_print.c, system/lib_sm.c, system/thesaurus.c:
