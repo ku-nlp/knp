@@ -1,3 +1,17 @@
+2004-07-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule:
+	ヨリ格を任意格にした
+
+	* rule/context.rule:
+	「省略解析なし」の用言を追加
+
+	* system/thesaurus.c, system/lib_sm.c, system/extern.h, system/case_ipal.c, system/const.h:
+	意味素固定cacheの導入
+
+	* system/context.c: 
+	不適当な先行詞候補の削除
+
 2004-06-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule, rule/bnst_basic.rule:
