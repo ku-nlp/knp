@@ -552,7 +552,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 			 int make_bunsetsu()
 /*==================================================================*/
 {
-    int prev_stat, now_stat;
+    int prev_stat, now_stat = -1;
     int i, j;
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr = NULL;

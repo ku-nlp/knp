@@ -274,7 +274,7 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
     int L_B_pos = ptr->L_B;
     int ending_bonus_score;
     int max_pos = -1;
-    float current_score, max_score = ENOUGH_MINUS, pure_score;
+    float current_score, max_score = ENOUGH_MINUS, pure_score = 0;
     FEATURE *fp;
 
     /* 制限がある場合,まったく可能性のないスタート位置(R_pos)は排除 */

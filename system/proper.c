@@ -614,7 +614,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 			  void NE_analysis()
 /*==================================================================*/
 {
-    int i, j, k, h, pos, apos, flag = 0, match_tail, value;
+    int i, j, k, h, pos, apos = 0, flag = 0, match_tail, value;
     char decision[9], *cp;	/* ¡ú */
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
