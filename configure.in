@@ -21,7 +21,7 @@ JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
 AC_ARG_WITH(rcpath, [  --with-rcpath           use specified rcpath], 
 RCPATH=$with_rcpath, RCPATH="")
 
-SUBDIRS="system rule docs"
+SUBDIRS="system rule docs perl"
 
 packagesrcdir=`cd $srcdir && pwd`
 
@@ -141,4 +141,5 @@ system/Makefile
 juman/Makefile
 rule/Makefile
 docs/Makefile
+perl/Makefile
 ])

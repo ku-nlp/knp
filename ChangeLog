@@ -1,4 +1,60 @@
+1999-12-29  Sadao KUROHASHI  <kuro@zinnia.Language.Media.Laboratory>
+
+	* system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c, system/read_data.c, system/const.h:
+	option, main のせいり
+
+	* rule/bnst_type.phrase: change rule order for にもかかわらず
+
+1999-12-27  Koji Nobumoto  <nobumoto@zinnia.Language.Media.Laboratory>
+
+	* rule/rule_trans.pl: 形態素ルールのときに,後ろのコンテキストがないとカッコが出力されなかった
+	のを修正. また,空白カッコをなくした. デフォルトでは,コンテキストがないとき
+	は,?*が付く.
+
+1999-12-27  Sadao KUROHASHI  <kuro@zinnia.Language.Media.Laboratory>
+
+	* system/const.h, system/ipal.c, system/path.h:
+	const.h ipal.c: enlarge buffer size, etc. for caseframes.
+	path.h: modify directry names of IPAL.
+
+1999-12-26  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_rule.c: ルール読み込み時に rp->f が NULL になっていないと BUS ERROR になる問題
+	を修正。
+
+1999-12-22  Sadao KUROHASHI  <kuro@zinnia.Language.Media.Laboratory>
+
+	* rule/mrph_basic.rule, rule/rule_trans.pl, rule/bnst_type.phrase:
+	rule_trans.pl : 抜本改訂，仕様変更
+
+	bnst_type.phrase : rule_trans.plの修正に対応
+
+	mrph_basci.rule : feature:表現文末を追加
+
+	* system/lib_print.c, system/context.c: lib_print.c : bugfix
+	context.c : つねにへんこうちゅう
+
+1999-12-19  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/configfile.c: Linux でのサーバ動作時に、RC コマンドを発行すると Segmentation Fault
+	するバグを修正。
+
+1999-12-18  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* perl/KNP.pm: -r による .jumanrc 指定。
+	-bnst オプションへの対応。
+
+	* juman/Makefile.in: jumanrc.sample を EXTRA_DIST へ追加。
+
+1999-12-17  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* juman/Makefile.am: jumanrc.sample を EXTRA_DIST へ追加。
+
 1999-12-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* INSTALL: 誤り訂正。
+
+	* ChangeLog: ChangeLog 更新。
 
 	* system/const.h, system/extern.h, system/read_rule.c, system/main.c:
 	ヘルプシステム用オプションの撲滅。
@@ -21,6 +77,10 @@
 1999-12-06  Koji Nobumoto  <nobumoto@zinnia.Language.Media.Laboratory>
 
 	* system/main.c, system/const.h, system/context.c: clear_context() を追加
+
+1999-12-03  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: 極端なデータによってタイムアウトした場合に無限ループに陥っていたバグを修正した。
 
 1999-12-03  Koji Nobumoto  <nobumoto@zinnia.Language.Media.Laboratory>
 
@@ -235,6 +295,10 @@
 
 	* rule/compoundnoun.rule: 提出時バージョン。
 
+1999-08-02  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: parse メソッド内でローカル変数を利用する場合に、きちんと初期化するようにした。
+
 1999-07-31  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/main.c, system/unsupervised.c:
@@ -279,6 +343,10 @@
 
 	* system/main.c: OPT_DETAIL, OPT_DEBUG のときの print_mrphs() の移動。
 	ルールファイルの実行時読み込みに関する変更。
+
+1999-07-05  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: Juman のデフォルトのオプションを -e -B とした。
 
 1999-07-02  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
@@ -346,6 +414,10 @@
 
 	* system/dpnd_analysis.c: unsupervised learning 用のチェック関係の変更。
 
+1999-06-10  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: $KNP::PORT 変数を新設。KNP Server のポート番号を指定できるようにした。
+
 1999-06-10  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/main.c: ヘルプシステムのルールをオプションで読み込むようにした。
@@ -375,14 +447,29 @@
 
 	* system/context.c: dpnd_info_to_bnst を print_result から出したことによる修正。
 
+1999-05-27  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: $KNP::JUMAN_SERVER を空に設定することにより Juman をローカルで実行するように改良した。
+
 1999-05-27  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/main.c: Parse timeout のときに入力文を表示するように修正。
+
+1999-05-24  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: ドキュメント微修正。
 
 1999-05-24  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* system/lib_sm.c, system/read_data.c, system/para_analysis.c, system/proper.c:
 	初期化に関するバグ修正。
+
+1999-05-24  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: mrph / bnst メソッドを微修正。
+
+	* perl/KNP.pm: ドキュメントの整備。
+	all / comment / mrph_num / mrph / bnst_num / bnst などのメソッドを追加
 
 1999-05-23  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
@@ -412,6 +499,18 @@
 	ヘルプシステム用のルールを追加。
 
 	* system/case_print.c: バグ修正。
+
+1999-05-23  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: KNP server との接続終了処理を厳密に行うようにした。
+
+	* perl/KNP.pm: 各文節の feature を feature 単位の配列に分解せず文字列としても保持しておくように変更した。
+
+	* perl/KNP.pm: 各形態素の feature を feature 単位の配列に分解せず文字列としても保持しておくように変更した。
+
+	* perl/KNP.pm: require IO::Socket::INET / Fork する時期を変更した。
+
+	* perl/KNP.pm: KNP server のクライアントとしても動作するように改良した。
 
 1999-05-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
@@ -478,9 +577,19 @@
 
 	* system/para_relation.c: 並列解析を giveup しにくくなった。
 
+1999-04-20  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: 出力が二重にならないようにするためのおまじないを加えた。
+
+	* perl/KNP.pm: knp の子プロセスなどの呼び出しを行う部分を Fork.pm として分離した。
+
 1999-04-20  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* rule/compoundnoun.rule: 時間の追加等。
+
+1999-04-19  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: -i オプションへの対応を組み込んだ
 
 1999-04-18  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
@@ -510,6 +619,10 @@
 	* rule/compoundnoun.rule: 更新。
 
 	* rule/compoundnoun.rule: New file.
+
+1999-04-09  Masatoshi Tsuchiya  <tsuchiya@zinnia.Language.Media.Laboratory>
+
+	* perl/KNP.pm: New file.
 
 1999-04-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 

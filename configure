@@ -1105,7 +1105,7 @@ else
 fi
 
 
-SUBDIRS="system rule docs"
+SUBDIRS="system rule docs perl"
 
 packagesrcdir=`cd $srcdir && pwd`
 
@@ -1887,6 +1887,7 @@ system/Makefile
 juman/Makefile
 rule/Makefile
 docs/Makefile
+perl/Makefile
  config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -1984,6 +1985,7 @@ system/Makefile
 juman/Makefile
 rule/Makefile
 docs/Makefile
+perl/Makefile
 "}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
