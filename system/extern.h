@@ -23,6 +23,12 @@ extern char  		key_str[], cont_str[];
 extern datum 		key, content;
 
 extern int		IPALExist;
+extern int		SMExist;
+extern int		SM2CODEExist;
+extern int		SMP2SMGExist;
+DBM_FILE		sm_db;
+DBM_FILE		sm2code_db;
+DBM_FILE		smp2smg_db;
 
 extern MRPH_DATA 	mrph_data[];
 extern BNST_DATA 	bnst_data[];
@@ -30,7 +36,6 @@ extern PARA_DATA	para_data[];
 extern PARA_MANAGER	para_manager[];
 extern NamedEntity	NE_data[];
 
-/* extern SENTENCE_DATA	*start_sentence_data; */
 extern SENTENCE_DATA	sentence_data[];
 
 extern int 		match_matrix[][BNST_MAX];

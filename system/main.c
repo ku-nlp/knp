@@ -271,8 +271,7 @@ jmp_buf timeout;
     init_juman();	/* JUMAN関係 */
     init_ipal();	/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */
-    init_sm();		/* 意味素オープン */
-    init_sm2code();	/* 意味素コードオープン */
+    init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
     if (OptNE != OPT_NORMAL)
 	init_proper();	/* 固有名詞解析辞書オープン */
@@ -357,6 +356,11 @@ jmp_buf timeout;
 
 	Case_frame_num = 0;
 	set_pred_caseframe();			/* 用言の格フレーム */
+
+	/* 形態素に意味素を与える */
+	for (i = 0; i < Mrph_num; i++) {
+	    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+	}
 
 	for (i = 0; i < Bnst_num; i++) {
 	  get_bgh_code(bnst_data+i);		/* シソーラス */
@@ -493,7 +497,6 @@ jmp_buf timeout;
     close_ipal();
     close_bgh();
     close_sm();
-    close_sm2code();
     close_scase();
     if (OptNE != OPT_NORMAL)
 	close_proper();

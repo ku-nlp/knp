@@ -17,6 +17,9 @@
 #define sizeof_char(cp) (sizeof(cp) / sizeof(char *))
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 
+#define sm2code(cp) read_db(cp, sm2code_db)
+#define smp2smg(cp) read_db(cp, smp2smg_db)
+
 /*====================================================================
 				LENGTH
 ====================================================================*/
@@ -152,6 +155,9 @@
 #define TYPE_KANAKANJI	2
 #define TYPE_SUUJI	3
 #define TYPE_EIKIGOU	4
+
+#define SM_NO_EXPAND_NE	1
+#define SM_EXPAND_NE	2
 
 /*====================================================================
 				  ?
@@ -351,7 +357,7 @@ typedef struct {
     char	Imi[IMI_MAX];
     char	type;
     FEATUREptr	f;
-    char 	SM[SM_CODE_SIZE*SM_CODE_MAX];	/* 追加 */
+    char 	SM[SM_CODE_SIZE*SM_CODE_MAX+1];	/* 追加 */
     NamedEntity	NE;				/* 追加 */
     NamedEntity	eNE;				/* 追加 */
     struct _pos_s	Case[23];		/* 追加 */

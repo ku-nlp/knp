@@ -21,8 +21,9 @@
 #define CN_FILE  	KNP_RULE "/compoundnoun.data"
 
 #define BGH_DB_NAME	KNP_DICT "/bgh/bgh"
-#define SM_DB_NAME	KNP_DICT "/sm/sm"
+#define SM_DB_NAME	KNP_DICT "/sm/word2code"
 #define SM2CODE_DB_NAME	KNP_DICT "/sm/sm2code"
+#define SMP2SMG_DB_NAME	KNP_DICT "/sm/smp2smg"
 #define SCASE_DB_NAME	KNP_DICT "/scase/scase"
 #define IPAL_DB_NAME	KNP_DICT "/ipal/ipal"
 #define IPAL_DAT_NAME	KNP_DICT "/ipal/ipal.dat"

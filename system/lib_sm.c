@@ -11,41 +11,54 @@
 
 DBM_FILE	sm_db;
 DBM_FILE	sm2code_db;
+DBM_FILE	smp2smg_db;
 int		SMExist;
 int		SM2CODEExist;
+int		SMP2SMGExist;
 
 /*==================================================================*/
-                    void init_sm()
+			    void init_sm()
 /*==================================================================*/
 {
-    if ((sm_db = DBM_open(SM_DB_NAME, O_RDONLY, 0)) == NULL) {
-        /* 
-	   fprintf(stderr, "Can not open Database <%s>.\n", SM_DB_NAME);
-	   exit(1);
-	*/
+    if ((sm_db = DBM_open(SM_DB_NAME, O_RDONLY, 0)) == NULL)
 	SMExist = FALSE;
-    } else {
+    else
 	SMExist = TRUE;
-    }
+
+    if ((sm2code_db = DBM_open(SM2CODE_DB_NAME, O_RDONLY, 0)) == NULL)
+	SM2CODEExist = FALSE;
+    else
+	SM2CODEExist = TRUE;
+
+    if ((smp2smg_db = DBM_open(SMP2SMG_DB_NAME, O_RDONLY, 0)) == NULL)
+	SMP2SMGExist = FALSE;
+    else
+	SMP2SMGExist = TRUE;
 }
 
 /*==================================================================*/
-                    void close_sm()
+			   void close_sm()
 /*==================================================================*/
 {
     if (SMExist == TRUE)
 	DBM_close(sm_db);
+
+    if (SM2CODEExist == TRUE)
+	DBM_close(sm2code_db);
+
+    if (SMP2SMGExist == TRUE)
+	DBM_close(smp2smg_db);
 }
 
 /*==================================================================*/
-                    char *get_sm(char *cp)
+			char *get_sm(char *cp)
 /*==================================================================*/
 {
     int i, pos;
 
     key.dptr = cp;
     if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
+	fprintf(stderr, "Too long key <%s>.\n", cp);
 	cont_str[0] = '\0';
 	return cont_str;
     }  
@@ -69,14 +82,14 @@ int		SM2CODEExist;
 
     pos = 0;
     for (i = 0; cont_str[i]; i+=12) {
-	if (cont_str[i] == '3' ||
-	    cont_str[i] == '8' ||
-	    cont_str[i] == '9' ||
-	    cont_str[i] == 'b' ||
-	    cont_str[i] == 'e' ||
-	    cont_str[i] == 'f' ||
-	    cont_str[i] == 'm' ||
-	    cont_str[i] == 'n') {
+	if (cont_str[i] == '3' ||	/* 名 */
+	    cont_str[i] == '4' ||	/* 名(形式) */
+	    cont_str[i] == '5' ||	/* 名(形動) */
+	    cont_str[i] == '6' ||	/* 名(転生) */
+	    cont_str[i] == '7' ||	/* サ変 */
+	    cont_str[i] == '9' ||	/* 時詞 */
+	    cont_str[i] == 'a' ||	/* 代名 */
+	    cont_str[i] == 'n') {	/* 固 */
 	    strncpy(cont_str+pos, cont_str+i, 12);
 	    pos += 12;
 	}
@@ -209,40 +222,17 @@ int		SM2CODEExist;
 }
 
 /*==================================================================*/
-                    void init_sm2code()
-/*==================================================================*/
-{
-    if ((sm2code_db = DBM_open(SM2CODE_DB_NAME, O_RDONLY, 0)) == NULL) {
-        /* 
-	   fprintf(stderr, "Can not open Database <%s>.\n", SM2CODE_DB_NAME);
-	   exit(1);
-	*/
-	SM2CODEExist = FALSE;
-    } else {
-	SM2CODEExist = TRUE;
-    }
-}
-
-/*==================================================================*/
-                    void close_sm2code()
-/*==================================================================*/
-{
-    if (SM2CODEExist == TRUE)
-	DBM_close(sm2code_db);
-}
-
-/*==================================================================*/
-                    char *sm2code(char *cp)
+		 char *read_db(char *cp, DBM_FILE db)
 /*==================================================================*/
 {
     key.dptr = cp;
     if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
+	fprintf(stderr, "Too long key <%s>.\n", cp);
 	cont_str[0] = '\0';
 	return cont_str;
     }  
     
-    content = DBM_fetch(sm2code_db, key);
+    content = DBM_fetch(db, key);
     if (content.dptr) {
 	strncpy(cont_str, content.dptr, content.dsize);
 	cont_str[content.dsize] = '\0';
