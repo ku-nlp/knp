@@ -258,6 +258,9 @@ extern int	EX_match_subject;
 	    VerboseLevel = atoi(argv[0]);
 	}
 	/* 格解析用オプション */
+	else if (str_eq(argv[0], "-assign-ga-subj")) {
+	    OptCaseFlag |= OPT_CASE_ASSIGN_GA_SUBJ;
+	}
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}

@@ -3333,7 +3333,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		/* 文脈解析において格フレームを決定した場合 */
 		if (cpm_ptr->decided != CF_DECIDED) {
 		    after_case_analysis(sp, cpm_ptr);
-		    assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
+		    if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
+			assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
+		    }
 
 		    record_match_ex(sp, cpm_ptr);
 		}

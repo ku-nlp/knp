@@ -811,7 +811,9 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
 		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
 		    if (!OptEllipsis || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
+			    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			}
 			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
 			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
@@ -820,7 +822,9 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
 		    }
 		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
-			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
+			    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			}
 		    }
 
 		    if (sp->Best_mgr->cpm[i].decided == CF_DECIDED) {

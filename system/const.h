@@ -112,6 +112,7 @@
 #define OPT_DT		3
 #define	OPT_SERV_FORE	1
 
+#define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
 
 #define	OPT_DISC_OR_CF	1
