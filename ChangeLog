@@ -1,3 +1,19 @@
+2003-09-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule: 態の認識の修正
+
+	* rule/bnst_etc.rule, rule/kakari_uke.rule:
+	連体節が連用の要素以降に係らないようにした
+
+	* rule/case_analysis.rule:
+	格フレームをひく表記を修正
+
+	* rule/bnst_type.phrase:
+	形容詞語幹+「との」を用言として扱うように修正
+
+	* rule/Makefile.am:
+	*.dataをdistターゲットの対象にした
+
 2003-08-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: 決定木用のオプションを整理
