@@ -261,7 +261,7 @@ extern char *smp2smg(char *cpd, int flag);
 extern int sm_fix(BNST_DATA *bp, char *targets);
 extern void merge_smp2smg(BNST_DATA *bp);
 extern void assign_sm_aux_feature(BNST_DATA *bp);
-extern int sm_match_check(char *pat, char *codes);
+extern int sm_match_check(char *pat, char *codes, int expand);
 extern int assign_sm(BNST_DATA *bp, char *cp);
 extern int sm_code_depth(char *cp);
 extern int sm_all_match(char *c, char *target);
@@ -271,6 +271,7 @@ extern int delete_specified_sm(char *sm, char *del);
 extern void fix_sm_person(SENTENCE_DATA *sp);
 extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
@@ -346,6 +347,7 @@ extern float calc_similarity(char *exd, char *exp, int expand);
 extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 extern void overflowed_function(char *str, int max, char *function);
+extern char *get_most_similar_code(char *exd, char *exp);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);
