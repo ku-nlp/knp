@@ -33,7 +33,7 @@ packagesrcdir=`cd $srcdir && pwd`
 if test "$with_svm" = yes; then
     SUBDIRS="svm $SUBDIRS"
     SVM_CFLAGS="-I$packagesrcdir/svm -DUSE_SVM"
-    KNP_LIBS="$KNP_LIBS $packagesrcdir/svm/libsvm.la -ltinysvm"
+    KNP_LIBS="$KNP_LIBS $packagesrcdir/svm/libsvm.la -ltinysvm -lstdc++"
     LIBSVM_VERSION_INFO="0:0:1"
     AC_SUBST(LIBSVM_VERSION_INFO)
 fi
