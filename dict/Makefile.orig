@@ -95,11 +95,16 @@ database_ipal :
 		cat cf/ipalv.dat cf/ipals.dat cf/ipala.dat | src/ipal2scase.pl >> scase/scase.dat; \
 	fi
 
+database_cf :
+	if [ -f cf/ipalv.dat ]; then \
+		$(IPAL_CMD) cf/ipal.idx cf/ipal.dat < cf/ipalv.dat; \
+	fi
+
 #----------------------------------------
 #	Target(2): make_hashdb
 #----------------------------------------
 
-make_hashdb : hashdb_bgh hashdb_sm hashdb_scase hashdb_ipal
+make_hashdb : hashdb_bgh hashdb_sm hashdb_scase
 
 hashdb_sm : hashdb_word2code hashdb_sm2code hashdb_code2sm hashdb_smp2smg
 
@@ -145,7 +150,7 @@ hashdb_rsk :
 		mv $(TEMPDIR)/rsk rsk/rsk$(DBEXT); \
 	fi
 
-hashdb_ipal :
+hashdb_cf :
 	if [ -f cf/ipal.idx ]; then \
 		$(MAKE_DB) $(TEMPDIR)/ipal -append / < cf/ipal.idx; \
 		mv $(TEMPDIR)/ipal cf/ipal$(DBEXT); \
