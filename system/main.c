@@ -541,7 +541,14 @@ char *Opt_jumanrc = NULL;
 	/* 本格的解析 */
 	/**************/
 
-	if (OptInput == OPT_PARSED) goto PARSED;
+	if (OptInput == OPT_PARSED) {
+	    if (OptAnalysis == OPT_CASE2 ||
+		OptAnalysis == OPT_DISC) {
+		Best_mgr.score = -10000;
+		call_case_analysis(Best_mgr.dpnd);
+	    }
+	    goto PARSED;
+	}
 
 	calc_dpnd_matrix();			/* 依存可能性計算 */
 	if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_DPND, 0);
