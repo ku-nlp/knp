@@ -107,7 +107,15 @@ int		ScaseDicExist;
 	/* まず付属語を固定，自立語を減らしていく
 	   ★ case_ipal と同じにする */
 
-	end = ptr->head_ptr - ptr->mrph_ptr;
+	/* 形容詞「〜的」の場合、「的」まで含めて検索する */
+	if (!strcmp(vtype, "形") && 
+	    ptr->mrph_ptr + ptr->mrph_num - 1 > ptr->head_ptr && 
+	    !strcmp((ptr->head_ptr + 1)->Goi, "的だ")) {
+	    end = ptr->head_ptr - ptr->mrph_ptr + 1;
+	}
+	else {
+	    end = ptr->head_ptr - ptr->mrph_ptr;
+	}
 
 	for (strt = 0 ; strt <= end; strt++) {
 	    *str_buffer = '\0';
