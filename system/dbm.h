@@ -8,13 +8,6 @@
 
 #ifdef GDBM
 
-#ifdef BERKELEY_DB_V2
-
-#include <db.h>
-typedef DB *DBM_FILE;
-
-#endif
-
 /*  for GDBM  */
 
 #include <gdbm.h>
