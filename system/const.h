@@ -122,6 +122,7 @@
 #define	OPT_DISC_BEST	2
 #define	OPT_DISC_CLASS_ONLY	4
 #define	OPT_DISC_FLAT	8
+#define	OPT_DISC_TWIN_CAND	16
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
@@ -903,6 +904,56 @@ typedef struct ellipsis_svm_features {
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
 } E_SVM_FEATURES;
+
+typedef struct ellipsis_twin_cand_svm_features {
+    float	c1_similarity;
+    float	c2_similarity;
+
+    int		c1_pp[PP_NUMBER];
+    int		c1_location[LOC_NUMBER];
+    int		c1_fs_flag;
+    int		c1_topic_flag;
+    int		c1_no_topic_flag;
+    int		c1_in_cnoun_flag;
+    int		c1_subject_flag;
+    int		c1_n_modify_flag;
+    int		c1_dep_mc_flag;
+    int		c1_dep_p_level[6];
+    int		c1_prev_p_flag;
+    int		c1_get_over_p_flag;
+    int		c1_sm_none_flag;
+    int		c1_extra_tag[3];
+
+    int		c2_pp[PP_NUMBER];
+    int		c2_location[LOC_NUMBER];
+    int		c2_fs_flag;
+    int		c2_topic_flag;
+    int		c2_no_topic_flag;
+    int		c2_in_cnoun_flag;
+    int		c2_subject_flag;
+    int		c2_n_modify_flag;
+    int		c2_dep_mc_flag;
+    int		c2_dep_p_level[6];
+    int		c2_prev_p_flag;
+    int		c2_get_over_p_flag;
+    int		c2_sm_none_flag;
+    int		c2_extra_tag[3];
+
+    int		p_pp[3];
+    int		p_voice[3];
+    int		p_type[3];
+    int		p_sahen_flag;
+    int		p_cf_subject_flag;
+    int		p_cf_sentence_flag;
+    int		p_n_modify_flag;
+} E_TWIN_CAND_SVM_FEATURES;
+
+typedef struct ellipsis_candidate {
+    E_FEATURES	*ef;
+    SENTENCE_DATA	*s;
+    TAG_DATA	*tp;
+    char	*tag;
+} E_CANDIDATE;
 
 /*====================================================================
                                END

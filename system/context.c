@@ -55,6 +55,10 @@ PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
 PALIST **ClauseList;		/* 各文の主節 */
 int ClauseListMax = 0;
 
+E_CANDIDATE *ante_cands;
+int cand_num = 0;
+int cand_num_max = 0;
+
 extern int	EX_match_subject;
 
 #define CASE_ORDER_MAX	3
@@ -1100,6 +1104,31 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 }
 
 /*==================================================================*/
+   char *TwinCandSvmFeatures2String(E_TWIN_CAND_SVM_FEATURES *esf)
+/*==================================================================*/
+{
+    int max, i, prenum;
+    char *buffer, *sbuf;
+
+    prenum = 2;
+
+    max = (sizeof(E_TWIN_CAND_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
+    sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
+			       "TwinCandSvmFeatures2String");
+    buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
+				 "TwinCandSvmFeatures2String");
+
+    sprintf(buffer, "1:%.5f 2:%.5f", esf->c1_similarity, esf->c2_similarity);
+    for (i = prenum + 1; i <= max; i++) {
+	sprintf(sbuf, " %d:%d", i, *(esf->c1_pp + i - prenum - 1));
+	strcat(buffer, sbuf);
+    }
+    free(sbuf);
+
+    return buffer;
+}
+
+/*==================================================================*/
 void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, char *ecp, 
 				       char *word, int pp, char *sid, int num, int loc)
 /*==================================================================*/
@@ -1120,6 +1149,61 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d:%s", 
 	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
 	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, ecp);
+    assign_cfeature(&(em_ptr->f), buffer);
+    free(buffer);
+}
+
+/*==================================================================*/
+void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp, 
+				       E_CANDIDATE *c1, E_CANDIDATE *c2)
+/*==================================================================*/
+{
+    char *buffer, *w1, *w2, *p1, *p2, *sid1, *sid2;
+    int n1, n2;
+
+    if (c1->tp) {
+	if (c1->tp->head_ptr->Goi == NULL) {
+	    return;
+	}
+	else {
+	    w1 = c1->tp->head_ptr->Goi;
+	    p1 = pp_code_to_kstr(c1->ef->c_pp);
+	    sid1 = c1->s->KNPSID ? c1->s->KNPSID + 5 : "?";
+	    n1 = c1->tp->num;
+	}
+    }
+    else {
+	w1 = c1->tag;
+	sid1 = "?";
+	n1 = -1;
+    }
+
+    if (c2->tp) {
+	if (c2->tp->head_ptr->Goi == NULL) {
+	    return;
+	}
+	else {
+	    w2 = c2->tp->head_ptr->Goi;
+	    sid2 = c2->s->KNPSID ? c2->s->KNPSID + 5 : "?";
+	    n2 = c2->tp->num;
+	}
+    }
+    else {
+	w2 = c2->tag;
+	sid2 = "?";
+	n2 = -1;
+    }
+
+    buffer = (char *)malloc_data(strlen(ecp) + 128 + strlen(w1) + strlen(w2), 
+				 "TwinCandSvmFeaturesString2FeatureString");
+    sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d;%s;%s;%s;%d:%s", 
+	    pp_code_to_kstr(c1->ef->p_pp), w1, 
+	    c1->ef->c_location >= 0 ? loc_code_to_str(c1->ef->c_location) : "NONE", 
+	    sid1, n1, 
+	    w2, 
+	    c2->ef->c_location >= 0 ? loc_code_to_str(c2->ef->c_location) : "NONE", 
+	    sid2, n2, 
+	    ecp);
     assign_cfeature(&(em_ptr->f), buffer);
     free(buffer);
 }
@@ -1200,6 +1284,139 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
     f->p_cf_subject_flag = ef->p_cf_subject_flag;
     f->p_cf_sentence_flag = ef->p_cf_sentence_flag;
     f->p_n_modify_flag = ef->p_n_modify_flag;
+    /* f->p_dep_p_level[0] = str_eq(ef->p_dep_p_level, "A-") ? 1 : 0;
+    f->p_dep_p_level[1] = str_eq(ef->p_dep_p_level, "A") ? 1 : 0;
+    f->p_dep_p_level[2] = str_eq(ef->p_dep_p_level, "B-") ? 1 : 0;
+    f->p_dep_p_level[3] = str_eq(ef->p_dep_p_level, "B") ? 1 : 0;
+    f->p_dep_p_level[4] = str_eq(ef->p_dep_p_level, "B+") ? 1 : 0;
+    f->p_dep_p_level[5] = str_eq(ef->p_dep_p_level, "C") ? 1 : 0; */
+
+    /* f->c_ac = ef->c_ac; */
+
+    return f;
+}
+
+/*==================================================================*/
+E_TWIN_CAND_SVM_FEATURES *MakeTwinCandSvmFeatures(E_FEATURES *ef1, E_FEATURES *ef2)
+/*==================================================================*/
+{
+    E_TWIN_CAND_SVM_FEATURES *f;
+    int i;
+
+    f = (E_TWIN_CAND_SVM_FEATURES *)malloc_data(sizeof(E_TWIN_CAND_SVM_FEATURES), "MakeTwinCandSvmFeatures");
+
+    /* ef1 */
+    f->c1_similarity = ef1->similarity;
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	f->c1_pp[i] = ef1->c_pp == i ? 1 : 0;
+    }
+
+    f->c1_location[0] = ef1->c_location == LOC_PARENTV ? 1 : 0;
+    f->c1_location[1] = ef1->c_location == LOC_PARENTV_MC ? 1 : 0;
+    f->c1_location[2] = ef1->c_location == LOC_CHILDPV ? 1 : 0;
+    f->c1_location[3] = ef1->c_location == LOC_CHILDV ? 1 : 0;
+    f->c1_location[4] = ef1->c_location == LOC_PARENTNPARENTV ? 1 : 0;
+    f->c1_location[5] = ef1->c_location == LOC_PARENTNPARENTV_MC ? 1 : 0;
+    f->c1_location[6] = ef1->c_location == LOC_PV ? 1 : 0;
+    f->c1_location[7] = ef1->c_location == LOC_PV_MC ? 1 : 0;
+    f->c1_location[8] = ef1->c_location == LOC_PARENTVPARENTV ? 1 : 0;
+    f->c1_location[9] = ef1->c_location == LOC_PARENTVPARENTV_MC ? 1 : 0;
+    f->c1_location[10] = ef1->c_location == LOC_MC ? 1 : 0;
+    f->c1_location[11] = ef1->c_location == LOC_SC ? 1 : 0;
+    f->c1_location[12] = ef1->c_location == LOC_PRE_OTHERS ? 1 : 0;
+    f->c1_location[13] = ef1->c_location == LOC_POST_OTHERS ? 1 : 0;
+    f->c1_location[14] = ef1->c_location == LOC_S1_MC ? 1 : 0;
+    f->c1_location[15] = ef1->c_location == LOC_S1_SC ? 1 : 0;
+    f->c1_location[16] = ef1->c_location == LOC_S1_OTHERS ? 1 : 0;
+    f->c1_location[17] = ef1->c_location == LOC_S2_MC ? 1 : 0;
+    f->c1_location[18] = ef1->c_location == LOC_S2_SC ? 1 : 0;
+    f->c1_location[19] = ef1->c_location == LOC_S2_OTHERS ? 1 : 0;
+    f->c1_location[20] = ef1->c_location == LOC_OTHERS ? 1 : 0;
+
+    f->c1_fs_flag = ef1->c_fs_flag;
+    f->c1_topic_flag = ef1->c_topic_flag;
+    f->c1_no_topic_flag = ef1->c_no_topic_flag;
+    f->c1_in_cnoun_flag = ef1->c_in_cnoun_flag;
+    f->c1_subject_flag = ef1->c_subject_flag;
+    f->c1_dep_mc_flag = ef1->c_dep_mc_flag;
+    f->c1_n_modify_flag = ef1->c_n_modify_flag;
+    f->c1_dep_p_level[0] = str_eq(ef1->c_dep_p_level, "A-") ? 1 : 0;
+    f->c1_dep_p_level[1] = str_eq(ef1->c_dep_p_level, "A") ? 1 : 0;
+    f->c1_dep_p_level[2] = str_eq(ef1->c_dep_p_level, "B-") ? 1 : 0;
+    f->c1_dep_p_level[3] = str_eq(ef1->c_dep_p_level, "B") ? 1 : 0;
+    f->c1_dep_p_level[4] = str_eq(ef1->c_dep_p_level, "B+") ? 1 : 0;
+    f->c1_dep_p_level[5] = str_eq(ef1->c_dep_p_level, "C") ? 1 : 0;
+    f->c1_prev_p_flag = ef1->c_prev_p_flag;
+    f->c1_get_over_p_flag = ef1->c_get_over_p_flag;
+    f->c1_sm_none_flag = ef1->c_sm_none_flag;
+    f->c1_extra_tag[0] = ef1->c_extra_tag == 0 ? 1 : 0;
+    f->c1_extra_tag[1] = ef1->c_extra_tag == 1 ? 1 : 0;
+    f->c1_extra_tag[2] = ef1->c_extra_tag == 2 ? 1 : 0;
+
+    /* ef2 */
+    f->c2_similarity = ef2->similarity;
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	f->c2_pp[i] = ef2->c_pp == i ? 1 : 0;
+    }
+
+    f->c2_location[0] = ef2->c_location == LOC_PARENTV ? 1 : 0;
+    f->c2_location[1] = ef2->c_location == LOC_PARENTV_MC ? 1 : 0;
+    f->c2_location[2] = ef2->c_location == LOC_CHILDPV ? 1 : 0;
+    f->c2_location[3] = ef2->c_location == LOC_CHILDV ? 1 : 0;
+    f->c2_location[4] = ef2->c_location == LOC_PARENTNPARENTV ? 1 : 0;
+    f->c2_location[5] = ef2->c_location == LOC_PARENTNPARENTV_MC ? 1 : 0;
+    f->c2_location[6] = ef2->c_location == LOC_PV ? 1 : 0;
+    f->c2_location[7] = ef2->c_location == LOC_PV_MC ? 1 : 0;
+    f->c2_location[8] = ef2->c_location == LOC_PARENTVPARENTV ? 1 : 0;
+    f->c2_location[9] = ef2->c_location == LOC_PARENTVPARENTV_MC ? 1 : 0;
+    f->c2_location[10] = ef2->c_location == LOC_MC ? 1 : 0;
+    f->c2_location[11] = ef2->c_location == LOC_SC ? 1 : 0;
+    f->c2_location[12] = ef2->c_location == LOC_PRE_OTHERS ? 1 : 0;
+    f->c2_location[13] = ef2->c_location == LOC_POST_OTHERS ? 1 : 0;
+    f->c2_location[14] = ef2->c_location == LOC_S1_MC ? 1 : 0;
+    f->c2_location[15] = ef2->c_location == LOC_S1_SC ? 1 : 0;
+    f->c2_location[16] = ef2->c_location == LOC_S1_OTHERS ? 1 : 0;
+    f->c2_location[17] = ef2->c_location == LOC_S2_MC ? 1 : 0;
+    f->c2_location[18] = ef2->c_location == LOC_S2_SC ? 1 : 0;
+    f->c2_location[19] = ef2->c_location == LOC_S2_OTHERS ? 1 : 0;
+    f->c2_location[20] = ef2->c_location == LOC_OTHERS ? 1 : 0;
+
+    f->c2_fs_flag = ef2->c_fs_flag;
+    f->c2_topic_flag = ef2->c_topic_flag;
+    f->c2_no_topic_flag = ef2->c_no_topic_flag;
+    f->c2_in_cnoun_flag = ef2->c_in_cnoun_flag;
+    f->c2_subject_flag = ef2->c_subject_flag;
+    f->c2_dep_mc_flag = ef2->c_dep_mc_flag;
+    f->c2_n_modify_flag = ef2->c_n_modify_flag;
+    f->c2_dep_p_level[0] = str_eq(ef2->c_dep_p_level, "A-") ? 1 : 0;
+    f->c2_dep_p_level[1] = str_eq(ef2->c_dep_p_level, "A") ? 1 : 0;
+    f->c2_dep_p_level[2] = str_eq(ef2->c_dep_p_level, "B-") ? 1 : 0;
+    f->c2_dep_p_level[3] = str_eq(ef2->c_dep_p_level, "B") ? 1 : 0;
+    f->c2_dep_p_level[4] = str_eq(ef2->c_dep_p_level, "B+") ? 1 : 0;
+    f->c2_dep_p_level[5] = str_eq(ef2->c_dep_p_level, "C") ? 1 : 0;
+    f->c2_prev_p_flag = ef2->c_prev_p_flag;
+    f->c2_get_over_p_flag = ef2->c_get_over_p_flag;
+    f->c2_sm_none_flag = ef2->c_sm_none_flag;
+    f->c2_extra_tag[0] = ef2->c_extra_tag == 0 ? 1 : 0;
+    f->c2_extra_tag[1] = ef2->c_extra_tag == 1 ? 1 : 0;
+    f->c2_extra_tag[2] = ef2->c_extra_tag == 2 ? 1 : 0;
+
+    /* ガ,ヲ,ニ */
+    for (i = 0; i < 3; i++) {
+	f->p_pp[i] = ef1->p_pp == i+1 ? 1 : 0;
+    }
+    f->p_voice[0] = ef1->p_voice & VOICE_SHIEKI ? 1 : 0;
+    f->p_voice[1] = ef1->p_voice & VOICE_UKEMI ? 1 : 0;
+    f->p_voice[2] = ef1->p_voice & VOICE_MORAU ? 1 : 0;
+    f->p_type[0] = ef1->p_type == 1 ? 1 : 0;
+    f->p_type[1] = ef1->p_type == 2 ? 1 : 0;
+    f->p_type[2] = ef1->p_type == 3 ? 1 : 0;
+    f->p_sahen_flag = ef1->p_sahen_flag;
+    f->p_cf_subject_flag = ef1->p_cf_subject_flag;
+    f->p_cf_sentence_flag = ef1->p_cf_sentence_flag;
+    f->p_n_modify_flag = ef1->p_n_modify_flag;
     /* f->p_dep_p_level[0] = str_eq(ef->p_dep_p_level, "A-") ? 1 : 0;
     f->p_dep_p_level[1] = str_eq(ef->p_dep_p_level, "A") ? 1 : 0;
     f->p_dep_p_level[2] = str_eq(ef->p_dep_p_level, "B-") ? 1 : 0;
@@ -1403,6 +1620,126 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
+void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
+/*==================================================================*/
+{
+    while (cand_num >= cand_num_max) {
+	if (cand_num_max == 0) {
+	    cand_num_max = 1;
+	    ante_cands = (E_CANDIDATE *)malloc_data(sizeof(E_CANDIDATE) * cand_num_max, 
+						  "push_cand");
+	}
+	else {
+	    ante_cands = (E_CANDIDATE *)realloc_data(ante_cands, 
+						     sizeof(E_CANDIDATE) * (cand_num_max <<= 1), 
+						     "push_cand");
+	}
+    }
+
+    (ante_cands + cand_num)->ef = ef;
+    (ante_cands + cand_num)->s = s;
+    (ante_cands + cand_num)->tp = tp;
+    (ante_cands + cand_num)->tag = tag;
+    cand_num++;
+}
+
+/*==================================================================*/
+			  void clear_cands()
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < cand_num; i++) {
+	free((ante_cands + i)->ef);
+    }
+    cand_num = 0;
+}
+
+/*==================================================================*/
+ int classify_twin_candidate(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
+			     CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    E_TWIN_CAND_SVM_FEATURES *f;
+    int i, j, *vote, max = 0, max_num = 0;
+    char *cp, feature_buffer[DATA_LEN];
+    float score;
+
+    if (cand_num == 0) {
+	return 0;
+    }
+    else if (cand_num > 1) {
+	vote = (int *)malloc_data(sizeof(int) * cand_num, "classify_twin_candidate");
+	for (i = 0; i < cand_num; i++) {
+	    vote[i] = 0;
+	}
+
+	for (i = 0; i < cand_num - 1; i++) {
+	    for (j = i + 1; j < cand_num; j++) {
+		f = MakeTwinCandSvmFeatures((ante_cands + i)->ef, (ante_cands + j)->ef);
+		cp = TwinCandSvmFeatures2String(f);
+
+		if (OptLearn == TRUE) {
+		    /* 学習FEATURE */
+		    TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
+		}
+		else {
+		    score = svm_classify(cp, (ante_cands + i)->ef->p_pp);
+
+		    if (score > 0) {
+			vote[i]++;
+		    }
+		    else {
+			vote[j]++;
+		    }
+		}
+
+		free(f);
+		free(cp);
+	    }
+	}
+
+	if (OptLearn == TRUE) {
+	    return 0;
+	}
+
+	/* voting */
+	for (i = 0; i < cand_num; i++) {
+	    if (max < vote[i]) {
+		max = vote[i];
+		max_num = i;
+	    }
+
+	    /* 省略候補 */
+	    sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", 
+		    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+		    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+		    loc_code_to_str((ante_cands + i)->ef->c_location), 
+		    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+		    (ante_cands + i)->ef->similarity, (float)vote[i]/cand_num);
+	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	}
+    }
+    else {
+	/* cand_num == 1 */
+	if (OptLearn == TRUE) {
+	    return 0;
+	}
+    }
+
+    /* 決定 */
+    maxscore = (float)max/cand_num;
+    maxrawscore = (ante_cands + max_num)->ef->similarity;
+    maxs = (ante_cands + max_num)->s;
+    maxpos = (ante_cands + max_num)->ef->pos;
+    maxi = (ante_cands + max_num)->tp ? (ante_cands + max_num)->tp->num : -1;
+    maxtag = (ante_cands + max_num)->tag;
+
+    free(vote);
+    return 1;
+}
+
+/*==================================================================*/
 void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 							   CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
 							   int tag, CASE_FRAME *cf_ptr, int n)
@@ -1414,6 +1751,12 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
     char *ecp, feature_buffer[DATA_LEN];
 
     ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	push_cand(ef, NULL, NULL, ExtraTags[tag]);
+	return;
+    }
+
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
 
@@ -1447,6 +1790,12 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     float score;
 
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
+
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	push_cand(ef, s, bp, NULL);
+	return;
+    }
+
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
 
@@ -1512,10 +1861,17 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 	char *ecp;
 
 	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+
+	if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	    push_cand(ef, NULL, NULL, ExtraTags[tag]);
+	    return;
+	}
+
 	esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
 	ecp = EllipsisSvmFeatures2String(esf);
 	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 					  "?", -1, -1);
+
 	free(ef);
 	free(esf);
 	free(ecp);
@@ -1538,6 +1894,12 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     /* 学習FEATURE */
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
+
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	push_cand(ef, s, bp, NULL);
+	return;
+    }
+
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
     EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
@@ -1749,7 +2111,7 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 /*==================================================================*/
 {
     /* 学習用featureを出力するときは候補をすべて出す */
-    if (OptLearn == TRUE) {
+    if (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	return 0;
     }
     /* 学習器の出力がpositiveなら 1 */
@@ -2365,15 +2727,19 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* 例外タグ
-    for (i = 0; ExtraTags[i][0]; i++) {
-	EllipsisDetectForVerbSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-						  i, cf_ptr, n);
+    /* 例外タグ */
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	for (i = 0; ExtraTags[i][0]; i++) {
+	    EllipsisDetectForVerbSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						      i, cf_ptr, n);
+	}
+	/*
+	if (ScoreCheck(cf_ptr, n)) {
+	    goto EvalAntecedent;
+	}
+	*/
     }
-    if (ScoreCheck(cf_ptr, n)) {
-	goto EvalAntecedent;
-    }
-    */
+
 
     /* 予備実験で決めた順番で探す */
 
@@ -2394,7 +2760,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
 
     for (j = 0; LocationOrder[cf_ptr->pp[n][0]][j] != END_M && 
-	     (OptLearn == TRUE || LocationLimit[cf_ptr->pp[n][0]] == END_M || j < LocationLimit[cf_ptr->pp[n][0]]); j++) {
+	     (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND) || 
+	      LocationLimit[cf_ptr->pp[n][0]] == END_M || j < LocationLimit[cf_ptr->pp[n][0]]); j++) {
 	switch(LocationOrder[cf_ptr->pp[n][0]][j]) {
 	case LOC_PARENTV_MC:
 	    SearchParentV(cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, 1);
@@ -2514,6 +2881,14 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	memset(Bcheck, 0, sizeof(int) * TAG_MAX);
     }
     */
+
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
+	    clear_cands();
+	    goto EvalAntecedent;
+	}
+	clear_cands();
+    }
 
     /* 閾値を越えるものが見つからなかった */
     if (!ScoreCheck(cf_ptr, n)) {
@@ -3238,7 +3613,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    if (check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
 		continue;
 	    }
-	    /* 固有名詞は省略解析しない */
+	    /* 固有名詞は省略解析しない (用言に対して) */
 	    else if (cpm_ptr->cf.type == CF_PRED && 
 		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
 		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "地名") || 

@@ -176,6 +176,38 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscMethod = OPT_SVM;
 	}
+	else if (str_eq(argv[0], "-anaphora-svm-best")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-anaphora-svm-best-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-anaphora-svm-flat")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_FLAT;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-anaphora-svm-flat-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_FLAT;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-anaphora-svm-twin")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
+	    OptDiscMethod = OPT_SVM;
+	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -291,18 +323,10 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
-	else if (str_eq(argv[0], "-ellipsis-best")) {
+	else if (str_eq(argv[0], "-ellipsis-or-cf-twin")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	}
-	else if (str_eq(argv[0], "-ellipsis-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-ellipsis-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
+	    OptDiscFlag |= OPT_DISC_OR_CF;
+	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
 	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-sototh")) {
