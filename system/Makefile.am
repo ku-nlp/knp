@@ -36,7 +36,6 @@ knp_SOURCES = \
 	para_dpnd.c \
 	para_relation.c \
 	para_revision.c \
-	para_similarity.c \
 	path.h \
 	proper.c \
 	quote.c \
@@ -53,7 +52,8 @@ knp_SOURCES = \
 	noun.c \
 	bind_juman.c \
 	thesaurus.c \
-	hash.c
+	hash.c \
+	bnst_compare.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 
