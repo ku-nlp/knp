@@ -1,6 +1,8 @@
 SUBDIRS = .
 
-EXTRA_DIST = VERSION
+EXTRA_DIST = \
+	VERSION \
+	jumanrc.sample
 
 INCLUDES = @JUMAN_CFLAGS@
 
