@@ -696,15 +696,22 @@ extern int	EX_match_subject;
 
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
+#ifndef _WIN32
     signal(SIGALRM, timeout_function);
     alarm(0);
     alarm(ParseTimeout);
+#endif
     if (detect_dpnd_case_struct(sp) == FALSE) {
 	ErrorComment = strdup("Cannot detect dependency structure");
 	when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
 					   すべて文節が隣に係ると扱う */
     }
+    else if (OptCheck == TRUE) {
+	check_candidates(sp);
+    }
+#ifndef _WIN32
     alarm(0);
+#endif
 
 PARSED:
     /* 係り受け情報を bnst 構造体に記憶 */
@@ -719,10 +726,6 @@ PARSED:
     ne_para_analysis(sp);
 
     memo_by_program(sp);	/* メモへの書き込み */
-
-    /* 係り先候補数チェック用 */
-    if (OptCheck == TRUE)
-	check_candidates(sp);
 
     return TRUE;
 }
@@ -825,7 +828,6 @@ PARSED:
 	success = 0;
 
 	if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
-	if (flag == FALSE) continue;
 
 	/************/
 	/* 文脈解析 */
@@ -835,6 +837,8 @@ PARSED:
 	    make_dpnd_tree(sp);
 	    DiscourseAnalysis(sp);
 	}
+
+	if (flag == FALSE) continue;
 
 	/* entity 情報の feature の作成 */
 	if (OptDisplay  == OPT_ENTITY) {
@@ -856,6 +860,7 @@ PARSED:
     }
 }
 
+#ifndef _WIN32
 /*==================================================================*/
 			  void server_mode()
 /*==================================================================*/
@@ -1188,7 +1193,7 @@ PARSED:
     close(fd);
     exit(0);
 }
-
+#endif
 
 /*==================================================================*/
 		   int main(int argc, char **argv)
@@ -1204,13 +1209,17 @@ PARSED:
 	init_all();
 	knp_main();
 	close_all();
-    } else if (OptMode == SERVER_MODE) {
+    }
+#ifndef _WIN32
+    else if (OptMode == SERVER_MODE) {
 	init_all();
 	server_mode();
 	close_all();
-    } else if (OptMode == CLIENT_MODE) {
+    }
+    else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
+#endif
 
     exit(0);
 }
