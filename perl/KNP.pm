@@ -1,5 +1,5 @@
 #
-# KNPをperlから呼び出すライブラリ (Ver 0.1)
+# KNP を perl から呼び出すライブラリ
 #
 #		Masatoshi Tsuchiya (tsuchiya@pine.kuee.kyoto-u.ac.jp)
 #		Sadao Kurohasi (kuro@i.kyoto-u.ac.jp)
@@ -37,6 +37,7 @@
 #                 {parent}	: i番目の文節の係り先
 #                 {dpndtype}	: i番目の文節の係りのタイプ(D,P,I,A)
 #                 {child}	: i番目の文節に係っている文節リスト
+#                 {fstring}	: i番目の文節の全てのfeature
 #                 {feature}[j]	: i番目の文節のj番目のfeature
 #
 # 使用例
@@ -54,28 +55,26 @@ require 5.000;
 use FileHandle;
 use Juman;
 use strict;
-use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST );
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST $VERSION );
 
 
 # プログラム内部で利用される大域変数
-$COMMAND = "";				# KNP のパス名
-if( $ENV{OS_TYPE} eq "Solaris" ){
-    $COMMAND = "/share/tool/knp/system/knp";
-} else {
-    die "Only Solaris is supported now !";
-}
+$COMMAND      = "/share/tool/knp/system/knp";
+$HOST         = "grape";		# KNP サーバーのホスト名 ( サーバーを利用しない場合は空にしておく )
 $KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
 $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
-$HOST         = "grape";
-
+$VERSION      = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 
 sub BEGIN {
     # 出力が二重にならないようにするためのおまじない
     STDOUT->autoflush(1);
 }
+
+
+sub Version { $VERSION; }
 
 
 sub new {
@@ -235,8 +234,8 @@ sub parse {
 		$this->{BNST}[$bnst_num]{dpndtype} = $2;
 		if( ( $f_string ) = /^ (.+)$/ ){
 		    # 文節のfeature
-		    $f_string =~ s/^\<//;
-		    $f_string =~ s/\>$//g;
+		    $this->{BNST}[$bnst_num]{fstring} = $f_string;
+		    $f_string =~ s/^\<|\>$//g;
 		    @{$this->{BNST}[$bnst_num]{feature}} = split(/\>\</, $f_string);
 		} else {
 		    @{$this->{BNST}[$bnst_num]{feature}} = ();
