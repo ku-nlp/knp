@@ -116,6 +116,11 @@ extern GeneralRuleType *GeneralRuleArray;
 extern int GeneralRuleNum;
 extern int GeneralRuleMax;
 
+/* Server Client extention */
+extern FILE *Infp;
+extern FILE *Outfp;
+extern int   OptMode;
+
 /*====================================================================
 				 END
 ====================================================================*/

@@ -11,9 +11,6 @@
 
 int 	para_rel_matrix[PARA_MAX][PARA_MAX];
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
-
 static char *RESULT[] = {
     "重なりなし", "少し重なる", "前で重なる", "後で重なる",  "重複",
     "前部の修正", "含まれる前", "含まれる後", "誤り"};

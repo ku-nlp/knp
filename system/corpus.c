@@ -8,11 +8,6 @@
 ====================================================================*/
 #include "knp.h"
 
-/* Server Client extention */
-extern FILE  *Infp;
-extern FILE  *Outfp;
-extern int   OptMode;
-
 static char buffer[DATA_LEN];
 char CorpusComment[BNST_MAX][DATA_LEN];
 static DBM_FILE c_db, cc_db, op_db, op_sm_db, cp_db, wc_db, c_temp_db;

@@ -16,10 +16,6 @@
 
 extern char *check_feature();
 
-/* Server Client extention */
-extern FILE *Infp;
-extern FILE *Outfp;
-
 char pos2symbol(char *hinshi, char *bunrui)
 {
     if (!strcmp(hinshi, "ÆÃ¼ì")) return ' ';

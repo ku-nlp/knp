@@ -12,9 +12,6 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
-
 /*==================================================================*/
 		       void assign_dpnd_rule()
 /*==================================================================*/

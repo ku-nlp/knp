@@ -226,24 +226,6 @@ char *Opt_jumanrc = NULL;
 	    */
 	    OptOptionalCase = argv[0];
 	}
-	else if (str_eq(argv[0], "-mrule")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EtcRuleFile = argv[0];
-	    init_etc_rule(IsMrphRule);
-	}
-	else if (str_eq(argv[0], "-mstring")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EtcRuleFile = argv[0];
-	    init_etc_rule(IsMrph2Rule);
-	}
-	else if (str_eq(argv[0], "-brule")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EtcRuleFile = argv[0];
-	    init_etc_rule(IsBnstRule);
-	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();

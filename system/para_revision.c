@@ -17,9 +17,6 @@
 extern int D_check_array[BNST_MAX];
 extern int D_found_array[BNST_MAX];
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
-
 static int judge_matrix[4][4] = {
     {1, 1, 0, 1},
     {1, 1, 0, 1},

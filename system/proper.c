@@ -8,11 +8,6 @@
 ====================================================================*/
 #include "knp.h"
 
-/* Server Client extention */
-extern FILE  *Infp;
-extern FILE  *Outfp;
-extern int   OptMode;
-
 DBM_FILE	proper_db = NULL, properc_db = NULL, propercase_db = NULL;
 int		PROPERExist = 0;
 

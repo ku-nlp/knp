@@ -8,11 +8,6 @@
 ====================================================================*/
 #include "knp.h"
 
-/* Server Client extention */
-extern FILE  *Infp;
-extern FILE  *Outfp;
-extern int   OptMode;
-
 void CheckCandidates()
 {
     int i, j;

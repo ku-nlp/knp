@@ -12,9 +12,6 @@
 int D_check_array[BNST_MAX];
 int D_found_array[BNST_MAX];
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
-
 /*==================================================================*/
 		    int check_stop_extend(int num)
 /*==================================================================*/

@@ -35,8 +35,6 @@ int	EX_match_exact = 12;
 
 int	Thesaurus = USE_BGH;
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
 extern float ntt_code_match(char *c1, char *c2);
 
 /*==================================================================*/

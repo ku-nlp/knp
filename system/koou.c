@@ -12,9 +12,6 @@
 int 	Koou_matrix[BNST_MAX][BNST_MAX];
 int	koou_m_p[BNST_MAX];
 
-extern FILE  *Infp;
-extern FILE  *Outfp;
-
 /*==================================================================*/
                          void init_koou() 
 /*==================================================================*/

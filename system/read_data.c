@@ -9,11 +9,6 @@
 ====================================================================*/
 #include "knp.h"
 
-/* Server Client extention */
-extern FILE  *Infp;
-extern FILE  *Outfp;
-extern int   OptMode;
-
 int Bnst_start[MRPH_MAX];
 int ArticleID = 0;
 int preArticleID = 0;
