@@ -501,6 +501,47 @@ extern QUOTE_DATA quote_data;
     return Para_num;
 }
 
+
+/*==================================================================*/
+		 int farthest_child(BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    /* 一番遠い子供の文節番号を返す */
+
+    int i;
+    BNST_DATA	*loop_ptr = b_ptr;
+    
+    while (loop_ptr->child[0]) {
+	for (i = 0; loop_ptr->child[i]; i++);
+	loop_ptr = loop_ptr->child[i-1];
+    }
+    
+    return (loop_ptr - sp->bnst_data);
+}
+
+/*==================================================================*/
+			void para_recovery()
+/*==================================================================*/
+{
+    /* 並列構造の情報の再現 */
+
+    int		i;
+    BNST_DATA	*b_ptr;
+
+    Para_num = 0;
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	if (b_ptr->dpnd_type == 'P') {
+	    sp->para_data[Para_num].L_B = i;
+	    sp->para_data[Para_num].R = b_ptr->dpnd_head;
+	    sp->para_data[Para_num].max_path[0] = 
+		farthest_child(b_ptr);
+	    sp->para_data[Para_num].status = 'n';
+	    Para_num++;
+	}
+    }
+    detect_para_relation();
+}
+
 /*====================================================================
                                END
 ====================================================================*/

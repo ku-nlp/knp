@@ -610,6 +610,7 @@ char *Opt_jumanrc = NULL;
 
 	/* 係り受け情報を bnst 構造体に記憶 */
 	dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
+	para_recovery();
 	
 	/* 固有名詞認識処理 */
 
