@@ -278,8 +278,10 @@ char  		cont_str[DBM_CON_MAX];
 		if ( _code_match( code_del + i, code + j ) == 1 ) {
 		    if ( j == 0 ) {
 			code = code + j + SM_CODE_SIZE;
+		    }else if ( j + SM_CODE_SIZE > strlen(code) ) {
+			code[j] = '\0';
 		    }else {
-			code[j] = "\0";
+			code[j] = '\0';
 			tmp = code + j + SM_CODE_SIZE;
 			code = strcat( code, tmp );
 		    }
