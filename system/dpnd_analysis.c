@@ -174,11 +174,11 @@ extern FILE  *Outfp;
 	 int check_uncertain_d_condition(DPND *dp, int gvnr)
 /*==================================================================*/
 {
-    /* 用言:弱の d の係り受けを許す条件
+    /* 後方チ(ェック)の d の係り受けを許す条件
 
        ・ 次の可能な係り先(D)が３つ以上後ろ ( d - - D など )
        ・ dに読点がある
-       ・ 係り元とdの後ろが同じ格	例) 東京で最初に大学で行われた
+       ・ 係り元とdの後ろが同じ格	例) 日本で最初に京都で行われた
        ・ d(係り先)とdの後ろが同じ格	例) 東京で計画中に京都に変更された
     */
 
@@ -269,8 +269,7 @@ extern FILE  *Outfp;
     int i;
 
     for (i = 0; i < Bnst_num; i++) {
-	if ((check_feature((bnst_data + i)->f, "用言:強") ||
-	     check_feature((bnst_data + i)->f, "用言:弱")) &&
+	if (check_feature((bnst_data + i)->f, "用言") &&
 	    (bnst_data + i)->para_num != -1 &&
 	    para_data[(bnst_data + i)->para_num].status != 'x') {
 	    
@@ -300,7 +299,7 @@ extern FILE  *Outfp;
        1. 「〜は」(提題,係:未格)の係り先は優先されるものがある
        		(bnst_etc.ruleで指定，並列のキーは並列解析後プログラムで指定)
 
-       2. 「〜は」は一述語に一つ係ることを優先(時間は別)
+       2. 「〜は」は一述語に一つ係ることを優先(時間,数量は別)
 
        3. すべての格要素は同一表層格が一述語に一つ係ることを優先(ガガは別)
 
@@ -316,8 +315,8 @@ extern FILE  *Outfp;
 	ha_check = 0;
 	un_count = 0;
 
-	if (check_feature(g_ptr->f, "用言:強") ||
-	    check_feature(g_ptr->f, "用言:弱")) {
+	if (check_feature(g_ptr->f, "用言") ||
+	    check_feature(g_ptr->f, "準用言")) {
 	    pred_p = 1;
 	} else {
 	    pred_p = 0;
@@ -395,10 +394,11 @@ extern FILE  *Outfp;
 			}
 			/* else {one_score -= 15;} */
 
-			/* 一つめの提題にだけ点を与える (時間は別)
+			/* 一つめの提題にだけ点を与える (時間,数量は別)
 			     → 複数の提題が同一述語に係ることを防ぐ */
 
-			if (check_feature(d_ptr->f, "時間")) {
+			if (check_feature(d_ptr->f, "時間") ||
+			    check_feature(d_ptr->f, "数量")) {
 			    one_score += 10;
 			} else if (ha_check == 0){
 			    one_score += 10;
@@ -410,10 +410,11 @@ extern FILE  *Outfp;
 
 		    /* 格要素一般の扱い */
 
-		    /* 未格 : 数えておき，後で空スロットを調べる (時間は別) */
+		    /* 未格 : 数えておき，後で空スロットを調べる (時間,数量は別) */
 
 		    if (!strcmp(cp, "係:未格")) {
-			if (check_feature(d_ptr->f, "時間")) {
+			if (check_feature(d_ptr->f, "時間") ||
+			    check_feature(d_ptr->f, "数量")) {
 			    one_score += 10;
 			} else {
 			    un_count++;
@@ -425,7 +426,7 @@ extern FILE  *Outfp;
 			      → ノ格がかかればそれより前の格はかからない
 
 			      ※ 「体言」というのは判定詞のこと，ただし
-			         文末などでは用言:強:動となっていることも
+			         文末などでは用言:動となっていることも
 				 あるので，「体言」でチェック */
 
 		    else if (!strcmp(cp, "係:ノ格")) {
@@ -497,7 +498,7 @@ extern FILE  *Outfp;
 	    if ((g_ptr->SCASE_code[case2num("ニ格")]
 		 - scase_check[case2num("ニ格")]) == 1 &&
 		rentai == 1 &&
-		check_feature(g_ptr->f, "用言:強:動")) {
+		check_feature(g_ptr->f, "用言:動")) {
 		vacant_slot_num ++;
 		/* ニ格は動詞で連体修飾の場合だけ考慮，つまり連体
 		   修飾に割り当てるだけで，未格のスロットとはしない */
@@ -912,7 +913,7 @@ extern FILE  *Outfp;
 	if (Best_mgr.dpnd.head[i] > i + 3 &&
 	    !check_feature(bnst_data[i].f, "ハ") &&
 	    !check_feature(bnst_data[i].f, "読点") &&
-	    !check_feature(bnst_data[i].f, "用言:強") &&
+	    !check_feature(bnst_data[i].f, "用言") &&
 	    !check_feature(bnst_data[i].f, "係:ガ格") &&
 	    !check_feature(bnst_data[i].f, "用言:無") &&
 	    !check_feature(bnst_data[i].f, "並キ") &&

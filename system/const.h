@@ -46,7 +46,7 @@
 #define MrphRule_MAX	256
 #define BnstRule_MAX	256
 #define UkeRule_MAX	256
-#define KakariRule_MAX 	512
+#define KakariRule_MAX 	640
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
 #define DpndRule_MAX	124
@@ -168,6 +168,12 @@
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
 #define SM_CHECK_FULL	3
+
+#define RLOOP_BREAK_NONE	0
+#define RLOOP_BREAK_NORMAL	1
+#define RLOOP_BREAK_JUMP	2
+#define RLOOP_MRM	0
+#define RLOOP_RMM	1
 
 /*====================================================================
 				  ?
@@ -444,7 +450,6 @@ typedef struct tnode_p {
     int  	max_num;
     int         L_B, R, max_path[BNST_MAX];
     FEATURE_PATTERN f_pattern;	/* 末尾文節の条件 */
-    float	threshold;	/* 並列となる最低類似度 */
     float	max_score;	/* 類似性の最大値 */
     float	pure_score;	/* 末尾表現のボーナスを除いた値,強並列の基準 */
     char        status;

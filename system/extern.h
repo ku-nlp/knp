@@ -42,7 +42,6 @@ extern SENTENCE_DATA	sentence_data[];
 extern int 		match_matrix[][BNST_MAX];
 extern int 		path_matrix[][BNST_MAX];
 extern int		restrict_matrix[][BNST_MAX];
-extern int		restrict_table[];
 extern int 		Dpnd_matrix[][BNST_MAX];
 extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];

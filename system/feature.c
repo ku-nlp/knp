@@ -161,7 +161,7 @@
 }
 
 /*==================================================================*/
-      void string2feature_pattern(FEATURE_PATTERN *f, char *cp)
+      void string2feature_pattern_OLD(FEATURE_PATTERN *f, char *cp)
 /*==================================================================*/
 {
     /* 文字列 "文頭|体言|提題" などをFEATURE_PATTERNに変換
@@ -193,6 +193,56 @@
     copy_cfeature(&(f->fp[nth]), scp);
     nth++;
 
+    f->fp[nth] = NULL;
+}
+
+/*==================================================================*/
+      void string2feature_pattern(FEATURE_PATTERN *f, char *cp)
+/*==================================================================*/
+{
+    /* 文字列 "文頭|体言|提題" などをFEATURE_PATTERNに変換
+       本来list2feature_patternに対応するものだが,
+       ORだけでANDはサポートしていない */
+
+    int nth;
+    char buffer[256], *start_cp, *loop_cp;
+    FEATURE **fpp;
+    
+    if (!*cp) {
+	f->fp[0] = NULL;
+	return;
+    }
+
+    strcpy(buffer, cp);
+    nth = 0;
+    clear_feature(f->fp+nth);
+    fpp = f->fp+nth;
+    loop_cp = buffer;
+    start_cp = loop_cp;
+    while (*loop_cp) {
+	if (*loop_cp == '&' && *(loop_cp+1) == '&') {
+	    *loop_cp = '\0';
+	    copy_cfeature(fpp, start_cp);
+	    fpp = &((*fpp)->next);
+	    loop_cp += 2;
+	    start_cp = loop_cp;
+	}
+	else if (*loop_cp == '|' && *(loop_cp+1) == '|') {
+	    *loop_cp = '\0';
+	    copy_cfeature(fpp, start_cp);
+	    nth++;
+	    clear_feature(f->fp+nth);
+	    fpp = f->fp+nth;
+	    loop_cp += 2;
+	    start_cp = loop_cp;
+	}
+	else {
+	    loop_cp ++;
+	}
+    }
+    copy_cfeature(fpp, start_cp);
+
+    nth++;
     f->fp[nth] = NULL;
 }
 
@@ -951,11 +1001,22 @@
 	}
     }
 
+    /* &自立語一致 : 自立語が同じかどうか */
+    
+    else if (!strncmp(rule, "&自立語一致", strlen("&自立語一致"))) {
+	if (!strcmp(((BNST_DATA *)ptr1)->Jiritu_Go, 
+		    ((BNST_DATA *)ptr2)->Jiritu_Go)) {
+	    return TRUE;
+	} else {
+	    return FALSE;
+	}
+    }
+
     else {
 #ifdef DEBUG
 	fprintf(stderr, "Invalid Feature-Function (%s)\n", rule);
 #endif
-	return FALSE;
+	return TRUE;
     }
 }
 
@@ -970,46 +1031,54 @@
        p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
     */
 
-    int i, flag, value;
-    FEATURE *fp;
+    int i, value;
 
+    /* PATTERNがなければマッチ */
     if (fr->fp[0] == NULL) return TRUE;
 
+    /* ORの各条件を調べる */
     for (i = 0; fr->fp[i]; i++) {
-	fp = fr->fp[i];
-	flag = TRUE;
-	while (fp) {
-	    if (fp->cp[0] == '^' && fp->cp[1] == '&') {
-		value = check_function(fp->cp+1, fd, p1, p2);
-		if (value == TRUE) {
-		    flag = FALSE;
-		    break;
-		}
-	    } else if (fp->cp[0] == '&') {
-		value = check_function(fp->cp, fd, p1, p2);
-		if (value == FALSE) {
-		    flag = FALSE;
-		    break;
-		}
-		else if (value == CORPUS_POSSIBILITY_1)
-		    flag = CORPUS_POSSIBILITY_1;
-	    } else if (fp->cp[0] == '^') {
-		if (check_feature(fd, fp->cp+1)) {
-		    flag = FALSE;
-		    break;
-		}
-	    } else {
-		if (!check_feature(fd, fp->cp)) {
-		    flag = FALSE;
-		    break;
-		}
-	    }
-	    fp = fp->next;
-	}
-	if (flag == TRUE) return TRUE;
-	else if (flag == CORPUS_POSSIBILITY_1) return CORPUS_POSSIBILITY_1;
+	value = feature_AND_match(fr->fp[i], fd, p1, p2);
+	if (value == TRUE) 
+	    return TRUE;
+	else if (value == CORPUS_POSSIBILITY_1) 
+	    return CORPUS_POSSIBILITY_1;
     }
     return FALSE;
+}
+
+/*==================================================================*/
+ int feature_AND_match(FEATURE *fp, FEATURE *fd, void *p1, void *p2)
+/*==================================================================*/
+{
+    int value, flag = TRUE;
+
+    while (fp) {
+	if (fp->cp[0] == '^' && fp->cp[1] == '&') {
+	    value = check_function(fp->cp+1, fd, p1, p2);
+	    if (value == TRUE) {
+		return FALSE;
+	    }
+	} else if (fp->cp[0] == '&') {
+	    value = check_function(fp->cp, fd, p1, p2);
+	    if (value == FALSE) {
+		return FALSE;
+	    }
+	    else if (value == CORPUS_POSSIBILITY_1) {
+		flag = CORPUS_POSSIBILITY_1;
+	    }
+	} else if (fp->cp[0] == '^') {
+	    if (check_feature(fd, fp->cp+1)) {
+		return FALSE;
+	    }
+	} else {
+	    if (!check_feature(fd, fp->cp)) {
+		return FALSE;
+	    }
+	}
+	fp = fp->next;
+    }
+    return flag;
 }
 
 /*====================================================================

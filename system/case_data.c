@@ -21,7 +21,7 @@
 	flag = TRUE;
     }
     else if (check_feature(b_ptr->f, "∑∏:•¨≥ ") || 
-	     (!check_feature(cpm_ptr->pred_b_ptr->f, "Õ—∏¿:∂Ø:»Ω") &&
+	     (!check_feature(cpm_ptr->pred_b_ptr->f, "Õ—∏¿:»Ω") &&
 	      check_feature(b_ptr->f, "∑∏:•Œ≥ "))) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("§¨");
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
@@ -103,7 +103,7 @@
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     if (check_feature(b_ptr->f, "∑∏:•»≥ ") && /* ≥ Õ◊¡« --  ∏ */
-	check_feature(b_ptr->f, "Õ—∏¿:∂Ø")) {
+	check_feature(b_ptr->f, "Õ—∏¿")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
 	       (char *)sm2code(" ‰ ∏"));
 	sm_num++;

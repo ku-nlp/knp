@@ -70,9 +70,8 @@ int		ScaseDicExist;
     /* init_bnst でもしている */
 
     if (ScaseDicExist == TRUE &&
-	(check_feature(ptr->f, "用言:強:動") ||
-	 check_feature(ptr->f, "用言:強:形") ||
-	 check_feature(ptr->f, "用言:弱"))) {
+	(check_feature(ptr->f, "用言:動") ||
+	 check_feature(ptr->f, "用言:形"))) {
 
 	/* まず付属語を固定，自立語を減らしていく */
 
@@ -113,16 +112,18 @@ int		ScaseDicExist;
        表層格辞書がない場合, 
        または辞書にない用言の場合 */
     
-    if (check_feature(ptr->f, "用言:強:判")) {
+    if (check_feature(ptr->f, "用言:判")) {
 	ptr->SCASE_code[case2num("ガ格")] = 1;
     } 
-    else if (check_feature(ptr->f, "用言:強:形")) {
+    else if (check_feature(ptr->f, "用言:形")) {
 	ptr->SCASE_code[case2num("ガ格")] = 1;
 	ptr->SCASE_code[case2num("ニ格")] = 1;
+	/* 形容詞の表層格の付与は副作用が多いので制限
 	ptr->SCASE_code[case2num("ヨリ格")] = 1;
 	ptr->SCASE_code[case2num("ト格")] = 1;
+	*/
     } 
-    else if (check_feature(ptr->f, "用言:強:動")) {
+    else if (check_feature(ptr->f, "用言:動")) {
 	ptr->SCASE_code[case2num("ガ格")] = 1;
 	ptr->SCASE_code[case2num("ヲ格")] = 1;
 	ptr->SCASE_code[case2num("ニ格")] = 1;
@@ -153,8 +154,8 @@ int		ScaseDicExist;
     BNST_DATA  *b_ptr;
 
     for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++)
-	if (check_feature(b_ptr->f, "用言:強") ||
-	    check_feature(b_ptr->f, "用言:弱")) {
+	if (check_feature(b_ptr->f, "用言") ||
+	    check_feature(b_ptr->f, "準用言")) {
 
 	    /* 以下の2つの処理はfeatureレベルで起動している */
 	    /* set_pred_voice(b_ptr); ヴォイス */

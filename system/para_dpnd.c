@@ -40,7 +40,7 @@ extern FILE  *Outfp;
       return TRUE;
 
     for (i = m_ptr->start[0]; i <= m_ptr->end[0]; i++)
-      if (check_feature(bnst_data[i].f, "用言:強"))
+      if (check_feature(bnst_data[i].f, "用言"))
 	return TRUE;
     return FALSE;
 }

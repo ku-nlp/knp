@@ -613,6 +613,8 @@ const REGEXPBNST RegexpBnstInitValue = {
      int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr)
 /*==================================================================*/
 {
+    /* ★★近い将来いらなくなる 99/11/02★★ */
+    
     /* 
        pre_pattern  (shortest match でよい)
        self_pattern (longest match  がよい)
@@ -679,13 +681,10 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-     int _regexpmrphrule_match2(MrphRule *r_ptr, MRPH_DATA *d_ptr,
+     int regexpmrphrule_match_M(MrphRule *r_ptr, MRPH_DATA *d_ptr,
 				int bw_length, int fw_length)
 /*==================================================================*/
 {
-    /* regexpmrphrule_match2との違いはマッチする範囲が指定されて
-       いること */
-
     /* 
        pre_pattern  (shortest match でよい)
        self_pattern (longest match  がよい)
@@ -750,28 +749,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 	match_length --;
     }
 
-    return -1;
-}
-
-/*==================================================================*/
-        int regexpmrphrule_match2(MrphRule *r_ptr,
-				  MRPH_DATA *d_ptr, int length,
-				  int *start, int *end)
-/*==================================================================*/
-{
-    /* 範囲の中で，各場所から前後のマッチング関数を呼び出す */
-
-    int i, match_length;
-
-    for (i = 0; i < length; i++) {
-	if ((match_length = 
-	     _regexpmrphrule_match2(r_ptr, d_ptr+i, i, length-i))
-	    != -1) {
-	    *start = i;
-	    *end = i + match_length;
-	    return 0;
-	}
-    }
     return -1;
 }
 

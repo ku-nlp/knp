@@ -419,112 +419,125 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	 void assign_mrph_feature(MrphRule *r_ptr, int size)
 /*==================================================================*/
 {
-    int i, j, k, match_length, flag[MRPH_MAX];
+    int i, j, k, match_length;
     MRPH_DATA	*m_ptr;
-
-    /* break flag 初期化 */
-    for (i = 0; i < Mrph_num; i++)
-	flag[i] = 0;
 
     for (j = 0; j < size; j++, r_ptr++) {
 	for (i = 0; i < Mrph_num; i++) {
-	    if (flag[i])
-		continue;
 	    m_ptr = mrph_data + i;
+
 	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
 		for (k = i; k < i + match_length; k++) {
 		    m_ptr = mrph_data + k;
 		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
 		}
-
-		/* この形態素では break するとき */
-		if (break_feature(r_ptr->f))
-		    flag[i] = 1;
 	    }
 	}
     }
 }
-
-/*==================================================================*/
-/*by Nobumoto Oct/31th/1999*/
-	 void assign_mrph_feature2(MrphRule *r_ptr, int size, 
-				   MRPH_DATA *s_m_ptr, int length,
-				   int *mch_end)
-/*==================================================================*/
-
-{
-    /* ある範囲に対して形態素のマッチングを行う */
-
-    int j, k, match_start, match_end;
-    MRPH_DATA	*m_ptr;
-    *mch_end = 0;  /* 以下の if 文の条件に合わなければただの 0 */
-
-    for (j = 0; j < size; j++, r_ptr++) {
-	if (regexpmrphrule_match2(r_ptr, s_m_ptr, length,
-				  &match_start, &match_end) != -1) {
-	    /*
-	      match_start と match_end は、該当する形態素列の
-	      開始位置と終了位置の, i (ここではj？)からの相対位置らしい
-	     */
-	    for (k = match_start; k < match_end; k++) {
-		m_ptr = s_m_ptr + k;
-		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-	    }
-
-/*by Nobumoto Oct/31th/1999*/
-	    *mch_end = match_end;
-	    if (break_feature(r_ptr->f)) break;
-	}
-    }
-}
-
-/*==================================================================*/
-      void assign_mrph_string_feature(MrphRule *r_ptr, int size)
-/*==================================================================*/
-/*by Nobumoto Oct/31th/1999*/
-{
-    int i, j, match_end;
-
-    for (i = 0; i < Mrph_num; i++){
-	for(j = 0; j < Mrph_num - i; j++){
-	    assign_mrph_feature2(r_ptr, size, 
-				 mrph_data+i, 
-				 Mrph_num-i-j,
-				 &match_end);
-
-	    i += match_end; /* 次のルーチンは, タグを付け終わった形態素列の次の形態素から始める */
-	}
-    }
-}
-
-/********************/
-/*変数とデータの関係*/
-/********************/
-/*
-
-                  |<-----タグ付け目標形態素列---->|    (形態素の区切り)
-                  |                               |       ↓
-      ---------------------------------------------------------
-(文)  |   |   |   | * | * | * | * | * | * | * | * |   |   |   |
-      ---------------------------------------------------------
-          ↑         
-          i       |                               |
-           <----->|                               |
-          match_start                             |
-          |                                       |
-          |<------------------------------------->|
-                  match_end
-*/
 
 /*==================================================================*/
 		    int break_feature(FEATURE *fp)
 /*==================================================================*/
 {
     while (fp) {
-	if (!strcmp(fp->cp, "&break")) return 1;
+	if (!strcmp(fp->cp, "&break:normal")) 
+	    return RLOOP_BREAK_NORMAL;
+	else if (!strcmp(fp->cp, "&break:jump")) 
+	    return RLOOP_BREAK_JUMP;
+	else if (!strncmp(fp->cp, "&break", strlen("&break")))
+	    return RLOOP_BREAK_NORMAL;
 	fp = fp->next;
     }
-    return 0;
+    return RLOOP_BREAK_NONE;
+}
+
+/*==================================================================*/
+     void assign_mrph_feature_new(MrphRule *r_ptr, int r_size,
+				  MRPH_DATA *s_m_ptr, int m_length,
+				  int mode, int break_mode)
+/*==================================================================*/
+{
+    /* ★★近い将来修正 99/11/02★★
+
+       方向のモード
+       文節も同じように
+       assign_mrph_featureとの完全ないれかえ
+       .jumanrcからの読み込み
+     */
+
+    /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
+
+    int i, j, k, match_length, feature_break_mode;
+    MRPH_DATA *m_ptr;
+    
+    /* MRM
+       	1.self_patternの先頭の形態素位置
+	  2.ルール
+	    3.self_patternの末尾の形態素位置
+	の順にループが回る
+	
+	break_mode == RLOOP_BREAK_NORMAL
+	    2のレベルでbreakする
+	break_mode == RLOOP_BREAK_JUMP
+	    2のレベルでbreakし，self_pattern長だけ1のループを進める
+     */
+
+    if (mode == RLOOP_MRM) {
+	for (i = 0; i < m_length; i++) {
+	    for (j = 0; j < r_size; j++, r_ptr++) {
+		if ((match_length = 
+		     regexpmrphrule_match_M(r_ptr, s_m_ptr+i, i, m_length-i))
+		    != -1) {
+		    for (k = i; k < i + match_length; k++) {
+			m_ptr = s_m_ptr + k;
+			assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+		    }
+		    feature_break_mode = break_feature(r_ptr->f);
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_NORMAL) {
+			break;
+		    } else if (break_mode == RLOOP_BREAK_JUMP ||
+			       feature_break_mode == RLOOP_BREAK_JUMP) {
+			i += match_length - 1;
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    /* RMM
+       	1.ルール
+	  2.self_patternの先頭の形態素位置
+	    3.self_patternの末尾の形態素位置
+	の順にループが回る
+	
+	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
+	    2のレベルでbreakする (※この使い方は考えにくいが)
+    */
+
+    else if (mode == RLOOP_RMM) {
+	for (j = 0; j < r_size; j++, r_ptr++) {
+	    feature_break_mode = break_feature(r_ptr->f);
+	    for (i = 0; i < m_length; i++) {
+		if ((match_length = 
+		     regexpmrphrule_match_M(r_ptr, s_m_ptr+i, i, m_length-i))
+		    != -1) {
+		    for (k = i; k < i + match_length; k++) {
+			m_ptr = s_m_ptr + k;
+			assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+		    }
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			break_mode == RLOOP_BREAK_JUMP ||
+			feature_break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_JUMP) {
+			break;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 /*==================================================================*/

@@ -298,37 +298,50 @@ static int X_pos, Y_pos, Wid, Hig;
 }
 
 /*==================================================================*/
-  void show_self2ps(BNST_DATA *ptr, int depth1, int depth2, int flag)
+void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 /*==================================================================*/
 {
     int i, j, comb_count = 0, c_count = 0;
     BNST_DATA *ptr_buffer[10], *child_buffer[10];
+    char ans_flag[BNST_MAX];
+
+    if (ans_flag_p) {
+	strncpy(ans_flag, ans_flag_p, BNST_MAX);
+    } else {
+	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
+    }
 
     if (ptr->child[0]) {
 	for (i = 0; ptr->child[i]; i++);
-	show_self2ps(ptr->child[i-1], depth1*2, depth2+1, 0);
+
+	/* 最後の子は ans_flag を 0 に */ 
+	ans_flag[depth] = '0';
+	show_self2ps(ptr->child[i-1], depth+1, ans_flag, 0);
+
 	if (i > 1) {
-	    for (j = i-2; j>0; j--)
-	      show_self2ps(ptr->child[j], depth1*2+1, depth2+1, 0);
+	    /* 他の子は ans_flag を 1 に */ 
+	    ans_flag[depth] = '1';
+	    for (j = i - 2; j > 0; j--) {
+		show_self2ps(ptr->child[j], depth+1, ans_flag, 0);
+	    }
 
 	    /* flag: 1: ─PARA 2: -<P>PARA */
-
 	    if (ptr->para_top_p == TRUE && ptr->para_type == PARA_NIL)
-	      show_self2ps(ptr->child[0], depth1*2+1, depth2+1, 1);
+	      show_self2ps(ptr->child[0], depth+1, ans_flag, 1);
 	    else if (ptr->para_top_p == TRUE && ptr->para_type != PARA_NIL)
-	      show_self2ps(ptr->child[0], depth1*2+1, depth2+1, 2);
+	      show_self2ps(ptr->child[0], depth+1, ans_flag, 2);
 	    else
-	      show_self2ps(ptr->child[0], depth1*2+1, depth2+1, 0);
+	      show_self2ps(ptr->child[0], depth+1, ans_flag, 0);
 	}
     }
 
     if (ptr->para_top_p != TRUE)
-      X_pos -= ptr->space*7;
+	X_pos -= ptr->space*7;
 
     print_bnst2ps(ptr);
     
     if (flag == 0) {
-	show_link2ps(depth1, depth2, ptr->para_type, X_pos);
+	show_link2ps(depth, ans_flag, ptr->para_type, X_pos);
     } else if (flag == 1) {
 	write_kanji(stdout, "─", X_pos, Y_pos); X_pos += Wid*2;
     } else if (flag == 2) {
@@ -351,7 +364,7 @@ static int X_pos, Y_pos, Wid, Hig;
 
     write_head(stdout);
 
-    show_self2ps((bnst_data + Bnst_num - 1), 1, 1, 0);
+    show_self2ps((bnst_data + Bnst_num - 1), 1, NULL, 0);
 
     write_tail(stdout);
 }

@@ -96,8 +96,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
     if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
     else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
-    else if (strcmp(level1, level2) <= 0)	/* ptr1 <= ptr2 ならOK */
-	return TRUE;				/* ※ "レベル:"のまま比較 */
+    else if (levelcmp(level1 + strlen("レベル:"), 
+		      level2 + strlen("レベル:")) <= 0)	/* ptr1 <= ptr2 ならOK */
+	return TRUE;
     else return FALSE;
 }
 
@@ -112,9 +113,31 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
     if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
     else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
-    else if (strcmp(level1, level2 + strlen("レベル:")) <= 0)
+    else if (levelcmp(level1, level2 + strlen("レベル:")) <= 0)
 	return TRUE;				/* ptr1 <= ptr2 ならOK */
     else return FALSE;
+}
+
+/*==================================================================*/
+		  int levelcmp(char *cp1, char *cp2)
+/*==================================================================*/
+{
+    int level1, level2;
+    if (!strcmp(cp1, "A-"))      level1 = 1;
+    else if (!strcmp(cp1, "A"))  level1 = 2;
+    else if (!strcmp(cp1, "B-")) level1 = 3;
+    else if (!strcmp(cp1, "B"))  level1 = 4;
+    else if (!strcmp(cp1, "B+")) level1 = 5;
+    else if (!strcmp(cp1, "C"))  level1 = 6;
+    else fprintf(stderr, "Invalid level (%s)\n", cp1);
+    if (!strcmp(cp2, "A-"))      level2 = 1;
+    else if (!strcmp(cp2, "A"))  level2 = 2;
+    else if (!strcmp(cp2, "B-")) level2 = 3;
+    else if (!strcmp(cp2, "B"))  level2 = 4;
+    else if (!strcmp(cp2, "B+")) level2 = 5;
+    else if (!strcmp(cp2, "C"))  level2 = 6;
+    else fprintf(stderr, "Invalid level (%s)\n", cp2);
+    return level1 - level2;
 }
 
 /*==================================================================*/
@@ -128,13 +151,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     ptr1 = &(bnst_data[pre]);
     ptr2 = &(bnst_data[pos]);
 
-    /* 用言:強，用言:弱，体言 */
-    
-    if ((check_feature(ptr1->f, "用言:強") &&
-	 check_feature(ptr2->f, "用言:強")) ||
+    /* 用言，体言 */
 
-	(check_feature(ptr1->f, "用言:弱") &&
-	 check_feature(ptr2->f, "用言:弱")) || 
+    if ((check_feature(ptr1->f, "用言") &&
+	 check_feature(ptr2->f, "用言")) ||
 
 	(check_feature(ptr1->f, "体言") &&
 	 check_feature(ptr2->f, "体言")) || 
@@ -147,10 +167,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	) {
 
 	/* ただし，判定詞 -- 体言 の類似度は 0 */
-	if (check_feature(ptr1->f, "用言:強:判") &&
-	    !check_feature(ptr1->f, "用言:強:判:?") && /* 「〜で」を除く */
+	if (check_feature(ptr1->f, "用言:判") &&
+	    !check_feature(ptr1->f, "用言:判:?") && /* 「〜で」を除く */
 	    check_feature(ptr2->f, "体言") &&
-	    !check_feature(ptr2->f, "用言:強:判")) return 0; 
+	    !check_feature(ptr2->f, "用言:判")) return 0;
 
 	point += 2;
 

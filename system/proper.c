@@ -703,12 +703,11 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 
     /* 複合名詞ルールの適用 */
     assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize);
-    for (i = 0; i < Bnst_num; i++) {
-	int dummy;
-	assign_mrph_feature2(CNRuleArray, CurCNRuleSize, 
-			     bnst_data[i].mrph_ptr, 
-			     bnst_data[i].mrph_num, &dummy);
-    }
+    for (i = 0; i < Bnst_num; i++)
+	assign_mrph_feature_new(CNRuleArray, CurCNRuleSize, 
+			    bnst_data[i].mrph_ptr, 
+			    bnst_data[i].mrph_num, 
+				1, FALSE);
     assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize);
 
     /* 並列処理

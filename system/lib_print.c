@@ -663,66 +663,100 @@ static int max_width;			/* 木の最大幅 */
 }
 
 /*==================================================================*/
-    void show_link(int n1, int n2, char para_type, char to_para_p)
+void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 /*==================================================================*/
 {
     int i;
     
-    if ( n2 != 1 ) {
+    if (depth != 1) {
+
+	/* 親への枝 (兄弟を考慮) */
+
 	if (para_type == PARA_NORMAL || 
 	    para_type == PARA_INCOMP ||
 	    to_para_p == TRUE)
-	  fprintf(Outfp, "─");
+	    fprintf(Outfp, "─");
 	else 
-	  fprintf(Outfp, "──");
-	if ( n1%2 ) fprintf(Outfp, "┤");
-	else fprintf(Outfp, "┐");
+	    fprintf(Outfp, "──");
+
+	if (ans_flag[depth-1] == '1') 
+	    fprintf(Outfp, "┤");
+	else 
+	    fprintf(Outfp, "┐");
+
 	fprintf(Outfp, "　");
-	for ( i=2; i<n2; i++ ) {
+
+	/* 祖先の兄弟の枝 */
+
+	for (i = depth - 1; i > 1; i--) {
 	    fprintf(Outfp, "　　");
-	    if ( (n1%(mylog(i)))/mylog(i-1) ) fprintf(Outfp, "│");
-	    else fprintf(Outfp, "　");
+	    if (ans_flag[i-1] == '1') 
+		fprintf(Outfp, "│");
+	    else 
+		fprintf(Outfp, "　");
 	    fprintf(Outfp, "　");
 	}
     }
 }
 
 /*==================================================================*/
-  void show_self(BNST_DATA *ptr, int depth1, int depth2, int flag)
+ void show_self(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 /*==================================================================*/
 {
+    /* 
+       depth は自分の深さ(根が1)
+
+       ans_flag は自分と祖先が最後の子かどうかの履歴
+       深さnの祖先(または自分)が最後の子であれば ans_flag[n-1] が '0'
+       そうでなければ '1'(この場合枝の描画が必要)
+    */
+
     int i, j, comb_count = 0, c_count = 0;
     BNST_DATA *ptr_buffer[10], *child_buffer[10];
+    char ans_flag[BNST_MAX];
 
-    if ( ptr->child[0] ) {
-	for ( i=0; ptr->child[i]; i++ );
-	show_self(ptr->child[i-1], depth1*2, depth2+1, 0);
-	if ( i > 1 ) {
-	    for ( j=i-2; j>0; j-- )
-	      show_self(ptr->child[j], depth1*2+1, depth2+1, 0);
+    if (ans_flag_p) {
+	strncpy(ans_flag, ans_flag_p, BNST_MAX);
+    } else {
+	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
+    }
+
+    if (ptr->child[0]) {
+	for (i = 0; ptr->child[i]; i++);
+
+	/* 最後の子は ans_flag を 0 に */ 
+	ans_flag[depth] = '0';
+	show_self(ptr->child[i-1], depth+1, ans_flag, 0);
+
+	if (i > 1) {
+	    /* 他の子は ans_flag を 1 に */ 
+	    ans_flag[depth] = '1';
+	    for (j = i - 2; j > 0; j--) {
+		show_self(ptr->child[j], depth+1, ans_flag, 0);
+	    }
 
 	    /* flag: 1: ─PARA 2: -<P>PARA */
-
 	    if (ptr->para_top_p == TRUE && 
 		ptr->para_type == PARA_NIL &&
-		ptr->to_para_p == FALSE)
-	      show_self(ptr->child[0], depth1*2+1, depth2+1, 1);
-	    else if (ptr->para_top_p == TRUE)
-	      show_self(ptr->child[0], depth1*2+1, depth2+1, 2);
-	    else
-	      show_self(ptr->child[0], depth1*2+1, depth2+1, 0);
+		ptr->to_para_p == FALSE) {
+		show_self(ptr->child[0], depth+1, ans_flag, 1);
+	    } else if (ptr->para_top_p == TRUE) {
+		show_self(ptr->child[0], depth+1, ans_flag, 2);
+	    } else {
+		show_self(ptr->child[0], depth+1, ans_flag, 0);
+	    }
 	}
     }
 
-    calc_self_space(ptr, depth2);
+    calc_self_space(ptr, depth);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
 	  fputc(' ', Outfp);
     }
     print_bnst(ptr, NULL);
     
-    if ( flag == 0 ) {
-	show_link(depth1, depth2, ptr->para_type, ptr->to_para_p);
+    if (flag == 0) {
+	show_link(depth, ans_flag, ptr->para_type, ptr->to_para_p);
 	if (OptExpress == OPT_TREEF) {
 	fputc('\n', Outfp);
 	    print_some_feature(ptr->f, Outfp);
@@ -733,9 +767,6 @@ static int max_width;			/* 木の最大幅 */
     } else if ( flag == 2 ) {
 	fprintf(Outfp, "-");
     }
-
-
-
 }
 
 /*==================================================================*/
@@ -811,7 +842,7 @@ static int max_width;			/* 木の最大幅 */
     if (OptExpress == OPT_TREE || OptExpress == OPT_TREEF) {
 	max_width = 0;
 	calc_tree_width((bnst_data + Bnst_num -1), 1);
-	show_self((bnst_data + Bnst_num -1), 1, 1, 0);
+	show_self((bnst_data + Bnst_num -1), 1, NULL, 0);
     }
     else if (OptExpress == OPT_SEXP) {
 	show_sexp((bnst_data + Bnst_num -1), 0, 0);
@@ -859,8 +890,8 @@ static int max_width;			/* 木の最大幅 */
 
 	print_feature(ptr->f, Outfp);
 
-	if (check_feature(ptr->f, "用言:強") ||
-	    check_feature(ptr->f, "用言:弱")) {
+	if (check_feature(ptr->f, "用言") ||
+	    check_feature(ptr->f, "準用言")) {
 
 	    fprintf(Outfp, " <表層格:");
 	    if (ptr->SCASE_code[case2num("ガ格")])

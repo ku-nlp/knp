@@ -42,7 +42,6 @@ char  		cont_str[DBM_CON_MAX];
 int		match_matrix[BNST_MAX][BNST_MAX];
 int		path_matrix[BNST_MAX][BNST_MAX];
 int		restrict_matrix[BNST_MAX][BNST_MAX];
-int		restrict_table[BNST_MAX];
 int 		Dpnd_matrix[BNST_MAX][BNST_MAX]; /* 係り可能性 0, D, P, A */
 int 		Quote_matrix[BNST_MAX][BNST_MAX];/* 括弧マスク 0, 1 */
 int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
@@ -920,7 +919,7 @@ void client_mode()
 
 
 /*==================================================================*/
-		   void main(int argc, char **argv)
+		   int main(int argc, char **argv)
 /*==================================================================*/
 {
     option_proc(argc, argv);

@@ -63,9 +63,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
 
     int i, rel_pre, rel_pos;
     
-    for ( i=0; i<Bnst_num; i++ )
-      restrict_table[i] = 0;
-    
     switch ( flag ) {
       case REVISE_SPRE: case REVISE_PRE:
 	for ( a1=0; a1<=a2; a1++ ) {
@@ -88,7 +85,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
 		      restrict_matrix[a1][a3] = 
 			judge_matrix[rel_pre][rel_pos];
 		}
-		restrict_table[a3] += restrict_matrix[a1][a3];
 	    }
 	}
 	break;
@@ -97,7 +93,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
 	    if ( a3 < b1 ) {		/* 脚剩しない */
 		for ( b3=b2+1; b3<Bnst_num; b3++ ) {
 		    restrict_matrix[b1][b3] = 1;
-		    restrict_table[b3] += restrict_matrix[b1][b3];
 		}
 	    } else {
 		if ( (a2+1) < b1 )   rel_pre = 0;
@@ -115,7 +110,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
 		    else 
 		      restrict_matrix[b1][b3] = 
 			judge_matrix[rel_pre][rel_pos];
-		    restrict_table[b3] += restrict_matrix[b1][b3];
 		}
 	    }
 	}
@@ -186,8 +180,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
     for (i = 0; i < Bnst_num; i++)
       for (j = i + 1; j < Bnst_num; j++)
 	restrict_matrix[i][j] = 1;
-    for (j = ptr->L_B + 1; j < Bnst_num; j++)
-      restrict_table[j] = 1;
 
     /* 事误のキ〖は痰浑
 
@@ -216,7 +208,6 @@ static int judge_matrix_pre_str[4][4] = { /* 涟が动事误 */
       if (_check_para_d_struct(ptr->L_B + 1, j, FALSE, 0, NULL) == FALSE)
 	for (i = 0; i <= ptr->L_B; i++) {
 	    restrict_matrix[i][j] = 0;
-	    restrict_table[j] = 0;
 	}
     
     Revised_para_num = num;

@@ -35,33 +35,17 @@ float	norm[] = {
 extern QUOTE_DATA quote_data;
 
 /*==================================================================*/
-	  int mask_quote_scope(int L_B_pos, int restrict_p)
+		  void mask_quote_scope(int L_B_pos)
 /*==================================================================*/
 {
-    int i, j, k, start, end;
+    int i, j, k, l, start, end;
 
-    /* 
-       括弧がある場合に並列構造の範囲に制限を設ける
-
-       <注意> restrict_tableについては制限していない．結果的に
-       matrixで制限されるが, 本来はきっちりと処理する必要がある．
-       restrict_tableは廃止してもいいかも ？？
-    */
-
-    if (restrict_p == NULL) {
-	for (i = 0; i < Bnst_num; i++)
-	    for (j = i + 1; j < Bnst_num; j++)
-		restrict_matrix[i][j] = 1;
-	for (j = L_B_pos + 1; j < Bnst_num; j++)
-	    restrict_table[j] = 1;
-    }
+    /* 括弧がある場合に並列構造の範囲に制限を設ける */
 
     for (k = 0; quote_data.in_num[k] >= 0; k++) {
 
 	int start = quote_data.in_num[k];
 	int end = quote_data.out_num[k];
-
-	restrict_p = TRUE;
 
 	/* 後に括弧がある場合 */
 
@@ -86,6 +70,13 @@ extern QUOTE_DATA quote_data;
 		for (j = start; j < Bnst_num; j++)
 		    if (i < start || end < j)
 			restrict_matrix[i][j] = 0;
+
+	    /* 括弧の中に句点がある場合 */
+	    for (l = start; l < end; l++)
+		if (check_feature(bnst_data[l].f, "係:文末"))
+		    for (i = start; i <= l; i++)
+			for (j = l + 1; j <= end; j++)
+			    restrict_matrix[i][j] = 0;
 	}
     }
 
@@ -105,7 +96,7 @@ extern QUOTE_DATA quote_data;
     /*
       パスのスコア計算において区切りペナルティをcancelする条件
     	・係が同じ
-	・用言:強であるかどうかが同じ
+	・用言であるかどうかが同じ
 	・読点があるかないかが同じ
 	
        ※ 条件は少し緩くしてある．問題があれば強める 
@@ -115,16 +106,21 @@ extern QUOTE_DATA quote_data;
     cp2 = (char *)check_feature(ptr2->f, "係");
     if (strcmp(cp1, cp2)) return 0;
 	
-
-    flag1 = check_feature(ptr1->f, "用言:強") ? 1 : 0;
-    flag2 = check_feature(ptr2->f, "用言:強") ? 1 : 0;
+    flag1 = check_feature(ptr1->f, "用言") ? 1 : 0;
+    flag2 = check_feature(ptr2->f, "用言") ? 1 : 0;
     if (flag1 != flag2) return 0;
+
+    if (check_feature(ptr1->f, "用言")) {
+	cp1 = (char *)check_feature(ptr1->f, "ID");
+	cp2 = (char *)check_feature(ptr2->f, "ID");
+	if (!cp1 || !cp2 || strcmp(cp1, cp2)) return 0;
+    }
     
     flag1 = check_feature(ptr1->f, "読点") ? 1 : 0;
     flag2 = check_feature(ptr2->f, "読点") ? 1 : 0;
     if (flag1 != flag2) return 0;
 
-    return 0;
+    return 1;
 }
 
 /*==================================================================*/
@@ -180,10 +176,10 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
+	     void dp_search_scope(int L_B_pos, int R_pos)
 /*==================================================================*/
 {
-    int i, j, current_max, score_upward, score_sideway, score_start;
+    int i, j, current_max, score_upward, score_sideway;
     
     /* ＤＰマッチング */
 
@@ -204,32 +200,12 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 
 	    score_sideway = score_matrix[L_B_pos][j+1] 
 	      		    - PENALTY - penalty_table[j];
+	    score_matrix[L_B_pos][j] = score_sideway;
+	    prepos_matrix[L_B_pos][j] = L_B_pos;
 
-	    if (0 &&
-		restrict_p == FALSE &&
-		match_matrix[L_B_pos][j] && 
-		(score_start = 
-		   match_matrix[L_B_pos][j] + plus_bonus_score(j, type))
-		     >= score_sideway) {
-
-		/* その位置からのスタートを考慮する場合(高速化)
-		   スコアを範囲の広さで正規化する場合は使えない
-		   さらに,
-		   plus_bonus_score(j, type)は最後に計算すること
-		   にしたので，この高速化は実質的にはもう使えない
-		   */
-
-		score_matrix[L_B_pos][j] = score_start;
-		prepos_matrix[L_B_pos][j] = START_HERE;
-	    } else {
-		score_matrix[L_B_pos][j] = score_sideway;
-		prepos_matrix[L_B_pos][j] = L_B_pos;
-	    }
+	    /* 他の行の処理:下からと左からのスコアを比較 */
 
 	    for (i=L_B_pos-1; i>=0; i--) {
-
-		/* 下からのスコアと左からのスコアを比較 */
-
 		score_upward = match_matrix[i][j] + maxsco_array[i+1]
 		  - calc_dynamic_level_penalty(L_B_pos, i, j);
 		score_sideway = score_matrix[i][j+1] 
@@ -267,50 +243,89 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 }
 
 /*==================================================================*/
-  void _detect_para_scope(PARA_DATA *ptr, int R_pos, int restrict_p)
+	  void _detect_para_scope(PARA_DATA *ptr, int R_pos)
 /*==================================================================*/
 {
-    int i, j, flag;
+    int i, j, flag, nth;
     int L_B_pos = ptr->L_B;
     int ending_bonus_score;
     int max_pos = -1;
-    float current_score, max_score = ENOUGH_MINUS, pure_score = 0;
+    float current_score, sim_threshold, new_threshold,
+	max_score = ENOUGH_MINUS, pure_score = 0;
+    char *cp;
     FEATURE *fp;
 
-    /* 制限がある場合,まったく可能性のないスタート位置(R_pos)は排除 */
+    /*							 */
+    /* スタート位置(R_pos)からの解析を本当に行うかどうか */
+    /*							 */
 
-    if (restrict_p) { 
-	flag = FALSE;
-	for (i = 0; i <= L_B_pos; i++)
-	    if (restrict_matrix[i][R_pos]) flag = TRUE;
-	if (flag == FALSE) return;
+    /* 類似度が0なら中止 */
+
+    if (match_matrix[L_B_pos][R_pos] == 0) return;
+
+    /* restrict_matrixで可能性がない場合は中止 */
+
+    flag = FALSE;
+    for (i = 0; i <= L_B_pos; i++) {
+	if (restrict_matrix[i][R_pos]) {
+	    flag = TRUE; break;
+	}
     }
+    if (flag == FALSE) return;
 
-    /* 末尾の文節に制限がある場合 */
-    
-    if (feature_pattern_match(&(ptr->f_pattern), 
-			      bnst_data[R_pos].f,
-			      bnst_data + L_B_pos,
-			      bnst_data + R_pos) == FALSE) return;  
-
-    /* 「〜，それを」という誤った並列を排除 */
+    /* 「〜，それを」という並列は中止 */
 
     if (L_B_pos + 1 == R_pos &&	
 	check_feature(bnst_data[R_pos].f, "指示詞"))
 	return;
 
-    /* DP MATCHING (R_posで終るものについて) */
+    /* ルールによる制限(類似スコアの閾値を取得) */
 
-    dp_search_scope(L_B_pos, R_pos, ptr->type, restrict_p);
+    /* 条件がなければ閾値は0.0に */
+    if ((ptr->f_pattern).fp[0] == NULL) {
+	sim_threshold = 0.0;
+    } 
+    /* 条件があれば，マッチするものの中で最低の閾値に */
+    else {
+	sim_threshold = 100.0;
+	nth = 0;
+	while (fp = (ptr->f_pattern).fp[nth]) {
+	    if (feature_AND_match(fp, bnst_data[R_pos].f,
+				  bnst_data + L_B_pos,
+				  bnst_data + R_pos) == TRUE) {
+		if (cp = check_feature(fp, "&ST")) {
+		    sscanf(cp, "&ST:%f", &new_threshold);
+		} else {
+		    new_threshold = 0.0;
+		}
+		if (new_threshold < sim_threshold )
+		    sim_threshold = new_threshold;
+	    }
+	    nth++;
+	}
+	if (sim_threshold == 100.0) return;
+    }
+
+    /* if (feature_pattern_match(&(ptr->f_pattern), 
+       bnst_data[R_pos].f,
+       bnst_data + L_B_pos,
+       bnst_data + R_pos) == FALSE) */
+
+    /*		    */
+    /* DP MATCHING  */
+    /*		    */
+
+    dp_search_scope(L_B_pos, R_pos);
+
+
+    /* 最大パスの検出 */
+
     ending_bonus_score = plus_bonus_score(R_pos, ptr->type);
-
-    /* 最大パスの検出 (R_posで終るものについて) */
-
     for (i = L_B_pos; i >= 0; i--) {
 	current_score = 
 	    (float)(score_matrix[i][L_B_pos+1] + ending_bonus_score)
 	    / norm[R_pos - i + 1];
-	if (!(restrict_p == TRUE && restrict_matrix[i][R_pos] == 0) &&
+	if (restrict_matrix[i][R_pos] && 
 	    max_score < current_score) {
 	    max_score = current_score;
 	    pure_score = (float)score_matrix[i][L_B_pos+1]
@@ -329,9 +344,28 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 	return;
     }
 
-    /* 他のR_posの最大パスと比較 */
+    /*
+      閾値を越えて，まだstatusが x なら n に
+      閾値を越えて，statusが n なら スコア比較
+      閾値を越えなくての，参考のためスコアを記憶
+    */
+    flag = FALSE;
+    if (sim_threshold <= pure_score &&
+	ptr->status == 'x') {
+	ptr->status = 'n';
+	flag = TRUE;
+    }
+    else if (sim_threshold <= pure_score &&
+	     ptr->status == 'n' &&
+	     ptr->max_score < max_score) {
+	flag = TRUE;
+    }
+    else if (ptr->status == 'x' &&
+	     ptr->max_score < max_score) {
+	flag = TRUE;
+    }	
 
-    if (ptr->max_score < max_score) {
+    if (flag == TRUE) {
 	ptr->max_score = max_score;
 	ptr->pure_score = pure_score;
 	ptr->max_path[0] = max_pos;
@@ -344,33 +378,6 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 	}
     }
 }
-    
-/*==================================================================*/
-	       int check_para_strength(PARA_DATA *ptr)
-/*==================================================================*/
-{
-    if (ptr->pure_score < ptr->threshold) {
-	ptr->status = 'x';
-	return FALSE;
-    }
-    if (ptr->pure_score > 4.0) {
-	ptr->status = 's';
-	return TRUE;
-    }
-    else if (ptr->pure_score > 0.0) {
-	ptr->status = 'n';
-	return TRUE;
-    }
-    else {
-	ptr->status = 'x';
-	/*
-	fprintf(Outfp, ";; Cannot find proper CS for the key <");
-	print_bnst(bnst_data + ptr->L_B, NULL);
-	fprintf(Outfp, ">.\n");
-	*/
-	return FALSE;
-    }
-}
 
 /*==================================================================*/
 	 int detect_para_scope(int para_num, int restrict_p)
@@ -380,12 +387,27 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
     PARA_DATA *para_ptr = &(para_data[para_num]);
     int L_B_pos = para_ptr->L_B;
 
+    /* 
+       restrict_p
+         TRUE : 前の並列解析の失敗によって特定のキーだけを処理する場合
+	 FALSE : はじめにすべてのキーを処理する場合
+	 
+       restrict_matrix
+         括弧による制限と前の並列構造解析による制限(restrict_pの場合)
+	 (restrict_p==FALSEの場合ここで初期化)
+    */
+
+    para_ptr->status = 'x';
     para_ptr->max_score = ENOUGH_MINUS;
     para_ptr->pure_score = ENOUGH_MINUS;
     para_ptr->manager_ptr = NULL;
-  
-    if (mask_quote_scope(L_B_pos, restrict_p)) 
-	restrict_p = TRUE;
+
+    if (restrict_p == FALSE)
+	for (i = 0; i < Bnst_num; i++)
+	    for (j = i + 1; j < Bnst_num; j++)
+		restrict_matrix[i][j] = 1;
+
+    mask_quote_scope(L_B_pos);
 
     for (k = 0; k < Bnst_num; k++) {
 	penalty_table[k] = (k == L_B_pos) ? 
@@ -393,11 +415,20 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
     }
 
     for (j = L_B_pos+1; j < Bnst_num; j++)
-	if (match_matrix[L_B_pos][j] != 0)
-	    _detect_para_scope(para_ptr, j, restrict_p);
+	_detect_para_scope(para_ptr, j);
 
-    check_para_strength(para_ptr);
-	    
+    if (para_ptr->status == 'x') {
+	;
+	/*
+	fprintf(Outfp, ";; Cannot find proper CS for the key <");
+	print_bnst(bnst_data + ptr->L_B, NULL);
+	fprintf(Outfp, ">.\n");
+	*/
+    } else if (para_ptr->status == 'n' &&
+	       para_ptr->pure_score > 4.0) {
+	para_ptr->status = 's';
+    }
+    
     return TRUE;	/* 解析結果statusがxでも,一応TUREを返す */
 }
 
@@ -416,7 +447,6 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 /*==================================================================*/
 {
     int i;
-    float threshold;
     char *cp, type[16], condition[256];
 
     for (i = 0; i < Bnst_num; i++) {
@@ -426,9 +456,8 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 	    bnst_data[i].para_num = Para_num;
 
 	    type[0] = NULL;
-	    threshold = 0.0;
 	    condition[0] = NULL;
-	    sscanf(cp, "%*[^:]:%[^:]:%f:%s", type, &threshold, condition);
+	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
 	    para_data[Para_num].para_char = 'a'+ Para_num;
 	    para_data[Para_num].L_B = i;
@@ -441,9 +470,6 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
 		bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
 	    para_data[Para_num].type = bnst_data[i].para_key_type;
-
-	    para_data[Para_num].threshold = threshold;
-
 	    string2feature_pattern(&(para_data[Para_num].f_pattern),condition);
 	    
 	    Para_num ++;
