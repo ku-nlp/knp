@@ -19,11 +19,11 @@ EXTRA_DIST = \
 ruledir = $(pkgdatadir)/rule
 dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
 
-.rule.data:
-	$(RULECONV) $<
+# .rule.data:
+# 	$(RULECONV) $<
 
-.phrase.rule:
-	$(RULETRANS) < $< > $@
+# .phrase.rule:
+# 	$(RULETRANS) < $< > $@
 
 rule:
 	if [ -x $(RULECONV) ]; then \
