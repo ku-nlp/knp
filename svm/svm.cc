@@ -49,7 +49,7 @@
 #include <tinysvm.h>
 #include "svm.h"
 
-#define	ModelFile	"/home/kawahara/CHUN-LI/knp/system/hoge.model"
+char *ModelFile = NULL;	/* modelファイルの指定 */
 
 TinySVM::Model model;
 
@@ -61,8 +61,7 @@ int init_svm() {
 }
 
 double svm_classify(char *line) {
-    double y = 0, dist;
-    int len = strlen(line);
+    double dist;
     int i = 0;
 
     while (isspace(line[i])) i++;
