@@ -1,3 +1,18 @@
+2003-04-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
+	省略解析で指示対象を探す範囲を指定可能にした
+
+2003-04-24  Nobuhiro Kaji  <kaji@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/extern.h, system/lib_sm.c, system/path.h:
+	ntt のシソーラスをカスタムできるようにした
+
+	* dict/scode/ntt/transform.cpp: New file.
+
+	* dict/scode/ntt/transform.cpp, dict/scode/ntt/Makefile.am:
+	transform.cpp で，接尾辞以外にも品詞を指定できるようにした
+
 2003-04-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/dpnd_analysis.c, system/extern.h:
