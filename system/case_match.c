@@ -25,10 +25,12 @@ int 	SM_match_score[] = {0, 10, 10, 10, 10, 10, 10, 10, 10,
   				/*{0, 5, 8, 10, 12};*/	/* ＳＭ対応スコア */
 int     SM_match_unknown = 10;			 	/* データ未知     */
 
-int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11};
+/* int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11}; */
 /* int 	EX_match_score[] = {0, 0, 0, 1, 3, 5, 10, 11}; */
+int 	EX_match_score[]  = {0, 0, 0, 1, 3, 5, 8, 11};
+int 	EX_match_score2[] = {0, 0, 0, 1, 2, 4, 7, 11};
 							/* 用例対応スコア */
-int     EX_match_unknown = 8; /* 10; */			/* データ未知     */
+int     EX_match_unknown = 6;				/* データ未知     */
 int     EX_match_sentence = 10;				/* 格要素 -- 文   */
 int     EX_match_tim = 0;				/* 格要素 -- 時間:時間格 */
 int     EX_match_tim2 = 12;				/* 格要素 -- 時間:その他の格 */
@@ -38,6 +40,7 @@ int	EX_match_exact = 12;
 int	EX_match_subject = 8;
 int	EX_match_modification = 0;
 
+int	SOTO_THRESHOLD = 8;
 int	Thesaurus = USE_NTT;
 
 /*==================================================================*/
@@ -321,7 +324,9 @@ int	Thesaurus = USE_NTT;
 	return EX_match_qua;
     }
     /* 意味素 : 格要素 -- 主体 (ガ格のみ) */
-    else if (MatchPP(cfp->pp[as2][0], "ガ") && 
+    else if ((MatchPP(cfp->pp[as2][0], "ガ") || 
+	      (cfp->voice == FRAME_PASSIVE_1 && 
+	       MatchPP(cfp->pp[as2][0], "ニ"))) && 
 	     cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
 	*pos = MATCH_SUBJECT;
 	return EX_match_subject;
@@ -402,7 +407,9 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	}
 
 	if (MatchPP(cfp->pp[as2][0], "ガ") && 
-	    cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
+	    (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
+	     (cfd->ex2[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
+	      cf_match_element(cfp->sm[as2], "主体", TRUE)))) {
 	    ga_subject = 1;
 	}
 	else {
@@ -414,8 +421,18 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    cfp->concatenated_flag == 0 && 
 	    cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
 			     cfp->ex_list[as2], cfp->ex_num[as2], pos)) {
-	    return EX_match_exact;
+	    if (MatchPP(cfp->pp[as2][0], "外の関係")) {
+		return EX_match_score[7]; /* 最大値 */
+	    }
+	    else {
+		return EX_match_exact;
+	    }
 	}
+
+	/* 外の関係のときシソーラス使わない
+	if (MatchPP(cfp->pp[as2][0], "外の関係")) {
+	    return 0;
+	} */
 
 	if (Thesaurus == USE_BGH) {
 	    exd = cfd->ex[as1];
@@ -437,7 +454,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    score = elmnt_match_score_each_sm(as1, cfd, as2, cfp, pos);
 	}
 
-	/* 用例がどちらか一方でもなかったら */
+	/* 入力側の用例の意味属性がない場合 */
 	if (*exd == '\0') {
 	    if (*cfd->sm[as1] == '\0') {
 		score = EX_match_unknown;
@@ -446,13 +463,18 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		score = 0;
 	    }
 	}
+	/* 格フレームの用例の意味属性がない場合 */
 	else if (exp == NULL || *exp == '\0') {
-	    /* 格フレーム側の用例の意味属性がないとき */
+	    /* 格フレーム側の意味属性がないとき */
 	    if (cfp->sm[as2] == NULL) {
 		score = EX_match_unknown;
 	    }
 	    /* 意味属性はあるが、match しないとき */
 	    else if (score < 0) {
+		/* 格フレームに用例自体がないとき */
+		if (!MatchPP(cfp->pp[as2][0], "ガ") && cfp->ex_num[as2] == 0) {
+		    return -1;
+		}
 		score = 0;
 	    }
 	}
@@ -468,7 +490,12 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		ex_score = *(match_score+(int)rawscore);
 	    }
 	    else if (Thesaurus == USE_NTT) {
-		ex_score = *(match_score+(int)(rawscore*7));
+		if (CheckMatchMaxSM(exd, exp, 0, sm2code("抽象"))) {
+		    ex_score = EX_match_score2[(int)(rawscore*7)];
+		}
+		else {
+		    ex_score = *(match_score+(int)(rawscore*7));
+		}
 	    }
 	}
 
@@ -521,6 +548,22 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 }
 
 /*==================================================================*/
+		int check_case(CASE_FRAME *cf, int c)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; i < cf->element_num; i++) {
+	for (j = 0; cf->pp[i][j] != END_M; j++) {
+	    if (cf->pp[i][j] == c) {
+		return i;
+	    }
+	}
+    }
+    return -1;
+}
+
+/*==================================================================*/
 	    void eval_assign(CASE_FRAME *cfd, LIST *list1,
 			     CASE_FRAME *cfp, LIST *list2,
 			     int score)
@@ -533,7 +576,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
     int local_m_p = 0;
     int local_c_e = 0;
     int pat_element, dat_element = 0;
-    int cf_element = 0;
+    int cf_element = 0, lastpp;
     float local_score;
 
     local_score = score;
@@ -573,10 +616,12 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
     for (i = 0; i < cfp->element_num; i++) {
 	if (list2->flag[i] != UNASSIGNED) {
 	    cf_element++;
+	    lastpp = cfp->pp[i][0];
 	}
     }
 
-    if (local_m_e < dat_element) {
+    if (local_m_e < dat_element || 
+	(cf_element == 1 && str_eq(pp_code_to_kstr(lastpp), "外の関係"))) {
 	local_score = -1;
     }
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0) {
@@ -589,6 +634,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	/* local_score = local_score * local_m_e
 	   / (dat_element * sqrt((double)pat_element)); */
 
+	/* 同じ格フレームでの対応付けに影響 */
 	local_score = local_score / sqrt((double)pat_element);
 
 	/* corpus based case analysis 00/01/04 */
@@ -719,8 +765,8 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 			    elmnt_score = 
 				elmnt_match_score(target, cfd, i, cfp, flag, &pos);
 
-			    if (flag == EXAMPLE || 
-				(flag == SEMANTIC_MARKER && elmnt_score != 0)) {
+			    if ((flag == EXAMPLE && elmnt_score >= 0) || 
+				(flag == SEMANTIC_MARKER && elmnt_score > 0)) {
 
 				/* 対応付けをして，残りの格要素の処理に進む */
 
@@ -739,7 +785,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 				list2.pos[i] = MATCH_NONE;
 			    } 
 			
-			    else {
+			    else if (elmnt_score >= 0) {
 				/* flag == SEMANTIC_MARKER && elmnt_score == 0
 				   すなわち，格助詞の対応する格スロットがあるのに
 				   意味マーカ不一致の場合も，処理を進める */
@@ -877,26 +923,34 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		   )) || 
 		 (nokaku && 
 		  check_same_case(cfd->sp[target], cfp->pp[i][0], cfp)) || 
-		 (renkaku &&
-		  cfp->pp[i][1] == END_M &&
-		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
-		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) ||
-		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
+		 (renkaku && 
+		  cfp->pp[i][1] == END_M && 
+		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") || 
+		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") || 
+		   (verb && /* 動詞だけ */
+		    ((sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) || 
+		     ((OptCaseFlag & OPT_CASE_SOTO_NO) && cfp->pp[i][0] == pp_kstr_to_code("ノ")) || /* ★形容詞OK */
+		     (cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))))) {
 		pos = MATCH_NONE;
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag, &pos);
-		if (elmnt_score != 0 || flag == EXAMPLE) {
-		    if (cfd->weight[target]) {
-			elmnt_score /= cfd->weight[target];
+		/* 外の関係にするときの閾値 */
+		/* 外の関係: 主体禁止 */
+		if (!(sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) || 
+		    (!cf_match_element(cfd->sm[target], "主体", FALSE) &&
+		     elmnt_score >= SOTO_THRESHOLD)) {
+		    if (elmnt_score > 0 || (flag == EXAMPLE && elmnt_score == 0)) {
+			if (cfd->weight[target]) {
+			    elmnt_score /= cfd->weight[target];
+			}
+			list1.flag[target] = i;
+			list2.flag[i] = target;
+			list1.score[target] = elmnt_score;
+			list2.score[i] = elmnt_score;
+			list2.pos[i] = pos;
+			assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
+			list2.flag[i] = UNASSIGNED;
+			list2.pos[i] = MATCH_NONE;
 		    }
-		    list1.flag[target] = i;
-		    list2.flag[i] = target;
-		    list1.score[target] = elmnt_score;
-		    list2.score[i] = elmnt_score;
-		    list2.pos[i] = pos;
-		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
-		    list2.flag[i] = UNASSIGNED;
-		    list2.pos[i] = MATCH_NONE;
 		}
 	    }
 	}
@@ -907,29 +961,31 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 
 	/* 外の関係だと推定してボーナスを与える */
 	if (renkaku && verb) {
-	    /* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
-	    if (OptDisc == OPT_DISC) {
-		elmnt_score = 0;
-	    }
-	    else {
-		elmnt_score = SOTO_SCORE;
-	    }
-	    if (cfd->weight[target]) {
-		elmnt_score /= cfd->weight[target];
-	    }
-	    /* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
+	    if (OptCaseFlag & OPT_CASE_SOTO_OLD) {
+		/* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
+		if (OptDisc == OPT_DISC) {
+		    elmnt_score = 0;
+		}
+		else {
+		    elmnt_score = SOTO_SCORE;
+		}
+		if (cfd->weight[target]) {
+		    elmnt_score /= cfd->weight[target];
+		}
+		/* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
 
-	    /* 格フレームに「外の関係」格を追加 
-	       下で cfp->element_num を戻しているので、
-	       同じ格が複数あるかどうかをチェックしていない */
-	    if (cfp->element_num < CF_ELEMENT_MAX) {
-		_make_ipal_cframe_pp(cfp, "外の関係", cfp->element_num);
-		list1.flag[target] = cfp->element_num;
-		list1.score[target] = elmnt_score;
-		list2.flag[cfp->element_num] = target;
-		list2.score[cfp->element_num] = elmnt_score;
-		cfp->element_num++;
-		soto_decide = 1;
+		/* 格フレームに「外の関係」格を追加 
+		   下で cfp->element_num を戻しているので、
+		   同じ格が複数あるかどうかをチェックしていない */
+		if (cfp->element_num < CF_ELEMENT_MAX) {
+		    _make_ipal_cframe_pp(cfp, "外の関係", cfp->element_num);
+		    list1.flag[target] = cfp->element_num;
+		    list1.score[target] = elmnt_score;
+		    list2.flag[cfp->element_num] = target;
+		    list2.score[cfp->element_num] = elmnt_score;
+		    cfp->element_num++;
+		    soto_decide = 1;
+		}
 	    }
 	}
 	else if (mikaku) {

@@ -556,6 +556,41 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
+ int CheckMatchMaxSM(char *exd, char *exp, int expand, char *target)
+/*==================================================================*/
+{
+    int i, j, step = SM_CODE_SIZE, flag;
+    float score = 0, tempscore;
+
+    /* どちらかに用例のコードがないとき */
+    if (!(exd && exp && *exd && *exp)) {
+	return FALSE;
+    }
+
+    if (expand != SM_NO_EXPAND_NE) {
+	expand = SM_EXPAND_NE_DATA;
+    }
+
+    /* 最大マッチスコアを求める */
+    for (j = 0; exp[j]; j+=step) {
+	for (i = 0; exd[i]; i+=step) {
+	    tempscore = ntt_code_match(exp+j, exd+i, expand);
+	    if (tempscore > score) {
+		score = tempscore;
+		/* 両方 target 意味素に属す */
+		if (sm_match_check(target, exd) && sm_match_check(target, exp)) {
+		    flag = TRUE;
+		}
+		else {
+		    flag = FALSE;
+		}
+	    }
+	}
+    }
+    return flag;
+}
+
+/*==================================================================*/
 	       int sm_fix(BNST_DATA *bp, char *targets)
 /*==================================================================*/
 {

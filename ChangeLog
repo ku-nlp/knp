@@ -1,3 +1,11 @@
+2002-01-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h, system/lib_sm.c, system/main.c:
+	格解析の改良
+	  格フレーム辞書の外の関係を使う (オプション:-soto) ための変更
+	  被連体修飾詞を格フレームのノ格にマッチさせる
+	  格解析のマッチングの類似度曲線変更, <抽象>のマッチを低く
+
 2001-12-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/thesaurus.c:

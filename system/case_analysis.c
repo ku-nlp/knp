@@ -363,9 +363,13 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	    for (i = 1; i < cpm_ptr->result_num; i++) {
 		/* score が最高で、
 		   直前格要素が格フレームの直前格にマッチしているものがあれば(0番目をチェック)
-		   直前格要素が格フレームの直前格にマッチしていることが条件 */
-		if (cpm_ptr->cmm[i].score == top && 
-		    (cflag == 0 || CheckCfClosest(&(cpm_ptr->cmm[i]), closest) == TRUE)) {
+		   直前格要素が格フレームの直前格にマッチしていることが条件
+		   ↓
+		   score が最高であることだけにした
+		*/
+		if (cpm_ptr->cmm[i].score == top) {
+/*		if (cpm_ptr->cmm[i].score == top && 
+		    (cflag == 0 || CheckCfClosest(&(cpm_ptr->cmm[i]), closest) == TRUE)) { */
 		    cpm_ptr->tie_num++;
 		}
 		else {
@@ -404,8 +408,9 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	}
     }
 
-    /* すべての格のスコアを正規化したものにする */
     if (cf_ptr->element_num != 0) {
+	/* 直前格があるときは直前格のスコアしか考慮されていないので、
+	   すべての格のスコアを足して正規化したものにする */
 	if (closest > -1) {
 	    for (i = 0; i < cpm_ptr->result_num; i++) {
 		/* 割り当て失敗のとき(score==-1)は、pure_score は定義されていない */
@@ -414,9 +419,10 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		if (cpm_ptr->cmm[i].score < 0 || pat_num == 0) {
 		    break;
 		}
-		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
+		/* cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num); */
+		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0];
 	    }
-	    /* すべてのスコアでsort */
+	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
 	    for (i = cpm_ptr->tie_num-1; i >= 1; i--) {
 		for (j = i-1; j >= 0; j--) {
 		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score) {
@@ -484,8 +490,12 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
        check_feature してもよい
        条件廃止: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
     if (min != -1) {
-	/* 最近格要素が指示詞の場合は決定しない */
-	if (check_feature((sp->bnst_data+min)->f, "指示詞")) {
+	/* 決定しない:
+	   1. 最近格要素が指示詞の場合
+	   2. ガ格で意味素がないとき */
+	if (check_feature((sp->bnst_data+min)->f, "指示詞") || 
+	    ((sp->bnst_data+min)->SM_code[0] == '\0' && 
+	      MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))) {
 	    return -2;
 	}
 	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* 未格 */
@@ -496,9 +506,8 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
-		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外 */
-		   cpm_ptr->cf.pp[elem_b_num][0] == 39) && 
-		  /* (cf_match_element(cpm_ptr->cf.sm[elem_b_num], "数量", FALSE) || */
+		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外の基本格 */
+		   MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "マデ")) && 
 		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE))) {
 	    return elem_b_num;
 	}
@@ -1256,7 +1265,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
 {
-    int i, num;
+    int i, num, soto, pos;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word;
 
     /* 格フレームがない場合 */
@@ -1280,40 +1289,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 
-    /* 格解析結果 ★buffer溢れ未対応★ */
-    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
-    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	if (num == UNASSIGNED) {
-	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
-		sprintf(buffer, ";%s/E/%s", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
-	    }
-	    else {
-		sprintf(buffer, ";%s/U", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
-	    }
-	}
-	else {
-	    word = make_print_string(cpm_ptr->elem_b_ptr[num]);
-	    sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
-		    cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
-		    word, cpm_ptr->elem_b_ptr[num]->num);
-	    free(word);
-
-	    /* 省略の場合 (特殊タグ以外) */
-	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {
-		strcat(feature_buffer, buffer);
-		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
-			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
-			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
-	    }
-	}
-	strcat(feature_buffer, buffer);
-    }
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
-
-    /* 各格要素の記述 */
+    /* 入力側の各格要素の記述 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 省略解析の結果は除く
 	   指示詞の解析をする場合は、指示詞を除く */
@@ -1327,12 +1303,22 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == NIL_ASSIGNED) {
-	    /* 外の関係 */
-	    if (cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
+	    /* 被連体修飾詞が割り当てなし -- 外の関係 */
+	    if ( /* (OptCaseFlag & OPT_CASE_SOTO_OLD) && */
+		cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
 		check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
 		strcpy(relation, "外の関係");
 		sprintf(feature_buffer, "%s判定", relation);
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+
+		if ((soto = check_case(cpm_ptr->cmm[0].cf_ptr, pp_kstr_to_code("外の関係"))) >= 0) {
+		    cpm_ptr->cmm[0].result_lists_d[0].flag[i] = soto;
+		    cpm_ptr->cmm[0].result_lists_p[0].flag[soto] = i;
+		    cpm_ptr->cmm[0].result_lists_d[0].score[i] = 
+			elmnt_match_score(i, &(cpm_ptr->cf), soto, cpm_ptr->cmm[0].cf_ptr, EXAMPLE, &pos);;
+		    cpm_ptr->cmm[0].result_lists_p[0].score[soto] = cpm_ptr->cmm[0].result_lists_d[0].score[i];
+		    cpm_ptr->cmm[0].result_lists_p[0].pos[soto] = pos;
+		}
 	    }
 	    /* 割り当てなしだが、入力側の格が明示されている場合はそれを表示
 	       (格の可能性はひとつしかなく、未格以外) */
@@ -1407,6 +1393,39 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    free(word);
 	}
     }
+
+    /* 格解析結果 ★buffer溢れ未対応★ */
+    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
+    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	if (num == UNASSIGNED) {
+	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
+		sprintf(buffer, ";%s/E/%s", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
+	    }
+	    else {
+		sprintf(buffer, ";%s/U", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+	    }
+	}
+	else {
+	    word = make_print_string(cpm_ptr->elem_b_ptr[num]);
+	    sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
+		    cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
+		    word, cpm_ptr->elem_b_ptr[num]->num);
+	    free(word);
+
+	    /* 省略の場合 (特殊タグ以外) */
+	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {
+		strcat(feature_buffer, buffer);
+		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
+			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
+			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
+	    }
+	}
+	strcat(feature_buffer, buffer);
+    }
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 }
 
 /*====================================================================

@@ -83,6 +83,7 @@ jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 char *Opt_jumanrc = NULL;
 
+extern int	SOTO_THRESHOLD;
 extern int	DISTANCE_STEP;
 extern int	RENKAKU_STEP;
 extern int	STRONG_V_COST;
@@ -294,7 +295,19 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
+	else if (str_eq(argv[0], "-soto-old")) {
+	    OptCaseFlag |= OPT_CASE_SOTO_OLD;
+	}
+	else if (str_eq(argv[0], "-soto-no")) {
+	    OptCaseFlag |= OPT_CASE_SOTO;
+	    OptCaseFlag |= OPT_CASE_SOTO_NO;
+	}
 	/* 以下コスト調整用 */
+	else if (str_eq(argv[0], "-sototh")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    SOTO_THRESHOLD = atoi(argv[0]);
+	}
 	else if (str_eq(argv[0], "-dcost")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();

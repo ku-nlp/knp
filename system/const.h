@@ -119,6 +119,8 @@
 #define	OPT_CASE_SOTO	1
 #define	OPT_CASE_GAGA	2
 #define	OPT_CASE_NO	4
+#define	OPT_CASE_SOTO_OLD	8
+#define	OPT_CASE_SOTO_NO	16
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;

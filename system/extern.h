@@ -160,6 +160,7 @@ extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int fla
 extern int cf_match_element(char *d, char *target, int flag);
 extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
 extern int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos);
+extern int check_case(CASE_FRAME *cf, int c);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);

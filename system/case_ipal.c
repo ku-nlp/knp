@@ -447,7 +447,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    code = get_str_code(point2, thesaurus);
 	    if (code) {
 		if (strlen(buf) + strlen(code) >= max) {
-		    fprintf(stderr, "Too many EX <%s> (%2dth).\n", ipal_str_buf, count);
+		    /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", ipal_str_buf, count); */
 		    free(code);
 		    break;
 		}
