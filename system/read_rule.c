@@ -86,6 +86,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	store_regexpmrphs(&(rp->self_pattern), car(cdr(body_cell)));
 	store_regexpmrphs(&(rp->post_pattern), car(cdr(cdr(body_cell))));
 
+	rp->f = NULL;
 	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
 
 	if (++(*count) == max) {
@@ -245,6 +246,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	store_regexpbnsts(&(rp->self_pattern), car(cdr(body_cell)));
 	store_regexpbnsts(&(rp->post_pattern), car(cdr(cdr(body_cell))));
 
+	rp->f = NULL;
 	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
 	
 	if (++(*count) == max) {
