@@ -266,13 +266,13 @@ extern void init_scase();
 extern void close_scase();
 
 /* lib_sm.c */
-extern char *_get_sm(char *cp);
+extern char *_get_ntt(char *cp);
 extern char *sm2code(char *cp);
 extern char *code2sm(char *cp);
 extern float ntt_code_match(char *c1, char *c2, int flag);
 extern int sm_time_match(char *c);
-extern void init_sm();
-extern void close_sm();
+extern void init_ntt();
+extern void close_ntt();
 extern char *_smp2smg(char *cp);
 extern char *smp2smg(char *cpd, int flag);
 extern int sm_fix(BNST_DATA *bp, char *targets);

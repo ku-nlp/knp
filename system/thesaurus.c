@@ -20,7 +20,7 @@ int	ParaThesaurus = USE_BGH;
     }
 
     if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
-	init_sm();
+	init_ntt();
     }
 }
 
@@ -33,7 +33,7 @@ int	ParaThesaurus = USE_BGH;
     }
 
     if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
-	close_sm();
+	close_ntt();
     }
 }
 
@@ -50,7 +50,7 @@ int	ParaThesaurus = USE_BGH;
 
     if (flag == USE_NTT) {
 	exist = SMExist;
-	get_code = _get_sm;
+	get_code = _get_ntt;
     }
     else if (flag == USE_BGH) {
 	exist = BGHExist;

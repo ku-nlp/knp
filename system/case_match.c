@@ -551,6 +551,22 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 }
 
 /*==================================================================*/
+int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
+/*==================================================================*/
+{
+    int i;
+	       
+    for (i = 0; i < cfd->element_num; i++) {
+	if (cfd->adjacent[i] == TRUE && 
+	    list1->flag[i] != NIL_ASSIGNED && 
+	    cfp->adjacent[list1->flag[i]] == TRUE) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 	    void eval_assign(CASE_FRAME *cfd, LIST *list1,
 			     CASE_FRAME *cfp, LIST *list2,
 			     int score)
@@ -860,6 +876,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
 	int renkaku = 0, mikaku = 0, nokaku = 0, verb, gaflag = 0, sotoflag = 0, soto_decide;
+	int sotonoflag = 0;
 
 	if (cfd->pp[target][target_pp] == -2) {
 	    renkaku = 1;
@@ -872,6 +889,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    nokaku = 1;
 	}
 
+	/* 動詞かどうか */
 	if (cfd->ipal_id[0] && str_eq(cfd->ipal_id, "動")) {
 	    verb = 1;
 	}
@@ -892,8 +910,13 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	}
 
 	/* 外の関係解析 */
-	if (OptCaseFlag & OPT_CASE_SOTO) {
+	if ((OptCaseFlag & OPT_CASE_SOTO) && 
+	    !cf_match_element(cfd->sm[target], "主体", FALSE)) {
 	    sotoflag = 1;
+	}
+	/* 外の関係-ノ格解析 */
+	else if (OptCaseFlag & OPT_CASE_SOTO_NO) {
+	    sotonoflag = 1;
 	}
 
 	for (i = 0; i < cfp->element_num; i++) {
@@ -916,15 +939,16 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") || 
 		   (verb && /* 動詞だけ */
 		    ((sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) || 
-		     ((OptCaseFlag & OPT_CASE_SOTO_NO) && cfp->pp[i][0] == pp_kstr_to_code("ノ")) || /* ★形容詞OK */
+		     (sotonoflag && cfp->pp[i][0] == pp_kstr_to_code("ノ") && 
+		      check_adjacent_assigned(cfd, cfp, &list1) == TRUE) || /* ★形容詞OK */
 		     (cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))))) {
 		pos = MATCH_NONE;
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag, &pos);
 		/* 外の関係にするときの閾値 */
 		/* 外の関係: 主体禁止 */
-		if (!(sotoflag && cfp->pp[i][0] == pp_kstr_to_code("外の関係")) || 
-		    (!cf_match_element(cfd->sm[target], "主体", FALSE) &&
-		     elmnt_score >= SOTO_THRESHOLD)) {
+		if (!(cfp->pp[i][0] == pp_kstr_to_code("外の関係") || 
+		      cfp->pp[i][0] == pp_kstr_to_code("ノ")) || 
+		    elmnt_score >= SOTO_THRESHOLD) {
 		    if (elmnt_score > 0 || (flag == EXAMPLE && elmnt_score == 0)) {
 			if (cfd->weight[target]) {
 			    elmnt_score /= cfd->weight[target];

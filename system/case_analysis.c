@@ -509,6 +509,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外の基本格 */
 		   MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "マデ")) && 
 		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE))) {
+	    cpm_ptr->cf.adjacent[elem_b_num] = TRUE;	/* 直前格のマーク */
 	    return elem_b_num;
 	}
     }
