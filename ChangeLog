@@ -1,3 +1,12 @@
+2002-06-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/feature.c, system/main.c, system/para_relation.c, system/read_data.c:
+	格解析のbug fix
+	-caseのときにタイムアウトするとKNPが固まるので、exitするようにした。
+
+	* system/corpus.c, system/db.c, system/dbm.h, system/lib_bgh.c, system/lib_scase.c, system/lib_sm.c, system/make_db.c, system/noun.c, system/proper.c, system/read_rule.c:
+	DBまわりの整理
+	
 2002-06-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/Makefile.orig: 新聞格フレーム辞書DBを作るtargetを修正
