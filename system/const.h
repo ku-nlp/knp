@@ -559,6 +559,7 @@ typedef struct {
 ====================================================================*/
 #define IPAL_FIELD_NUM	27	/* 65 */
 #define IPAL_DATA_SIZE	5000	/* 1026 */
+#define CASE_MAX_NUM	5	/* CF_ELEMENT_MAX との違いは? */
 
 #define USE_BGH	1
 #define	USE_NTT	2
@@ -574,9 +575,9 @@ typedef struct {
     int hyouki;			/* 表記 */
     int imi;			/* 意味 */
     int jyutugoso;		/* 述語素 */
-    int kaku_keishiki[5];	/* 格形式 */
-    int imisosei[5];		/* 意味素性 */
-    int meishiku[5];		/* 名詞句 */
+    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
+    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
+    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
     int sase;			/* 態１ */
     int rare;			/* 態２ */
     int tyoku_noudou1;		/* 態３ */
