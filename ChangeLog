@@ -1,3 +1,8 @@
+2003-10-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/context.c:
+	省略解析でSVM featureに頻度を入れた
+
 2003-10-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/case_analysis.c, system/case_ipal.c:
