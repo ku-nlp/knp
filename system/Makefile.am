@@ -1,13 +1,11 @@
 SUBDIRS = .
 
-EXTRA_DIST = \
-	Makefile.orig \
-	ipal.c \
-	make_db.c
-
 INCLUDES = @KNP_CFLAGS@
 
-noinst_PROGRAMS = knp ipal make_db
+bin_PROGRAMS = knp
+
+pkglibexecdir= $(libexecdir)/knp
+pkglibexec_PROGRAMS = ipal make_db
 
 knp_SOURCES = \
 	case_analysis.c \
