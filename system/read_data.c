@@ -823,7 +823,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    b_ptr->mrph_num = 1;
 	    b_ptr->jiritu_ptr = NULL;
 	    b_ptr->jiritu_num = 0;
+	    b_ptr->settou_ptr = NULL;
 	    b_ptr->settou_num = 0;
+	    b_ptr->fuzoku_ptr = NULL;
 	    b_ptr->fuzoku_num = 0;
 	    b_ptr->length = 0;
 	    for (j = 0, cp = b_ptr->SCASE_code; j < 11; j++, cp++)
@@ -834,11 +836,23 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    b_ptr->mrph_num ++;
 	}
 
+	if (check_feature(m_ptr->f, "接頭")) {
+	    if (!b_ptr->settou_ptr) {
+		b_ptr->settou_ptr = m_ptr;
+	    }
+	    b_ptr->settou_num ++;
+	}
 	if (check_feature(m_ptr->f, "自立")) {
 	    if (!b_ptr->jiritu_ptr) {
 		b_ptr->jiritu_ptr = m_ptr;
 	    }
 	    b_ptr->jiritu_num ++;
+	}
+	if (check_feature(m_ptr->f, "付属")) {
+	    if (!b_ptr->fuzoku_ptr) {
+		b_ptr->fuzoku_ptr = m_ptr;
+	    }
+	    b_ptr->fuzoku_num ++;
 	}
     }
     
