@@ -24,6 +24,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
     int i, j, k, flag, pref_mrph, pref_rule;
+    int bw_length;
     int real_homo_num;
     int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
     int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
@@ -47,8 +48,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	for (j = 0; j < i; j++) {
 	    loop_ptr2 = m_ptr + j;
 
-	    /* 読み以外すべて同じ --> 無視 */
-	    if (loop_ptr2->Hinshi == loop_ptr->Hinshi &&
+	    /* 読み以外すべて同じ --> 無視 --> mrph_homeを拡張して対応 */
+	    if (0 &&
+		loop_ptr2->Hinshi == loop_ptr->Hinshi &&
 		loop_ptr2->Bunrui == loop_ptr->Bunrui &&
 		str_eq(loop_ptr2->Goi, loop_ptr->Goi) &&
 		loop_ptr2->Katuyou_Kata == loop_ptr->Katuyou_Kata &&
@@ -73,24 +75,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     if (real_homo_num == 1) return;
 
-
-    /* 多義性をマークするfeatureを与える */
-
-    assign_cfeature(&(m_ptr->f), "品曖");
-    for (i = 0; i < homo_num; i++) {
-	if (uniq_flag[i] == 0) continue;
-	sprintf(fname, "品曖-%s", 
-		Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
-	assign_cfeature(&(m_ptr->f), fname);
-
-	/* 固有名詞以外には"その他"をふっておく */
-	if (m_ptr->Bunrui != 3 && /* 固有名詞 */
-	    m_ptr->Bunrui != 4 && /* 地名 */
-	    m_ptr->Bunrui != 5 && /* 人名 */
-	    m_ptr->Bunrui != 6) /* 組織名 */
-	    assign_cfeature(&(m_ptr->f), "品曖-その他");
-    }
-
     /* ルール (mrph_homo.rule)に従って優先する形態素を選択
        ※ 同形異義語数とルール中の形態素数が同じことが条件
           各同形異義語がルール中の形態素のいずれかにマッチすればよい
@@ -105,6 +89,23 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    fprintf(stderr, ";; The number of Rule morphs is too large in HomoRule.\n");
 	    exit(1);
 	}
+	
+	/* そこまでの形態素列をチェック */
+	bw_length = m_ptr - sp->mrph_data;
+	if ((r_ptr->pre_pattern == NULL &&	/* 違い */
+	     bw_length != 0) ||
+	    (r_ptr->pre_pattern != NULL &&
+	     regexpmrphs_match(r_ptr->pre_pattern->mrph + 
+			       r_ptr->pre_pattern->mrphsize - 1,
+			       r_ptr->pre_pattern->mrphsize,
+			       m_ptr - 1, 
+			       bw_length,	/* 違い */
+			       BW_MATCHING, 
+			       ALL_MATCHING,/* 違い */
+			       SHORT_MATCHING) == -1)) {
+	    continue;
+	}
+	
 	pref_mrph = 0;
 	for (k = 0; k < r_ptr->pattern->mrphsize; k++) matched_flag[k] = FALSE;
 	for (j = 0, loop_ptr = m_ptr; j < homo_num; j++, loop_ptr++) {
@@ -152,20 +153,38 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
 
 	/* pref_mrph番目のデータをコピー */
-	strcpy(m_ptr->Goi2, (m_ptr+pref_mrph)->Goi2);
-	strcpy(m_ptr->Yomi, (m_ptr+pref_mrph)->Yomi);
-	strcpy(m_ptr->Goi, (m_ptr+pref_mrph)->Goi);
-	m_ptr->Hinshi = (m_ptr+pref_mrph)->Hinshi;
-	m_ptr->Bunrui = (m_ptr+pref_mrph)->Bunrui;
-	m_ptr->Katuyou_Kata = (m_ptr+pref_mrph)->Katuyou_Kata;
-	m_ptr->Katuyou_Kei = (m_ptr+pref_mrph)->Katuyou_Kei;
-	strcpy(m_ptr->Imi, (m_ptr+pref_mrph)->Imi);
+	if (pref_mrph != 0) {
+	    strcpy(m_ptr->Goi2, (m_ptr+pref_mrph)->Goi2);
+	    strcpy(m_ptr->Yomi, (m_ptr+pref_mrph)->Yomi);
+	    strcpy(m_ptr->Goi, (m_ptr+pref_mrph)->Goi);
+	    m_ptr->Hinshi = (m_ptr+pref_mrph)->Hinshi;
+	    m_ptr->Bunrui = (m_ptr+pref_mrph)->Bunrui;
+	    m_ptr->Katuyou_Kata = (m_ptr+pref_mrph)->Katuyou_Kata;
+	    m_ptr->Katuyou_Kei = (m_ptr+pref_mrph)->Katuyou_Kei;
+	    strcpy(m_ptr->Imi, (m_ptr+pref_mrph)->Imi);
+	    clear_feature(&(m_ptr->f));
+	    m_ptr->f = (m_ptr+pref_mrph)->f;
+	    (m_ptr+pref_mrph)->f = NULL;
+	}
+	assign_feature(&(m_ptr->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
 
-	assign_feature(&(m_ptr->f), &((HomoRuleArray + pref_rule)->f), 
-		     m_ptr);
-
-    } else {
-
+	/* 多義性をマークするfeatureを与える */
+	assign_cfeature(&(m_ptr->f), "品曖");
+	for (i = 0; i < homo_num; i++) {
+	    if (uniq_flag[i] == 0) continue;
+	    sprintf(fname, "品曖-%s", 
+		    Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
+	    assign_cfeature(&(m_ptr->f), fname);
+	    
+	    /* 固有名詞以外には"その他"をふっておく */
+	    if (m_ptr->Bunrui != 3 && /* 固有名詞 */
+		m_ptr->Bunrui != 4 && /* 地名 */
+		m_ptr->Bunrui != 5 && /* 人名 */
+		m_ptr->Bunrui != 6) /* 組織名 */
+		assign_cfeature(&(m_ptr->f), "品曖-その他");
+	}
+    } 
+    else {
 	if (1 || OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, ";; Cannot disambiguate lexical ambiguities"
 		    " (%dth mrph : %s ?", m_ptr - sp->mrph_data,
@@ -241,7 +260,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, i, homo_flag;
 
@@ -375,9 +394,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		homo_flag = 0;
 	    }
 	    
-	    if (homo_num && homo_flag == 0) {
+	    if (homo_flag == 0 && homo_num) {
 
-		/* 同形異義語マークがなければ，前に同形異義語セットがあれば
+		/* 同形異義語マークがなく，前に同形異義語セットがあれば
 	           lexical_disambiguationを呼んで処理 */		   
 
 		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
@@ -405,29 +424,41 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	    offset = homo_flag ? 2 : 0;
 	    mrph_item = sscanf(input_buffer + offset,
-			       "%s %s %s %*s %d %*s %d %*s %d %*s %d %s", 
+			       "%s %s %s %*s %d %*s %d %*s %d %*s %d %[^\n]", 
 			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 			       &(m_ptr->Hinshi), &(m_ptr->Bunrui),
 			       &(m_ptr->Katuyou_Kata), &(m_ptr->Katuyou_Kei),
-			       m_ptr->Imi);
+			       rest_buffer);
 
 	    if (mrph_item == 8) {
 		/* 意味情報をfeatureへ */
-		if (strcmp(m_ptr->Imi, "NIL")) {
-		    char *token, *str;
+		if (strncmp(rest_buffer, "NIL", 3)) {
+		    char *token, *imip, *cp;
 
 		    /* 通常 "" で括られている */
-		    str = strdup(*(m_ptr->Imi) == '\"' ? m_ptr->Imi + 1 : m_ptr->Imi);
-		    if (*(str + strlen(str) - 1) == '\"') {
-			*(str + strlen(str) - 1) = '\0';
+		    if (rest_buffer[0] == '\"') {
+			imip = &rest_buffer[1];
+			if (cp = strchr(imip, '\"')) {
+			    *cp = '\0';
+			}
+			sprintf(m_ptr->Imi, "\"%s\"", imip);
+		    }
+		    else {
+			imip = rest_buffer;
+			if (cp = strchr(imip, ' ')) {
+			    *cp = '\0';
+			}
+			strcpy(m_ptr->Imi, imip);
 		    }
 
-		    token = strtok(str, " ");
+		    token = strtok(imip, " ");
 		    while (token) {
 			assign_cfeature(&(m_ptr->f), token);
 			token = strtok(NULL, " ");
 		    }
-		    free(str);
+		}
+		else {
+		    strcpy(m_ptr->Imi, "NIL");
 		}
 	    }
 	    else if (mrph_item == 7) {

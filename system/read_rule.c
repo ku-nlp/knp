@@ -193,12 +193,15 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	LineNoForError = LineNo;
 
 	body_cell = s_read(fp);
-	/* 形態素列ルールの読込 */
-	store_regexpmrphs(&(rp->pattern), car(body_cell));
 
-	list2feature(cdr(body_cell), &(rp->f));
+	/* 前の形態素列ルールの読込 */
+	store_regexpmrphs(&(rp->pre_pattern), car(body_cell));
 
-	
+	/* homoの形態素列ルールの読込 */
+	store_regexpmrphs(&(rp->pattern), car(cdr(body_cell)));
+
+	list2feature(cdr(cdr(body_cell)), &(rp->f));
+
 	if (++CurHomoRuleSize == HomoRule_MAX) {
 	    fprintf(stderr, ";; Too many HomoRule.");
 	    exit(1);

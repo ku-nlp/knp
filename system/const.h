@@ -332,6 +332,7 @@ typedef struct {
 
 /* 同形異義語規則 */
 typedef struct {
+    REGEXPMRPHS	*pre_pattern;
     REGEXPMRPHS *pattern;
     FEATURE	*f;
 } HomoRule;
