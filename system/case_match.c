@@ -36,8 +36,6 @@ int	EX_match_subject = 0;
 
 int	Thesaurus = USE_BGH;
 
-extern float ntt_code_match(char *c1, char *c2);
-
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
 /*==================================================================*/

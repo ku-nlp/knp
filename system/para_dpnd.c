@@ -403,7 +403,7 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 
     /* 並列構造内の係受けチェック，マスク */
     
-    for (i = 0; i < Para_M_num; i++)
+    for (i = 0; i < sp->Para_M_num; i++)
 	if (sp->para_manager[i].parent == NULL)
 	    if (check_para_d_struct(sp, &sp->para_manager[i]) == FALSE)
 		return FALSE;

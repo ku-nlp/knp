@@ -859,14 +859,14 @@ void optional_case_evaluation(SENTENCE_DATA *sp)
     int appropriate = 0;
 
     /* 普通の Best 解と、事例を用いた場合の Best 解が同じならば return */
-    if (Op_Best_mgr.ID < 0 || Best_mgr.ID == Op_Best_mgr.ID)
+    if (Op_Best_mgr.ID < 0 || sp->Best_mgr->ID == Op_Best_mgr.ID)
 	return;
 
     /* 学習時でなければ */
     if (!OptLearn) {
 	for (i = 0;i < sp->Bnst_num; i++) {
 	    /* 事例を用いた文節 */
-	    if (Op_Best_mgr.dpnd.op[i].flag && Best_mgr.dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
+	    if (Op_Best_mgr.dpnd.op[i].flag && sp->Best_mgr->dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
 
 		/* 係り先が異なり、事例を用いていればデータ出力 */
 		if (Op_Best_mgr.dpnd.op[i].data)
@@ -879,7 +879,7 @@ void optional_case_evaluation(SENTENCE_DATA *sp)
 		/* 読点がなければ */
 		else {
 		    /* 事例を用いたときのほうが近いとき */
-		    if (Op_Best_mgr.dpnd.head[i] < Best_mgr.dpnd.head[i])
+		    if (Op_Best_mgr.dpnd.head[i] < sp->Best_mgr->dpnd.head[i])
 			appropriate++;
 		    /* 事例を用いたときのほうが遠いとき */
 		    else
@@ -891,10 +891,10 @@ void optional_case_evaluation(SENTENCE_DATA *sp)
 	/* 事例を用いたときのスコアが大きく、
 	   かつ appropriate が 0 以上だったら適用 */
 	/* 
-	   if (Op_Best_mgr.score > Best_mgr.score && appropriate >= 0) {
+	   if (Op_Best_mgr.score > sp->Best_mgr->score && appropriate >= 0) {
 	   */
-	if (Op_Best_mgr.score > Best_mgr.score) {
-	    Best_mgr = Op_Best_mgr;
+	if (Op_Best_mgr.score > sp->Best_mgr->score) {
+	    *(sp->Best_mgr) = Op_Best_mgr;
 	    return;
 	}
     }
@@ -1004,7 +1004,7 @@ int temp_corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 
 void CheckChildCaseFrame(SENTENCE_DATA *sp) {
     int i, j;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     for (i = sp->Bnst_num-1; i > 0; i--) {
 	if (!check_feature((sp->bnst_data+i)->f, "用言"))
@@ -1539,18 +1539,18 @@ void unsupervised_debug_print(SENTENCE_DATA *sp) {
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	/* 事例を用いた文節 */
-	if (Best_mgr.dpnd.op[i].flag) {
+	if (sp->Best_mgr->dpnd.op[i].flag) {
 	    /* 出力して free */
-	    if (Best_mgr.dpnd.op[i].data) {
-		fprintf(Outfp, "; %s(%d) %s\n", (sp->bnst_data+i)->Jiritu_Go, i, Best_mgr.dpnd.op[i].data);
-		if (*(Best_mgr.dpnd.op[i].candidatesdata))
-		    fprintf(Outfp, ";        %s\n", Best_mgr.dpnd.op[i].candidatesdata);
-		free(Best_mgr.dpnd.op[i].data);
-		Best_mgr.dpnd.op[i].data = NULL;
+	    if (sp->Best_mgr->dpnd.op[i].data) {
+		fprintf(Outfp, "; %s(%d) %s\n", (sp->bnst_data+i)->Jiritu_Go, i, sp->Best_mgr->dpnd.op[i].data);
+		if (*(sp->Best_mgr->dpnd.op[i].candidatesdata))
+		    fprintf(Outfp, ";        %s\n", sp->Best_mgr->dpnd.op[i].candidatesdata);
+		free(sp->Best_mgr->dpnd.op[i].data);
+		sp->Best_mgr->dpnd.op[i].data = NULL;
 	    }
-	    if (Best_mgr.dpnd.op[i].candidatesdata) {
-		free(Best_mgr.dpnd.op[i].candidatesdata);
-		Best_mgr.dpnd.op[i].candidatesdata = NULL;
+	    if (sp->Best_mgr->dpnd.op[i].candidatesdata) {
+		free(sp->Best_mgr->dpnd.op[i].candidatesdata);
+		sp->Best_mgr->dpnd.op[i].candidatesdata = NULL;
 	    }
 	}
     }

@@ -510,10 +510,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
         
     /* 後処理 */
 
-    if (Work_mgr.score > Best_mgr.score ||
-	(Work_mgr.score == Best_mgr.score && 
-	 compare_dpnd(sp, &Work_mgr, &Best_mgr) == TRUE))
-	copy_mgr(&Best_mgr, &Work_mgr);
+    if (Work_mgr.score > sp->Best_mgr->score ||
+	(Work_mgr.score == sp->Best_mgr->score && 
+	 compare_dpnd(sp, &Work_mgr, sp->Best_mgr) == TRUE))
+	copy_mgr(sp->Best_mgr, &Work_mgr);
 }
 
 /*==================================================================*/
@@ -526,9 +526,9 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     /* 格解析の結果(Best_mgrが管理)をfeatureとして用言文節に与える */
 
-    for (j = 0; j < Best_mgr.pred_num; j++) {
+    for (j = 0; j < sp->Best_mgr->pred_num; j++) {
 
-	cpm_ptr = &(Best_mgr.cpm[j]);
+	cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
 	/* 格フレームがない場合 */
 	if (cpm_ptr->result_num == 0 || 
@@ -552,7 +552,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
 	    else {
-		fprintf(stderr, "UNASSIGNED? %s\n", sp->KNPSID);
+		fprintf(stderr, "UNASSIGNED? %s\n", sp->KNPSID ? sp->KNPSID : "");
 		exit(1);
 	    }
 	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);

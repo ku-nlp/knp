@@ -87,7 +87,7 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     for (i = 0; i < sp->Bnst_num - 1; i++)
 	buffer[i] = sp->bnst_data[i].dpnd_head;
 
-    for (i = 0; i < Para_M_num; i++) {
+    for (i = 0; i < sp->Para_M_num; i++) {
 	for (j = 0; j < sp->para_manager[i].part_num - 1; j++) {
 	    buffer[sp->para_manager[i].end[j]] = 
 		sp->para_manager[i].end[sp->para_manager[i].part_num - 1];
@@ -104,18 +104,18 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     for (j = sp->Bnst_num - 1; j >= 0; j--) {
 	child_num = 0;
 	for (i = j - 1; i >= 0; i--)
-	  if (buffer[i] == j) {
-	      sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
-	      if (child_num >= PARA_PART_MAX) {
-		  child_num = PARA_PART_MAX-1;
-		  break;
-	      }
-	      sp->bnst_data[i].parent = sp->bnst_data + j;
-	      if (Mask_matrix[i][j] == 3) {
-		  sp->bnst_data[i].para_type = PARA_INCOMP;
-	      }
-	      /* PARA_NORMALは展開時にセット */
-	  }
+	    if (buffer[i] == j) {
+		sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
+		if (child_num >= PARA_PART_MAX) {
+		    child_num = PARA_PART_MAX-1;
+		    break;
+		}
+		sp->bnst_data[i].parent = sp->bnst_data + j;
+		if (Mask_matrix[i][j] == 3) {
+		    sp->bnst_data[i].para_type = PARA_INCOMP;
+		}
+		/* PARA_NORMALは展開時にセット */
+	    }
 	sp->bnst_data[j].child[child_num] = NULL;
     }
     
@@ -354,10 +354,10 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	return FALSE;
 	
     if (OptExpandP == TRUE) 
-	for (i = 0; i < Para_M_num; i++)		/* 強並列の展開 */
+	for (i = 0; i < sp->Para_M_num; i++)		/* 強並列の展開 */
 	    if (sp->para_manager[i].parent == NULL)
 		strong_para_expand(sp, sp->para_manager + i);    
-    for (i = 0; i < Para_M_num; i++) 			/* PARAの展開 */
+    for (i = 0; i < sp->Para_M_num; i++) 		/* PARAの展開 */
 	if (sp->para_manager[i].parent == NULL)
 	    para_top_expand(sp, sp->para_manager + i);    
     if (OptExpandP == TRUE) 

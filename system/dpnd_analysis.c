@@ -500,10 +500,10 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	print_kakari(sp);
     }
 
-    if (score > Best_mgr.score) {
-	Best_mgr.dpnd = dpnd;
-	Best_mgr.score = score;
-	Best_mgr.ID = dpndID;
+    if (score > sp->Best_mgr->score) {
+	sp->Best_mgr->dpnd = dpnd;
+	sp->Best_mgr->score = score;
+	sp->Best_mgr->ID = dpndID;
 	Possibility++;
     }
 
@@ -518,7 +518,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    }
 	}
 	else {
-	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, sp->KNPSID, score);
+	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, sp->KNPSID ? sp->KNPSID : "", score);
 	    for (i = 0;i < sp->Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
@@ -721,16 +721,16 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 {
     int i;
 
-    Best_mgr.dpnd.head[sp->Bnst_num - 1] = -1;
+    sp->Best_mgr->dpnd.head[sp->Bnst_num - 1] = -1;
 
     for (i = sp->Bnst_num - 2; i >= 0; i--) {
-	Best_mgr.dpnd.head[i] = i + 1;
-	Best_mgr.dpnd.type[i] = 'D';
-	Best_mgr.dpnd.check[i].num = 1;
-	Best_mgr.dpnd.check[i].pos[0] = i + 1;
+	sp->Best_mgr->dpnd.head[i] = i + 1;
+	sp->Best_mgr->dpnd.type[i] = 'D';
+	sp->Best_mgr->dpnd.check[i].num = 1;
+	sp->Best_mgr->dpnd.check[i].pos[0] = i + 1;
     }
 
-    Best_mgr.score = 0;
+    sp->Best_mgr->score = 0;
 }
 
 /*==================================================================*/
@@ -747,8 +747,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     if (OptAnalysis == OPT_CASE2 ||
 	OptAnalysis == OPT_DISC) {	
-	Best_mgr.score = -10000;
-	call_case_analysis(sp, Best_mgr.dpnd);
+	sp->Best_mgr->score = -10000;
+	call_case_analysis(sp, sp->Best_mgr->dpnd);
     }
 
     if (Possibility != 0) {
@@ -756,8 +756,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    OptAnalysis == OPT_CASE2 ||
 	    OptAnalysis == OPT_DISC) {
 	    /* 格解析の結果を用言文節へ */
-	    for (i = 0; i < Best_mgr.pred_num; i++)
-		Best_mgr.cpm[i].pred_b_ptr->cpm_ptr = &(Best_mgr.cpm[i]);
+	    for (i = 0; i < sp->Best_mgr->pred_num; i++)
+		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);
 	    /* 格解析の結果をfeatureへ */
 	    record_case_analysis(sp);
 	    /* 主格を feature へ(固有名詞認識処理用)
@@ -776,11 +776,11 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 {
     int i;
     DPND dpnd;
-    
-    Best_mgr.score = -10000; /* スコアは「より大きい」時に入れ換えるので，
-				初期値は十分小さくしておく */
-    Best_mgr.dflt = 0;
-    Best_mgr.ID = -1;
+
+    sp->Best_mgr->score = -10000; /* スコアは「より大きい」時に入れ換えるので，
+				    初期値は十分小さくしておく */
+    sp->Best_mgr->dflt = 0;
+    sp->Best_mgr->ID = -1;
     Possibility = 0;
     dpndID = 0;
 
@@ -824,10 +824,10 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     /* 緩和をメモに記録する場合
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
-	if (Best_mgr.dpnd.type[i] == 'd') {
+	if (sp->Best_mgr->dpnd.type[i] == 'd') {
 	    strcat(PM_Memo, " 緩和d");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
-	} else if (Best_mgr.dpnd.type[i] == 'R') {
+	} else if (sp->Best_mgr->dpnd.type[i] == 'R') {
 	    strcat(PM_Memo, " 緩和R");
 	    sprintf(PM_Memo+strlen(PM_Memo), "(%d)", i);
 	}
@@ -837,7 +837,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     /* 遠い係り受けをメモに記録する場合
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
-	if (Best_mgr.dpnd.head[i] > i + 3 &&
+	if (sp->Best_mgr->dpnd.head[i] > i + 3 &&
 	    !check_feature(sp->bnst_data[i].f, "ハ") &&
 	    !check_feature(sp->bnst_data[i].f, "読点") &&
 	    !check_feature(sp->bnst_data[i].f, "用言") &&

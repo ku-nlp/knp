@@ -11,7 +11,7 @@
 void CheckCandidates(SENTENCE_DATA *sp)
 {
     int i, j;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
     char buffer[DATA_LEN], buffer2[256], *cp;
 
     /* 各文節ごとにチェック用の feature を与える */

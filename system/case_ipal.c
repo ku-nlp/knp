@@ -76,32 +76,62 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-			   void init_cf2()
+		 void clear_mgr_cf(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; i < CPM_MAX; i++) {
+	for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	    if (Thesaurus == USE_BGH) {
+		free(sp->Best_mgr->cpm[i].cf.ex[j]);
+		sp->Best_mgr->cpm[i].cf.ex[j] = NULL;
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		free(sp->Best_mgr->cpm[i].cf.ex2[j]);
+		sp->Best_mgr->cpm[i].cf.ex2[j] = NULL;
+	    }
+	    free(sp->Best_mgr->cpm[i].cf.sm[j]);
+	    sp->Best_mgr->cpm[i].cf.sm[j] = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+		 void init_mgr_cf(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; i < CPM_MAX; i++) {
+	for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	    if (Thesaurus == USE_BGH) {
+		sp->Best_mgr->cpm[i].cf.ex[j] = 
+		    (char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		sp->Best_mgr->cpm[i].cf.ex2[j] = 
+		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+	    }
+	    sp->Best_mgr->cpm[i].cf.sm[j] = 
+		(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+	}
+    }
+}
+
+/*==================================================================*/
+		   void init_cf2(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2 || 
 	OptAnalysis == OPT_DISC) {
-	int i, j;
 
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
 	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
-	for (i = 0; i < CPM_MAX; i++) {
-	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
-		if (Thesaurus == USE_BGH) {
-		    Best_mgr.cpm[i].cf.ex[j] = 
-			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
-		}
-		else if (Thesaurus == USE_NTT) {
-		    Best_mgr.cpm[i].cf.ex2[j] = 
-			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-		}
-		Best_mgr.cpm[i].cf.sm[j] = 
-		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-	    }
-	}
+	init_mgr_cf(sp);
     }
 }
 

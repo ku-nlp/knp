@@ -570,7 +570,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
     BNST_DATA *b_ptr;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	/* sp->mrph_data[i].SM[0] = '\0'; */

@@ -70,20 +70,32 @@ int Bcheck[BNST_MAX];
 }
 
 /*==================================================================*/
-		void clear_sentence(SENTENCE_DATA *sp)
+		void ClearSentence(SENTENCE_DATA *s)
+/*==================================================================*/
+{
+    free(s->mrph_data);
+    free(s->bnst_data);
+    free(s->para_data);
+    free(s->para_manager);
+    if (s->cpm)
+	free(s->cpm);
+    if (s->cf)
+	free(s->cf);
+    if (s->KNPSID)
+	free(s->KNPSID);
+    if (s->Best_mgr) {
+	free(s->Best_mgr);
+	clear_mgr_cf(s);
+    }
+}
+
+/*==================================================================*/
+		void ClearSentences(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
-    SENTENCE_DATA *s;
     for (i = 0; i < sp->Sen_num-1; i++) {
-	s = sentence_data+i;
-	free(s->mrph_data);
-	free(s->bnst_data);
-	free(s->para_data);
-	free(s->para_manager);
-	free(s->cpm);
-	free(s->cf);
-	free(s->KNPSID);
+	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
 }
@@ -92,21 +104,32 @@ int Bcheck[BNST_MAX];
 		 void InitSentence(SENTENCE_DATA *s)
 /*==================================================================*/
 {
-    int i;
+    int i, j;
 
     s->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*MRPH_MAX);
     s->bnst_data = (BNST_DATA *)malloc_data(sizeof(BNST_DATA)*BNST_MAX);
     s->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*PARA_MAX);
     s->para_manager = (PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*PARA_MAX);
+    s->Best_mgr = (TOTAL_MGR *)malloc_data(sizeof(TOTAL_MGR));
     s->Sen_num = 0;
     s->Mrph_num = 0;
     s->Bnst_num = 0;
     s->New_Bnst_num = 0;
+    s->KNPSID = NULL;
+    s->cpm = NULL;
+    s->cf = NULL;
 
     for (i = 0; i < MRPH_MAX; i++)
 	(s->mrph_data+i)->f = NULL;
     for (i = 0; i < BNST_MAX; i++)
 	(s->bnst_data+i)->f = NULL;
+    for (i = 0; i < PARA_MAX; i++) {
+	for (j = 0; j < RF_MAX; j++) {
+	    (s->para_data+i)->f_pattern.fp[j] = NULL;
+	}
+    }
+
+    init_mgr_cf(s);
 }
 
 /*==================================================================*/
@@ -121,7 +144,7 @@ int Bcheck[BNST_MAX];
     /* 一時的措置 */
     if (sp->Sen_num > 256) {
 	fprintf(stderr, "Sentence buffer overflowed!\n");
-	clear_sentence(sp);
+	ClearSentences(sp);
     }
 
     sp_new = sentence_data + sp->Sen_num - 1;
@@ -195,19 +218,22 @@ int Bcheck[BNST_MAX];
 	}
     }
 
-    sp_new->KNPSID = strdup(sp->KNPSID);
+    if (sp->KNPSID)
+	sp_new->KNPSID = strdup(sp->KNPSID);
+    else
+	sp_new->KNPSID = NULL;
 
-    sp_new->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*Para_num, 
+    sp_new->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*sp->Para_num, 
 				 "PARA DATA");
-    for (i = 0; i < Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	sp_new->para_data[i] = sp->para_data[i];
 	sp_new->para_data[i].manager_ptr += sp_new->para_manager - sp->para_manager;
     }
 
     sp_new->para_manager = 
-	(PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*Para_M_num, 
+	(PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*sp->Para_M_num, 
 				    "PARA MANAGER");
-    for (i = 0; i < Para_M_num; i++) {
+    for (i = 0; i < sp->Para_M_num; i++) {
 	sp_new->para_manager[i] = sp->para_manager[i];
 	sp_new->para_manager[i].parent += sp_new->para_manager - sp->para_manager;
 	for (j = 0; j < sp_new->para_manager[i].child_num; j++) {
@@ -218,20 +244,20 @@ int Bcheck[BNST_MAX];
 
     /* 格解析結果の保存 */
     sp_new->cpm = 
-	(CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR)*Best_mgr.pred_num, 
+	(CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR)*sp->Best_mgr->pred_num, 
 				   "CF PRED MGR");
 
     /* 格フレームの個数分だけ確保 */
-    for (i = 0; i < Best_mgr.pred_num; i++) {
-	cfnum += Best_mgr.cpm[i].result_num;
+    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+	cfnum += sp->Best_mgr->cpm[i].result_num;
     }
     sp_new->cf = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*cfnum, 
 					   "CASE FRAME");
 
     cfnum = 0;
-    for (i = 0; i < Best_mgr.pred_num; i++) {
-	num = Best_mgr.cpm[i].pred_b_ptr->num;	/* この用言の文節番号 */
-	*(sp_new->cpm+i) = Best_mgr.cpm[i];
+    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+	num = sp->Best_mgr->cpm[i].pred_b_ptr->num;	/* この用言の文節番号 */
+	*(sp_new->cpm+i) = sp->Best_mgr->cpm[i];
 	sp_new->bnst_data[num].cpm_ptr = sp_new->cpm+i;
 	(sp_new->cpm+i)->pred_b_ptr = sp_new->bnst_data+num;
 	for (j = 0; j < (sp_new->cpm+i)->cf.element_num; j++) {
@@ -242,9 +268,13 @@ int Bcheck[BNST_MAX];
 	for (j = 0; j < (sp_new->cpm+i)->result_num; j++) {
 	    copy_cf_with_alloc(sp_new->cf+cfnum, (sp_new->cpm+i)->cmm[j].cf_ptr);
 	    (sp_new->cpm+i)->cmm[j].cf_ptr = sp_new->cf+cfnum;
+	    sp->Best_mgr->cpm[i].cmm[j].cf_ptr = sp_new->cf+cfnum;
 	    cfnum++;
 	}
     }
+
+    /* 現在 cpm を保存しているが、Best_mgr を保存した方がいいかもしれない */
+    sp_new->Best_mgr = NULL;
 }
 
 /*==================================================================*/
@@ -294,6 +324,65 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n)
 }
 
 /*==================================================================*/
+     float CalcSimilarityForNoun(BNST_DATA *dat, BNST_DATA *pat)
+/*==================================================================*/
+{
+    char *exd, *exp;
+    int i, j, step;
+    float score = -1, tempscore;
+
+    if (Thesaurus == USE_BGH) {
+	exd = dat->BGH_code;
+	exp = pat->BGH_code;
+	step = BGH_CODE_SIZE;
+    }
+    else if (Thesaurus == USE_NTT) {
+	exd = dat->SM_code;
+	exp = pat->SM_code;
+	step = SM_CODE_SIZE;
+    }
+
+    /* どちらかに用例のコードがないとき */
+    if (!(exd && exp && *exd && *exp)) {
+	return 0;
+    }
+
+    /* 最大マッチスコアを求める */
+    for (j = 0; exp[j]; j+=step) {
+	for (i = 0; exd[i]; i+=step) {
+	    if (Thesaurus == USE_BGH) {
+		tempscore = _ex_match_score(exp+j, exd+i);
+		tempscore /= 7;
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		tempscore = ntt_code_match(exp+j, exd+i);
+	    }
+	    if (tempscore > score) {
+		score = tempscore;
+	    }
+	}
+    }
+
+    if (score > 0) {
+	return score;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+		   int CheckPureNoun(BNST_DATA *bp)
+/*==================================================================*/
+{
+    if (check_feature(bp->f, "体言") && 
+	!check_feature(bp->f, "形副名詞") && 
+	!check_feature(bp->f, "時間") && 
+	!check_feature(bp->f, "数量")) {
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 void EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr, 
 				      BNST_DATA *bp, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
@@ -302,10 +391,7 @@ void EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr,
     char feature_buffer[DATA_LEN];
 
     /* 省略要素となるためのとりあえずの条件 */
-    if (!check_feature(bp->f, "体言") || 
-	check_feature(bp->f, "形副名詞") || 
-	check_feature(bp->f, "時間") || 
-	check_feature(bp->f, "数量")) {
+    if (!CheckPureNoun(bp)) {
 	return;
     }
 
@@ -420,13 +506,16 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 }
 
 /*==================================================================*/
-	      void EllipsisDetectForNoun(BNST_DATA *bp)
+     void EllipsisDetectForNoun(SENTENCE_DATA *cs, BNST_DATA *bp)
 /*==================================================================*/
 {
     char **def;
-    int i, ssize = 5;
-    SENTENCE_DATA *sbuf;
+    int i, j, ssize = 5, scount, current, bend;
+    SENTENCE_DATA *sbuf, *sp, *s;
+    float score;
+    char feature_buffer[DATA_LEN];
 
+    /* 名詞の定義文を取得 */
     def = GetDefinitionFromBunsetsu(bp);
     if (!def) {
 	return;
@@ -434,14 +523,81 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 
     sbuf = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA)*ssize);
 
-    for (i = 0; *(def+i); i++) {
-	fprintf(stderr, "定義文[%s] %d: %s\n", bp->Jiritu_Go, i, *(def+i));
-	if (i >= ssize) {
+    for (scount = 0; *(def+scount); scount++) {
+	fprintf(stderr, "定義文[%s] %d: %s\n", bp->Jiritu_Go, scount, *(def+scount));
+
+	if (scount >= ssize) {
 	    sbuf = (SENTENCE_DATA *)realloc_data(sbuf, sizeof(SENTENCE_DATA)*(ssize <<= 1));
 	}
-	InitSentence(sbuf+i);
-	GetJumanResult(sbuf+i, *(def+i));
+	sp = sbuf+scount;
+
+	/* 定義文を解析 */
+	InitSentence(sp);
+	ParseSentence(sp, *(def+scount));
+
+	/* 元の文 (文章) の名詞で、定義文に含まれる名詞に似ているものにリンクをはる */
+	for (i = sp->Bnst_num-1; i >= 0; i--) {
+	    if (CheckPureNoun(sp->bnst_data+i)) {
+		/* sp->bnst_data+i: 定義文中の体言 */
+		maxscore = 0;
+		current = 1;
+#ifdef DEBUG
+		fprintf(Outfp, "定義文 -- %s\n", (sp->bnst_data+i)->Jiritu_Go);
+#endif
+		/* 元の文章 */
+		for (s = cs; s >= sentence_data; s--) {
+		    if (current) {
+			bend = bp->num;
+		    }
+		    else {
+			bend = s->Bnst_num;
+		    }
+
+		    for (j = bend-1; j >= 0; j--) {
+			if (!CheckPureNoun(s->bnst_data+j))
+			    continue;
+			/* s->bnst_data+j: 元の文章中の体言 */
+			score = CalcSimilarityForNoun(s->bnst_data+j, sp->bnst_data+i);
+			if (score > maxscore) {
+			    maxscore = score;
+			    maxs = s;
+			    maxi = j;
+			}
+			if (score > 0) {
+			    /* 省略候補 */
+			    sprintf(feature_buffer, "C%s;%s:%.3f", (s->bnst_data+j)->Jiritu_Go, 
+				    (sp->bnst_data+i)->Jiritu_Go, 
+				    score);
+			    assign_cfeature(&(bp->f), feature_buffer);
+#ifdef DEBUG
+			    fprintf(Outfp, "\t%.3f %s\n", score, (s->bnst_data+j)->Jiritu_Go);
+#endif
+			}
+		    }
+		    if (current)
+			current = 0;
+		}
+		if (maxscore > 0) {
+		    /* 決定した省略関係 */
+		    sprintf(feature_buffer, "C【%s】;%s:%.3f", (maxs->bnst_data+maxi)->Jiritu_Go, 
+			    (sp->bnst_data+i)->Jiritu_Go, 
+			    maxscore);
+		    assign_cfeature(&(bp->f), feature_buffer);
+#ifdef DEBUG
+		    fprintf(Outfp, "\t◎ %s\n", (maxs->bnst_data+maxi)->Jiritu_Go);
+#endif
+		}
+#ifdef DEBUG
+		fputc('\n', Outfp);
+#endif
+	    }
+	}
+	clear_cf();
     }
+
+    /* ここで文データを scount 個 free */
+    for (i = 0; i < scount; i++)
+	ClearSentence(sbuf+i);
 }
 
 /*==================================================================*/
@@ -455,10 +611,11 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
     BNST_DATA *pred_b_ptr;
 
     copy_sentence(sp);
+    clear_cf();
 
     /* 各用言をチェック */
-    for (j = 0; j < Best_mgr.pred_num; j++) {
-	cpm_ptr = &(Best_mgr.cpm[j]);
+    for (j = 0; j < sp->Best_mgr->pred_num; j++) {
+	cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
 	/* 格フレームがない場合 */
 	if (cpm_ptr->result_num == 0 || 
@@ -486,11 +643,8 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 
     /* 各体言をチェック */
     for (i = sp->Bnst_num-1; i >= 0; i--) {
-	if (check_feature((sp->bnst_data+i)->f, "体言") && 
-	    !check_feature((sp->bnst_data+i)->f, "形副名詞") && 
-	    !check_feature((sp->bnst_data+i)->f, "時間") && 
-	    !check_feature((sp->bnst_data+i)->f, "数量")) {
-	    EllipsisDetectForNoun(sp->bnst_data+i);
+	if (CheckPureNoun(sp->bnst_data+i)) {
+	    EllipsisDetectForNoun(sentence_data+sp->Sen_num-1, sp->bnst_data+i);
 	}
     }
 }

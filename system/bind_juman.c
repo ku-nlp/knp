@@ -130,7 +130,7 @@ FILE *w2c, *w2p, *rfc, *rfp;
 }
 
 /*==================================================================*/
-	  int GetJumanResult(SENTENCE_DATA *s, char *input)
+	   int ParseSentence(SENTENCE_DATA *s, char *input)
 /*==================================================================*/
 {
     char *cp, buffer[DATA_LEN];
@@ -145,7 +145,11 @@ FILE *w2c, *w2p, *rfc, *rfp;
     fflush(w2c);
     /* 形態素解析結果を rfc から読んで s に入れる
        EOS で TRUE がかえる */
-    /* main_analysis(s, rfc); */
+    main_analysis(s, rfc);
+#ifdef DEBUG
+    print_result(s);
+    fputc('\n', Outfp);
+#endif
     return 1;
 }
 

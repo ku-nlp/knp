@@ -26,12 +26,9 @@ PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
 TOTAL_MGR	Op_Best_mgr;
 
-int 		Para_num;			/* 並列構造数 */
-int 		Para_M_num;			/* 並列管理マネージャー数 */
 int 		Revised_para_num;			
 
 char		Comment[DATA_LEN];		/* コメント行 */
-char		KNPSID[256];
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
 char            SID_box[256];
@@ -446,7 +443,8 @@ extern int	SOTO_SCORE;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
-    current_sentence_data.KNPSID = KNPSID;
+    current_sentence_data.KNPSID = NULL;
+    current_sentence_data.Best_mgr = &Best_mgr;
 
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
@@ -478,9 +476,6 @@ extern int	SOTO_SCORE;
 	    }
 	    assign_ntt_dict(sp, i);
 	}
-    }
-    else {
-	sp->mrph_data[i].SM = NULL;
     }
 
     /* 形態素へのFEATURE付与 */
@@ -548,7 +543,7 @@ extern int	SOTO_SCORE;
 	/**************/
 
     if (OptInput == OPT_PARSED) {
-	dpnd_info_to_bnst(sp, &(Best_mgr.dpnd)); 
+	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
 	para_recovery(sp);
 	after_decide_dpnd(sp);
 	goto PARSED;
@@ -581,8 +576,8 @@ extern int	SOTO_SCORE;
     /****************/
 
     init_mask_matrix(sp);
-    Para_num = 0;	
-    Para_M_num = 0;
+    sp->Para_num = 0;
+    sp->Para_M_num = 0;
     relation_error = 0;
     d_struct_error = 0;
     Revised_para_num = -1;
@@ -643,7 +638,7 @@ extern int	SOTO_SCORE;
 PARSED:
 
     /* 係り受け情報を bnst 構造体に記憶 */
-    dpnd_info_to_bnst(sp, &(Best_mgr.dpnd)); 
+    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
 	/* 固有名詞認識処理 */
@@ -662,7 +657,7 @@ PARSED:
 	CheckCandidates(sp);
 
     if (OptLearn == TRUE)
-	fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, sp->KNPSID, Best_mgr.score);
+	fprintf(Outfp, ";;;OK 決定 %d %s %d\n", sp->Best_mgr->ID, sp->KNPSID ? sp->KNPSID : "", sp->Best_mgr->score);
 
 	/* 実験 */
     if (OptCheck == TRUE)
@@ -685,7 +680,7 @@ PARSED:
     SENTENCE_DATA *sp = &current_sentence_data;
 
     /* 格解析の準備 */
-    init_cf2();
+    init_cf2(sp);
     init_case_analysis();
 
     /* ルール読み込み */
@@ -715,7 +710,7 @@ PARSED:
 #endif
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
-	    dpnd_info_to_bnst(sp, &(Best_mgr.dpnd));
+	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
 	    if (OptAnalysis != OPT_DISC) print_result(sp);
 	    fflush(Outfp);
 	}
@@ -771,8 +766,7 @@ PARSED:
 	fflush(Outfp);
 
 	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2 || 
-	    OptAnalysis == OPT_DISC) {
+	    OptAnalysis == OPT_CASE2) {
 	    clear_cf();
 	}
 

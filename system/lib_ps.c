@@ -113,7 +113,7 @@ static char tmp[64];
 	    path_matrix[i][j] = 0;
 
     if (type == PRINT_PARA) {
-	for (i = 0; i < Para_num; i++) {
+	for (i = 0; i < sp->Para_num; i++) {
 	    ptr = &sp->para_data[i];
 	    for (j = ptr->L_B+1; j <= ptr->R; j++)
 		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =

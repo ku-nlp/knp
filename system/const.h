@@ -708,14 +708,16 @@ typedef struct sentence {
     int			Mrph_num;
     int			Bnst_num;
     int			New_Bnst_num;
+    int			Para_M_num;	/* 並列管理マネージャ数 */
+    int			Para_num;	/* 並列構造数 */
     MRPH_DATA		*mrph_data;
     BNST_DATA	 	*bnst_data;
     PARA_DATA		*para_data;
     PARA_MANAGER	*para_manager;
     CF_PRED_MGR		*cpm;
     CASE_FRAME		*cf;
-    struct sentence	*next;
     char		*KNPSID;
+    TOTAL_MGR		*Best_mgr;
 } SENTENCE_DATA;
 
 /*====================================================================

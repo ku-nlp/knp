@@ -435,7 +435,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 {
     int i;
 
-    for (i = 0; i < Para_num; i++) 
+    for (i = 0; i < sp->Para_num; i++) 
 	detect_para_scope(sp, i, FALSE);
 }
 
@@ -450,14 +450,14 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
 	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ÊÂ¥­")) != NULL) {
 
-	    sp->bnst_data[i].para_num = Para_num;
+	    sp->bnst_data[i].para_num = sp->Para_num;
 
 	    type[0] = NULL;
 	    condition[0] = NULL;
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
-	    sp->para_data[Para_num].para_char = 'a'+ Para_num;
-	    sp->para_data[Para_num].L_B = i;
+	    sp->para_data[sp->Para_num].para_char = 'a'+ sp->Para_num;
+	    sp->para_data[sp->Para_num].L_B = i;
 
 	    if (!strcmp(type, "Ì¾")) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_N	;
@@ -466,11 +466,11 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    } else if (!strcmp(type, "¡©")) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
-	    sp->para_data[Para_num].type = sp->bnst_data[i].para_key_type;
-	    string2feature_pattern(&(sp->para_data[Para_num].f_pattern),condition);
+	    sp->para_data[sp->Para_num].type = sp->bnst_data[i].para_key_type;
+	    string2feature_pattern(&(sp->para_data[sp->Para_num].f_pattern),condition);
 	    
-	    Para_num ++;
-	    if (Para_num >= PARA_MAX) {
+	    sp->Para_num ++;
+	    if (sp->Para_num >= PARA_MAX) {
 		fprintf(stderr, "Too many para (%s)!\n", Comment);
 		return CONTINUE;
 	    }
@@ -480,7 +480,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	}
     }
 
-    if (Para_num == 0) return 0;
+    if (sp->Para_num == 0) return 0;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
@@ -495,7 +495,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	}
     }
 
-    return Para_num;
+    return sp->Para_num;
 }
 
 
@@ -526,22 +526,22 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     int		i, j;
     BNST_DATA	*b_ptr;
 
-    Para_num = 0;
-    Para_M_num = 0;
+    sp->Para_num = 0;
+    sp->Para_M_num = 0;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
-	    sp->para_data[Para_num].L_B = i;
-	    sp->para_data[Para_num].R = b_ptr->dpnd_head;
+	    sp->para_data[sp->Para_num].L_B = i;
+	    sp->para_data[sp->Para_num].R = b_ptr->dpnd_head;
 	    for (j = i - 1; 
 		 j >= 0 && 
 		     (sp->bnst_data[j].dpnd_head < i ||
 		      (sp->bnst_data[j].dpnd_head == i &&
 		       sp->bnst_data[j].dpnd_type != 'P'));
 		 j--);
-	    sp->para_data[Para_num].max_path[0] = j + 1;
-	    sp->para_data[Para_num].status = 'n';
-	    Para_num++;
+	    sp->para_data[sp->Para_num].max_path[0] = j + 1;
+	    sp->para_data[sp->Para_num].status = 'n';
+	    sp->Para_num++;
 	}
     }
     detect_para_relation(sp);

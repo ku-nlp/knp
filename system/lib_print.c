@@ -458,7 +458,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
     /* パスのマーク付け(PARA) */
 
     if (type == PRINT_PARA) {
-	for ( i=0; i<Para_num; i++ ) {
+	for ( i=0; i<sp->Para_num; i++ ) {
 	    ptr = &sp->para_data[i];
 	    for ( j=ptr->L_B+1; j<=ptr->R; j++ )
 		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
@@ -549,7 +549,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
     print_line(max_length, over_flag);
     
     if (type == PRINT_PARA) {
-	for (i = 0; i < Para_num; i++) {
+	for (i = 0; i < sp->Para_num; i++) {
 	    fprintf(Outfp, "%c(%c):%4.1f(%4.1f) ", 
 		    sp->para_data[i].para_char, 
 		    sp->para_data[i].status, 
@@ -602,7 +602,7 @@ void print_para_manager(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int level)
 {
     int i;
     
-    for (i = 0; i < Para_M_num; i++)
+    for (i = 0; i < sp->Para_M_num; i++)
 	if (sp->para_manager[i].parent == NULL)
 	    print_para_manager(sp, &sp->para_manager[i], 0);
 }
@@ -923,7 +923,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     char *date_p, time_string[64];
     time_t t;
     struct tm *tms;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     /* 時間の取得 */
     t = time(NULL);

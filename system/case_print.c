@@ -227,7 +227,7 @@
 /*==================================================================*/
 {
     int i, j;
-    TOTAL_MGR *tm = &Best_mgr;
+    TOTAL_MGR *tm = sp->Best_mgr;
 
     fprintf(Outfp, "¢£ %d Score:%d, Dflt:%d, Possibility:%d/%d ¢£\n", 
 	    sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);

@@ -80,9 +80,9 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 {
     int i, j;
 
-    Para_M_num = 0;
+    sp->Para_M_num = 0;
 
-    for (i = 0; i <Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	sp->para_manager[i].para_num = 0;
 	sp->para_manager[i].part_num = 0;
 	sp->para_manager[i].parent = NULL;
@@ -264,9 +264,9 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* 位置関係の決定，誤りの修正 */
 
-    for (i = 0; i < Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
-        for (j = i+1; j < Para_num; j++) {
+        for (j = i+1; j < sp->Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    if ((para_rel_matrix[i][j] = para_location(sp, i, j)) == REL_BAD) {
 		if (OptDisplay == OPT_DEBUG)
@@ -281,9 +281,9 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* REL_POSで重なりの割合が大きい場合REL_PARに変更 */
 
-    for (i = 0; i < Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
-	for (j = 0; j < Para_num; j++) {
+	for (j = 0; j < sp->Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    if (para_rel_matrix[i][j] == REL_POS &&
 		para_brother_p(sp, i, j) == TRUE) {
@@ -294,12 +294,12 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* 左にREL_POS，右にREL_PREの場合，その間をREL_REVに変更 */
 
-    for (i = 1; i < Para_num-1; i++) {
+    for (i = 1; i < sp->Para_num-1; i++) {
 	if (sp->para_data[i].status == 'x') continue;
 	for (j = 0; j < i; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    if (para_rel_matrix[j][i] == REL_POS) {
-		for (k = i+1; k < Para_num; k++) {
+		for (k = i+1; k < sp->Para_num; k++) {
 		    if (sp->para_data[k].status == 'x') continue;
 		    if (para_rel_matrix[i][k] == REL_PRE) {
 			para_rel_matrix[j][k] = REL_REV;
@@ -311,12 +311,12 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* 兄弟関係のまとめ，MANAGERによる管理 */
 
-    for (i = 0; i < Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
 	if (sp->para_data[i].manager_ptr) {
 	    m_ptr = sp->para_data[i].manager_ptr;
 	} else {
-	    m_ptr = &sp->para_manager[Para_M_num++];
+	    m_ptr = &sp->para_manager[sp->Para_M_num++];
 	    sp->para_data[i].manager_ptr = m_ptr;
 	    m_ptr->para_data_num[m_ptr->para_num++] = i;
 	    if (m_ptr->para_num >= PARA_PART_MAX) {
@@ -328,7 +328,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	    m_ptr->start[m_ptr->part_num] = sp->para_data[i].L_B+1;
 	    m_ptr->end[m_ptr->part_num++] = sp->para_data[i].R;
 	}	  
-        for (j = i+1; j < Para_num; j++) {
+        for (j = i+1; j < sp->Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    switch (para_rel_matrix[i][j]) {
 	      case REL_PAR:
@@ -349,10 +349,10 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
     
     /* 親子関係のまとめ m_ptr1が子，m_ptr2が親の時に処理 */
 
-    for (i = 0; i < Para_num; i++) {
+    for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
 	m_ptr1 = sp->para_data[i].manager_ptr;
-        for (j = 0; j < Para_num; j++) {
+        for (j = 0; j < sp->Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    m_ptr2 = sp->para_data[j].manager_ptr;
 	    if ((i < j &&
@@ -369,13 +369,13 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* 範囲の修正 */
 
-    for (i = 0; i < Para_M_num; i++)
+    for (i = 0; i < sp->Para_M_num; i++)
 	if (sp->para_manager[i].parent == NULL)
 	    para_revise_scope(&sp->para_manager[i]);    
 
     /* 強並列のマーク */
 
-    for (i = 0; i < Para_M_num; i++) {
+    for (i = 0; i < sp->Para_M_num; i++) {
 	flag = TRUE;
 	for (j = 0; j < sp->para_manager[i].para_num; j++) {
 	    if (sp->para_data[sp->para_manager[i].para_data_num[j]].status != 's') {
@@ -388,7 +388,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     /* 並列解析結果をfeatureに */
 
-    for (i = 0; i < Para_M_num; i++) {
+    for (i = 0; i < sp->Para_M_num; i++) {
 	for (j = 0; j < sp->para_manager[i].part_num-1; j++) {
 	    sprintf(buffer1, "並結句数:%d", sp->para_manager[i].part_num);
 	    sprintf(buffer2, "並結文節数:%d", 
