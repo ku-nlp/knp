@@ -1,3 +1,9 @@
+2002-04-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule: 「通し(て)」を複合辞にした
+
+	* system/case_data.c: 「通し(て)」を複合辞「ヲツウジル格」にした
+
 2002-04-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/dpnd_analysis.c, system/ipal.c:
