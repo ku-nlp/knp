@@ -2,6 +2,9 @@
 
 	* configure.ac: bug fix of KNP_RC_DEFULT.
 
+	* system/case_ipal.c:
+	-caseで格解析できないようになっていた不都合を修正
+
 2003-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac, dict/ebcf/Makefile.am: 名詞格フレームへの対応
