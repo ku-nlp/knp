@@ -914,7 +914,7 @@ static int max_width;			/* 木の最大幅 */
     }
     fprintf(Outfp, "\n");
 
-    /* チェック用 */
+    /* チェック用
     if (OptCheck == TRUE)
 	for (i = 0; i < Bnst_num; i++)
 	    if (tm->dpnd.check[i].num != -1) {
@@ -923,6 +923,7 @@ static int max_width;			/* 木の最大幅 */
 		    fprintf(Outfp, " %d", tm->dpnd.check[i].pos[j]);
 		fprintf(Outfp, "\n");
 	    }
+	    */
 
     /* 解析結果のメインの出力 */
 
