@@ -15,7 +15,7 @@ extern int   OptMode;
 
 static char buffer[DATA_LEN];
 char CorpusComment[BNST_MAX][DATA_LEN];
-static DBM_FILE c_db, cc_db, op_db, cp_db, wc_db;
+static DBM_FILE c_db, cc_db, op_db, cp_db, wc_db, c_temp_db;
 
 extern char *ClauseDBname;
 extern char *ClauseCDBname;
@@ -55,6 +55,8 @@ int dbfetch_num(DBM_FILE db, char *buf)
     return count;
 }
 
+#define CLAUSE_TEMP_DB_NAME KNP_DICT "/clause/clause-strength.gdbm"
+
 int init_clause()
 {
     int i;
@@ -72,12 +74,16 @@ int init_clause()
 	c_db = db_read_open(ClauseDBname);
     else
 	c_db = db_read_open(CLAUSE_DB_NAME);
+
+    /* c_temp_db = db_read_open(CLAUSE_TEMP_DB_NAME); */
+
     return TRUE;
 }
 
 void close_clause()
 {
     db_close(c_db);
+    /* db_close(c_temp_db); */
     if (!(OptInhibit & OPT_INHIBIT_C_CLAUSE))
 	db_close(cc_db);
 }
@@ -85,9 +91,9 @@ void close_clause()
 /* 述語節間の係り受け頻度を調べる関数 */
 int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 {
-    char *type1, *type2, *cp, *token, *type, *level1, *level2;
+    char *type1, *type2, *cp, *token, *type, *level1, *level2, *sparse;
     char parallel1, parallel2, touten1, touten2, touten;
-    int score, offset, i;
+    int score, offset, i, score2;
 
     /* para_flag == TRUE  : 並列を考慮 (並列解析まえの呼び出しでは意味がない)
        para_flag == FALSE : 並列を無視 */
@@ -163,26 +169,32 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
     }
     /* free(cp); */
 
+    sprintf(buffer, "!%s%c%c %s%c%c", 
+	    type1+3, parallel1, touten1, 
+	    type2+3, parallel2, touten2);
+    if (buffer[DATA_LEN-1] != '\n') {
+	fprintf(stderr, "corpus_clause_comp: data length overflow.\n");
+	exit(1);
+    }
+    score2 = dbfetch_num(c_db, buffer);
+
     /* デバッグ出力 */
-    if (OptCheck != TRUE) {
-	if (para_flag == TRUE) {
-	    if (level1 && level2) {
-		fprintf(Outfp, ";;; %2d %2d %s%c%c(%s) %s%c%c(%s) -> %d\n", 
-			ptr1->num, ptr2->num, type1+3, parallel1, touten1, level1+7, 
-			type2+3, parallel2, touten2, level2+7, score);
-	    }
-	    else {
-		fprintf(Outfp, ";;; %2d %2d %s%c%c %s%c%c -> %d\n", 
-			ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
-			type2+3, parallel2, touten2, score);
-	    }
+    if (para_flag == TRUE) {
+	if (level1 && level2) {
+	    fprintf(Outfp, ";;; %2d %2d %s%c%c(%s) %s%c%c(%s) -> %d (%d)\n", 
+		    ptr1->num, ptr2->num, type1+3, parallel1, touten1, level1+7, 
+		    type2+3, parallel2, touten2, level2+7, score, score2);
 	}
 	else {
-	    fprintf(Outfp, ";;;(R) %s %c %s %c->%d\n", type1+3, touten1, 
-		    type2+3, touten2, score);
+	    fprintf(Outfp, ";;; %2d %2d %s%c%c %s%c%c -> %d (%d)\n", 
+		    ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
+		    type2+3, parallel2, touten2, score, score2);
 	}
     }
-
+    else {
+	fprintf(Outfp, ";;;(R) %s %c %s %c->%d (%d)\n", type1+3, touten1, 
+		type2+3, touten2, score, score2);
+    }
 
     if (score) {
 	if (score == 1) {
@@ -206,6 +218,14 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 				      (BNST_DATA *)ptr2, 
 				      FALSE);
 	else */
+
+	if (!score2) {
+	    if (sparse = (char *)check_feature(ptr1->f, "SPARSE"))
+		sprintf(buffer, "%s:%d%c", sparse, ptr2->num, parallel1);
+	    else
+		sprintf(buffer, "SPARSE:%d%c", ptr2->num, parallel1);
+	    assign_cfeature(&(ptr1->f), buffer);
+	}
 	return FALSE;
     }
 }
@@ -384,13 +404,17 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 
     /* 越えたことがあるとバリアではない */
     if (score) {
+#ifdef DEBUG
 	/* デバッグ出力 */
-	fprintf(Outfp, ";;;(C) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;; (C壁) %2d %2d %s %c %s %c-> !%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+#endif
 	return FALSE;
     }
+#ifdef DEBUG
     else
 	/* デバッグ出力 */
-	fprintf(Outfp, ";;;(C) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;; (C壁) %2d %2d %s %c %s %c-> !%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+#endif
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -410,8 +434,10 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 	score += scorep;
     }
 
+#ifdef DEBUG
     /* デバッグ出力 */
     fprintf(Outfp, "  %d\n", score);
+#endif
 
     /* あとは係ったことがあればよい */
     if (score)
@@ -927,7 +953,106 @@ void optional_case_evaluation()
 
     if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
     else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
-    else if (strcmp(level1, level2 + strlen("レベル:")) <= 0)
+    else if (levelcmp(level1, level2 + strlen("レベル:")) <= 0)
 	return TRUE;				/* ptr1 <= ptr2 ならOK */
     else return FALSE;
+}
+
+/* 実験 (強弱関係を一次元リストにした場合)*/
+int temp_corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
+{
+    char *type1, *type2, *cp, *token, *type, *level1, *level2;
+    char parallel1, parallel2, touten1, touten2, touten;
+    int score1, score2, score3, offset, i;
+
+    /* para_flag == TRUE  : 並列を考慮 (並列解析まえの呼び出しでは意味がない)
+       para_flag == FALSE : 並列を無視 */
+
+    /* 初期化 */
+    parallel1 = ' ';
+    parallel2 = ' ';
+    touten1 = ' ';
+    touten2 = ' ';
+
+    /* 並列の設定
+    if (para_flag == TRUE) {
+	if (ptr1->para_key_type != PARA_KEY_O)
+	    parallel1 = 'P';
+    }
+    */
+
+    /* 述語タイプの設定 */
+    type1 = (char *)check_feature(ptr1->f, "ID");
+    type2 = (char *)check_feature(ptr2->f, "ID");
+
+    /* level の設定(表示に用いるだけ) */
+    level1 = (char *)check_feature(ptr1->f, "レベル");
+    level2 = (char *)check_feature(ptr2->f, "レベル");
+
+    if (!type1) return TRUE;
+    if (!type2) return FALSE;
+
+    /* 係り先の読点を見るためのオフセット */
+    if (!strcmp(type2+3, "〜（ため）"))
+	offset = 1;
+    else
+	offset = 0;
+
+    /* 読点の設定 */
+    if ((char *)check_feature(ptr1->f, "読点"))
+	touten1 = ',';
+    if ((char *)check_feature((ptr2+offset)->f, "読点"))
+	touten2 = ',';
+
+    /* データベースの検索 */
+
+    /* 係り側 */
+    sprintf(buffer, "%s%c%c", type1+3, parallel1, touten1);
+    if (buffer[DATA_LEN-1] != '\n') {
+	fprintf(stderr, "corpus_clause_comp: data length overflow.\n");
+	exit(1);
+    }
+
+    /*  fprintf(stdout, ";;; K★ %s ", buffer); */
+    score1 = dbfetch_num(c_temp_db, buffer);
+    /*  fprintf(stdout, "%d\n", score1); */
+
+    /* 受け側 */
+    sprintf(buffer, "%s%c%c", type2+3, parallel2, touten2);
+    if (buffer[DATA_LEN-1] != '\n') {
+	fprintf(stderr, "corpus_clause_comp: data length overflow.\n");
+	exit(1);
+    }
+
+    /*  fprintf(stdout, ";;; U★ %s ", buffer); */
+    score2 = dbfetch_num(c_temp_db, buffer);
+    /*  fprintf(stdout, "%d\n", score2); */
+
+    /*
+    fprintf(stderr, ";;; ★ %d %d\n", score1, score2);
+    */
+
+    /* 前より後の方が強ければ TRUE */
+    /* if (!score2 || score1 <= score2) */
+    if (!score1 || score1 <= score2)
+	return TRUE;
+    else
+	return FALSE;
+}
+
+void CheckChildCaseFrame() {
+    int i, j;
+    TOTAL_MGR *tm = &Best_mgr;
+
+    for (i = Bnst_num-1; i > 0; i--) {
+	if (!check_feature((bnst_data+i)->f, "用言"))
+	    continue;
+	for (j = 0; j < i; j++) {
+	    if (tm->dpnd.head[j] == i) {
+		assign_cfeature(&((bnst_data+i)->f), "子○");
+		break;
+		/* check_feature((bnst_data+j)->f, "係") */
+	    }
+	}
+    }
 }
