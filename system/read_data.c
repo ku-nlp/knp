@@ -821,8 +821,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    if (i != 0) b_ptr++;
 	    b_ptr->mrph_ptr = m_ptr;
 	    b_ptr->mrph_num = 1;
-	    b_ptr->jiritu_ptr = m_ptr;
-	    b_ptr->jiritu_num = 1;
+	    b_ptr->jiritu_ptr = NULL;
+	    b_ptr->jiritu_num = 0;
 	    b_ptr->settou_num = 0;
 	    b_ptr->fuzoku_num = 0;
 	    b_ptr->length = 0;
@@ -832,6 +832,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	       mainの文ごとのループの先頭で処理に移動 */
 	} else {
 	    b_ptr->mrph_num ++;
+	}
+
+	if (check_feature(m_ptr->f, "自立")) {
+	    if (!b_ptr->jiritu_ptr) {
+		b_ptr->jiritu_ptr = m_ptr;
+	    }
 	    b_ptr->jiritu_num ++;
 	}
     }
@@ -847,6 +853,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		fprintf(stderr, "Too big bunsetsu (%s...)!\n", 
 			b_ptr->mrph_ptr);
 		return FALSE;
+	    }
+	}
+
+	*b_ptr->Jiritu_Go = '\0';
+	for (j = 0; j < b_ptr->jiritu_num; j++) {
+	    if ((strlen(b_ptr->Jiritu_Go) + strlen((b_ptr->jiritu_ptr+j)->Goi)) >= WORD_LEN_MAX) {
+		fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)\n",
+			b_ptr->Jiritu_Go, (b_ptr->jiritu_ptr+j)->Goi);
+	    } else {
+		strcat(b_ptr->Jiritu_Go, (b_ptr->jiritu_ptr+j)->Goi);
 	    }
 	}
     }

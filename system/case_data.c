@@ -142,12 +142,13 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	  c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
+    /* 
     else if (check_feature(b_ptr->f, "ʣ�缭") && b_ptr->child[0]) {
 	c_ptr->pp[c_ptr->element_num][0] = 
 	    pp_hstr_to_code(make_fukugoji_string(b_ptr));
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
-    }
+    } */
     else {
 	return NULL;
     }
