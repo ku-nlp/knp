@@ -1,3 +1,8 @@
+2004-11-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/thesaurus.c:
+	シソーラスを使わない設定を追加
+
 2004-11-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/bnst_compare.c, system/case_match.c, system/configfile.c, system/const.h, system/extern.h, system/knp.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/read_data.c, system/thesaurus.c:
