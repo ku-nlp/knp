@@ -78,6 +78,7 @@ char *Case_name[] = {
 		"ガ２", ""};
 
 char 		*ProgName;
+extern FILE	*Jumanrc_Fileptr;
 extern int 	Case_frame_num;
 extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
@@ -276,7 +277,7 @@ char *Opt_jumanrc = NULL;
     */
 
     set_jumanrc_fileptr(Opt_jumanrc, TRUE);
-    init_knp();
+    read_rc(Jumanrc_Fileptr);
     grammar(NULL);				/* 文法辞書 */
     katuyou(NULL);				/* 活用辞書 */
 
@@ -357,8 +358,6 @@ char *Opt_jumanrc = NULL;
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
 	init_optional_case();
 
-    read_rules();	/* ルール読み込み */
-
     current_sentence_data.mrph_data = mrph_data;
     current_sentence_data.bnst_data = bnst_data;
     current_sentence_data.para_data = para_data;
@@ -379,6 +378,9 @@ char *Opt_jumanrc = NULL;
 
     /* sentence_data *sp = &current_sentence_data; */
     sp = &current_sentence_data;
+
+    /* ルール読み込み */
+    read_rules();
 
     while ( 1 ) {
 
@@ -712,7 +714,7 @@ char *Opt_jumanrc = NULL;
     
 	/* 子作り失敗 しくしく */
 	if((pid = fork()) < 0) {
-	    fprintf(stderr,"Fork Error\n");
+	    fprintf(stderr, "Fork Error\n");
 	    sleep(1);
 	    continue;
 	}
@@ -735,19 +737,26 @@ char *Opt_jumanrc = NULL;
 	    while (1) {
 		char buf[1024];
 
-		fgets(buf,sizeof(buf),Infp);
+		fgets(buf, sizeof(buf), Infp);
 
 		/* QUIT */
-		if (strncasecmp(buf,"QUIT",4) == 0) {
+		if (strncasecmp(buf, "QUIT", 4) == 0) {
 		    fprintf(Outfp, "200 OK Quit\n");
 		    fflush(Outfp);
 		    exit(0);
 		}
 
+		if (strncasecmp(buf, "RC", 2) == 0) {
+		    server_read_rc(Infp);
+		    fprintf(Outfp, "200 OK\n");
+		    fflush(Outfp);
+		    continue;
+		}
+
 		/* RUN */
 		/* Option 解析は strstr なんかでかなりええかげん 
 		   つまり間違ったオプションはエラーにならん... */
-		if (strncasecmp(buf,"RUN",3) == 0) {
+		if (strncasecmp(buf, "RUN", 3) == 0) {
 		    char *p;
 
 		    if (strstr(buf, "-case"))   OptAnalysis = OPT_CASE;

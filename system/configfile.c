@@ -4,7 +4,6 @@
 
 /* $Id$ */
 
-extern FILE *Jumanrc_Fileptr;
 extern char Jumangram_Dirname[];
 extern int LineNoForError, LineNo;
 char *Knprule_Dirname = NULL;
@@ -26,7 +25,22 @@ int RuleNumMax = 0;
 }
 
 /*==================================================================*/
-			   void init_knp()
+		   void clear_rule_configuration()
+/*==================================================================*/
+{
+    if (CurrentRuleNum) {
+	free(RULE);
+	CurrentRuleNum = 0;
+	RuleNumMax = 0;
+    }
+    if (Knprule_Dirname) {
+	free(Knprule_Dirname);
+	Knprule_Dirname = NULL;
+    }
+}
+
+/*==================================================================*/
+			void read_rc(FILE *in)
 /*==================================================================*/
 {
 #ifdef  _WIN32
@@ -39,9 +53,9 @@ int RuleNumMax = 0;
     LineNo = 0 ;
     Jumangram_Dirname[0] = '\0';
 
-    while (!s_feof(Jumanrc_Fileptr))  {
+    while (!s_feof(in))  {
 	LineNoForError = LineNo;
-	cell1 = s_read(Jumanrc_Fileptr);
+	cell1 = s_read(in);
 
 	if (!strcmp(DEF_GRAM_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
@@ -172,6 +186,16 @@ int RuleNumMax = 0;
 	}	
     }
 #endif
+}
+
+/*==================================================================*/
+		    void server_read_rc(FILE *fp)
+/*==================================================================*/
+{
+    clear_rule_configuration();
+    set_cha_getc();
+    read_rc(fp);
+    unset_cha_getc();
 }
 
 /*==================================================================*/
