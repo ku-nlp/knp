@@ -112,7 +112,8 @@ jmp_buf timeout;
 	else if (str_eq(argv[0], "-debug"))  OptDisplay = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand")) OptExpandP = TRUE;
 	else if (str_eq(argv[0], "-check"))  OptCheck = TRUE;
-	else if (str_eq(argv[0], "-nosm"))   OptNE = OPT_NOSM;
+	else if (str_eq(argv[0], "-nenosm")) OptNE = OPT_NENOSM;
+	else if (str_eq(argv[0], "-ne"))     OptNE = OPT_NE;
 	else if (str_eq(argv[0], "-cc"))     OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))     OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))     OptInhibit &= ~OPT_INHIBIT_BARRIER;
@@ -226,8 +227,10 @@ jmp_buf timeout;
     						/* 文節の例外ルール */
     read_dpnd_rule(DPND_FILE);			/* 係り受けルール */
     read_koou_rule(KOOU_FILE);			/* 呼応表現ルール */
-    read_NE_rule(NE_FILE);			/* 固有名詞ルール */
-    read_CN_rule(CN_FILE);			/* 固有名詞ルール */
+    if (OptNE != OPT_NORMAL) {
+	read_NE_rule(NE_FILE);			/* 固有名詞ルール */
+	read_CN_rule(CN_FILE);			/* 固有名詞ルール */
+    }
 
     read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
 		   &ContRuleSize, ContRule_MAX);
@@ -271,7 +274,8 @@ jmp_buf timeout;
     init_sm();		/* 意味素オープン */
     init_sm2code();	/* 意味素コードオープン */
     init_scase();	/* 表層格辞書オープン */
-    init_proper();	/* 固有名詞解析辞書オープン */
+    if (OptNE != OPT_NORMAL)
+	init_proper();	/* 固有名詞解析辞書オープン */
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
     if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
@@ -463,7 +467,8 @@ jmp_buf timeout;
 	alarm(0);
 
 	/* 固有名詞認識処理 */
-	NE_analysis();
+	if (OptNE != OPT_NORMAL)
+	    NE_analysis();
 
 	memo_by_program();	/* メモへの書き込み */
 
@@ -490,7 +495,8 @@ jmp_buf timeout;
     close_sm();
     close_sm2code();
     close_scase();
-    close_proper();
+    if (OptNE != OPT_NORMAL)
+	close_proper();
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	close_clause();
     if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))

@@ -528,7 +528,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     sm = (char *)get_sm(mp->Goi);
 
     /* °ÕÌ£ÁÇ¤Ë¤è¤ë¸¡º÷ */
-    if (OptNE != OPT_NOSM && *sm) {
+    if (OptNE != OPT_NENOSM && *sm) {
 	smn = strlen(sm);
 	strncpy(mp->SM, sm, smn);	/* ¡ú */
 	smn = smn/SM_CODE_SIZE;
