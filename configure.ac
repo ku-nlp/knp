@@ -11,7 +11,9 @@ AM_CONFIG_HEADER([config.h])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PROG_RANLIB
+
+AC_DISABLE_SHARED
+AC_PROG_LIBTOOL
 
 
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
@@ -31,9 +33,11 @@ packagesrcdir=`cd $srcdir && pwd`
 if test "$with_svm" = yes; then
     SUBDIRS="svm $SUBDIRS"
     SVM_CFLAGS="-I$packagesrcdir/svm -DUSE_SVM"
-    SVM_LDFLAGS="-L$packagesrcdir/svm"
-    KNP_LIBS="$KNP_LIBS -lsvm -ltinysvm"
+    KNP_LIBS="$KNP_LIBS $packagesrcdir/svm/libsvm.la -ltinysvm"
+    LIBSVM_VERSION_INFO="0:0:1"
+    AC_SUBST(LIBSVM_VERSION_INFO)
 fi
+AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
 
 if test x"$juman_prefix" != x; then
    JUMAN_CFLAGS="-I$juman_prefix/include"
@@ -43,7 +47,7 @@ fi
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
 
 AC_MSG_CHECKING("debug version")
-if test "x$enable_debug" = "xyes"; then
+if test "x$enable_debug" = xyes; then
     dnl    AC_DEFINE(DEBUG)
     ETC_CFLAGS="-DDEBUG $ETC_CFLAGS"
 else
@@ -67,10 +71,11 @@ if ( test \( "x$with_berkeley_db2" = xyes -a "x$with_berkeley_db" = xyes \) \
     AC_MSG_ERROR("More than two DBs are specified.")    
 elif ( test "x$with_berkeley_db2" = xyes ); then
     AC_SEARCH_LIBS(db_open, db2 db, , 
-	         AC_MSG_ERROR(not found.))
+		   AC_MSG_ERROR(not found.))
 elif ( test "x$with_berkeley_db" = xyes ); then
-    AC_SEARCH_LIBS(db_create, db-3 db-4 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
-	         AC_MSG_ERROR(not found.))
+    AC_CHECK_LIB(db-4.1, db_create, DB_LIBS="-ldb-4.1 $DB_LIBS" ETC_CFLAGS="-DDB41 -DDB3 $ETC_CFLAGS", 
+		 AC_SEARCH_LIBS(db_create, db-3 db-4 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
+				AC_MSG_ERROR(not found.)))
 elif ( test "x$with_gdbm" = xyes ); then
     AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
@@ -102,7 +107,7 @@ KNP_CFLAGS="$SVM_CFLAGS $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=
 
 AC_SUBST(KNP_CFLAGS)
 
-LDFLAGS="$SVM_LDFLAGS $JUMAN_LDFLAGS $LDFLAGS"
+LDFLAGS="$JUMAN_LDFLAGS $LDFLAGS"
 
 
 # Checks for header files.

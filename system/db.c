@@ -168,7 +168,12 @@ DBM_FILE db_read_open(char *filename)
     db->set_cachesize(db, 0, 1048576, 0);
     db->set_pagesize(db, 4096);
 
+#ifdef DB41
+    if ((errno = db->open(db, NULL, filename, NULL, DB_HASH, DB_RDONLY, 0444))) {
+#else
     if ((errno = db->open(db, filename, NULL, DB_HASH, DB_RDONLY, 0444))) {
+#endif
+
 #ifdef DEBUG
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
 #endif
@@ -193,7 +198,12 @@ DBM_FILE db_write_open(char *filename)
     /* Initialization */
     db->set_cachesize(db, 0, 1048576, 0);
 
+#ifdef DB41
+    if ((errno = db->open(db, NULL, filename, NULL, DB_HASH, DB_CREATE | DB_TRUNCATE, 0644))) {
+#else
     if ((errno = db->open(db, filename, NULL, DB_HASH, DB_CREATE | DB_TRUNCATE, 0644))) {
+#endif
+
 #ifdef DEBUG
         fprintf(stderr, "db_write_open: %s: %s\n", filename, (char *)strerror(errno));
 #endif
