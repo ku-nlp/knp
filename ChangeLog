@@ -3,6 +3,8 @@
 	* system/case_match.c, system/const.h, system/context.c, system/extern.h:
 	名詞関係解析の条件: exact matchか意味素によるマッチのどちらかにした。
 
+	* system/context.h: 位置カテゴリ順の更新
+
 2004-01-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_sm.c:
