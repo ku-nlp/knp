@@ -21,3 +21,9 @@
 ; (KNP辞書ディレクトリ
 ;         /share/tool/knp/dict
 ; )
+
+(SVMモデルファイル
+	(/share/tool/knp/svm/disc-ga.model ガ)
+	(/share/tool/knp/svm/disc-wo.model ヲ)
+	(/share/tool/knp/svm/disc-ni.model ニ)
+)
