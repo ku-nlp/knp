@@ -1,5 +1,9 @@
 2001-11-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* autogen.sh: New file.
+
+2001-11-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/context.c, system/corpus.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/lib_ps.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/para_analysis.c, system/para_dpnd.c, system/para_relation.c, system/para_revision.c, system/proper.c, system/quote.c, system/read_data.c, system/read_rule.c, system/regexp.c, system/tree_conv.c:
 	コードの整理
 
