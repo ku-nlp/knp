@@ -36,7 +36,7 @@ int		SMP2SMGExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((sm_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((sm_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -65,7 +65,7 @@ int		SMP2SMGExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((sm2code_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((sm2code_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -94,7 +94,7 @@ int		SMP2SMGExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((code2sm_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((code2sm_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -123,7 +123,7 @@ int		SMP2SMGExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((smp2smg_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((smp2smg_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -146,13 +146,13 @@ int		SMP2SMGExist;
 /*==================================================================*/
 {
     if (SMExist == TRUE)
-	db_close(sm_db);
+	DB_close(sm_db);
 
     if (SM2CODEExist == TRUE)
-	db_close(sm2code_db);
+	DB_close(sm2code_db);
 
     if (SMP2SMGExist == TRUE)
-	db_close(smp2smg_db);
+	DB_close(smp2smg_db);
 }
 
 /*==================================================================*/

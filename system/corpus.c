@@ -19,7 +19,7 @@ extern char *OptionalCaseDBname;
 
 DBM_FILE db_read_open(char *filename);
 char *db_get(DBM_FILE db, char *buf);
-void db_close(DBM_FILE db);
+void DB_close(DBM_FILE db);
 
 typedef struct {
     int Value[BNST_MAX][BNST_MAX];
@@ -102,10 +102,10 @@ int init_clause()
 
 void close_clause()
 {
-    db_close(c_db);
+    DB_close(c_db);
     /* db_close(c_temp_db); */
     if (!(OptInhibit & OPT_INHIBIT_C_CLAUSE))
-	db_close(cc_db);
+	DB_close(cc_db);
 }
 
 /* 述語節間の係り受け頻度を調べる関数 */
@@ -264,7 +264,7 @@ int init_case_pred()
 
 void close_case_pred()
 {
-    db_close(cp_db);
+    DB_close(cp_db);
 }
 
 /* 自立語 : 文節 feature の制限 */
@@ -665,8 +665,8 @@ int init_optional_case() {
 
 void close_optional_case()
 {
-    db_close(op_db);
-    db_close(op_sm_db);
+    DB_close(op_db);
+    DB_close(op_sm_db);
 }
 
 /* 任意格からの係り受け頻度を調べる関数 */

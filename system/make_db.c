@@ -25,7 +25,7 @@
 
 extern DBM_FILE db_write_open(char *filename);
 extern int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode);
-extern void db_close(DBM_FILE db);
+extern void DB_close(DBM_FILE db);
 
 int main(int argc, char *argv[])
 {
@@ -66,6 +66,6 @@ int main(int argc, char *argv[])
     }
     fputc('\n', stderr);
 
-    db_close(db);
+    DB_close(db);
     return 0;
 }

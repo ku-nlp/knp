@@ -29,7 +29,7 @@ int		ScaseDicExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((scase_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((scase_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -51,7 +51,7 @@ int		ScaseDicExist;
 /*==================================================================*/
 {
     if (ScaseDicExist == TRUE)
-      db_close(scase_db);
+      DB_close(scase_db);
 }
 
 /*==================================================================*/

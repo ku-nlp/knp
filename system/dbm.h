@@ -24,9 +24,9 @@ typedef GDBM_FILE DBM_FILE;
 
 /*  functions  */
 
-#define db_open(name, rw, mode) \
+#define DB_open(name, rw, mode) \
   gdbm_open( name, DBM_BLOCK_SIZE, rw, mode, NULL )
-#define db_close(dbf) \
+#define DB_close(dbf) \
   gdbm_close(dbf)
 
 /*  DBM_store flags  */
@@ -44,9 +44,9 @@ typedef HASH_FILE *DBM_FILE;
 
 /*  functions  */
 
-#define db_open(name, rw, mode) \
+#define DB_open(name, rw, mode) \
     hash_read_open(name)
-#define db_close(dbf) \
+#define DB_close(dbf) \
     hash_close(dbf)
 #define	db_read_open(name) \
     hash_read_open(name)
@@ -66,9 +66,9 @@ typedef DB *DBM_FILE;
 
 /*  functions  */
 
-#define db_open(name, rw, mode) \
+#define DB_open(name, rw, mode) \
     db_read_open(name)
-#define db_close(dbf) \
+#define DB_close(dbf) \
     db_close(dbf)
 
 #endif

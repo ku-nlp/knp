@@ -29,7 +29,7 @@ int		BGHExist;
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((bgh_db = db_open(filename, O_RDONLY, 0)) == NULL) {
+    if ((bgh_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
@@ -51,7 +51,7 @@ int		BGHExist;
 /*==================================================================*/
 {
     if (BGHExist == TRUE)
-	db_close(bgh_db);
+	DB_close(bgh_db);
 }
 
 /*==================================================================*/

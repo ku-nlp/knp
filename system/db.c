@@ -38,12 +38,6 @@ DBM_FILE db_write_open(char *filename)
     return db;
 }
 
-/* DB close */
-void db_close(DBM_FILE db)
-{
-    gdbm_close(db);
-}
-
 /* DB list */
 void db_list(DBM_FILE db)
 {
