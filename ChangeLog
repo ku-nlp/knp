@@ -1,3 +1,8 @@
+2004-01-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/case_analysis.rule, rule/context.rule, rule/mrph_basic.rule:
+	修飾的な語の扱いを追加
+
 2004-01-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
