@@ -130,15 +130,18 @@ static int rel_matrix_strong[4][4] = {
 	     int para_brother_p(int pre_num, int pos_num)
 /*==================================================================*/
 {
-    /* REL_POS -> REL_PAR に変換する条件 */
+    /* REL_POS -> REL_PAR に変換する条件
+       前の並列構造のpost-conjunctと後の並列構造のpre-conjunctの
+       大きさがそれほどかわらない（４：３以下）
+       */
 
     int pre_length, pos_length;
 
     pre_length = para_data[pre_num].R - para_data[pre_num].L_B;
     pos_length = para_data[pos_num].L_B - para_data[pos_num].max_path[0] + 1;
     
-    if (pre_length * 3 > pos_length * 4) return FALSE;
-    else return TRUE;
+    if (pre_length * 3 <= pos_length * 4) return TRUE;
+    else return FALSE;
 }
 
 /*==================================================================*/
@@ -218,7 +221,7 @@ static int rel_matrix_strong[4][4] = {
 }
 
 /*==================================================================*/
-	      void para_revice_scope(PARA_MANAGER *ptr)
+	      void para_revise_scope(PARA_MANAGER *ptr)
 /*==================================================================*/
 {
     int i;
@@ -229,7 +232,7 @@ static int rel_matrix_strong[4][4] = {
 	/* 子供の処理 */
 
 	for (i = 0; i < ptr->child_num; i++)
-	  para_revice_scope(ptr->child[i]);
+	  para_revise_scope(ptr->child[i]);
 
 
 	/* 左側の修正 */
@@ -252,7 +255,7 @@ static int rel_matrix_strong[4][4] = {
 {
     /* 並列構造間の関係の整理 */
 
-    int i, j, flag;
+    int i, j, k, flag;
     int a1, a2, a3, b1, b2, b3;
     PARA_MANAGER *m_ptr, *m_ptr1, *m_ptr2;
 
@@ -272,6 +275,36 @@ static int rel_matrix_strong[4][4] = {
     }
 
     init_para_manager();
+
+    /* REL_POSで重なりの割合が大きい場合REL_PARに変更 */
+
+    for (i = 0; i < Para_num; i++) {
+	if (para_data[i].status == 'x') continue;
+	for (j = 0; j < Para_num; j++) {
+	    if (para_data[j].status == 'x') continue;
+	    if (para_rel_matrix[i][j] == REL_POS &&
+		para_brother_p(i, j) == TRUE) {
+		para_rel_matrix[i][j] = REL_PAR;
+	    }
+	}
+    }
+
+    /* 左にREL_POS，右にREL_PREの場合，その間をREL_REVに変更 */
+
+    for (i = 1; i < Para_num-1; i++) {
+	if (para_data[i].status == 'x') continue;
+	for (j = 0; j < i; j++) {
+	    if (para_data[j].status == 'x') continue;
+	    if (para_rel_matrix[j][i] == REL_POS) {
+		for (k = i+1; k < Para_num; k++) {
+		    if (para_data[k].status == 'x') continue;
+		    if (para_rel_matrix[i][k] == REL_PRE) {
+			para_rel_matrix[j][k] = REL_REV;
+		    }
+		}
+	    }
+	}
+    }
 
     /* 兄弟関係のまとめ，MANAGERによる管理 */
 
@@ -305,19 +338,6 @@ static int rel_matrix_strong[4][4] = {
 		m_ptr->start[m_ptr->part_num] = para_data[j].L_B+1;
 		m_ptr->end[m_ptr->part_num++] = para_data[j].R;
 		break;
-	      case REL_POS: 
-		if (para_brother_p(i, j) == TRUE) {
- 		    para_rel_matrix[i][j] = REL_PAR;
-		    para_data[j].manager_ptr = m_ptr;
-		    m_ptr->para_data_num[m_ptr->para_num++] = j;
-		    if (m_ptr->para_num >= PARA_PART_MAX) {
-			fprintf(stderr, "Too many para (%s)!\n", Comment);
-			exit(1);
-		    }
-		    m_ptr->start[m_ptr->part_num] = para_data[j].L_B+1;
-		    m_ptr->end[m_ptr->part_num++] = para_data[j].R;
-		}
-		break;
 	      default:
 		break;
 	    }
@@ -348,7 +368,7 @@ static int rel_matrix_strong[4][4] = {
 
     for (i = 0; i < Para_M_num; i++)
       if (para_manager[i].parent == NULL)
-	para_revice_scope(&para_manager[i]);    
+	para_revise_scope(&para_manager[i]);    
 
     /* 強並列のマーク */
 
