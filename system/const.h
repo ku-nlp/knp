@@ -388,6 +388,8 @@ typedef struct {
 #define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
+#define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
+
 typedef struct _RuleVector {
     char	*file;
     int		type;

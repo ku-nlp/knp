@@ -97,6 +97,8 @@ extern int DicForRuleDBExist;
 extern char 		*Case_name[];
 extern char		*ETAG_name[];
 
+extern char		*ModelFile;
+
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;

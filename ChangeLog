@@ -1,3 +1,9 @@
+2002-01-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_ipal.c, system/configfile.c, system/const.h, system/context.c, system/extern.h:
+	SVMのモデルファイルを設定ファイルに記述できるようにした
+	省略解析: 対象の用言に対する候補の位置をfeatureに
+
 2002-01-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/context.rule: 省略・照応処理用ルール追加

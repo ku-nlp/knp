@@ -989,6 +989,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	cf_ptr->pp[i][1] = END_M;
     }
 
+    cf_ptr->samecase[0][0] = END_M;
+    cf_ptr->samecase[0][1] = END_M;
+
     f_num_inc(start, &f_num);
     Case_frame_num++;
     b_ptr->cf_num = 1;
