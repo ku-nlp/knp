@@ -9,7 +9,17 @@
 
 	* system/Makefile.am:
 	para_similarity.c から bnst_compare.c の改名への対応
-	
+
+	* system/feature.c: 不要なfeature functionの削除
+
+	* system/corpus.c, system/proper.c: removed.
+
+	* system/Makefile.am, system/const.h, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/lib_sm.c, system/main.c, system/path.h, system/proper.c, system/read_data.c, system/read_rule.c, system/regexp.c:
+	古い固有表現抽出関連、頻度情報を使った節の係り受け判定の削除
+
+	* rule/kakari_uke.rule:
+	用言のレベルをチェックするfeature fuction名の統一
+
 2002-11-02  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule, rule/kakari_uke.rule:
