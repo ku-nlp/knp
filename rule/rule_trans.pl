@@ -1,55 +1,135 @@
 #! /usr/local/bin/jperl -- -*-Perl-*-
+######################################################################
+#
+#		 KNPの形態素，文節ルールのtranslator
+#
+#					99/09/10 by kuro@i.kyoto-u.ac.jp
+#					99/12/22 last modified
+######################################################################
+#
+# 各行のnotation
+# ==============
+#	[前の文脈]自分自身[後の文脈]\t+FEATURE列
+#		※ FEATURE列の前は必ずTABで区切る
+#		※ 前後の文脈，自分自身の中は文節ごとに空白で区切る
+#						(文節ルールの場合)
+#		※ FEATURE列はFEATUREごとに空白で区切る
+#
+# 形態素，文節のnotation
+# ======================
+#	^....		文節先頭からマッチ (文節ルールの場合)
+#	<<...>>		文節のfeature
+#	<...>		直前の形態素のfeature (〜<...>とすればfeatureだけの指定)
+#
+#	(...)		0回以上の出現 (形態素レベルと文節レベルそれぞれ)
+#	{WORD1|WORD2|..}WORD1 or WORD2 or ...
+#			  (扱えるのは品詞が同一の場合だけ)
+#
+#	{\品詞}		その品詞
+#	{\品詞:細分類}	その細分類
+#
+#	‥		任意の形態素列 (※ ……は記号一語で使っている)
+#	〜		任意の形態素 (形態素解析のために挿入，ルールでは削除)
+#
+#	WORD_活用語G	任意の活用語 (任意の活用形)
+#	WORD_非活用語G	任意の非活用語
+#
+#	WORD_活用語g	品詞,細分類:*，活用型:以下の一般化，活用形:そのまま，語:*
+#			  動詞タイプ 例) 書くg
+#                         --------------------
+#				母音動詞 子音動詞＊行 カ変動詞 サ変動詞 ザ変動詞
+#				動詞性接尾辞ます型 動詞性接尾辞うる型 動詞性接尾辞得る型
+#				無活用型
+#			  イ形容詞タイプ 例) 美しいg
+#                         -------------------------- 
+#			 	イ形容詞＊段
+#				助動詞ぬ型 助動詞く型
+#			  ナ形容詞タイプ 例) 静かだg
+#                         --------------------------
+#				ナ形容詞 ナ形容詞特殊 ナノ形容詞 判定詞
+#				助動詞ぬ型 助動詞だろう型 助動詞そうだ型
+#				(「特別の」にすればダ列特殊連体となる)
+#				(※ 「助動詞ぬ型」はイ形容詞とナ形容詞両方)
+#			  タル形容詞タイプ 例) 堂々たるg
+#                         ------------------------------
+#				タル形容詞
+#
+#	WORD_非活用語g	名詞，名詞性名詞接尾辞，名詞性述語接尾辞
+#
+#	WORD12345	品詞，細分類，活用型，活用形，語について数字指定の部分だけのこす
+#			  例) する1235 --> 活用形だけ何でもよい
+#
+#	※例外事項※	・"#define WORD 般化予約語"とした場合はWORDgと解釈
+#			・句読点，括弧はgなしでも語の一般化を行う
+#			・名詞，副詞，助詞は常に細分類を一般化
 
-######################################################################
-# KNPの文節featture付与ルールのtranslator	(99/09/10 kuro)
-######################################################################
+# 活用型の対応付け
+# -----------------------------------------
+# 無活用型		動詞
+# 		イ形容詞 ナ形容詞
+# 助動詞く型		イ形容詞
+# 動詞性接尾辞ます型	動詞
+# 動詞性接尾辞うる型	動詞
+# 動詞性接尾辞得る型	動詞
+
+$conj_type[0] = "母音動詞 子音動詞カ行 子音動詞カ行促音便形 子音動詞ガ行 子音動詞サ行 子音動詞タ行 子音動詞ナ行 子音動詞バ行 子音動詞マ行 子音動詞ラ行 子音動詞ラ行イ形 子音動詞ワ行 子音動詞ワ行文語音便形 カ変動詞 カ変動詞来 サ変動詞 ザ変動詞 動詞性接尾辞ます型 動詞性接尾辞うる型 動詞性接尾辞得る型 無活用型";
+$conj_type[1] = "イ形容詞アウオ段 イ形容詞イ段 イ形容詞イ段特殊 助動詞ぬ型 助動詞く型";
+$conj_type[2] = "ナ形容詞 ナ形容詞特殊 ナノ形容詞 判定詞 助動詞ぬ型 助動詞だろう型 助動詞そうだ型";
+$conj_type[3] = "タル形容詞";
 
 # 本当は全体に書いておく方がよいが，とりあえず使われるものだけ
 
-$pos_cond{"形式名詞"} = " [名詞 形式名詞]";
-$pos_repr{"形式名詞"} = "こと";
-$pos_cond{"副詞的名詞"} = " [名詞 副詞的名詞]";
-$pos_repr{"副詞的名詞"} = "ため";
-
-$pos_cond{"接尾辞"} = " [接尾辞]";
-$pos_repr{"接尾辞"} = "個";
-$pos_cond{"名詞性名詞助数辞"} = " [接尾辞 名詞性名詞助数辞]";
-$pos_repr{"名詞性名詞助数辞"} = "個";
-$pos_cond{"名詞性特殊接尾辞"} = " [接尾辞 名詞性特殊接尾辞]";
-$pos_repr{"名詞性特殊接尾辞"} = "以内";
-
-$pos_cond{"助詞"} = " [助詞]";
-$pos_repr{"助詞"} = "だけ";
-$pos_cond{"格助詞"} = " [助詞 格助詞]";
-$pos_repr{"格助詞"} = "に";
-$pos_cond{"副助詞"} = " [助詞 副助詞]";
-$pos_repr{"副助詞"} = "だけ";
-
-$pos_cond{"副詞形態指示詞"} = " [指示詞 副詞形態指示詞]";
-$pos_repr{"副詞形態指示詞"} = "こう";
-$pos_cond{"連体詞"} = " [連体詞]";
-$pos_repr{"連体詞"} = "ほんの";
-$pos_cond{"連体詞形態指示詞"} = " [指示詞 連体詞形態指示詞]";
-$pos_repr{"連体詞形態指示詞"} = "この";
-$pos_cond{"接続詞"} = " [接続詞]";
-$pos_repr{"接続詞"} = "そして";
-$pos_cond{"感動詞"} = " [感動詞]";
-$pos_repr{"感動詞"} = "あっ";
-
-$pos_cond{"句点"} = " [特殊 句点]";
-$pos_repr{"句点"} = "．";
+$pos_repr{"\\名詞:形式名詞"} = "こと";
+$pos_repr{"\\名詞:副詞的名詞"} = "ため";
+$pos_repr{"\\接尾辞"} = "個";
+$pos_repr{"\\接尾辞:名詞性名詞助数辞"} = "個";
+$pos_repr{"\\接尾辞:名詞性特殊接尾辞"} = "以内";
+$pos_repr{"\\助詞"} = "だけ";
+$pos_repr{"\\助詞:格助詞"} = "に";
+$pos_repr{"\\助詞:副助詞"} = "だけ";
+$pos_repr{"\\指示詞:副詞形態指示詞"} = "こう";
+$pos_repr{"\\連体詞"} = "ほんの";
+$pos_repr{"\\指示詞:連体詞形態指示詞"} = "この";
+$pos_repr{"\\接続詞"} = "そして";
+$pos_repr{"\\感動詞"} = "あっ";
+$pos_repr{"\\特殊:句点"} = "．";
 
 ######################################################################
-use Juman
-$juman = new Juman("-e -B"); 
-
+# use Juman
+# $juman = new Juman("-e -B"); 
+use KNP;
+# $knp = new KNP("-bnst -tab -r /home/kuro/.jumanrc");
+$knp = new KNP("-bnst -tab");
 ######################################################################
+$bnstrule_flag = 1;
 $num = 0;
+
 while ( <STDIN> ) {
     
     chomp;
     $num ++;
     next if (/^[\s\t]*\;/ || length($_) == 0);
+
+    if (/^\#define/) {
+	@tmp = split;
+	if ($tmp[1] eq "文節ルール") {
+	    $bnstrule_flag = 1;
+	} 
+	elsif ($tmp[1] eq "形態素ルール") {
+	    $bnstrule_flag = 0;
+	} 
+	elsif ($tmp[2] eq "般化予約語") {
+	    $g_define_word{$tmp[1]} = 1;
+	} 
+	else {
+	    die "Invalid define line ($_)!!\n" 
+	}
+	next;
+    }
+
+
+    # 表現とFEATURE列とコメントを分離
+    # 	FEATURE列との間はtab，コメントは ; の後
 
     if (/^([^\t]+)[\s\t]+([^\;\t]+)[\s\t]*(\;.+)$/) {
 	$pattern = $1; $feature = $2; $comment = $3;
@@ -59,139 +139,107 @@ while ( <STDIN> ) {
 	print STDERR  "line $num is invalid; $_\n";
 	next;
     }
-    print "; $pattern\n";
-
     $pattern =~ s/^\s+//;	# 念のため
     $pattern =~ s/\s+$//;	# 念のため
 
+
+    # 前後の文脈と自分自身を分離，前後の文脈は[...]
+
     $pattern =~ /^(\[[^\[\]]+\])?([^\[\]]+)(\[[^\[\]]+\])?$/;
-    $tmp1 = $1; $self = $2; $tmp2 = $3;
+    $tmp1 = $1; $tmp2 = $2; $tmp3 = $3;
     $tmp1 =~ s/^\[|\]$//g;
     @pres = split(/ /, $tmp1);
     $tmp2 =~ s/^\[|\]$//g;
-    @poss = split(/ /, $tmp2);
+    @self = split(/ /, $tmp2);
+    $tmp3 =~ s/^\[|\]$//g;
+    @poss = split(/ /, $tmp3);
 
-    # print " pre  @pres\n self $self\n post @poss\n\n";
+    # print ">> pre  @pres\n self @self\n post @poss\n\n";
 
-    # まず代表句をつくる
-    undef @pres_str;
-    undef @poss_str;
-    foreach (@pres) {
-	push (@pres_str, print_bnst_cond(0, $_));
+
+    # 前後の文脈の前後には空文字列を挿入(出力時は?*)
+
+    if ($bnstrule_flag) {
+	unshift(@pres, "") if ($pres[0] ne "‥");
+	push(@poss, "") if ($poss[$#poss] ne "‥");
     }
-    $self_str = print_bnst_cond(0, $self);
-    foreach (@poss) {
-	push (@poss_str, print_bnst_cond(0, $_));
+    
+    @all = (@pres, @self, @poss);
+
+    # 代表句をつくる
+
+    undef @repr_str;
+    foreach (@all) {
+	push(@repr_str, bnst_cond($_, 0));
     }
 
-    print "(\n";
-    # 前の文節列の条件
-    if (@pres) {
-	print "( ?*";
-	for ($i = 0; $i < @pres; $i++) {
-	    if ($i == 0) {
-		$l_context = "";
-	    } else {
-		$l_context = $pres_str[$i-1];
-	    }
-	    if ($i == (@pres - 1)) {
-		$r_context = $self_str;
-	    } else {
-		$r_context = $pres_str[$i+1];;
-	    }
-	    print_bnst_cond(1, $pres[$i], $l_context, $r_context);
+
+    # MAIN
+
+    print "; $pattern\n";
+    print "(\n(";
+    for ($i = 0; $i < @all; $i++) {
+	print " )\n(" if ($i == @pres);
+	print " )\n(" if ($i == (@pres + @self));
+
+	if ($bnstrule_flag && 
+	    ($i == 0 || $i == (@all - 1))) {
+	    print " ?*";
+	} else {
+	    bnst_cond($all[$i], 1, $repr_str[$i-1], $repr_str[$i+1]);
 	}
-	print " )\n";
-    } else {
-	print "( ?* )\n";
     }
-
-    # 自分の条件
-    print "( ";
-
-    if (@pres) {
-	$l_context = $pres_str[@pres_str-1];
-    } else {
-	$l_context = "";
-    }
-    if (@poss) {
-	$r_context = $poss_str[0];
-    } else {
-	$r_context = "";
-    }
-    print_bnst_cond(1, $self, $l_context, $r_context);
-
-    print " )\n";
-
-    # 後の文節列の条件
-    if (@poss) {
-	print "( ";
-	for ($i = 0; $i < @poss; $i++) {
-	    if ($i == 0) {
-		$l_context = $self_str;
-	    } else {
-		$l_context = $poss_str[$i-1];
-	    }
-	    if ($i == (@poss - 1)) {
-		$r_context = "";
-	    } else {
-		$r_context = $poss_str[$i+1];;
-	    }
-	    print_bnst_cond(1, $poss[$i], $l_context, $r_context);
-	}
-	print " ?* )\n";
-    } else {
-	print "( ?* )\n";
-    }
-
-    print "\t$feature\n";
-    print ")\n";
-
+    print " )\n\t$feature\n)\n";
     print "$comment\n" if $comment;
     print "\n";
 }
-$juman->close;
+
+# $juman->close;
+# $knp->close;
 
 ######################################################################
-sub print_bnst_cond
+sub bnst_cond
 {
-    my ($flag, $input, $l_context, $r_context) = @_;
-    my ($ast_flag, $input1, $input2);
+    # 文節の条件を処理 (flag=1:通常の処理，flag=0:代表表現をかえす)
 
-    if ($input =~ /^\((.+)\)$/) {
+    my ($input, $flag, $l_context, $r_context) = @_;
+    my ($ast_flag, $string, $feature);
+
+    # (....) -> ....とast_flagに分離
+    
+    if ($bnstrule_flag && $input =~ /^\((.+)\)$/) {
 	$input = $1;
 	$ast_flag = 1;
     } else {
 	$ast_flag = 0;
     }
 
-    if ($input =~ /^\<([^\<\>]+)\>$/) {
-	$input = $1;
-	if ($flag) {
-	    printf "< (?*) %s >", feature2str($input);
+
+    # 文節のFEATUREを分離
+
+    if ($input =~ /^\<\<([^\<\>]+)\>\>$/) {
+	$string = "‥"; $feature = $1;
+    } elsif ($input =~ /^(.+)\<\<([^\<\>]+)\>\>$/) {
+	$string = $1; $feature = $2;
+    } else {
+	$string = $input; $feature = "";
+    }
+
+
+    # 出力
+
+    if ($flag) {
+	if ($bnstrule_flag) {
+	    print " < (";
+	    bnst_cond2($string, 1, $l_context, $r_context);
+	    printf " )%s >", feature2str($feature);
+	    print "*" if $ast_flag;
 	} else {
-	    return "？";
-	}
-    } elsif ($input =~ /^(.+)\<([^\<\>]+)\>$/) {
-	$input1 = $1; $input2 = $2;
-	if ($flag) {
-	    print "< (";
-	    print_normal_cond(1, $input1, $l_context, $r_context);
-	    printf ") %s >", feature2str($input2);
-	} else {
-	    return print_normal_cond(0, $input1);
+	    bnst_cond2($string, 1, $l_context, $r_context);
 	}
     } else {
-	if ($flag) {
-	    print "< (";
-	    print_normal_cond(1, $input, $l_context, $r_context);
-	    print ") >";
-	} else {
-	    return print_normal_cond(0, $input);
-	}
+	return bnst_cond2($string, 0);
     }
-    print "*" if $ast_flag;
-    print " ";
 }
 
 ######################################################################
@@ -199,7 +247,9 @@ sub feature2str
 {
     my ($input) = @_;
 
-    $data = "(";
+    return "" unless ($input);
+
+    $data = " (";
     foreach (split(/\|\|/, $input)) {
 	s/\&\&/ /g;
 	$data .= "($_)";
@@ -209,88 +259,112 @@ sub feature2str
 }
 
 ######################################################################
-sub print_normal_cond
+sub bnst_cond2
 {
-    my ($flag, $input, $l_context, $r_context) = @_;
-    my (@data, @feature, @mrph);
-    my ($i, $j, $k, $l, $error_flag);
-    my $from_any = 1;
+    # 文節の条件を処理 (flag=1:通常の処理，flag=0:代表表現をかえす)
 
-    if ($input =~ /^\^/) {
-	$input =~ s/^\^//;
-	$from_any = 0;
+    # (彼|彼女)に(だけ|すら|さえ)は
+    #
+    # part: [0][0]:彼   [1][0]:に [2][0]:だけ [3][0]:は
+    #       [0][1]:彼女           [2][1]:すら
+    #                             [2][1]:さえ
+    # 
+    # data[0][0]{phrase}: 彼にだけは
+    # data[0][1]{phrase}: 彼女にだけは
+    # data[2][1]{phrase}: 彼にすらは
+    # data[2][2]{phrase}: 彼にさえは
+    # 
+    # ※ data[0][0]{phrase}はすべてのpartで0番目の語を集めたもの
+    #    data[i][j]{phrase}はi番目のpartをj番目の語にしたもの
+
+    my ($input, $flag, $l_context, $r_context) = @_;
+    my (@data, @feature, @mrph);
+    my ($i, $j, $k, $l, $error_flag, $any_prefix, $knp_input);
+
+    # 先頭が ^ であれば先頭からの条件
+
+    if ($input =~ s/^\^// || $bnstrule_flag == 0) {
+	$any_prefix = 0;
+    } else {
+	$any_prefix = 1;
     }
 
-    # 要素ごとに分割
-    
+    # 要素ごとに分割 --> @part
+    # (括弧,‥の前後，>,G,g,数字の後に空白を入れる)
+
     $input =~ s/\(/ \(/g;
     $input =~ s/\)/\) /g;
     $input =~ s/\{/ \{/g;
     $input =~ s/\}/\} /g;
-    # $input =~ s/\<\</ \<\</g;
-    $input =~ s/\>\>/\>\> /g;
-    $input =~ s/\*/\* /g;
-    $input =~ s/\?\*/ \?\*/g;
+    $input =~ s/‥/ ‥ /g;
+    $input =~ s/\>/\> /g;
+    $input =~ s/G/G /g;
+    $input =~ s/g/g /g;
+    $input =~ s/(\d+)/\1 /g;
     $input =~ s/^ +| +$//g;
+    @part_str = split(/ +/, $input);
+    $part_num = @part_str;
 
-    # 標準データを$data[0][0]に
+    # @part_strを整形し，@part(2次元配列)を作成
 
-    $i = 0;
-    foreach $item (split(/ +/, $input)) {
-	if ($item =~ /^\((.+)\)$/) {
-	    $item =  $1;
+    for ($i = 0; $i < $part_num; $i++) {
+	if ($part_str[$i] =~ /^\((.+)\)$/) {
+	    $part_str[$i] =  $1;
 	    $feature[$i]{ast} = 1;
 	}
-	elsif ($item =~ /^\{(.+)\}$/) {
-	    $item =  $1;
+	elsif ($part_str[$i] =~ /^\{(.+)\}$/) {
+	    $part_str[$i] =  $1;
 	}
 
-	if ($item !~ /^\<\</ && $item =~ /\|/) {
-
-	    # ORの場合は句だけ
-
+	# ORの場合は表層表現だけ
+	if ($part_str[$i] !~ /^\<\</ && $part_str[$i] =~ /\|/) {
+	    @{$part[$i]} = split(/\|/, $part_str[$i]);
 	    $feature[$i]{or} = 1;
-	    @{$part[$i]} = split(/\|/, $item);
+	}
 
-	} else {
+	# 他は種々のメタ表現を考慮
+	else {
+	    @{$part[$i]} = ($part_str[$i]);
 
-	    # 他は種々の指定を考慮
-
-	    @{$part[$i]} = ($item);
-
-	    if (0 && $part[$i][0] =~ /\<\<(.+)\>\>$/) {
-		$feature[$i]{result} = 
-		    " [* * * * * " . feature2str($1) . "]";
-		$part[$i][0] = "？";
-	    }
-
-	    if ($part[$i][0] =~ /\<\<(.+)\>\>$/) {
+	    if ($part[$i][0] =~ /\<(.+)\>$/) {
 		$feature[$i]{lastfeature} = feature2str($1);
-		$part[$i][0] =~ s/\<\<.+\>\>$//;
+		$part[$i][0] =~ s/\<.+\>$//;
 	    }
-	    elsif ($part[$i][0] eq "?*") {
+	    elsif ($part[$i][0] eq "‥") {
 		$feature[$i]{result} = " ?*";
-		$part[$i][0] = "？";
+		$part[$i][0] = "‥";
 	    }
-	    elsif ($part[$i][0] =~ /\*$/) {
-		$feature[$i]{lastast} = 1;
-		$part[$i][0] =~ s/\*$//;
+	    elsif ($part[$i][0] =~ /G$/) {
+		$feature[$i]{lastGENERAL} = 1;
+		$part[$i][0] =~ s/G$//;
 	    }
-	    elsif ($pos_cond{$part[$i][0]}) {
-		$feature[$i]{result} = $pos_cond{$part[$i][0]};
+	    elsif ($part[$i][0] =~ /g$/) {
+		$feature[$i]{lastgeneral} = 1;
+		$part[$i][0] =~ s/g$//;
+	    }
+	    elsif ($part[$i][0] =~ /([\d]+)$/) {
+		$feature[$i]{lastnum} = $1;
+		$part[$i][0] =~ s/[\d]+$//;
+	    }
+	    elsif ($part[$i][0] =~ /^\\/) {
+		$feature[$i]{result} = " [$part[$i][0]]";
+		$feature[$i]{result} =~ s/\\//;
+		$feature[$i]{result} =~ s/\:/ /;
 		$part[$i][0] = $pos_repr{$part[$i][0]};
 	    }
 	}
+    }
 
+    # $part[$i][0]を標準データとして$data[0][0]に
+
+    for ($i = 0; $i < $part_num; $i++) {
 	$data[0][0]{phrase} .= $part[$i][0];
 	$data[0][0]{length}[$i] = length($part[$i][0]);
-	$i++;
     }
-    $part_num = $i;
 
-    if ($flag == 0) {
-	return $data[0][0]{phrase};
-    }
+    # 代表表現を返す場合
+
+    return $data[0][0]{phrase} if ($flag == 0);
 
     # i番目のpartをj番目の語にしたものを$data[i][j]に
 
@@ -309,71 +383,80 @@ sub print_normal_cond
 	}
     }
 
-    # それぞれJUMANで処理
+    # それぞれKNP(JUMAN)で処理
 
     for ($i = 0; $i < $part_num; $i++) {
 	for ($j = 0; $j < @{$part[$i]}; $j++) {
 	    next unless ($data[$i][$j]);
-	    # print ">> ($l_context)$data[$i][$j]{phrase}($r_context)(@{$data[$i][$j]{length}})\n";
 
-	    if ($r_context) {
-		@juman_result = $juman->parse($l_context . $data[$i][$j]{phrase} . $r_context); 
-	    } elsif (!$r_context && $data[$i][$j]{phrase} =~ /(，|．)$/) {
-		@juman_result = $juman->parse($l_context . $data[$i][$j]{phrase} . "？"); 
+	    # 末尾が"，"なら"＝"，それ以外なら"，＝"を付与
+	    # ※ 以下の問題を解決するため
+	    #      1. 連体形の文節がそれだけでは正しくJUMANされない
+	    #      2. 単に"＝"を付与すると"同じ"が語幹になる
+	    #      2. "，，"はJUMANで未定義語
+	    #      3. 末尾の"，"もJUMANで未定義語
+
+	    $knp_input = $l_context . $data[$i][$j]{phrase} . $r_context;
+	    if ($knp_input =~ /，$/) {
+		$knp_input .= "＝";
 	    } else {
-		@juman_result = $juman->parse($l_context . $data[$i][$j]{phrase} . "，？"); 
+		$knp_input .= "，＝";
 	    }
+
+	    $knp->parse($knp_input); 
+	    @knp_result = split(/\n/, $knp->{ALL});
+
+	    # print "\n\n>>>>>$knp_input\n>>>@knp_result\n";
+
 	    $k = 0;
-	    $length = 0;
-	    $begin_check = 0;
-	    foreach $item (@juman_result) { 
+	    foreach $item (@knp_result) { 
 		next if ($item =~ /^EOS/);
-		next if ($item =~ /^\@/);
-		@tmp_mrph = split(/ /, $item);
+		# next if ($item =~ /^\@/);
+		next if ($item =~ /^(\*|\#|\;)/);
+		($mrph[$i][$j][$k]{word}, 
+		 $mrph[$i][$j][$k]{yomi}, 
+		 $mrph[$i][$j][$k]{base}, 
+		 $mrph[$i][$j][$k]{pos}, 
+		 $mrph[$i][$j][$k]{d1}, 
+		 $mrph[$i][$j][$k]{pos2}, 
+		 $mrph[$i][$j][$k]{d2}, 
+		 $mrph[$i][$j][$k]{conj}, 
+		 $mrph[$i][$j][$k]{d3}, 
+		 $mrph[$i][$j][$k]{conj2}, 
+		 $mrph[$i][$j][$k]{d4}) = split(/ /, $item);
+		$mrph[$i][$j][$k]{length} = length($mrph[$i][$j][$k]{word});
+		$mrph[$i][$j][$k]{result} = 		    
+		    " [$mrph[$i][$j][$k]{pos} $mrph[$i][$j][$k]{pos2} $mrph[$i][$j][$k]{conj} $mrph[$i][$j][$k]{conj2} $mrph[$i][$j][$k]{base}]";
+		$k++;
+	    }
 
-		if ($length < length($l_context)) {
-		    $length += length($tmp_mrph[0]);
-		    next;
-		} elsif ($length < (length($l_context) + length($data[$i][$j]{phrase}))) {
-		    if ($begin_check == 0) {
-			if ($length != length($l_context)) {
-			    print "CONTEXT ERROR @tmp_mrph\n";
-			    return;
-			} else {
-			    $begin_check = 1;
-			}
-		    }
+	    # l_contextとr_contextが形態素として正しく区切れているかチェック
 
-		    $length += length($tmp_mrph[0]);
-		    ($mrph[$i][$j][$k]{word}, 
-		     $mrph[$i][$j][$k]{yomi}, 
-		     $mrph[$i][$j][$k]{base}, 
-		     $mrph[$i][$j][$k]{pos}, 
-		     $mrph[$i][$j][$k]{d1}, 
-		     $mrph[$i][$j][$k]{pos2}, 
-		     $mrph[$i][$j][$k]{d2}, 
-		     $mrph[$i][$j][$k]{conj}, 
-		     $mrph[$i][$j][$k]{d3}, 
-		     $mrph[$i][$j][$k]{conj2}, 
-		     $mrph[$i][$j][$k]{d4}) = @tmp_mrph;
-		    $mrph[$i][$j][$k]{length} = length($mrph[$i][$j][$k]{word});
-
-		    # ここで作るのはチェックのためだけ
-		    $mrph[$i][$j][$k]{result} = 		    
-			" [$mrph[$i][$j][$k]{pos} $mrph[$i][$j][$k]{pos2} $mrph[$i][$j][$k]{conj} $mrph[$i][$j][$k]{conj2} $mrph[$i][$j][$k]{base}]";
-		    $k++;
-		} else {
-		    if ($length != (length($l_context) + length($data[$i][$j]{phrase}))) {
-			print "CONTEXT ERROR @tmp_mrph\n";
-			return;
-		    }
+	    $begin_check = 0;
+	    $end_check = 0;
+	    $length = 0;
+	    for ($k = 0; $mrph[$i][$j][$k]{word}; $k++) {
+		if ($length == length($l_context)) {
+		    $begin_check = 1;
+		    $mrph_start_num = $k;
+		} 
+		$length += $mrph[$i][$j][$k]{length};
+		if ($length == (length($l_context) + 
+				   length($data[$i][$j]{phrase}))) {
+		    $end_check = 1;
 		}
 	    }
+	    if (!$begin_check || !$end_check) {
+		print "CONTEXT ERROR\n";
+		return;
+	    }
 
-	    # part と mrph の対応つけ (場合によってORの文字数が違うので各$data[$i][$j]に必要)
+	    # part と mrph の対応つけ 
+	    # (場合によってORの文字数が違うので各$data[$i][$j]に必要)
+
 	    $part_length = 0;
 	    $mrph_length = 0;
-	    $k = 0;
+	    $k = $mrph_start_num;
 	    for ($l = 0; $l < $part_num; $l++) {
 		$part_length += $data[$i][$j]{length}[$l];
 		$data[$i][$j]{start}[$l] = $k;
@@ -422,7 +505,10 @@ sub print_normal_cond
 		    $error_flag = 1;
 		    if ($mrph[0][0][$data[0][0]{start}[$i]]{conj} eq "*" && 
 			$mrph[$i][$j][$data[$i][$j]{start}[$i]]{conj} ne "*") {
-			# 活用語とそうでないものの間は若干吸収
+
+			# $data[0][0]を標準とするので，$data[0][0]が無活用，$data[i][j]が活用の場合
+			# $data[i][j]のwordをbaseにコピーする
+
 			$mrph[$i][$j][$data[$i][$j]{start}[$i]]{base} = $mrph[$i][$j][$data[$i][$j]{start}[$i]]{word}
 		    }
 		}
@@ -453,43 +539,69 @@ sub print_normal_cond
 
     # 出力
 
-    print " ?*" if ($from_any);
+    print " ?*" if ($any_prefix && $part[0][0] ne "‥");
 
     for ($i = 0; $i < $part_num; $i++) {
 	if ($feature[$i]{result}) {
 	    print $feature[$i]{result};
-	} else {
+	    print "*" if ($feature[$i]{ast});
+	}
+	else {
 	    for ($k = $data[0][0]{start}[$i]; $k <= $data[0][0]{end}[$i]; $k++) {
-		if (($mrph[0][0][$k]{base} eq "書く" || $mrph[0][0][$k]{base} eq "読む") && 
-		    $k == $feature[$i]{end} &&
-		    $feature[$i]{lastast}) {
-		    $mrph[0][0][$k]{result} = " [* * * * * ((活用語))]";
+		if ($k == $data[0][0]{end}[$i] &&
+		    $feature[$i]{lastGENERAL}) {
+		    if ($mrph[0][0][$k]{conj} ne "*") {
+			$mrph[0][0][$k]{result} = " [* * * * * ((活用語))]";
+		    } else {
+			$mrph[0][0][$k]{result} = " [* * * * * ((^活用語))]";
+		    }
 		}
-		elsif ($mrph[0][0][$k]{base} eq "書く" || $mrph[0][0][$k]{base} eq "読む") {
-		    $mrph[0][0][$k]{result} = " [* * (母音動詞 子音動詞カ行 子音動詞カ行促音便形 子音動詞ガ行 子音動詞サ行 子音動詞タ行 子音動詞ナ行 子音動詞バ行 子音動詞マ行 子音動詞ラ行 子音動詞ラ行イ形 子音動詞ワ行 子音動詞ワ行文語音便形 カ変動詞 カ変動詞来 サ変動詞 ザ変動詞 動詞性接尾辞ます型 動詞性接尾辞うる型 動詞性接尾辞得る型 無活用型) $mrph[0][0][$k]{conj2} *]";
+		elsif (($k == $data[0][0]{end}[$i] &&
+			$feature[$i]{lastgeneral}) ||
+		       $g_define_word{$mrph[0][0][$k]{base}}) {
+		    if ($mrph[0][0][$k]{conj} ne "*") {
+			$conj_flag = 0;
+			for ($m = 0; $m < @conj_type; $m++) {
+			    if ($conj_type[$m] =~ /$mrph[0][0][$k]{conj}/) {
+				$mrph[0][0][$k]{result} = " [* * ($conj_type[$m]) $mrph[0][0][$k]{conj2} *]";
+				$conj_flag = 1;
+				break;
+			    }
+			}
+			if (!$conj_flag) {
+			    print STDERR "Invalid conjugation type ($mrph[0][0][$k]{conj})!!\n";
+			}
+		    } else {
+			$mrph[0][0][$k]{result} = " [* * * * * ((名詞相当語))]";
+		    }
 		}
-		elsif ($mrph[0][0][$k]{base} eq "美しい") {
-		    $mrph[0][0][$k]{result} = " [* * (イ形容詞アウオ段 イ形容詞イ段 イ形容詞イ段特殊 助動詞ぬ型 助動詞く型) $mrph[0][0][$k]{conj2} *]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "静かだ" || $mrph[0][0][$k]{base} eq "特別だ") {
-		    $mrph[0][0][$k]{result} = " [* * (ナ形容詞 ナ形容詞特殊 ナノ形容詞 判定詞 助動詞ぬ型 助動詞だろう型 助動詞そうだ型) $mrph[0][0][$k]{conj2} *]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "堂々たる") {
-		    $mrph[0][0][$k]{result} = " [* * (タル形容詞) $mrph[0][0][$k]{conj2} *]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "学生" &&
-		       $k == $feature[$i]{end} &&
-		       $feature[$i]{lastast}) {
-		    $mrph[0][0][$k]{result} = " [* * * * * ((^活用語))]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "学生") {
-		    $mrph[0][0][$k]{result} = " [* * * * * ((名詞相当語))]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "すこし") {
-		    $mrph[0][0][$k]{result} = " [副詞 * * * *]";
-		}
-		elsif ($mrph[0][0][$k]{base} eq "昨日") {
-		    $mrph[0][0][$k]{result} = " [名詞 時相名詞 * * *]";
+		elsif ($k == $data[0][0]{end}[$i] &&
+		       $feature[$i]{lastnum}) {
+		    if ($feature[$i]{lastnum} =~ /1/) {
+			$mrph[0][0][$k]{result} = " [$mrph[0][0][$k]{pos}";
+		    } else {
+			$mrph[0][0][$k]{result} = " [*";
+		    }
+		    if ($feature[$i]{lastnum} =~ /2/) {
+			$mrph[0][0][$k]{result} .= " $mrph[0][0][$k]{pos2}";
+		    } else {
+			$mrph[0][0][$k]{result} .= " *";
+		    }
+		    if ($feature[$i]{lastnum} =~ /3/) {
+			$mrph[0][0][$k]{result} .= " $mrph[0][0][$k]{conj}";
+		    } else {
+			$mrph[0][0][$k]{result} .= " *";
+		    }
+		    if ($feature[$i]{lastnum} =~ /4/) {
+			$mrph[0][0][$k]{result} .= " $mrph[0][0][$k]{conj2}";
+		    } else {
+			$mrph[0][0][$k]{result} .= " *";
+		    }
+		    if ($feature[$i]{lastnum} =~ /5/) {
+			$mrph[0][0][$k]{result} .= " $mrph[0][0][$k]{base}]";
+		    } else {
+			$mrph[0][0][$k]{result} .= " *]";
+		    }
 		}
 		elsif ($mrph[0][0][$k]{base} eq "，") {
 		    $mrph[0][0][$k]{result} = " [特殊 読点 * * *]";
@@ -510,7 +622,6 @@ sub print_normal_cond
 		    $mrph[0][0][$k]{pos2} = "*" if ($mrph[0][0][$k]{pos} eq "名詞");
 		    $mrph[0][0][$k]{pos2} = "*" if ($mrph[0][0][$k]{pos} eq "副詞");
 		    $mrph[0][0][$k]{pos2} = "*" if ($mrph[0][0][$k]{pos} eq "助詞");
-		    $mrph[0][0][$k]{conj2} = "*" if ($feature[$i]{lastast});
 		    $mrph[0][0][$k]{result} =
 			" [$mrph[0][0][$k]{pos} $mrph[0][0][$k]{pos2} $mrph[0][0][$k]{conj} $mrph[0][0][$k]{conj2} $mrph[0][0][$k]{base}]";
 		}
@@ -518,40 +629,23 @@ sub print_normal_cond
 		# 形態素のfeatureが指定されている場合
 		if ($feature[$i]{lastfeature}) {
 		    if ($mrph[0][0][$k]{result}) {
-			$mrph[0][0][$k]{result} =~ s/\]$/ $feature[$i]{lastfeature}]/;
+			$mrph[0][0][$k]{result} =~ s/\]$/$feature[$i]{lastfeature}\]/;
 		    }
 		    else {
-			$mrph[0][0][$k]{result} = " [* * * * * $feature[$i]{lastfeature}]";
+			$mrph[0][0][$k]{result} = " [* * * * *$feature[$i]{lastfeature}]";
 		    }
 		}
-
+	    
 		print $mrph[0][0][$k]{result};
-		print "*" if ($feature[$i]{ask});
+		print "*" if ($feature[$i]{ast});
+	    }
+
+	    if ($feature[$i]{ast} &&
+		$data[0][0]{end}[$i] - $data[0][0]{start}[$i] > 0) {
+		print STDERR "$input: *は各形態素につくだけ！！！\n";
 	    }
 	}
-
-	if ($feature[$i]{ast}) {
-	    print "*";
-	}
     }
 }
 
-######################################################################
-sub print_juman
-{
-    my ($input) = @_;
-    my ($data, $item, @juman_result);
-    $data = "";
-
-    @juman_result = $juman->parse($input);
-
-    foreach $item (@juman_result) {
-        next if ($item =~ /^EOS/);
-        next if ($item =~ /^\@/);
-        ($word, $yomi, $base, $pos, $d1, $pos2, $d2, $conj, $d3, $conj2, $d4)
-            = split(/ /, $item);
-        $data .= "  [$pos $pos2 $conj $conj2 ($base)] \n";
-    }
-    print $data;
-}
 ######################################################################
