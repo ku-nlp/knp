@@ -345,10 +345,12 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     }
 
     /* 被連体修飾詞 */
-    if (check_feature(b_ptr->f, "係:連格") || 
+    if ((check_feature(b_ptr->f, "係:連格") && 
+	 (b_ptr->para_type != PARA_NORMAL || 
+	  b_ptr->num == b_ptr->parent->num)) || /* 用言並列なら、「Vした」と<PARA>が同じときのみ */
 	(b_ptr->para_type == PARA_NORMAL && /* 並列の連体修飾 (★weightを考える) */
 	 check_feature(b_ptr->f, "係:連用") && 
-	 b_ptr->parent && b_ptr->parent->para_top_p && 
+	 b_ptr->parent->para_top_p && 
 	 check_feature(b_ptr->parent->child[0]->f, "係:連格")) || 
 	renkaku_exception_p) {
 
