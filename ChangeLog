@@ -3,6 +3,9 @@
 	* system/context.c:
 	名詞関係解析を類似度だけで行う場合も、exact matchか<主体>matchに制限
 
+	* system/case_match.c:
+	指示詞のマッチングをすべて0点にした。
+
 2003-12-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
