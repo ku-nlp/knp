@@ -784,85 +784,28 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		 int make_bunsetsu(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int prev_stat, now_stat = -1;
     int i, j;
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr = NULL;
     
     sp->Bnst_num = 0;
     sp->Max_New_Bnst_num = 0;
-    prev_stat = MRPH_SUFX;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 
-	if (check_feature(m_ptr->f, "←複合") ||
+	if (check_feature(m_ptr->f, "文節始")) {
+	    if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
+	}
+	if (check_feature(m_ptr->f, "複合←") ||
 	    check_feature(m_ptr->f, "自立"))
-	    now_stat = MRPH_INDP;
-	else if (check_feature(m_ptr->f, "付属"))
-	    now_stat = MRPH_SUFX;
+	    push_indp(b_ptr, m_ptr);
 	else if (check_feature(m_ptr->f, "接頭"))
-	    now_stat = MRPH_PRFX;
-	else
+	    push_prfx(b_ptr, m_ptr);
+	else if (check_feature(m_ptr->f, "付属"))
+	    push_sufx(b_ptr, m_ptr);
+	else 
 	    fprintf(Outfp, ";; Invalid input \n");
-
-	/* ▼ 不適切な入力 (接尾辞ではじまる，接頭＋接尾)
-	   接尾辞を自立語として扱う (暫定的) */
-
-	if (i == 0 && now_stat == MRPH_SUFX) {
-	    fprintf(Outfp, 
-		    ";; Invalid input (prefix and suffix)\"%s%s ... \"!\n",
-		    sp->mrph_data[0].Goi2, sp->mrph_data[1].Goi2);
-	    /* return FALSE; */
-	    now_stat = MRPH_INDP;
-	} else if (prev_stat == MRPH_PRFX &&
-		   now_stat == MRPH_SUFX) {
-	    fprintf(Outfp, 
-		    ";; Invalid input (prefix and suffix)\"... %s%s ... \"!\n",
-		    sp->mrph_data[i-1].Goi2, sp->mrph_data[i].Goi2);
-	    /* return FALSE; */
-	    now_stat = MRPH_INDP;
-	}
-
-	/* 処理 */
-
-	switch (now_stat) {
-	case MRPH_PRFX:
-	    switch (prev_stat) {
-	    case MRPH_PRFX:
-		push_prfx(b_ptr, m_ptr);
-		break;
-	    default:
-		if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
-		push_prfx(b_ptr, m_ptr);
-		break;
-	    }
-	    break;
-	  case MRPH_INDP:
-	    switch (prev_stat) {
-	    case MRPH_PRFX:
-		push_indp(b_ptr, m_ptr);
-		break;
-	    case MRPH_INDP:
-		if (!check_feature(m_ptr->f, "←複合"))
-		    if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
-		push_indp(b_ptr, m_ptr);
-		break;
-	    case MRPH_SUFX:
-		if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
-		push_indp(b_ptr, m_ptr);
-		break;
-	    }
-	    break;
-	  case MRPH_SUFX:
-	    if (m_ptr->type == BNST_RULE_SKIP)
-		b_ptr->mrph_num++;
-	    else 
-		push_sufx(b_ptr, m_ptr);
-	    break;
-	}
-	
-	prev_stat = now_stat;
-    }    
+    }
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num;
@@ -911,9 +854,9 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->mrph_num ++;
 	}
 
-	if (check_feature(m_ptr->f, "←複合") || check_feature(m_ptr->f, "自立")) {
+	if (check_feature(m_ptr->f, "複合←") || check_feature(m_ptr->f, "自立")) {
 	    if (prev_stat == MRPH_SUFX || 
-		(prev_stat == MRPH_INDP && !check_feature(m_ptr->f, "←複合")) || !b_ptr->jiritu_ptr) {
+		(prev_stat == MRPH_INDP && !check_feature(m_ptr->f, "複合←")) || !b_ptr->jiritu_ptr) {
 		b_ptr->jiritu_ptr = m_ptr;
 		b_ptr->jiritu_num = 0;
 	    }

@@ -587,7 +587,7 @@
     /* &記英数カ : 記英数カ チェック (句読点以外) (形態素レベル) */
 
     if (!strcmp(rule, "&記英数カ")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (!(0xa1a5 < code && code < 0xa4a0) && /* 記号の範囲 */
@@ -601,14 +601,14 @@
     /* &漢字 : 漢字 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&漢字")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (code >= 0xb0a0 ||	/* 漢字の範囲 */
 		code == 0xa1b9 || 	/* 々 */
-		(code == 0xa4ab && ucp == ((MRPH_DATA *)ptr2)->Goi) ||	/* か */
-		(code == 0xa5ab && ucp == ((MRPH_DATA *)ptr2)->Goi) ||	/* カ */
-		(code == 0xa5f6 && ucp == ((MRPH_DATA *)ptr2)->Goi))	/* ヶ */
+		(code == 0xa4ab && ucp == (unsigned char *)((MRPH_DATA *)ptr2)->Goi2) ||	/* か */
+		(code == 0xa5ab && ucp == (unsigned char *)((MRPH_DATA *)ptr2)->Goi2) ||	/* カ */
+		(code == 0xa5f6 && ucp == (unsigned char *)((MRPH_DATA *)ptr2)->Goi2))		/* ヶ */
 	      ;
 	    else 
 	      return FALSE;
@@ -620,7 +620,7 @@
     /* &かな漢字 : かな漢字チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&かな漢字")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    code = check_char_type(code);
@@ -634,7 +634,7 @@
     /* &ひらがな : ひらがな チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&ひらがな")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_HIRAGANA)
@@ -658,7 +658,7 @@
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&カタカナ")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_KATAKANA)
@@ -671,7 +671,7 @@
     /* &数字 : 数字 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&数字")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_SUUJI)
@@ -684,7 +684,7 @@
     /* &英記号 : 英記号 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&英記号")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    type = check_char_type(code);
@@ -698,7 +698,7 @@
     /* &記号 : 記号 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&記号")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
 	    type = check_char_type(code);
@@ -712,7 +712,7 @@
     /* &混合 : 混合 (漢字+...) チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&混合")) {
-	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	pretype = 0;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -728,7 +728,7 @@
     /* &一文字 : 文字数 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&一文字")) {
-	if (strlen(((MRPH_DATA *)ptr2)->Goi) == 2)
+	if (strlen(((MRPH_DATA *)ptr2)->Goi2) == 2)
 	    return TRUE;
 	else 
 	    return FALSE;
@@ -824,7 +824,7 @@
 	    code = atoi(cp);
 	else
 	    code = 0;
-	if (strlen(((MRPH_DATA *)ptr2)->Goi) >= code*2) {
+	if (strlen(((MRPH_DATA *)ptr2)->Goi2) >= code*2) {
 	    return TRUE;
 	}
 	return FALSE;
@@ -832,8 +832,8 @@
 
     else if (!strncmp(rule, "&形態素末尾:", strlen("&形態素末尾:"))) {
 	cp = rule + strlen("&形態素末尾:");
-	i = strlen(((MRPH_DATA *)ptr2)->Goi) - strlen(cp);
-	if (*cp && i >= 0 && !strcmp((((MRPH_DATA *)ptr2)->Goi)+i, cp)) {
+	i = strlen(((MRPH_DATA *)ptr2)->Goi2) - strlen(cp);
+	if (*cp && i >= 0 && !strcmp((((MRPH_DATA *)ptr2)->Goi2)+i, cp)) {
 	    return TRUE;
 	}
 	return FALSE;
