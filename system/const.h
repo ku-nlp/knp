@@ -79,6 +79,7 @@
 #endif
 
 #define DATA_LEN	5120
+#define SMALL_DATA_LEN	128
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
@@ -117,6 +118,7 @@
 
 #define	OPT_CASE_SOTO	1
 #define	OPT_CASE_GAGA	2
+#define	OPT_CASE_NO	4
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -593,6 +595,7 @@ typedef struct {
 #define	CF_NORMAL	0
 #define	CF_SUM		1	/* OR の格フレーム */
 #define	CF_GA_SEMI_SUBJECT	2
+#define	CF_CHANGE	4
 
 #define	CF_UNDECIDED	0
 #define	CF_CAND_DECIDED	1
@@ -648,6 +651,7 @@ typedef struct cf_def {
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
+    int 	sp[CF_ELEMENT_MAX];		 	/* 表層格 (入力側) */
     char	*sm[CF_ELEMENT_MAX]; 			/* 意味マーカ */
     char	*sm_delete[CF_ELEMENT_MAX];		/* 使用禁止意味マーカ */
     int		sm_delete_size[CF_ELEMENT_MAX];
@@ -662,12 +666,14 @@ typedef struct cf_def {
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
     int 	ipal_size;				/* IPALのサイズ */
-    char 	ipal_id[128];				/* IPALのID */
+    char 	ipal_id[SMALL_DATA_LEN];		/* IPALのID */
     char 	*entry;					/* 用言の表記 */
-    char 	imi[128];
+    char 	imi[SMALL_DATA_LEN];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
     int		etcflag;				/* 格フレームが OR かどうか */
+    char	feature[SMALL_DATA_LEN];
     int		weight[CF_ELEMENT_MAX];
+    int		samecase[CF_ELEMENT_MAX][2];
     BNST_DATA	*pred_b_ptr;
 } CASE_FRAME;
 

@@ -67,16 +67,14 @@ int	EX_PRINT_NUM = 10;
 	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
 
     /* 格フレームを決定した方法 */
-    if (OptDisc == OPT_DISC) {
-	if (cpm_ptr->decided == CF_DECIDED) {
-	    fputs(" D", Outfp);
-	}
-	else if (cpm_ptr->decided == CF_CAND_DECIDED) {
-	    fputs(" C", Outfp);
-	}
-	else {
-	    fputs(" U", Outfp);
-	}
+    if (cpm_ptr->decided == CF_DECIDED) {
+	fputs(" D", Outfp);
+    }
+    else if (cpm_ptr->decided == CF_CAND_DECIDED) {
+	fputs(" C", Outfp);
+    }
+    else {
+	fputs(" U", Outfp);
     }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
@@ -132,6 +130,10 @@ int	EX_PRINT_NUM = 10;
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
+
+    if (cmm_ptr->cf_ptr->feature[0]) {
+	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);
+    }
 
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
 	fprintf(Outfp, "(間受)");

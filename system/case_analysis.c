@@ -66,13 +66,31 @@ int	TEIDAI_STEP	= 2;
 	OptAnalysis == OPT_CASE2) {
 	int i;
 
+	/* 作業cmm領域確保 */
 	Cf_match_mgr = 
 	    (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
 					"init_case_analysis");
 
-	for (i = 0; i < CPM_MAX; i++) {
-	    init_case_frame(&Work_mgr.cpm[i].cf);
+	init_mgr_cf(&Work_mgr);
+    }
+}
+
+/*==================================================================*/
+		void clear_case_frame(CASE_FRAME *cf)
+/*==================================================================*/
+{
+    int j;
+
+    for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	if (Thesaurus == USE_BGH) {
+	    free(cf->ex[j]);
 	}
+	else if (Thesaurus == USE_NTT) {
+	    free(cf->ex2[j]);
+	}
+	free(cf->sm[j]);
+	free(cf->ex_list[j][0]);
+	free(cf->ex_list[j]);
     }
 }
 
@@ -127,12 +145,15 @@ struct PP_STR_TO_CODE {
     {"まで", "マデ", 39},	/* 明示されない格であるが、辞書側の格として表示するために
 				   書いておく */
     {"修飾", "修飾", 40},
-    {"が２", "ガ２", 41},
-    {"外の関係", "外の関係", 42},
-    {"の", "ノ", 43},
+    {"の", "ノ", 41},		/* 格フレームのノ格 */
+    {"が２", "ガ２", 42},	/* for backward compatibility */
+    {"外の関係", "外の関係", 43},
+    {"がが", "ガガ", 42},
+    {"外の関係", "外ノ関係", 43},	/* for backward compatibility */
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
+    {"未", "未", -3},		/* 格フレームによって動的に割り当てる格を決定する */
     {"＊", "＊", -2},		/* 埋め込み文の被修飾詞 */
     {NULL, NULL, -1}		/* 格助詞の非明示のもの(提題助詞等) */
 };
@@ -209,6 +230,20 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
+		 int CheckCfAdjacent(CASE_FRAME *cf)
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < cf->element_num; i++) {
+	if (cf->adjacent[i] && 
+	    MatchPP(cf->pp[i][0], "修飾")) {
+	    return FALSE;
+	}
+    }
+    return TRUE;
+}
+
+/*==================================================================*/
 	  int CheckCfClosest(CF_MATCH_MGR *cmm, int closest)
 /*==================================================================*/
 {
@@ -262,6 +297,10 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 	    if (((b_ptr->cf_ptr+i)->etcflag & CF_SUM) && b_ptr->cf_num != 1) {
 		continue;
 	    }
+	    /* 直前格が修飾の場合などを除く */
+	    else if (CheckCfAdjacent(b_ptr->cf_ptr+i) == FALSE) {
+		continue;
+	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
 	}
 
@@ -276,6 +315,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 	       EXAMPLE
 	       SEMANTIC_MARKER */
 
+	    /* closest があれば、直前格要素のみのスコアになる */
 	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode, closest);
 
 	    /* 結果を格納 */
@@ -355,7 +395,10 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 
     if (OptDisplay == OPT_DEBUG) {
 	print_data_cframe(cpm_ptr, Cf_match_mgr);
-	print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num);
+	/* print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num); */
+	for (i = 0; i < cpm_ptr->result_num; i++) {
+	    print_crrspnd(cpm_ptr, &cpm_ptr->cmm[i]);
+	}
     }
 
     return cpm_ptr->score;
@@ -415,8 +458,8 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
 		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外 */
 		   cpm_ptr->cf.pp[elem_b_num][0] == 39) && 
-		  (cf_match_element(cpm_ptr->cf.sm[elem_b_num], "数量", FALSE) || 
-		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE)))) {
+		  /* (cf_match_element(cpm_ptr->cf.sm[elem_b_num], "数量", FALSE) || */
+		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE))) {
 	    return elem_b_num;
 	}
     }
@@ -483,16 +526,18 @@ CPM_CACHE *CPMcache[TBLSIZE];
 /*==================================================================*/
 {
     int i;
-    CPM_CACHE *ccp;
+    CPM_CACHE *ccp, *next;
 
     for (i = 0; i < TBLSIZE; i++) {
 	if (CPMcache[i]) {
 	    ccp = CPMcache[i];
 	    while (ccp) {
 		free(ccp->key);
+		clear_case_frame(&(ccp->cpm->cf));
 		free(ccp->cpm);
-		ccp = ccp->next;
+		next = ccp->next;
 		free(ccp);
+		ccp = next;
 	    }
 	    CPMcache[i] = NULL;
 	}
@@ -590,6 +635,31 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
     closest = get_closest_case_component(sp, cpm_ptr);
 
+    /* 直前格要素のひとつ手前のノ格 */
+    if (OptCaseFlag & OPT_CASE_NO && 
+	closest > -1 && 
+	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
+	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, 
+		      "係:ノ格")) {
+	BNST_DATA *bp;
+	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
+
+	/* 割り当てる格は格フレームによって動的に変わる */
+	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("未");
+	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
+	cpm_ptr->cf.sp[cpm_ptr->cf.element_num] = pp_hstr_to_code("の");
+	cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
+	_make_data_cframe_sm(cpm_ptr, bp);
+	_make_data_cframe_ex(cpm_ptr, bp);
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = bp;
+	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	if (cpm_ptr->cf.element_num < CF_ELEMENT_MAX) {
+	    cpm_ptr->cf.element_num++;
+	}
+    }
+
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
     /* ★直前格要素がない場合は、この関数を実行する必要がない★ */
     find_best_cf(sp, cpm_ptr, closest);
@@ -610,6 +680,11 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	else if (closest == -1 && cpm_ptr->cf.element_num > 0 && 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
+	    cpm_ptr->decided = CF_DECIDED;
+	}
+    }
+    else {
+	if (closest > -1) {
 	    cpm_ptr->decided = CF_DECIDED;
 	}
     }
@@ -728,6 +803,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
+    strcpy(dst->feature, src->feature);
     if (src->entry) {
 	dst->entry = strdup(src->entry);
     }
@@ -761,7 +837,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	else if (Thesaurus == USE_NTT) {
 	    if (src->ex2[i]) strcpy(dst->ex2[i], src->ex2[i]);
 	}
-	dst->ex_list[i] = src->ex_list[i];
+	strcpy(dst->ex_list[i][0], src->ex_list[i][0]);
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
 	dst->examples[i] = src->examples[i];	/* これを使う場合問題あり */
@@ -773,6 +849,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
+    strcpy(dst->feature, src->feature);
     dst->entry = src->entry;
     dst->pred_b_ptr = src->pred_b_ptr;
 }
@@ -1179,6 +1256,10 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	decide_voice(sp, cpm_ptr);
     }
 
+    if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化");
+    }
+
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 省略解析の結果は除く
 	   指示詞の解析をする場合は、指示詞を除く */
@@ -1199,13 +1280,14 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 		sprintf(feature_buffer, "%s判定", relation);
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 	    }
-	    /* 割り当てなしで未格 */
-	    else if (cpm_ptr->cf.pp[i][0] == -1) {
-		strcpy(relation, "--");
-	    }
-	    /* 割り当てなしだが、入力側の格が明示されているのでそれを表示 */
-	    else {
+	    /* 割り当てなしだが、入力側の格が明示されている場合はそれを表示
+	       (格の可能性はひとつしかなく、未格以外) */
+	    else if (cpm_ptr->cf.pp[i][1] == END_M && 
+		     cpm_ptr->cf.pp[i][0] >= 0) {
 		strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
+	    }
+	    else {
+		strcpy(relation, "--");
 	    }
 
 	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */

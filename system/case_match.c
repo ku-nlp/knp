@@ -495,6 +495,30 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 }
 
 /*==================================================================*/
+	 int check_same_case(int dp, int pp, CASE_FRAME *cf)
+/*==================================================================*/
+{
+    int i, p1, p2;
+
+    if (dp < pp) {
+	p1 = dp;
+	p2 = pp;
+    }
+    else {
+	p1 = pp;
+	p2 = dp;
+    }
+
+    for (i = 0; cf->samecase[i][0] != END_M; i++) {
+	if (cf->samecase[i][0] == p1 && 
+	    cf->samecase[i][1] == p2) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	    void eval_assign(CASE_FRAME *cfd, LIST *list1,
 			     CASE_FRAME *cfp, LIST *list2,
 			     int score)
@@ -710,6 +734,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 				assign_list(cfd, list1, cfp, list2, 
 					    score + elmnt_score, flag);
 				list2.flag[i] = UNASSIGNED;
+				list2.pos[i] = MATCH_NONE;
 			    } 
 			
 			    else {
@@ -728,6 +753,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 				assign_list(cfd, list1, cfp, list2, 
 					    score + elmnt_score, flag);
 				list2.flag[i] = UNASSIGNED;
+				list2.pos[i] = MATCH_NONE;
 			    }
 			    break;
 			}
@@ -798,20 +824,19 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
-	int renkaku, mikaku, verb, gaflag = 0, sotoflag = 0, soto_decide;
+	int renkaku = 0, mikaku = 0, nokaku = 0, verb, gaflag = 0, sotoflag = 0, soto_decide;
 
 	if (cfd->pp[target][target_pp] == -2) {
 	    renkaku = 1;
 	}
-	else {
-	    renkaku = 0;
-	}
-	if (cfd->pp[target][target_pp] == -1) {
+	else if (cfd->pp[target][target_pp] == -1) {
 	    mikaku = 1;
 	}
-	else {
-	    mikaku = 0;
+	/* 割り当てる格を格フレームから動的に生成する場合 */
+	else if (cfd->pp[target][target_pp] == -3) {
+	    nokaku = 1;
 	}
+
 	if (cfd->ipal_id[0] && str_eq(cfd->ipal_id, "動")) {
 	    verb = 1;
 	}
@@ -847,7 +872,9 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") || 
 		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("ガ２"))
-		   )) ||
+		   )) || 
+		 (nokaku && 
+		  check_same_case(cfd->sp[target], cfp->pp[i][0], cfp)) || 
 		 (renkaku &&
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
@@ -867,6 +894,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		    list2.pos[i] = pos;
 		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 		    list2.flag[i] = UNASSIGNED;
+		    list2.pos[i] = MATCH_NONE;
 		}
 	    }
 	}

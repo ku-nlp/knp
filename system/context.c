@@ -415,7 +415,7 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	}
     }
 
-    init_mgr_cf(s);
+    init_mgr_cf(s->Best_mgr);
 }
 
 /*==================================================================*/
@@ -2159,7 +2159,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	if (maxscore > AssignReferentThresholdForSVM) {
 	    if (maxtag) {
 		if (str_eq(maxtag, "主体一般")) {
-		    sprintf(feature_buffer, "C用;【主体一般】;%s;-1;-1;1", 
+		    sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
 			    pp_code_to_kstr(cf_ptr->pp[n][0]));
 		    assign_cfeature(&(em_ptr->f), feature_buffer);
 		    return 0;
@@ -2172,7 +2172,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		    return 1;
 		}
 		else if (str_eq(maxtag, "不特定物")) {
-		    sprintf(feature_buffer, "C用;【不特定物】;%s;-1;-1;1", 
+		    sprintf(feature_buffer, "C用;【例外:なし】;%s;-1;-1;1", 
 			    pp_code_to_kstr(cf_ptr->pp[n][0]));
 		    assign_cfeature(&(em_ptr->f), feature_buffer);
 		    /* ★最大スコアの指示対象を dummy で格フレームに保存 
@@ -2242,7 +2242,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
 	return 1;
     }
-    /* 【主体一般】
+    /* 【不特定:人】
        1. 用言が受身でニ格 (もとはガ格) に <主体> をとるとき
        2. 「〜ため(に)」でガ格に <主体> をとるとき 
        3. 〜が V した N (外の関係, !判定詞), 形副名詞, 相対名詞は除く
@@ -2271,7 +2271,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	 check_feature(cpm_ptr->pred_b_ptr->f, "係:連格") && 
 	 cf_ptr->pp[n][0] == pp_kstr_to_code("ガ"))) {
 	/* 格フレームを決めるループのときに feature を与えるのは問題 */
-	sprintf(feature_buffer, "C用;【主体一般】;%s;-1;-1;1", 
+	sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
@@ -2283,7 +2283,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	     MatchPP(cf_ptr->pp[n][0], "ヘ") || 
 	     MatchPP(cf_ptr->pp[n][0], "ヨリ") || 
 	     MatchPP(cf_ptr->pp[n][0], "カラ") || 
-	     MatchPP(cf_ptr->pp[n][0], "マデ")) {
+	     MatchPP(cf_ptr->pp[n][0], "マデ") || 
+	     MatchPP(cf_ptr->pp[n][0], "ガ２")) {
 	sprintf(feature_buffer, "省略処理なし-%s", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
@@ -2291,11 +2292,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     else if (check_feature(cpm_ptr->pred_b_ptr->f, "省略格指定")) {
 	;
     }
-    /* ガ格:時間 があるとき、「時期・時間・状況」とする
+    /* ガ格:時間 があるとき、「不特定:状況」とする
     else if (maxscore > 0 && 
 	     MatchPP(cf_ptr->pp[n][0], "ガ") && 
 	     cf_match_element(cf_ptr->sm[n], "時間", TRUE)) {
-	sprintf(feature_buffer, "C用;【時期・時間・状況】;%s;-1;-1;1", 
+	sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
 	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
@@ -2318,9 +2319,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	     MatchPP(cf_ptr->pp[n][0], "ヲ") && 
 	     check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析") && 
 	     sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code)) {
-	sprintf(feature_buffer, "C用;【不特定物】;%s;-1;-1;1", 
+	/* sprintf(feature_buffer, "C用;【例外:なし】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
+	assign_cfeature(&(em_ptr->f), feature_buffer); */
 	/* ★最大スコアの指示対象を dummy で格フレームに保存 
 	   それが、ほかの格の候補にならなくなるのは問題★ */
 	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
@@ -2349,7 +2350,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(etc_buffer, "%d文前", distance);
 	}
 
-	word = make_print_string((maxs->bnst_data+maxi)->Jiritu_Go);
+	word = make_print_string(maxs->bnst_data+maxi);
 
 	/* 決定した省略関係 */
 	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
@@ -2498,10 +2499,10 @@ int MarkEllipsisCase(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	    pp_code_to_kstr(cf_ptr->pp[n][0]));
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 
-    /* <時期・時間・状況> をガ格としてとる判定詞 */
+    /* <不特定:状況> をガ格としてとる判定詞 */
     if (check_feature(cpm_ptr->pred_b_ptr->f, "時間ガ省略") && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	sprintf(feature_buffer, "C用;【時期・時間・状況】;%s;-1;-1;1", 
+	sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 	return 0;

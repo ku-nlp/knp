@@ -110,6 +110,7 @@ extern FILE *JumanSentence(FILE *fp);
 
 /* case_analysis.c */
 extern void realloc_cmm();
+extern void init_case_frame(CASE_FRAME *cf);
 extern void init_case_analysis();
 extern int pp_kstr_to_code(char *cp);
 extern int pp_hstr_to_code(char *cp);
@@ -135,7 +136,7 @@ extern void init_cf2(SENTENCE_DATA *sp);
 extern void close_cf();
 extern void set_pred_caseframe(SENTENCE_DATA *sp);
 extern void clear_cf(int flag);
-extern void init_mgr_cf(SENTENCE_DATA *sp);
+extern void init_mgr_cf(TOTAL_MGR *tmp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern void MakeInternalBnst(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);

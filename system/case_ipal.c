@@ -97,29 +97,21 @@ int	PrintDeletedSM = 0;
 	    }
 	    free(sp->Best_mgr->cpm[i].cf.sm[j]);
 	    sp->Best_mgr->cpm[i].cf.sm[j] = NULL;
+
+	    free(sp->Best_mgr->cpm[i].cf.ex_list[j][0]);
+	    free(sp->Best_mgr->cpm[i].cf.ex_list[j]);
 	}
     }
 }
 
 /*==================================================================*/
-		 void init_mgr_cf(SENTENCE_DATA *sp)
+		   void init_mgr_cf(TOTAL_MGR *tmp)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
 
     for (i = 0; i < CPM_MAX; i++) {
-	for (j = 0; j < CF_ELEMENT_MAX; j++) {
-	    if (Thesaurus == USE_BGH) {
-		sp->Best_mgr->cpm[i].cf.ex[j] = 
-		    (char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
-	    }
-	    else if (Thesaurus == USE_NTT) {
-		sp->Best_mgr->cpm[i].cf.ex2[j] = 
-		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-	    }
-	    sp->Best_mgr->cpm[i].cf.sm[j] = 
-		(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
-	}
+	init_case_frame(&tmp->cpm[i].cf);
     }
 }
 
@@ -130,11 +122,13 @@ int	PrintDeletedSM = 0;
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
 
+	/* 格フレーム領域確保 */
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
 	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
-	init_mgr_cf(sp);
+	/* Best_mgrのcpm領域確保 */
+	init_mgr_cf(sp->Best_mgr);
     }
 }
 
@@ -540,21 +534,71 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
   void _make_ipal_cframe(IPAL_FRAME *i_ptr, CASE_FRAME *cf_ptr, int address, int size)
 /*==================================================================*/
 {
-    int i, j = 0, ga_p = FALSE;
-    char ast_cap[32];
+    int i, j = 0, ga_p = FALSE, c1, c2, count = 0;
+    char ast_cap[32], *token, *cp, *buf;
 
     cf_ptr->ipal_address = address;
     cf_ptr->ipal_size = size;
     cf_ptr->concatenated_flag = 0;
     strcpy(cf_ptr->ipal_id, i_ptr->DATA+i_ptr->id); 
     strcpy(cf_ptr->imi, i_ptr->DATA+i_ptr->imi);
-    /* OR の格フレームは「述語素」に「和フレーム」と書いてある */
-    if (str_eq(i_ptr->DATA+i_ptr->jyutugoso, "和フレーム")) {
-	cf_ptr->etcflag = CF_SUM;
+    cf_ptr->etcflag = CF_NORMAL;
+    cf_ptr->feature[0] = '\0';
+
+    token = strtok(i_ptr->DATA+i_ptr->jyutugoso, " ");
+    while (token) {
+	/* ORの格フレームは「述語素」に「和フレーム」と書いてある */
+	if (str_eq(token, "和フレーム")) {
+	    cf_ptr->etcflag |= CF_SUM;
+	}
+	else {
+	    /* 格フレームが変化したフラグ */
+	    if (str_eq(token, "★変化")) {
+		cf_ptr->etcflag |= CF_CHANGE;
+	    }
+	    else if ((cp = strchr(token, ':')) != NULL) {
+		buf = strdup(token);
+		cp = buf+(cp-token);
+		*cp = '\0';
+		c1 = pp_kstr_to_code(buf);
+		c2 = pp_kstr_to_code(cp+1);
+		free(buf);
+
+		if (c1 == END_M || c2 == END_M) {
+		    fprintf(stderr, ";; Can't understand <%s>\n", token);
+		}
+		/* 溢れチェック */
+		else if (count >= CF_ELEMENT_MAX) {
+		    break;
+		}
+		else {
+		    /* 数が小さい格を前に入れる */
+		    if (c1 > c2) {
+			cf_ptr->samecase[count][0] = c2;
+			cf_ptr->samecase[count][1] = c1;
+		    }
+		    else {
+			cf_ptr->samecase[count][0] = c1;
+			cf_ptr->samecase[count][1] = c2;
+		    }
+		    count++;
+		}
+	    }
+
+	    /* 溢れチェック */
+	    if (strlen(cf_ptr->feature)+strlen(token)-1 >= SMALL_DATA_LEN) {
+		break;
+	    }
+	    if (cf_ptr->feature[0] != '\0') {
+		strcat(cf_ptr->feature, " ");
+	    }
+	    strcat(cf_ptr->feature, token);
+	}
+	token = strtok(NULL, " ");
     }
-    else {
-	cf_ptr->etcflag = CF_NORMAL;
-    }
+
+    cf_ptr->samecase[count][0] = END_M;
+    cf_ptr->samecase[count][1] = END_M;
 
     /* 格要素の追加 */
 

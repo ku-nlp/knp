@@ -291,6 +291,9 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-gaga")) {
 	    OptCaseFlag |= OPT_CASE_GAGA;
 	}
+	else if (str_eq(argv[0], "-no")) {
+	    OptCaseFlag |= OPT_CASE_NO;
+	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-dcost")) {
 	    argv++; argc--;
@@ -779,13 +782,6 @@ PARSED:
     /* チェック用 */
     if (OptCheck == TRUE)
 	CheckCandidates(sp);
-
-    if (OptLearn == TRUE)
-	fprintf(Outfp, ";;;OK 決定 %d %s %d\n", sp->Best_mgr->ID, sp->KNPSID ? sp->KNPSID : "", sp->Best_mgr->score);
-
-    /* 実験 */
-    if (OptCheck == TRUE)
-	CheckChildCaseFrame(sp);
 
     /* 認識した固有名詞を保存しておく */
     if (OptNE == OPT_NE || OptNE == OPT_NESM) {
