@@ -6,10 +6,9 @@
 1) `./configure 'を実行してください。JUMANのライブラリのシステム標準ディ
    レクトリ(/usr/lib など)以外にある場合は`./configure'にオプションを
    与える必要があります。例えば、JUMANが /usr/local/juman 以下にインス
-   トールされている場合は、JUMANのライブラリは /usr/local/juman/lib に
-   あるので、次のように指定してください。
+   トールされている場合は、次のように指定してください。
 
-     ./configure --with-jumanlib-dir=/usr/local/juman/lib
+     ./configure --with-juman-prefix=/usr/local/juman
 
 2) `make'を実行してください。
 
