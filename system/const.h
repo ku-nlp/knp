@@ -563,5 +563,22 @@ typedef struct {
 } TOTAL_MGR;
 
 /*====================================================================
+		      固有名詞解析 - 文脈処理へ
+====================================================================*/
+
+/* 保持しておくためのデータ */
+
+typedef struct _MRPH_P {
+    MRPH_DATA data;
+    struct _MRPH_P *next;
+} MRPH_P;
+
+typedef struct _PreservedNamedEntity {
+    MRPH_P *mrph;
+    int Type;
+    struct _PreservedNamedEntity *next;
+} PreservedNamedEntity;
+
+/*====================================================================
                                END
 ====================================================================*/
