@@ -1,3 +1,16 @@
+2004-01-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule, system/case_data.c, system/case_match.c, system/context.c, system/extern.h:
+	名詞解析の整理
+
+2004-01-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c: オプション -ellipsis-* を追加
+
+	* system/case_analysis.c, system/const.h, system/context.c:
+	SVMに頻度を入れない場合分け(DISC_DONT_USE_FREQ)の追加
+	定数CF_DECIDE_THRESHOLDの導入
+
 2003-12-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_sm.c: bug fix.
