@@ -96,18 +96,24 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	満点				: BGH_CODE_SIZE-2 == 8	
      */
 
-    int i, j, point, max_point = 0;
+    int i, j;
+    float point, max_point = 0;
 
     if (! *(ptr1->SM_code) || ! *(ptr2->SM_code))
 	return -1;
 
     for (i = 0; ptr1->SM_code[i]; i+=SM_CODE_SIZE)
 	for (j = 0; ptr2->SM_code[j]; j+=SM_CODE_SIZE) {
-	    point = (int)(ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE)*(BGH_CODE_SIZE-2));
+	    point = ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE);
 	    if (max_point < point) max_point = point;
 	}
 
-    return max_point;
+    /* 類似度 0.4 以下は切る */
+    max_point = (max_point-0.4)*(BGH_CODE_SIZE-2)/(BGH_CODE_SIZE-4)*BGH_CODE_SIZE;
+    if (max_point < 0)
+	return 0;
+    else
+	return (int)(max_point);
 }
 
 /*==================================================================*/
