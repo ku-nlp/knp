@@ -13,7 +13,6 @@
 #include "path.h"
 #include "const.h"
 #include "dbm.h"
-#include "knpinit.h"
 #include "extern.h"
 
 /*====================================================================
