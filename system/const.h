@@ -82,7 +82,7 @@
 
 #define DATA_LEN	5120
 #define ALLOCATION_STEP	1024
-#define PARSETIMEOUT	60
+#define DEFAULT_PARSETIMEOUT	60
 
 /*====================================================================
 				DEFINE
@@ -166,11 +166,15 @@
 #define SM_EXPAND_NE	2
 #define SM_CHECK_FULL	3
 
+#define RLOOP_MRM	0
+#define RLOOP_RMM	1
+
 #define RLOOP_BREAK_NONE	0
 #define RLOOP_BREAK_NORMAL	1
 #define RLOOP_BREAK_JUMP	2
-#define RLOOP_MRM	0
-#define RLOOP_RMM	1
+
+#define LtoR		1
+#define RtoL		-1
 
 /*====================================================================
 				  ?
@@ -360,6 +364,7 @@ typedef struct {
 
 #define		DEF_KNP_FILE		"KNPルールファイル"
 #define		DEF_KNP_DIR		"KNPルールディレクトリ"
+#define		DEF_KNP_DICT_DIR	"KNP辞書ディレクトリ"
 
 typedef struct _RuleVector {
     char	*file;
@@ -372,9 +377,9 @@ typedef struct _RuleVector {
 #define RuleIncrementStep 10
 
 /* 読み込み方法 */
-#define HomoRuleType 1
-#define MorphRuleType 2
-#define BnstRuleType 3
+#define MorphRuleType 1
+#define BnstRuleType 2
+#define HomoRuleType 3
 #define DpndRuleType 4
 #define KoouRuleType 5
 #define NeMorphRuleType 6

@@ -7,11 +7,23 @@
 extern FILE *Jumanrc_Fileptr;
 extern char Jumangram_Dirname[];
 extern int LineNoForError, LineNo;
-char Knprule_Dirname[FILENAME_MAX];
+char *Knprule_Dirname = NULL;
+char *Knpdict_Dirname = NULL;
 
 RuleVector *RULE;
 int CurrentRuleNum = 0;
 int RuleNumMax = 0;
+
+/*==================================================================*/
+	    void check_duplicated(int value, char *string)
+/*==================================================================*/
+{
+    /* 値が 0 でないときはエラー */
+    if (value) {
+	fprintf(stderr, "%s is duplicately specified in .jumanrc\n", string);
+	exit(0);	
+    }
+}
 
 /*==================================================================*/
 			   void init_knp()
@@ -25,7 +37,7 @@ int RuleNumMax = 0;
     CELL *cell1,*cell2;
 
     LineNo = 0 ;
-    Jumangram_Dirname[0]='\0';
+    Jumangram_Dirname[0] = '\0';
 
     while (!s_feof(Jumanrc_Fileptr))  {
 	LineNoForError = LineNo;
@@ -33,7 +45,7 @@ int RuleNumMax = 0;
 
 	if (!strcmp(DEF_GRAM_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc");
+		fprintf(stderr, "error in .jumanrc\n");
 		exit(0);
 	    } else 
 		strcpy(Jumangram_Dirname, _Atom(cell2));
@@ -41,11 +53,11 @@ int RuleNumMax = 0;
 	/* KNP ルールディレクトリ */
 	else if (!strcmp(DEF_KNP_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .jumanrc");
+		fprintf(stderr, "error in .jumanrc\n");
 		exit(0);
 	    }
 	    else
-		strcpy(Knprule_Dirname, _Atom(cell2));
+		Knprule_Dirname = strdup(_Atom(cell2));
 	}
 	/* KNP ルールファイル */
 	else if (!strcmp(DEF_KNP_FILE, _Atom(car(cell1)))) {
@@ -61,46 +73,72 @@ int RuleNumMax = 0;
 		(RULE+CurrentRuleNum)->file = (char *)strdup(_Atom(car(car(cell1))));
 		(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 		(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+		(RULE+CurrentRuleNum)->type = 0;
 		(RULE+CurrentRuleNum)->direction = 0;
 
 		cell2 = cdr(car(cell1));
 
 		while (!Null(car(cell2))) {
-		    if (!strcmp(_Atom(car(cell2)), "同形多義語")) {
+		    if (!strcmp(_Atom(car(cell2)), "同形異義語")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = HomoRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "形態素")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = MorphRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "文節")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = BnstRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "係り受け")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = DpndRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "呼応")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = KoouRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "固有表現形態素")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NeMorphRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "固有表現句-PRE")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhrasePreRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "固有表現句")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhraseRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "固有表現句-AUX")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhraseAuxRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "文脈")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = ContextRuleType;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "ルールループ先行")) {
 			(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "BREAK")) {
+			/* RLOOP_BREAK_NONE は 0 なのでひっかからない */
+			check_duplicated((RULE+CurrentRuleNum)->breakmode, "Break mode");
 			(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NORMAL;
+		    }
+		    else if (!strcmp(_Atom(car(cell2)), "BREAKJUMP")) {
+			/* RLOOP_BREAK_NONE は 0 なのでひっかからない */
+			check_duplicated((RULE+CurrentRuleNum)->breakmode, "Break mode");
+			(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_JUMP;
+		    }
+		    else if (!strcmp(_Atom(car(cell2)), "順方向")) {
+			check_duplicated((RULE+CurrentRuleNum)->direction, "Direction");
+			(RULE+CurrentRuleNum)->direction = LtoR;
+		    }
+		    else if (!strcmp(_Atom(car(cell2)), "逆方向")) {
+			check_duplicated((RULE+CurrentRuleNum)->direction, "Direction");
+			(RULE+CurrentRuleNum)->direction = RtoL;
 		    }
 		    else {
 			fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cell2)));
@@ -108,10 +146,30 @@ int RuleNumMax = 0;
 		    }
 		    cell2 = cdr(cell2);
 		}
+
+		/* ルールのタイプが指定されていないとき */
+		if (!(RULE+CurrentRuleNum)->type) {
+		    fprintf(stderr, "Rule type for \'%s\' is not specified in .jumanrc\n", 
+			    (RULE+CurrentRuleNum)->file);
+		    exit(0);
+		}
+
+		/* デフォルトの方向 */
+		if (!(RULE+CurrentRuleNum)->direction)
+		    (RULE+CurrentRuleNum)->direction = LtoR;
+
 		CurrentRuleNum++;
 		cell1 = cdr(cell1);
 	    }
 	}
+	else if (!strcmp(DEF_KNP_DICT_DIR, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .jumanrc\n");
+		exit(0);
+	    }
+	    else
+		Knpdict_Dirname = strdup(_Atom(cell2));
+	}	
     }
 #endif
 }
@@ -126,6 +184,11 @@ int RuleNumMax = 0;
     int status;
     time_t data;
     struct stat sb;
+
+    if (!Knprule_Dirname) {
+	fprintf(stderr, "Please specify rule directory in .jumanrc\n");
+	exit(0);
+    }
 
     fullname = (char *)malloc_data(strlen(Knprule_Dirname)+strlen(file)+7, "check_filename");
     sprintf(fullname, "%s/%s.data", Knprule_Dirname, file);
@@ -161,7 +224,7 @@ int RuleNumMax = 0;
     status = stat(rulename, &sb);
     if (!status) {
 	if (data < sb.st_mtime) {
-	    fprintf(stderr, "%s: rule file is newer!\n", fullname);
+	    fprintf(stderr, "%s: older than rule file!\n", fullname);
 	}
     }
     free(rulename);

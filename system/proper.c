@@ -705,9 +705,9 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize);
     for (i = 0; i < Bnst_num; i++)
 	assign_mrph_feature_new(CNRuleArray, CurCNRuleSize, 
-			    bnst_data[i].mrph_ptr, 
-			    bnst_data[i].mrph_num, 
-				1, FALSE);
+				bnst_data[i].mrph_ptr, 
+				bnst_data[i].mrph_num, 
+				RLOOP_RMM, FALSE, LtoR);
     assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize);
 
     /* ÊÂÎó½èÍý

@@ -13,34 +13,34 @@ extern REGEXPMRPHS *regexpmrphs_alloc();
 
 /* global variable declaration */
 HomoRule	HomoRuleArray[HomoRule_MAX];
-int 	        CurHomoRuleSize;
+int 	        CurHomoRuleSize = 0;
 
 KoouRule	KoouRuleArray[KoouRule_MAX];
-int		CurKoouRuleSize;
+int		CurKoouRuleSize = 0;
 
 DpndRule	DpndRuleArray[DpndRule_MAX];
-int		CurDpndRuleSize;
+int		CurDpndRuleSize = 0;
 
 BnstRule 	ContRuleArray[ContRule_MAX];
-int 	        ContRuleSize;
+int 	        ContRuleSize = 0;
 
 MrphRule	NERuleArray[NERule_MAX];
-int 	        CurNERuleSize;
+int 	        CurNERuleSize = 0;
 
 MrphRule	CNpreRuleArray[CNRule_MAX];
-int 	        CurCNpreRuleSize;
+int 	        CurCNpreRuleSize = 0;
 
 MrphRule	CNRuleArray[CNRule_MAX];
-int 	        CurCNRuleSize;
+int 	        CurCNRuleSize = 0;
 
 MrphRule	CNauxRuleArray[CNRule_MAX];
-int 	        CurCNauxRuleSize;
+int 	        CurCNauxRuleSize = 0;
 
 MrphRule        HelpsysArray[Helpsys_MAX];
-int             CurHelpsysSize;
+int             CurHelpsysSize = 0;
 
 void		*EtcRuleArray = NULL;
-int		CurEtcRuleSize;
+int		CurEtcRuleSize = 0;
 int		ExistEtcRule = 0;
 
 GeneralRuleType	*GeneralRuleArray = NULL;
@@ -66,17 +66,20 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     FILE     *fp;
     CELL     *body_cell;
 
+    /* 重複してルールファイルが指定されているとき */
+    if (*count) {
+	fprintf(stderr, "Mrph rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
     file_name = (char *)check_filename(file_name);
-    
+
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
     }
 
-    free(file_name);
-
     LineNo = 1;
-    *count = 0;
 
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -95,7 +98,8 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	
 	rp++;
     }
-    
+
+    free(file_name);    
     fclose(fp);
 }
 
@@ -104,7 +108,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 /*==================================================================*/
 {
     int i;
-    
+
     for (i = 0; *Case_name[i]; i++)
 	if (str_eq(cp, Case_name[i]))
 	    return i;
@@ -120,8 +124,14 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     REGEXPMRPHS *pattern_bp;
     KoouRule  *rp = KoouRuleArray;
 
+    /* 重複してルールファイルが指定されているとき */
+    if (CurKoouRuleSize) {
+	fprintf(stderr, "Koou rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
     file_name = (char *)check_filename(file_name);
-    
+
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
@@ -130,7 +140,6 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     free(file_name);
 
     LineNo = 1;
-    CurKoouRuleSize = 0;
 
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -155,7 +164,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 
 	rp++;
     }
-    
+
     fclose(fp);
 }
 
@@ -168,8 +177,14 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     HomoRule  *rp = HomoRuleArray;
     FEATURE   **fpp;	
 
+    /* 重複してルールファイルが指定されているとき */
+    if (CurHomoRuleSize) {
+	fprintf(stderr, "Homo rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
     file_name = (char *)check_filename(file_name);
-    
+
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
 	exit(1);
@@ -178,7 +193,6 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     free(file_name);
     
     LineNo = 1;
-    CurHomoRuleSize = 0;
 
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -209,6 +223,12 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     CELL     *body_cell;
     FEATURE   **fpp;	
 
+    /* 重複してルールファイルが指定されているとき */
+    if (*count) {
+	fprintf(stderr, "Bnst rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
     file_name = (char *)check_filename(file_name);
     
     if ( (fp = fopen(file_name, "r")) == NULL ) {
@@ -219,7 +239,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     free(file_name);
 
     LineNo = 1;
-    *count = 0;
 
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -251,6 +270,12 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     DpndRule	*rp = DpndRuleArray;
     FEATURE	**fpp;	
 
+    /* 重複してルールファイルが指定されているとき */
+    if (CurDpndRuleSize) {
+	fprintf(stderr, "Dpnd rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
     file_name = (char *)check_filename(file_name);
 
     if ( (fp = fopen(file_name, "r")) == NULL ) {
@@ -261,7 +286,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     free(file_name);
 
     LineNo = 1;
-    CurDpndRuleSize = 0;
 
     while (!s_feof(fp)) {
 	LineNoForError = LineNo;
@@ -404,45 +428,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
-/*==================================================================*/
-{
-    FILE     *fp;
-    CELL     *body_cell;
-
-    file_name = (char *)check_filename(file_name);
-    
-    if ( (fp = fopen(file_name, "r")) == NULL ) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
-	exit(1);
-    }
-    
-    LineNo = 1;
-    *count = 0;
-    
-    while (!s_feof(fp)) {
-	LineNoForError = LineNo;
-
-	body_cell = s_read(fp);
-	store_regexpmrphs(&(rp->pre_pattern), car(body_cell));
-	store_regexpmrphs(&(rp->self_pattern), car(cdr(body_cell)));
-	store_regexpmrphs(&(rp->post_pattern), car(cdr(cdr(body_cell))));
-
-	list2feature(cdr(cdr(cdr(body_cell))), &(rp->f));
-
-	if (++(*count) == max) {
-	    fprintf(stderr, "Too many Rule for %s.\n", file_name);
-	    exit(1);
-	}
-	
-	rp++;
-    }
-
-    free(file_name);
-    fclose(fp);
-}
-
-/*==================================================================*/
 		     void init_etc_rule(int flag)
 /*==================================================================*/
 {
@@ -466,7 +451,7 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
     }
     else if (ExistEtcRule == IsMrph2Rule) {
 	assign_mrph_feature_new((MrphRule *)r_ptr, size, mrph_data, Mrph_num, 
-				RLOOP_MRM, RLOOP_BREAK_JUMP);
+				RLOOP_MRM, RLOOP_BREAK_JUMP, LtoR);
     }
     else if (ExistEtcRule == IsBnstRule) {
 	assign_bnst_feature((BnstRule *)r_ptr, size, mode);
@@ -494,10 +479,13 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 	GeneralRuleArray = (GeneralRuleType *)realloc(GeneralRuleArray, 
 						      sizeof(GeneralRuleType)*GeneralRuleMax);
     }
+
+    /* 各種タイプ, モードの伝播 */
     (GeneralRuleArray+GeneralRuleNum)->type = rule->type;
     (GeneralRuleArray+GeneralRuleNum)->mode = rule->mode;
     (GeneralRuleArray+GeneralRuleNum)->breakmode = rule->breakmode;
     (GeneralRuleArray+GeneralRuleNum)->direction = rule->direction;
+    (GeneralRuleArray+GeneralRuleNum)->CurRuleSize = 0;
 
     if ((GeneralRuleArray+GeneralRuleNum)->type == MorphRuleType) {
 	(GeneralRuleArray+GeneralRuleNum)->RuleArray = 

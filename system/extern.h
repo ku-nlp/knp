@@ -112,7 +112,8 @@ extern char *get_bgh(char *cp);
 extern char *db_get(DBM_FILE db, char *buf);
 
 /* KNP ½é´ü²½ */
-extern char Knprule_Dirname[];
+extern char *Knprule_Dirname;
+extern char *Knpdict_Dirname;
 extern RuleVector *RULE;
 extern int CurrentRuleNum;
 extern int RuleNumMax;

@@ -97,6 +97,7 @@ char *OptionalCaseDBname = NULL;
 char *EtcRuleFile = NULL;
 
 jmp_buf timeout;
+int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 
 /*==================================================================*/
 			     void usage()
@@ -106,7 +107,8 @@ jmp_buf timeout;
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand] [-mrule|-brule filename]\n"
-	    "           [-C host:port] [-S] [-N port] \n");
+	    "           [-C host:port] [-S] [-N port]\n"
+	    "           [-timeout second]\n");
     exit(1);    
 }
 
@@ -127,8 +129,8 @@ jmp_buf timeout;
     OptNE = OPT_NORMAL;
     OptHelpsys = FALSE;
     OptLearn = FALSE;
-/*    OptIgnoreChar = (char)NULL;*/
-	OptIgnoreChar = '\0';
+    /*    OptIgnoreChar = (char)NULL;*/
+    OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
 	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
@@ -201,15 +203,15 @@ jmp_buf timeout;
 	    OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
 	} 
 	else if (str_eq(argv[0], "-N")) {
-	  argv++; argc--;
-	  if (argc < 1) usage();
-	  OptPort = atol(argv[0]);
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    OptPort = atol(argv[0]);
 	}
 	else if (str_eq(argv[0], "-C")) {
-	  OptMode = CLIENT_MODE;
-	  argv++; argc--;
-	  if (argc < 1) usage();
-	  strcpy(OptHostname,argv[0]);
+	    OptMode = CLIENT_MODE;
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    strcpy(OptHostname,argv[0]);
 	}
 	else if (str_eq(argv[0], "-optionalcase")) {
 	    argv++; argc--;
@@ -240,6 +242,11 @@ jmp_buf timeout;
 	    EtcRuleFile = argv[0];
 	    init_etc_rule(IsBnstRule);
 	}
+	else if (str_eq(argv[0], "-timeout")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    ParseTimeout = atoi(argv[0]);
+	}
 	else {
 	    usage();
 	}
@@ -254,6 +261,12 @@ jmp_buf timeout;
 /*==================================================================*/
 {
     int i;
+
+    /* rcfile をさがす順
+       1. $HOME/.jumanrc
+       2. RC_DEFAULT (Makefile)
+       → rcfileがなければエラー
+    */
 
     set_jumanrc_fileptr(NULL, TRUE);
     init_knp();
@@ -289,23 +302,23 @@ jmp_buf timeout;
 	}
 	/* 固有名詞ルール */
 	else if ((RULE+i)->type == NeMorphRuleType) {
-	    read_NE_rule((RULE+i)->file, NERuleArray, &CurNERuleSize, NERule_MAX);
+	    read_mrph_rule((RULE+i)->file, NERuleArray, &CurNERuleSize, NERule_MAX);
 	}
 	/* 複合名詞準備ルール */
 	else if ((RULE+i)->type == NePhrasePreRuleType) {
-	    read_NE_rule((RULE+i)->file, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
+	    read_mrph_rule((RULE+i)->file, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
 	}
 	/* 複合名詞ルール */
 	else if ((RULE+i)->type == NePhraseRuleType) {
-	    read_NE_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+	    read_mrph_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
 	}
 	/* 複合名詞補助ルール */
 	else if ((RULE+i)->type == NePhraseAuxRuleType) {
-	    read_NE_rule((RULE+i)->file, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
+	    read_mrph_rule((RULE+i)->file, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
 	}
-	/* 複合名詞ルール (JUMAN only) */ /* 重複注意 */
+	/* 複合名詞ルール (JUMAN only) */
 	else if ((RULE+i)->type == NePhraseRuleType) {
-	    read_NE_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+	    read_mrph_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
 	}
 	/* 文脈処理のルール */
 	else if ((RULE+i)->type == ContextRuleType) {
@@ -554,7 +567,7 @@ void stand_alone_mode()
 	para_postprocess();	/* 各conjunctのheadを提題の係り先に */
 
 	signal(SIGALRM, timeout_function);
-	alarm(PARSETIMEOUT);
+	alarm(ParseTimeout);
 
 	if (detect_dpnd_case_struct() == FALSE) {
 	    ErrorComment = strdup("Cannot detect dependency structure");

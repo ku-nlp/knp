@@ -471,6 +471,10 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int i, j, k, match_length, feature_break_mode;
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
+
+    /* 逆方向に適用する場合はデータのおしりをさしておく必要がある */
+    if (direction == RtoL)
+	s_m_ptr += m_length-1;
     
     /* MRM
        	1.self_patternの先頭の形態素位置
@@ -491,12 +495,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    for (j = 0; j < r_size; j++, r_ptr++) {
 		if ((match_length = 
 		     regexpmrphrule_match_M(r_ptr, m_ptr, 
-					    direction == LtoR ? i : m_length-i, 
-					    direction == LtoR ? m_length-i : i))
-		    != -1) {
-		    for (k = i; k < i + match_length; k++) {
-			assign_feature(&((s_m_ptr + k)->f), &(r_ptr->f), s_m_ptr + k);
-		    }
+					    direction == LtoR ? i : m_length-i-1, 
+					    direction == LtoR ? m_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_m_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_m_ptr+i*direction+k);
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			feature_break_mode == RLOOP_BREAK_NORMAL) {
@@ -529,12 +532,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		m_ptr = s_m_ptr+(i*direction);
 		if ((match_length = 
 		     regexpmrphrule_match_M(r_ptr, m_ptr, 
-					    direction == LtoR ? i : m_length-i, 
-					    direction == LtoR ? m_length-i : i))
-		    != -1) {
-		    for (k = i; k < i + match_length; k++) {
-			assign_feature(&((s_m_ptr + k)->f), &(r_ptr->f), s_m_ptr + k);
-		    }
+					    direction == LtoR ? i : m_length-i-1, 
+					    direction == LtoR ? m_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_m_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_m_ptr+i*direction+k);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
 			feature_break_mode == RLOOP_BREAK_NORMAL ||
@@ -548,21 +550,93 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_bnst_feature_new(BnstRule *r_ptr, int r_size,
-				  BNST_DATA *s_b_ptr, int m_length,
-				  int mode, int break_mode)
+     void assign_bnst_feature_new(BnstRule *s_r_ptr, int r_size,
+				  BNST_DATA *s_b_ptr, int b_length,
+				  int mode, int break_mode, int direction)
 /*==================================================================*/
 {
-    /* dummy (tentative) */
+    /* ある範囲(文全体,文節内など)に対して文節のマッチングを行う */
 
-    if (break_mode == RLOOP_BREAK_NONE)
-	break_mode = LOOP_ALL;
-    else if (break_mode == RLOOP_BREAK_NORMAL)
-	break_mode = LOOP_BREAK;
-    assign_bnst_feature(r_ptr, r_size, break_mode);
+    int i, j, k, match_length, feature_break_mode;
+    BnstRule *r_ptr;
+    BNST_DATA *b_ptr;
+
+    /* 逆方向に適用する場合はデータのおしりをさしておく必要がある */
+    if (direction == RtoL)
+	s_b_ptr += b_length-1;
+    
+    /* MRM
+       	1.self_patternの先頭の文節位置
+	  2.ルール
+	    3.self_patternの末尾の文節位置
+	の順にループが回る
+	
+	break_mode == RLOOP_BREAK_NORMAL
+	    2のレベルでbreakする
+	break_mode == RLOOP_BREAK_JUMP
+	    2のレベルでbreakし，self_pattern長だけ1のループを進める
+     */
+
+    if (mode == RLOOP_MRM) {
+	for (i = 0; i < b_length; i++) {
+	    r_ptr = s_r_ptr;
+	    b_ptr = s_b_ptr+(i*direction);
+	    for (j = 0; j < r_size; j++, r_ptr++) {
+		if ((match_length = 
+		     regexpbnstrule_match_M(r_ptr, b_ptr, 
+					    direction == LtoR ? i : b_length-i-1, 
+					    direction == LtoR ? b_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_b_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_b_ptr+i*direction+k);
+		    feature_break_mode = break_feature(r_ptr->f);
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_NORMAL) {
+			break;
+		    } else if (break_mode == RLOOP_BREAK_JUMP ||
+			       feature_break_mode == RLOOP_BREAK_JUMP) {
+			i += match_length - 1;
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    /* RMM
+       	1.ルール
+	  2.self_patternの先頭の文節位置
+	    3.self_patternの末尾の文節位置
+	の順にループが回る
+	
+	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
+	    2のレベルでbreakする (※この使い方は考えにくいが)
+    */
+
+    else if (mode == RLOOP_RMM) {
+	r_ptr = s_r_ptr;
+	for (j = 0; j < r_size; j++, r_ptr++) {
+	    feature_break_mode = break_feature(r_ptr->f);
+	    for (i = 0; i < b_length; i++) {
+		b_ptr = s_b_ptr+(i*direction);
+		if ((match_length = 
+		     regexpbnstrule_match_M(r_ptr, b_ptr, 
+					    direction == LtoR ? i : b_length-i-1, 
+					    direction == LtoR ? b_length-i : i+1)) != -1) {
+		    for (k = 0; k < match_length; k++)
+			assign_feature(&((s_b_ptr+i*direction+k)->f), 
+				       &(r_ptr->f), s_b_ptr+i*direction+k);
+		    if (break_mode == RLOOP_BREAK_NORMAL ||
+			break_mode == RLOOP_BREAK_JUMP ||
+			feature_break_mode == RLOOP_BREAK_NORMAL ||
+			feature_break_mode == RLOOP_BREAK_JUMP) {
+			break;
+		    }
+		}
+	    }
+	}
+    }
 }
-
-#define RuleCast(x, y) (x == MorphRuleType ? (MrphRule *)(y) : (BnstRule *)(y))
 
 /*==================================================================*/
 		void assign_general_feature(int flag)
