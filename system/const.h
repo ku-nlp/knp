@@ -105,6 +105,7 @@
 #define OPT_TAB		4
 #define OPT_NOTAG	5
 #define OPT_PA		6
+#define OPT_NOTAGTREE	7
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3

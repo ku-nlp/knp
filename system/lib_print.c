@@ -866,17 +866,20 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 {
     /* 依存構造木の表示 */
 
-    if (OptExpress == OPT_TREE || OptExpress == OPT_TREEF) {
+    /* tag単位のtreeを描くとき */
+    if (OptExpress == OPT_TREE || 
+	OptExpress == OPT_TREEF) {
 	max_width = 0;
 
 	calc_tree_width((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1);
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1, NULL, 0);
+    }
+    /* 文節のtreeを描くとき */
+    else if (OptExpress == OPT_NOTAGTREE) {
+	max_width = 0;
 
-	/* 文節のtreeを描くとき
 	calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
 	show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
-	*/
-
     }
     else if (OptExpress == OPT_SEXP) {
 	show_sexp((sp->bnst_data + sp->Bnst_num -1), 0, 0);
@@ -1018,6 +1021,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
     else if (OptExpress == OPT_PA) {
 	print_pa_structure(sp);
+    }
+    else if (OptExpress == OPT_NOTAGTREE) {
+	/* tree出力 */
+	make_dpnd_tree(sp);
+	print_kakari(sp);
     }
     else {
 	/* tree出力 */
