@@ -261,6 +261,7 @@ static int rel_matrix_strong[4][4] = {
     int i, j, k, flag;
     int a1, a2, a3, b1, b2, b3;
     PARA_MANAGER *m_ptr, *m_ptr1, *m_ptr2;
+    char buffer1[64], buffer2[64];
 
     /* 位置関係の決定，誤りの修正 */
 
@@ -384,6 +385,18 @@ static int rel_matrix_strong[4][4] = {
 	    }
 	}
 	para_manager[i].status = (flag == TRUE) ? 's' : 'w';
+    }
+
+    /* 並列解析結果をfeatureに */
+
+    for (i = 0; i < Para_M_num; i++) {
+	for (j = 0; j < para_manager[i].part_num-1; j++) {
+	    sprintf(buffer1, "並結句数:%d", para_manager[i].part_num);
+	    sprintf(buffer2, "並結文節数:%d", 
+		    para_manager[i].end[1] - para_manager[i].start[1] + 1);
+	    assign_cfeature(&(bnst_data[para_manager[i].end[j]].f), buffer1);
+	    assign_cfeature(&(bnst_data[para_manager[i].end[j]].f), buffer2);
+	}
     }
 
     return TRUE;
