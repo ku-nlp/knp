@@ -11,10 +11,10 @@ word2code.db: word2code.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-word2code_add.rule:
+word2code_add.dic:
 	true
 
-word2code_add.dat: transform word2code_add.rule
+word2code_add.dat: transform word2code_add.dic
 	./transform word2code_add
 
 word2code_add.db: word2code_add.dat
@@ -22,10 +22,10 @@ word2code_add.db: word2code_add.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-word2code_del.rule:
+word2code_del.dic:
 	true
 
-word2code_del.dat: transform word2code_del.rule
+word2code_del.dat: transform word2code_del.dic
 	./transform word2code_del
 
 word2code_del.db: word2code_del.dat

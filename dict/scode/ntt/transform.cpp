@@ -7,7 +7,7 @@
 
 /*
   
-  入力ファイル(*.rule)
+  入力ファイル(*.dic)
   ====================
   アスパラ 野菜:作物
   ...
@@ -47,13 +47,13 @@ int main ( int argc, char *argv[] ) {
   ifstream fin;
   ofstream fout;
   string name, filename_in, filename_out;
-  string line, word, code;
+  string line, word, code, hinsi_f;
   vector<string> sm_vec;
-  int i, suffix_f;
+  int i;
 
   if ( argc == 2 ) {
     name = argv[1];
-    filename_in = name + ".rule";
+    filename_in = name + ".dic";
     filename_out = name + ".dat";
   }else {
     exit(1);
@@ -72,23 +72,42 @@ int main ( int argc, char *argv[] ) {
     
     for ( i = 0; i < sm_vec.size(); i++ ) {
 
-      if ( sm_vec[i].substr( 0, 1 ) == "*" ) {
-	sm_vec[i].erase( 0, 1 );
-	suffix_f = 1;
-      }else {
-	suffix_f = 0;
-      }
-      code = sm2code( sm_vec[i] );
-      if ( suffix_f == 1 ) {
-	code.replace( 0, 1, "m" );
-      }else {
-	  code.replace( 0, 1, "3" );
-      }
-      if ( code == "NULL" ) {
-	cerr << "invalid sm: " << sm_vec[i] << "\n";
-      }else {
-	fout << word << " " << code << "\n";
-      }
+	//  品詞を指定している場合
+	if ( ( sm_vec[i].substr( 0, 1 ) == "3" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "4" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "5" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "6" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "7" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "8" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "9" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "a" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "b" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "c" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "d" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "e" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "f" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "g" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "h" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "i" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "j" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "k" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "l" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "m" ) ||
+	     ( sm_vec[i].substr( 0, 1 ) == "n" ) ) {
+	    sm_vec[i].erase( 0, 1 );
+	    hinsi_f = sm_vec[i].substr( 0, 1 );
+	}else {
+	    hinsi_f = "3";  //  品詞を指定していなければ，デフォルト 3 
+	}
+      
+	code = sm2code( sm_vec[i] );
+	
+	if ( code == "NULL" ) {
+	    cerr << "invalid sm: " << sm_vec[i] << "\n";
+	}else {
+	    code.replace( 0, 1, hinsi_f );   // 品詞を変える
+	    fout << word << " " << code << "\n";
+	}
     }
   }
   fin.close();
