@@ -108,6 +108,9 @@
 #define OPT_INHIBIT_CASE_PREDICATE	0x0100
 #define OPT_INHIBIT_BARRIER		0x1000
 
+#define	OPT_CASE_SOTO	1
+#define	OPT_CASE_GAGA	2
+
 #define PARA_KEY_O          0
 #define PARA_KEY_N          1	/* 体言の並列 */
 #define PARA_KEY_P          2	/* 用言の並列 */

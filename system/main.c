@@ -60,6 +60,7 @@ int		OptInhibit;
 int		OptCheck;
 int		OptNE;
 int		OptLearn;
+int		OptCaseFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
 char		*OptOptionalCase = NULL;

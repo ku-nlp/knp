@@ -56,6 +56,7 @@ extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
 extern int		OptLearn;
+extern int		OptCaseFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern char		*OptOptionalCase;
