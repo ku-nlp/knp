@@ -3,6 +3,9 @@
 	* system/para_analysis.c, system/para_relation.c:
 	並列構造の個数が最大値を越えてもexitしないようにした
 
+	* system/extern.h, system/para_analysis.c:
+	para_recovery()で並列構造の最大数を越える場合がある不都合を修正
+
 2003-04-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
