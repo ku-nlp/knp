@@ -1,3 +1,25 @@
+2004-11-08  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_home.rule, system/const.h, system/read_data.c, system/read_rule.c:
+	音訓に対応
+        
+	* rule/mrph_basic.rule:
+	〜自体（副詞的接尾辞）
+
+2004-11-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/Makefile.am: dependency bug fix.
+
+2004-10-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/Makefile.am: bug fix.
+
+2004-10-07  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_type.phrase:
+	ID:〜と：並列を制限
+	ID:〜から：読点がある場合をB+に
+
 2004-10-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/scode/ntt/usr_word2code.dat: New file.
