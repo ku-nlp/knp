@@ -1,3 +1,19 @@
+2003-07-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_event.c:
+	backoffの実装。
+	ゼロ代名詞をもつ用言側を条件にした。
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.c, system/context.c, system/extern.h, system/main.c, system/path.h, rule/case_analysis.rule:
+	名詞の関係解析の実装
+
+2003-06-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/case_analysis.c, system/const.h, system/context.c, system/extern.h, system/lib_scase.c, system/main.c, system/path.h:
+	省略解析へ用言の共起情報の導入
+
+	* system/lib_event.c: New file.
+
 2003-06-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule:
