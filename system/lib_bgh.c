@@ -86,7 +86,6 @@ int		BGHExist;
 {
     int strt, end, last, stop, i, overflow_flag = 0;
     char str_buffer[BNST_LENGTH_MAX], *code;
-    char feature_buffer[500];
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
@@ -213,9 +212,6 @@ int		BGHExist;
     }
   Match:
     ptr->BGH_num = strlen(ptr->BGH_code) / BGH_CODE_SIZE;
-
-    sprintf(feature_buffer, "BGH:%s", ptr->BGH_code);
-    assign_cfeature(&(ptr->f), feature_buffer);
 }
 
 /*==================================================================*/

@@ -85,7 +85,7 @@ void close_clause()
 /* 述語節間の係り受け頻度を調べる関数 */
 int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 {
-    char *type1, *type2, *cp, *token, *type;
+    char *type1, *type2, *cp, *token, *type, *level1, *level2;
     char parallel1, parallel2, touten1, touten2, touten;
     int score, offset, i;
 
@@ -109,6 +109,10 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
     /* 述語タイプの設定 */
     type1 = (char *)check_feature(ptr1->f, "ID");
     type2 = (char *)check_feature(ptr2->f, "ID");
+
+    /* level の設定(表示に用いるだけ) */
+    level1 = (char *)check_feature(ptr1->f, "レベル");
+    level2 = (char *)check_feature(ptr2->f, "レベル");
 
     if (!type1) return TRUE;
     if (!type2) return FALSE;
@@ -161,12 +165,22 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 
     /* デバッグ出力 */
     if (OptCheck != TRUE) {
-	if (para_flag == TRUE)
-	    fprintf(Outfp, ";;; %2d %2d %s%c%c %s%c%c->%d\n", ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
-		    type2+3, parallel2, touten2, score);
-	else
+	if (para_flag == TRUE) {
+	    if (level1 && level2) {
+		fprintf(Outfp, ";;; %2d %2d %s%c%c(%s) %s%c%c(%s) -> %d\n", 
+			ptr1->num, ptr2->num, type1+3, parallel1, touten1, level1+7, 
+			type2+3, parallel2, touten2, level2+7, score);
+	    }
+	    else {
+		fprintf(Outfp, ";;; %2d %2d %s%c%c %s%c%c -> %d\n", 
+			ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
+			type2+3, parallel2, touten2, score);
+	    }
+	}
+	else {
 	    fprintf(Outfp, ";;;(R) %s %c %s %c->%d\n", type1+3, touten1, 
 		    type2+3, touten2, score);
+	}
     }
 
 
@@ -186,13 +200,13 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	    return TRUE;
     }
     else {
-	/* 並列のときでスコアがないなら条件緩和して並列を無視 */
+	/* 並列のときでスコアがないなら条件緩和して並列を無視
 	if (parallel1 == 'P')
 	    return corpus_clause_comp((BNST_DATA *)ptr1, 
 				      (BNST_DATA *)ptr2, 
 				      FALSE);
-	else
-	    return FALSE;
+	else */
+	return FALSE;
     }
 }
 
@@ -224,7 +238,7 @@ void close_case_pred()
 /* 格から述語への係り受け頻度を調べる関数 */
 int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 {
-    char *type1, *type2;
+    char *type1, *type2, *level2;
     char parallel1, touten1, touten2;
     int score, scorep, offset, para_flag = 0;
 
@@ -240,6 +254,9 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
     /* 格と述語タイプの設定 */
     type1 = (char *)check_feature(ptr1->f, "係");
     type2 = (char *)check_feature(ptr2->f, "ID");
+
+    /* level の設定(表示に用いるだけ) */
+    level2 = (char *)check_feature(ptr2->f, "レベル");
 
     if (!type1) return FALSE;
     if (!type2) return FALSE;
@@ -274,9 +291,9 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 	score += scorep;
     }
 
-    /* デバッグ出力
-    fprintf(Outfp, ";;;(K) %s%c%c %s %c->!%d", type1+3, parallel1, touten1, type2+3, touten2, score);
-    */
+#ifdef DEBUGMORE
+    fprintf(Outfp, ";;;(K) %2d %2d %s%c%c %s %c->!%d", ptr1->num, ptr2->num, type1+3, parallel1, touten1, type2+3, touten2, score);
+#endif
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -296,9 +313,9 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2)
 	score += scorep;
     }
 
-    /* デバッグ出力
+#ifdef DEBUGMORE
     fprintf(Outfp, "  %d\n", score);
-    */
+#endif
 
     if (score)
 	return TRUE;
