@@ -52,7 +52,6 @@
 
 package KNP;
 require 5.000;
-use FileHandle;
 use Juman;
 use strict;
 use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST $VERSION );
@@ -69,8 +68,12 @@ $VERSION      = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
 
 
 sub BEGIN {
-    # 出力が二重にならないようにするためのおまじない
-    STDOUT->autoflush(1);
+    unless( $HOST ){
+	# KNP を子プロセスとして実行している場合、標準出力のバッファリ
+	# ングによって出力が二重にならないようにするためのおまじない
+	require FileHandle or die;
+	STDOUT->autoflush(1);
+    }
 }
 
 
@@ -122,7 +125,7 @@ sub new {
 # 呼び出した KNP を終了するメソッド
 sub DESTORY {
     my( $this ) = @_;
-    &kill_knp( $this ) if( $this->{KNP}->alive );
+    &kill_knp( $this ) if $this->{KNP};
 }
 
 
@@ -286,9 +289,10 @@ sub kill_knp {
     my( $this ) = @_;
     $this->{PREVIOUS} = [];
     if( $HOST ){
+	$this->{KNP}->print( pack("c",0x0b)."\n" );
 	$this->{KNP}->close;
     } else {
-	$this->{KNP}->kill;
+	$this->{KNP}->alive && $this->{KNP}->kill;
     }
     delete $this->{KNP};
     1;
