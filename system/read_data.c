@@ -408,16 +408,20 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    if (mrph_item == 8) {
 		/* 意味情報をfeatureへ */
 		if (strcmp(m_ptr->Imi, "NIL")) {
-		    int pflag = 0;
+		    char *token, *str;
+
 		    /* 通常 "" で括られている */
-		    if (*(m_ptr->Imi + strlen(m_ptr->Imi) - 1) == '\"') {
-			*(m_ptr->Imi + strlen(m_ptr->Imi) - 1) = '\0';
-			pflag = 1;
+		    str = strdup(*(m_ptr->Imi) == '\"' ? m_ptr->Imi + 1 : m_ptr->Imi);
+		    if (*(str + strlen(str) - 1) == '\"') {
+			*(str + strlen(str) - 1) = '\0';
 		    }
-		    assign_cfeature(&(m_ptr->f), *(m_ptr->Imi) == '\"' ? m_ptr->Imi + 1 : m_ptr->Imi);
-		    if (pflag) {
-			*(m_ptr->Imi + strlen(m_ptr->Imi)) = '\"';
+
+		    token = strtok(str, " ");
+		    while (token) {
+			assign_cfeature(&(m_ptr->f), token);
+			token = strtok(NULL, " ");
 		    }
+		    free(str);
 		}
 	    }
 	    else if (mrph_item == 7) {
@@ -1116,6 +1120,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		    make_tag_unit_set_inum(sp, sp->Tag_num);
 		}
 		tp->bnum = bp->num;
+		tp->b_ptr = bp;		/* タグ単位から文節へマーク */
 		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
 		bp->tag_num = 1;
 		pre_bp = bp;
@@ -1129,6 +1134,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    }
 	    else {
 		tp->bnum = -1;
+		tp->b_ptr = pre_bp;
 		pre_bp->tag_num++;
 	    }
 	    sp->Tag_num++;
@@ -1174,6 +1180,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		    make_tag_unit_set_inum(sp, tp->num);
 		}
 		tp->bnum = bp->num;
+		tp->b_ptr = bp;		/* タグ単位から文節へマーク */
 		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
 		bp->tag_num = 1;
 		pre_bp = bp;
@@ -1187,6 +1194,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    }
 	    else {
 		tp->bnum = -1;
+		tp->b_ptr = pre_bp;
 		pre_bp->tag_num++;
 	    }
 	}
