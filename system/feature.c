@@ -639,10 +639,11 @@
     if ((0xa5a0 < code && code < 0xa6a0) || code == 0xa1bc) {
 	return TYPE_KATAKANA;
     }
-    /* ひらがな */ /* 漢字 */
+    /* ひらがな */
     else if (0xa4a0 < code && code < 0xa5a0) {
 	return TYPE_HIRAGANA;
     }
+    /* 漢字 */
     else if (0xb0a0 < code || code == 0xa1b9) {
 	return TYPE_KANJI;
     }
@@ -650,8 +651,13 @@
     else if ((0xa3af < code && code < 0xa3ba) || code == 0xa1a5 || code == 0xa1a6) {
 	return TYPE_SUUJI;
     }
+    /* アルファベット */
+    else if (0xa3c0 < code && code < 0xa3fb) {
+	return TYPE_EIGO;
+    }
+    /* 記号 */
     else {
-	return TYPE_EIKIGOU;
+	return TYPE_KIGOU;
     }
 }
 
@@ -706,7 +712,7 @@
 
     /* &かな漢字 : かな漢字チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&かな漢字")) {
+    else if (!strcmp(rule, "&かな漢字")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -720,7 +726,7 @@
 
     /* &ひらがな : ひらがな チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&ひらがな")) {
+    else if (!strcmp(rule, "&ひらがな")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -733,7 +739,7 @@
 
     /* &末尾ひらがな : 末尾の一文字がひらがなか チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&末尾ひらがな")) {
+    else if (!strcmp(rule, "&末尾ひらがな")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;	/* 表記をチェック */
 	ucp += strlen(ucp)-2;
 	code = (*ucp)*0x100+*(ucp+1);
@@ -744,7 +750,7 @@
 
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&カタカナ")) {
+    else if (!strcmp(rule, "&カタカナ")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -757,7 +763,7 @@
 
     /* &数字 : 数字 チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&数字")) {
+    else if (!strcmp(rule, "&数字")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -770,11 +776,26 @@
 
     /* &英記号 : 英記号 チェック (形態素レベル) */
 
-    if (!strcmp(rule, "&英記号")) {
+    else if (!strcmp(rule, "&英記号")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
-	    if (check_char_type(code) != TYPE_EIKIGOU)
+	    type = check_char_type(code);
+	    if (type != TYPE_EIGO && type != TYPE_KIGOU)
+		return FALSE;
+	    ucp += 2;
+	}	    
+	return TRUE;
+    }
+
+    /* &記号 : 記号 チェック (形態素レベル) */
+
+    else if (!strcmp(rule, "&記号")) {
+	ucp = ((MRPH_DATA *)ptr2)->Goi;
+	while (*ucp) {
+	    code = (*ucp)*0x100+*(ucp+1);
+	    type = check_char_type(code);
+	    if (type != TYPE_KIGOU)
 		return FALSE;
 	    ucp += 2;
 	}	    

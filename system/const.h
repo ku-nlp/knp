@@ -168,7 +168,8 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define TYPE_HIRAGANA	2
 #define TYPE_KANJI	3
 #define TYPE_SUUJI	4
-#define TYPE_EIKIGOU	5
+#define TYPE_EIGO	5
+#define TYPE_KIGOU	6
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
