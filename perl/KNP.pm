@@ -102,9 +102,7 @@ sub new {
     # -i オプションの対応
     if( $option =~ /\-i +(\S)+/ ){
 	my $pat = $1;
-	$this->{PATTERN} = "(?:^EOS\$|\nEOS\$|^\Q$pat\E)";
-    } else {
-	$this->{PATTERN} = "(?:^EOS\$|\nEOS\$)";
+	$this->{PATTERN} = "\Q$pat\E";
     }
 
     bless $this;
@@ -149,16 +147,21 @@ sub parse {
     splice( @{$this->{PREVIOUS}}, 10 );
 
     # 構文解析結果を読み出す。
+    if( $input =~ /^\#/ ){
+	# "#" で始まる入力文の場合は解析結果を読み込まずに、単に1を返す。
+	$this->{ALL} = $input;
+	return 1;
+    }
     my $buf = "";
     while( $_ = &read( $this->{READ}, $TIMEOUT ) ){
 	$buf .= $_;
-	last if /$this->{PATTERN}/;
+	last if( $buf =~ /\nEOS$/ || $this->{PATTERN} && /^$this->{PATTERN}/ );
     }
     $this->{ALL} = $buf;
 
     # 構文解析結果の最後に EOS のみの行が無い場合は、読み出し中にタイ
     # ムアウトが発生している。
-    unless( $buf =~ /$this->{PATTERN}/ ){
+    unless( $buf =~ /\nEOS$/ || $this->{PATTERN} && $buf =~ /\n$this->{PATTERN}/ ){
  	if(( $counter==1 )&&( $VERBOSE )){
  	    print STDERR ";; TIMEOUT is occured.\n";
  	    for( my $i=$[; $this->{PREVIOUS}[$i]; $i++ ){
@@ -188,11 +191,13 @@ sub parse {
 
     # 構文解析結果を処理する。
     my( $mrph_num, $bnst_num, $f_string );
+    ( $this->{COMMENT} ) = ( $buf =~ s/^(\#[^\n]*?)\n// );     # 最初のコメント( # S-ID:1 )を取り除く
     for( split( /\n/,$buf ) ){
 	chomp;
 
-	if (/^\#/) {
-	    $this->{COMMENT} = $_;
+	if ( /^EOS$/ || $this->{PATTERN} && /^$this->{PATTERN}/) {
+	    $this->{BNST}[$bnst_num - 1]{end} = $mrph_num - 1 if $bnst_num > $[;
+	    last;
 	}
 	elsif (/^;;/) {
 	    $this->{ERROR} .= $_;
@@ -218,10 +223,6 @@ sub parse {
 		$this->{ERROR} .= ";; KNP.pm : Illegal output of knp : output=$_\n"
 	    }
 	    $bnst_num++;
-	}
-	elsif (/$this->{PATTERN}/) {
-	    $this->{BNST}[$bnst_num - 1]{end} = $mrph_num - 1 if $bnst_num > $[;
-	    last;
 	}
 	else {
 	    # @{$this->{MRPH}[$mrph_num]} = split;
