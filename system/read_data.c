@@ -169,6 +169,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     U_CHAR imi_buffer[IMI_MAX];
     MRPH_DATA  *m_ptr = mrph_data, *ptr;
     int homo_num, offset, mrph_item, i,len;
+#ifdef _WIN32
+    char *EUCbuffer;
+#endif
 
     preArticleID = ArticleID;
     ArticleID = 0;
@@ -182,6 +185,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     while (1) {
 
 	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
+
+#ifdef _WIN32
+	EUCbuffer = toStringEUC(input_buffer);
+	strcpy(input_buffer, EUCbuffer);
+	free(EUCbuffer);
+#endif
 
 	/* Server モードの場合は 注意 \r\n になる*/
 	if (OptMode == SERVER_MODE) {
