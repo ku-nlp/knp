@@ -55,6 +55,7 @@ int		OptInhibit;
 int		OptCheck;
 int		OptNE;
 int		OptJuman;
+int		OptSVM;
 int		OptLearn;
 int		OptCaseFlag;
 int		OptCFMode;
@@ -138,6 +139,7 @@ extern float	AssignReferentThreshold;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
     OptJuman = OPT_NORMAL;
+    OptSVM = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = 0;
     OptIgnoreChar = '\0';
@@ -169,6 +171,9 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
 	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
+#ifdef USE_SVM
+	else if (str_eq(argv[0], "-svm"))     OptSVM      = OPT_SVM;
+#endif
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -475,9 +480,11 @@ extern float	AssignReferentThreshold;
     if (OptDisc == OPT_DISC) {
 	init_noun();	/* 名詞辞書オープン */
 #ifdef USE_SVM
-	if (!init_svm()) {	/* SVM */
-	    fprintf(stderr, "SVM initialization error.\n");
-	    exit(1);
+	if (OptSVM == OPT_SVM) {
+	    if (!init_svm()) {	/* SVM */
+		fprintf(stderr, "SVM initialization error.\n");
+		exit(1);
+	    }
 	}
 #endif
     }

@@ -49,6 +49,7 @@ extern int 		OptExpandP;
 extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
+extern int		OptSVM;
 extern int		OptLearn;
 extern int		OptCaseFlag;
 extern int		OptCFMode;

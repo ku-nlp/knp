@@ -106,6 +106,7 @@
 #define OPT_NE		3
 #define OPT_NE_SIMPLE	4
 #define OPT_JUMAN	2
+#define OPT_SVM		2
 
 #define OPT_INHIBIT_CLAUSE		0x0001
 #define OPT_INHIBIT_C_CLAUSE		0x0002
