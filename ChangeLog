@@ -1,3 +1,12 @@
+2002-11-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	形態素の品詞参照方法の統一
+
+2002-11-01  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule: 名詞的形容詞語幹のバグfix
+
 2002-10-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/Makefile.am:

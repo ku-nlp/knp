@@ -1159,7 +1159,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	/* ¿Ë∆¨§Ú§ﬂ§Î */
 	for (i = 0; i < bp->mrph_num; i++) {
 	    /* …’¬∞§Œ∆√ºÏ§ÚΩ¸§Ø */
-	    if ((bp->mrph_ptr+i)->Hinshi != 1 || 
+	    if (strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "∆√ºÏ") || 
 		check_feature((bp->mrph_ptr+i)->f, "º´Œ©")) {
 		start = i;
 		break;
@@ -1169,11 +1169,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	/* Àˆ»¯§Ú§ﬂ§Î */
 	for (i = bp->mrph_num-1; i >= start; i--) {
 	    /* ∆√ºÏ, ΩıªÏ, Ωı∆∞ªÏ, »ΩƒÍªÏ§ÚΩ¸§Ø */
-	    if (((bp->mrph_ptr+i)->Hinshi != 1 || 
+	    if ((strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "∆√ºÏ") || 
 		 check_feature((bp->mrph_ptr+i)->f, "º´Œ©")) && 
-		(bp->mrph_ptr+i)->Hinshi != 4 && 
-		(bp->mrph_ptr+i)->Hinshi != 5 && 
-		(bp->mrph_ptr+i)->Hinshi != 9) {
+		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "ΩıªÏ") && 
+		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "Ωı∆∞ªÏ") && 
+		strcmp(Class[(bp->mrph_ptr+i)->Hinshi][0].id, "»ΩƒÍªÏ")) {
 		end = i;
 		break;
 	    }
@@ -1197,7 +1197,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	}
     }
     else {
-	ret = strdup(L_Jiritu_M(bp)->Goi2);
+	if (bp->jiritu_ptr) {
+	    ret = strdup(L_Jiritu_M(bp)->Goi2);
+	}
+	else {
+	    ret = strdup(bp->mrph_ptr->Goi2);
+	}
     }
     return ret;
 }

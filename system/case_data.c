@@ -54,7 +54,7 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 
     /* この文節 */
     for (i = 0; i < b_ptr->jiritu_num; i++) {
-	if ((b_ptr->jiritu_ptr+i)->Hinshi == 1)	/* 特殊以外 */
+	if (!strcmp(Class[(b_ptr->jiritu_ptr+i)->Hinshi][0].id, "特殊")) /* 特殊以外 */
 	    continue;
 	strcat(fukugoji_string, 
 	       (b_ptr->jiritu_ptr+i)->Goi);

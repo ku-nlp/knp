@@ -1076,7 +1076,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
     /* 「〜化」, 「〜的だ」 で 名詞+接尾辞(自立語) の形のもの
        (準用言ではない … 「〜年」などの時間を除く) */
     /* ★ そのうち ルール化する */
-    else if (b_ptr->jiritu_num > 1 && L_Jiritu_M(b_ptr)->Hinshi == 14 && 
+    else if (b_ptr->jiritu_num > 1 && !strcmp(Class[L_Jiritu_M(b_ptr)->Hinshi][0].id, "接尾辞") && 
 	     !check_feature(b_ptr->f, "準用言")) {
 	assign_cfeature(&(b_ptr->f), "名詞+接尾辞");
 	sprintf(buffer[0], "%s%s", (b_ptr->jiritu_ptr+b_ptr->jiritu_num-2)->Goi, L_Jiritu_M(b_ptr)->Goi);
