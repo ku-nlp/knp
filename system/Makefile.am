@@ -57,6 +57,7 @@ knp_LDADD = -ljuman @KNP_LIBS@
 make_db_SOURCES = \
 	make_db.c \
 	db.c \
-	tools.c
+	tools.c \
+	japanese.c
 
 make_db_LDADD = @MAKE_DB_LIBS@

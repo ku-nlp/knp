@@ -63,6 +63,27 @@ unsigned int seed[NSEED][256];
     return (hash & (TBLSIZE-1));
 }
 
+#ifdef _WIN32
+/*==================================================================*/
+	 int sjis_fprintf(FILE *output, const char *fmt, ...)
+/*==================================================================*/
+{
+    va_list ap;
+    char buffer[DATA_LEN];
+    char *SJISbuffer;
+
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+
+    SJISbuffer = (char *)toStringSJIS(buffer);
+    fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
+    free(SJISbuffer);
+
+    return TRUE;
+}
+#endif 
+
 /*====================================================================
                                END
 ====================================================================*/

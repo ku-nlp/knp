@@ -928,24 +928,23 @@ PARSED:
 	    exit(1);
 	}
     
-	/* 子作り失敗 しくしく */
 	if((pid = fork()) < 0) {
 	    fprintf(stderr, "Fork Error\n");
 	    sleep(1);
 	    continue;
 	}
 
-	/* 子供できちゃった */
+	/* 子供 */
 	if(pid == 0) {
 
-	    /* ぉぃぉぃ そんなところで げろはくなぁ */
+	    /* ? */
 	    chdir("/tmp");
 
 	    close(sfd);
 	    Infp  = fdopen(fd, "r");
 	    Outfp = fdopen(fd, "w");
 
-	    /* 良い子に育つには 挨拶しましょうね.. */
+	    /* 挨拶 */
 	    fprintf(Outfp, "200 Running KNP Server\n");
 	    fflush(Outfp);
 
@@ -1036,7 +1035,7 @@ PARSED:
     int  port = DEFAULT_PORT;
     int  strnum = 0;
 
-    /* 文字列を送って ステータスコードを返す */  
+    /* 文字列を送って、ステータスコードを返す */  
     int send_string(char *str)
 	{
 	    int len,result = 0;
@@ -1059,13 +1058,13 @@ PARSED:
 	    return result;
 	} 
 
-    /* host:port って形の場合 */
+    /* host:port という形の場合 */
     if ((p = strchr(OptHostname, ':')) != NULL) {
 	*p++ = '\0';
 	port = atoi(p);
     }
 
-    /* あとは つなげる準備 */
+    /* つなげる準備 */
     if ((hp = gethostbyname(OptHostname)) == NULL) {
 	fprintf(stderr,"host unkown\n");
 	exit(1);
@@ -1085,20 +1084,20 @@ PARSED:
 	exit(1);
     }
 
-    /* Server 用との 通信ハンドルを作成 */
+    /* Server 用との通信ハンドルを作成 */
     if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
 	close (fd);
 	fprintf(stderr,"fd error\n");
 	exit(1);
     }
 
-    /* 挨拶は元気な声で */
+    /* 挨拶 */
     if (send_string(NULL) != 200) {
 	fprintf(stderr,"greet error\n");
 	exit(1);
     }
 
-    /* オプション解析 もっと スマートなやり方ないかなぁ */
+    /* オプション解析 (いいかげん) */
     option[0] = '\0';
     switch (OptAnalysis) {
     case OPT_CASE: strcat(option," -case"); break;
@@ -1124,7 +1123,7 @@ PARSED:
 	strcat(option,buf);
     }
 
-    /* これから動作じゃ */
+    /* これから動作 */
     sprintf(buf,"RUN%s\n",option);
     if (send_string(buf) != 200) {
 	fprintf(stderr,"argument error OK? [%s]\n",option);
@@ -1132,7 +1131,7 @@ PARSED:
 	exit(1);
     }
 
-    /* あとは LOOP */
+    /* LOOP */
     strnum = 0;
     while (fgets(buf,sizeof(buf),stdin) != NULL) {
 	if (strncmp(buf,"EOS",3) == 0) {

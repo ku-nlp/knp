@@ -148,7 +148,6 @@ FILE *w2c, *w2p, *rfc, *rfp;
     }
 
     fputs(buffer, w2c);
-    fputc('\n', w2c);
     fflush(w2c);
     return rfc;
 }

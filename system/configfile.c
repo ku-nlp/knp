@@ -1,8 +1,14 @@
+/*====================================================================
+
+			     jumanrc 関連
+
+                                               S.Kurohashi 1999.11.13
+
+    $Id$
+====================================================================*/
 #include "knp.h"
 #include <sys/types.h>
 #include <sys/stat.h>
-
-/* $Id$ */
 
 extern char Jumangram_Dirname[];
 extern int LineNoForError, LineNo;
@@ -78,9 +84,18 @@ int knp_dict_file_already_defined = 0;
 /*==================================================================*/
 {
 #ifdef  _WIN32
-    /* MS Windows のばあいは,juman.ini を見に行くように変更 
-     dicfile == gramfile */
-    GetPrivateProfileString("juman","dicfile","",Jumangram_Dirname,FILENAME_MAX,"juman.ini");
+    char buf[FILENAME_MAX];
+    /* MS Windows の場合は、juman.ini, knp.ini を見に行く
+       dicfile == gramfile */
+    GetPrivateProfileString("juman", "dicfile", "", Jumangram_Dirname, FILENAME_MAX, "juman.ini");
+    GetPrivateProfileString("knp", "ruledir", "", buf, FILENAME_MAX, "knp.ini");
+    if (buf[0]) {
+	Knprule_Dirname = strdup(buf);
+    }
+    GetPrivateProfileString("knp", "dictdir", "", buf, FILENAME_MAX, "knp.ini");
+    if (buf[0]) {
+	Knpdict_Dirname = strdup(buf);
+    }
 #else
     CELL *cell1,*cell2;
     char *dicttype;

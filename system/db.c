@@ -20,7 +20,9 @@ DBM_FILE db_read_open(char *filename)
     DBM_FILE db;
 
     if (!(db = gdbm_open(filename, DBM_BLOCK_SIZE, GDBM_READER, 0444, 0))) {
+#ifdef DEBUG
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
+#endif
 	return NULL;
     }
     return db;
@@ -32,7 +34,9 @@ DBM_FILE db_write_open(char *filename)
     DBM_FILE db;
 
     if (!(db = gdbm_open(filename, 1024, GDBM_NEWDB, 0644, 0))) {
+#ifdef DEBUG
         fprintf(stderr, "db_write_open: %s: %s\n", filename, (char *)strerror(errno));
+#endif
         exit(1);
     }
     return db;
@@ -139,7 +143,7 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 		free(buffer);
 	}
 	else if (storeflag < 0) {
-	    fprintf(stderr, "dbstore : Cannot store key.\n");
+	    fprintf(stderr, "db_put : Cannot store key.\n");
 	    exit(4);
 	}
     }
@@ -166,7 +170,9 @@ DBM_FILE db_read_open(char *filename)
     dbinfo.db_cachesize = 1048576;
 
     if ((errno = db_open(filename, DB_HASH, DB_RDONLY, 0444, NULL, &dbinfo, &db))) {
+#ifdef DEBUG
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
+#endif
 	return NULL;
     }
     return db;
@@ -183,7 +189,9 @@ DBM_FILE db_write_open(char *filename)
     dbinfo.db_cachesize = 1048576;
 
     if ((errno = db_open(filename, DB_HASH, DB_CREATE | DB_TRUNCATE, 0644, NULL, &dbinfo, &db))) {
-        fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
+#ifdef DEBUG
+        fprintf(stderr, "db_write_open: %s: %s\n", filename, (char *)strerror(errno));
+#endif
         exit(1);
     }
     return db;
@@ -311,7 +319,7 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 		free(buffer);
 	}
 	else if (errno) {
-	    fprintf(stderr, "dbstore : %s\n", (char *)strerror(errno));
+	    fprintf(stderr, "db_put : %s\n", (char *)strerror(errno));
 	    exit(4);
 	}
     }
