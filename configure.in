@@ -78,9 +78,10 @@ AC_ARG_ENABLE(small,
 	[  --enable-small          make a small version [default=no]])
 
 AC_MSG_CHECKING("debug version")
-if test ! "x$enable_debug" = "xyes"; then
+if test ! "x$enable_debug" = "xno"; then
     dnl    AC_DEFINE(DEBUG)
     ETC_CFLAGS="-DDEBUG $ETC_CFLAGS"
+    enable_debug=yes
 fi
 AC_MSG_RESULT("$enable_debug")
 
