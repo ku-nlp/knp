@@ -813,9 +813,11 @@ typedef struct predicate_anaphora_list {
 
 typedef struct ellipsis_component {
     SENTENCE_DATA	*s;
+    char		*pp_str;		/* ¥Î³ÊÍÑ */
     int			bnst;
     float		score;
     int			dist;			/* µ÷Î¥ */
+    struct ellipsis_component *next;
 } ELLIPSIS_COMPONENT;
 
 typedef struct ellipsis_cmm_list {

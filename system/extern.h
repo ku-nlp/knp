@@ -166,6 +166,7 @@ extern void server_read_rc(FILE *fp);
 extern void InitAnaphoraList();
 extern void RegisterPredicate(char *key, int voice, int cf_addr, 
 			      int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag);
+extern ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);

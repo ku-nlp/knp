@@ -291,6 +291,65 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
+ void StoreEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str, 
+			     SENTENCE_DATA *sp, int tag_n, float score, int dist)
+/*==================================================================*/
+{
+    if (!pp_str) {
+	ccp->s = sp;
+	ccp->bnst = tag_n;
+	ccp->score = score;
+	ccp->dist = dist;
+	return;
+    }
+    else {
+	ELLIPSIS_COMPONENT **ccpp = &ccp;
+
+	while (*ccpp && (*ccpp)->s && (*ccpp)->bnst) {
+	    /* ノ格格指定あり: 上書き */
+	    if ((*ccpp)->pp_str && !strcmp((*ccpp)->pp_str, pp_str)) {
+		(*ccpp)->s = sp;
+		(*ccpp)->pp_str = strdup(pp_str);
+		(*ccpp)->bnst = tag_n;
+		(*ccpp)->score = score;
+		(*ccpp)->dist = dist;
+		return;
+	    }
+	    ccpp = &((*ccpp)->next);
+	}
+
+	if (!*ccpp) {
+	    *ccpp = (ELLIPSIS_COMPONENT *)malloc_data(sizeof(ELLIPSIS_COMPONENT), "StoreEllipsisComponent");
+	}
+
+	(*ccpp)->s = sp;
+	(*ccpp)->pp_str = strdup(pp_str);
+	(*ccpp)->bnst = tag_n;
+	(*ccpp)->score = score;
+	(*ccpp)->dist = dist;
+	(*ccpp)->next = NULL;
+    }
+}
+
+/*==================================================================*/
+ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str)
+/*==================================================================*/
+{
+    if (!pp_str) {
+	return ccp;
+    }
+    else {
+	while (ccp) {
+	    if (ccp->pp_str && !strcmp(ccp->pp_str, pp_str)) {
+		return ccp;
+	    }
+	    ccp = ccp->next;
+	}
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 void RegisterTagTarget(char *key, int voice, int cf_addr, 
 		       int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag)
 /*==================================================================*/
@@ -806,7 +865,7 @@ float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos)
 }
 
 /*==================================================================*/
-int CheckEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, char *word)
+int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, char *word)
 /*==================================================================*/
 {
     int i, num;
@@ -1732,7 +1791,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
-    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
+    if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	free(esf);
 	free(ecp);
@@ -1835,7 +1894,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
-    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
+    if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	free(esf);
 	free(ecp);
@@ -2937,9 +2996,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		etc_buffer, maxi);
 	assign_cfeature(&(em_ptr->f), feature_buffer);
-	em_ptr->cc[cf_ptr->pp[n][0]].s = maxs;
-	em_ptr->cc[cf_ptr->pp[n][0]].bnst = maxi;
-	em_ptr->cc[cf_ptr->pp[n][0]].dist = distance;
+
+	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+			       maxs, maxi, maxscore, distance);
 
 	/* 指示対象を格フレームに保存 */
 	AppendToCF(cpm_ptr, cmm_ptr, l, maxs->tag_data + maxi, cf_ptr, n, maxscore, maxpos, maxs);
@@ -2972,7 +3031,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 			      cmm_ptr->cf_ptr->cf_address, 
 			      cf_ptr->pp[n][0], 
 			      cf_ptr->pp_str[n]))) {
-	if (!CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, ccp->word)) {
+	if (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, ccp->word)) {
 	    maxs = sentence_data + ccp->sent_num - 1;
 	    maxi = ccp->tag_num;
 	    maxscore = 1.0;
@@ -3060,9 +3119,9 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		etc_buffer, maxi);
 	assign_cfeature(&(em_ptr->f), feature_buffer);
-	em_ptr->cc[cf_ptr->pp[n][0]].s = maxs;
-	em_ptr->cc[cf_ptr->pp[n][0]].bnst = maxi;
-	em_ptr->cc[cf_ptr->pp[n][0]].dist = distance;
+
+	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+			       maxs, maxi, maxscore, distance);
 
 	/* 指示対象を格フレームに保存 */
 	AppendToCF(cpm_ptr, cmm_ptr, l, maxs->tag_data + maxi, cf_ptr, n, maxscore, maxpos, maxs);

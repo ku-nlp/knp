@@ -1300,6 +1300,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 {
     int i, num, soto, pos, sent_n, tag_n;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word;
+    ELLIPSIS_COMPONENT *ccp;
 
     /* voice 決定 */
     if (cpm_ptr->pred_b_ptr->voice == VOICE_UNKNOWN) {
@@ -1373,6 +1374,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
+					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
 
 	if (i != 0) {
 	    strcat(feature_buffer, ";");
@@ -1381,9 +1384,9 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {
 	    /* 例外タグ */
-	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
+	    if (ccp && ccp->bnst < 0) {
 		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
+			ETAG_name[abs(ccp->bnst)]);
 	    }
 	    /* 割り当てなし */
 	    else {
@@ -1395,9 +1398,9 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* 割り当てあり */
 	else {
 	    /* 例外タグ */
-	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
+	    if (ccp && ccp->bnst < 0) {
 		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
+			ETAG_name[abs(ccp->bnst)]);
 	    }
 	    else {
 		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
@@ -1413,11 +1416,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		strcat(feature_buffer, buffer);
 
 		/* 省略の場合 (特殊タグ以外) */
-		if (em_ptr && cpm_ptr->elem_b_num[num] <= -2) {
-		    sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
-			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
-			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
-		    sent_n = em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->Sen_num;
+		if (ccp && cpm_ptr->elem_b_num[num] <= -2) {
+		    sprintf(buffer, "/%d/%s", ccp->dist, 
+			    ccp->s->KNPSID ? 
+			    ccp->s->KNPSID+5 : "?");
+		    sent_n = ccp->s->Sen_num;
 		}
 		/* 同文内 */
 		else {
