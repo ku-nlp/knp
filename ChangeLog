@@ -1,3 +1,12 @@
+2004-06-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule:
+	「半個」「多数個」を数量にし、1つのタグ単位にした
+	被連体修飾詞の「もの」を決め打ちで外の関係にするのを止めた
+
+	* rule/context.rule:
+	「その」などの連体詞形態指示詞を先行詞候補にするのを止めた
+
 2004-06-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
