@@ -1,3 +1,10 @@
+2002-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+	* system/case_analysis.c, system/case_match.c:
+	ÈïÏ¢ÂÎ½¤¾þ»ì¤Î¥Î³ÊÂÐ±þÉÕ¤±¤Î²þÎÉ
+
+	* system/extern.h, system/lib_sm.c, system/thesaurus.c:
+	´Ø¿ôÌ¾¤ÎÊÑ¹¹: sm -> ntt
+	
 2002-01-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h, system/lib_sm.c, system/main.c:
