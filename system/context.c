@@ -646,6 +646,10 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	}
 	sp_new->para_manager[i].bnst_ptr += sp_new->bnst_data - sp->bnst_data;
     }
+
+    sp_new->cpm = NULL;
+    sp_new->cf = NULL;
+
     return sp_new;
 }
 
