@@ -293,7 +293,7 @@ extern QUOTE_DATA quote_data;
 	    if (feature_AND_match(fp, bnst_data[R_pos].f,
 				  bnst_data + L_B_pos,
 				  bnst_data + R_pos) == TRUE) {
-		if (cp = check_feature(fp, "&ST")) {
+		if (cp = (char *)check_feature(fp, "&ST")) {
 		    sscanf(cp, "&ST:%f", &new_threshold);
 		} else {
 		    new_threshold = 0.0;
