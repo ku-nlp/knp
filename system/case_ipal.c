@@ -1407,7 +1407,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	/* 正解コーパスを入力したときに自立語がない場合がある */
 	if (t_ptr->jiritu_ptr != NULL && 
 	    !check_feature(t_ptr->f, "格解析なし")) {
-	    if (((OptEllipsis & OPT_ELLIPSIS) || 
+	    if ((!OptEllipsis || 
+		 (OptEllipsis & OPT_ELLIPSIS) || 
 		 (OptEllipsis & OPT_DEMO)) && 
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 check_feature(t_ptr->f, "非用言格解析"))) { /* サ変名詞, 形容詞語幹 */
