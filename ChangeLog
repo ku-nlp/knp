@@ -1,3 +1,11 @@
+2003-10-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	名詞の関係解析のbug fix.
+
+	* sysmte/main.c:
+	名詞の関係解析の決定木版を可能にした。
+
 2003-10-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
