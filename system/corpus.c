@@ -54,7 +54,7 @@ void db_close(DBM_FILE db) {
     }
 }
 
-int dbfetch(DBM_FILE db, char *buf) {
+int dbfetch_num(DBM_FILE db, char *buf) {
     DBT content, key;
     int count = 0;
 
@@ -67,7 +67,7 @@ int dbfetch(DBM_FILE db, char *buf) {
     errno = db->get(db, NULL, &key, &content, NULL);
     if (!errno) {
 	if (content.size >= DATA_LEN) {
-	    fprintf(stderr, "dbfetch: content length overflow.\n");
+	    fprintf(stderr, "dbfetch_num: content length overflow.\n");
 	    exit(1);
 	}
 	strncpy(buffer, content.data, content.size);
@@ -101,7 +101,7 @@ void db_close(DBM_FILE db) {
     gdbm_close(db);
 }
 
-int dbfetch(DBM_FILE db, char *buf) {
+int dbfetch_num(DBM_FILE db, char *buf) {
     datum content, key;
     int count = 0;
 
@@ -110,7 +110,7 @@ int dbfetch(DBM_FILE db, char *buf) {
     content = gdbm_fetch(db, key);
     if (content.dptr) {
 	if (content.dsize >= DATA_LEN) {
-	    fprintf(stderr, "dbfetch: content length overflow.\n");
+	    fprintf(stderr, "dbfetch_num: content length overflow.\n");
 	    exit(1);
 	}
 	*(content.dptr+content.dsize) = '\0';
@@ -225,7 +225,7 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag) {
 	fprintf(stderr, "corpus_clause_comp: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(c_db, buffer);
+    score = dbfetch_num(c_db, buffer);
 
     if (!(OptInhibit & OPT_INHIBIT_C_CLAUSE) && (para_flag == TRUE) && 
 	parallel1 == ' ') {
@@ -357,7 +357,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_case_predicate_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(cp_db, buffer);
+    score = dbfetch_num(cp_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -365,7 +365,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "!%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "!%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(cp_db, buffer);
+	scorep = dbfetch_num(cp_db, buffer);
 	score += scorep;
     }
 
@@ -379,7 +379,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_case_predicate_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(cp_db, buffer);
+    score = dbfetch_num(cp_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -387,7 +387,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(cp_db, buffer);
+	scorep = dbfetch_num(cp_db, buffer);
 	score += scorep;
     }
 
@@ -447,7 +447,7 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_barrier_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(c_db, buffer);
+    score = dbfetch_num(c_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -455,7 +455,7 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "!%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "!%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(c_db, buffer);
+	scorep = dbfetch_num(c_db, buffer);
 	score += scorep;
     }
 
@@ -475,7 +475,7 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_barrier_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(c_db, buffer);
+    score = dbfetch_num(c_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -483,7 +483,7 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(c_db, buffer);
+	scorep = dbfetch_num(c_db, buffer);
 	score += scorep;
     }
 
@@ -543,7 +543,7 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_barrier_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(cp_db, buffer);
+    score = dbfetch_num(cp_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -551,7 +551,7 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "!%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "!%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(cp_db, buffer);
+	scorep = dbfetch_num(cp_db, buffer);
 	score += scorep;
     }
 
@@ -571,7 +571,7 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	fprintf(stderr, "corpus_barrier_check: data length overflow.\n");
 	exit(1);
     }
-    score = dbfetch(cp_db, buffer);
+    score = dbfetch_num(cp_db, buffer);
 
     /* 並列を考慮しないとき */
     if (!para_flag) {
@@ -579,7 +579,7 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	    sprintf(buffer, "%s %c %s %c", type1+3, touten1, type2+3, touten2);
 	else
 	    sprintf(buffer, "%sP%c %s %c", type1+3, touten1, type2+3, touten2);
-	scorep = dbfetch(cp_db, buffer);
+	scorep = dbfetch_num(cp_db, buffer);
 	score += scorep;
     }
 
@@ -667,8 +667,32 @@ void close_optional_case() {
     db_close(op_db);
 }
 
-/* 任意格からの係り受け頻度を調べる関数 */
-int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
+/* 係り先リストが与えられたときに、指定された係り先のスコアを計算する関数 */
+int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHECK_DATA *list) {
+    int i;
+    float score, currentscore = -1, totalscore = 0;
+
+    /* 候補すべてのスコアを計算する */
+    for (i = 0; i < list->num; i++) {
+	score = CorpusExampleDependencyFrequency(ptr1, case1, bnst_data+list->pos[i]);
+	totalscore += score;
+
+	/* 今調べている Head であるとき */
+	if (list->pos[i] == h)
+	    currentscore = score;
+    }
+
+    if (currentscore < 0) {
+	fprintf(stderr, "A contradiction occured.\n");
+	exit(1);
+    }
+
+    return (int)(currentscore/totalscore);
+}
+
+/* 事例の係り受け頻度を返す関数 */
+/* この中でスコア計算してしまう */
+int CorpusExampleDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
     int i, j, k, score, flag, pos1, pos2;
     char *cp1, *cp2;
 
@@ -686,10 +710,14 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
     cp2 = (char *)malloc_data(strlen(ptr2->Jiritu_Go), "optional case");
     cp2[0] = '\0';
 
+    /* 係り側自立語列を順に短くしていく */
     for (i = 0; i < ptr1->jiritu_num; i++) {
 	cp1[0] = '\0';
 	flag = 1;
+
+	/* 係り側自立語列の作成 */
 	for (k = i; k < ptr1->jiritu_num; k++) {
+	    /* 副詞的名詞, 形式名詞を含んでいたらやめる */
 	    if (check_Morph_for_optional_case(ptr1->jiritu_ptr+k) == TRUE) {
 		flag = 0;
 		break;
@@ -700,13 +728,18 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 	if (!flag)
 	    continue;
 
+	/* 「なる」, 「ない」, 「する」, 「ある」 は除く */
 	if (check_JiritsuGo_for_optional_case(cp1) == TRUE)
 	    continue;
 
+	/* 受け側自立語列を順に短くしていく */
 	for (j = 0; j < ptr2->jiritu_num; j++) {
 	    cp2[0] = '\0';
 	    flag = 1;
+
+	    /* 受け側自立語列の作成 */
 	    for (k = j; k < ptr2->jiritu_num; k++) {
+		/* 副詞的名詞, 形式名詞を含んでいたらやめる */
 		if (check_Morph_for_optional_case(ptr2->jiritu_ptr+k) == TRUE) {
 		    flag = 0;
 		    break;
@@ -717,18 +750,109 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 	    if (!flag)
 		continue;
 
+	    /* 「なる」, 「ない」, 「する」, 「ある」 は除く */
 	    if (check_JiritsuGo_for_optional_case(cp2) == TRUE)
 		continue;
 
+	    /* DB を検索するためのキーを作成 */
+	    sprintf(buffer, "%s:%s %s", cp1, case1, cp2);
+	    if (buffer[DATA_LEN-1] != '\n') {
+		fprintf(stderr, "CorpusExampleDependencyFrequency: data length overflow.\n");
+		exit(1);
+	    }
+
+	    /* DB 検索 */
+	    score = dbfetch_num(op_db, buffer);
+	    fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+
+	    if (score) {
+		free(cp1);
+		free(cp2);
+		return score;
+	    }
+	}
+    }
+
+    free(cp1);
+    free(cp2);
+    return 0;
+}
+
+/* 任意格からの係り受け頻度を調べる関数 */
+int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
+    int i, j, k, score, flag, pos1, pos2, firstscore = 0;
+    char *cp1, *cp2;
+
+    /* 文節番号 */
+    pos1 = ptr1->num;
+    pos2 = ptr2->num;
+
+    /* 文節 feature のチェック */
+    if (check_feature_for_optional_case(ptr1->f) == TRUE)
+	return 0;
+
+    /* Memory 確保 */
+    cp1 = (char *)malloc_data(strlen(ptr1->Jiritu_Go), "optional case");
+    cp1[0] = '\0';
+    cp2 = (char *)malloc_data(strlen(ptr2->Jiritu_Go), "optional case");
+    cp2[0] = '\0';
+
+    /* 係り側自立語列を順に短くしていく */
+    for (i = 0; i < ptr1->jiritu_num; i++) {
+	cp1[0] = '\0';
+	flag = 1;
+
+	/* 係り側自立語列の作成 */
+	for (k = i; k < ptr1->jiritu_num; k++) {
+	    /* 副詞的名詞, 形式名詞を含んでいたらやめる */
+	    if (check_Morph_for_optional_case(ptr1->jiritu_ptr+k) == TRUE) {
+		flag = 0;
+		break;
+	    }
+	    strcat(cp1, (ptr1->jiritu_ptr+k)->Goi);
+	}
+
+	if (!flag)
+	    continue;
+
+	/* 「なる」, 「ない」, 「する」, 「ある」 は除く */
+	if (check_JiritsuGo_for_optional_case(cp1) == TRUE)
+	    continue;
+
+	/* 受け側自立語列を順に短くしていく */
+	for (j = 0; j < ptr2->jiritu_num; j++) {
+	    cp2[0] = '\0';
+	    flag = 1;
+
+	    /* 受け側自立語列の作成 */
+	    for (k = j; k < ptr2->jiritu_num; k++) {
+		/* 副詞的名詞, 形式名詞を含んでいたらやめる */
+		if (check_Morph_for_optional_case(ptr2->jiritu_ptr+k) == TRUE) {
+		    flag = 0;
+		    break;
+		}
+		strcat(cp2, (ptr2->jiritu_ptr+k)->Goi);
+	    }
+
+	    if (!flag)
+		continue;
+
+	    /* 「なる」, 「ない」, 「する」, 「ある」 は除く */
+	    if (check_JiritsuGo_for_optional_case(cp2) == TRUE)
+		continue;
+
+	    /* DB を検索するためのキーを作成 */
 	    sprintf(buffer, "%s:%s %s", cp1, case1, cp2);
 	    if (buffer[DATA_LEN-1] != '\n') {
 		fprintf(stderr, "corpus_optional_case_comp: data length overflow.\n");
 		exit(1);
 	    }
 
-	    score = dbfetch(op_db, buffer);
+	    /* DB 検索 */
+	    score = dbfetch_num(op_db, buffer);
+	    fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
 
-	    if (score) {
+	    if (score && !firstscore) {
 		if (!CorpusComment[ptr1->num][0]) {
 		    sprintf(CorpusComment[ptr1->num], "%s:%s %s %d", cp1, case1, cp2, score);
 		    if (CorpusComment[ptr1->num][DATA_LEN-1] != '\n') {
@@ -737,27 +861,19 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		    }
 		}
 
-		  fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
-
-		free(cp1);
-		free(cp2);
 		/* full match */
 		if (!i && !j)
-		    return 2;
+		    firstscore = 2;
 		/* part match */
 		else
-		    return 1;
+		    firstscore = 1;
 	    }
-
-	    else
-		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
-
 	}
     }
 
     free(cp1);
     free(cp2);
-    return 0;
+    return firstscore;
 }
 
 /* 扱うべき任意格であれば真を返す関数 */
@@ -816,6 +932,7 @@ int check_Morph_for_optional_case(MRPH_DATA *m) {
     return FALSE;
 }
 
+/* 事例情報を用いた構文木の選択するか否か */
 void optional_case_evaluation() {
     int i;
     int appropriate = 0;
@@ -858,7 +975,10 @@ void optional_case_evaluation() {
 
 	/* 事例を用いたときのスコアが大きく、
 	   かつ appropriate が 0 以上だったら適用 */
-	if (Op_Best_mgr.score > Best_mgr.score && appropriate >= 0) {
+	/* 
+	   if (Op_Best_mgr.score > Best_mgr.score && appropriate >= 0) {
+	   */
+	if (Op_Best_mgr.score > Best_mgr.score) {
 	    Best_mgr = Op_Best_mgr;
 	    return;
 	}
