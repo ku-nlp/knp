@@ -1,5 +1,5 @@
 (JUMAN文法ディレクトリ
-	@juman_prefix@/share/juman
+	@juman_prefix@/share/juman/dic
 )
 
 (KNPルールディレクトリ
