@@ -1,3 +1,22 @@
+2002-11-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/feature.c, system/para_similarity.c:
+	subordinate_level_forbid(): deleted.
+
+	* system/para_similarity.c: removed.
+
+	* system/bnst_compare.c: added.
+
+	* system/Makefile.am:
+	para_similarity.c から bnst_compare.c の改名への対応
+	
+2002-11-02  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule, rule/kakari_uke.rule:
+	「少し大きな」「少しゆっくり」などの処理
+
+	* system/para_similarity.c: コメントの修正
+
 2002-11-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c:
