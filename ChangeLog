@@ -1,3 +1,8 @@
+2005-03-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule:
+	<主題表現>の精緻化
+
 2005-01-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c, system/feature.c:
