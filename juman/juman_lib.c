@@ -177,6 +177,7 @@ PROCESS_BUFFER * p_buffer;
 int *            path_buffer;
 int *		 match_pbuf;
 
+U_CHAR		kigou[MIDASI_MAX];   /* @ */
 U_CHAR		midasi1[MIDASI_MAX]; /* 活用 */
 U_CHAR		midasi2[MIDASI_MAX]; /* 原形 */
 U_CHAR		yomi[MIDASI_MAX];    /* 活用の読み */
@@ -220,12 +221,12 @@ int 	is_through(MRPH *mrph_p);
   NACSIS 吉岡
 */   
 void	print_path_mrph(FILE* output, int path_num , int para_flag);
-void    print_best_path(FILE* output);
+char    **print_best_path(FILE* output);
 void    print_all_mrph(FILE* output);
 void    _print_all_mrph(FILE* output, int path_num);
 void    print_all_path(FILE* output);
 void	_print_all_path(FILE* output, int path_num, int pathes);
-void	print_homograph_path(FILE* output);
+char	**print_homograph_path(FILE* output);
 int	_print_homograph_path(FILE* output, int pbuf_start, int new_p);
 
 int	pos_match_process(int pos, int p_start);
@@ -1152,6 +1153,96 @@ void my_fprintf(FILE* output, const char *fmt, ...)
 }
 #endif
 
+char **OutputAV;
+int OutputAVnum;
+int OutputAVmax;
+
+MRPH *prepare_path_mrph(int path_num , int para_flag)
+{
+    MRPH       	*mrph_p;
+    int        	j;
+
+    mrph_p = &(m_buffer[p_buffer[path_num].mrph_p]);
+
+    if (para_flag != 0 && is_through(mrph_p) == TRUE) return NULL;
+    
+    if (para_flag)
+	strcpy(kigou, "@ ");
+    else
+	kigou[0] = '\0';
+    strcpy(midasi1, mrph_p->midasi);
+    strcpy(midasi2, mrph_p->midasi);
+    strcpy(yomi, mrph_p->yomi);
+    if ( (mrph_p->katuyou1 > 0) && (mrph_p->katuyou2 > 0) ) {
+	strcat(midasi1, Form[mrph_p->katuyou1][mrph_p->katuyou2].gobi);
+	for(j = 1; strcmp(Form[mrph_p->katuyou1][j].name, BASIC_FORM); j++);
+	strcat(midasi2, Form[mrph_p->katuyou1][j].gobi);
+	strcat(yomi, Form[mrph_p->katuyou1][mrph_p->katuyou2].gobi_yomi);
+    }
+    return mrph_p;
+}
+
+char *get_path_mrph(int path_num , int para_flag)
+{
+    int len = 0;
+    MRPH *mrph_p;
+    char *ret;
+
+    if ((mrph_p = prepare_path_mrph(path_num, para_flag)) == NULL) return NULL;
+    len = strlen(kigou)+strlen(midasi1)+strlen(yomi)+strlen(midasi2)+strlen(Class[mrph_p->hinsi][0].id)+mrph_p->hinsi/10+1;
+
+    if ( mrph_p->bunrui ) {
+	len += strlen(Class[mrph_p->hinsi][mrph_p->bunrui].id);
+    }
+    else {
+	len += 1;
+    }
+
+    len += mrph_p->bunrui/10+1;
+	
+    if ( mrph_p->katuyou1 ) { 
+	len += strlen(Type[mrph_p->katuyou1].name);
+    }
+    else {
+	len += 1;
+    }
+
+    len += mrph_p->katuyou1/10+1;
+	
+    if ( mrph_p->katuyou2 ) {
+	len += strlen(Form[mrph_p->katuyou1][mrph_p->katuyou2].name);
+    }
+    else {
+	len += 1;
+    }
+
+    len += mrph_p->katuyou2/10+1;
+
+    len += 12;	/* 隙間 10, 改行 1, 終端 1 */
+    ret = (char *)malloc(len);
+    sprintf(ret, "%s%s %s %s %s %d %s %d %s %d %s %d\n", kigou, midasi1, yomi, midasi2, 
+	    Class[mrph_p->hinsi][0].id, mrph_p->hinsi, 
+	    mrph_p->bunrui ? Class[mrph_p->hinsi][mrph_p->bunrui].id : "*", mrph_p->bunrui, 
+	    mrph_p->katuyou1 ? Type[mrph_p->katuyou1].name : "*", mrph_p->katuyou1, 
+	    mrph_p->katuyou2 ? Form[mrph_p->katuyou1][mrph_p->katuyou2].name : "*", mrph_p->katuyou2);
+    return ret;
+}
+
+int get_best_path_num()
+{
+    int j, last;
+
+    j = 0;
+    last = p_buffer_num-1;
+    do {
+	last = p_buffer[last].path[0];
+	path_buffer[j] = last;
+	j++;
+    } while ( p_buffer[last].path[0] );
+
+    return j;
+}
+
 /*
 ------------------------------------------------------------------------------
   PROCEDURE: <print_path_mrph> 形態素の表示      >>> changed by yamaji <<<
@@ -1166,29 +1257,14 @@ void print_path_mrph(FILE* output, int path_num , int para_flag)
 {
     PROCESS_BUFFER	*proc_p;
     MRPH       	*mrph_p;
-    int		newDicNo;
-    int         now_r_buffer_num;
-    MRPH       	*r_mrph;
-    MRPH        r_last_mrph;
     int		pos;
     int        	i, j, k, len;
 
+    if ((mrph_p = prepare_path_mrph(path_num, para_flag)) == NULL) return;
     proc_p = &(p_buffer[path_num]);
-    mrph_p = &(m_buffer[p_buffer[path_num].mrph_p]);
     pos = proc_p->start;
 
-    if (para_flag != 0 && is_through(mrph_p) == TRUE) return;
-    
-    if (para_flag) fprintf(output , "@ ");
-    strcpy(midasi1, mrph_p->midasi);
-    strcpy(midasi2, mrph_p->midasi);
-    strcpy(yomi, mrph_p->yomi);
-    if ( (mrph_p->katuyou1 > 0) && (mrph_p->katuyou2 > 0) ) {
-	strcat(midasi1, Form[mrph_p->katuyou1][mrph_p->katuyou2].gobi);
-	for(j = 1; strcmp(Form[mrph_p->katuyou1][j].name, BASIC_FORM); j++);
-	strcat(midasi2, Form[mrph_p->katuyou1][j].gobi);
-	strcat(yomi, Form[mrph_p->katuyou1][mrph_p->katuyou2].gobi_yomi);
-    }
+    fputs(kigou, output);
 
     switch (Show_Opt2) {
     case Op_F: 
@@ -1256,6 +1332,23 @@ void print_path_mrph(FILE* output, int path_num , int para_flag)
     }
 }
 
+void process_path_mrph(FILE* output, int path_num , int para_flag) {
+    if (output) {
+	print_path_mrph(output, path_num, para_flag);
+    }
+    else {
+	if (OutputAVnum == 0) {
+	    OutputAVmax = 10;
+	    OutputAV = (char **)malloc(sizeof(char *)*OutputAVmax);
+	}
+	else if (OutputAVnum >= OutputAVmax-1) {
+	    OutputAV = (char **)realloc(OutputAV, sizeof(char *)*(OutputAVmax <<= 1));
+	}
+	*(OutputAV+OutputAVnum++) =  get_path_mrph(path_num, para_flag);
+	*(OutputAV+OutputAVnum) =  NULL;
+    }
+}
+
 /*
 ------------------------------------------------------------------------------
   PROCEDURE: <print_best_path> 後方最長一致のPATHを調べる
@@ -1265,10 +1358,9 @@ void print_path_mrph(FILE* output, int path_num , int para_flag)
   サーバーモード対応のため、引数outputを増やして出力先の変更を可能にする。
   NACSIS 吉岡
 */
-void print_best_path(FILE* output)
+char **print_best_path(FILE* output)
 {
     int i, j, last;
-    MRPH *mrph_p,*mrph_p1;
 
     j = 0;
     last = p_buffer_num-1;
@@ -1278,10 +1370,16 @@ void print_best_path(FILE* output)
 	j++;
     } while ( p_buffer[last].path[0] );
 
-    for ( i=j-1; i>=0; i-- ) {
-	mrph_p = &(m_buffer[p_buffer[path_buffer[i]].mrph_p]);
-	print_path_mrph(output, path_buffer[i] , 0);
+    /* 結果を buffer に入れる場合 */
+    if (!output) {
+	OutputAVnum = 0;
+	OutputAVmax = 0;
     }
+
+    for ( i=j-1; i>=0; i-- ) {
+	process_path_mrph(output, path_buffer[i] , 0);
+    }
+    return OutputAV;	/* 後でちゃんと free してください */
 }
 
 /*
@@ -1367,11 +1465,19 @@ void _print_all_path(FILE* output, int path_num, int pathes)
   サーバーモード対応のため、引数outputを増やして出力先の変更を可能にする。
   NACSIS 吉岡
 */
-void print_homograph_path(FILE* output)
+char **print_homograph_path(FILE* output)
 {
     path_buffer[0] = p_buffer_num-1;
     path_buffer[1] = -1;
+
+    /* 結果を buffer に入れる場合 */
+    if (!output) {
+	OutputAVnum = 0;
+	OutputAVmax = 0;
+    }
+
     _print_homograph_path(output, 0, 2);
+    return OutputAV;	/* 後でちゃんと free してください */
 }
 
 int _print_homograph_path(FILE* output, int pbuf_start, int new_p)
@@ -1383,11 +1489,12 @@ int _print_homograph_path(FILE* output, int pbuf_start, int new_p)
 	for (j = new_p-2; j >= 1; j--) {
 	    /* 同音異義語群を一気に出力 */
 	    for ( ; path_buffer[j] >= 0; j--) {}
-	    for (k = j+1, l = 0; path_buffer[k] >= 0; k++)
-		print_path_mrph(output, path_buffer[k] , l++);
+	    for (k = j+1, l = 0; path_buffer[k] >= 0; k++) {
+		process_path_mrph(output, path_buffer[k] , l++);
+	    }
 	}
 	if (Show_Opt1 == Op_BB) return(1);
-	fprintf(output, "EOP\n");
+	if (output) fprintf(output, "EOP\n");
 	return(0);
     }
 
