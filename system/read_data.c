@@ -10,6 +10,10 @@
 #include "knp.h"
 
 int Bnst_start[MRPH_MAX];
+int Tag_start[MRPH_MAX];
+int Tag_dpnd[TAG_MAX];
+int Tag_type[TAG_MAX];
+
 int ArticleID = 0;
 int preArticleID = 0;
 
@@ -296,7 +300,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		OptAnalysis = OPT_CASE2;
 	    }
 	    sp->Bnst_num = 0;
-	    for (i = 0; i < MRPH_MAX; i++) Bnst_start[i] = 0;
+	    sp->Tag_num = 0;
+	    memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);
+	    memset(Tag_start, 0, sizeof(int)*MRPH_MAX);
 	    if (sscanf(input_buffer, "* %d%c", 
 		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
 		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2)  {
@@ -307,6 +313,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
 	}
+	/* 文節行 */
 	else if (input_buffer[0] == '*') {
 	    if (OptInput != OPT_PARSED || 
 		sscanf(input_buffer, "* %d%c", 
@@ -317,7 +324,19 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    }
 	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
-	}	    
+	}
+	/* タグ単位行 */
+	else if (input_buffer[0] == '+') {
+	    if (OptInput != OPT_PARSED || 
+		sscanf(input_buffer, "+ %d%c", 
+		       &Tag_dpnd[sp->Tag_num],
+		       &Tag_type[sp->Tag_num]) != 2) {
+		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+		return readtoeos(fp);
+	    }
+	    Tag_start[sp->Mrph_num] = 1;
+	    sp->Tag_num++;
+	}
 
 	/* 文末 */
 
@@ -1002,77 +1021,11 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-		void make_tag_units(SENTENCE_DATA *sp)
+	     void after_make_tag_units(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, settou_num = 0, count;
-    char *flag;
-    MRPH_DATA *mp, *settou_ptr;
-    TAG_DATA *tp = NULL;
-    BNST_DATA *bp = sp->bnst_data, *pre_bp;
-
-    sp->Tag_num = 0;
-
-    for (i = 0; i < sp->Mrph_num; i++) {
-	mp = sp->mrph_data + i;
-	flag = check_feature(mp->f, "タグ単位始");
-
-	/* 文節始まりの形態素だけど<タグ単位始>がついていない場合も許す */
-	if (flag || 
-	    (bp != NULL && bp->mrph_ptr == mp)) {
-	    tp = sp->tag_data + sp->Tag_num;
-
-	    if (flag == NULL) {
-		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
-			sp->KNPSID ? sp->KNPSID : "?");
-	    }
-
-	    memset(tp, 0, sizeof(TAG_DATA));
-	    tp->num = sp->Tag_num;
-	    tp->mrph_ptr = mp;
-
-	    /* 文節区切りと一致するとき */
-	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
-		/* 遡ってinumを付与 */
-		if (sp->Tag_num > 0 && (tp - 1)->bnum < 0) {
-		    count = 0;
-		    for (j = sp->Tag_num - 2; j >= 0; j--) {
-			(sp->tag_data + j)->inum = ++count;
-			if ((sp->tag_data + j)->bnum >= 0) {
-			    break;
-			}
-		    }
-		}
-		tp->bnum = bp->num;
-		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
-		bp->tag_num = 1;
-		pre_bp = bp;
-		if (bp->num < sp->Bnst_num - 1) {
-		    bp++;
-		}
-		else {
-		    /* 最後の文節が終わった */
-		    bp = NULL;
-		}
-	    }
-	    else {
-		tp->bnum = -1;
-		pre_bp->tag_num++;
-	    }
-	    sp->Tag_num++;
-	}
-	push_tag_units(tp, mp);
-    }
-
-    if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
-	count = 0;
-	for (j = sp->Tag_num - 2; j >= 0; j--) {
-	    (sp->tag_data + j)->inum = ++count;
-	    if ((sp->tag_data + j)->bnum >= 0) {
-		break;
-	    }
-	}
-    }
+    int i;
+    TAG_DATA *tp;
 
     for (i = 0; i < sp->Tag_num; i++) {
 	tp = sp->tag_data + i;
@@ -1105,6 +1058,156 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     /* 文節ルールを適用する */
     assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType);
+}
+
+/*==================================================================*/
+       void make_tag_unit_set_inum(SENTENCE_DATA *sp, int num)
+/*==================================================================*/
+{
+    int j, count = 0;
+
+    for (j = num - 2; j >= 0; j--) {
+	(sp->tag_data + j)->inum = ++count;
+	if ((sp->tag_data + j)->bnum >= 0) {
+	    break;
+	}
+    }
+}
+
+/*==================================================================*/
+		void make_tag_units(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *flag;
+    MRPH_DATA *mp;
+    TAG_DATA *tp = NULL;
+    BNST_DATA *bp = sp->bnst_data, *pre_bp;
+
+    sp->Tag_num = 0;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	mp = sp->mrph_data + i;
+	flag = check_feature(mp->f, "タグ単位始");
+
+	/* 文節始まりの形態素だけど<タグ単位始>がついていない場合も許す */
+	if (flag || 
+	    (bp != NULL && bp->mrph_ptr == mp)) {
+	    tp = sp->tag_data + sp->Tag_num;
+
+	    if (flag == NULL) {
+		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
+			sp->KNPSID ? sp->KNPSID : "?");
+	    }
+
+	    memset(tp, 0, sizeof(TAG_DATA));
+	    tp->num = sp->Tag_num;
+	    tp->mrph_ptr = mp;
+
+	    /* 文節区切りと一致するとき */
+	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
+		/* 遡ってinumを付与 */
+		if (sp->Tag_num > 0 && (tp - 1)->bnum < 0) {
+		    make_tag_unit_set_inum(sp, sp->Tag_num);
+		}
+		tp->bnum = bp->num;
+		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
+		bp->tag_num = 1;
+		pre_bp = bp;
+		if (bp->num < sp->Bnst_num - 1) {
+		    bp++;
+		}
+		else {
+		    /* 最後の文節が終わった */
+		    bp = NULL;
+		}
+	    }
+	    else {
+		tp->bnum = -1;
+		pre_bp->tag_num++;
+	    }
+	    sp->Tag_num++;
+	}
+	push_tag_units(tp, mp);
+    }
+
+    if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
+	make_tag_unit_set_inum(sp, sp->Tag_num);
+    }
+
+    after_make_tag_units(sp);
+}
+
+/*==================================================================*/
+	      void make_tag_units_pm(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    MRPH_DATA *mp;
+    TAG_DATA *tp = sp->tag_data;
+    BNST_DATA *bp = sp->bnst_data, *pre_bp;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	mp = sp->mrph_data + i;
+
+	if (Tag_start[i]) {
+	    if (i != 0) tp++;
+
+	    if (check_feature(mp->f, "タグ単位始") == NULL) {
+		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
+			sp->KNPSID ? sp->KNPSID : "?");
+	    }
+
+	    memset(tp, 0, sizeof(TAG_DATA));
+	    tp->num = tp - sp->tag_data;
+	    tp->mrph_ptr = mp;
+
+	    /* 文節区切りと一致するとき */
+	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
+		/* 遡ってinumを付与 */
+		if (tp->num > 0 && (tp - 1)->bnum < 0) {
+		    make_tag_unit_set_inum(sp, tp->num);
+		}
+		tp->bnum = bp->num;
+		bp->tag_ptr = tp;	/* 文節からタグ単位へマーク */
+		bp->tag_num = 1;
+		pre_bp = bp;
+		if (bp->num < sp->Bnst_num - 1) {
+		    bp++;
+		}
+		else {
+		    /* 最後の文節が終わった */
+		    bp = NULL;
+		}
+	    }
+	    else {
+		tp->bnum = -1;
+		pre_bp->tag_num++;
+	    }
+	}
+	push_tag_units(tp, mp);
+    }
+
+    if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
+	make_tag_unit_set_inum(sp, sp->Tag_num);
+    }
+
+    after_make_tag_units(sp);
+}
+
+
+/*==================================================================*/
+	     void dpnd_info_to_tag_pm(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー (解析済版) */
+
+    int		i;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	(sp->tag_data + i)->dpnd_head = Tag_dpnd[i];
+	(sp->tag_data + i)->dpnd_type = Tag_type[i];
+    }
 }
 
 /*====================================================================

@@ -256,6 +256,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-print-deleted-sm")) {
 	    PrintDeletedSM = 1;
 	}
+	else if (str_eq(argv[0], "-print-frequency")) {
+	    PrintFrequency = 1;
+	}
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -602,7 +605,8 @@ extern int	EX_match_subject;
 
     if (OptInput == OPT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) return FALSE;
-    } else {
+    }
+    else {
 	if (make_bunsetsu_pm(sp) == FALSE) return FALSE;
     }
 
@@ -611,7 +615,12 @@ extern int	EX_match_subject;
     if (OptAnalysis == OPT_BNST) return TRUE;
 
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
-    make_tag_units(sp);
+    if (OptInput == OPT_RAW) {
+	make_tag_units(sp);
+    }
+    else {
+	make_tag_units_pm(sp);
+    }
 
     /* 文節への意味情報付与 */
 
@@ -772,7 +781,12 @@ PARSED:
     para_recovery(sp);
 
     if (OptExpress != OPT_NOTAG) {
-	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+	if (OptInput == OPT_RAW) {
+	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
+	}
+	else {
+	    dpnd_info_to_tag_pm(sp);
+	}
     }
 
     /* 並列構造をみて固有表現認識を行う */
