@@ -335,7 +335,7 @@ void init_all()
 	init_clause();
     if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
 	init_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
+    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
 	init_optional_case();
 
     read_rules();	/* ルール読み込み */
