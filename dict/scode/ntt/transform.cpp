@@ -32,6 +32,7 @@
   usr_add.rule usr_add.dat usr_del.rule usr_del.dat
   
 */
+using namespace std;
 
 map<string,string> SM2CODE;
 
@@ -101,7 +102,7 @@ int main ( int argc, char *argv[] ) {
 */
 void read_sm2code() {
 
-  ifstream fin( "/home/kaji/knp/dict/scode/ntt/sm2code.dat" );
+  ifstream fin( "sm2code.dat" );
   string line, sm, code;
   
   while( getline( fin, line ) ) {
