@@ -91,11 +91,12 @@ sub BEGIN {
 sub DESTORY {
     my( $this ) = @_;
     &kill_knp( $this ) if $this->{KNP};
+    close RC if $this->{RCFILE};
 }
 
 
 sub new {
-    my( $this, $option );
+    my( $this, $option, $rcfile);
     if( @_ == 2 ){
 	# 引数によって指定されたオプションを利用して KNP を実行する場合
 	( $this, $option ) = @_;
@@ -111,6 +112,12 @@ sub new {
 
     if( $HOST ){
 	require IO::Socket::INET or die "KNP.pm: Can't load module: IO::Socket::INET\n";
+
+	if( $option =~ s/\-r\s+(\S+)// ){
+	    $rcfile = $1;
+	    open( RC, "< $rcfile" ) ||
+		die "KNP.pm: Can't open jumanrc file: file=$rcfile\n";
+	}
     } else {
 	require Fork or die "KNP.pm: Can't load module: Fork\n";
     }
@@ -123,6 +130,7 @@ sub new {
 	      BNST_NUM => 0,
 	      BNST     => [],
 	      OPTION   => $option,
+	      RCFILE   => $rcfile,
 	      PREVIOUS => [] };
 
     # -i オプションの対応
@@ -158,6 +166,14 @@ sub parse {
 	    $sock->timeout( 60 );
 	    my $tmp = $sock->getline;
 	    ( $tmp =~ /^200/ ) || die "KNP.pm: Illegal message: host=$HOST, msg=$tmp\n";
+	    if( $this->{RCFILE} ){
+		# 設定ファイルを渡す
+		$sock->print( "RC\n", <RC>, "\n", pack("c",0x0b), "\n" );
+		$tmp = $sock->getline;
+		( $tmp =~ /^200/ )
+		    || die "KNP.pm: Configuration error: host=$HOST, port=$PORT, command=RC response=$tmp\n";
+		seek( RC, 0, 0 );
+	    }
 	    $sock->print( sprintf( "RUN %s\n", $this->{OPTION} ) );
 	    $tmp = $sock->getline;
 	    ( $tmp =~ /^200/ ) || die "KNP.pm: Configuration error: host=$HOST, msg=$tmp\n";
@@ -252,7 +268,7 @@ sub parse {
 		} else {
 		    @{$this->{BNST}[$bnst_num]{feature}} = ();
 		}
-	    } else {
+	    } elsif ( $this->{OPTION} !~ /\-bnst/ ) {
 		$this->{ALL}    = ";; KNP.pm : Illegal output of knp : output=$_\n" . $this->{ALL};
 		$this->{ERROR} .= ";; KNP.pm : Illegal output of knp : output=$_\n"
 	    }
