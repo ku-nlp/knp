@@ -296,6 +296,9 @@
 		sprintf(fname, "%s%s", fprefix, G_Feature[gnum]);
 		assign_cfeature(fpp1, fname);
 	    }
+	    else if (!strncmp((*fpp2)->cp, "&品詞変更:", strlen("&品詞変更:"))) {
+		change_mrph((MRPH_DATA *)ptr, *fpp2);
+	    }
 	    /*
 	    else if (!strncmp((*fpp2)->cp, "&辞書", strlen("&辞書"))) {
 		assign_f_from_dic(fpp1, ((MRPH_DATA *)ptr)->Goi);
@@ -501,7 +504,7 @@
 
     if (n == 2) {
 	if (str_eq(category, "文字種")) {
-	    if (strcmp(check_class((MRPH_DATA *)ptr2), cp1))
+	    if (strcmp((char *)check_class((MRPH_DATA *)ptr2), cp1))
 		return FALSE;
 	    else
 		return TRUE;
@@ -602,7 +605,7 @@
        p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
     */
 
-    int code, type, pretype;
+    int i, code, type, pretype, flag;
     char *cp;
     unsigned char *ucp; 
 
@@ -717,8 +720,39 @@
 
     /* &固有C: 固有名詞 クラスチェック */
 
-    else if (!strncmp(rule, "&固有C:", strlen("&固有C:")))
-	return check_feature_NE(((MRPH_DATA *)ptr2)->f, rule + strlen("&固有C:"));
+    else if (!strncmp(rule, "&固有C:", strlen("&固有C:"))) {
+	if (check_feature_NE(((MRPH_DATA *)ptr2)->f, rule + strlen("&固有C:")))
+	    return TRUE;
+	else
+	    return FALSE;
+    }
+    
+
+    /* &意味素: 意味素チェック */
+
+    else if (!strncmp(rule, "&意味素:", strlen("&意味素:"))) {
+	cp = rule + strlen("&意味素:");
+	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
+	if (*cp & 0x80) {
+	    cp = (char *)sm2code(cp);
+	    flag = SM_NO_EXPAND_NE;
+	}
+	else {
+	    flag = SM_CHECK_FULL;
+	}
+	    
+	for (i = 0; ((MRPH_DATA *)ptr2)->SM[i]; i+=SM_CODE_SIZE) {
+	    if (_sm_match_score(cp, 
+			    &((MRPH_DATA *)ptr2)->SM[i], flag))
+		return TRUE;
+	}
+	return FALSE;
+    }
+
+    /* &固照応 固有名詞照応チェック */
+
+    else if (!strncmp(rule, "&固照応:", strlen("&固照応:")))
+	return check_correspond_NE((MRPH_DATA *)ptr2, rule + strlen("&固照応:"));
 
     /* &表層: 表層格チェック (文節レベル,係受レベル) */
 
