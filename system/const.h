@@ -54,8 +54,8 @@
 #define NERule_MAX	512
 #define CNRule_MAX	512
 
-#define ALL_CASE_FRAME_MAX 	1024
-#define IPAL_FRAME_MAX 	512
+#define ALL_CASE_FRAME_MAX 	1536
+#define IPAL_FRAME_MAX 		512
 #define CF_ELEMENT_MAX 		10
 #define PP_ELEMENT_MAX		5
 #define SM_ELEMENT_MAX		64			/* SM_CODE_MAXとまとめるべき */
@@ -63,7 +63,7 @@
 #define MAX_MATCH_MAX 		10
 
 #define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
-#define CPM_MAX 	15				/* 文内述語数 */
+#define CPM_MAX 	32				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
 /* --> dbm.h
@@ -95,7 +95,7 @@
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
-#define OPT_NESM	2
+#define OPT_NENOSM	2
 #define OPT_NE		3
 
 #define OPT_INHIBIT_CLAUSE		0x0001
@@ -158,7 +158,6 @@
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
-#define SM_CHECK_FULL	3
 
 /*====================================================================
 				  ?
@@ -308,7 +307,7 @@ typedef struct {
     REGEXPMRPHS 	*uke_pattern;
 } KoouRule;
 
-#define QUOTE_MAX 20
+#define QUOTE_MAX 40
 
 typedef struct {
     int in_num[QUOTE_MAX];
@@ -561,23 +560,6 @@ typedef struct {
     int 	pred_num;	/* 文中の用言数 */
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
 } TOTAL_MGR;
-
-/*====================================================================
-		      固有名詞解析 - 文脈処理へ
-====================================================================*/
-
-/* 保持しておくためのデータ */
-
-typedef struct _MRPH_P {
-    MRPH_DATA data;
-    struct _MRPH_P *next;
-} MRPH_P;
-
-typedef struct _PreservedNamedEntity {
-    MRPH_P *mrph;
-    int Type;
-    struct _PreservedNamedEntity *next;
-} PreservedNamedEntity;
 
 /*====================================================================
                                END
