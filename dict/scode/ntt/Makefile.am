@@ -1,40 +1,21 @@
 SUBDIRS = .
 
 dicdir = $(pkgdatadir)/scode/ntt
-nodist_dic_DATA = word2code.db word2code_add.db word2code_del.db sm2code.db code2sm.db smp2smg.db
+nodist_dic_DATA = word2code.db sm2code.db code2sm.db smp2smg.db
 
-word2code.dat:
+usr_word2code.dat:
 	true
+
+transform: transform.cpp
+	g++ transform.cpp -o transform
+
+word2code.dat: transform usr_word2code.dat sm2code.dat word2code.orig
+	./transform usr_word2code.dat sm2code.dat word2code.orig > word2code.dat
 
 word2code.db: word2code.dat
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
-
-word2code_add.dic:
-	true
-
-word2code_add.dat: transform word2code_add.dic
-	./transform word2code_add
-
-word2code_add.db: word2code_add.dat
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-word2code_del.dic:
-	true
-
-word2code_del.dat: transform word2code_del.dic
-	./transform word2code_del
-
-word2code_del.db: word2code_del.dat
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-transform: transform.cpp
-	g++ transform.cpp -o transform
 
 sm2code.dat:
 	true
