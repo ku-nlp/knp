@@ -1,60 +1,62 @@
+# -*- perl -*-
 #
 # KNP を perl から呼び出すライブラリ
 #
-#		Masatoshi Tsuchiya (tsuchiya@pine.kuee.kyoto-u.ac.jp)
-#		Sadao Kurohasi (kuro@i.kyoto-u.ac.jp)
-#
+#	Masatoshi Tsuchiya (tsuchiya@pine.kuee.kyoto-u.ac.jp)
+#	Sadao Kurohasi (kuro@i.kyoto-u.ac.jp)
 
-# $this->{ALL}		: 解析結果そのまま
+# このモジュールを使用する方法は、
 #
-# $this->{COMMENT}	: 解析結果の一行目(#ではじまるコメント行)
+#     perldoc KNP
 #
-# $this->{MRPH_NUM}	: 形態素数
+# というコマンドで参照することができます。
+
+# KNP オブジェクトは、以下に説明されているような要素を持つハッシュです。
+# また、ここに記述した以外に、動作時に必要な情報を保持する要素が含まれ
+# ます。ハッシュの内容を不用意に書き換えると誤動作しますので、なるべく
+# メソッド経由で情報を取り出すようにしてください。
+
+#     $this->{ALL}          : 解析結果そのまま
 #
-# $this->{MRPH}		: 形態素列
-#              [i]	: i番目の形態素
-#                 {midasi}	: i番目の形態素の見出し
-#                 {yomi}	: i番目の形態素の読み
-#                 {genkei}	: i番目の形態素の原型
-#                 {hinsi}	: i番目の形態素の品詞
-#                 {hinsi_id}	: i番目の形態素の品詞番号
-#                 {bunrui}	: i番目の形態素の細分類
-#                 {bunrui_id}	: i番目の形態素の細分類番号
-#                 {katuyou1}	: i番目の形態素の活用型
-#                 {katuyou1_id}	: i番目の形態素の活用型番号
-#                 {katuyou2}	: i番目の形態素の活用形
-#                 {katuyou2_id}	: i番目の形態素の活用形番号
-#                 {imis}	: i番目の形態素の意味
-#                 {fstring}	: i番目の形態素の全てのfeature
-#                 {feature}[j]	: i番目の形態素のj番目のfeature
+#     $this->{COMMENT}      : 解析結果の一行目(#ではじまるコメント行)
 #
-# $this->{BNST_NUM}	: 文節数
+#     $this->{MRPH_NUM}     : 形態素数
 #
-# $this->{BNST}		: 文節列
-#              [i]	: i番目の文節
-#                 {start}	: i番目の文節のはじめの形態素番号
-#                 {end}		: i番目の文節のさいごの形態素番号
-#                 {parent}	: i番目の文節の係り先
-#                 {dpndtype}	: i番目の文節の係りのタイプ(D,P,I,A)
-#                 {child}	: i番目の文節に係っている文節リスト
-#                 {fstring}	: i番目の文節の全てのfeature
-#                 {feature}[j]	: i番目の文節のj番目のfeature
+#     $this->{MRPH}         : 形態素列
+#                  [i]      : i番目の形態素
+#                     {midasi}      : i番目の形態素の見出し
+#                     {yomi}        : i番目の形態素の読み
+#                     {genkei}      : i番目の形態素の原型
+#                     {hinsi}       : i番目の形態素の品詞
+#                     {hinsi_id}    : i番目の形態素の品詞番号
+#                     {bunrui}      : i番目の形態素の細分類
+#                     {bunrui_id}   : i番目の形態素の細分類番号
+#                     {katuyou1}    : i番目の形態素の活用型
+#                     {katuyou1_id} : i番目の形態素の活用型番号
+#                     {katuyou2}    : i番目の形態素の活用形
+#                     {katuyou2_id} : i番目の形態素の活用形番号
+#                     {imis}        : i番目の形態素の意味
+#                     {fstring}     : i番目の形態素の全てのfeature
+#                     {feature}[j]  : i番目の形態素のj番目のfeature
 #
-# 使用例
+#     $this->{BNST_NUM}     : 文節数
 #
-# use KNP;
-# $knp = new KNP();
-# while ( <STDIN> ) {
-#    chomp;
-#    $knp->parse($_);
-# }
+#     $this->{BNST}         : 文節列
+#                  [i]      : i番目の文節
+#                     {start}       : i番目の文節のはじめの形態素番号
+#                     {end}         : i番目の文節のさいごの形態素番号
+#                     {parent}      : i番目の文節の係り先
+#                     {dpndtype}    : i番目の文節の係りのタイプ(D,P,I,A)
+#                     {child}       : i番目の文節に係っている文節リスト
+#                     {fstring}     : i番目の文節の全てのfeature
+#                     {feature}[j]  : i番目の文節のj番目のfeature
 
 
 package KNP;
 require 5.000;
 use Juman;
 use strict;
-use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST $VERSION );
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST $VERSION $MRPH_TYPE $BNST_TYPE );
 
 
 # プログラム内部で利用される大域変数
@@ -65,6 +67,10 @@ $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
 $VERSION      = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
+
+$MRPH_TYPE    = '^(?:midasi|yomi|genkei|hinsi|hinsi_id|bunrui|bunrui_id|katuyou1|katuyou1_id|katuyou2|katuyou2_id|imis|fstring|feature)$';
+$BNST_TYPE    = '^(?:start|end|parent|dpndtype|child|fstring|feature)$';
+
 
 
 sub BEGIN {
@@ -92,13 +98,13 @@ sub new {
     }
 
     unless( $JUMAN ){
-	$JUMAN = new Juman( $JUMAN_OPTION, "grape:1" ) or die;
+	$JUMAN = new Juman( $JUMAN_OPTION, "grape:1" ) || die "KNP.pm: Can't make JUMAN object\n";
     }
 
     if( $HOST ){
-	require IO::Socket::INET or die;
+	require IO::Socket::INET or die "KNP.pm: Can't load module: IO::Socket::INET\n";
     } else {
-	require Fork or die;
+	require Fork or die "KNP.pm: Can't load module: Fork\n";
     }
 
     $this = { ALL      => "",
@@ -299,4 +305,231 @@ sub kill_knp {
 }
 
 
+sub all {
+    my( $this ) = @_;
+    $this->{ALL};
+}
+
+sub comment {
+    my( $this ) = @_;
+    $this->{COMMENT};
+}
+
+sub mrph_num {
+    my( $this ) = @_;
+    $this->{MRPH_NUM};
+}
+
+sub mrph {
+    my $this = shift;
+    unless( @_  ){
+	$this->{MRPH};
+    } else {
+	my $i = shift;
+	( $i =~ /[^0-9]/ )
+	    and warn( "KNP.pm (mrph): Integer is required: arg=$i\n" ), return undef;
+	( $i >= ( $this->{MRPH_NUM} + $[ ) )
+	    and warn( "KNP.pm (mrph): Argument overflow: arg=$i\n" ), return undef;
+	unless( @_ ){
+	    $this->{MRPH}[$i];
+	} else {
+	    my $x = shift;
+	    ( $x =~ /$MRPH_TYPE/o )
+		or warn( "KNP.pm (mrph): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
+	    unless( @_ ){
+		$this->{MRPH}[$i]{$x};
+	    } else {
+		my $j = shift;
+		( $j =~ /[^0-9]/ )
+		    and warn "KNP.pm (mrph): Integer is required: arg=$i, type=$x, suffix=$j\n", return undef;
+		( $x eq 'feature' )
+		    or warn "KNP.pm (mrph): Illegal type is specified: arg=$i, type=$x, suffix=$j\n", return undef;
+		$this->{MRPH}[$i]{$x}[$j];
+	    }
+	}
+    }
+}
+    
+sub bnst_num {
+    my( $this ) = @_;
+    $this->{BNST_NUM};
+}
+
+sub bnst {
+    my $this = shift;
+    unless( @_  ){
+	$this->{BNST};
+    } else {
+	my $i = shift;
+	( $i =~ /[^0-9]/ )
+	    and warn( "KNP.pm (bnst): Integer is required: arg=$i\n" ), return undef;
+	( $i >= ( $this->{BNST_NUM} + $[ ) )
+	    and warn( "KNP.pm (bnst): Argument overflow: arg=$i\n" ), return undef;
+	unless( @_ ){
+	    $this->{BNST}[$i];
+	} else {
+	    my $x = shift;
+	    ( $x =~ /$BNST_TYPE/o )
+		or warn( "KNP.pm (bnst): Unknown type is specified: arg=$i, type=$x\n" ), return undef;
+	    unless( @_ ){
+		$this->{BNST}[$i]{$x};
+	    } else {
+		my $j = shift;
+		( $j =~ /[^0-9]/ )
+		    and warn "KNP.pm (bnst): Integer is required: arg=$i, type=$x, suffix=$j\n", return undef;
+		( $x eq 'feature' )
+		    or warn "KNP.pm (bnst): Illegal type is specified: arg=$i, type=$x, suffix=$j\n", return undef;
+		$this->{BNST}[$i]{$x}[$j];
+	    }
+	}
+    }
+}
+
 1;
+
+
+__END__
+
+=head1 NAME
+
+KNP - 構文解析を行うモジュール
+
+=head1 SYNOPSIS
+
+ use KNP;
+ $knp = new KNP;
+ $knp->parse( "この文を構文解析してください。" );
+ print $knp->all;
+
+=head1 DESCRIPTION
+
+C<KNP> は、構文解析器 knp を Perl から利用するためのモジュールです。
+
+=head1 CONSTRUCTOR
+
+=over 4
+
+=item new ( [OPTION] )
+
+C<KNP> オブジェクトを生成します。引数に指定された文字列を knp を実行す
+る場合のオプションとして利用します。
+
+Examples:
+
+   $knp = new KNP;
+   $knp = new KNP( "" );
+   $knp = new KNP( "-case2 -tab -helpsys" );
+
+引数が省略された場合は、"-case2 -tab" をオプションとして knp を実行し
+ます。
+
+=head1 METHODS
+
+=over 4
+
+=item parse( STRING )
+
+STRING の構文解析を行います。
+
+=item all()
+
+knp が出力した構文解析結果そのままの文字列を返すメソッドです。
+
+=item comment()
+
+knp が出力した構文解析結果の1行目に含まれるコメントを返すメソッドです。
+
+=item mrph_num()
+
+形態素数を返すメソッドです。
+
+=item mrph( [ARG,TYPE,SUFFIX] )
+
+構文解析結果の形態素情報にアクセスするためのメソッドです。
+
+Examples:
+
+   $knp->mrph;
+   # 引数が省略された場合は、形態素情報のリストに対
+   # するリファレンスを返す。
+
+   $knp->mrph( 1 );
+   # ARG によって、何番目の形態素の情報を返すかを指
+   # 定する。この場合は、1つ目の形態素情報のハッシュ
+   # に対するリファレンスを返す。
+
+   $knp->mrph( 2, 'fstring' );
+   # TYPE によって必要な形態素情報を指定する。この場
+   # 合、2つ目の形態素の全ての feature の文字列を返
+   # す。
+
+   $knp->mrph( 3, 'feature', 4 );
+   # 3つ目の形態素の4個目の feature を返す。
+
+TYPE として指定することができる文字列は次の通りです。
+
+   midasi
+   yomi
+   genkei
+   hinsi
+   hinsi_id
+   bunrui
+   bunrui_id
+   katuyou1
+   katuyou1_id
+   katuyou2
+   katuyou2_id
+   imis
+   fstring
+   feature
+
+第3引数 SUFFIX を取ることができるのは TYPE として feature を指定した場
+合に限られます。
+
+=item bnst_num()
+
+文節数を返すメソッドです。
+
+=item bnst( [ARG,TYPE,SUFFIX] )
+
+構文解析結果の文節に関する情報を取り出すメソッドです。
+
+Examples:
+
+   $knp->bnst;
+   # 引数が省略された場合は、文節情報のリストに対す
+   # るリファレンスを返す。
+
+   $knp->bnst( 1 );
+   # ARG によって、何番目の文節の情報を返すかを指定
+   # する。この場合は、1つ目の文節情報のハッシュに対
+   # するリファレンスを返す。
+
+   $knp->bnst( 2, 'fstring' );
+   # TYPE によって必要な文節情報を指定する。この場合、
+   # 2つ目の文節の全ての feature の文字列を返す。
+
+   $knp->bnst( 3, 'feature', 4 );
+   # 3つ目の文節の4個目の feature を返す。
+
+TYPE として指定することができる文字列は次の通りです。
+
+   start
+   end
+   parent
+   dpndtype
+   child
+   fstring
+   feature
+
+第3引数 SUFFIX を取ることができるのは TYPE として feature を指定した場
+合に限られます。
+
+=head1 NOTE
+
+C<KNP> オブジェクトを直接参照することによって形態素情報や文節情報を得
+ることもできます。その方法については、source を参照してください。しか
+し、誤動作などを避けるため、出来るだけメソッド経由で情報を取り出してく
+ださい。
+
+=cut
