@@ -15,8 +15,6 @@ extern int		Revised_para_num;
 extern char		*ErrorComment;
 extern char 		PM_Memo[];
 
-extern char  		cont_str[];
-
 extern int		CFExist;
 extern int		BGHExist;
 extern int		SMExist;
@@ -25,8 +23,6 @@ extern int		SMP2SMGExist;
 DBM_FILE		sm_db;
 DBM_FILE		sm2code_db;
 DBM_FILE		smp2smg_db;
-
-extern NamedEntity	NE_data[];
 
 extern SENTENCE_DATA	sentence_data[];
 
@@ -39,8 +35,6 @@ extern int 		Mask_matrix[][BNST_MAX];
 
 extern char		G_Feature[][64];
 
-extern TOTAL_MGR	Op_Best_mgr;
-
 extern int 		OptAnalysis;
 extern int		OptDisc;
 extern int		OptDemo;
@@ -48,16 +42,13 @@ extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
 extern int 		OptExpandP;
-extern int 		OptInhibit;
 extern int		OptCheck;
-extern int		OptNE;
 extern int		OptDiscMethod;
 extern int		OptLearn;
 extern int		OptCaseFlag;
 extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
-extern char		*OptOptionalCase;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
@@ -73,27 +64,11 @@ extern int		CurKoouRuleSize;
 extern DpndRule		DpndRuleArray[];
 extern int		CurDpndRuleSize;
 
-extern MrphRule 	NERuleArray[];
-extern int 		CurNERuleSize;
-extern MrphRule 	CNpreRuleArray[];
-extern int 		CurCNpreRuleSize;
-extern MrphRule 	CNRuleArray[];
-extern int 		CurCNRuleSize;
-extern MrphRule 	CNauxRuleArray[];
-extern int 		CurCNauxRuleSize;
-
 extern BnstRule		ContRuleArray[];
 extern int 		ContRuleSize;
 
-extern DicForRule	*DicForRuleVArray;
-extern int		CurDicForRuleVSize;
-extern DicForRule	*DicForRulePArray;
-extern int		CurDicForRulePSize;
-
 void			*EtcRuleArray;
 int			CurEtcRuleSize;
-
-extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];
 extern char		*ETAG_name[];
@@ -115,6 +90,13 @@ extern int	EX_match_exact;
 /* bind_juman.c */
 extern void CloseJuman();
 extern FILE *JumanSentence(FILE *fp);
+
+/* bnst_compare.c */
+extern int subordinate_level_check(char *cp, BNST_DATA *ptr2);
+extern int levelcmp(char *cp1, char *cp2);
+extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);
+extern int subordinate_level_forbid(char *cp, BNST_DATA *ptr2);
+extern void calc_match_matrix(SENTENCE_DATA *sp);
 
 /* case_analysis.c */
 extern void realloc_cmm();
@@ -189,27 +171,6 @@ extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
 extern void DiscourseAnalysis(SENTENCE_DATA *sp);
 extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
-
-/* corpus.c */
-extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 
-					      char *case1, int h, CHECK_DATA *list, 
-					      CORPUS_DATA *corpus);
-extern int subordinate_level_check_special(char *cp, BNST_DATA *ptr2);
-extern int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag);
-extern int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, 
-				     BNST_DATA *ptr2, CORPUS_DATA *corpus);
-extern int init_clause();
-extern int init_case_pred();
-extern int init_optional_case();
-extern void optional_case_evaluation(SENTENCE_DATA *sp);
-extern void CheckChildCaseFrame(SENTENCE_DATA *sp);
-extern void unsupervised_debug_print(SENTENCE_DATA *sp);
-extern void close_clause();
-extern void close_case_pred();
-extern void close_optional_case();
 
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
@@ -325,25 +286,8 @@ extern int detect_para_relation(SENTENCE_DATA *sp);
 extern void revise_para_rel(SENTENCE_DATA *sp, int pre, int pos);
 extern void revise_para_kakari(SENTENCE_DATA *sp, int num, int *array);
 
-/* para_similarity.c */
-extern int subordinate_level_check(char *cp, BNST_DATA *ptr2);
-extern int levelcmp(char *cp1, char *cp2);
-extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int subordinate_level_forbid(char *cp, BNST_DATA *ptr2);
-extern void calc_match_matrix(SENTENCE_DATA *sp);
-
 /* proper.c */
-extern char *check_class(MRPH_DATA *mp);
-extern int check_correspond_NE(MRPH_DATA *data, char *rule);
-extern void clearNE();
-extern void init_proper(SENTENCE_DATA *s);
-extern void assign_ntt_dict(SENTENCE_DATA *sp, int i);
-extern void NE_analysis(SENTENCE_DATA *sp);
-extern void preserveNE(SENTENCE_DATA *sp);
-extern void printNE();
-extern void close_proper();
-extern void assign_ne_rule(SENTENCE_DATA *sp);
-extern void NEparaAnalysis(SENTENCE_DATA *sp);
+extern void ne_para_analysis(SENTENCE_DATA *sp);
 
 /* quote.c */
 extern int quote(SENTENCE_DATA *sp);
@@ -405,9 +349,6 @@ extern BNST_DATA *t_add_node(BNST_DATA *parent, BNST_DATA *child, int pos);
 
 extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 extern int ParseSentence(SENTENCE_DATA *s, char *input);
-
-/* unsupervised.c */
-extern void CheckCandidates(SENTENCE_DATA *sp);
 
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;

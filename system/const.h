@@ -112,12 +112,6 @@
 #define OPT_SVM		2
 #define OPT_DT		3
 
-#define OPT_INHIBIT_CLAUSE		0x0001
-#define OPT_INHIBIT_C_CLAUSE		0x0002
-#define OPT_INHIBIT_OPTIONAL_CASE	0x0010
-#define OPT_INHIBIT_CASE_PREDICATE	0x0100
-#define OPT_INHIBIT_BARRIER		0x1000
-
 #define	OPT_CASE_SOTO	1
 #define	OPT_CASE_GAGA	2
 #define	OPT_CASE_NO	4
@@ -584,14 +578,6 @@ typedef struct _check {
     int pos[BNST_MAX];
 } CHECK_DATA;
 
-typedef struct _optionalcase {
-    int flag;
-    int weight;
-    char *type;
-    char *data;
-    char *candidatesdata;
-} CORPUS_DATA;
-
 /* 文中の各文節の係り先などの記録 */
 typedef struct {
     int  	head[BNST_MAX];	/* 係り先 */
@@ -599,9 +585,6 @@ typedef struct {
     int   	dflt[BNST_MAX];	/* 係りの距離 */
     int 	mask[BNST_MAX];	/* 非交差条件 */
     int 	pos;		/* 現在の処理位置 */
-    int         flag;           /* テンポラリフラグ */
-    char        *comment;       /* テンポラリ */
-    struct _optionalcase op[BNST_MAX];	/* 任意格使用 */
     CHECK_DATA	check[BNST_MAX];
     FEATURE	*f[BNST_MAX];	/* feature */
 } DPND;
@@ -609,7 +592,7 @@ typedef struct {
 /*====================================================================
 				格解析
 ====================================================================*/
-#define IPAL_FIELD_NUM	72
+
 #define CASE_MAX_NUM	20
 #define CASE_TYPE_NUM	50
 
@@ -734,25 +717,6 @@ typedef struct {
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
-
-#define	OPTIONAL_CASE_SCORE	2
-
-/*====================================================================
-		      固有名詞解析 - 文脈処理へ
-====================================================================*/
-
-/* 保持しておくためのデータ */
-
-typedef struct _MRPH_P {
-    MRPH_DATA data;
-    struct _MRPH_P *next;
-} MRPH_P;
-
-typedef struct _PreservedNamedEntity {
-    MRPH_P *mrph;
-    int Type;
-    struct _PreservedNamedEntity *next;
-} PreservedNamedEntity;
 
 /*====================================================================
 			       文脈処理

@@ -21,8 +21,6 @@ int 		Revised_para_num;
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[DATA_LEN];		/* パターンマッチ結果 */
 
-char  		cont_str[DBM_CON_MAX];
-
 int		match_matrix[BNST_MAX][BNST_MAX];
 int		path_matrix[BNST_MAX][BNST_MAX];
 int		restrict_matrix[BNST_MAX][BNST_MAX];
@@ -42,9 +40,7 @@ int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
-int		OptInhibit;
 int		OptCheck;
-int		OptNE;
 int		OptJuman;
 int		OptDiscMethod;
 int		OptLearn;
@@ -52,7 +48,6 @@ int		OptCaseFlag;
 int		OptDiscFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
-char		*OptOptionalCase = NULL;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -74,11 +69,6 @@ extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
 extern FORM     Form[TYPE_NO][FORM_NO];
 int CLASS_num;
-
-char *ClauseDBname = NULL;
-char *ClauseCDBname = NULL;
-char *CasePredicateDBname = NULL;
-char *OptionalCaseDBname = NULL;
 
 jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
@@ -128,10 +118,7 @@ extern float	AssignReferentThreshold;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
-    /* デフォルトで禁止するオプション */
-    OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
     OptCheck = FALSE;
-    OptNE = OPT_NORMAL;
     OptJuman = OPT_NORMAL;
     OptDiscMethod = OPT_NORMAL;
     OptLearn = FALSE;
@@ -160,8 +147,6 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
-	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
-	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
 #ifdef USE_SVM
@@ -186,12 +171,6 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-print-deleted-sm")) {
 	    PrintDeletedSM = 1;
 	}
-	else if (str_eq(argv[0], "-cdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	}
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -202,17 +181,6 @@ extern float	AssignReferentThreshold;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    strcpy(OptHostname,argv[0]);
-	}
-	else if (str_eq(argv[0], "-optionalcase")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    /* 
-	    if ((case2num(argv[0])) == -1) {
-		fprintf(stderr, "Error: Case %s is invalid!\n", argv[0]);
-		usage();
-	    }
-	    */
-	    OptOptionalCase = argv[0];
 	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
@@ -417,22 +385,6 @@ extern float	AssignReferentThreshold;
 	else if ((RULE+i)->type == KoouRuleType) {
 	    read_koou_rule((RULE+i)->file);
 	}
-	/* 固有名詞ルール */
-	else if ((RULE+i)->type == NeMorphRuleType) {
-	    read_mrph_rule((RULE+i)->file, NERuleArray, &CurNERuleSize, NERule_MAX);
-	}
-	/* 複合名詞準備ルール */
-	else if ((RULE+i)->type == NePhrasePreRuleType) {
-	    read_mrph_rule((RULE+i)->file, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
-	}
-	/* 複合名詞ルール */
-	else if ((RULE+i)->type == NePhraseRuleType) {
-	    read_mrph_rule((RULE+i)->file, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
-	}
-	/* 複合名詞補助ルール */
-	else if ((RULE+i)->type == NePhraseAuxRuleType) {
-	    read_mrph_rule((RULE+i)->file, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
-	}
 	/* 文脈処理のルール */
 	else if ((RULE+i)->type == ContextRuleType) {
 	    read_bnst_rule((RULE+i)->file, ContRuleArray, &ContRuleSize, ContRule_MAX);
@@ -492,13 +444,6 @@ extern float	AssignReferentThreshold;
 	}
     }
 
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	init_clause();
-    if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
-	init_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
-	init_optional_case();
-
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
     memset(bnst_data, 0, sizeof(BNST_DATA)*BNST_MAX);
@@ -520,11 +465,6 @@ extern float	AssignReferentThreshold;
 	 current_sentence_data.bnst_data[i].f = NULL;
     }
 
-    /* 固有名詞解析辞書オープン */
-    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
-	init_proper(&current_sentence_data);
-    }
-
     if (OptDisc == OPT_DISC) {
 	InitAnaphoraList();
     }
@@ -540,14 +480,6 @@ extern float	AssignReferentThreshold;
 
     if (OptDisc == OPT_DISC)
 	close_noun();
-    if (OptNE == OPT_NE || OptNE == OPT_NESM)
-	close_proper();
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	close_clause();
-    if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))
-	close_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	close_optional_case();
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -556,6 +488,33 @@ extern float	AssignReferentThreshold;
 #ifdef INTEGRATE_JUMAN
     CloseJuman();
 #endif
+}
+
+/*==================================================================*/
+	       void check_candidates(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    TOTAL_MGR *tm = sp->Best_mgr;
+    char buffer[DATA_LEN], buffer2[SMALL_DATA_LEN], *cp;
+
+    /* 各文節ごとにチェック用の feature を与える */
+    for (i = 0; i < sp->Bnst_num; i++)
+	if (tm->dpnd.check[i].num != -1) {
+	    /* 係り側 -> 係り先 */
+	    sprintf(buffer, "候補");
+	    for (j = 0; j < tm->dpnd.check[i].num; j++) {
+		/* 候補たち */
+		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
+		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
+		    fprintf(stderr, ";; Too long string <%s> (%d) in CheckCandidates.\n", 
+			    buffer, tm->dpnd.check[i].num);
+		    return;
+		}
+		strcat(buffer, buffer2);
+	    }
+	    assign_cfeature(&(sp->bnst_data[i].f), buffer);
+	}
 }
 
 /*==================================================================*/
@@ -574,7 +533,7 @@ extern float	AssignReferentThreshold;
 
     /* 形態素への意味情報付与 (固有表現解析のとき) */
 
-    if ((OptNE == OPT_NE || OptNE == OPT_NESM) && SMExist == TRUE) {
+    if (0 && SMExist == TRUE) {
 	char *code;
 	for (i = 0; i < sp->Mrph_num; i++) {
 	    code = get_str_code(sp->mrph_data[i].Goi, USE_NTT);
@@ -638,11 +597,6 @@ extern float	AssignReferentThreshold;
 	print_mrphs(sp, 0);
 
     fix_sm_person(sp);
-
-    /* 固有名詞ルール */
-    if (OptNE == OPT_NE_SIMPLE) {
-	assign_ne_rule(sp);
-    }
 
     /* FEATURE付与だけの場合 */
 
@@ -758,37 +712,19 @@ extern float	AssignReferentThreshold;
     }
     alarm(0);
 
-    /* コーパスベース時の評価値計算 */
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	optional_case_evaluation(sp);
-
 PARSED:
-
     /* 係り受け情報を bnst 構造体に記憶 */
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-    /* 固有表現認識処理 */
-    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
-	NE_analysis(sp);
-    }
-    else {
-	/* 並列構造をみて固有表現認識を行う */
-	NEparaAnalysis(sp);
-    }
+    /* 並列構造をみて固有表現認識を行う */
+    ne_para_analysis(sp);
 
     memo_by_program(sp);	/* メモへの書き込み */
 
     /* 係り先候補数チェック用 */
     if (OptCheck == TRUE)
-	CheckCandidates(sp);
-
-    /* 認識した固有名詞を保存しておく */
-    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
-	preserveNE(sp);
-	if (OptDisplay == OPT_DEBUG)
-	    printNE();
-    }
+	check_candidates(sp);
 
     return TRUE;
 }
@@ -932,9 +868,6 @@ PARSED:
 	    print_mrphs(sp, 0);
 	} else {
 	    print_result(sp);
-
-	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-		unsupervised_debug_print(sp);
 	}
 	fflush(Outfp);
 

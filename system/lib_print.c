@@ -961,12 +961,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	ErrorComment = NULL;
     }
 
-    if (tm->dpnd.comment) {
-	fprintf(Outfp, " CORPUS:%s", tm->dpnd.comment);
-	free(tm->dpnd.comment);
-	tm->dpnd.comment = NULL;
-    }
-
     if (PM_Memo[0]) {
 	if (sp->Comment && strstr(sp->Comment, "MEMO")) {
 	    fprintf(Outfp, "%s", PM_Memo);

@@ -17,7 +17,6 @@ knp_SOURCES = \
 	case_print.c \
 	const.h \
 	context.c \
-	corpus.c \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \
@@ -26,7 +25,6 @@ knp_SOURCES = \
 	koou.c \
 	lib_bgh.c \
 	lib_dt.c \
-	lib_lib.c \
 	lib_print.c \
 	lib_ps.c \
 	lib_scase.c \
@@ -44,7 +42,6 @@ knp_SOURCES = \
 	regexp.c \
 	tools.c \
 	tree_conv.c \
-	unsupervised.c \
 	db.c \
 	japanese.c \
 	japanese.h \

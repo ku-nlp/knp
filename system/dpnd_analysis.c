@@ -8,7 +8,6 @@
 ====================================================================*/
 #include "knp.h"
 
-extern char CorpusComment[BNST_MAX][DATA_LEN];
 int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
 
@@ -31,7 +30,7 @@ static int dpndID = 0;
 	}
 
 	if (b_ptr->dpnd_rule == NULL) {
-	    fprintf(stderr, "No DpndRule for %dth bnst (", i);
+	    fprintf(stderr, ";; No DpndRule for %dth bnst (", i);
 	    print_feature(b_ptr->f, stderr);
 	    fprintf(stderr, ")\n");
 
@@ -141,10 +140,10 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    break;
 	}
     }
-    dpnd_cp = (char *)check_feature(sp->bnst_data[dp->pos].f, "係");
-    gvnr_cp = (char *)check_feature(sp->bnst_data[gvnr].f, "係");
+    dpnd_cp = check_feature(sp->bnst_data[dp->pos].f, "係");
+    gvnr_cp = check_feature(sp->bnst_data[gvnr].f, "係");
     if (gvnr < sp->Bnst_num-1) {
-	next_cp = (char *)check_feature(sp->bnst_data[gvnr+1].f, "係");	
+	next_cp = check_feature(sp->bnst_data[gvnr+1].f, "係");	
     }
     else {
 	next_cp = NULL;
@@ -236,8 +235,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 /*==================================================================*/
 {
     int i, j, k, one_score, score, rentai, vacant_slot_num;
-    int topic_score, optional_flag = 0;
-    int optional_score = 0, total_optional_score = 0;
+    int topic_score;
     int scase_check[SCASE_CODE_SIZE], ha_check, un_count, pred_p;
     char *cp, *cp2, *buffer;
     BNST_DATA *g_ptr, *d_ptr;
@@ -258,14 +256,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
        4. 未格，連体修飾先はガ,ヲ,ニ格の余っているスロット数だけ点数付与
     */
-
-    /* コーパスの事例データの初期化 */
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-	for (i = 1; i < sp->Bnst_num; i++) {
-	    dpnd.op[i].data = NULL;
-	    dpnd.op[i].candidatesdata = NULL;
-	}
-    }
 
     score = 0;
     for (i = 1; i < sp->Bnst_num; i++) {
@@ -304,39 +294,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    one_score -= 5;
 		}
 
-		/* 係り受けがコーパス中に存在するかどうか */
-		if ((cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
-		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-			/* 優先規則 */
-			optional_score = CorpusExampleDependencyCalculation(sp, d_ptr, cp+3, i, &(dpnd.check[j]), &dpnd.op[j]);
-			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr, &dpnd.op[j]); */
-
-			/* one_score += optional_score*10; */
-			/* 距離重み */ /* j が i に係っている */
-			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(sp->Bnst_num-1-i)/(sp->Bnst_num-1-j); */
-			if (optional_score > 0) {
-			    dpnd.op[j].flag = TRUE;
-			    dpnd.op[j].weight = optional_score;
-			    dpnd.op[j].type = cp+3;
-			    if (dpnd.comment) {
-				buffer = dpnd.comment;
-				dpnd.comment = (char *)malloc(strlen(buffer)+strlen(CorpusComment[j])+2);
-				strcpy(dpnd.comment, buffer);
-				strcat(dpnd.comment, " ");
-				strcat(dpnd.comment, CorpusComment[j]);
-			    }
-			    else {
-				dpnd.comment = strdup(CorpusComment[j]);
-			    }
-			    optional_flag = 1;
-			    total_optional_score += optional_score;
-			    /* total_optional_score += optional_score*5; */
-			}
-		    }
-		}
-
 		if (pred_p &&
-		    (cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
+		    (cp = check_feature(d_ptr->f, "係")) != NULL) {
 		    
 		    /* 未格 提題(「〜は」)の扱い */
 
@@ -345,7 +304,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
 			/* 文末, 「〜が」など, 並列末, C, B'に係ることを優先 */
 
-			if ((cp2 = (char *)check_feature(g_ptr->f, "提題受")) 
+			if ((cp2 = check_feature(g_ptr->f, "提題受")) 
 			    != NULL) {
 			    sscanf(cp2, "%*[^:]:%d", &topic_score);
 			    one_score += topic_score;
@@ -522,10 +481,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	fprintf(Outfp, "=%d", score);
-	if (optional_flag)
-	    fprintf(Outfp, "+%d=%d", total_optional_score, score+total_optional_score);
-	fprintf(Outfp, "\n");
+	fprintf(Outfp, "=%d\n", score);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -541,25 +497,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	Possibility++;
     }
 
-    /* 事例情報を使ったとき */
-    if (optional_flag) {
-	if (!OptLearn) {
-	    score += total_optional_score;
-	    if (score > Op_Best_mgr.score) {
-		Op_Best_mgr.dpnd = dpnd;
-		Op_Best_mgr.score = score;
-		Op_Best_mgr.ID = dpndID;
-	    }
-	}
-	else {
-	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, sp->KNPSID ? sp->KNPSID : "", score);
-	    for (i = 0;i < sp->Bnst_num; i++) {
-		if (dpnd.op[i].flag) {
-		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
-		}
-	    }
-	}
-    }
     dpndID++;
 }
 
@@ -642,7 +579,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     /* 前の文節の係り受けに従う場合  例) 「〜大統領は一日，〜」 */
 
-    if ((cp = (char *)check_feature(b_ptr->f, "係:無格従属")) != NULL) {
+    if ((cp = check_feature(b_ptr->f, "係:無格従属")) != NULL) {
         sscanf(cp, "%*[^:]:%*[^:]:%d", &(dpnd.head[dpnd.pos]));
         dpnd.type[dpnd.pos] = 'D';
         dpnd.dflt[dpnd.pos] = 0;
@@ -863,23 +800,17 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     Possibility = 0;
     dpndID = 0;
 
-    Op_Best_mgr.score = -10000;
-    Op_Best_mgr.ID = -1;
-
     /* 係り状態の初期化 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	dpnd.head[i] = -1;
 	dpnd.dflt[i] = 0;
 	dpnd.mask[i] = 1;
-	memset(&(dpnd.op[i]), 0, sizeof(struct _optionalcase));
 	memset(&(dpnd.check[i]), 0, sizeof(CHECK_DATA));
 	dpnd.check[i].num = -1;
 	dpnd.f[i] = NULL;
     }
     dpnd.pos = sp->Bnst_num - 1;
-    dpnd.flag = 0;
-    dpnd.comment = NULL;
 
     /* 格解析キャッシュの初期化 */
     if (OptAnalysis == OPT_CASE) {

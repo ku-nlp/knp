@@ -260,9 +260,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		index(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
 		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
-		    if (OptNE != OPT_NORMAL) {
-			clearNE();
-		    }
 		    if (OptDisc == OPT_DISC) {
 			ClearSentences(sp);
 		    }
@@ -738,8 +735,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     /* clear_feature(&(b_ptr->f));
        mainの文ごとのループの先頭で処理に移動 */
-
-    CorpusComment[b_ptr->num][0] = '\0';
 
     return b_ptr;
 }

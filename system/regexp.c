@@ -429,29 +429,11 @@ const REGEXPBNST RegexpBnstInitValue = {
     int i;
     char *value;
 
-    if (!strncmp(rule, "&語彙:", 6)) {
-	/* データベースを使う場合 */
-	if (DicForRuleDBExist == TRUE) {
-	    value = (char *)get_rulev(data);
-	    if (value) {
-		if (strstr(value, rule+6)) {
-		    free(value);
-		    return TRUE;
-		}
-		free(value);
-	    }
-	}
-	/* データベースを使わない場合 */
-	else {
-	    for (i = 0; i < CurDicForRuleVSize; i++) {
-		if (str_eq(DicForRuleVArray[i].key, data) && check_feature(DicForRuleVArray[i].f, rule+6))
-		    return TRUE;
-	    }
-	    return FALSE;
-	}
+    if (0) {
+	;
     }
     else {
-	fprintf(stderr, "Invalid Mrph-Feature-Function (%s)\n", rule);
+	fprintf(stderr, ";; Invalid Mrph-Feature-Function (%s)\n", rule);
 	return FALSE;
     }
     return FALSE;
@@ -468,12 +450,12 @@ const REGEXPBNST RegexpBnstInitValue = {
 	return TRUE;
     else {
 	for (i = 0; r_string[i]; i++) {
-	    /* 関数呼び出し */
+	    /* 関数呼び出し
 	    if (r_string[i][0] == '&')
 		if (mrph_check_function(r_string[i], d_string)) {
 		    tmp_ret = TRUE;
 		    break;
-		}
+		} */
 	    if (str_eq(r_string[i],d_string)) {
 		tmp_ret = TRUE;
 		break;

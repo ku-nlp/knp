@@ -24,18 +24,6 @@ int		CurDpndRuleSize = 0;
 BnstRule 	ContRuleArray[ContRule_MAX];
 int 	        ContRuleSize = 0;
 
-MrphRule	NERuleArray[NERule_MAX];
-int 	        CurNERuleSize = 0;
-
-MrphRule	CNpreRuleArray[CNRule_MAX];
-int 	        CurCNpreRuleSize = 0;
-
-MrphRule	CNRuleArray[CNRule_MAX];
-int 	        CurCNRuleSize = 0;
-
-MrphRule	CNauxRuleArray[CNRule_MAX];
-int 	        CurCNauxRuleSize = 0;
-
 void		*EtcRuleArray = NULL;
 int		CurEtcRuleSize = 0;
 int		ExistEtcRule = 0;
@@ -44,17 +32,8 @@ GeneralRuleType	*GeneralRuleArray = NULL;
 int		GeneralRuleNum = 0;
 int		GeneralRuleMax = 0;
 
-DicForRule	*DicForRuleVArray;
-int		CurDicForRuleVSize;
-DicForRule	*DicForRulePArray;
-int		CurDicForRulePSize;
-
 extern int 	LineNo;
 extern int 	LineNoForError;
-
-DBM_FILE dic_for_rulev_db;
-DBM_FILE dic_for_rulep_db;
-int DicForRuleDBExist = FALSE;
 
 /*==================================================================*/
 void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
@@ -360,113 +339,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     }
 
     fclose(fp);
-}
-
-/*==================================================================*/
-	      void read_dic_for_rule(char *file_name, DicForRule **Array, int *Num)
-/*==================================================================*/
-{
-    FILE *fp;
-    char buffer[DATA_LEN];
-    char key[DATA_LEN], value[DATA_LEN];
-    int i, exist_flag = 0, max = 0;
-
-    buffer[DATA_LEN-1] = '\n';
-    key[DATA_LEN-1] = '\n';
-    value[DATA_LEN-1] = '\n';
-
-    /* ファイルオープン */
-    if (!(fp = fopen(file_name, "r"))) {
-	fprintf(stderr, ";; Cannot open file (%s) !!\n", file_name);
-	exit(1);
-    }
-
-    /* 読み込み */
-    while (fgets(buffer, DATA_LEN, fp)) {
-	if (buffer[DATA_LEN-1] != '\n') {
-	    fprintf(stderr, ";; Buffer overflow (read_dic_for_rule)\n");
-	    exit(1);
-	}
-
-	/* 一行読み込み */
-	sscanf(buffer, "%s %[^\n]\n", key, value);
-
-	if (key[DATA_LEN-1] != '\n') {
-	    fprintf(stderr, ";; Buffer overflow (read_dic_for_rule)\n");
-	    exit(1);
-	}
-	if (value[DATA_LEN-1] != '\n') {
-	    fprintf(stderr, ";; Buffer overflow (read_dic_for_rule)\n");
-	    exit(1);
-	}
-
-	/* メモリ確保 */
-	if (*Num >= max) {
-	    max += ALLOCATION_STEP;
-	    if (!(*Array = (DicForRule *)realloc(*Array, sizeof(DicForRule)*max))) {
-		fprintf(stderr, ";; Memory allocation Error.\n");
-		exit(1);
-	    }
-	}
-
-	/* キーが存在するときは feature だけ追加 */
-	for (i = 0; i < *Num; i++) {
-	    if (!strcmp((*Array)[i].key, key)) {
-		assign_cfeature(&((*Array)[i].f), value);
-		exist_flag = 1;
-		break;
-	    }
-	}
-
-	/* キーが存在しないとき */
-	if (!exist_flag) {
-	    (*Array)[*Num].key = strdup(key);
-	    (*Array)[*Num].f = NULL;
-	    assign_cfeature(&((*Array)[*Num].f), value);
-	    (*Num)++;
-	}
-	else
-	    exist_flag = 0;
-    }
-    fclose(fp);
-}
-
-/*==================================================================*/
-			  int init_dic_for_rule()
-/*==================================================================*/
-{
-    if ((dic_for_rulev_db = DB_open(RULEV_DB_NAME, O_RDONLY, 0)) == NULL || 
-	(dic_for_rulep_db = DB_open(RULEP_DB_NAME, O_RDONLY, 0)) == NULL) {
-	read_dic_for_rule(RULEV_DIC_FILE, &DicForRuleVArray, &CurDicForRuleVSize);
-	read_dic_for_rule(RULEP_DIC_FILE, &DicForRulePArray, &CurDicForRulePSize);
-    } 
-    else
-	DicForRuleDBExist = TRUE;
-    return DicForRuleDBExist;
-}
-
-/*==================================================================*/
-		      void close_dic_for_rule()
-/*==================================================================*/
-{
-    if (DicForRuleDBExist == TRUE) {
-	DB_close(dic_for_rulev_db);
-	DB_close(dic_for_rulep_db);
-    }
-}
-
-/*==================================================================*/
-		      char *get_rulev(char *cp)
-/*==================================================================*/
-{
-    return db_get(dic_for_rulev_db, cp);
-}
-
-/*==================================================================*/
-		      char *get_rulep(char *cp)
-/*==================================================================*/
-{
-    return db_get(dic_for_rulep_db, cp);
 }
 
 /*==================================================================*/

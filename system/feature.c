@@ -441,34 +441,6 @@
 }
 
 /*==================================================================*/
-	      int whether_corpus_compare(BNST_DATA *bp)
-/*==================================================================*/
-{
-    /* マッチすれば、FALSE をかえし、
-       統計的情報を用いた述語の係り受け解析を行わない。
-       */
-    char *type;
-
-    /* 文節ポインタが NULL? */
-    if (bp == NULL)
-	return FALSE;
-
-    type = (char *)check_feature(bp->f, "ID");
-
-    if (type) {
-	type +=3;
-	if (!strcmp(type, "〜と（引用）") || 
-	    !strcmp(type, "（弱連用）") || 
-	    !strcmp(type, "（区切）") || 
-	    !strcmp(type, "（複合辞連用）") || 
-	    !strcmp(type, "〜の〜"))
-	    return FALSE;
-    }
-    
-    return TRUE;
-}
-
-/*==================================================================*/
 	int compare_threshold(int value, int threshold, char *eq)
 /*==================================================================*/
 {
@@ -551,94 +523,6 @@
 	return flag;
 
     return 1-flag;
-}
-
-/*==================================================================*/
-      int check_function_NE(char *rule, void *ptr1, void *ptr2)
-/*==================================================================*/
-{
-    char category[7], cp1[128], cp2[128], cp3[128], cp4[128];
-    int n, threshold;
-
-   /* 5 XB:かな漢字:人名:le:33
-      4 単語:人名:gt:3
-      3 細:地名:1
-      2 文字種:カタカナ
-      4 文字種:地名:le:4
-      3 頻度:gt:3 */
-
-    n = sscanf(rule, "%[^:]:%[^:]:%[^:]:%[^:]:%[^:]", category, cp1, cp2, cp3, cp4);
-
-    if (n == 2) {
-	if (str_eq(category, "文字種")) {
-	    if (strcmp((char *)check_class((MRPH_DATA *)ptr2), cp1))
-		return FALSE;
-	    else
-		return TRUE;
-	}
-
-	fprintf(stderr, "Invalid rule! (%s).\n", rule);
-	return FALSE;
-    }
-    else if (n == 3) {
-	if (str_eq(category, "細")) {
-	    threshold = atoi(cp2);
-	    if (str_eq(cp1, "その他"))
-		return check_Bunrui_others((MRPH_DATA *)ptr2, threshold);
-	    else
-		return check_Bunrui((MRPH_DATA *)ptr2, cp1, threshold);
-	}
-	else if (str_eq(category, "頻度")) {
-	    threshold = atoi(cp2);
-	    return compare_threshold(((MRPH_DATA *)ptr2)->eNE.self.Count, 
-				     threshold, cp1);
-	}
-
-	fprintf(stderr, "Invalid rule! (%s).\n", rule);
-	return FALSE;
-    }
-    else if (n == 4) {
-	threshold = atoi(cp3);
-
-	if (str_eq(category, "単語"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, cp1), 
-				     threshold, cp2);
-	else if (str_eq(category, "文字種"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.selfSM, cp1), 
-				     threshold, cp2);
-	else if (str_eq(category, "格"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.Case, cp1), 
-				     threshold, cp2);
-
-	fprintf(stderr, "Invalid rule! (%s).\n", rule);
-	return FALSE;
-    }
-    else if (n == 5) {
-	threshold = atoi(cp4);
-
-	if (str_eq(category, "XB"))
-	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.XB, cp2), 
-				     threshold, cp3) && 
-		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
-	else if (str_eq(category, "AX"))
-	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.AX, cp2), 
-				     threshold, cp3) && 
-		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
-	else if (str_eq(category, "AのX"))
-	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.AnoX, cp2), 
-				     threshold, cp3) && 
-		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
-	else if (str_eq(category, "XのB"))
-	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.XnoB, cp2), 
-				     threshold, cp3) && 
-		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
-
-	fprintf(stderr, "Invalid rule! (%s).\n", rule);
-	return FALSE;
-    }
-
-    fprintf(stderr, "Invalid rule! (%s).\n", rule);
-    return FALSE;
 }
 
 /*==================================================================*/
@@ -837,20 +721,6 @@
 	    return FALSE;
     }
 
-    /* &固有: 固有名詞 Feature チェック (形態素レベル) */
-
-    else if (!strncmp(rule, "&固有:", strlen("&固有:")))
-	return check_function_NE(rule + strlen("&固有:"), ptr1, ptr2);
-
-    /* &固有C: 固有名詞 クラスチェック */
-
-    else if (!strncmp(rule, "&固有C:", strlen("&固有C:"))) {
-	if (check_feature_NE(((MRPH_DATA *)ptr2)->f, rule + strlen("&固有C:")))
-	    return TRUE;
-	else
-	    return FALSE;
-    }
-
     /* &意味素: 意味素チェック (形態素) */
 
     else if (!strncmp(rule, "&意味素:", strlen("&意味素:"))) {
@@ -956,11 +826,6 @@
 	return FALSE;
     }
 
-    /* &固照応 固有名詞照応チェック */
-
-    else if (!strncmp(rule, "&固照応:", strlen("&固照応:")))
-	return check_correspond_NE((MRPH_DATA *)ptr2, rule + strlen("&固照応:"));
-
     /* &表層: 表層格チェック (文節レベル,係受レベル) */
 
     else if (!strncmp(rule, "&表層:", strlen("&表層:"))) {
@@ -971,14 +836,16 @@
 	    if (((BNST_DATA *)ptr2)->
 		SCASE_code[case2num(cp + strlen("係:"))]) {
 		return TRUE;
-	    } else {
+	    }
+	    else {
 		return FALSE;
 	    }
 	}
 	else if (((BNST_DATA *)ptr2)->
-	    	SCASE_code[case2num(rule + strlen("&表層:"))]) {
+		 SCASE_code[case2num(rule + strlen("&表層:"))]) {
 	    return TRUE;
-	} else {
+	}
+	else {
 	    return FALSE;
  	}
     }
@@ -989,7 +856,8 @@
 	if (((BNST_DATA *)ptr2 - (BNST_DATA *)ptr1)
 	    <= atoi(rule + strlen("&D:"))) {
 	    return TRUE;
-	} else {
+	}
+	else {
 	    return FALSE;
 	}
     }
@@ -997,32 +865,15 @@
     /* &レベル : 用言のレベル比較 (係受レベル) */
 
     else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
-	if ((OptInhibit & OPT_INHIBIT_CLAUSE) || (whether_corpus_compare((BNST_DATA *)ptr1) == FALSE)) {
-	    if (!strcmp(rule + strlen("&レベル:"), "強"))
-		/* 述語間の強弱の比較 */
-		return subordinate_level_comp((BNST_DATA *)ptr1, 
-					      (BNST_DATA *)ptr2);
-	    else
-		/* 述語は係り受け可能か */
-		return subordinate_level_check(rule + strlen("&レベル:"),
-					       (BNST_DATA *)ptr2);
+	if (!strcmp(rule + strlen("&レベル:"), "強")) {
+	    /* 述語間の強弱の比較 */
+	    return subordinate_level_comp((BNST_DATA *)ptr1, 
+					  (BNST_DATA *)ptr2);
 	}
 	else {
-	    /* &レベル が連続してチェックされるのは無駄だね */
-	    if (prerule && 
-		!strncmp(prerule, "&レベル:", strlen("&レベル:")) && 
-		ptr1 == pre1 && 
-		ptr2 == pre2) {
-		return TRUE;
-	    }
-
-	    prerule = rule;
-	    pre1 = ptr1;
-	    pre2 = ptr2;
-
-	    return corpus_clause_comp((BNST_DATA *)ptr1, 
-				      (BNST_DATA *)ptr2, 
-				      TRUE);
+	    /* 述語は係り受け可能か */
+	    return subordinate_level_check(rule + strlen("&レベル:"), 
+					   (BNST_DATA *)ptr2);
 	}
     }
 
@@ -1030,57 +881,14 @@
     /* &節境界 : 節間の壁チェック */
 
     else if (!strncmp(rule, "&節境界:", strlen("&節境界:"))) {
-	if ((OptInhibit & OPT_INHIBIT_CLAUSE))
-	    /* 
-	       1. ルールに書いてあるレベルより強いことをチェック
-	       2. 係り側より受け側のレベルが強いことをチェック
-	    */
-	    return (subordinate_level_check(rule + strlen("&節境界:"),
-					    (BNST_DATA *)ptr2) && 
-		    subordinate_level_comp((BNST_DATA *)ptr1, 
+	/* 
+	   1. ルールに書いてあるレベルより強いことをチェック
+	   2. 係り側より受け側のレベルが強いことをチェック
+	*/
+	return (subordinate_level_check(rule + strlen("&節境界:"), 
+					(BNST_DATA *)ptr2) && 
+		subordinate_level_comp((BNST_DATA *)ptr1, 
 				       (BNST_DATA *)ptr2));
-	else
-	    return corpus_clause_barrier_check((BNST_DATA *)ptr1, 
-					       (BNST_DATA *)ptr2);
-    }
-
-    /* &格述 : 格と述語の嗜好性チェック */
-
-    else if (!strncmp(rule, "&格述:", strlen("&格述:"))) {
-	if (OptInhibit & OPT_INHIBIT_CASE_PREDICATE)
-	    return subordinate_level_check(rule + strlen("&格述:"),
-					   (BNST_DATA *)ptr2);
-	else
-	    return corpus_case_predicate_check((BNST_DATA *)ptr1, 
-					       (BNST_DATA *)ptr2);
-    }
-
-    /* &境界 : 格と述語の壁チェック */
-
-    else if (!strncmp(rule, "&境界:", strlen("&境界:"))) {
-	if (OptInhibit & OPT_INHIBIT_BARRIER)
-	    return subordinate_level_check(rule + strlen("&境界:"),
-					   (BNST_DATA *)ptr2);
-	else
-	    return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2);
-    }
-
-    /* &境界連用 : 格と述語の壁チェック (連用) */
-
-    else if (!strncmp(rule, "&境界連用:", strlen("&境界連用:"))) {
-	if (OptInhibit & OPT_INHIBIT_BARRIER)
-	    return subordinate_level_check(rule + strlen("&境界連用:"),
-					   (BNST_DATA *)ptr2);
-	else
-	    /* レベルの処理 */
-	    return subordinate_level_check(rule + strlen("&境界連用:"),
-					   (BNST_DATA *)ptr2);
-	    /* 統計的に処理しない */
-	    /* return FALSE; */
-	    /* 統計的に処理する */
-	    /* return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2); */
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */
