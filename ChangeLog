@@ -6,6 +6,10 @@
 	* system/case_match.c:
 	指示詞のマッチングをすべて0点にした。
 
+	* rule/bnst_basic.rule: 修飾語を追加
+
+	* rule/bnst_type.phrase: コメント修正
+
 2003-12-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
