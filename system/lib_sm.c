@@ -209,14 +209,13 @@ char  		cont_str[DBM_CON_MAX];
 	    /* 意味素を付与する品詞 */
 	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
 		if ((*arg && code[i] == *arg) ||	/* 指定された品詞 */
-		    (!*arg && (
-			code[i] == '3' ||	/* 名 */
-			code[i] == '4' ||	/* 名(形式) */
-			code[i] == '5' ||	/* 名(形動) */
-			code[i] == '6' ||	/* 名(転生) */
-			code[i] == '7' ||	/* サ変 */
-			code[i] == '9' ||	/* 時詞 */
-			code[i] == 'a'))) {	/* 代名 */
+		    code[i] == '3' ||	/* 名 */
+		    code[i] == '4' ||	/* 名(形式) */
+		    code[i] == '5' ||	/* 名(形動) */
+		    code[i] == '6' ||	/* 名(転生) */
+		    code[i] == '7' ||	/* サ変 */
+		    code[i] == '9' ||	/* 時詞 */
+		    code[i] == 'a') {	/* 代名 */
 		    strncpy(code+pos, code+i, SM_CODE_SIZE);
 		    pos += SM_CODE_SIZE;
 		}
