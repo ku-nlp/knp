@@ -792,6 +792,43 @@ extern FILE  *Outfp;
 }
 
 /*==================================================================*/
+		       int after_decide_dpnd()
+/*==================================================================*/
+{
+    int i;
+
+    if (OptInput == OPT_PARSED) {
+	Possibility = 1;
+    }
+
+    /* 依存構造決定後 格解析を行う場合 */
+
+    if (OptAnalysis == OPT_CASE2 ||
+	OptAnalysis == OPT_DISC) {	
+	Best_mgr.score = -10000;
+	call_case_analysis(Best_mgr.dpnd);
+    }
+
+    if (Possibility != 0) {
+	if (OptAnalysis == OPT_CASE ||
+	    OptAnalysis == OPT_CASE2 ||
+	    OptAnalysis == OPT_DISC) {
+	    /* 格解析の結果を用言文節へ */
+	    for (i = 0; i < Best_mgr.pred_num; i++)
+		Best_mgr.cpm[i].pred_b_ptr->cpm_ptr = &(Best_mgr.cpm[i]);
+	    /* 格解析の結果をfeatureへ */
+	    record_case_analysis();
+	    /* 主格を feature へ(固有名詞認識処理用)
+	    assign_agent();
+	    */
+	}
+	return TRUE;
+    } else { 
+	return FALSE;
+    }
+}
+
+/*==================================================================*/
 		    int detect_dpnd_case_struct()
 /*==================================================================*/
 {
@@ -826,31 +863,9 @@ extern FILE  *Outfp;
     
     decide_dpnd(dpnd);
 
-    /* 依存構造決定後 格解析を行う場合 */
+    /* 構造決定後の処理 */
 
-    if (OptAnalysis == OPT_CASE2 ||
-	OptAnalysis == OPT_DISC) {	
-	Best_mgr.score = -10000;
-	call_case_analysis(Best_mgr.dpnd);
-    }
-
-    if (Possibility != 0) {
-	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2 ||
-	    OptAnalysis == OPT_DISC) {
-	    /* 格解析の結果を用言文節へ */
-	    for (i = 0; i < Best_mgr.pred_num; i++)
-		Best_mgr.cpm[i].pred_b_ptr->cpm_ptr = &(Best_mgr.cpm[i]);
-	    /* 格解析の結果をfeatureへ */
-	    record_case_analysis();
-	    /* 主格を feature へ(固有名詞認識処理用)
-	    assign_agent();
-	    */
-	}
-	return TRUE;
-    } else { 
-	return FALSE;
-    }
+    return after_decide_dpnd();
 }
 
 /*==================================================================*/
