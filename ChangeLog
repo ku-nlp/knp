@@ -1,3 +1,8 @@
+2003-12-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	名詞関係解析では、閾値を越える候補がなくても不特定:人を与えないことにした。
+
 2003-12-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.h, system/context.c:
