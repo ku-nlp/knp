@@ -84,8 +84,10 @@
 #include <sys/wait.h>
 #endif
 
+#ifdef _WIN32
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
+#endif
 #endif
 
 #ifdef HAVE_PWD_H
