@@ -936,6 +936,37 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 }
 
+/*==================================================================*/
+		     void assign_ntt_dict(int i)
+/*==================================================================*/
+{
+    int j, flag = 0;
+    char sm[SM_CODE_SIZE+1];
+
+    sm[SM_CODE_SIZE] = '\0';
+
+    for (j = 0; mrph_data[i].SM[j]; j+=SM_CODE_SIZE) {
+	strncpy(sm, &(mrph_data[i].SM[j]), SM_CODE_SIZE);
+	if (!(flag & 0x01) && comp_sm(sm2code("地名"), sm, 0))
+	    flag |= 0x01;
+	else if (!(flag & 0x02) && comp_sm(sm2code("人名"), sm, 0))
+	    flag |= 0x02;
+	else if (!(flag & 0x04) && comp_sm(sm2code("組織名"), sm, 0))
+	    flag |= 0x04;
+	else if (!(flag & 0x08) && comp_sm(sm2code("その他の固有名詞"), sm, 0))
+	    flag |= 0x08;
+    }
+
+    if (flag & 0x01)
+	assign_cfeature(&(mrph_data[i].f), "NTT-地名");
+    if (flag & 0x02)
+	assign_cfeature(&(mrph_data[i].f), "NTT-人名");
+    if (flag & 0x04)
+	assign_cfeature(&(mrph_data[i].f), "NTT-組織名");
+    if (flag & 0x08)
+	assign_cfeature(&(mrph_data[i].f), "NTT-固有名詞");
+}
+
 /*====================================================================
                                END
 ====================================================================*/

@@ -381,16 +381,18 @@ void stand_alone_mode()
 		set_pred_caseframe();			/* 用言の格フレーム */
 
 		/* 形態素に意味素を与える */
-		for (i = 0; i < Mrph_num; i++)
-			strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+		for (i = 0; i < Mrph_num; i++) {
+		    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+		    assign_ntt_dict(i);
+		}
 
 		for (i = 0; i < Bnst_num; i++) {
-			get_bgh_code(bnst_data+i);		/* シソーラス */
-			get_sm_code(bnst_data+i);		/* 意味素 */
+		    get_bgh_code(bnst_data+i);		/* シソーラス */
+		    get_sm_code(bnst_data+i);		/* 意味素 */
 		}
 
 		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-			check_bnst();
+		    check_bnst();
 
 		/* continue; 文節のみのチェックの場合 */
 
