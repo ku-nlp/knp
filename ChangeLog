@@ -1,3 +1,9 @@
+2003-06-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c: 不要な記述を削除
+
+	* knprc.in: 省略解析の探索範囲の指定を追加
+
 2003-06-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c:
