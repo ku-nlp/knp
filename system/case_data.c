@@ -78,6 +78,26 @@ char *FukugojiTable[] = {"¤ò½ü¤¯", "¤ò¤Î¤¾¤¯",
 }
 
 /*==================================================================*/
+int check_cc_relation(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, char *pp_str)
+/*==================================================================*/
+{
+    int i;
+
+    if (!cpm_ptr) {
+	return 0;
+    }
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->elem_b_ptr[i]->num == b_ptr->num && 
+	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[cpm_ptr->cmm[0].result_lists_d[0].flag[i]][0], 
+		    pp_str)) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, 
 				  int *pp_num, char *fcp)
 /*==================================================================*/
@@ -110,9 +130,15 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     }
     /* Ì¾»ì¤Î¹à¤È¤Ê¤ë¤â¤Î */
     else {
-	if (!strcmp(fcp, "£ÔÌ¾»ì¹à") && b_ptr->dpnd_type != 'A') {
-	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = 0;
-	    c_ptr->pp_str[c_ptr->element_num] = NULL;
+	if (!strcmp(fcp, "£ÔÌ¾»ì¹à")) {
+	    /* ¾ò·ï: Æ±³Ê¤Ç¤Ï¤Ê¤¤ 
+	             Ï¢ÂÎ½¤¾þÀá¤Î¾ì¹ç¤Ï¤½¤Î´Ø·¸¤¬³°¤Î´Ø·¸ */
+	    if (b_ptr->dpnd_type != 'A' &&
+		(!check_feature(b_ptr->f, "·¸:Ï¢³Ê") || 
+		 check_cc_relation(b_ptr->cpm_ptr, cpm_ptr->pred_b_ptr, "³°¤Î´Ø·¸"))) {
+		c_ptr->pp[c_ptr->element_num][(*pp_num)++] = 0;
+		c_ptr->pp_str[c_ptr->element_num] = NULL;
+	    }
 	}
     }
 
