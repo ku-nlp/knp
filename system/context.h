@@ -1,7 +1,7 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-#define	SVM_FREQ_SD	115.55188 /* for np */
+#define	SVM_FREQ_SD	114.23868 /* for np (20040117-smfix) */
 // #define	SVM_FREQ_SD	38.49114 /* for 2002_10_17 (cook-only) */
 // #define	SVM_FREQ_SD	29.98034 /* for 2002_11_19 (cook-only) */
 
