@@ -375,6 +375,11 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    AntecedentDecideThresholdForNoun = atof(argv[0]);
 	}
+	else if (str_eq(argv[0], "-cffix-th")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    CFSimThreshold = atof(argv[0]);
+	}
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();

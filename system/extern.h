@@ -89,6 +89,7 @@ extern int	PrintFeatures;
 extern int 	EX_match_score[];
 extern int	EX_match_exact;
 extern float	AntecedentDecideThresholdForNoun;
+extern float	CFSimThreshold;
 extern float	SVM_FREQ_SD;
 extern float	SVM_FREQ_SD_NO;
 
