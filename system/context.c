@@ -1593,7 +1593,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     /* 省略の指示対象を入力側の格フレームに入れる */
 
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
-    int d, demonstrative;
+    int d, demonstrative, old_score;
 
     if (c_ptr->element_num >= CF_ELEMENT_MAX) {
 	return 0;
@@ -1602,6 +1602,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     /* 指示詞の場合 */
     if (cmm_ptr->result_lists_p[l].flag[n] != UNASSIGNED) {
 	d = cmm_ptr->result_lists_p[l].flag[n];
+	old_score = cmm_ptr->result_lists_p[l].score[n];
 	demonstrative = 1;
     }
     else {
@@ -1644,7 +1645,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
 	cpm_ptr->elem_b_num[d] = -3;	/* 照応を表す */
 
 	/* 指示詞の場合、もとの指示詞の分のスコアを引いておく */
-	cmm_ptr->pure_score[l] -= cmm_ptr->result_lists_p[l].score[n];
+	cmm_ptr->pure_score[l] -= old_score;
     }
     return 1;
 }
