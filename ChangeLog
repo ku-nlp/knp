@@ -5,6 +5,8 @@
 
 	* system/ipal.c: IPAL_DATA_SIZEを倍増
 
+	* dict/gcf/scase.dat: Updated.
+
 2003-12-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c: 名詞関係解析: exact matchか<主体>matchに制限
