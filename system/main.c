@@ -208,6 +208,10 @@ extern int	EX_match_subject;
 	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
 	    OptDiscMethod = OPT_SVM;
 	}
+	else if (str_eq(argv[0], "-relation-noun-svm")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptDiscMethod = OPT_SVM;
+	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -230,9 +234,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
-	else if (str_eq(argv[0], "-relation-noun-svm")) {
+	else if (str_eq(argv[0], "-relation-noun-dt")) {
 	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscMethod = OPT_DT;
 	}
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;
