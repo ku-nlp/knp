@@ -291,7 +291,7 @@ int	PrintDeletedSM = 0;
     CF_frame.samecase[count][0] = END_M;
     CF_frame.samecase[count][1] = END_M;
 
-    if (cp = index(CF_frame.DATA, ':')) {
+    if (cp = strchr(CF_frame.DATA, ':')) {
 	strncpy(CF_frame.pred_type, cp+1, 2);
 	CF_frame.pred_type[2] = '\0';
     }

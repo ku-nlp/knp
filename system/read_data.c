@@ -277,7 +277,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
-		index(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
+		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
 		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptEllipsis) {
