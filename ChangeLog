@@ -1,3 +1,8 @@
+2005-01-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_homo.rule, system/case_analysis.c, system/case_ipal.c, system/dpnd_analysis.c, system/extern.h, system/read_data.c:
+	原形の曖昧性を格解析で解消
+
 2004-12-22  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule:
