@@ -594,7 +594,7 @@ int knp_dict_file_already_defined = 0;
 	    /* filename + ".data" */
 	    if (*file == '~' && (home = getenv("HOME"))) {
 		free(fullname);
-		fullname = (char *)malloc_data(strlen(home)+strlen(file), "check_dict_filename");
+		fullname = (char *)malloc_data(strlen(home)+strlen(file)+6, "check_dict_filename");
 		sprintf(fullname, "%s%s.data", home, strchr(file, '/'));
 	    }
 	    else {
