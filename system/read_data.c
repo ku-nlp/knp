@@ -355,6 +355,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
+		for (i = 0; i < homo_num; i++) {
+		    clear_feature(&((m_ptr+i)->f));
+		}
 		homo_num = 0;
 	    }
 	    return TRUE;
@@ -380,6 +383,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
+		for (i = 0; i < homo_num; i++) {
+		    clear_feature(&((m_ptr+i)->f));
+		}
 		homo_num = 0;
 	    }
 
