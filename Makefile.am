@@ -1,7 +1,7 @@
 SUBDIRS = system
 SHELL = sh
 
-man_MANS = knp.1
+man_MANS = docs/knp.1
 
 EXTRA_DIST = \
 	docs/knp.1 \
