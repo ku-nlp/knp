@@ -519,11 +519,7 @@ char *Opt_jumanrc = NULL;
 	/**************/
 
 	if (OptInput == OPT_PARSED) {
-	    if (OptAnalysis == OPT_CASE2 ||
-		OptAnalysis == OPT_DISC) {
-		Best_mgr.score = -10000;
-		call_case_analysis(Best_mgr.dpnd);
-	    }
+	    after_decide_dpnd();
 	    goto PARSED;
 	}
 
