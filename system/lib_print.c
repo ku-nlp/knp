@@ -867,15 +867,14 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     if (OptExpress == OPT_TREE || OptExpress == OPT_TREEF) {
 	max_width = 0;
 
-	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2) {
-	    calc_tree_width((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1);
-	    show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1, NULL, 0);
-	}
-	else {
-	    calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
-	    show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
-	}
+	calc_tree_width((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1);
+	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1, NULL, 0);
+
+	/* 文節のtreeを描くとき
+	calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
+	show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
+	*/
+
     }
     else if (OptExpress == OPT_SEXP) {
 	show_sexp((sp->bnst_data + sp->Bnst_num -1), 0, 0);
