@@ -1,3 +1,8 @@
+2003-12-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule, system/case_data.c:
+	外の関係をもつ連体修飾節を被連体修飾詞のノ格とした。
+
 2003-12-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c: 並列の格要素を最後に格解析結果に追加
