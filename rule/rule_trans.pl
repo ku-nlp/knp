@@ -328,12 +328,11 @@ sub bnst_cond2
     $input =~ s/\>/\> /g;
     $input =~ s/G/G /g;
     $input =~ s/g/g /g;
-    if ($input =~ /(\d+\<)/){
-	;
-    } else {
-	$input =~ s/(\d+)/\1 /g;
-    }
-#    $input =~ s/(\d+)/\1 /g;
+
+    $input =~ s/(\d+)/\1 /g;
+    $input =~ s/(\d) (\))/\1\2/g;
+    $input =~ s/(\d) (\<)/\1\2/g;
+
     $input =~ s/^ +| +$//g;
     @part_str = split(/ +/, $input);
     $part_num = @part_str;
