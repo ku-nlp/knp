@@ -25,6 +25,7 @@ knp_SOURCES = \
 	knp.h \
 	koou.c \
 	lib_bgh.c \
+	lib_dt.c \
 	lib_lib.c \
 	lib_print.c \
 	lib_ps.c \

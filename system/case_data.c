@@ -476,7 +476,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     BNST_DATA *cel_b_ptr;
-    int i, child_num;
+    int i, child_num, first, closest;
     char *vtype = NULL;
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
@@ -649,6 +649,39 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
 	    return;
+	}
+    }
+
+    closest = get_closest_case_component(sp, cpm_ptr);
+
+    /* 直前格要素のひとつ手前のノ格
+       ※ <数量>以外: 一五％の株式を V
+          <時間>以外: */
+    if (OptCaseFlag & OPT_CASE_NO && 
+	closest > -1 && 
+	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
+	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "数量") && 
+	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "時間") && 
+	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")
+	/* !check_feature(cpm_ptr->elem_b_ptr[closest]->f, "数量") && 
+	!check_feature(cpm_ptr->elem_b_ptr[closest]->f, "時間") */
+	) {
+	BNST_DATA *bp;
+	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
+
+	/* 割り当てる格は格フレームによって動的に変わる */
+	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("未");
+	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
+	cpm_ptr->cf.sp[cpm_ptr->cf.element_num] = pp_hstr_to_code("の");
+	cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
+	_make_data_cframe_sm(cpm_ptr, bp);
+	_make_data_cframe_ex(cpm_ptr, bp);
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = bp;
+	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	if (cpm_ptr->cf.element_num < CF_ELEMENT_MAX) {
+	    cpm_ptr->cf.element_num++;
 	}
     }
 

@@ -110,6 +110,7 @@
 #define OPT_NE_SIMPLE	4
 #define OPT_JUMAN	2
 #define OPT_SVM		2
+#define OPT_DT		3
 
 #define OPT_INHIBIT_CLAUSE		0x0001
 #define OPT_INHIBIT_C_CLAUSE		0x0002
@@ -122,6 +123,8 @@
 #define	OPT_CASE_NO	4
 #define	OPT_CASE_SOTO_OLD	8
 #define	OPT_CASE_SOTO_NO	16
+
+#define	OPT_DISC_OR_CF	1
 
 #define	PP_NUMBER	44
 #define LOC_NUMBER	7
@@ -393,6 +396,7 @@ typedef struct {
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
+#define		DEF_DT_MODEL_FILE	"決定木ファイル"
 
 typedef struct _RuleVector {
     char	*file;
@@ -839,6 +843,7 @@ typedef struct ellipsis_features {
 
     int		c_pp;
     int		c_distance;
+    int		c_dist_bnst;
     int		c_fs_flag;
     int		c_location;
     int		c_topic_flag;
@@ -858,6 +863,8 @@ typedef struct ellipsis_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
+
+    int		c_ac;
 } E_FEATURES;
 
 typedef struct ellipsis_svm_features {
@@ -865,6 +872,7 @@ typedef struct ellipsis_svm_features {
 
     int		c_pp[PP_NUMBER];
     int		c_distance;
+    int		c_dist_bnst;
     int		c_fs_flag;
     int		c_location[LOC_NUMBER];
     int		c_topic_flag;
@@ -884,6 +892,8 @@ typedef struct ellipsis_svm_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
+
+    int		c_ac;
 } E_SVM_FEATURES;
 
 /*====================================================================

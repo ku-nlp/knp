@@ -496,7 +496,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
        条件廃止: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
     if (min != -1) {
 	/* 決定しない:
-	   1. 最近格要素が指示詞の場合
+	   1. 最近格要素が指示詞の場合 ★格だけマッチさせる?
 	   2. ガ格で意味素がないとき */
 	if (check_feature((sp->bnst_data+min)->f, "指示詞") || 
 	    ((sp->bnst_data+min)->SM_code[0] == '\0' && 
@@ -689,37 +689,6 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
        文脈解析: 直前格要素がなければ格フレームを決定しない */
 
     closest = get_closest_case_component(sp, cpm_ptr);
-
-    /* 直前格要素のひとつ手前のノ格
-       ※ <数量>以外: 一五％の株式を V
-          <時間>以外: */
-    if (OptCaseFlag & OPT_CASE_NO && 
-	closest > -1 && 
-	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
-	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "数量") && 
-	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "時間") && 
-	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")
-	/* !check_feature(cpm_ptr->elem_b_ptr[closest]->f, "数量") && 
-	!check_feature(cpm_ptr->elem_b_ptr[closest]->f, "時間") */
-	) {
-	BNST_DATA *bp;
-	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
-
-	/* 割り当てる格は格フレームによって動的に変わる */
-	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("未");
-	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
-	cpm_ptr->cf.sp[cpm_ptr->cf.element_num] = pp_hstr_to_code("の");
-	cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
-	_make_data_cframe_sm(cpm_ptr, bp);
-	_make_data_cframe_ex(cpm_ptr, bp);
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = bp;
-	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-	if (cpm_ptr->cf.element_num < CF_ELEMENT_MAX) {
-	    cpm_ptr->cf.element_num++;
-	}
-    }
 
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
     find_best_cf(sp, cpm_ptr, closest, 1);

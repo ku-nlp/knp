@@ -336,12 +336,24 @@ int knp_dict_file_already_defined = 0;
 	    }
 	    else {
 		ModelFile = check_tilde(_Atom(cell2));
-		if (OptSVM == OPT_SVM && OptDisplay == OPT_DEBUG) {
+		if (OptDiscMethod == OPT_SVM && OptDisplay == OPT_DEBUG) {
 		    fprintf(Outfp, "SVM model file ... %s\n", ModelFile);
 		}
 	    }
 	}
 #endif
+	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .jumanrc\n");
+		exit(0);
+	    }
+	    else {
+		DTFile = check_tilde(_Atom(cell2));
+		if (OptDiscMethod == OPT_DT && OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "DT file ... %s\n", DTFile);
+		}
+	    }
+	}
     }
 #endif
 

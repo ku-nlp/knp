@@ -832,6 +832,10 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
 			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
 		    }
+
+		    if (sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
+			assign_cfeature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), "格フレーム決定");
+		    }
 		}
 	    }
 	    /* 主格を feature へ(固有名詞認識処理用)

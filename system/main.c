@@ -46,9 +46,10 @@ int		OptInhibit;
 int		OptCheck;
 int		OptNE;
 int		OptJuman;
-int		OptSVM;
+int		OptDiscMethod;
 int		OptLearn;
 int		OptCaseFlag;
+int		OptDiscFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
 char		*OptOptionalCase = NULL;
@@ -132,9 +133,10 @@ extern float	AssignReferentThreshold;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
     OptJuman = OPT_NORMAL;
-    OptSVM = OPT_NORMAL;
+    OptDiscMethod = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = 0;
+    OptDiscFlag = 0;
     OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
@@ -162,19 +164,16 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
-	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
 #ifdef USE_SVM
-	else if (str_eq(argv[0], "-svm"))     OptSVM      = OPT_SVM;
+	else if (str_eq(argv[0], "-svm"))     OptDiscMethod = OPT_SVM;
 	else if (str_eq(argv[0], "-svmmodel")) {
-	    OptSVM      = OPT_SVM;
+	    OptDiscMethod = OPT_SVM;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    ModelFile = strdup(argv[0]);
 	}
 #endif
+	else if (str_eq(argv[0], "-dt"))     OptDiscMethod = OPT_DT;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -192,40 +191,6 @@ extern float	AssignReferentThreshold;
 	    ClauseDBname = argv[0];
 	    OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	}
-	else if (str_eq(argv[0], "-ccdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseCDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_C_CLAUSE;
-	}
-	else if (str_eq(argv[0], "-kdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	}
-	else if (str_eq(argv[0], "-bdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	}
-	else if (str_eq(argv[0], "-odb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    OptionalCaseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
-	} 
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -308,6 +273,10 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-soto-no")) {
 	    OptCaseFlag |= OPT_CASE_SOTO;
 	    OptCaseFlag |= OPT_CASE_SOTO_NO;
+	}
+	else if (str_eq(argv[0], "-disc-or-cf")) {
+	    OptDisc = OPT_DISC;
+	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-sototh")) {
@@ -504,13 +473,16 @@ extern float	AssignReferentThreshold;
     if (OptDisc == OPT_DISC) {
 	init_noun();	/* 名詞辞書オープン */
 #ifdef USE_SVM
-	if (OptSVM == OPT_SVM) {
+	if (OptDiscMethod == OPT_SVM) {
 	    if (!init_svm()) {	/* SVM */
 		fprintf(stderr, "SVM initialization error.\n");
 		exit(1);
 	    }
 	}
 #endif
+	if (OptDiscMethod == OPT_DT) {
+	    init_dt();
+	}
     }
 
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))

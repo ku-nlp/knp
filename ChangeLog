@@ -1,4 +1,10 @@
+2002-09-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/case_analysis.c, system/case_data.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/main.c:
+	省略解析の決定木への対応
+
 2002-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/lib_print.c: 文節タイプの表示を修正
 
 2002-06-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>

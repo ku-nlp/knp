@@ -51,9 +51,10 @@ extern int 		OptExpandP;
 extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
-extern int		OptSVM;
+extern int		OptDiscMethod;
 extern int		OptLearn;
 extern int		OptCaseFlag;
+extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern char		*OptOptionalCase;
@@ -98,6 +99,7 @@ extern char 		*Case_name[];
 extern char		*ETAG_name[];
 
 extern char		*ModelFile;
+extern char		*DTFile;
 
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
@@ -249,6 +251,9 @@ extern int bgh_code_match(char *c1, char *c2);
 extern void overflowed_function(char *str, int max, char *function);
 extern void init_bgh();
 extern void close_bgh();
+
+/* lib_dt.c */
+extern float dt_classify(char *data);
 
 /* lib_lib.c */
 extern int str_part_eq(char *dat, char *pat);
