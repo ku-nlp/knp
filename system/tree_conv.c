@@ -231,7 +231,8 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 
     if (b_ptr->para_top_p == TRUE) {
 	for ( i=0; b_ptr->child[i]; i++ ) {
-	    if (b_ptr->child[i]->para_type == PARA_NIL) {
+	    if (b_ptr->child[i]->para_type == PARA_NIL && 
+		!check_feature(b_ptr->child[i]->f, "ทธ:ฯขอั")) {
 
 		/* b_ptr->child[i] ฝคพþสธภแ */
 
