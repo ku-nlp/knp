@@ -149,7 +149,7 @@ int		SMP2SMGExist;
 
 	    if (overflow_flag) {
 		overflow_flag = 0;
-		continue;
+		return;
 	    }
 
 	    strcpy(ptr->SM_code, get_sm(str_buffer));
@@ -171,7 +171,7 @@ int		SMP2SMGExist;
 
 		if (overflow_flag) {
 		    overflow_flag = 0;
-		    continue;
+		    return;
 		}
 
 		strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
@@ -183,7 +183,7 @@ int		SMP2SMGExist;
 
 		if (overflow_flag) {
 		    overflow_flag = 0;
-		    continue;
+		    return;
 		}
 
 		/* ナ形容詞の場合は語幹で検索 */
@@ -215,7 +215,7 @@ int		SMP2SMGExist;
 
 	    if (overflow_flag) {
 		overflow_flag = 0;
-		continue;
+		return;
 	    }
 
 	    strcpy(ptr->SM_code, get_sm(str_buffer));
