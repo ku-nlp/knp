@@ -1,3 +1,17 @@
+2003-06-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule:
+	動詞に続く「出せる」「替える」を付属語にして1文節(1タグ単位)にした。
+
+	* rule/context.rule:
+	「彼」「彼女」の照応解析をとりあえずしないことにした。
+
+	* rule/case_analysis.rule:
+	複合名詞の格解析を改良
+
+	* rule/bnst_basic.rule, system/case_data.c, system/case_ipal.c, system/case_print.c, system/const.h, system/context.c, system/feature.c, system/lib_print.c, system/lib_scase.c, system/main.c:
+	voiceの整理
+
 2003-06-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c: 不要な記述を削除
