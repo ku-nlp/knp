@@ -78,17 +78,19 @@ extern FILE  *Outfp;
 
 	/* 分類語彙表コード */
 
-	if (cpm_ptr->cf.ex[i][0]) {
-	    fprintf(Outfp, "BGH:○");
-	    /*
-	    for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
-		if (j != 0) fprintf(Outfp,  "/");
-		fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+	if (Thesaurus == USE_BGH) {
+	    if (cpm_ptr->cf.ex[i][0]) {
+		fprintf(Outfp, "BGH:○");
+		/*
+		  for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
+		  if (j != 0) fprintf(Outfp,  "/");
+		  fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+		  }
+		*/
 	    }
-	    */
-	}
-	else {
-	    fprintf(Outfp, "BGH:×");
+	    else {
+		fprintf(Outfp, "BGH:×");
+	    }
 	}
 
 	fprintf(Outfp, "]");	
@@ -132,13 +134,14 @@ extern FILE  *Outfp;
     fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
-	fprintf(Outfp, "<文節結合フレーム> ");
+	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
 
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
-      fprintf(Outfp, "(間受)");
-    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1 ||
-	     cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
-      fprintf(Outfp, "(直受)");
+	fprintf(Outfp, "(間受)");
+    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1)
+	fprintf(Outfp, "(直受1)");
+    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
+	fprintf(Outfp, "(直受2)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
@@ -236,9 +239,9 @@ extern FILE  *Outfp;
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	    if (i == 0)
 		fprintf(Outfp, "(彼)");
-	    else
+	    else if (cmm_ptr->cf_ptr->examples[i])
 		fprintf(Outfp, "(%s)", 
-			i_ptr->DATA+i_ptr->meishiku[i-1]);
+			cmm_ptr->cf_ptr->examples[i]);
 	} else if (cmm_ptr->cf_ptr->examples[i]) {
 	    /* 用例の出力 */
 	    fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);

@@ -581,6 +581,7 @@ typedef struct {
 #define	USE_NTT	2
 #define	STOREtoCF	4
 #define	USE_BGH_WITH_STORE	5
+#define	USE_NTT_WITH_STORE	6
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -618,9 +619,9 @@ typedef struct cf_def {
     char	sm[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE]; 	
 							/* 意味マーカ */
     int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
-    char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*BGH_CODE_SIZE];
+    char 	*ex[CF_ELEMENT_MAX];
     							/* 用例 (BGH) */
-    char	ex2[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE];
+    char	*ex2[CF_ELEMENT_MAX];
 							/* 用例 (NTT) */
     char	*examples[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
@@ -669,6 +670,10 @@ typedef struct {
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
+
+#define	SOTO_SCORE		10
+#define	OPTIONAL_CASE_SCORE	20
+#define	SOTO_ADD_SCORE		30
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ

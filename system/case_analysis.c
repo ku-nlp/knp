@@ -12,7 +12,7 @@
 extern int Possibility;
 
 CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* 作業領域 */
-TOTAL_MGR	Dflt_mgr;
+/* TOTAL_MGR	Dflt_mgr; */
 TOTAL_MGR	Work_mgr;
 
 /*==================================================================*/
@@ -22,8 +22,23 @@ TOTAL_MGR	Work_mgr;
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2 || 
 	OptAnalysis == OPT_DISC) {
+	int i, j;
+
 	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*IPAL_FRAME_MAX*5, 
 						   "init_case_analysis");
+
+	for (i = 0; i < CPM_MAX; i++) {
+	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
+		if (Thesaurus == USE_BGH) {
+		    Work_mgr.cpm[i].cf.ex[j] = 
+			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_case_analysis");
+		}
+		else if (Thesaurus == USE_NTT) {
+		    Work_mgr.cpm[i].cf.ex2[j] = 
+			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_case_analysis");
+		}
+	    }
+	}
     }
 }
 
@@ -168,16 +183,17 @@ char *sm_code_to_str(int code)
     */
 
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    int i, frame_num, max_score;
+    int i, frame_num, max_score, default_score;
     
     /* 初期化 */
     cpm_ptr->pred_b_ptr = b_ptr;
     cpm_ptr->score = -1;
     cpm_ptr->result_num = 0;
+    cpm_ptr->cmm[0].cf_ptr = NULL;
 
     /* 入力文側の格要素設定 */
     cf_ptr->voice = b_ptr->voice;
-    make_data_cframe(cpm_ptr);
+    default_score = make_data_cframe(cpm_ptr);
 
     /* 格フレーム解析スキップ
     if (cf_ptr->element_num == 0) {
@@ -187,12 +203,20 @@ char *sm_code_to_str(int code)
     */
 
     /* 格フレーム設定 */
-    frame_num = cpm_ptr->pred_b_ptr->cf_num;
+    frame_num = 0;
+    for (i = 0; i < b_ptr->cf_num; i++) {
+	/* 前隣を結合したフレームなのにもかかわらず、
+	   前隣が自分に係らない構造の場合はスキップ */
+  	if ((b_ptr->cf_ptr + i)->concatenated_flag == 1 && 
+  	    b_ptr->num > 0 && (b_ptr-1)->dpnd_head != b_ptr->num) {
+  	    continue;
+  	}
+	(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
+    }
+
     if (frame_num == 0) {
 	return -2;
     }
-    for (i = 0; i < frame_num; i++)
-      (Cf_match_mgr + i)->cf_ptr = cpm_ptr->pred_b_ptr->cf_ptr + i;
 
     /* 格要素なしの時の実験 98/12/16 */
     if (cf_ptr->element_num == 0) {
@@ -200,6 +224,7 @@ char *sm_code_to_str(int code)
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
+	frame_num = 1;
     }
     else { /* このelseはtentative */
 	for (i = 0; i < frame_num; i++) {
@@ -212,13 +237,6 @@ char *sm_code_to_str(int code)
 	       意味マーカの利用に変更 (1998/10/02)
 	       オプションで選択       (1999/06/15)
 	       */
-
-	    /* 前隣を結合したフレームなのにもかかわらず、
-	       前隣が自分に係らない構造の場合はスキップ */
-	    if ((Cf_match_mgr+i)->cf_ptr->concatenated_flag == 1 && 
-		(sp->bnst_data+b_ptr->num-1)->dpnd_head != b_ptr->num) {
-		continue;
-	    }
 
 	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
 
@@ -252,6 +270,11 @@ char *sm_code_to_str(int code)
     }
     */
 
+    /* 外の関係のスコアを足す */
+    if (cpm_ptr->score > -1)  {
+	cpm_ptr->score += default_score;
+    }
+
     if (OptDisplay == OPT_DEBUG) {
 	print_data_cframe(cf_ptr);
 	print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num);
@@ -268,7 +291,9 @@ char *sm_code_to_str(int code)
     int i;
     int one_case_point;
     
-    if (b_ptr->para_top_p != TRUE && check_feature(b_ptr->f, "用言") && 
+    if (b_ptr->para_top_p != TRUE && 
+	(check_feature(b_ptr->f, "用言") || 
+	 check_feature(b_ptr->f, "準用言")) && 
 	!check_feature(b_ptr->f, "複合辞")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
@@ -289,10 +314,80 @@ char *sm_code_to_str(int code)
     }
 
     for (i = 0; b_ptr->child[i]; i++)
-      if (all_case_analysis(b_ptr->child[i], t_ptr) == FALSE)
-	return FALSE;
+	if (all_case_analysis(b_ptr->child[i], t_ptr) == FALSE)
+	    return FALSE;
 
     return TRUE;
+}
+
+/*==================================================================*/
+	    void copy_cf(CASE_FRAME *dst, CASE_FRAME *src)
+/*==================================================================*/
+{
+    int i, j;
+
+    dst->element_num = src->element_num;
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	dst->oblig[i] = src->oblig[i];
+	for (j = 0; j < PP_ELEMENT_MAX; j++) {
+	    dst->pp[i][j] = src->pp[i][j];
+	}
+	for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
+	    dst->sm[i][j] = src->sm[i][j];
+	}
+	for (j = 0; j < SM_ELEMENT_MAX; j++) {
+	    dst->sm_flag[i][j] = src->sm_flag[i][j];
+	}
+	if (Thesaurus == USE_BGH) {
+	    strcpy(dst->ex[i], src->ex[i]);
+	}
+	else if (Thesaurus == USE_NTT) {
+	    strcpy(dst->ex2[i], src->ex2[i]);
+	}
+	dst->examples[i] = src->examples[i];	/* これを使う場合問題あり */
+    }
+    dst->voice = src->voice;
+    dst->ipal_address = src->ipal_address;
+    dst->ipal_size = src->ipal_size;
+    strcpy(dst->ipal_id, src->ipal_id);
+    strcpy(dst->imi, src->imi);
+    dst->concatenated_flag = src->concatenated_flag;
+}
+
+/*==================================================================*/
+	  void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src)
+/*==================================================================*/
+{
+    int i;
+
+    copy_cf(&dst->cf, &src->cf);
+    dst->pred_b_ptr = src->pred_b_ptr;
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	dst->elem_b_ptr[i] = src->elem_b_ptr[i];
+	dst->elem_b_num[i] = src->elem_b_num[i];
+    }
+    dst->score = src->score;
+    dst->result_num = src->result_num;
+    for (i = 0; i < CMM_MAX; i++) {
+	dst->cmm[i] = src->cmm[i];
+    }
+}
+
+/*==================================================================*/
+	    void copy_mgr(TOTAL_MGR *dst, TOTAL_MGR *src)
+/*==================================================================*/
+{
+    int i;
+
+    dst->dpnd = src->dpnd;
+    dst->pssb = src->pssb;
+    dst->dflt = src->dflt;
+    dst->score = src->score;
+    dst->pred_num = src->pred_num;
+    for (i = 0; i < CPM_MAX; i++) {
+	copy_cpm(&dst->cpm[i], &src->cpm[i]);
+    }
+    dst->ID = src->ID;
 }
 
 /*==================================================================*/
@@ -408,7 +503,8 @@ char *sm_code_to_str(int code)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
+	fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", 
+		Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
     }
         
     /* 後処理 */
@@ -416,8 +512,8 @@ char *sm_code_to_str(int code)
     if (Work_mgr.score > Best_mgr.score ||
 	(Work_mgr.score == Best_mgr.score && 
 	 compare_dpnd(&Work_mgr, &Best_mgr) == TRUE))
-	Best_mgr = Work_mgr; 
-    if (Work_mgr.dflt == 0) Dflt_mgr = Work_mgr;
+	copy_mgr(&Best_mgr, &Work_mgr);
+    /* if (Work_mgr.dflt == 0) Dflt_mgr = Work_mgr; */
 }
 
 /*==================================================================*/
@@ -436,11 +532,15 @@ char *sm_code_to_str(int code)
     for (j = 0; j < Best_mgr.pred_num; j++) {
 
 	cpm_ptr = &(Best_mgr.cpm[j]);
+
+	/* 格フレームがない場合 */
+	if (cpm_ptr->result_num == 0) {
+	    continue;
+	}
+
 	cmm_ptr = &(cpm_ptr->cmm[0]);
 	cf_ptr = cmm_ptr->cf_ptr;
 	pred_b_ptr = cpm_ptr->pred_b_ptr;
-
-	if (!cf_ptr) continue;	/* 格フレームがない場合 */
 
 	sprintf(feature_buffer, "意味:%s", cf_ptr->imi);
 	assign_cfeature(&(pred_b_ptr->f), feature_buffer);
@@ -471,7 +571,7 @@ char *sm_code_to_str(int code)
 	    
 	    /* 意味素 */
 
-	    for (k = 0; cf_ptr->sm[i][k]; k+=12) {
+	    for (k = 0; cf_ptr->sm[i][k]; k+=SM_CODE_SIZE) {
 		if (k != 0) 
 		    sprintf(feature_buffer+strlen(feature_buffer), "/");
 		sprintf(feature_buffer+strlen(feature_buffer), 

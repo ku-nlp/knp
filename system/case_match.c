@@ -25,12 +25,11 @@ int 	SM_match_score[] = {0, 100, 100, 100, 100, 100, 100, 100, 100,
 int     SM_match_unknown = 10;			 	/* データ未知     */
 
 int 	EX_match_score[] = {0, 0, 50, 70, 80, 90, 100, 110};
-int 	EX2_match_score[] = {0, 50, 60, 70, 80, 90, 100, 100, 100, 
-			    100, 100, 100, 100};
+/* int 	EX_match_score[] = {0, 0, 100, 100, 100, 100, 100, 100}; */
 							/* 用例対応スコア */
 int     EX_match_unknown = 50; 				/* データ未知     */
 int     EX_match_sentence = 80;				/* 格要素 -- 文   */
-int     EX_match_tim = 80;				/* 格要素 -- 時間 */
+int     EX_match_tim = 50;				/* 格要素 -- 時間 */
 int     EX_match_qua = 80;				/* 格要素 -- 数量 */
 
 int	Thesaurus = USE_BGH;
@@ -351,6 +350,10 @@ extern float ntt_code_match(char *c1, char *c2);
       if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED))
 	pat_element++;
 
+    /* corpus based case analysis 00/01/04 */
+    /* 任意格に加点 */
+    local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE;
+
     if (local_m_e < dat_element)
 	local_score = -1;
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0)
@@ -366,10 +369,6 @@ extern float ntt_code_match(char *c1, char *c2);
 
 	/* corpus based case analysis 00/01/04 */
 	local_score /= 10;	/* 正規化しない,最大11に */
-
-    /* corpus based case analysis 00/01/04 */
-    /* 任意格にとりあえず 2点 */
-    local_score += (cfd->element_num - dat_element) * 2;
 
 
     if (local_score > Current_max_score || 
@@ -576,9 +575,9 @@ extern float ntt_code_match(char *c1, char *c2);
 		}
 	    }
 	}
-	
+
 	list1.flag[target] = NIL_ASSIGNED;
-	assign_list(cfd, list1, cfp, list2, score, flag);
+	assign_list(cfd, list1, cfp, list2, score+SOTO_ADD_SCORE, flag);
 	return;
     } 
 

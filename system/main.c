@@ -688,7 +688,14 @@ char *Opt_jumanrc = NULL;
 		unsupervised_debug_print();
 	}
 	fflush(Outfp);
-	success = 1;/* OK À®¸ù */
+
+	if (OptAnalysis == OPT_CASE || 
+	    OptAnalysis == OPT_CASE2 || 
+	    OptAnalysis == OPT_DISC) {
+	    clear_cf();
+	}
+
+	success = 1;	/* OK À®¸ù */
     }
 
     close_cf();
@@ -1026,6 +1033,7 @@ char *Opt_jumanrc = NULL;
     } else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
+    exit(0);
 }
 
 /*====================================================================

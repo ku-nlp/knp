@@ -30,6 +30,7 @@ int	IPALExist;
 	OptAnalysis == OPT_CASE2 || 
 	OptAnalysis == OPT_DISC) {
 	char *index_db_filename, *data_filename;
+	int i, j;
 
 	if (DICT[CF_DATA]) {
 	    data_filename = (char *)check_dict_filename(DICT[CF_DATA]);
@@ -46,10 +47,7 @@ int	IPALExist;
 	}
 
 	if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {
-	    if (OptAnalysis == OPT_CASE ||
-		OptAnalysis == OPT_CASE2) {
-		fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
-	    }
+	    fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
 	    IPALExist = FALSE;
 	}
 	else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
@@ -64,6 +62,31 @@ int	IPALExist;
 	free(index_db_filename);
 
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
+	for (i = 0; i < ALL_CASE_FRAME_MAX; i++) {
+	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
+		if (Thesaurus == USE_BGH) {
+		    (Case_frame_array+i)->ex[j] = 
+			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
+		}
+		else if (Thesaurus == USE_NTT) {
+		    (Case_frame_array+i)->ex2[j] = 
+			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+		}
+	    }
+	}
+
+	for (i = 0; i < CPM_MAX; i++) {
+	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
+		if (Thesaurus == USE_BGH) {
+		    Best_mgr.cpm[i].cf.ex[j] = 
+			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_cf");
+		}
+		else if (Thesaurus == USE_NTT) {
+		    Best_mgr.cpm[i].cf.ex2[j] = 
+			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_cf");
+		}
+	    }
+	}
     }
 }
 
@@ -213,19 +236,21 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     point = cp;
     *destination = '\0';
     while (point = extract_ipal_str(point, ipal_str_buf)) {
-	
-	/* 「ＡのＢ」の「Ｂ」だけを処理 */
 	point2 = ipal_str_buf;
+
+	/* 「ＡのＢ」の「Ｂ」だけを処理
 	for (i = strlen(point2) - 2; i > 2; i -= 2) {
 	    if (!strncmp(point2+i-2, "の", 2)) {
 		point2 += i;
 		break;
 	    }
 	}
+	*/
+
 	code = (char *)get_code(point2);
 	if (code) {
 	    if (strlen(destination) + strlen(code) >= max) {
-		fprintf(stderr, "Too many EX <%s>.\n", ipal_str_buf);
+		fprintf(stderr, "Too many EX <%s> (%2dth).\n", ipal_str_buf, count);
 		free(code);
 		break;
 	    }
@@ -292,8 +317,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
 	_make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j, USE_BGH);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j, USE_NTT);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus);
 	j++;
     }
 
@@ -302,8 +326,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     for (i = 0; i < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
 	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j);
-	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_NTT);
+	if (Thesaurus == USE_BGH) {
+	    _make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH_WITH_STORE);
+	}
+	else if (Thesaurus == USE_NTT) {
+	    _make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_NTT_WITH_STORE);
+	}
 
 	/* 能動 : Agentive ガ格を任意的とする場合
 	if (cf_ptr->voice == FRAME_ACTIVE &&
@@ -393,11 +421,20 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 /*==================================================================*/
 {
     int f_num, plus_num = 0, i;
-    char *verb, buffer[WORD_LEN_MAX];
+    char *verb, buffer[3][WORD_LEN_MAX];
     BNST_DATA *pre_ptr;
 
     /* 自立語末尾語を用いて格フレーム辞書を引く */
-    verb = L_Jiritu_M(b_ptr)->Goi;
+
+    /* 「（〜を）〜に」 のときは 「〜にする」の結合フレームをさがす */
+    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+	sprintf(buffer[0], "%sにする", L_Jiritu_M(b_ptr)->Goi);
+	verb = buffer[0];
+    }
+    else {
+	verb = L_Jiritu_M(b_ptr)->Goi;
+    }
+
     f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
     for (i = 0; i < f_num; i++) {
 	(cf_ptr+i)->concatenated_flag = 0;
@@ -407,29 +444,59 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	return f_num;
     }
 
-    buffer[0] = '\0';
-    buffer[WORD_LEN_MAX-1] = '\n';
+    buffer[0][0] = '\0';
+    buffer[1][0] = '\0';
+    buffer[2][0] = '\0';
+    buffer[0][WORD_LEN_MAX-1] = '\n';
+    buffer[1][WORD_LEN_MAX-1] = '\n';
+
     pre_ptr = sp->bnst_data+b_ptr->num-1;
+
     /* 前隣の文節の単語をすべて結合
        構造決定後、係り受け関係にあるかどうかチェック */
-    for (i = 0; i < pre_ptr->mrph_num; i++) {
-	strcat(buffer, (pre_ptr->mrph_ptr+i)->Goi);
+
+    /* 前隣の文節が未格である場合 */
+    if (check_feature(pre_ptr->f, "係:未格")) {
+	for (i = 0; i < pre_ptr->settou_num; i++) {
+	    strcat(buffer[0], (pre_ptr->settou_ptr+i)->Goi);
+	}
+	for (i = 0; i < pre_ptr->jiritu_num; i++) {
+	    strcat(buffer[0], (pre_ptr->jiritu_ptr+i)->Goi);
+	}
+	strcpy(buffer[1], buffer[0]);
+	/* ガ格, ヲ格でチェックしたい */
+	strcat(buffer[0], "が");
+	strcat(buffer[1], "を");
+    }
+    else {
+	for (i = 0; i < pre_ptr->mrph_num; i++) {
+	    strcat(buffer[0], (pre_ptr->mrph_ptr+i)->Goi);
+	}
     }
     /* 自分の文節の接頭辞と自立語を結合 */
     for (i = 0; i < b_ptr->settou_num; i++) {
-	strcat(buffer, (b_ptr->settou_ptr+i)->Goi);
+	strcat(buffer[0], (b_ptr->settou_ptr+i)->Goi);
     }
     for (i = 0; i < b_ptr->jiritu_num; i++) {
-	strcat(buffer, (b_ptr->jiritu_ptr+i)->Goi);
+	strcat(buffer[0], (b_ptr->jiritu_ptr+i)->Goi);
     }
 
     /* 先にチェックしないと… */
-    if (buffer[WORD_LEN_MAX-1] != '\n') {
+    if (buffer[0][WORD_LEN_MAX-1] != '\n') {
 	fprintf(stderr, "buffer overflowed.\n");
 	return f_num;
     }
-    verb = buffer;
-    plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+    if (buffer[1][WORD_LEN_MAX-1] != '\n') {
+	fprintf(stderr, "buffer overflowed.\n");
+	return f_num;
+    }
+
+    i = 0;
+    while (buffer[i][0]) {
+	verb = buffer[i];
+	plus_num += make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+	i++;
+    }
     for (i = f_num; i < f_num+plus_num; i++) {
 	(cf_ptr+i)->concatenated_flag = 1;
     }
@@ -474,7 +541,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    get_ipal_frame(i_ptr, address, size);
 	    pre_pos = cp + 1;
 
-	    /* 用言のタイプがマッチしなければ */
+	    /* 用言のタイプがマッチしなければ (準用言なら通過) */
 	    if (vtype && strncmp(i_ptr->DATA+i_ptr->id, vtype, 2)) {
 		if (break_flag)
 		    break;
@@ -601,10 +668,11 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 }
 
 /*==================================================================*/
-			   void clean_cf()
+			   void clear_cf()
 /*==================================================================*/
 {
     int i;
+
     for (i = 0; i < Case_frame_num; i++) {
 	if ((Case_frame_array+i)->examples) {
 	    free((Case_frame_array+i)->examples);

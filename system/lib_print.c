@@ -1019,13 +1019,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	(OptDisplay == OPT_DETAIL || 
 	 OptDisplay == OPT_DEBUG)) {
 
-	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibilty:%d/%d ■\n", 
+	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibility:%d/%d ■\n", 
 		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
 
 	/* 上記出力の最後の引数(依存構造の数)は1にしている．
 	   ちゃんと扱ってない */
 	
-	for (i = 0; i < tm->pred_num; i++) {
+	for (i = tm->pred_num-1; i >= 0; i--) {
 	    print_data_cframe(&(tm->cpm[i]));
 	    for (j = 0; j < tm->cpm[i].result_num; j++)
 		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
