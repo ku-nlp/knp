@@ -841,6 +841,7 @@ typedef struct ellipsis_features {
     float	similarity;
     float	event;
     int		pos;
+    int		frequency;
 
     int		c_pp;
     int		c_distance;
@@ -876,6 +877,7 @@ typedef struct ellipsis_svm_features {
 #ifdef DISC_USE_EVENT
     float	event;
 #endif
+    float	frequency;
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST

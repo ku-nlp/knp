@@ -1078,11 +1078,12 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     char *buffer, *sbuf;
 
 #ifdef DISC_USE_EVENT
-    prenum = 2;
+    prenum = 3;
 #else
-    prenum = 1;
+    prenum = 2;
 #endif
 
+    /* 桁数の計算は常用対数の代わりに自然対数でやる (1000でも6.9) */
     max = (sizeof(E_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
     sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
 			       "EllipsisSvmFeatures2String");
@@ -1093,6 +1094,13 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 #else
     sprintf(buffer, "1:%.5f", esf->similarity);
 #endif
+    if (OptLearn == TRUE) {
+	sprintf(sbuf, " %d:%d", prenum, (int)esf->frequency);
+    }
+    else {
+	sprintf(sbuf, " %d:%.5f", prenum, esf->frequency);
+    }
+    strcat(buffer, sbuf);
 
     for (i = prenum + 1; i <= max; i++) {
 	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - prenum - 1));
@@ -1221,6 +1229,13 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 #ifdef DISC_USE_EVENT
     f->event = ef->event;
 #endif
+    if (OptLearn == TRUE) {
+	f->frequency = ef->frequency;
+    }
+    else {
+	/* 標準偏差で割る */
+	f->frequency = (float)ef->frequency / 112.24212;
+    }
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
     }
@@ -1494,8 +1509,10 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeatures");
 
+    /* 類似度計算 */
     f->pos = MATCH_NONE;
     f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos);
+    f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* 用例の頻度 */
 
     if (vp) {
 	f->event = get_event_value(vs, vp, cs, cpm_ptr->pred_b_ptr);
