@@ -1,3 +1,6 @@
+2003-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+	* configure.ac, dict/ebcf/Makefile.am: 名詞格フレームへの対応
+
 2003-07-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_event.c:
