@@ -1856,12 +1856,12 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: sim >= 1.0 or <sm> match */
+	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
 	if (ef->similarity >= 1.0) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	    similarity = ef->similarity;
 	}
-	else if (ef->match_sm_flag) {
+	else if (ef->match_sm_flag && ef->similarity > 0.6) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	    similarity = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
@@ -1977,11 +1977,11 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: sim >= 1.0 or <sm> match */
+	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
 	if (ef->similarity >= 1.0) {
 	    score = ef->similarity;
 	}
-	else if (ef->match_sm_flag) {
+	else if (ef->match_sm_flag && ef->similarity > 0.6) {
 	    score = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
 	}
@@ -3228,7 +3228,8 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 			      cpm_ptr->pred_b_ptr->voice, 
 			      cmm_ptr->cf_ptr->cf_address, 
 			      cf_ptr->pp[n][0], 
-			      cf_ptr->pp_str[n]))) {
+			      cf_ptr->pp_str[n]))
+	&&  sp->Sen_num - ccp->sent_num < 5) {
 	if (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, ccp->word)) {
 	    maxs = sentence_data + ccp->sent_num - 1;
 	    maxi = ccp->tag_num;
