@@ -108,9 +108,10 @@ char *Opt_jumanrc = NULL;
     fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
-	    "           [-expand] [-mrule|-brule filename]\n"
+	    "           [-expand]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
-	    "           [-timeout second] [-r rcfile]\n");
+	    "           [-timeout second] [-r rcfile]\n"
+	    "           [-thesaurus [BGH|NTT]]\n");
     exit(1);    
 }
 
@@ -248,6 +249,19 @@ char *Opt_jumanrc = NULL;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-thesaurus")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if (!strcasecmp(argv[0], "ntt")) {
+		Thesaurus = USE_NTT;
+	    }
+	    else if (!strcasecmp(argv[0], "bgh")) {
+		Thesaurus = USE_BGH;
+	    }
+	    else {
+		usage();
+	    }
 	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;

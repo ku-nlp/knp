@@ -33,8 +33,11 @@ int     EX_match_sentence = 80;				/* 格要素 -- 文   */
 int     EX_match_tim = 80;				/* 格要素 -- 時間 */
 int     EX_match_qua = 80;				/* 格要素 -- 数量 */
 
+int	Thesaurus = USE_BGH;
+
 extern FILE  *Infp;
 extern FILE  *Outfp;
+extern float ntt_code_match(char *c1, char *c2);
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
@@ -205,7 +208,7 @@ extern FILE  *Outfp;
     /* 意味マーカのマッチング度の計算 */
 
     int i, j, k, tmp_score, score = -100, ex_score = -100;
-    int thesaurus = USE_BGH, step;
+    int step;
     char *exd, *exp;
     int (*match_function)();
     int *match_score;
@@ -245,14 +248,14 @@ extern FILE  *Outfp;
 
     else if (flag == EXAMPLE) {
 
-	if (thesaurus == USE_BGH) {
+	if (Thesaurus == USE_BGH) {
 	    exd = cfd->ex[as1];
 	    exp = cfp->ex[as2];
 	    step = BGH_CODE_SIZE;
 	    match_function = _ex_match_score;
 	    match_score = EX_match_score;
 	}
-	else if (thesaurus == USE_NTT) {
+	else if (Thesaurus == USE_NTT) {
 	    exd = cfd->ex2[as1];
 	    exp = cfp->ex2[as2];
 	    step = SM_CODE_SIZE;
@@ -286,7 +289,13 @@ extern FILE  *Outfp;
 	    /* 用例のマッチング */
 	    for (j = 0; exp[j]; j+=step) {
 		for (i = 0; exd[i]; i+=step) {
-		    tmp_score = *(match_score+match_function(exp+j, exd+i));
+		    /* とりあえず… */
+		    if (Thesaurus == USE_BGH) {
+			tmp_score = *(match_score+match_function(exp+j, exd+i));
+		    }
+		    else if (Thesaurus == USE_NTT) {
+			tmp_score = ntt_code_match(exp+j, exd+i)*110;
+		    }
 		    if (tmp_score > ex_score) ex_score = tmp_score;
 		}
 	    }
@@ -551,9 +560,11 @@ extern FILE  *Outfp;
 		((cfd->pp[target][0] == -1 &&
 		  cfp->pp[i][1] == -1 &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("ニ"))) ||
-		 (cfd->pp[target][0] == -2))) {
+		   cfp->pp[i][0] == pp_kstr_to_code("ヲ"))) ||
+		 (cfd->pp[target][0] == -2 &&
+		  cfp->pp[i][1] == -1 &&
+		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
+		   cfp->pp[i][0] == pp_kstr_to_code("ヲ"))))) {
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
 		if (elmnt_score != 0 || flag == EXAMPLE) {
 		    list1.flag[target] = i;
@@ -615,6 +626,10 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     for (i = 0; i < Current_max_num; i++)
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
 
+    /* tentative */
+    if (cmm_ptr->cf_ptr->concatenated_flag == 1) {
+	cmm_ptr->score += 1;
+    }
 
 #ifdef CASE_DEBUG
     print_crrspnd(cfd, cmm_ptr);

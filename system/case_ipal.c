@@ -378,31 +378,35 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     verb = L_Jiritu_M(b_ptr)->Goi;
     f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
+    for (i = 0; i < f_num; i++) {
+	(cf_ptr+i)->concatenated_flag = 0;
+    }
 
-    if (str_eq(verb, "する") || 
-	str_eq(verb, "なる") || 
-	str_eq(verb, "ある") || 
-	str_eq(verb, "いう")) {
-	buffer[0] = '\0';
-	buffer[WORD_LEN_MAX-1] = '\n';
-	pre_ptr = sp->bnst_data+b_ptr->num-1;
-	/* 前隣の文節の単語をすべて結合
-	   構造決定後、係り受け関係にあるかどうかチェック */
-	for (i = 0; i < pre_ptr->mrph_num; i++) {
-	    strcat(buffer, (pre_ptr->mrph_ptr+i)->Goi);
-	}
-	/* 自分の文節すべて結合したほうがいいかも (学習時も) */
-	strcat(buffer, verb);
-	/* 先にチェックしないと… */
-	if (buffer[WORD_LEN_MAX-1] != '\n') {
-	    fprintf(stderr, "buffer overflowed.\n");
-	    return f_num;
-	}
-	verb = buffer;
-	plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
-	for (i = f_num; i < f_num+plus_num; i++) {
-	    (cf_ptr+i)->concatenated_flag = 1;
-	}
+    buffer[0] = '\0';
+    buffer[WORD_LEN_MAX-1] = '\n';
+    pre_ptr = sp->bnst_data+b_ptr->num-1;
+    /* 前隣の文節の単語をすべて結合
+       構造決定後、係り受け関係にあるかどうかチェック */
+    for (i = 0; i < pre_ptr->mrph_num; i++) {
+	strcat(buffer, (pre_ptr->mrph_ptr+i)->Goi);
+    }
+    /* 自分の文節の接頭辞と自立語を結合 */
+    for (i = 0; i < b_ptr->settou_num; i++) {
+	strcat(buffer, (b_ptr->settou_ptr+i)->Goi);
+    }
+    for (i = 0; i < b_ptr->jiritu_num; i++) {
+	strcat(buffer, (b_ptr->jiritu_ptr+i)->Goi);
+    }
+
+    /* 先にチェックしないと… */
+    if (buffer[WORD_LEN_MAX-1] != '\n') {
+	fprintf(stderr, "buffer overflowed.\n");
+	return f_num;
+    }
+    verb = buffer;
+    plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+    for (i = f_num; i < f_num+plus_num; i++) {
+	(cf_ptr+i)->concatenated_flag = 1;
     }
 
     return f_num+plus_num;
