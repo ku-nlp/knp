@@ -143,6 +143,7 @@ extern float	AssignGaCaseThreshold;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAG;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
@@ -338,6 +339,13 @@ extern float	AssignGaCaseThreshold;
 	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
 	    OptAnalysis = OPT_CASE2;
 	}
+	if (OptExpress == OPT_TAG) {
+	    OptExpress = OPT_TAB;
+	}
+    }
+    else if (OptExpress == OPT_TAG && 
+	     (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
+	OptExpress = OPT_TAB;
     }
 }
 
@@ -575,13 +583,14 @@ extern float	AssignGaCaseThreshold;
 
     if (OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2) {
-
-	/* 格解析を行うサ変名詞を含む文節に feature を与え、
-	   複合名詞をばらして格要素として認識する */
+	/* タグ単位へ */
 	make_tag_units(sp);
 
 	/* それぞれの用言の格フレームを取得 */
 	set_pred_caseframe(sp);
+    }
+    else if (OptExpress == OPT_TAG) {
+	make_tag_units(sp);
     }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
@@ -687,8 +696,9 @@ PARSED:
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-    if (OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2) {
+    if (OptAnalysis == OPT_CASE || 
+	OptAnalysis == OPT_CASE2 || 
+	OptExpress == OPT_TAG) {
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
     }
 
@@ -746,6 +756,11 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+	    if (OptAnalysis == OPT_CASE || 
+		OptAnalysis == OPT_CASE2 || 
+		OptExpress == OPT_TAG) {
+		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+	    }
 	    if (OptDisc != OPT_DISC)
 		print_result(sp);
 	    else

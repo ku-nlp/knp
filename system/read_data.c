@@ -949,7 +949,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		void make_tag_units(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, settou_num = 0, count;
+    int i, j, k, settou_num = 0, count, flag;
     MRPH_DATA *mp, *settou_ptr;
     TAG_DATA *tp = NULL;
     BNST_DATA *bp = sp->bnst_data, *pre_bp;
@@ -958,11 +958,17 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	mp = sp->mrph_data + i;
+	flag = check_feature(mp->f, "タグ単位始");
 
-	/* 付属から始まる文節のために (「と/いうと」)
-	   ※ jiritu_ptr に入ってしまう */
-	if (check_feature(mp->f, "タグ単位始")) {
+	/* 文節始まりの形態素だけど<タグ単位始>がついていない場合も許す */
+	if (flag || 
+	    (bp != NULL && bp->mrph_ptr == mp)) {
 	    tp = sp->tag_data + sp->Tag_num;
+
+	    if (flag == NULL) {
+		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
+			sp->KNPSID ? sp->KNPSID : "?");
+	    }
 
 	    memset(tp, 0, sizeof(TAG_DATA));
 	    tp->num = sp->Tag_num;
@@ -1025,13 +1031,17 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    assign_cfeature(&(tp->f), "文節内");
 	}
 
-	/* 
-	if (tp->inum != 0) {
-	    assign_cfeature(&(tp->f), "係:文節内");
-	    } */
-
 	/* 各タグ単位の長さを計算しておく */
 	calc_bnst_length(sp, (BNST_DATA *)tp);
+    }
+
+    /* <文頭>, <文末> */
+    assign_cfeature(&(sp->tag_data->f), "文頭");
+    if (sp->Tag_num > 0) {
+	assign_cfeature(&((sp->tag_data + sp->Tag_num - 1)->f), "文末");
+    }
+    else {
+	assign_cfeature(&(sp->tag_data->f), "文末");
     }
 
     /* 文節ルールを適用する */

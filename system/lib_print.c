@@ -98,8 +98,18 @@
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (flag == 1) {
-	    fprintf(Outfp, "%c %d%c", t_ptr->bnum < 0 ? '+' : '*', 
-		    t_ptr->dpnd_head, t_ptr->dpnd_type);
+	    /* Ê¸Àá¹Ô */
+	    if (t_ptr->bnum >= 0) {
+		fprintf(Outfp, "* %d%c", 
+			(sp->bnst_data + t_ptr->bnum)->dpnd_head, 
+			(sp->bnst_data + t_ptr->bnum)->dpnd_type);
+		if ((sp->bnst_data + t_ptr->bnum)->f) {
+		    fputc(' ', Outfp);
+		    print_feature((sp->bnst_data + t_ptr->bnum)->f, Outfp);
+		}
+		fputc('\n', Outfp);
+	    }
+	    fprintf(Outfp, "+ %d%c", t_ptr->dpnd_head, t_ptr->dpnd_type);
 	    if (t_ptr->f) {
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);
@@ -1007,6 +1017,9 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	else {
 	    print_mrphs(sp, 1);
 	}
+    }
+    else if (OptExpress == OPT_TAG) {
+	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_PA) {
 	print_pa_structure(sp);

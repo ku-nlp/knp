@@ -155,7 +155,11 @@ struct _sort_kv {
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->cf_id);
+    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", 
+	    cmm_ptr->score, cmm_ptr->pure_score[0], 
+	    sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
+					    &(cmm_ptr->result_lists_p[0])))), 
+	    cmm_ptr->cf_ptr->cf_id);
 
     if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);
@@ -167,8 +171,8 @@ struct _sort_kv {
 	fprintf(Outfp, "(直受1)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
 	fprintf(Outfp, "(直受2)");
-    else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
-	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
+    else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI || 
+	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO || 
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
 	fprintf(Outfp, "(使役)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POSSIBLE)
@@ -178,7 +182,7 @@ struct _sort_kv {
     else if (cmm_ptr->cf_ptr->voice == FRAME_SPONTANE)
 	fprintf(Outfp, "(自発)");
 
-    /* fprintf(Outfp, "%s\n", i_ptr->DATA+i_ptr->imi); */
+    /* fprintf(Outfp, "%s\n", i_ptr->DATA + i_ptr->imi); */
     fputs("-----------------------------------\n", Outfp);
 
     /* 格要素対応の表示 */
@@ -315,8 +319,8 @@ struct _sort_kv {
     /* 上記出力の最後の引数(依存構造の数)は1にしている．
        ちゃんと扱ってない */
 
-    for (i = tm->pred_num-1; i >= 0; i--) {
-	if (i != tm->pred_num-1) {
+    for (i = tm->pred_num - 1; i >= 0; i--) {
+	if (i != tm->pred_num - 1) {
 	    fputc('\n', Outfp);
 	}
 	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));
@@ -344,7 +348,7 @@ struct _sort_kv {
 
     /* 前から順番に、Predicate-Argument Structure を出力 */
 
-    for (p = sp->Best_mgr->pred_num-1; p >= 0; p--) {
+    for (p = sp->Best_mgr->pred_num - 1; p >= 0; p--) {
 	cpm_ptr = &(sp->Best_mgr->cpm[p]);
 	fprintf(Outfp, "%2d %s", sp->Best_mgr->pred_num-1-p, cpm_ptr->pred_b_ptr->head_ptr->Goi);
 
