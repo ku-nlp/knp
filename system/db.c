@@ -85,7 +85,7 @@ char *db_get(DBM_FILE db, char *buf)
 int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 {
     datum content, key;
-    char *buffer;
+    char *buffer = NULL;
     int valuesize, i, storeflag;
 
     valuesize = strlen(value);
