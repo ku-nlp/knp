@@ -143,10 +143,12 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 
 	/* 全部だめなら前の文 */
 
-	prev_sp = sentence_data + sp->Sen_num - 2;
-	if ((cp = (char *)check_feature(prev_sp->bnst_data[prev_sp->Bnst_num - 1].f,
-					"Cガ格推定")) != NULL) {
-	    assign_GA2pred(b_ptr, cp + strlen("Cガ格推定:"), "前文");
+	if (sp->Sen_num >= 2){
+	    prev_sp = sentence_data + sp->Sen_num - 2; 
+	    if ((cp = (char *)check_feature(prev_sp->bnst_data[prev_sp->Bnst_num - 1].f,
+					    "Cガ格推定")) != NULL) {
+		assign_GA2pred(b_ptr, cp + strlen("Cガ格推定:"), "前文");
+	    }
 	}
     }
     Match:
