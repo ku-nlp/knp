@@ -163,6 +163,7 @@ int	PrintDeletedSM = 0;
 
 	    free(sp->Best_mgr->cpm[i].cf.ex_list[j][0]);
 	    free(sp->Best_mgr->cpm[i].cf.ex_list[j]);
+	    free(sp->Best_mgr->cpm[i].cf.ex_freq[j]);
 	}
     }
 }
@@ -390,10 +391,12 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag
 /*==================================================================*/
 {
     int freq;
-    unsigned char *orig_ret = ret;
 
-    if (*dat == '\0' || !strcmp(dat, "＊")) 
-      return NULL;
+    /* flag == TRUE: 頻度付きで返す */
+
+    if (*dat == '\0' || !strcmp(dat, "＊")) {
+	return NULL;
+    }
 
     while (1) {
 	if (*dat == '\0') {
@@ -402,11 +405,10 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag
 	}
 	/* 頻度が記述してある場合 */
 	else if (*dat == ':') {
-	    /* flag == 1: 頻度1は捨てる */
-	    sscanf(dat + 1, "%d", &freq);
-	    if (flag && freq < 2) {
-		*orig_ret = '\0';
+	    if (flag) {
+		*ret++ = *dat;
 	    }
+	    /* flag == FALSE: 頻度を返さない */
 	    else {
 		*ret++ = '\0';	/* ':' -> '\0' */
 	    }
@@ -522,8 +524,12 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     point = cp;
     buf[0] = '\0';
     while ((point = extract_ipal_str(point, cf_str_buf, FALSE))) {
+	/* 意味素制限 (NTT) */
+        if (cf_str_buf[0] == '+') {
+	    ;
+	}
 	/* 使ってはいけない意味素 (NTT) */
-        if (cf_str_buf[0] == '-') {
+        else if (cf_str_buf[0] == '-') {
 	    if (Thesaurus == USE_BGH) continue;
 	    if (c_ptr->sm_delete[num] == NULL) {
 		c_ptr->sm_delete_size[num] = SM_ELEMENT_MAX;
@@ -639,6 +645,26 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
+		  int split_freq(unsigned char *cp)
+/*==================================================================*/
+{
+    int freq;
+
+    while (1) {
+	if (*cp == ':') {
+	    sscanf(cp + 1, "%d", &freq);
+	    *cp = '\0';
+	    return freq;
+	}
+	else if (*cp == '\0') {
+	    return 1;
+	}
+	cp++;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, 
 			  int flag, int fflag)
 /*==================================================================*/
@@ -649,7 +675,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
               格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
-    int max, count = 0, length = 0, thesaurus = USE_NTT;
+    int max, count = 0, length = 0, thesaurus = USE_NTT, freq;
     char *code, **destination, *buf;
 
     if (*cp == '\0') {
@@ -672,8 +698,16 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
     point = cp;
     *buf = '\0';
-    while ((point = extract_ipal_str(point, cf_str_buf, fflag))) {
+    while ((point = extract_ipal_str(point, cf_str_buf, TRUE))) {
 	point2 = cf_str_buf;
+
+	/* 頻度の抽出 */
+	freq = split_freq(point2);
+
+	/* fflag == TRUE: 頻度1を削除 */
+	if (fflag && freq < 2) {
+	    continue;
+	}
 
 	/* 「ＡのＢ」の「Ｂ」だけを処理
 	for (i = strlen(point2) - 2; i > 2; i -= 2) {
@@ -699,14 +733,20 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    if (c_ptr->ex_size[num] == 0) {
 		c_ptr->ex_size[num] = 10;	/* 初期確保数 */
 		c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
-							    "_make_ipal_cframe_ex");
+							   "_make_ipal_cframe_ex");
+		c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
+							 "_make_ipal_cframe_ex");
 	    }
 	    else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
 		c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
 							    sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
 							    "_make_ipal_cframe_ex");
+		c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
+							  sizeof(int)*c_ptr->ex_size[num], 
+							  "_make_ipal_cframe_ex");
 	    }
-	    c_ptr->ex_list[num][c_ptr->ex_num[num]++] = strdup(point2);
+	    c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(point2);
+	    c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
 
 
 	    count++;
@@ -1479,6 +1519,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		    }
 		}
 		free((Case_frame_array+i)->ex_list[j]);
+		free((Case_frame_array+i)->ex_freq[j]);
 		(Case_frame_array+i)->ex_list[j] = NULL;
 		(Case_frame_array+i)->ex_size[j] = 0;
 		(Case_frame_array+i)->ex_num[j] = 0;

@@ -9,6 +9,7 @@
 #include "knp.h"
 
 int	EX_PRINT_NUM = 10;
+int	PrintFrequency = 0;
 
 /*==================================================================*/
    void print_depend_type(CF_PRED_MGR *cpm_ptr, int num, int flag)
@@ -260,12 +261,23 @@ struct _sort_kv {
 		for (j = 0; j < print_num; j++) {
 		    if (j != 0) fputc('/', Outfp);
 		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("¡Ú", Outfp);
-		    fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
+		    if (PrintFrequency) {
+			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][j], cmm_ptr->cf_ptr->ex_freq[i][j]);
+		    }
+		    else {
+			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
+		    }
 		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("¡Û", Outfp);
 		}
 		if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
 		    fputs("/¡Ú", Outfp);
-		    fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
+		    if (PrintFrequency) {
+			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]], 
+				cmm_ptr->cf_ptr->ex_freq[i][cmm_ptr->result_lists_p[k].pos[i]]);
+		    }
+		    else {
+			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
+		    }
 		    fputs("¡Û", Outfp);
 		}
 		if (print_num != cmm_ptr->cf_ptr->ex_num[i])

@@ -55,6 +55,8 @@ int	TEIDAI_STEP	= 2;
 					      "init_case_frame");
 	cf->ex_list[j][0] = (char *)malloc_data(sizeof(char)*WORD_LEN_MAX, 
 						"init_case_frame");
+	cf->ex_freq[j] = (int *)malloc_data(sizeof(int), 
+					    "init_case_frame");
     }
 }
 
@@ -85,6 +87,7 @@ int	TEIDAI_STEP	= 2;
 	free(cf->sm[j]);
 	free(cf->ex_list[j][0]);
 	free(cf->ex_list[j]);
+	free(cf->ex_freq[j]);
     }
 }
 
@@ -782,12 +785,16 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	if (src->ex_list[i]) {
 	    dst->ex_list[i] = (char **)malloc_data(sizeof(char *)*src->ex_size[i], 
 						   "copy_cf_with_alloc");
+	    dst->ex_freq[i] = (int *)malloc_data(sizeof(int)*src->ex_size[i], 
+						 "copy_cf_with_alloc");
 	    for (j = 0; j < src->ex_num[i]; j++) {
 		dst->ex_list[i][j] = strdup(src->ex_list[i][j]);
+		dst->ex_freq[i][j] = src->ex_freq[i][j];
 	    }
 	}
 	else {
 	    dst->ex_list[i] = NULL;
+	    dst->ex_freq[i] = NULL;
 	}
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
@@ -852,6 +859,9 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	if (src->sm[i]) strcpy(dst->sm[i], src->sm[i]);
 	if (src->ex[i]) strcpy(dst->ex[i], src->ex[i]);
 	strcpy(dst->ex_list[i][0], src->ex_list[i][0]);
+	for (j = 0; j < src->ex_num[i]; j++) {
+	    dst->ex_freq[i][j] = src->ex_freq[i][j];
+	}
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
 	dst->examples[i] = src->examples[i];	/* これを使う場合問題あり */

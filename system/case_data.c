@@ -310,6 +310,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     }
 
     strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->head_ptr->Goi);
+    c_ptr->ex_freq[c_ptr->element_num][0] = 1;
 }
 
 /*==================================================================*/

@@ -688,6 +688,7 @@ typedef struct cf_def {
     int		sm_delete_num[CF_ELEMENT_MAX];
     char 	*ex[CF_ELEMENT_MAX];			/* อัฮใ */
     char	**ex_list[CF_ELEMENT_MAX];
+    int		*ex_freq[CF_ELEMENT_MAX];
     int		ex_size[CF_ELEMENT_MAX];
     int		ex_num[CF_ELEMENT_MAX];
     char	*examples[CF_ELEMENT_MAX];
