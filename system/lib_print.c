@@ -915,7 +915,6 @@ static int max_width;			/* 木の最大幅 */
 	else if (time_string[0])
 	    fprintf(Outfp, " KNP:%s", time_string);
     }
-    free(time_string);
 
     /* エラーがあれば、エラーの内容 */
     if (ErrorComment) {
