@@ -19,11 +19,14 @@ EXTRA_DIST = \
 ruledir = $(pkgdatadir)/rule
 dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
 
-# .rule.data:
-# 	$(RULECONV) $<
+.rule.data:
+	$(RULECONV) $<
 
-# .phrase.rule:
-# 	$(RULETRANS) < $< > $@
+.phrase.rule:
+	if [ -f $@ ]; then \
+	    cp -pf $@ $@.old; \
+	fi; \
+	$(RULETRANS) < $< > $@
 
 rule:
 	if [ -x $(RULECONV) ]; then \
@@ -32,19 +35,7 @@ rule:
 
 all: trans
 
-trans:
-	if [ -x $(RULETRANS) ]; then \
-	    if [ -f bnst_type.rule ]; then \
-		cp -pf bnst_type.rule bnst_type.rule.old; \
-	    fi; \
-	    for f in *.phrase; \
-	    do \
-		base=`expr $$f : "\(.*\)\.[^.]*"` \
-		$(RULETRANS) < $$f > $$base.rule; \
-	    done; \
-	fi
-	$(MAKE) rule
-	$(MAKE) diff
+trans: diff
 
 diff:
 	if [ -r bnst_type.rule.old -a -r bnst_type.rule ]; then \
