@@ -370,9 +370,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	non_subj_flag = 1;
     }
 
-    /* 主体関連のマッチング (ヲ格以外) */
-    if (cfp->sm[n] && 
-	!MatchPP(cfp->pp[n][0], "ヲ")) {
+    /* 意味属性のマッチング */
+    if (cfp->sm[n]) {
 	int i, j;
 
 	for (j = 0; cfp->sm[n][j]; j += step) {
@@ -385,6 +384,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 		!strncmp(cfp->sm[n] + j, sm2code("人"), SM_CODE_SIZE) || 
 		!strncmp(cfp->sm[n] + j, sm2code("組織"), SM_CODE_SIZE)) {
 		if (non_subj_flag == 0 && 
+		    !MatchPP(cfp->pp[n][0], "ヲ") && /* 主体のマッチング (ヲ格以外) */
 		    sms_match(cfp->sm[n] + j, tp->SM_code, expand)) {
 		    return 1;
 		}
@@ -393,6 +393,12 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	    else if (!strncmp(cfp->sm[n] + j, sm2code("動作"), SM_CODE_SIZE)) {
 		if (sms_match(sm2code("名(転生)"), tp->SM_code, SM_CHECK_FULL) || 
 		    sms_match(sm2code("サ変"), tp->SM_code, SM_CHECK_FULL)) {
+		    return 1;
+		}
+	    }
+	    /* 格フレーム-場所 <=> <場所> */
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("場所"), SM_CODE_SIZE)) {
+		if (sms_match(cfp->sm[n] + j, tp->SM_code, expand)) {
 		    return 1;
 		}
 	    }
