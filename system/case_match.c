@@ -48,7 +48,24 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 }
 
 /*==================================================================*/
-	      int _sm_match_score(char *cpp, char *cpd)
+		  int comp_sm(char *cpp, char *cpd)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 1; i < SM_CODE_SIZE; i++) {
+	if (cpp[i] == '*')
+	    return i;
+	else if (cpd[i] == '*')
+	    return 0;
+	else if (cpp[i] != cpd[i])
+	    return 0;
+    }
+    return SM_CODE_SIZE;
+}
+
+/*==================================================================*/
+	      int _sm_match_score(char *cpp, char *cpd, int flag)
 /*==================================================================*/
 {
     /*
@@ -59,11 +76,17 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
                          (名詞以外のものはget_smの時点で排除 99/01/13)
     */
 
-    int i;
+    /* 
+       flag == SM_EXPAND_NE    : 固有名詞意味属性を一般名詞意味属性に変換する
+       flag == SM_NO_EXPAND_NE : 固有名詞意味属性を一般名詞意味属性に変換しない
+     */
+
+    int i, current_score, score = 0;
+    char *cp;
 
     if (cpp[0] == 'x') {
 	if (cpd[0] == 'x')
-	    return 12;
+	    return SM_CODE_SIZE;
 	else
 	    return 0;
     } else {
@@ -81,16 +104,37 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 	 マッチしないとき : 0を返す
     */
 
-    for (i = 1; i < 12; i++) {
-	if (cpp[i] == '*') {
-	    return i;
-	} else if (cpd[i] == '*') {
-	    return 0;
-	} else if (cpp[i] != cpd[i]) {
-	    return 0;
+    /* データが固有名詞のとき */
+    if (cpd[0] == '2') {
+	if (flag == SM_EXPAND_NE) {
+	    if (SMP2SMGExist == FALSE) {
+		fprintf(stderr, ";;; Cannot open smp2smg table!\n");
+		return 0;
+	    }
+	    else {
+		for (cp = (char *)smp2smg(cpd); *cp; cp+=SM_CODE_SIZE+1) {
+		    if (*(cp+SM_CODE_SIZE) == '/')
+			*(cp+SM_CODE_SIZE) = '\0';
+		    else if (str_eq(cp+SM_CODE_SIZE, " side-effect"))
+			continue;
+
+		    if (*(cp+SM_CODE_SIZE) != '\0')
+			fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
+				*(cp+SM_CODE_SIZE), "_sm_match_score");
+		    else {
+			current_score = comp_sm(cpp, cp);
+			if (current_score > score)
+			    score = current_score;
+		    }
+		}
+		return score;
+	    }
 	}
+	else
+	    return 0;
     }
-    return 12;
+    else
+	return comp_sm(cpp, cpd);
 }
 
 /*==================================================================*/
@@ -131,7 +175,7 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 	    return SM_match_unknown;
 
 	for (j = 0; cfp->sm[as2][j]; j+=12) {
-	    if (!strncmp(cfp->sm[as2]+j, sm2code("→"), 12)) {
+	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), 12)) {
 
 		for (k = 0; cfp->ex[as2][k]; k+=10) {
 		    for (i = 0; cfd->ex[as1][i]; i+=10) {
@@ -148,7 +192,7 @@ int     EX_match_qua = 100;				/* 格要素 -- 数量 */
 		for (i = 0; cfd->sm[as1][i]; i+=12) {
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
-						       cfd->sm[as1]+i)];
+						       cfd->sm[as1]+i, SM_NO_EXPAND_NE)];
 		    if (tmp_score && (cfp->sm_flag[as2][j/12] == FALSE))
 			return -100;
 		    if (tmp_score > score) score = tmp_score;
