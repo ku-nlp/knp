@@ -1,3 +1,7 @@
+2002-12-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule: 無格従属が扱われていなかったのを修正
+
 2002-12-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule: 格解析ルールの更新
