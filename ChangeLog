@@ -17,6 +17,11 @@
 	* system/dpnd_analysis.c:
 	-debug時にtreeが表示されていなかったbugを修正
 
+	* configure.ac, system/knp.h, system/hash.c:
+	Boehm GCのsupport
+
+	* system/thesaurus.c: includeの不整合を修正
+
 2003-08-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: 決定木用のオプションを整理
