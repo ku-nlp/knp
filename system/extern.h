@@ -172,38 +172,6 @@ extern void read_rc(FILE *in);
 extern void init_configfile();
 extern void server_read_rc(FILE *fp);
 
-/* context.c */
-extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int voice, int cf_addr, int pp, char *word, int flag);
-extern void ClearSentences(SENTENCE_DATA *sp);
-extern void discourse_analysis(SENTENCE_DATA *sp);
-extern void copy_sentence(SENTENCE_DATA *sp);
-extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
-extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
-extern void DiscourseAnalysis(SENTENCE_DATA *sp);
-extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
-
-/* corpus.c */
-extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 
-					      char *case1, int h, CHECK_DATA *list, 
-					      CORPUS_DATA *corpus);
-extern int subordinate_level_check_special(char *cp, BNST_DATA *ptr2);
-extern int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag);
-extern int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, 
-				     BNST_DATA *ptr2, CORPUS_DATA *corpus);
-extern int init_clause();
-extern int init_case_pred();
-extern int init_optional_case();
-extern void optional_case_evaluation(SENTENCE_DATA *sp);
-extern void CheckChildCaseFrame(SENTENCE_DATA *sp);
-extern void unsupervised_debug_print(SENTENCE_DATA *sp);
-extern void close_clause();
-extern void close_case_pred();
-extern void close_optional_case();
-
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
 extern DBM_FILE db_read_open(char *filename);
@@ -291,10 +259,6 @@ extern int sm_all_match(char *c, char *target);
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
 extern void usage();
-
-/* noun.c */
-extern void init_noun();
-extern void close_noun();
 
 /* para_dpnd.c */
 extern int _check_para_d_struct(SENTENCE_DATA *sp, int str, int end,

@@ -18,7 +18,6 @@ AC_ARG_WITH(berkeley-db3, [  --with-berkeley-db3     use Berkeley DB library (3.
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
 AC_ARG_WITH(integrate-juman, [  --with-integrate-juman  integrate JUMAN into KNP], 
 ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
-AC_ARG_WITH(svm, [  --with-svm              use TinySVM library [default=no]])
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
 JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
@@ -144,7 +143,6 @@ AC_OUTPUT([
 Makefile
 system/Makefile
 juman/Makefile
-svm/Makefile
 rule/Makefile
 docs/Makefile
 perl/Makefile

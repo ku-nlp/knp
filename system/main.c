@@ -42,16 +42,11 @@ int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
-int		OptInhibit;
-int		OptCheck;
 int		OptNE;
 int		OptJuman;
-int		OptSVM;
-int		OptLearn;
 int		OptCaseFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
-char		*OptOptionalCase = NULL;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -101,7 +96,7 @@ extern float	AssignReferentThreshold;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst]\n" 
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
@@ -119,20 +114,14 @@ extern float	AssignReferentThreshold;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
-    OptDisc = OPT_NORMAL;
     OptDemo = FALSE;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
-    /* デフォルトで禁止するオプション */
-    OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
-    OptCheck = FALSE;
     OptNE = OPT_NORMAL;
     OptJuman = OPT_NORMAL;
-    OptSVM = OPT_NORMAL;
-    OptLearn = FALSE;
     OptCaseFlag = 0;
     OptIgnoreChar = '\0';
 
@@ -143,8 +132,6 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
-	else if (str_eq(argv[0], "-disc"))    OptDisc     = OPT_DISC;
-	else if (str_eq(argv[0], "-demonstrative")) OptDemo = TRUE;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
@@ -155,18 +142,10 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
-	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
 	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
 	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
-	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
-#ifdef USE_SVM
-	else if (str_eq(argv[0], "-svm"))     OptSVM      = OPT_SVM;
-#endif
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -178,46 +157,6 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-print-deleted-sm")) {
 	    PrintDeletedSM = 1;
 	}
-	else if (str_eq(argv[0], "-cdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CLAUSE;
-	}
-	else if (str_eq(argv[0], "-ccdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ClauseCDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_C_CLAUSE;
-	}
-	else if (str_eq(argv[0], "-kdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
-	}
-	else if (str_eq(argv[0], "-bdb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    if (CasePredicateDBname) {
-		if (strcmp(CasePredicateDBname, argv[0]))
-		    usage();
-	    }
-	    else
-		CasePredicateDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_BARRIER;
-	}
-	else if (str_eq(argv[0], "-odb")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    OptionalCaseDBname = argv[0];
-	    OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
-	} 
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -228,17 +167,6 @@ extern float	AssignReferentThreshold;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    strcpy(OptHostname,argv[0]);
-	}
-	else if (str_eq(argv[0], "-optionalcase")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    /* 
-	    if ((case2num(argv[0])) == -1) {
-		fprintf(stderr, "Error: Case %s is invalid!\n", argv[0]);
-		usage();
-	    }
-	    */
-	    OptOptionalCase = argv[0];
 	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
@@ -294,91 +222,12 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
-	/* 以下コスト調整用 */
-	else if (str_eq(argv[0], "-dcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    DISTANCE_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-rcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    RENKAKU_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-svcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    STRONG_V_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-atcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ADJACENT_TOUTEN_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-lacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    LEVELA_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-tscost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    TEIDAI_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-quacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_qua = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-unknowncost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_unknown = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sentencecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_sentence = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-timecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_tim = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sotocost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_SCORE = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-score-esc")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EllipsisSubordinateClauseScore = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-score-agent")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_subject = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-ellipsis-threshold")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AssignReferentThreshold = (float)atof(argv[0]);
-	}
 	else {
 	    usage();
 	}
     }
     if (argc != 0) {
 	usage();
-    }
-
-    /* 文脈解析のときは必ず格解析を行う (CASE2)
-       解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptDisc == OPT_DISC) {
-	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
-	    OptAnalysis = OPT_CASE2;
-	}
     }
 }
 
@@ -476,25 +325,6 @@ extern float	AssignReferentThreshold;
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
 
-    if (OptDisc == OPT_DISC) {
-	init_noun();	/* 名詞辞書オープン */
-#ifdef USE_SVM
-	if (OptSVM == OPT_SVM) {
-	    if (!init_svm()) {	/* SVM */
-		fprintf(stderr, "SVM initialization error.\n");
-		exit(1);
-	    }
-	}
-#endif
-    }
-
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	init_clause();
-    if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
-	init_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || OptOptionalCase)
-	init_optional_case();
-
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
     memset(bnst_data, 0, sizeof(BNST_DATA)*BNST_MAX);
@@ -520,10 +350,6 @@ extern float	AssignReferentThreshold;
     if (OptNE == OPT_NE || OptNE == OPT_NESM) {
 	init_proper(&current_sentence_data);
     }
-
-    if (OptDisc == OPT_DISC) {
-	InitAnaphoraList();
-    }
 }
 
 /*==================================================================*/
@@ -535,16 +361,8 @@ extern float	AssignReferentThreshold;
     close_sm();
     close_scase();
 
-    if (OptDisc == OPT_DISC)
-	close_noun();
     if (OptNE == OPT_NE || OptNE == OPT_NESM)
 	close_proper();
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	close_clause();
-    if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))
-	close_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	close_optional_case();
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -760,10 +578,6 @@ extern float	AssignReferentThreshold;
     }
     alarm(0);
 
-    /* コーパスベース時の評価値計算 */
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	optional_case_evaluation(sp);
-
 PARSED:
 
     /* 係り受け情報を bnst 構造体に記憶 */
@@ -780,10 +594,6 @@ PARSED:
     }
 
     memo_by_program(sp);	/* メモへの書き込み */
-
-    /* 係り先候補数チェック用 */
-    if (OptCheck == TRUE)
-	CheckCandidates(sp);
 
     /* 認識した固有名詞を保存しておく */
     if (OptNE == OPT_NE || OptNE == OPT_NESM) {
@@ -839,8 +649,6 @@ PARSED:
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
 	    if (OptDisc != OPT_DISC)
 		print_result(sp);
-	    else
-		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 	}
 
@@ -911,15 +719,6 @@ PARSED:
 
 	if (flag == FALSE) continue;
 
-	/************/
-	/* 文脈解析 */
-	/************/
-
-	if (OptDisc == OPT_DISC) {
-	    make_dpnd_tree(sp);
-	    DiscourseAnalysis(sp);
-	}
-
 	/* entity 情報の feature の作成 */
 	if (OptDisplay  == OPT_ENTITY) {
 	    prepare_all_entity(sp);
@@ -933,9 +732,6 @@ PARSED:
 	    print_mrphs(sp, 0);
 	} else {
 	    print_result(sp);
-
-	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-		unsupervised_debug_print(sp);
 	}
 	fflush(Outfp);
 

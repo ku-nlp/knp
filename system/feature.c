@@ -968,32 +968,15 @@
     /* &レベル : 用言のレベル比較 (係受レベル) */
 
     else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
-	if ((OptInhibit & OPT_INHIBIT_CLAUSE) || (whether_corpus_compare((BNST_DATA *)ptr1) == FALSE)) {
-	    if (!strcmp(rule + strlen("&レベル:"), "強"))
-		/* 述語間の強弱の比較 */
-		return subordinate_level_comp((BNST_DATA *)ptr1, 
-					      (BNST_DATA *)ptr2);
-	    else
-		/* 述語は係り受け可能か */
-		return subordinate_level_check(rule + strlen("&レベル:"),
-					       (BNST_DATA *)ptr2);
+	if (!strcmp(rule + strlen("&レベル:"), "強")) {
+	    /* 述語間の強弱の比較 */
+	    return subordinate_level_comp((BNST_DATA *)ptr1, 
+					  (BNST_DATA *)ptr2);
 	}
 	else {
-	    /* &レベル が連続してチェックされるのは無駄だね */
-	    if (prerule && 
-		!strncmp(prerule, "&レベル:", strlen("&レベル:")) && 
-		ptr1 == pre1 && 
-		ptr2 == pre2) {
-		return TRUE;
-	    }
-
-	    prerule = rule;
-	    pre1 = ptr1;
-	    pre2 = ptr2;
-
-	    return corpus_clause_comp((BNST_DATA *)ptr1, 
-				      (BNST_DATA *)ptr2, 
-				      TRUE);
+	    /* 述語は係り受け可能か */
+	    return subordinate_level_check(rule + strlen("&レベル:"),
+					   (BNST_DATA *)ptr2);
 	}
     }
 
@@ -1008,79 +991,44 @@
     /* &節境界 : 節間の壁チェック */
 
     else if (!strncmp(rule, "&節境界:", strlen("&節境界:"))) {
-	if ((OptInhibit & OPT_INHIBIT_CLAUSE))
-	    /* 
-	       1. ルールに書いてあるレベルより強いことをチェック
-	       2. 係り側より受け側のレベルが強いことをチェック
-	    */
-	    return (subordinate_level_check(rule + strlen("&節境界:"),
-					    (BNST_DATA *)ptr2) && 
-		    subordinate_level_comp((BNST_DATA *)ptr1, 
+	/* 
+	   1. ルールに書いてあるレベルより強いことをチェック
+	   2. 係り側より受け側のレベルが強いことをチェック
+	*/
+	return (subordinate_level_check(rule + strlen("&節境界:"),
+					(BNST_DATA *)ptr2) && 
+		subordinate_level_comp((BNST_DATA *)ptr1, 
 				       (BNST_DATA *)ptr2));
-	else
-	    return corpus_clause_barrier_check((BNST_DATA *)ptr1, 
-					       (BNST_DATA *)ptr2);
     }
 
 
     /* &格述 : 格と述語の嗜好性チェック */
 
     else if (!strncmp(rule, "&格述:", strlen("&格述:"))) {
-	if (OptInhibit & OPT_INHIBIT_CASE_PREDICATE)
-	    return subordinate_level_check(rule + strlen("&格述:"),
-					   (BNST_DATA *)ptr2);
-	else
-	    return corpus_case_predicate_check((BNST_DATA *)ptr1, 
-					       (BNST_DATA *)ptr2);
+	return subordinate_level_check(rule + strlen("&格述:"),
+				       (BNST_DATA *)ptr2);
     }
 
     /* &境界 : 格と述語の壁チェック */
 
     else if (!strncmp(rule, "&境界:", strlen("&境界:"))) {
-	if (OptInhibit & OPT_INHIBIT_BARRIER)
 	    return subordinate_level_check(rule + strlen("&境界:"),
 					   (BNST_DATA *)ptr2);
-	else
-	    return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2);
     }
 
     /* &境界連用 : 格と述語の壁チェック (連用) */
 
     else if (!strncmp(rule, "&境界連用:", strlen("&境界連用:"))) {
-	if (OptInhibit & OPT_INHIBIT_BARRIER)
-	    return subordinate_level_check(rule + strlen("&境界連用:"),
-					   (BNST_DATA *)ptr2);
-	else
-	    /* レベルの処理 */
-	    return subordinate_level_check(rule + strlen("&境界連用:"),
-					   (BNST_DATA *)ptr2);
-	    /* 統計的に処理しない */
-	    /* return FALSE; */
-	    /* 統計的に処理する */
-	    /* return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2); */
+	return subordinate_level_check(rule + strlen("&境界連用:"),
+				       (BNST_DATA *)ptr2);
     }
 
     /* &境界特別 : 格と述語の壁チェック (事例, 臨時) */
 
     else if (!strncmp(rule, "&境界特別:", strlen("&境界特別:"))) {
 	/* ルールによる壁 */
-	if (OptInhibit & OPT_INHIBIT_BARRIER) {
-	    /* 事例を使うとき */
-	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-		return subordinate_level_check_special(rule + strlen("&境界特別:"),
-						       (BNST_DATA *)ptr2);
-	    }
-	    else {
-		return subordinate_level_check(rule + strlen("&境界特別:"),
-					       (BNST_DATA *)ptr2);
-	    }
-	}
-	else{
-	    return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2);
-	}
+	return subordinate_level_check(rule + strlen("&境界特別:"),
+				       (BNST_DATA *)ptr2);
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */

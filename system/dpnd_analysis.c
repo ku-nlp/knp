@@ -236,8 +236,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 /*==================================================================*/
 {
     int i, j, k, one_score, score, rentai, vacant_slot_num;
-    int topic_score, optional_flag = 0;
-    int optional_score = 0, total_optional_score = 0;
+    int topic_score;
     int scase_check[SCASE_CODE_SIZE], ha_check, un_count, pred_p;
     char *cp, *cp2, *buffer;
     BNST_DATA *g_ptr, *d_ptr;
@@ -258,14 +257,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
        4. 未格，連体修飾先はガ,ヲ,ニ格の余っているスロット数だけ点数付与
     */
-
-    /* コーパスの事例データの初期化 */
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-	for (i = 1; i < sp->Bnst_num; i++) {
-	    dpnd.op[i].data = NULL;
-	    dpnd.op[i].candidatesdata = NULL;
-	}
-    }
 
     score = 0;
     for (i = 1; i < sp->Bnst_num; i++) {
@@ -302,37 +293,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
 		if (j + 1 == i && check_feature(d_ptr->f, "読点")) {
 		    one_score -= 5;
-		}
-
-		/* 係り受けがコーパス中に存在するかどうか */
-		if ((cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
-		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-			/* 優先規則 */
-			optional_score = CorpusExampleDependencyCalculation(sp, d_ptr, cp+3, i, &(dpnd.check[j]), &dpnd.op[j]);
-			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr, &dpnd.op[j]); */
-
-			/* one_score += optional_score*10; */
-			/* 距離重み */ /* j が i に係っている */
-			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(sp->Bnst_num-1-i)/(sp->Bnst_num-1-j); */
-			if (optional_score > 0) {
-			    dpnd.op[j].flag = TRUE;
-			    dpnd.op[j].weight = optional_score;
-			    dpnd.op[j].type = cp+3;
-			    if (dpnd.comment) {
-				buffer = dpnd.comment;
-				dpnd.comment = (char *)malloc(strlen(buffer)+strlen(CorpusComment[j])+2);
-				strcpy(dpnd.comment, buffer);
-				strcat(dpnd.comment, " ");
-				strcat(dpnd.comment, CorpusComment[j]);
-			    }
-			    else {
-				dpnd.comment = strdup(CorpusComment[j]);
-			    }
-			    optional_flag = 1;
-			    total_optional_score += optional_score;
-			    /* total_optional_score += optional_score*5; */
-			}
-		    }
 		}
 
 		if (pred_p &&
@@ -521,10 +481,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	fprintf(Outfp, "=%d", score);
-	if (optional_flag)
-	    fprintf(Outfp, "+%d=%d", total_optional_score, score+total_optional_score);
-	fprintf(Outfp, "\n");
+	fprintf(Outfp, "=%d\n", score);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -540,25 +497,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	Possibility++;
     }
 
-    /* 事例情報を使ったとき */
-    if (optional_flag) {
-	if (!OptLearn) {
-	    score += total_optional_score;
-	    if (score > Op_Best_mgr.score) {
-		Op_Best_mgr.dpnd = dpnd;
-		Op_Best_mgr.score = score;
-		Op_Best_mgr.ID = dpndID;
-	    }
-	}
-	else {
-	    fprintf(Outfp, ";;;OK 候補 %d %s %d\n", dpndID, sp->KNPSID ? sp->KNPSID : "", score);
-	    for (i = 0;i < sp->Bnst_num; i++) {
-		if (dpnd.op[i].flag) {
-		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
-		}
-	    }
-	}
-    }
     dpndID++;
 }
 

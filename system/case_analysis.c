@@ -1287,21 +1287,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	    else {
 		strcpy(relation, "--");
 	    }
-
-	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
-	    if (OptDisc == OPT_DISC) {
-		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
-				  cpm_ptr->pred_b_ptr->voice, 
-				  cpm_ptr->cmm[0].cf_ptr->ipal_address, 
-				  cpm_ptr->cf.pp[i][0], 
-				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-		if (lastflag > 0) {
-		    RegisterLastClause(sp->Sen_num, 
-				       L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
-				       cpm_ptr->cf.pp[i][0], 
-				       cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-		}
-	    }
 	}
 	else if (num >= 0) {
 	    /* 格フレームに割りあててあるガガ格 */
@@ -1313,21 +1298,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	    else {
 		strcpy(relation, 
 		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
-	    }
-
-	    /* 格関係の保存 (文脈解析用) */
-	    if (OptDisc == OPT_DISC) {
-		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
-				  cpm_ptr->pred_b_ptr->voice, 
-				  cpm_ptr->cmm[0].cf_ptr->ipal_address, 
-				  cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-		if (lastflag > 0) {
-		    RegisterLastClause(sp->Sen_num, 
-				       L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
-				       cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				       cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-		}
 	    }
 	}
 	/* else: UNASSIGNED はないはず */
