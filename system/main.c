@@ -31,7 +31,7 @@ int 		Para_M_num;			/* 並列管理マネージャー数 */
 int 		Revised_para_num;			
 
 int 		Sen_num;			/* 文カウント 1〜 */
-char		Comment[256];			/* コメント行 */
+char		Comment[DATA_LEN];		/* コメント行 */
 char		PM_Memo[256];			/* パターンマッチ結果 */
 
 char  		key_str[DBM_KEY_MAX], cont_str[DBM_CON_MAX];
