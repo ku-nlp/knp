@@ -3,6 +3,9 @@
 	* system/context.c:
 	名詞の関係解析と省略解析を同時にするときのbug fix
 
+	* system/context.c, system/extern.h, system/main.c:
+	SVMのfeatureを表示するオプション(-print-svm-features)を追加
+
 2003-10-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c: 名詞の関係解析で固有名詞文節も対象とすることに
