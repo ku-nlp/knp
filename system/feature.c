@@ -963,8 +963,10 @@
     else if (!strncmp(rule, "&態:", strlen("&態:"))) {
 	cp = rule + strlen("&態:");
 	if ((!strcmp(cp, "能動") && ((BNST_DATA *)ptr2)->voice == 0) || 
-	    (!strcmp(cp, "受動") && ((BNST_DATA *)ptr2)->voice == VOICE_UKEMI) || 
-	    (!strcmp(cp, "使役") && ((BNST_DATA *)ptr2)->voice == VOICE_SHIEKI)) {
+	    (!strcmp(cp, "受動") && (((BNST_DATA *)ptr2)->voice & VOICE_UKEMI || 
+				     ((BNST_DATA *)ptr2)->voice & VOICE_SHIEKI_UKEMI)) || 
+	    (!strcmp(cp, "使役") && (((BNST_DATA *)ptr2)->voice & VOICE_SHIEKI || 
+				     ((BNST_DATA *)ptr2)->voice & VOICE_SHIEKI_UKEMI))) {
 	    return TRUE;
 	}
 	else {

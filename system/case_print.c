@@ -69,8 +69,12 @@ int	EX_PRINT_NUM = 10;
 	fputs("(»ÈÌò)¡Û", Outfp);
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
 	fputs("(¼õ¿È)¡Û", Outfp);
+    else if (cpm_ptr->cf.voice == VOICE_SHIEKI_UKEMI)
+	fputs("(»ÈÌò&¼õ¿È)¡Û", Outfp);
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-	fputs("(»ÈÌòor¼õ¿È)¡Û", Outfp);
+	fputs("(¤â¤é¤¦)¡Û", Outfp);
+    else if (cpm_ptr->cf.voice == VOICE_HOSHII)
+	fputs("(¤Û¤·¤¤)¡Û", Outfp);
     else
 	fputs("¡Û", Outfp);
 
@@ -175,6 +179,8 @@ struct _sort_kv {
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO || 
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
 	fprintf(Outfp, "(»ÈÌò)");
+    else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_PASSIVE)
+	fprintf(Outfp, "(»ÈÌò&¼õ¿È)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POSSIBLE)
 	fprintf(Outfp, "(²ÄÇ½)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POLITE)

@@ -719,6 +719,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE);
 	j++;
     }
+    else if (cf_ptr->voice == FRAME_CAUSATIVE_PASSIVE) {
+	_make_ipal_cframe_pp(cf_ptr, "ニ", j);
+	_make_ipal_cframe_sm(cf_ptr, "主体準", j, 
+			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE);
+	j++;
+    }
 
     /* 各格要素の処理 */
 
@@ -730,12 +737,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE, 
-				 !MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : !MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE, 
-				 !MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : !MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
@@ -967,18 +974,36 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		}
 	    }
 
-	    /* 能動態 */
+	    /* 能動態 or 格フレームに態が含まれる場合 */
 	    if (voice == 0) {
 		(cf_ptr + f_num)->voice = FRAME_ACTIVE;
 		_make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb);
 
-		/* 格フレーム使役 */
-		if (t_ptr->voice == VOICE_SHIEKI) {
-		    /* とりあえず */
-		    (cf_ptr + f_num)->voice = FRAME_CAUSATIVE_NI;
+		/* 格フレーム使役/格フレーム使役&受身*/
+		if (t_ptr->voice & VOICE_SHIEKI || 
+		    t_ptr->voice & VOICE_SHIEKI_UKEMI) {
+		    /* ニ格がないとき */
+		    if ((c = check_cf_case(cf_ptr + f_num, "ニ")) < 0) {
+			_make_ipal_cframe_pp(cf_ptr + f_num, "ニ", (cf_ptr + f_num)->element_num);
+			_make_ipal_cframe_sm(cf_ptr + f_num, "主体準", (cf_ptr + f_num)->element_num, 
+					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
+			(cf_ptr+f_num)->element_num++;
+		    }
+		    /* ニ格はあるけど<主体>がないとき */
+		    else if (sm_match_check(sm2code("主体"), (cf_ptr + f_num)->sm[c]) == FALSE) {
+			_make_ipal_cframe_sm(cf_ptr + f_num, "主体準", c, 
+					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
+		    }
+		    if (t_ptr->voice & VOICE_SHIEKI) {
+			(cf_ptr + f_num)->voice = FRAME_CAUSATIVE_NI;
+		    }
+		    else if (t_ptr->voice & VOICE_SHIEKI_UKEMI) {
+			(cf_ptr + f_num)->voice = FRAME_CAUSATIVE_PASSIVE;
+		    }
 		}
 		/* 格フレーム受身 */
-		else if (t_ptr->voice) {
+		else if (t_ptr->voice & VOICE_UKEMI || 
+			 t_ptr->voice & VOICE_UNKNOWN) {
 		    /* ニ/ニヨル/カラ格がないとき */
 		    if ((c = check_cf_case(cf_ptr + f_num, "ニ")) < 0 && 
 			(c = check_cf_case(cf_ptr + f_num, "ニヨル")) < 0 && 
@@ -1001,8 +1026,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	    }
 
 	    /* 使役 */
-	    if (voice == VOICE_SHIEKI ||
-		voice == VOICE_MORAU) {
+	    if (voice & VOICE_SHIEKI) {
 		if (i_ptr->voice & CF_CAUSATIVE_WO && i_ptr->voice & CF_CAUSATIVE_NI)
 		  (cf_ptr + f_num)->voice = FRAME_CAUSATIVE_WO_NI;
 		else if (i_ptr->voice & CF_CAUSATIVE_WO)
@@ -1016,8 +1040,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	    }
 	    
 	    /* 受身 */
-	    if (voice == VOICE_UKEMI ||
-		voice == VOICE_MORAU) {
+	    if (voice & VOICE_UKEMI) {
 		/* 直接受身１ */
 		if (i_ptr->voice & CF_PASSIVE_1) {
 		    (cf_ptr + f_num)->voice = FRAME_PASSIVE_1;
@@ -1040,8 +1063,29 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		    cf_ptr = Case_frame_array + start;
 		}
 	    }
+
+	    /* もらう/ほしい */
+	    if (voice & VOICE_MORAU || 
+		voice & VOICE_HOSHII) {
+		/* ニ使役 (間接受身でも同じ */
+		if (i_ptr->voice & CF_CAUSATIVE_NI) {
+		    (cf_ptr + f_num)->voice = FRAME_CAUSATIVE_NI;
+		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb);
+		    f_num_inc(start, &f_num);
+		    cf_ptr = Case_frame_array + start;
+		}
+ 	    }
+
+	    /* せられる/させられる */
+	    if (voice & VOICE_SHIEKI_UKEMI) {
+		(cf_ptr + f_num)->voice = FRAME_CAUSATIVE_PASSIVE;
+		_make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb);
+		f_num_inc(start, &f_num);
+		cf_ptr = Case_frame_array + start;
+	    } 
+
 	    /* 可能，尊敬，自発 */
-	    if (voice == VOICE_UKEMI) {
+	    if (voice & VOICE_UKEMI) {
 		if (i_ptr->voice & CF_POSSIBLE) {
 		    (cf_ptr + f_num)->voice = FRAME_POSSIBLE;
 		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb);
@@ -1076,19 +1120,15 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     int f_num = 0, plus_num;
     char *verb;
 
-    verb = (char *)malloc_data(strlen(in_verb) + 3, "make_ipal_cframe_subcontract");
+    verb = (char *)malloc_data(strlen(in_verb) + 4, "make_ipal_cframe_subcontract");
     strcpy(verb, in_verb);
     free(in_verb);
 
-    if (check_feature(t_ptr->f, "サ変止") || 
-	(check_feature(t_ptr->f, "非用言格解析") && 
-	 check_feature(t_ptr->f, "サ変"))) {
-	/* 能動態 
-	   t_ptr->voice == 0 で行う */
-	t_ptr->voice = 0;
+    if (t_ptr->voice == VOICE_UNKNOWN) {
+	t_ptr->voice = 0; /* 能動態でtry */
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0);
 
-	/* 受身の場合を考えないとき */
+	/* 今のところ受身の場合を考えない */
 	free(verb);
 	return f_num;
 
@@ -1096,32 +1136,40 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     }
 
     /* 受身, 使役の格フレーム */
-    if (t_ptr->voice == VOICE_UKEMI ||
-	t_ptr->voice == VOICE_MORAU || 
-	t_ptr->voice == VOICE_UNKNOWN || 
-	t_ptr->voice == VOICE_SHIEKI) {
-	if (t_ptr->voice == VOICE_SHIEKI) {
+    if (t_ptr->voice == VOICE_UNKNOWN || 
+	t_ptr->voice & VOICE_UKEMI ||
+	t_ptr->voice & VOICE_SHIEKI || 
+	t_ptr->voice & VOICE_SHIEKI_UKEMI) {
+	int suffix = 0;
+
+	if (t_ptr->voice & VOICE_SHIEKI) {
 	    strcat(verb, ":C");
+	    suffix = 2;
 	}
-	else {
+	else if (t_ptr->voice & VOICE_UKEMI || 
+		 t_ptr->voice & VOICE_UNKNOWN) {
 	    strcat(verb, ":P");
+	    suffix = 2;
 	}
+	else if (t_ptr->voice & VOICE_SHIEKI_UKEMI) {
+	    strcat(verb, ":PC");
+	    suffix = 3;
+	}
+
 	plus_num = _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, 0);
 	if (plus_num != 0) {
 	    free(verb);
 	    return f_num + plus_num;
 	}
-	*(verb + strlen(verb) - 2) = '\0';	/* みつからなかったらもとにもどす */
+	*(verb + strlen(verb) - suffix) = '\0'; /* みつからなかったらもとにもどす */
     }
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
-	/* 受身 */
-	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI);
-	free(verb);
-	return f_num;
+	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI); /* 受身 */
     }
-
-    f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice);
+    else {
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice);
+    }
     free(verb);    
     return f_num;
 }
@@ -1132,29 +1180,29 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 {
     char *buffer;
 
-    /* 用言タイプ, voiceの分(6)も確保しておく */
+    /* 用言タイプ, voiceの分(7)も確保しておく */
 
     /* 「（〜を）〜に」 のときは 「する」 で探す */
     if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
-	buffer = (char *)malloc_data(11, "make_pred_string"); /* 4 + 7 */
+	buffer = (char *)malloc_data(12, "make_pred_string"); /* 4 + 8 */
 	strcpy(buffer, "する");
     }
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→")) {
-	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 7, 
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 8, 
 				     "make_pred_string");
 	strcpy(buffer, t_ptr->head_ptr->Goi2);
 	strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
     }
     /* 「形容詞語幹+的だ」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出←")) {
-	buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(t_ptr->head_ptr->Goi) + 7, 
+	buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(t_ptr->head_ptr->Goi) + 8, 
 				     "make_pred_string");
 	strcpy(buffer, (t_ptr->head_ptr - 1)->Goi2);
 	strcat(buffer, t_ptr->head_ptr->Goi);
     }
     else {
-	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 7, "make_pred_string");
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 8, "make_pred_string");
 	strcpy(buffer, t_ptr->head_ptr->Goi);
     }
 

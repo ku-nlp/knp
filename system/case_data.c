@@ -638,24 +638,41 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 }
 
 /*==================================================================*/
-		void set_pred_voice(BNST_DATA *b_ptr)
+		 void set_pred_voice(BNST_DATA *ptr)
 /*==================================================================*/
 {
     /* ヴォイスの設定 */
 
-    if (check_feature(b_ptr->f, "〜せる") ||
-	check_feature(b_ptr->f, "〜させる")) {
-	b_ptr->voice = VOICE_SHIEKI;
-    }
-    else if (check_feature(b_ptr->f, "〜れる") ||
-	     check_feature(b_ptr->f, "〜られる")) {
-	b_ptr->voice = VOICE_UKEMI;
-    }
-    else if (check_feature(b_ptr->f, "〜もらう")) {
-	b_ptr->voice = VOICE_MORAU;
-    }
-    else if (check_feature(b_ptr->f, "〜ほしい")) {
-	b_ptr->voice = VOICE_SHIEKI;
+    char *cp;
+
+    ptr->voice = 0;
+
+    if (cp = check_feature(ptr->f, "態")) {
+	char *token, *str;
+
+	str = strdup(cp + 3);
+	token = strtok(str, "|");
+	while (token) {
+	    if (!strcmp(token, "受動")) {
+		ptr->voice |= VOICE_UKEMI;
+	    }
+	    else if (!strcmp(token, "使役")) {
+		ptr->voice |= VOICE_SHIEKI;
+	    }
+	    else if (!strcmp(token, "もらう")) {
+		ptr->voice |= VOICE_MORAU;
+	    }
+	    else if (!strcmp(token, "ほしい")) {
+		ptr->voice |= VOICE_HOSHII;
+	    }
+	    else if (!strcmp(token, "使役&受動")) {
+		ptr->voice |= VOICE_SHIEKI_UKEMI;
+	    }
+	    /* 「可能」は未扱い */
+
+	    token = strtok(NULL, "|");
+	}
+	free(str);
     }
 }
 

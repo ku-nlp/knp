@@ -339,6 +339,8 @@
 		    fprintf(Outfp, " 使役ヲ"); break;
 		case FRAME_CAUSATIVE_NI:
 		    fprintf(Outfp, " 使役ニ"); break;
+		case FRAME_CAUSATIVE_PASSIVE:
+		    fprintf(Outfp, " 使役&受身"); break;
 		case FRAME_POSSIBLE:
 		    fprintf(Outfp, " 可能"); break;
 		case FRAME_POLITE:

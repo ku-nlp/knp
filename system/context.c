@@ -1174,9 +1174,9 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     for (i = 0; i < 3; i++) {
 	f->p_pp[i] = ef->p_pp == i+1 ? 1 : 0;
     }
-    f->p_voice[0] = ef->p_voice == VOICE_SHIEKI ? 1 : 0;
-    f->p_voice[1] = ef->p_voice == VOICE_UKEMI ? 1 : 0;
-    f->p_voice[2] = ef->p_voice == VOICE_MORAU ? 1 : 0;
+    f->p_voice[0] = ef->p_voice & VOICE_SHIEKI ? 1 : 0;
+    f->p_voice[1] = ef->p_voice & VOICE_UKEMI ? 1 : 0;
+    f->p_voice[2] = ef->p_voice & VOICE_MORAU ? 1 : 0;
     f->p_type[0] = ef->p_type == 1 ? 1 : 0;
     f->p_type[1] = ef->p_type == 2 ? 1 : 0;
     f->p_type[2] = ef->p_type == 3 ? 1 : 0;
@@ -1205,13 +1205,8 @@ void SetEllipsisFeaturesForPred(E_FEATURES *f, CF_PRED_MGR *cpm_ptr,
 
     f->p_pp = cf_ptr->pp[n][0];
 
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "追加受身")) {
-	f->p_voice = VOICE_UKEMI;
-    }
-    else {
-	/* 能動(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
-	f->p_voice = cpm_ptr->pred_b_ptr->voice;
-    }
+    /* 能動(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
+    f->p_voice = cpm_ptr->pred_b_ptr->voice;
 
     if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:動")) {
 	f->p_type = 1;
@@ -2503,7 +2498,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
   EvalAntecedent:
     if (maxtag) {
 	if (str_eq(maxtag, "不特定-人")) {
-	    sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
+	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
@@ -2519,7 +2514,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    return 1;
 	}
 	else if (str_eq(maxtag, "不特定-状況")) {
-	    sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
+	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
@@ -2585,7 +2580,7 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
     /* <不特定:状況> をガ格としてとる判定詞 */
     if (check_feature(cpm_ptr->pred_b_ptr->f, "時間ガ省略") && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
+	sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 	return 0;

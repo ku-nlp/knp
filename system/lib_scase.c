@@ -96,15 +96,15 @@ int		ScaseDicExist;
 	strcmp(vtype, "用言:判")) { /* 判定詞ではない場合 */
 	vtype += 5;
 
-	if (ptr->voice == VOICE_UKEMI || 
-	    ptr->voice == VOICE_MORAU) {
+	voice[0] = '\0';
+	if (ptr->voice & VOICE_UKEMI) {
 	    strcpy(voice, ":P");
 	}
-	else if (ptr->voice == VOICE_SHIEKI) {
+	else if (ptr->voice & VOICE_SHIEKI) {
 	    strcpy(voice, ":C");
 	}
-	else {
-	    voice[0] = '\0';
+	else if (ptr->voice & VOICE_SHIEKI_UKEMI) {
+	    strcpy(voice, ":PC");
 	}
 
 	str_buffer = make_pred_string(ptr->head_tag_ptr); /* 最後のタグ単位 (「〜のは」の場合は1つ前) */
@@ -161,12 +161,16 @@ int		ScaseDicExist;
 
     /* ヴォイスによる修正 */
 
-    if (ptr->voice == VOICE_SHIEKI) {
+    if (ptr->voice & VOICE_SHIEKI) {
 	ptr->SCASE_code[case2num("ヲ格")] = 1;
 	ptr->SCASE_code[case2num("ニ格")] = 1;
-    } else if (ptr->voice == VOICE_UKEMI) {
+    }
+    else if (ptr->voice & VOICE_UKEMI || 
+	     ptr->voice & VOICE_SHIEKI_UKEMI) {
 	ptr->SCASE_code[case2num("ニ格")] = 1;
-    } else if (ptr->voice == VOICE_MORAU) {
+    }
+    else if (ptr->voice & VOICE_MORAU || 
+	     ptr->voice & VOICE_HOSHII) {
 	ptr->SCASE_code[case2num("ヲ格")] = 1;
 	ptr->SCASE_code[case2num("ニ格")] = 1;
     }
