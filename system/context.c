@@ -1856,8 +1856,8 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: exact match or <sm> match */
-	if (ef->similarity > 1.0) {
+	/* 名詞の場合: sim >= 1.0 or <sm> match */
+	if (ef->similarity >= 1.0) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	    similarity = ef->similarity;
 	}
@@ -1977,8 +1977,8 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: exact match or <sm> match */
-	if (ef->similarity > 1.0) {
+	/* 名詞の場合: sim >= 1.0 or <sm> match */
+	if (ef->similarity >= 1.0) {
 	    score = ef->similarity;
 	}
 	else if (ef->match_sm_flag) {
