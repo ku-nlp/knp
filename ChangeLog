@@ -1,5 +1,8 @@
 2005-01-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* system/case_ipal.c, system/dpnd_analysis.c:
+	格フレームない場合も格解析結果を書くようにした。
+
 	* rule/context.rule:
 	「サ変名詞+をする」のサ変名詞は省略解析しないのをやめた。
 
