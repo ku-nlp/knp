@@ -1,3 +1,11 @@
+2004-02-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	形態素の意味情報をfeatureに反映するようにした。
+
+	* system/case_analysis.c, system/case_ipal.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/main.c, system/path.h:
+	格フレームのキャッシュモデルの実装
+
 2004-02-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_print.c:
