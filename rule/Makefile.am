@@ -27,13 +27,17 @@ dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data con
 	    cp -pf $@ $@.old; \
 	fi; \
 	$(RULETRANS) < $< > $@
+	if [ -r $@.old ]; then \
+	    perl -pe 's/RID:\d+//' $@ > $@-tmp; \
+	    perl -pe 's/RID:\d+//' $@.old > $@.old-tmp; \
+	    diff $(DIFF_ENV) $@.old-tmp $@-tmp; \
+	    rm -f $@.old-tmp $@-tmp; \
+	fi
 
 rule:
 	if [ -x $(RULECONV) ]; then \
 	    $(RULECONV) *.rule; \
 	fi
-
-all: trans
 
 trans: diff
 
