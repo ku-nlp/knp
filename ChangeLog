@@ -2,6 +2,8 @@
 
 	* dict/Makefile.orig: 辞書ディレクトリの修正
 
+	* configure.in: JUMANのパスを指定するしたときの不具合を修正。
+
 2002-03-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/hash.c: New file.

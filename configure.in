@@ -23,7 +23,7 @@ ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
 AC_ARG_WITH(svm, [  --with-svm              use TinySVM library [default=no]])
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
-JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
+JUMAN_LIB_DIR=$with_jumanlib_dir, JUMAN_LIB_DIR="")
 
 AC_ARG_WITH(rcpath, [  --with-rcpath           use specified rcpath], 
 RCPATH=$with_rcpath, RCPATH="")
