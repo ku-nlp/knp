@@ -1050,8 +1050,10 @@ PARSED:
     if (!pidfile) {
 	fputs(";; can't write pidfile: " KNP_PIDFILE "\n", stderr);
     }
-    fprintf(pidfile, "%d\n", getpid());
-    fclose(pidfile);
+    else {
+	fprintf(pidfile, "%d\n", getpid());
+	fclose(pidfile);
+    }
     umask(0);
 
     /* change uid and gid for security */
