@@ -1,3 +1,12 @@
+2003-03-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/case_analysis.rule:
+	弱時相名詞以外の時相名詞を強時間に
+	サ変名詞の整理, 括弧終のサ変名詞の用言化を止めた
+
+	* rule/context.rule:
+	省略解析ルールの整理
+
 2003-03-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c: コンパイルできない不都合を修正
