@@ -294,13 +294,16 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		b_ptr->num > 0 && (b_ptr-1)->dpnd_head != b_ptr->num) {
 		continue;
 	    }
-	    /* OR の格フレームを除く */
-	    if (((b_ptr->cf_ptr+i)->etcflag & CF_SUM) && b_ptr->cf_num != 1) {
-		continue;
-	    }
-	    /* 直前格が修飾の場合などを除く */
-	    else if (CheckCfAdjacent(b_ptr->cf_ptr+i) == FALSE) {
-		continue;
+	    /* 格フレームが1個ではないとき */
+	    if (b_ptr->cf_num != 1) {
+		/* OR の格フレームを除く */
+		if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
+		    continue;
+		}
+		/* 直前格が修飾の場合などを除く */
+		else if (CheckCfAdjacent(b_ptr->cf_ptr+i) == FALSE) {
+		    continue;
+		}
 	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
 	}
@@ -1245,8 +1248,9 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     /* 先頭をみる */
     for (i = 0; i < bp->mrph_num; i++) {
-	/* 特殊を除く */
-	if ((bp->mrph_ptr+i)->Hinshi != 1) {
+	/* 付属の特殊を除く */
+	if ((bp->mrph_ptr+i)->Hinshi != 1 || 
+	    check_feature((bp->mrph_ptr+i)->f, "自立")) {
 	    start = i;
 	    break;
 	}
@@ -1255,13 +1259,19 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     /* 末尾をみる */
     for (i = bp->mrph_num-1; i >= start; i--) {
 	/* 特殊, 助詞, 助動詞, 判定詞を除く */
-	if ((bp->mrph_ptr+i)->Hinshi != 1 && 
+	if (((bp->mrph_ptr+i)->Hinshi != 1 || 
+	     check_feature((bp->mrph_ptr+i)->f, "自立")) && 
 	    (bp->mrph_ptr+i)->Hinshi != 4 && 
 	    (bp->mrph_ptr+i)->Hinshi != 5 && 
 	    (bp->mrph_ptr+i)->Hinshi != 9) {
 	    end = i;
 	    break;
 	}
+    }
+
+    if (start > end) {
+	start = bp->jiritu_ptr-bp->mrph_ptr;
+	end = bp->settou_num+bp->jiritu_num-1;
     }
 
     for (i = start; i <= end; i++) {
@@ -1453,11 +1463,13 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
 	else {
 	    word = make_print_string(cpm_ptr->elem_b_ptr[num]);
-	    sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
-		    cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
-		    word, cpm_ptr->elem_b_ptr[num]->num);
-	    free(word);
+	    if (word) {
+		sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
+			cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
+			word, cpm_ptr->elem_b_ptr[num]->num);
+		free(word);
+	    }
 
 	    /* 省略の場合 (特殊タグ以外) */
 	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {

@@ -474,7 +474,13 @@ extern float	AssignReferentThreshold;
 	       static void timeout_function(int signal)
 /*==================================================================*/
 {
-    longjmp(timeout, 1);
+    if (OptAnalysis == OPT_CASE || 
+	OptAnalysis == OPT_CASE2) {
+	exit(1);
+    }
+    else {
+	longjmp(timeout, 1);
+    }
 }
 
 /*==================================================================*/
@@ -847,7 +853,7 @@ PARSED:
 
 	if (setjmp(timeout)) {
 #ifdef DEBUG
-	    fprintf(stderr, "Parse timeout.\n(");
+	    fprintf(stderr, ";; Parse timeout.\n;; (");
 	    for (i = 0; i < sp->Mrph_num; i++)
 		fprintf(stderr, "%s", sp->mrph_data[i].Goi2);
 	    fprintf(stderr, ")\n");

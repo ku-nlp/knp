@@ -344,7 +344,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	    /* 最大数を越えないようにチェック */
 	    if (sp->Mrph_num >= MRPH_MAX) {
-		fprintf(stderr, "Too many mrph (%s %s%s...)!\n", 
+		fprintf(stderr, ";; Too many mrph (%s %s%s...)!\nEOS\n", 
 			sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
 		sp->Mrph_num = 0;
 		return readtoeos(fp);
@@ -701,7 +701,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     b_ptr->num = sp->Bnst_num;
     sp->Bnst_num++;
     if (sp->Bnst_num > BNST_MAX) {
-	fprintf(stderr, "Too many bnst (%s %s%s...)!\n", 
+	fprintf(stderr, ";; Too many bnst (%s %s%s...)!\nEOS\n", 
 		sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
 	sp->Bnst_num = 0;
 	return NULL;
@@ -874,7 +874,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					     j++, m_ptr++) {
 	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
 		BNST_LENGTH_MAX) {
-		fprintf(stderr, "Too big bnst (%s %s%s...)!\n", 
+		fprintf(stderr, ";; Too big bnst (%s %s%s...)!\n", 
 			sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr, b_ptr->mrph_ptr+1);
 		return FALSE;
 	    }
@@ -950,7 +950,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					     j++, m_ptr++) {
 	    if ((b_ptr->length += strlen(m_ptr->Goi2)) >
 		BNST_LENGTH_MAX) {
-		fprintf(stderr, "Too big bunsetsu (%s...)!\n", 
+		fprintf(stderr, ";; Too big bunsetsu (%s...)!\n", 
 			b_ptr->mrph_ptr);
 		return FALSE;
 	    }

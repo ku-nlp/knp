@@ -41,6 +41,11 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 {
     int i;
 
+    /* 付属語がないとき */
+    if (b_ptr->num < 1 || (b_ptr-1)->fuzoku_num == 0) {
+	return NULL;
+    }
+
     fukugoji_string[0] = '\0';
 
     /* 前の文節の助詞 */
@@ -278,7 +283,13 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     else if (check_feature(b_ptr->f, "複合辞") && 
 	     check_feature(b_ptr->f, "係:連用") && 
 	     b_ptr->child[0]) {
-	int fc = pp_hstr_to_code(make_fukugoji_string(b_ptr));
+	char *fsp;
+	int fc;
+	fsp = make_fukugoji_string(b_ptr);
+	if (fsp == NULL) {
+	    return NULL;
+	}
+	fc = pp_hstr_to_code(fsp);
 	if (fc == END_M) {
 	    return NULL;
 	}

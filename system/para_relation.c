@@ -209,7 +209,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
 #ifdef DEBUG
 	/* 元の親と新しい親に関係がない */
-	fprintf(stderr, "Invalid relation !!\n");
+	fprintf(stderr, ";; Invalid relation !!\n");
 #endif
 	
     } else {
