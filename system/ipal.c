@@ -36,44 +36,35 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	fprintf(fp, "%s %d:%d\n", entry, address, size);
     }
 
-    for (point = hyouki; *point; point++) {
-
-	/* 用例の区切り */
-	if (*point == ' ') {
-	    output_buf[length] = '\0';
-	    /* 読みと異なる場合に出力 */
-	    if (flag != 1 || strcmp(output_buf, entry)) {
-		if (pp) {
-		    fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+    if (pp) {
+	for (point = hyouki; *point; point++) {
+	    /* 用例の区切り */
+	    if (*point == ' ') {
+		output_buf[length] = '\0';
+		fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+		length = 0;
+	    } else {
+		if (*point == ':') {
+		    output_buf[length++] = '\0';
 		}
 		else {
-		    fprintf(fp, "%s %d:%d\n", output_buf, address, size);
-		    flag = 1;
+		    output_buf[length++] = *point;
+		}
+
+		/* 日本語ならもう1byte進める */
+		if (*point & 0x80) {
+		    output_buf[length++] = *(point+1);
+		    point++;
 		}
 	    }
-	    length = 0;
-	} else {
-	    if (*point == ':') {
-		output_buf[length++] = '\0';
-	    }
-	    else {
-		output_buf[length++] = *point;
-	    }
-
-	    /* 日本語ならもう1byte進める */
-	    if (*point & 0x80) {
-		output_buf[length++] = *(point+1);
-		point++;
-	    }
 	}
+	output_buf[length] = '\0';
+	fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
     }
-    output_buf[length] = '\0';
-    if (flag != 1 || strcmp(output_buf, entry)) {
-	if (pp) {
-	    fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
-	}
-	else {
-	    fprintf(fp, "%s %d:%d\n", output_buf, address, size);
+    else {
+	/* 読みと異なる場合に出力 */
+	if (flag != 1 || strcmp(hyouki, entry)) {
+	    fprintf(fp, "%s %d:%d\n", hyouki, address, size);
 	}
     }
 }
