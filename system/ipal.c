@@ -8,7 +8,7 @@
 
 /* from ipal.h */
 #define IPAL_FIELD_NUM 27 /* 65 */
-#define IPAL_DATA_SIZE	1026 /* 1380 */
+#define IPAL_DATA_SIZE	5000 /* 1026 */
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -34,7 +34,7 @@ typedef struct {
     unsigned char DATA[IPAL_DATA_SIZE];
 } IPAL_FRAME;
 
-char buffer[1024];
+char buffer[5000];
 
 IPAL_TRANS_FRAME ipal_frame;
 
@@ -93,7 +93,7 @@ main(int argc, char **argv)
 	pos = 0;
 	for (i = 0; i < IPAL_FIELD_NUM; i++, line++) {
 	    
-	    if (fgets(buffer, 1024, stdin) == NULL) {
+	    if (fgets(buffer, 5000, stdin) == NULL) {
 		if (i != 0) {
 		    fprintf(stderr, "Invalid data.\n");
 		    exit(1);

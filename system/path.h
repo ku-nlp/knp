@@ -7,7 +7,7 @@
     $Id$
 ====================================================================*/
 
-#define IPAL_DAT_NAME	KNP_DICT "/ipal/ipal.dat"
+#define IPAL_DAT_NAME	KNP_DICT "/cf/ipal.dat"
 #define RULEV_DIC_FILE	KNP_DICT "/rule/rulev.dic"
 #define RULEP_DIC_FILE	KNP_DICT "/rule/rulep.dic"
 
@@ -17,7 +17,7 @@
 #define SM2CODE_DB_NAME	KNP_DICT "/sm/sm2code"
 #define SMP2SMG_DB_NAME	KNP_DICT "/sm/smp2smg"
 #define SCASE_DB_NAME	KNP_DICT "/scase/scase"
-#define IPAL_DB_NAME	KNP_DICT "/cf/cf"
+#define IPAL_DB_NAME	KNP_DICT "/cf/ipal"
 #define PROPER_DB_NAME	KNP_DICT "/proper/word"
 #define PROPERC_DB_NAME	KNP_DICT "/proper/class"
 #define PROPERCASE_DB_NAME	KNP_DICT "/proper/case"
@@ -35,7 +35,7 @@
 #define SM2CODE_DB_NAME	KNP_DICT "/sm/sm2code.db"
 #define SMP2SMG_DB_NAME	KNP_DICT "/sm/smp2smg.db"
 #define SCASE_DB_NAME	KNP_DICT "/scase/scase.db"
-#define IPAL_DB_NAME	KNP_DICT "/ipal/ipal.db"
+#define IPAL_DB_NAME	KNP_DICT "/cf/ipal.db"
 #define PROPER_DB_NAME	KNP_DICT "/proper/word.db"
 #define PROPERC_DB_NAME	KNP_DICT "/proper/class.db"
 #define PROPERCASE_DB_NAME	KNP_DICT "/proper/case.db"

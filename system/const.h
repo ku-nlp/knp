@@ -40,7 +40,7 @@
 
 #define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
-#define SM_CODE_MAX	100
+#define SM_CODE_MAX	128
 
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
@@ -67,8 +67,8 @@
 #endif
 #define CF_ELEMENT_MAX 		10
 #define PP_ELEMENT_MAX		5
-#define SM_ELEMENT_MAX		64			/* SM_CODE_MAXとまとめるべき */
-#define EX_ELEMENT_MAX		64
+#define SM_ELEMENT_MAX		128			/* SM_CODE_MAXとまとめるべき */
+#define EX_ELEMENT_MAX		128
 #define MAX_MATCH_MAX 		10
 
 #define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
@@ -554,7 +554,7 @@ typedef struct {
 				格解析
 ====================================================================*/
 #define IPAL_FIELD_NUM	27	/* 65 */
-#define IPAL_DATA_SIZE	1026	/* 1380 */
+#define IPAL_DATA_SIZE	5000	/* 1026 */
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
