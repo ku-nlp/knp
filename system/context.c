@@ -810,65 +810,6 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
     }
 }
 
-/*==================================================================*/
-	       void MakeInternalBnst(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j;
-    BNST_DATA *bp;
-
-    /* 最後の自立語がサ変名詞のときに、それより前の名詞を
-       仮の文節として考える */
-
-    for (i = 0; i < sp->Bnst_num; i++) {
-	bp = sp->bnst_data+i;
-	bp->internal_num = 0;
-
-	/* 「転換期」などはまだ扱っていない */
-	if (bp->jiritu_ptr != NULL && check_feature(L_Jiritu_M(bp)->f, "サ変")) {
-	    /* 用言ではないサ変名詞を格解析する feature */
-	    if (!check_feature(bp->f, "用言")) {
-		assign_cfeature(&(bp->f), "サ変名詞格解析");
-	    }
-	}
-	else {
-	    continue;
-	}
-
-	if (bp->jiritu_num > 1) {
-	    for (j = 2; j <= bp->jiritu_num; j++) {
-		/* 名詞であれば */
-		if ((bp->jiritu_ptr+bp->jiritu_num-j)->Hinshi == 6) {
-		    if (bp->internal_num == 0) {
-			bp->internal = (BNST_DATA *)malloc_data(sizeof(BNST_DATA), "MakeInternalBnst");
-			bp->internal_max = 1;
-		    }
-		    else if (bp->internal_num >= bp->internal_max) {
-			bp->internal = (BNST_DATA *)realloc_data(bp->internal, 
-								 sizeof(BNST_DATA)*(bp->internal_max <<= 1), 
-								 "MakeInternalBnst");
-		    }
-		    assign_cfeature(&(bp->f), "内部文節");
-		    memset(bp->internal+bp->internal_num, 0, sizeof(BNST_DATA));
-		    (bp->internal+bp->internal_num)->num = -1;
-		    (bp->internal+bp->internal_num)->mrph_num = 1;
-		    (bp->internal+bp->internal_num)->mrph_ptr = bp->jiritu_ptr+bp->jiritu_num-j;
-		    (bp->internal+bp->internal_num)->jiritu_num = 1;
-		    (bp->internal+bp->internal_num)->jiritu_ptr = bp->jiritu_ptr+bp->jiritu_num-j;
-		    strcpy((bp->internal+bp->internal_num)->Jiritu_Go, 
-			   (bp->internal+bp->internal_num)->jiritu_ptr->Goi);
-		    get_bgh_code(bp->internal+bp->internal_num);
-		    get_sm_code(bp->internal+bp->internal_num);
-		    assign_cfeature(&((bp->internal+bp->internal_num)->f), "係:文節内");
-		    (bp->internal+bp->internal_num)->parent = bp;
-		    bp->internal_num++;
-		    break;
-		}
-	    }
-	}
-    }
-}
-
 /*====================================================================
                                END
 ====================================================================*/

@@ -122,6 +122,7 @@ extern void set_pred_caseframe(SENTENCE_DATA *sp);
 extern void clear_cf();
 extern void init_mgr_cf(SENTENCE_DATA *sp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
+extern void MakeInternalBnst(SENTENCE_DATA *sp);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -148,7 +149,6 @@ extern void InitAnaphoraList();
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
 extern void copy_sentence(SENTENCE_DATA *sp);
-extern void MakeInternalBnst(SENTENCE_DATA *sp);
 
 /* corpus.c */
 extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 

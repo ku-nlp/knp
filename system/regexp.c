@@ -182,29 +182,29 @@ const REGEXPBNST RegexpBnstInitValue = {
     nth = 0;
     while (!Null(car(list_cell))) {
 	switch (type) {
-	  case MRPH_HINSHI:
+	case MRPH_HINSHI:
 	    mp->Hinshi[nth] = get_hinsi_id(_Atom(car(list_cell)));
 	    break;
-	  case MRPH_BUNRUI:
+	case MRPH_BUNRUI:
 	    mp->Bunrui[nth] = 
-	      get_bunrui_id(_Atom(car(list_cell)), mp->Hinshi[0]);
+		get_bunrui_id(_Atom(car(list_cell)), mp->Hinshi[0]);
 	    break;
-	  case MRPH_KATA:
+	case MRPH_KATA:
 	    mp->Katuyou_Kata[nth] = get_type_id(_Atom(car(list_cell)));
 	    break;
-	  case MRPH_KEI:
+	case MRPH_KEI:
 	    tmp = _Atom(car(list_cell));
 	    mp->Katuyou_Kei[nth] = 
-	      (char *)malloc((strlen(tmp)+1) * sizeof(char));
+		(char *)malloc((strlen(tmp)+1) * sizeof(char));
 	    strcpy(mp->Katuyou_Kei[nth], tmp);
 	    break;
-	  case MRPH_GOI:
+	case MRPH_GOI:
 	    tmp = _Atom(car(list_cell));
 	    mp->Goi[nth] = 
-	      (char *)malloc((strlen(tmp)+1) * sizeof(char));
+		(char *)malloc((strlen(tmp)+1) * sizeof(char));
 	    strcpy(mp->Goi[nth], tmp);
 	    break;
-	  default: break;
+	default: break;
 	}
 	list_cell = cdr(list_cell);
 	nth++;
@@ -288,11 +288,11 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     while (!Null(cell)) {
 	switch(store_regexpmrph(((*mspp)->mrph)+mrph_num, car(cell))) {
-	  case MAT_FLG: case QST_FLG:
+	case MAT_FLG: case QST_FLG:
 	    mrph_num++; break;
-	  case NOT_FLG: case AST_FLG:
+	case NOT_FLG: case AST_FLG:
 	    break;
-	  default:
+	default:
 	    break;
 	}
 	cell = cdr(cell);
@@ -362,11 +362,11 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     while (!Null(cell)) {
 	switch(store_regexpbnst(((*bspp)->bnst)+bnst_num, car(cell))) {
-	  case MAT_FLG: case QST_FLG:
+	case MAT_FLG: case QST_FLG:
 	    bnst_num++; break;
-	  case NOT_FLG: case AST_FLG:
+	case NOT_FLG: case AST_FLG:
 	    break;
-	  default:
+	default:
 	    break;
 	}
 	cell = cdr(cell);
@@ -386,18 +386,18 @@ const REGEXPBNST RegexpBnstInitValue = {
     int i, tmp_ret = FALSE;
 
     if (r_data[0] == -1 || r_data[0] == 0)
-      return TRUE;
+	return TRUE;
     else {
 	for (i = 0; r_data[i]!=-1; i++)
-	  if (r_data[i] == data) {
-	      tmp_ret = TRUE;
-	      break;
-	  }
+	    if (r_data[i] == data) {
+		tmp_ret = TRUE;
+		break;
+	    }
 	if ((flg == MAT_FLG && tmp_ret == TRUE) ||
 	    (flg == NOT_FLG && tmp_ret == FALSE))
-	  return TRUE;
+	    return TRUE;
 	else 
-	  return FALSE;
+	    return FALSE;
     }
 }
 
@@ -409,20 +409,20 @@ const REGEXPBNST RegexpBnstInitValue = {
     int i, tmp_ret = FALSE;
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
-      return TRUE;
+	return TRUE;
     else if (kata == 0 || kei == 0) 
-      return FALSE;
+	return FALSE;
     else {
 	for (i = 0; r_string[i]; i++)
-	  if (str_eq(r_string[i], Form[kata][kei].name)) {
-	      tmp_ret = TRUE;
-	      break;
-	  }
+	    if (str_eq(r_string[i], Form[kata][kei].name)) {
+		tmp_ret = TRUE;
+		break;
+	    }
 	if ((flg == MAT_FLG && tmp_ret == TRUE) ||
 	    (flg == NOT_FLG && tmp_ret == FALSE))
-	  return TRUE;
+	    return TRUE;
 	else 
-	  return FALSE;
+	    return FALSE;
     }
 }
 
@@ -469,7 +469,7 @@ const REGEXPBNST RegexpBnstInitValue = {
     int i, tmp_ret = FALSE;
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
-      return TRUE;
+	return TRUE;
     else {
 	for (i = 0; r_string[i]; i++) {
 	    /* 関数呼び出し */
@@ -485,9 +485,9 @@ const REGEXPBNST RegexpBnstInitValue = {
 	}
 	if ((flg == MAT_FLG && tmp_ret == TRUE) ||
 	    (flg == NOT_FLG && tmp_ret == FALSE))
-	  return TRUE;
+	    return TRUE;
 	else 
-	  return FALSE;
+	    return FALSE;
     }
 }
 
@@ -501,7 +501,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     /* '?' */
     if (ptr1->type_flag == QST_FLG)
-      return TRUE;
+	return TRUE;
     else {
 	if (rule_HBK_cmp(ptr1->Hinshi_not,ptr1->Hinshi,ptr2->Hinshi) &&
 	    rule_HBK_cmp(ptr1->Bunrui_not,ptr1->Bunrui,ptr2->Bunrui) &&
@@ -881,5 +881,5 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*====================================================================
-                               END
+				 END
 ====================================================================*/
