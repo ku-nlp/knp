@@ -71,11 +71,12 @@ char Ga_Memory[256];
 }
 
 /*==================================================================*/
-void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
+void assign_GA2pred(BNST_DATA *pred_ptr, BNST_DATA *GA_ptr, char *comment)
 /*==================================================================*/
 {
     char result[256];
-    sprintf(result, "C¥¬³Ê¿äÄê:%s:%s", comment, GA);
+    sprintf(result, "C¥¬³Ê¿äÄê:%s:", comment);
+    print_bnst(GA_ptr, result+strlen(result));
     assign_cfeature(&(pred_ptr->f), result);
     /* printf("  %s\n", result); */
 }    
@@ -101,10 +102,10 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 
 	for (i = 0; b_ptr->child[i]; i++) {
 	    if (check_feature(b_ptr->child[i]->f, "·¸:¥¬³Ê")) {
-		assign_GA2pred(b_ptr, b_ptr->child[i]->Jiritu_Go, "¥¬³Ê");
+		assign_GA2pred(b_ptr, b_ptr->child[i], "¥¬³Ê");
 		goto Match;
 	    } else if (check_feature(b_ptr->child[i]->f, "·¸:Ì¤³Ê")) {
-		assign_GA2pred(b_ptr, b_ptr->child[i]->Jiritu_Go, "Ì¤³Ê");
+		assign_GA2pred(b_ptr, b_ptr->child[i], "Ì¤³Ê");
 		goto Match;
 	    }
 	}
@@ -115,12 +116,12 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    for (i = 0; b_ptr->parent->child[i]; i++) {
 		if (b_ptr->parent->child[i]->para_type == PARA_NIL &&
 		    check_feature(b_ptr->parent->child[i]->f, "·¸:¥¬³Ê")) {
-		    assign_GA2pred(b_ptr, b_ptr->parent->child[i]->Jiritu_Go, "¥¬³Ê");
+		    assign_GA2pred(b_ptr, b_ptr->parent->child[i], "¥¬³Ê");
 		    goto Match;
 		}
 		else if (b_ptr->parent->child[i]->para_type == PARA_NIL &&
 			 check_feature(b_ptr->parent->child[i]->f, "·¸:Ì¤³Ê")) {
-		    assign_GA2pred(b_ptr, b_ptr->parent->child[i]->Jiritu_Go, "Ì¤³Ê");
+		    assign_GA2pred(b_ptr, b_ptr->parent->child[i], "Ì¤³Ê");
 		    goto Match;
 		}
 		
@@ -133,7 +134,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    b_ptr->parent &&
 	    b_ptr->parent->para_top_p != TRUE &&
 	    !check_feature(b_ptr->parent->f, "³°¤Î´Ø·¸")) {
-	    assign_GA2pred(b_ptr, b_ptr->parent->Jiritu_Go, "½¤¾şÀè");
+	    assign_GA2pred(b_ptr, b_ptr->parent, "½¤¾şÀè");
 	    goto Match;
 	}
 	if (check_feature(b_ptr->f, "·¸:Ï¢³Ê") &&
@@ -144,7 +145,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    b_ptr->parent->parent->para_top_p != TRUE &&
 	    !check_feature(b_ptr->parent->parent->f, "³°¤Î´Ø·¸")&&
 	    (cp = (char *)check_feature(b_ptr->parent->parent->f, "C¥¬³Ê¿äÄê")) != NULL) {
-	    assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À");
+	    /* assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À"); */
 	    goto Match;
 /*
   (¤³¤ó¤Ê¤È¤­)
@@ -167,7 +168,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    b_ptr->parent->parent &&
 	    b_ptr->parent->parent->para_top_p != TRUE &&
 	    !check_feature(b_ptr->parent->parent->f, "³°¤Î´Ø·¸")) {
-	    assign_GA2pred(b_ptr, b_ptr->parent->parent->Jiritu_Go, "½¤¾şÀè");
+	    assign_GA2pred(b_ptr, b_ptr->parent->parent, "½¤¾şÀè");
 	    goto Match;
 	}
 	if (check_feature(b_ptr->f, "·¸:Ï¢³Ê") &&
@@ -178,7 +179,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    check_feature(b_ptr->parent->parent->f, "³°¤Î´Ø·¸") &&
 	    check_feature(b_ptr->parent->parent->f, "·¸:Ï¢ÍÑ")&&
 	    (cp = (char *)check_feature(b_ptr->parent->parent->parent->f, "C¥¬³Ê¿äÄê")) != NULL) {
-	    assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À");
+	    /* assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À"); */
 	    goto Match;
 	}
 
@@ -188,7 +189,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	if (check_feature(b_ptr->f, "·¸:Ï¢ÍÑ") &&
 	    b_ptr->parent &&
 	    (cp = (char *)check_feature(b_ptr->parent->f, "C¥¬³Ê¿äÄê")) != NULL) {
-	    assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À");
+	    /* assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "¿ÆÍÑ¸À"); */
 	    goto Match;
 	}
 
@@ -199,7 +200,7 @@ void assign_GA2pred(BNST_DATA *pred_ptr, char *GA, char *comment)
 	    if (prev_sp->Bnst_num >= 1 ){
 		if ((cp = (char *)check_feature(prev_sp->bnst_data[prev_sp->Bnst_num - 1].f,
 						"C¥¬³Ê¿äÄê")) != NULL) {
-		    assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "Á°Ê¸");
+		    /* assign_GA2pred(b_ptr, cp + strlen("C¥¬³Ê¿äÄê:"), "Á°Ê¸"); */
 		    goto Match;
 		}
 	    }

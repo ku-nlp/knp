@@ -167,7 +167,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 {
     int i;
 
-    if ((int)cp > 0 && ptr) {
+    if (cp && ptr) {
 	if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "<P>");
 	else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "<I>");
 	else			     cp[0] = '\0';
