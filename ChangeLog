@@ -1,3 +1,17 @@
+2003-06-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c:
+	knprcがないときに格解析用ルールを読み込むことにした
+
+	* system/case_analysis.c, system/case_ipal.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_scase.c, system/main.c, system/read_data.c:
+	格・省略解析の新格フレームへの対応と整理
+	
+	* rule/case_analysis.rule, rule/context.rule: 格・省略解析の修正
+
+	* rule/mrph_basic.rule: タグ単位整理
+
+	* dict/gcf/scase.dat: 表層格辞書の更新
+
 2003-05-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac, svm/Makefile.am:
