@@ -1,3 +1,28 @@
+2001-08-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule: 固有表現認識ルールの整理
+	「電鉄,会議,国家」を組織名末尾語に追加
+
+2001-08-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/mrph_basic.rule: 固有表現認識ルールの整理
+
+2001-08-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_homo.rule:
+	「ＮＴＴ」のように、「組織名」と「アルファベット」の品詞曖昧をもってい
+	ても「組織名」に一意決定するように変更。
+
+2001-08-07  Sadao KUROHASHI  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* system/tree_conv.c:
+	不要なデバッグ情報のコメントアウト
+
+2001-08-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_bgh.c:
+	分類語彙表をひくとき、サ変動詞は「する」付きでひくように修正。
+
 2001-08-06  Sadao KUROHASHI  <kuro@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/rule_trans.pl, system/lib_print.c, system/para_analysis.c, system/para_similarity.c, system/tree_conv.c:
