@@ -767,7 +767,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 }
 
 /*==================================================================*/
-float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos)
+float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos, int cf_flag)
 /*==================================================================*/
 {
     char *exd, *exp;
@@ -854,7 +854,7 @@ float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos)
 	}
     }
 
-    if (score > 0) {
+    if (cf_flag == CF_PRED && score > 0) {
 	*pos = MATCH_SUBJECT;
 	return score;
     }
@@ -1533,7 +1533,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 類似度計算 */
     f->pos = MATCH_NONE;
-    f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos);
+    f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos, cpm_ptr->cf.type);
     f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* 用例の頻度 */
 
     if (vp) {
@@ -1852,7 +1852,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     if (cpm_ptr->cf.type == CF_NOUN) {
 	/* 名詞の場合: exact match or <agent> match */
 	if (ef->similarity > 1.0 || 
-	    ef->c_subject_flag && ef->p_cf_subject_flag) {
+	    (ef->similarity >= 1.0 && ef->c_subject_flag && ef->p_cf_subject_flag)) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	}
 	else {
