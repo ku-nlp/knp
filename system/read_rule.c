@@ -498,14 +498,14 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-void read_etc_rule(char *file_name, BnstRule *rp, int *count, int max)
+void read_etc_rule(char *file_name, void *rp, int *count, int max)
 /*==================================================================*/
 {
     if (ExistEtcRule == IsMrphRule) {
-	read_mrph_rule(file_name, rp, count, max);
+	read_mrph_rule(file_name, (MrphRule *)rp, count, max);
     }
     else if (ExistEtcRule == IsBnstRule) {
-	read_bnst_rule(file_name, rp, count, max);
+	read_bnst_rule(file_name, (BnstRule *)rp, count, max);
     }
 }
 
