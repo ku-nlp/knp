@@ -8,6 +8,11 @@
 ====================================================================*/
 #include "knp.h"
 
+float maxscore;
+SENTENCE_DATA *maxs;
+int maxi;
+int Bcheck[BNST_MAX];
+
 /*==================================================================*/
       void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src)
 /*==================================================================*/
@@ -268,20 +273,100 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n)
 }
 
 /*==================================================================*/
+void EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr, 
+				      BNST_DATA *bp, CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    float score;
+    char feature_buffer[DATA_LEN];
+
+    /* 省略要素となるためのとりあえずの条件 */
+    if (!check_feature(bp->f, "体言") || 
+	check_feature(bp->f, "形副名詞") || 
+	check_feature(bp->f, "時間") || 
+	check_feature(bp->f, "数量")) {
+	return;
+    }
+
+    score = CalcSimilarityForVerb(bp, cf_ptr, n);
+    if (score > maxscore) {
+	maxscore = score;
+	maxs = s;
+	maxi = bp->num;
+    }
+    if (score > 0) {
+	/* 省略候補 */
+	sprintf(feature_buffer, "C%s;%s:%.3f", bp->Jiritu_Go, 
+		pp_code_to_kstr(cf_ptr->pp[n][0]), 
+		score);
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+    }
+
+    Bcheck[bp->num] = 1;
+}
+
+/*==================================================================*/
+void SearchCaseComponent(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr, 
+			 BNST_DATA *bp, CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    int i, num;
+
+    /* 他の用言 (親用言など) の格要素をチェック */
+    if (bp->cpm_ptr && bp->cpm_ptr->cmm[0].score != -2) {
+	for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	    num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	    if (num != UNASSIGNED) {
+		/* 格要素の格の一致 (ガ格のときはそうかもしれない) */
+		/* cf_ptr->pp[n][0] == cmm_ptr->cf_ptr->pp[i][0] */
+		EllipsisDetectForVerbSubcontract(s, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], cf_ptr, n);
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
+    /* 用言とその省略格が与えられる */
+
     /* cf_ptr = cpm_ptr->cmm[0].cf_ptr である */
     /* 用言 cpm_ptr の cf_ptr->pp[n][0] 格が省略されている
        cf_ptr->ex[n] に似ている文節を探す */
 
-    int i, maxi, current = 1, bend;
-    float score, maxscore = 0;
+    int i, current = 1, bend, num;
     char feature_buffer[DATA_LEN];
-    SENTENCE_DATA *s, *maxs;
+    SENTENCE_DATA *s;
+    BNST_DATA *bp;
+    CF_MATCH_MGR *cmm_ptr;
+
+    maxscore = 0;
+    s = sentence_data + sp->Sen_num - 1;
+    memset(Bcheck, 0, BNST_MAX);
+
+    /* 親をみる (PARA なら child 用言) */
+    if (cpm_ptr->pred_b_ptr->parent) {
+	/* 親が PARA */
+	if (cpm_ptr->pred_b_ptr->parent->para_top_p) {
+	    for (i = 0; cpm_ptr->pred_b_ptr->parent->child[i]; i++) {
+		/* PARA の子供で、自分を以外の並列用言 */
+		if (cpm_ptr->pred_b_ptr->parent->child[i] != cpm_ptr->pred_b_ptr &&
+		    cpm_ptr->pred_b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
+		    SearchCaseComponent(s, cpm_ptr, cpm_ptr->pred_b_ptr->parent->child[i], 
+					cf_ptr, n);
+		}
+	    }
+	}
+	/* とりあえず、ひとつ上の用言のみ */
+	else {
+	    bp = cpm_ptr->pred_b_ptr->parent;
+	    SearchCaseComponent(s, cpm_ptr, bp, cf_ptr, n);
+	}
+    }
 
     /* 前の文の体言を探す (この用言の格要素になっているもの以外) */
-    for (s = sentence_data + sp->Sen_num - 1; s >= sentence_data; s--) {
+    for (; s >= sentence_data; s--) {
 	if (current) {
 	    bend = cpm_ptr->pred_b_ptr->num;
 	}
@@ -290,27 +375,11 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	}
 
 	for (i = bend; i >= 0; i--) {
-	    if (current && 
-		(s->bnst_data+i)->dpnd_head == cpm_ptr->pred_b_ptr->num)
+	    if (Bcheck[i] || 
+		(current && (s->bnst_data+i)->dpnd_head == cpm_ptr->pred_b_ptr->num)) {
 		continue;
-	    if (check_feature((s->bnst_data+i)->f, "体言") && 
-		!check_feature((s->bnst_data+i)->f, "形副名詞") && 
-		!check_feature((s->bnst_data+i)->f, "時間") && 
-		!check_feature((s->bnst_data+i)->f, "数量")) {
-		score = CalcSimilarityForVerb(s->bnst_data+i, cf_ptr, n);
-		if (score > maxscore) {
-		    maxscore = score;
-		    maxs = s;
-		    maxi = i;
-		}
-		if (score > 0) {
-		    /* 省略候補 */
-		    sprintf(feature_buffer, "C%s;%s:%.3f", (s->bnst_data+i)->Jiritu_Go, 
-			    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-			    score);
-		    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
-		}
 	    }
+	    EllipsisDetectForVerbSubcontract(s, cpm_ptr, s->bnst_data+i, cf_ptr, n);
 	}
 	if (current)
 	    current = 0;
@@ -359,7 +428,8 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	cpm_ptr = &(Best_mgr.cpm[j]);
 
 	/* 格フレームがない場合 */
-	if (cpm_ptr->result_num == 0) {
+	if (cpm_ptr->result_num == 0 || 
+	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1) {
 	    continue;
 	}
 

@@ -534,7 +534,8 @@ char *pp_code_to_hstr(int num)
 	cpm_ptr = &(Best_mgr.cpm[j]);
 
 	/* 格フレームがない場合 */
-	if (cpm_ptr->result_num == 0) {
+	if (cpm_ptr->result_num == 0 || 
+	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1) {
 	    continue;
 	}
 
