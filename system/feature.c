@@ -656,6 +656,22 @@
 	return TRUE;
     }
 
+    /* &末尾文字列 : 末尾の文字列を チェック (形態素レベル) */
+
+    else if (!strncmp(rule, "&末尾文字列:", strlen("&末尾文字列:"))) {
+	cp = rule + strlen("&末尾文字列:");
+
+	/* パターンの方が大きければFALSE */
+	if (strlen(cp) > strlen(((MRPH_DATA *)ptr2)->Goi2))
+	    return FALSE;
+
+	ucp = ((MRPH_DATA *)ptr2)->Goi2;	/* 表記をチェック */
+	ucp += strlen(ucp)-strlen(cp);
+	if (strcmp(ucp, cp))
+	    return FALSE;
+	return TRUE;
+    }
+
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&カタカナ")) {
