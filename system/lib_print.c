@@ -946,7 +946,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     */ 
 
     /* 既解析へのパターンマッチで, マッチがなければ出力しない
-       if (OptAnalysis == OPT_PM && !PM_Memo[0]) return;
+       if (OptAnalysis == OPT_AssignF && !PM_Memo[0]) return;
     */
 
     /* Barrier Matrix の出力
@@ -962,7 +962,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
 
-    if (OptAnalysis != OPT_PM) {
+    if (OptInput != OPT_PARSED) {
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " KNP:%s", date_p);
 	else if (time_string[0])

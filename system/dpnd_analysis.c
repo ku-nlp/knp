@@ -238,7 +238,7 @@ extern FILE  *Outfp;
 		   void dpnd_info_to_bnst(DPND *dp)
 /*==================================================================*/
 {
-    /* 係り受けに関する種々の情報を bnst 構造体に記憶 */
+    /* 係り受けに関する種々の情報を DPND から BNST_DATA にコピー */
 
     int		i;
     BNST_DATA	*b_ptr;

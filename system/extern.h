@@ -46,6 +46,7 @@ extern TOTAL_MGR	Best_mgr;
 extern TOTAL_MGR	Op_Best_mgr;
 
 extern int 		OptAnalysis;
+extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
 extern int 		OptExpandP;

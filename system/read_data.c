@@ -233,7 +233,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	/* 解析済みの場合 */
 
 	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
-	    OptAnalysis = OPT_PM;
+	    OptInput = OPT_PARSED;
 	    sp->Bnst_num = 0;
 	    for (i = 0; i < MRPH_MAX; i++) Bnst_start[i] = 0;
 	    if (sscanf(input_buffer, "* %d%c", 
@@ -246,7 +246,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    sp->Bnst_num++;
 	}
 	else if (input_buffer[0] == '*') {
-	    if (OptAnalysis != OPT_PM || 
+	    if (OptInput != OPT_PARSED || 
 		sscanf(input_buffer, "* %d%c", 
 		       &Best_mgr.dpnd.head[sp->Bnst_num],
 		       &Best_mgr.dpnd.type[sp->Bnst_num]) != 2) {

@@ -90,8 +90,10 @@
 #define OPT_CASE2	6
 #define OPT_DPND	2
 #define OPT_BNST	3
-#define OPT_PM		4
+#define OPT_AssignF	4
 #define OPT_DISC	5
+#define OPT_RAW		1
+#define OPT_PARSED	2
 #define OPT_TREE	1
 #define OPT_TREEF	2
 #define OPT_SEXP	3

@@ -52,6 +52,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 char		G_Feature[100][64];		/* FEATUREの変数格納 */
 
 int 		OptAnalysis;
+int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
@@ -120,6 +121,7 @@ char *Opt_jumanrc = NULL;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
+    OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
@@ -138,6 +140,7 @@ char *Opt_jumanrc = NULL;
 	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
 	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
+	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
 	else if (str_eq(argv[0], "-disc"))    OptAnalysis = OPT_DISC;
 	else if (str_eq(argv[0], "-tree"))    OptExpress = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress = OPT_TREEF;
@@ -366,14 +369,17 @@ char *Opt_jumanrc = NULL;
 }
 
 /*==================================================================*/
-		       void stand_alone_mode()
+		       void knp_main()
 /*==================================================================*/
 {
     int i, j, flag, success = 1;
     int relation_error, d_struct_error;
     char *code;
 
-    /* sentence_data *sp = &current_sentence_data; */
+    /* spをきちんと渡すようにすれば spをlocalにして，こちらの
+       定義でよくなる
+       sentence_data *sp = &current_sentence_data; */
+
     sp = &current_sentence_data;
 
     /* ルール読み込み */
@@ -388,11 +394,13 @@ char *Opt_jumanrc = NULL;
 	    fflush(Outfp);
 	}
 
-	/* この段階では成功していない */
-	success = 0;
+	/********************/
+	/* 前の解析の後始末 */
+	/********************/
+
+	/* タイムアウト時 */
 
 	if (setjmp(timeout)) {
-	    /* タイムアウト時 */
 #ifdef DEBUG
 	    fprintf(stderr, "Parse timeout.\n(");
 	    for (i = 0; i < sp->Mrph_num; i++)
@@ -407,19 +415,40 @@ char *Opt_jumanrc = NULL;
 	}
 
 	/* FEATURE の初期化 */
-	for (i = 0; i < sp->Mrph_num; i++) clear_feature(&(sp->mrph_data[i].f));
-	for (i = 0; i < sp->Bnst_num; i++) clear_feature(&(sp->bnst_data[i].f));
-	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
-	    sp->bnst_data[i].f = NULL;
+
+	if (OptAnalysis == OPT_DISC) {
+	    /* 中身は保存しておくので */
+	    for (i = 0; i < sp->Mrph_num; i++)
+		(sp->mrph_data+i)->f = NULL;
+	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+		(sp->bnst_data+i)->f = NULL;
+	}
+	else {
+	    for (i = 0; i < sp->Mrph_num; i++) 
+		clear_feature(&(sp->mrph_data[i].f));
+	    for (i = 0; i < sp->Bnst_num; i++) 
+		clear_feature(&(sp->bnst_data[i].f));
+	    /* New_Bnstはもともとpointer */
+	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++)
+		(sp->bnst_data+i)->f = NULL;
+	}
+
+	/**********************/
+	/* 新たな文の解析開始 */
+	/**********************/
+
+	success = 0;
 
 	/* 読み込み */
+
 	if ((flag = read_mrph(Infp)) == EOF) break;
 
 	sp->Sen_num ++;
 
 	if (flag == FALSE) continue;
 
-	/* 形態素に意味素を与える */
+	/* 形態素への意味情報付与 */
+
 	if (SMExist == TRUE) {
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		code = (char *)get_sm(sp->mrph_data[i].Goi);
@@ -431,55 +460,25 @@ char *Opt_jumanrc = NULL;
 	    }
 	}
 
-	/* 形態素への情報付与 --> 文節 */
+	/* 形態素へのFEATURE付与 */
 
 	assign_cfeature(&(sp->mrph_data[0].f), "文頭");
 	assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
-
-	/* 形態素ルールのみに情報付与 */
 	assign_general_feature(MorphRuleType);
 
-	if (OptAnalysis == OPT_PM) {
-	    if (make_bunsetsu_pm() == FALSE) continue;
-	} else {
+	/* 形態素を文節にまとめる */
+
+	if (OptInput == OPT_RAW) {
 	    if (make_bunsetsu() == FALSE) continue;
+	} else {
+	    if (make_bunsetsu_pm() == FALSE) continue;
 	}
 
 	/* 文節化だけの場合 */
-	if (OptAnalysis == OPT_BNST) {
-	    print_mrphs(0);
-	    fflush(Outfp);
-	    success = 1;
-	    continue;
-	}
 
-	/* 文節への情報付与 */
+	if (OptAnalysis == OPT_BNST) goto ENDofANALYSIS;
 
-	assign_cfeature(&(sp->bnst_data[0].f), "文頭");
-	if (sp->Bnst_num > 0)
-	    assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
-	else
-	    assign_cfeature(&(sp->bnst_data[0].f), "文末");
-
-	/* 文節ルールのみに情報付与 */
-	assign_general_feature(BnstRuleType);
-
-	/* assign_etc_feature(EtcRuleArray, CurEtcRuleSize, LOOP_ALL); */
-
-	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	    print_mrphs(0);
-
-	if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
-	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
-	    print_result();
-	    fflush(Outfp);
-	    continue;
-	}
-
-	assign_dpnd_rule();			/* 係り受け規則 */
-
-	Case_frame_num = 0;
-	set_pred_caseframe();			/* 用言の格フレーム */
+	/* 文節への意味情報付与 */
 
 	for (i = 0; i < sp->Bnst_num; i++) {
 	    get_bgh_code(sp->bnst_data+i);		/* シソーラス */
@@ -487,19 +486,39 @@ char *Opt_jumanrc = NULL;
 		get_sm_code(sp->bnst_data+i);		/* 意味素 */
 	}
 
+	/* 文節へのFEATURE付与 */
+
+	assign_cfeature(&(sp->bnst_data[0].f), "文頭");
+	assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
+	/* 意味不明 将来削除 99/12/29
+	   if (sp->Bnst_num > 0)
+	     assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
+	   else
+	     assign_cfeature(&(sp->bnst_data[0].f), "文末");
+	*/
+	assign_general_feature(BnstRuleType);
+
+	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
+	    print_mrphs(0);
+
+	/* FEATURE付与だけの場合 */
+
+	if (OptAnalysis == OPT_AssignF) goto ENDofANALYSIS;
+
+
+	assign_dpnd_rule();			/* 係り受け規則 */
+
+	Case_frame_num = 0;
+	set_pred_caseframe();			/* 用言の格フレーム */
+
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	    check_bnst();
 
-	/* continue; 文節のみのチェックの場合 */
-
-	/*
-	  if (sp->Bnst_num > 30) {
-	  fprintf(stdout, "Too long sentence (%d bnst)\n", sp->Bnst_num);
-	  continue;
-	  }
-	  */
-
+	/**************/
 	/* 本格的解析 */
+	/**************/
+
+	if (OptInput == OPT_PARSED) goto PARSED;
 
 	calc_dpnd_matrix();			/* 依存可能性計算 */
 	if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_DPND, 0);
@@ -523,7 +542,9 @@ char *Opt_jumanrc = NULL;
 	    print_matrix(PRINT_DPND, 0);
 	}
 
+	/****************/
 	/* 並列構造解析 */
+	/****************/
 
 	init_mask_matrix();
 	Para_num = 0;	
@@ -566,27 +587,32 @@ char *Opt_jumanrc = NULL;
 	else if (flag == CONTINUE)
 	    continue;
 
+	/********************/
 	/* 依存・格構造解析 */
+	/********************/
+
 	para_postprocess();	/* 各conjunctのheadを提題の係り先に */
 
 	signal(SIGALRM, timeout_function);
 	alarm(ParseTimeout);
-
 	if (detect_dpnd_case_struct() == FALSE) {
 	    ErrorComment = strdup("Cannot detect dependency structure");
 	    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
 					   すべて文節が隣に係ると扱う */
 	}
-
 	alarm(0);
 
-	/* 任意格の解析を行うとき */
+	/* コーパスベース時の評価値計算 */
 	if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	    optional_case_evaluation();
 
-	dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
+    PARSED:
 
+	/* 係り受け情報を bnst 構造体に記憶 */
+	dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
+	
 	/* 固有名詞認識処理 */
+
 	if (OptNE != OPT_NORMAL)
 	    NE_analysis();
 	else
@@ -605,13 +631,6 @@ char *Opt_jumanrc = NULL;
 	if (OptCheck == TRUE)
 	    CheckChildCaseFrame();
 
-	/* 結果表示 */
-	if (OptAnalysis != OPT_DISC) print_result();
-	fflush(Outfp);
-
-	/* OK 成功 */
-	success = 1;
-
 	/* 認識した固有名詞を保存しておく */
 	if (OptNE != OPT_NORMAL) {
 	    preserveNE();
@@ -619,16 +638,28 @@ char *Opt_jumanrc = NULL;
 		printNE();
 	}
 
+	/************/
 	/* 文脈解析 */
-	if (OptAnalysis == OPT_DISC) {
-	    discourse_analysis();
+	/************/
 
-	    /* feature の初期化 */
-	    for (i = 0; i < MRPH_MAX; i++)
-		(sp->mrph_data+i)->f = NULL;
-	    for (i = 0; i < BNST_MAX; i++)
-		(sp->bnst_data+i)->f = NULL;
+	if (OptAnalysis == OPT_DISC) {
+	    make_dpnd_tree();
+	    discourse_analysis();
 	}
+
+    ENDofANALYSIS:
+
+	/************/
+	/* 結果表示 */
+	/************/
+
+	if (OptAnalysis == OPT_BNST) {
+	    print_mrphs(0);
+	} else {
+	    print_result();
+	}
+	fflush(Outfp);
+	success = 1;/* OK 成功 */
     }
 
     close_ipal();
@@ -790,7 +821,7 @@ char *Opt_jumanrc = NULL;
 	    }
 
 	    /* 解析 */
-	    stand_alone_mode();
+	    knp_main();
 
 	    /* 後処理 */
 	    shutdown(fd,2);
@@ -959,7 +990,7 @@ char *Opt_jumanrc = NULL;
     /* モードによって処理を分岐 */
     if (OptMode == STAND_ALONE_MODE) {
 	init_all();
-	stand_alone_mode();
+	knp_main();
     } else if (OptMode == SERVER_MODE) {
 	init_all();
 	server_mode();

@@ -30,7 +30,6 @@ char Ga_Memory[256];
 						 "MRPH DATA");
     for (i = 0; i < sp->Mrph_num; i++) {
 	sp_new->mrph_data[i] = sp->mrph_data[i];
-	sp->mrph_data[i].f = NULL;
     }
 
     sp_new->Bnst_num = sp->Bnst_num;
@@ -47,7 +46,6 @@ char Ga_Memory[256];
 	for (j = 0; sp_new->bnst_data[i].child[j]; j++) {
 	    sp_new->bnst_data[i].child[j]+= sp_new->bnst_data - sp->bnst_data;
 	}
-	sp->bnst_data[i].f = NULL;
     }
 
     sp_new->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*Para_num, 
@@ -299,7 +297,6 @@ void assign_GA2pred(BNST_DATA *pred_ptr, BNST_DATA *GA_ptr, char *comment)
 
 
     GA_detection(sp->bnst_data + sp->Bnst_num -1);
-    print_result();
     
     copy_sentence();
 }
