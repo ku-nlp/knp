@@ -3,7 +3,7 @@
 
 #define	NSEED	32	/* 乱数表の種類。2の羃乗でなければならない。 */
 #define NSIZE	256
-#define	TBLSIZE	8192
+#define	HASH_TBLSIZE	8192
 
 #define	HASH_READ_MODE	1
 #define	HASH_WRITE_MODE	2

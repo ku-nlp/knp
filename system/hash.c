@@ -16,9 +16,9 @@
 		 void read_hhdata(HASH_FILE *hashdb)
 /*==================================================================*/
 {
-    hashdb->hhdata = (HASH_HEADER_UNIT *)malloc_data(sizeof(HASH_DATA_UNIT)*TBLSIZE, 
+    hashdb->hhdata = (HASH_HEADER_UNIT *)malloc_data(sizeof(HASH_DATA_UNIT)*HASH_TBLSIZE, 
 						     "read_hhdata");
-    fread(hashdb->hhdata, sizeof(HASH_HEADER_UNIT), TBLSIZE, hashdb->fp);
+    fread(hashdb->hhdata, sizeof(HASH_HEADER_UNIT), HASH_TBLSIZE, hashdb->fp);
 }
 
 /*==================================================================*/
@@ -45,7 +45,7 @@
 	hash ^= hashdb->seed[j++][key[i++]];
 	j &= NSEED-1;
     }
-    return (hash & (TBLSIZE-1));
+    return (hash & (HASH_TBLSIZE-1));
 }
 
 /*==================================================================*/
@@ -79,9 +79,9 @@
 
     init_hash_seed(hashdb);
 
-    hashdb->hddata = (HASH_DATA_UNIT_INTERNAL **)malloc_data(sizeof(HASH_DATA_UNIT_INTERNAL *)*TBLSIZE, 
+    hashdb->hddata = (HASH_DATA_UNIT_INTERNAL **)malloc_data(sizeof(HASH_DATA_UNIT_INTERNAL *)*HASH_TBLSIZE, 
 							    "hash_write_open");
-    memset(hashdb->hddata, 0, sizeof(HASH_DATA_UNIT_INTERNAL *)*TBLSIZE);
+    memset(hashdb->hddata, 0, sizeof(HASH_DATA_UNIT_INTERNAL *)*HASH_TBLSIZE);
 
     if ((hashdb->fp = fopen(file, "w")) == NULL) {
 	fprintf(stderr, ";; Cannot open file (%s) !!\n", file);
@@ -221,7 +221,7 @@
     HASH_HEADER_UNIT hhu;
     HASH_DATA_UNIT hdu;
     HASH_DATA_UNIT_INTERNAL *hdp;
-    int cdata[TBLSIZE];
+    int cdata[HASH_TBLSIZE];
 
     /* SEEDの書き込み */
     for (i = 0; i < NSEED; ++i) {
@@ -234,7 +234,7 @@
     }
 
     /* 個数のカウント */
-    for (i = 0; i < TBLSIZE; i++) {
+    for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
 	    count = 0;
 	    hdp = hashdb->hddata[i];
@@ -250,8 +250,8 @@
     }
 
     /* ハッシュ配列(アドレス)の書き込み */
-    pos = sizeof(unsigned int)*NSEED*NSIZE+sizeof(HASH_HEADER_UNIT)*TBLSIZE;
-    for (i = 0; i < TBLSIZE; i++) {
+    pos = sizeof(unsigned int)*NSEED*NSIZE+sizeof(HASH_HEADER_UNIT)*HASH_TBLSIZE;
+    for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
 	    hhu.pos = pos;
 
@@ -273,7 +273,7 @@
     }
 
     /* データの書き込み */
-    for (i = 0; i < TBLSIZE; i++) {
+    for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
 	    /* 個数の書き込み */
 	    if (fwrite(&cdata[i], sizeof(int), 1, hashdb->fp) < 1) {
@@ -333,7 +333,7 @@
 
 	hash_finish(hashdb);
 
-	for (i = 0; i < TBLSIZE; i++) {
+	for (i = 0; i < HASH_TBLSIZE; i++) {
 	    if (hashdb->hddata[i]) {
 		hdp = hashdb->hddata[i];
 		while (hdp) {

@@ -14,6 +14,8 @@
 
 	* dict/Makefile.am, dict/Makefile.orig: 自動的に辞書を作るようにした。
 
+	* system/hash.c, system/hash.h: マクロTBLSIZEの重複を解消
+
 2002-10-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, rule/bnst_etc.rule, rule/bnst_type.phrase:
