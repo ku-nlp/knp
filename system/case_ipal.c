@@ -925,14 +925,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	bp = sp->bnst_data+i;
 	bp->internal_num = 0;
 
-	/* 「転換期」などはまだ扱っていない */
-	if (bp->jiritu_ptr != NULL && check_feature(L_Jiritu_M(bp)->f, "サ変")) {
-	    /* 用言ではないサ変名詞を格解析する feature */
-	    if (!check_feature(bp->f, "用言")) {
-		assign_cfeature(&(bp->f), "サ変名詞格解析");
-	    }
-	}
-	else {
+	/* 自立語末尾がサ変名詞でない場合 */
+	if (bp->jiritu_ptr == NULL || !check_feature(L_Jiritu_M(bp)->f, "サ変") || 
+	    check_feature(bp->f, "用言:判")) {
 	    continue;
 	}
 

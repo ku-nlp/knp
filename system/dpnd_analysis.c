@@ -786,8 +786,17 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	if (OptAnalysis == OPT_CASE ||
 	    OptAnalysis == OPT_CASE2) {
 	    /* 格解析の結果を用言文節へ */
-	    for (i = 0; i < sp->Best_mgr->pred_num; i++)
+	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
 		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);
+		/* ※ 暫定的
+		   並列のときに make_dpnd_tree() を呼び出すと cpm_ptr がなくなるので、
+		   ここでコピーしておく */
+		if (sp->Best_mgr->cpm[i].pred_b_ptr->parent && 
+		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->para_top_p == TRUE && 
+		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->cpm_ptr == NULL) {
+		    sp->Best_mgr->cpm[i].pred_b_ptr->parent->cpm_ptr = &(sp->Best_mgr->cpm[i]);
+		}
+	    }
 	    /* 格解析の結果をfeatureへ */
 	    record_case_analysis(sp);
 	    /* 主格を feature へ(固有名詞認識処理用)

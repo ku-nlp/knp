@@ -10,7 +10,6 @@
 extern int		Thesaurus;
 extern int		ParaThesaurus;
 
-extern int		Process_type;
 extern int		Revised_para_num;
 
 extern char		*ErrorComment;
@@ -94,6 +93,9 @@ extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];
 
+/* 各種スコア, コスト */
+extern int	SOTO_SCORE;
+
 /* 関数プロトタイプ */
 
 /* bind_juman.c */
@@ -112,7 +114,7 @@ extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void record_case_analysis(SENTENCE_DATA *sp);
 
 /* case_data.c */
-extern int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
 
 /* case_ipal.c */
@@ -125,6 +127,7 @@ extern void clear_cf();
 extern void init_mgr_cf(SENTENCE_DATA *sp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern void MakeInternalBnst(SENTENCE_DATA *sp);
+extern void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

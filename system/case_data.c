@@ -303,6 +303,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	else {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("を");
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
 	}
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
@@ -368,6 +369,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		   (char *)sm2code("数量"));
 	    sm_num++;
 	}
+	if (check_feature(b_ptr->f, "人名") || 
+	    check_feature(b_ptr->f, "組織名")) {
+	    strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
+		   (char *)sm2code("主体"));
+	    sm_num++;
+	}
 	
 	/* for (i = 0; i < b_ptr->SM_num; i++) */
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
@@ -391,12 +398,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 }
 
 /*==================================================================*/
-    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+    void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     BNST_DATA *cel_b_ptr;
-    int i, j, k, child_num, score = 0;
+    int i, j, k, child_num;
     char *vtype = NULL;
 
     if (vtype = (char *)check_feature(b_ptr->f, "用言")) {
@@ -438,7 +445,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		    cpm_ptr->cf.element_num ++;
 		}
 		else {
-		    score = SOTO_SCORE;
+		    cpm_ptr->default_score = SOTO_SCORE;
 		}
 	    }
 	} else {
@@ -461,7 +468,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		    cpm_ptr->cf.element_num ++;
 		}
 		else {
-		    score = SOTO_SCORE;
+		    cpm_ptr->default_score = SOTO_SCORE;
 		}
 	    }
 	}
@@ -500,7 +507,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
-	    return score;
+	    return;
 	}
     }
 
@@ -527,7 +534,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		}
 		if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 		    cpm_ptr->cf.element_num = 0;
-		    return score;
+		    return;
 		}
 	    }
 	}
@@ -546,7 +553,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	cpm_ptr->cf.element_num ++;
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
-	    return score;
+	    return;
 	}
     }
 
@@ -558,11 +565,11 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     } */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (!MatchPP(cpm_ptr->cf.pp[i][0], "時間")) {
-	    return score;
+	    return;
 	}
     }
     cpm_ptr->cf.element_num = 0;
-    return score;
+    return;
 }
 
 /*==================================================================*/

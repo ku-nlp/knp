@@ -171,41 +171,15 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+      int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /*
-                                              戻値
-      入力の格要素がない場合                    -3
-      格フレームがない場合                      -2
-      入力側に必須格が残る場合(解析不成功)      -1
-      解析成功                               score (0以上)
-    */
-
+    int i, j, frame_num = 0;
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
-    int i, j, frame_num, default_score;
+    BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     CF_MATCH_MGR tempcmm;
-    
-    /* 初期化 */
-    cpm_ptr->pred_b_ptr = b_ptr;
-    cpm_ptr->score = -1;
-    cpm_ptr->result_num = 0;
-    cpm_ptr->cmm[0].cf_ptr = NULL;
 
-    /* 入力文側の格要素設定 */
-    cf_ptr->voice = b_ptr->voice;
-    default_score = make_data_cframe(sp, cpm_ptr);
-
-    /* 格フレーム解析スキップ
-    if (cf_ptr->element_num == 0) {
-	cpm_ptr->cmm[0].cf_ptr = NULL;
-	return -3;
-    }
-    */
-
-    frame_num = 0;
-
-    /* 格要素なしの時の実験 98/12/16 */
+    /* 格要素なしの時の実験 */
     if (cf_ptr->element_num == 0) {
 	/* 先頭の格フレーム 
 	   == この用言のすべての格フレームの OR、または
@@ -236,7 +210,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		continue;
 	    }
 	    /* OR の格フレームを除く */
-	    if ((b_ptr->cf_ptr+i)->flag == CF_SUM) {
+	    if ((b_ptr->cf_ptr+i)->flag == CF_SUM && b_ptr->cf_num != 1) {
 		continue;
 	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
@@ -280,9 +254,10 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	cpm_ptr->score = cpm_ptr->cmm[0].score;
     }
 
+
     /* 外の関係のスコアを足す */
     if (cpm_ptr->score > -1)  {
-	cpm_ptr->score += default_score;
+	cpm_ptr->score += cpm_ptr->default_score;
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -291,6 +266,40 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
 
     return cpm_ptr->score;
+}
+
+/*==================================================================*/
+int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    /*
+                                              戻値
+      入力の格要素がない場合                    -3
+      格フレームがない場合                      -2
+      入力側に必須格が残る場合(解析不成功)      -1
+      解析成功                               score (0以上)
+    */
+
+    /* 初期化 */
+    cpm_ptr->pred_b_ptr = b_ptr;
+    cpm_ptr->score = -1;
+    cpm_ptr->default_score = 0;
+    cpm_ptr->result_num = 0;
+    cpm_ptr->cmm[0].cf_ptr = NULL;
+
+    /* 入力文側の格要素設定 */
+    cpm_ptr->cf.voice = b_ptr->voice;
+    make_data_cframe(sp, cpm_ptr);
+
+    /* 格フレーム解析スキップ
+    if (cpm_ptr->cf.element_num == 0) {
+	cpm_ptr->cmm[0].cf_ptr = NULL;
+	return -3;
+    }
+    */
+
+    /* もっともスコアのよい格フレームを決定する */
+    return find_best_cf(sp, cpm_ptr);
 }
 
 /*==================================================================*/
@@ -363,6 +372,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->flag = src->flag;
+    dst->pred_b_ptr = src->pred_b_ptr;
 }
 
 /*==================================================================*/
@@ -566,6 +576,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
 	cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
+	if (lastflag < 0 && !check_feature(cpm_ptr->pred_b_ptr->f, "非主節")) {
+	    lastflag = j;
+	}
+
 	/* 格フレームがない場合 */
 	if (cpm_ptr->result_num == 0 || 
 	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
@@ -604,12 +618,11 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		    RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
 				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-		    if ((lastflag < 0 || lastflag == j) && !check_feature(cpm_ptr->pred_b_ptr->f, "非主題")) {
+		    if (lastflag == j) {
 			RegisterLastClause(sp->Sen_num, 
 					   L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 					   cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
 					   cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
-			lastflag = j;
 		    }
 		}
 	    }

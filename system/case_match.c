@@ -376,13 +376,15 @@ int	Thesaurus = USE_NTT;
 	    match_score = EX_match_score;
 	}
 
-	/* score = elmnt_match_score_each_sm(cfd->sm[as1], cfp->sm[as2]); */
 	score = elmnt_match_score_each_sm(as1, cfd, as2, cfp);
 
 	/* 用例がどちらか一方でもなかったら */
 	if (*exd == '\0') {
-	    if (score < 0) {
+	    if (*cfd->sm[as1] == '\0') {
 		score = EX_match_unknown;
+	    }
+	    else if (score < 0) {
+		score = 0;
 	    }
 	}
 	else if (exp == NULL || *exp == '\0') {
@@ -390,7 +392,7 @@ int	Thesaurus = USE_NTT;
 	    if (cfp->sm[as2] == NULL) {
 		score = EX_match_unknown;
 	    }
-	    /* sm に match しないとき */
+	    /* 意味属性はあるが、match しないとき */
 	    else if (score < 0) {
 		score = 0;
 	    }
@@ -720,7 +722,7 @@ int	Thesaurus = USE_NTT;
 
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
-	int renkaku, mikaku, verb, gaflag = 0, sotoflag = 0;
+	int renkaku, mikaku, verb, gaflag = 0, sotoflag = 0, soto_decide;
 
 	if (cfd->pp[target][target_pp] == -2) {
 	    renkaku = 1;
@@ -793,20 +795,39 @@ int	Thesaurus = USE_NTT;
 
 	list1.flag[target] = NIL_ASSIGNED;
 	elmnt_score = 0;
+	soto_decide = 0;
 
 	/* 外の関係だと推定してボーナスを与える */
 	if (renkaku && verb) {
 	    /* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
-	    elmnt_score = SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE;
+	    elmnt_score = SOTO_SCORE;
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
 	    }
 	    /* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
+
+	    /* 格フレームに「外の関係」格を追加 
+	       下で cfp->element_num を戻しているので、
+	       同じ格が複数あるかどうかをチェックしていない */
+	    if (cfp->element_num < CF_ELEMENT_MAX) {
+		_make_ipal_cframe_pp(cfp, "外ノ関係", cfp->element_num);
+		list1.flag[target] = cfp->element_num;
+		list1.score[target] = elmnt_score;
+		list2.flag[cfp->element_num] = target;
+		list2.score[cfp->element_num] = elmnt_score;
+		cfp->element_num++;
+		soto_decide = 1;
+	    }
 	}
 	else if (mikaku) {
 	    /* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
 	}
 	assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
+
+	/* cfp->element_num は global に影響するので元に戻しておく */
+	if (soto_decide) {
+	    cfp->element_num--;
+	}
 	return;
     }
     else if (multi_pp == 1) {
@@ -839,7 +860,8 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 	assign_d_list.flag[i] = UNASSIGNED;
 	assign_d_list.score[i] = -1;
     }
-    for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
+/*    for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) { */
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	assign_p_list.flag[i] = UNASSIGNED;
 	assign_p_list.score[i] = -1;
     }

@@ -101,7 +101,7 @@ extern int	EX_match_qua;
 extern int	EX_match_unknown;
 extern int	EX_match_sentence;
 extern int	EX_match_tim;
-extern int	SOTO_SCORE;
+extern int	EllipsisSubordinateClauseScore;
 
 /*==================================================================*/
 			     void usage()
@@ -339,6 +339,11 @@ extern int	SOTO_SCORE;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    SOTO_SCORE = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-score-esc")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EllipsisSubordinateClauseScore = atoi(argv[0]);
 	}
 	else {
 	    usage();
@@ -757,7 +762,7 @@ PARSED:
 	    if (OptDisc != OPT_DISC)
 		print_result(sp);
 	    else
-		copy_sentence(sp);
+		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 	}
 
@@ -835,7 +840,7 @@ PARSED:
 
 	if (OptDisc == OPT_DISC) {
 	    make_dpnd_tree(sp);
-	    discourse_analysis(sp);
+	    DiscourseAnalysis(sp);
 	}
 
 	/************/

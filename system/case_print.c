@@ -16,20 +16,27 @@
     int i;
 
     /* 係タイプの出力 */
-    if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係")) != NULL) {
-	fprintf(Outfp, "《");
+
+    /* 省略のとき */
+    if (cpm_ptr->elem_b_num[num] == -2) {
+	fputs("《省》", Outfp);
+	return;
+    }
+
+    if ((cp = check_feature(cpm_ptr->elem_b_ptr[num]->f, "係")) != NULL) {
+	fputs("《", Outfp);
 	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
 	    if (i) {
 		fputc('/', Outfp);
 	    }
 	    if (cpm_ptr->cf.pp[num][i] < 0) {
-		fprintf(Outfp, "--");
+		fputs("--", Outfp);
 	    }
 	    else {
 		fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
 	    }
 	}
-	fprintf(Outfp, "》");
+	fputs("》", Outfp);
     }
 }
 

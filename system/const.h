@@ -677,6 +677,7 @@ typedef struct cpm_def {
     BNST_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
     int 	score;				/* スコア最大値(=cmm[0].score) */
+    int 	default_score;			/* 外の関係スコア (ルールで与えられている外の関係) */
     int 	result_num;			/* 記憶する格フレーム数 */
     CF_MATCH_MGR cmm[CMM_MAX];			/* スコア最大の格フレームとの
 						   対応付けを記録
@@ -695,7 +696,6 @@ typedef struct {
 } TOTAL_MGR;
 
 #define	OPTIONAL_CASE_SCORE	2
-#define	SOTO_ADD_SCORE		3
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ

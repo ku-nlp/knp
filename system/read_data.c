@@ -883,7 +883,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	       int make_bunsetsu_pm(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, prev_stat = MRPH_SUFX;
     char *cp;
     MRPH_DATA	*m_ptr;
     BNST_DATA	*b_ptr = sp->bnst_data;
@@ -911,23 +911,29 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->mrph_num ++;
 	}
 
-	if (check_feature(m_ptr->f, "接頭")) {
-	    if (!b_ptr->settou_ptr) {
-		b_ptr->settou_ptr = m_ptr;
-	    }
-	    b_ptr->settou_num ++;
-	}
-	if (check_feature(m_ptr->f, "自立")) {
-	    if (!b_ptr->jiritu_ptr) {
+	if (check_feature(m_ptr->f, "←複合") || check_feature(m_ptr->f, "自立")) {
+	    if (prev_stat == MRPH_SUFX || 
+		(prev_stat == MRPH_INDP && !check_feature(m_ptr->f, "←複合")) || !b_ptr->jiritu_ptr) {
 		b_ptr->jiritu_ptr = m_ptr;
+		b_ptr->jiritu_num = 0;
 	    }
 	    b_ptr->jiritu_num ++;
+	    prev_stat = MRPH_INDP;
 	}
-	if (check_feature(m_ptr->f, "付属")) {
+	else if (check_feature(m_ptr->f, "接頭")) {
+	    if (prev_stat != MRPH_PRFX || !b_ptr->settou_ptr) {
+		b_ptr->settou_ptr = m_ptr;
+		b_ptr->settou_num = 0;
+	    }
+	    b_ptr->settou_num ++;
+	    prev_stat = MRPH_PRFX;
+	}
+	else if (check_feature(m_ptr->f, "付属")) {
 	    if (!b_ptr->fuzoku_ptr) {
 		b_ptr->fuzoku_ptr = m_ptr;
 	    }
 	    b_ptr->fuzoku_num ++;
+	    prev_stat = MRPH_SUFX;
 	}
     }
     
