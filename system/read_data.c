@@ -483,15 +483,17 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 /*by Nobumoto Oct/31th/1999*/
 {
-    int i, match_end;
+    int i, j, match_end;
 
     for (i = 0; i < Mrph_num; i++){
+	for(j = 0; j < Mrph_num - i; j++){
 	    assign_mrph_feature2(r_ptr, size, 
 				 mrph_data+i, 
-				 Mrph_num-i,
+				 Mrph_num-i-j,
 				 &match_end);
 
 	    i += match_end; /* 次のルーチンは, タグを付け終わった形態素列の次の形態素から始める */
+	}
     }
 }
 
