@@ -211,6 +211,7 @@ int ContextRuleNum = 0;
 		    exit(1);
 		}
 	    }
+
 	    /* feature番号が1のとき類似度なので、floatで比較 */
 	    if (!dt_comp_elem(rc->value, dc->value, rc->eq, rc->num == 1 ? 1 : 0)) {
 		flag = 0;
@@ -220,7 +221,13 @@ int ContextRuleNum = 0;
 	}
 	/* すべての条件を満たしたとき */
 	if (flag) {
-	    return ContextRules[i].cf;
+	    dc = d.cond;
+	    while (dc) {
+		if (dc->num == 1) {
+		    return dc->value;
+		}
+		dc = dc->next;
+	    }
 	}
     }
 
@@ -233,3 +240,7 @@ int ContextRuleNum = 0;
 {
     read_dt_file(DTFile);
 }
+
+/*====================================================================
+                               END
+====================================================================*/
