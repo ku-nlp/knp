@@ -6,6 +6,12 @@
 	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/mrph_basic.rule:
 	「〜を〜に疑」を限定された「〜に」のみに与えるように修正
 
+	* rule/context.rule:
+	人名には<人>, 組織名には<組織>を与えるようにした。
+
+	* system/case_match.c:
+	格解析の意味素のマッチを修正
+
 2004-01-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule, system/case_data.c, system/case_match.c, system/context.c, system/extern.h:
