@@ -40,20 +40,27 @@ char buffer[IPAL_DATA_SIZE];
 IPAL_TRANS_FRAME ipal_frame;
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
-		     unsigned char *hyouki, int address, int size)
+		     unsigned char *hyouki, int address, int size, int flag)
 {
     unsigned char output_buf[256];
     unsigned char *point;
-    int length = 0, flag = 1;
+    int length = 0;
 
-    fprintf(fp, "%s %d:%d\n", entry, address, size);
+    /* 読みをキーするとき */
+    if (flag) {
+	fprintf(fp, "%s %d:%d\n", entry, address, size);
+    }
+    else {
+	fprintf(stderr, "%s was skipped.\n", entry);
+    }
 
     for (point = hyouki; *point; point+=2) {
 
 	if (*point == 0xa1 && *(point+1) == 0xa4) { /* "，" */
 	    output_buf[length] = '\0';
-	    if (strcmp(output_buf, entry)) {
+	    if (!flag || strcmp(output_buf, entry)) {
 		fprintf(fp, "%s %d:%d\n", output_buf, address, size);
+		flag = 1;
 	    }
 	    length = 0;
 	} else {
@@ -62,7 +69,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	}
     }
     output_buf[length] = '\0';
-    if (strcmp(output_buf, entry)) {
+    if (!flag || strcmp(output_buf, entry)) {
 	fprintf(fp, "%s %d:%d\n", output_buf, address, size);
     }
 }
@@ -71,7 +78,7 @@ main(int argc, char **argv)
 {
     FILE *fp_idx, *fp_dat;
     char tag[256];
-    int i, line, pos, address = 0, writesize;
+    int i, line, pos, address = 0, writesize, flag;
 
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s index-filename data-filename\n", argv[0]);
@@ -128,12 +135,19 @@ main(int argc, char **argv)
 
 	writesize = sizeof(int)*IPAL_FIELD_NUM+pos;
 
+	if (!strcmp(ipal_frame.DATA+ipal_frame.point[4], "和フレーム")) {
+	    flag = 0;
+	}
+	else {
+	    flag = 1;
+	}
+
 	/* アドレス書き出し */
 
 	fprint_ipal_idx(fp_idx, 
 			ipal_frame.DATA+ipal_frame.point[1], 
 			ipal_frame.DATA+ipal_frame.point[2], 
-			address, writesize);
+			address, writesize, flag);
 
 	/* データ書き出し */
 
