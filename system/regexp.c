@@ -611,79 +611,8 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-     int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr)
-/*==================================================================*/
-{
-    /* ★★近い将来いらなくなる 99/11/02★★ */
-    
-    /* 
-       pre_pattern  (shortest match でよい)
-       self_pattern (longest match  がよい)
-       post_pattern (shortest match でよい)
-       
-       まず，pre_patternを調べ，次にself_patternのlongest matchから
-       順に，その後でpost_patternを調べる
-    */
-
-    int match_length, match_rest;
-
-    /* まず，pre_patternを調べる */
-
-    if (r_ptr->pre_pattern != NULL &&
-	regexpmrphs_match(r_ptr->pre_pattern->mrph + 
-			  r_ptr->pre_pattern->mrphsize - 1,
-			  r_ptr->pre_pattern->mrphsize,
-			  d_ptr - 1, 
-			  d_ptr - sp->mrph_data,
-			  BW_MATCHING, 
-			  PART_MATCHING, 
-			  SHORT_MATCHING) == -1)
-	return -1;
-
-    
-    /* 次にself_patternのlongest matchから順に，その後でpost_patternを調べる
-       match_length は self_pattern の match の(可能性の)長さ */
-
-    match_length = sp->Mrph_num - (d_ptr - sp->mrph_data);
-
-    while (match_length > 0) {
-	if (r_ptr->self_pattern == NULL) {
-	    match_length = 1;	/* self_pattern がなければ
-				   マッチの長さは1にしておく */
-	}
-	else if ((match_rest = 
-		  regexpmrphs_match(r_ptr->self_pattern->mrph, 
-				    r_ptr->self_pattern->mrphsize,
-				    d_ptr,
-				    match_length,
-				    FW_MATCHING, 
-				    PART_MATCHING,
-				    LONG_MATCHING)) != -1) {
-	    match_length -= match_rest;
-	}
-	else {
-	    return -1;
-	}
-
-	if (r_ptr->post_pattern == NULL || 
-	    regexpmrphs_match(r_ptr->post_pattern->mrph, 
-			      r_ptr->post_pattern->mrphsize,
-			      d_ptr + match_length,
-			      sp->Mrph_num - (d_ptr - sp->mrph_data) - match_length,
-			      FW_MATCHING, 
-			      PART_MATCHING, 
-			      SHORT_MATCHING) != -1) {
-	    return match_length;
-	}
-	match_length --;
-    }
-
-    return -1;
-}
-
-/*==================================================================*/
-     int regexpmrphrule_match_M(MrphRule *r_ptr, MRPH_DATA *d_ptr,
-				int bw_length, int fw_length)
+     int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr,
+			      int bw_length, int fw_length)
 /*==================================================================*/
 {
     /* 
@@ -880,37 +809,8 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-     int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr)
-/*==================================================================*/
-{
-    if ((r_ptr->self_pattern == NULL ||
-	 regexpbnst_match(r_ptr->self_pattern->bnst, d_ptr) == TRUE) &&
-	(r_ptr->pre_pattern == NULL ||
-	 regexpbnsts_match(r_ptr->pre_pattern->bnst + 
-			   r_ptr->pre_pattern->bnstsize - 1, 
-			   r_ptr->pre_pattern->bnstsize, 
-			   d_ptr - 1, 
-			   d_ptr - sp->bnst_data, 
-			   BW_MATCHING, 
-			   PART_MATCHING, 
-			   SHORT_MATCHING) == TRUE) &&
-	(r_ptr->post_pattern == NULL ||
-	 regexpbnsts_match(r_ptr->post_pattern->bnst, 
-			   r_ptr->post_pattern->bnstsize, 
-			   d_ptr + 1, 
-			   sp->Bnst_num - (d_ptr - sp->bnst_data) - 1,
-			   FW_MATCHING, 
-			   PART_MATCHING, 
-			   SHORT_MATCHING) == TRUE)) {
-	return TRUE;
-    } else {
-	return FALSE;
-    }
-}
-
-/*==================================================================*/
-     int regexpbnstrule_match_M(BnstRule *r_ptr, BNST_DATA *d_ptr,
-				int bw_length, int fw_length)
+     int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr,
+			      int bw_length, int fw_length)
 /*==================================================================*/
 {
     /* 

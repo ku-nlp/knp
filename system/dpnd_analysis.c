@@ -16,45 +16,6 @@ extern FILE  *Infp;
 extern FILE  *Outfp;
 
 /*==================================================================*/
-    void assign_bnst_feature(BnstRule *r_ptr, int size, int mode)
-/*==================================================================*/
-{
-    int 	i, j;
-    BnstRule	*loop_ptr; 
-    BNST_DATA	*b_ptr;
-
-    if (mode == LOOP_BREAK) {
-
-	/* breakする場合 : 各文節に各規則を適用 */
-
-	for (i = 0, b_ptr = sp->bnst_data + sp->Bnst_num - 1; i < sp->Bnst_num;
-						      i++, b_ptr--)
-	    /* 文末の文節から順に処理．文頭からの場合は以下のループになる 
-	       for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
-	       */
-	    for (j = 0, loop_ptr = r_ptr; j < size; j++, loop_ptr++)
-		if (regexpbnstrule_match(loop_ptr, b_ptr) == TRUE ) {
-		    assign_feature(&(b_ptr->f), &(loop_ptr->f), b_ptr);
-		    break;
-		}
-    } else {
-
-	/* breakしない場合 : 各規則を各文節に適用
-	   (規則適用の結果が別の規則に副作用を与える) */
-
-	for (j = 0, loop_ptr = r_ptr; j < size; j++, loop_ptr++)
-	    for (i = 0, b_ptr = sp->bnst_data + sp->Bnst_num - 1; i < sp->Bnst_num; 
-							  i++, b_ptr--)
-		/* 文末の文節から順に処理．文頭からの場合は以下のループになる 
-		   for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) 
-		*/
-		if (regexpbnstrule_match(loop_ptr, b_ptr) == TRUE ) {
-		    assign_feature(&(b_ptr->f), &(loop_ptr->f), b_ptr);
-		}
-    }
-}
-
-/*==================================================================*/
 		       void assign_dpnd_rule()
 /*==================================================================*/
 {

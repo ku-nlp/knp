@@ -391,51 +391,6 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     }
 }
 
-#if 0
-/*==================================================================*/
-		       void assign_mrph_prop()
-/*==================================================================*/
-{
-    int i, j, k, match_length;
-    MrphRule	*r_ptr;
-    MRPH_DATA	*m_ptr;
-    
-    for (j = 0, r_ptr = MrphRuleArray; j < CurMrphRuleSize; j++, r_ptr++) {
-	for (i = 0; i < sp->Mrph_num; i++) {
-	    m_ptr = sp->mrph_data + i;
-
-	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
-		for (k = i; k < i + match_length; k++) {
-		    m_ptr = sp->mrph_data + k;
-		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-		}
-	    }
-	}
-    }
-}
-#endif
-
-/*==================================================================*/
-	 void assign_mrph_feature(MrphRule *r_ptr, int size)
-/*==================================================================*/
-{
-    int i, j, k, match_length;
-    MRPH_DATA	*m_ptr;
-
-    for (j = 0; j < size; j++, r_ptr++) {
-	for (i = 0; i < sp->Mrph_num; i++) {
-	    m_ptr = sp->mrph_data + i;
-
-	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
-		for (k = i; k < i + match_length; k++) {
-		    m_ptr = sp->mrph_data + k;
-		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-		}
-	    }
-	}
-    }
-}
-
 /*==================================================================*/
 		    int break_feature(FEATURE *fp)
 /*==================================================================*/
@@ -453,19 +408,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_mrph_feature_new(MrphRule *s_r_ptr, int r_size,
-				  MRPH_DATA *s_m_ptr, int m_length,
-				  int mode, int break_mode, int direction)
+     void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
+			      MRPH_DATA *s_m_ptr, int m_length,
+			      int mode, int break_mode, int direction)
 /*==================================================================*/
 {
-    /* ★★近い将来修正 99/11/02★★
-
-       方向のモード
-       文節も同じように
-       assign_mrph_featureとの完全ないれかえ
-       .jumanrcからの読み込み
-     */
-
     /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
 
     int i, j, k, match_length, feature_break_mode;
@@ -480,7 +427,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
        	1.self_patternの先頭の形態素位置
 	  2.ルール
 	    3.self_patternの末尾の形態素位置
-	の順にループが回る
+	の順にループが回る (3のループはregexpmrphrule_matchの中)
 	
 	break_mode == RLOOP_BREAK_NORMAL
 	    2のレベルでbreakする
@@ -494,9 +441,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    m_ptr = s_m_ptr+(i*direction);
 	    for (j = 0; j < r_size; j++, r_ptr++) {
 		if ((match_length = 
-		     regexpmrphrule_match_M(r_ptr, m_ptr, 
-					    direction == LtoR ? i : m_length-i-1, 
-					    direction == LtoR ? m_length-i : i+1)) != -1) {
+		     regexpmrphrule_match(r_ptr, m_ptr, 
+					  direction == LtoR ? i : m_length-i-1, 
+					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_m_ptr+i*direction+k);
@@ -518,7 +465,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
        	1.ルール
 	  2.self_patternの先頭の形態素位置
 	    3.self_patternの末尾の形態素位置
-	の順にループが回る
+	の順にループが回る (3のループはregexpmrphrule_matchの中)
 	
 	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
 	    2のレベルでbreakする (※この使い方は考えにくいが)
@@ -531,9 +478,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    for (i = 0; i < m_length; i++) {
 		m_ptr = s_m_ptr+(i*direction);
 		if ((match_length = 
-		     regexpmrphrule_match_M(r_ptr, m_ptr, 
-					    direction == LtoR ? i : m_length-i-1, 
-					    direction == LtoR ? m_length-i : i+1)) != -1) {
+		     regexpmrphrule_match(r_ptr, m_ptr, 
+					  direction == LtoR ? i : m_length-i-1, 
+					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_m_ptr+i*direction+k);
@@ -550,9 +497,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_bnst_feature_new(BnstRule *s_r_ptr, int r_size,
-				  BNST_DATA *s_b_ptr, int b_length,
-				  int mode, int break_mode, int direction)
+     void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
+			      BNST_DATA *s_b_ptr, int b_length,
+			      int mode, int break_mode, int direction)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して文節のマッチングを行う */
@@ -569,7 +516,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
        	1.self_patternの先頭の文節位置
 	  2.ルール
 	    3.self_patternの末尾の文節位置
-	の順にループが回る
+	の順にループが回る (3のループはregexpbnstrule_matchの中)
 	
 	break_mode == RLOOP_BREAK_NORMAL
 	    2のレベルでbreakする
@@ -583,9 +530,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    b_ptr = s_b_ptr+(i*direction);
 	    for (j = 0; j < r_size; j++, r_ptr++) {
 		if ((match_length = 
-		     regexpbnstrule_match_M(r_ptr, b_ptr, 
-					    direction == LtoR ? i : b_length-i-1, 
-					    direction == LtoR ? b_length-i : i+1)) != -1) {
+		     regexpbnstrule_match(r_ptr, b_ptr, 
+					  direction == LtoR ? i : b_length-i-1, 
+					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
@@ -607,7 +554,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
        	1.ルール
 	  2.self_patternの先頭の文節位置
 	    3.self_patternの末尾の文節位置
-	の順にループが回る
+	の順にループが回る (3のループはregexpbnstrule_matchの中)
 	
 	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
 	    2のレベルでbreakする (※この使い方は考えにくいが)
@@ -620,9 +567,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    for (i = 0; i < b_length; i++) {
 		b_ptr = s_b_ptr+(i*direction);
 		if ((match_length = 
-		     regexpbnstrule_match_M(r_ptr, b_ptr, 
-					    direction == LtoR ? i : b_length-i-1, 
-					    direction == LtoR ? b_length-i : i+1)) != -1) {
+		     regexpbnstrule_match(r_ptr, b_ptr, 
+					  direction == LtoR ? i : b_length-i-1, 
+					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
@@ -648,12 +595,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     /* 形態素か文節かについての場合分け */
     if (flag == MorphRuleType) {
-	assign_function = assign_mrph_feature_new;
+	assign_function = assign_mrph_feature;
 	data = sp->mrph_data;
 	size = sp->Mrph_num;
     }
     else if (flag == BnstRuleType) {
-	assign_function = assign_bnst_feature_new;
+	assign_function = assign_bnst_feature;
 	data = sp->bnst_data;
 	size = sp->Bnst_num;
     }

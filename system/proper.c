@@ -668,18 +668,11 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 
     /* 形態素に対するルールの適用 (eNE に対して) */
     for (i = 0; i < sp->Mrph_num; i++) {
-	m_ptr = sp->mrph_data + i;
-	/* feature へ */
-	NE2feature(m_ptr);
-
-	/* 細分類決定 */
-	for (j = 0, r_ptr = NERuleArray; j < CurNERuleSize; j++, r_ptr++) {
-    	    if (regexpmrphrule_match(r_ptr, m_ptr) != -1) {
-		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-		break;
-	    }
-	}
+	NE2feature(sp->mrph_data + i);
     }
+    assign_mrph_feature(NERuleArray, CurNERuleSize,
+			sp->mrph_data, sp->Mrph_num, 
+			RLOOP_MRM, RLOOP_BREAK_NORMAL, LtoR);
 
     /* 照応処理 */
     if (1) {
@@ -702,13 +695,17 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 
     /* 複合名詞ルールの適用 */
-    assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize);
+    assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize,
+			sp->mrph_data, sp->Mrph_num,
+			RLOOP_RMM, FALSE, LtoR);
     for (i = 0; i < sp->Bnst_num; i++)
-	assign_mrph_feature_new(CNRuleArray, CurCNRuleSize, 
-				sp->bnst_data[i].mrph_ptr, 
-				sp->bnst_data[i].mrph_num, 
-				RLOOP_RMM, FALSE, LtoR);
-    assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize);
+	assign_mrph_feature(CNRuleArray, CurCNRuleSize, 
+			    sp->bnst_data[i].mrph_ptr, 
+			    sp->bnst_data[i].mrph_num, 
+			    RLOOP_RMM, FALSE, LtoR);
+    assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize,
+			sp->mrph_data, sp->Mrph_num,
+			RLOOP_RMM, FALSE, LtoR);
 
     /* 並列処理
        並列句の数が 3 つ以上または、大きさが 2 文節以上のとき */

@@ -449,22 +449,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 }
 
 /*==================================================================*/
-       void assign_etc_feature(void *r_ptr, int size, int mode)
-/*==================================================================*/
-{
-    if (ExistEtcRule == IsMrphRule) {
-	assign_mrph_feature((MrphRule *)r_ptr, size);
-    }
-    else if (ExistEtcRule == IsMrph2Rule) {
-	assign_mrph_feature_new((MrphRule *)r_ptr, size, sp->mrph_data, sp->Mrph_num, 
-				RLOOP_MRM, RLOOP_BREAK_JUMP, LtoR);
-    }
-    else if (ExistEtcRule == IsBnstRule) {
-	assign_bnst_feature((BnstRule *)r_ptr, size, mode);
-    }
-}
-
-/*==================================================================*/
   void read_etc_rule(char *file_name, void *rp, int *count, int max)
 /*==================================================================*/
 {

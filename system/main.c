@@ -616,7 +616,9 @@ char *Opt_jumanrc = NULL;
 	if (OptNE != OPT_NORMAL)
 	    NE_analysis();
 	else
-	    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
+	    assign_mrph_feature(CNRuleArray, CurCNRuleSize,
+				sp->mrph_data, sp->Mrph_num,
+				RLOOP_RMM, FALSE, LtoR);
 
 	memo_by_program();	/* メモへの書き込み */
 
