@@ -10,6 +10,7 @@
 
 int 	Current_ec_score;	/* 明示されている格の得点 */
 int 	Current_max_score;	/* 明示されていない格の得点 */
+float	Current_sufficiency;	/* 埋まりぐあい */
 int 	Current_max_m_e;	/* 要素数 */
 int 	Current_max_m_p;	/* 要素の位置 */
 int 	Current_max_c_e;	/* 交差数 */
@@ -197,10 +198,11 @@ int	Thesaurus = USE_NTT;
 }
 
 /*==================================================================*/
- int cf_match_both_element(char *d, char *p, char *target, int unit)
+int cf_match_both_element(char *d, char *p, char *target, int unit, int flag)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, len;
+    char *code;
 
     /* 両方に target が存在するかチェック */
 
@@ -208,14 +210,31 @@ int	Thesaurus = USE_NTT;
 	return FALSE;
     }
 
-    for (i = 0; *(d+i); i += unit) {
-	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
-	    for (j = 0; *(p+j); j += unit) {
-		if (!strncmp(p+j, (char *)sm2code(target), unit)) {
-		    return TRUE;
+    code = sm2code(target);
+
+    if (flag == TRUE) {
+	for (i = 0; *(d+i); i += unit) {
+	    if (!strncmp(d+i, code, unit)) {
+		for (j = 0; *(p+j); j += unit) {
+		    if (!strncmp(p+j, code, unit)) {
+			return TRUE;
+		    }
 		}
+		return FALSE;
 	    }
-	    return FALSE;
+	}
+    }
+    else {
+	len = sm_code_depth(code);
+	for (i = 0; *(d+i); i += unit) {
+	    if (!strncmp(d+i+1, code+1, len)) {
+		for (j = 0; *(p+j); j += unit) {
+		    if (!strncmp(p+j+1, code+1, len)) {
+			return TRUE;
+		    }
+		}
+		return FALSE;
+	    }
 	}
     }
     return FALSE;
@@ -226,22 +245,22 @@ int	Thesaurus = USE_NTT;
 /*==================================================================*/
 {
     /* 意味素 : 格要素 -- 補文 */
-    if (cf_match_both_element(smd, smp, "補文", SM_CODE_SIZE)) {
+    if (cf_match_both_element(smd, smp, "補文", SM_CODE_SIZE, TRUE)) {
 	return EX_match_sentence;
     }
     /* 意味素 : 格要素 -- 時間 */
-    else if (cf_match_both_element(smd, smp, "時間", SM_CODE_SIZE)) {
+    else if (cf_match_both_element(smd, smp, "時間", SM_CODE_SIZE, TRUE)) {
 	return EX_match_tim;
     }
     /* 意味素 : 格要素 -- 数量 */
-    else if (cf_match_both_element(smd, smp, "数量", SM_CODE_SIZE)) {
+    else if (cf_match_both_element(smd, smp, "数量", SM_CODE_SIZE, TRUE)) {
 	return EX_match_qua;
     }
     /* 意味素 : 格要素 -- 主体 */
-    else if (cf_match_both_element(smd, smp, "主体", SM_CODE_SIZE)) {
+    else if (cf_match_both_element(smd, smp, "主体", SM_CODE_SIZE, FALSE)) {
 	return EX_match_subject;
     }
-    return 0;
+    return -100;
 }
 
 /*==================================================================*/
@@ -358,6 +377,7 @@ int	Thesaurus = USE_NTT;
     int local_m_p = 0;
     int local_c_e = 0;
     int pat_element = 0, dat_element = 0;
+    int cf_element = 0;
     
     local_score = score;
 
@@ -383,6 +403,13 @@ int	Thesaurus = USE_NTT;
     for (i = 0; i < cfp->element_num; i++)
 	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED))
 	    pat_element++;
+
+    /* 格フレーム中の要素数 */
+    for (i = 0; i < cfp->element_num; i++) {
+	if (list2->flag[i] != UNASSIGNED) {
+	    cf_element++;
+	}
+    }
 
     if (local_m_e < dat_element)
 	local_score = -1;
@@ -418,6 +445,7 @@ int	Thesaurus = USE_NTT;
 	Current_max_list1[0] = *list1;
 	Current_max_list2[0] = *list2;
 	Current_max_score = local_score;
+	Current_sufficiency = (float)cf_element/cfp->element_num;
 	Current_max_m_e = local_m_e;
 	Current_max_m_p = local_m_p;
 	Current_max_c_e = local_c_e;
@@ -734,6 +762,7 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 
     Current_max_num = 0;
     Current_max_score = -2;
+    Current_sufficiency = 0;
     Current_max_m_e = 0;
     Current_max_m_p = 0;
     Current_max_c_e = 0;
@@ -757,6 +786,7 @@ void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 	fprintf(stderr, "Too many case matching result !\n");
 
     cmm_ptr->score = Current_max_score;
+    cmm_ptr->sufficiency = Current_sufficiency;
     cmm_ptr->result_num = Current_max_num;
     for (i = 0; i < Current_max_num; i++) {
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];

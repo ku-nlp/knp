@@ -234,7 +234,9 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
 	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
-		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score) {
+		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
+		    (cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && 
+		     cpm_ptr->cmm[j].sufficiency < cpm_ptr->cmm[j+1].sufficiency)) {
 		    tempcmm = cpm_ptr->cmm[j];
 		    cpm_ptr->cmm[j] = cpm_ptr->cmm[j+1];
 		    cpm_ptr->cmm[j+1] = tempcmm;
@@ -545,16 +547,33 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	    if (num == NIL_ASSIGNED) {
-		if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
+		if (cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
+		    check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
 		    strcpy(relation, "外の関係");
+
+		    sprintf(feature_buffer, "%s判定", relation);
+		    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 		}
 		else {
-		    strcpy(relation, "×");
+		    strcpy(relation, "--");
 		}
 	    }
 	    else if (num >= 0) {
 		strcpy(relation, 
 		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+
+		/* ガ格に割り当てられ、格フレームに <主体> があれば、その格要素に <主体> を与える */
+		if (str_eq(pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), "ガ") && 
+		    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", SM_CODE_SIZE)) {
+		    assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
+		}
+
+		/* 格関係の保存 (文脈解析用) */
+		if (OptDisc == OPT_DISC) {
+		    RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
+				      cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
+				      cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
+		}
 	    }
 	    /* else: UNASSIGNED はないはず */
 

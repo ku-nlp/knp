@@ -65,6 +65,7 @@ int	IPALExist;
     }
     else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
 	fprintf(stderr, "Cannot open CF INDEX Database <%s>.\n", index_db_filename);
+	/* 格フレーム DATA は読めるのに、DB が読めないときは終わる */
 	exit(1);
     } 
     else {
@@ -571,6 +572,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		    continue;
 	    }
 
+	    /* (cf_ptr+f_num)->entry = strdup(verb); */
+
 	    /* 能動態 */
 	    if (b_ptr->voice == NULL) {
 		(cf_ptr+f_num)->voice = FRAME_ACTIVE;
@@ -666,6 +669,24 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
     if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
 	sprintf(buffer[0], "する");
 	verb = buffer[0];
+    }
+    /* 「〜化」, 「〜的だ」 で 名詞+接尾辞(自立語) の形のもの
+       (準用言ではない … 「〜年」などの時間を除く) */
+    /* ★ そのうち ルール化する */
+    else if (b_ptr->jiritu_num > 1 && L_Jiritu_M(b_ptr)->Hinshi == 14 && 
+	     check_feature(b_ptr->f, "準用言")) {
+	assign_cfeature(&(b_ptr->f), "名詞+接尾辞");
+	sprintf(buffer[0], "%s%s", (b_ptr->jiritu_ptr+b_ptr->jiritu_num-2)->Goi, L_Jiritu_M(b_ptr)->Goi);
+	verb = buffer[0];
+	f_num = make_ipal_cframe_subcontract(b_ptr, start, verb);
+	if (f_num != 0) {
+	    Case_frame_num += f_num;
+	    for (i = 0; i < f_num; i++) {
+		(Case_frame_array+start+i)->concatenated_flag = 0;
+	    }
+	    return f_num;
+	}
+	verb = L_Jiritu_M(b_ptr)->Goi;
     }
     else {
 	verb = L_Jiritu_M(b_ptr)->Goi;
@@ -858,6 +879,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		(Case_frame_array+i)->semantics[j] = NULL;
 	    }
 	}
+	if ((Case_frame_array+i)->entry) {
+	    free((Case_frame_array+i)->entry);
+	}
     }
 }
 
@@ -917,6 +941,16 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 		}
 	    }
 	}
+    }
+}
+
+/*==================================================================*/
+	void MergeCaseFrame(CASE_FRAME *dst, CASE_FRAME *src)
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	
     }
 }
 

@@ -643,6 +643,7 @@ typedef struct cf_def {
     int 	ipal_address;				/* IPALのアドレス */
     int 	ipal_size;				/* IPALのサイズ */
     char 	ipal_id[128];				/* IPALのID */
+    char 	*entry;					/* 用言の表記 */
     char 	imi[128];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
     int		weight[CF_ELEMENT_MAX];
@@ -659,6 +660,7 @@ typedef struct {
 typedef struct {
     CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
     int 	score;				/* スコア */
+    float	sufficiency;			/* 格フレームの埋まりぐあい */
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
@@ -736,6 +738,25 @@ typedef struct anaphora_list {
     int		count;
     struct anaphora_list *next;
 } ALIST;
+
+/* 格要素の構造体
+typedef struct case_component {
+    int		pp;
+    WORD	*data;
+} CASE_COMPONENT;
+*/
+typedef struct case_component {
+    char	*word;
+    int		count;
+    struct case_component *next;
+} CASE_COMPONENT;
+
+/* 用言と格要素の組の構造体 */
+typedef struct predicate_anaphora_list {
+    char	*key;		/* 用言 */
+    CASE_COMPONENT *cc[CASE_MAX_NUM];	/* 格要素のリスト */
+    struct predicate_anaphora_list *next;
+} PALIST;
 
 /*====================================================================
                                END

@@ -698,6 +698,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     b_ptr->to_para_p = FALSE;
 
     b_ptr->cpm_ptr = NULL;
+    b_ptr->voice = 0;
 
     b_ptr->length = 0;
     b_ptr->space = 0;
@@ -873,6 +874,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->fuzoku_num = 0;
 	    b_ptr->length = 0;
 	    b_ptr->cpm_ptr = NULL;
+	    b_ptr->voice = 0;
 	    for (j = 0, cp = b_ptr->SCASE_code; j < SCASE_CODE_SIZE; j++, cp++)
 		*cp = 0;
 	    /* clear_feature(&(b_ptr->f));

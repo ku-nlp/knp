@@ -349,6 +349,9 @@
 	    else if (!strncmp((*fpp2)->cp, "&ÉÊ»ìÊÑ¹¹:", strlen("&ÉÊ»ìÊÑ¹¹:"))) {
 		change_mrph((MRPH_DATA *)ptr, *fpp2);
 	    }
+	    else if (!strncmp((*fpp2)->cp, "&°ÕÌ£ÁÇÉÕÍ¿:", strlen("&°ÕÌ£ÁÇÉÕÍ¿:"))) {
+		assign_sm((BNST_DATA *)ptr, (*fpp2)->cp + strlen("&°ÕÌ£ÁÇÉÕÍ¿:"));
+	    }
 	    /*
 	    else if (!strncmp((*fpp2)->cp, "&¼­½ñ", strlen("&¼­½ñ"))) {
 		assign_f_from_dic(fpp1, ((MRPH_DATA *)ptr)->Goi);

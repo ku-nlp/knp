@@ -30,13 +30,23 @@ int		SMP2SMGExist;
 	filename = (char *)check_dict_filename(SM_DB_NAME, FALSE);
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
     if ((sm_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 	SMExist = FALSE;
 #ifdef DEBUG
 	fprintf(stderr, "Cannot open NTT word dictionary <%s>.\n", filename);
 #endif
     }
     else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
 	SMExist = TRUE;
     }
     free(filename);
@@ -49,13 +59,23 @@ int		SMP2SMGExist;
 	filename = (char *)check_dict_filename(SM2CODE_DB_NAME, FALSE);
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
     if ((sm2code_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 	SM2CODEExist = FALSE;
 #ifdef DEBUG
 	fprintf(stderr, "Cannot open NTT sm dictionary <%s>.\n", filename);
 #endif
     }
     else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
 	SM2CODEExist = TRUE;
     }
     free(filename);
@@ -68,13 +88,23 @@ int		SMP2SMGExist;
 	filename = (char *)check_dict_filename(SMP2SMG_DB_NAME, FALSE);
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
     if ((smp2smg_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 	SMP2SMGExist = FALSE;
 #ifdef DEBUG
 	fprintf(stderr, "Cannot open NTT smp smg table <%s>.\n", filename);
 #endif
     }
     else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
 	SMP2SMGExist = TRUE;
     }
     free(filename);
@@ -468,6 +498,38 @@ int		SMP2SMGExist;
 	}
     }
     return score;
+}
+
+/*==================================================================*/
+	       int sm_match_check(char *pat, char *codes)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; *(codes+i); i += SM_CODE_SIZE) {
+	if (_sm_match_score(pat, codes+i, SM_NO_EXPAND_NE) > 0) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
+		int assign_sm(BNST_DATA *bp, char *cp)
+/*==================================================================*/
+{
+    char *code;
+    code = sm2code(cp);
+
+    /* すでにその意味属性をもっているとき */
+    if (sm_match_check(code, bp->SM_code) == TRUE) {
+	return FALSE;
+    }
+
+    /* ★溢れる?★ */
+    strcat(bp->SM_code, code);
+    bp->SM_num++;
+    return TRUE;
 }
 
 /*==================================================================*/

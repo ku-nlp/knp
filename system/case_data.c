@@ -100,13 +100,16 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ヘ格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("へ");
-	c_ptr->pp[c_ptr->element_num][1] = END_M;
+	/* ヘ格 or ニ格 */
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("へ");
+	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ノ格") && 
-	     !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	     !check_feature(cpm_ptr->pred_b_ptr->f, "用言:判") && 
+	     !check_feature(cpm_ptr->pred_b_ptr->f, "準用言")) {
 	/* 隣接しない場合は? */
 	/* 類似度に閾値を設けて、単なる修飾を区別する必要がある */
 	c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("が");
@@ -352,7 +355,9 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
 	if (b_ptr->para_type != PARA_NORMAL) {
 	    if (b_ptr->parent) {
-		if (!check_feature(b_ptr->parent->f, "外の関係")) {
+		/* 外の関係以外のときは格要素に (外の関係でも形容詞のときは格要素にする) */
+		if (!check_feature(b_ptr->parent->f, "外の関係") || 
+		    check_feature(b_ptr->parent->f, "用言:形")) {
 		    _make_data_cframe_pp(cpm_ptr, NULL);
 		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
 		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
@@ -373,7 +378,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
 	    if (cel_b_ptr->parent && 
 		cel_b_ptr->parent->parent) {
-		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係")) {
+		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
+		    check_feature(cel_b_ptr->parent->parent->f, "用言:形")) {
 		    _make_data_cframe_pp(cpm_ptr, NULL);
 		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
 		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
@@ -446,7 +452,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
 
     /* 複合名詞のとき */
-    if (b_ptr->internal_num) {
+    if (b_ptr->internal_num && !check_feature(b_ptr->f, "名詞+接尾辞")) {
 	/* とりあえず後から 2 つめの形態素を扱う */
 	_make_data_cframe_pp(cpm_ptr, NULL);
 	_make_data_cframe_sm(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
@@ -471,7 +477,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     /* ヴォイスの設定 */ /* ★★★ 修正必要 ★★★ */
 
     int i;
-    b_ptr->voice = NULL;
 
     if (check_feature(b_ptr->f, "〜せる") ||
 	check_feature(b_ptr->f, "〜させる")) {
