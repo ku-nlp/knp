@@ -264,12 +264,14 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag) {
 
     if (score) {
 	if (score == 1) {
+	    /*
 	    if (!CorpusComment[ptr1->num][0])
 		sprintf(CorpusComment[ptr1->num], "%s%c %s%c", type1+3, touten1, type2+3, touten2);
 	    if (CorpusComment[ptr1->num][DATA_LEN-1] != '\n') {
 		fprintf(stderr, "corpus_clause_comp: data length overflow(2).\n");
 		exit(1);
 	    }
+	    */
 	    return CORPUS_POSSIBILITY_1;
 	}
 	else
@@ -367,8 +369,9 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	score += scorep;
     }
 
-    /* デバッグ出力 */
+    /* デバッグ出力
     fprintf(Outfp, ";;;(K) %s%c%c %s %c->!%d", type1+3, parallel1, touten1, type2+3, touten2, score);
+    */
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -388,8 +391,9 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	score += scorep;
     }
 
-    /* デバッグ出力 */
+    /* デバッグ出力
     fprintf(Outfp, "  %d\n", score);
+    */
 
     if (score)
 	return TRUE;
@@ -553,13 +557,13 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 
     /* 越えたことがあるとバリアではない */
     if (score) {
-	/* デバッグ出力 */
-	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	/* デバッグ出力
+	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score); */
 	return FALSE;
     }
-    else
-	/* デバッグ出力 */
-	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+    /* else
+	デバッグ出力
+	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score); */
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -586,8 +590,8 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     if (BarrierMatrix.Type2[pos2] == NULL)
 	BarrierMatrix.Type2[pos2] = strdup(type2+3);
 
-    /* デバッグ出力 */
-    fprintf(Outfp, "  %d\n", score);
+    /* デバッグ出力
+    fprintf(Outfp, "  %d\n", score); */
 
     /* あとは係ったことがあればよい */
     if (score)
@@ -641,7 +645,10 @@ void print_barrier(int bnum) {
 }
 
 int init_optional_case() {
+    int i;
     buffer[DATA_LEN-1] = '\n';
+    for (i = 0; i < BNST_MAX; i++)
+	CorpusComment[i][DATA_LEN-1] = '\n';
 #ifdef BERKELEY_DB_V2
     if (OptionalCaseDBname)
 	return db_read_open(OptionalCaseDBname, &op_db);
@@ -722,7 +729,16 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 	    score = dbfetch(op_db, buffer);
 
 	    if (score) {
-		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+		if (!CorpusComment[ptr1->num][0]) {
+		    sprintf(CorpusComment[ptr1->num], "%s:%s %s %d", cp1, case1, cp2, score);
+		    if (CorpusComment[ptr1->num][DATA_LEN-1] != '\n') {
+			fprintf(stderr, "corpus_optional_case_comp: data length overflow.\n");
+			exit(1);
+		    }
+		}
+
+		  fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+
 		free(cp1);
 		free(cp2);
 		/* full match */
@@ -732,10 +748,10 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		else
 		    return 1;
 	    }
-	    /*
+
 	    else
 		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
-		*/
+
 	}
     }
 
@@ -756,12 +772,14 @@ int check_optional_case(char *scase) {
     }
     else {
 	/* デ, カラ, マデ, ト格かな */
-	if (str_eq(scase, "デ格") || 
-	    str_eq(scase, "カラ格") || 
-	    str_eq(scase, "マデ格") || 
+	if (str_eq(scase, "カラ格") || 
+	    str_eq(scase, "ガ格") || 
+	    str_eq(scase, "デ格") || 
 	    str_eq(scase, "ト格") || 
-	    str_eq(scase, "未格") || 
-	    str_eq(scase, "ガ格"))
+	    str_eq(scase, "ニ格") || 
+	    str_eq(scase, "ヘ格") || 
+	    str_eq(scase, "マデ格") || 
+	    str_eq(scase, "ヨリ格"))
 	    return TRUE;
 	else
 	    return FALSE;
@@ -800,7 +818,9 @@ int check_Morph_for_optional_case(MRPH_DATA *m) {
 
 void optional_case_evaluation() {
     int i;
+    int appropriate = 0;
 
+    /* 普通の Best 解と、事例を用いた場合の Best 解が同じならば return */
     if (Op_Best_mgr.ID < 0 || Best_mgr.ID == Op_Best_mgr.ID)
 	return;
 
@@ -820,13 +840,27 @@ void optional_case_evaluation() {
 	for (i = 0;i < Bnst_num; i++) {
 	    /* 事例を用いた文節 */
 	    if (Op_Best_mgr.dpnd.op[i].flag && Best_mgr.dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
-		/* 事例を用いたときのほうが近いとき
-		   if (Op_Best_mgr.dpnd.head[i] < Best_mgr.dpnd.head[i] && */
-		if (Op_Best_mgr.score > Best_mgr.score) {
-		    Best_mgr = Op_Best_mgr;
-		    return;
+		/* 読点があれば */
+		if (check_feature(Op_Best_mgr.dpnd.f[i], "読点")) {
+		    appropriate++;
+		}
+		/* 読点がなければ */
+		else {
+		    /* 事例を用いたときのほうが近いとき */
+		    if (Op_Best_mgr.dpnd.head[i] < Best_mgr.dpnd.head[i])
+			appropriate++;
+		    /* 事例を用いたときのほうが遠いとき */
+		    else
+			appropriate--;
 		}
 	    }
+	}
+
+	/* 事例を用いたときのスコアが大きく、
+	   かつ appropriate が 0 以上だったら適用 */
+	if (Op_Best_mgr.score > Best_mgr.score && appropriate >= 0) {
+	    Best_mgr = Op_Best_mgr;
+	    return;
 	}
     }
 }
