@@ -1,3 +1,8 @@
+2003-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	タグ単位導入に伴うbug fix.
+
 2003-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_print.c, system/const.h, system/lib_print.c, system/main.c, system/read_data.c:
