@@ -50,4 +50,4 @@ smp2smg.db: smp2smg.dat
 		@MAKE_DB_COMMAND@ $@ -append / < $<; \
 	fi
 
-CLEANFILES = word2code.db sm2code.db code2sm.db smp2smg.db
+CLEANFILES = transform word2code.dat word2code.db sm2code.db code2sm.db smp2smg.db
