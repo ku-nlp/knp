@@ -28,6 +28,7 @@
 #define CLAUSE_CDB_NAME	KNP_DICT "/clause/c_clause.gdbm"
 #define CASE_PRED_DB_NAME	KNP_DICT "/case_pred/case_pred.gdbm"
 #define OP_DB_NAME	KNP_DICT "/optional_case/optional_case.gdbm"
+#define OP_SM_DB_NAME	KNP_DICT "/optional_case/optional_case_sm.gdbm"
 #define WC_DB_NAME	KNP_DICT "/optional_case/wordcount.gdbm"
 #else
 #define BGH_DB_NAME	KNP_DICT "/bgh/bgh.db"
@@ -46,5 +47,6 @@
 #define CLAUSE_CDB_NAME	KNP_DICT "/clause/c_clause.db"
 #define CASE_PRED_DB_NAME	KNP_DICT "/case_pred/case_pred.db"
 #define OP_DB_NAME	KNP_DICT "/optional_case/optional_case.db"
+#define OP_SM_DB_NAME	KNP_DICT "/optional_case/optional_case_sm.db"
 #define WC_DB_NAME	KNP_DICT "/optional_case/wordcount.db"
 #endif
