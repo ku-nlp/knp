@@ -949,7 +949,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	strncpy(sm, &(mrph_data[i].SM[j]), SM_CODE_SIZE);
 	if (!(flag & 0x01) && comp_sm(sm2code("地名"), sm, 0))
 	    flag |= 0x01;
-	else if (!(flag & 0x02) && comp_sm(sm2code("人名"), sm, 0))
+	else if (!(flag & 0x02) && comp_sm(sm2code("人名（固）"), sm, 0))
 	    flag |= 0x02;
 	else if (!(flag & 0x04) && comp_sm(sm2code("組織名"), sm, 0))
 	    flag |= 0x04;
