@@ -308,7 +308,7 @@ char *sm_code_to_str(int code)
 	    
 	    /* É½ÁØ³Ê */
 
-	    for (k = 0; cf_ptr->pp[i][k]!= -1; k++) {
+	    for (k = 0; cf_ptr->pp[i][k] != END_M; k++) {
 		if (k != 0) 
 		    sprintf(feature_buffer+strlen(feature_buffer), "/");
 		sprintf(feature_buffer+strlen(feature_buffer), 

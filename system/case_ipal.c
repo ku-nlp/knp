@@ -179,6 +179,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 
 	/* c_ptr->sm[num][sm_num++] = sm_zstr_to_code(); */
     }
+    /* 末尾は strcpy で \0 が入る */
 }
 
 /*==================================================================*/
@@ -432,7 +433,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
-	cf_ptr->sm[i][0] = END_M;
+	cf_ptr->sm[i][0] = '\0';
 	cf_ptr->ex[i][0] = '\0';
     }
 
