@@ -832,6 +832,33 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 }
 
 /*==================================================================*/
+	       void check_candidates(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    TOTAL_MGR *tm = sp->Best_mgr;
+    char buffer[DATA_LEN], buffer2[SMALL_DATA_LEN], *cp;
+
+    /* 各文節ごとにチェック用の feature を与える */
+    for (i = 0; i < sp->Bnst_num; i++)
+	if (tm->dpnd.check[i].num != -1) {
+	    /* 係り側 -> 係り先 */
+	    sprintf(buffer, "候補");
+	    for (j = 0; j < tm->dpnd.check[i].num; j++) {
+		/* 候補たち */
+		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
+		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
+		    fprintf(stderr, ";; Too long string <%s> (%d) in check_candidates.\n", 
+			    buffer, tm->dpnd.check[i].num);
+		    return;
+		}
+		strcat(buffer, buffer2);
+	    }
+	    assign_cfeature(&(sp->bnst_data[i].f), buffer);
+	}
+}
+
+/*==================================================================*/
 	       void memo_by_program(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
