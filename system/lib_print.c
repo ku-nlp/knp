@@ -1030,6 +1030,9 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    for (j = 0; j < tm->cpm[i].result_num; j++)
 		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
 	}
+
+	/* 次の解析のために初期化しておく */
+	tm->pred_num = 0;
     }
 }
 
