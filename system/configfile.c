@@ -651,7 +651,9 @@ int knp_dict_file_already_defined = 0;
 
     for (i = 0; i < PP_NUMBER; i++) {
 	DTFile[i] = NULL;
+#ifdef USE_SVM
 	SVMFile[i] = NULL;
+#endif
     }
 
     read_rc(find_rc_file(opfile));
