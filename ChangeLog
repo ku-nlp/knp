@@ -1,3 +1,19 @@
+2004-10-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/bgh.pl:
+	分類語彙表: 「もの」から主体の意味素を削除
+
+2004-09-21  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/kakari_uke.rule:
+	「より」を動詞だけでなく用言に
+
+	* system/bnst_compare.c:
+	複合辞とそうでないもの類似度なし
+
+	* system/thesaurus.c:
+	「共通する」で「する」だけに対してBGHcodeを与えない
+
 2004-09-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_data.c, rule/case_analysis.rule:
