@@ -82,7 +82,7 @@ int	IPALExist;
  *	IPAL -> 格フレーム
  */
 
-unsigned char ipal_str_buf[256];
+unsigned char ipal_str_buf[IPAL_DATA_SIZE];
 
 /*==================================================================*/
 unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret)
@@ -332,13 +332,16 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 {
     IPAL_FRAME *i_ptr = &Ipal_frame;
     int f_num = 0, address, break_flag = 0;
-    char *pre_pos, *cp, *address_str;
+    char *pre_pos, *cp, *address_str, *vtype = NULL;
     
     address_str = get_ipal_address(L_Jiritu_M(b_ptr)->Goi);
 
     /* なければ */
     if (!address_str)
 	return f_num;
+
+    if (vtype = check_feature(b_ptr->f, "用言"))
+	vtype += 5;
 
     for (cp = pre_pos = address_str; ; cp++) {
 	if (*cp == '/' || *cp == '\0') {
@@ -351,6 +354,14 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	    address = atoi(pre_pos);
 	    get_ipal_frame(i_ptr, address);
 	    pre_pos = cp + 1;
+
+	    /* 用言のタイプがマッチしなければ */
+	    if (vtype && strncmp(i_ptr->DATA+i_ptr->id, vtype, 2)) {
+		if (break_flag)
+		    break;
+		else
+		    continue;
+	    }
 
 	    /* 能動態 */
 	    if (b_ptr->voice == NULL) {
