@@ -14,7 +14,21 @@ char fukugoji_string[64];
 	     char *make_fukugoji_string(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    strcpy(fukugoji_string, "ニオイテ");
+    int i;
+
+    fukugoji_string[0] = '\0';
+
+    /* 前の文節の助詞 */
+    strcat(fukugoji_string, 
+	   ((sp->bnst_data+b_ptr->num-1)->fuzoku_ptr+(sp->bnst_data+b_ptr->num-1)->fuzoku_num-1)->Yomi);
+
+    /* この文節 */
+    for (i = 0; i < b_ptr->mrph_num; i++) {
+	if ((b_ptr->mrph_ptr+i)->Hinshi == 1)	/* 特殊以外 */
+	    continue;
+	strcat(fukugoji_string, 
+	       (b_ptr->mrph_ptr+i)->Yomi);
+    }
 
     return fukugoji_string;
 }
