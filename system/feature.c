@@ -3,14 +3,10 @@
 			     FEATURE処理
 
                                                S.Kurohashi 96. 7. 4
+
+    $Id$
 ====================================================================*/
-/* $Id$ */
-#include <malloc.h>
-#include <juman.h>
-#include "path.h"
-#include "const.h"
-#include "dbm.h"
-#include "extern.h"
+#include "knp.h"
 
 /*
   FEATUREの処理には次の３種類がある

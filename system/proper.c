@@ -3,18 +3,10 @@
 			     ¸ÇÍ­Ì¾»ì½èÍý
 
                                                S.Kurohashi 96. 7. 4
-====================================================================*/
-/* $Id$ */
 
-#include <stdlib.h>
-#include <string.h>
-#include <malloc.h>
-#include <juman.h>
-#include <math.h>
-#include "path.h"
-#include "const.h"
-#include "dbm.h"
-#include "extern.h"
+    $Id$
+====================================================================*/
+#include "knp.h"
 
 DBM_FILE	proper_db = NULL, properc_db = NULL, propercase_db = NULL;
 int		PROPERExist = 0;

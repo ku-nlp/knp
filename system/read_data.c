@@ -4,15 +4,10 @@
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
+
+    $Id$
 ====================================================================*/
-/* $Id$ */
-#include <stdio.h>
-#include <stdlib.h>
-#include <juman.h>
-#include "path.h"
-#include "const.h"
-#include "dbm.h"
-#include "extern.h"
+#include "knp.h"
 
 int Bnst_start[MRPH_MAX];
 
