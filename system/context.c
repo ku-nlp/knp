@@ -223,11 +223,60 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
+	 void ClearEllipsisComponent(ELLIPSIS_COMPONENT *ec)
+/*==================================================================*/
+{
+    ELLIPSIS_COMPONENT *emp, *next;
+
+    if (ec->pp_str) {
+	free(ec->pp_str);
+    }
+    emp = ec->next;
+    while (emp) {
+	if (emp->pp_str) {
+	    free(emp->pp_str);
+	}
+	next = emp->next;
+	free(emp);
+	emp = next;
+    }
+}
+
+/*==================================================================*/
 	       void ClearEllipsisMGR(ELLIPSIS_MGR *em)
 /*==================================================================*/
 {
+    int i;
+
+    for (i = 0; i < CASE_TYPE_NUM; i++) {
+	ClearEllipsisComponent(&(em->cc[i]));
+    }
+
     clear_feature(&(em->f));
     InitEllipsisMGR(em);
+}
+
+/*==================================================================*/
+void CopyEllipsisComponent(ELLIPSIS_COMPONENT *dst, ELLIPSIS_COMPONENT *src)
+/*==================================================================*/
+{
+    dst->s = src->s;
+    if (src->pp_str) {
+	dst->pp_str = strdup(src->pp_str);
+    }
+    else {
+	dst->pp_str = NULL;
+    }
+    dst->bnst = src->bnst;
+    dst->score = src->score;
+    dst->dist = src->dist;
+    if (src->next) {
+	dst->next = (ELLIPSIS_COMPONENT *)malloc_data(sizeof(ELLIPSIS_COMPONENT), "CopyEllipsisComponent");
+	CopyEllipsisComponent(dst->next, src->next);
+    }
+    else {
+	dst->next = NULL;
+    }
 }
 
 /*==================================================================*/
@@ -297,9 +346,11 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 {
     if (!pp_str) {
 	ccp->s = sp;
+	ccp->pp_str = NULL;
 	ccp->bnst = tag_n;
 	ccp->score = score;
 	ccp->dist = dist;
+	ccp->next = NULL;
 	return;
     }
     else {
@@ -2997,7 +3048,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		etc_buffer, maxi);
 	assign_cfeature(&(em_ptr->f), feature_buffer);
 
-	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 			       maxs, maxi, maxscore, distance);
 
 	/* 指示対象を格フレームに保存 */
@@ -3550,7 +3601,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		 CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i))) {
 		maxem->cpm = workem.cpm;
 		for (k = 0; k < CASE_TYPE_NUM; k++) {
-		    maxem->cc[k] = workem.cc[k];
+		    ClearEllipsisComponent(&(maxem->cc[k]));
+		    CopyEllipsisComponent(&(maxem->cc[k]), &(workem.cc[k]));
 		}
 		maxem->score = workem.score;
 		maxem->pure_score = workem.pure_score;
