@@ -68,13 +68,17 @@ void db_list(DBM_FILE db)
 char *db_get(DBM_FILE db, char *buf)
 {
     datum content, key;
+    char *rbuf;
 
     key.dptr = buf;
     key.dsize = strlen(buf);
     content = gdbm_fetch(db, key);
     if (content.dptr) {
-	*(content.dptr+content.dsize) = '\0';
-	return content.dptr;
+	rbuf = (char *)malloc_data(content.dsize+1, "db_get");
+	strncpy(rbuf, content.dptr, content.dsize);
+	*(rbuf+content.dsize) = '\0';
+	free(content.dptr);
+	return rbuf;
     }
     return NULL;
 }
@@ -91,6 +95,7 @@ DBM_FILE db_read_open(char *filename)
     DB_INFO dbinfo;
     DBM_FILE db;
 
+    /* Initialization */
     memset(&dbinfo, 0, sizeof(dbinfo));
     dbinfo.db_cachesize = 1048576;
 
@@ -107,6 +112,7 @@ DBM_FILE db_write_open(char *filename)
     DB_INFO dbinfo;
     DBM_FILE db;
 
+    /* Initialization */
     memset(&dbinfo, 0, sizeof(dbinfo));
     dbinfo.db_cachesize = 1048576;
 
@@ -137,6 +143,7 @@ void db_list(DBM_FILE db)
 	exit(1);
     }
 
+    /* Initialization */
     memset(&key, 0, sizeof(key));
     memset(&content, 0, sizeof(content));
 
@@ -151,7 +158,9 @@ void db_list(DBM_FILE db)
 char *db_get(DBM_FILE db, char *buf)
 {
     DBT content, key;
+    char *rbuf;
 
+    /* Initialization */
     memset(&key, 0, sizeof(DBT));
     memset(&content, 0, sizeof(DBT));
 
@@ -159,14 +168,20 @@ char *db_get(DBM_FILE db, char *buf)
     key.size = strlen(key.data);
     errno = db->get(db, NULL, &key, &content, 0);
 
+    /* Not existence */
     if (errno == DB_NOTFOUND)
 	return NULL;
+    /* Other errors */
     else if (errno) {
         fprintf(stderr, "db_get: %s\n", (char *)strerror(errno));
         exit(1);
     }
-    *((char *)content.data+content.size) = '\0';
-    return content.data;
+
+    rbuf = (char *)malloc_data(content.size+1, "db_get");
+    strncpy(rbuf, content.data, content.size);
+    *(rbuf+content.size) = '\0';
+    free(content.data);
+    return rbuf;
 }
 
 #endif
