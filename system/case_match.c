@@ -388,8 +388,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 		    return 1;
 		}
 	    }
-	    /* 格フレーム-行為 <=> <名(転生)>, <サ変> */
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("行為"), SM_CODE_SIZE)) {
+	    /* 格フレーム-動作 <=> <名(転生)>, <サ変> */
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("動作"), SM_CODE_SIZE)) {
 		if (sms_match(sm2code("名(転生)"), tp->SM_code, SM_CHECK_FULL) || 
 		    sms_match(sm2code("サ変"), tp->SM_code, SM_CHECK_FULL)) {
 		    return 1;
