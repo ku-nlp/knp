@@ -578,9 +578,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	/* 無格従属: 前の文節の係り受けに従う場合 */
 	for (i = 0; i < sp->Bnst_num -1; i++)
 	    if (dpnd.head[i] < 0) {
+		/* ありえない係り受け */
 		if (i >= dpnd.head[i + dpnd.head[i]]) {
-		    fprintf(stderr, ";; Invalid dependency (%d -> %d)\n", 
-			    i, dpnd.head[i + dpnd.head[i]]);
 		    return;
 		}
 		dpnd.head[i] = dpnd.head[i + dpnd.head[i]];
