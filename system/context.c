@@ -158,6 +158,57 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
+		    void ClearCCList(PALIST *pap)
+/*==================================================================*/
+{
+    int j;
+    CASE_COMPONENT *ccp, *next;
+
+    for (j = 0; j < CASE_MAX_NUM; j++) {
+	if (pap->cc[j]) {
+	    free(pap->cc[j]->word);
+	    if (pap->cc[j]->pp_str) {
+		free(pap->cc[j]->pp_str);
+	    }
+	    ccp = pap->cc[j]->next;
+	    free(pap->cc[j]);
+	    while (ccp) {
+		free(ccp->word);
+		if (ccp->pp_str) {
+		    free(ccp->pp_str);
+		}
+		next = ccp->next;
+		free(ccp);
+		ccp = next;
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+		       void ClearAnaphoraList()
+/*==================================================================*/
+{
+    int i, j;
+    PALIST *pap, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (palist[i].key) {
+	    free(palist[i].key);
+	}
+	ClearCCList(&palist[i]);
+	pap = palist[i].next;
+	while (pap) {
+	    free(pap->key);
+	    ClearCCList(pap);
+	    next = pap->next;
+	    free(pap);
+	    pap = next;
+	}
+    }
+}
+
+/*==================================================================*/
 		       void InitAnaphoraList()
 /*==================================================================*/
 {
@@ -196,14 +247,25 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
- void StoreCaseComponent(CASE_COMPONENT **ccpp, char *word, int sent_n, int tag_n, int flag)
+ void StoreCaseComponent(CASE_COMPONENT **ccpp, char *word, char *pp_str, 
+			 int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
     /* 格要素を登録する */
 
     while (*ccpp) {
-	/* すでに登録されているとき */
-	if (!strcmp((*ccpp)->word, word)) {
+	/* ノ格格指定あり: 上書き */
+	if (pp_str && (*ccpp)->pp_str && !strcmp((*ccpp)->pp_str, pp_str)) {
+	    free((*ccpp)->word);
+	    (*ccpp)->word = strdup(word);
+	    (*ccpp)->sent_num = sent_n;
+	    (*ccpp)->tag_num = tag_n;
+	    (*ccpp)->count = 1;
+	    (*ccpp)->flag = flag;
+	    return;
+	}
+	/* すでに登録されているとき: 同じ単語があれば */
+	else if (!pp_str && !(*ccpp)->pp_str && !strcmp((*ccpp)->word, word)) {
 	    /* 元が省略関係で今が格関係なら、すべて格関係にする */
 	    if ((*ccpp)->flag == EREL && flag == CREL) {
 		(*ccpp)->flag = CREL;
@@ -215,6 +277,12 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
     }
     *ccpp = (CASE_COMPONENT *)malloc_data(sizeof(CASE_COMPONENT), "StoreCaseComponent");
     (*ccpp)->word = strdup(word);
+    if (pp_str) {
+	(*ccpp)->pp_str = strdup(pp_str);
+    }
+    else {
+	(*ccpp)->pp_str = NULL;
+    }
     (*ccpp)->sent_num = sent_n;
     (*ccpp)->tag_num = tag_n;
     (*ccpp)->count = 1;
@@ -223,8 +291,8 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
-   void RegisterPredicate(char *key, int voice, int cf_addr, 
-			  int pp, char *word, int sent_n, int tag_n, int flag)
+void RegisterTagTarget(char *key, int voice, int cf_addr, 
+		       int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
     /* 用言と格要素をセットで登録する */
@@ -247,30 +315,30 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 	    if (!strcmp((*papp)->key, key) && 
 		(*papp)->voice == voice && 
 		(*papp)->cf_addr == (*papp)->cf_addr) {
-		StoreCaseComponent(&((*papp)->cc[pp]), word, sent_n, tag_n, flag);
+		StoreCaseComponent(&((*papp)->cc[pp]), word, pp_str, sent_n, tag_n, flag);
 		return;
 	    }
 	    papp = &((*papp)->next);
 	} while (*papp);
-	*papp = (PALIST *)malloc_data(sizeof(PALIST), "RegisterPredicate");
+	*papp = (PALIST *)malloc_data(sizeof(PALIST), "RegisterTagTarget");
 	(*papp)->key = strdup(key);
 	(*papp)->voice = voice;
 	(*papp)->cf_addr = cf_addr;
 	memset((*papp)->cc, 0, sizeof(CASE_COMPONENT *)*CASE_MAX_NUM);
-	StoreCaseComponent(&((*papp)->cc[pp]), word, sent_n, tag_n, flag);
+	StoreCaseComponent(&((*papp)->cc[pp]), word, pp_str, sent_n, tag_n, flag);
 	(*papp)->next = NULL;
     }
     else {
 	pap->key = strdup(key);
 	pap->voice = voice;
 	pap->cf_addr = cf_addr;
-	StoreCaseComponent(&(pap->cc[pp]), word, sent_n, tag_n, flag);
+	StoreCaseComponent(&(pap->cc[pp]), word, pp_str, sent_n, tag_n, flag);
     }
 }
 
 /*==================================================================*/
-  CASE_COMPONENT *CheckPredicate(char *key, int voice, int cf_addr,
-				 int pp)
+  CASE_COMPONENT *CheckTagTarget(char *key, int voice, int cf_addr,
+				 int pp, char *pp_str)
 /*==================================================================*/
 {
     PALIST *pap;
@@ -289,10 +357,24 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 	    pap->voice == voice && 
 	    pap->cf_addr == cf_addr) {
 	    ccp = pap->cc[pp];
-	    while (ccp->next) {
-		ccp = ccp->next;
+	    /* ノ格の格指定あるとき */
+	    if (pp_str) {
+		while (ccp) {
+		    if (!ccp->pp_str || !strcmp(ccp->pp_str, pp_str)) {
+			return ccp;
+		    }
+		    ccp = ccp->next;
+		}
 	    }
-	    return ccp;
+	    /* ノ格の格指定ないとき */
+	    else if (ccp) {
+		/* 最後の要素を返す */
+		while (ccp->next) {
+		    ccp = ccp->next;
+		}
+		return ccp;
+	    }
+	    return NULL;
 	}
 	pap = pap->next;
     }
@@ -329,6 +411,7 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
+    ClearAnaphoraList();
     InitAnaphoraList();
 }
 
@@ -2883,10 +2966,12 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     cs = sentence_data + sp->Sen_num - 1;
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
 
-    if ((ccp = CheckPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+    /* 共参照リンクを辿ってタグつけ */
+    if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 			      cpm_ptr->pred_b_ptr->voice, 
 			      cmm_ptr->cf_ptr->cf_address, 
-			      cf_ptr->pp[n][0]))) {
+			      cf_ptr->pp[n][0], 
+			      cf_ptr->pp_str[n]))) {
 	if (!CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, ccp->word)) {
 	    maxs = sentence_data + ccp->sent_num - 1;
 	    maxi = ccp->tag_num;

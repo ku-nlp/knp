@@ -787,6 +787,7 @@ typedef struct sentence {
 
 typedef struct case_component {
     char	*word;
+    char	*pp_str;
     int		sent_num;
     int		tag_num;
     int		count;

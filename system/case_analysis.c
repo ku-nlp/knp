@@ -1327,7 +1327,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	    /* ³Ê´Ø·¸¤ÎÊÝÂ¸ (Ê¸Ì®²òÀÏÍÑ) -- ³ä¤êÅö¤Æ¤Ê¤¤¾ì¹ç [tentative]
 	    if (OptEllipsis) {
-		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+		RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cf.pp[i][0], 
@@ -1425,12 +1425,13 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    sent_n = sp->Sen_num;
 		}
 
-		/* ³Ê´Ø·¸¤ÎÊÝÂ¸ (Ê¸Ì®²òÀÏÍÑ) */
+		/* ³Ê¡¦¾ÊÎ¬´Ø·¸¤ÎÊÝÂ¸ (Ê¸Ì®²òÀÏÍÑ) */
 		if (OptEllipsis) {
-		    RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				      cpm_ptr->pred_b_ptr->voice, 
 				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
+				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
 				      word, sent_n, tag_n, CREL);
 		}
 		if (word) free(word);
