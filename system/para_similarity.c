@@ -42,10 +42,40 @@ int ParaThesaurus = USE_BGH;
 
     if (ptr == NULL) return 0;
     for (i = 0; i < ptr->fuzoku_num; i++) 
-	if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
-	    (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
-	    (cp == NULL  || str_eq((ptr->fuzoku_ptr+i)->Goi, cp)))
-	    return 1;
+      if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
+	  (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
+	  (cp == NULL  || str_eq((ptr->fuzoku_ptr+i)->Goi, cp)))
+	return 1;
+    return 0;
+}
+
+/*==================================================================*/
+int check_fuzoku_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
+/*==================================================================*/
+{
+    int	i;
+
+    if (ptr == NULL) return 0;
+    for (i = 0; i < ptr->fuzoku_num; i++) 
+      if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
+	  (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
+	  (cp == NULL  || strstr((ptr->fuzoku_ptr+i)->Goi, cp)))
+	return 1;
+    return 0;
+}
+
+/*==================================================================*/
+int check_bnst_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
+/*==================================================================*/
+{
+    int	i;
+
+    if (ptr == NULL) return 0;
+    for (i = 0; i < ptr->mrph_num; i++) 
+      if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr+i)->Hinshi) &&
+	  (Bunrui == 0 || Bunrui == (ptr->mrph_ptr+i)->Bunrui) &&
+	  (cp == NULL  || strstr((ptr->mrph_ptr+i)->Goi, cp)))
+	return 1;
     return 0;
 }
 
@@ -208,9 +238,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	
 	/* 「的，」と「的だ」 */
 	(check_feature(ptr1->f, "並キ:名") && 
-	 check_fuzoku(ptr1, 0, 0, "的") && 
-	 check_fuzoku(ptr2, 0, 0, "的だ"))
-
+	 check_feature(ptr1->f, "的") && 
+	 check_feature(ptr2->f, "的"))
+	 /* check_bnst_substr(ptr1, 0, 0, "的") && 
+	    check_bnst_substr(ptr2, 0, 0, "的だ")) */
 	) {
 
 	/* ただし，判定詞 -- 体言 の類似度は 0 */

@@ -688,8 +688,14 @@
 	ucp = ((MRPH_DATA *)ptr2)->Goi;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
-	    if (code < 0xb0a0 && code != 0xa1b9) /* 漢字の範囲 */
-		return FALSE;
+	    if (code >= 0xb0a0 ||	/* 漢字の範囲 */
+		code == 0xa1b9 || 	/* 々 */
+		(code == 0xa4ab && ucp == ((MRPH_DATA *)ptr2)->Goi) ||	/* か */
+		(code == 0xa5ab && ucp == ((MRPH_DATA *)ptr2)->Goi) ||	/* カ */
+		(code == 0xa5f6 && ucp == ((MRPH_DATA *)ptr2)->Goi))	/* ヶ */
+	      ;
+	    else 
+	      return FALSE;
 	    ucp += 2;
 	}	    
 	return TRUE;
@@ -1075,6 +1081,18 @@
     else if (!strncmp(rule, "&自立語一致", strlen("&自立語一致"))) {
 	if (!strcmp(((BNST_DATA *)ptr1)->Jiritu_Go, 
 		    ((BNST_DATA *)ptr2)->Jiritu_Go)) {
+	    return TRUE;
+	} else {
+	    return FALSE;
+	}
+    }
+
+
+    /* &文字列照合 : 原形との文字列部分マッチ by kuro 00/12/28 */
+    
+    else if (!strncmp(rule, "&文字列照合:", strlen("&文字列照合:"))) {
+      	cp = rule + strlen("&文字列照合:");
+	if (strstr(((MRPH_DATA *)ptr2)->Goi, cp)) {
 	    return TRUE;
 	} else {
 	    return FALSE;

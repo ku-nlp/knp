@@ -215,8 +215,13 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
            「今年は四月に統一地方選挙、七月に参院選挙があります。」
        		「約四十倍」,「統一地方選挙」がサ変省略でないことがわかる
        
-       → 最後のconjunctのheadとの係り受けを他のconjunctのheadとの係り受け
-       にコピーする．
+       → 「a1 a2 a3, b1 b2 b3」において，すべて体言の場合，(a1 a3),(a2 a3)
+       の係り受けを(a1 b3),(a2 b3)の係り受けで上書きする．
+       ただし，隣にだけ係るような係り受けの場合に副作用があるので，(a2 a3)
+       の上書きは，(a2 a3)と(a2 b3)が異なる場合のみとする．
+
+       例) 「映画は二月クランクイン、十月公開の予定。」
+
 
        ※ この方法では前のconjunctの係り受けを修正することしかできず，
        次の例は正しく扱えない．
@@ -238,8 +243,11 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		noun_flag = 0;
 	if (noun_flag) {
 	    for (k = 0; k < m_ptr->part_num - 1; k++)
-		for (i = m_ptr->start[k]; i < m_ptr->end[k]; i ++) 
-		    Dpnd_matrix[i][m_ptr->end[k]] =     
+	        for (i = m_ptr->start[k]; i < m_ptr->end[k]; i ++)
+		    if (!(i == m_ptr->end[k] - 1 &&
+			  Dpnd_matrix[i][m_ptr->end[k]] ==     
+			  Dpnd_matrix[m_ptr->end[m_ptr->part_num - 1] - 1][m_ptr->end[m_ptr->part_num - 1]]))
+		      Dpnd_matrix[i][m_ptr->end[k]] =     
 			Dpnd_matrix[i][m_ptr->end[m_ptr->part_num - 1]];
 	}
     }
