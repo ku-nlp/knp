@@ -488,7 +488,6 @@ extern float	AssignReferentThreshold;
 	    if (code) {
 		strcpy(sp->mrph_data[i].SM, code);
 		free(code);
-		assign_ntt_dict(sp, i);
 	    }
 	    else {
 		sp->mrph_data[i].SM[0] = '\0';
