@@ -1,3 +1,10 @@
+2003-08-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_scase.c: 「〜を〜に」の格解析の不具合を修正
+
+	* system/const.h, system/context.c:
+	位置カテゴリのかわりに距離のみを使う場合用の場合分け
+
 2003-07-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac: bug fix of KNP_RC_DEFULT.
