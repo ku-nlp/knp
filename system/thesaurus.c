@@ -6,7 +6,7 @@
 
     $Id$
 ====================================================================*/
-#include <knp.h>
+#include "knp.h"
 
 int 	Thesaurus = USE_NTT;
 int	ParaThesaurus = USE_BGH;
