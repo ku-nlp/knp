@@ -652,6 +652,7 @@ typedef struct {
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
+    LIST	result_lists_d[MAX_MATCH_MAX];
 } CF_MATCH_MGR;
 
 /* 文と(用言に対する複数の可能な)格フレームの対応付け結果の記録 */

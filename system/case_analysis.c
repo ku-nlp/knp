@@ -208,7 +208,7 @@ char *pp_code_to_hstr(int num)
 
     /* 格要素なしの時の実験 98/12/16 */
     if (cf_ptr->element_num == 0) {
-	case_frame_match(cf_ptr, Cf_match_mgr, OptCFMode);
+	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode);
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
@@ -227,7 +227,7 @@ char *pp_code_to_hstr(int num)
 	       オプションで選択       (1999/06/15)
 	       */
 
-	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
+	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode);
 
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
 	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
@@ -520,12 +520,9 @@ char *pp_code_to_hstr(int num)
 		     void record_case_analysis()
 /*==================================================================*/
 {
-    int i, j, k, num;
+    int i, j, num;
     char feature_buffer[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
-    CF_MATCH_MGR *cmm_ptr;
-    CASE_FRAME *cf_ptr;
-    BNST_DATA *pred_b_ptr;
 
     /* 格解析の結果(Best_mgrが管理)をfeatureとして用言文節に与える */
 
@@ -535,30 +532,30 @@ char *pp_code_to_hstr(int num)
 
 	/* 格フレームがない場合 */
 	if (cpm_ptr->result_num == 0 || 
-	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1) {
+	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
+	    cpm_ptr->cmm[0].score == -2) {
 	    continue;
 	}
 
-	cmm_ptr = &(cpm_ptr->cmm[0]);
-	cf_ptr = cmm_ptr->cf_ptr;
-	pred_b_ptr = cpm_ptr->pred_b_ptr;
-
-	for (i = 0; i < cf_ptr->element_num; i++) {
-	    num = cmm_ptr->result_lists_p[0].flag[i];
-
-	    /* 対応関係 */
-	    if (num != UNASSIGNED && cmm_ptr->score != -2) {
-		sprintf(feature_buffer, "格関係%d:%s", pred_b_ptr->num, 
-			pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]));
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[num]->f), feature_buffer);
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	    if (num == NIL_ASSIGNED) {
+		if (check_feature(cpm_ptr->pred_b_ptr->f, "連格")) {
+		    sprintf(feature_buffer, "格関係%d:外の関係", cpm_ptr->pred_b_ptr->num);
+		}
+		else {
+		    sprintf(feature_buffer, "格関係%d:×", cpm_ptr->pred_b_ptr->num);
+		}
 	    }
-	    else if (num == UNASSIGNED && 
-		     !check_feature(pred_b_ptr->f, "準用言") && 
-		     !str_eq(pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]), "時間")) {
-		sprintf(feature_buffer, "C省略可能性-%s", 
-			pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]));
-		assign_cfeature(&(pred_b_ptr->f), feature_buffer);
+	    else if (num >= 0) {
+		sprintf(feature_buffer, "格関係%d:%s", cpm_ptr->pred_b_ptr->num, 
+			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
+	    else {
+		fprintf(stderr, "UNASSIGNED? %s\n", sp->KNPSID);
+		exit(1);
+	    }
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 	}
     }
 }

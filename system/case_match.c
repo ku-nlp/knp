@@ -706,13 +706,14 @@ extern float ntt_code_match(char *c1, char *c2);
 }
 
 /*==================================================================*/
-void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
+void case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag)
 /*==================================================================*/
 {
     /* 格フレームのマッチング */
 
     LIST assign_d_list, assign_p_list;
     int i;
+    CASE_FRAME *cfd = &(cpm_ptr->cf);
 
     /* 初期化 */
 
@@ -742,8 +743,10 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
 
     cmm_ptr->score = Current_max_score;
     cmm_ptr->result_num = Current_max_num;
-    for (i = 0; i < Current_max_num; i++)
+    for (i = 0; i < Current_max_num; i++) {
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
+	cmm_ptr->result_lists_d[i] = Current_max_list1[i];
+    }
 
     /* tentative */
     if (cmm_ptr->cf_ptr->concatenated_flag == 1) {

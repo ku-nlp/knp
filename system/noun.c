@@ -113,7 +113,7 @@ int	NounExist = 0;
 	    if (strlen(buf)+strlen((bp->mrph_ptr+i)->Goi2)+2 > BNST_LENGTH_MAX) {
 		fprintf(stderr, "Too long key <%s> in %s.\n", buf, "GetDefinitionFromBunsetsu");
 		/* overflowed_function(buf, BNST_LENGTH_MAX, "GetDefinitionFromBunsetsu"); */
-		return;
+		return NULL;
 	    }
 	    strcat(buf, (bp->mrph_ptr+i)->Goi2);
 	}

@@ -339,11 +339,15 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
     char feature_buffer[DATA_LEN];
     SENTENCE_DATA *s;
     BNST_DATA *bp;
-    CF_MATCH_MGR *cmm_ptr;
 
     maxscore = 0;
     s = sentence_data + sp->Sen_num - 1;
     memset(Bcheck, 0, BNST_MAX);
+
+    /* 省略されている格をマーク */
+    sprintf(feature_buffer, "C省略可能性-%s", 
+	    pp_code_to_kstr(cf_ptr->pp[n][0]));
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 
     /* 親をみる (PARA なら child 用言) */
     if (cpm_ptr->pred_b_ptr->parent) {
@@ -429,7 +433,8 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 
 	/* 格フレームがない場合 */
 	if (cpm_ptr->result_num == 0 || 
-	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1) {
+	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
+	    cpm_ptr->cmm[0].score == -2) {
 	    continue;
 	}
 
@@ -442,7 +447,7 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	    /* とりあえず省略要素と認定する条件を設定 
 	       1. 準用言ではない
 	       2. 時間格ではない */
-	    if (num == UNASSIGNED && cmm_ptr->score != -2 && 
+	    if (num == UNASSIGNED && 
 		!check_feature(pred_b_ptr->f, "準用言") && 
 		!str_eq((char *)pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]), "時間")) {
 		EllipsisDetectForVerb(cpm_ptr, cmm_ptr->cf_ptr, i);
