@@ -4,7 +4,7 @@ dicdir = $(pkgdatadir)/dict/scode/ntt
 nodist_dic_DATA = word2code.db sm2code.db code2sm.db smp2smg.db
 
 usr_word2code.dat:
-	true
+	touch $@
 
 transform: transform.cpp
 	g++ transform.cpp -o transform
