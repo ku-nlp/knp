@@ -570,6 +570,8 @@ typedef struct {
 #define	STOREtoCF	4
 #define	USE_BGH_WITH_STORE	5
 #define	USE_NTT_WITH_STORE	6
+#define	USE_SUFFIX_SM	8
+#define	USE_PREFIX_SM	16
 
 #define	CF_NORMAL	0
 #define	CF_SUM		1	/* OR の格フレーム */

@@ -552,6 +552,7 @@ extern float	AssignGaCaseThreshold;
 	if (!check_feature((sp->bnst_data+i)->f, "体言") && 
 	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
+	    delete_cfeature(&((sp->bnst_data+i)->f), "SM");
 	}
     }
 

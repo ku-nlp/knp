@@ -201,12 +201,13 @@ extern void list2feature_pattern(FEATURE_PATTERN *f, CELL *cell);
 extern void list2feature(CELL *cp, FEATURE **fpp);
 extern void clear_feature(FEATURE **fpp);
 extern void append_feature(FEATURE **fpp, FEATURE *afp);
+extern void delete_cfeature(FEATURE **fpp, char *type);
 
 /* koou.c */
 int koou(SENTENCE_DATA *sp);
 
 /* lib_bgh.c */
-extern char *_get_bgh(char *cp);
+extern char *_get_bgh(char *cp, char *arg);
 extern int bgh_code_match(char *c1, char *c2);
 extern int bgh_code_match_for_case(char *cp1, char *cp2);
 extern void init_bgh();
@@ -235,7 +236,7 @@ extern void init_scase();
 extern void close_scase();
 
 /* lib_sm.c */
-extern char *_get_ntt(char *cp);
+extern char *_get_ntt(char *cp, char *arg);
 extern char *sm2code(char *cp);
 extern char *code2sm(char *cp);
 extern float ntt_code_match(char *c1, char *c2, int flag);

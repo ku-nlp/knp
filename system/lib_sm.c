@@ -176,18 +176,17 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
-		       char *_get_ntt(char *cp)
+		 char *_get_ntt(char *cp, char *arg)
 /*==================================================================*/
 {
-    int i, pos, length;
+    int i, pos;
     char *code;
 
     code = db_get(sm_db, cp);
 
     if (code) {
-	length = strlen(code);
-	/* 溢れたら、縮める (撲滅対象) */
-	if (length > SM_CODE_SIZE*SM_ELEMENT_MAX) {
+	/* 溢れたら、縮める */
+	if (strlen(code) > SM_CODE_SIZE*SM_ELEMENT_MAX) {
 #ifdef DEBUG
 	    fprintf(stderr, "Too long SM content <%s>.\n", code);
 #endif
@@ -209,13 +208,15 @@ char  		cont_str[DBM_CON_MAX];
 	else {
 	    /* 意味素を付与する品詞 */
 	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
-		if (code[i] == '3' ||	/* 名 */
-		    code[i] == '4' ||	/* 名(形式) */
-		    code[i] == '5' ||	/* 名(形動) */
-		    code[i] == '6' ||	/* 名(転生) */
-		    code[i] == '7' ||	/* サ変 */
-		    code[i] == '9' ||	/* 時詞 */
-		    code[i] == 'a') {	/* 代名 */
+		if ((*arg && code[i] == *arg) ||	/* 指定された品詞 */
+		    (!*arg && (
+			code[i] == '3' ||	/* 名 */
+			code[i] == '4' ||	/* 名(形式) */
+			code[i] == '5' ||	/* 名(形動) */
+			code[i] == '6' ||	/* 名(転生) */
+			code[i] == '7' ||	/* サ変 */
+			code[i] == '9' ||	/* 時詞 */
+			code[i] == 'a'))) {	/* 代名 */
 		    strncpy(code+pos, code+i, SM_CODE_SIZE);
 		    pos += SM_CODE_SIZE;
 		}
@@ -804,12 +805,14 @@ char  		cont_str[DBM_CON_MAX];
 	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
 	    /* o すでに主体付与されていない
+	       o <数量> ではない (<数量>のとき意味属性がない)
 	       o <用言:動>である 
 	       o 格フレームが<主体>をもつ, <主体準>ではない
 	       o 入力側が意味素がないか、(固有名詞と推定)
 	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
 	    */
 	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
+		!check_feature(cpm_ptr->elem_b_ptr[i]->f, "数量") && 
 		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
 		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
 		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 

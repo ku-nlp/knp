@@ -118,6 +118,33 @@
     }
 }
 
+/*==================================================================*/
+	   void delete_cfeature(FEATURE **fpp, char *type)
+/*==================================================================*/
+{
+    FEATURE *prep = NULL;
+
+    while (*fpp) {
+	if (comp_feature((*fpp)->cp, type) == TRUE) {
+	    FEATURE *next;
+	    free((*fpp)->cp);
+	    if (prep == NULL) {
+		next = (*fpp)->next;
+		free(*fpp);
+		*fpp = next;
+	    }
+	    else {
+		next = (*fpp)->next;
+		free(*fpp);
+		prep->next = next;
+	    }
+	    return;
+	}
+	prep = *fpp;
+	fpp = &(prep->next);
+    }
+}    
+
 /*
  *
  *  ファイル(S式または文字列) ==コピー==> ルール構造体

@@ -42,24 +42,30 @@ int	ParaThesaurus = USE_BGH;
 /*==================================================================*/
 {
     int i, exist;
-    char *code;
+    char *code, arg = '\0';
     unsigned char *hira;
     char *(*get_code)();
 
     /* 文字列の意味素コードを取得 */
 
-    if (flag == USE_NTT) {
+    if (flag & USE_NTT) {
 	exist = SMExist;
 	get_code = _get_ntt;
+	if (flag & USE_SUFFIX_SM) {
+	    arg = 'm';
+	}
+	else if (flag & USE_PREFIX_SM) {
+	    arg = 'l';
+	}
     }
-    else if (flag == USE_BGH) {
+    else if (flag & USE_BGH) {
 	exist = BGHExist;
 	get_code = _get_bgh;
     }
 
     if (exist == FALSE) return NULL;
 
-    if ((code = get_code(cp))) {
+    if ((code = get_code(cp, &arg))) {
 	return code;
     }
 
@@ -72,7 +78,7 @@ int	ParaThesaurus = USE_BGH;
 	}
     }
     hira = katakana2hiragana(cp);
-    code = get_code(hira);
+    code = get_code(hira, &arg);
     free(hira);
     return code;
 }
@@ -82,7 +88,7 @@ int	ParaThesaurus = USE_BGH;
 /*==================================================================*/
 {
     str[max-1] = '\0';
-    fprintf(stderr, "Too long key <%s> in %s.\n", str, function);
+    fprintf(stderr, ";; Too long key <%s> in %s.\n", str, function);
     str[max-1] = GUARD;
 }
 
@@ -90,7 +96,7 @@ int	ParaThesaurus = USE_BGH;
 	       void get_bnst_code(BNST_DATA *ptr, int flag)
 /*==================================================================*/
 {
-    int strt, end, stop, i, jiritu;
+    int strt, end, stop, i, lookup_pos = 0;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char *result_code;
     int *result_num, exist, code_unit;
@@ -137,25 +143,26 @@ int	ParaThesaurus = USE_BGH;
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") || 
 	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "動詞") && /* 用言のときの付属語の動詞を排除 */
 	     (flag == USE_NTT || strcmp((ptr->fuzoku_ptr + stop)->Goi, "する"))) || 
-	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") && 
-	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
+	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") && /* 意味素をみる接尾辞以外は排除 */
+	     !check_feature((ptr->fuzoku_ptr + stop)->f, "Ｔ意味有接尾辞")))
 	    break;
     }
 
-    /* 「側」など付属語的なものでは辞書を引かない */
-    for (jiritu = 0; jiritu < ptr->jiritu_num; jiritu++) {
-	if (check_feature((ptr->jiritu_ptr + jiritu)->f, "Ｔ固有末尾") && 
-	    jiritu != 0) {
-	    stop = 0;
-	    break;
-	}
+    end = ptr->settou_num + ptr->jiritu_num + stop;
+
+    /* カウンタのみで引く */
+    if (end > 1 && 
+	check_feature((ptr->mrph_ptr+end-1)->f, "カウンタ")) {
+	lookup_pos = USE_SUFFIX_SM;
+	strt = end-1;
+    }
+    else {
+	strt = 0;
     }
 
-    end = ptr->settou_num + jiritu + stop;
-    for (strt =0 ; strt < (ptr->settou_num + jiritu); strt++) {
+    for (; strt < end; strt++) {
 
 	/* 表記のまま */
-
 	*str_buffer = '\0';
 	for (i = strt; i < end; i++) {
 	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
@@ -165,7 +172,7 @@ int	ParaThesaurus = USE_BGH;
 	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 	}
 
-	code = get_str_code(str_buffer, flag);
+	code = get_str_code(str_buffer, flag | lookup_pos);
 
 	if (code) {
 	    strcpy(result_code, code);
@@ -176,7 +183,7 @@ int	ParaThesaurus = USE_BGH;
 	       "お" をとってみる => 形態素マッチ */
 	    if (strlen(str_buffer) > 2 && 
 		!strncmp(str_buffer, "お", 2)) {
-		code = get_str_code(str_buffer+2, flag);
+		code = get_str_code(str_buffer+2, flag | lookup_pos);
 		if (code) {
 		    strcpy(result_code, code);
 		    free(code);
@@ -215,7 +222,7 @@ int	ParaThesaurus = USE_BGH;
 			"ナノ形容詞"))) 
 		str_buffer[strlen(str_buffer)-2] = '\0';
 
-	    code = get_str_code(str_buffer, flag);
+	    code = get_str_code(str_buffer, flag | lookup_pos);
 
 	    if (code) {
 		strcpy(result_code, code);
