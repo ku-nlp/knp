@@ -1,3 +1,8 @@
+2004-02-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/const.h, system/context.c, system/context.h, system/extern.h:
+	位置カテゴリ順序をknprcに記述できるようにした。
+
 2004-02-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c:
