@@ -807,7 +807,7 @@ PARSED:
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
 	    }
-	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
+	    for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }
 	}
