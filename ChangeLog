@@ -1,11 +1,33 @@
+2001-07-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* svm/getopt.h: New file.
+
+	* svm/Makefile.am: ファイル追加に伴う変更
+
+2001-07-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/context.c, system/main.c:
+	直前格要素による格フレームの決定: <回数>をのぞいた
+	省略解析: feature追加
+	SVM使用時の閾値(AssignReferentThresholdForSVM)を追加
+
+2001-07-26  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/context.c, system/extern.h, system/main.c:
+	省略解析にSVMを使うかどうかをオプションで指定するように変更
+
 2001-07-25  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
-	* system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/ipal.c, system/knp.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/para_analysis.c, system/path.h, system/proper.c, system/read_data.c 
+
+	* system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/ipal.c, system/knp.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/para_analysis.c, system/path.h, system/proper.c, system/read_data.c:
 	文脈(省略)解析と格解析を統合
 
-	* juman/juman_lib.c
+	* juman/juman_lib.c:
 	解析した結果を文字列として返せるように変更
 
 	* configure.in: SVMを用いる場合のオプションを追加
+
+	* svm/Makefile.am, svm/base_example.h, svm/classifier.h, svm/common.h, svm/example.h, svm/kernel.h, svm/misc.h, svm/model.h, svm/param.h, svm/svm.cc, svm/svm.h:
+	New files.
 
 2001-05-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
