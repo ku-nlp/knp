@@ -355,12 +355,10 @@ int		SMP2SMGExist;
 
     for (i = 1; i <= min; i++) {
 	if (*(c1+i) != *(c2+i)) {
-	    return (float)2*(i-1)/(d1+i-1+(float)(d2-i+1)/2);
-	    /* return (float)2*(i-1)/(d1+d2); */
+	    return (float)2*(i-1)/(d1+d2);
 	}
     }
-    return (float)2*min/(d1+min+(float)(d2-min)/2);
-    /* return (float)2*min/(d1+d2); */
+    return (float)2*min/(d1+d2);
 }
 
 /*====================================================================
