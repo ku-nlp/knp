@@ -95,7 +95,7 @@
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
-#define OPT_NENOSM	2
+#define OPT_NESM	2
 #define OPT_NE		3
 
 #define OPT_INHIBIT_CLAUSE		0x0001
@@ -158,6 +158,7 @@
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
+#define SM_CHECK_FULL	3
 
 /*====================================================================
 				  ?
@@ -210,6 +211,8 @@ typedef struct {
 #define BW_MATCHING 1
 #define ALL_MATCHING 0
 #define PART_MATCHING 1
+#define SHORT_MATCHING 0
+#define LONG_MATCHING 1
 
 #define RM_HINSHI_MAX 64
 #define RM_BUNRUI_MAX 64
@@ -374,9 +377,7 @@ typedef struct tnode_b {
     int		mrph_num,   settou_num,  jiritu_num,  fuzoku_num;
     MRPH_DATA 	*mrph_ptr,  *settou_ptr, *jiritu_ptr, *fuzoku_ptr;
   /* 自立語データ */
-    /* char 	Jiritu_Go[WORD_LEN_MAX]; */
-    char 	*Jiritu_Go;
-    int 	Jiritu_Go_Size;
+    char 	Jiritu_Go[WORD_LEN_MAX];
   /* 並列構造 */
     int 	para_num;	/* 対応する並列構造データ番号 */
     char   	para_key_type;  /* 名|述|？ featureからコピー */
@@ -560,6 +561,23 @@ typedef struct {
     int 	pred_num;	/* 文中の用言数 */
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
 } TOTAL_MGR;
+
+/*====================================================================
+		      固有名詞解析 - 文脈処理へ
+====================================================================*/
+
+/* 保持しておくためのデータ */
+
+typedef struct _MRPH_P {
+    MRPH_DATA data;
+    struct _MRPH_P *next;
+} MRPH_P;
+
+typedef struct _PreservedNamedEntity {
+    MRPH_P *mrph;
+    int Type;
+    struct _PreservedNamedEntity *next;
+} PreservedNamedEntity;
 
 /*====================================================================
                                END

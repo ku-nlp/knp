@@ -17,6 +17,10 @@ char *CaseList[] = {"カラ格", "ガ格", "デ格", "ト格", "ニ格", "ノ格",
 		    "文末", "未格", "無格", "用言強NONE", "隣接", 
 		    "連格", "連体", "連用", ""};
 
+PreservedNamedEntity *pNE = NULL;
+
+char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
+
 /*==================================================================*/
 			   void init_proper()
 /*==================================================================*/
@@ -165,7 +169,13 @@ char *CaseList[] = {"カラ格", "ガ格", "デ格", "ト格", "ニ格", "ノ格",
 	offset = strlen(type)+1;
 	sscanf(feature+offset, "%[^:]", class);
 
-	if (i < Mrph_num-2 && check_feature(mrph_data[i+2].f, "自立")) {
+	if (i < Mrph_num-2 && 
+	    ((check_feature(mrph_data[i].f, "自立") && 
+	      mrph_data[i].Hinshi == 6) || 
+	      (mrph_data[i].Hinshi == 14 && mrph_data[i].Bunrui == 2) || 
+	      (mrph_data[i].Hinshi == 13 && mrph_data[i].Bunrui == 1)) && 
+	    check_feature(mrph_data[i+2].f, "自立") && 
+	    mrph_data[i+2].Hinshi == 6) {
 	    /* "の"の後の自立語の文字種 */
 	    strcpy(mtype, check_class(&(mrph_data[i+2])));
 	    if (str_eq(class, mtype)) {
@@ -178,7 +188,13 @@ char *CaseList[] = {"カラ格", "ガ格", "デ格", "ト格", "ニ格", "ノ格",
 	offset = strlen(type)+1;
 	sscanf(feature+offset, "%[^:]", class);
 
-	if (i > 1 && check_feature(mrph_data[i-2].f, "自立")) {
+	if (i > 1 && 
+	    ((check_feature(mrph_data[i].f, "自立") && 
+	      mrph_data[i].Hinshi == 6) || 
+	      (mrph_data[i].Hinshi == 14 && mrph_data[i].Bunrui == 2) || 
+	      (mrph_data[i].Hinshi == 13 && mrph_data[i].Bunrui == 1)) && 
+	    check_feature(mrph_data[i-2].f, "自立") && 
+	    mrph_data[i-2].Hinshi == 6) {
 	    /* "の"の前の自立語の文字種 */
 	    strcpy(mtype, check_class(&(mrph_data[i-2])));
 	    if (str_eq(class, mtype)) {
@@ -279,21 +295,16 @@ char *CaseList[] = {"カラ格", "ガ格", "デ格", "ト格", "ニ格", "ノ格",
     ratio = merge_ratio(n1, n2);
 
     if (n1 || n2) {
-	if (p1->Location || p2->Location) {
+	if (p1->Location || p2->Location)
 	    r.Location = calculate_NE(p1->Location, n1, p2->Location, n2, ratio);
-	}
-	if (p1->Person || p2->Person) {
+	if (p1->Person || p2->Person)
 	    r.Person = calculate_NE(p1->Person, n1, p2->Person, n2, ratio);
-	}
-	if (p1->Organization || p2->Organization) {
+	if (p1->Organization || p2->Organization)
 	    r.Organization = calculate_NE(p1->Organization, n1, p2->Organization, n2, ratio);
-	}
-	if (p1->Artifact || p2->Artifact) {
+	if (p1->Artifact || p2->Artifact)
 	    r.Artifact = calculate_NE(p1->Artifact, n1, p2->Artifact, n2, ratio);
-	}
-	if (p1->Others || p2->Others) {
+	if (p1->Others || p2->Others)
 	    r.Others = calculate_NE(p1->Others, n1, p2->Others, n2, ratio);
-	}
     }
     return r;
 }
@@ -525,13 +536,14 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 
     /* ここで入力形態素に意味素を与えておく */
-    sm = (char *)get_sm(mp->Goi);
+    /* sm = (char *)get_sm(mp->Goi); */
 
     /* 意味素による検索 */
-    if (OptNE != OPT_NENOSM && *sm) {
-	smn = strlen(sm);
-	strncpy(mp->SM, sm, smn);	/* ★ */
-	smn = smn/SM_CODE_SIZE;
+    if (OptNE == OPT_NESM && mp->SM[0]) {
+	/* smn = strlen(sm);
+	   strncpy(mp->SM, sm, smn);
+	   smn = smn/SM_CODE_SIZE; */
+	smn = strlen(mp->SM)/SM_CODE_SIZE;
 
 	for (i = 0; i < smn; i++) {
 	    code[0] = '1';
@@ -599,7 +611,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     TOTAL_MGR *tm = &Best_mgr;
 
     for (i = 0; i < Mrph_num; i++) {
-	mrph_data[i].SM[0] = '\0';
+	/* mrph_data[i].SM[0] = '\0'; */
 	init_NE(&(mrph_data[i].NE));
 	init_NE(&(mrph_data[i].eNE));
 
@@ -647,7 +659,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     /* 格 */
     for (i = 0; i < Bnst_num; i++) {
 	h = tm->dpnd.head[i];
-	cp = check_feature(bnst_data[i].f, "係");
+	cp = (char *)check_feature(bnst_data[i].f, "係");
 	if (cp) {
 	    for (j = 0; CaseList[j][0]; j++) {
 		if (str_eq(cp+3, CaseList[j])) {
@@ -658,7 +670,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	}
     }
 
-    /* ルールの適用 (eNE に対して) */
+    /* 形態素に対するルールの適用 (eNE に対して) */
     for (i = 0; i < Mrph_num; i++) {
 	m_ptr = mrph_data + i;
 	/* feature へ */
@@ -666,34 +678,170 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 
 	/* 細分類決定 */
 	for (j = 0, r_ptr = NERuleArray; j < CurNERuleSize; j++, r_ptr++) {
-    	    if (regexpmrphrule_match(r_ptr, m_ptr) == TRUE) {
+    	    if (regexpmrphrule_match(r_ptr, m_ptr) != -1) {
 		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-
-		/* 形態素細分類の変更
-		sscanf(r_ptr->f->cp, "%*[^:]:%*[^:]:%s", decision);
-		if (strcmp(decision, "その他"))
-		    m_ptr->Bunrui = get_Bunrui(decision);
-		    */
 		break;
 	    }
 	}
     }
 
     /* 複合名詞ルールの適用 */
-    for (i = 0; i < Mrph_num; i++) {
-	m_ptr = mrph_data + i;
+    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
+}
 
-	for (j = 0, r_ptr = CNRuleArray; j < CurCNRuleSize; j++, r_ptr++) {
-            if (r_ptr->self_pattern->mrph->Goi[0] &&
-                !strcmp(r_ptr->self_pattern->mrph->Goi[0], "特別")) {
-                if ((match_tail = regexpmrphrule_match2(r_ptr, m_ptr)) != -1) {
-                    for (k = i; k < (Mrph_num - match_tail); k++) {
-                        m_ptr = mrph_data + k;
-                        assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-                    }
-                }
-            }
+/*==================================================================*/
+		      int ReturnNEcode(char *cp)
+/*==================================================================*/
+{
+    int i = 0;
+
+    while (TableNE[i++][0]) {
+	if (str_eq(cp, TableNE[i]))
+	    return i;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+	  void allocateMRPH(PreservedNamedEntity **p, int i)
+/*==================================================================*/
+{
+    MRPH_P **mp;
+
+    while ((*p)->next != NULL)
+	p = &((*p)->next);
+    mp = &((*p)->mrph);
+    while (*mp != NULL)
+	mp = &((*mp)->next);
+    *mp = (MRPH_P *)malloc_data(sizeof(MRPH_P));
+    (*mp)->data = mrph_data[i];
+    (*mp)->next = NULL;
+}
+
+/*==================================================================*/
+      void allocateNE(PreservedNamedEntity **p, int code, int i)
+/*==================================================================*/
+{
+    while (*p != NULL)
+	p = &((*p)->next);
+    *p = (PreservedNamedEntity *)malloc_data(sizeof(PreservedNamedEntity));
+    (*p)->mrph = NULL;
+    (*p)->next = NULL;
+    allocateMRPH(p, i);
+    (*p)->Type = code;
+}
+
+/*==================================================================*/
+			  void preserveNE()
+/*==================================================================*/
+{
+    int i, code, precode = -1;
+    char *cp;
+
+    for (i = 0; i < Mrph_num; i++) {
+	if (cp = (char *)check_feature(mrph_data[i].f, "複固")) {
+	    code = ReturnNEcode(cp+strlen("複固:"));
+	    /* 違う種類の固有名詞になるか、固有名詞が始まったとき */
+	    if (code != precode)
+		allocateNE(&pNE, code, i);
+	    /* 同じ種類の固有名詞 */
+	    else
+		allocateMRPH(&pNE, i);
+	    precode = code;
 	}
+	else
+	    precode = -1;
+    }
+}
+
+/*==================================================================*/
+			    void printNE()
+/*==================================================================*/
+{
+    PreservedNamedEntity *p = pNE;
+    MRPH_P *mp;
+
+    fprintf(stdout, "<固有名詞 スタック>\n");
+
+    while (p) {
+	mp = p->mrph;
+	fprintf(stdout, "%d", p->Type);
+	while (mp) {
+	    fprintf(stdout, " %s", mp->data.Goi2);
+	    mp = mp->next;
+	}
+	putchar('\n');
+	p = p->next;
+    }
+}
+
+/*==================================================================*/
+	  int check_correspond_NE(MRPH_DATA *data, char *rule)
+/*==================================================================*/
+{
+    int code;
+    PreservedNamedEntity *p = pNE;
+    MRPH_P *mp;
+
+    code = ReturnNEcode(rule);
+
+    while (p) {
+	mp = p->mrph;
+	/* とりあえず、先頭の形態素だけチェックしておく */
+	if (code == p->Type && str_eq(data->Goi, mp->data.Goi))
+	    return TRUE;
+	p = p->next;
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
+			  int assign_agent()
+/*==================================================================*/
+{
+    int i, j, child;
+    char *cp;
+    char Childs[128], Case[128], SM[128];
+
+    for (i = 0; i < Bnst_num; i++) {
+	if (cp = (char *)check_feature(bnst_data[i].f, "深層格N1")) {
+	    sscanf(cp, "%*[^:]:%[^:]:%[^:]:%[^:]", 
+		   Childs, Case, SM);
+	    child = atoi(Childs);
+	    /* 自立語全てに feature を与える */
+	    for (j = 0; j < bnst_data[child].jiritu_num; j++)
+		assign_cfeature(&((bnst_data[child].jiritu_ptr+j)->f), "主格");
+	}
+    }
+}
+
+/*==================================================================*/
+		      void clearMRPH(MRPH_P *p)
+/*==================================================================*/
+{
+    MRPH_P *old;
+
+    while (p) {
+	old = p->next;
+	free(p);
+	p = old;
+    }
+}
+
+/*==================================================================*/
+			    void clearNE()
+/*==================================================================*/
+{
+    PreservedNamedEntity *p = pNE;
+    PreservedNamedEntity *old;
+
+    pNE = NULL;
+
+    while (p) {
+	old = p->next;
+	clearMRPH(p->mrph);
+	free(p);
+	p = old;
     }
 }
 
