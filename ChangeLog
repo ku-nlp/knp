@@ -1,3 +1,8 @@
+2004-02-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_ipal.c:
+	格フレームの用例をすべて読み込むように修正
+
 2004-02-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/context.c, system/context.h, system/extern.h:
