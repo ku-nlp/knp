@@ -2,6 +2,9 @@
 
 	* system/context.c: 名詞関係解析bug fix
 
+	* system/extern.h, system/lib_scase.c, system/main.c:
+	表層格辞書を使わないオプション(-no-scase)を追加
+
 2003-11-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/dpnd_analysis.c, system/case_data.c, system/main.c:
