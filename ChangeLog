@@ -1,3 +1,16 @@
+2003-10-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/case_analysis.c, system/case_ipal.c:
+	-print-ex-all指定時に意味素がちゃんと表示されないbugを修正
+
+2003-10-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	関係解析で候補を探索するときに、用言のリンクを辿るように変更
+
+	* system/const.h:
+	用言(格フレームをもつ要素)の最大数を32から64にした
+
 2003-10-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/dpnd_analysis.c, system/lib_print.c, system/main.c, system/read_data.c:
