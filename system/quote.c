@@ -9,6 +9,9 @@
 ====================================================================*/
 #include "knp.h"
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 QUOTE_DATA quote_data;
 
 /*==================================================================*/
@@ -34,7 +37,7 @@ QUOTE_DATA quote_data;
     int i;
 
     for (i = 0; quote_data.in_num[i] >= 0; i++) {
-	fprintf(stdout,"Quote_num %d in %d out %d \n", i,
+	fprintf(Outfp,"Quote_num %d in %d out %d \n", i,
 		quote_data.in_num[i], quote_data.out_num[i]);
     }
 }

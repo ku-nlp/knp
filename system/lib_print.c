@@ -15,6 +15,10 @@
 
 extern char *check_feature();
 
+/* Server Client extention */
+extern FILE *Infp;
+extern FILE *Outfp;
+
 char pos2symbol(char *hinshi, char *bunrui)
 {
     if (!strcmp(hinshi, "特殊")) return ' ';
@@ -45,31 +49,31 @@ char pos2symbol(char *hinshi, char *bunrui)
 		  void print_mrph(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
-    fprintf(stdout, "%s %s %s ", m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi);
+    fprintf(Outfp, "%s %s %s ", m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi);
     
-    fprintf(stdout, "%s ", Class[m_ptr->Hinshi][0].id);
-    fprintf(stdout, "%d ", m_ptr->Hinshi);
+    fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][0].id);
+    fprintf(Outfp, "%d ", m_ptr->Hinshi);
 	
     if (m_ptr->Bunrui) 
-	fprintf(stdout, "%s ", Class[m_ptr->Hinshi][m_ptr->Bunrui].id);
+	fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][m_ptr->Bunrui].id);
     else
-	fprintf(stdout, "* ");
-    fprintf(stdout, "%d ", m_ptr->Bunrui);
+	fprintf(Outfp, "* ");
+    fprintf(Outfp, "%d ", m_ptr->Bunrui);
 	
     if (m_ptr->Katuyou_Kata) 
-	fprintf(stdout, "%s ", Type[m_ptr->Katuyou_Kata].name);
+	fprintf(Outfp, "%s ", Type[m_ptr->Katuyou_Kata].name);
     else                    
-	fprintf(stdout, "* ");
-    fprintf(stdout, "%d ", m_ptr->Katuyou_Kata);
+	fprintf(Outfp, "* ");
+    fprintf(Outfp, "%d ", m_ptr->Katuyou_Kata);
     
     if (m_ptr->Katuyou_Kei) 
-	fprintf(stdout, "%s ", 
+	fprintf(Outfp, "%s ", 
 		Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].name);
     else 
-	fprintf(stdout, "* ");
-    fprintf(stdout, "%d ", m_ptr->Katuyou_Kei);
+	fprintf(Outfp, "* ");
+    fprintf(Outfp, "%d ", m_ptr->Katuyou_Kei);
     
-    fprintf(stdout, "%s", m_ptr->Imi);
+    fprintf(Outfp, "%s", m_ptr->Imi);
 }
 
 /*==================================================================*/
@@ -79,11 +83,11 @@ char pos2symbol(char *hinshi, char *bunrui)
     char yomi_buffer[256];
 
     sprintf(yomi_buffer, "(%s)", m_ptr->Yomi);
-    fprintf(stdout, "%-16.16s%-18.18s %-14.14s",
+    fprintf(Outfp, "%-16.16s%-18.18s %-14.14s",
 	    m_ptr->Goi2, yomi_buffer, 
 	    Class[m_ptr->Hinshi][m_ptr->Bunrui].id);
     if (m_ptr->Katuyou_Kata)
-	fprintf(stdout, " %-14.14s %-12.12s",
+	fprintf(Outfp, " %-14.14s %-12.12s",
 		Type[m_ptr->Katuyou_Kata].name,
 		Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].name);
 }
@@ -98,28 +102,28 @@ char pos2symbol(char *hinshi, char *bunrui)
 
     for (i = 0, b_ptr = bnst_data; i < Bnst_num; i++, b_ptr++) {
 	if (flag == 1) {
-	    fprintf(stdout, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
+	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
 	    if (b_ptr->f) {
-		fprintf(stdout, " ");
-		print_feature(b_ptr->f, stdout);
+		fprintf(Outfp, " ");
+		print_feature(b_ptr->f, Outfp);
 	    }
-	    fprintf(stdout, "\n");
+	    fprintf(Outfp, "\n");
 	}
 	else {
-	    fprintf(stdout, "*\n");
+	    fprintf(Outfp, "*\n");
 	}
 
 	for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
 	    print_mrph(m_ptr);
 	    if (m_ptr->f) {
-		fprintf(stdout, " ");
-		print_feature(m_ptr->f, stdout);
+		fprintf(Outfp, " ");
+		print_feature(m_ptr->f, Outfp);
 	    }
 	    /* print_mrph_f(m_ptr); */
-	    fprintf(stdout, "\n");
+	    fprintf(Outfp, "\n");
 	}
     }
-    fprintf(stdout, "EOS\n");
+    fprintf(Outfp, "EOS\n");
 }
 
 /*==================================================================*/
@@ -128,7 +132,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 {
     int i;
     for (i = 0; i < ptr->mrph_num; i++)
-	fprintf(stdout, "%s", (ptr->mrph_ptr + i)->Goi2);
+	fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
 }
 
 /*==================================================================*/
@@ -150,13 +154,13 @@ char pos2symbol(char *hinshi, char *bunrui)
 	}
     } else if (cp == NULL && ptr) {
 	if ( ptr->para_top_p == TRUE ) {
-	    fprintf(stdout, "PARA");
+	    fprintf(Outfp, "PARA");
 	} else {
 	    for (i = 0; i < ptr->mrph_num; i++) {
 		if (OptDisplay == OPT_NORMAL) {
-		    fprintf(stdout, "%s", (ptr->mrph_ptr + i)->Goi2);
+		    fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
 		} else { 
-		    fprintf(stdout, "%s%c", (ptr->mrph_ptr + i)->Goi2, 
+		    fprintf(Outfp, "%s%c", (ptr->mrph_ptr + i)->Goi2, 
 			    pos2symbol(Class[(ptr->mrph_ptr + i)->Hinshi]
 				       [0].id,
 				       Class[(ptr->mrph_ptr + i)->Hinshi]
@@ -165,9 +169,9 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    }
 	}
 
-	if ( ptr->para_type == PARA_NORMAL ) fprintf(stdout, "<P>");
-	else if ( ptr->para_type == PARA_INCOMP ) fprintf(stdout, "<I>");
-	if ( ptr->to_para_p == TRUE ) fprintf(stdout, "(D)");
+	if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "<P>");
+	else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "<I>");
+	if ( ptr->to_para_p == TRUE ) fprintf(Outfp, "(D)");
     }
 }
 
@@ -200,12 +204,12 @@ char pos2symbol(char *hinshi, char *bunrui)
 	flag = FALSE;
 	for (j = 0; j < cpm_ptr->cmm[0].cf_ptr->element_num; j++)
 	  if (cpm_ptr->cmm[0].result_lists_p[0].flag[j] == elem_num) {
-	      fprintf(stdout, " N%d", offset + j);
+	      fprintf(Outfp, " N%d", offset + j);
 	      flag = TRUE;
 	  }
     }
     if (flag == FALSE)
-      fprintf(stdout, " *");
+      fprintf(Outfp, " *");
 
     for (i = 0; b_ptr->child[i]; i++) {
 	flag = FALSE;
@@ -219,12 +223,12 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    flag = FALSE;
 	    for (j = 0; j < cpm_ptr->cmm[0].cf_ptr->element_num; j++)
 	      if (cpm_ptr->cmm[0].result_lists_p[0].flag[j] == elem_num) {
-		  fprintf(stdout, " N%d", offset + j);
+		  fprintf(Outfp, " N%d", offset + j);
 		  flag = TRUE;
 	      }
 	}
 	if (flag == FALSE)
-	  fprintf(stdout, " *");
+	  fprintf(Outfp, " *");
     }
 }
 
@@ -238,79 +242,79 @@ char pos2symbol(char *hinshi, char *bunrui)
     IPAL_FRAME *i_ptr = &Ipal_frame;
     char *cp;
      
-    fputc('(', stdout);	/* 文節始り */
+    fputc('(', Outfp);	/* 文節始り */
 
     if ( ptr->para_top_p == TRUE ) {
 	if (ptr->child[1] && 
 	    ptr->child[1]->para_key_type == PARA_KEY_N)
-	  fprintf(stdout, "noun_para"); 
+	  fprintf(Outfp, "noun_para"); 
 	else
-	  fprintf(stdout, "pred_para");
+	  fprintf(Outfp, "pred_para");
     }
     else {
-	fprintf(stdout, "%d ", ptr->num);
+	fprintf(Outfp, "%d ", ptr->num);
 
 	/* 係り受け情報の表示 (追加:97/10/29) */
 
-	fprintf(stdout, "(type:%c int:%s ext:%s) ",
+	fprintf(Outfp, "(type:%c int:%s ext:%s) ",
 		ptr->dpnd_type, ptr->dpnd_int, ptr->dpnd_ext);
 
-	fputc('(', stdout);
+	fputc('(', Outfp);
 	for (i=0, m_ptr=ptr->mrph_ptr; i < ptr->mrph_num; i++, m_ptr++) {
-	    fputc('(', stdout);
+	    fputc('(', Outfp);
 	    print_mrph(m_ptr);
-	    fprintf(stdout, " ");
-	    print_feature2(m_ptr->f, stdout);
-	    fputc(')', stdout);
+	    fprintf(Outfp, " ");
+	    print_feature2(m_ptr->f, Outfp);
+	    fputc(')', Outfp);
 	}
-	fputc(')', stdout);
+	fputc(')', Outfp);
 
-	fprintf(stdout, " ");
-	print_feature2(ptr->f, stdout);
+	fprintf(Outfp, " ");
+	print_feature2(ptr->f, Outfp);
 
 	if (OptAnalysis = OPT_DPND ||
 	    !check_feature(ptr->f, "用言") ||	/* 用言でない場合 */
 	    ptr->cpm_ptr == NULL) { 		/* 解析前 */
-	    fprintf(stdout, " NIL");
+	    fprintf(Outfp, " NIL");
 	}
 	else {
-	    fprintf(stdout, " (");
+	    fprintf(Outfp, " (");
 	    
 	    if (ptr->cpm_ptr->cmm[0].cf_ptr == NULL)
-		fprintf(stdout, "-2");	/* IPALにENTRYなし */
+		fprintf(Outfp, "-2");	/* IPALにENTRYなし */
 	    else if ((ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_address == -1)
-		fprintf(stdout, "-1");	/* 格要素なし */
+		fprintf(Outfp, "-1");	/* 格要素なし */
 	    else {
-		fprintf(stdout, "%s", 
+		fprintf(Outfp, "%s", 
 			(ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_id);
 		switch (ptr->cpm_ptr->cmm[0].cf_ptr->voice) {
 		case FRAME_ACTIVE:
-		    fprintf(stdout, " 能動"); break;
+		    fprintf(Outfp, " 能動"); break;
 		case FRAME_PASSIVE_I:
-		    fprintf(stdout, " 間受"); break;
+		    fprintf(Outfp, " 間受"); break;
 		case FRAME_PASSIVE_1:
-		    fprintf(stdout, " 直受１"); break;
+		    fprintf(Outfp, " 直受１"); break;
 		case FRAME_PASSIVE_2:
-		    fprintf(stdout, " 直受２"); break;
+		    fprintf(Outfp, " 直受２"); break;
 		case FRAME_CAUSATIVE_WO_NI:
-		    fprintf(stdout, " 使役ヲニ"); break;
+		    fprintf(Outfp, " 使役ヲニ"); break;
 		case FRAME_CAUSATIVE_WO:
-		    fprintf(stdout, " 使役ヲ"); break;
+		    fprintf(Outfp, " 使役ヲ"); break;
 		case FRAME_CAUSATIVE_NI:
-		    fprintf(stdout, " 使役ニ"); break;
+		    fprintf(Outfp, " 使役ニ"); break;
 		case FRAME_POSSIBLE:
-		    fprintf(stdout, " 可能"); break;
+		    fprintf(Outfp, " 可能"); break;
 		case FRAME_POLITE:
-		    fprintf(stdout, " 尊敬"); break;
+		    fprintf(Outfp, " 尊敬"); break;
 		case FRAME_SPONTANE:
-		    fprintf(stdout, " 自発"); break;
+		    fprintf(Outfp, " 自発"); break;
 		default: break;
 		}
-		fprintf(stdout, " (");
+		fprintf(Outfp, " (");
 		print_data2ipal_corr(ptr, ptr->cpm_ptr);
-		fprintf(stdout, ")");
+		fprintf(Outfp, ")");
 	    }
-	    fprintf(stdout, ")");
+	    fprintf(Outfp, ")");
 
 	    /* ------------変更:述語素, 格形式を出力-----------------
 	    if (ptr->cpm_ptr != NULL &&
@@ -319,23 +323,23 @@ char pos2symbol(char *hinshi, char *bunrui)
 		get_ipal_frame(i_ptr, 
 			       (ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_address);
 		if (i_ptr->DATA[i_ptr->jyutugoso]) {
-		    fprintf(stdout, " 述語素 %s", 
+		    fprintf(Outfp, " 述語素 %s", 
 			    i_ptr->DATA+i_ptr->jyutugoso);
 		} else {
-		    fprintf(stdout, " 述語素 nil");
+		    fprintf(Outfp, " 述語素 nil");
 		}
-		fprintf(stdout, " 格形式 (");
+		fprintf(Outfp, " 格形式 (");
 		for (j=0; *((i_ptr->DATA)+(i_ptr->kaku_keishiki[j])) 
 			       != NULL; j++){
-		    fprintf(stdout, " %s", 
+		    fprintf(Outfp, " %s", 
 			    i_ptr->DATA+i_ptr->kaku_keishiki[j]);
 		}
-		fprintf(stdout, ")");
+		fprintf(Outfp, ")");
 	    }
 	    ------------------------------------------------------- */
 	}
     }
-    fputc(')', stdout);	/* 文節終り */    
+    fputc(')', Outfp);	/* 文節終り */    
 }
 
 /*==================================================================*/
@@ -346,11 +350,11 @@ char pos2symbol(char *hinshi, char *bunrui)
 
     init_bnst_tree_property();
 
-    fputc('(', stdout);
+    fputc('(', Outfp);
     for ( i=0; i<Bnst_num; i++ )
       print_bnst(&(bnst_data[i]), NULL);
-    fputc(')', stdout);
-    fputc('\n', stdout);
+    fputc(')', Outfp);
+    fputc('\n', Outfp);
 }
 
 /*====================================================================
@@ -394,17 +398,17 @@ char pos2symbol(char *hinshi, char *bunrui)
     if ( len > space ) {
 	if ( (space%2) != (len%2) ) {
 	    cp += len + 1 - space;
-	    fputc(' ', stdout);
+	    fputc(' ', Outfp);
 	} else
 	  cp += len - space;
     } else
-      for ( i=0; i<space-len; i++ ) fputc(' ', stdout);
+      for ( i=0; i<space-len; i++ ) fputc(' ', Outfp);
 
     if ( ptr->para_key_type ) {
-	fprintf(stdout, "%c>", 'a'+ (*para_char));
+	fprintf(Outfp, "%c>", 'a'+ (*para_char));
 	(*para_char)++;
     }
-    fprintf(stdout, "%s", cp);
+    fprintf(Outfp, "%s", cp);
 }
 
 /*==================================================================*/
@@ -412,9 +416,9 @@ char pos2symbol(char *hinshi, char *bunrui)
 /*==================================================================*/
 {
     int i;
-    for ( i=0; i<(length-1); i++ ) fputc('-', stdout);
-    flag ? fputc(')', stdout) : fputc('-', stdout);
-    fputc('\n', stdout);
+    for ( i=0; i<(length-1); i++ ) fputc('-', Outfp);
+    flag ? fputc(')', Outfp) : fputc('-', Outfp);
+    fputc('\n', Outfp);
 }
 
 /*==================================================================*/
@@ -464,24 +468,24 @@ char pos2symbol(char *hinshi, char *bunrui)
     }
 
     if (type == PRINT_PARA)
-      fprintf(stdout, "<< PARA MATRIX >>\n");
+      fprintf(Outfp, "<< PARA MATRIX >>\n");
     else if (type == PRINT_DPND)
-      fprintf(stdout, "<< DPND MATRIX >>\n");
+      fprintf(Outfp, "<< DPND MATRIX >>\n");
     else if (type == PRINT_MASK)
-      fprintf(stdout, "<< MASK MATRIX >>\n");
+      fprintf(Outfp, "<< MASK MATRIX >>\n");
     else if (type == PRINT_QUOTE)
-      fprintf(stdout, "<< QUOTE MATRIX >>\n");
+      fprintf(Outfp, "<< QUOTE MATRIX >>\n");
     else if (type == PRINT_RSTR)
-      fprintf(stdout, "<< RESTRICT MATRIX for PARA RELATION>>\n");
+      fprintf(Outfp, "<< RESTRICT MATRIX for PARA RELATION>>\n");
     else if (type == PRINT_RSTD)
-      fprintf(stdout, "<< RESTRICT MATRIX for DEPENDENCY STRUCTURE>>\n");
+      fprintf(Outfp, "<< RESTRICT MATRIX for DEPENDENCY STRUCTURE>>\n");
     else if (type == PRINT_RSTQ)
-      fprintf(stdout, "<< RESTRICT MATRIX for QUOTE SCOPE>>\n");
+      fprintf(Outfp, "<< RESTRICT MATRIX for QUOTE SCOPE>>\n");
 
     print_line(max_length, over_flag);
-    for ( i=0; i<(max_length-Bnst_num*3); i++ ) fputc(' ', stdout);
-    for ( i=0; i<Bnst_num; i++ ) fprintf(stdout, "%2d ", i);
-    fputc('\n', stdout);
+    for ( i=0; i<(max_length-Bnst_num*3); i++ ) fputc(' ', Outfp);
+    for ( i=0; i<Bnst_num; i++ ) fprintf(Outfp, "%2d ", i);
+    fputc('\n', Outfp);
     print_line(max_length, over_flag);
 
     for ( i=0; i<Bnst_num; i++ ) {
@@ -489,50 +493,50 @@ char pos2symbol(char *hinshi, char *bunrui)
 	for ( j=i+1; j<Bnst_num; j++ ) {
 
 	    if (type == PRINT_PARA) {
-		fprintf(stdout, "%2d", match_matrix[i][j]);
+		fprintf(Outfp, "%2d", match_matrix[i][j]);
 	    } else if (type == PRINT_DPND) {
 		if (Dpnd_matrix[i][j] == 0)
-		    fprintf(stdout, " -");
+		    fprintf(Outfp, " -");
 		else
-		    fprintf(stdout, " %c", (char)Dpnd_matrix[i][j]);
+		    fprintf(Outfp, " %c", (char)Dpnd_matrix[i][j]);
 		
 	    } else if (type == PRINT_MASK) {
-		fprintf(stdout, "%2d", Mask_matrix[i][j]);
+		fprintf(Outfp, "%2d", Mask_matrix[i][j]);
 
 	    } else if (type == PRINT_QUOTE) {
-		fprintf(stdout, "%2d", Quote_matrix[i][j]);
+		fprintf(Outfp, "%2d", Quote_matrix[i][j]);
 
 	    } else if (type == PRINT_RSTR || 
 		       type == PRINT_RSTD ||
 		       type == PRINT_RSTQ) {
 		if (j <= L_B) 
-		    fprintf(stdout, "--");
+		    fprintf(Outfp, "--");
 		else if (L_B < i)
-		    fprintf(stdout, " |");
+		    fprintf(Outfp, " |");
 		else
-		    fprintf(stdout, "%2d", restrict_matrix[i][j]);
+		    fprintf(Outfp, "%2d", restrict_matrix[i][j]);
 	    }
 
 	    switch(path_matrix[i][j]) {
-	      case  0:	fputc(' ', stdout); break;
-	      case -1:	fputc('*', stdout); break;
-	      default:	fputc(path_matrix[i][j], stdout); break;
+	      case  0:	fputc(' ', Outfp); break;
+	      case -1:	fputc('*', Outfp); break;
+	      default:	fputc(path_matrix[i][j], Outfp); break;
 	    }
 	}
-	fputc('\n', stdout);
+	fputc('\n', Outfp);
     }
 
     print_line(max_length, over_flag);
     
     if (type == PRINT_PARA) {
 	for (i = 0; i < Para_num; i++) {
-	    fprintf(stdout, "%c(%c):%4.1f(%4.1f) ", 
+	    fprintf(Outfp, "%c(%c):%4.1f(%4.1f) ", 
 		    para_data[i].para_char, 
 		    para_data[i].status, 
 		    para_data[i].max_score,
 		    para_data[i].pure_score);
 	}
-	fputc('\n', stdout);
+	fputc('\n', Outfp);
     }
 }
 
@@ -547,26 +551,26 @@ char pos2symbol(char *hinshi, char *bunrui)
     int i, j;
     
     for (i = 0; i < level * 5; i++)
-      fputc(' ', stdout);
+      fputc(' ', Outfp);
 
     for (i = 0; i < m_ptr->para_num; i++)
-      fprintf(stdout, " %c", para_data[m_ptr->para_data_num[i]].para_char);
-    fputc(':', stdout);
+      fprintf(Outfp, " %c", para_data[m_ptr->para_data_num[i]].para_char);
+    fputc(':', Outfp);
 
     for (i = 0; i < m_ptr->part_num; i++) {
 	if (m_ptr->start[i] == m_ptr->end[i]) {
-	    fputc('(', stdout);
+	    fputc('(', Outfp);
 	    print_bnst(&bnst_data[m_ptr->start[i]], NULL);
-	    fputc(')', stdout);
+	    fputc(')', Outfp);
 	} else {
-	    fputc('(', stdout);
+	    fputc('(', Outfp);
 	    print_bnst(&bnst_data[m_ptr->start[i]], NULL);
-	    fputc('-', stdout);
+	    fputc('-', Outfp);
 	    print_bnst(&bnst_data[m_ptr->end[i]], NULL);
-	    fputc(')', stdout);
+	    fputc(')', Outfp);
 	}
     }
-    fputc('\n', stdout);
+    fputc('\n', Outfp);
 
     for (i = 0; i < m_ptr->child_num; i++)
       print_para_manager(m_ptr->child[i], level+1);
@@ -642,17 +646,17 @@ static int max_width;			/* 木の最大幅 */
 	if (para_type == PARA_NORMAL || 
 	    para_type == PARA_INCOMP ||
 	    to_para_p == TRUE)
-	  fprintf(stdout, "─");
+	  fprintf(Outfp, "─");
 	else 
-	  fprintf(stdout, "──");
-	if ( n1%2 ) fprintf(stdout, "┤");
-	else fprintf(stdout, "┐");
-	fprintf(stdout, "　");
+	  fprintf(Outfp, "──");
+	if ( n1%2 ) fprintf(Outfp, "┤");
+	else fprintf(Outfp, "┐");
+	fprintf(Outfp, "　");
 	for ( i=2; i<n2; i++ ) {
-	    fprintf(stdout, "　　");
-	    if ( (n1%(mylog(i)))/mylog(i-1) ) fprintf(stdout, "│");
-	    else fprintf(stdout, "　");
-	    fprintf(stdout, "　");
+	    fprintf(Outfp, "　　");
+	    if ( (n1%(mylog(i)))/mylog(i-1) ) fprintf(Outfp, "│");
+	    else fprintf(Outfp, "　");
+	    fprintf(Outfp, "　");
 	}
     }
 }
@@ -687,21 +691,21 @@ static int max_width;			/* 木の最大幅 */
     calc_self_space(ptr, depth2);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
-	  fputc(' ', stdout);
+	  fputc(' ', Outfp);
     }
     print_bnst(ptr, NULL);
     
     if ( flag == 0 ) {
 	show_link(depth1, depth2, ptr->para_type, ptr->to_para_p);
 	if (OptExpress == OPT_TREEF) {
-	    fputc(';', stdout);
-	    print_some_feature(ptr->f, stdout);
+	fputc('\n', Outfp);
+	    print_some_feature(ptr->f, Outfp);
 	}
-	fputc('\n', stdout);
+	fputc('\n', Outfp);
     } else if ( flag == 1 ) {
-	fprintf(stdout, "─");
+	fprintf(Outfp, "─");
     } else if ( flag == 2 ) {
-	fprintf(stdout, "-");
+	fprintf(Outfp, "-");
     }
 
 
@@ -715,40 +719,40 @@ static int max_width;			/* 木の最大幅 */
     int i, j, comb_count = 0, c_count = 0;
     BNST_DATA *ptr_buffer[10], *child_buffer[10];
 
-    for (i = 0; i < depth; i++) fputc(' ', stdout);
-    fprintf(stdout, "(");
+    for (i = 0; i < depth; i++) fputc(' ', Outfp);
+    fprintf(Outfp, "(");
 
     if ( ptr->para_top_p == TRUE ) {
 	if (ptr->child[1] && 
 	    ptr->child[1]->para_key_type == PARA_KEY_N)
-	  fprintf(stdout, "(noun_para"); 
+	  fprintf(Outfp, "(noun_para"); 
 	else
-	  fprintf(stdout, "(pred_para");
+	  fprintf(Outfp, "(pred_para");
 
 	if (ptr->child[0]) {
-	    fputc('\n', stdout);
+	    fputc('\n', Outfp);
 	    i = 0;
 	    while (ptr->child[i+1] && ptr->child[i+1]->para_type != PARA_NIL) {
 		/* <P>の最後以外 */
-		/* UCHI fputc(',', stdout); */
+		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, 0);	i ++;
 	    }
 	    if (ptr->child[i+1]) { /* その他がある場合 */
 		/* <P>の最後 */
-		/* UCHI fputc(',', stdout); */
+		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, 1);	i ++;
 		/* その他の最後以外 */
 		while (ptr->child[i+1]) {
-		    /* UCHI fputc(',', stdout); */
+		    /* UCHI fputc(',', Outfp); */
 		    show_sexp(ptr->child[i], depth + 3, 0); i ++;
 		}
 		/* その他の最後 */
-		/* UCHI fputc(',', stdout); */
+		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, pars + 1);
 	    }
 	    else {
 		/* <P>の最後 */
-		/* UCHI fputc(',', stdout); */
+		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, pars + 1 + 1);
 	    }
 	}
@@ -758,16 +762,16 @@ static int max_width;			/* 木の最大幅 */
 	print_bnst_detail(ptr);
 
 	if (ptr->child[0]) {
-	    fputc('\n', stdout);
+	    fputc('\n', Outfp);
 	    for ( i=0; ptr->child[i+1]; i++ ) {
-		/* UCHI fputc(',', stdout); */
+		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, 0);
 	    }
-	    /* UCHI fputc(',', stdout); */
+	    /* UCHI fputc(',', Outfp); */
 	    show_sexp(ptr->child[i], depth + 3, pars + 1);
 	} else {
-	    for (i = 0; i < pars + 1; i++) fputc(')', stdout);
-	    fputc('\n', stdout);
+	    for (i = 0; i < pars + 1; i++) fputc(')', Outfp);
+	    fputc('\n', Outfp);
 	}
     }
 }
@@ -787,7 +791,7 @@ static int max_width;			/* 木の最大幅 */
 	show_sexp((bnst_data + Bnst_num -1), 0, 0);
     }
 
-    fprintf(stdout, "EOS\n");
+    fprintf(Outfp, "EOS\n");
 }
 
 
@@ -825,40 +829,40 @@ static int max_width;			/* 木の最大幅 */
 		strcat(b_buffer, " ");
 	    }
 	}
-	fprintf(stdout, "%-20s", b_buffer);
+	fprintf(Outfp, "%-20s", b_buffer);
 
-	print_feature(ptr->f, stdout);
+	print_feature(ptr->f, Outfp);
 
 	if (check_feature(ptr->f, "用言:強") ||
 	    check_feature(ptr->f, "用言:弱")) {
 
-	    fprintf(stdout, " <表層格:");
+	    fprintf(Outfp, " <表層格:");
 	    if (ptr->SCASE_code[case2num("ガ格")])
-	      fprintf(stdout, "ガ,");
+	      fprintf(Outfp, "ガ,");
 	    if (ptr->SCASE_code[case2num("ヲ格")])
-	      fprintf(stdout, "ヲ,");
+	      fprintf(Outfp, "ヲ,");
 	    if (ptr->SCASE_code[case2num("ニ格")])
-	      fprintf(stdout, "ニ,");
+	      fprintf(Outfp, "ニ,");
 	    if (ptr->SCASE_code[case2num("デ格")])
-	      fprintf(stdout, "デ,");
+	      fprintf(Outfp, "デ,");
 	    if (ptr->SCASE_code[case2num("カラ格")])
-	      fprintf(stdout, "カラ,");
+	      fprintf(Outfp, "カラ,");
 	    if (ptr->SCASE_code[case2num("ト格")])
-	      fprintf(stdout, "ト,");
+	      fprintf(Outfp, "ト,");
 	    if (ptr->SCASE_code[case2num("ヨリ格")])
-	      fprintf(stdout, "ヨリ,");
+	      fprintf(Outfp, "ヨリ,");
 	    if (ptr->SCASE_code[case2num("ヘ格")])
-	      fprintf(stdout, "ヘ,");
+	      fprintf(Outfp, "ヘ,");
 	    if (ptr->SCASE_code[case2num("マデ格")])
-	      fprintf(stdout, "マデ,");
+	      fprintf(Outfp, "マデ,");
 	    if (ptr->SCASE_code[case2num("ノ格")])
-	      fprintf(stdout, "ノ,");
+	      fprintf(Outfp, "ノ,");
 	    if (ptr->SCASE_code[case2num("ガ２")])
-	      fprintf(stdout, "ガ２,");
-	    fprintf(stdout, ">");
+	      fprintf(Outfp, "ガ２,");
+	    fprintf(Outfp, ">");
 	}
 
-	fputc('\n', stdout);
+	fputc('\n', Outfp);
     }
 }
 
@@ -888,32 +892,32 @@ static int max_width;			/* 木の最大幅 */
     /* ヘッダの出力 */
 
     if (Comment[0]) {
-	fprintf(stdout, "%s", Comment);
+	fprintf(Outfp, "%s", Comment);
     } else {
-	fprintf(stdout, "# S-ID:%d", Sen_num);
+	fprintf(Outfp, "# S-ID:%d", Sen_num);
     }
 
     if (OptAnalysis != OPT_PM && (date_p = (char *)getenv("DATE"))) {
-	fprintf(stdout, " KNP:%s", date_p);
+	fprintf(Outfp, " KNP:%s", date_p);
     }
 
     if (PM_Memo[0]) {
 	if (strstr(Comment, "MEMO")) {
-	    fprintf(stdout, "%s", PM_Memo);
+	    fprintf(Outfp, "%s", PM_Memo);
 	} else {
-	    fprintf(stdout, " MEMO:%s", PM_Memo);
+	    fprintf(Outfp, " MEMO:%s", PM_Memo);
 	}	
     }
-    fprintf(stdout, "\n");
+    fprintf(Outfp, "\n");
 
     /* チェック用 */
     if (OptCheck == TRUE)
 	for (i = 0; i < Bnst_num; i++)
 	    if (tm->dpnd.check[i].num != -1) {
-		fprintf(stdout, ";;;(check) %2d %2d %d (%d)", i, tm->dpnd.head[i], tm->dpnd.check[i].num, tm->dpnd.check[i].def);
+		fprintf(Outfp, ";;;(check) %2d %2d %d (%d)", i, tm->dpnd.head[i], tm->dpnd.check[i].num, tm->dpnd.check[i].def);
 		for (j = 0; j < tm->dpnd.check[i].num; j++)
-		    fprintf(stdout, " %d", tm->dpnd.check[i].pos[j]);
-		fprintf(stdout, "\n");
+		    fprintf(Outfp, " %d", tm->dpnd.check[i].pos[j]);
+		fprintf(Outfp, "\n");
 	    }
 
     /* 解析結果のメインの出力 */
@@ -935,7 +939,7 @@ static int max_width;			/* 木の最大幅 */
 	(OptDisplay == OPT_DETAIL || 
 	 OptDisplay == OPT_DEBUG)) {
 
-	fprintf(stdout, "■ %d Score:%d, Dflt:%d, Possibilty:%d/%d ■\n", 
+	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibilty:%d/%d ■\n", 
 		Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
 
 	/* 上記出力の最後の引数(依存構造の数)は1にしている．

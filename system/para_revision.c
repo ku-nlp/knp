@@ -17,6 +17,9 @@
 extern int D_check_array[BNST_MAX];
 extern int D_found_array[BNST_MAX];
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 static int judge_matrix[4][4] = {
     {1, 1, 0, 1},
     {1, 1, 0, 1},
@@ -42,11 +45,11 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
 {
     int i, j;
     
-    fprintf(stdout, "<< restrict matrix >>\n");	
+    fprintf(Outfp, "<< restrict matrix >>\n");	
     for ( i=0; i<=L_B_pos; i++ ) {
 	for ( j=L_B_pos+1; j<Bnst_num; j++ )
-	  fprintf(stdout, "%3d", restrict_matrix[i][j]);
-	fputc('\n', stdout);
+	  fprintf(Outfp, "%3d", restrict_matrix[i][j]);
+	fputc('\n', Outfp);
     }
 }
 

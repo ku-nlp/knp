@@ -8,6 +8,11 @@
 ====================================================================*/
 #include "knp.h"
 
+/* Server Client extention */
+extern FILE  *Infp;
+extern FILE  *Outfp;
+extern int   OptMode;
+
 static char buffer[DATA_LEN];
 char CorpusComment[BNST_MAX][DATA_LEN];
 static DBM_FILE c_db, cc_db, op_db, cp_db;
@@ -236,7 +241,7 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag) {
 			touten = ' ';
 		    sprintf(buffer, "%s %c", type+3, touten);
 		    if (!strcmp(token, buffer)) {
-			fprintf(stdout, ";;;(D) %2d %2d %s\n", ptr1->num, i, buffer);
+			fprintf(Outfp, ";;;(D) %2d %2d %s\n", ptr1->num, i, buffer);
 			Dpnd_matrix[ptr1->num][i] = 0;
 		    }
 		}
@@ -249,10 +254,10 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag) {
     /* デバッグ出力 */
     if (OptCheck != TRUE) {
 	if (para_flag == TRUE)
-	    fprintf(stdout, ";;; %2d %2d %s%c%c %s%c%c->%d\n", ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
+	    fprintf(Outfp, ";;; %2d %2d %s%c%c %s%c%c->%d\n", ptr1->num, ptr2->num, type1+3, parallel1, touten1, 
 		    type2+3, parallel2, touten2, score);
 	else
-	    fprintf(stdout, ";;;(R) %s %c %s %c->%d\n", type1+3, touten1, 
+	    fprintf(Outfp, ";;;(R) %s %c %s %c->%d\n", type1+3, touten1, 
 		    type2+3, touten2, score);
     }
 
@@ -363,7 +368,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     }
 
     /* デバッグ出力 */
-    fprintf(stdout, ";;;(K) %s%c%c %s %c->!%d", type1+3, parallel1, touten1, type2+3, touten2, score);
+    fprintf(Outfp, ";;;(K) %s%c%c %s %c->!%d", type1+3, parallel1, touten1, type2+3, touten2, score);
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -384,7 +389,7 @@ int corpus_case_predicate_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     }
 
     /* デバッグ出力 */
-    fprintf(stdout, "  %d\n", score);
+    fprintf(Outfp, "  %d\n", score);
 
     if (score)
 	return TRUE;
@@ -453,12 +458,12 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     /* 越えたことがあるとバリアではない */
     if (score) {
 	/* デバッグ出力 */
-	fprintf(stdout, ";;;(C) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;;(C) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
 	return FALSE;
     }
     else
 	/* デバッグ出力 */
-	fprintf(stdout, ";;;(C) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;;(C) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -479,7 +484,7 @@ int corpus_clause_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     }
 
     /* デバッグ出力 */
-    fprintf(stdout, "  %d\n", score);
+    fprintf(Outfp, "  %d\n", score);
 
     /* あとは係ったことがあればよい */
     if (score)
@@ -549,12 +554,12 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
     /* 越えたことがあるとバリアではない */
     if (score) {
 	/* デバッグ出力 */
-	fprintf(stdout, ";;;(B) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d\n", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
 	return FALSE;
     }
     else
 	/* デバッグ出力 */
-	fprintf(stdout, ";;;(B) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
+	fprintf(Outfp, ";;;(B) %2d %2d %s %c %s %c->!%d", pos1, pos2, type1+3, touten1, type2+3, touten2, score);
 
     /* データベースの検索(係る例) */
     sprintf(buffer, "%s%c%c %s %c", type1+3, parallel1, touten1, type2+3, touten2);
@@ -582,7 +587,7 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 	BarrierMatrix.Type2[pos2] = strdup(type2+3);
 
     /* デバッグ出力 */
-    fprintf(stdout, "  %d\n", score);
+    fprintf(Outfp, "  %d\n", score);
 
     /* あとは係ったことがあればよい */
     if (score)
@@ -595,30 +600,30 @@ int corpus_barrier_check(BNST_DATA *ptr1, BNST_DATA *ptr2) {
 void print_barrier(int bnum) {
     int i, j;
 
-    fprintf(stdout, ";;;(B)   ");
+    fprintf(Outfp, ";;;(B)   ");
     for (i = 0; i < bnum; i++)
-	fprintf(stdout, " %2d", i);
-    fprintf(stdout, "\n");
+	fprintf(Outfp, " %2d", i);
+    fprintf(Outfp, "\n");
     for (i = 0; i < bnum-1; i++) {
-	fprintf(stdout, ";;;(B) %2d   ", i);
+	fprintf(Outfp, ";;;(B) %2d   ", i);
 	for (j = 0; j < i; j++) {
-	    fprintf(stdout, "   ");
+	    fprintf(Outfp, "   ");
 	}
 	for (j = i+1; j < bnum; j++) {
-	    /* fprintf(stdout, " %2c", BarrierMatrix.Value[i][j] ? 'o' : '-'); */
+	    /* fprintf(Outfp, " %2c", BarrierMatrix.Value[i][j] ? 'o' : '-'); */
 	    if (BarrierMatrix.Value[i][j] > 99)
-		fprintf(stdout, "  *");
+		fprintf(Outfp, "  *");
 	    else if (BarrierMatrix.Value[i][j] == -1)
-		fprintf(stdout, "  -");
+		fprintf(Outfp, "  -");
 	    else
-		fprintf(stdout, " %2d", BarrierMatrix.Value[i][j]);
+		fprintf(Outfp, " %2d", BarrierMatrix.Value[i][j]);
 	    
 	}
-	fprintf(stdout, "\n");
+	fprintf(Outfp, "\n");
     }
 
     for (i = 0; i < bnum; i++)
-	fprintf(stdout, ";;;(B) %2d %10s %20s\n", i, BarrierMatrix.Type1[i] ? BarrierMatrix.Type1[i] : " ", BarrierMatrix.Type2[i] ? BarrierMatrix.Type2[i] : " ");
+	fprintf(Outfp, ";;;(B) %2d %10s %20s\n", i, BarrierMatrix.Type1[i] ? BarrierMatrix.Type1[i] : " ", BarrierMatrix.Type2[i] ? BarrierMatrix.Type2[i] : " ");
 
     /* 初期化 */
     for (i = 0; i < bnum; i++) {
@@ -717,7 +722,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 	    score = dbfetch(op_db, buffer);
 
 	    if (score) {
-		fprintf(stdout, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
 		free(cp1);
 		free(cp2);
 		/* full match */
@@ -728,7 +733,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		    return 0.5;
 	    }
 	    else
-		fprintf(stdout, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
 	}
     }
 
@@ -745,7 +750,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
     }
     score = dbfetch(op_db, buffer);
 
-    fprintf(stdout, ";;;(O) %s:%s %s ->%d\n", ptr1->Jiritu_Go, case1, 
+    fprintf(Outfp, ";;;(O) %s:%s %s ->%d\n", ptr1->Jiritu_Go, case1, 
 	    ptr2->Jiritu_Go, score);
 
     if (score)

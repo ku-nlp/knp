@@ -11,6 +11,9 @@
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 int Possibility;	/* 依存構造の可能性の何番目か */
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 /*==================================================================*/
     void assign_bnst_feature(BnstRule *r_ptr, int size, int mode)
 /*==================================================================*/
@@ -486,16 +489,16 @@ int Possibility;	/* 依存構造の可能性の何番目か */
 
 	if (OptDisplay == OPT_DEBUG) {
 	    if (i == 1) 
-		fprintf(stdout, "Score:    ");
+		fprintf(Outfp, "Score:    ");
 	    if (pred_p) {
-		fprintf(stdout, "%2d*", one_score);
+		fprintf(Outfp, "%2d*", one_score);
 	    } else {
-		fprintf(stdout, "%2d ", one_score);
+		fprintf(Outfp, "%2d ", one_score);
 	    }
 	}
     }
 
-    if (OptDisplay == OPT_DEBUG) fprintf(stdout, "=%d\n", score);
+    if (OptDisplay == OPT_DEBUG) fprintf(Outfp, "=%d\n", score);
 
     if (OptDisplay == OPT_DEBUG) {
 	dpnd_info_to_bnst(&dpnd);
@@ -521,15 +524,15 @@ int Possibility;	/* 依存構造の可能性の何番目か */
     
     if (OptDisplay == OPT_DEBUG) {
 	if (dpnd.pos == Bnst_num - 1) {
-	    fprintf(stdout, "------", dpnd.pos);
+	    fprintf(Outfp, "------", dpnd.pos);
 	    for (i = 0; i < Bnst_num; i++)
-	      fprintf(stdout, "-%02d", i);
-	    fputc('\n', stdout);
+	      fprintf(Outfp, "-%02d", i);
+	    fputc('\n', Outfp);
 	}
-	fprintf(stdout, "In %2d:", dpnd.pos);
+	fprintf(Outfp, "In %2d:", dpnd.pos);
 	for (i = 0; i < Bnst_num; i++)
-	    fprintf(stdout, " %2d", dpnd.head[i]);
-	fputc('\n', stdout);
+	    fprintf(Outfp, " %2d", dpnd.head[i]);
+	fputc('\n', Outfp);
     }
 
     dpnd.pos --;

@@ -22,6 +22,9 @@ int 	maxpos_array[BNST_MAX];
 int 	maxsco_array[BNST_MAX];
 int 	penalty_table[BNST_MAX];
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 float	norm[] = {
     1.00,  1.00,  1.59,  2.08,  2.52,  2.92,  3.30,  3.66,  4.00,  4.33,
     4.64,  4.95,  5.24,  5.53,  5.81,  6.08,  6.35,  6.61,  6.87,  7.12,
@@ -361,9 +364,9 @@ void dp_search_scope(int L_B_pos, int R_pos, int type, int restrict_p)
     else {
 	ptr->status = 'x';
 	/*
-	fprintf(stdout, ";; Cannot find proper CS for the key <");
+	fprintf(Outfp, ";; Cannot find proper CS for the key <");
 	print_bnst(bnst_data + ptr->L_B, NULL);
-	fprintf(stdout, ">.\n");
+	fprintf(Outfp, ">.\n");
 	*/
 	return FALSE;
     }

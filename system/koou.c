@@ -12,6 +12,9 @@
 int 	Koou_matrix[BNST_MAX][BNST_MAX];
 int	koou_m_p[BNST_MAX];
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 /*==================================================================*/
                          void init_koou() 
 /*==================================================================*/
@@ -47,14 +50,14 @@ int	koou_m_p[BNST_MAX];
 			flag = TRUE;
 			Koou_matrix[i][k] = 1;
 			if (OptDisplay == OPT_DEBUG) 
-			    fprintf(stdout, "  End %d\n", k);
+			    fprintf(Outfp, "  End %d\n", k);
 		    }
 		    else if (r_ptr->uke_pattern &&
 			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) 
 			     == TRUE) {
 			Koou_matrix[i][k] = 2;
 			if (OptDisplay == OPT_DEBUG) 
-			    fprintf(stdout, "  Uke %d\n", k);
+			    fprintf(Outfp, "  Uke %d\n", k);
 		    }
 	    }
 	}

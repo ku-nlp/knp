@@ -9,6 +9,11 @@
 ====================================================================*/
 #include "knp.h"
 
+/* Server Client extention */
+extern FILE  *Infp;
+extern FILE  *Outfp;
+extern int   OptMode;
+
 int Bnst_start[MRPH_MAX];
 int ArticleID = 0;
 int preArticleID = 0;
@@ -118,15 +123,15 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     if (flag == TRUE) {
 
 	if (0 && OptDisplay == OPT_DEBUG) {
-	    fprintf(stdout, "Lexical Disambiguation "
+	    fprintf(Outfp, "Lexical Disambiguation "
 		    "(%dth mrph -> %dth homo by %dth rule : %s :", 
 		    m_ptr - mrph_data, pref_mrph, pref_rule, 
 		    (m_ptr+pref_mrph)->Goi2);
 	    for (i = 0, loop_ptr = m_ptr; i < homo_num; i++, loop_ptr++)
 		if (uniq_flag[i]) 
-		    fprintf(stdout, " %s", 
+		    fprintf(Outfp, " %s", 
 			    Class[loop_ptr->Hinshi][loop_ptr->Bunrui].id);
-	    fprintf(stdout, ")\n");
+	    fprintf(Outfp, ")\n");
 	}
 
 	/* pref_mrph番目のデータをコピー */
@@ -144,14 +149,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     } else {
 
 	if (1 || OptDisplay == OPT_DEBUG) {
-	    fprintf(stdout, ";; Cannot disambiguate lexical ambiguities"
+	    fprintf(Outfp, ";; Cannot disambiguate lexical ambiguities"
 		    " (%dth mrph : %s ?", m_ptr - mrph_data,
 		    (m_ptr+pref_mrph)->Goi2);
 	    for (i = 0, loop_ptr = m_ptr; i < homo_num; i++, loop_ptr++)
 		if (uniq_flag[i]) 
-		    fprintf(stdout, " %s", 
+		    fprintf(Outfp, " %s", 
 			    Class[loop_ptr->Hinshi][loop_ptr->Bunrui].id);
-	    fprintf(stdout, ")\n");
+	    fprintf(Outfp, ")\n");
 	}
     }
 }
@@ -163,7 +168,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     U_CHAR input_buffer[1024+IMI_MAX];
     U_CHAR imi_buffer[IMI_MAX];
     MRPH_DATA  *m_ptr = mrph_data, *ptr;
-    int homo_num, offset, mrph_item, i;
+    int homo_num, offset, mrph_item, i,len;
 
     preArticleID = ArticleID;
     ArticleID = 0;
@@ -176,6 +181,18 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 	if (fgets(input_buffer, 1024+IMI_MAX, fp) == NULL) return EOF;
 
+	/* Server モードの場合は 注意 \r\n になる*/
+	if (OptMode == SERVER_MODE) {
+	  len = strlen(input_buffer);
+	  if (len > 2 && input_buffer[len-1] == '\n' && input_buffer[len-2] == '\r') {
+	    input_buffer[len-2] = '\n';
+	    input_buffer[len-1] = '\0';
+	  }
+
+	  if (input_buffer[0] == EOf) 
+	    return EOF;
+	} 
+
 	if (input_buffer[strlen(input_buffer)-1] != '\n') {
 	    fprintf(stderr, "Too long mrph <%s> !\n", input_buffer);
 	    return FALSE;
@@ -183,13 +200,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 	/* -i によるコメント行 */
 	if ( OptIgnoreChar && *input_buffer == OptIgnoreChar ) {
-	    fprintf(stdout, "%s", input_buffer);
+	    fprintf(Outfp, "%s", input_buffer);
+	    fflush(Outfp);
 	    continue;
 	}
 
 	/* # による正規のコメント行 */
 
-	if (Mrph_num == 0 && input_buffer[0] == '#') {
+	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    strcpy(Comment, input_buffer);
 
@@ -519,20 +537,20 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	else if (check_feature(m_ptr->f, "接頭"))
 	    now_stat = MRPH_PRFX;
 	else
-	    fprintf(stdout, ";; Invalid input \n");
+	    fprintf(Outfp, ";; Invalid input \n");
 
 	/* ▼ 不適切な入力 (接尾辞ではじまる，接頭＋接尾)
 	   接尾辞を自立語として扱う (暫定的) */
 
 	if (i == 0 && now_stat == MRPH_SUFX) {
-	    fprintf(stdout, 
+	    fprintf(Outfp, 
 		    ";; Invalid input (prefix and suffix)\"%s%s ... \"!\n",
 		    mrph_data[0].Goi2, mrph_data[1].Goi2);
 	    /* return FALSE; */
 	    now_stat = MRPH_INDP;
 	} else if (prev_stat == MRPH_PRFX &&
 		   now_stat == MRPH_SUFX) {
-	    fprintf(stdout, 
+	    fprintf(Outfp, 
 		    ";; Invalid input (prefix and suffix)\"... %s%s ... \"!\n",
 		    mrph_data[i-1].Goi2, mrph_data[i].Goi2);
 	    /* return FALSE; */

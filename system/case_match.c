@@ -31,6 +31,9 @@ int     EX_match_sentence = 100;			/* ³ÊÍ×ÁÇ -- Ê¸   */
 int     EX_match_tim = 100;				/* ³ÊÍ×ÁÇ -- »þ´Ö */
 int     EX_match_qua = 100;				/* ³ÊÍ×ÁÇ -- ¿ôÎÌ */
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
 /*==================================================================*/
@@ -40,11 +43,11 @@ int     EX_match_qua = 100;				/* ³ÊÍ×ÁÇ -- ¿ôÎÌ */
     int i;
     for (i = 0; i < cf->element_num; i++) {
 	if (list->flag[i] == NIL_ASSIGNED)
-	  fprintf(stdout, "  X");
+	  fprintf(Outfp, "  X");
 	else
-	  fprintf(stdout, "%3d", list->flag[i]+1);
+	  fprintf(Outfp, "%3d", list->flag[i]+1);
     }
-    fprintf(stdout, "\n");
+    fprintf(Outfp, "\n");
 }
 
 /*==================================================================*/
@@ -367,14 +370,14 @@ int     EX_match_qua = 100;				/* ³ÊÍ×ÁÇ -- ¿ôÎÌ */
     int i, j;
 
 #ifdef CASE_DEBUG
-    fprintf(stdout, "dat");
+    fprintf(Outfp, "dat");
     for (i = 0; i < cfd->element_num; i++)
-      fprintf(stdout, "%d ", list1.flag[i]);
-    fputc('\n', stdout);
-    fprintf(stdout, "pat");
+      fprintf(Outfp, "%d ", list1.flag[i]);
+    fputc('\n', Outfp);
+    fprintf(Outfp, "pat");
     for (i = 0; i < cfp->element_num; i++)
-      fprintf(stdout, "%d ", list2.flag[i]);
-    fputc('\n', stdout);
+      fprintf(Outfp, "%d ", list2.flag[i]);
+    fputc('\n', Outfp);
 #endif 
     
     /* ÌÀ¼¨¤µ¤ì¤Æ¤¤¤ë³Ê½õ»ì¤Î¥Á¥§¥Ã¥¯ */

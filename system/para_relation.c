@@ -11,6 +11,9 @@
 
 int 	para_rel_matrix[PARA_MAX][PARA_MAX];
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 static char *RESULT[] = {
     "重なりなし", "少し重なる", "前で重なる", "後で重なる",  "重複",
     "前部の修正", "含まれる前", "含まれる後", "誤り"};
@@ -54,24 +57,24 @@ static int rel_matrix_strong[4][4] = {
     b2 = ptr2->L_B;
     b3 = ptr2->R;
 
-    fprintf(stdout, "%-10s ==> ", RESULT[para_rel_matrix[p_num1][p_num2]]);
+    fprintf(Outfp, "%-10s ==> ", RESULT[para_rel_matrix[p_num1][p_num2]]);
 
     if (a1 != a2)
       print_bnst(&(bnst_data[a1]), NULL);
-    fputc('(', stdout);
+    fputc('(', Outfp);
     print_bnst(&(bnst_data[a2]), NULL);
-    fputc(')', stdout);
+    fputc(')', Outfp);
     print_bnst(&(bnst_data[a3]), NULL);
 
-    fprintf(stdout, " <=> ");
+    fprintf(Outfp, " <=> ");
 
     if (b1 != b2)
       print_bnst(&(bnst_data[b1]), NULL);
-    fputc('(', stdout);
+    fputc('(', Outfp);
     print_bnst(&(bnst_data[b2]), NULL);
-    fputc(')', stdout);
+    fputc(')', Outfp);
     print_bnst(&(bnst_data[b3]), NULL);
-    fputc('\n', stdout);
+    fputc('\n', Outfp);
 }
 
 /*==================================================================*/

@@ -8,6 +8,9 @@
 ====================================================================*/
 #include "knp.h"
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 /*==================================================================*/
 	      void print_data_cframe(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
@@ -17,60 +20,60 @@
     char setubi_buffer[256];
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-      fprintf(stdout, "【%s(使役)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+      fprintf(Outfp, "【%s(使役)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-      fprintf(stdout, "【%s(受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+      fprintf(Outfp, "【%s(受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-      fprintf(stdout, "【%s(使役or受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+      fprintf(Outfp, "【%s(使役or受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else
-      fprintf(stdout, "【%s】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+      fprintf(Outfp, "【%s】", cpm_ptr->pred_b_ptr->Jiritu_Go);
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 
-	fprintf(stdout, " ");
+	fprintf(Outfp, " ");
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
 	cp = (char *)check_feature(cpm_ptr->elem_b_ptr[i]->f, "係");
-	fprintf(stdout, "(%s)", cp ? cp + strlen("係:") : "");
+	fprintf(Outfp, "(%s)", cp + strlen("係:"));
 
 	/*
-	fprintf(stdout, " %s%s", cpm_ptr->elem_b_ptr[i]->Jiritu_Go,
+	fprintf(Outfp, " %s%s", cpm_ptr->elem_b_ptr[i]->Jiritu_Go,
 		meishi_setubi(cpm_ptr->elem_b_ptr[i], setubi_buffer));
 		*/
 		
-	fprintf(stdout, "[");
+	fprintf(Outfp, "[");
 
 	/* 意味マーカ */
 
-	fprintf(stdout, "SM:");
+	fprintf(Outfp, "SM:");
 	for (j = 0; cpm_ptr->cf.sm[i][j]; j+=12) {
-	    if (j != 0) fprintf(stdout,  "/");
-	    fprintf(stdout, "%12.12s", &(cpm_ptr->cf.sm[i][j]));
+	    if (j != 0) fprintf(Outfp,  "/");
+	    fprintf(Outfp, "%12.12s", &(cpm_ptr->cf.sm[i][j]));
 	}
 
 	/* 分類語彙表コード */
 
-	fprintf(stdout, "BGH:");
+	fprintf(Outfp, "BGH:");
 	for (j = 0; cpm_ptr->cf.ex[i][j]; j+=10) {
-	    if (j != 0) fprintf(stdout,  "/");
-	    fprintf(stdout, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+	    if (j != 0) fprintf(Outfp,  "/");
+	    fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
 	}
 
-	fprintf(stdout, "]");	
+	fprintf(Outfp, "]");	
 
 	/*
 	if (cpm_ptr->cf.pp[i][0] >= 0) 
-	  fprintf(stdout, "%s", pp_code_to_hstr(cpm_ptr->cf.pp[i][0]));
+	  fprintf(Outfp, "%s", pp_code_to_hstr(cpm_ptr->cf.pp[i][0]));
 	else if (cpm_ptr->elem_b_ptr[i]->fuzoku_ptr)
-	  fprintf(stdout, "(%s)", (cpm_ptr->elem_b_ptr[i]->fuzoku_ptr +
+	  fprintf(Outfp, "(%s)", (cpm_ptr->elem_b_ptr[i]->fuzoku_ptr +
 				   cpm_ptr->elem_b_ptr[i]->fuzoku_num-1)->Goi);
 	else
-	  fprintf(stdout, "(φ)");
+	  fprintf(Outfp, "(φ)");
 	  */
 	
 	if (cpm_ptr->cf.oblig[i] == FALSE)
-	  fprintf(stdout, "*");
+	  fprintf(Outfp, "*");
     }
-    fputc('\n', stdout);
+    fputc('\n', Outfp);
 }
 
 /*==================================================================*/
@@ -93,25 +96,25 @@
     
     /* 得点，意味の表示 */
 
-    fprintf(stdout, "★%3d点 ", cmm_ptr->score);
+    fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
 
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
-      fprintf(stdout, "(間受)");
+      fprintf(Outfp, "(間受)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1 ||
 	     cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
-      fprintf(stdout, "(直受)");
+      fprintf(Outfp, "(直受)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
-      fprintf(stdout, "(使役)");
+      fprintf(Outfp, "(使役)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POSSIBLE)
-      fprintf(stdout, "(可能)");
+      fprintf(Outfp, "(可能)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POLITE)
-      fprintf(stdout, "(尊敬)");
+      fprintf(Outfp, "(尊敬)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_SPONTANE)
-      fprintf(stdout, "(自発)");
+      fprintf(Outfp, "(自発)");
 
-    fprintf(stdout, "%s\n", i_ptr->DATA+i_ptr->imi);
+    fprintf(Outfp, "%s\n", i_ptr->DATA+i_ptr->imi);
     /* i_ptr->DATA+i_ptr->bunrei1 */
 
     /* 格要素対応の表示 */
@@ -119,27 +122,27 @@
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	num = cmm_ptr->result_lists_p[0].flag[i];
 	if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
-	    fprintf(stdout, " --");
+	  fprintf(Outfp, " --");
 	}
 	else {
-	    fprintf(stdout, " ");
+	    fprintf(Outfp, " ");
 	    _print_bnst(cpm_ptr->elem_b_ptr[num]);
 	    cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係");
-	    fprintf(stdout, "(%s)", cp ? cp + strlen("係:") : "");
+	    fprintf(Outfp, "(%s)", cp + strlen("係:"));
 
 	    /*
-	    fprintf(stdout," %s%s", cpm_ptr->elem_b_ptr[num]->Jiritu_Go, 
+	    fprintf(Outfp," %s%s", cpm_ptr->elem_b_ptr[num]->Jiritu_Go, 
 		    meishi_setubi(cpm_ptr->elem_b_ptr[num], setubi_buffer));
 	    if (cfd->pp[num][0] >= 0) 
-	      fprintf(stdout, "%s", pp_code_to_hstr(cfd->pp[num][0]));
+	      fprintf(Outfp, "%s", pp_code_to_hstr(cfd->pp[num][0]));
 	    else if (l_fuzoku_goi(cpm_ptr->elem_b_ptr[num]))
-	      fprintf(stdout, "(%s)", l_fuzoku_goi(cpm_ptr->elem_b_ptr[num]));
+	      fprintf(Outfp, "(%s)", l_fuzoku_goi(cpm_ptr->elem_b_ptr[num]));
 	    else
-	      fprintf(stdout, "(φ)");
+	      fprintf(Outfp, "(φ)");
 	    */
 
 	    if (num != UNASSIGNED && cfd->oblig[num] == FALSE)
-	      fprintf(stdout, "*");
+	      fprintf(Outfp, "*");
 
 	    /* 用例による解析の場合
 	       最大マッチのコードを求める 
@@ -158,19 +161,19 @@
 	    }
 	    if (max_match_num >= 6) max_match_num = 7;
 	    
-	    fprintf(stdout, " [");
+	    fprintf(Outfp, " [");
 	    for (j = 0; cfd->ex[num][j]; j+=10) {
-		if (j != 0) fprintf(stdout, "/");
+		if (j != 0) fprintf(Outfp, "/");
 		if (j == max_match_nth) {
 		    for (k = 0; k < 7; k++) {
-			fputc(cfd->ex[num][j+k], stdout);
+			fputc(cfd->ex[num][j+k], Outfp);
 			if (k + 1 == max_match_num)
-			  fputc('*', stdout);
+			  fputc('*', Outfp);
 		    }
 		} else
-		  fprintf(stdout, "%7.7s", &(cfd->ex[num][j]));
+		  fprintf(Outfp, "%7.7s", &(cfd->ex[num][j]));
 	    }
-	    fprintf(stdout, "]");
+	    fprintf(Outfp, "]");
 	    */
 
 	    /* 意味素による解析の場合
@@ -178,57 +181,57 @@
 	     */
 	}
 	
-	fprintf(stdout, " : ");
+	fprintf(Outfp, " : ");
 	
 	if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	    if (i == 0)
-	      fprintf(stdout, "(彼)");
+	      fprintf(Outfp, "(彼)");
 	    else
-	      fprintf(stdout, "(%s)", 
+	      fprintf(Outfp, "(%s)", 
 		      i_ptr->DATA+i_ptr->meishiku[i-1]);
 	} else
-	  fprintf(stdout, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
+	  fprintf(Outfp, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
 	  
 	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= -1; j++) {
-	    if (j != 0) fprintf(stdout,  "/");
-	    fprintf(stdout, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+	    if (j != 0) fprintf(Outfp,  "/");
+	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
 	}
 	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
-	  fprintf(stdout, "*");
+	  fprintf(Outfp, "*");
 
 	/* 用例による解析の場合
-	fprintf(stdout, " [");
+	fprintf(Outfp, " [");
 	for (j = 0; cmm_ptr->cf_ptr->ex[i][j]; j+=10) {
 	    for (k = 0; k < j; k++)
 	      if (!strncmp(cmm_ptr->cf_ptr->ex[i]+j, cmm_ptr->cf_ptr->ex[i]+k, 5))
 		goto SAME_BREAK_2;
-	    if (j != 0) fprintf(stdout, "/");
-	    fprintf(stdout, "%5.5s", cmm_ptr->cf_ptr->ex[i]+j);
+	    if (j != 0) fprintf(Outfp, "/");
+	    fprintf(Outfp, "%5.5s", cmm_ptr->cf_ptr->ex[i]+j);
 	  SAME_BREAK_2:
 	}
-	fprintf(stdout, "]");
+	fprintf(Outfp, "]");
 	*/
 
 	/* 意味素による解析の場合 */
-	fprintf(stdout, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
 
 	/* 意味素コードを書く場合
-	fprintf(stdout, " [");
+	fprintf(Outfp, " [");
 	for (j = 0; cmm_ptr->cf_ptr->sm[i][j]; j+=12) {
 	    for (k = 0; k < j; k++)
 	      if (!strncmp(cmm_ptr->cf_ptr->sm[i]+j, cmm_ptr->cf_ptr->sm[i]+k, 5))
 		goto SAME_BREAK_2;
-	    if (j != 0) fprintf(stdout, "/");
-	    fprintf(stdout, "%5.5s", cmm_ptr->cf_ptr->sm[i]+j);
+	    if (j != 0) fprintf(Outfp, "/");
+	    fprintf(Outfp, "%5.5s", cmm_ptr->cf_ptr->sm[i]+j);
 	  SAME_BREAK_2:
 	}
-	fprintf(stdout, "]");
+	fprintf(Outfp, "]");
 	*/
 
-	fprintf(stdout, "\n");
+	fprintf(Outfp, "\n");
     }
 
 }

@@ -12,6 +12,9 @@
 int D_check_array[BNST_MAX];
 int D_found_array[BNST_MAX];
 
+extern FILE  *Infp;
+extern FILE  *Outfp;
+
 /*==================================================================*/
 		    int check_stop_extend(int num)
 /*==================================================================*/
@@ -96,9 +99,9 @@ int D_found_array[BNST_MAX];
 		D_found_array[i] = FALSE;
 		/* revise_para_kakariからの呼出(s_p == NULL)は表示なし */
 		if (OptDisplay == OPT_DEBUG && s_p) {
-		    fprintf(stdout, ";; Cannot find a head for bunsetsu <");
+		    fprintf(Outfp, ";; Cannot find a head for bunsetsu <");
 		    print_bnst(bnst_data + i, NULL);
-		    fprintf(stdout, ">.\n");
+		    fprintf(Outfp, ">.\n");
 		}
 		success_p = FALSE;
 		for (k = i + 1; k <= end; k++) hikousa_array[k] = 0;
@@ -168,7 +171,7 @@ int D_found_array[BNST_MAX];
     else if (error[0] == TRUE) {
 	for (i = 1; i < m_ptr->part_num; i++)
 	  if (error[i] == TRUE) {
-	    fprintf(stdout, 
+	    fprintf(Outfp, 
 		    ";; Cannot revise invalid kakari struct in para!!\n");
 	    return -1;
 	  }
@@ -177,7 +180,7 @@ int D_found_array[BNST_MAX];
     else if (error[m_ptr->part_num - 1] == TRUE) {
 	for (i = 0; i < m_ptr->part_num - 1; i++)
 	  if (error[i] == TRUE) {
-	    fprintf(stdout, 
+	    fprintf(Outfp, 
 		    ";; Cannot revise invalid kakari struct in para!!\n");
 	    return -1;
 	  }
