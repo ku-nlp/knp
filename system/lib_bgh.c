@@ -25,12 +25,22 @@ int		BGHExist;
 	filename = (char *)check_dict_filename(BGH_DB_NAME, FALSE);
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
     if ((bgh_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
 	BGHExist = FALSE;
 #ifdef DEBUG
 	fprintf(stderr, "Cannot open BGH dictionary <%s>.\n", filename);
 #endif
     } else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
 	BGHExist = TRUE;
     }
     free(filename);

@@ -104,6 +104,7 @@
 #define OPT_DEBUG	3
 #define OPT_NESM	2
 #define OPT_NE		3
+#define OPT_JUMAN	2
 
 #define OPT_INHIBIT_CLAUSE		0x0001
 #define OPT_INHIBIT_C_CLAUSE		0x0002

@@ -98,6 +98,7 @@ extern char 		*Case_name[];
 
 /* bind_juman.c */
 extern void CloseJuman();
+extern FILE *JumanSentence(FILE *fp);
 
 /* case_analysis.c */
 extern void realloc_cmm();

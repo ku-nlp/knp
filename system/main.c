@@ -54,6 +54,7 @@ int		OptExpandP;
 int		OptInhibit;
 int		OptCheck;
 int		OptNE;
+int		OptJuman;
 int		OptLearn;
 int		OptCaseFlag;
 int		OptCFMode;
@@ -134,6 +135,7 @@ extern int	SOTO_SCORE;
     OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
+    OptJuman = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = 0;
     /*    OptIgnoreChar = (char)NULL;*/
@@ -160,6 +162,8 @@ extern int	SOTO_SCORE;
 	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
 	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
+	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
+	else if (str_eq(argv[0], "-juman"))   OptJuman    = OPT_JUMAN;
 	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
@@ -715,6 +719,7 @@ PARSED:
 /*==================================================================*/
 {
     int i, success = 1, flag;
+    FILE *Jumanfp;
 
     SENTENCE_DATA *sp = &current_sentence_data;
 
@@ -802,7 +807,14 @@ PARSED:
 	/**************/
 
 	success = 0;
-	if ((flag = main_analysis(sp, Infp)) == EOF) break;
+
+	if (OptJuman == OPT_JUMAN) {
+	    if ((Jumanfp = JumanSentence(Infp)) == NULL) break;
+	    if ((flag = main_analysis(sp, Jumanfp)) == EOF) break;
+	}
+	else {
+	    if ((flag = main_analysis(sp, Infp)) == EOF) break;
+	}
 	if (flag == FALSE) continue;
 
 	/************/

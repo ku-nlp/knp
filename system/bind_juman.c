@@ -130,9 +130,35 @@ FILE *w2c, *w2p, *rfc, *rfp;
 }
 
 /*==================================================================*/
+		    FILE *JumanSentence(FILE *fp)
+/*==================================================================*/
+{
+    char buffer[LENMAX];
+
+    if (!JumanAlive) {
+	ForkJuman();
+    }
+
+    buffer[LENMAX-1] = GUARD;
+    if (fgets(buffer, LENMAX, fp) == NULL) return NULL;
+    if (buffer[LENMAX-1] != GUARD) {
+	buffer[LENMAX-1] = '\0';
+	fprintf(stderr, "Too long input string (%s).\n", String);
+	return NULL;
+    }
+
+    fputs(buffer, w2c);
+    fputc('\n', w2c);
+    fflush(w2c);
+    return rfc;
+}
+
+/*==================================================================*/
 	   int ParseSentence(SENTENCE_DATA *s, char *input)
 /*==================================================================*/
 {
+    /* この関数を使うときには s を初期化しておく必要がある */
+
     int OptInputBackup;
 
     if (!JumanAlive) {
