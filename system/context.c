@@ -3119,13 +3119,8 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* 閾値を越えるものがなく、格フレームに<主体>があるとき */
-    if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	maxtag = ExtraTags[1]; /* 不特定-人 */
-    }
-    else {
-	return 0;
-    }
+    /* 閾値を越えるものがないとき */
+    return 0;
 
   EvalAntecedentNoun:
     /* 閾値を越えるものが見つかった */
