@@ -556,7 +556,7 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
- int CheckMatchMaxSM(char *exd, char *exp, int expand, char *target)
+ int sm_check_match_max(char *exd, char *exp, int expand, char *target)
 /*==================================================================*/
 {
     int i, j, step = SM_CODE_SIZE, flag;
@@ -676,6 +676,58 @@ int		SMP2SMGExist;
     if (sm_all_match(bp->SM_code, "11**********")) {
 	assign_cfeature(&(bp->f), "抽象");
     }
+}
+
+/*==================================================================*/
+	      int delete_matched_sm(char *sm, char *del)
+/*==================================================================*/
+{
+    int i, j, flag, pos = 0;
+
+    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
+	flag = 1;
+	/* 固有ではないときチェック */
+	if (sm[i] != '2') {
+	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
+		if (_sm_match_score(sm+i, del+j, SM_NO_EXPAND_NE) > 0) {
+		    flag = 0;
+		    break;
+		}
+	    }
+	}
+	if (flag) {
+	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
+	    pos += SM_CODE_SIZE;
+	}
+    }
+    *(sm+pos) = '\0';
+    return 1;
+}
+
+/*==================================================================*/
+	     int delete_specified_sm(char *sm, char *del)
+/*==================================================================*/
+{
+    int i, j, flag, pos = 0;
+
+    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
+	flag = 1;
+	/* 固有ではないときを対象とする */
+	if (sm[i] != '2') {
+	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
+		if (!strncmp(sm+i+1, del+j+1, SM_CODE_SIZE-1)) {
+		    flag = 0;
+		    break;
+		}
+	    }
+	}
+	if (flag) {
+	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
+	    pos += SM_CODE_SIZE;
+	}
+    }
+    *(sm+pos) = '\0';
+    return 1;
 }
 
 /*====================================================================

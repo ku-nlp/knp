@@ -8,6 +8,35 @@
 ====================================================================*/
 #include <knp.h>
 
+int 	Thesaurus = USE_NTT;
+int	ParaThesaurus = USE_BGH;
+
+/*==================================================================*/
+			void init_thesaurus()
+/*==================================================================*/
+{
+    if (Thesaurus == USE_BGH || ParaThesaurus == USE_BGH) {
+	init_bgh();
+    }
+
+    if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
+	init_sm();
+    }
+}
+
+/*==================================================================*/
+			void close_thesaurus()
+/*==================================================================*/
+{
+    if (Thesaurus == USE_BGH || ParaThesaurus == USE_BGH) {
+	close_bgh();
+    }
+
+    if (Thesaurus == USE_NTT || ParaThesaurus == USE_NTT) {
+	close_sm();
+    }
+}
+
 /*==================================================================*/
 	   char *get_str_code(unsigned char *cp, int flag)
 /*==================================================================*/
@@ -213,60 +242,6 @@
 }
 
 /*==================================================================*/
-	      int DeleteSpecifiedSM(char *sm, char *del)
-/*==================================================================*/
-{
-    int i, j, flag, pos = 0;
-    if (Thesaurus == USE_BGH) return 0;
-
-    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
-	flag = 1;
-	/* 固有ではないときを対象とする */
-	if (sm[i] != '2') {
-	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
-		if (!strncmp(sm+i+1, del+j+1, SM_CODE_SIZE-1)) {
-		    flag = 0;
-		    break;
-		}
-	    }
-	}
-	if (flag) {
-	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
-	    pos += SM_CODE_SIZE;
-	}
-    }
-    *(sm+pos) = '\0';
-    return 1;
-}
-
-/*==================================================================*/
-	       int DeleteMatchedSM(char *sm, char *del)
-/*==================================================================*/
-{
-    int i, j, flag, pos = 0;
-    if (Thesaurus == USE_BGH) return 0;
-
-    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
-	flag = 1;
-	/* 固有ではないときチェック */
-	if (sm[i] != '2') {
-	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
-		if (_sm_match_score(sm+i, del+j, SM_NO_EXPAND_NE) > 0) {
-		    flag = 0;
-		    break;
-		}
-	    }
-	}
-	if (flag) {
-	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
-	    pos += SM_CODE_SIZE;
-	}
-    }
-    *(sm+pos) = '\0';
-    return 1;
-}
-
-/*==================================================================*/
 	float CalcSimilarity(char *exd, char *exp, int expand)
 /*==================================================================*/
 {
@@ -308,7 +283,11 @@
     /* スコアの幅に注意
        NTT: 0 〜 1.0
        BGH: 0 〜 7 */
+    if (Thesaurus == USE_BGH) {
+	score /= 7;
+    }
 
+    /* スコア: 0 〜 1.0 */
     return score;
 }
 
@@ -350,8 +329,8 @@ float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
 	return 0;
     }
 
-    if (del) {
-	DeleteSpecifiedSM(smp, del);
+    if (Thesaurus == USE_NTT && del) {
+	delete_specified_sm(smp, del);
     }
 
     if (smd && smp[0]) {

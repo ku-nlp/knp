@@ -385,6 +385,9 @@ typedef struct {
 #define		DEF_KNP_DICT_DIR	"KNP辞書ディレクトリ"
 #define		DEF_KNP_DICT_FILE	"KNP辞書ファイル"
 
+#define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
+#define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
+
 typedef struct _RuleVector {
     char	*file;
     int		type;

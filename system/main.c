@@ -109,7 +109,7 @@ extern float	AssignReferentThreshold;
 	    "           [-C host:port] [-S] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
 	    "           [-thesaurus [BGH|NTT]] (Default:NTT)\n"
-	    "           [-para [BGH|NTT]] (Default:BGH)\n");
+	    "           [-para-thesaurus [BGH|NTT]] (Default:BGH)\n");
     exit(1);    
 }
 
@@ -259,7 +259,7 @@ extern float	AssignReferentThreshold;
 		usage();
 	    }
 	}
-	else if (str_eq(argv[0], "-para")) {
+	else if (str_eq(argv[0], "-para-thesaurus")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    if (!strcasecmp(argv[0], "ntt")) {
@@ -485,8 +485,7 @@ extern float	AssignReferentThreshold;
     init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
-    init_bgh();		/* シソーラスオープン */
-    init_sm();		/* NTT 辞書オープン */
+    init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
 
     if (OptDisc == OPT_DISC) {
@@ -544,8 +543,7 @@ extern float	AssignReferentThreshold;
 /*==================================================================*/
 {
     close_cf();
-    close_bgh();
-    close_sm();
+    close_thesaurus();
     close_scase();
 
     if (OptDisc == OPT_DISC)

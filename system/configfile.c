@@ -269,6 +269,60 @@ int knp_dict_file_already_defined = 0;
 		cell1 = cdr(cell1);
 	    }
 	}
+	else if (!strcmp(DEF_CASE_THESAURUS, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .jumanrc\n");
+		exit(0);
+	    }
+	    else {
+		if (!strcasecmp(_Atom(cell2), "ntt")) {
+		    Thesaurus = USE_NTT;
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, "Thesaurus for case analysis ... NTT\n");
+		    }
+		}
+		else if (!strcasecmp(_Atom(cell2), "bgh")) {
+		    Thesaurus = USE_BGH;
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, "Thesaurus for case analysis ... BGH\n");
+		    }
+		}
+		else {
+		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
+	else if (!strcmp(DEF_PARA_THESAURUS, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .jumanrc\n");
+		exit(0);
+	    }
+	    else {
+		if (!strcasecmp(_Atom(cell2), "ntt")) {
+		    ParaThesaurus = USE_NTT;
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, "Thesaurus for para analysis ... NTT\n");
+		    }
+		}
+		else if (!strcasecmp(_Atom(cell2), "bgh")) {
+		    ParaThesaurus = USE_BGH;
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, "Thesaurus for para analysis ... BGH\n");
+		    }
+		}
+		else if (!strcasecmp(_Atom(cell2), "none")) {
+		    ParaThesaurus = USE_NONE;
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, "Thesaurus for para analysis ... NONE\n");
+		    }
+		}
+		else {
+		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
     }
 #endif
 

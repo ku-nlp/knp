@@ -41,7 +41,6 @@ int	EX_match_subject = 8;
 int	EX_match_modification = 0;
 
 int	SOTO_THRESHOLD = 8;
-int	Thesaurus = USE_NTT;
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
@@ -361,32 +360,37 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 {
     /* 意味マーカのマッチング度の計算 */
 
-    int i, j, k, tmp_score, score = -100, ex_score = -100;
+    int i, j, k, score = -100, ex_score = -100;
     char *exd, *exp;
     int *match_score;
 
+    if (Thesaurus == USE_BGH) {
+	exd = cfd->ex[as1];
+	exp = cfp->ex[as2];
+	match_score = EX_match_score;
+    }
+    else if (Thesaurus == USE_NTT) {
+	exd = cfd->ex2[as1];
+	exp = cfp->ex2[as2];
+	match_score = EX_match_score;
+    }
+
     if (flag == SEMANTIC_MARKER) {
-	
+	int tmp_score;
+
 	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2] == NULL || cfp->sm[as2][0] == '\0') 
 	    return SM_match_unknown;
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
 	    /* 具体的な用例が書いてある場合 */
 	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), SM_CODE_SIZE)) {
-
-		for (k = 0; cfp->ex[as2][k]; k+=BGH_CODE_SIZE) {
-		    for (i = 0; cfd->ex[as1][i]; i+=BGH_CODE_SIZE) {
-			tmp_score = 
-			    EX_match_score[_ex_match_score(cfp->ex[as2]+k, 
-							   cfd->ex[as1]+i)];
-			if (tmp_score == 11) {
-			    return 10;
-			}
-		    }
+		tmp_score = (int)CalcSimilarity(exd, exp, 0);
+		if (tmp_score == 1) {
+		    return 10;
 		}
 	    }
-	    else {
-		/* 選択制限によるマッチ */
+	    else if (SMExist == TRUE) {
+		/* 選択制限によるマッチ (NTTシソーラスがある場合) */
 		for (i = 0; cfd->sm[as1][i]; i+=SM_CODE_SIZE) {
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
@@ -434,17 +438,6 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    return 0;
 	} */
 
-	if (Thesaurus == USE_BGH) {
-	    exd = cfd->ex[as1];
-	    exp = cfp->ex[as2];
-	    match_score = EX_match_score;
-	}
-	else if (Thesaurus == USE_NTT) {
-	    exd = cfd->ex2[as1];
-	    exp = cfp->ex2[as2];
-	    match_score = EX_match_score;
-	}
-
 	/* ガ格<主体>共通スコア */
 	if (ga_subject) {
 	    *pos = MATCH_SUBJECT;
@@ -483,19 +476,13 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 
 	    rawscore = CalcSmWordsSimilarity(exd, cfp->ex_list[as2], cfp->ex_num[as2], pos, 
 					     cfp->sm_delete[as2], 0);
-	    /* rawscore = CalcWordsSimilarity(cfd->ex_list[as1][0], cfp->ex_list[as2], cfp->ex_num[as2], pos); */
-	    /* rawscore = CalcSimilarity(exd, exp); */
 	    /* 用例のマッチング */
-	    if (Thesaurus == USE_BGH) {
-		ex_score = *(match_score+(int)rawscore);
+	    if (Thesaurus == USE_NTT && 
+		sm_check_match_max(exd, exp, 0, sm2code("抽象"))) { /* <抽象>のマッチを低く */
+		ex_score = EX_match_score2[(int)(rawscore*7)];
 	    }
-	    else if (Thesaurus == USE_NTT) {
-		if (CheckMatchMaxSM(exd, exp, 0, sm2code("抽象"))) {
-		    ex_score = EX_match_score2[(int)(rawscore*7)];
-		}
-		else {
-		    ex_score = *(match_score+(int)(rawscore*7));
-		}
+	    else {
+		ex_score = *(match_score+(int)(rawscore*7));
 	    }
 	}
 

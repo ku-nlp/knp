@@ -282,6 +282,9 @@ extern int sm_match_check(char *pat, char *codes);
 extern int assign_sm(BNST_DATA *bp, char *cp);
 extern int sm_code_depth(char *cp);
 extern int sm_all_match(char *c, char *target);
+extern int sm_check_match_max(char *exd, char *exp, int expand, char *target);
+extern int delete_matched_sm(char *sm, char *del);
+extern int delete_specified_sm(char *sm, char *del);
 
 /* main.c */
 extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
@@ -367,12 +370,13 @@ extern int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr,
 extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 
 /* thesaurus.c */
+extern void init_thesaurus();
+extern void close_thesaurus();
 extern char *get_str_code(unsigned char *cp, int flag);
 extern void get_bnst_code(BNST_DATA *ptr, int flag);
 extern float CalcSimilarity(char *exd, char *exp, int expand);
 extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
-extern int DeleteMatchedSM(char *sm, char *del);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);

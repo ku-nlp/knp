@@ -6,6 +6,9 @@
 	  被連体修飾詞を格フレームのノ格にマッチさせる
 	  格解析のマッチングの類似度曲線変更, <抽象>のマッチを低く
 
+	* system/case_analysis.c, system/case_match.c, system/configfile.c, system/const.h, system/context.c, system/extern.h, system/lib_sm.c, system/main.c, system/para_similarity.c, system/thesaurus.c:
+	シソーラスまわりの整理
+
 2001-12-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/thesaurus.c:

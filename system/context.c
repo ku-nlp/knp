@@ -633,11 +633,6 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 	/* 最大マッチスコアを求める */
 	ex_score = CalcSmWordsSimilarity(exd, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos, 
 					 cf_ptr->sm_delete[n], expand);
-	/* ex_score = CalcWordsSimilarity(cand->Jiritu_Go, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos); */
-	/* ex_score = CalcSimilarity(exd, exp); */
-	if (Thesaurus == USE_BGH) {
-	    ex_score /= 7;
-	}
     }
 
     /* 主体のマッチング (とりあえずガ格のときだけ) */
@@ -713,9 +708,6 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 
     /* 最大マッチスコアを求める */
     ex_score = (float)CalcSimilarity(exd, exp, 0);
-    if (Thesaurus == USE_BGH) {
-	ex_score /= 7;
-    }
 
     if (ex_score > score) {
 	return ex_score;

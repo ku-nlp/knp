@@ -1126,6 +1126,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 {
     int i;
 
+    if (Thesaurus == USE_BGH) return;
+
     /* 人名のとき: 
        o 一般名詞体系の<主体>以下の意味素を削除
        o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
@@ -1133,7 +1135,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     for (i = 0; i < sp->Bnst_num; i++) {
 	if (check_feature((sp->bnst_data+i)->f, "人名")) {
 	    /* 固有の意味素だけ残したい */
-	    DeleteMatchedSM((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
+	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
 	    assign_cfeature(&((sp->bnst_data+i)->f), "固有一般展開禁止");
 	}
     }
@@ -1147,6 +1149,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
        現在は <場所> のみ */
 
     int i, num;
+
+    if (Thesaurus == USE_BGH) return;
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
@@ -1171,6 +1175,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 /*==================================================================*/
 {
     int i, num;
+
+    if (Thesaurus == USE_BGH) return;
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
