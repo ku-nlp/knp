@@ -1953,9 +1953,8 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
     SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 			tp, cf_ptr, n, LOC_MC);
 
-    /* 「〜だ。」は OK */
-    if (check_feature(tp->f, "用言:判") && 
-	CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC)) {
+    /* 文末にある体言(先行詞候補)は OK */
+    if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC)) {
 	EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, LOC_MC);
     }
 
@@ -2063,7 +2062,7 @@ int GoUpParaChild(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		/* <PARA>でなくなるまでさかのぼる必要がある */
 		tp2 = tp->child[i];
 		while (tp2->para_top_p) {
-		    tp2 = tp->child[i]->child[0];
+		    tp2 = tp2->child[0];
 		}
 
 		SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
