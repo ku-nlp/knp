@@ -1,3 +1,9 @@
+2004-04-15  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/contet.c:
+	名詞の解析時の共参照の範囲を前４文に限定
+	名詞の解析時の意味素マッチに類似度0.6以上という制約も追加
+
 2004-03-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
