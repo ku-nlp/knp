@@ -1,5 +1,7 @@
 SUBDIRS = .
 
+INCLUDES = @JUMAN_CFLAGS@
+
 noinst_LIBRARIES = libjuman.a
 
 libjuman_a_SOURCES = \

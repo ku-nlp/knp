@@ -15,13 +15,15 @@ AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=yes]])
 AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library [default=no]])
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
 
-AC_ARG_ENABLE(juman-lib-dir, [  --enable-juman-lib-dir  use specified JUMAN library DIR [default=../juman/lib]], 
-JUMAN_LIB_DIR=$enable_juman_lib_dir, JUMAN_LIB_DIR="")
+AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
+JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
 
-AC_ARG_ENABLE(rcpath, [  --enable-rcpath         use specified rcpath], 
-RCPATH=$enable_rcpath, RCPATH="")
+AC_ARG_WITH(rcpath, [  --with-rcpath           use specified rcpath], 
+RCPATH=$with_rcpath, RCPATH="")
 
 SUBDIRS="system rule docs"
+
+packagesrcdir=`cd $srcdir && pwd`
 
 if test "$with_included_juman" = yes; then
     SUBDIRS="juman $SUBDIRS"
@@ -29,7 +31,7 @@ if test "$with_included_juman" = yes; then
     AC_MSG_CHECKING("rcpath")
     if test -z "$RCPATH"; then
 	if test -f juman/jumanrc.sample; then
-	    RCPATH="`pwd`/juman/jumanrc.sample"
+	    RCPATH="$packagesrcdir/juman/jumanrc.sample"
 	elif test -f /share/tool/juman/jumanrc.sample; then
 	    RCPATH="/share/tool/juman/jumanrc.sample"
 	else
@@ -47,12 +49,12 @@ if test "$with_included_juman" = yes; then
     AC_MSG_RESULT("$RCPATH")
     RCPATH_CFLAGS="-DRC_DEFAULT=\"\\\"$RCPATH\"\\\""
 else
-    AC_MSG_CHECKING("juman library DIR")
+    AC_MSG_CHECKING("JUMAN library DIR")
     if test -z "$JUMAN_LIB_DIR"; then
 	if test -d /share/tool/juman/lib; then
 	    JUMAN_LIB_DIR="/share/tool/juman/lib"
 	elif test -d ../juman/lib; then
-	    JUMAN_LIB_DIR="`pwd`/../juman/lib"
+	    JUMAN_LIB_DIR="$packagesrcdir/../juman/lib"
 	else
 	    AC_MSG_ERROR("JUMAN is not found.")
 	fi
@@ -65,12 +67,13 @@ else
     RCPATH_CFLAGS=""
 fi
 
-JUMAN_CFLAGS="-I$JUMAN_LIB_DIR"
+JUMAN_CFLAGS="-I$JUMAN_LIB_DIR $RCPATH_CFLAGS"
 JUMAN_LDFLAGS="-L$JUMAN_LIB_DIR"
+
+AC_SUBST(JUMAN_CFLAGS)
 
 AC_ARG_ENABLE(debug, 
 	[  --disable-debug         build a non-debugging version [default=no]])
-
 AC_ARG_ENABLE(small, 
 	[  --enable-small          make a small version [default=no]])
 
@@ -86,8 +89,8 @@ if test "x$enable_small" = "xyes"; then
     ETC_CFLAGS="-DSMALL $ETC_CFLAGS"
 fi
 
-AC_PREFIX_DEFAULT(`pwd`)
-KNP_DIR=@prefix@
+AC_PREFIX_DEFAULT("$packagesrcdir")
+KNP_DIR=$packagesrcdir
 KNP_SYS="$KNP_DIR/system"
 KNP_DICT="$KNP_DIR/dict"
 KNP_RULE="$KNP_DIR/rule"
@@ -116,7 +119,9 @@ MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 
-CFLAGS="-I/usr/local/include $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" $RCPATH_CFLAGS $ETC_CFLAGS $CFLAGS"
+KNP_CFLAGS="-I/usr/local/include $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+
+AC_SUBST(KNP_CFLAGS)
 
 dnl Checks for header files.
 AC_HEADER_STDC

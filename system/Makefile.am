@@ -5,6 +5,8 @@ EXTRA_DIST = \
 	ipal.c \
 	make_db.c
 
+INCLUDES = @KNP_CFLAGS@
+
 noinst_PROGRAMS = knp ipal make_db
 
 knp_SOURCES = \
