@@ -1,3 +1,8 @@
+2004-09-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_data.c, rule/case_analysis.rule:
+	ノ格がサ変名詞に係るときの格解析が失敗するのを修正
+
 2004-09-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
