@@ -1,3 +1,8 @@
+2004-02-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_print.c:
+	-detail»þ¤Îbuffer overflow½¤Àµ
+
 2004-01-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, rule/case_analysis.rule, rule/context.rule, rule/mrph_basic.rule:
