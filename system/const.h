@@ -839,7 +839,8 @@ typedef struct ellipsis_list {
 
 typedef struct ellipsis_features {
     float	similarity;
-    float	event;
+    float	event1;
+    float	event2;
     int		pos;
     int		frequency;
 
@@ -875,7 +876,8 @@ typedef struct ellipsis_features {
 typedef struct ellipsis_svm_features {
     float	similarity;
 #ifdef DISC_USE_EVENT
-    float	event;
+    float	event1;
+    float	event2;
 #endif
     float	frequency;
 

@@ -1078,7 +1078,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     char *buffer, *sbuf;
 
 #ifdef DISC_USE_EVENT
-    prenum = 3;
+    prenum = 4;
 #else
     prenum = 2;
 #endif
@@ -1090,7 +1090,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
 				 "EllipsisSvmFeatures2String");
 #ifdef DISC_USE_EVENT
-    sprintf(buffer, "1:%.5f 2:%.5f", esf->similarity, esf->event);
+    sprintf(buffer, "1:%.5f 2:%.5f 3:%.5f", esf->similarity, esf->event1, esf->event2);
 #else
     sprintf(buffer, "1:%.5f", esf->similarity);
 #endif
@@ -1227,7 +1227,8 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 
     f->similarity = ef->similarity;
 #ifdef DISC_USE_EVENT
-    f->event = ef->event;
+    f->event1 = ef->event1;
+    f->event2 = ef->event2;
 #endif
     if (OptLearn == TRUE) {
 	f->frequency = ef->frequency;
@@ -1515,7 +1516,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* ÍÑÎã¤ÎÉÑÅÙ */
 
     if (vp) {
-	f->event = get_event_value(vs, vp, cs, cpm_ptr->pred_b_ptr);
+	f->event1 = get_event_value(vs, vp, cs, cpm_ptr->pred_b_ptr);
+	f->event2 = get_event_value(cs, cpm_ptr->pred_b_ptr, vs, vp);
 
 	f->c_pp = GetCandCase(vp->cpm_ptr, &(vp->cpm_ptr->cmm[0]), bp);
 
@@ -1529,7 +1531,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->c_n_modify_flag = check_feature(vp->f, "·¸:Ï¢³Ê") ? 1 : 0;
     }
     else {
-	f->event = -1;
+	f->event1 = -1;
+	f->event2 = -1;
 
 	f->c_pp = -1;
 	f->c_dep_p_level[0] = '\0';
