@@ -4,6 +4,9 @@
 
 	* dict/Makefile.orig: 意味素DB を作る target を作成
 
+	* configure.in, system/bind_juman.c, system/context.c, system/main.c:
+	KNP に含まれる JUMAN library への依存を解消
+
 2001-05-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* configure.in: RCPATH 指定時の不要な test の廃止

@@ -831,13 +831,15 @@ PARSED:
 
 	success = 0;
 
+#ifdef INTEGRATE_JUMAN
 	if (OptJuman == OPT_JUMAN) {
 	    if ((Jumanfp = JumanSentence(Infp)) == NULL) break;
 	    if ((flag = main_analysis(sp, Jumanfp)) == EOF) break;
 	}
-	else {
+	else
+#endif
 	    if ((flag = main_analysis(sp, Infp)) == EOF) break;
-	}
+
 	if (flag == FALSE) continue;
 
 	/************/
@@ -881,7 +883,10 @@ PARSED:
 	close_case_pred();
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	close_optional_case();
+
+#ifdef INTEGRATE_JUMAN
     CloseJuman();
+#endif
 }
 
 /*==================================================================*/

@@ -1410,6 +1410,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     return 0;
 }
 
+#ifdef INTEGRATE_JUMAN
 /*==================================================================*/
      void EllipsisDetectForNoun(SENTENCE_DATA *cs, BNST_DATA *bp)
 /*==================================================================*/
@@ -1507,6 +1508,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     for (i = 0; i < scount; i++)
 	ClearSentence(sbuf+i);
 }
+#endif
 
 /*==================================================================*/
 	       int GetElementID(CASE_FRAME *cfp, int c)

@@ -14,6 +14,8 @@ AC_PROG_MAKE_SET
 AC_ARG_WITH(gdbm, [  --with-gdbm             use GDBM library [default=yes]])
 AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (2.X) [default=no]])
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
+AC_ARG_WITH(integrate-juman, [  --with-integrate-juman  integrate JUMAN into KNP], 
+ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
 JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
