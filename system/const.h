@@ -612,6 +612,7 @@ typedef struct cf_def {
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
 typedef struct {
     int  	flag[CF_ELEMENT_MAX];
+    int		score[CF_ELEMENT_MAX];
 } LIST;
 
 /* 文と格フレームの対応付け結果の記録 */
