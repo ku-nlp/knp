@@ -534,7 +534,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     if (OptDisplay == OPT_DEBUG) {
 	dpnd_info_to_bnst(sp, &dpnd);
+	if (OptExpress != OPT_NOTAG) {
+	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+	}
 	make_dpnd_tree(sp);
+	bnst_to_tag_tree(sp); /* タグ単位 */
 	print_kakari(sp);
     }
 
