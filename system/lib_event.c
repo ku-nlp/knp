@@ -148,7 +148,7 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
 	str2 = make_pred_str_with_cc(sp2, p2, TRUE);
 
 	buf = (char *)malloc_data(strlen(str1) + strlen(str2) + 2, "get_event_value");
-	sprintf(buf, "%s|%s", str1, str2);
+	sprintf(buf, "%s|%s", str2, str1);
 	free(str1);
 	free(str2);
 
@@ -157,13 +157,35 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
 	/* backoff */
 	if (val == 0) {
 	    str1 = make_pred_str_with_cc(sp1, p1, FALSE);
-	    str2 = make_pred_str_with_cc(sp2, p2, FALSE);
+	    str2 = make_pred_str_with_cc(sp2, p2, TRUE);
 
-	    sprintf(buf, "%s|%s", str1, str2);
+	    sprintf(buf, "%s|%s", str2, str1);
 	    free(str1);
 	    free(str2);
 
 	    val = get_event(buf);
+
+	    if (val == 0) {
+		str1 = make_pred_str_with_cc(sp1, p1, TRUE);
+		str2 = make_pred_str_with_cc(sp2, p2, FALSE);
+
+		sprintf(buf, "%s|%s", str2, str1);
+		free(str1);
+		free(str2);
+
+		val = get_event(buf);
+
+		if (val == 0) {
+		    str1 = make_pred_str_with_cc(sp1, p1, FALSE);
+		    str2 = make_pred_str_with_cc(sp2, p2, FALSE);
+
+		    sprintf(buf, "%s|%s", str2, str1);
+		    free(str1);
+		    free(str2);
+
+		    val = get_event(buf);
+		}
+	    }
 	}
 
 	free(buf);
