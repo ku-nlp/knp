@@ -438,102 +438,10 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 /*==================================================================*/
 {
     (*f_num_p)++;
-    if ((Case_frame_num + *f_num_p) > ALL_CASE_FRAME_MAX) {
+    if ((Case_frame_num + *f_num_p) >= ALL_CASE_FRAME_MAX) {
 	fprintf(stderr, "Not enough Case_frame_array !!\n");
 	exit(1);
     }
-}
-
-/*==================================================================*/
-      int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
-/*==================================================================*/
-{
-    int f_num = 0, plus_num = 0, i;
-    char *verb, buffer[3][WORD_LEN_MAX];
-    BNST_DATA *pre_ptr;
-
-    /* 自立語末尾語を用いて格フレーム辞書を引く */
-
-    if (!b_ptr->jiritu_ptr) {
-	return f_num;
-    }
-
-    /* 「（〜を）〜に」 のときは 「〜にする」の結合フレームをさがす */
-    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
-	sprintf(buffer[0], "%sにする", L_Jiritu_M(b_ptr)->Goi);
-	verb = buffer[0];
-    }
-    else {
-	verb = L_Jiritu_M(b_ptr)->Goi;
-    }
-
-    f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
-    for (i = 0; i < f_num; i++) {
-	(cf_ptr+i)->concatenated_flag = 0;
-    }
-
-    if (b_ptr->num < 1) {
-	return f_num;
-    }
-
-    buffer[0][0] = '\0';
-    buffer[1][0] = '\0';
-    buffer[2][0] = '\0';
-    buffer[0][WORD_LEN_MAX-1] = '\n';
-    buffer[1][WORD_LEN_MAX-1] = '\n';
-
-    pre_ptr = sp->bnst_data+b_ptr->num-1;
-
-    /* 前隣の文節の単語をすべて結合
-       構造決定後、係り受け関係にあるかどうかチェック */
-
-    /* 前隣の文節が未格である場合 */
-    if (check_feature(pre_ptr->f, "係:未格")) {
-	for (i = 0; i < pre_ptr->settou_num; i++) {
-	    strcat(buffer[0], (pre_ptr->settou_ptr+i)->Goi);
-	}
-	for (i = 0; i < pre_ptr->jiritu_num; i++) {
-	    strcat(buffer[0], (pre_ptr->jiritu_ptr+i)->Goi);
-	}
-	strcpy(buffer[1], buffer[0]);
-	/* ガ格, ヲ格でチェックしたい */
-	strcat(buffer[0], "が");
-	strcat(buffer[1], "を");
-    }
-    else {
-	for (i = 0; i < pre_ptr->mrph_num; i++) {
-	    strcat(buffer[0], (pre_ptr->mrph_ptr+i)->Goi);
-	}
-    }
-    /* 自分の文節の接頭辞と自立語を結合 */
-    for (i = 0; i < b_ptr->settou_num; i++) {
-	strcat(buffer[0], (b_ptr->settou_ptr+i)->Goi);
-    }
-    for (i = 0; i < b_ptr->jiritu_num; i++) {
-	strcat(buffer[0], (b_ptr->jiritu_ptr+i)->Goi);
-    }
-
-    /* 先にチェックしないと… */
-    if (buffer[0][WORD_LEN_MAX-1] != '\n') {
-	fprintf(stderr, "buffer overflowed.\n");
-	return f_num;
-    }
-    if (buffer[1][WORD_LEN_MAX-1] != '\n') {
-	fprintf(stderr, "buffer overflowed.\n");
-	return f_num;
-    }
-
-    i = 0;
-    while (buffer[i][0]) {
-	verb = buffer[i];
-	plus_num += make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
-	i++;
-    }
-    for (i = f_num; i < f_num+plus_num; i++) {
-	(cf_ptr+i)->concatenated_flag = 1;
-    }
-
-    return f_num+plus_num;
 }
 
 /*==================================================================*/
@@ -650,12 +558,100 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
     return f_num;
 }
 
-
 /*==================================================================*/
-   int make_default_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
+      int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
-    int i, num = 0;
+    int f_num = 0, plus_num, i, j;
+    char *verb, buffer[3][WORD_LEN_MAX];
+    BNST_DATA *pre_ptr;
+
+    /* 自立語末尾語を用いて格フレーム辞書を引く */
+
+    if (!b_ptr->jiritu_ptr) {
+	return f_num;
+    }
+
+    /* 「（〜を）〜に」 のときは 「〜にする」の結合フレームをさがす */
+    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+	sprintf(buffer[0], "%sにする", L_Jiritu_M(b_ptr)->Goi);
+	verb = buffer[0];
+    }
+    else {
+	verb = L_Jiritu_M(b_ptr)->Goi;
+    }
+
+    f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
+    Case_frame_num += f_num;
+    for (i = 0; i < f_num; i++) {
+	(cf_ptr+i)->concatenated_flag = 0;
+    }
+
+    if (b_ptr->num < 1) {
+	return f_num;
+    }
+
+    buffer[0][0] = '\0';
+    buffer[1][0] = '\0';
+    buffer[2][0] = '\0';
+    buffer[0][WORD_LEN_MAX-1] = '\n';
+    buffer[1][WORD_LEN_MAX-1] = '\n';
+
+    pre_ptr = sp->bnst_data+b_ptr->num-1;
+
+    /* 前隣の文節の単語をすべて結合
+       構造決定後、係り受け関係にあるかどうかチェック */
+
+    /* 前隣の文節が未格である場合 */
+    if (check_feature(pre_ptr->f, "係:未格")) {
+	for (i = 0; i < pre_ptr->settou_num; i++) {
+	    strcat(buffer[0], (pre_ptr->settou_ptr+i)->Goi);
+	}
+	for (i = 0; i < pre_ptr->jiritu_num; i++) {
+	    strcat(buffer[0], (pre_ptr->jiritu_ptr+i)->Goi);
+	}
+	strcpy(buffer[1], buffer[0]);
+	/* ガ格, ヲ格でチェックしたい */
+	strcat(buffer[0], "が");
+	strcat(buffer[1], "を");
+    }
+    else {
+	for (i = 0; i < pre_ptr->mrph_num; i++) {
+	    strcat(buffer[0], (pre_ptr->mrph_ptr+i)->Goi);
+	}
+    }
+
+    for (i = 0; buffer[i][0]; i++) {
+	/* 自分の文節の接頭辞と自立語を結合 */
+	for (j = 0; j < b_ptr->settou_num; j++) {
+	    strcat(buffer[i], (b_ptr->settou_ptr+j)->Goi);
+	}
+	for (j = 0; j < b_ptr->jiritu_num; j++) {
+	    strcat(buffer[i], (b_ptr->jiritu_ptr+j)->Goi);
+	}
+
+	if (buffer[i][WORD_LEN_MAX-1] != '\n') {
+	    fprintf(stderr, "buffer overflowed.\n");
+	    return f_num;
+	}
+
+	verb = buffer[i];
+	plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+	Case_frame_num += plus_num;
+	for (j = f_num; j < f_num+plus_num; j++) {
+	    (cf_ptr+j)->concatenated_flag = 1;
+	}
+	f_num += plus_num;
+    }
+
+    return f_num;
+}
+
+/*==================================================================*/
+    int make_default_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
+/*==================================================================*/
+{
+    int i, num = 0, f_num = 0;
 
     _make_ipal_cframe_pp(cf_ptr, "ガ＊", num++);
     _make_ipal_cframe_pp(cf_ptr, "ヲ＊", num++);
@@ -668,15 +664,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
-	/* cf_ptr->sm[i][0] = '\0';
-	if (Thesaurus == USE_BGH) {
-	    cf_ptr->ex[i][0] = '\0';
-	}
-	else if (Thesaurus == USE_NTT) {
-	    cf_ptr->ex2[i][0] = '\0';
-	} */
     }
 
+    f_num_inc(&f_num);
     return 1;
 }
 
@@ -685,23 +675,39 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 /*==================================================================*/
 {
     int f_num;
-	
+
+    b_ptr->cf_ptr = Case_frame_array + Case_frame_num;	
     if ((f_num = make_ipal_cframe(b_ptr, Case_frame_array + Case_frame_num)) 
 	!= 0) {
-	b_ptr->cf_ptr = Case_frame_array + Case_frame_num;
 	b_ptr->cf_num = f_num;
-	Case_frame_num += f_num;
     } else {
 	make_default_cframe(b_ptr, Case_frame_array + Case_frame_num);
-	b_ptr->cf_ptr = Case_frame_array + Case_frame_num;
 	b_ptr->cf_num = 1;
-	/* fprintf(stderr, "No entry for <%s> in IPAL.\n",b_ptr->Jiritu_Go); */
-
-	if ((Case_frame_num += 1) > ALL_CASE_FRAME_MAX) {
-	    fprintf(stderr, "Not enough Case_frame_array !!\n");
-	    exit(1);
-	}
     }
+}
+
+/*==================================================================*/
+		      void set_pred_caseframe()
+/*==================================================================*/
+{
+    int i;
+    BNST_DATA  *b_ptr;
+
+    Case_frame_num = 0;
+
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
+	if (check_feature(b_ptr->f, "用言") ||
+	    check_feature(b_ptr->f, "準用言")) {
+
+	    /* 以下の2つの処理はfeatureレベルで起動している */
+	    /* set_pred_voice(b_ptr); ヴォイス */
+	    /* get_scase_code(b_ptr); 表層格 */
+
+ 	    if (OptAnalysis == OPT_CASE ||
+ 		OptAnalysis == OPT_CASE2 ||
+ 		OptAnalysis == OPT_DISC)
+		make_case_frames(b_ptr);
+	}
 }
 
 /*==================================================================*/

@@ -152,28 +152,6 @@ int		ScaseDicExist;
     }
 }
 
-/*==================================================================*/
-		      void set_pred_caseframe()
-/*==================================================================*/
-{
-    int i;
-    BNST_DATA  *b_ptr;
-
-    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
-	if (check_feature(b_ptr->f, "用言") ||
-	    check_feature(b_ptr->f, "準用言")) {
-
-	    /* 以下の2つの処理はfeatureレベルで起動している */
-	    /* set_pred_voice(b_ptr); ヴォイス */
-	    /* get_scase_code(b_ptr); 表層格 */
-
- 	    if (OptAnalysis == OPT_CASE ||
- 		OptAnalysis == OPT_CASE2 ||
- 		OptAnalysis == OPT_DISC)
-		make_case_frames(b_ptr);/* 格フレーム */
-	}
-}
-
 /*====================================================================
                                END
 ====================================================================*/

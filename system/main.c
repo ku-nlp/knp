@@ -79,7 +79,6 @@ char *Case_name[] = {
 
 char 		*ProgName;
 extern FILE	*Jumanrc_Fileptr;
-extern int 	Case_frame_num;
 extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
 extern FORM     Form[TYPE_NO][FORM_NO];
@@ -531,7 +530,6 @@ char *Opt_jumanrc = NULL;
 
 	assign_dpnd_rule();			/* 係り受け規則 */
 
-	Case_frame_num = 0;
 	set_pred_caseframe();			/* 用言の格フレーム */
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
