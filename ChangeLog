@@ -1,3 +1,9 @@
+2003-04-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c:
+	省略解析時に、並列構造解析との兼ね合いでsegmentation faultすること
+	があるバグを修正
+
 2003-04-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
