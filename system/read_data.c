@@ -457,7 +457,15 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
     char h_buffer[62], b_buffer[62], kata_buffer[62], kei_buffer[62];
+    char org_buffer[512];
     int num;
+
+    /* もとの形態素情報をfeatureとして保存 */
+    sprintf(org_buffer, "ORG:%s-%s-%s-%d-%d-%d-%d", 
+	    m_ptr->Goi, m_ptr->Yomi, m_ptr->Goi2, 
+	    m_ptr->Hinshi, m_ptr->Bunrui, 
+	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
+    assign_cfeature(&(m_ptr->f), org_buffer);
 
     m_ptr->Hinshi = 0;
     m_ptr->Bunrui = 0;
@@ -485,6 +493,8 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     if (m_ptr->Katuyou_Kata == 0) {
 	strcpy(m_ptr->Goi, m_ptr->Goi2);
     }
+
+    
 }
 
 /*==================================================================*/
