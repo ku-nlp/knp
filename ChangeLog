@@ -1,7 +1,33 @@
+2002-12-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule: 格解析ルールの更新
+
+	* system/case_data.c: 格解析ルールの拡張に伴う更新
+
+	* configure.ac: help表記を修正
+
+2002-12-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* Makefile.am, autogen.sh, configure.ac, system/db.c:
+	BerkeleyDB 4.1に対応
+
+	* svm/Makefile.am: ライブラリまわりの整理
+
+	* rule/context.rule:
+	直前格のない「する, なる, ある」は格解析しないようにするルールを有効にした
+
+2002-12-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule, system/case_ipal.c:
+	直前格のない「する, なる, ある」は格解析しないようにするルールをコメントで追加
+
+	* system/context.c:
+	省略解析: ガ格で<主体>を指している場合は、ガ格閾値を越えていなくてもよいことにした
+
 2002-12-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/main.c:
-	cygwin用にサーバがdaemon化しないモードを付加
+	cygwin用にサーバがdaemon化しないモードを付加(-F)
 
 2002-11-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
