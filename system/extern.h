@@ -113,7 +113,7 @@ extern char *make_print_string(BNST_DATA *bp, int flag);
 extern void InitCPMcache();
 extern void ClearCPMcache();
 extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
-extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */

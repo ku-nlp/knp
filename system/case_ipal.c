@@ -1412,7 +1412,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 {
     int i;
     for (i = 0; i < cfp->element_num; i++) {
-	if (MatchPP(cfp->pp[i][0], pp)) {
+	if (MatchPP2(cfp->pp[i], pp)) {
 	    return i;
 	}
     }

@@ -440,7 +440,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
 		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
-		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
+		    if (check_feature(cel_b_ptr->f, "·¸:Ì¤³Ê")) {
+			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+		    }
+		    else {
+			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
+		    }
 		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = child_num;
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 		    cpm_ptr->cf.element_num ++;

@@ -1085,12 +1085,47 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
-	       int check_gaga_ok(CF_PRED_MGR *cpm_ptr)
+      int add_cf_slot(CF_PRED_MGR *cpm_ptr, char *cstr, int num)
+/*==================================================================*/
+{
+    if (cpm_ptr->cmm[0].cf_ptr->element_num >= CF_ELEMENT_MAX) {
+	return FALSE;
+    }
+
+    _make_ipal_cframe_pp(cpm_ptr->cmm[0].cf_ptr, cstr, cpm_ptr->cmm[0].cf_ptr->element_num);
+    cpm_ptr->cmm[0].result_lists_d[0].flag[num] = cpm_ptr->cmm[0].cf_ptr->element_num;
+    cpm_ptr->cmm[0].result_lists_d[0].score[num] = 0;
+    cpm_ptr->cmm[0].result_lists_p[0].flag[cpm_ptr->cmm[0].cf_ptr->element_num] = num;
+    cpm_ptr->cmm[0].result_lists_p[0].score[cpm_ptr->cmm[0].cf_ptr->element_num] = 0;
+    cpm_ptr->cmm[0].cf_ptr->element_num++;
+
+    return TRUE;
+}
+
+/*==================================================================*/
+    int assign_cf_slot(CF_PRED_MGR *cpm_ptr, int cnum, int num)
+/*==================================================================*/
+{
+    /* 格フレームのその格にすでに対応付けがあれば */
+    if (cpm_ptr->cmm[0].result_lists_p[0].flag[cnum] != UNASSIGNED) {
+	return FALSE;
+    }
+
+    cpm_ptr->cmm[0].result_lists_d[0].flag[num] = cnum;
+    cpm_ptr->cmm[0].result_lists_d[0].score[num] = 0;
+    cpm_ptr->cmm[0].result_lists_p[0].flag[cnum] = num;
+    cpm_ptr->cmm[0].result_lists_p[0].score[cnum] = 0;
+
+    return TRUE;
+}
+
+/*==================================================================*/
+		int check_ga2_ok(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     int i;
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	/* 割り当てなしのガ格, ヲ格, ニ格が存在するならば、ガガ不可 */
+	/* 割り当てなしのガ格, ヲ格, ニ格が存在するならば、ガ２不可 */
 	if (cpm_ptr->cmm[0].result_lists_p[0].flag[i] == UNASSIGNED && 
 	    (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ガ") || 
 	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ヲ") || 
@@ -1099,39 +1134,6 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	}
     }
     return 1;
-}
-
-/*==================================================================*/
-    void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    int i;
-
-    if (check_gaga_ok(cpm_ptr) == 0) {
-	return;
-    }
-
-    /* 「〜は」で格フレーム側のガ格, ヲ格, ニ格がうまっているなら
-       ガガ格と解釈する */
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (cpm_ptr->cmm[0].result_lists_d[0].flag[i] == NIL_ASSIGNED && 
-	    cpm_ptr->elem_b_ptr[i]->num < cpm_ptr->pred_b_ptr->num && 
-	    check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:未格") && 
-	    !check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間") && 
-	    /* 用言の直前ではない (実は、もうひとつのガ格よりも前にあることを条件にしたい) */
-	    cpm_ptr->pred_b_ptr->num != cpm_ptr->elem_b_ptr[i]->num+1 && 
-	    /* ガガ格作成 (最初の「〜は」のみ) */
-	    check_cf_case(cpm_ptr->cmm[0].cf_ptr, "ガ２") < 0) {
-	    _make_ipal_cframe_pp(cpm_ptr->cmm[0].cf_ptr, "ガ２", cpm_ptr->cmm[0].cf_ptr->element_num);
-	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] = cpm_ptr->cmm[0].cf_ptr->element_num;
-	    cpm_ptr->cmm[0].result_lists_p[0].flag[cpm_ptr->cmm[0].cf_ptr->element_num] = i;
-	    cpm_ptr->cmm[0].result_lists_d[0].score[i] = 0;
-	    cpm_ptr->cmm[0].result_lists_p[0].score[cpm_ptr->cmm[0].cf_ptr->element_num] = 0;
-	    cpm_ptr->cmm[0].cf_ptr->element_num++;
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "ガガ格作成");
-	}
-    }
 }
 
 /*==================================================================*/
@@ -1251,6 +1253,58 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
+  void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i, c;
+
+    /* 未対応の格要素の処理 */
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->cmm[0].result_lists_d[0].flag[i] == NIL_ASSIGNED) {
+	    /* 未格, 連格 */
+	    if (cpm_ptr->elem_b_num[i] == -1) {
+		/* 用言直前のノ格はとりあえず保留 */
+		if (cpm_ptr->cf.pp[i][0] == pp_kstr_to_code("未")) {
+		    continue;
+		}
+		/* <時間> => 時間 */
+		if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間")) {
+		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "時間") < 0) {
+			add_cf_slot(cpm_ptr, "時間", i);
+		    }
+		}
+		/* 二重主語構文の外のガ格 */
+		else if (cpm_ptr->elem_b_ptr[i]->num < cpm_ptr->pred_b_ptr->num && 
+			 check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:未格") && 
+			 cpm_ptr->pred_b_ptr->num != cpm_ptr->elem_b_ptr[i]->num+1 && /* 用言の直前ではない (実は、もうひとつのガ格よりも前にあることを条件にしたい) */
+			 check_ga2_ok(cpm_ptr)) {
+		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "ガ２") < 0) {
+			add_cf_slot(cpm_ptr, "ガ２", i);
+		    }
+		}
+		/* その他 => 外の関係 */
+		else {
+		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "外の関係")) < 0) {
+			add_cf_slot(cpm_ptr, "外の関係", i);
+		    }
+		    else {
+			assign_cf_slot(cpm_ptr, c, i);
+		    }
+		}
+	    }
+	    /* 格は明示されているが、格フレーム側にその格がなかった場合 */
+	    /* ★ とりうる格が複数あるとき: ヘ格 */
+	    else {
+		if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, pp_code_to_kstr(cpm_ptr->cf.pp[i][0])) < 0) {
+		    add_cf_slot(cpm_ptr, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]), i);
+		}
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
@@ -1280,33 +1334,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == NIL_ASSIGNED) {
-	    /* 被連体修飾詞が割り当てなし -- 外の関係 */
-	    if ( /* (OptCaseFlag & OPT_CASE_SOTO_OLD) && */
-		cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
-		check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
-		strcpy(relation, "外の関係");
-		sprintf(feature_buffer, "%s判定", relation);
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
-
-		if ((soto = check_case(cpm_ptr->cmm[0].cf_ptr, pp_kstr_to_code("外の関係"))) >= 0) {
-		    cpm_ptr->cmm[0].result_lists_d[0].flag[i] = soto;
-		    cpm_ptr->cmm[0].result_lists_p[0].flag[soto] = i;
-		    cpm_ptr->cmm[0].result_lists_d[0].score[i] = 
-			elmnt_match_score(i, &(cpm_ptr->cf), soto, cpm_ptr->cmm[0].cf_ptr, EXAMPLE, &pos);;
-		    cpm_ptr->cmm[0].result_lists_p[0].score[soto] = cpm_ptr->cmm[0].result_lists_d[0].score[i];
-		    cpm_ptr->cmm[0].result_lists_p[0].pos[soto] = pos;
-		}
-	    }
-	    /* 割り当てなしだが、入力側の格が明示されている場合はそれを表示
-	       (格の可能性はひとつしかなく、未格以外) */
-	    /* ★「へ」も扱いたい (現在は「へ/ニ」となっている) */
-	    else if (cpm_ptr->cf.pp[i][1] == END_M && 
-		     cpm_ptr->cf.pp[i][0] >= 0) {
-		strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
-	    }
-	    else {
-		strcpy(relation, "--");
-	    }
+	    strcpy(relation, "--");
 
 	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
 	    if (OptDisc == OPT_DISC) {

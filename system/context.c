@@ -801,7 +801,7 @@ int CheckEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, BNST_DAT
 
     /* 用言が候補と同じ表記を
        他の格の省略の指示対象としてもっているかどうか
-       cpm_ptr->elem_b_num[num] == -2 
+       cpm_ptr->elem_b_num[num] <= -2 
        => 通常の格要素もチェック */
 
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
@@ -2895,7 +2895,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 
 	    /* 文脈解析において格フレームを決定した場合 */
 	    if (cpm_ptr->decided != CF_DECIDED) {
-		assign_gaga_slot(sp, cpm_ptr);
+		after_case_analysis(sp, cpm_ptr);
 		assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		/* fix_sm_place(sp, cpm_ptr); */
 		/* 格解析の結果を feature へ */

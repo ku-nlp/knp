@@ -747,7 +747,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		      これは成功する */
 		for (j = 0; j < sp->Best_mgr->cpm[i].cf.element_num; j++) {
 		    /* 省略解析の結果 or 連体修飾は除く */
-		    if (sp->Best_mgr->cpm[i].elem_b_num[j] == -2 || 
+		    if (sp->Best_mgr->cpm[i].elem_b_num[j] <= -2 || 
 			sp->Best_mgr->cpm[i].elem_b_ptr[j]->num > sp->Best_mgr->cpm[i].pred_b_ptr->num) {
 			continue;
 		    }
@@ -760,10 +760,11 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
 		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
 		    if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-			assign_gaga_slot(sp, &(sp->Best_mgr->cpm[i]));
 			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
 			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
+
 			/* 格解析の結果を featureへ */
 			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
 		    }
@@ -776,9 +777,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    }
 		}
 	    }
-	    /* 主格を feature へ(固有名詞認識処理用)
-	    assign_agent();
-	    */
 	}
 	return TRUE;
     } else { 
