@@ -1433,13 +1433,18 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    sent_n = sp->Sen_num;
 		}
 
-		/* 並列の子供 */
+		/* 並列の子供 
+		   省略時: OK 
+		   直接の係り受け時: 未実装(elem_b_ptrが para_top_p) */
 		if (cpm_ptr->elem_b_ptr[num]->para_type == PARA_NORMAL && 
 		    cpm_ptr->elem_b_ptr[num]->parent && 
 		    cpm_ptr->elem_b_ptr[num]->parent->para_top_p) {
 		    for (j = 0; cpm_ptr->elem_b_ptr[num]->parent->child[j]; j++) {
 			if (cpm_ptr->elem_b_ptr[num] == cpm_ptr->elem_b_ptr[num]->parent->child[j] || /* target */
-			    cpm_ptr->elem_b_ptr[num]->parent->child[j]->para_type != PARA_NORMAL) { /* 並列ではない */
+			    cpm_ptr->elem_b_ptr[num]->parent->child[j]->para_type != PARA_NORMAL || /* 並列ではない */
+			    (cpm_ptr->pred_b_ptr->num < cpm_ptr->elem_b_ptr[num]->num && /* 連体修飾の場合は、 */
+			     (cpm_ptr->elem_b_ptr[num]->parent->child[j]->num < cpm_ptr->pred_b_ptr->num || /* 用言より前はいけない */
+			      cpm_ptr->elem_b_ptr[num]->num < cpm_ptr->elem_b_ptr[num]->parent->child[j]->num))) { /* 新たな並列の子が元の子より後はいけない */
 			    continue;
 			}
 			word = make_print_string(cpm_ptr->elem_b_ptr[num]->parent->child[j], 0);
@@ -1476,6 +1481,55 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+}
+
+/*==================================================================*/
+  void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    /* 原形が曖昧な用言 */
+    if (check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") && 
+	strcmp(cpm_ptr->pred_b_ptr->head_ptr->Goi, cpm_ptr->cmm[0].cf_ptr->entry)) { /* 現在の形態素表記と格フレームの表記が異なる場合のみ変更 */
+	FEATURE *fp;
+	MRPH_DATA m;
+
+	fp = cpm_ptr->pred_b_ptr->head_ptr->f;
+	while (fp) {
+	    if (!strncmp(fp->cp, "ALT-", 4)) {
+		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%s", 
+		       m.Goi2, m.Yomi, m.Goi, 
+		       &m.Hinshi, &m.Bunrui, 
+		       &m.Katuyou_Kata, &m.Katuyou_Kei, &m.Imi);
+		/* 選択した格フレームの表記と一致する形態素を選択 */
+		if (!strcmp(cpm_ptr->cmm[0].cf_ptr->entry, m.Goi)) {
+		    char *imip, *cp;
+
+		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Goi, m.Goi);
+		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Yomi, m.Yomi);
+		    cpm_ptr->pred_b_ptr->head_ptr->Hinshi = m.Hinshi;
+		    cpm_ptr->pred_b_ptr->head_ptr->Bunrui = m.Bunrui;
+		    cpm_ptr->pred_b_ptr->head_ptr->Katuyou_Kata = m.Katuyou_Kata;
+		    cpm_ptr->pred_b_ptr->head_ptr->Katuyou_Kei = m.Katuyou_Kei;
+		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Imi, m.Imi);
+		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
+
+		    /* 意味情報をfeatureへ */
+		    if (m.Imi[0] == '\"') { /* 通常 "" で括られている */
+			imip = &m.Imi[1];
+			if (cp = strchr(imip, '\"')) {
+			    *cp = '\0';
+			}
+		    }
+		    else {
+			imip = m.Imi;
+		    }
+		    imi2feature(imip, cpm_ptr->pred_b_ptr->head_ptr);
+		    break;
+		}
+	    }
+	    fp = fp->next;
+	}
+    }
 }
 
 /*====================================================================

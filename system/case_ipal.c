@@ -1432,9 +1432,32 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return f_num;
     }
 
-    f_num = make_ipal_cframe_subcontract(sp, t_ptr, start, make_pred_string(t_ptr), flag);
-    Case_frame_num += f_num;
+    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, make_pred_string(t_ptr), flag);
 
+    /* 原形が曖昧な用言の場合 */
+    if (check_feature(t_ptr->head_ptr->f, "原形曖昧")) {
+	FEATURE *fp;
+	MRPH_DATA m;
+	char *str;
+
+	fp = t_ptr->head_ptr->f;
+	while (fp) {
+	    if (!strncmp(fp->cp, "ALT-", 4)) {
+		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%s", 
+		       m.Goi2, m.Yomi, m.Goi, 
+		       &m.Hinshi, &m.Bunrui, 
+		       &m.Katuyou_Kata, &m.Katuyou_Kei, &m.Imi);
+		/* 代表と異なるもの */
+		if (strcmp(t_ptr->head_ptr->Goi, m.Goi)) {
+		    str = strdup(m.Goi);
+		    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, str, flag);
+		}
+	    }
+	    fp = fp->next;
+	}
+    }
+
+    Case_frame_num += f_num;
     return f_num;
 }
 

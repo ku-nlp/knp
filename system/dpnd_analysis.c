@@ -841,6 +841,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 			/* 格解析の結果を featureへ */
 			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
 					     check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
+
+			/* 格解析の結果を用いて原形の曖昧性を解消 */
+			lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
 		    }
 		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
 			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {

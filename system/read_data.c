@@ -23,7 +23,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
-    int i, j, k, flag, pref_mrph, pref_rule;
+    int i, j, k, flag, amb_flag, pref_mrph, pref_rule;
     int bw_length;
     int real_homo_num;
     int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
@@ -31,7 +31,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 					   ルール内形態素パターンに 1 */
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
-    char fname[SMALL_DATA_LEN2];
+    char fname[SMALL_DATA_LEN2], *buf;
 
     /* 処理する最大数を越えていれば、最大数個だけチェックする */
     if (homo_num > HOMO_MAX) {
@@ -152,6 +152,39 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    fprintf(Outfp, ")\n");
 	}
 
+	/* 多義性をマークするfeatureを与える */
+	assign_cfeature(&((m_ptr+pref_mrph)->f), "品曖");
+
+	/* ルールに記述されているfeatureを与える (「品曖」を削除するルールもある) */
+	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
+
+	/* 原形が曖昧なときは形態素情報を保存する */
+	amb_flag = 0;
+	if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
+	    for (i = 0; i < homo_num; i++) {
+		if (i != pref_mrph && 
+		    strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) { /* 原形がpref_mrphと異なる場合 */
+		    amb_flag = 1;
+		    buf = malloc_data(strlen((m_ptr+i)->Goi2)+
+				      strlen((m_ptr+i)->Yomi)+
+				      strlen((m_ptr+i)->Goi)+
+				      strlen((m_ptr+i)->Imi)+20, "lexical_disambiguation");
+		    /* もとの形態素情報をfeatureとして保存 */
+		    sprintf(buf, "ALT-%s-%s-%s-%d-%d-%d-%d-%s", 
+			    (m_ptr+i)->Goi2, (m_ptr+i)->Yomi, (m_ptr+i)->Goi, 
+			    (m_ptr+i)->Hinshi, (m_ptr+i)->Bunrui, 
+			    (m_ptr+i)->Katuyou_Kata, (m_ptr+i)->Katuyou_Kei, 
+			    (m_ptr+i)->Imi);
+		    assign_cfeature(&((m_ptr+pref_mrph)->f), buf);
+		    free(buf);
+		}
+	    }
+	}
+
+	if (amb_flag) {
+	    assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧");
+	}
+
 	/* pref_mrph番目のデータをコピー */
 	if (pref_mrph != 0) {
 	    strcpy(m_ptr->Goi2, (m_ptr+pref_mrph)->Goi2);
@@ -166,10 +199,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    m_ptr->f = (m_ptr+pref_mrph)->f;
 	    (m_ptr+pref_mrph)->f = NULL;
 	}
-	assign_feature(&(m_ptr->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
 
-	/* 多義性をマークするfeatureを与える */
-	assign_cfeature(&(m_ptr->f), "品曖");
 	for (i = 0; i < homo_num; i++) {
 	    if (uniq_flag[i] == 0) continue;
 	    sprintf(fname, "品曖-%s", 
@@ -254,6 +284,19 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     }
 
     return TRUE;
+}
+
+/*==================================================================*/
+	     int imi2feature(char *str, MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *token;
+
+    token = strtok(str, " ");
+    while (token) {
+	assign_cfeature(&(m_ptr->f), token);
+	token = strtok(NULL, " ");
+    }
 }
 
 /*==================================================================*/
@@ -433,7 +476,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    if (mrph_item == 8) {
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
-		    char *token, *imip, *cp;
+		    char *imip, *cp;
 
 		    /* 通常 "" で括られている */
 		    if (rest_buffer[0] == '\"') {
@@ -451,11 +494,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 			strcpy(m_ptr->Imi, imip);
 		    }
 
-		    token = strtok(imip, " ");
-		    while (token) {
-			assign_cfeature(&(m_ptr->f), token);
-			token = strtok(NULL, " ");
-		    }
+		    imi2feature(imip, m_ptr);
 		}
 		else {
 		    strcpy(m_ptr->Imi, "NIL");

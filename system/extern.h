@@ -128,6 +128,7 @@ extern void ClearCPMcache();
 extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
 extern char *make_fukugoji_string(TAG_DATA *b_ptr);
@@ -320,6 +321,7 @@ extern void ne_para_analysis(SENTENCE_DATA *sp);
 extern int quote(SENTENCE_DATA *sp);
 
 /* read_data.c */
+extern int imi2feature(char *str, MRPH_DATA *m_ptr);
 extern int read_mrph(SENTENCE_DATA *sp, FILE *fp);
 extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
 extern void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
