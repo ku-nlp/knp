@@ -109,6 +109,7 @@
 #define OPT_ENTITY	4
 #define OPT_SVM		2
 #define OPT_DT		3
+#define	OPT_SERV_FORE	1
 
 #define	OPT_CASE_NO	4
 

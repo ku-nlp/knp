@@ -47,6 +47,7 @@ int		OptLearn;
 int		OptCaseFlag;
 int		OptDiscFlag;
 int		OptCFMode;
+int		OptServerFlag;
 char		OptIgnoreChar;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -71,7 +72,7 @@ extern FORM     Form[TYPE_NO][FORM_NO];
 int CLASS_num;
 
 jmp_buf timeout;
-int	ParseTimeout = DEFAULT_PARSETIMEOUT;
+int ParseTimeout = DEFAULT_PARSETIMEOUT;
 char *Opt_knprc = NULL;
 
 extern int	SOTO_THRESHOLD;
@@ -98,7 +99,7 @@ extern float	AssignGaCaseThreshold;
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
-	    "           [-C host:port] [-S] [-N port]\n"
+	    "           [-C host:port] [-S|-F] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
 	    "           [-scode [BGH|NTT]] (Default:NTT)\n"
 	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
@@ -125,6 +126,7 @@ extern float	AssignGaCaseThreshold;
     OptLearn = FALSE;
     OptCaseFlag = 0;
     OptDiscFlag = 0;
+    OptServerFlag = 0;
     OptIgnoreChar = '\0';
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
@@ -180,6 +182,11 @@ extern float	AssignGaCaseThreshold;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    strcpy(OptHostname, argv[0]);
+	}
+	/* daemonにしない場合 (cygwin用) */
+	else if (str_eq(argv[0], "-F")) {
+	    OptMode = SERVER_MODE;
+	    OptServerFlag = OPT_SERV_FORE;
 	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
@@ -848,15 +855,17 @@ PARSED:
 	    exit(0);
 	}
 
-    /* parent */
-    if ((i = fork()) > 0) {
-	return;
+    if (OptServerFlag != OPT_SERV_FORE) {
+	/* parent */
+	if ((i = fork()) > 0) {
+	    return;
+	}
+	else if (i == -1) {
+	    fprintf(stderr, ";; unable to fork new process\n");
+	    return;
+	}
+	/* child */
     }
-    else if (i == -1) {
-	fprintf(stderr, ";; unable to fork new process\n");
-	return;
-    }
-    /* child */
 
     signal(SIGHUP,  SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
