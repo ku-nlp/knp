@@ -1,3 +1,8 @@
+2002-10-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/Makefile.am:
+	辞書の依存性を考慮、元ファイルが更新されているかどうかチェック
+
 2002-10-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/context.c, system/dpnd_analysis.c:
