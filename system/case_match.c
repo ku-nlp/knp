@@ -346,7 +346,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-      int cf_match_subject(TAG_DATA *tp, CASE_FRAME *cfp, int n)
+   int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n)
 /*==================================================================*/
 {
     int step, expand, non_subj_flag = 0;
@@ -466,12 +466,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 }
 
 /*==================================================================*/
-float calc_similarity_word_cf_with_subject(TAG_DATA *tp, 
-					   CASE_FRAME *cfp, int n, int *pos)
+ float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp,
+				       int n, int *pos)
 /*==================================================================*/
 {
     /* 主体マッチ */
-    if (cf_match_subject(tp, cfp, n)) {
+    if (cf_match_sm_thesaurus(tp, cfp, n)) {
 	*pos = MATCH_SUBJECT;
 	return (float)EX_match_subject / 11;
     }
@@ -551,8 +551,8 @@ float calc_similarity_word_cf_with_subject(TAG_DATA *tp,
 	*/
 
 	/* 用例のマッチング */
-	ex_rawscore = calc_similarity_word_cf_with_subject(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
-							   cfp, as2, pos);
+	ex_rawscore = calc_similarity_word_cf_with_sm(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
+						      cfp, as2, pos);
 
 	/* exact match */
 	if (ex_rawscore > 1.0) {

@@ -1387,9 +1387,15 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 類似度計算 */
     f->pos = MATCH_NONE;
-    f->similarity = cpm_ptr->cf.type == CF_PRED ? 
-	calc_similarity_word_cf_with_subject(bp, cf_ptr, n, &f->pos) : 
+    if (f->similarity = cpm_ptr->cf.type == CF_PRED) {
+	calc_similarity_word_cf_with_sm(bp, cf_ptr, n, &f->pos);
+    }
+    else {
 	calc_similarity_word_cf(bp, cf_ptr, n, &f->pos);
+
+	/* 意味素マッチ (SVMには入っていない) */
+	f->match_sm_flag = cf_match_sm_thesaurus(bp, cf_ptr, n);
+    }
     f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* 用例の頻度 */
 
     if (vp) {
@@ -1707,9 +1713,8 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: exact match or <agent> match */
-	if (ef->similarity > 1.0 || 
-	    (ef->similarity >= 1.0 && ef->c_subject_flag && ef->p_cf_subject_flag)) {
+	/* 名詞の場合: exact match or <sm> match */
+	if (ef->similarity > 1.0 || ef->match_sm_flag) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	}
 	else {

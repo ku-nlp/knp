@@ -876,6 +876,7 @@ typedef struct ellipsis_features {
     char	p_dep_p_level[3];
 
     int		c_ac;
+    int		match_sm_flag;
 } E_FEATURES;
 
 typedef struct ellipsis_svm_features {
