@@ -123,8 +123,10 @@ int	EX_PRINT_NUM = 10;
 
 	fputc(']', Outfp);	
 
-	if (cpm_ptr->cf.oblig[i] == FALSE)
+	/* 任意格の要素をマーク */
+	if (cpm_ptr->cf.oblig[i] == FALSE) {
 	    fputc('*', Outfp);
+	}
     }
     fputc('\n', Outfp);
 }

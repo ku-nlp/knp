@@ -1391,6 +1391,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	    /* ¼ç¼­ */
 	    else {
 		bp->internal->parent = bp;
+		bp->internal->voice = bp->voice;
 	    }
 	}
     }

@@ -454,11 +454,6 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;
     }
 
-    /* 外の関係のスコアを足す */
-    if (cpm_ptr->score > -1)  {
-	cpm_ptr->score += cpm_ptr->default_score;
-    }
-
     if (OptDisplay == OPT_DEBUG) {
 	print_data_cframe(cpm_ptr, Cf_match_mgr);
 	/* print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num); */
@@ -483,12 +478,9 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
     /* 直前格要素を走査 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	/* 複合名詞の一部: <時間>以外ならそのまま直前格要素とする */
+	/* 複合名詞の一部: 直前としない */
 	if (cpm_ptr->elem_b_ptr[i]->num == -1) {
-	    if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間")) {
-		return -1;
-	    }
-	    return i;
+	    return -1;
 	}
 	/* 「〜を〜に」 */
 	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num) {
@@ -689,14 +681,13 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     /* 初期化 */
     cpm_ptr->pred_b_ptr = b_ptr;
     cpm_ptr->score = -1;
-    cpm_ptr->default_score = 0;
     cpm_ptr->result_num = 0;
     cpm_ptr->tie_num = 0;
     cpm_ptr->cmm[0].cf_ptr = NULL;
     cpm_ptr->decided = CF_UNDECIDED;
 
     /* 入力文側の格要素設定 */
-    make_data_cframe(sp, cpm_ptr);
+    closest = make_data_cframe(sp, cpm_ptr);
 
     /* 格フレーム解析スキップ
     if (cpm_ptr->cf.element_num == 0) {
@@ -705,7 +696,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
     */
 
-    /* cache (under construction) */
+    /* cache */
     if (OptAnalysis == OPT_CASE && 
 	(cache_ptr = CheckCPM(cpm_ptr))) {
 	copy_cpm(cpm_ptr, cache_ptr, 0);
@@ -714,8 +705,6 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
     /* もっともスコアのよい格フレームを決定する
        文脈解析: 直前格要素がなければ格フレームを決定しない */
-
-    closest = get_closest_case_component(sp, cpm_ptr);
 
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
     find_best_cf(sp, cpm_ptr, closest, 1);
@@ -1264,10 +1253,6 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	if (cpm_ptr->cmm[0].result_lists_d[0].flag[i] == NIL_ASSIGNED) {
 	    /* 未格, 連格 */
 	    if (cpm_ptr->elem_b_num[i] == -1) {
-		/* 用言直前のノ格はとりあえず保留 */
-		if (cpm_ptr->cf.pp[i][0] == pp_kstr_to_code("未")) {
-		    continue;
-		}
 		/* <時間> => 時間 */
 		if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "時間")) {
 		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "時間") < 0) {
@@ -1283,8 +1268,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 			add_cf_slot(cpm_ptr, "ガ２", i);
 		    }
 		}
-		/* その他 => 外の関係 */
-		else {
+		/* その他 => 外の関係
+		   複合名詞の前側: 保留
+		   用言直前のノ格: 保留 */
+		else if (!(cpm_ptr->elem_b_ptr[i]->num == -1 && 
+			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
+			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("未")) {
 		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "外の関係")) < 0) {
 			add_cf_slot(cpm_ptr, "外の関係", i);
 		    }

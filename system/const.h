@@ -665,7 +665,6 @@ typedef struct cpm_def {
     BNST_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
     int 	score;				/* スコア最大値(=cmm[0].score) */
-    int 	default_score;			/* 外の関係スコア (ルールで与えられている外の関係) */
     int 	result_num;			/* 記憶する格フレーム数 */
     int		tie_num;
     CF_MATCH_MGR cmm[CMM_MAX];			/* スコア最大の格フレームとの

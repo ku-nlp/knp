@@ -118,7 +118,7 @@ extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
 extern char *make_fukugoji_string(BNST_DATA *b_ptr);
-extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
 extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
 extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);

@@ -750,8 +750,7 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
 	!check_feature(bp->f, "強時間") && 
 	!check_feature(bp->f, "指示詞") && 
 	!check_feature(bp->f, "ID:（〜を）〜に") && 
-	!check_feature(bp->f, "外の関係") && 
-	!check_feature(bp->f, "外の関係可能性")) {
+	!check_feature(bp->f, "外の関係")) {
 	return TRUE;
     }
     return FALSE;
@@ -2168,9 +2167,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		 check_feature(cpm_ptr->pred_b_ptr->f, "追加受身") || 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "非用言格解析"))) || 
 	       (cpm_ptr->pred_b_ptr->parent && 
-		(check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係") || 
-		 check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係可能性") || 
-		 check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係判定")) && 
+		check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係") && 
 		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "時間") && 
 		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "相対名詞") && 
 		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "形副名詞") && 

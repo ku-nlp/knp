@@ -80,19 +80,12 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag)
 /*==================================================================*/
 {
-    int pp_num = 0, cc, jiritsu_num = 0, closest = FALSE;
+    int pp_num = 0, cc;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     FEATURE *fp;
 
-    if (b_ptr) {
-	/* 自立語の数 */
-	if (!check_feature(b_ptr->f, "数量")) {
-	    jiritsu_num = b_ptr->jiritu_num;
-	}
-
-	/* ★複合名詞のときは? */
-	closest = cpm_ptr->pred_b_ptr->num == b_ptr->num+1 ? TRUE : FALSE;
-    }
+    /* flag == TRUE:  格要素
+       flag == FALSE: 被連体修飾詞 */
 
     /* 格要素 */
     if (flag == TRUE) {
@@ -241,7 +234,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 }
 
 /*==================================================================*/
-    void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
@@ -278,20 +271,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 
     cpm_ptr->cf.element_num = 0;
 
-    /* 用言文節が「（〜を）〜に」のとき 
-       「する」の格フレームに対してニ格(同文節)を設定 */
-    if (check_feature(b_ptr->f, "ID:（〜を）〜に")) {
-	if (_make_data_cframe_pp(cpm_ptr, b_ptr, TRUE)) {
-	    _make_data_cframe_sm(cpm_ptr, b_ptr);
-	    _make_data_cframe_ex(cpm_ptr, b_ptr);
-	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
-	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
-	    cpm_ptr->cf.element_num ++;
-	}
-    }
-
+    /* 被連体修飾詞 */
     if (check_feature(b_ptr->f, "係:連格")) {
 
 	/* para_type == PARA_NORMAL は「Vし,Vした PARA N」のとき
@@ -305,21 +285,23 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	if (b_ptr->para_type != PARA_NORMAL) {
 	    if (b_ptr->parent) {
 		/* 外の関係以外のときは格要素に (外の関係でも形容詞のときは格要素にする) */
-		if (!(check_feature(b_ptr->parent->f, "外の関係") || 
-		      check_feature(b_ptr->parent->f, "外の関係可能性")) || 
+		if (!check_feature(b_ptr->parent->f, "外の関係") || 
 		    check_feature(b_ptr->f, "用言:形")) {
 		    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
-		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
-		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
-		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
-		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		    cpm_ptr->cf.element_num ++;
 		}
+		/* 一意に外の関係にする */
 		else {
-		    cpm_ptr->default_score = SOTO_SCORE;
+		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("外の関係");
+		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
+		    cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
 		}
+		_make_data_cframe_sm(cpm_ptr, b_ptr->parent);
+		_make_data_cframe_ex(cpm_ptr, b_ptr->parent);
+		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
+		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+		cpm_ptr->cf.element_num ++;
 	    }
 	}
 	/* 用言が並列のとき */
@@ -331,28 +313,35 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 
 	    if (cel_b_ptr->parent && 
 		cel_b_ptr->parent->parent) {
-		if (!(check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
-		      check_feature(b_ptr->parent->parent->f, "外の関係可能性")) || 
+		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
 		    check_feature(b_ptr->f, "用言:形")) {
 		    _make_data_cframe_pp(cpm_ptr, cel_b_ptr->parent, FALSE);
-		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
-		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
-		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
-		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		    cpm_ptr->cf.element_num ++;
 		}
+		/* 一意に外の関係にする */
 		else {
-		    cpm_ptr->default_score = SOTO_SCORE;
+		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("外の関係");
+		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
+		    cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
 		}
+		_make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
+		_make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
+		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
+		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+		cpm_ptr->cf.element_num ++;
 	    }
 	}
     }
 
-    /* 自分(用言)が複合名詞内のときの親 */
+    for (child_num = 0; b_ptr->child[child_num]; child_num++);
+
+    /* 自分(用言)が複合名詞内 */
     if (b_ptr->num == -1) {
-	if (b_ptr->parent && b_ptr->parent->num == -1) {
+	BNST_DATA *t_ptr;
+
+	/* 自分(用言)が複合名詞内のときの親 : 被連体修飾詞扱い */
+	if (b_ptr->parent->num == -1) {
 	    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
 	    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
 	    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
@@ -361,19 +350,36 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 	    cpm_ptr->cf.element_num ++;
+
+	    t_ptr = b_ptr->parent;
+	    while (t_ptr->num == -1) {
+		if (t_ptr->cpm_ptr) { /* 別の格解析対象 */
+		    t_ptr = NULL;
+		    break;
+		}
+		t_ptr = t_ptr->parent;
+	    }
 	}
-	/* 主辞 */
 	else {
-	    for (child_num = 0; b_ptr->child[child_num]; child_num++);
+	    t_ptr = b_ptr->parent;
+	}
+
+	/* ... n2 n1 = n 
+	   複合名詞内の最初の用言(格解析対象)に対して nの子供をとってくる */
+	if (t_ptr) {
+	    /* 並列の場合 */
+	    if (t_ptr->para_top_p == TRUE) {
+		t_ptr = t_ptr->child[0];
+	    }
 	    orig_child_num = child_num;
-	    for (i = 0; b_ptr->parent->child[i]; i++) {
-		b_ptr->child[child_num+i] = b_ptr->parent->child[i];
+	    for (i = 0; t_ptr->child[i]; i++) {
+		b_ptr->child[child_num+i] = t_ptr->child[i];
+		child_num++;
 	    }
 	}
     }
 
     /* 子供を格要素に */
-    for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
 	if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i], TRUE))) {
 	    /* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
@@ -394,7 +400,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    else {
 		/* 直前格のマーク (厳しい版: 完全に直前のみ) */
 		if (i == 0 && b_ptr->num == b_ptr->child[i]->num+1 && 
-		    !check_feature(b_ptr->f, "ID:（〜を）〜に")) {
+		    !check_feature(b_ptr->f, "Ｔ用言同文節")) {
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
 		}
 		else {
@@ -404,24 +410,43 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		_make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	    }
-	    if (check_feature(cel_b_ptr->f, "係:未格")) {
+
+	    /* 格が明示されていないことをマーク */
+	    if (check_feature(cel_b_ptr->f, "係:未格") || 
+		cel_b_ptr->num == -1) {
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 	    }
 	    else {
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
 	    }
+
 	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.element_num ++;
 	}
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
-	    return;
+	    return -1;
 	}
     }
 
     /* 複合名詞: 子供をもとにもどす */
     if (orig_child_num >= 0) {
 	b_ptr->child[orig_child_num] = NULL;
+    }
+
+    /* 用言文節が「（〜を）〜に」のとき 
+       「する」の格フレームに対してニ格(同文節)を設定
+       ヲ格は子供の処理で扱われる */
+    if (check_feature(b_ptr->f, "Ｔ用言同文節")) {
+	if (_make_data_cframe_pp(cpm_ptr, b_ptr, TRUE)) {
+	    _make_data_cframe_sm(cpm_ptr, b_ptr);
+	    _make_data_cframe_ex(cpm_ptr, b_ptr);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr;
+	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = child_num;
+	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
+	    cpm_ptr->cf.element_num ++;
+	}
     }
 
     /* 用言が並列のとき、格要素を expand する */
@@ -440,24 +465,28 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
 		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
+
+		    /* 格が明示されていないことをマーク */
 		    if (check_feature(cel_b_ptr->f, "係:未格")) {
 			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		    }
 		    else {
 			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
 		    }
+
 		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = child_num;
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 		    cpm_ptr->cf.element_num ++;
 		}
 		if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 		    cpm_ptr->cf.element_num = 0;
-		    return;
+		    return -1;
 		}
 	    }
 	}
     }
 
+    /* 直前格要素の取得 */
     closest = get_closest_case_component(sp, cpm_ptr);
 
     /* 直前格要素のひとつ手前のノ格
@@ -496,16 +525,16 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (!MatchPP(cpm_ptr->cf.pp[i][0], "時間")) {
-	    return;
+	    return closest;
 	}
 	/* 直前格でニ格で <時間> のときは削除しない */
 	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num+1 && 
-	    check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:ニ格")) {
-	    return;
+		 check_feature(cpm_ptr->elem_b_ptr[i]->f, "係:ニ格")) {
+	    return closest;
 	}
     }
     cpm_ptr->cf.element_num = 0;
-    return;
+    return -1;
 }
 
 /*==================================================================*/

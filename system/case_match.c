@@ -329,7 +329,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	return EX_match_qua;
     }
     /* 意味素 : 格要素 -- 主体 (ガ格のみ) */
-    else if ((MatchPP(cfp->pp[as2][0], "ガ") || 
+    else if (((cfp->voice == FRAME_ACTIVE && 
+	       MatchPP(cfp->pp[as2][0], "ガ")) || 
 	      (cfp->voice == FRAME_PASSIVE_1 && 
 	       MatchPP(cfp->pp[as2][0], "ニ"))) && 
 	     cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
@@ -424,7 +425,11 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	    return TRUE;
 	}
 
-	if (MatchPP(cfp->pp[as2][0], "ガ") && 
+	/* 能動ガ格, 受身ニ格で<主体>のとき */
+	if (((cfp->voice == FRAME_ACTIVE && 
+	      MatchPP(cfp->pp[as2][0], "ガ")) || 
+	     (cfp->voice == FRAME_PASSIVE_1 && 
+	      MatchPP(cfp->pp[as2][0], "ニ"))) && 
 	    (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
 	     (cfd->ex[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
 	      cf_match_element(cfp->sm[as2], "主体", TRUE)))) {
@@ -646,6 +651,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	}
     }
 
+    /* 外の関係だけのマッチを避ける */
     if (local_m_e < dat_element || 
 	(cf_element == 1 && str_eq(pp_code_to_kstr(lastpp), "外の関係"))) {
 	local_score = -1;
