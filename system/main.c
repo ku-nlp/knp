@@ -367,7 +367,10 @@ void stand_alone_mode()
 		/* 文節への情報付与 */
 
 		assign_cfeature(&(bnst_data[0].f), "文頭");
-		assign_cfeature(&(bnst_data[Bnst_num-1].f), "文末");
+		if (Bnst_num > 0)
+		    assign_cfeature(&(bnst_data[Bnst_num-1].f), "文末");
+		else
+		    assign_cfeature(&(bnst_data[0].f), "文末");
 
 		assign_bnst_feature(BnstRule1Array, CurBnstRule1Size, LOOP_ALL);
 		/* 一般的FEATURE */
@@ -501,6 +504,10 @@ void stand_alone_mode()
 		    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
 
 		memo_by_program();	/* メモへの書き込み */
+
+		/* チェック用 */
+		if (OptCheck == TRUE)
+		    CheckCandidates();
 
 		/* 結果表示 */
 		if (OptAnalysis != OPT_DISC) print_result();
