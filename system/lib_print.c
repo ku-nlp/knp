@@ -898,8 +898,10 @@ static int max_width;			/* 木の最大幅 */
        if (OptAnalysis == OPT_PM && !PM_Memo[0]) return;
     */
 
+    /* Barrier Matrix の出力
     if (!(OptInhibit & OPT_INHIBIT_BARRIER))
 	print_barrier(Bnst_num);
+	*/
 
     /* ヘッダの出力 */
 
@@ -921,6 +923,12 @@ static int max_width;			/* 木の最大幅 */
 	fprintf(Outfp, " ERROR:%s", ErrorComment);
 	free(ErrorComment);
 	ErrorComment = NULL;
+    }
+
+    if (tm->dpnd.comment) {
+	fprintf(Outfp, " CORPUS:%s", tm->dpnd.comment);
+	free(tm->dpnd.comment);
+	tm->dpnd.comment = NULL;
     }
 
     if (PM_Memo[0]) {
