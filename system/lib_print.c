@@ -899,7 +899,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 {
     int 	i, j;
     BNST_DATA 	*ptr;
-    char b_buffer[256];
+    char b_buffer[BNST_LENGTH_MAX];
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	ptr = &sp->bnst_data[i];
@@ -907,6 +907,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	b_buffer[0] = '\0';
 
 	for (j = 0; j < ptr->mrph_num; j++) {
+	    /* buffer overflow */
+	    if (strlen(b_buffer) + strlen((ptr->mrph_ptr + j)->Goi2) + 4 > BNST_LENGTH_MAX) {
+		break;
+	    }
+
 	    if (ptr->mrph_ptr + j == ptr->head_ptr) {
 		strcat(b_buffer, "[");
 		strcat(b_buffer, (ptr->mrph_ptr + j)->Goi2);
