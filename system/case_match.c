@@ -413,7 +413,7 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 	}
 
 	/* »Ø¼¨»ì¤Î¤È¤­ */
-	if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "¾ÊÎ¬²òÀÏÂÐ¾Ý»Ø¼¨»ì")) {
+	if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "»Ø¼¨»ì")) {
 	    *score = EX_match_demonstrative;
 	    return TRUE;
 	}
