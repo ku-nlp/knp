@@ -10,6 +10,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <juman.h>
+#include <math.h>
 #include "path.h"
 #include "const.h"
 #include "dbm.h"
@@ -87,24 +88,32 @@ int		PROPERExist = 0;
     p->Organization = 0;
     p->Artifact = 0;
     p->Others = 0;
+    p->Type[0] = '\0';
+    p->Count = 0;
 }
 
 /*==================================================================*/
 		    void init_NE(NamedEntity *np)
 /*==================================================================*/
 {
-    _init_NE(&(np->AnoB));
-    _init_NE(&(np->BnoA));
-    _init_NE(&(np->before));
+    _init_NE(&(np->AnoX));
+    _init_NE(&(np->XnoB));
+    _init_NE(&(np->XB));
+    _init_NE(&(np->AX));
     _init_NE(&(np->self));
-    _init_NE(&(np->after));
+    _init_NE(&(np->selfSM));
 }
 
 /*==================================================================*/
-	    void _store_NE(struct _pos_s *p, char *string)
+     void _store_NE(struct _pos_s *p, char *string, char *mtype)
 /*==================================================================*/
 {
     char *token, type[256];
+
+    if (mtype)
+	strcpy(p->Type, mtype);
+    else
+	p->Type[0] = '\0';
 
     /* スペースで切るのです */
     token = strtok(string, " ");
@@ -148,59 +157,77 @@ int		PROPERExist = 0;
 	 void store_NE(NamedEntity *np, char *feature, int i)
 /*==================================================================*/
 {
-    char type[256], *mtype;
-    int offset, pos, j;
+    char type[256], mtype[256], class[256];
+    int offset;
 
     sscanf(feature, "%[^:]", type);
 
-    if (str_eq(type, "AのB")) {
-	_store_NE(&(np->AnoB), feature+strlen(type)+1);
-    }
-    else if (str_eq(type, "BのA")) {
-	_store_NE(&(np->BnoA), feature+strlen(type)+1);
-    }
-    else if (str_eq(type, "前")) {
+    if (str_eq(type, "AのX")) {
 	offset = strlen(type)+1;
-	sscanf(feature+offset, "%[^:]", type);
+	sscanf(feature+offset, "%[^:]", class);
 
-	pos = -1;
-	for (j = i-1; j >= 0; j--) {
-	    if (check_feature(mrph_data[j].f, "自立") || 
-		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
-		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
-		pos = j;
-		break;
+	if (i < Mrph_num-2 && check_feature(mrph_data[i+2].f, "自立")) {
+	    /* "の"の後の自立語の文字種 */
+	    strcpy(mtype, check_class(&(mrph_data[i+2])));
+	    if (str_eq(class, mtype)) {
+		offset += strlen(class)+1;
+		_store_NE(&(np->AnoX), feature+offset, class);
 	    }
 	}
-	if (pos != -1) {
-	    mtype = check_class(&(mrph_data[pos]));
-	    if (str_eq(type, mtype)) {
-		offset += strlen(type)+1;
-		_store_NE(&(np->before), feature+offset);
+    }
+    else if (str_eq(type, "XのB")) {
+	offset = strlen(type)+1;
+	sscanf(feature+offset, "%[^:]", class);
+
+	if (i > 1 && check_feature(mrph_data[i-2].f, "自立")) {
+	    /* "の"の前の自立語の文字種 */
+	    strcpy(mtype, check_class(&(mrph_data[i-2])));
+	    if (str_eq(class, mtype)) {
+		offset += strlen(class)+1;
+		_store_NE(&(np->XnoB), feature+offset, class);
+	    }
+	}
+    }
+    else if (str_eq(type, "XB")) {
+	offset = strlen(type)+1;
+	sscanf(feature+offset, "%[^:]", class);
+
+	if (i > 0 && 
+	    ((check_feature(mrph_data[i].f, "自立") && 
+	      mrph_data[i].Hinshi == 6) || 
+	      (mrph_data[i].Hinshi == 14 && mrph_data[i].Bunrui == 2) || 
+	      (mrph_data[i].Hinshi == 13 && mrph_data[i].Bunrui == 1)) && 
+	     (check_feature(mrph_data[i-1].f, "自立") && 
+	      mrph_data[i-1].Hinshi == 6)) {
+	    /* ひとつ前の自立語(または接辞)の文字種 */
+	    strcpy(mtype, check_class(&(mrph_data[i-1])));
+	    if (str_eq(class, mtype)) {
+		offset += strlen(class)+1;
+		_store_NE(&(np->XB), feature+offset, class);
 	    }
 	}
     }
     else if (str_eq(type, "単語")) {
-	_store_NE(&(np->self), feature+strlen(type)+1);
+	_store_NE(&(np->self), feature+strlen(type)+1, NULL);
     }
-    else if (str_eq(type, "後")) {
+    else if (str_eq(type, "文字種")) {
+	_store_NE(&(np->selfSM), feature+strlen(type)+1, NULL);
+    }
+    else if (str_eq(type, "AX")) {
 	offset = strlen(type)+1;
-	sscanf(feature+offset, "%[^:]", type);
+	sscanf(feature+offset, "%[^:]", class);
 
-	pos = -1;
-	for (j = i+1; j < Mrph_num; j++) {
-	    if (check_feature(mrph_data[j].f, "自立") || 
-		(mrph_data[j].Hinshi == 14 && mrph_data[j].Bunrui == 2) || 
-		(mrph_data[j].Hinshi == 13 && mrph_data[j].Bunrui == 1)) {
-		pos = j;
-		break;
-	    }
-	}
-	if (pos != -1) {
-	    mtype = check_class(&(mrph_data[pos]));
-	    if (str_eq(type, mtype)) {
-		offset += strlen(type)+1;
-		_store_NE(&(np->after), feature+offset);
+	if (i < Mrph_num-1 && 
+	    ((check_feature(mrph_data[i].f, "自立") && 
+	      mrph_data[i].Hinshi == 6) || 
+	      (mrph_data[i].Hinshi == 14 && mrph_data[i].Bunrui == 2) || 
+	      (mrph_data[i].Hinshi == 13 && mrph_data[i].Bunrui == 1)) && 
+	     (check_feature(mrph_data[i+1].f, "自立") && 
+	      mrph_data[i+1].Hinshi == 6)) {
+	    strcpy(mtype, check_class(&(mrph_data[i+1])));
+	    if (str_eq(class, mtype)) {
+		offset += strlen(class)+1;
+		_store_NE(&(np->AX), feature+offset, class);
 	    }
 	}
     }
@@ -220,14 +247,15 @@ int		PROPERExist = 0;
     if (n1 && n2)
 	return (float)v1/n1*100*ratio+(float)v2/n2*100*(1-ratio);
     else if (n1)
-	return (float)v1/n1*100*ratio;
+	return (float)v1/n1*100;
+    /* return (float)v1/n1*100*ratio; */
     else if (n2)
 	return (float)v2/n2*100*(1-ratio);
     return 0;
 }
 
 /*==================================================================*/
-struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char *type)
+struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp)
 /*==================================================================*/
 {
     int n1, n2;
@@ -236,8 +264,17 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 
     _init_NE(&r);
 
+    /* 文字種制約の伝播 */
+    if (p1->Type[0])
+	strcpy(r.Type, p1->Type);
+    else if (p2->Type[0])
+	strcpy(r.Type, p2->Type);
+	
+
     n1 = p1->Location + p1->Person + p1->Organization + p1->Artifact + p1->Others;
     n2 = p2->Location + p2->Person + p2->Organization + p2->Artifact + p2->Others;
+
+    r.Count = n1;
 
     /* 単語レベルの情報と意味素レベルの情報をマージする割り合いの計算 */
     ratio = merge_ratio(n1, n2);
@@ -263,26 +300,60 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 }
 
 /*==================================================================*/
-  void NE2mrph(NamedEntity *np1, NamedEntity *np2, MRPH_DATA *mp)
+       struct _pos_s _NE2mrphS(struct _pos_s *p, MRPH_DATA *mp)
 /*==================================================================*/
 {
-    mp->NE.AnoB = _NE2mrph(&(np1->AnoB), &(np2->AnoB), mp, "AのB");
-    mp->NE.BnoA = _NE2mrph(&(np1->BnoA), &(np2->BnoA), mp, "BのA");
-    mp->NE.before = _NE2mrph(&(np1->before), &(np2->before), mp, "前");
-    mp->NE.self = _NE2mrph(&(np1->self), &(np2->self), mp, "単語");
-    mp->NE.after = _NE2mrph(&(np1->after), &(np2->after), mp, "後");
-}
+    int n;
+    struct _pos_s r;
 
-/*==================================================================*/
-    void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type)
-/*==================================================================*/
-{
-    int n, length, i, first = 0;
-    char *buffer, element[5][13];
+    _init_NE(&r);
 
     n = p->Location + p->Person + p->Organization + p->Artifact + p->Others;
 
+    r.Count = n;
+
     if (n) {
+	if (p->Location) {
+	    r.Location = (float)p->Location/n*100;
+	}
+	if (p->Person) {
+	    r.Person = (float)p->Person/n*100;
+	}
+	if (p->Organization) {
+	    r.Organization = (float)p->Organization/n*100;
+	}
+	if (p->Artifact) {
+	    r.Artifact = (float)p->Artifact/n*100;
+	}
+	if (p->Others) {
+	    r.Others = (float)p->Others/n*100;
+	}
+    }
+    return r;
+}
+
+/*==================================================================*/
+  void NE2mrph(NamedEntity *np1, NamedEntity *np2, MRPH_DATA *mp)
+/*==================================================================*/
+{
+    mp->NE.AnoX = _NE2mrph(&(np1->AnoX), &(np2->AnoX), mp);
+    mp->NE.XnoB = _NE2mrph(&(np1->XnoB), &(np2->XnoB), mp);
+    mp->NE.XB = _NE2mrph(&(np1->XB), &(np2->XB), mp);
+    mp->NE.AX = _NE2mrph(&(np1->AX), &(np2->AX), mp);
+    mp->NE.self = _NE2mrphS(&(np1->self), mp);
+    mp->NE.selfSM = _NE2mrphS(&(np2->selfSM), mp);
+}
+
+/*==================================================================*/
+void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
+/*==================================================================*/
+{
+    int n, length, i, first = 0;
+    char buffer[256], element[5][13];
+
+    n = p->Location + p->Person + p->Organization + p->Artifact + p->Others;
+
+    if (n || flag == 2) {
 	for (i = 0; i < 5; i++) {
 	    element[i][0] = '\0';
 	}
@@ -302,13 +373,24 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 	    sprintf(element[4], "その他:%d", p->Others);
 	}
 
-	length = 0;
+	/* length = 0;
 	for (i = 0; i < 5; i++) {
 	    if (element[i][0])
 		length += strlen(element[i])+1;
 	}
-	buffer = (char *)malloc_data(strlen(type)+length+1, "_NE2feature");
-	sprintf(buffer, "%s:", type);
+	buffer = (char *)malloc_data(strlen(type)+length+1+(int)log10(p->Count)+8, "_NE2feature"); */
+
+	if (!flag)
+	    sprintf(buffer, "%s:", type);
+	else if (flag == 1)
+	    sprintf(buffer, "%s:%s:", type, p->Type);
+	else if (flag == 2) {
+	    if (p->Count)
+		sprintf(buffer, "%s%%頻度 %d:", type, p->Count);
+	    else
+		sprintf(buffer, "%s%%頻度 %d", type, p->Count);
+	}
+
 	for (i = 0; i < 5; i++) {
 	    if (element[i][0]) {
 		if (first++)
@@ -318,7 +400,7 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 	}
 
 	assign_cfeature(&(mp->f), buffer);
-	free(buffer);
+	/* free(buffer); */
     }
 }
 
@@ -326,11 +408,12 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 		    void NE2feature(MRPH_DATA *mp)
 /*==================================================================*/
 {
-    _NE2feature(&(mp->eNE.AnoB), mp, "AのB");
-    _NE2feature(&(mp->eNE.BnoA), mp, "BのA");
-    _NE2feature(&(mp->eNE.before), mp, "前");
-    _NE2feature(&(mp->eNE.self), mp, "単語");
-    _NE2feature(&(mp->eNE.after), mp, "後");
+    _NE2feature(&(mp->eNE.AnoX), mp, "AのX", 1);
+    _NE2feature(&(mp->eNE.XnoB), mp, "XのB", 1);
+    _NE2feature(&(mp->eNE.XB), mp, "XB", 1);
+    _NE2feature(&(mp->eNE.AX), mp, "AX", 1);
+    _NE2feature(&(mp->eNE.self), mp, "単語", 2);
+    _NE2feature(&(mp->eNE.selfSM), mp, "文字種", 0);
 }
 
 /*==================================================================*/
@@ -360,11 +443,11 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 {
     NamedEntity ne;
 
-    ne.AnoB = _merge_NE(&(np1->AnoB), &(np2->AnoB));
-    ne.BnoA = _merge_NE(&(np1->BnoA), &(np2->BnoA));
-    ne.before = _merge_NE(&(np1->before), &(np2->before));
+    ne.AnoX = _merge_NE(&(np1->AnoX), &(np2->AnoX));
+    ne.XnoB = _merge_NE(&(np1->XnoB), &(np2->XnoB));
+    ne.XB = _merge_NE(&(np1->XB), &(np2->XB));
     ne.self = _merge_NE(&(np1->self), &(np2->self));
-    ne.after = _merge_NE(&(np1->after), &(np2->after));
+    ne.AX = _merge_NE(&(np1->AX), &(np2->AX));
 
     return ne;
 }
@@ -423,7 +506,7 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
     sm = (char *)get_sm(mp->Goi);
 
     /* 意味素による検索 */
-    if (*sm) {
+    if (OptNE != OPT_NOSM && *sm) {
 	smn = strlen(sm);
 	strncpy(mp->SM, sm, smn);	/* ★ */
 	smn = smn/SM_CODE_SIZE;
@@ -456,6 +539,15 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char
 	    store_NE(&ne[1], dic_content, num);
 	}
     }
+
+    /*            ne[0]    ne[1]
+	   -----------------
+	   XB     表記     意味素
+	   AX     表記     意味素
+	   AnoX   表記     意味素
+	   XnoB   表記     意味素
+	   self   表記
+	   selfSM          文字種 */
 
     NE2mrph(&ne[0], &ne[1], mp);
 }
