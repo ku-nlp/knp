@@ -753,7 +753,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
               格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
-    int max, count = 0, thesaurus = USE_NTT, freq;
+    int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0;
     char *code, **destination, *buf;
 
     if (*cp == '\0') {
@@ -797,15 +797,19 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	*/
 
 	if (*point2 != '\0') {
-	    code = get_str_code(point2, thesaurus);
-	    if (code) {
-		if (strlen(buf) + strlen(code) >= max) {
-		    /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
-		    free(code);
-		    break;
+	    if (!over_flag) {
+		code = get_str_code(point2, thesaurus);
+		if (code) {
+		    if (strlen(buf) + strlen(code) >= max) {
+			/* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
+			free(code);
+			over_flag = 1;
+		    }
+		    else {
+			strcat(buf, code);
+			free(code);
+		    }
 		}
-		strcat(buf, code);
-		free(code);
 	    }
 
 	    if (c_ptr->ex_size[num] == 0) {
