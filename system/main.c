@@ -347,7 +347,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-noun-th")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
-	    AntecedentDecideThresholdForNoun = atoi(argv[0]);
+	    AntecedentDecideThresholdForNoun = atof(argv[0]);
 	}
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
