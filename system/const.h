@@ -424,7 +424,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	15
+#define DICT_MAX	13
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -438,8 +438,7 @@ typedef struct _RuleVector {
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
 #define	CODE2SM_DB	12
-#define	SM_ADD_DB	13
-#define	SM_DEL_DB	14
+
 
 
 /*====================================================================
