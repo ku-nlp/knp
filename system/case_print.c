@@ -32,8 +32,10 @@ extern FILE  *Outfp;
 
 	fprintf(Outfp, " ");
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
-	cp = (char *)check_feature(cpm_ptr->elem_b_ptr[i]->f, "렇");
-	fprintf(Outfp, "(%s)", cp + strlen("렇:"));
+	if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[i]->f, "렇"))
+	    != NULL) {
+	    fprintf(Outfp, "(%s)", cp + strlen("렇:"));
+	}
 
 	/*
 	fprintf(Outfp, " %s%s", cpm_ptr->elem_b_ptr[i]->Jiritu_Go,
@@ -127,8 +129,10 @@ extern FILE  *Outfp;
 	else {
 	    fprintf(Outfp, " ");
 	    _print_bnst(cpm_ptr->elem_b_ptr[num]);
-	    cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "렇");
-	    fprintf(Outfp, "(%s)", cp + strlen("렇:"));
+	    if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "렇"))
+		!= NULL) {
+		fprintf(Outfp, "(%s)", cp + strlen("렇:"));
+	    }
 
 	    /*
 	    fprintf(Outfp," %s%s", cpm_ptr->elem_b_ptr[num]->Jiritu_Go, 
