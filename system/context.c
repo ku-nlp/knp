@@ -3820,7 +3820,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
 			assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		    }
-
+		    specify_sm_from_cf(sp, cpm_ptr);
 		    record_match_ex(sp, cpm_ptr);
 		}
 
