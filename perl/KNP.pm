@@ -56,12 +56,13 @@ package KNP;
 require 5.000;
 use Juman;
 use strict;
-use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN_SERVER $JUMAN $VERBOSE $HOST $VERSION $MRPH_TYPE $BNST_TYPE );
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN_SERVER $JUMAN $VERBOSE $HOST $PORT $VERSION $MRPH_TYPE $BNST_TYPE );
 
 
 # プログラム内部で利用される大域変数
 $COMMAND      = "/share/tool/knp/system/knp";
 $HOST         = "grape";		# KNP サーバーのホスト名 ( サーバーを利用しない場合は空にしておく )
+$PORT         = 31000;
 $KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
 $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $JUMAN_SERVER = "grape:1";		# Juman サーバー
@@ -152,7 +153,7 @@ sub parse {
     # knp を fork する。
     if( $HOST ){
 	unless( $this->{KNP} ){
-	    my $sock = new IO::Socket::INET( PeerAddr => $HOST, PeerPort => 31000, Proto => 'tcp' )
+	    my $sock = new IO::Socket::INET( PeerAddr => $HOST, PeerPort => $PORT, Proto => 'tcp' )
 		|| die "KNP.pm: Can't connect server: host=$HOST\n";
 	    $sock->timeout( 60 );
 	    my $tmp = $sock->getline;
