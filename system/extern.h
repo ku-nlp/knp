@@ -17,6 +17,7 @@ extern int		Revised_para_num;
 
 extern int		Sen_num;
 extern char 		Comment[];
+extern char		*ErrorComment;
 extern char 		PM_Memo[];
 
 extern char  		key_str[], cont_str[];
@@ -58,6 +59,7 @@ extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
 extern int		OptHelpsys;
+extern int		OptCFMode;
 extern char		OptIgnoreChar;
 
 extern enum OPTION1	Option1;
