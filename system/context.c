@@ -32,7 +32,7 @@ float	AntecedentDecideThresholdForNi = 0.90;
 
 float	CFSimThreshold = 0.80;
 
-float	SVM_FREQ_SD = 113.47293;	/* for np (20040204-smfix) */
+float	SVM_FREQ_SD = 80.08846;	/* for np (cf-20040623) */
 float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
