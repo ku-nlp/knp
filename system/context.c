@@ -2980,33 +2980,27 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
 
 
-    if (!EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				 cs->tag_data + cs->Tag_num - 1, 
-				 cf_ptr, n, LOC_OTHERS)) {
-	/* 前文 */
-	if (cs - sentence_data > 0) {
-	    if (!EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					 (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-					 cf_ptr, n, LOC_OTHERS)) {
-		/* 2文前 */
-		if (cs - sentence_data > 1) {
-		    if (!EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-						 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-						 cf_ptr, n, LOC_OTHERS)) {
-			return 0;
-		    }
-		}
-		else {
-		    return 0;
-		}
+    if (EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				cs->tag_data + cs->Tag_num - 1, 
+				cf_ptr, n, LOC_OTHERS)) {
+	goto EvalAntecedentNoun;
+    }
+    /* 前文 */
+    else if (cs - sentence_data > 0) { 
+	if (EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				    (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+				    cf_ptr, n, LOC_OTHERS)) {
+	    goto EvalAntecedentNoun;
+	}
+	/* 2文前 */
+	else if (cs - sentence_data > 1) {
+	    if (EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					(cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+					cf_ptr, n, LOC_OTHERS)) {
+		goto EvalAntecedentNoun;
 	    }
 	}
-	else {
-	    return 0;
-	}
     }
-
-    /* 閾値を越えるものが見つかった */
 
     /* 閾値を越えるものがなく、格フレームに<主体>があるとき */
     if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
@@ -3016,6 +3010,8 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	return 0;
     }
 
+  EvalAntecedentNoun:
+    /* 閾値を越えるものが見つかった */
     if (maxtag) {
 	if (str_eq(maxtag, "不特定-人")) {
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
