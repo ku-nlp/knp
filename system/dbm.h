@@ -24,20 +24,10 @@ typedef GDBM_FILE DBM_FILE;
 
 /*  functions  */
 
-#define DBM_open( name, rw, mode ) \
+#define db_open(name, rw, mode) \
   gdbm_open( name, DBM_BLOCK_SIZE, rw, mode, NULL )
-#define DBM_close( dbf ) \
-  gdbm_close( dbf )
-#define DBM_fetch( dbf, key ) \
-  gdbm_fetch( dbf, key )
-#define DBM_store( dbf, key, content, flag ) \
-  gdbm_store( dbf, key, content, flag )
-#define DBM_delete( dbf, key ) \
-  gdbm_delete( dbf, key )
-#define DBM_firstkey( dbf ) \
-  gdbm_fetch( dbf )
-#define DBM_nextkey( dbf, key ) \
-  gdbm_fetch( dbf, key )
+#define db_close(dbf) \
+  gdbm_close(dbf)
 
 /*  DBM_store flags  */
 
@@ -46,30 +36,24 @@ typedef GDBM_FILE DBM_FILE;
 
 #else
 
-#ifdef NDBM
+#ifdef INTERNAL_HASH
 
-/*  for NDBM  */
+#include "hash.h"
 
-#include <ndbm.h>
-
-typedef DBM* DBM_FILE;
+typedef HASH_FILE *DBM_FILE;
 
 /*  functions  */
 
-#define DBM_open( name, rw, mode ) \
-  dbm_open( name, rw, mode )
-#define DBM_close( dbf ) \
-  dbm_close( dbf )
-#define DBM_fetch( dbf, key ) \
-  dbm_fetch( dbf, key )
-#define DBM_store( dbf, key, content, flag ) \
-  dbm_store( dbf, key, content, flag )
-#define DBM_delete( dbf, key ) \
-  dbm_delete( dbf, key )
-#define DBM_firstkey( dbf ) \
-  dbm_fetch( dbf )
-#define DBM_nextkey( dbf, key ) \
-  dbm_fetch( dbf, key )
+#define db_open(name, rw, mode) \
+    hash_read_open(name)
+#define db_close(dbf) \
+    hash_close(dbf)
+#define	db_read_open(name) \
+    hash_read_open(name)
+#define	db_write_open(name) \
+    hash_write_open(name)
+#define	db_get(dbf, buf) \
+    hash_fetch(dbf, buf)
 
 #else
 
@@ -82,12 +66,10 @@ typedef DB *DBM_FILE;
 
 /*  functions  */
 
-#define DBM_open(name, rw, mode) \
+#define db_open(name, rw, mode) \
     db_read_open(name)
-#define DBM_close(dbf) \
+#define db_close(dbf) \
     db_close(dbf)
 
 #endif
 #endif
-
-/*  end of dbm.h  */

@@ -261,7 +261,7 @@ char *db_get(DBM_FILE db, char *buf)
 	return NULL;
     /* Other errors */
     else if (errno) {
-        fprintf(stderr, "db_get: %s (%d)\n", (char *)strerror(errno), errno);
+        fprintf(stderr, "db_get(%s): %s (%d)\n", buf, (char *)strerror(errno), errno);
         exit(1);
     }
 
@@ -381,6 +381,70 @@ void db_teardown()
 
 #else
 
+#ifdef INTERNAL_HASH
+
+/* DB put */
+int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
+{
+    if (mode == DBM_APPEND || mode == DBM_AND || mode == DBM_OR) {
+	errno = hash_put(db, buf, value, HASH_NOOVERWRITE);
+
+	/* key existence */
+	if (errno == HASH_KEYEXIST) {
+	    int valuesize, contentsize, i;
+	    char *buffer, *content;
+
+	    valuesize = strlen(value);
+
+	    /* get the content which already exists */
+	    content = hash_fetch(db, buf);
+	    contentsize = strlen(content);
+
+	    if (mode == DBM_APPEND) {
+		if (Separator)
+		    buffer = (char *)malloc_data(contentsize+valuesize+strlen(Separator)+1, "db_put");
+		else
+		    buffer = (char *)malloc_data(contentsize+valuesize+1, "db_put");
+		strncpy(buffer, content, contentsize);
+		buffer[contentsize] = '\0';
+		if (Separator)
+		    strcat(buffer, Separator);
+		strcat(buffer, value);
+	    }
+	    else if (mode == DBM_AND) {
+		for (i = 0; i < contentsize; i++)
+		    if (*((char *)(content)+i) == '0')
+			value[i] = '0';
+		buffer = strdup(value);
+	    }
+	    else if (mode == DBM_OR) {
+		for (i = 0; i < contentsize; i++)
+		    if (*((char *)(content)+i) == '1')
+			value[i] = '1';
+		buffer = strdup(value);
+	    }
+	    free(content);
+	    errno = hash_put(db, buf, buffer, 0);
+	    free(buffer);
+	}
+	else if (errno) {
+	    fprintf(stderr, "db_put : error\n");
+	    exit(4);
+	}
+    }
+    else if (mode == DBM_OVERRIDE) {
+	errno = hash_put(db, buf, value, 0);
+    }
+    else {
+	fprintf(stderr, "db_put : Invalid mode (%d)\n", mode);
+	exit(1);
+    }
+    return 0;
+}
+
+#else
+/* BerkeleyDB 2 */
+
 /* DB open for reading */
 DBM_FILE db_read_open(char *filename)
 {
@@ -471,7 +535,7 @@ char *db_get(DBM_FILE db, char *buf)
 	return NULL;
     /* Other errors */
     else if (errno) {
-        fprintf(stderr, "db_get: %s (%d)\n", (char *)strerror(errno), errno);
+        fprintf(stderr, "db_get(%s): %s (%d)\n", buf, (char *)strerror(errno), errno);
         exit(1);
     }
 
@@ -555,5 +619,6 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
     return 0;
 }
 
+#endif
 #endif
 #endif

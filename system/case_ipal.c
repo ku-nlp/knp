@@ -66,7 +66,7 @@ int	PrintDeletedSM = 0;
 #endif
 	IPALExist = FALSE;
     }
-    else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
+    else if ((ipal_db = db_open(index_db_filename, O_RDONLY, 0)) == NULL) {
 	fprintf(stderr, "Cannot open CF INDEX Database <%s>.\n", index_db_filename);
 	/* 格フレーム DATA は読めるのに、DB が読めないときは終わる */
 	exit(1);
@@ -138,7 +138,7 @@ int	PrintDeletedSM = 0;
 {
     if (IPALExist == TRUE) {
 	fclose(ipal_fp);
-	DBM_close(ipal_db);
+	db_close(ipal_db);
     }
 }
 

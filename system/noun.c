@@ -26,7 +26,7 @@ int	NounExist = 0;
 	db_filename = (char *)check_dict_filename(NOUN_DB_NAME, FALSE);
     }
 
-    if ((noun_db = DBM_open(db_filename, O_RDONLY, 0)) == NULL) {
+    if ((noun_db = db_open(db_filename, O_RDONLY, 0)) == NULL) {
 	fprintf(stderr, "Cannot open Noun Database <%s>.\n", db_filename);
 	exit(1);
     }
@@ -40,7 +40,7 @@ int	NounExist = 0;
 /*==================================================================*/
 {
     if (NounExist) {
-	DBM_close(noun_db);
+	db_close(noun_db);
     }
 }
 

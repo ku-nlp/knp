@@ -435,8 +435,8 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 			  int init_dic_for_rule()
 /*==================================================================*/
 {
-    if ((dic_for_rulev_db = DBM_open(RULEV_DB_NAME, O_RDONLY, 0)) == NULL || 
-	(dic_for_rulep_db = DBM_open(RULEP_DB_NAME, O_RDONLY, 0)) == NULL) {
+    if ((dic_for_rulev_db = db_open(RULEV_DB_NAME, O_RDONLY, 0)) == NULL || 
+	(dic_for_rulep_db = db_open(RULEP_DB_NAME, O_RDONLY, 0)) == NULL) {
 	read_dic_for_rule(RULEV_DIC_FILE, &DicForRuleVArray, &CurDicForRuleVSize);
 	read_dic_for_rule(RULEP_DIC_FILE, &DicForRulePArray, &CurDicForRulePSize);
     } 
@@ -450,8 +450,8 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 /*==================================================================*/
 {
     if (DicForRuleDBExist == TRUE) {
-	DBM_close(dic_for_rulev_db);
-	DBM_close(dic_for_rulep_db);
+	db_close(dic_for_rulev_db);
+	db_close(dic_for_rulep_db);
     }
 }
 

@@ -27,9 +27,9 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 {
     int i;
 
-    if ((proper_db = DBM_open(check_dict_filename(PROPER_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
-	(properc_db = DBM_open(check_dict_filename(PROPERC_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
-	(propercase_db = DBM_open(check_dict_filename(PROPERCASE_DB_NAME, FALSE), O_RDONLY, 0)) == NULL) {
+    if ((proper_db = db_open(check_dict_filename(PROPER_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
+	(properc_db = db_open(check_dict_filename(PROPERC_DB_NAME, FALSE), O_RDONLY, 0)) == NULL || 
+	(propercase_db = db_open(check_dict_filename(PROPERCASE_DB_NAME, FALSE), O_RDONLY, 0)) == NULL) {
 	PROPERExist = FALSE;
     } else {
 	PROPERExist = TRUE;
@@ -46,9 +46,9 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 /*==================================================================*/
 {
     if (PROPERExist == TRUE) {
-	DBM_close(proper_db);
-	DBM_close(properc_db);
-	DBM_close(propercase_db);
+	db_close(proper_db);
+	db_close(properc_db);
+	db_close(propercase_db);
     }
 }
 

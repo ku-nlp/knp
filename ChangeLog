@@ -1,3 +1,10 @@
+2002-03-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/hash.c: New file.
+
+	* system/Makefile.am, system/case_ipal.c, system/db.c, system/dbm.h, system/hash.c, system/lib_bgh.c, system/lib_scase.c, system/lib_sm.c, system/noun.c, system/proper.c, system/read_rule.c:
+	ハッシュをKNP内部に実装
+
 2002-03-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_print.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c, system/read_data.c, system/thesaurus.c:

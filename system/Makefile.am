@@ -51,7 +51,8 @@ knp_SOURCES = \
 	configfile.c \
 	noun.c \
 	bind_juman.c \
-	thesaurus.c
+	thesaurus.c \
+	hash.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 
@@ -59,6 +60,7 @@ make_db_SOURCES = \
 	make_db.c \
 	db.c \
 	tools.c \
-	japanese.c
+	japanese.c \
+	hash.c
 
 make_db_LDADD = @MAKE_DB_LIBS@
