@@ -515,12 +515,15 @@ extern int	EX_match_subject;
     int flag, i;
     int relation_error, d_struct_error;
 
-    sp->Sen_num ++;
+    sp->Sen_num++;
 
     /* 形態素の読み込み */
 
     if ((flag = read_mrph(sp, input)) == EOF) return EOF;
-    if (flag == FALSE) return FALSE;
+    if (flag == FALSE) { /* EOSしかない空の文 */
+	sp->Sen_num--;
+	return FALSE;
+    }
 
     /* 形態素への意味情報付与 (固有表現解析のとき) */
 
@@ -828,6 +831,7 @@ PARSED:
 	success = 0;
 
 	if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
+	if (flag == FALSE) continue;
 
 	/************/
 	/* 文脈解析 */
@@ -837,8 +841,6 @@ PARSED:
 	    make_dpnd_tree(sp);
 	    DiscourseAnalysis(sp);
 	}
-
-	if (flag == FALSE) continue;
 
 	/* entity 情報の feature の作成 */
 	if (OptDisplay  == OPT_ENTITY) {
