@@ -427,7 +427,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-     int mrph_check_function(char *rule, char *data)
+	   int mrph_check_function(char *rule, char *data)
 /*==================================================================*/
 {
     int i;
@@ -435,7 +435,7 @@ const REGEXPBNST RegexpBnstInitValue = {
     if (!strncmp(rule, "&語彙:", 6)) {
 	/* データベースを使う場合 */
 	if (DicForRuleDBExist == TRUE) {
-	    if (strstr(get_rulev(data), rule+6)) {
+	    if (strstr((char *)get_rulev(data), rule+6)) {
 		return TRUE;
 	    }
 	}
@@ -452,6 +452,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	fprintf(stderr, "Invalid Mrph-Feature-Function (%s)\n", rule);
 	return FALSE;
     }
+    return FALSE;
 }
 
 /*==================================================================*/
@@ -519,86 +520,82 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 	   int regexpmrphs_match(REGEXPMRPH *r_ptr,int r_num,
 				 MRPH_DATA *d_ptr, int d_num, 
-				 int direction, int mode)
+				 int fw_or_bw, 
+				 int all_or_part, 
+				 int short_or_long)
 /*==================================================================*/
 {
-    int ret, step;
-
-    (direction == FW_MATCHING) ? (step = 1) : (step = -1);
-
-    if (r_num == 0) {
-	if (d_num == 0 || mode == PART_MATCHING)
-	    return TRUE;
-	else 
-	    return FALSE;
-    } else {
-        if (r_ptr->ast_flag == AST_FLG) {
-	    
-	    /* パターンに"condition*"がある場合 :
-	       	パターンのみ進める(パターンの"*"をスキップ) or
-		conditionがデータとマッチすればデータのみ進める */
-	    
-            if (regexpmrphs_match(r_ptr+step,r_num-1,d_ptr,d_num,
-				  direction,mode))
-		return TRUE;
-	    else if (d_num &&
-		     regexpmrph_match(r_ptr, d_ptr) &&
-		     regexpmrphs_match(r_ptr,r_num,d_ptr+step,d_num-1, 
-				      direction,mode))
-		return TRUE;
-            else 
-		return FALSE;
-        } else {
-	    if (d_num &&
-		regexpmrph_match(r_ptr,d_ptr) &&
-		regexpmrphs_match(r_ptr+step,r_num-1,d_ptr+step,d_num-1,
-				 direction,mode))
-		return TRUE;
-	    else 
-		return FALSE;
-	} 
-    }
-}
-
-/*==================================================================*/
-	   int regexpmrphs_match2(REGEXPMRPH *r_ptr,int r_num,
-				  MRPH_DATA *d_ptr, int d_num, 
-				  int direction, int mode)
-/*==================================================================*/
-{
-    /* 形態素列にfeatureを与えるために変更 99/03/03  */
+    /* 形態素列に対してもfeatureを与えられるように変更 99/04/09 */
 
     int ret, step, return_num;
 
-    (direction == FW_MATCHING) ? (step = 1) : (step = -1);
+    (fw_or_bw == FW_MATCHING) ? (step = 1) : (step = -1);
 
     if (r_num == 0) {
-	if (d_num == 0 || mode == PART_MATCHING)
+	if (d_num == 0 || all_or_part == PART_MATCHING)
 	    return d_num;
 	else 
 	    return -1;
     } else {
         if (r_ptr->ast_flag == AST_FLG) {
 	    
-	    /* パターンに"condition*"がある場合 :
-	       	パターンのみ進める(パターンの"*"をスキップ) or
-		conditionがデータとマッチすればデータのみ進める */
+	    /* 
+	       パターンに"condition*"がある場合，次の可能性を調べる
+
+	        1. パターンのみ進める(パターンの"*"をスキップ)
+	        2. データのみ進める(conditionがデータとマッチすれば)
+
+	       1を先にすればSHORT_MATCHING, 2を先にすればLONG_MATCHING
+	    */
 	    
-	    if (d_num &&
-		     regexpmrph_match(r_ptr, d_ptr) &&
-		     (return_num = regexpmrphs_match2(r_ptr,r_num,d_ptr+step,
-				       d_num-1,direction,mode)) != -1)
-		return return_num;
-            else if ((return_num = regexpmrphs_match2(r_ptr+step,r_num-1,d_ptr,
-				       d_num,direction,mode)) != -1)
-		return return_num;
-            else 
-		return -1;
+	    if (short_or_long == SHORT_MATCHING) {
+		if ((return_num = 
+		     regexpmrphs_match(r_ptr+step,r_num-1,
+				       d_ptr,d_num,
+				       fw_or_bw,
+				       all_or_part,
+				       short_or_long)) != -1)
+		    return return_num;
+		else if (d_num &&
+			regexpmrph_match(r_ptr, d_ptr) &&
+			(return_num = 
+			 regexpmrphs_match(r_ptr,r_num,
+					   d_ptr+step,d_num-1,
+					   fw_or_bw,
+					   all_or_part,
+					   short_or_long)) != -1)
+		    return return_num;
+		else 
+		    return -1;
+	    } else {
+		if (d_num &&
+		    regexpmrph_match(r_ptr, d_ptr) &&
+		    (return_num = 
+		     regexpmrphs_match(r_ptr,r_num,
+				       d_ptr+step,d_num-1,
+				       fw_or_bw,
+				       all_or_part,
+				       short_or_long)) != -1)
+		    return return_num;
+		else if ((return_num = 
+			  regexpmrphs_match(r_ptr+step,r_num-1,
+					    d_ptr,d_num,
+					    fw_or_bw,
+					    all_or_part,
+					    short_or_long)) != -1)
+		    return return_num;
+		else 
+		    return -1;
+	    }		
         } else {
 	    if (d_num &&
 		regexpmrph_match(r_ptr,d_ptr) &&
-		(return_num = regexpmrphs_match2(r_ptr+step,r_num-1,d_ptr+step,
-					d_num-1,direction,mode)) != -1)
+		(return_num = 
+		 regexpmrphs_match(r_ptr+step,r_num-1,
+				   d_ptr+step,d_num-1,
+				   fw_or_bw,
+				   all_or_part,
+				   short_or_long)) != -1)
 		return return_num;
 	    else 
 		return -1;
@@ -610,38 +607,69 @@ const REGEXPBNST RegexpBnstInitValue = {
      int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr)
 /*==================================================================*/
 {
-    if ((r_ptr->self_pattern == NULL || 
-	 regexpmrph_match(r_ptr->self_pattern->mrph, d_ptr) == TRUE) &&
-	(r_ptr->pre_pattern == NULL ||
-	 regexpmrphs_match(r_ptr->pre_pattern->mrph + 
-			   r_ptr->pre_pattern->mrphsize - 1,
-			   r_ptr->pre_pattern->mrphsize,
-			   d_ptr - 1, 
-			   d_ptr - mrph_data,
-			   BW_MATCHING, PART_MATCHING) == TRUE) &&
-	(r_ptr->post_pattern == NULL || 
-	 regexpmrphs_match(r_ptr->post_pattern->mrph, 
-			   r_ptr->post_pattern->mrphsize,
-			   d_ptr + 1,
-			   Mrph_num - (d_ptr - mrph_data) - 1,
-			   FW_MATCHING, PART_MATCHING) == TRUE)) {
-	return TRUE;
-    } else {
-	return FALSE;
-    }
-}
+    /* 
+       pre_pattern  (shortest match でよい)
+       self_pattern (longest match  がよい)
+       post_pattern (shortest match でよい)
+       
+       まず，pre_patternを調べ，次にself_patternのlongest matchから
+       順に，その後でpost_patternを調べる
+    */
 
-/*==================================================================*/
-     int regexpmrphrule_match2(MrphRule *r_ptr, MRPH_DATA *d_ptr)
-/*==================================================================*/
-{
-    /* 形態素列にfeatureを与えるために変更 99/03/03  */
+    int match_length, match_rest;
 
-    return regexpmrphs_match2(r_ptr->post_pattern->mrph, 
+    /* まず，pre_patternを調べる */
+
+    if (r_ptr->pre_pattern != NULL &&
+	regexpmrphs_match(r_ptr->pre_pattern->mrph + 
+			  r_ptr->pre_pattern->mrphsize - 1,
+			  r_ptr->pre_pattern->mrphsize,
+			  d_ptr - 1, 
+			  d_ptr - mrph_data,
+			  BW_MATCHING, 
+			  PART_MATCHING, 
+			  SHORT_MATCHING) == -1)
+	return -1;
+
+    
+    /* 次にself_patternのlongest matchから順に，その後でpost_patternを調べる
+       match_length は self_pattern の match の(可能性の)長さ */
+
+    match_length = Mrph_num - (d_ptr - mrph_data);
+
+    while (match_length > 0) {
+	if (r_ptr->self_pattern == NULL) {
+	    match_length = 1;	/* self_pattern がなければ
+				   マッチの長さは1にしておく */
+	}
+	else if ((match_rest = 
+		  regexpmrphs_match(r_ptr->self_pattern->mrph, 
+				    r_ptr->self_pattern->mrphsize,
+				    d_ptr,
+				    match_length,
+				    FW_MATCHING, 
+				    PART_MATCHING,
+				    LONG_MATCHING)) != -1) {
+	    match_length -= match_rest;
+	}
+	else {
+	    return -1;
+	}
+
+	if (r_ptr->post_pattern == NULL || 
+	    regexpmrphs_match(r_ptr->post_pattern->mrph, 
 			      r_ptr->post_pattern->mrphsize,
-			      d_ptr,
-			      Mrph_num - (d_ptr - mrph_data),
-			      FW_MATCHING, PART_MATCHING);
+			      d_ptr + match_length,
+			      Mrph_num - (d_ptr - mrph_data) - match_length,
+			      FW_MATCHING, 
+			      PART_MATCHING, 
+			      SHORT_MATCHING) != -1) {
+	    return match_length;
+	}
+	match_length --;
+    }
+
+    return -1;
 }
 
 /*==================================================================*/
@@ -652,7 +680,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     return regexpmrphs_match(r_ptr->mrph, r_ptr->mrphsize, 
 			     b_ptr->mrph_ptr, b_ptr->mrph_num, 
-			     FW_MATCHING, ALL_MATCHING);
+			     FW_MATCHING, ALL_MATCHING, SHORT_MATCHING);
 }
 
 /*==================================================================*/
@@ -666,9 +694,14 @@ const REGEXPBNST RegexpBnstInitValue = {
     if (ptr1->type_flag == QST_FLG)
       return TRUE;
     else {
-	ret_mrph = regexpmrphs_match(ptr1->mrphs->mrph, ptr1->mrphs->mrphsize, 
-				     ptr2->mrph_ptr, ptr2->mrph_num, 
-				     FW_MATCHING, ALL_MATCHING);
+	if (regexpmrphs_match(ptr1->mrphs->mrph, ptr1->mrphs->mrphsize, 
+			      ptr2->mrph_ptr, ptr2->mrph_num, 
+			      FW_MATCHING, ALL_MATCHING, SHORT_MATCHING)
+	    != -1) {
+	    ret_mrph = TRUE;
+	} else {
+	    ret_mrph = FALSE;
+	}	    
 
 	if ((ptr1->type_flag == MAT_FLG && ret_mrph == TRUE) ||
 	    (ptr1->type_flag == NOT_FLG && ret_mrph == FALSE))
@@ -683,15 +716,16 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 	   int regexpbnsts_match(REGEXPBNST *r_ptr,int r_num,
 				 BNST_DATA *d_ptr, int d_num, 
-				 int direction, int mode)
+				 int fw_or_bw, 
+				 int all_or_part)
 /*==================================================================*/
 {
     int ret, step;
 
-    (direction == FW_MATCHING) ? (step = 1) : (step = -1);
+    (fw_or_bw == FW_MATCHING) ? (step = 1) : (step = -1);
 
     if (r_num == 0) {
-	if (d_num == 0 || mode == PART_MATCHING)
+	if (d_num == 0 || all_or_part == PART_MATCHING)
 	    return TRUE;
 	else 
 	    return FALSE;
@@ -703,12 +737,12 @@ const REGEXPBNST RegexpBnstInitValue = {
 		conditionがデータとマッチすればデータのみ進める */
 	    
             if (regexpbnsts_match(r_ptr+step,r_num-1,d_ptr,d_num,
-				  direction,mode))
+				  fw_or_bw,all_or_part))
 		return TRUE;
 	    else if (d_num &&
 		     regexpbnst_match(r_ptr, d_ptr) &&
 		     regexpbnsts_match(r_ptr,r_num,d_ptr+step,d_num-1, 
-				      direction,mode))
+				      fw_or_bw,all_or_part))
 		return TRUE;
             else 
 		return FALSE;
@@ -716,7 +750,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    if (d_num &&
 		regexpbnst_match(r_ptr,d_ptr) &&
 		regexpbnsts_match(r_ptr+step,r_num-1,d_ptr+step,d_num-1,
-				 direction,mode))
+				 fw_or_bw,all_or_part))
 		return TRUE;
 	    else 
 		return FALSE;
