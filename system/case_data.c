@@ -42,7 +42,7 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 
     /* 前の文節の助詞 */
     strcat(fukugoji_string, 
-	   ((sp->bnst_data+b_ptr->num-1)->fuzoku_ptr+(sp->bnst_data+b_ptr->num-1)->fuzoku_num-1)->Goi);
+	   ((b_ptr-1)->fuzoku_ptr+(b_ptr-1)->fuzoku_num-1)->Goi);
 
     /* この文節 */
     for (i = 0; i < b_ptr->mrph_num; i++) {
@@ -168,7 +168,9 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	return b_ptr;
     }
-    else if (check_feature(b_ptr->f, "複合辞") && b_ptr->child[0]) {
+    else if (check_feature(b_ptr->f, "複合辞") && 
+	     check_feature(b_ptr->f, "係:連用") && 
+	     b_ptr->child[0]) {
 	c_ptr->pp[c_ptr->element_num][0] = 
 	    pp_hstr_to_code(make_fukugoji_string(b_ptr));
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
