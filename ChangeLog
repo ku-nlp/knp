@@ -1,3 +1,9 @@
+2004-02-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* knprc.in: 省略解析探索範囲のデフォルトを変更
+
+	* configure.ac: LARGEFILE対応
+
 2004-02-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_sm.c:
