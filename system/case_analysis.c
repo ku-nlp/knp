@@ -15,7 +15,12 @@ extern int MAX_Case_frame_num;
 CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* ºî¶ÈÎÎ°è */
 TOTAL_MGR	Work_mgr;
 
-#define	DISTANCE_STEP	5
+int	DISTANCE_STEP	= 5;
+int	RENKAKU_STEP	= 2;
+int	STRONG_V_COST	= 8;
+int	ADJACENT_TOUTEN_COST	= 5;
+int	LEVELA_COST	= 4;
+int	TEIDAI_STEP	= 2;
 
 /*==================================================================*/
 			  void realloc_cmm()
@@ -106,6 +111,7 @@ struct PP_STR_TO_CODE {
 				   ½ñ¤¤¤Æ¤ª¤¯ */
     {"½¤¾þ", "½¤¾þ", 39},
     {"¤¬£²", "¥¬£²", 40},
+    {"³°¤Î´Ø·¸", "³°¥Î´Ø·¸", 41},
     {"¤Ï", "¥Ï", 1},		/* NTT¼­½ñ¤Ç¤Ï¡Ö¥¬¥¬¡×¹½Ê¸¤¬¡Ö¥Ï¥¬¡×
 				   ¢¨ NTT¼­½ñ¤Î¡Ö¥Ï¡×¤Ï1(code)¤ËÊÑ´¹¤µ¤ì¤ë¤¬,
 				      1¤ÏÇÛÎó½ç¤À¤±¤Ç¡Ö¥¬¡×¤ËÊÑ´¹¤µ¤ì¤ë */
@@ -401,7 +407,7 @@ char *pp_code_to_hstr(int num)
 	   ¤³¤Î¤Ç¥³¥¹¥È¤òÍ¿¤¨¤ë) */
 	if (check_feature((sp->bnst_data+i)->f, "·¸:¥¬³Ê") && 
 	    check_feature((sp->bnst_data+dpnd.head[i])->f, "¥ì¥Ù¥ë:A")) {
-	    distance_cost += 4;
+	    distance_cost += LEVELA_COST;
 	}
 
 	if (dpnd.dflt[i] > 0) {
@@ -414,7 +420,7 @@ char *pp_code_to_hstr(int num)
 		    if (dpnd.head[i] == dpnd.head[j]) {
 			for (k = j+1; k < i; k++) {
 			    if (Mask_matrix[j][k] && Quote_matrix[j][k] && Dpnd_matrix[j][k] && Dpnd_matrix[j][k] != 'd') {
-				distance_cost += dpnd.dflt[i];
+				distance_cost += dpnd.dflt[i]*TEIDAI_STEP;
 			    }
 			}
 		    }
@@ -430,7 +436,7 @@ char *pp_code_to_hstr(int num)
 			subordinate_level_check("B", sp->bnst_data+i+1) && 
 			(cp = (char *)check_feature((sp->bnst_data+i+1)->f, "·¸"))) {
 			if (strcmp(cp+3, "Ï¢ÂÎ") && strcmp(cp+3, "Ï¢³Ê")) {
-			    distance_cost += 2;
+			    distance_cost += STRONG_V_COST;
 			}
 		    }
 		}
@@ -438,7 +444,7 @@ char *pp_code_to_hstr(int num)
 		else {
 		    /* ÎÙ¤Ë·¸¤ë¤È¤­ */
 		    if (dpnd.head[i] == i+1) {
-			distance_cost += 2;
+			distance_cost += ADJACENT_TOUTEN_COST;
 		    }
 		}
 	    }
@@ -450,7 +456,7 @@ char *pp_code_to_hstr(int num)
 		distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
 	    }
 	    else {
-		distance_cost += dpnd.dflt[i];
+		distance_cost += dpnd.dflt[i]*RENKAKU_STEP;
 	    }
 	}		    
     }
@@ -515,7 +521,7 @@ char *pp_code_to_hstr(int num)
 /*==================================================================*/
 {
     int i, j, k, num;
-    char feature_buffer[256];
+    char feature_buffer[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
     CASE_FRAME *cf_ptr;
@@ -536,47 +542,15 @@ char *pp_code_to_hstr(int num)
 	cf_ptr = cmm_ptr->cf_ptr;
 	pred_b_ptr = cpm_ptr->pred_b_ptr;
 
-	sprintf(feature_buffer, "°ÕÌ£:%s", cf_ptr->imi);
-	assign_cfeature(&(pred_b_ptr->f), feature_buffer);
-
 	for (i = 0; i < cf_ptr->element_num; i++) {
 	    num = cmm_ptr->result_lists_p[0].flag[i];
 
 	    /* ÂÐ±þ´Ø·¸ */
-
-	    if (num == UNASSIGNED || cmm_ptr->score == -2) 
-		sprintf(feature_buffer, "¿¼ÁØ³ÊN%d:NIL:", i+1);
-	    else
-		sprintf(feature_buffer, "¿¼ÁØ³ÊN%d:%d:", i+1, 
-			cpm_ptr->elem_b_ptr[num]->num);
-	    
-	    /* É½ÁØ³Ê */
-
-	    for (k = 0; cf_ptr->pp[i][k] != END_M; k++) {
-		if (k != 0) 
-		    sprintf(feature_buffer+strlen(feature_buffer), "/");
-		sprintf(feature_buffer+strlen(feature_buffer), 
-			"%s", pp_code_to_kstr(cf_ptr->pp[i][k]));
+	    if (num != UNASSIGNED && cmm_ptr->score != -2) {
+		sprintf(feature_buffer, "³Ê´Ø·¸:%d:%s", pred_b_ptr->num, 
+			pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]));
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[num]->f), feature_buffer);
 	    }
-	    if (cf_ptr->oblig[i] == FALSE)
-		sprintf(feature_buffer+strlen(feature_buffer), "*");
-
-	    sprintf(feature_buffer+strlen(feature_buffer), ":");
-
-	    /* °ÕÌ£ÁÇ */
-
-	    if (cf_ptr->sm[i]) {
-		for (k = 0; cf_ptr->sm[i][k]; k+=SM_CODE_SIZE) {
-		    if (k != 0) 
-			sprintf(feature_buffer+strlen(feature_buffer), "/");
-		    sprintf(feature_buffer+strlen(feature_buffer), 
-			    "%12.12s", &(cf_ptr->sm[i][k]));
-		}
-	    }
-
-	    /* featureÉÕÍ¿ */
-
-	    assign_cfeature(&(pred_b_ptr->f), feature_buffer);
 	}
     }
 }	    
