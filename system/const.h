@@ -157,9 +157,10 @@
 #define GUARD		'\n'
 
 #define TYPE_KATAKANA	1
-#define TYPE_KANAKANJI	2
-#define TYPE_SUUJI	3
-#define TYPE_EIKIGOU	4
+#define TYPE_HIRAGANA	2
+#define TYPE_KANJI	3
+#define TYPE_SUUJI	4
+#define TYPE_EIKIGOU	5
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
