@@ -18,9 +18,6 @@ AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (3.X
 AC_ARG_WITH(internal-hash, [  --with-internal-hash    use internal hash DB [default=yes]])
 AC_ARG_WITH(svm, [  --with-svm              use TinySVM library [default=no]])
 
-AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
-JUMAN_LIB_DIR=$with_jumanlib_dir, JUMAN_LIB_DIR="")
-
 
 SUBDIRS="system rule docs perl dict"
 
@@ -33,26 +30,6 @@ if test "$with_svm" = yes; then
     KNP_LIBS="$KNP_LIBS -lsvm -ltinysvm"
 fi
 
-AC_MSG_CHECKING("JUMAN library DIR")
-if test -z "$JUMAN_LIB_DIR"; then
-    if test -d /share/tool/juman/lib; then
-	JUMAN_LIB_DIR="/share/tool/juman/lib"
-    elif test -d ../juman/lib; then
-	JUMAN_LIB_DIR="$packagesrcdir/../juman/lib"
-   else
-	AC_MSG_ERROR("JUMAN is not found.")
-    fi
-else
-    if test ! -d $JUMAN_LIB_DIR; then
-	AC_MSG_ERROR("JUMAN is not found.")
-    fi
-fi
-AC_MSG_RESULT("$JUMAN_LIB_DIR")
-
-JUMAN_CFLAGS="-I$JUMAN_LIB_DIR -DNUMERIC_P -DTHROUGH_P"
-JUMAN_LDFLAGS="-L$JUMAN_LIB_DIR"
-
-AC_SUBST(JUMAN_CFLAGS)
 
 AC_ARG_ENABLE(debug, 
 	[  --enable-debug          build a debugging version [default=no]])
@@ -72,7 +49,7 @@ KNP_SYS="$KNP_DIR/system"
 KNP_DICT="$KNP_DIR/dict"
 KNP_RULE="$KNP_DIR/rule"
 
-LDFLAGS="$JUMAN_LDFLAGS $SVM_LDFLAGS $LDFLAGS"
+LDFLAGS="$SVM_LDFLAGS $LDFLAGS"
 
 dnl Checks for libraries.
 
@@ -104,7 +81,7 @@ AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 
 RCPATH="$packagesrcdir/knprc.sample"
-KNP_CFLAGS="$JUMAN_CFLAGS $SVM_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RCPATH\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="$SVM_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RCPATH\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
