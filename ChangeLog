@@ -1,3 +1,8 @@
+2003-09-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	照応解析のスコア計算のbug fix.
+
 2003-09-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule: 態の認識の修正
