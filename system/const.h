@@ -618,9 +618,10 @@ typedef struct tnode_t {
     char	para_top_p;
     char	para_type;
     char	to_para_p;
-    /* 所属する文節番号 */
-    int 	bnum;
+    /* 文節との関係 */
+    int 	bnum;	/* 文節区切りと一致するときの番号 */
     int		inum;
+    BNST_DATA	*b_ptr;	/* 所属する文節 */
     /* 形態素データ */
     int		settou_num, jiritu_num, fuzoku_num;
     MRPH_DATA 	*settou_ptr, *jiritu_ptr, *fuzoku_ptr;

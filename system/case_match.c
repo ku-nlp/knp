@@ -355,37 +355,32 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	expand = SM_EXPAND_NE;
     }
 
-    /* 主体のマッチング (ガ格, ニ格) */
+    /* 主体関連のマッチング (ヲ格以外) */
     if (cfp->sm[n] && 
 	!MatchPP(cfp->pp[n][0], "ヲ")) {
-	int i, j, flag;
+	int i, j;
 
 	for (j = 0; cfp->sm[n][j]; j += step) {
+	    /* 主体 */
 	    if (!strncmp(cfp->sm[n] + j, sm2code("主体"), SM_CODE_SIZE)) {
-		flag = 3;
+		for (i = 0; tp->SM_code[i]; i += step) {
+		    if (_sm_match_score(cfp->sm[n] + j, tp->SM_code + i, expand)) {
+			return 1;
+		    }
+		}
 	    }
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("人"), SM_CODE_SIZE)) {
-		flag = 1;
-	    }
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("組織"), SM_CODE_SIZE)) {
-		flag = 2;
-	    }
-	    else {
-		continue;
-	    }
-
-	    /* 格フレーム側に <主体> があるときに、格要素側をチェック */
-	    if (((flag & 1) && check_feature(tp->f, "人名")) || 
-		((flag & 2) && check_feature(tp->f, "組織名"))) {
-		return 1;
-	    }
-
-	    for (i = 0; tp->SM_code[i]; i += step) {
-		if (_sm_match_score(cfp->sm[n] + j, tp->SM_code + i, expand)) {
+	    /* 格フレーム-人名 -> 人名 */
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("人名"), SM_CODE_SIZE)) {
+		if (check_feature(tp->b_ptr->f, "人名")) {
 		    return 1;
 		}
 	    }
-	    break;
+	    /* 格フレーム-組織名 -> 組織名 */
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("組織名"), SM_CODE_SIZE)) {
+		if (check_feature(tp->b_ptr->f, "組織名")) {
+		    return 1;
+		}
+	    }
 	}
     }
     return 0;
