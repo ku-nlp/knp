@@ -414,6 +414,9 @@ typedef struct {
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
 #define		DEF_DT_MODEL_FILE	"決定木ファイル"
 
+#define		DEF_SVM_FREQ_SD		"SVM頻度標準偏差"
+#define		DEF_SVM_FREQ_SD_NO	"SVM頻度標準偏差ノ格"
+
 typedef struct _RuleVector {
     char	*file;
     int		type;

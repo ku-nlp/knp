@@ -29,6 +29,9 @@ float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
 float	AntecedentDecideThresholdForNoun = 0.60;
 float	AntecedentDecideThresholdForNi = 0.90;
 
+float	SVM_FREQ_SD = 114.23868;	/* for np (20040117-smfix) */
+float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
+
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
 
 E_CANDIDATE *ante_cands;

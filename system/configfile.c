@@ -411,6 +411,38 @@ int knp_dict_file_already_defined = 0;
 	    }
 	}
 #ifdef USE_SVM
+	else if (!strcmp(DEF_SVM_FREQ_SD, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		SVM_FREQ_SD = atof(_Atom(cell2));
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "SVM FREQ SD ... %f\n", SVM_FREQ_SD);
+		}
+		if (SVM_FREQ_SD <= 0) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
+	else if (!strcmp(DEF_SVM_FREQ_SD_NO, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		SVM_FREQ_SD_NO = atof(_Atom(cell2));
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "SVM FREQ SD NO ... %f\n", SVM_FREQ_SD_NO);
+		}
+		if (SVM_FREQ_SD_NO <= 0) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 
