@@ -236,6 +236,11 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscNounMethod = OPT_SVM;
 	}
+	else if (str_eq(argv[0], "-relation-noun-svm-best")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscNounMethod = OPT_SVM;
+	}
 	else if (str_eq(argv[0], "-print-svm-features")) {
 	    PrintFeatures = 1;
 	}
@@ -260,6 +265,10 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
+	}
+	else if (str_eq(argv[0], "-relation-noun-best")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptDiscFlag |= OPT_DISC_BEST;
 	}
 	else if (str_eq(argv[0], "-relation-noun-dt")) {
 	    OptEllipsis |= OPT_REL_NOUN;

@@ -3549,6 +3549,29 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
+    /* best解を探す場合 */
+    if (OptDiscFlag & OPT_DISC_BEST) {
+	EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				 cs->tag_data + cs->Tag_num - 1, 
+				 cf_ptr, n, LOC_OTHERS, TRUE);
+	if (cs - sentence_data > 0) {
+	    EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				     (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+				     cf_ptr, n, LOC_OTHERS, TRUE);
+	    if (cs - sentence_data > 1) {
+		EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+					 cf_ptr, n, LOC_OTHERS, TRUE);
+	    }
+	}
+
+	/* 閾値を越えるものが見つからなかった */
+	if (!ScoreCheck(cf_ptr, n)) {
+	    return 0;
+	}
+	goto EvalAntecedentNoun;
+    }
+
     /* 親 */
     if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cpm_ptr->pred_b_ptr->parent, 
