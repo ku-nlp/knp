@@ -1,3 +1,12 @@
+2001-07-25  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+	* system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/ipal.c, system/knp.h, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/para_analysis.c, system/path.h, system/proper.c, system/read_data.c 
+	文脈(省略)解析と格解析を統合
+
+	* juman/juman_lib.c
+	解析した結果を文字列として返せるように変更
+
+	* configure.in: SVMを用いる場合のオプションを追加
+
 2001-05-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* rule/bnst_basic.rule: 固有表現, 修飾語ルールの更新

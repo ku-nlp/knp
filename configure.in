@@ -8,6 +8,7 @@ AM_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
@@ -16,6 +17,7 @@ AC_ARG_WITH(berkeley-db, [  --with-berkeley-db      use Berkeley DB library (2.X
 AC_ARG_WITH(included-juman, [  --with-included-juman   use the JUMAN library included here])
 AC_ARG_WITH(integrate-juman, [  --with-integrate-juman  integrate JUMAN into KNP], 
 ETC_CFLAGS="-DINTEGRATE_JUMAN $ETC_CFLAGS")
+AC_ARG_WITH(svm, [  --with-svm              use TinySVM library [default=no]])
 
 AC_ARG_WITH(jumanlib-dir, [  --with-jumanlib-dir     use specified JUMAN library DIR], 
 JUMAN_LIB_DIR=$with_juman_lib_dir, JUMAN_LIB_DIR="")
@@ -26,6 +28,13 @@ RCPATH=$with_rcpath, RCPATH="")
 SUBDIRS="system rule docs perl dict"
 
 packagesrcdir=`cd $srcdir && pwd`
+
+if test "$with_svm" = yes; then
+    SUBDIRS="svm $SUBDIRS"
+    SVM_CFLAGS="-I$packagesrcdir/svm -DUSE_SVM"
+    SVM_LDFLAGS="-L$packagesrcdir/svm"
+    KNP_LIBS="$KNP_LIBS -lsvm -ltinysvm"
+fi
 
 if test "$with_included_juman" = yes; then
     SUBDIRS="juman $SUBDIRS"
@@ -83,7 +92,7 @@ KNP_SYS="$KNP_DIR/system"
 KNP_DICT="$KNP_DIR/dict"
 KNP_RULE="$KNP_DIR/rule"
 
-LDFLAGS="$JUMAN_LDFLAGS -L/usr/local/lib $LDFLAGS"
+LDFLAGS="$JUMAN_LDFLAGS $SVM_LDFLAGS -L/usr/local/lib $LDFLAGS"
 
 dnl Checks for libraries.
 
@@ -107,7 +116,7 @@ MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 
-KNP_CFLAGS="-I/usr/local/include $JUMAN_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="-I/usr/local/include $JUMAN_CFLAGS $SVM_CFLAGS -DKNP_SYS=\"\\\"$KNP_SYS\"\\\" -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
@@ -127,6 +136,7 @@ AC_OUTPUT([
 Makefile
 system/Makefile
 juman/Makefile
+svm/Makefile
 rule/Makefile
 docs/Makefile
 perl/Makefile
