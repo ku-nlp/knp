@@ -18,8 +18,6 @@
 DBM_FILE	proper_db, properc_db;
 int		PROPERExist = 0;
 
-NamedEntity NE_data[MRPH_MAX];
-
 /*==================================================================*/
 			   void init_proper()
 /*==================================================================*/
@@ -111,19 +109,19 @@ NamedEntity NE_data[MRPH_MAX];
     while (token) {
 	sscanf(token, "%[^:]", type);
 	if (str_eq(type, "地名")) {
-	    p->Location = atoi(token+strlen(type)+1);
+	    p->Location += atoi(token+strlen(type)+1);
 	}
 	else if (str_eq(type, "人名")) {
-	    p->Person = atoi(token+strlen(type)+1);
+	    p->Person += atoi(token+strlen(type)+1);
 	}
 	else if (str_eq(type, "組織名")) {
-	    p->Organization = atoi(token+strlen(type)+1);
+	    p->Organization += atoi(token+strlen(type)+1);
 	}
 	else if (str_eq(type, "固有名詞")) {
-	    p->Artifact = atoi(token+strlen(type)+1);
+	    p->Artifact += atoi(token+strlen(type)+1);
 	}
 	else if (str_eq(type, "その他")) {
-	    p->Others = atoi(token+strlen(type)+1);
+	    p->Others += atoi(token+strlen(type)+1);
 	}
 	token = strtok(NULL, " ");
     }
@@ -162,12 +160,27 @@ NamedEntity NE_data[MRPH_MAX];
 }
 
 /*==================================================================*/
-void _NE2feature(struct _pos_s *p1, struct _pos_s *p2, FEATURE **fpp, char *type)
+   float calculate_NE(int v1, int n1, int v2, int n2, float ratio)
 /*==================================================================*/
 {
-    int n1, n2, length, i;
+    if (n1 && n2)
+	return (float)v1/n1*100*ratio+(float)v2/n2*100*(1-ratio);
+    else if (n1)
+	return (float)v1/n1*100*ratio;
+    else if (n2)
+	return (float)v2/n2*100*(1-ratio);
+    return 0;
+}
+
+/*==================================================================*/
+struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp, char *type)
+/*==================================================================*/
+{
+    int n1, n2;
     float ratio;
-    char *buffer, element[5][13];
+    struct _pos_s r;
+
+    _init_NE(&r);
 
     n1 = p1->Location + p1->Person + p1->Organization + p1->Artifact + p1->Others;
     n2 = p2->Location + p2->Person + p2->Organization + p2->Artifact + p2->Others;
@@ -175,28 +188,63 @@ void _NE2feature(struct _pos_s *p1, struct _pos_s *p2, FEATURE **fpp, char *type
     ratio = merge_ratio(n1, n2);
 
     if (n1 || n2) {
+	if (p1->Location || p2->Location) {
+	    r.Location = calculate_NE(p1->Location, n1, p2->Location, n2, ratio);
+	}
+	if (p1->Person || p2->Person) {
+	    r.Person = calculate_NE(p1->Person, n1, p2->Person, n2, ratio);
+	}
+	if (p1->Organization || p2->Organization) {
+	    r.Organization = calculate_NE(p1->Organization, n1, p2->Organization, n2, ratio);
+	}
+	if (p1->Artifact || p2->Artifact) {
+	    r.Artifact = calculate_NE(p1->Artifact, n1, p2->Artifact, n2, ratio);
+	}
+	if (p1->Others || p2->Others) {
+	    r.Others = calculate_NE(p1->Others, n1, p2->Others, n2, ratio);
+	}
+    }
+    return r;
+}
+
+/*==================================================================*/
+  void NE2mrph(NamedEntity *np1, NamedEntity *np2, MRPH_DATA *mp)
+/*==================================================================*/
+{
+    mp->NE.AnoB = _NE2mrph(&(np1->AnoB), &(np2->AnoB), mp, "AのB");
+    mp->NE.BnoA = _NE2mrph(&(np1->BnoA), &(np2->BnoA), mp, "BのA");
+    mp->NE.before = _NE2mrph(&(np1->before), &(np2->before), mp, "前");
+    mp->NE.self = _NE2mrph(&(np1->self), &(np2->self), mp, "単語");
+    mp->NE.after = _NE2mrph(&(np1->after), &(np2->after), mp, "後");
+}
+
+/*==================================================================*/
+    void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type)
+/*==================================================================*/
+{
+    int n, length, i, first = 0;
+    char *buffer, element[5][13];
+
+    n = p->Location + p->Person + p->Organization + p->Artifact + p->Others;
+
+    if (n) {
 	for (i = 0; i < 5; i++) {
 	    element[i][0] = '\0';
 	}
-	if (p1->Location || p2->Location) {
-	    sprintf(element[0], "地名:%.0f", 
-		    (float)p1->Location/n1*100*ratio+(float)p2->Location/n2*100*(1-ratio));
+	if (p->Location) {
+	    sprintf(element[0], "地名:%d", p->Location);
 	}
-	if (p1->Person || p2->Person) {
-	    sprintf(element[1], "人名:%.0f", 
-		    (float)p1->Person/n1*100*ratio+(float)p2->Person/n2*100*(1-ratio));
+	if (p->Person) {
+	    sprintf(element[1], "人名:%d", p->Person);
 	}
-	if (p1->Organization || p2->Organization) {
-	    sprintf(element[2], "組織名:%.0f", 
-		    (float)p1->Organization/n1*100*ratio+(float)p2->Organization/n2*100*(1-ratio));
+	if (p->Organization) {
+	    sprintf(element[2], "組織名:%d", p->Organization);
 	}
-	if (p1->Artifact || p2->Artifact) {
-	    sprintf(element[3], "固有名詞:%.0f", 
-		    (float)p1->Artifact/n1*100*ratio+(float)p2->Artifact/n2*100*(1-ratio));
+	if (p->Artifact) {
+	    sprintf(element[3], "固有名詞:%d", p->Artifact);
 	}
-	if (p1->Others || p2->Others) {
-	    sprintf(element[4], "その他:%.0f", 
-		    (float)p1->Others/n1*100*ratio+(float)p2->Others/n2*100*(1-ratio));
+	if (p->Others) {
+	    sprintf(element[4], "その他:%d", p->Others);
 	}
 
 	length = 0;
@@ -208,45 +256,40 @@ void _NE2feature(struct _pos_s *p1, struct _pos_s *p2, FEATURE **fpp, char *type
 	sprintf(buffer, "%s:", type);
 	for (i = 0; i < 5; i++) {
 	    if (element[i][0]) {
+		if (first++)
+		    strcat(buffer, " ");
 		strcat(buffer, element[i]);
-		if (i != 4) strcat(buffer, " ");
 	    }
 	}
 
-	assign_cfeature(fpp, buffer);
+	assign_cfeature(&(mp->f), buffer);
 	free(buffer);
     }
 }
 
 /*==================================================================*/
-  void NE2feature(NamedEntity *np1, NamedEntity *np2, FEATURE **fpp)
+		    void NE2feature(MRPH_DATA *mp)
 /*==================================================================*/
 {
-    _NE2feature(&(np1->AnoB), &(np2->AnoB), fpp, "AのB");
-    _NE2feature(&(np1->BnoA), &(np2->BnoA), fpp, "BのA");
-    _NE2feature(&(np1->before), &(np2->before), fpp, "前");
-    _NE2feature(&(np1->self), &(np2->self), fpp, "単語");
-    _NE2feature(&(np1->after), &(np2->after), fpp, "後");
+    _NE2feature(&(mp->eNE.AnoB), mp, "AのB");
+    _NE2feature(&(mp->eNE.BnoA), mp, "BのA");
+    _NE2feature(&(mp->eNE.before), mp, "前");
+    _NE2feature(&(mp->eNE.self), mp, "単語");
+    _NE2feature(&(mp->eNE.after), mp, "後");
 }
 
 /*==================================================================*/
 		   char *check_class(MRPH_DATA *mp)
 /*==================================================================*/
 {
-    if (check_feature(mp->f, "漢字"))
-	return "漢字";
-    else if (check_feature(mp->f, "ひらがな"))
-	return "ひらがな";
+    if (check_feature(mp->f, "かな漢字"))
+	return "かな漢字";
     else if (check_feature(mp->f, "カタカナ"))
 	return "カタカナ";
-    else if (check_feature(mp->f, "混合"))
-	return "混合";
-    else if (check_feature(mp->f, "英語"))
-	return "英語";
+    else if (check_feature(mp->f, "英記号"))
+	return "英記号";
     else if (check_feature(mp->f, "数字"))
 	return "数字";
-    else if (check_feature(mp->f, "その他"))
-	return "その他";
     return NULL;
 }
 
@@ -315,28 +358,31 @@ void _NE2feature(struct _pos_s *p1, struct _pos_s *p2, FEATURE **fpp, char *type
 
     /* ここで入力形態素に意味素を与えておく */
     sm = get_sm(mp->Goi);
-    smn = strlen(sm);
-    strncpy(mp->SM, sm, smn);	/* ★ */
-    smn = smn/SM_CODE_SIZE;
 
     /* 意味素による検索 */
-    if (!mp->SM[0]) return;
-    for (i = 0; i < smn; i++) {
-	code[0] = '1';
-	code[1] = '\0';
-	strncat(code, mp->SM+SM_CODE_SIZE*i+1, SM_CODE_SIZE-1);
-	dic_content = get_proper(code, properc_db);
-	if (*dic_content != NULL) {
-	    for (cp = pre_pos = dic_content; *cp; cp++) {
-		if (*cp == '/') {
-		    *cp = '\0';
-		    store_NE(&ne[1], pre_pos);
-		    pre_pos = cp + 1;
+    if (*sm) {
+	smn = strlen(sm);
+	strncpy(mp->SM, sm, smn);	/* ★ */
+	smn = smn/SM_CODE_SIZE;
+
+	for (i = 0; i < smn; i++) {
+	    code[0] = '1';
+	    code[1] = '\0';
+	    strncat(code, mp->SM+SM_CODE_SIZE*i+1, SM_CODE_SIZE-1);
+	    dic_content = get_proper(code, properc_db);
+	    if (*dic_content != NULL) {
+		for (cp = pre_pos = dic_content; *cp; cp++) {
+		    if (*cp == '/') {
+			*cp = '\0';
+			store_NE(&ne[1], pre_pos);
+			pre_pos = cp + 1;
+		    }
 		}
+		store_NE(&ne[1], pre_pos);
 	    }
-	    store_NE(&ne[1], pre_pos);
 	}
     }
+
     /* 文字種による検索 */
     cp = check_class(mp);
     if (cp) {
@@ -346,7 +392,7 @@ void _NE2feature(struct _pos_s *p1, struct _pos_s *p2, FEATURE **fpp, char *type
 	}
     }
 
-    NE2feature(&ne[0], &ne[1], &(mp->f));
+    NE2mrph(&ne[0], &ne[1], mp);
 }
 
 /*====================================================================
