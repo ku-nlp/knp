@@ -82,7 +82,7 @@
 
 #define DATA_LEN	5120
 #define ALLOCATION_STEP	1024
-#define DEFAULT_PARSETIMEOUT	60
+#define DEFAULT_PARSETIMEOUT	180
 
 /*====================================================================
 				DEFINE

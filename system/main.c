@@ -35,6 +35,7 @@ char		Comment[DATA_LEN];		/* コメント行 */
 char		KNPSID[256];
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
+char            SID_box[256];
 
 char  		cont_str[DBM_CON_MAX];
 
