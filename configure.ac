@@ -20,7 +20,7 @@ AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
-AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix], [prefix where JUMAN is installed (optional)]), 
+AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
 AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui Goi Hyou (sakuin) is located (optional)]), 
 			  BGH_FILE="$withval")
@@ -40,8 +40,8 @@ fi
 AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
 
 if test x"$juman_prefix" != x; then
-   JUMAN_CFLAGS="-I$juman_prefix/include"
-   JUMAN_LDFLAGS="-L$juman_prefix/lib"
+    JUMAN_CFLAGS="-I$juman_prefix/include"
+    JUMAN_LDFLAGS="-L$juman_prefix/lib"
 fi
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
