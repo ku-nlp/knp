@@ -475,6 +475,12 @@ struct _check {
     int pos[BNST_MAX];
 };
 
+struct _optionalcase {
+    int flag;
+    int weight;
+    char *type;
+};
+
 /* 文中の各文節の係り先などの記録 */
 typedef struct {
     int  	head[BNST_MAX];	/* 係り先 */
@@ -484,6 +490,7 @@ typedef struct {
     int 	pos;		/* 現在の処理位置 */
     int         flag;           /* テンポラリフラグ */
     char        *comment;       /* テンポラリ */
+    struct _optionalcase op[BNST_MAX];	/* 任意格使用 */
     struct _check check[BNST_MAX];
 } DPND;
 
@@ -571,6 +578,7 @@ typedef struct {
     int 	score;		/* スコア */
     int 	pred_num;	/* 文中の用言数 */
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
+    int		ID;		/* DPND の ID */
 } TOTAL_MGR;
 
 /*====================================================================
