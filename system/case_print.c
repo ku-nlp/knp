@@ -23,7 +23,6 @@
 		fputc('/', Outfp);
 	    }
 	    if (cpm_ptr->cf.pp[num][i] < 0) {
-		/* 3 ¤Ï strlen("·¸:") */
 		fprintf(Outfp, "--");
 	    }
 	    else {
@@ -41,13 +40,13 @@
     int i;
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-	fprintf(Outfp, "¡Ú%s(»ÈÌò)¡Û", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "¡Ú%s(»ÈÌò)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-	fprintf(Outfp, "¡Ú%s(¼õ¿È)¡Û", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "¡Ú%s(¼õ¿È)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-	fprintf(Outfp, "¡Ú%s(»ÈÌòor¼õ¿È)¡Û", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "¡Ú%s(»ÈÌòor¼õ¿È)¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
     else
-	fprintf(Outfp, "¡Ú%s¡Û", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "¡Ú%s¡Û", L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
 
     fprintf(Outfp, " [%d]", cpm_ptr->pred_b_ptr->cf_num);
 
@@ -64,27 +63,27 @@
 	fputc('[', Outfp);
 
 	if (cpm_ptr->cf.sm[i][0]) {
-	    fprintf(Outfp, "SM:¡û");
+	    fputs("SM:¡û", Outfp);
 	}
 	else {
-	    fprintf(Outfp, "SM:¡ß");
+	    fputs("SM:¡ß", Outfp);
 	}
 
 	/* Ê¬Îà¸ì×ÃÉ½¥³¡¼¥É */
 
 	if (Thesaurus == USE_BGH) {
 	    if (cpm_ptr->cf.ex[i][0]) {
-		fprintf(Outfp, "BGH:¡û");
+		fputs("BGH:¡û", Outfp);
 	    }
 	    else {
-		fprintf(Outfp, "BGH:¡ß");
+		fputs("BGH:¡ß", Outfp);
 	    }
 	}
 
 	fputc(']', Outfp);	
 
 	if (cpm_ptr->cf.oblig[i] == FALSE)
-	    fprintf(Outfp, "*");
+	    fputc('*', Outfp);
     }
     fputc('\n', Outfp);
 }
@@ -93,7 +92,7 @@
    void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr)
 /*==================================================================*/
 {
-    int i, j, num;
+    int i, j, k, num;
 
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPAL¤Ë¤Ê¤¤¾ì¹ç */
 	return;
@@ -127,8 +126,11 @@
 
     /* ³ÊÍ×ÁÇÂÐ±þ¤ÎÉ½¼¨ */
 
+    for (k = 0; k < cmm_ptr->result_num; k++) {
+	if (k != 0)
+	    fputs("---\n", Outfp);
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
-	num = cmm_ptr->result_lists_p[0].flag[i];
+	num = cmm_ptr->result_lists_p[k].flag[i];
 	if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2¤ÏÁ´ÂÎ¤ÇÉÔ°ìÃ× */
 	    fprintf(Outfp, " ¡ü --");
 	}
@@ -143,8 +145,8 @@
 		fputc('*', Outfp);
 
 	    /* ³Ê¤´¤È¤Î¥¹¥³¥¢¤òÉ½¼¨ */
-	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
-		fprintf(Outfp, "¡Î%2dÅÀ¡Ï", cmm_ptr->result_lists_p[0].score[i]);
+	    if (cmm_ptr->result_lists_p[k].score[i] >= 0)
+		fprintf(Outfp, "¡Î%2dÅÀ¡Ï", cmm_ptr->result_lists_p[k].score[i]);
 	}
 
 	fprintf(Outfp, " : ¡Ô");
@@ -179,6 +181,7 @@
 
 	fputc('\n', Outfp);
     }
+}
 }
 
 /*==================================================================*/

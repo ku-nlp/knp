@@ -8,6 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
+int SOTO_SCORE = 7;
+
 char fukugoji_string[64];
 
 char *FukugojiTable[] = {"を除く", "をのぞく", 
@@ -140,12 +142,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("で");
 	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	if (check_feature(b_ptr->f, "デモ")) {
-	    c_ptr->pp[c_ptr->element_num][1] = -1;
-	    c_ptr->pp[c_ptr->element_num][2] = END_M;
-	}
-	else if (check_feature(b_ptr->f, "デ") && 
-		 check_feature(b_ptr->f, "ハ")) {
+	if (check_feature(b_ptr->f, "デモ") || 
+	    check_feature(b_ptr->f, "デハ")) {
 	    c_ptr->pp[c_ptr->element_num][1] = -1;
 	    c_ptr->pp[c_ptr->element_num][2] = END_M;
 	}
@@ -343,13 +341,18 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		}
 	    }
 	} else {
-	    if (b_ptr->parent && 
-		b_ptr->parent->parent) {
-		if (!check_feature(b_ptr->parent->parent->f, "外の関係")) {
+	    cel_b_ptr = b_ptr;
+	    while (cel_b_ptr->parent->para_type == PARA_NORMAL) {
+		cel_b_ptr = cel_b_ptr->parent;
+	    }
+
+	    if (cel_b_ptr->parent && 
+		cel_b_ptr->parent->parent) {
+		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係")) {
 		    _make_data_cframe_pp(cpm_ptr, NULL);
-		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent->parent);
-		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent->parent);
-		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent->parent;
+		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
+		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
+		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
 		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 		    cpm_ptr->cf.element_num ++;

@@ -529,18 +529,6 @@ typedef struct node_para_manager {
     char 	status;
 } PARA_MANAGER;
 
-typedef struct sentence {
-    int 		Sen_num;	/* 文番号 1〜 */
-    int			Mrph_num;
-    int			Bnst_num;
-    int			New_Bnst_num;
-    MRPH_DATA		*mrph_data;
-    BNST_DATA	 	*bnst_data;
-    PARA_DATA		*para_data;
-    PARA_MANAGER	*para_manager;
-    struct sentence	*next;
-} SENTENCE_DATA;
-
 typedef struct _check {
     int num;
     int def;
@@ -686,7 +674,6 @@ typedef struct {
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
 
-#define	SOTO_SCORE		7 /* 10 */
 #define	OPTIONAL_CASE_SCORE	2
 #define	SOTO_ADD_SCORE		5
 
@@ -706,6 +693,25 @@ typedef struct _PreservedNamedEntity {
     int Type;
     struct _PreservedNamedEntity *next;
 } PreservedNamedEntity;
+
+/*====================================================================
+			       文脈処理
+====================================================================*/
+
+typedef struct sentence {
+    int 		Sen_num;	/* 文番号 1〜 */
+    int			Mrph_num;
+    int			Bnst_num;
+    int			New_Bnst_num;
+    MRPH_DATA		*mrph_data;
+    BNST_DATA	 	*bnst_data;
+    PARA_DATA		*para_data;
+    PARA_MANAGER	*para_manager;
+    CF_PRED_MGR		*cpm;
+    CASE_FRAME		*cf;
+    struct sentence	*next;
+    char		*KNPSID;
+} SENTENCE_DATA;
 
 /*====================================================================
                                END

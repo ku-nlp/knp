@@ -101,6 +101,18 @@ jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 char *Opt_jumanrc = NULL;
 
+extern int	DISTANCE_STEP;
+extern int	RENKAKU_STEP;
+extern int	STRONG_V_COST;
+extern int	ADJACENT_TOUTEN_COST;
+extern int	LEVELA_COST;
+extern int	TEIDAI_STEP;
+extern int	EX_match_qua;
+extern int	EX_match_unknown;
+extern int	EX_match_sentence;
+extern int	EX_match_tim;
+extern int	SOTO_SCORE;
+
 /*==================================================================*/
 			     void usage()
 /*==================================================================*/
@@ -132,6 +144,7 @@ char *Opt_jumanrc = NULL;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
     OptLearn = FALSE;
+    OptCaseFlag = 0;
     /*    OptIgnoreChar = (char)NULL;*/
     OptIgnoreChar = '\0';
 
@@ -250,6 +263,69 @@ char *Opt_jumanrc = NULL;
 	    if (argc < 1) usage();
 	    Opt_jumanrc = argv[0];
 	}
+	/* 格解析用オプション */
+	else if (str_eq(argv[0], "-soto")) {
+	    OptCaseFlag |= OPT_CASE_SOTO;
+	}
+	else if (str_eq(argv[0], "-gaga")) {
+	    OptCaseFlag |= OPT_CASE_GAGA;
+	}
+	/* 以下コスト調整用 */
+	else if (str_eq(argv[0], "-dcost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    DISTANCE_STEP = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-rcost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    RENKAKU_STEP = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-svcost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    STRONG_V_COST = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-atcost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    ADJACENT_TOUTEN_COST = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-lacost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    LEVELA_COST = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-tscost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    TEIDAI_STEP = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-quacost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EX_match_qua = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-unknowncost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EX_match_unknown = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-sentencecost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EX_match_sentence = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-timecost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EX_match_tim = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-sotocost")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    SOTO_SCORE = atoi(argv[0]);
+	}
 	else {
 	    usage();
 	}
@@ -362,6 +438,7 @@ char *Opt_jumanrc = NULL;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
+    current_sentence_data.KNPSID = KNPSID;
 
     /* 固有名詞解析辞書オープン */
     if (OptNE != OPT_NORMAL) {
@@ -446,9 +523,9 @@ char *Opt_jumanrc = NULL;
 
 	/* 読み込み */
 
-	if ((flag = read_mrph(Infp)) == EOF) break;
-
 	sp->Sen_num ++;
+
+	if ((flag = read_mrph(Infp)) == EOF) break;
 
 	if (flag == FALSE) continue;
 
@@ -504,6 +581,15 @@ char *Opt_jumanrc = NULL;
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	    print_mrphs(0);
+
+	/* 時間属性を補助的に付与する */
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    if (!check_feature((sp->bnst_data+i)->f, "時間") && 
+		check_feature((sp->bnst_data+i)->f, "体言") && 
+		sm_time_match((sp->bnst_data+i)->SM_code)) {
+		assign_cfeature(&((sp->bnst_data+i)->f), "時間");
+	    }
+	}
 
 	/* FEATURE付与だけの場合 */
 
@@ -639,7 +725,7 @@ char *Opt_jumanrc = NULL;
 	    CheckCandidates();
 
 	if (OptLearn == TRUE)
-	    fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, KNPSID, Best_mgr.score);
+	    fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, sp->KNPSID, Best_mgr.score);
 
 	/* 実験 */
 	if (OptCheck == TRUE)

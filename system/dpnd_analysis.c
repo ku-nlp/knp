@@ -226,7 +226,7 @@ static int dpndID = 0;
 	    (sp->bnst_data + i)->para_num != -1 &&
 	    sp->para_data[(sp->bnst_data + i)->para_num].status != 'x') {
 	    
-	    assign_cfeature(&((sp->bnst_data + i)->f), "ÄóÂê¼õ:30");
+	    assign_cfeature(&((sp->bnst_data + i)->f), "ÄóÂê¼õ:60");
 	}
     }
 }
@@ -518,7 +518,7 @@ static int dpndID = 0;
 	    }
 	}
 	else {
-	    fprintf(Outfp, ";;;OK ¸õÊä %d %s %d\n", dpndID, KNPSID, score);
+	    fprintf(Outfp, ";;;OK ¸õÊä %d %s %d\n", dpndID, sp->KNPSID, score);
 	    for (i = 0;i < sp->Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(Outfp, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);

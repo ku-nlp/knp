@@ -83,6 +83,10 @@ QUOTE_DATA quote_data;
 	}
 	if (check_feature(sp->bnst_data[i].f, "³ç¸Ì½ª")) {
 	    if (s_num == -1) {
+		if (k >= QUOTE_MAX-1) {
+		    fprintf(stderr, "Too many quote (%s) ...\n", Comment);
+		    return CONTINUE;
+		}
 		quote_data.out_num[k] = i; /* ³ç¸Ì½ª¤¬Â¿¤¤¾ì¹ç */
 		k++;
 	    } else {

@@ -484,6 +484,12 @@ extern float ntt_code_match(char *c1, char *c2);
 
     /* 明示されている格助詞の処理 */
     if (target >= 0) {
+	for (i = 0; cfd->pp[target][i] != END_M; i++) {
+	    if (cfd->pp[target][i] < 0) {
+		multi_pp = 1;
+		break;
+	    }
+	}
 	ec_match_flag = 0;
 	for (i = 0; i < cfp->element_num; i++) {
 	    if (list2.flag[i] == UNASSIGNED) {
@@ -572,10 +578,16 @@ extern float ntt_code_match(char *c1, char *c2);
 		}
 	    }
 	}
-	/* return; */
-	list1.flag[target] = UNASSIGNED;
-	target = -1;
-	multi_pp = 1;
+	/* multi_pp のときは list1.flag[target] を UNASSIGNED にして、
+	   明示格を先にチェックする場合と非明示格を先にチェックする場合
+	   の両方をチェックする */
+	if (multi_pp) {
+	    list1.flag[target] = UNASSIGNED;
+	    target = -1;
+	}
+	else {
+	    return;
+	}
     }
 
     /* 明示されていない格助詞のチェック */

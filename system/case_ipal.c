@@ -238,7 +238,13 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    fprintf(stderr, "Not enough sm_num !!\n");
 	    break;
 	}
-	strcat(buf, (char *)sm2code(ipal_str_buf));
+
+	if (!strncmp(ipal_str_buf, "¿ôÎÌ", 4)) {
+	    strcat(buf, (char *)sm2code("¿ôÎÌ"));
+	}
+	else {
+	    strcat(buf, (char *)sm2code(ipal_str_buf));
+	}
     }
     c_ptr->sm[num] = strdup(buf);
 
