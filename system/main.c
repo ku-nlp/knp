@@ -352,9 +352,11 @@ void stand_alone_mode()
 		if (flag == FALSE) continue;
 
 		/* 形態素に意味素を与える */
-		for (i = 0; i < Mrph_num; i++) {
-		    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
-		    assign_ntt_dict(i);
+		if (SMExist == TRUE) {
+		    for (i = 0; i < Mrph_num; i++) {
+			strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+			assign_ntt_dict(i);
+		    }
 		}
 
 		/* 形態素への情報付与 --> 文節 */
@@ -412,7 +414,8 @@ void stand_alone_mode()
 
 		for (i = 0; i < Bnst_num; i++) {
 		    get_bgh_code(bnst_data+i);		/* シソーラス */
-		    get_sm_code(bnst_data+i);		/* 意味素 */
+		    if (SMExist == TRUE)
+			get_sm_code(bnst_data+i);		/* 意味素 */
 		}
 
 		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
@@ -461,38 +464,38 @@ void stand_alone_mode()
 		Revised_para_num = -1;
 
 		if ((flag = check_para_key()) > 0) {
-			calc_match_matrix();		/* 文節間類似度計算 */
-			detect_all_para_scope();	    	/* 並列構造推定 */
-			do {
-				if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
-					print_matrix(PRINT_PARA, 0);
-					/*
-					print_matrix2ps(PRINT_PARA, 0);
-					exit(0);
-					*/
-				}
-				/* 並列構造間の重なり解析 */
-				if (detect_para_relation() == FALSE) {
-					relation_error++;
-					continue;
-				}
-				if (OptDisplay == OPT_DEBUG) print_para_relation();
-				/* 並列構造内の依存構造チェック */
-				if (check_dpnd_in_para() == FALSE) {
-					d_struct_error++;
-					continue;
-				}
-				if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_MASK, 0);
-				goto ParaOK;		/* 並列構造解析成功 */
-			} while (relation_error <= 3 &&
-					 d_struct_error <= 3 &&
-					 detect_para_scope(Revised_para_num, TRUE) == TRUE);
-			ErrorComment = strdup("Cannot detect consistent CS scopes");
-			init_mask_matrix();
-		  ParaOK:
+		    calc_match_matrix();		/* 文節間類似度計算 */
+		    detect_all_para_scope();	    	/* 並列構造推定 */
+		    do {
+			if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+			    print_matrix(PRINT_PARA, 0);
+			    /*
+			      print_matrix2ps(PRINT_PARA, 0);
+			      exit(0);
+			      */
+			}
+			/* 並列構造間の重なり解析 */
+			if (detect_para_relation() == FALSE) {
+			    relation_error++;
+			    continue;
+			}
+			if (OptDisplay == OPT_DEBUG) print_para_relation();
+			/* 並列構造内の依存構造チェック */
+			if (check_dpnd_in_para() == FALSE) {
+			    d_struct_error++;
+			    continue;
+			}
+			if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_MASK, 0);
+			goto ParaOK;		/* 並列構造解析成功 */
+		    } while (relation_error <= 3 &&
+			     d_struct_error <= 3 &&
+			     detect_para_scope(Revised_para_num, TRUE) == TRUE);
+		    ErrorComment = strdup("Cannot detect consistent CS scopes");
+		    init_mask_matrix();
+		ParaOK:
 		}
 		else if (flag == CONTINUE)
-			continue;
+		    continue;
 
 		/* 依存・格構造解析 */
 		para_postprocess();	/* 各conjunctのheadを提題の係り先に */
@@ -531,20 +534,20 @@ void stand_alone_mode()
 
 		/* 認識した固有名詞を保存しておく */
 		if (OptNE != OPT_NORMAL) {
-			preserveNE();
-			if (OptDisplay == OPT_DEBUG)
-				printNE();
+		    preserveNE();
+		    if (OptDisplay == OPT_DEBUG)
+			printNE();
 		}
 
 		/* 文脈解析 */
 		if (OptAnalysis == OPT_DISC) {
-			discourse_analysis();
+		    discourse_analysis();
 
-			/* feature の初期化 */
-			for (i = 0; i < MRPH_MAX; i++)
-				(mrph_data+i)->f = NULL;
-			for (i = 0; i < BNST_MAX; i++)
-				(bnst_data+i)->f = NULL;
+		    /* feature の初期化 */
+		    for (i = 0; i < MRPH_MAX; i++)
+			(mrph_data+i)->f = NULL;
+		    for (i = 0; i < BNST_MAX; i++)
+			(bnst_data+i)->f = NULL;
 		}
     }
 
@@ -629,7 +632,7 @@ void server_mode()
     
 		/* 子作り失敗 しくしく */
 		if((pid = fork()) < 0) {
-			fprintf(stderr,"Frok Error\n");
+			fprintf(stderr,"Fork Error\n");
 			sleep(1);
 			continue;
 		}
