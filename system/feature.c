@@ -72,7 +72,7 @@
        指定したものだけを表示 */
 
     while (fp) {
-	if (fp->cp && strncmp(fp->cp, "Ｔ", 2) && !strncmp(fp->cp, "T", 1))
+	if (fp->cp && strncmp(fp->cp, "Ｃ", 2) && !strncmp(fp->cp, "C", 1))
 	    fprintf(filep, "<%s>", fp->cp); 
 	fp = fp->next;
     }
@@ -491,52 +491,85 @@
       int check_function_NE(char *rule, void *ptr1, void *ptr2)
 /*==================================================================*/
 {
-    char category[7], class[9], eq[3], temp[4];
+    char category[7], cp1[128], cp2[128], cp3[128], cp4[128];
     int n, threshold;
 
-    n = sscanf(rule, "%[^:]:%[^:]:%[^:]:%[^:]", category, class, eq, temp);
+   /* 5 XB:かな漢字:人名:le:33
+      4 単語:人名:gt:3
+      3 細:地名:1
+      2 文字種:カタカナ
+      4 文字種:地名:le:4
+      3 頻度:gt:3 */
+
+    n = sscanf(rule, "%[^:]:%[^:]:%[^:]:%[^:]:%[^:]", category, cp1, cp2, cp3, cp4);
 
     if (n == 2) {
 	if (str_eq(category, "文字種")) {
-	    if (strcmp(check_class((MRPH_DATA *)ptr2), class))
+	    if (strcmp(check_class((MRPH_DATA *)ptr2), cp1))
 		return FALSE;
 	    else
 		return TRUE;
 	}
+
+	fprintf(stderr, "Invalid rule! (%s).\n", rule);
+	return FALSE;
     }
     else if (n == 3) {
 	if (str_eq(category, "細")) {
-	    threshold = atoi(eq);
-	    if (str_eq(class, "その他"))
+	    threshold = atoi(cp2);
+	    if (str_eq(cp1, "その他"))
 		return check_Bunrui_others((MRPH_DATA *)ptr2, threshold);
 	    else
-		return check_Bunrui((MRPH_DATA *)ptr2, class, threshold);
+		return check_Bunrui((MRPH_DATA *)ptr2, cp1, threshold);
 	}
-    }
-    else if (n == 4) {
-	threshold = atoi(temp);
+	else if (str_eq(category, "頻度")) {
+	    threshold = atoi(cp2);
+	    return compare_threshold(((MRPH_DATA *)ptr2)->eNE.self.Count, 
+				     threshold, cp1);
+	}
 
-	if (str_eq(category, "単語"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, class), 
-				     threshold, eq);
-	else if (str_eq(category, "前"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.before, class), 
-				     threshold, eq);
-	else if (str_eq(category, "後"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.after, class), 
-				     threshold, eq);
-	else if (str_eq(category, "AのB"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.AnoB, class), 
-				     threshold, eq);
-	else if (str_eq(category, "BのA"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.BnoA, class), 
-				     threshold, eq);
-	else
-	    fprintf(stderr, "Invalid rule! (%s).\n", rule);
+	fprintf(stderr, "Invalid rule! (%s).\n", rule);
 	return FALSE;
     }
-    else
+    else if (n == 4) {
+	threshold = atoi(cp3);
+
+	if (str_eq(category, "単語"))
+	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, cp1), 
+				     threshold, cp2);
+	else if (str_eq(category, "文字種"))
+	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, cp1), 
+				     threshold, cp2);
+
 	fprintf(stderr, "Invalid rule! (%s).\n", rule);
+	return FALSE;
+    }
+    else if (n == 5) {
+	threshold = atoi(cp4);
+
+	if (str_eq(category, "XB"))
+	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.XB, cp2), 
+				     threshold, cp3) && 
+		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
+	else if (str_eq(category, "AX"))
+	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.AX, cp2), 
+				     threshold, cp3) && 
+		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
+	else if (str_eq(category, "AのX"))
+	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.AnoX, cp2), 
+				     threshold, cp3) && 
+		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
+	else if (str_eq(category, "XのB"))
+	    return (compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.XnoB, cp2), 
+				     threshold, cp3) && 
+		    str_eq(((MRPH_DATA *)ptr2)->eNE.XB.Type, cp1));
+
+	fprintf(stderr, "Invalid rule! (%s).\n", rule);
+	return FALSE;
+    }
+
+    fprintf(stderr, "Invalid rule! (%s).\n", rule);
+    return FALSE;
 }
 
 /*==================================================================*/
