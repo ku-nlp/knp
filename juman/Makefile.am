@@ -1,5 +1,7 @@
 SUBDIRS = .
 
+EXTRA_DIST = VERSION
+
 INCLUDES = @JUMAN_CFLAGS@
 
 noinst_LIBRARIES = libjuman.a
