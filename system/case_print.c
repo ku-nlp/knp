@@ -329,6 +329,60 @@ int	EX_PRINT_NUM = 10;
     fputs("</Case Structure Analysis Data>\n", Outfp);
 }
 
+/*==================================================================*/
+	      void print_pa_structure(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int p, i, num;
+    CF_PRED_MGR *cpm_ptr;
+    char relation[DATA_LEN], *word;
+
+    /* 前から順番に、Predicate-Argument Structure を出力 */
+
+    for (p = sp->Best_mgr->pred_num-1; p >= 0; p--) {
+	cpm_ptr = &(sp->Best_mgr->cpm[p]);
+	fprintf(Outfp, "%2d %s", sp->Best_mgr->pred_num-1-p, L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi);
+
+	/* 入力側の各格要素の記述 */
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    /* 指示詞の解析をする場合は、指示詞を除く */
+	    if (OptDemo == TRUE && 
+		check_feature(cpm_ptr->elem_b_ptr[i]->f, "省略解析対象指示詞")) {
+		continue;
+	    }
+
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+
+	    /* 割り当てなし */
+	    if (num == NIL_ASSIGNED) {
+		/* 割り当てなしだが、入力側の格が明示されている場合はそれを表示
+		   (格の可能性はひとつしかなく、未格以外) */
+		/* ★「へ」も扱いたい (現在は「へ/ニ」となっている) */
+		if (cpm_ptr->cf.pp[i][1] == END_M && 
+		    cpm_ptr->cf.pp[i][0] >= 0) {
+		    strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
+		}
+		else {
+		    continue;
+		}
+	    }
+	    /* 割り当てられている格 */
+	    else if (num >= 0) {
+		strcpy(relation, pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+	    }
+
+	    word = make_print_string(cpm_ptr->elem_b_ptr[i]);
+	    if (word) {
+		/* 省略の場合は * を付与 */
+		fprintf(Outfp, " %s:%s%s", word, relation, cpm_ptr->elem_b_num[i] == -2 ? "*" : "");
+		free(word);
+	    }
+	}
+	fputc('\n', Outfp);
+    }
+    fputs("EOS\n", Outfp);
+}
+
 /*====================================================================
                                END
 ====================================================================*/

@@ -976,22 +976,15 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
     fprintf(Outfp, "\n");
 
-    /* チェック用
-    if (OptCheck == TRUE)
-	for (i = 0; i < sp->Bnst_num; i++)
-	    if (tm->dpnd.check[i].num != -1) {
-		fprintf(Outfp, ";;;(check) %2d %2d %d (%d)", i, tm->dpnd.head[i], tm->dpnd.check[i].num, tm->dpnd.check[i].def);
-		for (j = 0; j < tm->dpnd.check[i].num; j++)
-		    fprintf(Outfp, " %d", tm->dpnd.check[i].pos[j]);
-		fprintf(Outfp, "\n");
-	    }
-	    */
-
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
 	print_mrphs(sp, 1);
-    } else {
+    }
+    else if (OptExpress == OPT_PA) {
+	print_pa_structure(sp);
+    }
+    else {
 	make_dpnd_tree(sp);
 	print_kakari(sp);
     }

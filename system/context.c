@@ -736,7 +736,7 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
     if (!check_feature(bp->f, "修飾") && 
 	!check_feature(bp->f, "修飾的") && 
 	!check_feature(bp->f, "形副名詞") && 
-	!check_feature(bp->f, "時間") && 
+	!check_feature(bp->f, "強時間") && 
 	!check_feature(bp->f, "指示詞") && 
 	!check_feature(bp->f, "ID:（〜を）〜に") && 
 	!check_feature(bp->f, "外の関係") && 
@@ -956,7 +956,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 				 "EllipsisSvmFeaturesString2FeatureString");
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%d:%s", 
 	    word, pp_code_to_kstr(pp), sid, num, ecp);
-    assign_cfeature(&(em_ptr->f), buffer);
+    /* assign_cfeature(&(em_ptr->f), buffer); */
     free(buffer);
 }
 
@@ -1293,9 +1293,11 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     /* 対象用言と候補が同じ自立語のとき
        判定詞の場合だけ許す */
     if (str_eq(cpm_ptr->pred_b_ptr->Jiritu_Go, bp->Jiritu_Go)) {
-	if (!check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	if (!(check_feature(cpm_ptr->pred_b_ptr->f, "用言:判") && 
+	      MatchPP(cf_ptr->pp[n][0], "ガ"))) {
 	    return;
 	}
+	/* 判定詞でガ格のときだけ */
 	sameflag = 1;
     }
     else {
@@ -1589,20 +1591,6 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	else {
 	    maxi = bp->num;
 	}
-
-	if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
-	    sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-		    L_Jiritu_M(bp)->Goi, 
-		    pos == MATCH_NONE ? "NONE" : "SUBJECT");
-	}
-	else {
-	    sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%.3f", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-		    L_Jiritu_M(bp)->Goi, 
-		    cf_ptr->ex_list[n][pos], rawscore);
-	}
-	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 
     /* 省略候補 (rawscore == 0 の場合も候補として出力) */
@@ -2074,28 +2062,29 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
        3. 〜が V した N (外の関係, !判定詞), 形副名詞, 相対名詞は除く
        4. スコアが閾値より下でガ格 <主体> をとるとき */
     else if (((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
-	 MatchPP(cf_ptr->pp[n][0], cp+9)) || 
-	(MatchPP(cf_ptr->pp[n][0], "ガ") && 
-	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
-	 (maxscore <= AssignGaCaseThreshold)) || 
-	(MatchPP(cf_ptr->pp[n][0], "ニ") && 
-	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
-	 !cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 
-	 maxscore <= AssignGaCaseThreshold && 
-	 (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
-	  check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
-	  check_feature(cpm_ptr->pred_b_ptr->f, "追加受身") || 
-	  check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析"))) || 
-	(cpm_ptr->pred_b_ptr->parent && 
-	 (check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係") || 
-	  check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係可能性") || 
-	  check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係判定")) && 
-	 !check_feature(cpm_ptr->pred_b_ptr->parent->f, "時間") && 
-	 !check_feature(cpm_ptr->pred_b_ptr->parent->f, "相対名詞") && 
-	 !check_feature(cpm_ptr->pred_b_ptr->parent->f, "形副名詞") && 
-	 !check_feature(cpm_ptr->pred_b_ptr->parent->f, "用言") && 
-	 check_feature(cpm_ptr->pred_b_ptr->f, "係:連格") && 
-	 cf_ptr->pp[n][0] == pp_kstr_to_code("ガ"))) {
+	      MatchPP(cf_ptr->pp[n][0], cp+9)) || 
+	     (cmm_ptr->result_lists_p[0].flag[n] == UNASSIGNED && /* 指示詞ではない */
+	      ((MatchPP(cf_ptr->pp[n][0], "ガ") && 
+		cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
+		(maxscore <= AssignGaCaseThreshold)) || 
+	       (MatchPP(cf_ptr->pp[n][0], "ニ") && 
+		cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
+		!cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 
+		maxscore <= AssignGaCaseThreshold && 
+		(check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
+		 check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
+		 check_feature(cpm_ptr->pred_b_ptr->f, "追加受身") || 
+		 check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析"))) || 
+	       (cpm_ptr->pred_b_ptr->parent && 
+		(check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係") || 
+		 check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係可能性") || 
+		 check_feature(cpm_ptr->pred_b_ptr->parent->f, "外の関係判定")) && 
+		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "時間") && 
+		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "相対名詞") && 
+		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "形副名詞") && 
+		!check_feature(cpm_ptr->pred_b_ptr->parent->f, "用言") && 
+		check_feature(cpm_ptr->pred_b_ptr->f, "係:連格") && 
+		cf_ptr->pp[n][0] == pp_kstr_to_code("ガ"))))) {
 	/* 格フレームを決めるループのときに feature を与えるのは問題 */
 	sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
@@ -2160,9 +2149,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	return 1;
     }
     /* 格解析で格フレームを決定していたら閾値なし
-       その他の場合は閾値: AssignReferentThreshold */
+       その他の場合は閾値: AssignReferentThreshold
+       指示詞のときは閾値なし */
     else if (maxscore > 0 && 
-	     ((cpm_ptr->decided == CF_DECIDED && 
+	     (cmm_ptr->result_lists_p[0].flag[n] != UNASSIGNED || /* 指示詞 */
+	      (cpm_ptr->decided == CF_DECIDED && 
 	       maxscore > AssignReferentThresholdDecided) || /* maxscore == 0 のとき省略の割り当てはないので > 0 にする必要がある */
 	      maxscore > AssignReferentThreshold)) {
 	int distance;
@@ -2857,6 +2848,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		/* fix_sm_place(sp, cpm_ptr); */
 		/* 格解析の結果を feature へ */
+		record_match_ex(sp, cpm_ptr);
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 		/* 保存するデータにも (★非効率)
 		cs = sentence_data + sp->Sen_num - 1;

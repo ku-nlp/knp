@@ -134,6 +134,7 @@ extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, in
 extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
 extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
@@ -169,6 +170,7 @@ extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int ipal_num);
 extern void print_case_result(SENTENCE_DATA *sp);
 extern void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
+extern void print_pa_structure(SENTENCE_DATA *sp);
 
 /* configfile.c */
 extern char *check_dict_filename(char *file, int flag);

@@ -150,6 +150,7 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;

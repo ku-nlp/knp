@@ -100,6 +100,7 @@
 #define OPT_TREEF	2
 #define OPT_SEXP	3
 #define OPT_TAB		4
+#define OPT_PA		5
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3

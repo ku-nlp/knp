@@ -821,6 +821,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    assign_gaga_slot(sp, &(sp->Best_mgr->cpm[i]));
 		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
 		    fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
+		    /* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); */
 		    /* 格解析の結果を featureへ */
 		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
 		}

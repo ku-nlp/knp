@@ -174,7 +174,8 @@ int	ParaThesaurus = USE_BGH;
 	else {
 	    /* 「お鍋」など一形態素になっている場合があるので
 	       "お" をとってみる => 形態素マッチ */
-	    if (!strncmp(str_buffer, "お", 2)) {
+	    if (strlen(str_buffer) > 2 && 
+		!strncmp(str_buffer, "お", 2)) {
 		code = get_str_code(str_buffer+2, flag);
 		if (code) {
 		    strcpy(result_code, code);

@@ -1279,6 +1279,37 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
+    void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i, num, pos;
+    char feature_buffer[DATA_LEN];
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	if (num != NIL_ASSIGNED && /* 割り当てがある */
+	    (cpm_ptr->elem_b_num[i] == -2 || /* 省略 */
+	     cpm_ptr->cf.pp[i][0] < 0)) { /* 〜は, 連体修飾 */
+	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
+	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
+		sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
+			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
+			L_Jiritu_M(cpm_ptr->elem_b_ptr[i])->Goi, 
+			pos == MATCH_NONE ? "NONE" : "SUBJECT");
+	    }
+	    else {
+		sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%d", 
+			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
+			L_Jiritu_M(cpm_ptr->elem_b_ptr[i])->Goi, 
+			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
+			cpm_ptr->cmm[0].result_lists_p[0].score[num]);
+	    }
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	}
+    }
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
@@ -1340,6 +1371,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    /* 割り当てなしだが、入力側の格が明示されている場合はそれを表示
 	       (格の可能性はひとつしかなく、未格以外) */
+	    /* ★「へ」も扱いたい (現在は「へ/ニ」となっている) */
 	    else if (cpm_ptr->cf.pp[i][1] == END_M && 
 		     cpm_ptr->cf.pp[i][0] >= 0) {
 		strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
@@ -1363,6 +1395,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		}
 	    }
 	}
+	/* 割り当てられている格 */
 	else if (num >= 0) {
 	    /* 格フレームに割りあててあるガガ格 */
 	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ２")) {
