@@ -1012,6 +1012,12 @@
 	}
     }
 
+    /* &ST : 並列構造解析での類似度の閾値 (ここでは無視) */
+    
+    else if (!strncmp(rule, "&ST", strlen("&ST"))) {
+	return TRUE;
+    }
+
     else {
 #ifdef DEBUG
 	fprintf(stderr, "Invalid Feature-Function (%s)\n", rule);
