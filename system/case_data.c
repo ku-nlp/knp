@@ -373,7 +373,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    }
 	    orig_child_num = child_num;
 	    for (i = 0; t_ptr->child[i]; i++) {
-		b_ptr->child[child_num+i] = t_ptr->child[i];
+		b_ptr->child[orig_child_num+i] = t_ptr->child[i];
 		child_num++;
 	    }
 	}
