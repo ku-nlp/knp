@@ -1,3 +1,7 @@
+2002-03-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/Makefile.orig: 辞書ディレクトリの修正
+
 2002-03-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/hash.c: New file.

@@ -12,6 +12,9 @@
 #----------------------------------------
 
 KNP_DIR  := /share/tool/knp
+KNP_SYS  := $(KNP_DIR)/system
+KNP_DICT := $(KNP_DIR)/dict
+
 TEMPDIR  := /tmp
 MAKE_DB  := ../system/make_db
 IPAL_CMD := ../system/ipal
@@ -25,13 +28,10 @@ IPALA1_FILE := /share/dict/ipal/orig/keiyou/keiyou1.txt
 IPALA2_FILE := /share/dict/ipal/orig/keiyou/keiyou2.txt
 IPALN_DIR   := /share/dict/ipal_noun_31/3.1/data
 
-WORD2CODE   := /share/dict/ntt/data/word2code
-SM2CODE     := /share/dict/ntt/data/sm2code
-CODE2SM     := /share/dict/ntt/data/code2sm
-SMP2SMG     := /share/dict/ntt/data/smp2smg
-
-KNP_SYS  := $(KNP_DIR)/system
-KNP_DICT := $(KNP_DIR)/dict
+WORD2CODE   := sm/word2code.dat
+SM2CODE     := sm/sm2code.dat
+CODE2SM     := sm/code2sm.dat
+SMP2SMG     := sm/smp2smg.dat
 
 #----------------------------------------
 #	Compiler Options
@@ -99,7 +99,7 @@ database_ipal :
 #	Target(2): make_hashdb
 #----------------------------------------
 
-make_hashdb : hashdb_bgh hashdb_sm hashdb_scase hashdb_rsk hashdb_ipal
+make_hashdb : hashdb_bgh hashdb_sm hashdb_scase hashdb_ipal
 
 hashdb_sm : hashdb_word2code hashdb_sm2code hashdb_code2sm hashdb_smp2smg
 
