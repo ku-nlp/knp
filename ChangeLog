@@ -1,3 +1,16 @@
+2003-12-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c: 名詞格フレームのPATHを指定可能に
+
+	* system/case_ipal.c, system/const.h, system/dpnd_analysis.c, sysmem/extern.h, system/lib_sm.c, system/thesaurus.c:
+	格フレームの意味素制限情報を利用するようにした。
+
+	* system/case_analysis.c, system/context.c:
+	名詞関係解析で親用言から見るようにした
+	feature表示の修正
+
+	* system/context.h: Added.
+
 2003-12-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
