@@ -1,3 +1,8 @@
+2004-12-22  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule:
+	修飾語を追加
+	
 2004-12-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/gcf/scase.dat:
