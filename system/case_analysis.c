@@ -1342,7 +1342,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
 	/* 割り当てられている格 */
 	else if (num >= 0) {
-	    /* 格フレームに割りあててあるガガ格 */
+	    /* 格フレームに割りあててあるガ２格 */
 	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ２")) {
 		strcpy(relation, "ガガ");
 		/* sprintf(feature_buffer, "%s判定", relation);
@@ -1350,7 +1350,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    else {
 		strcpy(relation, 
-		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+		       pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
 
 	    /* 格関係の保存 (文脈解析用) */
