@@ -143,11 +143,11 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	exit(1);
     }
 
-    free(file_name);
-
     if (OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Reading %s ... ", file_name);
     }
+
+    free(file_name);
 
     LineNo = 1;
 
@@ -204,12 +204,12 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	exit(1);
     }
 
-    free(file_name);
-
     if (OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Reading %s ... ", file_name);
     }
     
+    free(file_name);
+
     LineNo = 1;
 
     while (!s_feof(fp)) {
@@ -258,11 +258,11 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	exit(1);
     }
 
-    free(file_name);
-
     if (OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Reading %s ... ", file_name);
     }
+
+    free(file_name);
 
     LineNo = 1;
 
@@ -314,11 +314,11 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	exit(1);
     }
 
-    free(file_name);
-
     if (OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Reading %s ... ", file_name);
     }
+
+    free(file_name);
 
     LineNo = 1;
 
