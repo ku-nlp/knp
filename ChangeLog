@@ -1,3 +1,15 @@
+2002-12-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_trivial.phrase: deleted.
+
+	* system/const.h, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/thesaurus.c:
+	カウンタはそれ自身から意味属性を得るようにした
+
+2002-12-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_trivial.phrase, rule/kakari_uke.rule:
+	「些細表現」まわりの修正
+
 2002-12-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule: 無格従属が扱われていなかったのを修正
