@@ -16,8 +16,14 @@
 #include "dbm.h"
 #include "extern.h"
 
-DBM_FILE	proper_db, properc_db, propercase_db;
+DBM_FILE	proper_db = NULL, properc_db = NULL, propercase_db = NULL;
 int		PROPERExist = 0;
+
+char *CaseList[] = {"カラ格", "ガ格", "デ格", "ト格", "ニ格", "ノ格", 
+		    "ヘ格", "マデ格", "ヨリ格", "ヲ格", "体言NONE", 
+		    "中断線", "同格未格", "同格連体", "同格連用", 
+		    "文末", "未格", "無格", "用言強NONE", "隣接", 
+		    "連格", "連体", "連用", ""};
 
 /*==================================================================*/
 			   void init_proper()
@@ -26,10 +32,6 @@ int		PROPERExist = 0;
     if ((proper_db = DBM_open(PROPER_DB_NAME, O_RDONLY, 0)) == NULL || 
 	(properc_db = DBM_open(PROPERC_DB_NAME, O_RDONLY, 0)) == NULL || 
 	(propercase_db = DBM_open(PROPERCASE_DB_NAME, O_RDONLY, 0)) == NULL) {
-        /* 
-	   fprintf(stderr, "Can not open Database <%s>.\n", PROPER_DB_NAME);
-	   exit(1);
-	*/
 	PROPERExist = FALSE;
     } else {
 	PROPERExist = TRUE;
@@ -102,6 +104,7 @@ int		PROPERExist = 0;
     _init_NE(&(np->AX));
     _init_NE(&(np->self));
     _init_NE(&(np->selfSM));
+    _init_NE(&(np->Case));
 }
 
 /*==================================================================*/
@@ -255,7 +258,7 @@ int		PROPERExist = 0;
 }
 
 /*==================================================================*/
-struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp)
+     struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2)
 /*==================================================================*/
 {
     int n1, n2;
@@ -300,7 +303,7 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp)
 }
 
 /*==================================================================*/
-       struct _pos_s _NE2mrphS(struct _pos_s *p, MRPH_DATA *mp)
+	      struct _pos_s _NE2mrphS(struct _pos_s *p)
 /*==================================================================*/
 {
     int n;
@@ -336,12 +339,12 @@ struct _pos_s _NE2mrph(struct _pos_s *p1, struct _pos_s *p2, MRPH_DATA *mp)
   void NE2mrph(NamedEntity *np1, NamedEntity *np2, MRPH_DATA *mp)
 /*==================================================================*/
 {
-    mp->NE.AnoX = _NE2mrph(&(np1->AnoX), &(np2->AnoX), mp);
-    mp->NE.XnoB = _NE2mrph(&(np1->XnoB), &(np2->XnoB), mp);
-    mp->NE.XB = _NE2mrph(&(np1->XB), &(np2->XB), mp);
-    mp->NE.AX = _NE2mrph(&(np1->AX), &(np2->AX), mp);
-    mp->NE.self = _NE2mrphS(&(np1->self), mp);
-    mp->NE.selfSM = _NE2mrphS(&(np2->selfSM), mp);
+    mp->NE.AnoX = _NE2mrph(&(np1->AnoX), &(np2->AnoX));
+    mp->NE.XnoB = _NE2mrph(&(np1->XnoB), &(np2->XnoB));
+    mp->NE.XB = _NE2mrph(&(np1->XB), &(np2->XB));
+    mp->NE.AX = _NE2mrph(&(np1->AX), &(np2->AX));
+    mp->NE.self = _NE2mrphS(&(np1->self));
+    mp->NE.selfSM = _NE2mrphS(&(np2->selfSM));
 }
 
 /*==================================================================*/
@@ -414,6 +417,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     _NE2feature(&(mp->eNE.AX), mp, "AX", 1);
     _NE2feature(&(mp->eNE.self), mp, "単語", 2);
     _NE2feature(&(mp->eNE.selfSM), mp, "文字種", 0);
+    _NE2feature(&(mp->eNE.Case), mp, "格", 0);
 }
 
 /*==================================================================*/
@@ -468,6 +472,26 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    }
 	}
 	/* store_NE(&ne[0], pre_pos); */
+    }
+}
+
+/*==================================================================*/
+		 void store_NEC(char *feature, int i)
+/*==================================================================*/
+{
+    char type[256];
+    int j, offset;
+    struct _pos_s ne;
+
+    sscanf(feature, "%[^:]", type);
+    offset = strlen(type)+1;
+
+    for (j = 0; CaseList[j][0]; j++) {
+	if (str_eq(type, CaseList[j])) {
+	    _store_NE(&ne, feature+offset, NULL);
+	    mrph_data[i].Case[j] = _NE2mrphS(&ne);
+	    break;
+	}
     }
 }
 
@@ -540,6 +564,19 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	}
     }
 
+    /* 格 */
+    dic_content = get_proper(mp->Goi, propercase_db);
+    if (*dic_content != NULL) {
+	for (cp = pre_pos = dic_content; *cp; cp++) {
+	    if (*cp == '/') {
+		*cp = '\0';
+		store_NEC(pre_pos, num);
+		pre_pos = cp + 1;
+	    }
+	}
+	store_NEC(pre_pos, num);
+    }
+
     /*            ne[0]    ne[1]
 	   -----------------
 	   XB     表記     意味素
@@ -550,6 +587,111 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	   selfSM          文字種 */
 
     NE2mrph(&ne[0], &ne[1], mp);
+}
+
+/*==================================================================*/
+			  void NE_analysis()
+/*==================================================================*/
+{
+    int i, j, k, h, pos, apos, flag = 0, match_tail;
+    char decision[9], *cp;
+    MrphRule *r_ptr;
+    MRPH_DATA *m_ptr;
+    BNST_DATA *b_ptr;
+    TOTAL_MGR *tm = &Best_mgr;
+
+    for (i = 0; i < Mrph_num; i++) {
+	mrph_data[i].SM[0] = '\0';
+	init_NE(&(mrph_data[i].NE));
+	init_NE(&(mrph_data[i].eNE));
+	assign_f_from_dic(i);
+
+	/* 単語と文字種のコピー */
+	mrph_data[i].eNE.self = mrph_data[i].NE.self;
+	mrph_data[i].eNE.selfSM = mrph_data[i].NE.selfSM;
+    }
+
+    /* とりあえずすべての形態素にふっておこう */
+    for (i = 0; i < Mrph_num; i++) {
+	/* 前の隣接語 (自立語, 名詞性名詞接尾辞, 名詞接頭辞だけ) */
+	if (i > 0)
+	    mrph_data[i].eNE.AX = mrph_data[i-1].NE.AX;
+
+	/* 後の隣接語 (自立語, 名詞性名詞接尾辞, 名詞接頭辞だけ) */
+	if (i < Mrph_num-1)
+	    mrph_data[i].eNE.XB = mrph_data[i+1].NE.XB;
+
+	/* A の B */
+	if (flag != 2 && mrph_data[i].Hinshi == 6 && check_feature(mrph_data[i].f, "自立")) {
+	    flag = 1;
+	    apos = i;
+	}
+	else if (flag == 1 && str_eq(mrph_data[i].Goi, "の") && mrph_data[i].Hinshi == 9) {
+	    flag = 2;
+	}
+	else if (flag == 2 && mrph_data[i].Hinshi == 6 && check_feature(mrph_data[i].f, "自立")) {
+	    mrph_data[i].eNE.AnoX = mrph_data[apos].NE.AnoX;
+	    mrph_data[apos].eNE.XnoB = mrph_data[i].NE.XnoB;
+
+	    flag = 1;
+	    apos = i;
+	}
+	else {
+	    flag = 0;
+	}
+    }
+
+    /* 格 */
+    for (i = 0; i < Bnst_num; i++) {
+	h = tm->dpnd.head[i];
+	cp = check_feature(bnst_data[i].f, "係");
+	if (cp) {
+	    for (j = 0; CaseList[j][0]; j++) {
+		if (str_eq(cp+3, CaseList[j])) {
+		    bnst_data[i].mrph_ptr->eNE.Case = bnst_data[h].mrph_ptr->Case[j];
+		    break;
+		}
+	    }
+	}
+    }
+
+    /* ルールの適用 (eNE に対して) */
+    for (i = 0; i < Mrph_num; i++) {
+	m_ptr = mrph_data + i;
+	/* feature へ */
+	NE2feature(m_ptr);
+
+	/* 細分類決定 */
+	for (j = 0, r_ptr = NERuleArray; j < CurNERuleSize; j++, r_ptr++) {
+    	    if (regexpmrphrule_match(r_ptr, m_ptr) == TRUE) {
+		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+
+		/* 形態素細分類の変更
+		sscanf(r_ptr->f->cp, "%*[^:]:%*[^:]:%s", decision);
+		if (strcmp(decision, "その他"))
+		    m_ptr->Bunrui = get_Bunrui(decision);
+		    */
+		break;
+	    }
+	}
+    }
+
+    /* 複合名詞ルールの適用 */
+    for (i = 0; i < Mrph_num; i++) {
+	m_ptr = mrph_data + i;
+
+	for (j = 0, r_ptr = CNRuleArray; j < CurCNRuleSize; j++, r_ptr++) {
+            if (r_ptr->self_pattern->mrph->Goi[0] &&
+                !strcmp(r_ptr->self_pattern->mrph->Goi[0], "特別")) {
+                if ((match_tail = regexpmrphrule_match2(r_ptr, m_ptr)) != -1) {
+                    for (k = i; k < (Mrph_num - match_tail); k++) {
+                        m_ptr = mrph_data + k;
+                        assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+                    }
+                }
+            }
+	}
+    }
 }
 
 /*====================================================================
