@@ -1,3 +1,8 @@
+2004-04-15  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule:
+	外の関係＋副詞的名詞の間接照応解析をストップ
+
 2004-11-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/para_dpnd.c:
