@@ -149,7 +149,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 /*==================================================================*/
 {
-    int pp_num = 0, cc;
+    int pp_num = 0, cc, not_flag;
     char *buffer, *start_cp, *loop_cp;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     FEATURE *fp;
@@ -179,29 +179,39 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    buffer = strdup(start_cp+5);
 	    start_cp = buffer;
 	    loop_cp = start_cp;
-	    flag = 0;
+	    flag = 1; /* 2: OK, 1: Ì¤Äê, 0: NG */
+	    not_flag = 0;
 	    while (*loop_cp) {
-		if (flag == 0 && *loop_cp == '&' && *(loop_cp+1) == '&') {
+		if (flag == 1 && *loop_cp == '&' && *(loop_cp+1) == '&') {
 		    *loop_cp = '\0';
-		    if (!check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
-			flag = 0;
-			break;
+		    if ((!not_flag && !check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) || 
+			(not_flag && check_feature(cpm_ptr->pred_b_ptr->f, start_cp))) {
+			flag = 0; /* NG */
 		    }
 		    loop_cp += 2;
 		    start_cp = loop_cp;
+		    not_flag = 0;
 		}
-		else if (flag == 0 && *loop_cp == '|' && *(loop_cp+1) == '|') {
-		    *loop_cp = '\0';
-		    if (check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
-			flag = 1;
-			break;
+		else if (flag < 2 && *loop_cp == '|' && *(loop_cp+1) == '|') {
+		    if (flag == 1) {
+			*loop_cp = '\0';
+			if ((!not_flag && check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) || 
+			    (not_flag && !check_feature(cpm_ptr->pred_b_ptr->f, start_cp))) {
+			    flag = 2; /* OK */
+			}
+		    }
+		    else {
+			flag = 1; /* 0 -> 1 */
 		    }
 		    loop_cp += 2;
 		    start_cp = loop_cp;
+		    not_flag = 0;
 		}
 		else if (*loop_cp == ':') {
 		    *loop_cp = '\0';
-		    if (flag == 1 || check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
+		    if (flag == 2 || (flag == 1 && 
+			(!not_flag && check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) || 
+			(not_flag && !check_feature(cpm_ptr->pred_b_ptr->f, start_cp)))) {
 			if (_make_data_from_feature_to_pp(cpm_ptr, b_ptr, &pp_num, loop_cp+1) == FALSE) {
 			    free(buffer);
 			    return NULL;
@@ -210,6 +220,9 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 		    break;
 		}
 		else {
+		    if (*loop_cp == '^') {
+			not_flag = 1;
+		    }
 		    loop_cp++;
 		}
 	    }
