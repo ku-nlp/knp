@@ -196,7 +196,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     new_ptr = sp->bnst_data + sp->Bnst_num + sp->New_Bnst_num;
     sp->New_Bnst_num++;
     if ((sp->Bnst_num + sp->New_Bnst_num) > BNST_MAX) {
-	fprintf(stderr, "Too many nodes in expanding para top .\n");
+	fprintf(stderr, ";; Too many nodes in expanding para top .\n");
 	exit(1);
     }
     if (sp->Max_New_Bnst_num < sp->New_Bnst_num) {
@@ -311,7 +311,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 		sp->New_Bnst_num++;
 		if ((sp->Bnst_num + sp->New_Bnst_num) > BNST_MAX) {
 		    fprintf(stderr, 
-			    "Too many nodes in expanding incomplete para .\n");
+			    ";; Too many nodes in expanding incomplete para .\n");
 		    exit(1);
 		}
 		*new_ptr = *b_ptr;		/* ¥³¥Ô¡¼ */

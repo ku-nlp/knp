@@ -84,7 +84,7 @@
     memset(hashdb->hddata, 0, sizeof(HASH_DATA_UNIT_INTERNAL *)*TBLSIZE);
 
     if ((hashdb->fp = fopen(file, "w")) == NULL) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file);
+	fprintf(stderr, ";; Cannot open file (%s) !!\n", file);
 	exit(1);
     }
 
@@ -227,7 +227,7 @@
     for (i = 0; i < NSEED; ++i) {
 	for (j = 0; j < NSIZE; ++j) {
 	    if (fwrite(&(hashdb->seed[i][j]), sizeof(unsigned int), 1, hashdb->fp) < 1) {
-		fprintf(stderr, "Error in fwrite.\n");
+		fprintf(stderr, ";; Error in fwrite.\n");
 		exit(1);
 	    }
 	}
@@ -267,7 +267,7 @@
 	    hhu.pos = 0;
 	}
 	if (fwrite(&hhu, sizeof(HASH_HEADER_UNIT), 1, hashdb->fp) < 1) {
-	    fprintf(stderr, "Error in fwrite.\n");
+	    fprintf(stderr, ";; Error in fwrite.\n");
 	    exit(1);
 	}
     }
@@ -277,7 +277,7 @@
 	if (hashdb->hddata[i]) {
 	    /* 個数の書き込み */
 	    if (fwrite(&cdata[i], sizeof(int), 1, hashdb->fp) < 1) {
-		fprintf(stderr, "Error in fwrite.\n");
+		fprintf(stderr, ";; Error in fwrite.\n");
 		exit(1);
 	    }
 
@@ -288,7 +288,7 @@
 		hdu.value_size = hdp->value_size;
 
 		if (fwrite(&hdu, sizeof(HASH_DATA_UNIT), 1, hashdb->fp) < 1) {
-		    fprintf(stderr, "Error in fwrite.\n");
+		    fprintf(stderr, ";; Error in fwrite.\n");
 		    exit(1);
 		}
 
@@ -299,7 +299,7 @@
 	    hdp = hashdb->hddata[i];
 	    while (hdp) {
 		if (fwrite(hdp->key, hdp->key_size, 1, hashdb->fp) < 1) {
-		    fprintf(stderr, "Error in fwrite.\n");
+		    fprintf(stderr, ";; Error in fwrite.\n");
 		    exit(1);
 		}
 
@@ -310,7 +310,7 @@
 	    hdp = hashdb->hddata[i];
 	    while (hdp) {
 		if (fwrite(hdp->value, hdp->value_size, 1, hashdb->fp) < 1) {
-		    fprintf(stderr, "Error in fwrite.\n");
+		    fprintf(stderr, ";; Error in fwrite.\n");
 		    exit(1);
 		}
 

@@ -98,7 +98,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     pref_rule = 0;
     for (i = 0, r_ptr = HomoRuleArray; i < CurHomoRuleSize; i++, r_ptr++) {
 	if (r_ptr->pattern->mrphsize > HOMO_MRPH_MAX) {
-	    fprintf(stderr, "The number of Rule morphs is too large in HomoRule.\n");
+	    fprintf(stderr, ";; The number of Rule morphs is too large in HomoRule.\n");
 	    exit(1);
 	}
 	pref_mrph = 0;
@@ -255,7 +255,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer), "read_mrph");
 	    sscanf(input_buffer, "# %s", sp->KNPSID);
 
-	    /* 文章が変わったら固有名詞スタックをクリア */
+	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
 		index(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
 		sscanf(input_buffer, "# S-ID:%d", &ArticleID);

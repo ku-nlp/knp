@@ -183,7 +183,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	}
     }
 
-    fprintf(stderr, "Error in compare_dpnd !!\n");
+    fprintf(stderr, ";; Error in compare_dpnd !!\n");
     exit(1);
 }
 

@@ -198,6 +198,24 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
+		    int MatchPPn(int n, int *list)
+/*==================================================================*/
+{
+    int i;
+
+    if (n < 0) {
+	return 0;
+    }
+
+    for (i = 0; list[i] != END_M; i++) {
+	if (n == list[i]) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 		     int MatchPP(int n, char *pp)
 /*==================================================================*/
 {
@@ -499,8 +517,9 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	   1. ºÇ¶á³ÊÍ×ÁÇ¤¬»Ø¼¨»ì¤Î¾ì¹ç ¡ú³Ê¤À¤±¥Þ¥Ã¥Á¤µ¤»¤ë?
 	   2. ¥¬³Ê¤Ç°ÕÌ£ÁÇ¤¬¤Ê¤¤¤È¤­ */
 	if (check_feature((sp->bnst_data+min)->f, "»Ø¼¨»ì") || 
-	    ((sp->bnst_data+min)->SM_code[0] == '\0' && 
-	      MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥¬"))) {
+	    (Thesaurus == USE_NTT && 
+	     (sp->bnst_data+min)->SM_code[0] == '\0' && 
+	     MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥¬"))) {
 	    return -2;
 	}
 	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* Ì¤³Ê */
@@ -522,11 +541,11 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
-	static int number_compare(const int *i, const int *j)
+	static int number_compare(const void *i, const void *j)
 /*==================================================================*/
 {
     /* sort function */
-    return *i-*j;
+    return *(const int *)i-*(const int *)j;
 }
 
 /*==================================================================*/

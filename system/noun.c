@@ -27,7 +27,7 @@ int	NounExist = 0;
     }
 
     if ((noun_db = DB_open(db_filename, O_RDONLY, 0)) == NULL) {
-	fprintf(stderr, "Cannot open Noun Database <%s>.\n", db_filename);
+	fprintf(stderr, ";; Cannot open Noun Database <%s>.\n", db_filename);
 	exit(1);
     }
 

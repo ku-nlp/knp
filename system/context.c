@@ -65,6 +65,8 @@ char *CaseOrder[CASE_ORDER_MAX][4] = {
     {"ヲ", "ニ", "ガ", ""}, 
     {"ニ", "ヲ", "ガ", ""}, 
 };
+int DiscAddedCases[PP_NUMBER] = {END_M};
+
 
 /*==================================================================*/
 		       void InitAnaphoraList()
@@ -974,6 +976,11 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 /*==================================================================*/
 {
     char *buffer;
+
+    /* -learn 時のみ学習用featureを表示する */
+    if (OptLearn == FALSE) {
+	return;
+    }
 
     buffer = (char *)malloc_data(strlen(ecp)+46+strlen(word), 
 				 "EllipsisSvmFeaturesString2FeatureString");
@@ -2169,15 +2176,16 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     /* 次の場合は省略要素を探すが記録しない 
        (現時点ではデータを見るため、これらも省略解析を行っている) 
        デ格, ト格, ヨリ格, カラ格, マデ格 */
-    else if (MatchPP(cf_ptr->pp[n][0],"デ") || 
-	     MatchPP(cf_ptr->pp[n][0], "ト") || 
-	     MatchPP(cf_ptr->pp[n][0], "ヘ") || 
-	     MatchPP(cf_ptr->pp[n][0], "ヨリ") || 
-	     MatchPP(cf_ptr->pp[n][0], "カラ") || 
-	     MatchPP(cf_ptr->pp[n][0], "マデ") || 
-	     MatchPP(cf_ptr->pp[n][0], "ガ２") || 
-	     MatchPP(cf_ptr->pp[n][0], "ノ") || 
-	     MatchPP(cf_ptr->pp[n][0], "外の関係")) {
+    else if (!MatchPPn(cf_ptr->pp[n][0], DiscAddedCases) && 
+	     (MatchPP(cf_ptr->pp[n][0],"デ") || 
+	      MatchPP(cf_ptr->pp[n][0], "ト") || 
+	      MatchPP(cf_ptr->pp[n][0], "ヘ") || 
+	      MatchPP(cf_ptr->pp[n][0], "ヨリ") || 
+	      MatchPP(cf_ptr->pp[n][0], "カラ") || 
+	      MatchPP(cf_ptr->pp[n][0], "マデ") || 
+	      MatchPP(cf_ptr->pp[n][0], "ガ２") || 
+	      MatchPP(cf_ptr->pp[n][0], "ノ") || 
+	      MatchPP(cf_ptr->pp[n][0], "外の関係"))) {
 	sprintf(feature_buffer, "省略処理なし-%s", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
@@ -2446,6 +2454,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 /*==================================================================*/
 {
     int i, j, num, result, toflag = 0;
+    int cases[PP_NUMBER], count = 0;
 
     /* onceflag が指定された場合には、
        省略要素をひとつ発見し、そのときに最もよい格フレームを探す
@@ -2464,14 +2473,22 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 	}
     }
 
-    /* 格を与えられた順番に */
     for (j = 0; *order[j]; j++) {
+	cases[count++] = pp_kstr_to_code(order[j]);
+    }
+    for (j = 0; DiscAddedCases[j] != END_M; j++) {
+	cases[count++] = DiscAddedCases[j];
+    }
+    cases[count] = END_M;
+
+    /* 格を与えられた順番に */
+    for (j = 0; cases[j] != END_M; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
-	    if ((MatchPP(cf_ptr->pp[i][0], order[j]) && 
+	    if ((cf_ptr->pp[i][0] == cases[j] && 
 		 cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED) || 
 		(OptDemo == TRUE && /* 割り当てがあって、指示詞のとき */
 		 cmm_ptr->result_lists_p[0].flag[i] != UNASSIGNED && 
-		 MatchPP(cf_ptr->pp[i][0], order[j]) && 
+		 cf_ptr->pp[i][0] == cases[j] && 
 		 check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞")) && 
 		!(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ"))) {
 		if ((MarkEllipsisCase(cpm_ptr, cf_ptr, i)) == 0) {
@@ -2858,8 +2875,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	}
 	else if((!check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析") && 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "準用言")) || 
-		(check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析") && 
-		 check_feature(L_Jiritu_M(cpm_ptr->pred_b_ptr)->f, "カタカナ")) || 
 		check_feature(cpm_ptr->pred_b_ptr->f, "レベル:A-") || 
 		check_feature(cpm_ptr->pred_b_ptr->f, "ID:（〜を）〜に")) {
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略処理なし");

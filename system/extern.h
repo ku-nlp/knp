@@ -101,6 +101,8 @@ extern char		*ETAG_name[];
 extern char		*ModelFile;
 extern char		*DTFile;
 
+extern int	DiscAddedCases[];
+
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;
@@ -123,6 +125,7 @@ extern int pp_hstr_to_code(char *cp);
 extern char *pp_code_to_kstr(int num);
 extern char *pp_code_to_hstr(int num);
 extern int MatchPP(int n, char *pp);
+extern int MatchPPn(int n, int *list);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int lastflag);
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);

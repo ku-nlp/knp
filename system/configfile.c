@@ -323,6 +323,26 @@ int knp_dict_file_already_defined = 0;
 		}
 	    }
 	}
+	else if (!strcmp(DEF_DISC_CASES, _Atom(car(cell1)))) {
+	    int n = 0, cn;
+
+	    if (Null(cdr(cell1))) {
+		fprintf(stderr, "error in .jumanrc: %s\n", _Atom(car(cell1)));
+		exit(0);
+	    }
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		cn = pp_kstr_to_code(_Atom(car(cell1)));
+		if (cn == END_M) {
+		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cell1)));
+		    exit(0);
+		}
+		DiscAddedCases[n++] = cn;
+		cell1 = cdr(cell1);
+	    }
+	    DiscAddedCases[n] = END_M;
+	}
 #ifdef USE_SVM
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {

@@ -404,6 +404,9 @@ typedef struct {
 #define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
+#define		DEF_DISC_CASES		"KNP省略解析格"
+#define		DEF_DISC_OPTIONS	"KNP省略解析オプション"
+
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
 #define		DEF_DT_MODEL_FILE	"決定木ファイル"
 

@@ -174,6 +174,7 @@ extern float	AssignReferentThreshold;
 	}
 #endif
 	else if (str_eq(argv[0], "-dt"))     OptDiscMethod = OPT_DT;
+	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();

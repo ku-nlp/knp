@@ -369,7 +369,12 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		c_ptr->oblig[num] = FALSE;
 	    }
 	}
-	c_ptr->pp[num][pp_num++] = pp_kstr_to_code(ipal_str_buf);
+	c_ptr->pp[num][pp_num] = pp_kstr_to_code(ipal_str_buf);
+	if (c_ptr->pp[num][pp_num] == END_M) {
+	    fprintf(stderr, ";; Unknown case (%s) in PP!\n", ipal_str_buf);
+	    exit(1);
+	}
+	pp_num++;
     }
 
     c_ptr->pp[num][pp_num] = END_M;
@@ -383,13 +388,15 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 意味マーカの読みだし */
 
     unsigned char *point;
-    int sm_num = 0, length = 0, mlength, sm_delete_sm_max = 0;
-    char buf[SM_ELEMENT_MAX*SM_CODE_SIZE], *sm_delete_sm = NULL, *temp;
+    int sm_num = 0, sm_print_num = 0, mlength, sm_delete_sm_max = 0;
+    char buf[SM_ELEMENT_MAX*SM_CODE_SIZE], *sm_delete_sm = NULL, *temp, *str;
 
     if (*cp == '\0') {
 	return;
     }
 
+    str = strdup(cp);
+    *str = '\0';
     point = cp;
     buf[0] = '\0';
     while ((point = extract_ipal_str(point, ipal_str_buf))) {
@@ -463,13 +470,20 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	}
 
 	sm_num++;
+	sm_print_num++;
 	if (sm_num >= SM_ELEMENT_MAX){
 	    fprintf(stderr, ";;; Not enough sm_num !!\n");
 	    break;
 	}
 
 	if (!strncmp(ipal_str_buf, "数量", 4)) {
-	    strcat(buf, sm2code("数量"));
+	    /* 前回も<数量>のときは入れない */
+	    if (sm_num > 1 && !strncmp(&buf[SM_CODE_SIZE*(sm_num-2)], sm2code("数量"), SM_CODE_SIZE)) {
+		sm_num--;
+	    }
+	    else {
+		strcat(buf, sm2code("数量"));
+	    }
 	}
 	else if (!strncmp(ipal_str_buf, "主体準", 6)) {
 	    strcat(buf, sm2code("主体"));
@@ -479,13 +493,9 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    strcat(buf, sm2code(ipal_str_buf));
 	}
 
-	if ((flag & STOREtoCF) && sm_num <= EX_PRINT_NUM) {
-	    if (*point) {
-		length = point-cp-2;
-	    }
-	    else {
-		length = point-cp;
-	    }
+	if ((flag & STOREtoCF) && sm_print_num <= EX_PRINT_NUM) {
+	    if (str[0])	strcat(str, "/");
+	    strcat(str, ipal_str_buf);
 	}
     }
 
@@ -494,33 +504,32 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     }
 
     if (flag & STOREtoCF) {
-	if (sm_num <= EX_PRINT_NUM) {
-	    mlength = length+1;
-	    if (sm_delete_sm) mlength += strlen(sm_delete_sm)+2; /* ／の分 */
+	if (sm_print_num <= EX_PRINT_NUM) {
+	    mlength = strlen(str)+1;
+	    if (sm_delete_sm) mlength += strlen(sm_delete_sm)+1; /* "/"の分 */
 	    c_ptr->semantics[num] = (char *)malloc_data(sizeof(char)*mlength, 
 							"_make_ipal_cframe_sm");
-	    if (length) strncpy(c_ptr->semantics[num], cp, length);
-	    *(c_ptr->semantics[num]+length) = '\0';
+	    strcpy(c_ptr->semantics[num], str);
 	    if (sm_delete_sm) {
-		if (length) strcat(c_ptr->semantics[num], "／");
+		if (str[0]) strcat(c_ptr->semantics[num], "/");
 		strcat(c_ptr->semantics[num], sm_delete_sm);
 	    }
 	}
 	else {
 	    /* "...\0" の 4 つ分増やす */
-	    mlength = length+4;
-	    if (sm_delete_sm) mlength += strlen(sm_delete_sm)+2; /* ／の分 */
+	    mlength = strlen(str)+4;
+	    if (sm_delete_sm) mlength += strlen(sm_delete_sm)+2; /* "/"の分 */
 	    c_ptr->semantics[num] = (char *)malloc_data(sizeof(char)*mlength, 
 							"_make_ipal_cframe_sm");
-	    if (length) strncpy(c_ptr->semantics[num], cp, length);
-	    *(c_ptr->semantics[num]+length) = '\0';
+	    strcpy(c_ptr->semantics[num], str);
 	    if (sm_delete_sm) {
-		if (length) strcat(c_ptr->semantics[num], "／");
+		if (str[0]) strcat(c_ptr->semantics[num], "/");
 		strcat(c_ptr->semantics[num], sm_delete_sm);
 	    }
 	    strcat(c_ptr->semantics[num], "...");
 	}
     }
+    free(str);
     if (sm_delete_sm) free(sm_delete_sm);
 }
 
@@ -895,7 +904,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
 	    /* IPALデータの読みだし */
 	    match = sscanf(pre_pos, "%d:%d", &address, &size);
 	    if (match != 2) {
-		fprintf(stderr, "CaseFrame Dictionary Index error (it seems version 1.).\n");
+		fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
 		exit(1);
 	    }
 
@@ -1018,11 +1027,17 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start,
 	b_ptr->voice = VOICE_UNKNOWN;
     }
 
-    /* 受身の格フレーム */
+    /* 受身, 使役の格フレーム */
     if (b_ptr->voice == VOICE_UKEMI ||
 	b_ptr->voice == VOICE_MORAU || 
-	b_ptr->voice == VOICE_UNKNOWN) {
-	strcat(verb, ":A");
+	b_ptr->voice == VOICE_UNKNOWN || 
+	b_ptr->voice == VOICE_SHIEKI) {
+	if (b_ptr->voice == VOICE_SHIEKI) {
+	    strcat(verb, ":C");
+	}
+	else {
+	    strcat(verb, ":A");
+	}
 	plus_num = _make_ipal_cframe_subcontract(sp, b_ptr, start+f_num, verb, 0);
 	if (plus_num != 0) {
 	    return f_num+plus_num;
