@@ -1,3 +1,20 @@
+2003-05-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.ac, dict/ebcf/Makefile.am, dict/scode/bgh/Makefile.am, dict/scode/ntt/Makefile.am:
+	install時に辞書がなくてもエラーが出ないようにした
+
+	* system/knp.h:
+	Windows環境でコンパイルするときに、juman.hの一部の定義がconfilictする不都合を修正
+
+	* system/case_ipal.c, system/read_data.c:
+	index() を strchr() に修正
+
+	* system/configfile.c:
+	Windowsではknprcを見ないようにした
+
+	* rule/mrph_basic.rule: 
+	コメント追加
+
 2003-05-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c: timeout時にその文を出力していない不都合を修正
