@@ -250,13 +250,6 @@ extern FILE  *Outfp;
 	    match_function = _ex_match_score;
 	    match_score = EX_match_score;
 	}
-	else if (thesaurus == USE_NTT) {
-	    exd = cfd->ex2[as1];
-	    exp = cfp->ex2[as2];
-	    step = SM_CODE_SIZE;
-	    match_function = _sm_match_score;
-	    match_score = SM_match_score;
-	}
 
 	/* 特別 : 格要素 -- 文 */
 	if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
@@ -462,8 +455,6 @@ extern FILE  *Outfp;
 			    ec_match_flag = 1;
 			    list1.flag[target] = i;
 			    list2.flag[i] = target;
-			    list1.score[target] = elmnt_score;
-			    list2.score[i] = elmnt_score;
 			    assign_list(cfd, list1, cfp, list2, 
 					score + elmnt_score, flag);
 			    list2.flag[i] = UNASSIGNED;
@@ -478,8 +469,6 @@ extern FILE  *Outfp;
 
 			    list1.flag[target] = i;
 			    list2.flag[i] = target;
-			    list1.score[target] = elmnt_score;
-			    list2.score[i] = elmnt_score;
 			    /* 対応付けをして，残りの格要素の処理に進む */
 			    assign_list(cfd, list1, cfp, list2, 
 					score + elmnt_score, flag);
@@ -552,8 +541,6 @@ extern FILE  *Outfp;
 		if (elmnt_score != 0 || flag == EXAMPLE) {
 		    list1.flag[target] = i;
 		    list2.flag[i] = target;
-		    list1.score[target] = elmnt_score;
-		    list2.score[i] = elmnt_score;
 		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 		    list2.flag[i] = UNASSIGNED;
 		}
@@ -587,11 +574,9 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     Current_max_c_e = 0;
     for (i = 0; i < cfd->element_num; i++) {
 	assign_d_list.flag[i] = UNASSIGNED;
-	assign_d_list.score[i] = -1;
     }
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	assign_p_list.flag[i] = UNASSIGNED;
-	assign_p_list.score[i] = -1;
     }
 
     /* 処理 */

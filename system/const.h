@@ -64,10 +64,10 @@
 #define ALL_CASE_FRAME_MAX 	0
 #define IPAL_FRAME_MAX 		0
 #endif
-#define CF_ELEMENT_MAX 		20
+#define CF_ELEMENT_MAX 		10
 #define PP_ELEMENT_MAX		5
-#define SM_ELEMENT_MAX		256
-#define EX_ELEMENT_MAX		256
+#define SM_ELEMENT_MAX		64
+#define EX_ELEMENT_MAX		64
 #define MAX_MATCH_MAX 		10
 
 #define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
@@ -457,7 +457,7 @@ typedef struct tnode_b {
     char	to_para_p;	/* コピー */
     int 	sp_level;	/* 並列構造に対するバリア */
   /* 意味情報 */
-    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
+    char 	BGH_code[500];
     int		BGH_num;
     char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
@@ -556,9 +556,9 @@ typedef struct {
 /*====================================================================
 				格解析
 ====================================================================*/
-#define IPAL_FIELD_NUM	72
-#define IPAL_DATA_SIZE	12800
-#define CASE_MAX_NUM	20
+#define IPAL_FIELD_NUM	27
+#define IPAL_DATA_SIZE	1026
+#define CASE_MAX_NUM	5	/* CF_ELEMENT_MAX との違いは? */
 
 #define USE_BGH	1
 #define	USE_NTT	2
@@ -601,7 +601,6 @@ typedef struct cf_def {
     int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
     char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*BGH_CODE_SIZE];
     							/* 例 */
-    char	ex2[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
     char 	ipal_id[128];				/* IPALのID */
@@ -611,7 +610,6 @@ typedef struct cf_def {
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
 typedef struct {
     int  	flag[CF_ELEMENT_MAX];
-    int		score[CF_ELEMENT_MAX];
 } LIST;
 
 /* 文と格フレームの対応付け結果の記録 */

@@ -192,7 +192,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
-    strcpy(c_ptr->ex2[c_ptr->element_num], b_ptr->SM_code);
 }
 
 /*==================================================================*/

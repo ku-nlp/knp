@@ -169,9 +169,6 @@ extern FILE  *Outfp;
 	    if (num != UNASSIGNED && cfd->oblig[num] == FALSE)
 		fprintf(Outfp, "*");
 
-	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
-		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]/10);
-
 	    /* 用例による解析の場合
 	       最大マッチのコードを求める 
 

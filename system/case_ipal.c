@@ -185,9 +185,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	max = EX_ELEMENT_MAX*BGH_CODE_SIZE;
     }
     else if (flag == USE_NTT) {
-	get_code = get_sm;
-	destination = c_ptr->ex2[num];
-	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
+	return;
     }
 
     point = cp;

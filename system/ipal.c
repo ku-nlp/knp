@@ -7,9 +7,9 @@
 #include <stdio.h>
 
 /* from ipal.h */
-#define IPAL_FIELD_NUM	72
-#define IPAL_DATA_SIZE	12800
-#define CASE_MAX_NUM	20
+#define IPAL_FIELD_NUM	27
+#define IPAL_DATA_SIZE	1026
+#define CASE_MAX_NUM	5
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
