@@ -417,6 +417,8 @@ typedef struct {
 #define		DEF_SVM_FREQ_SD		"SVM…—≈Ÿ…∏Ω‡ –∫π"
 #define		DEF_SVM_FREQ_SD_NO	"SVM…—≈Ÿ…∏Ω‡ –∫π•Œ≥ "
 
+#define		DEF_DISC_LOC_ORDER	"KNPæ Œ¨≤Ú¿œ√µ∫˜ΩÁΩ¯"
+
 typedef struct _RuleVector {
     char	*file;
     int		type;

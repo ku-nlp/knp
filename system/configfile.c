@@ -410,6 +410,45 @@ int knp_dict_file_already_defined = 0;
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* ¾ÊÎ¬²òÀÏÃµº÷½ç½ø */
+	else if (!strcmp(DEF_DISC_LOC_ORDER, _Atom(car(cell1)))) {
+	    int pp, count;
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(car(cell1)));
+		pp = pp_kstr_to_code(dicttype);
+		if (pp == 0 || pp == END_M) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", dicttype);
+		    exit(0);
+		}
+
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Location category order for %s:", dicttype);
+		}
+
+		count = 0;
+		cell2 = cdr(car(cell1));
+		while (!Null(car(cell2))) {
+		    LocationOrder[pp][count] = loc_name_to_code(_Atom(car(cell2)));
+		    if (LocationOrder[pp][count] < 0) {
+			LocationOrder[pp][count] = END_M;
+		    }
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(Outfp, " %s", loc_code_to_str(LocationOrder[pp][count]));
+		    }
+		    count++;
+		    cell2 = cdr(cell2);
+		}
+
+		LocationOrder[pp][count] = END_M;
+		if (OptDisplay == OPT_DEBUG) {
+		    fputs("\n", Outfp);
+		}
+
+		cell1 = cdr(cell1);
+	    }
+	}
 #ifdef USE_SVM
 	else if (!strcmp(DEF_SVM_FREQ_SD, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
