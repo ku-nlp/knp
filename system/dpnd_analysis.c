@@ -106,13 +106,14 @@ extern FILE  *Outfp;
 		}
 		/* コーパス中での係り受け頻度が一回のとき */
 		else if (value == CORPUS_POSSIBILITY_1) {
-		    if (OptCheck == TRUE && first_uke_flag) {
-			Dpnd_matrix[i][j] = CORPUS_POSSIBILITY_1_FLAG;
-			/* Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k]; */
-			first_uke_flag = 0;
-		    }
-		    else
-			Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
+		    /*
+		      if (OptCheck == TRUE && first_uke_flag) {
+		      Dpnd_matrix[i][j] = CORPUS_POSSIBILITY_1_FLAG;
+		      first_uke_flag = 0;
+		      }
+		      else
+		    */
+		    Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
 		    break;
 		}
 	    }
@@ -574,7 +575,7 @@ extern FILE  *Outfp;
 /*==================================================================*/
 {
     int i, count, possibilities[32], default_pos, d_possibility;
-    int corpus_possibilities_flag[32];
+    int corpus_possibilities_flag[32], MaskFlag = 0;
     char *cp;
     BNST_DATA *b_ptr;
     
@@ -598,8 +599,10 @@ extern FILE  *Outfp;
     if (dpnd.pos == -1) {
 	/* 前の文節の係り受けに従う場合 */
 	for (i = 0; i < Bnst_num -1; i++)
-	    if (dpnd.head[i] < 0)
+	    if (dpnd.head[i] < 0) {
 		dpnd.head[i] = dpnd.head[i+dpnd.head[i]];
+		dpnd.check[i].pos[0] = dpnd.head[i];
+	    }
 
 	if (OptAnalysis == OPT_DPND ||
 	    OptAnalysis == OPT_CASE2 ||
@@ -628,11 +631,24 @@ extern FILE  *Outfp;
 	if (Mask_matrix[dpnd.pos][i] == 2) {
 	    dpnd.head[dpnd.pos] = i;
 	    dpnd.type[dpnd.pos] = 'P';
+	    /* チェック用 */
+	    /* 並列の場合は一意に決まっているので、候補を挙げるのは意味がない */
+	    dpnd.check[dpnd.pos].num = 1;
+	    dpnd.check[dpnd.pos].pos[0] = i;
+
+	    if (OptCheck == TRUE)
+		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:PARA");
 	    decide_dpnd(dpnd);
 	    return;
 	} else if (Mask_matrix[dpnd.pos][i] == 3) {
 	    dpnd.head[dpnd.pos] = i;
 	    dpnd.type[dpnd.pos] = 'I';
+
+	    dpnd.check[dpnd.pos].num = 1;
+	    dpnd.check[dpnd.pos].pos[0] = i;
+
+	    if (OptCheck == TRUE)
+		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:PARA");
 	    decide_dpnd(dpnd);
 	    return;
 	}
@@ -644,6 +660,9 @@ extern FILE  *Outfp;
         sscanf(cp, "%*[^:]:%*[^:]:%d", &(dpnd.head[dpnd.pos]));
         dpnd.type[dpnd.pos] = 'D';
         dpnd.dflt[dpnd.pos] = 0;
+	dpnd.check[dpnd.pos].num = 1;
+	if (OptCheck == TRUE)
+	    assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:無格従属");
         decide_dpnd(dpnd);
         return;
     }
@@ -685,6 +704,9 @@ extern FILE  *Outfp;
 				      b_ptr, bnst_data + i) == TRUE)
 		break;
 	}
+	else {
+	    MaskFlag = 1;
+	}
     }
 
     /* 実際に候補をつくっていく(この関数の再帰的呼び出し) */
@@ -698,6 +720,13 @@ extern FILE  *Outfp;
 	    count: b_ptr->dpnd_rule->preference;
 
 	/* チェック用 */
+	if (OptCheck == TRUE) {
+	    if (!MaskFlag)
+		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:EXIST");
+	    else
+		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:MASK");
+	}
+
 	dpnd.check[dpnd.pos].num = count;	/* 候補数 */
 	dpnd.check[dpnd.pos].def = default_pos;	/* デフォルトの位置 */
 	for (i = 0; i < count; i++) {
@@ -767,6 +796,10 @@ extern FILE  *Outfp;
 	    dpnd.head[dpnd.pos] = Bnst_num - 1;
 	    dpnd.type[dpnd.pos] = 'D';
 	    dpnd.dflt[dpnd.pos] = 10;
+	    dpnd.check[dpnd.pos].num = 1;
+	    dpnd.check[dpnd.pos].pos[0] = Bnst_num - 1;
+	    if (OptCheck == TRUE)
+		assign_cfeature(&(bnst_data[dpnd.pos].f), "候補:NONE");
 	    decide_dpnd(dpnd);
 	}
     }
