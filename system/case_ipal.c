@@ -31,10 +31,11 @@ int	IPALExist;
 #else
     if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
 #endif
-	/*
-	  fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
-	  exit(1);
-	  */
+
+	if (OptAnalysis == OPT_CASE ||
+	    OptAnalysis == OPT_CASE2) {
+	    fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
+	}
 	IPALExist = FALSE;
     }
     else if ((ipal_db = DBM_open(IPAL_DB_NAME, O_RDONLY, 0)) == NULL) {
@@ -67,7 +68,7 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-       void get_ipal_frame(IPAL_FRAME *i_ptr, int address)
+	 void get_ipal_frame(IPAL_FRAME *i_ptr, int address)
 /*==================================================================*/
 {
     fseek(ipal_fp, (long)address, 0);
@@ -326,7 +327,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 }
 
 /*==================================================================*/
-   int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
+      int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
     IPAL_FRAME *i_ptr = &Ipal_frame;
@@ -446,7 +447,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 }
 
 /*==================================================================*/
-	      void make_case_frames(BNST_DATA *b_ptr)
+	       void make_case_frames(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     int f_num;

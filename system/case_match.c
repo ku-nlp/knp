@@ -22,14 +22,14 @@ LIST 	Current_max_list2[MAX_MATCH_MAX];
 int 	SM_match_score[] = {0, 100, 100, 100, 100, 100, 100, 100, 100, 
 			    100, 100, 100, 100};
   				/*{0, 5, 8, 10, 12};*/	/* ＳＭ対応スコア */
-int     SM_match_unknown = 10;	/* 2 */		 	/* データ未知     */
+int     SM_match_unknown = 10;			 	/* データ未知     */
 
 int 	EX_match_score[] = {0, 0, 50, 70, 80, 90, 100, 110}; 
 							/* 用例対応スコア */
-int     EX_match_unknown = 40; /* 20 */			/* データ未知     */
-int     EX_match_sentence = 100;			/* 格要素 -- 文   */
-int     EX_match_tim = 100;				/* 格要素 -- 時間 */
-int     EX_match_qua = 100;				/* 格要素 -- 数量 */
+int     EX_match_unknown = 50; 				/* データ未知     */
+int     EX_match_sentence = 80;				/* 格要素 -- 文   */
+int     EX_match_tim = 80;				/* 格要素 -- 時間 */
+int     EX_match_qua = 80;				/* 格要素 -- 数量 */
 
 extern FILE  *Infp;
 extern FILE  *Outfp;
@@ -163,7 +163,7 @@ extern FILE  *Outfp;
 
     /* 単位の項目は無視 */
     if (!strncmp(cp1, "11960", 5) || !strncmp(cp2, "11960", 5))
-      return 0;
+	return 0;
     
     /* 比較 */
     match = bgh_code_match(cp1, cp2);
@@ -171,9 +171,28 @@ extern FILE  *Outfp;
     /* 代名詞の項目は類似度を押さえる */
     if ((!strncmp(cp1, "12000", 5) || !strncmp(cp2, "12000", 5)) &&
 	match > 3)
-      return 3;
+	return 3;
     
     return match;
+}
+
+/*==================================================================*/
+ int cf_match_both_element(char *d, char *p, char *target, int unit)
+/*==================================================================*/
+{
+    int i, j;
+
+    for (i = 0; *(d+i); i += unit) {
+	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
+	    for (j = 0; *(p+j); j += unit) {
+		if (!strncmp(p+i, (char *)sm2code(target), unit)) {
+		    return TRUE;
+		}
+	    }
+	    return FALSE;
+	}
+    }
+    return FALSE;
 }
 
 /*==================================================================*/
@@ -183,18 +202,18 @@ extern FILE  *Outfp;
 {
     /* 意味マーカのマッチング度の計算 */
 
-    int i, j, k, tmp_score, score = -100;
+    int i, j, k, tmp_score, score = -100, ex_score = -100;
 
     if (flag == SEMANTIC_MARKER) {
 	
 	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2][0] == '\0') 
 	    return SM_match_unknown;
 
-	for (j = 0; cfp->sm[as2][j]; j+=12) {
-	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), 12)) {
+	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
+	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("→"), SM_CODE_SIZE)) {
 
-		for (k = 0; cfp->ex[as2][k]; k+=10) {
-		    for (i = 0; cfd->ex[as1][i]; i+=10) {
+		for (k = 0; cfp->ex[as2][k]; k+=BGH_CODE_SIZE) {
+		    for (i = 0; cfd->ex[as1][i]; i+=BGH_CODE_SIZE) {
 			tmp_score = 
 			    EX_match_score[_ex_match_score(cfp->ex[as2]+k, 
 							   cfd->ex[as1]+i)];
@@ -205,11 +224,11 @@ extern FILE  *Outfp;
 		}
 	    }
 	    else {
-		for (i = 0; cfd->sm[as1][i]; i+=12) {
+		for (i = 0; cfd->sm[as1][i]; i+=SM_CODE_SIZE) {
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
 						       cfd->sm[as1]+i, SM_NO_EXPAND_NE)];
-		    if (tmp_score && (cfp->sm_flag[as2][j/12] == FALSE))
+		    if (tmp_score && (cfp->sm_flag[as2][j/SM_CODE_SIZE] == FALSE))
 			return -100;
 		    if (tmp_score > score) score = tmp_score;
 		}
@@ -221,37 +240,42 @@ extern FILE  *Outfp;
     else if (flag == EXAMPLE) {
 	
 	/* 特別 : 格要素 -- 文 */
-	if (!strcmp(cfd->sm[as1], (char *)sm2code("補文")) &&
-	    !strcmp(cfp->sm[as2], (char *)sm2code("補文")))
-	    return EX_match_sentence;
-
+	if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
+				  "補文", SM_CODE_SIZE)) {
+	    score = EX_match_sentence;
+	}
 	/* 特別 : 格要素 -- 時間 */
-	if (!strcmp(cfd->sm[as1], (char *)sm2code("時間"))) {
-	    for (i = 0; cfp->sm[as2][i]; i+=12)
-		if (!strcmp(cfp->sm[as2]+i, (char *)sm2code("時間")))
-		    return EX_match_tim;
+	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
+				       "時間", SM_CODE_SIZE)) {
+	    score = EX_match_tim;
+	}
+	/* 特別 : 格要素 -- 数量 */
+	else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], 
+				       "数量", SM_CODE_SIZE)) {
+	    score = EX_match_qua;
 	}
 
-	/* 特別 : 格要素 -- 数量 */
-	if (!strcmp(cfd->sm[as1], (char *)sm2code("数量")) ||
-	    !strcmp(cfd->sm[as1]+12, (char *)sm2code("数量"))) {
-	    for (i = 0; cfp->sm[as2][i]; i+=12)
-		if (!strcmp(cfp->sm[as2]+i, (char *)sm2code("数量")))
-		    return EX_match_tim;
-	}
-	    
+	/* 用例がどちらか一方でもなかったら */
 	if (cfd->ex[as1][0] == '\0' || cfp->ex[as2][0] == '\0') 
 	    return EX_match_unknown;
 
-	for (j = 0; cfp->ex[as2][j]; j+=10) {
-	    for (i = 0; cfd->ex[as1][i]; i+=10) {
+	/* 用例のマッチング */
+	for (j = 0; cfp->ex[as2][j]; j+=BGH_CODE_SIZE) {
+	    for (i = 0; cfd->ex[as1][i]; i+=BGH_CODE_SIZE) {
 		tmp_score = 
-		  EX_match_score[_ex_match_score(cfp->ex[as2]+j, 
-						 cfd->ex[as1]+i)];
-		if (tmp_score > score) score = tmp_score;
+		    EX_match_score[_ex_match_score(cfp->ex[as2]+j, 
+						   cfd->ex[as1]+i)];
+		if (tmp_score > ex_score) ex_score = tmp_score;
 	    }
 	}
-	return score;
+
+	/* 大きい方をかえす */
+	if (ex_score > score) {
+	    return ex_score;
+	}
+	else {
+	    return score;
+	}
     }
     return 0;
 }
@@ -312,8 +336,8 @@ extern FILE  *Outfp;
 	local_score /= 10;	/* 正規化しない,最大11に */
 
     /* corpus based case analysis 00/01/04 */
-    /* 任意格にとりあえず5点 */
-    local_score += (cfd->element_num - dat_element) * 5;
+    /* 任意格にとりあえず 2点 */
+    local_score += (cfd->element_num - dat_element) * 2;
 
 
     if (local_score > Current_max_score || 
@@ -383,11 +407,11 @@ extern FILE  *Outfp;
 #ifdef CASE_DEBUG
     fprintf(Outfp, "dat");
     for (i = 0; i < cfd->element_num; i++)
-      fprintf(Outfp, "%d ", list1.flag[i]);
+	fprintf(Outfp, "%d ", list1.flag[i]);
     fputc('\n', Outfp);
     fprintf(Outfp, "pat");
     for (i = 0; i < cfp->element_num; i++)
-      fprintf(Outfp, "%d ", list2.flag[i]);
+	fprintf(Outfp, "%d ", list2.flag[i]);
     fputc('\n', Outfp);
 #endif 
     

@@ -32,9 +32,16 @@ extern FILE  *Outfp;
 
 	fprintf(Outfp, " ");
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
+
+	/* 格の出力 */
 	if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[i]->f, "係"))
 	    != NULL) {
-	    fprintf(Outfp, "(%s)", cp + strlen("係:"));
+	    if (cpm_ptr->cf.pp[i][0] < 0) {
+		fprintf(Outfp, "(%s)", cp + strlen("係:"));
+	    }
+	    else {
+		fprintf(Outfp, "(%s)", pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
+	    }
 	}
 
 	/*
@@ -46,18 +53,32 @@ extern FILE  *Outfp;
 
 	/* 意味マーカ */
 
-	fprintf(Outfp, "SM:");
-	for (j = 0; cpm_ptr->cf.sm[i][j]; j+=12) {
-	    if (j != 0) fprintf(Outfp,  "/");
-	    fprintf(Outfp, "%12.12s", &(cpm_ptr->cf.sm[i][j]));
+	if (cpm_ptr->cf.sm[i][0]) {
+	    fprintf(Outfp, "SM:○");
+	    /*
+	    for (j = 0; cpm_ptr->cf.sm[i][j]; j+=SM_CODE_SIZE) {
+		if (j != 0) fprintf(Outfp,  "/");
+		fprintf(Outfp, "%12.12s", &(cpm_ptr->cf.sm[i][j]));
+	    }
+	    */
+	}
+	else {
+	    fprintf(Outfp, "SM:×");
 	}
 
 	/* 分類語彙表コード */
 
-	fprintf(Outfp, "BGH:");
-	for (j = 0; cpm_ptr->cf.ex[i][j]; j+=10) {
-	    if (j != 0) fprintf(Outfp,  "/");
-	    fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+	if (cpm_ptr->cf.ex[i][0]) {
+	    fprintf(Outfp, "BGH:○");
+	    /*
+	    for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
+		if (j != 0) fprintf(Outfp,  "/");
+		fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+	    }
+	    */
+	}
+	else {
+	    fprintf(Outfp, "BGH:×");
 	}
 
 	fprintf(Outfp, "]");	
@@ -124,10 +145,10 @@ extern FILE  *Outfp;
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	num = cmm_ptr->result_lists_p[0].flag[i];
 	if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
-	  fprintf(Outfp, " --");
+	    fprintf(Outfp, " ● --");
 	}
 	else {
-	    fprintf(Outfp, " ");
+	    fprintf(Outfp, " ● ");
 	    _print_bnst(cpm_ptr->elem_b_ptr[num]);
 	    if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係"))
 		!= NULL) {
@@ -187,6 +208,11 @@ extern FILE  *Outfp;
 	
 	fprintf(Outfp, " : ");
 	
+	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= -1; j++) {
+	    if (j != 0) fprintf(Outfp,  "/");
+	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+	}
+
 	if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
@@ -199,12 +225,8 @@ extern FILE  *Outfp;
 	} else
 	  fprintf(Outfp, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
 	  
-	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= -1; j++) {
-	    if (j != 0) fprintf(Outfp,  "/");
-	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
-	}
 	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
-	  fprintf(Outfp, "*");
+	    fprintf(Outfp, "*");
 
 	/* 用例による解析の場合
 	fprintf(Outfp, " [");
