@@ -1,6 +1,6 @@
 JUMAN を指定するとき。
 
-1) ./configure --enable-juman-lib-dir=/home/kawahara/Laboratory/knp/juman
+1) ./configure --with-jumanlib-dir=/home/kawahara/Laboratory/knp/juman
 2) make
 
 同梱されている JUMAN を使用するとき。
