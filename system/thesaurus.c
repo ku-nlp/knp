@@ -242,7 +242,7 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
-	float CalcSimilarity(char *exd, char *exp, int expand)
+       float calc_similarity(char *exd, char *exp, int expand)
 /*==================================================================*/
 {
     int i, j, step;
@@ -304,7 +304,7 @@ int	ParaThesaurus = USE_BGH;
     smp = get_str_code(exp, Thesaurus);
 
     if (smd && smp) {
-	score = CalcSimilarity(smd, smp, 0);
+	score = calc_similarity(smd, smp, 0);
     }
 
     if (smd) {
@@ -334,7 +334,7 @@ float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
     }
 
     if (smd && smp[0]) {
-	score = CalcSimilarity(smd, smp, expand);
+	score = calc_similarity(smd, smp, expand);
     }
 
     free(smp);

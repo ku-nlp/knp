@@ -707,7 +707,7 @@ float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos
     }
 
     /* 最大マッチスコアを求める */
-    ex_score = (float)CalcSimilarity(exd, exp, 0);
+    ex_score = (float)calc_similarity(exd, exp, 0);
 
     if (ex_score > score) {
 	return ex_score;
@@ -2242,16 +2242,15 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	return 1;
     }
     /* 【不特定:人】
-       1. 用言が受身でニ格 (もとはガ格) に <主体> をとるとき
-       2. 「〜ため(に)」でガ格に <主体> をとるとき 
+       1. 用言が受身でニ格 (もとはガ格) に <主体> をとり、閾値を越えるとき
+       2. ガ格 <主体> で、閾値を越えるとき
        3. 〜が V した N (外の関係, !判定詞), 形副名詞, 相対名詞は除く
        4. スコアが閾値より下でガ格 <主体> をとるとき */
     else if (((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
 	 MatchPP(cf_ptr->pp[n][0], cp+9)) || 
 	(MatchPP(cf_ptr->pp[n][0], "ガ") && 
 	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
-	 (maxscore <= AssignGaCaseThreshold || 
-	  check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜（ため）"))) || 
+	 (maxscore <= AssignGaCaseThreshold)) || 
 	(MatchPP(cf_ptr->pp[n][0], "ニ") && 
 	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
 	 !cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 

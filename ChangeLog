@@ -1,4 +1,10 @@
+2002-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_match.c, system/context.c, system/extern.h, system/thesaurus.c:
+	¥Î³Ê¤Î²òÀÏ¤Î²şÎÉ
+
 2002-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
 	* system/case_analysis.c, system/case_match.c:
 	ÈïÏ¢ÂÎ½¤¾ş»ì¤Î¥Î³ÊÂĞ±şÉÕ¤±¤Î²şÎÉ
 

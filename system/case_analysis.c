@@ -685,12 +685,15 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
     closest = get_closest_case_component(sp, cpm_ptr);
 
-    /* 直前格要素のひとつ手前のノ格 */
+    /* 直前格要素のひとつ手前のノ格
+       ※ <数量>以外: 一五％の株式 
+          <時間>以外: */
     if (OptCaseFlag & OPT_CASE_NO && 
 	closest > -1 && 
 	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
-	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, 
-		      "係:ノ格")) {
+	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "数量") && 
+	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "時間") && 
+	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")) {
 	BNST_DATA *bp;
 	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
 
@@ -1245,8 +1248,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     /* 末尾をみる */
     for (i = bp->mrph_num-1; i >= start; i--) {
-	/* 特殊, 助詞を除く */
+	/* 特殊, 助詞, 助動詞, 判定詞を除く */
 	if ((bp->mrph_ptr+i)->Hinshi != 1 && 
+	    (bp->mrph_ptr+i)->Hinshi != 4 && 
+	    (bp->mrph_ptr+i)->Hinshi != 5 && 
 	    (bp->mrph_ptr+i)->Hinshi != 9) {
 	    end = i;
 	    break;

@@ -374,7 +374,7 @@ extern void init_thesaurus();
 extern void close_thesaurus();
 extern char *get_str_code(unsigned char *cp, int flag);
 extern void get_bnst_code(BNST_DATA *ptr, int flag);
-extern float CalcSimilarity(char *exd, char *exp, int expand);
+extern float calc_similarity(char *exd, char *exp, int expand);
 extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 

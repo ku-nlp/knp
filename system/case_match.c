@@ -384,7 +384,7 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
 	    /* ¶ñÂÎÅª¤ÊÍÑÎã¤¬½ñ¤¤¤Æ¤¢¤ë¾ì¹ç */
 	    if (!strncmp(cfp->sm[as2]+j, (char *)sm2code("¢ª"), SM_CODE_SIZE)) {
-		tmp_score = (int)CalcSimilarity(exd, exp, 0);
+		tmp_score = (int)calc_similarity(exd, exp, 0);
 		if (tmp_score == 1) {
 		    return 10;
 		}
@@ -938,7 +938,9 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 		  (cfp->pp[i][0] == pp_kstr_to_code("¥¬") || 
 		   cfp->pp[i][0] == pp_kstr_to_code("¥ò") || 
 		   (verb && /* Æ°»ì¤À¤± */
-		    ((sotoflag && cfp->pp[i][0] == pp_kstr_to_code("³°¤Î´Ø·¸")) || 
+		    ((sotoflag && 
+		      (cfp->pp[i][0] == pp_kstr_to_code("³°¤Î´Ø·¸") || 
+		       cfp->pp[i][0] == pp_kstr_to_code("¥¬£²"))) || 
 		     (sotonoflag && cfp->pp[i][0] == pp_kstr_to_code("¥Î") && 
 		      check_adjacent_assigned(cfd, cfp, &list1) == TRUE) || /* ¡ú·ÁÍÆ»ìOK */
 		     (cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("¥Ë")))))))) {
