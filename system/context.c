@@ -2177,6 +2177,55 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 }
 
 /*==================================================================*/
+int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
+			     CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
+			     TAG_DATA *tp, CASE_FRAME *cf_ptr, int n, int loc)
+/*==================================================================*/
+{
+    int i;
+
+    /* 自分、用言の格要素(省略込み)、子供(再帰)の順番にチェックする */
+
+    /* 省略要素となるための条件 */
+    if (tp->para_top_p == TRUE || 
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0)) {
+	if (!Bcheck[cs - s][tp->num]) {
+	    Bcheck[cs - s][tp->num] = 1;
+	}
+    }
+    else {
+	if ((OptDiscFlag & OPT_DISC_BEST) || 
+	    cpm_ptr->cf.type == CF_NOUN || 
+	    ((loc == LOC_OTHERS || loc == LOC_S1_OTHERS || loc == LOC_S2_OTHERS) && s != cs) || 
+	    (loc == LOC_PRE_OTHERS && s == cs && tp->num < cpm_ptr->pred_b_ptr->num) || 
+	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
+	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
+	    Bcheck[cs - s][tp->num] = 1;
+	    /* BEST解を求めるとき以外は、スコアをチェックしてreturn */
+	    if (!(OptDiscFlag & OPT_DISC_BEST) && 
+		ScoreCheck(cf_ptr, n)) {
+		return 1;
+	    }
+	}
+    }
+
+    /* 用言の格要素をチェック (省略を含む) */
+    SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+			tp, cf_ptr, n, LOC_OTHERS);
+    if (!(OptDiscFlag & OPT_DISC_BEST) && 
+	ScoreCheck(cf_ptr, n)) {
+	return 1;
+    }
+
+    for (i = 0; tp->child[i]; i++) {
+	if (EllipsisDetectRecursive2(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp->child[i], cf_ptr, n, loc) == 1) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 int EllipsisDetectOne(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 		      CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
 		      TAG_DATA *tp, CASE_FRAME *cf_ptr, int n)
@@ -2980,23 +3029,23 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
 
 
-    if (EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				cs->tag_data + cs->Tag_num - 1, 
-				cf_ptr, n, LOC_OTHERS)) {
+    if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				 cs->tag_data + cs->Tag_num - 1, 
+				 cf_ptr, n, LOC_OTHERS)) {
 	goto EvalAntecedentNoun;
     }
     /* 前文 */
     else if (cs - sentence_data > 0) { 
-	if (EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				    (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				    cf_ptr, n, LOC_OTHERS)) {
+	if (EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				     (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+				     cf_ptr, n, LOC_OTHERS)) {
 	    goto EvalAntecedentNoun;
 	}
 	/* 2文前 */
 	else if (cs - sentence_data > 1) {
-	    if (EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					(cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					cf_ptr, n, LOC_OTHERS)) {
+	    if (EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+					 cf_ptr, n, LOC_OTHERS)) {
 		goto EvalAntecedentNoun;
 	    }
 	}
