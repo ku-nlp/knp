@@ -816,17 +816,22 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    sp->Best_mgr->cpm[i].elem_b_ptr[j]->pred_b_ptr = sp->Best_mgr->cpm[i].pred_b_ptr;
 		}
 
-		/* 文脈解析のときは格フレーム決定している用言についてのみ */
-		if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-		    assign_gaga_slot(sp, &(sp->Best_mgr->cpm[i]));
-		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
-		    fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
-		    /* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); */
-		    /* 格解析の結果を featureへ */
-		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
-		}
-		else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
-		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+		/* 格フレームがある場合 */
+		if (sp->Best_mgr->cpm[i].result_num != 0 && 
+		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->ipal_address != -1 && 
+		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
+		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
+		    if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
+			assign_gaga_slot(sp, &(sp->Best_mgr->cpm[i]));
+			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
+			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
+			/* 格解析の結果を featureへ */
+			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
+		    }
+		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
+			assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
+		    }
 		}
 	    }
 	    /* 主格を feature へ(固有名詞認識処理用)

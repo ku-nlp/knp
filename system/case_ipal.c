@@ -699,6 +699,61 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
+BNST_DATA *get_quasi_closest_case_component(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    BNST_DATA *tp;
+
+    if (b_ptr->num < 1) {
+	return NULL;
+    }
+
+    tp = sp->bnst_data+b_ptr->num-1;
+
+    if (!check_feature(tp->f, "ÂÎ¸À")) {
+	return NULL;
+    }
+
+    if (check_feature(tp->f, "»Ø¼¨»ì") || 
+	(tp->SM_code[0] == '\0' && 
+	 check_feature(tp->f, "·¸:¥¬³Ê"))) {
+	return NULL;
+    }
+
+    if (check_feature(tp->f, "·¸:¥ò³Ê") || 
+	check_feature(tp->f, "·¸:¥Ë³Ê") || 
+	(!cf_match_element(tp->SM_code, "¼çÂÎ", FALSE) && 
+	(check_feature(tp->f, "·¸:¥¬³Ê") || 
+	 check_feature(tp->f, "·¸:¥«¥é³Ê") || 
+	 check_feature(tp->f, "·¸:¥Ø³Ê") || 
+	 check_feature(tp->f, "·¸:¥è¥ê³Ê") || 
+	 check_feature(tp->f, "·¸:¥È³Ê") || 
+	 check_feature(tp->f, "·¸:¥Þ¥Ç³Ê")))) {
+	return tp;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
+		  char *feature2case(BNST_DATA *bp)
+/*==================================================================*/
+{
+    char *cp, *buffer;
+
+    if ((cp = check_feature(bp->f, "·¸"))) {
+	buffer = strdup(cp+3);
+	if (!strncmp(buffer+strlen(buffer)-2, "³Ê", 2)) {
+	    *(buffer+strlen(buffer)-2) = '\0';
+	    if (pp_kstr_to_code(buffer) != END_M) {
+		return buffer;
+	    }
+	}
+	free(buffer);
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 	       void f_num_inc(int start, int *f_num_p)
 /*==================================================================*/
 {
@@ -710,12 +765,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
-int _make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, 
+int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start, 
 				  char *verb, int voice)
 /*==================================================================*/
 {
     IPAL_FRAME *i_ptr;
     CASE_FRAME *cf_ptr;
+    BNST_DATA *cbp;
     int f_num = 0, address, break_flag = 0, size, match, c;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
 
@@ -724,7 +780,27 @@ int _make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start,
 
     cf_ptr = Case_frame_array+start;
 
-    address_str = get_ipal_address(verb);
+    /* Ä¾Á°³ÊÍ×ÁÇ¤ò¤¯¤Ã¤Ä¤±¤Æ¸¡º÷ */
+    cbp = get_quasi_closest_case_component(sp, b_ptr);
+    if (cbp) {
+	char *buffer, *pp;
+
+	pp = feature2case(cbp);
+	if (pp) {
+	    buffer = (char *)malloc_data(strlen(L_Jiritu_M(cbp)->Goi)+strlen(pp)+strlen(verb)+3, 
+					 "_make_ipal_cframe_subcontract");
+	    sprintf(buffer, "%s-%s-%s", L_Jiritu_M(cbp)->Goi, pp, verb);
+	    address_str = get_ipal_address(buffer);
+	    free(buffer);
+	    free(pp);
+	}
+	if (!pp || !address_str) {
+	    address_str = get_ipal_address(verb);
+	}
+    }
+    else {
+	address_str = get_ipal_address(verb);
+    }
 
     /* ¤Ê¤±¤ì¤Ð */
     if (!address_str)
@@ -856,7 +932,7 @@ int _make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start,
 }
 
 /*==================================================================*/
-int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
+int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start, char *verb)
 /*==================================================================*/
 {
     int f_num = 0, plus_num;
@@ -865,7 +941,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	/* Ç½Æ°ÂÖ 
 	   b_ptr->voice == 0 ¤Ç¹Ô¤¦ */
 	b_ptr->voice = 0;
-	f_num = _make_ipal_cframe_subcontract(b_ptr, start, verb, 0);
+	f_num = _make_ipal_cframe_subcontract(sp, b_ptr, start, verb, 0);
 	b_ptr->voice = VOICE_UNKNOWN;
     }
 
@@ -874,7 +950,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	b_ptr->voice == VOICE_MORAU || 
 	b_ptr->voice == VOICE_UNKNOWN) {
 	strcat(verb, ":A");
-	plus_num = _make_ipal_cframe_subcontract(b_ptr, start+f_num, verb, 0);
+	plus_num = _make_ipal_cframe_subcontract(sp, b_ptr, start+f_num, verb, 0);
 	if (plus_num != 0) {
 	    return f_num+plus_num;
 	}
@@ -883,10 +959,10 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 
     if (b_ptr->voice == VOICE_UNKNOWN) {
 	/* ¼õ¿È */
-	f_num += _make_ipal_cframe_subcontract(b_ptr, start+f_num, verb, VOICE_UKEMI);
+	f_num += _make_ipal_cframe_subcontract(sp, b_ptr, start+f_num, verb, VOICE_UKEMI);
 	return f_num;
     }
-    return _make_ipal_cframe_subcontract(b_ptr, start, verb, b_ptr->voice);
+    return _make_ipal_cframe_subcontract(sp, b_ptr, start, verb, b_ptr->voice);
 }
 
 /*==================================================================*/
@@ -921,7 +997,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	    strcat(verb, "¤¹¤ë");
 	}
 
-	f_num = make_ipal_cframe_subcontract(b_ptr, start, verb);
+	f_num = make_ipal_cframe_subcontract(sp, b_ptr, start, verb);
 	if (f_num != 0) {
 	    Case_frame_num += f_num;
 	    for (i = 0; i < f_num; i++) {
@@ -941,7 +1017,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	strcat(verb, "¤¹¤ë");
     }
 
-    f_num = make_ipal_cframe_subcontract(b_ptr, start, verb);
+    f_num = make_ipal_cframe_subcontract(sp, b_ptr, start, verb);
     Case_frame_num += f_num;
     for (i = 0; i < f_num; i++) {
 	(Case_frame_array+start+i)->concatenated_flag = 0;

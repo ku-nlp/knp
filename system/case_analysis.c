@@ -306,6 +306,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	}
 
 	if (frame_num == 0) {
+	    cpm_ptr->score = -2;
 	    return -2;
 	}
 
@@ -421,8 +422,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		if (cpm_ptr->cmm[i].score < 0 || pat_num == 0) {
 		    break;
 		}
-		/* cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num); */
-		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0];
+		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
 	    }
 	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
 	    for (i = cpm_ptr->tie_num-1; i >= 1; i--) {
@@ -1316,13 +1316,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 {
     int i, num, soto, pos;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word;
-
-    /* 格フレームがない場合 */
-    if (cpm_ptr->result_num == 0 || 
-	cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
-	cpm_ptr->cmm[0].score == -2) {
-	return;
-    }
 
     /* voice 決定 */
     if (cpm_ptr->pred_b_ptr->voice == VOICE_UNKNOWN) {

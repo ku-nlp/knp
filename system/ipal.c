@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 /* from ipal.h */
 #define IPAL_FIELD_NUM	72
@@ -40,27 +41,32 @@ char buffer[IPAL_DATA_SIZE];
 IPAL_TRANS_FRAME ipal_frame;
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
-		     unsigned char *hyouki, int address, int size, int flag)
+		     unsigned char *hyouki, unsigned char *pp, 
+		     int address, int size, int flag)
 {
     unsigned char output_buf[256];
     unsigned char *point;
     int length = 0;
 
     /* 読みをキーするとき */
-    if (flag) {
+    if (flag == 1) {
 	fprintf(fp, "%s %d:%d\n", entry, address, size);
-    }
-    else {
-	fprintf(stderr, "%s was skipped.\n", entry);
     }
 
     for (point = hyouki; *point; point+=2) {
 
-	if (*point == 0xa1 && *(point+1) == 0xa4) { /* "，" */
+	if ((*point == 0xa1 && *(point+1) == 0xa4) || /* "，" */
+	    (*point == 0xa1 && *(point+1) == 0xbf)) { /* "／" */
 	    output_buf[length] = '\0';
-	    if (!flag || strcmp(output_buf, entry)) {
-		fprintf(fp, "%s %d:%d\n", output_buf, address, size);
-		flag = 1;
+	    /* 読みと異なる場合に出力 */
+	    if (flag != 1 || strcmp(output_buf, entry)) {
+		if (pp) {
+		    fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+		}
+		else {
+		    fprintf(fp, "%s %d:%d\n", output_buf, address, size);
+		    flag = 1;
+		}
 	    }
 	    length = 0;
 	} else {
@@ -69,16 +75,21 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	}
     }
     output_buf[length] = '\0';
-    if (!flag || strcmp(output_buf, entry)) {
-	fprintf(fp, "%s %d:%d\n", output_buf, address, size);
+    if (flag != 1 || strcmp(output_buf, entry)) {
+	if (pp) {
+	    fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+	}
+	else {
+	    fprintf(fp, "%s %d:%d\n", output_buf, address, size);
+	}
     }
 }
 
 main(int argc, char **argv)
 {
     FILE *fp_idx, *fp_dat;
-    char tag[256];
-    int i, line, pos, address = 0, writesize, flag;
+    char tag[256], *pp;
+    int i, line, pos, address = 0, writesize, flag, closest[CASE_MAX_NUM];
 
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s index-filename data-filename\n", argv[0]);
@@ -99,6 +110,7 @@ main(int argc, char **argv)
 	/* データ読み込み */
 
 	pos = 0;
+	memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
 	for (i = 0; i < IPAL_FIELD_NUM; i++, line++) {
 	    
 	    if (fgets(buffer, IPAL_DATA_SIZE, stdin) == NULL) {
@@ -116,6 +128,11 @@ main(int argc, char **argv)
 		if (i == 0 && strcmp(tag, "ＩＤ")) {
 		    fprintf(stderr, "Invalid data (around line %d).\n", line);
 		    exit(1);
+		}
+		/* 直前格 */
+		else if (!strncmp(tag, "格", 2) && 
+			 !strncmp(&(ipal_frame.DATA[pos])+strlen(&(ipal_frame.DATA[pos]))-2, "＠", 2)) {
+		    closest[i-5] = i+40;
 		}
 	    }
 
@@ -136,7 +153,7 @@ main(int argc, char **argv)
 	writesize = sizeof(int)*IPAL_FIELD_NUM+pos;
 
 	if (!strcmp(ipal_frame.DATA+ipal_frame.point[4], "和フレーム")) {
-	    flag = 0;
+	    flag = 0;	/* 読みを登録しない */
 	}
 	else {
 	    flag = 1;
@@ -147,7 +164,25 @@ main(int argc, char **argv)
 	fprint_ipal_idx(fp_idx, 
 			ipal_frame.DATA+ipal_frame.point[1], 
 			ipal_frame.DATA+ipal_frame.point[2], 
+			NULL, 
 			address, writesize, flag);
+
+	for (i = 0; i < CASE_MAX_NUM; i++) {
+	    if (closest[i] > 0 && 
+		*(ipal_frame.DATA+ipal_frame.point[closest[i]]) != '\0') {
+		pp = strdup(ipal_frame.DATA+ipal_frame.point[i+5]);
+		*(pp+strlen(pp)-2) = '\0';
+		if (!strncmp(pp+strlen(pp)-2, "＊", 2)) {
+		    *(pp+strlen(pp)-2) = '\0';
+		}
+		fprint_ipal_idx(fp_idx, 
+				ipal_frame.DATA+ipal_frame.point[2], /* 用言表記 */
+				ipal_frame.DATA+ipal_frame.point[closest[i]], /* 直前格要素群 */
+				pp, 
+				address, writesize, 0);
+		free(pp);
+	    }
+	}
 
 	/* データ書き出し */
 #ifdef BIG_ENDIAN
