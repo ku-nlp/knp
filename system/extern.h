@@ -60,6 +60,7 @@ extern int		OptCaseFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern char		*OptOptionalCase;
+extern VerboseType	VerboseLevel;
 
 extern enum OPTION1	Option1;
 extern enum OPTION2	Option2;
@@ -104,6 +105,7 @@ extern char 		*Case_name[];
 
 extern char *get_bgh(char *cp);
 extern char *db_get(DBM_FILE db, char *buf);
+extern float ntt_code_match(char *c1, char *c2);
 
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;

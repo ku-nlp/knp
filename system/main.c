@@ -64,6 +64,7 @@ int		OptCaseFlag;
 int		OptCFMode;
 char		OptIgnoreChar;
 char		*OptOptionalCase = NULL;
+VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
 int		OptMode = STAND_ALONE_MODE;
@@ -262,6 +263,11 @@ extern int	SOTO_SCORE;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    Opt_jumanrc = argv[0];
+	}
+	else if (str_eq(argv[0], "-v")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    VerboseLevel = atoi(argv[0]);
 	}
 	/* 格解析用オプション */
 	else if (str_eq(argv[0], "-soto")) {

@@ -8,8 +8,6 @@
 ====================================================================*/
 #include "knp.h"
 
-extern float ntt_code_match(char *c1, char *c2);
-
 /*==================================================================*/
       void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src)
 /*==================================================================*/
@@ -353,6 +351,9 @@ void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 
 	for (i = 0; i < cf_ptr->element_num; i++) {
 	    num = cmm_ptr->result_lists_p[0].flag[i];
+	    /* とりあえず省略要素と認定する条件を設定 
+	       1. 準用言ではない
+	       2. 時間格ではない */
 	    if (num == UNASSIGNED && cmm_ptr->score != -2 && 
 		!check_feature(pred_b_ptr->f, "準用言") && 
 		!str_eq((char *)pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]), "時間")) {

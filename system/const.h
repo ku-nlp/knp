@@ -111,6 +111,9 @@
 #define	OPT_CASE_SOTO	1
 #define	OPT_CASE_GAGA	2
 
+typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
+	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
+
 #define PARA_KEY_O          0
 #define PARA_KEY_N          1	/* 体言の並列 */
 #define PARA_KEY_P          2	/* 用言の並列 */

@@ -920,7 +920,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 			 void print_result()
 /*==================================================================*/
 {
-    int i, j, k;
     char *date_p, time_string[64];
     time_t t;
     struct tm *tms;
@@ -1007,23 +1006,16 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 格解析を行なった場合の出力 */
 
-    if ((OptAnalysis == OPT_CASE || 
+    if (((OptAnalysis == OPT_CASE || 
 	 OptAnalysis == OPT_CASE2 ||
 	 OptAnalysis == OPT_DISC) &&
 	(OptDisplay == OPT_DETAIL || 
-	 OptDisplay == OPT_DEBUG)) {
+	 OptDisplay == OPT_DEBUG)) || 
+	(OptAnalysis == OPT_DISC && 
+	 OptExpress == OPT_TREEF && 
+	 VerboseLevel >= VERBOSE1)) {
 
-	fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibility:%d/%d ■\n", 
-		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
-
-	/* 上記出力の最後の引数(依存構造の数)は1にしている．
-	   ちゃんと扱ってない */
-	
-	for (i = tm->pred_num-1; i >= 0; i--) {
-	    print_data_cframe(&(tm->cpm[i]));
-	    for (j = 0; j < tm->cpm[i].result_num; j++)
-		print_crrspnd(&(tm->cpm[i]), &(tm->cpm[i].cmm[j]));
-	}
+	print_case_result();
 
 	/* 次の解析のために初期化しておく */
 	tm->pred_num = 0;
