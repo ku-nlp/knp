@@ -1689,7 +1689,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     E_FEATURES *ef;
     E_SVM_FEATURES *esf;
     char *ecp, feature_buffer[DATA_LEN];
-    float score;
+    float score, similarity;
 
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
@@ -1717,17 +1717,21 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 	/* 名詞の場合: exact match or <sm> match */
 	if (ef->similarity > 1.0) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
+	    similarity = ef->similarity;
 	}
 	else if (ef->match_sm_flag) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
+	    similarity = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
 	    score = -1;
+	    similarity = -1;
 	}
     }
     else {
 	score = classify_by_learning(ecp, cf_ptr->pp[n][0], OptDiscPredMethod);
+	similarity = ef->similarity;
     }
 
     /* 省略候補 */
@@ -1741,7 +1745,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     /* classifierがpositiveと分類 */
     if (score > 0) {
 	if (!(OptDiscFlag & OPT_DISC_CLASS_ONLY)) {
-	    score = ef->similarity;
+	    score = similarity;
 	}
 
 	/* 類似度0を入れるにはここを >= にする */
@@ -1836,7 +1840,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	    score = ef->similarity;
 	}
 	else if (ef->match_sm_flag) {
-	    score = ef->similarity;
+	    score = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
