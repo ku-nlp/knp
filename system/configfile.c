@@ -681,6 +681,12 @@ int knp_dict_file_already_defined = 0;
 #endif
     }
 
+#ifdef _WIN32
+    if (!opfile) {
+	read_rc(NULL);
+    }
+    else
+#endif
     read_rc(find_rc_file(opfile));
 }
 
