@@ -51,10 +51,9 @@
 package KNP;
 require 5.000;
 use FileHandle;
-use Fork;
 use Juman;
 use strict;
-use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE );
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST );
 
 
 # プログラム内部で利用される大域変数
@@ -68,12 +67,18 @@ $KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
 $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
+$HOST         = "grape";
 
 
 
 sub BEGIN {
     # 出力が二重にならないようにするためのおまじない
     STDOUT->autoflush(1);
+    if( $HOST ){
+	require IO::Socket::INET;
+    } else {
+	require Fork;
+    }
 }
 
 
@@ -135,9 +140,26 @@ sub parse {
     my $counter = 0;
   PARSE:
     # knp を fork する。
-    $this->{KNP} = new Fork( $COMMAND, $this->{OPTION} ) unless $this->{KNP} && $this->{KNP}->alive;
+    if( $HOST ){
+	unless( $this->{KNP} ){
+	    my $sock = new IO::Socket::INET( PeerAddr => $HOST, PeerPort => 31000, Proto => 'tcp' )
+		|| die "KNP.pm: Can't connect server: host=$HOST\n";
+	    $sock->timeout( 60 );
+	    my $tmp = $sock->getline;
+	    ( $tmp =~ /^200/ ) || die "KNP.pm: Illegal message: host=$HOST, msg=$tmp\n";
+	    $sock->print( sprintf( "RUN %s\n", $this->{OPTION} ) );
+	    $tmp = $sock->getline;
+	    ( $tmp =~ /^200/ ) || die "KNP.pm: Configuration error: host=$HOST, msg=$tmp\n";
+	    $this->{KNP} = $sock;
+	}
+    } else {
+	unless( $this->{KNP} && $this->{KNP}->alive ){
+	    $this->{KNP} = new Fork( $COMMAND, $this->{OPTION} ) || die "KNP.pm: Can't fork: command=$COMMAND\n";
+	    $this->{KNP}->timeout( 60 );
+	}
+    }
     my( @juman ) = $JUMAN->parse( $input );
-    $this->{KNP}->write( @juman );
+    $this->{KNP}->print( @juman );
     $counter++;
 
     # Parse ERROR などが発生した場合に原因を調べるため、構文解析した文
@@ -152,7 +174,7 @@ sub parse {
 	return 1;
     }
     my $buf = "";
-    while( $_ = $this->{KNP}->read ){
+    while( $_ = $this->{KNP}->getline ){
 	$buf .= $_;
 	last if( $buf =~ /\nEOS$/ || $this->{PATTERN} && /^$this->{PATTERN}/ );
     }
@@ -261,7 +283,12 @@ sub parse {
 sub kill_knp {
     my( $this ) = @_;
     $this->{PREVIOUS} = [];
-    $this->{KNP}->kill;
+    if( $HOST ){
+	$this->{KNP}->close;
+    } else {
+	$this->{KNP}->kill;
+    }
+    delete $this->{KNP};
     1;
 }
 
