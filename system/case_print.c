@@ -299,7 +299,7 @@ extern FILE  *Outfp;
 				   CF_MATCH_MGR *cmm_ptr,int ipal_num)
 /*==================================================================*/
 {
-    int i, j, check[IPAL_FRAME_MAX*3];
+    int i, j, check[ALL_CASE_FRAME_MAX];
     int max_num, max_score, max_counts, all_max_score = 0;
     int print_flag = TRUE;
     

@@ -138,7 +138,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    c_ptr->pp[c_ptr->element_num][1] = -1;
 	    c_ptr->pp[c_ptr->element_num][2] = END_M;
 	}
-	else if (check_feature(b_ptr->f, "•«•œ")) {
+	else if (check_feature(b_ptr->f, "•«") && 
+		 check_feature(b_ptr->f, "•œ")) {
 	    c_ptr->pp[c_ptr->element_num][1] = -1;
 	    c_ptr->pp[c_ptr->element_num][2] = END_M;
 	}
@@ -194,7 +195,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
-    else if (check_feature(b_ptr->f, "∑∏:Ã§≥ ")) {
+    else if (check_feature(b_ptr->f, "∑∏:Ã§≥ ") || 
+	     check_feature(b_ptr->f, "∑∏:∆±≥ Ã§≥ ")) {
 	if (check_feature(b_ptr->f, "ª˛¥÷")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("ª˛¥÷");
 	    c_ptr->oblig[c_ptr->element_num] = FALSE;
@@ -234,8 +236,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     int i, sm_num = 0, qua_flag = FALSE, tim_flag = FALSE;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
-    if (check_feature(b_ptr->f, "∑∏:•»≥ ") && /* ≥ Õ◊¡« --  ∏ */
-	check_feature(b_ptr->f, "Õ—∏¿")) {
+    /* ≥ Õ◊¡« --  ∏ */
+    if ((check_feature(b_ptr->f, "∑∏:•»≥ ") && 
+	 check_feature(b_ptr->f, "Õ—∏¿")) || 
+	(check_feature(b_ptr->f, "∑∏:•Ú≥ ") && 
+	 check_feature(b_ptr->f, "Õ—∏¿") && 
+	 check_feature(b_ptr->f, "∑¡…˚ÃæªÏ"))) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
 	       (char *)sm2code(" ‰ ∏"));
 	assign_cfeature(&(b_ptr->f), " ‰ ∏");

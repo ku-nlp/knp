@@ -187,6 +187,10 @@ extern float ntt_code_match(char *c1, char *c2);
 {
     int i, j;
 
+    if (p == NULL) {
+	return FALSE;
+    }
+
     for (i = 0; *(d+i); i += unit) {
 	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
 	    for (j = 0; *(p+j); j += unit) {
@@ -215,7 +219,7 @@ extern float ntt_code_match(char *c1, char *c2);
 
     if (flag == SEMANTIC_MARKER) {
 	
-	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2][0] == '\0') 
+	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2] == NULL || cfp->sm[as2][0] == '\0') 
 	    return SM_match_unknown;
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
@@ -237,7 +241,7 @@ extern float ntt_code_match(char *c1, char *c2);
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
 						       cfd->sm[as1]+i, SM_NO_EXPAND_NE)];
-		    if (tmp_score && (cfp->sm_flag[as2][j/SM_CODE_SIZE] == FALSE))
+		    if (tmp_score && (cfp->sm_false[as2] && cfp->sm_false[as2][j/SM_CODE_SIZE] == TRUE))
 			return -100;
 		    if (tmp_score > score) score = tmp_score;
 		}
@@ -266,7 +270,7 @@ extern float ntt_code_match(char *c1, char *c2);
 	    exp = cfp->ex2[as2];
 	    step = SM_CODE_SIZE;
 	    match_function = _sm_match_score;
-	    match_score = SM_match_score;
+	    match_score = EX_match_score;
 	}
 
 	/* 特別 : 格要素 -- 文 */
@@ -286,7 +290,7 @@ extern float ntt_code_match(char *c1, char *c2);
 	}
 
 	/* 用例がどちらか一方でもなかったら */
-	if (*exd == '\0' || *exp == '\0') {
+	if (*exd == '\0' || exp == NULL || *exp == '\0') {
 	    if (score < 0) {
 		score = EX_match_unknown;
 	    }
@@ -300,7 +304,7 @@ extern float ntt_code_match(char *c1, char *c2);
 			tmp_score = *(match_score+match_function(exp+j, exd+i));
 		    }
 		    else if (Thesaurus == USE_NTT) {
-			tmp_score = ntt_code_match(exp+j, exd+i)*11;
+			tmp_score = *(match_score+(int)(ntt_code_match(exp+j, exd+i)*7));
 		    }
 		    if (tmp_score > ex_score) ex_score = tmp_score;
 		}

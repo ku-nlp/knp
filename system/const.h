@@ -59,10 +59,8 @@
 
 #ifndef SMALL
 #define ALL_CASE_FRAME_MAX 	1536
-#define IPAL_FRAME_MAX 		512
 #else
 #define ALL_CASE_FRAME_MAX 	0
-#define IPAL_FRAME_MAX 		0
 #endif
 #define CF_ELEMENT_MAX 		20
 #define PP_ELEMENT_MAX		5
@@ -70,7 +68,7 @@
 #define EX_ELEMENT_MAX		256
 #define MAX_MATCH_MAX 		10
 
-#define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
+#define CMM_MAX 	5				/* 最適格フレーム数 */
 #define CPM_MAX 	32				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
@@ -616,9 +614,9 @@ typedef struct cf_def {
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
-    char	sm[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE]; 	
+    char	*sm[CF_ELEMENT_MAX]; 	
 							/* 意味マーカ */
-    int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
+    int         *sm_false[CF_ELEMENT_MAX];		/* 意味マーカのフラグ */
     char 	*ex[CF_ELEMENT_MAX];
     							/* 用例 (BGH) */
     char	*ex2[CF_ELEMENT_MAX];

@@ -24,7 +24,7 @@ TOTAL_MGR	Work_mgr;
 	OptAnalysis == OPT_DISC) {
 	int i, j;
 
-	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*IPAL_FRAME_MAX*5, 
+	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
 						   "init_case_analysis");
 
 	for (i = 0; i < CPM_MAX; i++) {
@@ -37,6 +37,8 @@ TOTAL_MGR	Work_mgr;
 		    Work_mgr.cpm[i].cf.ex2[j] = 
 			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_case_analysis");
 		}
+		Work_mgr.cpm[i].cf.sm[j] = 
+		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_case_analysis");
 	    }
 	}
     }
@@ -335,9 +337,6 @@ char *sm_code_to_str(int code)
 	for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
 	    dst->sm[i][j] = src->sm[i][j];
 	}
-	for (j = 0; j < SM_ELEMENT_MAX; j++) {
-	    dst->sm_flag[i][j] = src->sm_flag[i][j];
-	}
 	if (Thesaurus == USE_BGH) {
 	    strcpy(dst->ex[i], src->ex[i]);
 	}
@@ -429,6 +428,13 @@ char *sm_code_to_str(int code)
        ここで default との距離のずれ, 提題を処理 */
 
     for (i = 0; i < sp->Bnst_num-1; i++) {
+	/* ガ格 -> レベル:A (ルールでこの係り受けを許した場合は、
+	   このでコストを与える) */
+	if (check_feature((sp->bnst_data+i)->f, "係:ガ格") && 
+	    check_feature((sp->bnst_data+dpnd.head[i])->f, "レベル:A")) {
+	    distance_cost += 4;
+	}
+
 	if (dpnd.dflt[i] > 0) {
 	    /* 提題 */
 	    if (check_feature((sp->bnst_data+i)->f, "提題")) {
@@ -571,11 +577,13 @@ char *sm_code_to_str(int code)
 	    
 	    /* 意味素 */
 
-	    for (k = 0; cf_ptr->sm[i][k]; k+=SM_CODE_SIZE) {
-		if (k != 0) 
-		    sprintf(feature_buffer+strlen(feature_buffer), "/");
-		sprintf(feature_buffer+strlen(feature_buffer), 
-			"%12.12s", &(cf_ptr->sm[i][k]));
+	    if (cf_ptr->sm[i]) {
+		for (k = 0; cf_ptr->sm[i][k]; k+=SM_CODE_SIZE) {
+		    if (k != 0) 
+			sprintf(feature_buffer+strlen(feature_buffer), "/");
+		    sprintf(feature_buffer+strlen(feature_buffer), 
+			    "%12.12s", &(cf_ptr->sm[i][k]));
+		}
 	    }
 
 	    /* feature付与 */

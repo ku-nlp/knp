@@ -853,6 +853,7 @@ extern FILE  *Outfp;
 	dpnd.mask[i] = 1;
 	dpnd.check[i].num = -1;
 	memset(&(dpnd.op[i]), 0, sizeof(struct _optionalcase));
+	memset(&(dpnd.check[i]), 0, sizeof(CHECK_DATA));
 	dpnd.f[i] = NULL;
     }
     dpnd.pos = sp->Bnst_num - 1;
