@@ -10,6 +10,8 @@
 #include "knp.h"
 
 int Bnst_start[MRPH_MAX];
+int ArticleID = 0;
+int preArticleID = 0;
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
@@ -163,6 +165,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     MRPH_DATA  *m_ptr = mrph_data, *ptr;
     int homo_num, offset, mrph_item, i;
 
+    preArticleID = ArticleID;
+    ArticleID = 0;
     Mrph_num = 0;
     homo_num = 0;
     Comment[0] = '\0';
@@ -188,6 +192,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (Mrph_num == 0 && input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    strcpy(Comment, input_buffer);
+
+	    /* 文章が変わったら固有名詞スタックをクリア */
+	    sscanf(Comment, "# S-ID:%d", &ArticleID);
+	    if (ArticleID && ArticleID != preArticleID)
+		clearNE();
 	}
 
 	/* 解析済みの場合 */
@@ -312,37 +321,31 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     char h_buffer[62], b_buffer[62], kata_buffer[62], kei_buffer[62];
     int i, num;
 
-    while (f) {
-	if (f->cp && !strncmp(f->cp, "&品詞変更:", strlen("&品詞変更:"))) {
-	    
-	    m_ptr->Hinshi = 0;
+    m_ptr->Hinshi = 0;
+    m_ptr->Bunrui = 0;
+    m_ptr->Katuyou_Kata = 0;
+    m_ptr->Katuyou_Kei = 0;
+
+    num = sscanf(f->cp, "%*[^:]:%[^:]:%[^:]:%[^:]:%[^:]", 
+		 h_buffer, b_buffer, kata_buffer, kei_buffer);
+
+    m_ptr->Hinshi = get_hinsi_id(h_buffer);
+    if (num >= 2) {
+	if (!strcmp(b_buffer, "*"))
 	    m_ptr->Bunrui = 0;
-	    m_ptr->Katuyou_Kata = 0;
-	    m_ptr->Katuyou_Kei = 0;
-
-	    num = sscanf(f->cp, "%*[^:]:%[^:]:%[^:]:%[^:]:%[^:]", 
-			 h_buffer, b_buffer, kata_buffer, kei_buffer);
-
-	    m_ptr->Hinshi = get_hinsi_id(h_buffer);
-	    if (num >= 2) {
-		if (!strcmp(b_buffer, "*"))
-		    m_ptr->Bunrui = 0;
-		else 
-		    m_ptr->Bunrui = get_bunrui_id(b_buffer, m_ptr->Hinshi);
-	    }
-	    if (num >= 3) {
-		m_ptr->Katuyou_Kata = get_type_id(kata_buffer);
-		m_ptr->Katuyou_Kei = get_form_id(kei_buffer, 
-						 m_ptr->Katuyou_Kata);
-	    }
-
-	    /* 品詞変更が活用なしの場合は原型も変更する */
-	    /* ▼ 逆(活用なし→活用あり)は扱っていない */
-	    if (m_ptr->Katuyou_Kata == 0) {
-		strcpy(m_ptr->Goi, m_ptr->Goi2);
-	    }
-	}
-	f = f->next;
+	else 
+	    m_ptr->Bunrui = get_bunrui_id(b_buffer, m_ptr->Hinshi);
+    }
+    if (num >= 3) {
+	m_ptr->Katuyou_Kata = get_type_id(kata_buffer);
+	m_ptr->Katuyou_Kei = get_form_id(kei_buffer, 
+					 m_ptr->Katuyou_Kata);
+    }
+    
+    /* 品詞変更が活用なしの場合は原型も変更する */
+    /* ▼ 逆(活用なし→活用あり)は扱っていない */
+    if (m_ptr->Katuyou_Kata == 0) {
+	strcpy(m_ptr->Goi, m_ptr->Goi2);
     }
 }
 
@@ -362,16 +365,40 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       void assign_mrph_prop()
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, k, match_length;
     MrphRule	*r_ptr;
     MRPH_DATA	*m_ptr;
     
     for (j = 0, r_ptr = MrphRuleArray; j < CurMrphRuleSize; j++, r_ptr++) {
 	for (i = 0; i < Mrph_num; i++) {
 	    m_ptr = mrph_data + i;
-    	    if (regexpmrphrule_match(r_ptr, m_ptr) == TRUE) {
-		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
-		change_mrph(m_ptr, r_ptr->f);
+
+	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
+		for (k = i; k < i + match_length; k++) {
+		    m_ptr = mrph_data + k;
+		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+		}
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	 void assign_mrph_feature(MrphRule *r_ptr, int size)
+/*==================================================================*/
+{
+    int i, j, k, match_length;
+    MRPH_DATA	*m_ptr;
+
+    for (j = 0; j < size; j++, r_ptr++) {
+	for (i = 0; i < Mrph_num; i++) {
+	    m_ptr = mrph_data + i;
+
+	    if ((match_length = regexpmrphrule_match(r_ptr, m_ptr)) != -1) {
+		for (k = i; k < i + match_length; k++) {
+		    m_ptr = mrph_data + k;
+		    assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+		}
 	    }
 	}
     }
@@ -441,14 +468,17 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 /*==================================================================*/
 	 void push_indp(BNST_DATA *b_ptr, MRPH_DATA *m_ptr)
-/*==================================================================*/{
+/*==================================================================*/
+{
     if (b_ptr->jiritu_num == 0)
-      b_ptr->jiritu_ptr = m_ptr;
-    while ((strlen(b_ptr->Jiritu_Go) + strlen(m_ptr->Goi)) > b_ptr->Jiritu_Go_Size) {
-	b_ptr->Jiritu_Go_Size += WORD_LEN_MAX;
-	b_ptr->Jiritu_Go = (char *)realloc_data(b_ptr->Jiritu_Go, b_ptr->Jiritu_Go_Size, "push_indp");
+	b_ptr->jiritu_ptr = m_ptr;
+
+    if ((strlen(b_ptr->Jiritu_Go) + strlen(m_ptr->Goi)) >= WORD_LEN_MAX) {
+	fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)",
+		b_ptr->Jiritu_Go, m_ptr->Goi);
+    } else {
+	strcat(b_ptr->Jiritu_Go, m_ptr->Goi);
     }
-    strcat(b_ptr->Jiritu_Go, m_ptr->Goi);
     b_ptr->jiritu_num++;
     b_ptr->mrph_num++;
 }
