@@ -110,6 +110,7 @@ extern char *Knpdict_Dirname;
 extern RuleVector *RULE;
 extern int CurrentRuleNum;
 extern int RuleNumMax;
+extern char *DICT[];
 
 extern GeneralRuleType *GeneralRuleArray;
 extern int GeneralRuleNum;

@@ -27,7 +27,7 @@ PreservedNamedEntity *pNE = NULL;
 char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 
 /*==================================================================*/
-			  void init_proper()
+		  void init_proper(SENTENCE_DATA *s)
 /*==================================================================*/
 {
     int i;
@@ -41,7 +41,7 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
     }
 
     for (i = 0; i < MRPH_MAX; i++) {
-	(sp->mrph_data+i)->SM = (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE+1, 
+	(s->mrph_data+i)->SM = (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE+1, 
 						    "init_proper");
     }
 }

@@ -366,6 +366,7 @@ typedef struct {
 #define		DEF_KNP_FILE		"KNPルールファイル"
 #define		DEF_KNP_DIR		"KNPルールディレクトリ"
 #define		DEF_KNP_DICT_DIR	"KNP辞書ディレクトリ"
+#define		DEF_KNP_DICT_FILE	"KNP辞書ファイル"
 
 typedef struct _RuleVector {
     char	*file;
@@ -388,6 +389,21 @@ typedef struct _RuleVector {
 #define NePhraseRuleType 8
 #define NePhraseAuxRuleType 9
 #define ContextRuleType 10
+
+/* 辞書の最大数 */
+#define DICT_MAX	11
+
+/* 辞書の定義 */
+#define	BGH_DB		1
+#define	SM_DB		2
+#define	SM2CODE_DB	3
+#define	SMP2SMG_DB	4
+#define	SCASE_DB	5
+#define CF_INDEX_DB	6
+#define CF_DATA		7
+#define	PROPER_DB	8
+#define	PROPERC_DB	9
+#define	PROPERCASE_DB	10
 
 /*====================================================================
 			     固有名詞解析
@@ -609,6 +625,7 @@ typedef struct cf_def {
     char	*examples[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
+    int 	ipal_size;				/* IPALのサイズ */
     char 	ipal_id[128];				/* IPALのID */
     char 	imi[128];
     char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */

@@ -13,6 +13,19 @@ RuleVector *RULE = NULL;
 int CurrentRuleNum = 0;
 int RuleNumMax = 0;
 
+char *DICT[DICT_MAX];
+int knp_dict_file_already_defined = 0;
+
+/*==================================================================*/
+			void init_configfile()
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < DICT_MAX; i++) {
+	DICT[i] = NULL;
+    }
+}
+
 /*==================================================================*/
 	    void check_duplicated(int value, char *string)
 /*==================================================================*/
@@ -54,6 +67,7 @@ int RuleNumMax = 0;
     GetPrivateProfileString("juman","dicfile","",Jumangram_Dirname,sizeof(Jumangram_Dirname),"juman.ini");
 #else
     CELL *cell1,*cell2;
+    char *dicttype;
 
     LineNo = 0 ;
     Jumangram_Dirname[0] = '\0';
@@ -181,6 +195,7 @@ int RuleNumMax = 0;
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* KNP 辞書ディレクトリ */
 	else if (!strcmp(DEF_KNP_DICT_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .jumanrc\n");
@@ -188,7 +203,43 @@ int RuleNumMax = 0;
 	    }
 	    else
 		Knpdict_Dirname = strdup(_Atom(cell2));
-	}	
+	}
+	/* KNP 辞書ファイル */
+	else if (!strcmp(DEF_KNP_DICT_FILE, _Atom(car(cell1))) && 
+		 !knp_dict_file_already_defined) {
+	    cell1 = cdr(cell1);
+	    knp_dict_file_already_defined = 1;
+
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(cdr(car(cell1))));
+		if (!strcmp(dicttype, "格フレームINDEXDB")) {
+		    DICT[CF_INDEX_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "格フレームDATA")) {
+		    DICT[CF_DATA] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "分類語彙表DB")) {
+		    DICT[BGH_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "表層格DB")) {
+		    DICT[SCASE_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "NTT単語DB")) {
+		    DICT[SM_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "NTT意味素DB")) {
+		    DICT[SM2CODE_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "NTT固有名詞変換テーブルDB")) {
+		    DICT[SMP2SMG_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else {
+		    fprintf(stderr, "%s is invalid in .jumanrc\n", _Atom(car(cdr(car(cell1)))));
+		    exit(0);
+		}
+		cell1 = cdr(cell1);
+	    }
+	}
     }
 #endif
 }
@@ -226,7 +277,7 @@ int RuleNumMax = 0;
 }
 
 /*==================================================================*/
-		   char *check_filename(char *file)
+		char *check_rule_filename(char *file)
 /*==================================================================*/
 {
     /* ルールファイル (*.data) の fullpath を返す関数 */
@@ -240,7 +291,7 @@ int RuleNumMax = 0;
 	exit(0);
     }
 
-    fullname = (char *)malloc_data(strlen(Knprule_Dirname)+strlen(file)+7, "check_filename");
+    fullname = (char *)malloc_data(strlen(Knprule_Dirname)+strlen(file)+7, "check_rule_filename");
     sprintf(fullname, "%s/%s.data", Knprule_Dirname, file);
     /* dir + filename + ".data" */
     status = stat(fullname, &sb);
@@ -268,6 +319,42 @@ int RuleNumMax = 0;
     /* ルールファイルとの時間チェック */
     check_data_newer_than_rule(sb.st_mtime, fullname);
 
+    return fullname;
+}
+
+/*==================================================================*/
+		char *check_dict_filename(char *file)
+/*==================================================================*/
+{
+    char *fullname, *home;
+    int status;
+    struct stat sb;
+
+    if (!Knpdict_Dirname) {
+	fprintf(stderr, "Please specify dict directory in .jumanrc\n");
+	exit(0);
+    }
+
+    fullname = (char *)malloc_data(strlen(Knpdict_Dirname)+strlen(file)+2, "check_dict_filename");
+    sprintf(fullname, "%s/%s", Knpdict_Dirname, file);
+    /* dir + filename */
+    status = stat(fullname, &sb);
+
+    if (status < 0) {
+	free(fullname);
+	if (*file == '~' && (home = getenv("HOME"))) {
+	    fullname = (char *)malloc_data(strlen(home)+strlen(file), "check_dict_filename");
+	    sprintf(fullname, "%s%s", home, strchr(file, '/'));
+	}
+	else {
+	    fullname = strdup(file);
+	}
+	status = stat(fullname, &sb);
+	if (status < 0) {
+	    fprintf(stderr, "%s: No such file.\n", fullname);
+	    exit(1);
+	}
+    }
     return fullname;
 }
 

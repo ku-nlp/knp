@@ -125,11 +125,14 @@ extern FILE  *Outfp;
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
 	return;
     else
-	get_ipal_frame(i_ptr, cmm_ptr->cf_ptr->ipal_address);
+	get_ipal_frame(i_ptr, cmm_ptr->cf_ptr->ipal_address, cmm_ptr->cf_ptr->ipal_size);
     
     /* 得点，意味の表示 */
 
     fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
+
+    if (cmm_ptr->cf_ptr->concatenated_flag == 1)
+	fprintf(Outfp, "<文節結合フレーム> ");
 
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
       fprintf(Outfp, "(間受)");

@@ -29,22 +29,41 @@ int	IPALExist;
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2 || 
 	OptAnalysis == OPT_DISC) {
-#ifdef _WIN32
-	if ((ipal_fp = fopen(IPAL_DAT_NAME, "rb")) == NULL) {
-#else
-	if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
-#endif
-	    fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
+	char *index_db_filename, *data_filename;
+
+	if (DICT[CF_DATA]) {
+	    data_filename = (char *)check_dict_filename(DICT[CF_DATA]);
+	}
+	else {
+	    data_filename = strdup(IPAL_DAT_NAME);
+	}
+
+	if (DICT[CF_INDEX_DB]) {
+	    index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB]);
+	}
+	else {
+	    index_db_filename = strdup(IPAL_DB_NAME);
+	}
+
+	if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {
+	    if (OptAnalysis == OPT_CASE ||
+		OptAnalysis == OPT_CASE2) {
+		fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
+	    }
 	    IPALExist = FALSE;
 	}
-	else if ((ipal_db = DBM_open(IPAL_DB_NAME, O_RDONLY, 0)) == NULL) {
-	    fprintf(stderr, "Cannot open Database <%s>.\n", IPAL_DB_NAME);
+	else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
+	    fprintf(stderr, "Cannot open CF INDEX Database <%s>.\n", index_db_filename);
 	    exit(1);
 	} 
 	else {
 	    IPALExist = TRUE;
 	}
-	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_ipal");
+
+	free(data_filename);
+	free(index_db_filename);
+
+	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
     }
 }
 
@@ -69,11 +88,11 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-	 void get_ipal_frame(IPAL_FRAME *i_ptr, int address)
+    void get_ipal_frame(IPAL_FRAME *i_ptr, int address, int size)
 /*==================================================================*/
 {
     fseek(ipal_fp, (long)address, 0);
-    if (fread(i_ptr, sizeof(IPAL_FRAME), 1, ipal_fp) < 1) {
+    if (fread(i_ptr, size, 1, ipal_fp) < 1) {
 	fprintf(stderr, "Error in fread.\n");
 	exit(1);
     }
@@ -252,7 +271,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
-     void _make_ipal_cframe(CASE_FRAME *cf_ptr, int address)
+  void _make_ipal_cframe(CASE_FRAME *cf_ptr, int address, int size)
 /*==================================================================*/
 {
     int i, j = 0, ga_p = NULL;
@@ -260,6 +279,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     char ast_cap[32];
 
     cf_ptr->ipal_address = address;
+    cf_ptr->ipal_size = size;
     cf_ptr->concatenated_flag = 0;
     strcpy(cf_ptr->ipal_id, i_ptr->DATA+i_ptr->id); 
     strcpy(cf_ptr->imi, i_ptr->DATA+i_ptr->imi);
@@ -376,10 +396,15 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     char *verb, buffer[WORD_LEN_MAX];
     BNST_DATA *pre_ptr;
 
+    /* 自立語末尾語を用いて格フレーム辞書を引く */
     verb = L_Jiritu_M(b_ptr)->Goi;
     f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
     for (i = 0; i < f_num; i++) {
 	(cf_ptr+i)->concatenated_flag = 0;
+    }
+
+    if (b_ptr->num < 1) {
+	return f_num;
     }
 
     buffer[0] = '\0';
@@ -417,7 +442,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 /*==================================================================*/
 {
     IPAL_FRAME *i_ptr = &Ipal_frame;
-    int f_num = 0, address, break_flag = 0;
+    int f_num = 0, address, break_flag = 0, size, match;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
 
     if (!verb)
@@ -440,8 +465,13 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		*cp = '\0';
 	    
 	    /* IPALデータの読みだし */
-	    address = atoi(pre_pos);
-	    get_ipal_frame(i_ptr, address);
+	    match = sscanf(pre_pos, "%d:%d", &address, &size);
+	    if (match != 2) {
+		fprintf(stderr, "CaseFrame Dictionary Index error\n");
+		exit(1);
+	    }
+	    
+	    get_ipal_frame(i_ptr, address, size);
 	    pre_pos = cp + 1;
 
 	    /* 用言のタイプがマッチしなければ */
@@ -455,7 +485,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    /* 能動態 */
 	    if (b_ptr->voice == NULL) {
 		(cf_ptr+f_num)->voice = FRAME_ACTIVE;
-		_make_ipal_cframe(cf_ptr+f_num, address);
+		_make_ipal_cframe(cf_ptr+f_num, address, size);
 		f_num_inc(&f_num);
 	    }
 
@@ -469,7 +499,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		else if (!strcmp(i_ptr->DATA+i_ptr->sase, "ニ使役"))
 		  (cf_ptr+f_num)->voice = FRAME_CAUSATIVE_NI;
 		
-		_make_ipal_cframe(cf_ptr+f_num, address);
+		_make_ipal_cframe(cf_ptr+f_num, address, size);
 		f_num_inc(&f_num);
 	    }
 	    
@@ -479,19 +509,19 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		/* 直接受身１ */
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou1)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_1;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 		/* 直接受身２ */
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou2)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_2;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 		/* 間接受身 */
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "間受")) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_I;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 	    }
@@ -499,17 +529,17 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    if (b_ptr->voice == VOICE_UKEMI) {
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "可能")) {
 		    (cf_ptr+f_num)->voice = FRAME_POSSIBLE;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "尊敬")) {
 		    (cf_ptr+f_num)->voice = FRAME_POLITE;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "自発")) {
 		    (cf_ptr+f_num)->voice = FRAME_SPONTANE;
-		    _make_ipal_cframe(cf_ptr+f_num, address);
+		    _make_ipal_cframe(cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
 		}
 	    }

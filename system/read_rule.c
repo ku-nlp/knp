@@ -69,7 +69,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	exit(1);
     }
 
-    file_name = (char *)check_filename(file_name);
+    file_name = (char *)check_rule_filename(file_name);
 
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
@@ -128,7 +128,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	exit(1);
     }
 
-    file_name = (char *)check_filename(file_name);
+    file_name = (char *)check_rule_filename(file_name);
 
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
@@ -181,7 +181,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	exit(1);
     }
 
-    file_name = (char *)check_filename(file_name);
+    file_name = (char *)check_rule_filename(file_name);
 
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
@@ -227,7 +227,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	exit(1);
     }
 
-    file_name = (char *)check_filename(file_name);
+    file_name = (char *)check_rule_filename(file_name);
     
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);
@@ -275,7 +275,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	exit(1);
     }
 
-    file_name = (char *)check_filename(file_name);
+    file_name = (char *)check_rule_filename(file_name);
 
     if ( (fp = fopen(file_name, "r")) == NULL ) {
 	fprintf(stderr, "Cannot open file (%s) !!\n", file_name);

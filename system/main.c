@@ -358,6 +358,7 @@ char *Opt_jumanrc = NULL;
 {
     /* 初期化 */
 
+    init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */
@@ -366,8 +367,6 @@ char *Opt_jumanrc = NULL;
     init_case_analysis();
     			/* 格解析の準備 */
 
-    if (OptNE != OPT_NORMAL)
-	init_proper();	/* 固有名詞解析辞書オープン */
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
     if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
@@ -383,6 +382,11 @@ char *Opt_jumanrc = NULL;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
+
+    /* 固有名詞解析辞書オープン */
+    if (OptNE != OPT_NORMAL) {
+	init_proper(&current_sentence_data);
+    }
 }
 
 /*==================================================================*/

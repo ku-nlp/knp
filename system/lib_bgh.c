@@ -13,18 +13,24 @@ DBM_FILE	bgh_db;
 int		BGHExist;
 
 /*==================================================================*/
-                    void init_bgh()
+			   void init_bgh()
 /*==================================================================*/
 {
-    if ((bgh_db = DBM_open(BGH_DB_NAME, O_RDONLY, 0)) == NULL) {
-        /* 
-	   fprintf(stderr, "Can not open Database <%s>.\n", BGH_DB_NAME);
-	   exit(1);
-	*/
+    char *filename;
+
+    if (DICT[BGH_DB]) {
+	filename = (char *)check_dict_filename(DICT[BGH_DB]);
+    }
+    else {
+	filename = strdup(BGH_DB_NAME);
+    }
+
+    if ((bgh_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	BGHExist = FALSE;
     } else {
 	BGHExist = TRUE;
     }
+    free(filename);
 }
 
 /*==================================================================*/

@@ -20,20 +20,55 @@ int		SMP2SMGExist;
 			    void init_sm()
 /*==================================================================*/
 {
-    if ((sm_db = DBM_open(SM_DB_NAME, O_RDONLY, 0)) == NULL)
+    char *filename;
+
+    /* 単語 <=> 意味素コード */
+    if (DICT[SM_DB]) {
+	filename = (char *)check_dict_filename(DICT[SM_DB]);
+    }
+    else {
+	filename = strdup(SM_DB_NAME);
+    }
+
+    if ((sm_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SMExist = FALSE;
-    else
+    }
+    else {
 	SMExist = TRUE;
+    }
+    free(filename);
 
-    if ((sm2code_db = DBM_open(SM2CODE_DB_NAME, O_RDONLY, 0)) == NULL)
+    /* 意味素 <=> 意味素コード */
+    if (DICT[SM2CODE_DB]) {
+	filename = (char *)check_dict_filename(DICT[SM2CODE_DB]);
+    }
+    else {
+	filename = strdup(SM2CODE_DB_NAME);
+    }
+
+    if ((sm2code_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SM2CODEExist = FALSE;
-    else
+    }
+    else {
 	SM2CODEExist = TRUE;
+    }
+    free(filename);
 
-    if ((smp2smg_db = DBM_open(SMP2SMG_DB_NAME, O_RDONLY, 0)) == NULL)
+    /* 固有名詞体系 <=> 一般名詞体系 */
+    if (DICT[SMP2SMG_DB]) {
+	filename = (char *)check_dict_filename(DICT[SMP2SMG_DB]);
+    }
+    else {
+	filename = strdup(SMP2SMG_DB_NAME);
+    }
+
+    if ((smp2smg_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SMP2SMGExist = FALSE;
-    else
+    }
+    else {
 	SMP2SMGExist = TRUE;
+    }
+    free(filename);
 }
 
 /*==================================================================*/
