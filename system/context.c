@@ -1088,8 +1088,10 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
     }
-    /* f->c_distance = ef->c_distance;
-       f->c_dist_bnst = ef->c_dist_bnst; */
+#ifdef DISC_USE_DIST
+    f->c_distance = ef->c_distance;
+    f->c_dist_bnst = ef->c_dist_bnst;
+#endif
     f->c_fs_flag = ef->c_fs_flag;
     /* f->c_location[0] = ef->c_location == PLOC_PV ? 1 : 0;
        f->c_location[1] = ef->c_location == PLOC_PARENTV ? 1 : 0;
@@ -2668,8 +2670,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     /* 閾値を越えるものが見つからなかった */
     if (!ScoreCheck(cf_ptr, n)) {
-	/* 閾値を越えるものがなく、格フレームに<主体>があるとき */
-	if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	/* 閾値を越えるものがなく、ガ格または格フレームに<主体>があるとき */
+	if (MatchPP(cf_ptr->pp[n][0], "ガ") || 
+	    cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	    maxtag = ExtraTags[1]; /* 不特定-人 */
 	}
 	else {
@@ -2851,7 +2854,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     for (j = 0; cases[j] != END_M; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
 	    /* 指示詞の解析 (割り当てあり) */
-	    if (OptDemo == TRUE && 
+	    if ((OptEllipsis & OPT_DEMO) && 
 		cmm_ptr->result_lists_p[l].flag[i] != UNASSIGNED && 
 		cf_ptr->pp[i][0] == cases[j] && 
 		check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[i]]->f, "省略解析対象指示詞")) {
@@ -2863,7 +2866,8 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 
 	    if (demoflag == 1 || 
 		/* 割り当てなし => 省略 */
-		(cf_ptr->pp[i][0] == cases[j] && 
+		((OptEllipsis & OPT_ELLIPSIS) && 
+		 cf_ptr->pp[i][0] == cases[j] && 
 		 cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED && 
 		 !(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ")))) {
 		result = EllipsisDetectForVerb(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i, mainflag);
@@ -3064,7 +3068,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	/* 入力側格要素を設定
 	   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
 	   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
-	if (OptDemo == TRUE) {
+	if (OptEllipsis & OPT_DEMO) {
 	    make_data_cframe(sp, cpm_ptr);
 	}
 
@@ -3167,7 +3171,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	    }
 
 	    /* 格フレームの追加エントリの削除 */
-	    if (OptDemo == FALSE) {
+	    if (!(OptEllipsis & OPT_DEMO)) {
 		DeleteFromCF(&workem, cpm_ptr, &cmm, i);
 	    }
 	}
@@ -3262,7 +3266,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		/* 入力側格要素を設定
 		   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
 		   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
-		if (OptDemo == TRUE) {
+		if (OptEllipsis & OPT_DEMO) {
 		    make_data_cframe(sp, cpm_ptr);
 		}
 
@@ -3287,7 +3291,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		}
 
 		/* 格フレームの追加エントリの削除 */
-		if (OptDemo == FALSE) {
+		if (!(OptEllipsis & OPT_DEMO)) {
 		    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
 		}
 	    }
