@@ -4,7 +4,7 @@
 #		 KNP¤Î·ÁÂÖÁÇ¡¤Ê¸Àá¥ë¡¼¥ë¤Îtranslator
 #
 #					99/09/10 by kuro@i.kyoto-u.ac.jp
-#					99/12/25 last modified
+#					00/02/15 last modified
 ######################################################################
 #
 # ³Æ¹Ô¤Înotation
@@ -102,8 +102,10 @@ $pos_repr{"\\ÆÃ¼ì:¶çÅÀ"} = "¡¥";
 ######################################################################
 # use Juman
 # $juman = new Juman("-e -B"); 
-use KNP;
+#use KNP;
 # $knp = new KNP("-bnst -tab -r /home/kuro/.jumanrc");
+use lib "/home/nobumoto/etc/lib/perl";
+BEGIN { require "/home/nobumoto/etc/lib/perl/KNP.pm"};
 $knp = new KNP("-bnst -tab");
 ######################################################################
 $bnstrule_flag = 1;
@@ -329,7 +331,12 @@ sub bnst_cond2
     $input =~ s/\>/\> /g;
     $input =~ s/G/G /g;
     $input =~ s/g/g /g;
-    $input =~ s/(\d+)/\1 /g;
+    if ($input =~ /(\d+\<)/){
+	;
+    } else {
+	$input =~ s/(\d+)/\1 /g;
+    }
+#    $input =~ s/(\d+)/\1 /g;
     $input =~ s/^ +| +$//g;
     @part_str = split(/ +/, $input);
     $part_num = @part_str;
@@ -359,23 +366,23 @@ sub bnst_cond2
 		$feature[$i]{lastfeature} = feature2str($1);
 		$part[$i][0] =~ s/\<.+\>$//;
 	    }
-	    elsif ($part[$i][0] eq "¡Å") {
+	    if ($part[$i][0] eq "¡Å") {
 		$feature[$i]{result} = " ?*";
 		$part[$i][0] = "¡Å";
 	    }
-	    elsif ($part[$i][0] =~ /G$/) {
+	    if ($part[$i][0] =~ /G$/) {
 		$feature[$i]{lastGENERAL} = 1;
 		$part[$i][0] =~ s/G$//;
 	    }
-	    elsif ($part[$i][0] =~ /g$/) {
+	    if ($part[$i][0] =~ /g$/) {
 		$feature[$i]{lastgeneral} = 1;
 		$part[$i][0] =~ s/g$//;
 	    }
-	    elsif ($part[$i][0] =~ /([\d]+)$/) {
+	    if ($part[$i][0] =~ /([\d]+)$/) {
 		$feature[$i]{lastnum} = $1;
 		$part[$i][0] =~ s/[\d]+$//;
 	    }
-	    elsif ($part[$i][0] =~ /^\\/) {
+	    if ($part[$i][0] =~ /^\\/) {
 		$feature[$i]{result} = " [$part[$i][0]]";
 		$feature[$i]{result} =~ s/\\//;
 		$feature[$i]{result} =~ s/\:/ /;
