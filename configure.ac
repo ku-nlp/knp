@@ -73,6 +73,7 @@ fi
 
 eval KNP_DICT=`eval echo "$KNP_DICT"`
 eval KNP_RULE=`eval echo "$KNP_RULE"`
+eval RC_DEFAULT=`eval echo "$RC_DEFAULT"`
 
 if test x"$juman_prefix" != x; then
     JUMAN_CFLAGS="-I$juman_prefix/include"
