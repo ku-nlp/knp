@@ -398,6 +398,7 @@ void stand_alone_mode()
 
 
 		if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
+		    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
 		    print_result();
 		    fflush(Outfp);
 		    continue;
