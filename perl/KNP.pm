@@ -73,6 +73,9 @@ $BNST_TYPE    = '^(?:start|end|parent|dpndtype|child|fstring|feature)$';
 
 
 
+sub Version { $VERSION; }
+
+
 sub BEGIN {
     unless( $HOST ){
 	# KNP を子プロセスとして実行している場合、標準出力のバッファリ
@@ -83,7 +86,10 @@ sub BEGIN {
 }
 
 
-sub Version { $VERSION; }
+sub DESTORY {
+    my( $this ) = @_;
+    &kill_knp( $this ) if $this->{KNP};
+}
 
 
 sub new {
@@ -125,13 +131,6 @@ sub new {
 
     bless $this;
     $this;
-}
-
-
-# 呼び出した KNP を終了するメソッド
-sub DESTORY {
-    my( $this ) = @_;
-    &kill_knp( $this ) if $this->{KNP};
 }
 
 
@@ -423,6 +422,8 @@ Examples:
 引数が省略された場合は、"-case2 -tab" をオプションとして knp を実行し
 ます。
 
+=back
+
 =head1 METHODS
 
 =over 4
@@ -525,11 +526,23 @@ TYPE として指定することができる文字列は次の通りです。
 第3引数 SUFFIX を取ることができるのは TYPE として feature を指定した場
 合に限られます。
 
+=back
+
 =head1 NOTE
 
 C<KNP> オブジェクトを直接参照することによって形態素情報や文節情報を得
 ることもできます。その方法については、source を参照してください。しか
 し、誤動作などを避けるため、出来るだけメソッド経由で情報を取り出してく
 ださい。
+
+=head1 AUTHORS
+
+=over 4
+
+=item
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+=item
+黒橋 禎夫 <kuro@pine.kuee.kyoto-u.ac.jp>
 
 =cut
