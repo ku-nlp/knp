@@ -1,3 +1,9 @@
+2004-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	用言をチェックするとき、格要素になっていない要素もチェックするよう
+	にした。
+
 2004-01-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule:
