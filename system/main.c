@@ -88,9 +88,6 @@ extern int	EX_match_unknown;
 extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
-extern int	EllipsisSubordinateClauseScore;
-extern float	AssignReferentThreshold;
-extern float	AssignGaCaseThreshold;
 
 /*==================================================================*/
 			     void usage()
@@ -153,15 +150,31 @@ extern float	AssignGaCaseThreshold;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
 #ifdef USE_SVM
-	else if (str_eq(argv[0], "-svm"))     OptDiscMethod = OPT_SVM;
-	else if (str_eq(argv[0], "-svmmodel")) {
+	else if (str_eq(argv[0], "-svm")) {
+	    OptDisc     = OPT_DISC;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-svm-only")) {
+	    OptDisc     = OPT_DISC;
+	    OptDiscMethod = OPT_SVM;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	}
+	/* else if (str_eq(argv[0], "-svmmodel")) {
 	    OptDiscMethod = OPT_SVM;
 	    argv++; argc--;
 	    if (argc < 1) usage();
-	    ModelFile = strdup(argv[0]);
-	}
+	    ModelFile[0] = strdup(argv[0]);
+	    } */
 #endif
-	else if (str_eq(argv[0], "-dt"))     OptDiscMethod = OPT_DT;
+	else if (str_eq(argv[0], "-dt")) {
+	    OptDisc     = OPT_DISC;
+	    OptDiscMethod = OPT_DT;
+	}
+	else if (str_eq(argv[0], "-dt-only")) {
+	    OptDisc     = OPT_DISC;
+	    OptDiscMethod = OPT_DT;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	}
 	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
@@ -242,6 +255,14 @@ extern float	AssignGaCaseThreshold;
 	    OptDisc = OPT_DISC;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
+	else if (str_eq(argv[0], "-disc-best")) {
+	    OptDisc = OPT_DISC;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	}
+	else if (str_eq(argv[0], "-disc-flat")) {
+	    OptDisc = OPT_DISC;
+	    OptDiscFlag |= OPT_DISC_FLAT;
+	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
@@ -303,27 +324,10 @@ extern float	AssignGaCaseThreshold;
 	    if (argc < 1) usage();
 	    SOTO_SCORE = atoi(argv[0]);
 	}
-	else if (str_eq(argv[0], "-score-esc")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EllipsisSubordinateClauseScore = atoi(argv[0]);
-	}
 	else if (str_eq(argv[0], "-score-agent")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    EX_match_subject = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-disc-th")) {
-	    OptDisc = OPT_DISC;
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AssignReferentThreshold = (float)atof(argv[0]);
-	}
-	else if (str_eq(argv[0], "-disc-ga-th")) {
-	    OptDisc = OPT_DISC;
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AssignGaCaseThreshold = (float)atof(argv[0]);
 	}
 	else {
 	    usage();

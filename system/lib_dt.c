@@ -15,7 +15,7 @@
 #define DT_LT		5
 #define DT_LE		6
 
-char *DTFile = NULL;	/* 決定木ファイル */
+char *DTFile[PP_NUMBER];	/* 決定木ファイル */
 
 typedef struct _dtcond {
     int   num;
@@ -30,8 +30,14 @@ typedef struct {
     DTCOND *cond;
 } DTRULE;
 
-DTRULE ContextRules[1000];
-int ContextRuleNum = 0;
+#define	DT_RULE_NUM_MAX	1000
+
+typedef struct {
+    DTRULE ContextRules[DT_RULE_NUM_MAX];    
+    int ContextRuleNum;
+} DT;
+
+DT *DTrule[PP_NUMBER];
 
 
 /*==================================================================*/
@@ -116,15 +122,17 @@ int ContextRuleNum = 0;
 }
 
 /*==================================================================*/
-		  void read_dt_file(char *filename)
+	      void read_dt_file(DT *dt, char *filename)
 /*==================================================================*/
 {
     FILE *fp;
     char buf[DATA_LEN];
 
+    dt->ContextRuleNum = 0;
+
     if (filename == NULL) {
 	fprintf(stderr, ";; DTFile is not specified!!\n");
-	exit(1);	
+	exit(1);
     }
     else if ((fp = fopen(filename, "r")) == NULL) {
 	fprintf(stderr, ";; Cannot open file (%s) !!\n", filename);
@@ -132,8 +140,8 @@ int ContextRuleNum = 0;
     }
 
     while (fgets(buf, DATA_LEN, fp) != NULL) {
-	if (read_dt_str(buf, &(ContextRules[ContextRuleNum])) == 0) {
-	    ContextRuleNum++;
+	if (read_dt_str(buf, &(dt->ContextRules[dt->ContextRuleNum])) == 0) {
+	    dt->ContextRuleNum++;
 	}
     }
 
@@ -188,17 +196,26 @@ int ContextRuleNum = 0;
 }
 
 /*==================================================================*/
-		    float dt_classify(char *data)
+		float dt_classify(char *data, int pp)
 /*==================================================================*/
 {
-    DTRULE d;
+    DT *dt;
+    DTRULE d; /* テスト用feature */
     DTCOND *rc, *dc;
     int i, flag;
 
+    /* 0はすべての格用 */
+    if (DTrule[0]) {
+	dt = DTrule[0];
+    }
+    else {
+	dt = DTrule[pp];
+    }
+
     read_svm_str(data, &d);
 
-    for (i = 0; i < ContextRuleNum; i++) {
-	rc = ContextRules[i].cond;
+    for (i = 0; i < dt->ContextRuleNum; i++) {
+	rc = dt->ContextRules[i].cond;
 	flag = 1;
 	/* rule条件のループ */
 	while (rc) {
@@ -221,24 +238,39 @@ int ContextRuleNum = 0;
 	}
 	/* すべての条件を満たしたとき */
 	if (flag) {
-	    dc = d.cond;
+	    return dt->ContextRules[i].cf;
+	    /* dc = d.cond;
 	    while (dc) {
+		* 類似度を返す *
 		if (dc->num == 1) {
 		    return dc->value;
 		}
 		dc = dc->next;
-	    }
+	    } */
 	}
     }
 
-    return 0;
+    return -1;
 }
 
 /*==================================================================*/
 			    void init_dt()
 /*==================================================================*/
 {
-    read_dt_file(DTFile);
+    int i;
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	if (DTFile[i]) {
+	    DTrule[i] = (DT *)malloc_data(sizeof(DT), "init_dt");
+	    read_dt_file(DTrule[i], DTFile[i]);
+	    if (i == 0) { /* すべての格用 */
+		break;
+	    }
+	}
+	else {
+	    DTrule[i] = NULL;
+	}
+    }
 }
 
 /*====================================================================

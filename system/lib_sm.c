@@ -816,9 +816,11 @@ char  		cont_str[DBM_CON_MAX];
 		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
 		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
 		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
-		 (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
-		  (sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
-		   sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))))) {
+		 /* (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && ( */
+		 sm_match_check(sm2code("具体"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
+		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code) || /* 組織名, 人名はすでに主体 */
+		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
+		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))) {
 		assign_sm((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "主体");
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
 	    }

@@ -140,7 +140,7 @@ struct PP_STR_TO_CODE {
 				   書いておく */
     {"修飾", "修飾", 40},
     {"の", "ノ", 41},		/* 格フレームのノ格 */
-    {"が２", "ガ２", 42},	/* for backward compatibility */
+    {"が２", "ガ２", 42},
     {"外の関係", "外の関係", 43},
     {"がが", "ガガ", 42},
     {"外の関係", "外ノ関係", 43},	/* for backward compatibility */
@@ -515,7 +515,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
-		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外の基本格 */
+		    cpm_ptr->cf.pp[elem_b_num][0] < 9) || /* 基本格 */
 		   MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "マデ")) && 
 		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE))) {
 	    cpm_ptr->cf.adjacent[elem_b_num] = TRUE;	/* 直前格のマーク */
@@ -876,6 +876,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	dst->elem_b_ptr[i] = src->elem_b_ptr[i];
 	dst->elem_b_num[i] = src->elem_b_num[i];
+	dst->elem_s_ptr[i] = src->elem_s_ptr[i];
     }
     dst->score = src->score;
     dst->result_num = src->result_num;
@@ -1225,6 +1226,10 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 {
     int i, c;
 
+    if (cpm_ptr->score < 0) {
+	return;
+    }
+
     /* 未対応の格要素の処理 */
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
@@ -1392,26 +1397,33 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
 	/* 割り当てあり */
 	else {
-	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
-	    sprintf(buffer, "%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 	/* 省略 */
-		    cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* 照応 */
-		    cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
-		    word ? word : "(null)", 
-		    cpm_ptr->elem_b_ptr[num]->num);
-	    if (word) free(word);
-
-	    strcat(feature_buffer, buffer);
-
-	    /* 省略の場合 (特殊タグ以外) */
-	    if (em_ptr && cpm_ptr->elem_b_num[num] <= -2) {
-		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
-			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
-			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
+	    /* 例外タグ */
+	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
+		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
 	    }
-	    /* 同文内 */
 	    else {
-		sprintf(buffer, "/0/%s", sp->KNPSID ? sp->KNPSID+5 : "?");
+		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
+		sprintf(buffer, "%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 	/* 省略 */
+			cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* 照応 */
+			cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
+			word ? word : "(null)", 
+			cpm_ptr->elem_b_ptr[num]->num);
+		if (word) free(word);
+
+		strcat(feature_buffer, buffer);
+
+		/* 省略の場合 (特殊タグ以外) */
+		if (em_ptr && cpm_ptr->elem_b_num[num] <= -2) {
+		    sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
+			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
+			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
+		}
+		/* 同文内 */
+		else {
+		    sprintf(buffer, "/0/%s", sp->KNPSID ? sp->KNPSID+5 : "?");
+		}
 	    }
 	    strcat(feature_buffer, buffer);
 	}

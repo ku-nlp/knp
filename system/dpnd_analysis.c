@@ -238,7 +238,19 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	}
 	/* 文節内最後のタグ単位 (inum == 0) */
 	else {
-	    t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + (sp->bnst_data + dp->head[last_b])->tag_num - 1)->num;
+	    /* 「〜のは」の場合、ひとつ手前にかける */
+	    if ((sp->bnst_data + dp->head[last_b])->tag_num > 1 && 
+		!strcmp(Class[((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+			       (sp->bnst_data + dp->head[last_b])->tag_num - 1)->mrph_ptr->Hinshi][0].id, "名詞") && 
+		!strcmp(((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+			 (sp->bnst_data + dp->head[last_b])->tag_num - 1)->mrph_ptr->Goi, "の")) {
+		t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+				    (sp->bnst_data + dp->head[last_b])->tag_num - 2)->num;
+	    }
+	    else {
+		t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+				    (sp->bnst_data + dp->head[last_b])->tag_num - 1)->num;
+	    }
 	    if (dp->type[last_b] == 'd' || dp->type[last_b] == 'R') {
 		t_ptr->dpnd_type = 'D';
 	    }

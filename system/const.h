@@ -114,6 +114,9 @@
 #define	OPT_CASE_NO	4
 
 #define	OPT_DISC_OR_CF	1
+#define	OPT_DISC_BEST	2
+#define	OPT_DISC_CLASS_ONLY	4
+#define	OPT_DISC_FLAT	8
 
 #define	PP_NUMBER	44
 #define LOC_NUMBER	7
@@ -706,6 +709,7 @@ typedef struct cpm_def {
     CASE_FRAME 	cf;				/* 入力文の格構造 */
     TAG_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
     TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
+    struct sentence	*elem_s_ptr[CF_ELEMENT_MAX];	/* どの文の要素であるか (省略用) */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
     int 	score;				/* スコア最大値(=cmm[0].score) */
     int 	result_num;			/* 記憶する格フレーム数 */
@@ -819,8 +823,10 @@ typedef struct ellipsis_features {
     int		c_location;
     int		c_topic_flag;
     int		c_no_topic_flag;
+    int		c_in_cnoun_flag;
     int		c_subject_flag;
     int		c_dep_mc_flag;
+    int		c_n_modify_flag;
     char	c_dep_p_level[3];
     int		c_prev_p_flag;
     int		c_get_over_p_flag;
@@ -834,6 +840,7 @@ typedef struct ellipsis_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
+    char	p_dep_p_level[3];
 
     int		c_ac;
 } E_FEATURES;
@@ -842,19 +849,18 @@ typedef struct ellipsis_svm_features {
     float	similarity;
 
     int		c_pp[PP_NUMBER];
-    int		c_distance;
-    int		c_dist_bnst;
     int		c_fs_flag;
-    int		c_location[LOC_NUMBER];
     int		c_topic_flag;
     int		c_no_topic_flag;
+    int		c_in_cnoun_flag;
     int		c_subject_flag;
+    int		c_n_modify_flag;
     int		c_dep_mc_flag;
     int		c_dep_p_level[6];
     int		c_prev_p_flag;
     int		c_get_over_p_flag;
     int		c_sm_none_flag;
-    int		c_extra_tag[4];
+    int		c_extra_tag[3];
 
     int		p_pp[3];
     int		p_voice[3];
@@ -863,8 +869,6 @@ typedef struct ellipsis_svm_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
-
-    int		c_ac;
 } E_SVM_FEATURES;
 
 /*====================================================================

@@ -303,9 +303,12 @@ int	PrintDeletedSM = 0;
 }
 
 /*==================================================================*/
-unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret)
+unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag)
 /*==================================================================*/
 {
+    int freq;
+    unsigned char *orig_ret = ret;
+
     if (*dat == '\0' || !strcmp(dat, "＊")) 
       return NULL;
 
@@ -316,7 +319,14 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret)
 	}
 	/* 頻度が記述してある場合 */
 	else if (*dat == ':') {
-	    *ret++ = '\0';	/* ':' -> '\0' */
+	    /* flag == 1: 頻度1は捨てる */
+	    sscanf(dat + 1, "%d", &freq);
+	    if (flag && freq < 2) {
+		*orig_ret = '\0';
+	    }
+	    else {
+		*ret++ = '\0';	/* ':' -> '\0' */
+	    }
 	    dat++;
 	}
 	/* 空白でも切る */
@@ -370,7 +380,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     }
 
     point = cp; 
-    while ((point = extract_ipal_str(point, cf_str_buf))) {
+    while ((point = extract_ipal_str(point, cf_str_buf, FALSE))) {
 	if (pp_num == 0 && c_ptr->oblig[num] == END_M) {
 	    if (str_eq(cf_str_buf, "ガ") || 
 		str_eq(cf_str_buf, "ヲ") || 
@@ -420,7 +430,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     *str = '\0';
     point = cp;
     buf[0] = '\0';
-    while ((point = extract_ipal_str(point, cf_str_buf))) {
+    while ((point = extract_ipal_str(point, cf_str_buf, FALSE))) {
 	/* 使ってはいけない意味素 (NTT) */
         if (cf_str_buf[0] == '-') {
 	    if (Thesaurus == USE_BGH) continue;
@@ -538,10 +548,14 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
-void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag)
+void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, 
+			  int flag, int fflag)
 /*==================================================================*/
 {
     /* 例の読みだし */
+
+    /* fflag: 頻度1を使うかどうか
+              格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
     int max, count = 0, length = 0, thesaurus = USE_NTT;
@@ -567,7 +581,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     point = cp;
     *buf = '\0';
-    while ((point = extract_ipal_str(point, cf_str_buf))) {
+    while ((point = extract_ipal_str(point, cf_str_buf, fflag))) {
 	point2 = cf_str_buf;
 
 	/* 「ＡのＢ」の「Ｂ」だけを処理
@@ -602,11 +616,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 							    "_make_ipal_cframe_ex");
 	    }
 	    c_ptr->ex_list[num][c_ptr->ex_num[num]++] = strdup(point2);
-	}
 
-	count++;
-	if (flag & STOREtoCF && count == EX_PRINT_NUM) {
-	    length = point-cp-2;
+
+	    count++;
+	    if (flag & STOREtoCF && count == EX_PRINT_NUM) {
+		length = point-cp-2;
+	    }
 	}
     }
 
@@ -658,7 +673,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     unsigned char *point;
 
     point = cp;
-    while ((point = extract_ipal_str(point, cf_str_buf)))
+    while ((point = extract_ipal_str(point, cf_str_buf, FALSE)))
 	if (!strcmp(cf_str_buf, "Ａ")) return TRUE;
     return FALSE;
 }
@@ -701,7 +716,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
 	_make_ipal_cframe_sm(cf_ptr, "主体準", j, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE);
 	j++;
     }
 
@@ -714,11 +729,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    continue;
 	}
 	if (Thesaurus == USE_BGH) {
-	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE);
+	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE, 
+				 !MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
-	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE);
+	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE, 
+				 !MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
@@ -962,14 +979,16 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		}
 		/* 格フレーム受身 */
 		else if (t_ptr->voice) {
-		    /* ニ格がないとき */
-		    if ((c = check_cf_case(cf_ptr + f_num, "ニ")) < 0) {
+		    /* ニ/ニヨル/カラ格がないとき */
+		    if ((c = check_cf_case(cf_ptr + f_num, "ニ")) < 0 && 
+			(c = check_cf_case(cf_ptr + f_num, "ニヨル")) < 0 && 
+			(c = check_cf_case(cf_ptr + f_num, "カラ")) < 0) {
 			_make_ipal_cframe_pp(cf_ptr + f_num, "ニ", (cf_ptr + f_num)->element_num);
 			_make_ipal_cframe_sm(cf_ptr + f_num, "主体準", (cf_ptr + f_num)->element_num, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 			(cf_ptr+f_num)->element_num++;
 		    }
-		    /* ニ格はあるけど<主体>がないとき */
+		    /* ニ/ニヨル/カラ格はあるけど<主体>がないとき */
 		    else if (sm_match_check(sm2code("主体"), (cf_ptr + f_num)->sm[c]) == FALSE) {
 			_make_ipal_cframe_sm(cf_ptr + f_num, "主体準", c, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
@@ -1056,11 +1075,17 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 {
     int f_num = 0, plus_num;
 
-    if (check_feature(t_ptr->f, "サ変止")) {
+    if (check_feature(t_ptr->f, "サ変止") || 
+	(check_feature(t_ptr->f, "非用言格解析") && 
+	 check_feature(t_ptr->f, "サ変"))) {
 	/* 能動態 
 	   t_ptr->voice == 0 で行う */
 	t_ptr->voice = 0;
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0);
+
+	/* 受身の場合を考えないとき */
+	return f_num;
+
 	t_ptr->voice = VOICE_UNKNOWN;
     }
 

@@ -473,8 +473,6 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 
 	para_info_to_tag(bp, bp->tag_ptr + bp->tag_num - 1);
 
-	if (i == sp->Bnst_num - 1) continue;
-
 	/* <PARA>のときはheadのみだが、tag_ptr, tag_numの変更はしない */
 	if (bp->para_top_p == FALSE) {
 	    /* 文節内 */
@@ -485,10 +483,27 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	    }
 	}
 
+	if (i == sp->Bnst_num - 1) continue;
+
 	/* 親と子 */
-	(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;
-	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
-		   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+	if (bp->parent) {
+	    /* 「〜のは」の場合、ひとつ手前にかける */
+	    if (bp->parent->tag_num > 1 && 
+		!strcmp(Class[(bp->parent->tag_ptr + bp->parent->tag_num - 1)->mrph_ptr->Hinshi][0].id, "名詞")	&& 
+		!strcmp((bp->parent->tag_ptr + bp->parent->tag_num - 1)->mrph_ptr->Goi, "の")) {
+		(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 2;
+		t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 2), 
+			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+	    }
+	    else {
+		(bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;
+		t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
+			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+	    }
+	}
+	else {
+	    fprintf(stderr, ";; %s(%d)'s parent does'nt exist.!\n", bp->Jiritu_Go, i);
+	}
     }
 }
 

@@ -361,7 +361,7 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 {
     /* 意味マーカのマッチング度の計算 */
 
-    int i, j, k, ex_score = -100;
+    int i, j, k, ex_score = 0;
     char *exd, *exp;
     int *match_score;
 
@@ -404,7 +404,7 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
     }
 
     else if (flag == EXAMPLE) {
-	int ga_subject;
+	int subject_match;
 
 	/* 修飾格のとき */
 	if (MatchPP(cfd->pp[as1][0], "修飾")) {
@@ -419,21 +419,22 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 	}
 
 	/* 能動ガ格, 受身ニ格で<主体>のとき */
-	if (((cfp->voice == FRAME_ACTIVE && 
+	/* if (((cfp->voice == FRAME_ACTIVE && 
 	      MatchPP(cfp->pp[as2][0], "ガ")) || 
 	     (cfp->voice == FRAME_PASSIVE_1 && 
-	      MatchPP(cfp->pp[as2][0], "ニ"))) && 
-	    (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
-	     (cfd->ex[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
-	      cf_match_element(cfp->sm[as2], "主体", TRUE)))) {
-	    ga_subject = 1;
+	     MatchPP(cfp->pp[as2][0], "ニ"))) && */
+	if (!MatchPP(cfp->pp[as2][0], "ヲ") && 
+	    cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
+	    (cfd->ex[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
+	     cf_match_element(cfp->sm[as2], "主体", TRUE))) {
+	    subject_match = 1;
 	}
 	else {
-	    ga_subject = 0;
+	    subject_match = 0;
 	}
 
 	/* exact match */
-	if (ga_subject == 0 && 
+	if (subject_match == 0 && 
 	    cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
 			     cfp->ex_list[as2], cfp->ex_num[as2], pos)) {
 	    if (MatchPP(cfp->pp[as2][0], "外の関係")) {
@@ -445,14 +446,14 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 	    return TRUE;
 	}
 
-	/* 外の関係のときシソーラス使わない
+	/* 外の関係のときシソーラス使わない */
 	if (MatchPP(cfp->pp[as2][0], "外の関係")) {
 	    *score = 0;
 	    return FALSE;
-	} */
+	}
 
-	/* ガ格<主体>共通スコア */
-	if (ga_subject) {
+	/* <主体>共通スコア */
+	if (subject_match) {
 	    *pos = MATCH_SUBJECT;
 	    *score = EX_match_subject;
 	    return TRUE;
@@ -480,8 +481,8 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 	    else if (score < 0) {
 		/* 格フレームに用例自体がないとき */
 		if (!MatchPP(cfp->pp[as2][0], "ガ") && cfp->ex_num[as2] == 0) {
-		    *score = -1;
-		    return FALSE;
+		    *score = 0;
+		    /* return FALSE; */
 		}
 		*score = 0;
 	    }
@@ -589,7 +590,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 /*==================================================================*/
 	    void eval_assign(CASE_FRAME *cfd, LIST *list1,
 			     CASE_FRAME *cfp, LIST *list2,
-			     int score)
+			     int score, int closest)
 /*==================================================================*/
 {
     /* フレームのマッチング度の計算(格明示部分を除く) */
@@ -600,37 +601,32 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     int local_c_e = 0;
     int pat_element, dat_element = 0;
     int cf_element = 0, lastpp;
+    int unassigned_ga = 0;
     float local_score;
 
     local_score = score;
 
-    /* ★ experimental (類似度が高い直前格にボーナス)
-    for (i = 0; i < cfd->element_num; i++) {
-	if (cfd->adjacent[i] == TRUE && 
-	    list1->flag[i] != NIL_ASSIGNED && 
-	    cfp->adjacent[list1->flag[i]] == TRUE && 
-	    list1->score[i] > 10) {
-	    local_score += 2;
-	}
-    } */
-
     /* 要素数，要素の位置，交差数 */
     for (i = 0; i < cfd->element_num; i++) {
 	if (list1->flag[i] != NIL_ASSIGNED) {
-	    local_m_e ++;
+	    local_m_e++;
 	    local_m_p += i;
-	    for (j = i+1; j < cfd->element_num; j++)
-	      if (list1->flag[j] != NIL_ASSIGNED &&
-		  list1->flag[j] < list1->flag[i]) 
-		local_c_e --;
+	    for (j = i+1; j < cfd->element_num; j++) {
+		if (list1->flag[j] != NIL_ASSIGNED &&
+		    list1->flag[j] < list1->flag[i]) {
+		    local_c_e--;
+		}
+	    }
 	}
     }
 
     /* 文中の要素数(任意でマッチしていない要素以外) */
     /* ※ 埋め込み文の被修飾語は任意扱い */
-    for (i = 0; i < cfd->element_num; i++)
-	if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED))
+    for (i = 0; i < cfd->element_num; i++) {
+	if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED)) {
 	    dat_element++;
+	}
+    }
 
     /* 格フレーム中の要素数(任意でマッチしていない要素以外) */
     pat_element = count_pat_element(cfp, list2);
@@ -641,11 +637,26 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    cf_element++;
 	    lastpp = cfp->pp[i][0];
 	}
+	/* 割り当てのないガ格がある */
+	else if (MatchPP(cfp->pp[i][0], "ガ")) {
+	    unassigned_ga = 1;
+	}
     }
 
-    /* 外の関係だけのマッチを避ける */
+
+#ifdef CASE_DEBUG
+    fprintf(Outfp, "dat %s score=%.3f m_e=%d dat=%d pat=%d ", 
+	    cfp->cf_id, local_score, local_m_e, dat_element, pat_element);
+    for (i = 0; i < cfd->element_num; i++)
+	fprintf(Outfp, "%d ", list1->flag[i]);
+    fputc('\n', Outfp);
+#endif
+
     if (local_m_e < dat_element || 
-	(cf_element == 1 && str_eq(pp_code_to_kstr(lastpp), "外の関係"))) {
+	(closest > -1 && list1->flag[closest] == NIL_ASSIGNED) || 
+	/* 外の関係だけのマッチを避ける */
+	(OptDisc != OPT_DISC && 
+	 cf_element == 1 && MatchPP(lastpp, "外の関係"))) {
 	local_score = -1;
     }
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0) {
@@ -670,46 +681,73 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     /* 並列の expand を行ったときのスコアを考慮する必要がある */
     /* local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE; */
 
-    if (local_score > Current_max_score || 
-	(local_score == Current_max_score &&
-	 local_m_e > Current_max_m_e) ||
-	(local_score == Current_max_score &&
-	 local_m_e == Current_max_m_e &&
-	 local_m_p > Current_max_m_p) ||
-	(local_score == Current_max_score &&
-	 local_m_e == Current_max_m_e &&
-	 local_m_p == Current_max_m_p &&
-	 local_c_e > Current_max_c_e)) {
-	Current_max_list1[0] = *list1;
-	Current_max_list2[0] = *list2;
-	Current_max_score = local_score;
-	Current_pure_score[0] = score;
-	Current_sufficiency = (float)cf_element/cfp->element_num;
-	Current_max_m_e = local_m_e;
-	Current_max_m_p = local_m_p;
-	Current_max_c_e = local_c_e;
-	Current_max_num = 1;
+    if (0 && OptDisc == OPT_DISC) {
+	if (local_score > Current_max_score) {
+	    Current_max_list1[0] = *list1;
+	    Current_max_list2[0] = *list2;
+	    Current_max_score = local_score;
+	    Current_pure_score[0] = score;
+	    Current_sufficiency = (float)cf_element/cfp->element_num;
+	    Current_max_m_e = local_m_e;
+	    Current_max_m_p = local_m_p;
+	    Current_max_c_e = local_c_e;
+	    Current_max_num = 1;
+	}
+	else if (local_score == Current_max_score && 
+		 Current_max_num < MAX_MATCH_MAX) {
+	    Current_max_list1[Current_max_num] = *list1;
+	    Current_max_list2[Current_max_num] = *list2;
+	    Current_pure_score[Current_max_num] = score;
+	    Current_max_num++;
+	}
     }
-    else if (local_score == Current_max_score &&
+    else {
+	if (local_score > Current_max_score || 
+	    (local_score == Current_max_score &&
+	     local_m_e > Current_max_m_e) ||
+	    (local_score == Current_max_score &&
+	     local_m_e == Current_max_m_e &&
+	     local_m_p > Current_max_m_p) ||
+	    (local_score == Current_max_score &&
 	     local_m_e == Current_max_m_e &&
 	     local_m_p == Current_max_m_p &&
-	     local_c_e == Current_max_c_e &&
-	     Current_max_num < MAX_MATCH_MAX) {
-	Current_max_list1[Current_max_num] = *list1;
-	Current_max_list2[Current_max_num] = *list2;
-	Current_pure_score[Current_max_num] = score;
-	Current_max_num++;
+	     local_c_e > Current_max_c_e) || 
+	    (local_score == Current_max_score &&
+	     local_m_e == Current_max_m_e &&
+	     local_m_p == Current_max_m_p &&
+	     local_c_e == Current_max_c_e && 
+	     unassigned_ga == 0)) {
+	    Current_max_list1[0] = *list1;
+	    Current_max_list2[0] = *list2;
+	    Current_max_score = local_score;
+	    Current_pure_score[0] = score;
+	    Current_sufficiency = (float)cf_element/cfp->element_num;
+	    Current_max_m_e = local_m_e;
+	    Current_max_m_p = local_m_p;
+	    Current_max_c_e = local_c_e;
+	    Current_max_num = 1;
+	}
+	else if (local_score == Current_max_score &&
+		 local_m_e == Current_max_m_e &&
+		 local_m_p == Current_max_m_p &&
+		 local_c_e == Current_max_c_e &&
+		 Current_max_num < MAX_MATCH_MAX) {
+	    Current_max_list1[Current_max_num] = *list1;
+	    Current_max_list2[Current_max_num] = *list2;
+	    Current_pure_score[Current_max_num] = score;
+	    Current_max_num++;
+	}
     }
 }
 
 int assign_list(CASE_FRAME *cfd, LIST list1,
 		CASE_FRAME *cfp, LIST list2,
-		int score, int flag);
+		int score, int flag, int closest);
 
 /*==================================================================*/
 	    int _assign_list(CASE_FRAME *cfd, LIST list1,
 			     CASE_FRAME *cfp, LIST list2,
-			     int score, int flag, int assign_flag)
+			     int score, int flag, int assign_flag, int closest)
 /*==================================================================*/
 {
     /* 
@@ -734,7 +772,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 
     int target = -1;	/* データ側の処理対象の格要素 */
     int target_pp = 0;
-    int elmnt_score, gaflag = 0, sotoflag = 0, match_result;
+    int elmnt_score, gaflag = 0, sotoflag = 0, toflag = 0, match_result;
     int i, j, pos;
 
 #ifdef CASE_DEBUG
@@ -774,6 +812,16 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	    sotoflag = 1;
 	}
 
+	/* すでに補文ト格に割り当てがあるかどうか (ヲ格割り当て可能かどうか) */
+	for (i = 0; i < cfp->element_num; i++) {
+	    if (list2.flag[i] != UNASSIGNED && 
+		MatchPP2(cfp->pp[i], "ト")) {
+		/* cf_match_element(cfp->sm[i], "補文", TRUE)) { */
+		toflag = 1;
+		break;
+	    }
+	}
+
 	/* 格フレームの格ループ */
 	for (i = 0; i < cfp->element_num; i++) {
 	    /* 格フレームの空いている格 */
@@ -784,6 +832,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			if ((cfd->pp[target][target_pp] == cfp->pp[i][j] && 
 			     !((cfp->pp[i][j] == pp_kstr_to_code("外の関係") && !sotoflag) || 
 			       (cfp->pp[i][j] == pp_kstr_to_code("ガ２") && !gaflag) || 
+			       (cfp->pp[i][j] == pp_kstr_to_code("ヲ") && toflag) || 
 			       (cfp->pp[i][j] == pp_kstr_to_code("ノ") && 
 				check_adjacent_assigned(cfd, cfp, &list1) == FALSE))) || 
 			    (cfd->pp[target][target_pp] == pp_kstr_to_code("未") && 
@@ -795,8 +844,9 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			    if (!(cfp->pp[i][j] == pp_kstr_to_code("外の関係") || 
 				  cfp->pp[i][j] == pp_kstr_to_code("ノ")) || 
 				elmnt_score >= SOTO_THRESHOLD) {
-				if ((flag == EXAMPLE && 
-				     (match_result == TRUE || assign_flag == TRUE)) || 
+				if ((flag == EXAMPLE) || 
+				/* if ((flag == EXAMPLE && 
+				   (match_result == TRUE || assign_flag == TRUE)) || */
 				    (flag == SEMANTIC_MARKER && elmnt_score >= 0)) {
 				    /* 対応付けをして，残りの格要素の処理に進む
 				       ※ flag == SEMANTIC_MARKER && elmnt_score == 0
@@ -812,7 +862,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 				    list2.score[i] = elmnt_score;
 				    list2.pos[i] = pos;
 				    assign_list(cfd, list1, cfp, list2, 
-						score + elmnt_score, flag);
+						score + elmnt_score, flag, closest);
 				    list2.flag[i] = UNASSIGNED;
 				    list2.pos[i] = MATCH_NONE;
 				}
@@ -836,7 +886,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	   必須格で対応有の場合
 	       => 後ろに同じ格助詞があれば対応付けをしない可能性も試す? */
 
-	assign_list(cfd, list1, cfp, list2, score, flag);
+	assign_list(cfd, list1, cfp, list2, score, flag, closest);
 	return FALSE;
     }
     return TRUE;
@@ -845,20 +895,20 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 /*==================================================================*/
 	     int assign_list(CASE_FRAME *cfd, LIST list1,
 			     CASE_FRAME *cfp, LIST list2,
-			     int score, int flag)
+			     int score, int flag, int closest)
 /*==================================================================*/
 {
     /* 未格, 連格以外を先に割り当て */
 
-    if (_assign_list(cfd, list1, cfp, list2, score, flag, TRUE) == FALSE) {
+    if (_assign_list(cfd, list1, cfp, list2, score, flag, TRUE, closest) == FALSE) {
 	return FALSE;
     }
-    if (_assign_list(cfd, list1, cfp, list2, score, flag, FALSE) == FALSE) {
+    if (_assign_list(cfd, list1, cfp, list2, score, flag, FALSE, closest) == FALSE) {
 	return FALSE;
     }
 
     /* 評価 : すべての対応付けが終わった場合 */
-    eval_assign(cfd, &list1, cfp, &list2, score);
+    eval_assign(cfd, &list1, cfp, &list2, score, closest);
     return TRUE;
 }
 
@@ -896,7 +946,7 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
     /* 処理 */
 
     /* flag: 例 or 意味コード */
-    assign_list(cfd, assign_d_list, cmm_ptr->cf_ptr, assign_p_list, 0, flag);
+    assign_list(cfd, assign_d_list, cmm_ptr->cf_ptr, assign_p_list, 0, flag, closest);
 
     /* 後処理 */
 
@@ -913,7 +963,7 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
     }
 
     /* 直前格要素のスコアのみを用いるとき */
-    if (closest > -1) {
+    if (closest > -1 && Current_max_score >= 0) {
 	/* 直前格要素の割り当てがあることが条件 */
 	if (Current_max_list1[0].flag[closest] != NIL_ASSIGNED) {
 	    cmm_ptr->score = (float)Current_max_list1[0].score[closest];

@@ -381,33 +381,54 @@ int knp_dict_file_already_defined = 0;
 	}
 #ifdef USE_SVM
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
-	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .knprc\n");
-		exit(0);
-	    }
-	    else if (ModelFile) {
-		if (OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "SVM model file (arg) ... %s\n", ModelFile);
+	    int pp;
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(cdr(car(cell1))));
+		if (!strcmp(dicttype, "ALL")) {
+		    pp = 0;
 		}
-	    }
-	    else {
-		ModelFile = check_tilde(_Atom(cell2));
+		else {
+		    pp = pp_kstr_to_code(dicttype);
+		    if (pp == 0 || pp == END_M) {
+			fprintf(stderr, "%s is invalid in .knprc\n", dicttype);
+			exit(0);
+		    }
+		}
+
+		SVMFile[pp] = check_tilde(_Atom(car(car(cell1))));
 		if (OptDiscMethod == OPT_SVM && OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "SVM model file ... %s\n", ModelFile);
+		    fprintf(Outfp, "SVM model file ... %s for %s\n", SVMFile[pp], dicttype);
 		}
+
+		cell1 = cdr(cell1);
 	    }
 	}
 #endif
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
-	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .knprc\n");
-		exit(0);
-	    }
-	    else {
-		DTFile = check_tilde(_Atom(cell2));
-		if (OptDiscMethod == OPT_DT && OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "DT file ... %s\n", DTFile);
+	    int pp;
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(cdr(car(cell1))));
+		if (!strcmp(dicttype, "ALL")) {
+		    pp = 0;
 		}
+		else {
+		    pp = pp_kstr_to_code(dicttype);
+		    if (pp == 0 || pp == END_M) {
+			fprintf(stderr, "%s is invalid in .knprc\n", dicttype);
+			exit(0);
+		    }
+		}
+
+		DTFile[pp] = check_tilde(_Atom(car(car(cell1))));
+		if (OptDiscMethod == OPT_DT && OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "DT file ... %s for %s\n", DTFile[pp], dicttype);
+		}
+
+		cell1 = cdr(cell1);
 	    }
 	}
     }
@@ -623,8 +644,14 @@ int knp_dict_file_already_defined = 0;
 /*==================================================================*/
 {
     int i;
+
     for (i = 0; i < DICT_MAX; i++) {
 	DICT[i] = NULL;
+    }
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	DTFile[i] = NULL;
+	SVMFile[i] = NULL;
     }
 
     read_rc(find_rc_file(opfile));

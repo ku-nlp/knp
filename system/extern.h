@@ -73,8 +73,8 @@ int			CurEtcRuleSize;
 extern char 		*Case_name[];
 extern char		*ETAG_name[];
 
-extern char		*ModelFile;
-extern char		*DTFile;
+extern char		*SVMFile[];
+extern char		*DTFile[];
 
 extern int	DiscAddedCases[];
 
@@ -213,7 +213,7 @@ extern void init_bgh();
 extern void close_bgh();
 
 /* lib_dt.c */
-extern float dt_classify(char *data);
+extern float dt_classify(char *data, int pp);
 
 /* lib_lib.c */
 extern int str_part_eq(char *dat, char *pat);
