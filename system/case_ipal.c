@@ -157,7 +157,7 @@ int	PrintDeletedSM = 0;
 /*==================================================================*/
 {
     int i, c1, c2, count = 0;
-    char *buf, *cp, *token;
+    char *cp;
 
     if (size > MAX_ipal_frame_length) {
 	MAX_ipal_frame_length += ALLOCATION_STEP*((size-MAX_ipal_frame_length)/ALLOCATION_STEP+1);
@@ -208,7 +208,9 @@ int	PrintDeletedSM = 0;
     Ipal_frame.voice = 0;
     Ipal_frame.etcflag = CF_NORMAL;
     if (*Ipal_frame.feature) {
-	token = strtok(Ipal_frame.feature, " ");
+	char *string, *token, *buf;
+	string = strdup(Ipal_frame.feature);
+	token = strtok(string, " ");
 	while (token) {
 	    if (!strcmp(token, "和フレーム")) {
 		Ipal_frame.etcflag |= CF_SUM;
@@ -272,6 +274,7 @@ int	PrintDeletedSM = 0;
 	    }
 	    token = strtok(NULL, " ");
 	}
+	free(string);
     }
 
     Ipal_frame.samecase[count][0] = END_M;
@@ -926,8 +929,13 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
 		(cf_ptr+f_num)->voice = FRAME_ACTIVE;
 		_make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size, verb);
 
+		/* 格フレーム使役 */
+		if (b_ptr->voice == VOICE_SHIEKI) {
+		    /* とりあえず */
+		    (cf_ptr+f_num)->voice = FRAME_CAUSATIVE_NI;
+		}
 		/* 格フレーム受身 */
-		if (b_ptr->voice) {
+		else if (b_ptr->voice) {
 		    /* ニ格がないとき */
 		    if ((c = check_cf_case(cf_ptr+f_num, "ニ")) < 0) {
 			_make_ipal_cframe_pp(cf_ptr+f_num, "ニ", (cf_ptr+f_num)->element_num);
@@ -940,6 +948,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start
 		    }
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_1;
 		}
+		
 		f_num_inc(start, &f_num);
 		cf_ptr = Case_frame_array+start;
 	    }

@@ -194,39 +194,7 @@ int	EX_PRINT_NUM = 10;
 	    fprintf(Outfp, "¡Õ");
 
 	    /* ÍÑÎã¤Î½ÐÎÏ */
-	    if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
-		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
-		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
-		cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
-		if (i == 0)
-		    fprintf(Outfp, "(Èà)");
-		else if (cmm_ptr->cf_ptr->ex_list[i]) {
-		    print_num = EX_PRINT_NUM < 0 ? cmm_ptr->cf_ptr->ex_num[i] : 
-			cmm_ptr->cf_ptr->ex_num[i] > EX_PRINT_NUM ? 
-			EX_PRINT_NUM : cmm_ptr->cf_ptr->ex_num[i];
-		    fputc('(', Outfp);
-		    for (j = 0; j < print_num; j++) {
-			if (j != 0) fputc('/', Outfp);
-			if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("¡Ú", Outfp);
-			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
-			if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("¡Û", Outfp);
-		    }
-		    if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
-			fputs("/¡Ú", Outfp);
-			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
-			fputs("¡Û", Outfp);
-		    }
-		    if (print_num != cmm_ptr->cf_ptr->ex_num[i])
-			fputs("...", Outfp);
-		    fputc(')', Outfp);
-		}
-		/* else if (cmm_ptr->cf_ptr->examples[i])
-		    fprintf(Outfp, "(%s)", 
-			    cmm_ptr->cf_ptr->examples[i]); */
-	    } /* else if (cmm_ptr->cf_ptr->examples[i]) {
-		fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
-	    } */
-	    else if (cmm_ptr->cf_ptr->ex_list[i]) {
+	    if (cmm_ptr->cf_ptr->ex_list[i]) {
 		print_num = EX_PRINT_NUM < 0 ? cmm_ptr->cf_ptr->ex_num[i] : 
 		    cmm_ptr->cf_ptr->ex_num[i] > EX_PRINT_NUM ? 
 		    EX_PRINT_NUM : cmm_ptr->cf_ptr->ex_num[i];
