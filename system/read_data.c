@@ -26,9 +26,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     int i, j, k, flag, pref_mrph, pref_rule;
     int real_homo_num;
-    int uniq_flag[HOMO_MAX];	/* 他と品詞が異なる形態素なら 1 */
-    int matched_flag[10];	/* いずれかの形態素とマッチした
-				   ルール内形態素パターンに 1 */
+    int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
+    int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
+					   ルール内形態素パターンに 1 */
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
     char fname[256];
@@ -57,11 +57,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		uniq_flag[i] = 0;
 		break;		    
 	    }
-	    /* 原形,活用型,活用形のいずれかだけ違う --> 無視(将来扱う) */
+	    /* 活用型,活用形のいずれかが違う (いる, くる, ゆく, ...) --> 無視 */
 	    else if (loop_ptr2->Hinshi == loop_ptr->Hinshi &&
 		     loop_ptr2->Bunrui == loop_ptr->Bunrui &&
-		     (!str_eq(loop_ptr2->Goi, loop_ptr->Goi) ||
-		      loop_ptr2->Katuyou_Kata != loop_ptr->Katuyou_Kata ||
+		     str_eq(loop_ptr2->Goi, loop_ptr->Goi) &&
+		      (loop_ptr2->Katuyou_Kata != loop_ptr->Katuyou_Kata ||
 		      loop_ptr2->Katuyou_Kei != loop_ptr->Katuyou_Kei)) {
 		uniq_flag[i] = 0;
 		break;
@@ -101,14 +101,18 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     pref_mrph = 0;
     pref_rule = 0;
     for (i = 0, r_ptr = HomoRuleArray; i < CurHomoRuleSize; i++, r_ptr++) {
-	if (r_ptr->pattern->mrphsize != real_homo_num) continue;
+	if (r_ptr->pattern->mrphsize > HOMO_MRPH_MAX) {
+	    fprintf(stderr, "The number of Rule morphs is too large in HomoRule.\n");
+	    exit(1);
+	}
 	pref_mrph = 0;
 	for (k = 0; k < r_ptr->pattern->mrphsize; k++) matched_flag[k] = FALSE;
 	for (j = 0, loop_ptr = m_ptr; j < homo_num; j++, loop_ptr++) {
 	    if (uniq_flag[j] == 0) continue;
 	    flag = FALSE;
 	    for (k = 0; k < r_ptr->pattern->mrphsize; k++) {
-		if (matched_flag[k]) continue;
+		if (matched_flag[k] && (r_ptr->pattern->mrph + k)->ast_flag != AST_FLG)
+		    continue;
 		if (regexpmrph_match(r_ptr->pattern->mrph + k, loop_ptr) 
 		    == TRUE) {
 		    flag = TRUE;
@@ -120,8 +124,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    if (flag == FALSE) break;
 	}
 	if (flag == TRUE) {
-	    pref_rule = i;
-	    break;
+	    for (k = 0; k < r_ptr->pattern->mrphsize; k++) {
+		if (matched_flag[k] == FALSE) {
+		    flag = FALSE;
+		    break;
+		}
+	    }
+	    if (flag == TRUE) {
+		pref_rule = i;
+		break;
+	    }
 	}
     }
 

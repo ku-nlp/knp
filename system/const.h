@@ -37,6 +37,7 @@
 #define BROTHER_MAX	20
 #define TEIDAI_TYPES	5
 #define HOMO_MAX	30
+#define HOMO_MRPH_MAX	10
 
 #define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
