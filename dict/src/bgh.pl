@@ -1,4 +1,6 @@
-#! /usr/local/bin/jperl
+#! /usr/bin/perl
+
+use encoding 'euc-jp';
 
 # 分類語彙表データの整形
 #
@@ -65,7 +67,8 @@ $bug_fix{"なんだって,なんだって,4.318 ,1,1,5"} = "なんだって,なんだって,4.3180,1
 $bug_fix{"なんで,なんで,4.318 ,1,1,3"} = "なんで,なんで,4.3180,1,1,3";
 $bug_fix{"いずくんぞ,いずくんぞ,4.318 ,1,3,2"} = "いずくんぞ,いずくんぞ,4.3180,1,3,2";
 $bug_fix{"なんぞ,なんぞ,4.318 ,1,3,1"} = "なんぞ,なんぞ,4.3180,1,3,1";
-$bug_fix{"者,もの,1.1000,7,1,2"} = "者,-,1.1000,7,1,2";
+$bug_fix{"者,もの,1.1000,7,1,2"} = "者,-,1.1000,7,1,2"; # 読みを登録しない
+$bug_fix{"すの子��,すのこ,1.4430,18,2,1"} = "すの子,すのこ,1.4430,18,2,1";
 
 #
 # main : 最初の一行でバージョンを判断し，あとは関数を呼ぶだけ
@@ -115,7 +118,7 @@ sub fd_format {
 
     print "$hyouki $code\n";
 
-    if ($yomi !~ /$hyouki/ && length($yomi) > 2) {
+    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
 	print "$yomi $code\n";
     }
 }
@@ -155,11 +158,9 @@ sub monitor_format {
 	# 「反作用・反動が生ずる」，「なすりあう・とりあう・愛し合う」など
 	# では不適当だがあきらめる．
     }	
-    if ($yomi !~ /$hyouki/ && length($yomi) > 2) {
+    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
 	foreach $item (split(/・/,$yomi)) {
-	    foreach $item (split(/・/,$yomi)) {
-		print "$item $code\n";
-	    }
+	    print "$item $code\n";
 	}
     }
 }
