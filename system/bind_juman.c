@@ -133,27 +133,20 @@ FILE *w2c, *w2p, *rfc, *rfp;
 	  int GetJumanResult(SENTENCE_DATA *s, char *input)
 /*==================================================================*/
 {
-    char *cp;
-    char buffer[DATA_LEN];
+    char *cp, buffer[DATA_LEN];
+    int flag;
 
     if (!JumanAlive) {
 	ForkJuman();
     }
 
-    /* 文単位に分割する */
-    while (ReadSentence(&input, &cp) != EOF) {
-	fputs(cp, w2c);
-	fputc('\n', w2c);
-	fflush(w2c);
-	/* ここからは read_mrph(s, rfc, NULL) の仕事 
-	   EOS で TRUE がかえる */
-	while (fgets(buffer, DATA_LEN, rfc) != NULL) {
-	    /* fputs(buffer, stdout); */
-	    if (!strncmp(buffer, "EOS", 3)) {
-		break;
-	    }
-	}
-    }
+    fputs(input, w2c);
+    fputc('\n', w2c);
+    fflush(w2c);
+    /* 形態素解析結果を rfc から読んで s に入れる
+       EOS で TRUE がかえる */
+    /* main_analysis(s, rfc); */
+    return 1;
 }
 
 /*====================================================================

@@ -104,6 +104,7 @@ extern int DicForRuleDBExist;
 extern char 		*Case_name[];
 
 /* 関数プロトタイプ */
+extern int read_mrph(SENTENCE_DATA *sp, FILE *fp);
 extern char *get_bgh(char *cp);
 extern char *db_get(DBM_FILE db, char *buf);
 extern float ntt_code_match(char *c1, char *c2);

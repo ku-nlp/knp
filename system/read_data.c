@@ -206,32 +206,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
-	    int read_mrph_str(char **str, U_CHAR *buffer)
-/*==================================================================*/
-{
-    char *start, *cp;
-
-    if (**str == '\0') return EOF;
-
-    for (cp = start = *str; ; cp++) {
-	if (*cp == '\n') {
-	    *cp = '\0';
-	    *str = cp+1;
-	}
-	else if (*cp == '\0') {
-	    *str = cp;
-	}
-	else {
-	    continue;
-	}
-	strcpy(buffer, start);
-	return TRUE;
-    }
-    return FALSE;
-}
-
-/*==================================================================*/
-	int read_mrph(SENTENCE_DATA *sp, FILE *fp, char *str)
+	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
     U_CHAR input_buffer[DATA_LEN];
@@ -248,12 +223,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     input_buffer[DATA_LEN-1] = '\n';
 
     while (1) {
-	if (str) {
-	    if (read_mrph_str(&str, input_buffer) == EOF) return EOF;
-	}
-	else {
-	    if (read_mrph_file(fp, input_buffer) == EOF) return EOF;
-	}
+	if (read_mrph_file(fp, input_buffer) == EOF) return EOF;
 
 	if (input_buffer[DATA_LEN-1] != '\n' || input_buffer[strlen(input_buffer)-1] != '\n') {
 	    fprintf(stderr, "Too long mrph <%s> !\n", input_buffer);

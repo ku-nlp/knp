@@ -89,6 +89,27 @@ int Bcheck[BNST_MAX];
 }
 
 /*==================================================================*/
+		 void InitSentence(SENTENCE_DATA *s)
+/*==================================================================*/
+{
+    int i;
+
+    s->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*MRPH_MAX);
+    s->bnst_data = (BNST_DATA *)malloc_data(sizeof(BNST_DATA)*BNST_MAX);
+    s->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*PARA_MAX);
+    s->para_manager = (PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*PARA_MAX);
+    s->Sen_num = 0;
+    s->Mrph_num = 0;
+    s->Bnst_num = 0;
+    s->New_Bnst_num = 0;
+
+    for (i = 0; i < MRPH_MAX; i++)
+	(s->mrph_data+i)->f = NULL;
+    for (i = 0; i < BNST_MAX; i++)
+	(s->bnst_data+i)->f = NULL;
+}
+
+/*==================================================================*/
 		void copy_sentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -188,11 +209,11 @@ int Bcheck[BNST_MAX];
 				    "PARA MANAGER");
     for (i = 0; i < Para_M_num; i++) {
 	sp_new->para_manager[i] = sp->para_manager[i];
-	sp_new->para_manager[i].parent = sp_new->para_manager - sp->para_manager;
+	sp_new->para_manager[i].parent += sp_new->para_manager - sp->para_manager;
 	for (j = 0; j < sp_new->para_manager[i].child_num; j++) {
-	    sp_new->para_manager[i].child[j] = sp_new->para_manager - sp->para_manager;
+	    sp_new->para_manager[i].child[j] += sp_new->para_manager - sp->para_manager;
 	}
-	sp_new->para_manager[i].bnst_ptr = sp_new->bnst_data - sp->bnst_data;
+	sp_new->para_manager[i].bnst_ptr += sp_new->bnst_data - sp->bnst_data;
     }
 
     /* 格解析結果の保存 */
@@ -403,16 +424,23 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 /*==================================================================*/
 {
     char **def;
-    int i;
+    int i, ssize = 5;
+    SENTENCE_DATA *sbuf;
 
     def = GetDefinitionFromBunsetsu(bp);
     if (!def) {
 	return;
     }
 
+    sbuf = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA)*ssize);
+
     for (i = 0; *(def+i); i++) {
 	fprintf(stderr, "定義文[%s] %d: %s\n", bp->Jiritu_Go, i, *(def+i));
-	GetJumanResult(*(def+i));
+	if (i >= ssize) {
+	    sbuf = (SENTENCE_DATA *)realloc_data(sbuf, sizeof(SENTENCE_DATA)*(ssize <<= 1));
+	}
+	InitSentence(sbuf+i);
+	GetJumanResult(sbuf+i, *(def+i));
     }
 }
 

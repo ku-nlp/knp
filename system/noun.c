@@ -107,12 +107,11 @@ int	NounExist = 0;
 
     stop += bp->settou_num+bp->jiritu_num;
 
-    *buf = '\0';
     for (start =0 ; start < (bp->settou_num+bp->jiritu_num); start++) {
+	*buf = '\0';
 	for (i = start; i < stop; i++) {
 	    if (strlen(buf)+strlen((bp->mrph_ptr+i)->Goi2)+2 > BNST_LENGTH_MAX) {
 		fprintf(stderr, "Too long key <%s> in %s.\n", buf, "GetDefinitionFromBunsetsu");
-		/* overflowed_function(buf, BNST_LENGTH_MAX, "GetDefinitionFromBunsetsu"); */
 		return NULL;
 	    }
 	    strcat(buf, (bp->mrph_ptr+i)->Goi2);
