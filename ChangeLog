@@ -1,3 +1,8 @@
+2001-12-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/thesaurus.c:
+	格解析結果のFEATUREを追加
+
 2001-12-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_match.c, system/case_print.c, system/context.c:
