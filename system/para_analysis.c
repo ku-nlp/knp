@@ -506,7 +506,8 @@ extern QUOTE_DATA quote_data;
 		 int farthest_child(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    /* 一番遠い子供の文節番号を返す */
+    /* 一番遠い子供の文節番号を返す
+       (今のところこの関数は使っていない) */
 
     int i;
     BNST_DATA	*loop_ptr = b_ptr;
@@ -525,16 +526,23 @@ extern QUOTE_DATA quote_data;
 {
     /* 並列構造の情報の再現 */
 
-    int		i;
+    int		i, j;
     BNST_DATA	*b_ptr;
 
     Para_num = 0;
+    Para_M_num = 0;
+
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
 	    sp->para_data[Para_num].L_B = i;
 	    sp->para_data[Para_num].R = b_ptr->dpnd_head;
-	    sp->para_data[Para_num].max_path[0] = 
-		farthest_child(b_ptr);
+	    for (j = i - 1; 
+		 j >= 0 && 
+		     (sp->bnst_data[j].dpnd_head < i ||
+		      (sp->bnst_data[j].dpnd_head == i &&
+		       sp->bnst_data[j].dpnd_type != 'P'));
+		 j--);
+	    sp->para_data[Para_num].max_path[0] = j + 1;
 	    sp->para_data[Para_num].status = 'n';
 	    Para_num++;
 	}
