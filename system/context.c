@@ -798,20 +798,15 @@ void EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, CF_PR
 
     /* リンクする場所によるスコア */
     if (type == RANK2) {
-	weight = (float)EllipsisSubordinateClauseScore/10;
+	/* weight = (float)EllipsisSubordinateClauseScore/10; */
+	weight = 0.95;
     }
     else {
-	weight = 1.0+0.25*(type-1); /* 0.2 */
+	weight = 1.0;
     }
 
     /* リンクされた回数によるスコア */
     ac = CheckAnaphor(alist, bp->Jiritu_Go);
-    if (ac > 6) {
-	ascore = 1.0+0.06*5; /* 0.1 */
-    }
-    else {
-	ascore = 1.0+0.06*ac; /* 0.1 */
-    }
 
     /* すでに出現した用言とその格要素のセット */
     pac = CheckPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, cf_ptr->pp[n][0], bp->Jiritu_Go);
@@ -911,41 +906,42 @@ void EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, CF_PR
 	firstsc = 0;
     }
 
-    if (distance == 0 || 
+    if (distance == 0 || /* 対象文 */
 	(distance == 1 && (topicflag || subtopicflag || pcc)) || /* 前文 */
 	(s->Sen_num == 1 && (topicflag || subtopicflag || firstsc)) || /* 先頭文 */
 	(pcc || mcc || firstsc)) { /* それ以外で主節の省略の指示対象 */
 
 	/* 対象文には、厳しい制約が必要 
 	   主節の格要素の場合でも、対象用言より前に出現している必要がある */
-	/* if (distance == 0 && !topicflag && type != RANK3 && !(mcc && bp->num < cpm_ptr->pred_b_ptr->num)) { */
-	/* if (distance == 0 && type != RANK3 && !((topicflag || mcc) && bp->num < cpm_ptr->pred_b_ptr->num)) { */
 	if (distance == 0 && !((topicflag || mcc || type == RANK3) && bp->num < cpm_ptr->pred_b_ptr->num)) {
 	    if (check_feature(bp->f, "抽象") && !check_feature(bp->f, "人名") && !check_feature(bp->f, "組織名")) {
-		score = 0.6*pascore*rawscore;
+		weight *= 0.6;
+		score = weight*pascore*rawscore;
 	    }
 	    else {
-		score = 0.6*pascore*rawscore;
+		weight *= 0.6;
+		score = weight*pascore*rawscore;
 	    }
 	}
 	else {
 	    if (subtopicflag == 1) {
-		score = 0.6*pascore*rawscore;
+		weight *= 0.6;
+		score = weight*pascore*rawscore;
 	    }
 	    /* 判定詞の場合で RANK3 のもので類似度がない場合は救う
 	       「結婚も 〜 上回り、〜 十九万五千組。」 */
 	    else if (rawscore == 0  && type == RANK3 && check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
-		score = pascore*1.0;
+		score = weight*pascore*1.0;
 	    }
 	    else {
-		score = pascore*rawscore;
+		score = weight*pascore*rawscore;
 	    }
 	}
 
     }
     /* 特別に N-V のセットのときは許す */
     else if (pascore > 1 && rawscore > 0.8) {
-	score = ascore*pascore*rawscore;
+	score = weight*pascore*rawscore;
     }
     else {
 	score = 0;
@@ -999,7 +995,8 @@ void SearchCaseComponent(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr,
 		bp->cpm_ptr->elem_b_ptr[num]->num != cpm_ptr->pred_b_ptr->num && /* 格要素が元用言のときはだめ (bp->cpm_ptr->elem_b_ptr[num] は並列のとき <PARA> となり、pointer はマッチしない) */
 		CheckTargetNoun(bp->cpm_ptr->elem_b_ptr[num])) {
 		/* 格要素の格の一致 (格によりけり) */
-		if (cf_ptr->pp[n][0] == bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0]) {
+		if (cf_ptr->pp[n][0] == bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0] || 
+		    (MatchPP(cf_ptr->pp[n][0], "ガ２") && MatchPP(bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ガ"))) {
 		    EllipsisDetectForVerbSubcontract(s, s, cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], 
 						     cf_ptr, n, RANK3);
 		}
@@ -1104,6 +1101,10 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *c
 	/* とりあえず、連用で係るひとつ上の親用言のみ */
 	else if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連用")) {
 	    SearchCaseComponent(cs, cpm_ptr, cpm_ptr->pred_b_ptr->parent, cf_ptr, n);
+	}
+	/* 「〜した後」など */
+	else if (check_feature(cpm_ptr->pred_b_ptr->f, "従属節扱い")) {
+	    SearchCaseComponent(cs, cpm_ptr, cpm_ptr->pred_b_ptr->parent->parent, cf_ptr, n);
 	}
     }
 
@@ -1361,11 +1362,12 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *c
 }
 
 /*==================================================================*/
-int EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
-			       int mainflag, int toflag, int onceflag)
+float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
+				int mainflag, int toflag, int onceflag)
 /*==================================================================*/
 {
     int i, j, num, result;
+    float totalscore = 0;
     CF_MATCH_MGR *cmm_ptr;
 
     cmm_ptr = &(cpm_ptr->cmm[0]);
@@ -1377,11 +1379,14 @@ int EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED && 
 		!(toflag && MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ヲ"))) {
 		result = EllipsisDetectForVerb(sp, cpm_ptr, cmm_ptr->cf_ptr, i, mainflag);
-		if (result && onceflag) {
-		    /* ひとつの省略の指示対象をみつけたので、
-		       ここでもっともスコアの高い格フレームを再調査する */
-		    find_best_cf(sp, cpm_ptr);
-		    return 1;
+		if (result) {
+		    totalscore += maxscore;
+		    if (onceflag) {
+			/* ひとつの省略の指示対象をみつけたので、
+			   ここでもっともスコアの高い格フレームを再調査する */
+			find_best_cf(sp, cpm_ptr);
+			return totalscore;
+		    }
 		}
 	    }
 	}
@@ -1402,13 +1407,20 @@ int EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    !MatchPP(cmm_ptr->cf_ptr->pp[i][0], "φ") && 
 	    !MatchPP(cmm_ptr->cf_ptr->pp[i][0], "修飾")) {
 	    result = EllipsisDetectForVerb(sp, cpm_ptr, cmm_ptr->cf_ptr, i, mainflag);
-	    if (result && onceflag) {
-		find_best_cf(sp, cpm_ptr);
-		return 1;
+	    if (result) {
+		totalscore += maxscore;
+		if (onceflag) {
+		    find_best_cf(sp, cpm_ptr);
+		    return totalscore;
+		}
 	    }
 	}
     }
-    return 0;
+
+    if (onceflag) {
+	return -1;
+    }
+    return totalscore;
 }
 
 /*==================================================================*/
@@ -1416,6 +1428,7 @@ int EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     int i, j, num, toflag, lastflag = 1, mainflag, anum;
+    float score;
     SENTENCE_DATA *sp_new;
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
@@ -1493,12 +1506,12 @@ int EllipsisDetectForVerbMain(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* 格要素がひとつもないときは、省略の指示対象をひとつ決めてから
 	   もっともスコアの高い格フレームを選ぶ */
 	if (anum == 0) {
-	    if (EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 1) == 1) {
-		EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 0);
+	    if ((score = EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 1)) < 0) {
+		score += EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 0);
 	    }
 	}
 	else {
-	    EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 0);
+	    score = EllipsisDetectForVerbMain(sp, cpm_ptr, mainflag, toflag, 0);
 	}
 
 	ClearAnaphoraList(banlist);

@@ -567,7 +567,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	     void record_case_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, num, lastflag = -1;
+    int i, j, num, lastflag = -1, gagaok;
     char feature_buffer[DATA_LEN], relation[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
 
@@ -588,15 +588,46 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    continue;
 	}
 
+	gagaok = 1;
+	for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	    /* ³ä¤êÅö¤Æ¤Ê¤·¤Ç¥¬³Ê, ¥ò³Ê, ¥Ë³Ê¤Ê¤é¤Ð¡¢¥¬¥¬ÉÔ²Ä */
+	    if (num == UNASSIGNED) {
+		if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥¬") || 
+		    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥ò") || 
+		    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥Ë")) {
+		    gagaok = 0;
+		    break;
+		}
+	    }
+	}
+
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	    if (num == NIL_ASSIGNED) {
 		if (cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
 		    check_feature(cpm_ptr->pred_b_ptr->f, "·¸:Ï¢³Ê")) {
 		    strcpy(relation, "³°¤Î´Ø·¸");
-
 		    sprintf(feature_buffer, "%sÈ½Äê", relation);
 		    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+		}
+		/* ¡Ö¡Á¤Ï¡×¤Ç³Ê¥Õ¥ì¡¼¥àÂ¦¤Î¥¬³Ê, ¥ò³Ê, ¥Ë³Ê¤¬¤¦¤Þ¤Ã¤Æ¤¤¤ë¤Ê¤é
+		   ¥¬¥¬³Ê¤È²ò¼á¤¹¤ë */
+		else if (gagaok && 
+			 check_feature(cpm_ptr->elem_b_ptr[i]->f, "·¸:Ì¤³Ê") && 
+			 !check_feature(cpm_ptr->elem_b_ptr[i]->f, "»þ´Ö")) {
+		    strcpy(relation, "¥¬¥¬(¥Ï)");
+		    sprintf(feature_buffer, "%sÈ½Äê", relation);
+		    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+		    /* ¥¬¥¬³ÊºîÀ® (ºÇ½é¤Î¡Ö¡Á¤Ï¡×¤Î¤ß) */
+		    if (!check_cf_case(cpm_ptr->cmm[0].cf_ptr, "¥¬£²")) {
+			_make_ipal_cframe_pp(cpm_ptr->cmm[0].cf_ptr, "¥¬£²", cpm_ptr->cmm[0].cf_ptr->element_num);
+			cpm_ptr->cmm[0].result_lists_d[0].flag[i] = cpm_ptr->cmm[0].cf_ptr->element_num;
+			cpm_ptr->cmm[0].result_lists_p[0].flag[cpm_ptr->cmm[0].cf_ptr->element_num] = i;
+			cpm_ptr->cmm[0].result_lists_d[0].score[i] = 0;
+			cpm_ptr->cmm[0].result_lists_p[0].score[cpm_ptr->cmm[0].cf_ptr->element_num] = 0;
+			cpm_ptr->cmm[0].cf_ptr->element_num++;
+		    }
 		}
 		else {
 		    strcpy(relation, "--");
