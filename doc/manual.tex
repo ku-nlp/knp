@@ -20,11 +20,11 @@
 \def\fr{$\rangle$}
 
 \title{\bf 日本語構文解析システム \\
-        KNP version 2.0 b6 \\
+        KNP version 2.0 \\
         使用説明書}
 \author{黒橋 禎夫}
-\date{平成10年 6月\\
-\rule{0mm}{110mm}Copyright \copyright\ 1998\begin{tabular}[t]{l}
+\date{平成12年 12月\\
+\rule{0mm}{110mm}Copyright \copyright\ 2000\begin{tabular}[t]{l}
                                 京都大学大学院 情報学研究科 \\
                                 \end{tabular}
 }
@@ -47,6 +47,7 @@
 %Version 2.0b4 & 5 September 1997 \\
 %Version 2.0b5 & 29 October 1997 \\
 %Version 2.0b6 & 9 June 1998 \\
+%Version 2.0 & 31 December 2000 \\
 %\end{tabular}
 %\end{small}
 
@@ -111,24 +112,24 @@ KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解
 
 \begin{enumerate}
 \item gcc, gmake, nkf, jperl (それぞれ適当なftpサイトから入手可)
-\item JUMAN (ftp://pine.kuee.kyoto-u.ac.jp/pub/juman/juman3.4.tar.gz)
+\item JUMAN (ftp://pine.kuee.kyoto-u.ac.jp/pub/juman/juman3.61.tar.gz)
 \item 分類語彙表 \\ 
   フロッピーディスク版 (大日本図書 tel +81-03-3561-8679) \\
   または モニター版 (国立国語研究所:中野洋先生:nakano@kokken.go.jp)
-\item EDR日本語単語辞書 (http://www.iijnet.or.jp/edr)
+% \item EDR日本語単語辞書 (http://www.iijnet.or.jp/edr)
 \item IPAL辞書 (ftp://ftp.mgt.ipa.go.jp/pub/ipal/README.J 参照)
 \end{enumerate}
-このうち，1はシステムのコンパイルに必要です．2は，テキストを形態素列に
-変換するプログラムで，KNPはこのプログラムの出力を入力とします．3は並列
-構造解析と格構造解析，4は構文解析，5は格構造解析で利用しますが，これら
-がない場合でもシステムは動作します(とはいえ，少なくとも3, 4は準備され
-ることをお勧めします)．
+このうち，1はシステムのコンパイルに必要です．2は，テキストを形態素列に変
+換するプログラムで，KNPはこのプログラムの出力を入力とします．3は並列構造
+解析と格構造解析，4は格構造解析で利用しますが，これらがない場合でもシス
+テムは動作します(とはいえ，少なくとも3の分類語彙表は準備されることをお勧
+めします)．
 
 システムのインストールは以下の手順で行います．
 
 \begin{enumerate}
 
-\item knp2.0b3/system/Makefile, knp2.0b3/dict/Makefileで，
+\item knp2.0/system/Makefile, knp2.0/dict/Makefileで，
   以下の変数の値を設定します．
   \begin{center}
   \begin{tabular}{l@{ : }l}
@@ -148,11 +149,11 @@ KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解
 
 \item 標準では辞書のコンパイルにndbm(UNIXで通常用意されているハッシュ
   データベースライブラリ)を用いるようになっていますが，代わりにgdbm
-  を用いる場合は knp2.0b3/system/Makefile，knp2.0b3/dict/Makefile それ
+  を用いる場合は knp2.0/system/Makefile，knp2.0/dict/Makefile それ
   ぞれで if gdbm とあるコメントアウト部分(それぞれ2ヶ所)を有効にします．
   (\# と if gdbmを削除する)
 
-\item knp2.0b3で，gmake allを実行します．(辞書データベースを作るために
+\item knp2.0で，gmake allを実行します．(辞書データベースを作るために
   Sun SPARCStation20で約20分かかります．)
 
 \end{enumerate}

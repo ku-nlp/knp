@@ -1,4 +1,178 @@
+2000-12-08  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/para_similarity.c: 並列の類似度を NTT シソーラスでとる場合に閾値(0.4)を設けて、それ以下だ
+	と捨てるようにした。
+
+	* system/lib_scase.c, system/read_data.c, system/dpnd_analysis.c, system/feature.c, system/case_ipal.c, system/case_match.c, system/const.h, system/context.c, system/case_analysis.c:
+	SCASE_CODE_SIZE (11) を define して使用。
+	正解コーパスを入力したときの bug fix.
+
+2000-12-05  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/lib_print.c, system/lib_scase.c, system/main.c, system/para_similarity.c, system/configfile.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/bind_juman.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	正解コーパスを入力して、文脈解析できるようにした。
+	格解析結果の feature を用言側につけるように変更。
+	「〜との」をト格で格解析。
+	'-para BGH' オプションで、並列解析のマッチングを NTT シソーラスで行う
+	ようにした。
+
+2000-11-30  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/regexp.c, system/tools.c, system/tree_conv.c, system/unsupervised.c, system/para_relation.c, system/para_revision.c, system/para_similarity.c, system/path.h, system/proper.c, system/quote.c, system/make_db.c, system/noun.c, system/para_analysis.c, system/para_dpnd.c, system/lib_bgh.c, system/lib_print.c, system/lib_ps.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/knp.h, system/koou.c, system/configfile.c, system/const.h, system/context.c, system/corpus.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/Makefile.am, system/bind_juman.c, system/case_analysis.c, juman/juman_lib.c, juman/Makefile.am:
+	文脈解析枝を幹にマージ。
+
+2000-11-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/make_db.c, system/para_similarity.c, system/lib_bgh.c, system/lib_scase.c, system/lib_sm.c, system/context.c, system/extern.h, system/case_match.c, system/case_print.c, system/const.h, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	ノ格は「が」, 「を」への対応付けを行う。閾値で単なる修飾かどうか判定す
+	るのは今後の課題。
+	ノ格関連: 「〜への」(ヘ格), 「〜からの」(カラ格) の扱い。
+	複合名詞のときなど、文節内の要素を格要素とする場合への対処。
+	格関係 feature の書式変更。
+	類似度をとる関数群の整理。
+
+2000-11-23  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* system/para_relation.c, system/para_revision.c, system/para_similarity.c, system/tree_conv.c, system/const.h, system/lib_print.c, system/lib_ps.c, system/para_analysis.c:
+	変数名の変更等
+
+	* rule/bnst_etc.rule, rule/bnst_type.phrase, rule/kakari_uke.rule, rule/mrph_basic.rule, rule/mrph_homo.rule, rule/rule_trans.pl, rule/bnst_basic.rule:
+	*** empty log message ***
+
+2000-11-13  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/lib_sm.c, system/main.c, system/tools.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/const.h, system/context.c, system/case_match.c, system/case_print.c, system/configfile.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/bind_juman.c:
+	デフォルトのシソーラスを NTT に。
+	文脈解析における活性化モデルを実装。
+	サ変名詞の格解析。
+	格フレームの用言の直前格をマーク。
+	「〜を〜に」を格要素にしない。
+	NTT の意味素のうち「姓」, 「名」, 「大字」は用いない。
+	jumanrc 読み込み部分を改良。
+
+2000-10-23  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/unsupervised.c, system/para_relation.c, system/proper.c, system/quote.c, system/main.c, system/noun.c, system/para_analysis.c, system/lib_print.c, system/lib_sm.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/const.h, system/context.c, system/corpus.c, system/bind_juman.c, system/case_analysis.c, system/case_ipal.c:
+	プロトタイプ宣言の正常化。
+
+2000-10-18  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/unsupervised.c, system/proper.c, system/read_data.c, system/tree_conv.c, system/para_dpnd.c, system/para_relation.c, system/lib_ps.c, system/main.c, system/para_analysis.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/const.h, system/context.c, system/corpus.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/bind_juman.c, system/case_analysis.c:
+	Best_mgr などを SENTENCE_DATA に入れ、構文解析関数を自由に呼び出せるよ
+	うにした。
+	定義文を用いた文脈解析を最低限できるようにした。
+
+2000-10-17  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/noun.c, system/read_data.c, system/context.c, system/extern.h, system/main.c, system/bind_juman.c:
+	knp_main() から構文解析部分の分離。
+
+2000-10-16  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/path.h, system/lib_scase.c, system/lib_sm.c, system/noun.c, system/configfile.c, system/lib_bgh.c, system/case_ipal.c:
+	jumanrc に辞書ファイルの記述がないときでも、辞書ディレクトリの記述があ
+	ればそれをコンパイル時の指定より優先するように変更。
+
+2000-10-14  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c: 定義文の解析を行う基礎を作成。
+
+	* system/bind_juman.c: New file.
+
+	* system/Makefile.am, system/bind_juman.c, system/context.c:
+	定義文の解析を行う基礎を作成。
+
+	* juman/juman_lib.c: New file.
+
+	* juman/juman_lib.c, juman/Makefile.am: 定義文の解析を行う基礎を作成。
+
+2000-10-13  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/regexp.c, system/tree_conv.c, system/unsupervised.c, system/proper.c, system/quote.c, system/read_data.c, system/para_dpnd.c, system/para_relation.c, system/para_revision.c, system/para_similarity.c, system/lib_ps.c, system/main.c, system/para_analysis.c, system/knp.h, system/koou.c, system/lib_print.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/case_print.c, system/context.c, system/corpus.c, system/case_data.c, system/case_ipal.c, system/case_analysis.c:
+	SENTENCE_DATA *sp を local 化。
+
+2000-10-12  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/noun.c, system/case_analysis.c, system/case_match.c, system/const.h:
+	格解析結果を feature で与える方法を、入力側の対応関係をもとにするよう
+	に変更。
+
+2000-10-11  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/case_analysis.c:
+	用言の省略格要素を探すときに、親用言の格要素を探すようにした。
+	格フレームがないときに対する対処。
+
+2000-10-10  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/noun.c: New file.
+
+	* system/noun.c, system/path.h, system/context.c, system/extern.h, system/main.c, system/Makefile.am, system/case_analysis.c, system/const.h:
+	文脈解析において、例解小学国語辞典を引けるようにした。
+
+	* system/extern.h, system/lib_print.c, system/main.c, system/const.h, system/context.c, system/case_print.c:
+	出力の verbose level を設定できるようにした。
+
+2000-10-06  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/lib_sm.c, system/main.c, system/quote.c, system/context.c, system/dpnd_analysis.c, system/feature.c, system/case_match.c, system/case_print.c, system/const.h, system/case_analysis.c, system/case_data.c, system/case_ipal.c:
+	格解析に基づく文脈解析ができるようにした。
+
+2000-07-24  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_analysis.c: weight を変数にして調整可能にした。
+	格解析結果を Feature へ。
+
+2000-07-17  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/const.h, system/extern.h: コンパイルできないバグ修正。
+
+2000-07-06  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* INSTALL: configure に関する記述を追加。
+
+2000-07-05  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/path.h: BerkeleyDB を用いるときのデータベースのファイル名の変更。
+
+2000-06-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_match.c: 外の関係の解析への対応。
+
+2000-06-22  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* dict/src/bgh.pl:
+	改行コードの扱い等のバグ修正
+
+2000-06-21  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c: 入力に形態素がひとつもないときに対処。
+
+2000-06-14  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* dict/src/ipals.pl, dict/src/ipals_add_voice.pl, dict/src/ipalv.pl, dict/src/edr.pl, dict/src/ipal2scase.pl, dict/src/ipala.pl, dict/src/bgh.pl:
+	dict/src のスクリプト群の登録。
+
+	* system/lib_bgh.c, system/lib_sm.c:
+	意味属性検索部分の変更。具体的には、読みで引かない、後側を前にずらさな
+	いように変更。
+
+2000-06-14  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/kakari_uke.rule, rule/mrph_basic.rule, rule/rule_trans.pl:
+	「〜か否か」を一文節に
+	「〜のに」の扱いを少し正確に，コメントを丁寧に
+
+2000-05-10  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/case_analysis.c, system/case_match.c: ガガ構文の実験的コードの追加。
+
 2000-04-26  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/ipal.c, system/main.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, ChangeLog:
+	格解析における距離のコストを 5 にした。
+	デ格, ニ格の修飾語をとりあえず扱えるようにした。
+	格解析と Server モードの bug を解消。
 
 	* rule/bnst_basic.rule, rule/bnst_etc.rule, rule/bnst_trivial.phrase, ChangeLog:
 	「修飾」を与えるルールの追加。

@@ -1,9 +1,9 @@
 
 
 		  KN parser (Kurohashi-Nagao parser)
-			Version 2.0, Dec. 1996
+			Version 2.0, Dec. 2000
 	
-	 Copyright (C) 1993, 1994, 1995, 1996 Sadao Kurohashi
+	       Copyright (C) 1993-2000 Sadao Kurohashi
 
 
 1. INTRODUCTION
@@ -101,4 +101,4 @@ environment that will allow me to reproduce the bug.
 
 
 Sadao Kurohashi
-kuro@kuee.kyoto-u.ac.jp
+kuro@i.kyoto-u.ac.jp
