@@ -2203,6 +2203,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 /*==================================================================*/
 {
     int i;
+    TAG_DATA *tp2;
 
     /* 自分、用言の格要素(省略込み)、子供(再帰)の順番にチェックする */
 
@@ -2230,8 +2231,13 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
     }
 
     /* 用言の格要素をチェック (省略を含む) */
+    tp2 = tp;
+    while (tp2->para_top_p) {
+	tp2 = tp2->child[0];
+    }
     SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-			tp, cf_ptr, n, LOC_OTHERS);
+			tp2, cf_ptr, n, LOC_OTHERS);
+
     if (!(OptDiscFlag & OPT_DISC_BEST) && 
 	ScoreCheck(cf_ptr, n)) {
 	return 1;
