@@ -42,6 +42,8 @@ typedef GDBM_FILE DBM_FILE;
 
 #else
 
+#ifdef NDBM
+
 /*  for NDBM  */
 
 #include <ndbm.h>
@@ -65,6 +67,21 @@ typedef DBM* DBM_FILE;
 #define DBM_nextkey( dbf, key ) \
   dbm_fetch( dbf, key )
 
+#else
+
+#include <fcntl.h>
+#include <db.h>
+
+typedef DB *DBM_FILE;
+
+/*  functions  */
+
+#define DBM_open(name, rw, mode) \
+    db_read_open(name)
+#define DBM_close(dbf) \
+    db_close(dbf)
+
+#endif
 #endif
 
 /*  end of dbm.h  */
