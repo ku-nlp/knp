@@ -1963,7 +1963,19 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	return;
     }
 
-    score = ef->similarity;
+    if (cpm_ptr->cf.type == CF_NOUN) {
+	/* Ì¾»ì¤Î¾ì¹ç: exact match or <agent> match */
+	if (ef->similarity > 1.0 || 
+	    (ef->similarity >= 1.0 && ef->c_subject_flag && ef->p_cf_subject_flag)) {
+	    score = ef->similarity;
+	}
+	else {
+	    score = -1;
+	}
+    }
+    else {
+	score = ef->similarity;
+    }
 
     /* ¾ÊÎ¬¸õÊä */
     sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
