@@ -1020,11 +1020,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 格解析を行なった場合の出力 */
 
     if (((OptAnalysis == OPT_CASE || 
-	 OptAnalysis == OPT_CASE2 ||
-	 OptAnalysis == OPT_DISC) &&
-	(OptDisplay == OPT_DETAIL || 
-	 OptDisplay == OPT_DEBUG)) || 
-	(OptAnalysis == OPT_DISC && 
+	 OptAnalysis == OPT_CASE2) && 
+	 (OptDisplay == OPT_DETAIL || 
+	  OptDisplay == OPT_DEBUG)) || 
+	(OptDisc == OPT_DISC && 
 	 VerboseLevel >= VERBOSE1)) {
 
 	print_case_result(sp);

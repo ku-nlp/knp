@@ -574,6 +574,7 @@ typedef struct {
 #define CASE_MAX_NUM	20
 #define	EX_PRINT_NUM	10
 
+#define	USE_NONE 0
 #define USE_BGH	1
 #define	USE_NTT	2
 #define	STOREtoCF	4

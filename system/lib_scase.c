@@ -77,7 +77,7 @@ int		ScaseDicExist;
 }
 
 /*==================================================================*/
-             void get_scase_code(BNST_DATA *ptr)
+		 void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
     int strt, end, last, stop, i, overflow_flag = 0;
@@ -120,6 +120,7 @@ int		ScaseDicExist;
 		/* 用言タイプを含まない辞書の場合 */
 		ans = get_scase(str_buffer);
 		if (ans == NULL) {
+		    /* 用言タイプを含む辞書の場合 */
 		    predicate = strdup(str_buffer);
 		    if (ptr->num > 0) {
 			cp = check_feature((ptr-1)->f, "係");
@@ -129,9 +130,16 @@ int		ScaseDicExist;
 			}
 		    }
 		    if (ans == NULL) {
-			/* 用言タイプを含む辞書の場合 */
 			sprintf(str_buffer, "%s:%s", predicate, vtype);
 			ans = get_scase(str_buffer);
+		    }
+		    /* DEBUG 表示 */
+		    if (OptDisplay == OPT_DEBUG) {
+			if (ans != NULL) {
+			    char print_buffer[2*BNST_LENGTH_MAX];
+			    sprintf(print_buffer, "SCASEUSE:%s", str_buffer);
+			    assign_cfeature(&(ptr->f), print_buffer);
+			}
 		    }
 		    free(predicate);
 		}

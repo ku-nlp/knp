@@ -46,6 +46,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 char		G_Feature[100][64];		/* FEATUREの変数格納 */
 
 int 		OptAnalysis;
+int		OptDisc;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
@@ -85,8 +86,6 @@ char *ClauseCDBname = NULL;
 char *CasePredicateDBname = NULL;
 char *OptionalCaseDBname = NULL;
 
-char *EtcRuleFile = NULL;
-
 jmp_buf timeout;
 int	ParseTimeout = DEFAULT_PARSETIMEOUT;
 char *Opt_jumanrc = NULL;
@@ -113,7 +112,8 @@ extern int	SOTO_SCORE;
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
-	    "           [-thesaurus [BGH|NTT]]\n");
+	    "           [-thesaurus [BGH|NTT]] (Default:NTT)\n"
+	    "           [-para [BGH|NTT]] (Default:BGH)\n");
     exit(1);    
 }
 
@@ -124,6 +124,7 @@ extern int	SOTO_SCORE;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
+    OptDisc = OPT_NORMAL;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
@@ -145,20 +146,20 @@ extern int	SOTO_SCORE;
 	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
-	else if (str_eq(argv[0], "-disc"))    OptAnalysis = OPT_DISC;
-	else if (str_eq(argv[0], "-tree"))    OptExpress = OPT_TREE;
-	else if (str_eq(argv[0], "-treef"))   OptExpress = OPT_TREEF;
-	else if (str_eq(argv[0], "-sexp"))    OptExpress = OPT_SEXP;
-	else if (str_eq(argv[0], "-tab"))     OptExpress = OPT_TAB;
-	else if (str_eq(argv[0], "-normal"))  OptDisplay = OPT_NORMAL;
-	else if (str_eq(argv[0], "-detail"))  OptDisplay = OPT_DETAIL;
-	else if (str_eq(argv[0], "-debug"))   OptDisplay = OPT_DEBUG;
-	else if (str_eq(argv[0], "-expand"))  OptExpandP = TRUE;
-	else if (str_eq(argv[0], "-S"))       OptMode    = SERVER_MODE;
-	else if (str_eq(argv[0], "-check"))   OptCheck = TRUE;
-	else if (str_eq(argv[0], "-learn"))   OptLearn = TRUE;
-	else if (str_eq(argv[0], "-nesm"))    OptNE = OPT_NESM;
-	else if (str_eq(argv[0], "-ne"))      OptNE = OPT_NE;
+	else if (str_eq(argv[0], "-disc"))    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
+	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
+	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
+	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
+	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
+	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
+	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
+	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
+	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
+	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
+	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
+	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
 	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
@@ -248,6 +249,22 @@ extern int	SOTO_SCORE;
 		usage();
 	    }
 	}
+	else if (str_eq(argv[0], "-para")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if (!strcasecmp(argv[0], "ntt")) {
+		ParaThesaurus = USE_NTT;
+	    }
+	    else if (!strcasecmp(argv[0], "bgh")) {
+		ParaThesaurus = USE_BGH;
+	    }
+	    else if (!strcasecmp(argv[0], "none")) {
+		ParaThesaurus = USE_NONE;
+	    }
+	    else {
+		usage();
+	    }
+	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -327,6 +344,13 @@ extern int	SOTO_SCORE;
     }
     if (argc != 0) {
 	usage();
+    }
+
+    /* 文脈解析のときは必ず格解析を行う
+       解析済みデータのときは read_mrph() で CASE2 にしている */
+    if (OptDisc == OPT_DISC && 
+	(OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2)) {
+	OptAnalysis = OPT_CASE;
     }
 }
 
@@ -421,7 +445,7 @@ extern int	SOTO_SCORE;
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
 
-    if (OptAnalysis == OPT_DISC)
+    if (OptDisc == OPT_DISC)
 	init_noun();	/* 名詞辞書オープン */
 
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
@@ -453,7 +477,7 @@ extern int	SOTO_SCORE;
 	init_proper(&current_sentence_data);
     }
 
-    if (OptAnalysis == OPT_DISC) {
+    if (OptDisc == OPT_DISC) {
 	InitAnaphoraList();
     }
 }
@@ -537,8 +561,7 @@ extern int	SOTO_SCORE;
     assign_dpnd_rule(sp);			/* 係り受け規則 */
 
     if (OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2 ||
-	OptAnalysis == OPT_DISC) {
+	OptAnalysis == OPT_CASE2) {
 
 	/* 格解析を行うサ変名詞を含む文節に feature を与え、
 	   複合名詞をばらして格要素として認識する */
@@ -551,9 +574,9 @@ extern int	SOTO_SCORE;
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
 
-	/**************/
-	/* 本格的解析 */
-	/**************/
+    /**************/
+    /* 本格的解析 */
+    /**************/
 
     if (OptInput == OPT_PARSED) {
 	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
@@ -630,9 +653,9 @@ extern int	SOTO_SCORE;
     else if (flag == CONTINUE)
 	return FALSE;
 
-	/********************/
-	/* 依存・格構造解析 */
-	/********************/
+    /********************/
+    /* 依存・格構造解析 */
+    /********************/
 
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
@@ -645,7 +668,7 @@ extern int	SOTO_SCORE;
     }
     alarm(0);
 
-	/* コーパスベース時の評価値計算 */
+    /* コーパスベース時の評価値計算 */
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	optional_case_evaluation(sp);
 
@@ -727,7 +750,7 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptAnalysis != OPT_DISC) 
+	    if (OptDisc != OPT_DISC) 
 		print_result(sp);
 	    else
 		copy_sentence(sp);
@@ -736,8 +759,7 @@ PARSED:
 
 	/* 格フレームの初期化 */
 	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2 || 
-	    OptAnalysis == OPT_DISC) {
+	    OptAnalysis == OPT_CASE2) {
 	    clear_cf();
 	}
 
@@ -752,7 +774,7 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptAnalysis == OPT_DISC) {
+	if (OptDisc == OPT_DISC) {
 	    /* 中身は保存しておくので */
 	    for (i = 0; i < sp->Mrph_num; i++)
 		(sp->mrph_data+i)->f = NULL;
@@ -787,7 +809,7 @@ PARSED:
 	/* 文脈解析 */
 	/************/
 
-	if (OptAnalysis == OPT_DISC) {
+	if (OptDisc == OPT_DISC) {
 	    make_dpnd_tree(sp);
 	    discourse_analysis(sp);
 	}
@@ -814,7 +836,7 @@ PARSED:
     close_sm();
     close_scase();
 
-    if (OptAnalysis == OPT_DISC)
+    if (OptDisc == OPT_DISC)
 	close_noun();
     if (OptNE != OPT_NORMAL)
 	close_proper();

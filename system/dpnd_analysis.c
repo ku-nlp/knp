@@ -567,8 +567,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	    OptAnalysis == OPT_CASE2) {
 	    dpnd_evaluation(sp, dpnd);
 	} 
-	else if (OptAnalysis == OPT_CASE || 
-		 OptAnalysis == OPT_DISC) {
+	else if (OptAnalysis == OPT_CASE) {
 	    call_case_analysis(sp, dpnd);
 	}
 	return;
@@ -752,8 +751,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     if (Possibility != 0) {
 	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2 ||
-	    OptAnalysis == OPT_DISC) {
+	    OptAnalysis == OPT_CASE2) {
 	    /* 格解析の結果を用言文節へ */
 	    for (i = 0; i < sp->Best_mgr->pred_num; i++)
 		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);

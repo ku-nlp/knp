@@ -365,11 +365,6 @@ int knp_dict_file_already_defined = 0;
     fullname = (char *)malloc_data(strlen(Knpdict_Dirname)+strlen(file)+2, "check_dict_filename");
     sprintf(fullname, "%s/%s", Knpdict_Dirname, file);
 
-    /* flag が FALSE のときはファイルが存在するかどうかチェックしない */
-    if (flag == FALSE) {
-	return fullname;
-    }
-
     /* dir + filename */
     status = stat(fullname, &sb);
 
@@ -384,6 +379,10 @@ int knp_dict_file_already_defined = 0;
 	}
 	status = stat(fullname, &sb);
 	if (status < 0) {
+	    /* flag が FALSE のときはファイルが存在するかどうかチェックしない */
+	    if (flag == FALSE) {
+		return fullname;
+	    }
 	    fprintf(stderr, "%s: No such file.\n", fullname);
 	    exit(1);
 	}

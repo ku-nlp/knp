@@ -245,10 +245,17 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	if (check_feature(b_ptr->f, "カラ")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("から");
 	}
+	/* 「〜との」: ト格 */
+	else if (check_feature(b_ptr->f, "ト")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("と");
+	}
 	/* 「〜への」: ヘ格, ニ格 */
 	else if (check_feature(b_ptr->f, "ヘ")) {
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("へ");
 	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	}
+	else {
+	    return NULL;
 	}
 	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;

@@ -133,6 +133,8 @@ FILE *w2c, *w2p, *rfc, *rfp;
 	   int ParseSentence(SENTENCE_DATA *s, char *input)
 /*==================================================================*/
 {
+    int OptInputBackup;
+
     if (!JumanAlive) {
 	ForkJuman();
     }
@@ -140,6 +142,10 @@ FILE *w2c, *w2p, *rfc, *rfp;
     fputs(input, w2c);
     fputc('\n', w2c);
     fflush(w2c);
+
+    OptInputBackup = OptInput;
+    OptInput = OPT_RAW;
+
     /* 形態素解析結果を rfc から読んで s に入れる
        EOS で TRUE がかえる */
     main_analysis(s, rfc);
@@ -147,6 +153,9 @@ FILE *w2c, *w2p, *rfc, *rfp;
     print_result(s);
     fputc('\n', Outfp);
 #endif
+
+    OptInput = OptInputBackup;
+
     return 1;
 }
 

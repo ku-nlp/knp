@@ -8,6 +8,7 @@
 ====================================================================*/
 
 extern int		Thesaurus;
+extern int		ParaThesaurus;
 
 extern int		Process_type;
 extern int		Revised_para_num;
@@ -41,6 +42,7 @@ extern char		G_Feature[][64];
 extern TOTAL_MGR	Op_Best_mgr;
 
 extern int 		OptAnalysis;
+extern int		OptDisc;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;

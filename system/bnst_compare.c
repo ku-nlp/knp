@@ -9,6 +9,8 @@
 ====================================================================*/
 #include "knp.h"
 
+int ParaThesaurus = USE_BGH;
+
 /*==================================================================*/
               int str_part_cmp(char *c1, char *c2)
 /*==================================================================*/
@@ -21,11 +23,11 @@
     
     pre = 0;
     while (len > pre && *(c1+pre) == *(c2+pre)) 
-      pre++;
+	pre++;
 
     post = 0;
     while (len > post && *(c1+len1-post-1) == *(c2+len2-post-1))
-      post++;
+	post++;
     
     match = pre > post ? pre : post;
     match % 2 ? match -= 1 : NULL;
@@ -40,10 +42,10 @@
 
     if (ptr == NULL) return 0;
     for (i = 0; i < ptr->fuzoku_num; i++) 
-      if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
-	  (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
-	  (cp == NULL  || str_eq((ptr->fuzoku_ptr+i)->Goi, cp)))
-	return 1;
+	if ((Hinshi == 0 || Hinshi == (ptr->fuzoku_ptr+i)->Hinshi) &&
+	    (Bunrui == 0 || Bunrui == (ptr->fuzoku_ptr+i)->Bunrui) &&
+	    (cp == NULL  || str_eq((ptr->fuzoku_ptr+i)->Goi, cp)))
+	    return 1;
     return 0;
 }
 
@@ -53,9 +55,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 {
     if ((str_eq(ptr1->Jiritu_Go, cp) && check_fuzoku(ptr2, 0, 0, cp)) ||
 	(str_eq(ptr2->Jiritu_Go, cp) && check_fuzoku(ptr1, 0, 0, cp)))
-      return 1;
+	return 1;
     else 
-      return 0;
+	return 0;
 }
 
 /*==================================================================*/
@@ -74,10 +76,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	return -1;
 
     for (i = 0; ptr1->BGH_code[i]; i+=BGH_CODE_SIZE)
-      for (j = 0; ptr2->BGH_code[j]; j+=BGH_CODE_SIZE) {
-	  point = bgh_code_match(ptr1->BGH_code+i, ptr2->BGH_code+j);
-	  if (max_point < point) max_point = point;
-      }
+	for (j = 0; ptr2->BGH_code[j]; j+=BGH_CODE_SIZE) {
+	    point = bgh_code_match(ptr1->BGH_code+i, ptr2->BGH_code+j);
+	    if (max_point < point) max_point = point;
+	}
     
     if (max_point < 3) 
 	return 0;
@@ -90,9 +92,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 /*==================================================================*/
 {
     /* 返り値
-       	一方でも分類語彙表コードがない場合 	: -1
-	3桁未満の一致				: 0
-	3桁以上一致している場合			: (一致桁数 - 2)
+       	一方でも NTT コードがない場合 	: -1
+	満点				: BGH_CODE_SIZE-2 == 8	
      */
 
     int i, j, point, max_point = 0;
@@ -101,15 +102,12 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	return -1;
 
     for (i = 0; ptr1->SM_code[i]; i+=SM_CODE_SIZE)
-      for (j = 0; ptr2->SM_code[j]; j+=SM_CODE_SIZE) {
-	  point = (int)(ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE)*BGH_CODE_SIZE);
-	  if (max_point < point) max_point = point;
-      }
-    
-    if (max_point < 3) 
-	return 0;
-    else
-	return (max_point-2);
+	for (j = 0; ptr2->SM_code[j]; j+=SM_CODE_SIZE) {
+	    point = (int)(ntt_code_match(ptr1->SM_code+i, ptr2->SM_code+j, SM_EXPAND_NE)*(BGH_CODE_SIZE-2));
+	    if (max_point < point) max_point = point;
+	}
+
+    return max_point;
 }
 
 /*==================================================================*/
@@ -317,8 +315,15 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 		/* 分類語彙表による類似度 */
 
-		bgh_mt_point = bgh_match(ptr1, ptr2) * 2;
-		/* bgh_mt_point = ntt_match(ptr1, ptr2) * 2; (for NTT) */
+		if (ParaThesaurus == USE_NTT) {
+		    bgh_mt_point = ntt_match(ptr1, ptr2) * 2;
+		}
+		else if (ParaThesaurus == USE_NONE) {
+		    bgh_mt_point = -1;
+		}
+		else {
+		    bgh_mt_point = bgh_match(ptr1, ptr2) * 2;
+		}
 
 		/* 自立語の部分一致 (少なくとも一方の分類語彙表コードがない場合) */
 	    

@@ -36,8 +36,7 @@ int	TEIDAI_STEP	= 2;
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2 || 
-	OptAnalysis == OPT_DISC) {
+	OptAnalysis == OPT_CASE2) {
 	int i, j;
 
 	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
@@ -522,7 +521,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 /*==================================================================*/
 {
     int i, j, num;
-    char feature_buffer[DATA_LEN];
+    char feature_buffer[DATA_LEN], relation[DATA_LEN];
     CF_PRED_MGR *cpm_ptr;
 
     /* ³Ê²òÀÏ¤Î·ë²Ì(Best_mgr¤¬´ÉÍı)¤òfeature¤È¤·¤Æ³ÊÍ×ÁÇÊ¸Àá¤ËÍ¿¤¨¤ë */
@@ -542,28 +541,31 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	    if (num == NIL_ASSIGNED) {
 		if (check_feature(cpm_ptr->pred_b_ptr->f, "·¸:Ï¢³Ê")) {
-		    sprintf(feature_buffer, "³Ê´Ø·¸%d:³°¤Î´Ø·¸", cpm_ptr->pred_b_ptr->num);
+		    strcpy(relation, "³°¤Î´Ø·¸");
 		}
 		else {
-		    sprintf(feature_buffer, "³Ê´Ø·¸%d:¡ß", cpm_ptr->pred_b_ptr->num);
+		    strcpy(relation, "¡ß");
 		}
 	    }
 	    else if (num >= 0) {
-		sprintf(feature_buffer, "³Ê´Ø·¸%d:%s", cpm_ptr->pred_b_ptr->num, 
-			pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+		strcpy(relation, 
+		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
 	    /* else: UNASSIGNED ¤Ï¤Ê¤¤¤Ï¤º */
 
-	    sprintf(feature_buffer, "%s:%s", feature_buffer, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
-
 	    /* feature ¤ò³ÊÍ×ÁÇÊ¸Àá¤ËÍ¿¤¨¤ë */
 	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+		sprintf(feature_buffer, "³Ê´Ø·¸%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->num, 
+			relation, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
 	    }
 	    /* Ê¸ÀáÆâÉô¤ÎÍ×ÁÇ¤Î¾ì¹ç */
 	    else {
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->parent->f), feature_buffer);
+		sprintf(feature_buffer, "³Ê´Ø·¸%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->parent->num, 
+			relation, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
 	    }
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 	}
     }
 }

@@ -124,8 +124,7 @@ int	IPALExist;
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2 || 
-	OptAnalysis == OPT_DISC) {
+	OptAnalysis == OPT_CASE2) {
 
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;

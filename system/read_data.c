@@ -261,7 +261,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		    if (OptNE != OPT_NORMAL) {
 			clearNE();
 		    }
-		    if (OptAnalysis == OPT_DISC) {
+		    if (OptDisc == OPT_DISC) {
 			ClearSentences(sp);
 		    }
 		}
@@ -273,6 +273,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
 	    OptInput = OPT_PARSED;
+	    if (OptDisc == OPT_DISC) {
+		OptAnalysis = OPT_CASE2;
+	    }
 	    sp->Bnst_num = 0;
 	    for (i = 0; i < MRPH_MAX; i++) Bnst_start[i] = 0;
 	    if (sscanf(input_buffer, "* %d%c", 
@@ -859,6 +862,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	if (Bnst_start[i]) {
 	    if (i != 0) b_ptr++;
+	    b_ptr->num = b_ptr-sp->bnst_data;
 	    b_ptr->mrph_ptr = m_ptr;
 	    b_ptr->mrph_num = 1;
 	    b_ptr->jiritu_ptr = NULL;
