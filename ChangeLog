@@ -1,3 +1,11 @@
+2003-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_print.c, system/const.h, system/lib_print.c, system/main.c, system/read_data.c:
+	タグ単位を出力するときに文節行もあわせて出力
+
+	* rule/mrph_basic.rule:
+	タグ単位の微調整
+
 2003-01-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/bnst_compare.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_print.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/read_data.c, system/read_rule.c, system/regexp.c, system/thesaurus.c, system/tree_conv.c:
