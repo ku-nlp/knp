@@ -1,3 +1,9 @@
+2003-11-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/configfile.c, system/const.h, system/context.c, system/extern.h, system/main.c:
+	共参照リンクによってノ格タグをつけるようにした。
+	用言と名詞でSVM, DTなどを指定できるようにした。
+
 2003-11-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
