@@ -286,6 +286,22 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
+	       void codes2sm_print(FILE *fp, char *cp)
+/*==================================================================*/
+{
+    int i;
+    char sm[SM_CODE_SIZE + 1];
+
+    for (i = 0; cp[i]; i += SM_CODE_SIZE) {
+	if (i != 0) fputc(',', fp);
+	strncpy(sm, cp + i, SM_CODE_SIZE);
+	sm[0] = '1';
+	sm[SM_CODE_SIZE] = '\0';
+	fputs(code2sm(sm), fp);
+    }
+}
+
+/*==================================================================*/
 		       char *_smp2smg(char *cp)
 /*==================================================================*/
 {
@@ -803,7 +819,7 @@ char  		cont_str[DBM_CON_MAX];
 /*==================================================================*/
 {
     int i, num;
-    char *new_code;
+    char *new_code, *sm_codes;
 
     if (Thesaurus != USE_NTT) return;
 
@@ -813,14 +829,36 @@ char  		cont_str[DBM_CON_MAX];
 	}
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    num >= 0 && 
-	    cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
-	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, cpm_ptr->cmm[0].cf_ptr->sm_specify[num])) {
-		strcpy(cpm_ptr->elem_b_ptr[i]->SM_code, new_code);
-		cpm_ptr->elem_b_ptr[i]->SM_num = strlen(cpm_ptr->elem_b_ptr[i]->SM_code)/SM_CODE_SIZE;
+	if (cpm_ptr->elem_b_num[i] > -2 && num >= 0 && cpm_ptr->cmm[0].cf_ptr->ex[num] && 
+	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* 格フレームとある程度マッチするとき */
+
+	    if (cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
+		sm_codes = strdup(cpm_ptr->cmm[0].cf_ptr->sm_specify[num]);
+	    }
+	    else {
+		sm_codes = strdup(cpm_ptr->cmm[0].cf_ptr->ex[num]);
+		if (cpm_ptr->cmm[0].cf_ptr->sm_delete[num]) {
+		    delete_specified_sm(sm_codes, cpm_ptr->cmm[0].cf_ptr->sm_delete[num]);
+		}
+	    }
+	    /* もっとも類似している意味属性に決定 */
+	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, sm_codes)) {
+		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* 意味素更新 */
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
+				cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
+			codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
+			fprintf(stderr, "] -> [");
+			codes2sm_print(stderr, new_code);
+			fprintf(stderr, "]\n");
+		    }
+
+		    strcpy(cpm_ptr->elem_b_ptr[i]->SM_code, new_code);
+		    cpm_ptr->elem_b_ptr[i]->SM_num = strlen(cpm_ptr->elem_b_ptr[i]->SM_code) / SM_CODE_SIZE;
+		}
 		free(new_code);
 	    }
+	    free(sm_codes);
 	}
     }
 }
