@@ -57,6 +57,7 @@ int		OptExpandP;
 int		OptInhibit;
 int		OptCheck;
 int		OptNE;
+int		OptHelpsys;
 char		OptIgnoreChar;
 
 /* Server Client Extention */
@@ -114,6 +115,7 @@ jmp_buf timeout;
     OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
+    OptHelpsys = FALSE;
 /*    OptIgnoreChar = (char)NULL;*/
 	OptIgnoreChar = '\0';
 
@@ -135,6 +137,7 @@ jmp_buf timeout;
 	else if (str_eq(argv[0], "-check"))  OptCheck = TRUE;
 	else if (str_eq(argv[0], "-nesm"))   OptNE = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))     OptNE = OPT_NE;
+	else if (str_eq(argv[0], "-helpsys")) OptHelpsys = TRUE;
 	else if (str_eq(argv[0], "-cc"))     OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))     OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))     OptInhibit &= ~OPT_INHIBIT_BARRIER;
@@ -236,7 +239,8 @@ jmp_buf timeout;
 /*==================================================================*/
 {
     read_homo_rule(HOMO_FILE);			/* 同形異義語ルール */
-    read_mrph_rule(MRPH_FILE);			/* 形態素ルール */
+    read_mrph_rule(MRPH_FILE, MrphRuleArray, &CurMrphRuleSize, MrphRule_MAX);
+						/* 形態素ルール */
     read_bnst_rule(BNST1_FILE, BnstRule1Array, 
 		   &CurBnstRule1Size, BnstRule_MAX);
     						/* 文節の一般的ルール */
@@ -255,12 +259,24 @@ jmp_buf timeout;
     read_dpnd_rule(DPND_FILE);			/* 係り受けルール */
     read_koou_rule(KOOU_FILE);			/* 呼応表現ルール */
     if (OptNE != OPT_NORMAL) {
-	read_NE_rule(NE_FILE);			/* 固有名詞ルール */
-	read_CN_rule(CN_FILE);			/* 複合名詞ルール */
+	read_NE_rule(NE_FILE, NERuleArray, &CurNERuleSize, NERule_MAX);
+						/* 固有名詞ルール */
+	read_NE_rule(CN_PRE_FILE, CNpreRuleArray, &CurCNpreRuleSize, CNRule_MAX);
+						/* 複合名詞準備ルール */
+	read_NE_rule(CN_FILE, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+						/* 複合名詞ルール */
+	read_NE_rule(CN_AUX_FILE, CNauxRuleArray, &CurCNauxRuleSize, CNRule_MAX);
+						/* 複合名詞補助ルール */
     }
     else {
-	read_CN_rule(NE_JUMAN_FILE);		/* 固有名詞ルール */
+	read_NE_rule(NE_JUMAN_FILE, CNRuleArray, &CurCNRuleSize, CNRule_MAX);
+						/* 固有名詞ルール */
     }
+
+    read_mrph_rule(HELPSYS_FILE, HelpsysArray,
+		   &CurHelpsysSize, Helpsys_MAX);
+    						/* 対話的ヘルプシステム用ルール */
+
 
     read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
 		   &ContRuleSize, ContRule_MAX);
@@ -312,20 +328,20 @@ void stand_alone_mode()
 		/* Server Mode の場合 前回の出力が成功してない場合は 
 		   ERROR とはく Server/Client モードの場合は,出力の同期をこれで行う */
 		if (!success && OptMode == SERVER_MODE) {
-			fprintf(Outfp,"EOS ERROR\n");
-			fflush(Outfp);
+		    fprintf(Outfp,"EOS ERROR\n");
+		    fflush(Outfp);
 		}
 
 		/* この段階では成功していない */
 		success = 0;
 
 		if (setjmp(timeout))
-			fprintf(stderr, "Parse timeout.\n");
+		    fprintf(stderr, "Parse timeout.\n");
 
 		for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
 		for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
 		for (i = Bnst_num; i < Bnst_num + New_Bnst_num; i++)
-			bnst_data[i].f = NULL;
+		    bnst_data[i].f = NULL;
 
 		if ((flag = read_mrph(Infp)) == EOF) break;
 
@@ -333,23 +349,31 @@ void stand_alone_mode()
 
 		if (flag == FALSE) continue;
 
+		/* 形態素に意味素を与える */
+		for (i = 0; i < Mrph_num; i++) {
+		    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+		    assign_ntt_dict(i);
+		}
+
 		/* 形態素への情報付与 --> 文節 */
 
 		assign_cfeature(&(mrph_data[0].f), "文頭");
 		assign_cfeature(&(mrph_data[Mrph_num-1].f), "文末");
 		assign_mrph_feature(MrphRuleArray, CurMrphRuleSize);
+		if (OptHelpsys == TRUE)
+		    assign_mrph_feature(HelpsysArray, CurHelpsysSize);
 
 		if (OptAnalysis == OPT_PM) {
-			if (make_bunsetsu_pm() == FALSE) continue;
+		    if (make_bunsetsu_pm() == FALSE) continue;
 		} else {
-			if (make_bunsetsu() == FALSE) continue;
+		    if (make_bunsetsu() == FALSE) continue;
 		}
 
 		if (OptAnalysis == OPT_BNST) {
-			print_mrphs(0); continue;	/* 文節化だけの場合 */
+		    print_mrphs(0); continue;	/* 文節化だけの場合 */
 		}	
 		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-			print_mrphs(0);
+		    print_mrphs(0);
 	
 		/* 文節への情報付与 */
 
@@ -370,21 +394,15 @@ void stand_alone_mode()
 
 
 		if (OptAnalysis == OPT_PM) {		/* 解析済みデータのPM */
-			print_result();
-			fflush(Outfp);
-			continue;
+		    print_result();
+		    fflush(Outfp);
+		    continue;
 		}
 
 		assign_dpnd_rule();			/* 係り受け規則 */
 
 		Case_frame_num = 0;
 		set_pred_caseframe();			/* 用言の格フレーム */
-
-		/* 形態素に意味素を与える */
-		for (i = 0; i < Mrph_num; i++) {
-		    strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
-		    assign_ntt_dict(i);
-		}
 
 		for (i = 0; i < Bnst_num; i++) {
 		    get_bgh_code(bnst_data+i);		/* シソーラス */
@@ -396,12 +414,12 @@ void stand_alone_mode()
 
 		/* continue; 文節のみのチェックの場合 */
 
-	/*
+		/*
 		if (Bnst_num > 30) {
 			fprintf(stdout, "Too long sentence (%d bnst)\n", Bnst_num);
 			continue;
 		}
-	*/
+		*/
 
 		/* 本格的解析 */
 
@@ -411,20 +429,20 @@ void stand_alone_mode()
 		/* 呼応表現の処理 */
 
 		if (koou() == TRUE && OptDisplay == OPT_DEBUG)
-	    print_matrix(PRINT_DPND, 0);
+		    print_matrix(PRINT_DPND, 0);
 
 		/* 鍵括弧の処理 */
 
 		if ((flag = quote()) == TRUE && OptDisplay == OPT_DEBUG)
-			print_matrix(PRINT_QUOTE, 0);
+		    print_matrix(PRINT_QUOTE, 0);
 
 		if (flag == CONTINUE) continue;
 
 		/* 係り受け関係がない場合の弛緩 */
 	
 		if (relax_dpnd_matrix() == TRUE && OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "Relaxation ... \n");
-			print_matrix(PRINT_DPND, 0);
+		    fprintf(Outfp, "Relaxation ... \n");
+		    print_matrix(PRINT_DPND, 0);
 		}
 
 		/* 並列構造解析 */
@@ -483,6 +501,8 @@ void stand_alone_mode()
 		}
 
 		alarm(0);
+
+		dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
 
 		/* 固有名詞認識処理 */
 		if (OptNE != OPT_NORMAL)
@@ -638,6 +658,7 @@ void server_mode()
 					char *p;
 
 					if (strstr(buf, "-case"))   OptAnalysis = OPT_CASE;
+					if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
 					if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
 					if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
 					if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
@@ -647,6 +668,7 @@ void server_mode()
 					if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
 					if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
 					if (strstr(buf, "-expand")) OptExpandP = TRUE;
+					if (strstr(buf, "-helpsys")) OptHelpsys = TRUE;
 					/* うーん 引数とるのは困るんだなぁ..
 					   とおもいつつかなり強引... */
 					if ((p = strstr(buf, "-i")) != NULL) {
@@ -655,8 +677,8 @@ void server_mode()
 						if (*p != '\0') OptIgnoreChar = *p;
 					} 
 					fprintf(Outfp,"200 OK option=[Analysis=%d Express=%d"
-							" Display=%d IgnoreChar=%c]\n",
-							OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar);
+							" Display=%d IgnoreChar=%c Helpsys=%d]\n",
+							OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar, OptHelpsys);
 					fflush(Outfp);
 					break;
 				} else {
