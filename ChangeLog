@@ -2,6 +2,9 @@
 
 	* system/thesaurus.c: bug fix.
 
+	* system/const.h, system/lib_print.c, system/main.c:
+	オプション-notagtreeで文節のtreeを出力できるようにした。
+
 2003-09-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* knprc.in:
