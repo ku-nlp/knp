@@ -59,6 +59,10 @@ char *CaseList[] = {"¥«¥é³Ê", "¥¬³Ê", "¥Ç³Ê", "¥È³Ê", "¥Ë³Ê", "¥Î³Ê",
     
     content = DBM_fetch(db, key);
     if (content.dptr) {
+	if (content.dsize > DBM_CON_MAX) {
+	    fprintf(stderr, "Too long SM content <%.*s>.\n", content.dsize, content.dptr);
+	    content.dsize = DBM_CON_MAX;
+	}
 	strncpy(cont_str, content.dptr, content.dsize);
 	cont_str[content.dsize] = '\0';
 #ifdef	GDBM
@@ -475,6 +479,8 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     int j, offset;
     struct _pos_s ne;
 
+    _init_NE(&ne);
+
     sscanf(feature, "%[^:]", type);
     offset = strlen(type)+1;
 
@@ -596,6 +602,11 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	mrph_data[i].SM[0] = '\0';
 	init_NE(&(mrph_data[i].NE));
 	init_NE(&(mrph_data[i].eNE));
+
+	for (j = 0; CaseList[j][0]; j++) {
+	    _init_NE(&(mrph_data[i].Case[j]));
+	}
+
 	assign_f_from_dic(i);
 
 	/* Ã±¸ì¤ÈÊ¸»ú¼ï¤Î¥³¥Ô¡¼ */
