@@ -35,7 +35,7 @@ int		BGHExist;
 	}
 	BGHExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open BGH dictionary <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open BGH dictionary <%s>.\n", filename);
 #endif
     } else {
 	if (OptDisplay == OPT_DEBUG) {
@@ -64,7 +64,7 @@ int		BGHExist;
 	    }
 	    SM2CODEExist = FALSE;
 #ifdef DEBUG
-	    fprintf(stderr, "Cannot open BGH sm dictionary <%s>.\n", filename);
+	    fprintf(stderr, ";; Cannot open BGH sm dictionary <%s>.\n", filename);
 #endif
 	}
 	else {

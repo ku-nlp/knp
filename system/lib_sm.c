@@ -44,7 +44,7 @@ char  		cont_str[DBM_CON_MAX];
 	}
 	SMExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open NTT word dictionary <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open NTT word dictionary <%s>.\n", filename);
 #endif
     }
     else {
@@ -74,7 +74,7 @@ char  		cont_str[DBM_CON_MAX];
 	    }
 	    SM2CODEExist = FALSE;
 #ifdef DEBUG
-	    fprintf(stderr, "Cannot open NTT sm dictionary <%s>.\n", filename);
+	    fprintf(stderr, ";; Cannot open NTT sm dictionary <%s>.\n", filename);
 #endif
 	}
 	else {
@@ -104,7 +104,7 @@ char  		cont_str[DBM_CON_MAX];
 	}
 	CODE2SMExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open NTT code2sm dictionary <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open NTT code2sm dictionary <%s>.\n", filename);
 #endif
     }
     else {
@@ -133,7 +133,7 @@ char  		cont_str[DBM_CON_MAX];
 	}
 	SMP2SMGExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "Cannot open NTT smp smg table <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open NTT smp smg table <%s>.\n", filename);
 #endif
     }
     else {

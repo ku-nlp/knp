@@ -20,10 +20,6 @@
 #include <stdio.h>
 #endif
 
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -82,6 +78,14 @@
 
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif
+
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
 #endif
 
 #include "path.h"

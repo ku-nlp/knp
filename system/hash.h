@@ -1,8 +1,14 @@
 #ifndef HASH_H
 #define HASH_H
 
+#ifndef NSEED
 #define	NSEED	32	/* 乱数表の種類。2の羃乗でなければならない。 */
+#endif
+
+#ifndef NSIZE
 #define NSIZE	256
+#endif
+
 #define	HASH_TBLSIZE	8192
 
 #define	HASH_READ_MODE	1

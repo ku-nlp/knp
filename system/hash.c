@@ -58,7 +58,7 @@
     hashdb->mode = HASH_READ_MODE;
 
     if ((hashdb->fp = fopen(file, "r")) == NULL) {
-	fprintf(stderr, "Cannot open file (%s) !!\n", file);
+	/* fprintf(stderr, ";; Cannot open file (%s) !!\n", file); */
 	return NULL;
     }
 
