@@ -404,9 +404,11 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
+    int ret_pos;
+
     if (!check_feature(d->f, "形副名詞")) {
-	*pos = check_examples(d->head_ptr->Goi, ex_list, ex_num);
-	if (*pos >= 0) {
+	if ((ret_pos = check_examples(d->head_ptr->Goi, ex_list, ex_num)) >= 0) {
+	    *pos = ret_pos;
 	    return 1;
 	}
     }
@@ -578,6 +580,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 
 	/* 入力側の用例の意味属性がない場合 */
 	if (*exd == '\0' && *cfd->sm[as1] == '\0') {
+	    ex_rawscore = 0; /* ex_rawscore == -1 のはず */
 	    *score = EX_match_unknown;
 	}
 
@@ -588,7 +591,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	    sm_check_match_max(exd, exp, 0, sm2code("抽象"))) { * <抽象>のマッチを低く *
 	    ex_score = EX_match_score2[(int)(ex_rawscore * 7)];
 	}
-        */
+	*/
 
 	/* 大きい方をかえす */
 	if (ex_score > *score) {
