@@ -328,6 +328,17 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 }
 
 /*==================================================================*/
+		     void f_num_inc(int *f_num_p)
+/*==================================================================*/
+{
+    (*f_num_p)++;
+    if ((Case_frame_num + *f_num_p) > ALL_CASE_FRAME_MAX) {
+	fprintf(stderr, "Not enough Case_frame_array !!\n");
+	exit(1);
+    }
+}
+
+/*==================================================================*/
    int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
@@ -353,7 +364,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	    if (b_ptr->voice == NULL) {
 		(cf_ptr+f_num)->voice = FRAME_ACTIVE;
 		_make_ipal_cframe(cf_ptr+f_num, address);
-		f_num++;
+		f_num_inc(&f_num);
 	    }
 
 	    /* 使役 */
@@ -367,7 +378,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		  (cf_ptr+f_num)->voice = FRAME_CAUSATIVE_NI;
 		
 		_make_ipal_cframe(cf_ptr+f_num, address);
-		f_num++;
+		f_num_inc(&f_num);
 	    }
 	    
 	    /* 受身 */
@@ -377,19 +388,19 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou1)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_1;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 		/* 直接受身２ */
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou2)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_2;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 		/* 間接受身 */
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "間受")) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_I;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 	    }
 	    /* 可能，尊敬，自発 */
@@ -397,17 +408,17 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "可能")) {
 		    (cf_ptr+f_num)->voice = FRAME_POSSIBLE;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "尊敬")) {
 		    (cf_ptr+f_num)->voice = FRAME_POLITE;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "自発")) {
 		    (cf_ptr+f_num)->voice = FRAME_SPONTANE;
 		    _make_ipal_cframe(cf_ptr+f_num, address);
-		    f_num++;
+		    f_num_inc(&f_num);
 		}
 	    }
 	}
@@ -450,11 +461,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	!= 0) {
 	b_ptr->cf_ptr = Case_frame_array + Case_frame_num;
 	b_ptr->cf_num = f_num;
-	
-	if ((Case_frame_num += f_num) > ALL_CASE_FRAME_MAX) {
-	    fprintf(stderr, "Not enough Case_frame_array !!\n");
-	    exit(1);
-	}
+	Case_frame_num += f_num;
     } else {
 	make_default_cframe(b_ptr, Case_frame_array + Case_frame_num);
 	b_ptr->cf_ptr = Case_frame_array + Case_frame_num;
