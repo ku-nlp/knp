@@ -233,6 +233,9 @@ extern void close_scase();
 
 /* lib_sm.c */
 extern char *_get_ntt(char *cp, char *arg);
+extern char *_process_code(char *code, char *arg);
+extern int _code_match(char *code1,char *code2);
+extern char *_code_flow(char *code);
 extern char *sm2code(char *cp);
 extern char *code2sm(char *cp);
 extern float ntt_code_match(char *c1, char *c2, int flag);

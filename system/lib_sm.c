@@ -10,6 +10,8 @@
 #include "knp.h"
 
 DBM_FILE	sm_db;
+DBM_FILE	sm_add_db;  //  usr が定義する
+DBM_FILE	sm_del_db;  //
 DBM_FILE	sm2code_db;
 DBM_FILE	code2sm_db;
 DBM_FILE	smp2smg_db;
@@ -26,12 +28,17 @@ char  		cont_str[DBM_CON_MAX];
 {
     char *filename;
 
+    /***  データベースオープン  ***/
+    
     /* 単語 <=> 意味素コード */
-    if (DICT[SM_DB]) {
-	filename = check_dict_filename(DICT[SM_DB], TRUE);
+
+    // ファイル名を指定する
+    if (DICT[SM_DB]) {   
+	filename = check_dict_filename(DICT[SM_DB], TRUE);  // .knprc で定義されているとき   → SM_ADD_DB は const.h で定義されている
+	                                                    //                                  DICT[SM_ADD_DB] は configfile.c で指定されている
     }
     else {
-	filename = check_dict_filename(SM_DB_NAME, FALSE);
+	filename = check_dict_filename(SM_DB_NAME, FALSE);  // .knprc で定義されていないとき → path.h の default値(SM_DB_NAME) を使う
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -55,6 +62,69 @@ char  		cont_str[DBM_CON_MAX];
     }
     free(filename);
 
+    
+    /* 単語 <=> （ユーザが新しく定義した）意味素コード */
+    if (DICT[SM_ADD_DB]) {
+	filename = check_dict_filename(DICT[SM_ADD_DB], TRUE);
+    }
+    else {
+	filename = check_dict_filename(SM_ADD_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
+    if ((sm_add_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	SMExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, ";; Cannot open NTT word dictionary <%s>.\n", filename);
+#endif
+    }
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	SMExist = TRUE;
+    }
+    free(filename);
+
+
+
+    /* 単語 <=> （ユーザが削除したい）意味素コード */
+    if (DICT[SM_DEL_DB]) {
+	filename = check_dict_filename(DICT[SM_DEL_DB], TRUE);
+    }
+    else {
+	filename = check_dict_filename(SM_DEL_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
+    if ((sm_del_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	SMExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, ";; Cannot open NTT word dictionary <%s>.\n", filename);
+#endif
+    }
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	SMExist = TRUE;
+    }
+    free(filename);
+
+
+    
     /* 意味素 => 意味素コード */
     if (Thesaurus == USE_NTT) {
 	if (DICT[SM2CODE_DB]) {
@@ -145,6 +215,7 @@ char  		cont_str[DBM_CON_MAX];
     free(filename);
 }
 
+
 /*==================================================================*/
 			   void close_ntt()
 /*==================================================================*/
@@ -179,22 +250,98 @@ char  		cont_str[DBM_CON_MAX];
 		 char *_get_ntt(char *cp, char *arg)
 /*==================================================================*/
 {
-    int i, pos;
-    char *code;
 
-    code = db_get(sm_db, cp);
+    int i, j;
+    char *code, *code_add, *code_del, *tmp;
 
-    if (code) {
-	/* 溢れたら、縮める */
-	if (strlen(code) > SM_CODE_SIZE*SM_ELEMENT_MAX) {
-#ifdef DEBUG
-	    fprintf(stderr, "Too long SM content <%s>.\n", code);
-#endif
-	    code[SM_CODE_SIZE*SM_ELEMENT_MAX] = '\0';
+    code = _process_code( db_get(sm_db, cp), arg );
+    code_add = _process_code( db_get(sm_add_db, cp), arg );
+    code_del = _process_code( db_get(sm_del_db, cp), arg );
+
+    /* ユーザが定義した code を加える */
+    if ( code_add  != NULL ) {
+	if ( code != NULL ) {
+	    code = strcat( code, code_add );
+	    code = _code_flow( code );
 	}
+	else {
+	    code = code_add;
+	}
+    }
 
+    /* ユーザが指定した code を削除する */
+    if ( ( code != NULL ) && ( code_del  != NULL ) ) {
+
+	for ( i = 0; i < strlen(code_del); i += SM_CODE_SIZE ) {
+	    for ( j = 0; j < strlen(code); j += SM_CODE_SIZE ) {
+
+		if ( _code_match( code_del + i, code + j ) == 1 ) {
+		    if ( j == 0 ) {
+			code = code + j + SM_CODE_SIZE;
+		    }else {
+			code[j] = "\0";
+			tmp = code + j + SM_CODE_SIZE;
+			code = strcat( code, tmp );
+		    }
+		    break;
+		}
+	    }
+	}
+    }
+    
+    return code;
+}
+
+
+/*==================================================================*/
+                int _code_match(char *code1,char *code2)
+/*==================================================================*/
+{
+
+  int i;
+
+  for ( i = 0; i < SM_CODE_SIZE; i++ ) {
+      if ( code1[i] != code2[i] ) {
+	  return 0;
+      }
+  }
+
+  return 1;
+}
+
+
+
+/*==================================================================*/
+                 char *_code_flow(char *code)
+/*==================================================================*/
+{
+  /* 溢れたら、縮める */
+  
+  if (strlen(code) > SM_CODE_SIZE*SM_ELEMENT_MAX) {
+#ifdef DEBUG
+    fprintf(stderr, "Too long SM content <%s>.\n", code);
+#endif
+    code[SM_CODE_SIZE*SM_ELEMENT_MAX] = '\0';
+  }
+  
+  return code;
+}
+
+
+/*==================================================================*/
+                 char *_process_code(char *code, char *arg)
+/*==================================================================*/
+{
+
+    /* データベースから取り出した code を処理する */
+  
+    int i, pos;
+  
+    if (code) {
+	
+	code = _code_flow( code );
 	pos = 0;
-
+	
 	/* すべての意味属性が固有名詞のとき */
 	if (ne_check_all_sm(code) == TRUE) {
 	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
