@@ -673,6 +673,103 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
+     int _regexpmrphrule_match2(MrphRule *r_ptr, MRPH_DATA *d_ptr,
+				int bw_length, int fw_length)
+/*==================================================================*/
+{
+    /* regexpmrphrule_match2との違いはマッチする範囲が指定されて
+       いること */
+
+    /* 
+       pre_pattern  (shortest match でよい)
+       self_pattern (longest match  がよい)
+       post_pattern (shortest match でよい)
+       
+       まず，pre_patternを調べ，次にself_patternのlongest matchから
+       順に，その後でpost_patternを調べる
+    */
+
+    int match_length, match_rest;
+
+    /* まず，pre_patternを調べる */
+
+    if ((r_ptr->pre_pattern == NULL &&	/* 違い */
+	 bw_length != 0) ||
+	(r_ptr->pre_pattern != NULL &&
+	 regexpmrphs_match(r_ptr->pre_pattern->mrph + 
+			   r_ptr->pre_pattern->mrphsize - 1,
+			   r_ptr->pre_pattern->mrphsize,
+			   d_ptr - 1, 
+			   bw_length,	/* 違い */
+			   BW_MATCHING, 
+			   ALL_MATCHING,/* 違い */
+			   SHORT_MATCHING) == -1))
+	return -1;
+
+    
+    /* 次にself_patternのlongest matchから順に，その後でpost_patternを調べる
+       match_length は self_pattern の match の(可能性の)長さ */
+
+    match_length = fw_length;		/* 違い */
+
+    while (match_length > 0) {
+	if (r_ptr->self_pattern == NULL) {
+	    match_length = 1;	/* self_pattern がなければ
+				   マッチの長さは1にしておく */
+	}
+	else if ((match_rest = 
+		  regexpmrphs_match(r_ptr->self_pattern->mrph, 
+				    r_ptr->self_pattern->mrphsize,
+				    d_ptr,
+				    match_length,
+				    FW_MATCHING, 
+				    PART_MATCHING,
+				    LONG_MATCHING)) != -1) {
+	    match_length -= match_rest;
+	}
+	else {
+	    return -1;
+	}
+
+	if (r_ptr->post_pattern == NULL || 
+	    regexpmrphs_match(r_ptr->post_pattern->mrph, 
+			      r_ptr->post_pattern->mrphsize,
+			      d_ptr + match_length,
+			      fw_length - match_length,	/* 違い */
+			      FW_MATCHING, 
+			      ALL_MATCHING,		/* 違い */ 
+			      SHORT_MATCHING) != -1) {
+	    return match_length;
+	}
+	match_length --;
+    }
+
+    return -1;
+}
+
+/*==================================================================*/
+        int regexpmrphrule_match2(MrphRule *r_ptr,
+				  MRPH_DATA *d_ptr, int length,
+				  int *start, int *end)
+/*==================================================================*/
+{
+    /* 範囲の中で，各場所から前後のマッチング関数を呼び出す */
+
+    int i, match_length;
+
+    for (i = 0; i < length; i++) {
+	if ((match_length = 
+	     _regexpmrphrule_match2(r_ptr, d_ptr+i, i, length-i))
+	    != -1) {
+	    *start = i;
+	    *end = i + match_length;
+	    return 0;
+	}
+    }
+    return -1;
+}
+
+/*==================================================================*/
       int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
