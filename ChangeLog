@@ -1,3 +1,11 @@
+2002-11-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, rule/context.rule:
+	格解析: 外の関係まわりの整理
+	        複合名詞でvoiceが正しく扱われていなかったのを修正
+
+	* dict/ebcf/Makefile.am, dict/gcf/Makefile.am, dict/scode/bgh/Makefile.am, dict/scode/ntt/Makefile.am:
+	インストール先ディレクトリの修正
+
 2002-11-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_sm.c:
