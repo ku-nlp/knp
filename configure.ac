@@ -10,17 +10,17 @@ AM_CONFIG_HEADER([config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_INSTALL
 AC_PROG_RANLIB
-# AC_PROG_MAKE_SET
 
-AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (default=no)]))
-AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (default=no)]))
-AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (default=no)]))
-AC_ARG_WITH(internal-hash, AC_HELP_STRING([--with-internal-hash], [use internal hash DB (default=yes)]))
-AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (default=no)]))
+
+AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
+AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
+AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
+AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
-AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file], [path where Bunrui Goi Hyou (sakuin) is located (optional)]), 
+AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui Goi Hyou (sakuin) is located (optional)]), 
 			  BGH_FILE="$withval")
 
 
@@ -109,28 +109,25 @@ LDFLAGS="$SVM_LDFLAGS $JUMAN_LDFLAGS $LDFLAGS"
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
-    sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h getopt.h \
-    sys/socket.h netinet/in.h netdb.h windows.h)
+    sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h \
+    sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h)
 
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_C_INLINE
-AC_TYPE_OFF_T
+AC_TYPE_UID_T
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
 
 # Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
 AC_FUNC_MALLOC
-AC_FUNC_MMAP
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([alarm getcwd gethostbyname memset pow socket sqrt strcasecmp strchr strdup strerror strncasecmp strstr])
+AC_CHECK_FUNCS([alarm gethostbyname memset pow socket sqrt strcasecmp strchr strdup strerror strncasecmp strstr])
 
 
 AC_SUBST(SUBDIRS)
