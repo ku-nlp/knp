@@ -1,3 +1,19 @@
+2002-11-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/Makefile.am: 辞書まわりの整理
+
+	* dict/Makefile.orig: deleted.
+
+	* dict/scode/Makefile.am, dict/scode/bgh/Makefile.am, dict/scode/ntt/Makefile.am, dict/scode/bgh/sm2code.dat, dict/ebcf/Makfile.am, dict/gcf/Makefile.am, dict/gcf/scase.dat: added.
+
+	* system/Makefilie.orig, system/lib_lib.c: deleted.
+
+	* system/main.c: オプション変更: -thesaurus => -scode
+
+	* system/Makefile.am: ファイルの削除に伴う修正
+
+	* svm/svm.cc: SVMのモデル名指定に関する修正
+
 2002-11-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/Makefile.am, system/main.c: 削除されたファイルへの対応
@@ -19,6 +35,8 @@
 
 	* rule/case_analysis.rule, rule/context.rule:
 	形容詞語幹の格解析
+
+	* Makefile.am, rule/Makefile.am: 配布ファイル追加
 
 2002-11-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
