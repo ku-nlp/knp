@@ -154,36 +154,42 @@ char *sm_code_to_str(int code)
 
     /* 格要素なしの時の実験 98/12/16 */
     if (cf_ptr->element_num == 0) {
-	case_frame_match(cf_ptr, Cf_match_mgr, SEMANTIC_MARKER);
+	case_frame_match(cf_ptr, Cf_match_mgr, OptCFMode);
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
     }
-    else {			/* このelseはtentative */
-    for (i = 0; i < frame_num; i++) {
+    else { /* このelseはtentative */
+	for (i = 0; i < frame_num; i++) {
 
-	/* 意味マーカの利用に変更 (98/10/02) 
-	   case_frame_match(cf_ptr, Cf_match_mgr+i, EXAMPLE);
-	*/
-	case_frame_match(cf_ptr, Cf_match_mgr+i, SEMANTIC_MARKER);
+	    /* 選択可能
+	       EXAMPLE
+	       SEMANTIC_MARKER
 
-	/* その格フレームとの対応付けがスコア最大であれば記憶 */
+	       ChangeLog:
+	       意味マーカの利用に変更 (1998/10/02)
+	       オプションで選択       (1999/06/15)
+	       */
 
-	if ((Cf_match_mgr+i)->score > cpm_ptr->score) {
-	    cpm_ptr->score = (Cf_match_mgr+i)->score;
-	    cpm_ptr->cmm[0] = *(Cf_match_mgr+i);
-	    cpm_ptr->result_num = 1;
+	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
+
+	    /* その格フレームとの対応付けがスコア最大であれば記憶 */
+
+	    if ((Cf_match_mgr+i)->score > cpm_ptr->score) {
+		cpm_ptr->score = (Cf_match_mgr+i)->score;
+		cpm_ptr->cmm[0] = *(Cf_match_mgr+i);
+		cpm_ptr->result_num = 1;
+	    }
+
+	    /* その格フレームとの対応付けがスコア最大と同点でも記憶 */
+
+	    else if ((Cf_match_mgr+i)->score == cpm_ptr->score) {
+		if (cpm_ptr->result_num >= CMM_MAX)
+		    fprintf(stderr, "Not enough cmm.\n");
+		else
+		    cpm_ptr->cmm[cpm_ptr->result_num++] = *(Cf_match_mgr+i);
+	    }
 	}
-
-	/* その格フレームとの対応付けがスコア最大と同点でも記憶 */
-
-	else if ((Cf_match_mgr+i)->score == cpm_ptr->score) {
-	    if (cpm_ptr->result_num >= CMM_MAX)
-	      fprintf(stderr, "Not enough cmm.\n");
-	    else
-	      cpm_ptr->cmm[cpm_ptr->result_num++] = *(Cf_match_mgr+i);
-	}
-    }
     }
 
     if (OptDisplay == OPT_DEBUG) {
