@@ -360,22 +360,26 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
        ★形容詞, 判定詞は?
        check_feature してもよい
        条件廃止: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
-    if (min != -1 && 
-	((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* 未格 */
-	  (cpm_ptr->pred_b_ptr->num == min+1 || 
-	   (cpm_ptr->pred_b_ptr->num == min+2 && /* 副詞がはさまっている場合 */
-	    (check_feature((sp->bnst_data+min+1)->f, "副詞") || 
-	     check_feature((sp->bnst_data+min+1)->f, "係:連用"))))) || 
-	 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
-	 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
-	 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "φ") || 
-	 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
-	    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外 */
-	   cpm_ptr->cf.pp[elem_b_num][0] == 39) && 
-	  !check_feature((sp->bnst_data+min)->f, "指示詞") && 
-	  (cf_match_element(cpm_ptr->cf.sm[elem_b_num], "数量", FALSE) || 
-	   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE))))) {
-	return elem_b_num;
+    if (min != -1) {
+	/* 最近格要素が指示詞の場合は決定しない */
+	if (check_feature((sp->bnst_data+min)->f, "指示詞")) {
+	    return -2;
+	}
+	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* 未格 */
+		  (cpm_ptr->pred_b_ptr->num == min+1 || 
+		   (cpm_ptr->pred_b_ptr->num == min+2 && /* 副詞がはさまっている場合 */
+		    (check_feature((sp->bnst_data+min+1)->f, "副詞") || 
+		     check_feature((sp->bnst_data+min+1)->f, "係:連用"))))) || 
+		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
+		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
+		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "φ") || 
+		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
+		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外 */
+		   cpm_ptr->cf.pp[elem_b_num][0] == 39) && 
+		  (cf_match_element(cpm_ptr->cf.sm[elem_b_num], "数量", FALSE) || 
+		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "主体", FALSE)))) {
+	    return elem_b_num;
+	}
     }
     return -1;
 }
@@ -433,7 +437,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		}
 	    }
 	}
-	else if (closest < 0 && cpm_ptr->cf.element_num > 0 && 
+	else if (closest == -1 && cpm_ptr->cf.element_num > 0 && 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
 	    cpm_ptr->decided = CF_DECIDED;
 	}
@@ -456,7 +460,8 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
 	 /* check_feature(b_ptr->f, "準用言") || */
 	 check_feature(b_ptr->f, "サ変名詞格解析")) && 
-	!check_feature(b_ptr->f, "複合辞")) {
+	!check_feature(b_ptr->f, "複合辞") && 
+	!check_feature(b_ptr->f, "格解析なし")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
 
@@ -764,10 +769,14 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 {
     int i, num;
 
+    /* 人名のとき: 
+       o 一般名詞体系の<主体>以下の意味素を削除
+       o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
+
     for (i = 0; i < sp->Bnst_num; i++) {
 	if (check_feature((sp->bnst_data+i)->f, "人名")) {
 	    /* 固有の意味素だけ残したい */
-	    DeleteMatchedSM((sp->bnst_data+i)->SM_code, "100*********");
+	    DeleteMatchedSM((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
 	    assign_cfeature(&((sp->bnst_data+i)->f), "固有一般展開禁止");
 	}
     }
@@ -812,7 +821,13 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	if (cpm_ptr->elem_b_num[i] != -2 && 
 	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
-	    if (!check_feature(cpm_ptr->pred_b_ptr->f, "主体付与") && 
+	    /* o すでに主体付与されていない
+	       o <用言:動>である 
+	       o 格フレームが<主体>をもつ, <主体準>ではない
+	       o 入力側が意味素がないか、
+	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
+	    */
+	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
 		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
 		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
 		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
@@ -868,8 +883,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
     }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	/* 省略解析の結果は除く */
-	if (cpm_ptr->elem_b_num[i] == -2) {
+	/* 省略解析の結果は除く
+	   指示詞の解析をする場合は、指示詞を除く */
+	if (cpm_ptr->elem_b_num[i] == -2 || 
+	    (OptDemo == TRUE && 
+	     check_feature(cpm_ptr->elem_b_ptr[i]->f, "省略解析対象指示詞"))) {
 	    continue;
 	}
 
@@ -912,20 +930,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 		strcpy(relation, 
 		       pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
-
-	    /* ガ格に割り当てられ、格フレームに <主体> があれば、その格要素に <主体> を与える
-	       意味素制約: <抽象物>, <事> (レモン:×, サミット:○)
-	       ★ 用例数が少ないとき <主体> が必ず与えられていて問題
-	    if (str_eq(pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]), "ガ") && 
-		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
-		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
-		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
-		 (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
-		  (sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
-		   sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))))) {
-		assign_sm(cpm_ptr->elem_b_ptr[i], "主体");
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
-	    } */
 
 	    /* 格関係の保存 (文脈解析用) */
 	    if (OptDisc == OPT_DISC) {

@@ -63,6 +63,23 @@ unsigned int seed[NSEED][256];
     return (hash & (TBLSIZE-1));
 }
 
+/*==================================================================*/
+	 unsigned char *katakana2hiragana(unsigned char *cp)
+/*==================================================================*/
+{
+    int i;
+    unsigned char *hira;
+
+    hira = strdup(cp);
+
+    for (i = 0; i < strlen(hira); i += 2) {
+	if (*(hira+i) == 0xa5) {
+	    *(hira+i) = 0xa4;
+	}
+    }    
+    return hira;	/* free してください */
+}
+
 #ifdef _WIN32
 /*==================================================================*/
 	 int sjis_fprintf(FILE *output, const char *fmt, ...)

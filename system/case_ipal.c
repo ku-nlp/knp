@@ -280,7 +280,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    if (c_ptr->sm_delete[num] == NULL) {
 		c_ptr->sm_delete_size[num] = SM_ELEMENT_MAX;
 		c_ptr->sm_delete[num] = (char *)malloc_data(
-		    sizeof(char)*c_ptr->sm_delete_size[num]*SM_CODE_SIZE, 
+		    sizeof(char)*c_ptr->sm_delete_size[num]*SM_CODE_SIZE+1, 
 		    "_make_ipal_cframe_sm");
 		*c_ptr->sm_delete[num] = '\0';
 
@@ -316,7 +316,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    }
 	    else if (c_ptr->sm_delete_num[num] >= c_ptr->sm_delete_size[num]) {
 		c_ptr->sm_delete[num] = (char *)realloc_data(c_ptr->sm_delete[num], 
-		    sizeof(char)*(c_ptr->sm_delete_size[num] <<= 1)*SM_CODE_SIZE, 
+		    sizeof(char)*(c_ptr->sm_delete_size[num] <<= 1)*SM_CODE_SIZE+1, 
 		    "_make_ipal_cframe_sm");
 	    }
 

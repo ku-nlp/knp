@@ -47,6 +47,7 @@ char		G_Feature[100][64];		/* FEATUREの変数格納 */
 
 int 		OptAnalysis;
 int		OptDisc;
+int		OptDemo;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
@@ -129,6 +130,7 @@ extern float	AssignReferentThreshold;
 
     OptAnalysis = OPT_DPND;
     OptDisc = OPT_NORMAL;
+    OptDemo = FALSE;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
@@ -152,6 +154,7 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
 	else if (str_eq(argv[0], "-disc"))    OptDisc     = OPT_DISC;
+	else if (str_eq(argv[0], "-demonstrative")) OptDemo = TRUE;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
@@ -578,7 +581,10 @@ extern float	AssignReferentThreshold;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	get_bgh_code(sp->bnst_data+i);		/* シソーラス */
-	get_sm_code(sp->bnst_data+i);		/* 意味素 */
+	if (!check_feature((sp->bnst_data+i)->f, "用言:動") || 
+	    check_feature((sp->bnst_data+i)->f, "サ変")) {
+	    get_sm_code(sp->bnst_data+i);		/* 意味素 */
+	}
     }
 
     /* 文節へのFEATURE付与 */
@@ -729,9 +735,14 @@ PARSED:
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-    /* 固有名詞認識処理 */
-    if (OptNE == OPT_NE || OptNE == OPT_NESM)
+    /* 固有表現認識処理 */
+    if (OptNE == OPT_NE || OptNE == OPT_NESM) {
 	NE_analysis(sp);
+    }
+    else {
+	/* 並列構造をみて固有表現認識を行う */
+	NEparaAnalysis(sp);
+    }
 
     memo_by_program(sp);	/* メモへの書き込み */
 

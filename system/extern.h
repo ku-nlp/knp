@@ -42,6 +42,7 @@ extern TOTAL_MGR	Op_Best_mgr;
 
 extern int 		OptAnalysis;
 extern int		OptDisc;
+extern int		OptDemo;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
@@ -252,7 +253,7 @@ extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, cha
 extern int sm_time_match(char *c);
 extern void get_sm_code(BNST_DATA *ptr);
 extern void init_sm();
-extern char *get_sm(char *cp);
+extern char *get_sm(unsigned char *cp);
 extern void close_sm();
 extern char *_smp2smg(char *cp);
 extern char *smp2smg(char *cpd, int flag);
@@ -345,6 +346,7 @@ extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 extern void *malloc_data(size_t size, char *comment);
 extern void *realloc_data(void *ptr, size_t size, char *comment);
 extern int hash(unsigned char *key, int keylen);
+extern unsigned char *katakana2hiragana(unsigned char *cp);
 
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);

@@ -655,6 +655,13 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	}
     }
 
+    /* New領域の文節のcpmポインタをはりなおす */
+    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
+	if ((sp_new->bnst_data+i)->cpm_ptr) {
+	    (sp_new->bnst_data+i)->cpm_ptr = (sp_new->bnst_data+(sp_new->bnst_data+i)->cpm_ptr->pred_b_ptr->num)->cpm_ptr;
+	}
+    }
+
     /* 現在 cpm を保存しているが、Best_mgr を保存した方がいいかもしれない */
     sp_new->Best_mgr = NULL;
 }
@@ -983,7 +990,10 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSI
     }
 
     /* 格フレームが <主体> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
+	agentflag = 2;	/* 準主体 */
+    }
+    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	agentflag = 1;
     }
     else {
@@ -1094,18 +1104,18 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSI
 	case_ni = 1;
     }
 
-    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:-1 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:0 38:0 39:0 40:0 41:0 42:0 43:%d 44:%d 45:%d 46:%d", 
+    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:%d 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:-1 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:0 39:0 40:0 41:0 42:0 43:0 44:%d 45:%d 46:%d 47:%d 48:0", 
 	    (float)-1, /* 1 */
-	    agentflag, /* 6 */
-	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 17-24 */
-	    headjikan, headsoutai, headkeifuku, headpred, /* 25-28 */
-	    anonymousp, firstp, untarget, /* 29-31 */
-	    case_ga, case_wo, case_ni, /* 32-34 */
-	    hobunflag, predabstract, /* 35-36 */
-	    strcmp(tag, ExtraTags[0]) == 0 ? 1 : 0, /* 43 */
-	    strcmp(tag, ExtraTags[1]) == 0 ? 1 : 0, /* 44 */
-	    strcmp(tag, ExtraTags[2]) == 0 ? 1 : 0, /* 45 */
-	    strcmp(tag, ExtraTags[3]) == 0 ? 1 : 0); /* 46 */
+	    agentflag == 1 ? 1 : 0, agentflag == 2 ? 1 : 0, /* 6-7 */
+	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 18-25 */
+	    headjikan, headsoutai, headkeifuku, headpred, /* 26-29 */
+	    anonymousp, firstp, untarget, /* 30-32 */
+	    case_ga, case_wo, case_ni, /* 33-35 */
+	    hobunflag, predabstract, /* 36-37 */
+	    strcmp(tag, ExtraTags[0]) == 0 ? 1 : 0, /* 44 */
+	    strcmp(tag, ExtraTags[1]) == 0 ? 1 : 0, /* 45 */
+	    strcmp(tag, ExtraTags[2]) == 0 ? 1 : 0, /* 46 */
+	    strcmp(tag, ExtraTags[3]) == 0 ? 1 : 0); /* 47 */
     score = svm_classify(feature_buffer);
 
     /* fprintf(stderr, "DEBUG %s %f %s\n", tag, (float)score, feature_buffer); */
@@ -1135,12 +1145,12 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     float score, weight, ascore, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
     float addscore = 0;
     char feature_buffer[50000], *cp;
-    int ac, pac, pcc, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
+    int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
     int exception = 0, pos = MATCH_NONE, casematch, candagent, scopeflag, passive, headscope;
     int hobunflag, predabstract, tame, renkaku, soto1 = 0, soto2 = 0, soto3 = 0;
     int sahen1, sahen2, headjikan = 0, headsoutai = 0, headkeifuku = 0, headpred = 0;
     int anonymousp, firstp, untarget, case_ga = 0, case_wo = 0, case_ni = 0, smnone;
-    int important = 0;
+    int important = 0, gmcc;
     BNST_DATA *b_ptr;
 
     /* cs のときだけ意味がある */
@@ -1212,6 +1222,9 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     /* 前文の主節のスコア */
     pcc = CheckLastClause(cs->Sen_num-1, cf_ptr->pp[n][0], bp->Jiritu_Go);
 
+    /* 2文前の主節のスコア */
+    pcc2 = CheckLastClause(cs->Sen_num-2, cf_ptr->pp[n][0], bp->Jiritu_Go);
+
     /* 重要ではない格要素の場合 */
     if (check_feature(bp->f, "非主題")) {
 	pcscore = 1.0+0.2*pcc; /* 0.1 */
@@ -1230,6 +1243,9 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     else {
 	mcscore = 1.0+0.5*mcc; /* 0.2 */
     }
+
+    /* 候補が主節に係るかどうか */
+    gmcc = CheckLastClause(cs->Sen_num-distance, cf_ptr->pp[n][0], bp->Jiritu_Go);
 
     /* 提題のスコア */
     if (check_feature(bp->f, "主題表現")) {
@@ -1278,7 +1294,10 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     }
 
     /* 格フレームが <主体> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
+	agentflag = 2;	/* 準主体 */
+    }
+    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	agentflag = 1;
     }
     else {
@@ -1471,25 +1490,28 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 
     if (distance == 0 || /* 対象文 */
 	(distance == 1 && (topicflag || subtopicflag || pcc)) || /* 前文 */
+	/* (distance == 2 && pcc2) || * 2文前 */
 	(s->Sen_num == 1 && (topicflag || subtopicflag || firstsc)) || /* 先頭文 */
 	(pcc || mcc || firstsc)) { /* それ以外で主節の省略の指示対象 */
 	important = 1;
 
-	sprintf(feature_buffer, "1:%.3f 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d 12:%d 13:%d 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:%d 39:%d 40:%d 41:%d 42:%d 43:%d 44:%d 45:%d 46:%d", 
+	sprintf(feature_buffer, "1:%.3f 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d 12:%d 13:%d 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:%d 39:%d 40:%d 41:%d 42:%d 43:%d 44:%d 45:%d 46:%d 47:%d 48:%d", 
 		rawscore, distance, s->Sen_num == 1 ? 1: 0, /* 1-3 */
-		topicflag, subtopicflag, agentflag, candagent, /* 4-7 */
-		scopeflag, headscope, pac, ac, casematch, /* 8-12 */
-		sameflag, exception, smnone, important, /* 13-16 */
-		passive, sahen1, sahen2, tame, renkaku, /* 17-21 */
-		soto1, soto2, soto3, /* 22-24 */
-		headjikan, headsoutai, headkeifuku, headpred, /* 25-28 */
-		anonymousp, firstp, untarget, /* 29-31 */
-		case_ga, case_wo, case_ni, /* 32-34 */
-		hobunflag, predabstract, /* 35-36 */
+		topicflag, subtopicflag, /* 4-5 */
+		agentflag == 1 ? 1 : 0, agentflag == 2 ? 1 : 0, candagent, /* 6-8 */
+		scopeflag, headscope, pac, ac, casematch, /* 9-13 */
+		sameflag, exception, smnone, important, /* 14-17 */
+		passive, sahen1, sahen2, tame, renkaku, /* 18-22 */
+		soto1, soto2, soto3, /* 23-25 */
+		headjikan, headsoutai, headkeifuku, headpred, /* 26-29 */
+		anonymousp, firstp, untarget, /* 30-32 */
+		case_ga, case_wo, case_ni, /* 33-35 */
+		hobunflag, predabstract, /* 36-37 */
 		type == 1 ? 1 : 0, type == 2 ? 1 : 0, 
 		type == 3 ? 1 : 0, type == 4 ? 1 : 0, type == 5 ? 1 : 0, 
 		type > 5 ? 1 : 0, 
-		0, 0, 0, 0);
+		0, 0, 0, 0, 
+		gmcc);
 	score = svm_classify(feature_buffer);
 
 	if (VerboseLevel >= VERBOSE2) {
@@ -1539,7 +1561,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     float score, weight, ascore, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
     float addscore = 0;
     char feature_buffer[DATA_LEN];
-    int ac, pac, pcc, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
+    int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
     int exception = 0, pos = MATCH_NONE, casematch, candagent, hobunflag, predabstract, smnone;
     int important = 0;
 
@@ -1620,6 +1642,9 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     /* 前文の主節のスコア */
     pcc = CheckLastClause(cs->Sen_num-1, cf_ptr->pp[n][0], bp->Jiritu_Go);
+
+    /* 2文前の主節のスコア */
+    pcc2 = CheckLastClause(cs->Sen_num-2, cf_ptr->pp[n][0], bp->Jiritu_Go);
 
     /* 重要ではない格要素の場合 */
     if (check_feature(bp->f, "非主題")) {
@@ -1782,6 +1807,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     if (distance == 0 || /* 対象文 */
 	(distance == 1 && (topicflag || subtopicflag || pcc)) || /* 前文 */
+	/* (distance == 2 && pcc2) || * 2文前 */
 	(s->Sen_num == 1 && (topicflag || subtopicflag || firstsc)) || /* 先頭文 */
 	(pcc || mcc || firstsc)) { /* それ以外で主節の省略の指示対象 */
 
@@ -1933,14 +1959,25 @@ void SearchCaseComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
     /* 省略の指示対象を入力側の格フレームに入れる */
 
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
+    int d, demonstrative;
 
     if (c_ptr->element_num >= CF_ELEMENT_MAX) {
 	return 0;
     }
 
+    /* 指示詞の場合 */
+    if (cmm_ptr->result_lists_p[0].flag[n] != UNASSIGNED) {
+	d = cmm_ptr->result_lists_p[0].flag[n];
+	demonstrative = 1;
+    }
+    else {
+	d = c_ptr->element_num;
+	demonstrative = 0;
+    }
+
     /* 対応情報を追加 */
-    cmm_ptr->result_lists_p[0].flag[n] = c_ptr->element_num;
-    cmm_ptr->result_lists_d[0].flag[c_ptr->element_num] = n;
+    cmm_ptr->result_lists_p[0].flag[n] = d;
+    cmm_ptr->result_lists_d[0].flag[d] = n;
     cmm_ptr->result_lists_p[0].pos[n] = maxpos;
     /* cpm_ptr->cmm[0].result_lists_p[0].score[n] = -1; */
 
@@ -1968,16 +2005,22 @@ void SearchCaseComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 	cmm_ptr->result_lists_p[0].score[n] = maxscore > 1 ? EX_match_exact : *(EX_match_score+(int)(maxscore*7));
     }
 
-    c_ptr->pp[c_ptr->element_num][0] = cf_ptr->pp[n][0];
-    c_ptr->pp[c_ptr->element_num][1] = END_M;
-    c_ptr->oblig[c_ptr->element_num] = TRUE;
-    _make_data_cframe_sm(cpm_ptr, b_ptr);
-    _make_data_cframe_ex(cpm_ptr, b_ptr);
-    cpm_ptr->elem_b_ptr[c_ptr->element_num] = b_ptr;
-    cpm_ptr->elem_b_num[c_ptr->element_num] = -2;
-    c_ptr->weight[c_ptr->element_num] = 0;
-    c_ptr->adjacent[c_ptr->element_num] = FALSE;
-    c_ptr->element_num++;
+    c_ptr->pp[d][0] = cf_ptr->pp[n][0];
+    c_ptr->pp[d][1] = END_M;
+    c_ptr->oblig[d] = TRUE;
+    cpm_ptr->elem_b_ptr[d] = b_ptr;
+    cpm_ptr->elem_b_num[d] = -2;
+    c_ptr->weight[d] = 0;
+    c_ptr->adjacent[d] = FALSE;
+    if (!demonstrative) {
+	_make_data_cframe_sm(cpm_ptr, b_ptr);	/* 問題: 格納場所が c_ptr->element_num 固定 */
+	_make_data_cframe_ex(cpm_ptr, b_ptr);
+	c_ptr->element_num++;
+    }
+    /* 指示詞の場合、もとの指示詞の分のスコアを引いておく */
+    else {
+	cmm_ptr->pure_score[0] -= cmm_ptr->result_lists_p[0].score[n];
+    }
     return 1;
 }
 
@@ -2111,8 +2154,10 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	for (i = bend-1; i >= 0; i--) {
 	    if (current) {
-		if (Bcheck[i] || 
-		    (!check_feature((s->bnst_data+i)->f, "係:連用") && 
+		if (Bcheck[i]) {
+		    continue;
+		}
+		else if ((!check_feature((s->bnst_data+i)->f, "係:連用") && 
 		     (s->bnst_data+i)->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
 		    (!check_feature(cpm_ptr->pred_b_ptr->f, "係:未格") && /* 「〜 V のは N」を許す */
 		     !check_feature(cpm_ptr->pred_b_ptr->f, "係:ガ格") && 
@@ -2254,12 +2299,31 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	return 0;
     }
 #endif
+
+    /* 一人称 */
+    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "一人称")) && 
+	     MatchPP(cf_ptr->pp[n][0], cp+7)) {
+	sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
+		    pp_code_to_kstr(cf_ptr->pp[n][0]));
+	assign_cfeature(&(em_ptr->f), feature_buffer);
+	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
+	return 1;
+    }
+    /* 対象外 */
+    else if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "対象外")) && 
+	     MatchPP(cf_ptr->pp[n][0], cp+7)) {
+	sprintf(feature_buffer, "C用;【対象外】;%s;-1;-1;1", 
+		    pp_code_to_kstr(cf_ptr->pp[n][0]));
+	assign_cfeature(&(em_ptr->f), feature_buffer);
+	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
+	return 1;
+    }
     /* 【主体一般】
        1. 用言が受身でニ格 (もとはガ格) に <主体> をとるとき
        2. 「〜ため(に)」でガ格に <主体> をとるとき 
        3. 〜が V した N (外の関係, !判定詞), 形副名詞, 相対名詞は除く
        4. スコアが閾値より下でガ格 <主体> をとるとき */
-    if (((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
+    else if (((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
 	 MatchPP(cf_ptr->pp[n][0], cp+9)) || 
 	(MatchPP(cf_ptr->pp[n][0], "ガ") && 
 	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
@@ -2267,6 +2331,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	  check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜（ため）"))) || 
 	(MatchPP(cf_ptr->pp[n][0], "ニ") && 
 	 cf_match_element(cf_ptr->sm[n], "主体", FALSE) && 
+	 !cf_match_element(cf_ptr->sm[n], "場所", FALSE) && 
 	 (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
 	  check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
 	  check_feature(cpm_ptr->pred_b_ptr->f, "追加受身") || 
@@ -2298,24 +2363,6 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "省略処理なし-%s", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-    /* 一人称 */
-    else if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "一人称")) && 
-	     MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
-	return 1;
-    }
-    /* 対象外 */
-    else if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "対象外")) && 
-	     MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	sprintf(feature_buffer, "C用;【対象外】;%s;-1;-1;1", 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
-	return 1;
     }
     else if (check_feature(cpm_ptr->pred_b_ptr->f, "省略格指定")) {
 	;
@@ -2540,17 +2587,17 @@ void AppendCfFeature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_
 {
     char feature_buffer[DATA_LEN];
 
-    /* 格フレームが <主体> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr(cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-
     /* 格フレームが <主体準> をもつかどうか */
     if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
 	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
+    /* 格フレームが <主体> をもつかどうか */
+    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	assign_cfeature(&(em_ptr->f), feature_buffer);
+    }
+
 
     /* 格フレームが <補文> をもつかどうか */
     if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
@@ -2591,8 +2638,12 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     /* 格を与えられた順番に */
     for (j = 0; *order[j]; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
-	    if (MatchPP(cf_ptr->pp[i][0], order[j]) && 
-		cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED && 
+	    if ((MatchPP(cf_ptr->pp[i][0], order[j]) && 
+		 cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED) || 
+		(OptDemo == TRUE && /* 割り当てがあって、指示詞のとき */
+		 cmm_ptr->result_lists_p[0].flag[i] != UNASSIGNED && 
+		 MatchPP(cf_ptr->pp[i][0], order[j]) && 
+		 check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞")) && 
 		!(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ"))) {
 		if ((MarkEllipsisCase(cpm_ptr, cf_ptr, i)) == 0) {
 		    continue;
