@@ -185,6 +185,15 @@ extern int	EX_match_subject;
 	    OptDiscMethod = OPT_DT;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
+	else if (str_eq(argv[0], "-demonstrative-dt")) {
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscMethod = OPT_DT;
+	}
+	else if (str_eq(argv[0], "-anaphora-dt")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscMethod = OPT_DT;
+	}
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
