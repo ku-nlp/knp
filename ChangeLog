@@ -1,3 +1,8 @@
+2002-11-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_sm.c:
+	格解析: 類似度が低いときに格フレームの格との対応をとらず、時間、外の関係などに対応付け
+
 2002-11-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/knp.h, system/main.c: 
