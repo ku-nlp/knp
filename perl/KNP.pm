@@ -187,7 +187,7 @@ sub parse {
     my $buf = "";
     while( $_ = $this->{KNP}->getline ){
 	$buf .= $_;
-	last if( $buf =~ /\nEOS$/ || $this->{PATTERN} && /^$this->{PATTERN}/ );
+	last if( $buf =~ /(?:^EOS|\nEOS$)/ || $this->{PATTERN} && /^$this->{PATTERN}/ );
     }
     $this->{ALL} = $buf;
 
