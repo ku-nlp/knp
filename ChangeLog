@@ -1,3 +1,8 @@
+2004-01-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/lib_sm.c:
+	意味素固定: 格フレームにもっとも類似している意味素に決定
+
 2004-01-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_match.c, system/const.h:
