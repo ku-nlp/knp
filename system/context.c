@@ -110,6 +110,7 @@ SENTENCE_DATA sentence_data[256];
     copy_sentence();
     assign_bnst_feature(ContRuleArray, ContRuleSize);
     ttt();
+    dpnd_info_to_bnst(&(Best_mgr.dpnd)); /* 係り受け情報を bnst 構造体に記憶 */
     print_result();
 }
 
