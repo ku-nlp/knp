@@ -8,6 +8,7 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
+#include <time.h>
 
 #define PREFIX_MARK "T_P"
 #define CONWRD_MARK "T_C"
@@ -875,9 +876,16 @@ static int max_width;			/* 木の最大幅 */
 /*==================================================================*/
 {
     int i, j, k;
-    char *date_p;
-
+    char *date_p, time_string[64];
+    time_t t;
+    struct tm *tms;
     TOTAL_MGR *tm = &Best_mgr;
+
+    /* 時間の取得 */
+    t = time(NULL);
+    tms = localtime(&t);
+    if (!strftime(time_string, 64, "%Y/%m/%d", tms))
+	time_string[0] = '\0';
     
     /* PS出力の場合
        dpnd_info_to_bnst(&(tm->dpnd));
@@ -901,8 +909,19 @@ static int max_width;			/* 木の最大幅 */
 	fprintf(Outfp, "# S-ID:%d", Sen_num);
     }
 
-    if (OptAnalysis != OPT_PM && (date_p = (char *)getenv("DATE"))) {
-	fprintf(Outfp, " KNP:%s", date_p);
+    if (OptAnalysis != OPT_PM) {
+	if ((date_p = (char *)getenv("DATE")))
+	    fprintf(Outfp, " KNP:%s", date_p);
+	else if (time_string[0])
+	    fprintf(Outfp, " KNP:%s", time_string);
+    }
+    free(time_string);
+
+    /* エラーがあれば、エラーの内容 */
+    if (ErrorComment) {
+	fprintf(Outfp, " ERROR:%s", ErrorComment);
+	free(ErrorComment);
+	ErrorComment = NULL;
     }
 
     if (PM_Memo[0]) {
