@@ -52,7 +52,6 @@ extern int 		OptExpandP;
 extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
-extern int		OptHelpsys;
 extern int		OptLearn;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
@@ -91,9 +90,6 @@ extern DicForRule	*DicForRuleVArray;
 extern int		CurDicForRuleVSize;
 extern DicForRule	*DicForRulePArray;
 extern int		CurDicForRulePSize;
-
-extern MrphRule         HelpsysArray[];
-extern int              CurHelpsysSize;
 
 void			*EtcRuleArray;
 int			CurEtcRuleSize;

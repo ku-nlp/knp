@@ -51,7 +51,6 @@
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
 #define CNRule_MAX	512
-#define Helpsys_MAX	512
 #define EtcRule_MAX	1024
 #define GeneralRule_MAX	1024
 

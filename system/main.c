@@ -58,7 +58,6 @@ int		OptExpandP;
 int		OptInhibit;
 int		OptCheck;
 int		OptNE;
-int		OptHelpsys;
 int		OptLearn;
 int		OptCFMode;
 char		OptIgnoreChar;
@@ -129,7 +128,6 @@ char *Opt_jumanrc = NULL;
     OptInhibit = OPT_INHIBIT_CLAUSE | OPT_INHIBIT_CASE_PREDICATE | OPT_INHIBIT_BARRIER | OPT_INHIBIT_OPTIONAL_CASE | OPT_INHIBIT_C_CLAUSE;
     OptCheck = FALSE;
     OptNE = OPT_NORMAL;
-    OptHelpsys = FALSE;
     OptLearn = FALSE;
     /*    OptIgnoreChar = (char)NULL;*/
     OptIgnoreChar = '\0';
@@ -154,7 +152,6 @@ char *Opt_jumanrc = NULL;
 	else if (str_eq(argv[0], "-learn"))   OptLearn = TRUE;
 	else if (str_eq(argv[0], "-nesm"))    OptNE = OPT_NESM;
 	else if (str_eq(argv[0], "-ne"))      OptNE = OPT_NE;
-	else if (str_eq(argv[0], "-helpsys")) OptHelpsys = TRUE;
 	else if (str_eq(argv[0], "-cc"))      OptInhibit &= ~OPT_INHIBIT_CLAUSE;
 	else if (str_eq(argv[0], "-ck"))      OptInhibit &= ~OPT_INHIBIT_CASE_PREDICATE;
 	else if (str_eq(argv[0], "-cb"))      OptInhibit &= ~OPT_INHIBIT_BARRIER;
@@ -774,7 +771,6 @@ char *Opt_jumanrc = NULL;
 		    if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
 		    if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
 		    if (strstr(buf, "-expand")) OptExpandP = TRUE;
-		    if (strstr(buf, "-helpsys")) OptHelpsys = TRUE;
 		    /* うーん 引数とるのは困るんだなぁ..
 		       とおもいつつかなり強引... */
 		    if ((p = strstr(buf, "-i")) != NULL) {
@@ -783,8 +779,8 @@ char *Opt_jumanrc = NULL;
 			if (*p != '\0') OptIgnoreChar = *p;
 		    } 
 		    fprintf(Outfp,"200 OK option=[Analysis=%d Express=%d"
-			    " Display=%d IgnoreChar=%c Helpsys=%d]\n",
-			    OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar, OptHelpsys);
+			    " Display=%d IgnoreChar=%c]\n",
+			    OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar);
 		    fflush(Outfp);
 		    break;
 		} else {

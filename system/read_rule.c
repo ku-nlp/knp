@@ -36,9 +36,6 @@ int 	        CurCNRuleSize = 0;
 MrphRule	CNauxRuleArray[CNRule_MAX];
 int 	        CurCNauxRuleSize = 0;
 
-MrphRule        HelpsysArray[Helpsys_MAX];
-int             CurHelpsysSize = 0;
-
 void		*EtcRuleArray = NULL;
 int		CurEtcRuleSize = 0;
 int		ExistEtcRule = 0;
