@@ -1,3 +1,19 @@
+2004-07-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	SVM頻度標準偏差のdefault値を修正
+
+	* knprc.in:
+	KNP省略解析探索範囲のdefault値を修正
+
+	* rule/bnst_basic.rule:
+	連体修飾を受ける文末のサ変名詞は判定詞にするルールを追加
+
+2004-07-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule:
+	用言のタイプを修正するルールを削除
+
 2004-07-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/lib_sm.c: 
