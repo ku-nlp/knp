@@ -4,6 +4,8 @@
 
 	* system/hash.c: DBを作るときにfreeしていない箇所があったのを修正
 
+	* system/ipal.c: 一部格フレームでbufferが足りないのに対処
+
 2002-12-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule: 格解析ルールの更新
