@@ -53,38 +53,39 @@ require 5.000;
 use FileHandle;
 use Juman;
 use strict;
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE );
 no strict 'refs';
 
 
 # プログラム内部で利用される大域変数
-my $OPTION  = "-case2 -tab";
-my $COMMAND;
-
+$COMMAND = "";				# KNP のパス名
 if( $ENV{OS_TYPE} eq "Solaris" ){
     $COMMAND = "/share/tool/knp/system/knp";
 } else {
     die "Only Solaris is supported now !";
 }
-
-my $JUMAN   = new Juman("-e", "grape:1");
-my $FH      = "KNP00000";
-my $TIMEOUT = 300;
+$KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
+$JUMAN_OPTION = "-e";			# Juman に渡されるオプション
+$VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
+$JUMAN        = 0;
+my $FH        = "KNP00000";
+my $TIMEOUT   = 300;
 
 
 
 sub new {
-    my( $this, $option, $verbose );
-    if( @_ == 3 ){
-	# エラーなどが発生した場合に警告するようにする場合
-	( $this, $option, $verbose ) = @_;
-	$option = $OPTION unless $option;
-    } elsif( @_ == 2 ){
+    my( $this, $option );
+    if( @_ == 2 ){
 	# 引数によって指定されたオプションを利用して KNP を実行する場合
 	( $this, $option ) = @_;
     } else {
 	# デフォルトのオプションを利用して KNP を実行する場合
 	$this   = shift;
-	$option = $OPTION;
+	$option = $KNP_OPTION;
+    }
+
+    unless( $JUMAN ){
+	$JUMAN = new Juman( $JUMAN_OPTION, "grape:1" ) or die;
     }
 
     $this = { ALL      => "",
@@ -96,8 +97,16 @@ sub new {
 	      BNST     => [],
 	      PID      => 0,
 	      OPTION   => $option,
-	      PREVIOUS => [],
-	      VERBOSE  => $verbose };
+	      PREVIOUS => [] };
+
+    # -i オプションの対応
+    if( $option =~ /\-i +(\S)+/ ){
+	my $pat = $1;
+	$this->{PATTERN} = "(?:^EOS\$|\nEOS\$|^\Q$pat\E)";
+    } else {
+	$this->{PATTERN} = "(?:^EOS\$|\nEOS\$)";
+    }
+
     bless $this;
     $this;
 }
@@ -143,14 +152,14 @@ sub parse {
     my $buf = "";
     while( $_ = &read( $this->{READ}, $TIMEOUT ) ){
 	$buf .= $_;
-	last if /^EOS$/;
+	last if /$this->{PATTERN}/;
     }
     $this->{ALL} = $buf;
 
     # 構文解析結果の最後に EOS のみの行が無い場合は、読み出し中にタイ
     # ムアウトが発生している。
-    unless( $buf =~ /\nEOS$/ ){
- 	if(( $counter==1 )&&( $this->{VERBOSE} )){
+    unless( $buf =~ /$this->{PATTERN}/ ){
+ 	if(( $counter==1 )&&( $VERBOSE )){
  	    print STDERR ";; TIMEOUT is occured.\n";
  	    for( my $i=$[; $this->{PREVIOUS}[$i]; $i++ ){
  		print STDERR sprintf( ";; TIMEOUT:%02d:%s\n", $i, $this->{PREVIOUS}[$i] );
@@ -164,7 +173,7 @@ sub parse {
     # "Cannot detect consistent CS scopes." というエラーの場合は、KNP 
     # のバグである可能性があるので、一旦 KNP を再起動する。
     if( $buf =~ /;; Cannot detect consistent CS scopes.\n/ ){
- 	if(( $counter==1 )&&( $this->{VERBOSE} )){
+ 	if(( $counter==1 )&&( $VERBOSE )){
  	    print STDERR ";; Cannot detect consistent CS scopes.\n";
  	    for( my $i=$[; $this->{PREVIOUS}[$i]; $i++ ){
  		print STDERR sprintf( ";; CS:%02d:%s\n", $i, $this->{PREVIOUS}[$i] );
@@ -210,8 +219,9 @@ sub parse {
 	    }
 	    $bnst_num++;
 	}
-	elsif (/^EOS/) {
-	    $this->{BNST}[$bnst_num - 1]{end} = $mrph_num - 1;
+	elsif (/$this->{PATTERN}/) {
+	    $this->{BNST}[$bnst_num - 1]{end} = $mrph_num - 1 if $bnst_num > $[;
+	    last;
 	}
 	else {
 	    # @{$this->{MRPH}[$mrph_num]} = split;
