@@ -69,7 +69,7 @@
 #define MAX_MATCH_MAX 		10
 
 #define CMM_MAX 	5				/* 最適格フレーム数 */
-#define CPM_MAX 	32				/* 文内述語数 */
+#define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
 #ifndef IMI_MAX
