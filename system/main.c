@@ -794,13 +794,7 @@ PARSED:
     para_recovery(sp);
 
     if (OptExpress != OPT_NOTAG) {
-	if (OptInput == OPT_RAW || 
-	    (OptInput & OPT_INPUT_BNST)) {
-	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
-	}
-	else {
-	    dpnd_info_to_tag_pm(sp);
-	}
+	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
     /* 並列構造をみて固有表現認識を行う */

@@ -110,7 +110,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     }
     /* Ì¾»ì¤Î¹à¤È¤Ê¤ë¤â¤Î */
     else {
-	if (!strcmp(fcp, "£ÔÌ¾»ì¹à")) {
+	if (!strcmp(fcp, "£ÔÌ¾»ì¹à") && b_ptr->dpnd_type != 'A') {
 	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = 0;
 	    c_ptr->pp_str[c_ptr->element_num] = NULL;
 	}

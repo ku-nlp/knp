@@ -212,7 +212,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
-	  void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
+	void dpnd_info_to_tag_raw(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
     /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
@@ -258,6 +258,19 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		t_ptr->dpnd_type = dp->type[last_b];
 	    }
 	}
+    }
+}
+
+/*==================================================================*/
+	  void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
+/*==================================================================*/
+{
+    if (OptInput == OPT_RAW || 
+	(OptInput & OPT_INPUT_BNST)) {
+	dpnd_info_to_tag_raw(sp, dp);
+    }
+    else {
+	dpnd_info_to_tag_pm(sp);
     }
 }
 
