@@ -1105,8 +1105,8 @@
 }
 
 /*==================================================================*/
-     int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
-			       void *p1, void *p2)
+int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
+			  void *p1, void *p2)
 /*==================================================================*/
 {
     /* fr : ルール側のFEATURE_PATTERN,

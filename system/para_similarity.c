@@ -157,7 +157,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-		   int calc_match(int pre, int pos)
+	 int calc_match(SENTENCE_DATA *sp, int pre, int pos)
 /*==================================================================*/
 {
     int		i, j, part_mt_point, bgh_mt_point, point = 0;
@@ -349,14 +349,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-                    void calc_match_matrix()
+	      void calc_match_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
     
     for (i = 0; i < sp->Bnst_num; i++) 
-      for (j = i+1; j < sp->Bnst_num; j++)
-	match_matrix[i][j] = calc_match(i, j);
+	for (j = i+1; j < sp->Bnst_num; j++)
+	    match_matrix[i][j] = calc_match(sp, i, j);
 }
 
 /*====================================================================

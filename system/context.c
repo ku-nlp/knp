@@ -70,7 +70,7 @@ int Bcheck[BNST_MAX];
 }
 
 /*==================================================================*/
-			void clear_sentence()
+		void clear_sentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -89,7 +89,7 @@ int Bcheck[BNST_MAX];
 }
 
 /*==================================================================*/
-			 void copy_sentence()
+		void copy_sentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 文解析結果の保持 */
@@ -100,7 +100,7 @@ int Bcheck[BNST_MAX];
     /* 一時的措置 */
     if (sp->Sen_num > 256) {
 	fprintf(stderr, "Sentence buffer overflowed!\n");
-	clear_sentence();
+	clear_sentence(sp);
     }
 
     sp_new = sentence_data + sp->Sen_num - 1;
@@ -326,7 +326,7 @@ void SearchCaseComponent(SENTENCE_DATA *s, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
-void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
+void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
     /* 用言とその省略格が与えられる */
@@ -416,7 +416,7 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 }
 
 /*==================================================================*/
-		      void discourse_analysis()
+	      void discourse_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, num;
@@ -425,7 +425,7 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
     CASE_FRAME *cf_ptr;
     BNST_DATA *pred_b_ptr;
 
-    copy_sentence();
+    copy_sentence(sp);
 
     /* 各用言をチェック */
     for (j = 0; j < Best_mgr.pred_num; j++) {
@@ -450,7 +450,7 @@ void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	    if (num == UNASSIGNED && 
 		!check_feature(pred_b_ptr->f, "準用言") && 
 		!str_eq((char *)pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]), "時間")) {
-		EllipsisDetectForVerb(cpm_ptr, cmm_ptr->cf_ptr, i);
+		EllipsisDetectForVerb(sp, cpm_ptr, cmm_ptr->cf_ptr, i);
 	    }
 	}
     }

@@ -16,7 +16,7 @@ int preArticleID = 0;
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 /*==================================================================*/
-     void lexical_disambiguation(MRPH_DATA *m_ptr, int homo_num)
+void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
     int i, j, k, flag, pref_mrph, pref_rule;
@@ -174,15 +174,69 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-		       int read_mrph(FILE *fp)
+	     int read_mrph_file(FILE *fp, U_CHAR *buffer)
+/*==================================================================*/
+{
+    int len;
+#ifdef _WIN32
+    char *EUCbuffer;
+#endif
+
+    if (fgets(buffer, DATA_LEN, fp) == NULL) return EOF;
+
+#ifdef _WIN32
+    EUCbuffer = toStringEUC(buffer);
+    strcpy(buffer, EUCbuffer);
+    free(EUCbuffer);
+#endif
+
+    /* Server モードの場合は 注意 \r\n になる*/
+    if (OptMode == SERVER_MODE) {
+	len = strlen(buffer);
+	if (len > 2 && buffer[len-1] == '\n' && buffer[len-2] == '\r') {
+	    buffer[len-2] = '\n';
+	    buffer[len-1] = '\0';
+	}
+
+	if (buffer[0] == EOf) 
+	    return EOF;
+    }
+
+    return TRUE;
+}
+
+/*==================================================================*/
+	    int read_mrph_str(char **str, U_CHAR *buffer)
+/*==================================================================*/
+{
+    char *start, *cp;
+
+    if (**str == '\0') return EOF;
+
+    for (cp = start = *str; ; cp++) {
+	if (*cp == '\n') {
+	    *cp = '\0';
+	    *str = cp+1;
+	}
+	else if (*cp == '\0') {
+	    *str = cp;
+	}
+	else {
+	    continue;
+	}
+	strcpy(buffer, start);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
+	int read_mrph(SENTENCE_DATA *sp, FILE *fp, char *str)
 /*==================================================================*/
 {
     U_CHAR input_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, i, len, homo_flag;
-#ifdef _WIN32
-    char *EUCbuffer;
-#endif
 
     preArticleID = ArticleID;
     ArticleID = 0;
@@ -194,26 +248,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     input_buffer[DATA_LEN-1] = '\n';
 
     while (1) {
-
-	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
-
-#ifdef _WIN32
-	EUCbuffer = toStringEUC(input_buffer);
-	strcpy(input_buffer, EUCbuffer);
-	free(EUCbuffer);
-#endif
-
-	/* Server モードの場合は 注意 \r\n になる*/
-	if (OptMode == SERVER_MODE) {
-	  len = strlen(input_buffer);
-	  if (len > 2 && input_buffer[len-1] == '\n' && input_buffer[len-2] == '\r') {
-	    input_buffer[len-2] = '\n';
-	    input_buffer[len-1] = '\0';
-	  }
-
-	  if (input_buffer[0] == EOf) 
-	    return EOF;
-	} 
+	if (str) {
+	    if (read_mrph_str(&str, input_buffer) == EOF) return EOF;
+	}
+	else {
+	    if (read_mrph_file(fp, input_buffer) == EOF) return EOF;
+	}
 
 	if (input_buffer[DATA_LEN-1] != '\n' || input_buffer[strlen(input_buffer)-1] != '\n') {
 	    fprintf(stderr, "Too long mrph <%s> !\n", input_buffer);
@@ -221,7 +261,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	}
 
 	/* -i によるコメント行 */
-	if ( OptIgnoreChar && *input_buffer == OptIgnoreChar ) {
+	if (OptIgnoreChar && *input_buffer == OptIgnoreChar) {
 	    fprintf(Outfp, "%s", input_buffer);
 	    fflush(Outfp);
 	    continue;
@@ -241,7 +281,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		    clearNE();
 		}
 		if (OptAnalysis == OPT_DISC) {
-		    clear_sentence();
+		    clear_sentence(sp);
 		}
 	    }
 	}
@@ -283,7 +323,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    }
 
 	    if (homo_num) {	/* 前に同形異義語セットがあれば処理する */
-		lexical_disambiguation(m_ptr - homo_num - 1, homo_num + 1);
+		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
 		homo_num = 0;
@@ -308,7 +348,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		/* 同形異義語マークがなければ，前に同形異義語セットがあれば
 	           lexical_disambiguationを呼んで処理 */		   
 
-		lexical_disambiguation(m_ptr - homo_num - 1, homo_num + 1);
+		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
 		homo_num = 0;
@@ -437,9 +477,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
-			      MRPH_DATA *s_m_ptr, int m_length,
-			      int mode, int break_mode, int direction)
+       void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
+				MRPH_DATA *s_m_ptr, int m_length,
+				int mode, int break_mode, int direction)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
@@ -526,9 +566,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-     void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
-			      BNST_DATA *s_b_ptr, int b_length,
-			      int mode, int break_mode, int direction)
+void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
+			 BNST_DATA *s_b_ptr, int b_length,
+			 int mode, int break_mode, int direction)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して文節のマッチングを行う */
@@ -615,7 +655,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-		void assign_general_feature(int flag)
+       void assign_general_feature(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
     int i, size;
@@ -647,7 +687,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-	       BNST_DATA *init_bnst(MRPH_DATA *m_ptr)
+      BNST_DATA *init_bnst(SENTENCE_DATA *sp, MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
     int i;
@@ -703,7 +743,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 {
     if (b_ptr->settou_num == 0) 
-      b_ptr->settou_ptr = m_ptr;
+	b_ptr->settou_ptr = m_ptr;
     b_ptr->settou_num++;
     b_ptr->mrph_num++;
 }
@@ -730,7 +770,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 {
     if (b_ptr->fuzoku_num == 0) 
-      b_ptr->fuzoku_ptr = m_ptr;
+	b_ptr->fuzoku_ptr = m_ptr;
     b_ptr->fuzoku_num++;
     b_ptr->mrph_num++;
 }
@@ -740,7 +780,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 #define MRPH_SUFX 2
 
 /*==================================================================*/
-			 int make_bunsetsu()
+		 int make_bunsetsu(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int prev_stat, now_stat = -1;
@@ -790,7 +830,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		push_prfx(b_ptr, m_ptr);
 		break;
 	    default:
-		if ((b_ptr = init_bnst(m_ptr)) == NULL) return FALSE;
+		if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
 		push_prfx(b_ptr, m_ptr);
 		break;
 	    }
@@ -802,20 +842,20 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		break;
 	    case MRPH_INDP:
 		if (!check_feature(m_ptr->f, "←複合"))
-		    if ((b_ptr = init_bnst(m_ptr)) == NULL) return FALSE;
+		    if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
 		push_indp(b_ptr, m_ptr);
 		break;
 	    case MRPH_SUFX:
-		if ((b_ptr = init_bnst(m_ptr)) == NULL) return FALSE;
+		if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
 		push_indp(b_ptr, m_ptr);
 		break;
 	    }
 	    break;
 	  case MRPH_SUFX:
 	    if (m_ptr->type == BNST_RULE_SKIP)
-	      b_ptr->mrph_num++;
+		b_ptr->mrph_num++;
 	    else 
-	      push_sufx(b_ptr, m_ptr);
+		push_sufx(b_ptr, m_ptr);
 	    break;
 	}
 	
@@ -837,7 +877,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-			int make_bunsetsu_pm()
+	       int make_bunsetsu_pm(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;

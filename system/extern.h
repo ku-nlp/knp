@@ -6,7 +6,7 @@
 
     $Id$
 ====================================================================*/
-extern SENTENCE_DATA 	*sp;
+
 extern SENTENCE_DATA 	sentence_data[256];
 
 extern int		Thesaurus;

@@ -13,7 +13,7 @@ int D_check_array[BNST_MAX];
 int D_found_array[BNST_MAX];
 
 /*==================================================================*/
-		    int check_stop_extend(int num)
+	  int check_stop_extend(SENTENCE_DATA *sp, int num)
 /*==================================================================*/
 {
     if ((check_feature(sp->bnst_data[num].f, "読点") &&
@@ -21,13 +21,13 @@ int D_found_array[BNST_MAX];
 	check_feature(sp->bnst_data[num].f, "提題") ||
 	(check_feature(sp->bnst_data[num].f, "係:デ格") &&
 	 check_feature(sp->bnst_data[num].f, "ハ")))
-      return TRUE;
+	return TRUE;
     else
-      return FALSE;
+	return FALSE;
 }
 
 /*==================================================================*/
-	       int para_extend_p(PARA_MANAGER *m_ptr)
+      int para_extend_p(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
     /* 並列構造前部を延長する基準 : 強並列 or 用言を含む */
@@ -35,11 +35,11 @@ int D_found_array[BNST_MAX];
     int i;
 
     if (sp->para_data[m_ptr->para_data_num[0]].status == 's') 
-      return TRUE;
+	return TRUE;
 
     for (i = m_ptr->start[0]; i <= m_ptr->end[0]; i++)
-      if (check_feature(sp->bnst_data[i].f, "用言"))
-	return TRUE;
+	if (check_feature(sp->bnst_data[i].f, "用言"))
+	    return TRUE;
     return FALSE;
 }
 
@@ -63,8 +63,8 @@ int D_found_array[BNST_MAX];
 }
 
 /*==================================================================*/
-   int _check_para_d_struct(int str, int end, 
-			    int extend_p, int limit, int *s_p)
+    int _check_para_d_struct(SENTENCE_DATA *sp, int str, int end,
+			     int extend_p, int limit, int *s_p)
 /*==================================================================*/
 {
     int i, j, k, found, success_p = TRUE;
@@ -111,7 +111,7 @@ int D_found_array[BNST_MAX];
     
     if (extend_p == TRUE && success_p == TRUE) {
 	for (i = str - 1;; i--) {
-	    if (i < limit || check_stop_extend(i) == TRUE) {
+	    if (i < limit || check_stop_extend(sp, i) == TRUE) {
 		*s_p = i + 1;
 		break;
 	    } else if (D_check_array[i] == TRUE) {
@@ -150,7 +150,7 @@ int D_found_array[BNST_MAX];
 }
 
 /*==================================================================*/
-       int check_error_state(PARA_MANAGER *m_ptr, int error[])
+int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 /*==================================================================*/
 {
     /* エラー状態のチェック : 
@@ -168,28 +168,28 @@ int D_found_array[BNST_MAX];
     } 
     else if (error[0] == TRUE) {
 	for (i = 1; i < m_ptr->part_num; i++)
-	  if (error[i] == TRUE) {
-	    fprintf(Outfp, 
-		    ";; Cannot revise invalid kakari struct in para!!\n");
-	    return -1;
-	  }
+	    if (error[i] == TRUE) {
+		fprintf(Outfp, 
+			";; Cannot revise invalid kakari struct in para!!\n");
+		return -1;
+	    }
 	return m_ptr->para_data_num[0];
     } 
     else if (error[m_ptr->part_num - 1] == TRUE) {
 	for (i = 0; i < m_ptr->part_num - 1; i++)
-	  if (error[i] == TRUE) {
-	    fprintf(Outfp, 
-		    ";; Cannot revise invalid kakari struct in para!!\n");
-	    return -1;
-	  }
+	    if (error[i] == TRUE) {
+		fprintf(Outfp, 
+			";; Cannot revise invalid kakari struct in para!!\n");
+		return -1;
+	    }
 	return m_ptr->para_data_num[m_ptr->para_num-1];
-    }	    
+    }
     else
-      return -1;
+	return -1;
 }
 
 /*==================================================================*/
-	     int check_para_d_struct(PARA_MANAGER *m_ptr)
+   int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
     int i, j, k;
@@ -203,8 +203,8 @@ int D_found_array[BNST_MAX];
     BNST_DATA *k_ptr, *u_ptr;
     
     for (i = 0; i < m_ptr->child_num; i++)	/* 子供の再帰処理 */
-      if (check_para_d_struct(m_ptr->child[i]) == FALSE)
-	return FALSE;
+	if (check_para_d_struct(sp, m_ptr->child[i]) == FALSE)
+	    return FALSE;
     
     /* 体言文節の働きが曖昧なものが，並列構造解析で明確になる場合の処理
        ----------------------------------------------------------------
@@ -248,8 +248,8 @@ int D_found_array[BNST_MAX];
 
     start_pos = m_ptr->start[0];
     for (k = 0; k < m_ptr->part_num; k++)
-      if (_check_para_d_struct(m_ptr->start[k], m_ptr->end[k],
-			       (k == 0) ? para_extend_p(m_ptr): FALSE, 
+      if (_check_para_d_struct(sp, m_ptr->start[k], m_ptr->end[k],
+			       (k == 0) ? para_extend_p(sp, m_ptr): FALSE, 
 			       (k == 0) ? parent_range(m_ptr): 0,
 			       &start_pos) == FALSE) {
 	  invalid_flag = TRUE;
@@ -274,9 +274,9 @@ int D_found_array[BNST_MAX];
     if (invalid_flag == TRUE) {
 	
 	if (m_ptr->status != 's') {
-	    if ((revised_p_num = check_error_state(m_ptr, error_check)) 
+	    if ((revised_p_num = check_error_state(sp, m_ptr, error_check)) 
 		!= -1) {
-		revise_para_kakari(revised_p_num, D_found_array);
+		revise_para_kakari(sp, revised_p_num, D_found_array);
 		return FALSE;
 	    } else {
 		goto cannnot_revise;
@@ -302,9 +302,9 @@ int D_found_array[BNST_MAX];
 
 		/* エラーの対応がつかない(部分並列でない) */
 		if (no_more_error != no_more_error_here) {
-		    if ((revised_p_num = check_error_state(m_ptr, error_check))
+		    if ((revised_p_num = check_error_state(sp, m_ptr, error_check))
 			!= -1) {
-			revise_para_kakari(revised_p_num, D_found_array);
+			revise_para_kakari(sp, revised_p_num, D_found_array);
 			return FALSE;
 		    } else {
 			goto cannnot_revise;
@@ -319,43 +319,43 @@ int D_found_array[BNST_MAX];
 
     /* チェック済みの印 */
     for (k = start_pos; k < m_ptr->end[m_ptr->part_num-1]; k++)
-      D_check_array[k] = TRUE;
+	D_check_array[k] = TRUE;
 
     /* 先頭のconjunctのマスク */
     k = 0;
     for (i = 0; i < start_pos; i++) 	       /* < start_pos */
-      for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-	Mask_matrix[i][j] = 0;
+	for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
+	    Mask_matrix[i][j] = 0;
     /* ★★ 実験 endの上のカバーしない
     for (i = start_pos; i < m_ptr->start[k]; i++)       end の上
       Mask_matrix[i][m_ptr->end[k]] = 0;
     */
     for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-      for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-	Mask_matrix[i][j] = 0;
+	for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+	    Mask_matrix[i][j] = 0;
 
     if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
-      for (i = 0; i < m_ptr->start[0]; i++)
-	Mask_matrix[i][m_ptr->end[0]] = 0;
+	for (i = 0; i < m_ptr->start[0]; i++)
+	    Mask_matrix[i][m_ptr->end[0]] = 0;
     
     /* 内部のconjunctのマスク */
     for (k = 1; k < m_ptr->part_num - 1; k++) {
 	for (i = 0; i < m_ptr->start[k]; i++)
-	  for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-	    Mask_matrix[i][j] = 0;
+	    for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
+		Mask_matrix[i][j] = 0;
 	for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-	  for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-	    Mask_matrix[i][j] = 0;
+	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+		Mask_matrix[i][j] = 0;
     }
     
     /* 末尾のconjunctのマスク */
     k = m_ptr->part_num - 1;
     for (i = 0; i < m_ptr->start[k]; i++)
-      for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
-	Mask_matrix[i][j] = 0;
+	for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
+	    Mask_matrix[i][j] = 0;
     for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
-      for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-	Mask_matrix[i][j] = 0;
+	for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+	    Mask_matrix[i][j] = 0;
 
     /* 並列の係り先 */
     for (k = 0; k < m_ptr->part_num - 1; k++) {
@@ -379,34 +379,34 @@ int D_found_array[BNST_MAX];
 }
 
 /*==================================================================*/
-		       void init_mask_matrix()
+	       void init_mask_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
 
     for (i = 0; i < sp->Bnst_num; i++)
-      for (j = 0; j < sp->Bnst_num; j++)
-	Mask_matrix[i][j] = 1;
+	for (j = 0; j < sp->Bnst_num; j++)
+	    Mask_matrix[i][j] = 1;
 }
 
 /*==================================================================*/
-			 int check_dpnd_in_para()
+	      int check_dpnd_in_para(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
 
     /* 初期化 */
 
-    init_mask_matrix();
+    init_mask_matrix(sp);
     for (i = 0; i < sp->Bnst_num; i++)
-      D_check_array[i] = FALSE;
+	D_check_array[i] = FALSE;
 
     /* 並列構造内の係受けチェック，マスク */
     
     for (i = 0; i < Para_M_num; i++)
-      if (sp->para_manager[i].parent == NULL)
-	if (check_para_d_struct(&sp->para_manager[i]) == FALSE)
-	  return FALSE;
+	if (sp->para_manager[i].parent == NULL)
+	    if (check_para_d_struct(sp, &sp->para_manager[i]) == FALSE)
+		return FALSE;
 
     return TRUE;
 }

@@ -114,6 +114,9 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
     char *type1, *type2, *cp, *token, *type, *level1, *level2, *sparse;
     char parallel1, parallel2, touten1, touten2, touten;
     int score, offset, i, score2;
+    BNST_DATA *bnst_data;
+
+    bnst_data = ptr1-ptr1->num;
 
     /* para_flag == TRUE  : 並列を考慮 (並列解析まえの呼び出しでは意味がない)
        para_flag == FALSE : 並列を無視 */
@@ -171,9 +174,9 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	token = strtok(cp, "|");
 	while (token) {
 	    for (i = ptr1->num+1; i < ptr2->num; i++) {
-		type = (char *)check_feature((sp->bnst_data+i)->f, "ID");
+		type = (char *)check_feature((bnst_data+i)->f, "ID");
 		if (type) {
-		    if ((char *)check_feature((sp->bnst_data+i)->f, "読点"))
+		    if ((char *)check_feature((bnst_data+i)->f, "読点"))
 			touten = ',';
 		    else
 			touten = ' ';
@@ -634,7 +637,7 @@ void close_optional_case()
 }
 
 /* 任意格からの係り受け頻度を調べる関数 */
-int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus)
+int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus)
 {
     int i, j, k, score, flag, pos1, pos2, firstscore = 0, special = 0, smcore = 0;
     int fukugojiflag = 0;
@@ -850,7 +853,7 @@ int check_Morph_for_optional_case(MRPH_DATA *m)
 }
 
 /* 事例情報を用いた構文木の選択するか否か */
-void optional_case_evaluation()
+void optional_case_evaluation(SENTENCE_DATA *sp)
 {
     int i;
     int appropriate = 0;
@@ -999,7 +1002,7 @@ int temp_corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	return FALSE;
 }
 
-void CheckChildCaseFrame() {
+void CheckChildCaseFrame(SENTENCE_DATA *sp) {
     int i, j;
     TOTAL_MGR *tm = &Best_mgr;
 
@@ -1129,7 +1132,7 @@ char *get_unsupervised_data(DBM_FILE db, char *key, char c, char p) {
 }
 
 /* 意味素の係り受け頻度を調べる関数 */
-float CorpusSMDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target)
+float CorpusSMDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target)
 {
     int i, j, k, flag, pos1, pos2, special = 0, smcore = 0;
     int fukugojiflag = 0;
@@ -1257,7 +1260,7 @@ float get_unsupervised_num(DBM_FILE db, char *cp1, char *case1, char *cp2, char 
 }
 
 /* 事例の係り受け頻度を返す関数 */
-float CorpusExampleDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target) {
+float CorpusExampleDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target) {
     int i, k, score, flag, pos1, pos2, count, special = 0;
     int fukugojiflag = 0;
     char *cp1, *cp2, *cp;
@@ -1411,7 +1414,7 @@ float CorpusExampleDependencyFrequency(BNST_DATA *ptr1, char *case1, BNST_DATA *
 }
 
 /* 係り先リストが与えられたときに、指定された係り先のスコアを計算する関数 */
-int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHECK_DATA *list, CORPUS_DATA *corpus)
+int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, int h, CHECK_DATA *list, CORPUS_DATA *corpus)
 {
     int i, flag;
     float score, currentscore = -1, totalscore = 0;
@@ -1436,12 +1439,12 @@ int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHEC
 	    flag = 0;
 
 	/* 自立語のスコアを計算する */
-	score = CorpusExampleDependencyFrequency(ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
+	score = CorpusExampleDependencyFrequency(sp, ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
 	totalscore += score;
 	*(candidates_score+i) = score;
 
 	/* 意味素のスコアを計算する */
-	smscore = CorpusSMDependencyFrequency(ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
+	smscore = CorpusSMDependencyFrequency(sp, ptr1, case1, sp->bnst_data+list->pos[i], corpus, flag);
 	totalsmscore += smscore;
 	*(candidates_smscore+i) = smscore;
 
@@ -1531,7 +1534,7 @@ int CorpusExampleDependencyCalculation(BNST_DATA *ptr1, char *case1, int h, CHEC
     return (int)(lastscore*10);
 }
 
-void unsupervised_debug_print() {
+void unsupervised_debug_print(SENTENCE_DATA *sp) {
     int i;
 
     for (i = 0; i < sp->Bnst_num; i++) {

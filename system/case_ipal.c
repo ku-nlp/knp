@@ -612,7 +612,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 }
 
 /*==================================================================*/
-	  int make_ipal_cframe(BNST_DATA *b_ptr, int start)
+ int make_ipal_cframe(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start)
 /*==================================================================*/
 {
     int f_num = 0, plus_num, i, j;
@@ -736,16 +736,16 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 }
 
 /*==================================================================*/
-	       void make_case_frames(BNST_DATA *b_ptr)
+      void make_case_frames(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    if ((b_ptr->cf_num = make_ipal_cframe(b_ptr, Case_frame_num)) == 0) {
+    if ((b_ptr->cf_num = make_ipal_cframe(sp, b_ptr, Case_frame_num)) == 0) {
 	make_default_cframe(b_ptr, Case_frame_num);
     }
 }
 
 /*==================================================================*/
-		      void set_pred_caseframe()
+	      void set_pred_caseframe(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, start[BNST_MAX];
@@ -763,7 +763,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	    /* get_scase_code(b_ptr); …Ω¡ÿ≥  */
 
 	    start[i] = Case_frame_num;
-	    make_case_frames(b_ptr);
+	    make_case_frames(sp, b_ptr);
 	}
 	else {
 	    start[i] = -1;

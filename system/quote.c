@@ -12,7 +12,7 @@
 QUOTE_DATA quote_data;
 
 /*==================================================================*/
-                         void init_quote()
+		  void init_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -23,8 +23,8 @@ QUOTE_DATA quote_data;
     }
 
     for (i = 0; i < sp->Bnst_num; i++)
-      for (j = 0; j < sp->Bnst_num; j++)
-	Quote_matrix[i][j] = 1;
+	for (j = 0; j < sp->Bnst_num; j++)
+	    Quote_matrix[i][j] = 1;
 }
 
 /*==================================================================*/
@@ -40,7 +40,7 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         int check_quote() 
+		  int check_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /*
@@ -129,7 +129,7 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         void mask_quote() 
+		  void mask_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, l, start, end;
@@ -186,19 +186,19 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-                         int quote() 
+		     int quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int quote_p = FALSE;
 
-    init_quote();
+    init_quote(sp);
 
-    if (quote_p = check_quote()) {	/* 傢喟裡及腹請 */
+    if (quote_p = check_quote(sp)) {	/* 傢喟裡及腹請 */
 	if (quote_p == CONTINUE) return quote_p;
 
 	if (OptDisplay == OPT_DEBUG) print_quote();
 
-	mask_quote();			/* 墊昫及踏五晶尹 */
+	mask_quote(sp);			/* 墊昫及踏五晶尹 */
     }
 
     return quote_p;

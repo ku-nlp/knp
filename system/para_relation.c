@@ -36,7 +36,7 @@ static int rel_matrix_strong[4][4] = {
 */
 
 /*==================================================================*/
-	   void print_two_para_relation(int p_num1, int p_num2)
+void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 /*==================================================================*/
 {
     /* 並列構造間の関係の表示 */
@@ -57,7 +57,7 @@ static int rel_matrix_strong[4][4] = {
     fprintf(Outfp, "%-10s ==> ", RESULT[para_rel_matrix[p_num1][p_num2]]);
 
     if (a1 != a2)
-      print_bnst(&(sp->bnst_data[a1]), NULL);
+	print_bnst(&(sp->bnst_data[a1]), NULL);
     fputc('(', Outfp);
     print_bnst(&(sp->bnst_data[a2]), NULL);
     fputc(')', Outfp);
@@ -66,7 +66,7 @@ static int rel_matrix_strong[4][4] = {
     fprintf(Outfp, " <=> ");
 
     if (b1 != b2)
-      print_bnst(&(sp->bnst_data[b1]), NULL);
+	print_bnst(&(sp->bnst_data[b1]), NULL);
     fputc('(', Outfp);
     print_bnst(&(sp->bnst_data[b2]), NULL);
     fputc(')', Outfp);
@@ -75,7 +75,7 @@ static int rel_matrix_strong[4][4] = {
 }
 
 /*==================================================================*/
-		       void init_para_manager()
+	      void init_para_manager(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -93,7 +93,7 @@ static int rel_matrix_strong[4][4] = {
 }
 
 /*==================================================================*/
-	     int para_location(int pre_num, int pos_num)
+    int para_location(SENTENCE_DATA *sp, int pre_num, int pos_num)
 /*==================================================================*/
 {
     /* 並列構造間の関係の決定 */
@@ -121,13 +121,13 @@ static int rel_matrix_strong[4][4] = {
     else                 	rel_pos = 3;
 
     if (sp->para_data[pos_num].status == 's') 
-      return rel_matrix_strong[rel_pre][rel_pos];
+	return rel_matrix_strong[rel_pre][rel_pos];
     else
-      return rel_matrix_normal[rel_pre][rel_pos];
+	return rel_matrix_normal[rel_pre][rel_pos];
 }
 
 /*==================================================================*/
-	     int para_brother_p(int pre_num, int pos_num)
+   int para_brother_p(SENTENCE_DATA *sp, int pre_num, int pos_num)
 /*==================================================================*/
 {
     /* REL_POS -> REL_PAR に変換する条件
@@ -151,12 +151,12 @@ static int rel_matrix_strong[4][4] = {
     int i, j;
 
     for (i = 0; i < parent_ptr->child_num; i++)
-      if (parent_ptr->child[i] == child_ptr) {
-	  for (j = i; j < parent_ptr->child_num - 1; j++)
-	    parent_ptr->child[j] = parent_ptr->child[j+1];
-	  parent_ptr->child_num -= 1;
-	  break;
-      }
+	if (parent_ptr->child[i] == child_ptr) {
+	    for (j = i; j < parent_ptr->child_num - 1; j++)
+		parent_ptr->child[j] = parent_ptr->child[j+1];
+	    parent_ptr->child_num -= 1;
+	    break;
+	}
 }
 
 /*==================================================================*/
@@ -234,7 +234,7 @@ static int rel_matrix_strong[4][4] = {
 	/* 子供の処理 */
 
 	for (i = 0; i < ptr->child_num; i++)
-	  para_revise_scope(ptr->child[i]);
+	    para_revise_scope(ptr->child[i]);
 
 
 	/* 左側の修正 */
@@ -247,12 +247,12 @@ static int rel_matrix_strong[4][4] = {
 	
 	child_ptr = ptr->child[ptr->child_num-1];
 	if (ptr->end[ptr->part_num-1] < child_ptr->end[child_ptr->part_num-1])
-	  ptr->end[ptr->part_num-1] = child_ptr->end[child_ptr->part_num-1];
+	    ptr->end[ptr->part_num-1] = child_ptr->end[child_ptr->part_num-1];
     }
 }
 
 /*==================================================================*/
-		      int detect_para_relation()
+	     int detect_para_relation(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 並列構造間の関係の整理 */
@@ -268,16 +268,16 @@ static int rel_matrix_strong[4][4] = {
 	if (sp->para_data[i].status == 'x') continue;
         for (j = i+1; j < Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
-	    if ((para_rel_matrix[i][j] = para_location(i, j)) == REL_BAD) {
+	    if ((para_rel_matrix[i][j] = para_location(sp, i, j)) == REL_BAD) {
 		if (OptDisplay == OPT_DEBUG)
-		  print_two_para_relation(i, j);
-		revise_para_rel(i, j);
+		    print_two_para_relation(sp, i, j);
+		revise_para_rel(sp, i, j);
 		return FALSE;
 	    }
 	}
     }
 
-    init_para_manager();
+    init_para_manager(sp);
 
     /* REL_POSで重なりの割合が大きい場合REL_PARに変更 */
 
@@ -286,7 +286,7 @@ static int rel_matrix_strong[4][4] = {
 	for (j = 0; j < Para_num; j++) {
 	    if (sp->para_data[j].status == 'x') continue;
 	    if (para_rel_matrix[i][j] == REL_POS &&
-		para_brother_p(i, j) == TRUE) {
+		para_brother_p(sp, i, j) == TRUE) {
 		para_rel_matrix[i][j] = REL_PAR;
 	    }
 	}
@@ -370,8 +370,8 @@ static int rel_matrix_strong[4][4] = {
     /* 範囲の修正 */
 
     for (i = 0; i < Para_M_num; i++)
-      if (sp->para_manager[i].parent == NULL)
-	para_revise_scope(&sp->para_manager[i]);    
+	if (sp->para_manager[i].parent == NULL)
+	    para_revise_scope(&sp->para_manager[i]);    
 
     /* 強並列のマーク */
 

@@ -13,7 +13,7 @@ int 	Koou_matrix[BNST_MAX][BNST_MAX];
 int	koou_m_p[BNST_MAX];
 
 /*==================================================================*/
-                         void init_koou() 
+		  void init_koou(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i ,j;
@@ -26,7 +26,7 @@ int	koou_m_p[BNST_MAX];
 }
 
 /*==================================================================*/
-                         int check_koou() 
+		  int check_koou(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int		i, j, k, flag;
@@ -64,7 +64,7 @@ int	koou_m_p[BNST_MAX];
 }
 
 /*==================================================================*/
-	      void mask_for(int si, int start, int end)
+     void mask_for(SENTENCE_DATA *sp, int si, int start, int end)
 /*==================================================================*/
 {
     int i, j;
@@ -90,7 +90,7 @@ int	koou_m_p[BNST_MAX];
 }
 
 /*==================================================================*/
-			 void change_matrix()
+		void change_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, f_start, f_end;
@@ -111,25 +111,25 @@ int	koou_m_p[BNST_MAX];
 		else
 		  Dpnd_matrix[i][j] = 0;
 	    }
-	    mask_for(i, f_start, f_end);
+	    mask_for(sp, i, f_start, f_end);
 	    mask_back(i, f_start);
 	}
     }
 }
 
 /*==================================================================*/
-			      int koou()
+		     int koou(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int flag;
 
-    init_koou();
+    init_koou(sp);
 
     /* 呼応のチェック */
-    flag = (check_koou() == TRUE) ? TRUE: FALSE;
+    flag = (check_koou(sp) == TRUE) ? TRUE: FALSE;
 
     /* 行列の書き換え */
-    change_matrix();
+    change_matrix(sp);
 
     return flag;
 }

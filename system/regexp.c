@@ -492,7 +492,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-	 int regexpmrph_match(REGEXPMRPH *ptr1, MRPH_DATA *ptr2)
+       int regexpmrph_match(REGEXPMRPH *ptr1, MRPH_DATA *ptr2)
 /*==================================================================*/
 {
     /* 形態素のマッチング */
@@ -525,11 +525,11 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
          
 /*==================================================================*/
-	   int regexpmrphs_match(REGEXPMRPH *r_ptr,int r_num,
-				 MRPH_DATA *d_ptr, int d_num, 
-				 int fw_or_bw, 
-				 int all_or_part, 
-				 int short_or_long)
+	  int regexpmrphs_match(REGEXPMRPH *r_ptr,int r_num,
+				MRPH_DATA *d_ptr, int d_num, 
+				int fw_or_bw, 
+				int all_or_part, 
+				int short_or_long)
 /*==================================================================*/
 {
     /* 形態素列に対してもfeatureを与えられるように変更 99/04/09 */
@@ -683,7 +683,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-      int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr)
+     int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /* 将来はいらない */
@@ -694,7 +694,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-	 int regexpbnst_match(REGEXPBNST *ptr1, BNST_DATA *ptr2)
+       int regexpbnst_match(REGEXPBNST *ptr1, BNST_DATA *ptr2)
 /*==================================================================*/
 {
     /* 文節のマッチング */

@@ -16,7 +16,6 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-SENTENCE_DATA *sp;
 SENTENCE_DATA current_sentence_data;
 SENTENCE_DATA sentence_data[256];
 
@@ -463,11 +462,7 @@ extern int	SOTO_SCORE;
     int relation_error, d_struct_error;
     char *code;
 
-    /* spをきちんと渡すようにすれば spをlocalにして，こちらの
-       定義でよくなる
-       sentence_data *sp = &current_sentence_data; */
-
-    sp = &current_sentence_data;
+    SENTENCE_DATA *sp = &current_sentence_data;
 
     /* 格解析の準備 */
     init_cf2();
@@ -499,9 +494,9 @@ extern int	SOTO_SCORE;
 	    fprintf(stderr, ")\n");
 #endif
 	    ErrorComment = strdup("Parse timeout");
-	    when_no_dpnd_struct();
-	    dpnd_info_to_bnst(&(Best_mgr.dpnd));
-	    if (OptAnalysis != OPT_DISC) print_result();
+	    when_no_dpnd_struct(sp);
+	    dpnd_info_to_bnst(sp, &(Best_mgr.dpnd));
+	    if (OptAnalysis != OPT_DISC) print_result(sp);
 	    fflush(Outfp);
 	}
 
@@ -534,7 +529,7 @@ extern int	SOTO_SCORE;
 
 	sp->Sen_num ++;
 
-	if ((flag = read_mrph(Infp)) == EOF) break;
+	if ((flag = read_mrph(sp, Infp, NULL)) == EOF) break;
 
 	if (flag == FALSE) continue;
 
@@ -547,7 +542,7 @@ extern int	SOTO_SCORE;
 		    strcpy(sp->mrph_data[i].SM, code);
 		    free(code);
 		}
-		assign_ntt_dict(i);
+		assign_ntt_dict(sp, i);
 	    }
 	}
 	else {
@@ -558,14 +553,14 @@ extern int	SOTO_SCORE;
 
 	assign_cfeature(&(sp->mrph_data[0].f), "文頭");
 	assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
-	assign_general_feature(MorphRuleType);
+	assign_general_feature(sp, MorphRuleType);
 
 	/* 形態素を文節にまとめる */
 
 	if (OptInput == OPT_RAW) {
-	    if (make_bunsetsu() == FALSE) continue;
+	    if (make_bunsetsu(sp) == FALSE) continue;
 	} else {
-	    if (make_bunsetsu_pm() == FALSE) continue;
+	    if (make_bunsetsu_pm(sp) == FALSE) continue;
 	}
 
 	/* 文節化だけの場合 */
@@ -586,10 +581,10 @@ extern int	SOTO_SCORE;
 	    assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
 	else
 	    assign_cfeature(&(sp->bnst_data[0].f), "文末");
-	assign_general_feature(BnstRuleType);
+	assign_general_feature(sp, BnstRuleType);
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	    print_mrphs(0);
+	    print_mrphs(sp, 0);
 
 	/* 時間属性を補助的に付与する */
 	for (i = 0; i < sp->Bnst_num; i++) {
@@ -605,89 +600,89 @@ extern int	SOTO_SCORE;
 	if (OptAnalysis == OPT_AssignF) goto ENDofANALYSIS;
 
 
-	assign_dpnd_rule();			/* 係り受け規則 */
+	assign_dpnd_rule(sp);			/* 係り受け規則 */
 
 	if (OptAnalysis == OPT_CASE ||
 	    OptAnalysis == OPT_CASE2 ||
 	    OptAnalysis == OPT_DISC)
-	    set_pred_caseframe();		/* 用言の格フレーム */
+	    set_pred_caseframe(sp);		/* 用言の格フレーム */
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	    check_bnst();
+	    check_bnst(sp);
 
 	/**************/
 	/* 本格的解析 */
 	/**************/
 
 	if (OptInput == OPT_PARSED) {
-	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
-	    para_recovery();
-	    after_decide_dpnd();
+	    dpnd_info_to_bnst(sp, &(Best_mgr.dpnd)); 
+	    para_recovery(sp);
+	    after_decide_dpnd(sp);
 	    goto PARSED;
 	}
 
-	calc_dpnd_matrix();			/* 依存可能性計算 */
-	if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_DPND, 0);
+	calc_dpnd_matrix(sp);			/* 依存可能性計算 */
+	if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
 	/* 呼応表現の処理 */
 
-	if (koou() == TRUE && OptDisplay == OPT_DEBUG)
-	    print_matrix(PRINT_DPND, 0);
+	if (koou(sp) == TRUE && OptDisplay == OPT_DEBUG)
+	    print_matrix(sp, PRINT_DPND, 0);
 
 	/* 鍵括弧の処理 */
 
-	if ((flag = quote()) == TRUE && OptDisplay == OPT_DEBUG)
-	    print_matrix(PRINT_QUOTE, 0);
+	if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
+	    print_matrix(sp, PRINT_QUOTE, 0);
 
 	if (flag == CONTINUE) continue;
 
 	/* 係り受け関係がない場合の弛緩 */
 	
-	if (relax_dpnd_matrix() == TRUE && OptDisplay == OPT_DEBUG) {
+	if (relax_dpnd_matrix(sp) == TRUE && OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Relaxation ... \n");
-	    print_matrix(PRINT_DPND, 0);
+	    print_matrix(sp, PRINT_DPND, 0);
 	}
 
 	/****************/
 	/* 並列構造解析 */
 	/****************/
 
-	init_mask_matrix();
+	init_mask_matrix(sp);
 	Para_num = 0;	
 	Para_M_num = 0;
 	relation_error = 0;
 	d_struct_error = 0;
 	Revised_para_num = -1;
 
-	if ((flag = check_para_key()) > 0) {
-	    calc_match_matrix();		/* 文節間類似度計算 */
-	    detect_all_para_scope();	    	/* 並列構造推定 */
+	if ((flag = check_para_key(sp)) > 0) {
+	    calc_match_matrix(sp);		/* 文節間類似度計算 */
+	    detect_all_para_scope(sp);	    	/* 並列構造推定 */
 	    do {
 		if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
-		    print_matrix(PRINT_PARA, 0);
+		    print_matrix(sp, PRINT_PARA, 0);
 		    /*
-		      print_matrix2ps(PRINT_PARA, 0);
+		      print_matrix2ps(sp, PRINT_PARA, 0);
 		      exit(0);
 		      */
 		}
 		/* 並列構造間の重なり解析 */
-		if (detect_para_relation() == FALSE) {
+		if (detect_para_relation(sp) == FALSE) {
 		    relation_error++;
 		    continue;
 		}
-		if (OptDisplay == OPT_DEBUG) print_para_relation();
+		if (OptDisplay == OPT_DEBUG) print_para_relation(sp);
 		/* 並列構造内の依存構造チェック */
-		if (check_dpnd_in_para() == FALSE) {
+		if (check_dpnd_in_para(sp) == FALSE) {
 		    d_struct_error++;
 		    continue;
 		}
-		if (OptDisplay == OPT_DEBUG) print_matrix(PRINT_MASK, 0);
+		if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_MASK, 0);
 		goto ParaOK;		/* 並列構造解析成功 */
 	    } while (relation_error <= 3 &&
 		     d_struct_error <= 3 &&
-		     detect_para_scope(Revised_para_num, TRUE) == TRUE);
+		     detect_para_scope(sp, Revised_para_num, TRUE) == TRUE);
 	    ErrorComment = strdup("Cannot detect consistent CS scopes");
-	    init_mask_matrix();
+	    init_mask_matrix(sp);
 	ParaOK:
 	}
 	else if (flag == CONTINUE)
@@ -697,52 +692,52 @@ extern int	SOTO_SCORE;
 	/* 依存・格構造解析 */
 	/********************/
 
-	para_postprocess();	/* 各conjunctのheadを提題の係り先に */
+	para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 	signal(SIGALRM, timeout_function);
 	alarm(ParseTimeout);
-	if (detect_dpnd_case_struct() == FALSE) {
+	if (detect_dpnd_case_struct(sp) == FALSE) {
 	    ErrorComment = strdup("Cannot detect dependency structure");
-	    when_no_dpnd_struct();	/* 係り受け構造が求まらない場合
+	    when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
 					   すべて文節が隣に係ると扱う */
 	}
 	alarm(0);
 
 	/* コーパスベース時の評価値計算 */
 	if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	    optional_case_evaluation();
+	    optional_case_evaluation(sp);
 
     PARSED:
 
 	/* 係り受け情報を bnst 構造体に記憶 */
-	dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
-	para_recovery();
+	dpnd_info_to_bnst(sp, &(Best_mgr.dpnd)); 
+	para_recovery(sp);
 
 	/* 固有名詞認識処理 */
 
 	if (OptNE != OPT_NORMAL)
-	    NE_analysis();
+	    NE_analysis(sp);
 	else
 	    assign_mrph_feature(CNRuleArray, CurCNRuleSize,
 				sp->mrph_data, sp->Mrph_num,
 				RLOOP_RMM, FALSE, LtoR);
 
-	memo_by_program();	/* メモへの書き込み */
+	memo_by_program(sp);	/* メモへの書き込み */
 
 	/* チェック用 */
 	if (OptCheck == TRUE)
-	    CheckCandidates();
+	    CheckCandidates(sp);
 
 	if (OptLearn == TRUE)
 	    fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, sp->KNPSID, Best_mgr.score);
 
 	/* 実験 */
 	if (OptCheck == TRUE)
-	    CheckChildCaseFrame();
+	    CheckChildCaseFrame(sp);
 
 	/* 認識した固有名詞を保存しておく */
 	if (OptNE != OPT_NORMAL) {
-	    preserveNE();
+	    preserveNE(sp);
 	    if (OptDisplay == OPT_DEBUG)
 		printNE();
 	}
@@ -752,8 +747,8 @@ extern int	SOTO_SCORE;
 	/************/
 
 	if (OptAnalysis == OPT_DISC) {
-	    make_dpnd_tree();
-	    discourse_analysis();
+	    make_dpnd_tree(sp);
+	    discourse_analysis(sp);
 	}
 
     ENDofANALYSIS:
@@ -763,12 +758,12 @@ extern int	SOTO_SCORE;
 	/************/
 
 	if (OptAnalysis == OPT_BNST) {
-	    print_mrphs(0);
+	    print_mrphs(sp, 0);
 	} else {
-	    print_result();
+	    print_result(sp);
 
 	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-		unsupervised_debug_print();
+		unsupervised_debug_print(sp);
 	}
 	fflush(Outfp);
 

@@ -32,7 +32,7 @@ float	norm[] = {
 extern QUOTE_DATA quote_data;
 
 /*==================================================================*/
-		  void mask_quote_scope(int L_B_pos)
+	void mask_quote_scope(SENTENCE_DATA *sp, int L_B_pos)
 /*==================================================================*/
 {
     int i, j, k, l, start, end;
@@ -78,11 +78,11 @@ extern QUOTE_DATA quote_data;
     }
 
     if (k && OptDisplay == OPT_DEBUG)
-	print_matrix(PRINT_RSTQ, L_B_pos);
+	print_matrix(sp, PRINT_RSTQ, L_B_pos);
 }
 
 /*==================================================================*/
-		int bnst_match(int pos1, int pos2)
+	int bnst_match(SENTENCE_DATA *sp, int pos1, int pos2)
 /*==================================================================*/
 {
     int flag1, flag2;
@@ -121,7 +121,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	 int calc_static_level_penalty(int L_B_pos, int pos)
+int calc_static_level_penalty(SENTENCE_DATA *sp, int L_B_pos, int pos)
 /*==================================================================*/
 {
     int minus_score = 0;
@@ -129,17 +129,17 @@ extern QUOTE_DATA quote_data;
     int level2 = sp->bnst_data[pos].sp_level;
 
     if (level1 <= level2)
-      minus_score = MINUS * (level2 - level1 + 1);
+	minus_score = MINUS * (level2 - level1 + 1);
 
     return minus_score;
 }
 /*==================================================================*/
-   int calc_dynamic_level_penalty(int L_B_pos, int pos1, int pos2)
+int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int L_B_pos, int pos1, int pos2)
 /*==================================================================*/
 {
     if (sp->bnst_data[pos1].sp_level == sp->bnst_data[pos2].sp_level &&
-	bnst_match(pos1, pos2) &&
-	!bnst_match(pos1, L_B_pos))
+	bnst_match(sp, pos1, pos2) &&
+	!bnst_match(sp, pos1, L_B_pos))
 	return 0;
     else if (check_feature(sp->bnst_data[pos1].f, "提題") &&
 	     check_feature(sp->bnst_data[pos2].f, "提題"))
@@ -150,7 +150,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	      int plus_bonus_score(int R_pos, int type)
+     int plus_bonus_score(SENTENCE_DATA *sp, int R_pos, int type)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr;
@@ -173,7 +173,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	     void dp_search_scope(int L_B_pos, int R_pos)
+   void dp_search_scope(SENTENCE_DATA *sp, int L_B_pos, int R_pos)
 /*==================================================================*/
 {
     int i, j, current_max, score_upward, score_sideway;
@@ -204,7 +204,7 @@ extern QUOTE_DATA quote_data;
 
 	    for (i=L_B_pos-1; i>=0; i--) {
 		score_upward = match_matrix[i][j] + maxsco_array[i+1]
-		  - calc_dynamic_level_penalty(L_B_pos, i, j);
+		  - calc_dynamic_level_penalty(sp, L_B_pos, i, j);
 		score_sideway = score_matrix[i][j+1] 
 		  - PENALTY - penalty_table[j];
 		
@@ -240,7 +240,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	  void _detect_para_scope(PARA_DATA *ptr, int R_pos)
+void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int R_pos)
 /*==================================================================*/
 {
     int i, j, flag, nth;
@@ -312,12 +312,12 @@ extern QUOTE_DATA quote_data;
     /* DP MATCHING  */
     /*		    */
 
-    dp_search_scope(L_B_pos, R_pos);
+    dp_search_scope(sp, L_B_pos, R_pos);
 
 
     /* 最大パスの検出 */
 
-    ending_bonus_score = plus_bonus_score(R_pos, ptr->type);
+    ending_bonus_score = plus_bonus_score(sp, R_pos, ptr->type);
     for (i = L_B_pos; i >= 0; i--) {
 	current_score = 
 	    (float)(score_matrix[i][L_B_pos+1] + ending_bonus_score)
@@ -377,7 +377,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-	 int detect_para_scope(int para_num, int restrict_p)
+int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 /*==================================================================*/
 {
     int i, j, k;
@@ -404,15 +404,15 @@ extern QUOTE_DATA quote_data;
 	    for (j = i + 1; j < sp->Bnst_num; j++)
 		restrict_matrix[i][j] = 1;
 
-    mask_quote_scope(L_B_pos);
+    mask_quote_scope(sp, L_B_pos);
 
     for (k = 0; k < sp->Bnst_num; k++) {
 	penalty_table[k] = (k == L_B_pos) ? 
-	  0 : calc_static_level_penalty(L_B_pos, k);
+	  0 : calc_static_level_penalty(sp, L_B_pos, k);
     }
 
     for (j = L_B_pos+1; j < sp->Bnst_num; j++)
-	_detect_para_scope(para_ptr, j);
+	_detect_para_scope(sp, para_ptr, j);
 
     if (para_ptr->status == 'x') {
 	;
@@ -430,17 +430,17 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-		     void detect_all_para_scope()
+	    void detect_all_para_scope(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
 
     for (i = 0; i < Para_num; i++) 
-	detect_para_scope(i, FALSE);
+	detect_para_scope(sp, i, FALSE);
 }
 
 /*==================================================================*/
-			 int check_para_key()
+		int check_para_key(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -500,7 +500,7 @@ extern QUOTE_DATA quote_data;
 
 
 /*==================================================================*/
-		 int farthest_child(BNST_DATA *b_ptr)
+       int farthest_child(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /* 一番遠い子供の文節番号を返す
@@ -518,7 +518,7 @@ extern QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-			void para_recovery()
+		void para_recovery(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 並列構造の情報の再現 */
@@ -544,7 +544,7 @@ extern QUOTE_DATA quote_data;
 	    Para_num++;
 	}
     }
-    detect_para_relation();
+    detect_para_relation(sp);
 }
 
 /*====================================================================

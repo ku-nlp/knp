@@ -24,7 +24,7 @@ void write_head(FILE *fp)
 
     fpr = fopen(HEAD_FILE, "r");
     while((c = fgetc(fpr)) != EOF)
-      fputc(c, fp);
+	fputc(c, fp);
     fclose(fpr);
 }
 
@@ -35,7 +35,7 @@ void write_tail(FILE *fp)
 
     fpr = fopen(TAIL_FILE, "r");
     while((c = fgetc(fpr)) != EOF)
-      fputc(c, fp);
+	fputc(c, fp);
     fclose(fpr);
 } 
 
@@ -97,7 +97,7 @@ void write_kanji(FILE *fp, char *cp, int x, int y)
 
 static char tmp[64];
 /*==================================================================*/
-            void print_matrix2ps(int jlen, int type)
+     void print_matrix2ps(SENTENCE_DATA *sp, int jlen, int type)
 /*==================================================================*/
 {
     int i, j, comma_p;
@@ -109,16 +109,16 @@ static char tmp[64];
     /* パスのマーク付け */
 
     for (i = 0; i < sp->Bnst_num; i++)
-      for (j = 0; j < sp->Bnst_num; j++)
-	path_matrix[i][j] = 0;
+	for (j = 0; j < sp->Bnst_num; j++)
+	    path_matrix[i][j] = 0;
 
     if (type == PRINT_PARA) {
 	for (i = 0; i < Para_num; i++) {
 	    ptr = &sp->para_data[i];
 	    for (j = ptr->L_B+1; j <= ptr->R; j++)
-	      path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
-		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] ?
-		  -1 : 'a' + i;
+		path_matrix[ptr->max_path[j-ptr->L_B-1]][j] =
+		    path_matrix[ptr->max_path[j-ptr->L_B-1]][j] ?
+		    -1 : 'a' + i;
 	}
     }
 
@@ -134,7 +134,7 @@ static char tmp[64];
 	} else {
 	    strcpy(tmp, b_ptr->mrph_ptr->Goi2);
 	    for (j = 1; j < (b_ptr->mrph_num - 1); j++) 
-	      strcat(tmp, (b_ptr->mrph_ptr + j)->Goi2);
+		strcat(tmp, (b_ptr->mrph_ptr + j)->Goi2);
 	    if (!strcmp(Class[(b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Hinshi][0].id,
 			"特殊") &&
 		!strcmp(Class[(b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Hinshi]
@@ -151,9 +151,9 @@ static char tmp[64];
 	    sprintf(point_B, "%c>", 'a'+ para_char);
 	    para_char++;
 	    if (comma_p)
-	      write_text14(stdout,point_B,X+i*20+15-strlen(tmp)*7-14-7,Y-i*20);
+		write_text14(stdout,point_B,X+i*20+15-strlen(tmp)*7-14-7,Y-i*20);
 	    else
-	      write_text14(stdout,point_B,X+i*20+15-strlen(tmp)*7-14, Y-i*20);
+		write_text14(stdout,point_B,X+i*20+15-strlen(tmp)*7-14, Y-i*20);
 	}
 
 	if (comma_p) {
@@ -165,13 +165,13 @@ static char tmp[64];
 	
 	for (j = i+1; j < sp->Bnst_num; j++) {
 	    if (type == PRINT_PARA)
-	      sprintf(point_B, "%2d", match_matrix[i][j]);
+		sprintf(point_B, "%2d", match_matrix[i][j]);
 	    else if (type == PRINT_DPND)
-	      sprintf(point_B, "%2d", Dpnd_matrix[i][j]);
+		sprintf(point_B, "%2d", Dpnd_matrix[i][j]);
 	    switch(path_matrix[i][j]) {
-	      case  0:	point_B[2] = ' '; break;
-	      case -1:	point_B[2] = '*'; break;
-	      default:	point_B[2] = path_matrix[i][j]; break;
+	    case  0:	point_B[2] = ' '; break;
+	    case -1:	point_B[2] = '*'; break;
+	    default:	point_B[2] = path_matrix[i][j]; break;
 	    }
 	    point_B[3] = '\0';
 	    write_text14(stdout, point_B, X+j*20, Y-i*20);	
@@ -226,14 +226,14 @@ static int X_pos, Y_pos, Wid, Hig;
     if (ptr->para_top_p == TRUE) ptr->space = 4;
     else      			    ptr->space = ptr->length;
     if (ptr->para_type == PARA_NORMAL || ptr->para_type == PARA_INCOMP)
-      ptr->space += 1;
+	ptr->space += 1;
     if (ptr->to_para_p == TRUE)
-      ptr->space += 3;
+	ptr->space += 3;
     ptr->space += (depth2-1)*8;
 
     if (ptr->child[0])
-      for (i = 0; ptr->child[i]; i++)
-	calc_tree_width2ps(ptr->child[i], depth2+1);
+	for (i = 0; ptr->child[i]; i++)
+	    calc_tree_width2ps(ptr->child[i], depth2+1);
 }
 
 /*==================================================================*/
@@ -327,11 +327,11 @@ void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 
 	    /* flag: 1: ─PARA 2: -<P>PARA */
 	    if (ptr->para_top_p == TRUE && ptr->para_type == PARA_NIL)
-	      show_self2ps(ptr->child[0], depth+1, ans_flag, 1);
+		show_self2ps(ptr->child[0], depth+1, ans_flag, 1);
 	    else if (ptr->para_top_p == TRUE && ptr->para_type != PARA_NIL)
-	      show_self2ps(ptr->child[0], depth+1, ans_flag, 2);
+		show_self2ps(ptr->child[0], depth+1, ans_flag, 2);
 	    else
-	      show_self2ps(ptr->child[0], depth+1, ans_flag, 0);
+		show_self2ps(ptr->child[0], depth+1, ans_flag, 0);
 	}
     }
 
@@ -350,7 +350,7 @@ void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 }
 
 /*==================================================================*/
-			 void print_kakari2ps()
+	       void print_kakari2ps(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 依存構造木の表示 */

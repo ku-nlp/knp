@@ -158,7 +158,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-     int case_analysis(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /*
@@ -181,7 +181,7 @@ char *pp_code_to_hstr(int num)
 
     /* 入力文側の格要素設定 */
     cf_ptr->voice = b_ptr->voice;
-    default_score = make_data_cframe(cpm_ptr);
+    default_score = make_data_cframe(sp, cpm_ptr);
 
     /* 格フレーム解析スキップ
     if (cf_ptr->element_num == 0) {
@@ -261,7 +261,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-      int all_case_analysis(BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
+int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 /*==================================================================*/
 {
     CF_PRED_MGR *cpm_ptr;
@@ -276,7 +276,7 @@ char *pp_code_to_hstr(int num)
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
 
-	one_case_point = case_analysis(cpm_ptr, b_ptr);
+	one_case_point = case_analysis(sp, cpm_ptr, b_ptr);
 
 	/* 解析不成功(入力側に必須格が残る)場合にその依存構造の解析を
 	   やめる場合
@@ -292,7 +292,7 @@ char *pp_code_to_hstr(int num)
     }
 
     for (i = 0; b_ptr->child[i]; i++)
-	if (all_case_analysis(b_ptr->child[i], t_ptr) == FALSE)
+	if (all_case_analysis(sp, b_ptr->child[i], t_ptr) == FALSE)
 	    return FALSE;
 
     return TRUE;
@@ -366,7 +366,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-		  void call_case_analysis(DPND dpnd)
+	void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, j, k;
@@ -377,11 +377,11 @@ char *pp_code_to_hstr(int num)
 
     /* 依存構造木作成 */
 
-    dpnd_info_to_bnst(&dpnd);
-    make_dpnd_tree();
+    dpnd_info_to_bnst(sp, &dpnd);
+    make_dpnd_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
-	print_kakari();
+	print_kakari(sp);
 
     /* 格解析作業領域の初期化 */
 	
@@ -395,7 +395,7 @@ char *pp_code_to_hstr(int num)
     
     /* 格解析呼び出し */
 
-    if (all_case_analysis(sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
+    if (all_case_analysis(sp, sp->bnst_data+sp->Bnst_num-1, &Work_mgr) == TRUE)
 	Possibility++;
     else
 	return;
@@ -512,12 +512,12 @@ char *pp_code_to_hstr(int num)
 
     if (Work_mgr.score > Best_mgr.score ||
 	(Work_mgr.score == Best_mgr.score && 
-	 compare_dpnd(&Work_mgr, &Best_mgr) == TRUE))
+	 compare_dpnd(sp, &Work_mgr, &Best_mgr) == TRUE))
 	copy_mgr(&Best_mgr, &Work_mgr);
 }
 
 /*==================================================================*/
-		     void record_case_analysis()
+	     void record_case_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, num;
@@ -540,7 +540,7 @@ char *pp_code_to_hstr(int num)
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	    if (num == NIL_ASSIGNED) {
-		if (check_feature(cpm_ptr->pred_b_ptr->f, "連格")) {
+		if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
 		    sprintf(feature_buffer, "格関係%d:外の関係", cpm_ptr->pred_b_ptr->num);
 		}
 		else {
