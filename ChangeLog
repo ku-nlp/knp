@@ -1,3 +1,8 @@
+2003-12-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/extern.h, system/lib_print.c, system/lib_sm.c, system/thesaurus.c:
+	NTT意味素のfeature出力をタグ単位行だけ最後に行うようにした。
+
 2003-12-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c: 名詞格フレームのPATHを指定可能に
