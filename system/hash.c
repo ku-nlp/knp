@@ -197,6 +197,8 @@
 		return HASH_KEYEXIST;
 	    }
 	    next = (*hdpp)->next;
+	    free((*hdpp)->key);
+	    free((*hdpp)->value);
 	    free(*hdpp);
 	    break;
 	}
@@ -351,5 +353,9 @@
     fclose(hashdb->fp);
     free(hashdb);
 }
+
+/*====================================================================
+                               END
+====================================================================*/
 
 #endif
