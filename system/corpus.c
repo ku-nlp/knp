@@ -862,17 +862,6 @@ void optional_case_evaluation()
     if (Op_Best_mgr.ID < 0 || Best_mgr.ID == Op_Best_mgr.ID)
 	return;
 
-    /*
-    fprintf(stderr, "★ Best = %3d\n", Best_mgr.score);
-    for (i = 0;i < Bnst_num; i++) {
-	fprintf(stderr, "%2d %2d\n", i, Best_mgr.dpnd.head[i]);
-    }
-    fprintf(stderr, "★ Op_Best = %3d\n", Op_Best_mgr.score);
-    for (i = 0;i < Bnst_num; i++) {
-	fprintf(stderr, "%2d %2d\n", i, Op_Best_mgr.dpnd.head[i]);
-    }
-    */
-
     /* 学習時でなければ */
     if (!OptLearn) {
 	for (i = 0;i < Bnst_num; i++) {
@@ -904,4 +893,24 @@ void optional_case_evaluation()
 	    return;
 	}
     }
+}
+
+/*==================================================================*/
+    int subordinate_level_check_special(char *cp, BNST_DATA *ptr2)
+/*==================================================================*/
+{
+    char *level1, *level2;
+
+    level1 = cp;
+    level2 = (char *)check_feature(ptr2->f, "レベル");
+
+    /* 連体は FALSE */
+    if (check_feature(ptr2->f, "係:連体") || check_feature(ptr2->f, "係:連格"))
+	return FALSE;
+
+    if (level1 == NULL) return TRUE;		/* 何もなし --> 何でもOK */
+    else if (level2 == NULL) return FALSE;	/* 何でも× --> 何もなし */
+    else if (strcmp(level1, level2 + strlen("レベル:")) <= 0)
+	return TRUE;				/* ptr1 <= ptr2 ならOK */
+    else return FALSE;
 }
