@@ -1,3 +1,8 @@
+2000-04-26  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* system/Makefile.in, rule/Makefile.in, perl/Makefile.in, juman/Makefile.in, docs/Makefile.in, Makefile.in, configure, ChangeLog:
+	automake, autoconf 関連の整理。
+
 2000-04-07  Sadao KUROHASHI  <kuro@pine.kuee.kyoto-u.ac.jp>
 
 	* system/read_rule.c:
