@@ -102,11 +102,11 @@ AC_SUBST(SUBDIRS)
 AC_OUTPUT([
 Makefile
 system/Makefile
-juman/Makefile
 svm/Makefile
 rule/Makefile
 docs/Makefile
 perl/Makefile
 dict/Makefile
 dict/src/Makefile
+dict/scase/Makefile
 ])
