@@ -164,20 +164,20 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 }
 
 /*==================================================================*/
- int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new, TOTAL_MGR *best)
+int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 /*==================================================================*/
 {
     int i;
 
     return FALSE;
 
-    if (Possibility == 1 || new->dflt < best->dflt) {
+    if (Possibility == 1 || new_mgr->dflt < best_mgr->dflt) {
 	return TRUE;
     } else {
 	for (i = sp->Bnst_num - 2; i >= 0; i--) {
-	    if (new->dpnd.dflt[i] < best->dpnd.dflt[i]) 
+	    if (new_mgr->dpnd.dflt[i] < best_mgr->dpnd.dflt[i]) 
 		return TRUE;
-	    else if (new->dpnd.dflt[i] > best->dpnd.dflt[i]) 
+	    else if (new_mgr->dpnd.dflt[i] > best_mgr->dpnd.dflt[i]) 
 		return FALSE;
 	}
     }
