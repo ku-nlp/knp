@@ -763,8 +763,9 @@ extern FILE  *Outfp;
 		Best_mgr.cpm[i].pred_b_ptr->cpm_ptr = &(Best_mgr.cpm[i]);
 	    /* 格解析の結果をfeatureへ */
 	    record_case_analysis();
-	    /* 主格を feature へ(固有名詞認識処理用) */
+	    /* 主格を feature へ(固有名詞認識処理用)
 	    assign_agent();
+	    */
 	}
 	return TRUE;
     } else { 
