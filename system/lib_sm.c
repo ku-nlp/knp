@@ -54,57 +54,46 @@ int		SMP2SMGExist;
 			char *get_sm(char *cp)
 /*==================================================================*/
 {
-    int i, pos;
+    int i, pos, length;
+    char *code;
 
     if (SMExist == FALSE) {
 	fprintf(stderr, "Can not open Database <%s>.\n", SM_DB_NAME);
 	exit(1);
     }
 
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", cp);
-	cont_str[0] = '\0';
-	return cont_str;
-    }  
-    
-    content = DBM_fetch(sm_db, key);
-    if (content.dptr) {
-	if (content.dsize > SM_CODE_SIZE*SM_CODE_MAX) {
-	    fprintf(stderr, "Too long SM content <%.*s>.\n", content.dsize, content.dptr);
-	    content.dsize = SM_CODE_SIZE*SM_CODE_MAX;
-	}
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
+    code = db_get(sm_db, cp);
+
+    if (code) {
+	length = strlen(code);
+	/* 溢れたら、縮める (撲滅対象) */
+	if (length > SM_CODE_SIZE*SM_CODE_MAX) {
+#ifdef DEBUG
+	    fprintf(stderr, "Too long SM content <%s>.\n", code);
 #endif
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-
-    pos = 0;
-    /* 意味素を付与する品詞 */
-    for (i = 0; cont_str[i]; i+=SM_CODE_SIZE) {
-	if (cont_str[i] == '3' ||	/* 名 */
-	    cont_str[i] == '4' ||	/* 名(形式) */
-	    cont_str[i] == '5' ||	/* 名(形動) */
-	    cont_str[i] == '6' ||	/* 名(転生) */
-	    cont_str[i] == '7' ||	/* サ変 */
-	    cont_str[i] == '9' ||	/* 時詞 */
-	    cont_str[i] == 'a' ||	/* 代名 */
-	    cont_str[i] == 'l' ||	/* 接頭 */
-	    cont_str[i] == 'm' ||	/* 接辞 */
-	    cont_str[i] == '2') {	/* 固 */
-	    strncpy(cont_str+pos, cont_str+i, SM_CODE_SIZE);
-	    pos += SM_CODE_SIZE;
+	    code[SM_CODE_SIZE*SM_CODE_MAX] = '\0';
 	}
-    }
-    cont_str[pos] = '\0';
 
-    return cont_str;
+	pos = 0;
+	/* 意味素を付与する品詞 */
+	for (i = 0; code[i]; i+=SM_CODE_SIZE) {
+	    if (code[i] == '3' ||	/* 名 */
+		code[i] == '4' ||	/* 名(形式) */
+		code[i] == '5' ||	/* 名(形動) */
+		code[i] == '6' ||	/* 名(転生) */
+		code[i] == '7' ||	/* サ変 */
+		code[i] == '9' ||	/* 時詞 */
+		code[i] == 'a' ||	/* 代名 */
+		code[i] == 'l' ||	/* 接頭 */
+		code[i] == 'm' ||	/* 接辞 */
+		code[i] == '2') {	/* 固 */
+		strncpy(code+pos, code+i, SM_CODE_SIZE);
+		pos += SM_CODE_SIZE;
+	    }
+	}
+	code[pos] = '\0';
+    }
+    return code;
 }
 
 /*==================================================================*/
@@ -112,10 +101,13 @@ int		SMP2SMGExist;
 /*==================================================================*/
 {
     int strt, end, last, stop, i, overflow_flag = 0;
-    char str_buffer[BNST_LENGTH_MAX];    
+    char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[SM_CODE_SIZE*SM_CODE_MAX+1];
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
+
+    /* 初期化 */
+    *(ptr->SM_code) = '\0';
 
     /* 
        複合語の扱い
@@ -152,7 +144,11 @@ int		SMP2SMGExist;
 		return;
 	    }
 
-	    strcpy(ptr->SM_code, get_sm(str_buffer));
+	    code = get_sm(str_buffer);
+	    if (code) {
+		strcpy(ptr->SM_code, code);
+		free(code);
+	    }
 	    if (*(ptr->SM_code)) goto Match;
 
 	    /* 表記，最後原形 */
@@ -197,7 +193,11 @@ int		SMP2SMGExist;
 			   "ナノ形容詞"))) 
 		    str_buffer[strlen(str_buffer)-2] = NULL;
 
-		strcpy(ptr->SM_code, get_sm(str_buffer));
+		code = get_sm(str_buffer);
+		if (code) {
+		    strcpy(ptr->SM_code, code);
+		    free(code);
+		}
 		if (*(ptr->SM_code)) goto Match;
 	    }
 
@@ -218,7 +218,11 @@ int		SMP2SMGExist;
 		return;
 	    }
 
-	    strcpy(ptr->SM_code, get_sm(str_buffer));
+	    code = get_sm(str_buffer);
+	    if (code) {
+		strcpy(ptr->SM_code, code);
+		free(code);
+	    }
 	    if (*(ptr->SM_code)) goto Match;
 	}
     }
@@ -230,29 +234,51 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-		 char *read_db(char *cp, DBM_FILE db)
+		       char *sm2code(char *cp)
 /*==================================================================*/
 {
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", cp);
+    char *code;
+
+    /* sm と code は 1:1 対応 
+       -> cont_str は溢れない */
+
+    if (SM2CODEExist == FALSE) {
 	cont_str[0] = '\0';
 	return cont_str;
-    }  
-    
-    content = DBM_fetch(db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
+    }
+
+    code = db_get(sm2code_db, cp);
+    if (code) {
+	strcpy(cont_str, code);
+	free(code);
     }
     else {
 	cont_str[0] = '\0';
     }
+    return cont_str;
+}
 
+/*==================================================================*/
+		       char *smp2smg(char *cp)
+/*==================================================================*/
+{
+    char *code;
+
+    /* 値は長くても 52 bytes ぐらい */
+
+    if (SMP2SMGExist == FALSE) {
+	cont_str[0] = '\0';
+	return cont_str;
+    }
+    
+    code = db_get(smp2smg_db, cp);
+    if (code) {
+	strcpy(cont_str, code);
+	free(code);
+    }
+    else {
+	cont_str[0] = '\0';
+    }
     return cont_str;
 }
 

@@ -431,12 +431,18 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     int i;
+    char *value;
 
     if (!strncmp(rule, "&語彙:", 6)) {
 	/* データベースを使う場合 */
 	if (DicForRuleDBExist == TRUE) {
-	    if (strstr((char *)get_rulev(data), rule+6)) {
-		return TRUE;
+	    value = (char *)get_rulev(data);
+	    if (value) {
+		if (strstr(value, rule+6)) {
+		    free(value);
+		    return TRUE;
+		}
+		free(value);
 	    }
 	}
 	/* データベースを使わない場合 */

@@ -27,7 +27,7 @@ PreservedNamedEntity *pNE = NULL;
 char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 
 /*==================================================================*/
-			   void init_proper()
+			  void init_proper()
 /*==================================================================*/
 {
     if ((proper_db = DBM_open(PROPER_DB_NAME, O_RDONLY, 0)) == NULL || 
@@ -40,7 +40,7 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 }
 
 /*==================================================================*/
-                    void close_proper()
+			 void close_proper()
 /*==================================================================*/
 {
     if (PROPERExist == TRUE) {
@@ -48,42 +48,6 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 	DBM_close(properc_db);
 	DBM_close(propercase_db);
     }
-}
-
-/*==================================================================*/
-                    char *get_proper(char *cp, DBM_FILE db)
-/*==================================================================*/
-{
-    if (PROPERExist == FALSE) {
-	cont_str[0] = '\0';
-	return cont_str;
-    }
-
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key.dptr);
-	cont_str[0] = '\0';
-	return cont_str;
-    }  
-    
-    content = DBM_fetch(db, key);
-    if (content.dptr) {
-	if (content.dsize > DBM_CON_MAX) {
-	    fprintf(stderr, "Too long SM content <%.*s>.\n", content.dsize, content.dptr);
-	    content.dsize = DBM_CON_MAX;
-	}
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-
-    return cont_str;
 }
 
 /*==================================================================*/
@@ -475,25 +439,6 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
-		   char *get_proper_case(char *cp)
-/*==================================================================*/
-{
-    char *dic_content, *pre_pos;
-
-    dic_content = get_proper(cp, propercase_db);
-    if (*dic_content != NULL) {
-	for (cp = pre_pos = dic_content; *cp; cp++) {
-	    if (*cp == '/') {
-		*cp = '\0';
-		/* store_NE(&ne[0], pre_pos); */
-		pre_pos = cp + 1;
-	    }
-	}
-	/* store_NE(&ne[0], pre_pos); */
-    }
-}
-
-/*==================================================================*/
 		 void store_NEC(char *feature, int i)
 /*==================================================================*/
 {
@@ -534,8 +479,8 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     init_NE(&ne[1]);
 
     /* 表記による検索 */
-    dic_content = get_proper(mp->Goi, proper_db);
-    if (*dic_content != NULL) {
+    dic_content = db_get(proper_db, mp->Goi);
+    if (dic_content != NULL) {
 	for (cp = pre_pos = dic_content; *cp; cp++) {
 	    if (*cp == '/') {
 		*cp = '\0';
@@ -544,6 +489,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    }
 	}
 	store_NE(&ne[0], pre_pos, num);
+	free(dic_content);
     }
 
     /* ここで入力形態素に意味素を与えておく */
@@ -560,8 +506,8 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    code[0] = '1';
 	    code[1] = '\0';
 	    strncat(code, mp->SM+SM_CODE_SIZE*i+1, SM_CODE_SIZE-1);
-	    dic_content = get_proper(code, properc_db);
-	    if (*dic_content != NULL) {
+	    dic_content = db_get(properc_db, code);
+	    if (dic_content != NULL) {
 		for (cp = pre_pos = dic_content; *cp; cp++) {
 		    if (*cp == '/') {
 			*cp = '\0';
@@ -570,6 +516,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 		    }
 		}
 		store_NE(&ne[1], pre_pos, num);
+		free(dic_content);
 	    }
 	}
     }
@@ -579,15 +526,16 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 
     /* 文字種による検索 */
     if (type) {
-	dic_content = get_proper(type, properc_db);
-	if (*dic_content != NULL) {
+	dic_content = db_get(properc_db, type);
+	if (dic_content != NULL) {
 	    store_NE(&ne[1], dic_content, num);
+	    free(dic_content);
 	}
     }
 
     /* 格 */
-    dic_content = get_proper(mp->Goi, propercase_db);
-    if (*dic_content != NULL) {
+    dic_content = db_get(propercase_db, mp->Goi);
+    if (dic_content != NULL) {
 	for (cp = pre_pos = dic_content; *cp; cp++) {
 	    if (*cp == '/') {
 		*cp = '\0';
@@ -596,6 +544,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    }
 	}
 	store_NEC(pre_pos, num);
+	free(dic_content);
     }
 
     /*            ne[0]    ne[1]
@@ -673,7 +622,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 
     /* 格 */
-    for (i = 0; i < Bnst_num; i++) {
+    for (i = 0; i < Bnst_num-1; i++) {
 	h = tm->dpnd.head[i];
 	cp = (char *)check_feature(bnst_data[i].f, "係");
 	if (cp) {
@@ -733,19 +682,21 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 
     /* 照応処理 */
-    for (i = 0; i < Mrph_num; i++) {
-	if (value = check_correspond_NE_longest(i, "人名")) {
-	    for (j = 0; j < value; j++) {
-		assign_cfeature(&(mrph_data[i+j].f), "単固:人名");
-		assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
+    if (1) {
+	for (i = 0; i < Mrph_num; i++) {
+	    if (value = check_correspond_NE_longest(i, "人名")) {
+		for (j = 0; j < value; j++) {
+		    assign_cfeature(&(mrph_data[i+j].f), "単固:人名");
+		    assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
+		}
 	    }
 	}
-    }
-    for (i = 0; i < Mrph_num; i++) {
-	if (value = check_correspond_NE_longest(i, "地名")) {
-	    for (j = 0; j < value; j++) {
-		assign_cfeature(&(mrph_data[i+j].f), "単固:地名");
-		assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
+	for (i = 0; i < Mrph_num; i++) {
+	    if (value = check_correspond_NE_longest(i, "地名")) {
+		for (j = 0; j < value; j++) {
+		    assign_cfeature(&(mrph_data[i+j].f), "単固:地名");
+		    assign_cfeature(&(mrph_data[i+j].f), "固照応OK");
+		}
 	    }
 	}
     }
@@ -760,36 +711,38 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 
     /* 並列処理
        並列句の数が 3 つ以上または、大きさが 2 文節以上のとき */
-    for (i = 0; i < Bnst_num; i++) {
-	/* 住所が入る並列はやめておく */
-	if (CheckJiritsuGoFeature(i, "住所"))
-	    continue;
-	cp = (char *)check_feature(bnst_data[i].f, "並結句数");
-	if (cp) {
-	    value = atoi(cp+strlen("並結句数:"));
-	    if (value > 2) {
-		/* 係り側を調べて固有名詞じゃなかったら、受け側を調べる */
-		if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
-		    NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+    if (1) {
+	for (i = 0; i < Bnst_num; i++) {
+	    /* 住所が入る並列はやめておく */
+	    if (CheckJiritsuGoFeature(i, "住所") || !check_feature(bnst_data[i].f, "体言") || !check_feature(bnst_data[bnst_data[i].dpnd_head].f, "体言"))
 		continue;
+	    cp = (char *)check_feature(bnst_data[i].f, "並結句数");
+	    if (cp) {
+		value = atoi(cp+strlen("並結句数:"));
+		if (value > 2) {
+		    /* 係り側を調べて固有名詞じゃなかったら、受け側を調べる */
+		    if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+			NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+		    continue;
+		}
 	    }
-	}
 
-	cp = (char *)check_feature(bnst_data[i].f, "並結文節数");
-	if (cp) {
-	    value = atoi(cp+strlen("並結文節数:"));
-	    if (value > 1) {
-		if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
-		    NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+	    cp = (char *)check_feature(bnst_data[i].f, "並結文節数");
+	    if (cp) {
+		value = atoi(cp+strlen("並結文節数:"));
+		if (value > 1) {
+		    if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+			NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+		}
 	    }
-	}
 
-	/* 並列のとき
-	if (bnst_data[i].dpnd_type == 'P') {
-	    if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
-		NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+	    /* 並列のとき
+	       if (bnst_data[i].dpnd_type == 'P') {
+	       if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+	       NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+	       }
+	    */
 	}
-	*/
     }
 }
 

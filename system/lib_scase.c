@@ -40,24 +40,17 @@ int		ScaseDicExist;
 /*==================================================================*/
 {
     int i;
+    char *value;
 
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
+    if (ScaseDicExist == FALSE)
 	return NULL;
-    }  
+
+    value = db_get(scase_db, cp);
     
-    content = DBM_fetch(scase_db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	for (i = 0; i < content.dsize; i++)
-	  cont_str[i] -= '0';
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-	return cont_str;
+    if (value) {
+	for (i = 0; *(value+i) != '\0'; i++)
+	  *(value+i) -= '0';
+	return value;
     }
     else {
 	return NULL;
@@ -68,8 +61,10 @@ int		ScaseDicExist;
              void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, last, stop, i;
-    char *cp, *ans, str_buffer[256];    
+    int strt, end, last, stop, i, overflow_flag = 0;
+    char *cp, *ans, *anscp, str_buffer[BNST_LENGTH_MAX];
+
+    str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
     for (i = 0, cp = ptr->SCASE_code; i < 11; i++, cp++) *cp = 0;
     /* init_bnst でもしている */
@@ -89,11 +84,25 @@ int		ScaseDicExist;
 	    end = ptr->settou_num + ptr->jiritu_num + last;
 	    for (strt=0 ; strt<(ptr->settou_num + ptr->jiritu_num); strt++) {
 		*str_buffer = '\0';
-		for (i = strt; i < end; i++)
-		  strcat(str_buffer, (ptr->mrph_ptr + i)->Goi);
+		for (i = strt; i < end; i++) {
+		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi);
+		    if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
+			overflow_flag = 1;
+			overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_scase_code");
+			break;
+		    }
+		}
+
+		if (overflow_flag) {
+		    overflow_flag = 0;
+		    return;
+		}
+
 		if ((ans = get_scase(str_buffer)) != NULL) {
 		    cp = ptr->SCASE_code;
-		    for (i = 0; i < 11; i++) *cp++ = *ans++;
+		    anscp = ans;
+		    for (i = 0; i < 11; i++) *cp++ = *anscp++;
+		    free(ans);
 		    goto Match;
 		}
 	    }

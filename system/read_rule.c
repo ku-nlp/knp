@@ -384,54 +384,14 @@ void read_bnst_rule(char *file_neme, BnstRule *rp, int *count, int max)
                     char *get_rulev(char *cp)
 /*==================================================================*/
 {
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
-	cont_str[0] = '\0';
-	return cont_str;
-    }  
-    
-    content = DBM_fetch(dic_for_rulev_db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-
-    return cont_str;
+    return db_get(dic_for_rulev_db, cp);
 }
 
 /*==================================================================*/
                     char *get_rulep(char *cp)
 /*==================================================================*/
 {
-    key.dptr = cp;
-    if ((key.dsize = strlen(cp)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
-	cont_str[0] = '\0';
-	return cont_str;
-    }  
-    
-    content = DBM_fetch(dic_for_rulep_db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-    }
-    else {
-	cont_str[0] = '\0';
-    }
-
-    return cont_str;
+    return db_get(dic_for_rulep_db, cp);
 }
 
 /*==================================================================*/

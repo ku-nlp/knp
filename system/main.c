@@ -33,12 +33,11 @@ int 		Revised_para_num;
 
 int 		Sen_num;			/* 文カウント 1〜 */
 char		Comment[DATA_LEN];		/* コメント行 */
-char		SID[256];
+char		KNPSID[256];
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		PM_Memo[256];			/* パターンマッチ結果 */
 
-char  		key_str[DBM_KEY_MAX], cont_str[DBM_CON_MAX];
-datum 		key, content;			/* ハッシュデータベース用 */
+char  		cont_str[DBM_CON_MAX];
 
 int		match_matrix[BNST_MAX][BNST_MAX];
 int		path_matrix[BNST_MAX][BNST_MAX];
@@ -71,8 +70,8 @@ int		OptMode = STAND_ALONE_MODE;
 int		OptPort = DEFAULT_PORT;
 char		OptHostname[256];
 
-FILE		*Infp  = stdin;
-FILE		*Outfp = stdout;
+FILE		*Infp;
+FILE		*Outfp;
 
 char *Case_name[] = {
     		"ガ格", "ヲ格", "ニ格", "デ格", "カラ格", 
@@ -353,6 +352,7 @@ void stand_alone_mode()
 {
     int i, j, flag, success = 1;
     int relation_error, d_struct_error;
+    char *code;
 
     while ( 1 ) {
 
@@ -395,7 +395,11 @@ void stand_alone_mode()
 	/* 形態素に意味素を与える */
 	if (SMExist == TRUE) {
 	    for (i = 0; i < Mrph_num; i++) {
-		strcpy(mrph_data[i].SM, (char *)get_sm(mrph_data[i].Goi));
+		code = (char *)get_sm(mrph_data[i].Goi);
+		if (code) {
+		    strcpy(mrph_data[i].SM, code);
+		    free(code);
+		}
 		assign_ntt_dict(i);
 	    }
 	}
@@ -573,7 +577,7 @@ void stand_alone_mode()
 	    CheckCandidates();
 
 	if (OptLearn == TRUE)
-	    printf(";;;OK 決定 %d %s %d\n", Best_mgr.ID, SID, Best_mgr.score);
+	    fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, KNPSID, Best_mgr.score);
 
 	/* 結果表示 */
 	if (OptAnalysis != OPT_DISC) print_result();
@@ -910,6 +914,9 @@ void client_mode()
 /*==================================================================*/
 {
     option_proc(argc, argv);
+
+    Infp  = stdin;
+    Outfp = stdout;
 
     /* モードによって処理を分岐 */
     if (OptMode == STAND_ALONE_MODE) {

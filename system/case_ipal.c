@@ -10,14 +10,11 @@
 
 FILE *ipal_fp;
 DBM_FILE ipal_db;
-char  key_str[DBM_KEY_MAX], cont_str[DBM_CON_MAX];
-datum key, content;
 
 CASE_FRAME 	Case_frame_array[ALL_CASE_FRAME_MAX]; 	/* 格フレーム */
 int 	   	Case_frame_num;				/* 格フレーム数 */
 
 IPAL_FRAME Ipal_frame;
-char address_str[DBM_CON_MAX];
 
 int	IPALExist;
 
@@ -29,7 +26,11 @@ int	IPALExist;
 			  void init_ipal()
 /*==================================================================*/
 {
+#ifdef _WIN32
+    if ((ipal_fp = fopen(IPAL_DAT_NAME, "rb")) == NULL) {
+#else
     if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
+#endif
 	/*
 	  fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
 	  exit(1);
@@ -56,32 +57,13 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-       int get_ipal_address(unsigned char *word, char *address)
+	     char *get_ipal_address(unsigned char *word)
 /*==================================================================*/
 {
-    if (IPALExist == FALSE) return FALSE;
+    if (IPALExist == FALSE)
+	return NULL;
 
-    key.dptr = word;
-    if ((key.dsize = strlen(key.dptr)) >= DBM_KEY_MAX) {
-	fprintf(stderr, "Too long key <%s>.\n", key_str);
-	return 0;
-    }  
-
-    content = DBM_fetch(ipal_db, key);
-    if (content.dptr) {
-	strncpy(cont_str, content.dptr, content.dsize);
-	cont_str[content.dsize] = '\0';
-#ifdef	GDBM
-	free(content.dptr);
-	content.dsize = 0;
-#endif
-	strcpy(address, cont_str);
-	return TRUE;
-    }
-    else {
-	address[0] = '\0';
-	return FALSE;
-    }
+    return db_get(ipal_db, word);
 }
 
 /*==================================================================*/
@@ -190,6 +172,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 
     unsigned char *point, *point2;
     int i;
+    char *code;
     extern char *get_bgh();
 
     point = cp;
@@ -204,7 +187,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		break;
 	    }
 	}
-	strcat(c_ptr->ex[num], get_bgh(point2));
+	code = get_bgh(point2);
+	if (code) {
+	    strcat(c_ptr->ex[num], code);
+	    free(code);
+	}
 	if (strlen(c_ptr->ex[num]) >= EX_ELEMENT_MAX*10) {
 	    fprintf(stderr, "Too many EX <%s>.\n", ipal_str_buf);
 	    break;
@@ -343,17 +330,21 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 /*==================================================================*/
 {
     IPAL_FRAME *i_ptr = &Ipal_frame;
-    int f_num = 0, address;
-    char *pre_pos, *cp;
+    int f_num = 0, address, break_flag = 0;
+    char *pre_pos, *cp, *address_str;
     
-    get_ipal_address(L_Jiritu_M(b_ptr)->Goi, address_str);
+    address_str = get_ipal_address(L_Jiritu_M(b_ptr)->Goi);
 
-    if (address_str[0]) strcat(address_str, "/");
-				/* アドレスの区切り"/"を末尾に付加 */
- 		 		/* 次のforループを単純にするため */
-    for (cp = pre_pos = address_str; *cp; cp++) {
-	if (*cp == '/') {
-	    *cp = '\0';
+    /* なければ */
+    if (!address_str)
+	return f_num;
+
+    for (cp = pre_pos = address_str; ; cp++) {
+	if (*cp == '/' || *cp == '\0') {
+	    if (*cp == '\0')
+		break_flag = 1;
+	    else 
+		*cp = '\0';
 	    
 	    /* IPALデータの読みだし */
 	    address = atoi(pre_pos);
@@ -421,8 +412,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 		    f_num_inc(&f_num);
 		}
 	    }
+	    if (break_flag)
+		break;
 	}
     }
+    free(address_str);
     return f_num;
 }
 

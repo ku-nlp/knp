@@ -17,12 +17,11 @@ extern int		Revised_para_num;
 
 extern int		Sen_num;
 extern char 		Comment[];
-extern char		SID[];
+extern char		KNPSID[];
 extern char		*ErrorComment;
 extern char 		PM_Memo[];
 
-extern char  		key_str[], cont_str[];
-extern datum 		key, content;
+extern char  		cont_str[];
 
 extern int		IPALExist;
 extern int		SMExist;
@@ -126,6 +125,9 @@ int			CurEtcRuleSize;
 extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];
+
+extern char *get_bgh(char *cp);
+extern char *db_get(DBM_FILE db, char *buf);
 
 /*====================================================================
 				 END
