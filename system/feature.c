@@ -914,7 +914,9 @@
     }
 
     else {
+#ifdef DEBUG
 	fprintf(stderr, "Invalid Feature-Function (%s)\n", rule);
+#endif
 	return FALSE;
     }
 }

@@ -210,8 +210,10 @@ static int rel_matrix_strong[4][4] = {
 	    }
 	}
 
+#ifdef DEBUG
 	/* 元の親と新しい親に関係がない */
 	fprintf(stderr, "Invalid relation !!\n");
+#endif
 	
     } else {
 	child_ptr->parent = parent_ptr;
