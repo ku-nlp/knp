@@ -212,6 +212,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    strcpy(Comment, input_buffer);
+	    sscanf(Comment, "# %s", SID);
 
 	    /* 文章が変わったら固有名詞スタックをクリア */
 	    if (OptNE != OPT_NORMAL) {
@@ -529,7 +530,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	b_ptr->jiritu_ptr = m_ptr;
 
     if ((strlen(b_ptr->Jiritu_Go) + strlen(m_ptr->Goi)) >= WORD_LEN_MAX) {
-	fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)",
+	fprintf(stderr, ";; Too big Jiritu_Go (%s%s...)\n",
 		b_ptr->Jiritu_Go, m_ptr->Goi);
     } else {
 	strcat(b_ptr->Jiritu_Go, m_ptr->Goi);
