@@ -448,8 +448,12 @@ char *Opt_jumanrc = NULL;
 	    if (make_bunsetsu() == FALSE) continue;
 	}
 
+	/* 文節化だけの場合 */
 	if (OptAnalysis == OPT_BNST) {
-	    print_mrphs(0); continue;	/* 文節化だけの場合 */
+	    print_mrphs(0);
+	    fflush(Outfp);
+	    success = 1;
+	    continue;
 	}
 
 	/* 文節への情報付与 */
