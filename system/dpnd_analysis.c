@@ -898,8 +898,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		/* ¸õÊä¤¿¤Á */
 		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
 		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
-		    fprintf(stderr, ";; Too long string <%s> (%d) in check_candidates.\n", 
-			    buffer, tm->dpnd.check[i].num);
+		    fprintf(stderr, ";; Too long string <%s> (%d) in check_candidates. (%s)\n", 
+			    buffer, tm->dpnd.check[i].num, sp->KNPSID ? sp->KNPSID+5 : "?");
 		    return;
 		}
 		strcat(buffer, buffer2);
