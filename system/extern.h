@@ -95,6 +95,7 @@ int			CurEtcRuleSize;
 extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];
+extern char		*ETAG_name[];
 
 /* 各種スコア, コスト */
 extern int	SOTO_SCORE;
@@ -119,7 +120,7 @@ extern char *pp_code_to_kstr(int num);
 extern char *pp_code_to_hstr(int num);
 extern int MatchPP(int n, char *pp);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
-extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag);
+extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int lastflag);
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag);
 extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
@@ -127,7 +128,7 @@ extern char *make_print_string(BNST_DATA *bp);
 extern void InitCPMcache();
 extern void ClearCPMcache();
 extern void fix_sm_person(SENTENCE_DATA *sp);
-extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest);
+extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);

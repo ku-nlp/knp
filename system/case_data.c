@@ -564,7 +564,9 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	     */
 	    if (check_feature(cel_b_ptr->f, "¿ôÎÌ") && 
 		(check_feature(cel_b_ptr->f, "·¸:¥¬³Ê") || check_feature(cel_b_ptr->f, "·¸:¥ò³Ê")) && 
-		cel_b_ptr->num > 0 && check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "·¸:ÎÙÀÜ") && 
+		cel_b_ptr->num > 0 && 
+		(check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "·¸:ÎÙÀÜ") || 
+		 check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "·¸:Æ±³ÊÌ¤³Ê")) && 
 		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "¿ôÎÌ") && 
 		!check_feature((sp->bnst_data+cel_b_ptr->num-1)->f, "»ş´Ö")) {
 		_make_data_cframe_sm(cpm_ptr, sp->bnst_data+cel_b_ptr->num-1);

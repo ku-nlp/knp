@@ -64,19 +64,19 @@
     int strt, end, stop, i, jiritu;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char *result_code;
-    int result_num, exist, code_unit;
+    int *result_num, exist, code_unit;
 
     /* 文節の意味素コードを取得 */
 
     if (flag == USE_NTT) {
 	result_code = ptr->SM_code;
-	result_num = ptr->SM_num;
+	result_num = &ptr->SM_num;
 	exist = SMExist;
 	code_unit = SM_CODE_SIZE;
     }
     else if (flag == USE_BGH) {
 	result_code = ptr->BGH_code;
-	result_num = ptr->BGH_num;
+	result_num = &ptr->BGH_num;
 	exist = BGHExist;
 	code_unit = BGH_CODE_SIZE;
     }
@@ -196,9 +196,9 @@
     }
 
   Match:
-    result_num = strlen(result_code) / code_unit;
+    *result_num = strlen(result_code) / code_unit;
 
-    if (result_num > 0) {
+    if (*result_num > 0) {
 	if (flag == USE_NTT) {
 	    char feature_buffer[BNST_LENGTH_MAX+SM_CODE_SIZE*SM_ELEMENT_MAX+4];
 	    sprintf(feature_buffer, "SM:%s:%s", str_buffer, result_code);

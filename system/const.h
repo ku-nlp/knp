@@ -584,6 +584,7 @@ typedef struct {
 ====================================================================*/
 #define IPAL_FIELD_NUM	72
 #define CASE_MAX_NUM	20
+#define CASE_TYPE_NUM	50
 
 #define	USE_NONE 0
 #define USE_BGH	1
@@ -792,10 +793,18 @@ typedef struct predicate_anaphora_list {
     struct predicate_anaphora_list *next;
 } PALIST;
 
+#define	ELLIPSIS_TAG_UNSPECIFIED_PEOPLE	-2	/* 不特定:人 */
+#define	ELLIPSIS_TAG_I_WE		-3	/* 1人称 */
+#define	ELLIPSIS_TAG_UNSPECIFIED_CASE	-4	/* 不特定:状況 */
+#define	ELLIPSIS_TAG_PRE_SENTENCE	-5	/* 前文 */
+#define	ELLIPSIS_TAG_POST_SENTENCE	-6	/* 後文 */
+#define	ELLIPSIS_TAG_EXCEPTION		-7	/* 対象外 */
+
 typedef struct ellipsis_component {
     SENTENCE_DATA	*s;
     int			bnst;
     float		score;
+    int			dist;			/* 距離 */
 } ELLIPSIS_COMPONENT;
 
 typedef struct ellipsis_cmm_list {
@@ -807,7 +816,7 @@ typedef struct ellipsis_cmm_list {
 typedef struct ellipsis_list {
     CF_PRED_MGR		*cpm;
     float		score;
-    ELLIPSIS_COMPONENT cc[CASE_MAX_NUM];	/* 省略格要素のリスト */
+    ELLIPSIS_COMPONENT cc[CASE_TYPE_NUM];	/* 省略格要素のリスト */
     FEATUREptr		f;
     int			result_num;
     ELLIPSIS_CMM	ecmm[CMM_MAX];

@@ -822,7 +822,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
 		    fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
 		    /* 格解析の結果を featureへ */
-		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), lastflag == i ? 1 : 0);
+		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, lastflag == i ? 1 : 0);
 		}
 		else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
 		    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));

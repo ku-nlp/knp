@@ -26,6 +26,10 @@ int Bcheck[BNST_MAX];
 
 char *ExtraTags[] = {"対象外", "一人称", "主体一般", "不特定物", ""};
 
+char *ETAG_name[] = {
+    "", "", "不特定:人", "一人称", "不特定:状況", 
+    "前文", "後文", "対象外"};
+
 float	AssignReferentThreshold = 0.67;
 float	AssignReferentThresholdDecided = 0.50;
 float	AssignGaCaseThreshold = 0.67;	/* ガ格を【主体一般】にする閾値 */
@@ -2231,6 +2235,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_I_WE;
 	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
 	return 1;
     }
@@ -2240,6 +2245,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "C用;【対象外】;%s;-1;-1;1", 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_EXCEPTION;
 	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
 	return 1;
     }
@@ -2276,6 +2282,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
     }
     /* 次の場合は省略要素を探すが記録しない 
        (現時点ではデータを見るため、これらも省略解析を行っている) 
@@ -2303,6 +2310,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
 	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
 	return 1;
     } */
@@ -2315,9 +2323,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	sprintf(feature_buffer, "C用;【前文】;%s;-1;-1;1", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
-	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
+	em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_PRE_SENTENCE;
+	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
 	return 1;
     }
+    /* ★考える必要あり */
     else if (maxscore > 0 && 
 	     maxscore < AssignReferentThresholdAnonymousThing && 
 	     MatchPP(cf_ptr->pp[n][0], "ヲ") && 
@@ -2328,7 +2338,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	assign_cfeature(&(em_ptr->f), feature_buffer); */
 	/* ★最大スコアの指示対象を dummy で格フレームに保存 
 	   それが、ほかの格の候補にならなくなるのは問題★ */
-	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
+	/* AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos); */
 	return 1;
     }
     /* 格解析で格フレームを決定していたら閾値なし
@@ -2367,6 +2377,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	if (word) free(word);
 	em_ptr->cc[cf_ptr->pp[n][0]].s = maxs;
 	em_ptr->cc[cf_ptr->pp[n][0]].bnst = maxi;
+	em_ptr->cc[cf_ptr->pp[n][0]].dist = distance;
 
 	/* 指示対象を格フレームに保存 */
 	AppendToCF(cpm_ptr, cmm_ptr, maxs->bnst_data+maxi, cf_ptr, n, maxscore, maxpos);
@@ -2606,7 +2617,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		    if (onceflag) {
 			/* ひとつの省略の指示対象をみつけたので、
 			   ここでもっともスコアの高い格フレームを再調査する */
-			find_best_cf(sp, cpm_ptr, -1);
+			find_best_cf(sp, cpm_ptr, -1, 0);
 			return em_ptr->score;
 		    }
 		}
@@ -2642,7 +2653,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		else */
 		em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore*7));
 		if (onceflag) {
-		    find_best_cf(sp, cpm_ptr, -1);
+		    find_best_cf(sp, cpm_ptr, -1, 0);
 		    return em_ptr->score;
 		}
 	    }
@@ -3026,7 +3037,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		/* fix_sm_place(sp, cpm_ptr); */
 		/* 格解析の結果を feature へ */
-		record_case_analysis(sp, cpm_ptr, mainflag);
+		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 		/* 保存するデータにも (★非効率)
 		cs = sentence_data + sp->Sen_num - 1;
 		for (i = 0; i < cpm_ptr->cf.element_num; i++) {
@@ -3038,6 +3049,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 			cs->bnst_data[bn].pred_b_ptr = cs->bnst_data + (sp->bnst_data[bn].pred_b_ptr - sp->bnst_data);
 		    }
 		} */
+	    }
+	    else {
+		/* 格解析の結果を feature へ */
+		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 	    }
 
 	    /* サ変名詞のガ格はまだ怪しいので記録しない -> サ変名詞すべて記録しない

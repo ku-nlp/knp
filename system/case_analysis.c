@@ -250,7 +250,7 @@ char *pp_code_to_hstr(int num)
 }
 
 /*==================================================================*/
-int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
+int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide)
 /*==================================================================*/
 {
     int i, j, frame_num = 0, pat_num;
@@ -374,8 +374,39 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 	    }
 	}
 
-	/* 文脈解析ではないときは、すべての格のスコアを正規化したものにする */
-	if (closest > -1 && OptDisc != OPT_DISC) {
+	/* とりあえず設定
+	   closest > -1: decided 決定用 */
+	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;
+    }
+
+    /* 文脈解析: 直前格要素のスコアが閾値以上なら格フレームを決定 */
+    if (decide) {
+	if (OptDisc == OPT_DISC) {
+	    if (closest > -1 && cpm_ptr->score > 7) {
+		if (cpm_ptr->tie_num > 1) {
+		    cpm_ptr->decided = CF_CAND_DECIDED;
+		}
+		else {
+		    cpm_ptr->decided = CF_DECIDED;
+		    /* exact match して、最高点の格フレームがひとつなら、それだけを表示 */
+		    if (cpm_ptr->score == EX_match_exact) {
+			cpm_ptr->result_num = 1;
+		    }
+		}
+	    }
+	    else if (closest == -1 && cpm_ptr->cf.element_num > 0 && 
+		     check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
+		cpm_ptr->decided = CF_DECIDED;
+	    }
+	}
+	else if (closest > -1) {
+	    cpm_ptr->decided = CF_DECIDED;
+	}
+    }
+
+    /* すべての格のスコアを正規化したものにする */
+    if (cf_ptr->element_num != 0) {
+	if (closest > -1) {
 	    for (i = 0; i < cpm_ptr->result_num; i++) {
 		/* 割り当て失敗のとき(score==-1)は、pure_score は定義されていない */
 		/* 入力側に任意格しかなく割り当てがないとき(score==0)は、分子分母ともに0になる */
@@ -447,9 +478,8 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     }
 
     /* 1. ヲ格, ニ格であるとき
-       2. 無格で<回数>でないもの
-       3. <主体>にマッチしない 1, 2 以外の格 (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))
-       4. 用言の直前の未格 (副詞がはさまってもよい)
+       2. <主体>にマッチしない 1, 2 以外の格 (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ガ"))
+       3. 用言の直前の未格 (副詞がはさまってもよい)
        ★形容詞, 判定詞は?
        check_feature してもよい
        条件廃止: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
@@ -465,7 +495,6 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		     check_feature((sp->bnst_data+min+1)->f, "係:連用"))))) || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ヲ") || 
 		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ニ") || 
-		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "φ") || 
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
 		    cpm_ptr->cf.pp[elem_b_num][0] < 8) || /* デ格以外 */
 		   cpm_ptr->cf.pp[elem_b_num][0] == 39) && 
@@ -672,33 +701,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
 
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
-    /* ★直前格要素がない場合は、この関数を実行する必要がない★ */
-    find_best_cf(sp, cpm_ptr, closest);
-
-    if (OptDisc == OPT_DISC) {
-	/* 直前格要素のスコアが閾値以上なら格フレームを決定 */
-	if (closest > -1 && cpm_ptr->score > 7) {
-	    if (cpm_ptr->tie_num > 1) {
-		cpm_ptr->decided = CF_CAND_DECIDED;
-	    }
-	    else {
-		cpm_ptr->decided = CF_DECIDED;
-		/* exact match して、最高点の格フレームがひとつなら、それだけを表示 */
-		if (cpm_ptr->score == EX_match_exact) {
-		    cpm_ptr->result_num = 1;
-		}
-	    }
-	}
-	else if (closest == -1 && cpm_ptr->cf.element_num > 0 && 
-		 check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
-	    cpm_ptr->decided = CF_DECIDED;
-	}
-    }
-    else {
-	if (closest > -1) {
-	    cpm_ptr->decided = CF_DECIDED;
-	}
-    }
+    find_best_cf(sp, cpm_ptr, closest, 1);
 
     if (OptAnalysis == OPT_CASE) {
 	RegisterCPM(cpm_ptr);
@@ -1249,11 +1252,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
-void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
+void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
+			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
 {
     int i, num;
-    char feature_buffer[DATA_LEN], relation[DATA_LEN], *word;
+    char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word;
 
     /* 格フレームがない場合 */
     if (cpm_ptr->result_num == 0 || 
@@ -1267,10 +1271,49 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	decide_voice(sp, cpm_ptr);
     }
 
+    /* 「格フレーム変化」フラグがついている格フレームを使用した場合 */
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化");
     }
 
+    /* 格フレームID */
+    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+
+    /* 格解析結果 ★buffer溢れ未対応★ */
+    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id+2);
+    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	if (num == UNASSIGNED) {
+	    if (em_ptr && em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst < 0) {
+		sprintf(buffer, ";%s/E/%s", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			ETAG_name[abs(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].bnst)]);
+	    }
+	    else {
+		sprintf(buffer, ";%s/U", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+	    }
+	}
+	else {
+	    word = make_print_string(cpm_ptr->elem_b_ptr[num]);
+	    sprintf(buffer, ";%s/%c/%s/%d", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		    cpm_ptr->elem_b_num[num] == -2 ? 'O' : 
+		    cpm_ptr->cf.pp[num][0] < 0 ? 'N' : 'C', 
+		    word, cpm_ptr->elem_b_ptr[num]->num);
+	    free(word);
+
+	    /* 省略の場合 (特殊タグ以外) */
+	    if (em_ptr && cpm_ptr->elem_b_num[num] == -2) {
+		strcat(feature_buffer, buffer);
+		sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
+			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
+			em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
+	    }
+	}
+	strcat(feature_buffer, buffer);
+    }
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+
+    /* 各格要素の記述 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 省略解析の結果は除く
 	   指示詞の解析をする場合は、指示詞を除く */
