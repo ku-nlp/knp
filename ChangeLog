@@ -1,3 +1,28 @@
+2003-01-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/bnst_compare.c, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_print.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/read_data.c, system/read_rule.c, system/regexp.c, system/thesaurus.c, system/tree_conv.c:
+	格解析の単位を文節からタグ単位へ変更
+
+	* rule/case_analysis.rule, rule/mrph_basic.rule:
+	タグ単位まわりのfeature付与
+	接頭, 自立, 接尾のfeatureはそれらをもとに
+
+	* knprc.sample: 格解析の単位の変更に伴う更新
+
+2003-01-09  Sadao Kurohashi <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule: 弱時相名詞の若干の修正
+	追加: 従来，前回，次回
+	削除: 前半，後半
+
+2003-01-06  Sadao Kurohashi <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule: 複合語のルールの整理
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase: 時間助数辞 → 時間辞
+
+	* rule/mrph_homo.rule: 「たくさん」を副詞
+
 2002-12-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_trivial.phrase: deleted.
