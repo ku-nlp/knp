@@ -209,6 +209,9 @@ int	ParaThesaurus = USE_BGH;
 		    "ナノ形容詞")))
 	    str_buffer[strlen(str_buffer) - 2] = '\0';
 
+	/* 「共通する」がなく「する」だけになるような場合はskip */
+	if (end > 0 && str_eq(str_buffer, "する")) return;
+
 	code = get_str_code(str_buffer, flag | lookup_pos);
 
 	if (code) {

@@ -259,6 +259,13 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    (!check_feature(ptr1->f, "ため-せい") &&
 	     check_feature(ptr2->f, "ため-せい"))) return 0;
 
+	/* 複合辞とそれ以外も類似度 0 */
+
+	if ((check_feature(ptr1->f, "複合辞") &&
+	     !check_feature(ptr2->f, "複合辞")) ||
+	    (!check_feature(ptr1->f, "複合辞") &&
+	     check_feature(ptr2->f, "複合辞"))) return 0;
+
 	point += 2;
 
 	if (check_feature(ptr1->f, "体言") &&
