@@ -31,11 +31,15 @@ rule:
 	fi
 
 trans:
-	if [ -x rule_trans.pl ]; then \
+	if [ -x $(RULETRANS) ]; then \
 	    if [ -f bnst_type.rule ]; then \
 		cp -pf bnst_type.rule bnst_type.rule.old; \
 	    fi; \
-	    ./rule_trans.pl < bnst_type.phrase > bnst_type.rule; \
+	    for f in *.phrase; \
+	    do \
+		base=`expr $$f : "\(.*\)\.[^.]*"` \
+		$(RULETRANS) < $$f > $$base.rule; \
+	    done; \
 	fi
 	$(MAKE) rule
 
