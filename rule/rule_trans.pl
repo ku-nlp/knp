@@ -202,7 +202,9 @@ while ( <STDIN> ) {
 	    print " ?*";
 
 	} else {
-	    bnst_cond($all[$i], 1, $repr_str[$i-1], $repr_str[$i+1]);
+
+           bnst_cond($all[$i], 1, $repr_str[$i-1], $repr_str[$i+1]);
+    #	   bnst_cond($all[$i], 1, $repr_str[0 .. $i-1], $repr_str[$i+1 .. $#repr_str]);
 	}
     }
 
@@ -224,7 +226,7 @@ sub bnst_cond
     my ($ast_flag, $string, $feature);
 
     # (....) -> ....とast_flagに分離
-    
+
     if ($bnstrule_flag && $input =~ /^\((.+)\)$/) {
 	$input = $1;
 	$ast_flag = 1;
@@ -415,10 +417,13 @@ sub bnst_cond2
 	    #      3. 末尾の"，"もJUMANで未定義語
 
 	    $knp_input = $l_context . $data[$i][$j]{phrase} . $r_context;
-	    if ($knp_input =~ /，$/) {
-		$knp_input .= "＝";
-	    } else {
-		$knp_input .= "，＝";
+
+	    if($bnstrule_flag){
+		if ($knp_input =~ /，$/) {
+		    $knp_input .= "＝";
+		} else {
+		    $knp_input .= "，＝";
+		}
 	    }
 
 	    $knp->parse($knp_input); 
@@ -443,13 +448,12 @@ sub bnst_cond2
 		 $mrph[$i][$j][$k]{conj2}, 
 		 $mrph[$i][$j][$k]{d4}) = split(/ /, $item);
 		$mrph[$i][$j][$k]{length} = length($mrph[$i][$j][$k]{word});
-		$mrph[$i][$j][$k]{result} = 		    
+		$mrph[$i][$j][$k]{result} = 
 		    " [$mrph[$i][$j][$k]{pos} $mrph[$i][$j][$k]{pos2} $mrph[$i][$j][$k]{conj} $mrph[$i][$j][$k]{conj2} $mrph[$i][$j][$k]{base}]";
 		$k++;
 	    }
 
 	    # l_contextとr_contextが形態素として正しく区切れているかチェック
-
 	    $begin_check = 0;
 	    $end_check = 0;
 	    $length = 0;
@@ -517,7 +521,7 @@ sub bnst_cond2
 			break;
 		    }
 		}
-		
+
 		# ORが同一品詞か
 		if ($mrph[0][0][$data[0][0]{start}[$i]]{pos} ne $mrph[$i][$j][$data[$i][$j]{start}[$i]]{pos}) {
 		    $error_flag = 1;
@@ -645,8 +649,7 @@ sub bnst_cond2
 		}
 
 		# 形態素のfeatureが指定されている場合
-		if ($k == $data[0][0]{end}[$i] &&
-		    $feature[$i]{lastfeature}) {
+		if ($feature[$i]{lastfeature}) {
 		    if ($mrph[0][0][$k]{result}) {
 			$mrph[0][0][$k]{result} =~ s/\]$/$feature[$i]{lastfeature}\]/;
 		    }
@@ -654,7 +657,7 @@ sub bnst_cond2
 			$mrph[0][0][$k]{result} = " [* * * * *$feature[$i]{lastfeature}]";
 		    }
 		}
-	    
+
 		print $mrph[0][0][$k]{result};
 		print "*" if ($feature[$i]{ast});
 	    }
