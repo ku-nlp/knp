@@ -95,7 +95,7 @@
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
-#define OPT_NENOSM	2
+#define OPT_NESM	2
 #define OPT_NE		3
 
 #define OPT_INHIBIT_CLAUSE		0x0001
