@@ -219,6 +219,8 @@ extern FILE  *Outfp;
 {
     int i;
 
+    return TRUE;
+
     if (Possibility == 1 || new->dflt < best->dflt) {
 	return TRUE;
     } else {
@@ -306,6 +308,14 @@ extern FILE  *Outfp;
        4. 未格，連体修飾先はガ,ヲ,ニ格の余っているスロット数だけ点数付与
     */
 
+    /* コーパスの事例データの初期化 */
+    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
+	for (i = 1; i < sp->Bnst_num; i++) {
+	    dpnd.op[i].data = NULL;
+	    dpnd.op[i].candidatesdata = NULL;
+	}
+    }
+
     score = 0;
     for (i = 1; i < sp->Bnst_num; i++) {
 	g_ptr = sp->bnst_data + i;
@@ -343,15 +353,12 @@ extern FILE  *Outfp;
 		    one_score -= 5;
 		}
 
-		/* 任意格の係り受けがコーパス中に存在するかどうか */
+		/* 係り受けがコーパス中に存在するかどうか */
 		if ((cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
-		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) && 
-			check_optional_case(cp+3) == TRUE) {
-
-			/* 共起頻度による重み付け */
-			optional_score = CorpusExampleDependencyCalculation(d_ptr, cp+3, i, &(dpnd.check[j]));
-
-			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr); */
+		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
+			/* 優先規則 */
+			optional_score = CorpusExampleDependencyCalculation(d_ptr, cp+3, i, &(dpnd.check[j]), &dpnd.op[j]);
+			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr, &dpnd.op[j]); */
 
 			/* one_score += optional_score*10; */
 			/* 距離重み */ /* j が i に係っている */

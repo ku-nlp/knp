@@ -658,6 +658,9 @@ char *Opt_jumanrc = NULL;
 	    print_mrphs(0);
 	} else {
 	    print_result();
+
+	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
+		unsupervised_debug_print();
 	}
 	fflush(Outfp);
 	success = 1;/* OK À®¸ù */

@@ -30,7 +30,7 @@ void CheckCandidates()
 		if (OptOptionalCase) {
 		    if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ทธ")) != NULL) {
 			if (str_eq(cp+3, OptOptionalCase)) {
-			    corpus_optional_case_comp(sp->bnst_data+i, cp+3, sp->bnst_data[tm->dpnd.check[i].pos[j]]);
+			    corpus_optional_case_comp(sp->bnst_data+i, cp+3, sp->bnst_data[tm->dpnd.check[i].pos[j]], NULL);
 			}
 		    }
 		}

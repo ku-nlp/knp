@@ -532,11 +532,13 @@ typedef struct _check {
     int pos[BNST_MAX];
 } CHECK_DATA;
 
-struct _optionalcase {
+typedef struct _optionalcase {
     int flag;
     int weight;
     char *type;
-};
+    char *data;
+    char *candidatesdata;
+} CORPUS_DATA;
 
 /* 文中の各文節の係り先などの記録 */
 typedef struct {
@@ -595,6 +597,7 @@ typedef struct cf_def {
 							/* 意味マーカ */
     int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
     char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*10];	/* 例 */
+    char	ex2[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
     char 	ipal_id[128];				/* IPALのID */
