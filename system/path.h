@@ -10,6 +10,7 @@
 #define IPAL_DAT_NAME	KNP_DICT "/cf/ipal.dat"
 #define RULEV_DIC_FILE	KNP_DICT "/rule/rulev.dic"
 #define RULEP_DIC_FILE	KNP_DICT "/rule/rulep.dic"
+#define NOUN_DB_NAME	KNP_DICT "/rsk/rsk"
 
 #ifdef GDBM
 #define BGH_DB_NAME	KNP_DICT "/bgh/bgh"

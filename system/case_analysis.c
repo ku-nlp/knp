@@ -557,7 +557,6 @@ char *pp_code_to_hstr(int num)
 		sprintf(feature_buffer, "C¾ÊÎ¬²ÄÇ½À­-%s", 
 			pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]));
 		assign_cfeature(&(pred_b_ptr->f), feature_buffer);
-		/* EllipsisDetect_old(Best_mgr, cpm_ptr, cmm_ptr->cf_ptr, i); */
 	    }
 	}
     }

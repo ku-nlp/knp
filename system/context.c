@@ -222,7 +222,7 @@
 }
 
 /*==================================================================*/
-    float CalcSimilarity(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n)
+float CalcSimilarityForVerb(BNST_DATA *cand, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
     char *exd, *exp;
@@ -268,7 +268,7 @@
 }
 
 /*==================================================================*/
-void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
+void EllipsisDetectForVerb(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
     /* cf_ptr = cpm_ptr->cmm[0].cf_ptr である */
@@ -297,7 +297,7 @@ void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 		!check_feature((s->bnst_data+i)->f, "形副名詞") && 
 		!check_feature((s->bnst_data+i)->f, "時間") && 
 		!check_feature((s->bnst_data+i)->f, "数量")) {
-		score = CalcSimilarity(s->bnst_data+i, cf_ptr, n);
+		score = CalcSimilarityForVerb(s->bnst_data+i, cf_ptr, n);
 		if (score > maxscore) {
 		    maxscore = score;
 		    maxs = s;
@@ -326,6 +326,23 @@ void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 }
 
 /*==================================================================*/
+	      void EllipsisDetectForNoun(BNST_DATA *bp)
+/*==================================================================*/
+{
+    char **def;
+    int i;
+
+    def = GetDefinitionFromBunsetsu(bp);
+    if (!def) {
+	return;
+    }
+
+    for (i = 0; *(def+i); i++) {
+	fprintf(stderr, "定義文[%s] %d: %s\n", bp->Jiritu_Go, i, *(def+i));
+    }
+}
+
+/*==================================================================*/
 		      void discourse_analysis()
 /*==================================================================*/
 {
@@ -337,6 +354,7 @@ void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 
     copy_sentence();
 
+    /* 各用言をチェック */
     for (j = 0; j < Best_mgr.pred_num; j++) {
 	cpm_ptr = &(Best_mgr.cpm[j]);
 
@@ -357,50 +375,19 @@ void EllipsisDetect(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	    if (num == UNASSIGNED && cmm_ptr->score != -2 && 
 		!check_feature(pred_b_ptr->f, "準用言") && 
 		!str_eq((char *)pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][0]), "時間")) {
-		EllipsisDetect(cpm_ptr, cmm_ptr->cf_ptr, i);
+		EllipsisDetectForVerb(cpm_ptr, cmm_ptr->cf_ptr, i);
 	    }
 	}
     }
-}
 
-/*==================================================================*/
-void EllipsisDetect_old(TOTAL_MGR *tm, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
-/*==================================================================*/
-{
-    /* cf_ptr = cpm_ptr->cmm[0].cf_ptr である */
-    /* 用言 cpm_ptr の cf_ptr->pp[n][0] 格が省略されている
-       cf_ptr->ex[n] に似ている文節を探す */
-
-    int i, maxi;
-    float score, maxscore = 0;
-    char feature_buffer[DATA_LEN];
-
-    /* 文内の体言を探す (この用言の格要素になっているもの以外) */
-    for (i = 0; i < cpm_ptr->pred_b_ptr->num; i++) {
-	if (tm->dpnd.head[i] == cpm_ptr->pred_b_ptr->num)
-	/* if ((sp->bnst_data+i)->dpnd_head == cpm_ptr->pred_b_ptr->num) */
-	    continue;
+    /* 各体言をチェック */
+    for (i = sp->Bnst_num-1; i >= 0; i--) {
 	if (check_feature((sp->bnst_data+i)->f, "体言") && 
-	    !check_feature((sp->bnst_data+i)->f, "形副名詞")) {
-	    score = CalcSimilarity(sp->bnst_data+i, cf_ptr, n);
-	    if (score > maxscore) {
-		maxscore = score;
-		maxi = i;
-	    }
-	    if (score > 0) {
-		sprintf(feature_buffer, "C省略候補%d:%.3f:%s", cpm_ptr->pred_b_ptr->num, 
-			score, 
-			pp_code_to_kstr(cf_ptr->pp[n][0]));
-		assign_cfeature(&((sp->bnst_data+i)->f), feature_buffer);
-	    }
+	    !check_feature((sp->bnst_data+i)->f, "形副名詞") && 
+	    !check_feature((sp->bnst_data+i)->f, "時間") && 
+	    !check_feature((sp->bnst_data+i)->f, "数量")) {
+	    EllipsisDetectForNoun(sp->bnst_data+i);
 	}
-    }
-
-    if (maxscore > 0) {
-	sprintf(feature_buffer, "C省略関係%d:%.3f:%s", cpm_ptr->pred_b_ptr->num, 
-		maxscore, 
-		pp_code_to_kstr(cf_ptr->pp[n][0]));
-	assign_cfeature(&((sp->bnst_data+maxi)->f), feature_buffer);
     }
 }
 

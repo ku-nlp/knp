@@ -48,7 +48,8 @@ knp_SOURCES = \
 	db.c \
 	japanese.c \
 	japanese.h \
-	configfile.c
+	configfile.c \
+	noun.c
 
 knp_LDADD = -ljuman @KNP_LIBS@
 

@@ -407,6 +407,7 @@ typedef struct _RuleVector {
 #define	PROPER_DB	8
 #define	PROPERC_DB	9
 #define	PROPERCASE_DB	10
+#define	NOUN_DB		11
 
 /*====================================================================
 			     ∏«Õ≠ÃæªÏ≤Ú¿œ

@@ -103,9 +103,11 @@ extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];
 
+/* 関数プロトタイプ */
 extern char *get_bgh(char *cp);
 extern char *db_get(DBM_FILE db, char *buf);
 extern float ntt_code_match(char *c1, char *c2);
+extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 
 /* KNP 初期化 */
 extern char *Knprule_Dirname;

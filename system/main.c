@@ -429,6 +429,9 @@ extern int	SOTO_SCORE;
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
 
+    if (OptAnalysis == OPT_DISC)
+	init_noun();	/* 名詞辞書オープン */
+
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
     if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
@@ -782,6 +785,9 @@ extern int	SOTO_SCORE;
     close_bgh();
     close_sm();
     close_scase();
+
+    if (OptAnalysis == OPT_DISC)
+	close_noun();
     if (OptNE != OPT_NORMAL)
 	close_proper();
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
