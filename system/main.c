@@ -198,7 +198,14 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
-	else if (str_eq(argv[0], "-learn"))  OptLearn = TRUE;
+	else if (str_eq(argv[0], "-relation-noun-svm")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptDiscMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-learn")) {
+	    OptLearn = TRUE;
+	    OptDiscFlag |= OPT_DISC_OR_CF;
+	}
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -485,7 +492,7 @@ extern int	EX_match_subject;
 
     if (OptEllipsis) {
 #ifdef USE_SVM
-	if (OptDiscMethod == OPT_SVM) {
+	if (OptDiscMethod == OPT_SVM && OptLearn != TRUE) {
 	    init_svm();
 	}
 #endif

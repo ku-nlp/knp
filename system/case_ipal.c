@@ -1420,8 +1420,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		start = Case_frame_num;
 		make_caseframes(sp, t_ptr, CF_PRED);
 	    }
+	    /* 名詞格フレームはとりあえず、サ変名詞以外について */
 	    else if ((OptEllipsis & OPT_REL_NOUN) && 
-		     check_feature(t_ptr->f, "体言")) {
+		     check_feature(t_ptr->f, "体言") && 
+		     !check_feature(t_ptr->f, "サ変")) {
 		start = Case_frame_num;
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }

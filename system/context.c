@@ -1100,7 +1100,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 }
 
 /*==================================================================*/
-void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp, 
+void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, char *ecp, 
 				       char *word, int pp, char *sid, int num, int loc)
 /*==================================================================*/
 {
@@ -1118,7 +1118,8 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     buffer = (char *)malloc_data(strlen(ecp) + 64 + strlen(word), 
 				 "EllipsisSvmFeaturesString2FeatureString");
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d:%s", 
-	    word, pp_code_to_kstr(pp), loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, ecp);
+	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
+	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, ecp);
     assign_cfeature(&(em_ptr->f), buffer);
     free(buffer);
 }
@@ -1218,22 +1219,30 @@ void SetEllipsisFeaturesForPred(E_FEATURES *f, CF_PRED_MGR *cpm_ptr,
 {
     char *level;
 
-    f->p_pp = cf_ptr->pp[n][0];
+    if (cpm_ptr->cf.type == CF_PRED) {
+	f->p_pp = cf_ptr->pp[n][0];
 
-    /* 能動(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
-    f->p_voice = cpm_ptr->pred_b_ptr->voice;
+	/* 能動(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
+	f->p_voice = cpm_ptr->pred_b_ptr->voice;
 
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:動")) {
-	f->p_type = 1;
+	if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:動")) {
+	    f->p_type = 1;
+	}
+	else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
+	    f->p_type = 2;
+	}
+	else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	    f->p_type = 3;
+	}
+	else {
+	    f->p_type = 0;
+	}
     }
-    else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
-	f->p_type = 2;
-    }
-    else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
-	f->p_type = 3;
-    }
+    /* 名詞格フレームのとき */
     else {
-	f->p_type = 0;
+	f->p_pp = -1;
+	f->p_voice = -1;
+	f->p_type = -1;
     }
 
     if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変") && 
@@ -1378,6 +1387,10 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	    float classify_by_learning(char *ecp, int pp)
 /*==================================================================*/
 {
+    if (OptLearn == TRUE) {
+	return -1;
+    }
+
     if (OptDiscMethod == OPT_SVM) {
 #ifdef USE_SVM
 	return svm_classify(ecp, pp);
@@ -1405,10 +1418,10 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
     ecp = EllipsisSvmFeatures2String(esf);
 
     /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 				      "?", -1, -1);
 
-    score = classify_by_learning(ecp, cf_ptr->pp[n][0]);
+    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"));
 
     if (score > maxscore) {
 	maxscore = score;
@@ -1438,7 +1451,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     ecp = EllipsisSvmFeatures2String(esf);
 
     /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
+    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
@@ -1449,7 +1462,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 	return;
     }
 
-    score = classify_by_learning(ecp, cf_ptr->pp[n][0]);
+    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"));
 
     /* 省略候補 */
     sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
@@ -1459,7 +1472,7 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 	    ef->similarity, score);
     assign_cfeature(&(em_ptr->f), feature_buffer);
 
-    /* classifyerがpositiveと分類 */
+    /* classifierがpositiveと分類 */
     if (score > 0) {
 	if (!(OptDiscFlag & OPT_DISC_CLASS_ONLY)) {
 	    score = ef->similarity;
@@ -1501,7 +1514,7 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
 	esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
 	ecp = EllipsisSvmFeatures2String(esf);
-	EllipsisSvmFeaturesString2Feature(em_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 					  "?", -1, -1);
 	free(ef);
 	free(esf);
@@ -1527,7 +1540,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
     ecp = EllipsisSvmFeatures2String(esf);
-    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
+    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
@@ -1569,8 +1582,7 @@ int EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPS
 				     SENTENCE_DATA *vs, TAG_DATA *vp)
 /*==================================================================*/
 {
-    if (cpm_ptr->cf.type == CF_PRED &&
-	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+    if ((OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
 	_EllipsisDetectForVerbSubcontractWithLearning(s, cs, em_ptr, 
 						      cpm_ptr, cmm_ptr, l, 
 						      bp, cf_ptr, n, loc, vs, vp);
@@ -1680,7 +1692,8 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
        cpm_ptr->pred_b_ptr: target predicate */
 
     if (Bcheck[cs - s][bp->num] || /* すでにチェックした */
-	!check_feature(bp->f, "先行詞候補")) {
+	!check_feature(bp->f, "先行詞候補") || 
+	(s == cs && bp->num == cpm_ptr->pred_b_ptr->num)) {
 	return FALSE;
     }
 
@@ -3217,7 +3230,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    /* 固有名詞は省略解析しない */
-	    else if (check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
+	    else if (cpm_ptr->cf.type == CF_PRED && 
+		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
 		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "地名") || 
 		     check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "組織名")) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
