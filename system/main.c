@@ -462,7 +462,7 @@ extern float	AssignReferentThreshold;
 
     /* 初期化 */
 
-#ifdef DB3
+#ifdef DB3DEBUG
     db_setup();
 #endif
     init_hash();
@@ -543,7 +543,7 @@ extern float	AssignReferentThreshold;
     if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
 	close_optional_case();
 
-#ifdef DB3
+#ifdef DB3DEBUG
     db_teardown();
 #endif
 
@@ -1019,6 +1019,7 @@ PARSED:
 
 	/* 子供 */
 	if(pid == 0) {
+	    char buf[1024];
 
 	    /* ? */
 	    chdir("/tmp");
@@ -1032,10 +1033,7 @@ PARSED:
 	    fflush(Outfp);
 
 	    /* オプション解析 */
-	    while (1) {
-		char buf[1024];
-
-		fgets(buf, sizeof(buf), Infp);
+	    while (fgets(buf, sizeof(buf), Infp)) {
 
 		/* QUIT */
 		if (strncasecmp(buf, "QUIT", 4) == 0) {
