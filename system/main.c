@@ -168,6 +168,28 @@ extern int	EX_match_subject;
 	    OptDiscPredMethod = OPT_SVM;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
+	else if (str_eq(argv[0], "-ellipsis-svm-best")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscPredMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-ellipsis-svm-best-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_BEST;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	    OptDiscPredMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-ellipsis-svm-flat")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_FLAT;
+	    OptDiscPredMethod = OPT_SVM;
+	}
+	else if (str_eq(argv[0], "-ellipsis-svm-flat-only")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_FLAT;
+	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
+	    OptDiscPredMethod = OPT_SVM;
+	}
 	else if (str_eq(argv[0], "-demonstrative-svm")) {
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscPredMethod = OPT_SVM;
