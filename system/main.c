@@ -344,6 +344,7 @@ char *Opt_jumanrc = NULL;
 {
     /* 初期化 */
 
+    init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
     init_ipal();	/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */

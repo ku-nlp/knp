@@ -23,28 +23,42 @@ int	IPALExist;
  */
 
 /*==================================================================*/
-			  void init_ipal()
+			   void init_ipal()
 /*==================================================================*/
 {
-#ifdef _WIN32
-    if ((ipal_fp = fopen(IPAL_DAT_NAME, "rb")) == NULL) {
-#else
-    if ((ipal_fp = fopen(IPAL_DAT_NAME, "r")) == NULL) {
-#endif
+    char *index_db_filename, *data_filename;
 
+    if (DICT[CF_DATA]) {
+	data_filename = (char *)check_dict_filename(DICT[CF_DATA]);
+    }
+    else {
+	data_filename = strdup(IPAL_DAT_NAME);
+    }
+
+    if (DICT[CF_INDEX_DB]) {
+	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB]);
+    }
+    else {
+	index_db_filename = strdup(IPAL_DB_NAME);
+    }
+
+    if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {
 	if (OptAnalysis == OPT_CASE ||
 	    OptAnalysis == OPT_CASE2) {
-	    fprintf(stderr, "Cannot open IPAL data <%s>.\n", IPAL_DAT_NAME);
+	    fprintf(stderr, "Cannot open CF DATA <%s>.\n", data_filename);
 	}
 	IPALExist = FALSE;
     }
-    else if ((ipal_db = DBM_open(IPAL_DB_NAME, O_RDONLY, 0)) == NULL) {
-	fprintf(stderr, "Cannot open Database <%s>.\n", IPAL_DB_NAME);
+    else if ((ipal_db = DBM_open(index_db_filename, O_RDONLY, 0)) == NULL) {
+	fprintf(stderr, "Cannot open CF INDEX Database <%s>.\n", index_db_filename);
 	exit(1);
     } 
     else {
 	IPALExist = TRUE;
     }
+
+    free(data_filename);
+    free(index_db_filename);
 }
 
 /*==================================================================*/

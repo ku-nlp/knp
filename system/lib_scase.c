@@ -13,18 +13,24 @@ DBM_FILE	scase_db;
 int		ScaseDicExist;
 
 /*==================================================================*/
-                    void init_scase()
+			  void init_scase()
 /*==================================================================*/
 {
-    if ((scase_db = DBM_open(SCASE_DB_NAME, O_RDONLY, 0)) == NULL) {
-        /* fprintf(stderr, 
-	   "Can not open Database <%s>.\n", SCASE_DB_NAME);
-	   exit(1);
-	*/
+    char *filename;
+
+    if (DICT[SCASE_DB]) {
+	filename = (char *)check_dict_filename(DICT[SCASE_DB]);
+    }
+    else {
+	filename = strdup(SCASE_DB_NAME);
+    }
+
+    if ((scase_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	ScaseDicExist = FALSE;
     } else {
 	ScaseDicExist = TRUE;
     }
+    free(filename);
 }
 
 /*==================================================================*/
