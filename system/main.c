@@ -229,6 +229,12 @@ jmp_buf timeout;
 	    EtcRuleFile = argv[0];
 	    init_etc_rule(IsMrphRule);
 	}
+	else if (str_eq(argv[0], "-mstring")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    EtcRuleFile = argv[0];
+	    init_etc_rule(IsMrph2Rule);
+	}
 	else if (str_eq(argv[0], "-brule")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -578,6 +584,10 @@ void stand_alone_mode()
 
 	if (OptLearn == TRUE)
 	    fprintf(Outfp, ";;;OK 決定 %d %s %d\n", Best_mgr.ID, KNPSID, Best_mgr.score);
+
+	/* 実験 */
+	if (OptCheck == TRUE)
+	    CheckChildCaseFrame();
 
 	/* 結果表示 */
 	if (OptAnalysis != OPT_DISC) print_result();
