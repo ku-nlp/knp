@@ -1015,6 +1015,213 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 }
 
+/*==================================================================*/
+    void push_entity(char ***list, char *key, int count, int *max)
+/*==================================================================*/
+{
+    /* malloc と realloc 分けなくていいらしい */
+    if (*max == 0) {
+	*max = ALLOCATION_STEP;
+	*list = (char **)malloc_data(sizeof(char *)*(*max), "push_entity");
+    }
+    else if (*max <= count) {
+	*list = (char **)realloc_data(*list, sizeof(char *)*(*max <<= 1), "push_entity");
+    }
+
+    *(*list+count) = key;
+}
+
+/*==================================================================*/
+		  void prepare_entity(BNST_DATA *bp)
+/*==================================================================*/
+{
+    int count = 0, max = 0, i, flag = 0;
+    char *cp, **list, *str;
+
+    /* 固有表現 */
+    if ((cp = check_feature(bp->f, "人名"))) {
+	push_entity(&list, cp, count++, &max);
+	flag = 1;
+    }
+    else if ((cp = check_feature(bp->f, "組織名"))) {
+	push_entity(&list, cp, count++, &max);
+	flag = 1;
+    }
+    else if ((cp = check_feature(bp->f, "地名"))) {
+	push_entity(&list, cp, count++, &max);
+	flag = 1;
+    }
+    else {
+	/*
+	if ((cp = check_feature(bp->f, "人名疑"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag = 1;
+	}
+	if ((cp = check_feature(bp->f, "組織名疑"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag = 1;
+	}
+	if ((cp = check_feature(bp->f, "地名疑"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag = 1;
+	}
+	*/
+    }
+
+    /* NTT意味素 */
+    if (bp->SM_code[0]) {
+	if (sm_match_check(sm2code("人"), bp->SM_code) || 
+	    sm_match_check(sm2code("動物"), bp->SM_code) || 
+	    sm_match_check(sm2code("組織"), bp->SM_code)) {
+	    push_entity(&list, "<主体>", count++, &max);
+	    flag = 1;
+	}
+	if (sm_match_check(sm2code("場所"), bp->SM_code)) {
+	    push_entity(&list, "<場所>", count++, &max);
+	    flag = 1;
+	}
+	if (sm_match_check(sm2code("自然物"), bp->SM_code) || 
+	    sm_match_check(sm2code("植物"), bp->SM_code)) {
+	    push_entity(&list, "<自然物>", count++, &max);
+	    flag = 1;
+	}
+	if (sm_match_check(sm2code("人工物"), bp->SM_code)) {
+	    push_entity(&list, "<人工物>", count++, &max);
+	    flag = 1;
+	}
+	if (sm_match_check(sm2code("事象"), bp->SM_code) || 
+	    sm_match_check(sm2code("行為"), bp->SM_code)) {
+	    push_entity(&list, "<事象>", count++, &max);
+	    flag = 1;
+	}
+
+    }
+
+
+    /* その他 */
+    if ((cp = check_feature(bp->f, "時間"))) {
+	push_entity(&list, "時間", count++, &max);
+	flag = 1;
+    }
+
+    /* いままでのどれでもないときは、<抽象> を与える */
+    if (!flag && check_feature(bp->f, "体言")) {
+	push_entity(&list, "<抽象>", count++, &max);
+    }
+
+
+
+    /* モダリティ */
+    flag = 0;
+    for (i = 0; i < bp->mrph_num; i++) {
+	if (!(flag & 0x0001) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-依頼"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0001;
+	}
+	if (!(flag & 0x0002) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-意志"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0002;
+	}
+	if (!(flag & 0x0004) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-勧誘"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0004;
+	}
+	if (!(flag & 0x0008) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-願望"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0008;
+	}
+	if (!(flag & 0x0010) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-禁止"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0010;
+	}
+	if (!(flag & 0x0020) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-三人称意志"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0020;
+	}
+	if (!(flag & 0x0040) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-申し出"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0040;
+	}
+	if (!(flag & 0x0080) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-推量"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0080;
+	}
+	if (!(flag & 0x0100) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-意思-命令"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0100;
+	}
+	if (!(flag & 0x0200) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-当為"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0200;
+	}
+	if (!(flag & 0x0400) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-当為-許可"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0400;
+	}
+	if (!(flag & 0x0800) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-判断-可能性"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x0800;
+	}
+	if (!(flag & 0x1000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-判断-可能性-不可能"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x1000;
+	}
+	if (!(flag & 0x2000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-判断-推量"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x2000;
+	}
+	if (!(flag & 0x4000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-判断-伝聞"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x4000;
+	}
+	if (!(flag & 0x8000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-判断-様態"))) {
+	    push_entity(&list, cp, count++, &max);
+	    flag |= 0x8000;
+	}
+    }
+
+    /* 出力するfeatureがあれば出力 */
+    if (count) {
+	int i, len = 0;
+	for (i = 0; i < count; i++) {
+	    len += strlen(list[i])+1;
+	}
+	str = (char *)malloc_data(sizeof(char)*(len+2), "print_entity");
+	strcpy(str, "C:");
+	for (i = 0; i < count; i++) {
+	    if (i != 0) strcat(str, " ");
+	    strcat(str, list[i]);
+	}
+	assign_cfeature(&(bp->f), str);
+	free(str);
+	free(list);
+    }
+}
+
+/*==================================================================*/
+	      void prepare_all_entity(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    /* タグ付けから除くもの
+       こと: 形副名詞
+       その: 連体詞形態指示詞
+       それ: 指示詞
+       (〜と)して: 複合辞
+    */
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data+i)->f, "形副名詞") || 
+	    check_feature((sp->bnst_data+i)->f, "連体詞形態指示詞") || 
+	    check_feature((sp->bnst_data+i)->f, "指示詞") || 
+	    check_feature((sp->bnst_data+i)->f, "複合辞")) {
+	    continue;
+	}
+	prepare_entity(sp->bnst_data+i);
+    }
+}
+
 /*====================================================================
                                END
 ====================================================================*/

@@ -2,6 +2,10 @@
 
 	* configure.in, system/db.c: BerkeleyDB 3.X に対応
 
+	* system/const.h, system/lib_print.c, system/main.c: 木構造にあわ
+	せて、entity情報(固有表現, 意味属性)を出力するようにした (-treef
+	-entity)
+
 2001-08-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/bind_juman.c, system/configfile.c, system/const.h, system/db.c, system/dbm.h, system/japanese.c, system/knp.h, system/lib_print.c, system/main.c, system/read_data.c, system/tree_conv.c:

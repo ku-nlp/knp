@@ -149,13 +149,13 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
-	else if (str_eq(argv[0], "-learn"))   OptLearn    = TRUE;
 	else if (str_eq(argv[0], "-ne"))      OptNE       = OPT_NE;
 	else if (str_eq(argv[0], "-nesm"))    OptNE       = OPT_NESM;
 	else if (str_eq(argv[0], "-j"))       OptJuman    = OPT_JUMAN;
@@ -570,11 +570,8 @@ extern float	AssignReferentThreshold;
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	get_bgh_code(sp->bnst_data+i);		/* シソーラス */
-	if (!check_feature((sp->bnst_data+i)->f, "用言:動") || 
-	    check_feature((sp->bnst_data+i)->f, "サ変")) {
-	    get_sm_code(sp->bnst_data+i);		/* 意味素 */
-	}
+	get_bgh_code(sp->bnst_data+i);
+	get_sm_code(sp->bnst_data+i);
     }
 
     /* 文節へのFEATURE付与 */
@@ -585,6 +582,17 @@ extern float	AssignReferentThreshold;
     else
 	assign_cfeature(&(sp->bnst_data[0].f), "文末");
     assign_general_feature(sp, BnstRuleType);
+
+    /* サ変動詞以外の動詞の意味素を引くのは意味がない
+       ルール適用前には、featureがないためにチェックできない
+       ※ ルール適用後に意味素を引かないのは:
+           => 意味素はルールで使うかもしれないので、ルール適用前に与えておく */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data+i)->f, "用言:動") && 
+	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
+	    (sp->bnst_data+i)->SM_code[0] = '\0';
+	}
+    }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	print_mrphs(sp, 0);
@@ -879,6 +887,11 @@ PARSED:
 	if (OptDisc == OPT_DISC) {
 	    make_dpnd_tree(sp);
 	    DiscourseAnalysis(sp);
+	}
+
+	/* entity 情報の feature の作成 */
+	if (OptDisplay  == OPT_ENTITY) {
+	    prepare_all_entity(sp);
 	}
 
 	/************/
