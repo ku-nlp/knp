@@ -791,9 +791,11 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
     Case_frame_num = 0;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	if (check_feature(b_ptr->f, "用言") ||
-	    check_feature(b_ptr->f, "準用言") || 
-	    check_feature(b_ptr->f, "サ変名詞格解析")) {
+	/* 正解コーパスを入力したときに自立語がない場合がある */
+	if (b_ptr->jiritu_ptr != NULL && 
+	    (check_feature(b_ptr->f, "用言") ||
+	     check_feature(b_ptr->f, "準用言") || 
+	     check_feature(b_ptr->f, "サ変名詞格解析"))) {
 
 	    /* 以下の2つの処理はfeatureレベルで起動している */
 	    /* set_pred_voice(b_ptr); ヴォイス */
@@ -814,6 +816,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 	}
 	else {
 	    b_ptr->cf_ptr = NULL;
+	    b_ptr->cf_num = 0;
 	}
     }
 }

@@ -105,12 +105,13 @@ struct PP_STR_TO_CODE {
     {"とする", "トスル", 34},
     {"によるぬ", "ニヨルヌ", 35},
     {"にかぎるぬ", "ニカギルヌ", 36},
-    {"時間", "時間", 37},	/* ニ格, 無格で時間であるものを時間という格として扱う */
-    {"まで", "マデ", 38},	/* 明示されない格であるが、辞書側の格として表示するために
+    {"という", "トイウ", 37},	/* 〜というと? */
+    {"時間", "時間", 38},	/* ニ格, 無格で時間であるものを時間という格として扱う */
+    {"まで", "マデ", 39},	/* 明示されない格であるが、辞書側の格として表示するために
 				   書いておく */
-    {"修飾", "修飾", 39},
-    {"が２", "ガ２", 40},
-    {"外の関係", "外ノ関係", 41},
+    {"修飾", "修飾", 40},
+    {"が２", "ガ２", 41},
+    {"外の関係", "外ノ関係", 42},
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
@@ -201,6 +202,9 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
     }
 
+    /* 自立語がない場合など (用言は格フレームがなくでもデフォルトのものをもつ) 
+       all_case_analysis() でチェックすることにしたので意味ない
+     */
     if (frame_num == 0) {
 	return -2;
     }
@@ -268,9 +272,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     int one_case_point;
 
     if (b_ptr->para_top_p != TRUE && 
+	b_ptr->cf_num > 0 && 
 	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
 	 check_feature(b_ptr->f, "準用言") || 
-	 check_feature(L_Jiritu_M(b_ptr)->f, "サ変")) && 
+	 check_feature(b_ptr->f, "サ変名詞格解析")) && 
 	!check_feature(b_ptr->f, "複合辞")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
@@ -283,7 +288,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	*/
 
 	t_ptr->score += one_case_point;
-	
+
 	if (t_ptr->pred_num++ >= CPM_MAX) {
 	    fprintf(stderr, "too many predicates in a sentence.\n");
 	    exit(1);

@@ -292,6 +292,7 @@ int	Thesaurus = USE_NTT;
 
 	if (cfp->concatenated_flag == 0 && 
 	    !check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "·ÁÉûÌ¾»ì") && 
+	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->jiritu_ptr != NULL && 
 	    check_examples(L_Jiritu_M(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1])->Goi, cfp->examples[as2])) {
 	    return EX_match_exact;
 	}

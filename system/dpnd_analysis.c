@@ -238,7 +238,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     int i, j, k, one_score, score, rentai, vacant_slot_num;
     int topic_score, optional_flag = 0;
     int optional_score = 0, total_optional_score = 0;
-    int scase_check[11], ha_check, un_count, pred_p;
+    int scase_check[SCASE_CODE_SIZE], ha_check, un_count, pred_p;
     char *cp, *cp2, *buffer;
     BNST_DATA *g_ptr, *d_ptr;
 
@@ -272,7 +272,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	g_ptr = sp->bnst_data + i;
 
 	one_score = 0;
-	for (k = 0; k < 11; k++) scase_check[k] = 0;
+	for (k = 0; k < SCASE_CODE_SIZE; k++) scase_check[k] = 0;
 	ha_check = 0;
 	un_count = 0;
 

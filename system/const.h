@@ -41,6 +41,7 @@
 
 #define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
+#define SCASE_CODE_SIZE	11
 
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
@@ -484,7 +485,7 @@ typedef struct tnode_b {
     char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
   /* 用言データ */
-    char 	SCASE_code[11];	/* 表層格 */
+    char 	SCASE_code[SCASE_CODE_SIZE];	/* 表層格 */
     int 	voice;
     int 	cf_num;		/* その用言に対する格フレームの数 */
     CF_ptr 	cf_ptr;		/* 格フレーム管理配列(Case_frame_array)

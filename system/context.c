@@ -825,7 +825,7 @@ void EllipsisDetectForVerb(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *
 	bp->internal_num = 0;
 
 	/* 「転換期」などはまだ扱っていない */
-	if (check_feature(L_Jiritu_M(bp)->f, "サ変")) {
+	if (bp->jiritu_ptr != NULL && check_feature(L_Jiritu_M(bp)->f, "サ変")) {
 	    /* 用言ではないサ変名詞を格解析する feature */
 	    if (!check_feature(bp->f, "用言")) {
 		assign_cfeature(&(bp->f), "サ変名詞格解析");

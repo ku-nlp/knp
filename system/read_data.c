@@ -702,7 +702,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     b_ptr->length = 0;
     b_ptr->space = 0;
     
-    for (i = 0, cp = b_ptr->SCASE_code; i < 11; i++, cp++) *cp = 0;
+    for (i = 0, cp = b_ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
 
     /* clear_feature(&(b_ptr->f));
        mainの文ごとのループの先頭で処理に移動 */
@@ -872,7 +872,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    b_ptr->fuzoku_ptr = NULL;
 	    b_ptr->fuzoku_num = 0;
 	    b_ptr->length = 0;
-	    for (j = 0, cp = b_ptr->SCASE_code; j < 11; j++, cp++)
+	    b_ptr->cpm_ptr = NULL;
+	    for (j = 0, cp = b_ptr->SCASE_code; j < SCASE_CODE_SIZE; j++, cp++)
 		*cp = 0;
 	    /* clear_feature(&(b_ptr->f));
 	       mainの文ごとのループの先頭で処理に移動 */

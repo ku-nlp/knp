@@ -324,7 +324,7 @@
 	    }
 	    else if (!strcmp((*fpp2)->cp, "&山霖:猴近")) {
 		for (i = 0, cp = ((BNST_DATA *)ptr)->SCASE_code; 
-		     i < 11; i++, cp++) 
+		     i < SCASE_CODE_SIZE; i++, cp++) 
 		    *cp = 0;		
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&山霖:^", strlen("&山霖:^"))) {

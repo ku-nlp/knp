@@ -85,7 +85,7 @@ int		ScaseDicExist;
 
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
 
-    for (i = 0, cp = ptr->SCASE_code; i < 11; i++, cp++) *cp = 0;
+    for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
     /* init_bnst でもしている */
 
     if (ScaseDicExist == TRUE &&
@@ -124,7 +124,7 @@ int		ScaseDicExist;
 		    predicate = strdup(str_buffer);
 		    if (ptr->num > 0) {
 			cp = check_feature((ptr-1)->f, "係");
-			if (cp) {
+			if (cp && (ptr-1)->jiritu_ptr != NULL) {
 			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1)), cp+3, predicate, vtype);
 			    ans = get_scase(str_buffer);
 			}
@@ -146,7 +146,7 @@ int		ScaseDicExist;
 		if (ans != NULL) {
 		    cp = ptr->SCASE_code;
 		    anscp = ans;
-		    for (i = 0; i < 11; i++) *cp++ = *anscp++;
+		    for (i = 0; i < SCASE_CODE_SIZE; i++) *cp++ = *anscp++;
 		    free(ans);
 		    goto Match;
 		}
