@@ -14,8 +14,7 @@ float maxrawscore;
 SENTENCE_DATA *maxs;
 int maxi, maxpos;
 char *maxtag, *maxfeatures;
-#define PREV_SENTENCE_MAX	3
-int Bcheck[PREV_SENTENCE_MAX][TAG_MAX];
+int **Bcheck;
 int **LC;
 int PrintFeatures = 0;
 
@@ -561,6 +560,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 							  "RegisterCF");
 		}
 		*((*cfpp)->cfid + (*cfpp)->cfid_num++) = strdup(cfid);
+		free(key);
 		return;
 	    }
 	    cfpp = &((*cfpp)->next);
@@ -2853,7 +2853,7 @@ int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF
     int sent, i, dist;
     SENTENCE_DATA *ts;
 
-    for (sent = 0; sent < 3; sent++) {
+    for (sent = 0; sent < cs->Sen_num - (cs - s); sent++) {
 	ts = s - sent;
 	dist = (cs - s) + sent;
 	for (i = 0; i < ts->Tag_num; i++) {
@@ -2861,9 +2861,7 @@ int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF
 		if (CheckAppropriateCandidate(ts, cs, cpm_ptr, ts->tag_data + i, -2, cf_ptr, n, loc, 
 					      FALSE)) {
 		    EllipsisDetectForVerbSubcontract(ts, cs, em_ptr, cpm_ptr, cmm_ptr, l, ts->tag_data + i, cf_ptr, n, loc, ts, (ts->tag_data + i)->pred_b_ptr);
-		    if (dist < 3) {
-			Bcheck[cs - s][i] = 1;
-		    }
+		    Bcheck[dist][i] = 1;
 		}
 	    }
 	}
@@ -3283,7 +3281,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     maxpos = MATCH_NONE;
 
     cs = sentence_data + sp->Sen_num - 1;
-    memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
+    for (i = 0; i < sp->Sen_num; i++) {
+	memset(Bcheck[i], 0, sizeof(int) * TAG_MAX);
+    }
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {
@@ -3522,6 +3522,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 			  CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
+    int i;
     SENTENCE_DATA *cs;
     char feature_buffer[DATA_LEN], etc_buffer[DATA_LEN];
     CASE_COMPONENT *ccp;
@@ -3532,7 +3533,9 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     maxpos = MATCH_NONE;
 
     cs = sentence_data + sp->Sen_num - 1;
-    memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
+    for (i = 0; i < sp->Sen_num; i++) {
+	memset(Bcheck[i], 0, sizeof(int) * TAG_MAX);
+    }
 
     /* 共参照リンクを辿ってタグつけ */
     if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
@@ -4237,13 +4240,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
     }
 
-    if (VerboseLevel >= VERBOSE2) {
-	fprintf(stderr, ";;; %s for %s(%d):", cs->KNPSID ? cs->KNPSID : "?", tp->head_ptr->Goi, tp->num);
-	for (i = 0; i < cs->Tag_num; i++) {
-	    fprintf(stderr, " %s(%d):%s", (cs->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[0][i]));
-	}
-    }
-
     if (cs - sentence_data > 0) {
 	_SearchMC(cs - 1, NULL, LC, 1);
 	_SearchSC(cs - 1, NULL, LC, 1);
@@ -4252,12 +4248,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[1][i] = LOC_S1_OTHERS;
-	}
-
-	if (VerboseLevel >= VERBOSE2) {
-	    for (i = 0; i < (cs - 1)->Tag_num; i++) {
-		fprintf(stderr, " %s(%d):%s", ((cs - 1)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[1][i]));
-	    }
 	}
     }
 
@@ -4270,15 +4260,17 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	    LC[2][i] = LOC_S2_OTHERS;
 	}
-
-	if (VerboseLevel >= VERBOSE2) {
-	    for (i = 0; i < (cs - 2)->Tag_num; i++) {
-		fprintf(stderr, " %s(%d):%s", ((cs - 2)->tag_data + i)->head_ptr->Goi, i, loc_code_to_str(LC[2][i]));
-	    }
-	}
     }
 
     if (VerboseLevel >= VERBOSE2) {
+	int j;
+
+	fprintf(stderr, ";;; %s for %s(%d):", cs->KNPSID ? cs->KNPSID : "?", tp->head_ptr->Goi, tp->num);
+	for (i = 0; i < sp->Sen_num; i++) {
+	    for (j = 0; j < (cs - i)->Tag_num; j++) {
+		fprintf(stderr, " %s(%d):%s", ((cs - i)->tag_data + j)->head_ptr->Goi, j, loc_code_to_str(LC[i][j]));
+	    }
+	}
 	fprintf(stderr, "\n");
     }
 }
@@ -4303,6 +4295,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
     sp_new = PreserveSentence(sp);
 
     if (sp->available) {
+	Bcheck = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "DiscourseAnalysis");
+	for (i = 0; i < sp->Sen_num; i++) {
+	    Bcheck[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "DiscourseAnalysis");
+	}
+
 	/* for (j = 0; j < sp->Best_mgr->pred_num; j++) { */
 	/* 各用言をチェック (文頭から) */
 	for (j = sp->Best_mgr->pred_num - 1; j >= 0; j--) {
@@ -4444,6 +4441,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
 
 	PreserveCPM(sp_new, sp);
+
+	for (i = 0; i < sp->Sen_num; i++) {
+	    free(Bcheck[i]);
+	}
+	free(Bcheck);
     }
     clear_cf(0);
 }
