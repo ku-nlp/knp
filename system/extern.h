@@ -119,6 +119,11 @@ extern int MatchPP(int n, char *pp);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag);
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag);
+extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
+extern char *make_print_string(BNST_DATA *bp);
+extern void InitCPMcache();
+extern void ClearCPMcache();
 
 /* case_data.c */
 extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
@@ -129,7 +134,7 @@ extern void init_cf();
 extern void init_cf2(SENTENCE_DATA *sp);
 extern void close_cf();
 extern void set_pred_caseframe(SENTENCE_DATA *sp);
-extern void clear_cf();
+extern void clear_cf(int flag);
 extern void init_mgr_cf(SENTENCE_DATA *sp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern void MakeInternalBnst(SENTENCE_DATA *sp);

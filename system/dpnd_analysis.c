@@ -870,9 +870,19 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     dpnd.flag = 0;
     dpnd.comment = NULL;
 
+    /* 格解析キャッシュの初期化 */
+    if (OptAnalysis == OPT_CASE) {
+	InitCPMcache();
+    }
+
     /* 依存構造解析 --> 格構造解析 */
-    
+
     decide_dpnd(sp, dpnd);
+
+    /* 格解析キャッシュの初期化 */
+    if (OptAnalysis == OPT_CASE) {
+	ClearCPMcache();
+    }
 
     /* 構造決定後の処理 */
 

@@ -172,6 +172,7 @@ DBM_FILE db_read_open(char *filename)
 
     /* Initialization */
     db->set_cachesize(db, 0, 1048576, 0);
+    db->set_pagesize(db, 4096);
 
     if ((errno = db->open(db, filename, NULL, DB_HASH, DB_RDONLY, 0444))) {
 #ifdef DEBUG
@@ -342,6 +343,40 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 	exit(1);
     }
     return 0;
+}
+
+DB_ENV *dbenv;
+
+/* dbenv setup */
+void db_setup()
+{
+    int ret;
+
+    if ((ret = db_env_create(&dbenv, 0))) {
+	fprintf(stderr, "%s\n", db_strerror(ret));
+	exit(1);
+    }
+    dbenv->set_errfile(dbenv, stderr);
+    dbenv->set_errpfx(dbenv, "knp");
+
+    /* if ((ret = dbenv->set_lk_detect(dbenv, DB_LOCK_OLDEST))) {
+	dbenv->err(dbenv, ret, "environment set_lk_detect");
+	dbenv->close(dbenv, 0);
+	exit(1);
+    } */
+
+    if ((dbenv->open(dbenv, ".", 
+		     DB_CREATE | DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_MPOOL | DB_INIT_TXN, 0))) {
+	dbenv->err(dbenv, ret, "envirnment open");
+	dbenv->close(dbenv, 0);
+	exit(1);
+    }
+}
+
+/* dbenv teardown */
+void db_teardown()
+{
+    dbenv->close(dbenv, 0);
 }
 
 #else

@@ -351,82 +351,6 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 }
 
 /*==================================================================*/
-      void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src)
-/*==================================================================*/
-{
-    int i, j;
-
-    dst->element_num = src->element_num;
-    for (i = 0; i < src->element_num; i++) {
-	dst->oblig[i] = src->oblig[i];
-	dst->adjacent[i] = src->adjacent[i];
-	for (j = 0; j < PP_ELEMENT_MAX; j++) {
-	    dst->pp[i][j] = src->pp[i][j];
-	}
-	if (src->sm[i]) {
-	    dst->sm[i] = strdup(src->sm[i]);
-	}
-	else {
-	    dst->sm[i] = NULL;
-	}
-	if (Thesaurus == USE_BGH) {
-	    if (src->ex[i]) {
-		dst->ex[i] = strdup(src->ex[i]);
-	    }
-	    else {
-		dst->ex[i] = NULL;
-	    }
-	}
-	else if (Thesaurus == USE_NTT) {
-	    if (src->ex2[i]) {
-		dst->ex2[i] = strdup(src->ex2[i]);
-	    }
-	    else {
-		dst->ex2[i] = NULL;
-	    }
-	}
-	if (src->ex_list[i]) {
-	    dst->ex_list[i] = (char **)malloc_data(sizeof(char *)*src->ex_size[i], 
-						   "copy_cf_with_alloc");
-	    for (j = 0; j < src->ex_num[i]; j++) {
-		dst->ex_list[i][j] = strdup(src->ex_list[i][j]);
-	    }
-	}
-	else {
-	    dst->ex_list[i] = NULL;
-	}
-	dst->ex_size[i] = src->ex_size[i];
-	dst->ex_num[i] = src->ex_num[i];
-	if (src->examples[i]) {
-	    dst->examples[i] = strdup(src->examples[i]);
-	}
-	else {
-	    dst->examples[i] = NULL;
-	}
-	if (src->semantics[i]) {
-	    dst->semantics[i] = strdup(src->semantics[i]);
-	}
-	else {
-	    dst->semantics[i] = NULL;
-	}
-    }
-    dst->voice = src->voice;
-    dst->ipal_address = src->ipal_address;
-    dst->ipal_size = src->ipal_size;
-    strcpy(dst->ipal_id, src->ipal_id);
-    strcpy(dst->imi, src->imi);
-    dst->concatenated_flag = src->concatenated_flag;
-    dst->etcflag = src->etcflag;
-    if (src->entry) {
-	dst->entry = strdup(src->entry);
-    }
-    else {
-	dst->entry = NULL;
-    }
-    /* weight, pred_b_ptr は未設定 */
-}
-
-/*==================================================================*/
 		void ClearSentence(SENTENCE_DATA *s)
 /*==================================================================*/
 {
@@ -1104,7 +1028,7 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSI
 	case_ni = 1;
     }
 
-    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:%d 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:-1 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:0 39:0 40:0 41:0 42:0 43:0 44:%d 45:%d 46:%d 47:%d 48:0", 
+    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:%d 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:-1 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:0 39:0 40:0 41:0 42:0 43:0 44:%d 45:%d 46:%d 47:%d 48:-1", 
 	    (float)-1, /* 1 */
 	    agentflag == 1 ? 1 : 0, agentflag == 2 ? 1 : 0, /* 6-7 */
 	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 18-25 */
@@ -2409,6 +2333,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	       maxscore > AssignReferentThresholdDecided) || /* maxscore == 0 のとき省略の割り当てはないので > 0 にする必要がある */
 	      maxscore > AssignReferentThreshold)) {
 	int distance;
+	char *word;
 
 	if (distance == 0 && cpm_ptr->pred_b_ptr->num > maxi && 
 	    check_feature((maxs->bnst_data+maxi)->f, "ノ格用言チェック") && 
@@ -2424,14 +2349,17 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(etc_buffer, "%d文前", distance);
 	}
 
+	word = make_print_string((maxs->bnst_data+maxi)->Jiritu_Go);
+
 	/* 決定した省略関係 */
 	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
-		(maxs->bnst_data+maxi)->Jiritu_Go, 
+		word ? word : "?", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]), 
 		distance, maxi, 
 		maxscore, maxs->KNPSID ? maxs->KNPSID+5 : "?", 
 		etc_buffer, maxi);
 	assign_cfeature(&(em_ptr->f), feature_buffer);
+	if (word) free(word);
 	em_ptr->cc[cf_ptr->pp[n][0]].s = maxs;
 	em_ptr->cc[cf_ptr->pp[n][0]].bnst = maxi;
 
@@ -2534,7 +2462,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 #endif
 	    }
 	}
-	clear_cf();
+	clear_cf(0);
     }
 
     /* ここで文データを scount 個 free */
@@ -2701,12 +2629,12 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 	    AppendCfFeature(em_ptr, cpm_ptr, cf_ptr, i);
 	    if (result) {
 		em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
+		/* 
 		if (maxscore == (float)EX_match_subject/11) {
 		    em_ptr->score += EX_match_subject;
 		}
-		else {
-		    em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore*7));
-		}
+		else */
+		em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore*7));
 		if (onceflag) {
 		    find_best_cf(sp, cpm_ptr, -1);
 		    return em_ptr->score;
@@ -3149,7 +3077,7 @@ int FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *cp
     */
 
     PreserveCPM(sp_new, sp);
-    clear_cf();
+    clear_cf(0);
 }
 
 /*====================================================================

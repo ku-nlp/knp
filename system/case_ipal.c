@@ -1005,12 +1005,14 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 }
 
 /*==================================================================*/
-			   void clear_cf()
+		       void clear_cf(int flag)
 /*==================================================================*/
 {
-    int i, j, k;
+    int i, j, k, end;
 
-    for (i = 0; i < Case_frame_num; i++) {
+    end = flag ? MAX_Case_frame_num : Case_frame_num;
+
+    for (i = 0; i < end; i++) {
 	for (j = 0; j < CF_ELEMENT_MAX; j++) {
 	    if (Thesaurus == USE_BGH) {
 		if ((Case_frame_array+i)->ex[j]) {

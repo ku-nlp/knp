@@ -462,6 +462,9 @@ extern float	AssignReferentThreshold;
 
     /* 初期化 */
 
+#ifdef DB3
+    db_setup();
+#endif
     init_hash();
     init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
@@ -518,6 +521,35 @@ extern float	AssignReferentThreshold;
     if (OptDisc == OPT_DISC) {
 	InitAnaphoraList();
     }
+}
+
+/*==================================================================*/
+			   void close_all()
+/*==================================================================*/
+{
+    close_cf();
+    close_bgh();
+    close_sm();
+    close_scase();
+
+    if (OptDisc == OPT_DISC)
+	close_noun();
+    if (OptNE == OPT_NE || OptNE == OPT_NESM)
+	close_proper();
+    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
+	close_clause();
+    if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))
+	close_case_pred();
+    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
+	close_optional_case();
+
+#ifdef DB3
+    db_teardown();
+#endif
+
+#ifdef INTEGRATE_JUMAN
+    CloseJuman();
+#endif
 }
 
 /*==================================================================*/
@@ -816,7 +848,7 @@ PARSED:
 	/* 格フレームの初期化 */
 	if (OptAnalysis == OPT_CASE || 
 	    OptAnalysis == OPT_CASE2) {
-	    clear_cf();
+	    clear_cf(0);
 	}
 
 	/* 初期化 */
@@ -910,26 +942,6 @@ PARSED:
 
 	success = 1;	/* OK 成功 */
     }
-
-    close_cf();
-    close_bgh();
-    close_sm();
-    close_scase();
-
-    if (OptDisc == OPT_DISC)
-	close_noun();
-    if (OptNE == OPT_NE || OptNE == OPT_NESM)
-	close_proper();
-    if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
-	close_clause();
-    if (!(OptInhibit & OPT_INHIBIT_CASE_PREDICATE))
-	close_case_pred();
-    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE))
-	close_optional_case();
-
-#ifdef INTEGRATE_JUMAN
-    CloseJuman();
-#endif
 }
 
 /*==================================================================*/
@@ -1245,12 +1257,15 @@ PARSED:
     if (OptMode == STAND_ALONE_MODE) {
 	init_all();
 	knp_main();
+	close_all();
     } else if (OptMode == SERVER_MODE) {
 	init_all();
 	server_mode();
+	close_all();
     } else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
+
     exit(0);
 }
 

@@ -14,7 +14,6 @@ int	EX_PRINT_NUM = 10;
 	void print_depend_type(CF_PRED_MGR *cpm_ptr, int num)
 /*==================================================================*/
 {
-    char *cp;
     int i;
 
     /* 係タイプの出力 */
@@ -25,21 +24,19 @@ int	EX_PRINT_NUM = 10;
 	return;
     }
 
-    if ((cp = check_feature(cpm_ptr->elem_b_ptr[num]->f, "係")) != NULL) {
-	fputs("《", Outfp);
-	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
-	    if (i) {
-		fputc('/', Outfp);
-	    }
-	    if (cpm_ptr->cf.pp[num][i] < 0) {
-		fputs("--", Outfp);
-	    }
-	    else {
-		fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
-	    }
+    fputs("《", Outfp);
+    for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
+	if (i) {
+	    fputc('/', Outfp);
 	}
-	fputs("》", Outfp);
+	if (cpm_ptr->cf.pp[num][i] < 0) {
+	    fputs("--", Outfp);
+	}
+	else {
+	    fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
+	}
     }
+    fputs("》", Outfp);
 }
 
 /*==================================================================*/
@@ -131,7 +128,7 @@ int	EX_PRINT_NUM = 10;
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%6.2f点 ", cmm_ptr->score);
+    fprintf(Outfp, "★%6.2f点 (%d/%.3f) ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))));
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
 	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);

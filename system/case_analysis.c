@@ -32,31 +32,46 @@ int	TEIDAI_STEP	= 2;
 }
 
 /*==================================================================*/
+		 void init_case_frame(CASE_FRAME *cf)
+/*==================================================================*/
+{
+    int j;
+
+    for (j = 0; j < CF_ELEMENT_MAX; j++) {
+	if (Thesaurus == USE_BGH) {
+	    cf->ex[j] = 
+		(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, 
+				    "init_case_frame");
+	}
+	else if (Thesaurus == USE_NTT) {
+	    cf->ex2[j] = 
+		(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, 
+				    "init_case_frame");
+	}
+	cf->sm[j] = 
+	    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, 
+				"init_case_frame");
+	cf->ex_list[j] = (char **)malloc_data(sizeof(char *), 
+					      "init_case_frame");
+	cf->ex_list[j][0] = (char *)malloc_data(sizeof(char)*WORD_LEN_MAX, 
+						"init_case_frame");
+    }
+}
+
+/*==================================================================*/
 		      void init_case_analysis()
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
-	int i, j;
+	int i;
 
-	Cf_match_mgr = (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
-						   "init_case_analysis");
+	Cf_match_mgr = 
+	    (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
+					"init_case_analysis");
 
 	for (i = 0; i < CPM_MAX; i++) {
-	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
-		if (Thesaurus == USE_BGH) {
-		    Work_mgr.cpm[i].cf.ex[j] = 
-			(char *)malloc_data(sizeof(char)*EX_ELEMENT_MAX*BGH_CODE_SIZE, "init_case_analysis");
-		}
-		else if (Thesaurus == USE_NTT) {
-		    Work_mgr.cpm[i].cf.ex2[j] = 
-			(char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_case_analysis");
-		}
-		Work_mgr.cpm[i].cf.sm[j] = 
-		    (char *)malloc_data(sizeof(char)*SM_ELEMENT_MAX*SM_CODE_SIZE, "init_case_analysis");
-		Work_mgr.cpm[i].cf.ex_list[j] = (char **)malloc_data(sizeof(char *), "init_case_analysis");
-		Work_mgr.cpm[i].cf.ex_list[j][0] = (char *)malloc_data(sizeof(char)*WORD_LEN_MAX, "init_case_analysis");
-	    }
+	    init_case_frame(&Work_mgr.cpm[i].cf);
 	}
     }
 }
@@ -114,6 +129,7 @@ struct PP_STR_TO_CODE {
     {"修飾", "修飾", 40},
     {"が２", "ガ２", 41},
     {"外の関係", "外の関係", 42},
+    {"の", "ノ", 43},
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
@@ -203,7 +219,7 @@ char *pp_code_to_hstr(int num)
 int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 /*==================================================================*/
 {
-    int i, j, frame_num = 0;
+    int i, j, frame_num = 0, pat_num;
     CASE_FRAME *cf_ptr = &(cpm_ptr->cf);
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     CF_MATCH_MGR tempcmm;
@@ -229,7 +245,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr;
 	}
 	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode, -1);
-	cpm_ptr->score = Cf_match_mgr->score;
+	cpm_ptr->score = (int)Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
     }
@@ -262,16 +278,25 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 
 	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode, closest);
 
-	    /* スコア順にソート */
+	    /* 結果を格納 */
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
+
+	    /* DEBUG出力用: 下の print_good_crrspnds() で使う Cf_match_mgr のスコアを正規化 */
+	    if (OptDisplay == OPT_DEBUG && closest > -1 && OptDisc != OPT_DISC) {
+		pat_num = count_pat_element((Cf_match_mgr+i)->cf_ptr, &((Cf_match_mgr+i)->result_lists_p[0]));
+		if (!((Cf_match_mgr+i)->score < 0 || pat_num == 0)) {
+		    (Cf_match_mgr+i)->score = (Cf_match_mgr+i)->pure_score[0] / sqrt((double)pat_num);
+		}
+	    }
+
+	    /* スコア順にソート */
 	    for (j = cpm_ptr->result_num-1; j >= 0; j--) {
 		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
 		    (cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && (
 			(closest > -1 && 
-			 CheckCfClosest(&(cpm_ptr->cmm[j+1]), closest) == TRUE && 
-			 (CheckCfClosest(&(cpm_ptr->cmm[j]), closest) == FALSE || 
-			  cpm_ptr->cmm[j].sufficiency < cpm_ptr->cmm[j+1].sufficiency)) || 
-			(OptDisc != OPT_DISC && 
+			 (CheckCfClosest(&(cpm_ptr->cmm[j+1]), closest) == TRUE && 
+			  CheckCfClosest(&(cpm_ptr->cmm[j]), closest) == FALSE)) || 
+			(closest < 0 && 
 			 cpm_ptr->cmm[j].sufficiency < cpm_ptr->cmm[j+1].sufficiency)))) {
 		    tempcmm = cpm_ptr->cmm[j];
 		    cpm_ptr->cmm[j] = cpm_ptr->cmm[j+1];
@@ -285,7 +310,6 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 		cpm_ptr->result_num++;
 	    }
 	}
-	cpm_ptr->score = cpm_ptr->cmm[0].score;
 
 	/* スコアが同点の格フレームの個数を設定 */
 	if (cpm_ptr->result_num > 0) {
@@ -307,6 +331,21 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 		}
 	    }
 	}
+
+	/* 文脈解析ではないときは、すべての格のスコアを正規化したものにする */
+	if (closest > -1 && OptDisc != OPT_DISC) {
+	    int score;
+	    for (i = 0; i < cpm_ptr->result_num; i++) {
+		/* 割り当て失敗のとき(score==-1)は、pure_score は定義されていない */
+		/* 入力側に任意格しかなく割り当てがないとき(score==0)は、分子分母ともに0になる */
+		pat_num = count_pat_element(cpm_ptr->cmm[i].cf_ptr, &(cpm_ptr->cmm[i].result_lists_p[0]));
+		if (cpm_ptr->cmm[i].score < 0 || pat_num == 0) {
+		    break;
+		}
+		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
+	    }
+	}
+	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;
     }
 
     /* 外の関係のスコアを足す */
@@ -346,7 +385,7 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	   <回数>:無格 以外 */
 	else if (cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
 		 min < cpm_ptr->elem_b_ptr[i]->num && 
-		 !(MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "φ") && 
+		 !(MatchPP(cpm_ptr->cf.pp[i][0], "φ") && 
 		   check_feature(cpm_ptr->elem_b_ptr[i]->f, "回数"))) {
 	    min = cpm_ptr->elem_b_ptr[i]->num;
 	    elem_b_num = i;
@@ -385,6 +424,127 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
+	static int number_compare(const int *i, const int *j)
+/*==================================================================*/
+{
+    /* sort function */
+    return *i-*j;
+}
+
+/*==================================================================*/
+	       char *inputcc2num(CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i, numbers[CF_ELEMENT_MAX];
+    char str[70], token[3], *key;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	numbers[i] = cpm_ptr->elem_b_ptr[i]->num;
+    }
+
+    qsort(numbers, cpm_ptr->cf.element_num, sizeof(int), number_compare);
+
+    str[0] = '\0';
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (i) {
+	    sprintf(token, " %d", numbers[i]);
+	}
+	else {
+	    sprintf(token, "%d", numbers[i]);
+	}
+	strcat(str, token);
+    }
+    sprintf(token, " %d", cpm_ptr->pred_b_ptr->num);
+    strcat(str, token);
+
+    key = strdup(str);
+    return key;
+}
+
+typedef struct cpm_cache {
+/*    int	numbers[CF_ELEMENT_MAX];
+    int	predicate; */
+    char *key;
+    CF_PRED_MGR *cpm;
+    struct cpm_cache *next;
+} CPM_CACHE;
+
+CPM_CACHE *CPMcache[TBLSIZE];
+
+/*==================================================================*/
+			 void InitCPMcache()
+/*==================================================================*/
+{
+    memset(CPMcache, 0, sizeof(CPM_CACHE *)*TBLSIZE);
+}
+
+/*==================================================================*/
+			 void ClearCPMcache()
+/*==================================================================*/
+{
+    int i;
+    CPM_CACHE *ccp;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (CPMcache[i]) {
+	    ccp = CPMcache[i];
+	    while (ccp) {
+		free(ccp->key);
+		free(ccp->cpm);
+		ccp = ccp->next;
+		free(ccp);
+	    }
+	    CPMcache[i] = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+		int RegisterCPM(CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int num;
+    char *key;
+    CPM_CACHE **ccpp;
+
+    key = inputcc2num(cpm_ptr);
+    num = hash(key, strlen(key));
+
+    ccpp = &(CPMcache[num]);
+    while (*ccpp) {
+	ccpp = &((*ccpp)->next);
+    }
+
+    *ccpp = (CPM_CACHE *)malloc_data(sizeof(CPM_CACHE), "RegisterCPM");
+    (*ccpp)->key = key;
+    (*ccpp)->cpm = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "RegisterCPM");
+    init_case_frame(&((*ccpp)->cpm->cf));
+    copy_cpm((*ccpp)->cpm, cpm_ptr, 0);
+    (*ccpp)->next = NULL;
+}
+
+/*==================================================================*/
+	     CF_PRED_MGR *CheckCPM(CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int num;
+    char *key;
+    CPM_CACHE *ccp;
+
+    key = inputcc2num(cpm_ptr);
+    num = hash(key, strlen(key));
+
+    ccp = CPMcache[num];
+    while (ccp) {
+	if (str_eq(key, ccp->key)) {
+	    return ccp->cpm;
+	}
+	ccp = ccp->next;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
@@ -396,6 +556,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
       解析成功                               score (0以上)
     */
     int closest;
+    CF_PRED_MGR *cache_ptr;
 
     /* 初期化 */
     cpm_ptr->pred_b_ptr = b_ptr;
@@ -417,13 +578,23 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
     */
 
+    /* cache (under construction) */
+    if (OptAnalysis == OPT_CASE && 
+	(cache_ptr = CheckCPM(cpm_ptr))) {
+	copy_cpm(cpm_ptr, cache_ptr, 0);
+	return cpm_ptr->score;
+    }
+
     /* もっともスコアのよい格フレームを決定する
        文脈解析: 直前格要素がなければ格フレームを決定しない */
+
+    closest = get_closest_case_component(sp, cpm_ptr);
+
+    /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
+    /* ★直前格要素がない場合は、この関数を実行する必要がない★ */
+    find_best_cf(sp, cpm_ptr, closest);
+
     if (OptDisc == OPT_DISC) {
-	closest = get_closest_case_component(sp, cpm_ptr);
-	/* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
-	/* ★直前格要素がない場合は、この関数を実行する必要がない★ */
-	find_best_cf(sp, cpm_ptr, closest);
 	/* 直前格要素のスコアが閾値以上なら格フレームを決定 */
 	if (closest > -1 && cpm_ptr->score > 7) {
 	    if (cpm_ptr->tie_num > 1) {
@@ -442,9 +613,12 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    cpm_ptr->decided = CF_DECIDED;
 	}
     }
-    else {
-	find_best_cf(sp, cpm_ptr, -1);
+
+    if (OptAnalysis == OPT_CASE) {
+	RegisterCPM(cpm_ptr);
     }
+
+    return cpm_ptr->score;
 }
 
 /*==================================================================*/
@@ -488,26 +662,104 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
+      void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src)
+/*==================================================================*/
+{
+    int i, j;
+
+    dst->element_num = src->element_num;
+    for (i = 0; i < src->element_num; i++) {
+	dst->oblig[i] = src->oblig[i];
+	dst->adjacent[i] = src->adjacent[i];
+	for (j = 0; j < PP_ELEMENT_MAX; j++) {
+	    dst->pp[i][j] = src->pp[i][j];
+	}
+	if (src->sm[i]) {
+	    dst->sm[i] = strdup(src->sm[i]);
+	}
+	else {
+	    dst->sm[i] = NULL;
+	}
+	if (Thesaurus == USE_BGH) {
+	    if (src->ex[i]) {
+		dst->ex[i] = strdup(src->ex[i]);
+	    }
+	    else {
+		dst->ex[i] = NULL;
+	    }
+	}
+	else if (Thesaurus == USE_NTT) {
+	    if (src->ex2[i]) {
+		dst->ex2[i] = strdup(src->ex2[i]);
+	    }
+	    else {
+		dst->ex2[i] = NULL;
+	    }
+	}
+	if (src->ex_list[i]) {
+	    dst->ex_list[i] = (char **)malloc_data(sizeof(char *)*src->ex_size[i], 
+						   "copy_cf_with_alloc");
+	    for (j = 0; j < src->ex_num[i]; j++) {
+		dst->ex_list[i][j] = strdup(src->ex_list[i][j]);
+	    }
+	}
+	else {
+	    dst->ex_list[i] = NULL;
+	}
+	dst->ex_size[i] = src->ex_size[i];
+	dst->ex_num[i] = src->ex_num[i];
+	if (src->examples[i]) {
+	    dst->examples[i] = strdup(src->examples[i]);
+	}
+	else {
+	    dst->examples[i] = NULL;
+	}
+	if (src->semantics[i]) {
+	    dst->semantics[i] = strdup(src->semantics[i]);
+	}
+	else {
+	    dst->semantics[i] = NULL;
+	}
+    }
+    dst->voice = src->voice;
+    dst->ipal_address = src->ipal_address;
+    dst->ipal_size = src->ipal_size;
+    strcpy(dst->ipal_id, src->ipal_id);
+    strcpy(dst->imi, src->imi);
+    dst->concatenated_flag = src->concatenated_flag;
+    dst->etcflag = src->etcflag;
+    if (src->entry) {
+	dst->entry = strdup(src->entry);
+    }
+    else {
+	dst->entry = NULL;
+    }
+    /* weight, pred_b_ptr は未設定 */
+}
+
+/*==================================================================*/
 	    void copy_cf(CASE_FRAME *dst, CASE_FRAME *src)
 /*==================================================================*/
 {
     int i, j;
 
     dst->element_num = src->element_num;
-    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+/*    for (i = 0; i < CF_ELEMENT_MAX; i++) { */
+    for (i = 0; i < src->element_num; i++) {
 	dst->oblig[i] = src->oblig[i];
 	dst->adjacent[i] = src->adjacent[i];
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
 	}
-	for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
+	/* for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
 	    dst->sm[i][j] = src->sm[i][j];
-	}
+	} */
+	if (src->sm[i]) strcpy(dst->sm[i], src->sm[i]);
 	if (Thesaurus == USE_BGH) {
-	    strcpy(dst->ex[i], src->ex[i]);
+	    if (src->ex[i]) strcpy(dst->ex[i], src->ex[i]);
 	}
 	else if (Thesaurus == USE_NTT) {
-	    strcpy(dst->ex2[i], src->ex2[i]);
+	    if (src->ex2[i]) strcpy(dst->ex2[i], src->ex2[i]);
 	}
 	dst->ex_list[i] = src->ex_list[i];
 	dst->ex_size[i] = src->ex_size[i];
@@ -526,12 +778,17 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
-	  void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src)
+     void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag)
 /*==================================================================*/
 {
     int i;
 
-    copy_cf(&dst->cf, &src->cf);
+    if (flag) {
+	copy_cf_with_alloc(&dst->cf, &src->cf);
+    }
+    else {
+	copy_cf(&dst->cf, &src->cf);
+    }
     dst->pred_b_ptr = src->pred_b_ptr;
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	dst->elem_b_ptr[i] = src->elem_b_ptr[i];
@@ -558,7 +815,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     dst->score = src->score;
     dst->pred_num = src->pred_num;
     for (i = 0; i < CPM_MAX; i++) {
-	copy_cpm(&dst->cpm[i], &src->cpm[i]);
+	copy_cpm(&dst->cpm[i], &src->cpm[i], 0);
     }
     dst->ID = src->ID;
 }
@@ -864,11 +1121,51 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 }
 
 /*==================================================================*/
+		char *make_print_string(BNST_DATA *bp)
+/*==================================================================*/
+{
+    int i, start = 0, end = 0, length = 0;
+    char *ret;
+
+    /* 先頭をみる */
+    for (i = 0; i < bp->mrph_num; i++) {
+	/* 特殊を除く */
+	if ((bp->mrph_ptr+i)->Hinshi != 1) {
+	    start = i;
+	    break;
+	}
+    }
+
+    /* 末尾をみる */
+    for (i = bp->mrph_num-1; i >= start; i--) {
+	/* 特殊, 助詞を除く */
+	if ((bp->mrph_ptr+i)->Hinshi != 1 && 
+	    (bp->mrph_ptr+i)->Hinshi != 9) {
+	    end = i;
+	    break;
+	}
+    }
+
+    for (i = start; i <= end; i++) {
+	length += strlen((bp->mrph_ptr+i)->Goi2);
+    }
+    if (length == 0) {
+	return NULL;
+    }
+    ret = (char *)malloc_data(length+1, "make_print_string");
+    *ret = '\0';
+    for (i = start; i <= end; i++) {
+	strcat(ret, (bp->mrph_ptr+i)->Goi2);
+    }
+    return ret;
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 /*==================================================================*/
 {
     int i, num;
-    char feature_buffer[DATA_LEN], relation[DATA_LEN];
+    char feature_buffer[DATA_LEN], relation[DATA_LEN], *word;
 
     /* 格フレームがない場合 */
     if (cpm_ptr->result_num == 0 || 
@@ -893,15 +1190,22 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 
+	/* 割り当てなし */
 	if (num == NIL_ASSIGNED) {
+	    /* 外の関係 */
 	    if (cpm_ptr->elem_b_ptr[i]->num > cpm_ptr->pred_b_ptr->num && 
 		check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
 		strcpy(relation, "外の関係");
 		sprintf(feature_buffer, "%s判定", relation);
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 	    }
-	    else {
+	    /* 割り当てなしで未格 */
+	    else if (cpm_ptr->cf.pp[i][0] == -1) {
 		strcpy(relation, "--");
+	    }
+	    /* 割り当てなしだが、入力側の格が明示されているのでそれを表示 */
+	    else {
+		strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
 	    }
 
 	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
@@ -922,7 +1226,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	else if (num >= 0) {
 	    /* 格フレームに割りあててあるガガ格 */
 	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ２")) {
-		strcpy(relation, "ガガ(ハ)");
+		strcpy(relation, "ガガ");
 		sprintf(feature_buffer, "%s判定", relation);
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
 	    }
@@ -948,19 +1252,24 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int lastflag)
 	}
 	/* else: UNASSIGNED はないはず */
 
+
 	/* feature を用言文節に与える */
-	if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
-	    sprintf(feature_buffer, "格関係%d:%s:%s", 
-		    cpm_ptr->elem_b_ptr[i]->num, 
-		    relation, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
+	word = make_print_string(cpm_ptr->elem_b_ptr[i]);
+	if (word) {
+	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
+		sprintf(feature_buffer, "格関係%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->num, 
+			relation, word);
+	    }
+	    /* 文節内部の要素の場合 */
+	    else {
+		sprintf(feature_buffer, "格関係%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->parent->num, 
+			relation, word);
+	    }
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	    free(word);
 	}
-	/* 文節内部の要素の場合 */
-	else {
-	    sprintf(feature_buffer, "格関係%d:%s:%s", 
-		    cpm_ptr->elem_b_ptr[i]->parent->num, 
-		    relation, cpm_ptr->elem_b_ptr[i]->Jiritu_Go);
-	}
-	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
     }
 }
 

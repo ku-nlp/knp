@@ -845,14 +845,14 @@ int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos)
 		((mikaku &&
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("¥¬") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("¥ò")
+		   cfp->pp[i][0] == pp_kstr_to_code("¥ò") || 
+		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("¥¬£²"))
 		   )) ||
 		 (renkaku &&
 		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("¥¬") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("¥ò") ||
 		   (sotoflag && cfp->pp[i][0] == pp_kstr_to_code("³°¤Î´Ø·¸")) ||
-		   (gaflag && cfp->pp[i][0] == pp_kstr_to_code("¥¬£²")) ||
 		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("¥Ë")))))) {
 		pos = MATCH_NONE;
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag, &pos);
