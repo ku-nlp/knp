@@ -1827,9 +1827,8 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: exact match or <agent> match */
-	if (ef->similarity > 1.0 || 
-	    (ef->similarity >= 1.0 && ef->c_subject_flag && ef->p_cf_subject_flag)) {
+	/* 名詞の場合: exact match or <sm> match */
+	if (ef->similarity > 1.0 || ef->match_sm_flag) {
 	    score = ef->similarity;
 	}
 	else {
