@@ -1,3 +1,14 @@
+2003-10-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c: 名詞の関係解析で固有名詞文節も対象とすることに
+	した
+
+	* system/case_ipal.c: 名詞句の解析のbug修正
+
+	* system/case_analysis.c: 格関係表示のbug修正
+
+	* rule/context.rule: 数量を間接照応解析しないようにした
+
 2003-10-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/context.c:
