@@ -733,17 +733,22 @@
 	cp = rule + strlen("&意味素:");
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
 	if (*cp & 0x80) {
-	    cp = (char *)sm2code(cp);
+	    if (SM2CODEExist == TRUE)
+		cp = (char *)sm2code(cp);
+	    else
+		cp = NULL;
 	    flag = SM_NO_EXPAND_NE;
 	}
 	else {
 	    flag = SM_CHECK_FULL;
 	}
-	    
-	for (i = 0; ((MRPH_DATA *)ptr2)->SM[i]; i+=SM_CODE_SIZE) {
-	    if (_sm_match_score(cp, 
-			    &(((MRPH_DATA *)ptr2)->SM[i]), flag))
-		return TRUE;
+
+	if (cp) {
+	    for (i = 0; ((MRPH_DATA *)ptr2)->SM[i]; i+=SM_CODE_SIZE) {
+		if (_sm_match_score(cp, 
+				    &(((MRPH_DATA *)ptr2)->SM[i]), flag))
+		    return TRUE;
+	    }
 	}
 	return FALSE;
     }
