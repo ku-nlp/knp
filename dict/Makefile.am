@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS = src scase
 
 EXTRA_DIST = Makefile.orig
 
