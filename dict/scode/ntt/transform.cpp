@@ -24,7 +24,7 @@ using namespace std;
 map<string,string> SM2CODE, COPY;
 map<string,int> ADD_LINE, DEL_LINE;
 
-void read_usr_file( string filename );
+int read_usr_file( string filename );
 void read_sm2code( string filename );
 string sm2code ( string sm, string hinsi );
 void write_word2code( string filename );
@@ -105,7 +105,7 @@ string sm2code ( string sm, string hinsi ) {
 /*
   usr_word2code を読み込んで，word2code.orig に付加する行 ADD_LINE と，word2code.orig から削除する行 DEL_LINE を作成する
 */
-void read_usr_file( string filename ) {
+int read_usr_file( string filename ) {
 
     ifstream fin( filename.c_str() );
     string line, word, sm, code, hinsi;
@@ -113,8 +113,8 @@ void read_usr_file( string filename ) {
     int i, flag;
 
     if ( ! fin.is_open() ) {
-	cerr << "Invalid file name: " << filename << "\n";
-	exit(1);
+	cerr << "no usr file name: " << filename << "\n";
+	return 0;
     }
     
     while( getline( fin, line ) ) {
