@@ -77,10 +77,42 @@ char *FukugojiTable[] = {"§ÚΩ¸§Ø", "§Ú§Œ§æ§Ø",
 }
 
 /*==================================================================*/
+int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, 
+				  int *pp_num, char *fcp)
+/*==================================================================*/
+{
+    CASE_FRAME *c_ptr = &(cpm_ptr->cf);
+    int cc;
+
+    if (!strncmp(fcp, "≤Ú¿œ≥ -", 7)) {
+	cc = pp_kstr_to_code(fcp+7);
+	if (cc == END_M) {
+	    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+7);
+	    exit(1);
+	}
+	c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;
+	if (*pp_num >= PP_ELEMENT_MAX) {
+	    fprintf(stderr, ";; not enough pp_num (%d)!\n", PP_ELEMENT_MAX);
+	    exit(1);
+	}
+    }
+    else if (!strcmp(fcp, "…¨ø‹≥ ")) {
+	c_ptr->oblig[c_ptr->element_num] = TRUE;
+    }
+    else if (!strcmp(fcp, "£‘Õ—∏¿∆± ∏¿·")) {	/* °÷°¡§Ú°¡§À°◊§Œ§»§≠ */
+	if (cpm_ptr->pred_b_ptr->num != b_ptr->num) {
+	    return FALSE;
+	}
+    }
+    return TRUE;
+}
+
+/*==================================================================*/
 BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag)
 /*==================================================================*/
 {
     int pp_num = 0, cc;
+    char *buffer, *start_cp, *loop_cp;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     FEATURE *fp;
 
@@ -95,29 +127,55 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 	    b_ptr--;
 	}
 
-	fp = b_ptr->f;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
+	/* ∑∏§Í¿Ë§Ú§ﬂ§ÎæÏπÁ */
+	if (start_cp = check_feature(b_ptr->f, "∑∏•¡")) {
+	    buffer = strdup(start_cp+5);
+	    start_cp = buffer;
+	    loop_cp = start_cp;
+	    flag = 0;
+	    while (*loop_cp) {
+		if (flag == 0 && *loop_cp == '&' && *(loop_cp+1) == '&') {
+		    *loop_cp = '\0';
+		    if (!check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
+			flag = 0;
+			break;
+		    }
+		    loop_cp += 2;
+		    start_cp = loop_cp;
+		}
+		else if (flag == 0 && *loop_cp == '|' && *(loop_cp+1) == '|') {
+		    *loop_cp = '\0';
+		    if (check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
+			flag = 1;
+			break;
+		    }
+		    loop_cp += 2;
+		    start_cp = loop_cp;
+		}
+		else if (*loop_cp == ':') {
+		    *loop_cp = '\0';
+		    if (flag == 1 || check_feature(cpm_ptr->pred_b_ptr->f, start_cp)) {
+			if (_make_data_from_feature_to_pp(cpm_ptr, b_ptr, &pp_num, loop_cp+1) == FALSE) {
+			    return NULL;
+			}
+		    }
+		    break;
+		}
+		else {
+		    loop_cp++;
+		}
+	    }
+	    free(buffer);
+	}
+
+	fp = b_ptr->f;
+
+	/* feature§´§È≥ §ÿ */
 	while (fp) {
-	    if (!strncmp(fp->cp, "≤Ú¿œ≥ -", 7)) {
-		cc = pp_kstr_to_code(fp->cp+7);
-		if (cc == END_M) {
-		    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fp->cp+7);
-		    exit(1);
-		}
-		c_ptr->pp[c_ptr->element_num][pp_num++] = cc;
-		if (pp_num >= PP_ELEMENT_MAX) {
-		    fprintf(stderr, ";; not enough pp_num (%d)!\n", PP_ELEMENT_MAX);
-		    exit(1);
-		}
-	    }
-	    else if (!strcmp(fp->cp, "…¨ø‹≥ ")) {
-		c_ptr->oblig[c_ptr->element_num] = TRUE;
-	    }
-	    else if (!strcmp(fp->cp, "£‘Õ—∏¿∆± ∏¿·")) {	/* °÷°¡§Ú°¡§À°◊§Œ§»§≠ */
-		if (cpm_ptr->pred_b_ptr->num != b_ptr->num) {
-		    return NULL;
-		}
+	    if (_make_data_from_feature_to_pp(cpm_ptr, b_ptr, &pp_num, fp->cp) == FALSE) {
+		return NULL;
 	    }
 	    fp = fp->next;
 	}
@@ -413,6 +471,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 
 	    /* ≥ §¨Ã¿º®§µ§Ï§∆§§§ §§§≥§»§Ú•ﬁ°º•Ø */
 	    if (check_feature(cel_b_ptr->f, "∑∏:Ã§≥ ") || 
+		check_feature(cel_b_ptr->f, "∑∏:•Œ≥ ") || 
 		cel_b_ptr->num == -1) {
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 	    }
@@ -467,7 +526,8 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr, int flag
 		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 
 		    /* ≥ §¨Ã¿º®§µ§Ï§∆§§§ §§§≥§»§Ú•ﬁ°º•Ø */
-		    if (check_feature(cel_b_ptr->f, "∑∏:Ã§≥ ")) {
+		    if (check_feature(cel_b_ptr->f, "∑∏:Ã§≥ ") || 
+			check_feature(cel_b_ptr->f, "∑∏:•Œ≥ ")) {
 			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		    }
 		    else {
