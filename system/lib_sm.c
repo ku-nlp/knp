@@ -172,7 +172,7 @@ int		SMP2SMGExist;
 }
 
 /*==================================================================*/
-			char *get_sm(char *cp)
+		       char *_get_sm(char *cp)
 /*==================================================================*/
 {
     int i, pos, length;
@@ -224,6 +224,32 @@ int		SMP2SMGExist;
 	}
 	code[pos] = '\0';
     }
+    return code;
+}
+
+/*==================================================================*/
+		   char *get_sm(unsigned char *cp)
+/*==================================================================*/
+{
+    int i;
+    char *code;
+    unsigned char *hira;
+
+    if (code = _get_sm(cp)) {
+	return code;
+    }
+
+    /* 意味素ない場合で、
+       すべての文字がカタカナの場合はひらがなに変換して辞書引き */
+
+    for (i = 0; i < strlen(cp); i += 2) {
+	if (*(cp+i) != 0xa5) {
+	    return NULL;
+	}
+    }
+    hira = katakana2hiragana(cp);
+    code = _get_sm(hira);
+    free(hira);
     return code;
 }
 
@@ -288,6 +314,17 @@ int		SMP2SMGExist;
 	if (code) {
 	    strcpy(ptr->SM_code, code);
 	    free(code);
+	}
+	else {
+	    /* 「お鍋」など一形態素になっている場合があるので
+	       "お" をとってみる */
+	    if (!strncmp(str_buffer, "お", 2)) {
+		code = get_sm(str_buffer+2);
+		if (code) {
+		    strcpy(ptr->SM_code, code);
+		    free(code);
+		}
+	    }
 	}
 	if (*(ptr->SM_code)) goto Match;
 
