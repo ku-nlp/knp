@@ -122,6 +122,9 @@
 #define	OPT_CASE_SOTO_OLD	8
 #define	OPT_CASE_SOTO_NO	16
 
+#define	PP_NUMBER	44
+#define LOC_NUMBER	7
+
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
 
@@ -459,9 +462,9 @@ typedef struct {
 
 /* 形態素データ */
 typedef struct {
-    char 	Goi[WORD_LEN_MAX];	/* 原型 */
-    char 	Yomi[WORD_LEN_MAX];
-    char 	Goi2[WORD_LEN_MAX];
+    char 	Goi[WORD_LEN_MAX+1];	/* 原型 */
+    char 	Yomi[WORD_LEN_MAX+1];
+    char 	Goi2[WORD_LEN_MAX+1];
     int  	Hinshi;
     int 	Bunrui;
     int 	Katuyou_Kata;
@@ -828,6 +831,59 @@ typedef struct ellipsis_list {
     int			result_num;
     ELLIPSIS_CMM	ecmm[CMM_MAX];
 } ELLIPSIS_MGR;
+
+typedef struct ellipsis_features {
+    float	similarity;
+    int		pos;
+
+    int		c_pp;
+    int		c_distance;
+    int		c_fs_flag;
+    int		c_location;
+    int		c_topic_flag;
+    int		c_no_topic_flag;
+    int		c_subject_flag;
+    int		c_dep_mc_flag;
+    char	c_dep_p_level[3];
+    int		c_prev_p_flag;
+    int		c_get_over_p_flag;
+    int		c_sm_none_flag;
+    int		c_extra_tag;
+
+    int		p_pp;
+    int		p_voice;
+    int		p_type;
+    int		p_sahen_flag;
+    int		p_cf_subject_flag;
+    int		p_cf_sentence_flag;
+    int		p_n_modify_flag;
+} E_FEATURES;
+
+typedef struct ellipsis_svm_features {
+    float	similarity;
+
+    int		c_pp[PP_NUMBER];
+    int		c_distance;
+    int		c_fs_flag;
+    int		c_location[LOC_NUMBER];
+    int		c_topic_flag;
+    int		c_no_topic_flag;
+    int		c_subject_flag;
+    int		c_dep_mc_flag;
+    int		c_dep_p_level[6];
+    int		c_prev_p_flag;
+    int		c_get_over_p_flag;
+    int		c_sm_none_flag;
+    int		c_extra_tag[4];
+
+    int		p_pp[3];
+    int		p_voice[3];
+    int		p_type[3];
+    int		p_sahen_flag;
+    int		p_cf_subject_flag;
+    int		p_cf_sentence_flag;
+    int		p_n_modify_flag;
+} E_SVM_FEATURES;
 
 /*====================================================================
                                END

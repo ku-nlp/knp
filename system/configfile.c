@@ -329,6 +329,11 @@ int knp_dict_file_already_defined = 0;
 		fprintf(stderr, "error in .jumanrc\n");
 		exit(0);
 	    }
+	    else if (ModelFile) {
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "SVM model file (arg) ... %s\n", ModelFile);
+		}
+	    }
 	    else {
 		ModelFile = check_tilde(_Atom(cell2));
 		if (OptSVM == OPT_SVM && OptDisplay == OPT_DEBUG) {

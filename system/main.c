@@ -167,6 +167,12 @@ extern float	AssignReferentThreshold;
 	else if (str_eq(argv[0], "-co"))      OptInhibit &= ~OPT_INHIBIT_OPTIONAL_CASE;
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-svm"))     OptSVM      = OPT_SVM;
+	else if (str_eq(argv[0], "-svmmodel")) {
+	    OptSVM      = OPT_SVM;
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    ModelFile = strdup(argv[0]);
+	}
 #endif
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;

@@ -790,7 +790,7 @@ int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, B
 	    }
 #ifdef DEBUGMORE
 	    fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
-#endif DEBUGMORE
+#endif
 
 	    if (score && !firstscore) {
 		if (!CorpusComment[ptr1->num][0]) {
@@ -1372,7 +1372,7 @@ float CorpusExampleDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char 
 
 #ifdef DEBUGMORE
 	fprintf(Outfp, ";;;(O) %d %d %s:%s %s(%d) ->%d\n", pos1, pos2, cp1, case1, cp2, score);
-#endif DEBUGMORE
+#endif
 
 	if (score) {
 	    /* tempscore = (float)score/count; */

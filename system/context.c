@@ -32,8 +32,9 @@ int Bcheck[BNST_MAX];
 #define	PLOC_NPARENTCV	0x0006	/* サ変名詞の親の従属節 */
 #define	PLOC_NOTHERS	0x000e
 
-/* char *ExtraTags[] = {"対象外", "一人称", "不特定:人", "不特定:状況"}; */
-char *ExtraTags[] = {"対象外", "一人称", "不特定:人"};
+/* ※ 位置の数を変えたら、LOC_NUMBER(const.h)を変えること */
+
+char *ExtraTags[] = {"対象外", "一人称", "不特定-人", "不特定-状況"};
 
 char *ETAG_name[] = {
     "", "", "不特定:人", "一人称", "不特定:状況", 
@@ -858,6 +859,31 @@ int CheckObligatoryCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, BNST_DATA *
 }
 
 /*==================================================================*/
+int GetCandCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, BNST_DATA *bp)
+/*==================================================================*/
+{
+    /* 候補の格を得る
+       bp: 対象文節
+       cpm_ptr: 対象文節の係る用言 (bp->parent->cpm_ptr)
+    */
+
+    int i, num;
+
+    if (cpm_ptr && cpm_ptr->result_num > 0 && cmm_ptr->score != -2) {
+	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
+	    num = cmm_ptr->result_lists_p[0].flag[i];
+	    /* これが調べる格要素 */
+	    if (num != UNASSIGNED && 
+		cpm_ptr->elem_b_num[num] != -2 && /* 省略の格要素じゃない */
+		cpm_ptr->elem_b_ptr[num]->num == bp->num) {
+		return cmm_ptr->cf_ptr->pp[i][0];
+	    }
+	}
+    }
+    return -1;
+}
+
+/*==================================================================*/
 int CheckCaseCorrespond(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, 
 			BNST_DATA *bp, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
@@ -897,173 +923,258 @@ int CheckCaseCorrespond(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr,
     return NULL;
 }
 
+/*==================================================================*/
+	char *EllipsisSvmFeatures2String(E_SVM_FEATURES *esf)
+/*==================================================================*/
+{
+    int max, i;
+    char *buffer, *sbuf;
+
+    max = (sizeof(E_SVM_FEATURES)-sizeof(float))/sizeof(int)+1;
+    sbuf = (char *)malloc_data(sizeof(char)*(10+log(max)), 
+			       "EllipsisSvmFeatures2String");
+    buffer = (char *)malloc_data((sizeof(char)*(10+log(max)))*max+10, 
+				 "EllipsisSvmFeatures2String");
+    sprintf(buffer, "1:%.5f", esf->similarity);
+    for (i = 2; i <= max; i++) {
+	sprintf(sbuf, " %d:%d", i, *(esf->c_pp+i-2));
+	strcat(buffer, sbuf);
+    }
+    free(sbuf);
+
+    return buffer;
+}
+
+/*==================================================================*/
+void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp, 
+				       char *word, int pp, char *sid, int num)
+/*==================================================================*/
+{
+    char *buffer;
+
+    buffer = (char *)malloc_data(strlen(ecp)+46+strlen(word), 
+				 "EllipsisSvmFeaturesString2FeatureString");
+    sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%d:%s", 
+	    word, pp_code_to_kstr(pp), sid, num, ecp);
+    assign_cfeature(&(em_ptr->f), buffer);
+    free(buffer);
+}
+
+/*==================================================================*/
+ E_SVM_FEATURES *EllipsisFeatures2EllipsisSvmFeatures(E_FEATURES *ef)
+/*==================================================================*/
+{
+    E_SVM_FEATURES *f;
+    int i;
+
+    f = (E_SVM_FEATURES *)malloc_data(sizeof(E_SVM_FEATURES), "SetEllipsisFeatures");
+
+    f->similarity = ef->similarity;
+    for (i = 0; i < PP_NUMBER; i++) {
+	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
+    }
+    f->c_distance = ef->c_distance;
+    f->c_fs_flag = ef->c_fs_flag;
+    f->c_location[0] = ef->c_location == PLOC_PV ? 1 : 0;
+    f->c_location[1] = ef->c_location == PLOC_PARENTV ? 1 : 0;
+    f->c_location[2] = ef->c_location == PLOC_CHILDV ? 1 : 0;
+    f->c_location[3] = ef->c_location == PLOC_CHILDPV ? 1 : 0;
+    f->c_location[4] = ef->c_location == PLOC_NPARENTV ? 1 : 0;
+    f->c_location[5] = ef->c_location == PLOC_NPARENTCV ? 1 : 0;
+    f->c_location[6] = ef->c_location == PLOC_NOTHERS ? 1 : 0;
+    f->c_topic_flag = ef->c_topic_flag;
+    f->c_no_topic_flag = ef->c_no_topic_flag;
+    f->c_subject_flag = ef->c_subject_flag;
+    f->c_dep_mc_flag = ef->c_dep_mc_flag;
+    f->c_dep_p_level[0] = str_eq(ef->c_dep_p_level, "A-") ? 1 : 0;
+    f->c_dep_p_level[1] = str_eq(ef->c_dep_p_level, "A") ? 1 : 0;
+    f->c_dep_p_level[2] = str_eq(ef->c_dep_p_level, "B-") ? 1 : 0;
+    f->c_dep_p_level[3] = str_eq(ef->c_dep_p_level, "B") ? 1 : 0;
+    f->c_dep_p_level[4] = str_eq(ef->c_dep_p_level, "B+") ? 1 : 0;
+    f->c_dep_p_level[5] = str_eq(ef->c_dep_p_level, "C") ? 1 : 0;
+    f->c_prev_p_flag = ef->c_prev_p_flag;
+    f->c_get_over_p_flag = ef->c_get_over_p_flag;
+    f->c_sm_none_flag = ef->c_sm_none_flag;
+    f->c_extra_tag[0] = ef->c_extra_tag == 0 ? 1 : 0;
+    f->c_extra_tag[1] = ef->c_extra_tag == 1 ? 1 : 0;
+    f->c_extra_tag[2] = ef->c_extra_tag == 2 ? 1 : 0;
+    f->c_extra_tag[3] = ef->c_extra_tag == 3 ? 1 : 0;
+
+    /* ガ,ヲ,ニ */
+    for (i = 0; i < 3; i++) {
+	f->p_pp[i] = ef->p_pp == i+1 ? 1 : 0;
+    }
+    f->p_voice[0] = ef->p_voice == VOICE_SHIEKI ? 1 : 0;
+    f->p_voice[1] = ef->p_voice == VOICE_UKEMI ? 1 : 0;
+    f->p_voice[2] = ef->p_voice == VOICE_MORAU ? 1 : 0;
+    f->p_type[0] = ef->p_type == 1 ? 1 : 0;
+    f->p_type[1] = ef->p_type == 2 ? 1 : 0;
+    f->p_type[2] = ef->p_type == 3 ? 1 : 0;
+    f->p_sahen_flag = ef->p_sahen_flag;
+    f->p_cf_subject_flag = ef->p_cf_subject_flag;
+    f->p_cf_sentence_flag = ef->p_cf_sentence_flag;
+    f->p_n_modify_flag = ef->p_n_modify_flag;
+
+    return f;
+}
+
+/*==================================================================*/
+void SetEllipsisFeaturesForPred(E_FEATURES *f, CF_PRED_MGR *cpm_ptr, 
+				CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    f->p_pp = cf_ptr->pp[n][0];
+
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "追加受身")) {
+	f->p_voice = VOICE_UKEMI;
+    }
+    else {
+	/* 能動(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
+	f->p_voice = cpm_ptr->pred_b_ptr->voice;
+    }
+
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:動")) {
+	f->p_type = 1;
+    }
+    else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:形")) {
+	f->p_type = 2;
+    }
+    else if (check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
+	f->p_type = 3;
+    }
+    else {
+	f->p_type = 0;
+    }
+
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変") || 
+	check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析")) {
+	f->p_sahen_flag = 1;
+    }
+    else {
+	f->p_sahen_flag = 0;
+    }
+
+    f->p_cf_subject_flag = cf_match_element(cf_ptr->sm[n], "主体", FALSE) ? 1 : 0;
+    f->p_cf_sentence_flag = cf_match_element(cf_ptr->sm[n], "補文", TRUE) ? 1 : 0;
+    f->p_n_modify_flag = check_feature(cpm_ptr->pred_b_ptr->f, "係:連格") ? 1 : 0;
+}
+
+/*==================================================================*/
+E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs, 
+				CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, 
+				BNST_DATA *bp, CASE_FRAME *cf_ptr, int n, int loc)
+/*==================================================================*/
+{
+    E_FEATURES *f;
+    char *level;
+
+    f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeatures");
+
+    f->pos = MATCH_NONE;
+    f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos);
+
+    if (bp->pred_b_ptr) {
+	f->c_pp = GetCandCase(bp->pred_b_ptr->cpm_ptr, &(bp->pred_b_ptr->cpm_ptr->cmm[0]), bp);
+
+	if ((level = check_feature(bp->pred_b_ptr->f, "レベル"))) {
+	    strcpy(f->c_dep_p_level, level);
+	}
+	else {
+	    f->c_dep_p_level[0] = '\0';
+	}
+    }
+
+    f->c_distance = cs-s;
+    f->c_fs_flag = s->Sen_num == 1 ? 1 : 0;
+    f->c_location = loc;
+    f->c_topic_flag = check_feature(bp->f, "主題表現") ? 1 : 0;
+    f->c_no_topic_flag = check_feature(bp->f, "準主題表現") ? 1 : 0;
+    f->c_subject_flag = sm_match_check(sm2code("主体"), bp->SM_code) ? 1 : 0;
+    f->c_dep_mc_flag = CheckLastClause(cs->Sen_num-f->c_distance, f->c_pp, bp->Jiritu_Go) ? 1 : 0;
+
+    if (f->c_distance > 0 || 
+	(f->c_distance == 0 && bp->num < cpm_ptr->pred_b_ptr->num)) {
+	f->c_prev_p_flag = 1;
+    }
+    else {
+	f->c_prev_p_flag = 0;
+    }
+
+    if (f->c_distance == 0 && bp->dpnd_head > cpm_ptr->pred_b_ptr->num) {
+	f->c_get_over_p_flag = 1;
+    }
+    else {
+	f->c_get_over_p_flag = 0;
+    }
+
+    f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
+    f->c_extra_tag = -1;
+
+    /* 用言に関するfeatureを設定 */
+    SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
+
+    return f;
+}
+
+/*==================================================================*/
+E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr, 
+					 CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    E_FEATURES *f;
+
+    f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeaturesExtraTags");
+    memset(f, 0, sizeof(E_FEATURES));
+    f->similarity = -1;
+    f->c_pp = -1;
+    f->c_distance = -1;
+    f->c_extra_tag = tag;
+
+    /* 用言に関するfeatureを設定 */
+    SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
+
+    return f;
+}
+
 #ifdef USE_SVM
 /*==================================================================*/
 void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 						      CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, 
-						      char *tag, CASE_FRAME *cf_ptr, int n)
+						      int tag, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
+    E_FEATURES *ef;
+    E_SVM_FEATURES *esf;
     float score;
-    int predabstract, agentflag, hobunflag, passive, sahen1, sahen2, tame, renkaku;
-    int soto1 = 0, soto2 = 0, soto3 = 0;
-    int headjikan = 0, headsoutai = 0, headkeifuku = 0, headpred = 0;
-    int anonymousp, firstp, untarget;
-    int case_ga = 0, case_wo = 0, case_ni = 0;
-    char feature_buffer[50000], *cp;
-    BNST_DATA *b_ptr;
+    char *ecp, feature_buffer[DATA_LEN];
 
-    if (sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code)) {
-	predabstract = 1;
-    }
-    else {
-	predabstract = 0;
-    }
+    ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
+    ecp = EllipsisSvmFeatures2String(esf);
 
-    /* 格フレームが <主体> をもつかどうか */
-    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
-	agentflag = 2;	/* 準主体 */
-    }
-    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	agentflag = 1;
-    }
-    else {
-	agentflag = 0;
-    }
-
-    /* 格フレームが <補文> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
-	hobunflag = 1;
-    }
-    else {
-	hobunflag = 0;
-    }
-
-    /* 受身 */
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
-	check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
-	check_feature(cpm_ptr->pred_b_ptr->f, "追加受身")) {
-	passive = 1;
-    }
-    else {
-	passive = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析")) {
-	sahen1 = 1;
-    }
-    else {
-	sahen1 = 0;
-    }
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変")) {
-	sahen2 = 1;
-    }
-    else {
-	sahen2 = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜（ため）")) {
-	tame = 1;
-    }
-    else {
-	tame = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
-	renkaku = 1;
-    }
-    else {
-	renkaku = 0;
-    }
-
-    if ((b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr))) {
-	if (check_feature(b_ptr->f, "外の関係")) {
-	    soto1 = 1;
-	}
-	else if (check_feature(b_ptr->f, "外の関係可能性")) {
-	    soto2 = 1;
-	}
-	else if (check_feature(b_ptr->f, "外の関係判定")) {
-	    soto3 = 1;
-	}
-
-	if (check_feature(b_ptr->f, "時間")) {
-	    headjikan = 1;
-	}
-	if (check_feature(b_ptr->f, "相対名詞")) {
-	    headsoutai = 1;
-	}
-	if (check_feature(b_ptr->f, "形副名詞")) {
-	    headkeifuku = 1;
-	}
-	if (check_feature(b_ptr->f, "用言")) {
-	    headpred = 1;
-	}
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+9)) {
-	anonymousp = 1;
-    }
-    else {
-	anonymousp = 0;
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "一人称")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	firstp = 1;
-    }
-    else {
-	firstp = 0;
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "対象外")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	untarget = 1;
-    }
-    else {
-	untarget = 0;
-    }
-
-    if (MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	case_ga = 1;
-    }
-    else if (MatchPP(cf_ptr->pp[n][0], "ヲ")) {
-	case_wo = 1;
-    }
-    else if (MatchPP(cf_ptr->pp[n][0], "ニ")) {
-	case_ni = 1;
-    }
-
-    sprintf(feature_buffer, "1:%.3f 2:-1 3:-1 4:-1 5:-1 6:%d 7:%d 8:-1 9:-1 10:-1 11:-1 12:-1 13:-1 14:-1 15:-1 16:-1 17:-1 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:0 39:0 40:0 41:0 42:0 43:0 44:0 45:%d 46:%d 47:%d 48:-1", 
-	    (float)-1, /* 1 */
-	    agentflag == 1 ? 1 : 0, agentflag == 2 ? 1 : 0, /* 6-7 */
-	    passive, sahen1, sahen2, tame, renkaku, soto1, soto2, soto3, /* 18-25 */
-	    headjikan, headsoutai, headkeifuku, headpred, /* 26-29 */
-	    anonymousp, firstp, untarget, /* 30-32 */
-	    case_ga, case_wo, case_ni, /* 33-35 */
-	    hobunflag, predabstract, /* 36-37 */
-	    strcmp(tag, ExtraTags[0]) == 0 ? 1 : 0, /* 44 */
-	    strcmp(tag, ExtraTags[1]) == 0 ? 1 : 0, /* 45 */
-	    strcmp(tag, ExtraTags[2]) == 0 ? 1 : 0); /* 46 */
-    score = svm_classify(feature_buffer);
-
-    /* fprintf(stderr, "DEBUG %s %f %s\n", tag, (float)score, feature_buffer); */
+    score = svm_classify(ecp);
 
     if (score > maxscore) {
 	char feature_buffer2[50000];
 	maxscore = score;
 	maxrawscore = 1.0;
-	maxtag = tag;
-	sprintf(feature_buffer2, "SVM-%s:%s", pp_code_to_kstr(cf_ptr->pp[n][0]), feature_buffer);
+	maxtag = ExtraTags[tag];
+	sprintf(feature_buffer2, "SVM-%s:%s", pp_code_to_kstr(cf_ptr->pp[n][0]), ecp);
 	assign_cfeature(&(em_ptr->f), feature_buffer2);
     }
 
-    sprintf(feature_buffer, "C用;%s;%s;-1;-1;%.3f|-1", tag, 
+    /* 省略候補 */
+    sprintf(feature_buffer, "C用;%s;%s;-1;-1;%.3f|-1", ExtraTags[tag], 
 	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
 	    score);
     assign_cfeature(&(em_ptr->f), feature_buffer);
 
+    /* 学習FEATURE */
+    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+				      "?", -1);
+    free(ef);
+    free(esf);
+    free(ecp);
 }
 
 /*==================================================================*/
@@ -1072,419 +1183,84 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 					      BNST_DATA *bp, CASE_FRAME *cf_ptr, int n, int type, int loc)
 /*==================================================================*/
 {
-    float score, weight, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
-    char feature_buffer[50000], *cp;
-    int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
-    int exception = 0, pos = MATCH_NONE, casematch, candagent, scopeflag, passive, headscope;
-    int hobunflag, predabstract, tame, renkaku, soto1 = 0, soto2 = 0, soto3 = 0;
-    int sahen1, sahen2, headjikan = 0, headsoutai = 0, headkeifuku = 0, headpred = 0;
-    int anonymousp, firstp, untarget, case_ga = 0, case_wo = 0, case_ni = 0, smnone;
-    int important = 0, gmcc;
-    BNST_DATA *b_ptr;
+    E_FEATURES *ef;
+    E_SVM_FEATURES *esf;
+    float score;
+    char *ecp, feature_buffer[DATA_LEN];
 
-    /* cs のときだけ意味がある */
-    Bcheck[bp->num] = 1;
+    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc);
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
+    ecp = EllipsisSvmFeatures2String(esf);
 
-    /* 対象用言と候補が同じ自立語のとき
-       判定詞の場合だけ許す */
-    if (str_eq(cpm_ptr->pred_b_ptr->Jiritu_Go, bp->Jiritu_Go)) {
-	if (!check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
-	    return;
-	}
-	sameflag = 1;
-    }
-    else {
-	sameflag = 0;
-    }
+    /* 学習FEATURE */
+    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, bp->Jiritu_Go, cf_ptr->pp[n][0], 
+				      s->KNPSID ? s->KNPSID+5 : "?", bp->num);
 
+    /* すでに他の格の指示対象になっているときはだめ */
     if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, bp)) {
+	free(ef);
+	free(esf);
+	free(ecp);
 	return;
     }
 
-    /* 現在の文から対象となっている格要素の文までの距離 */
-    distance = cs-s;
+    score = svm_classify(ecp);
 
-    /* 同一文ではない同格の前側は候補にしない */
-    if (bp->dpnd_type == 'A' && distance != 0) {
-	return;
-    }
-
-    if (distance > 8) {
-	distscore = 0.2;
-    }
-    else {
-	distscore = 1-(float)distance*0.1;
-    }
-
-    /* 格の一致をチェック 
-     bp->parent && bp->parent->cpm_ptr &&  */
-    if (distance == 0 && 
-	bp->pred_b_ptr && bp->pred_b_ptr->cpm_ptr && 
-	bp->num < cpm_ptr->pred_b_ptr->num && 
-	check_feature(bp->pred_b_ptr->f, "用言")) {
-	if (CheckCaseCorrespond(bp->pred_b_ptr->cpm_ptr, &(bp->pred_b_ptr->cpm_ptr->cmm[0]), 
-				bp, cf_ptr, n) == 0) {
-	    /* 格不一致 */
-	    weight = 0.9;
-	    casematch = -1;
+    /* if (rawscore > 0 || smnone == 1) { */
+    if (score > maxscore) {
+	char feature_buffer2[50000];
+	maxscore = score;
+	maxrawscore = ef->similarity;
+	maxs = s;
+	maxpos = ef->pos;
+	if (bp->num < 0) {
+	    maxi = bp->parent->num;
 	}
 	else {
-	    /* 格一致 */
-	    weight = 1;
-	    casematch = 1;
+	    maxi = bp->num;
 	}
-    }
-    else {
-	weight = 1;
-	casematch = 0;
-    }
-
-    /* リンクされた回数によるスコア */
-    ac = CheckAnaphor(alist, bp->Jiritu_Go);
-
-    /* すでに出現した用言とその格要素のセット */
-    pac = CheckPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, cpm_ptr->pred_b_ptr->voice, 
-			 cf_ptr->ipal_address, 
-			 cf_ptr->pp[n][0], bp->Jiritu_Go);
-    pascore = 1.0+0.5*pac; /* 0.2 */
-
-    /* 前文の主節のスコア */
-    pcc = CheckLastClause(cs->Sen_num-1, cf_ptr->pp[n][0], bp->Jiritu_Go);
-
-    /* 2文前の主節のスコア */
-    pcc2 = CheckLastClause(cs->Sen_num-2, cf_ptr->pp[n][0], bp->Jiritu_Go);
-
-    /* 重要ではない格要素の場合 */
-    if (check_feature(bp->f, "非主題")) {
-	pcscore = 1.0+0.2*pcc; /* 0.1 */
-    }
-    else {
-	pcscore = 1.0+0.5*pcc; /* 0.1 */
+	sprintf(feature_buffer2, "SVM-%s:%s", pp_code_to_kstr(cf_ptr->pp[n][0]), ecp);
+	assign_cfeature(&(em_ptr->f), feature_buffer2);
+	maxtag = NULL;
     }
 
-    /* 現在の文の主節のスコア */
-    mcc = CheckLastClause(cs->Sen_num, cf_ptr->pp[n][0], bp->Jiritu_Go);
+    /* 省略候補 */
+    sprintf(feature_buffer, "C用;%s;%s;%d;%d;%.3f|%.3f", bp->Jiritu_Go, 
+	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
+	    ef->c_distance, maxi, 
+	    score, ef->similarity);
+    assign_cfeature(&(em_ptr->f), feature_buffer);
 
-    /* 重要ではない格要素の場合 */
-    if (check_feature(bp->f, "非主題")) {
-	mcscore = 1.0+0.2*mcc; /* 0.2 */
-    }
-    else {
-	mcscore = 1.0+0.5*mcc; /* 0.2 */
-    }
-
-    /* 候補が主節に係るかどうか */
-    gmcc = CheckLastClause(cs->Sen_num-distance, cf_ptr->pp[n][0], bp->Jiritu_Go);
-
-    /* 提題のスコア */
-    if (check_feature(bp->f, "主題表現")) {
-	topicflag = 1;
-	if (distance == 0) {
-	    topicscore = 1.5; /* 1.2 */
-	}
-	else {
-	    topicscore = 1.5; /* 1.2 */
-	}
-    }
-    else {
-	topicflag = 0;
-	topicscore = 1.0;
-    }
-
-    /* ★ 隣以外の AのB はルールで与えられていない */
-    if (!check_feature(bp->f, "準主題表現") && 
-	check_feature(bp->f, "係:ノ格") && 
-	bp->parent && 
-	check_feature(bp->parent->f, "主題表現")) {
-	assign_cfeature(&(bp->f), "準主題表現");
-    }
-
-    if (check_feature(bp->f, "準主題表現")) {
-	if (distance == 0 && 
-	    (check_feature(bp->f, "人名") || 
-	     check_feature(bp->f, "地名") || 
-	     check_feature(bp->f, "組織名"))) { 
-	    topicflag = 1;
-	    subtopicflag = 0;
-	}
-	else {
-	    subtopicflag = 1;
-	}
-    }
-    else {
-	subtopicflag = 0;
-    }
-
-    /* 補正 */
-    if (topicscore > 1.0 && 
-	(pcscore > 1.0 || mcscore > 1.0)) {
-	pcscore = 1.0;
-	mcscore = 1.0;
-    }
-
-    /* 格フレームが <主体> をもつかどうか */
-    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
-	agentflag = 2;	/* 準主体 */
-    }
-    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	agentflag = 1;
-    }
-    else {
-	agentflag = 0;
-    }
-
-    /* 格フレームが <補文> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
-	hobunflag = 1;
-    }
-    else {
-	hobunflag = 0;
-    }
-
-    if (sm_match_check(sm2code("主体"), bp->SM_code)) {
-	candagent = 1;
-    }
-    else {
-	candagent = 0;
-    }
-
-    if (sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code)) {
-	predabstract = 1;
-    }
-    else {
-	predabstract = 0;
-    }
-
-    if (distance > 0 || bp->num < cpm_ptr->pred_b_ptr->num) {
-	scopeflag = 1;
-    }
-    else {
-	scopeflag = 0;
-    }
-
-    if (distance == 0 && bp->parent && bp->parent->num > cpm_ptr->pred_b_ptr->num) {
-	headscope = 1;
-    }
-    else {
-	headscope = 0;
-    }
-
-    /* 受身 */
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "〜れる") || 
-	check_feature(cpm_ptr->pred_b_ptr->f, "〜られる") || 
-	check_feature(cpm_ptr->pred_b_ptr->f, "追加受身")) {
-	passive = 1;
-    }
-    else {
-	passive = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析")) {
-	sahen1 = 1;
-    }
-    else {
-	sahen1 = 0;
-    }
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "サ変")) {
-	sahen2 = 1;
-    }
-    else {
-	sahen2 = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜（ため）")) {
-	tame = 1;
-    }
-    else {
-	tame = 0;
-    }
-
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "係:連格")) {
-	renkaku = 1;
-    }
-    else {
-	renkaku = 0;
-    }
-
-    /* critical!! (★本当の親を求める必要がある) */
-    if ((b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr))) {
-	if (check_feature(b_ptr->f, "外の関係")) {
-	    soto1 = 1;
-	}
-	else if (check_feature(b_ptr->f, "外の関係可能性")) {
-	    soto2 = 1;
-	}
-	else if (check_feature(b_ptr->f, "外の関係判定")) {
-	    soto3 = 1;
-	}
-
-	if (check_feature(b_ptr->f, "時間")) {
-	    headjikan = 1;
-	}
-	if (check_feature(b_ptr->f, "相対名詞")) {
-	    headsoutai = 1;
-	}
-	if (check_feature(b_ptr->f, "形副名詞")) {
-	    headkeifuku = 1;
-	}
-	if (check_feature(b_ptr->f, "用言")) {
-	    headpred = 1;
-	}
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "不特定人")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+9)) {
-	anonymousp = 1;
-    }
-    else {
-	anonymousp = 0;
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "一人称")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	firstp = 1;
-    }
-    else {
-	firstp = 0;
-    }
-
-    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "対象外")) && 
-	MatchPP(cf_ptr->pp[n][0], cp+7)) {
-	untarget = 1;
-    }
-    else {
-	untarget = 0;
-    }
-
-    if (MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	case_ga = 1;
-    }
-    else if (MatchPP(cf_ptr->pp[n][0], "ヲ")) {
-	case_wo = 1;
-    }
-    else if (MatchPP(cf_ptr->pp[n][0], "ニ")) {
-	case_ni = 1;
-    }
-
-    /* N は 〜 N だ。 */
-    if (sameflag) {
-	rawscore = 1;
-    }
-    else if (casematch != -1 && type >= RANK3 && check_feature(cpm_ptr->pred_b_ptr->f, "用言:判")) {
-	rawscore = 1.0;
-    }
-    /* V したのは N だ。: ガ格, ヲ格 
-       やめた: check_feature(bp->f, "用言:判") */
-    else if (cpm_ptr->pred_b_ptr->dpnd_head == bp->num && /* ちゃんと指定してみる */
-	     check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜の〜") && 
-	     (check_feature(cpm_ptr->pred_b_ptr->f, "係:未格") || 
-	      check_feature(cpm_ptr->pred_b_ptr->f, "係:ガ格"))) {
-	rawscore = CalcSimilarityForVerb(bp, cf_ptr, n, &pos);
-	/* ★ rawscore == 0 で bp 側に意味素がない場合を考える */
-	exception = 1;
-    }
-    else {
-	rawscore = CalcSimilarityForVerb(bp, cf_ptr, n, &pos);
-    }
-
-    /* 意味素なし */
-    if (rawscore < 0) {
-	smnone = 1;
-    }
-    else {
-	smnone = 0;
-    }
-
-    firstsc = CheckLastClause(1, cf_ptr->pp[n][0], bp->Jiritu_Go);
-
-    /* 救うもの */
-    if (((s->Sen_num == 1 && firstsc == 0) || 
-	 (distance == 1 && pcc == 0) || 
-	 (distance == 0 && mcc == 0)
-	) && 
-	((bp->num == s->Bnst_num-1 && check_feature(bp->f, "用言:判")) || /* 文末の判定詞 */
-	 (bp->parent && bp->parent->parent && check_feature(bp->parent->parent->f, "主節") && subordinate_level_check("B", bp->parent) && 
-	  CheckObligatoryCase(bp->parent->cpm_ptr, &(bp->parent->cpm_ptr->cmm[0]), bp)) || /* 強い従属節 */
-	 (check_feature(bp->f, "係:ノ格") && check_feature((s->bnst_data+bp->dpnd_head)->f, "主節")))) { /* 主節に係るノ格(名詞句) */
-	if (s->Sen_num == 1) {
-	    firstsc = 1;
-	}
-	else if (distance == 0) {
-	    mcc = 1;
-	}
-	else {
-	    pcc = 1;
-	}
-    }
-
-    if (distance == 0 || /* 対象文 */
-	(distance == 1 && (topicflag || subtopicflag || pcc)) || /* 前文 */
-	/* (distance == 2 && pcc2) || * 2文前 */
-	(s->Sen_num == 1 && (topicflag || subtopicflag || firstsc)) || /* 先頭文 */
-	(pcc || mcc || firstsc)) { /* それ以外で主節の省略の指示対象 */
-	important = 1;
-    }
-    else {
-	important = 0;
-    }
-
-    if (1) {
-	sprintf(feature_buffer, "1:%.3f 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d 12:%d 13:%d 14:%d 15:%d 16:%d 17:%d 18:%d 19:%d 20:%d 21:%d 22:%d 23:%d 24:%d 25:%d 26:%d 27:%d 28:%d 29:%d 30:%d 31:%d 32:%d 33:%d 34:%d 35:%d 36:%d 37:%d 38:%d 39:%d 40:%d 41:%d 42:%d 43:%d 44:%d 45:%d 46:%d 47:%d 48:%d", 
-		rawscore, distance, s->Sen_num == 1 ? 1: 0, /* 1-3 */
-		topicflag, subtopicflag, /* 4-5 */
-		agentflag == 1 ? 1 : 0, agentflag == 2 ? 1 : 0, candagent, /* 6-8 */
-		scopeflag, headscope, pac, ac, casematch, /* 9-13 */
-		sameflag, exception, smnone, important, /* 14-17 */
-		passive, sahen1, sahen2, tame, renkaku, /* 18-22 */
-		soto1, soto2, soto3, /* 23-25 */
-		headjikan, headsoutai, headkeifuku, headpred, /* 26-29 */
-		anonymousp, firstp, untarget, /* 30-32 */
-		case_ga, case_wo, case_ni, /* 33-35 */
-		hobunflag, predabstract, /* 36-37 */
-		loc == 1 ? 1 : 0, loc == 16 ? 1 : 0, 
-		loc == 256 ? 1 : 0, loc == 768 ? 1 : 0, loc == 2 ? 1 : 0, 
-		loc == 6 ? 1 : 0, loc == 14 ? 1 : 0, 
-		0, 0, 0, 
-		gmcc);
-	score = svm_classify(feature_buffer);
-
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(stderr, "DEBUG %s %s %f %s\n", cpm_ptr->pred_b_ptr->Jiritu_Go, bp->Jiritu_Go, (float)score, feature_buffer);
-	}
-
-	if (rawscore > 0 || smnone == 1) {
-	    if (score > maxscore) {
-		char feature_buffer2[50000];
-		maxscore = score;
-		maxrawscore = rawscore;
-		maxs = s;
-		maxpos = pos;
-		if (bp->num < 0) {
-		    maxi = bp->parent->num;
-		}
-		else {
-		    maxi = bp->num;
-		}
-		sprintf(feature_buffer2, "SVM-%s:%s", pp_code_to_kstr(cf_ptr->pp[n][0]), feature_buffer);
-		assign_cfeature(&(em_ptr->f), feature_buffer2);
-		maxtag = NULL;
-	    }
-
-	    /* 省略候補 */
-	    sprintf(feature_buffer, "C用;%s;%s;%d;%d;%.3f|%.3f", bp->Jiritu_Go, 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-		    distance, maxi, 
-		    score, rawscore);
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
-		    bp->Jiritu_Go, 
-		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-		    rawscore, loc, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception, smnone, important);
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	}
-    }
+    free(ef);
+    free(esf);
+    free(ecp);
 }
 #endif
+
+/*==================================================================*/
+void EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
+					       CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, 
+					       int tag, CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+#ifdef USE_SVM
+    EllipsisDetectForVerbSubcontractExtraTagsWithSVM(cs, em_ptr, cpm_ptr, cmm_ptr, 
+						     tag, cf_ptr, n);
+#else
+    E_FEATURES *ef;
+    E_SVM_FEATURES *esf;
+    char *ecp;
+
+    ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
+    ecp = EllipsisSvmFeatures2String(esf);
+    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+				      "?", -1);
+    free(ef);
+    free(esf);
+    free(ecp);
+#endif
+}
 
 /*==================================================================*/
 void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
@@ -1494,10 +1270,22 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 {
     float score, weight, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
     float addscore = 0;
-    char feature_buffer[DATA_LEN];
+    char feature_buffer[DATA_LEN], *ecp;
     int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
     int exception = 0, pos = MATCH_NONE, casematch, candagent, hobunflag, predabstract, smnone;
     int important = 0;
+    E_FEATURES *ef;
+    E_SVM_FEATURES *esf;
+
+    /* 学習FEATURE */
+    ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc);
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
+    ecp = EllipsisSvmFeatures2String(esf);
+    EllipsisSvmFeaturesString2Feature(em_ptr, ecp, bp->Jiritu_Go, cf_ptr->pp[n][0], 
+				      s->KNPSID ? s->KNPSID+5 : "?", bp->num);
+    free(ef);
+    free(esf);
+    free(ecp);
 
     /* cs のときだけ意味がある */
     Bcheck[bp->num] = 1;
@@ -1514,6 +1302,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	sameflag = 0;
     }
 
+    /* すでに他の格の指示対象になっているときはだめ */
     if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, bp)) {
 	return;
     }
@@ -1725,7 +1514,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	}
     }
 
-    if (casematch != -1 && type == RANKP) {
+    if (casematch != -1 && (loc == PLOC_PV || loc == PLOC_PARENTV)) {
 	addscore = 0.10;
     }
 
@@ -1800,6 +1589,20 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	else {
 	    maxi = bp->num;
 	}
+
+	if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
+	    sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
+		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
+		    L_Jiritu_M(bp)->Goi, 
+		    pos == MATCH_NONE ? "NONE" : "SUBJECT");
+	}
+	else {
+	    sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%.3f", 
+		    pp_code_to_kstr(cf_ptr->pp[n][0]), 
+		    L_Jiritu_M(bp)->Goi, 
+		    cf_ptr->ex_list[n][pos], rawscore);
+	}
+	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 
     /* 省略候補 (rawscore == 0 の場合も候補として出力) */
@@ -1807,11 +1610,6 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
 	    distance, maxi, 
 	    score, rawscore);
-    assign_cfeature(&(em_ptr->f), feature_buffer);
-    sprintf(feature_buffer, "学習FEATURE;%s;%s;%.3f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", 
-	    bp->Jiritu_Go, 
-	    pp_code_to_kstr(cf_ptr->pp[n][0]), 
-	    rawscore, loc, ac, pac, pcc, mcc, topicflag, subtopicflag, agentflag, candagent, distance, bp->num, casematch, hobunflag, predabstract, sameflag, exception, smnone, important);
     assign_cfeature(&(em_ptr->f), feature_buffer);
 }
 
@@ -2147,6 +1945,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    current = 0;
     }
 
+    for (i = 0; ExtraTags[i][0]; i++) {
+	EllipsisDetectForVerbSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, 
+						  i, cf_ptr, n);
+    }
+
 #ifdef USE_SVM
     if (OptSVM == OPT_SVM) {
 	if (MatchPP(cf_ptr->pp[n][0],"デ") || 
@@ -2164,14 +1967,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    return 0;
 	}
 
-	for (i = 0; ExtraTags[i][0]; i++) {
-	    EllipsisDetectForVerbSubcontractExtraTagsWithSVM(cs, em_ptr, cpm_ptr, cmm_ptr, 
-							     ExtraTags[i], cf_ptr, n);
-	}
-
 	if (maxscore > AssignReferentThresholdForSVM) {
 	    if (maxtag) {
-		if (str_eq(maxtag, "不特定:人")) {
+		if (str_eq(maxtag, "不特定-人")) {
 		    sprintf(feature_buffer, "C用;【不特定:人】;%s;-1;-1;1", 
 			    pp_code_to_kstr(cf_ptr->pp[n][0]));
 		    assign_cfeature(&(em_ptr->f), feature_buffer);
@@ -2205,12 +2003,20 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		    /* AppendToCF(cpm_ptr, cmm_ptr, cpm_ptr->pred_b_ptr, cf_ptr, n, maxscore, -1); */
 		    return 1;
 		}
+		else if (str_eq(maxtag, "不特定-状況")) {
+		    sprintf(feature_buffer, "C用;【不特定:状況】;%s;-1;-1;1", 
+			    pp_code_to_kstr(cf_ptr->pp[n][0]));
+		    assign_cfeature(&(em_ptr->f), feature_buffer);
+		    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
+		    return 1;
+		}
 	    }
 
+	    /* 
 	    if (check_feature(cpm_ptr->pred_b_ptr->f, "省略格指定")) {
 		;
 	    }
-	    else {
+	    else */ {
 		int distance;
 
 		distance = cs-maxs;

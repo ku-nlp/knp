@@ -975,6 +975,8 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	/* 外の関係だと推定してボーナスを与える */
 	if (renkaku && verb) {
 	    if (OptCaseFlag & OPT_CASE_SOTO_OLD) {
+		int sotoc;
+
 		/* 外の関係スコア == SOTO_ADD_SCORE + OPTIONAL_CASE_SCORE */
 		if (OptDisc == OPT_DISC) {
 		    elmnt_score = 0;
@@ -987,18 +989,22 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 		}
 		/* elmnt_score -= OPTIONAL_CASE_SCORE; * 任意格ボーナスの分 */
 
+		/* 「外の関係」格がある場合 */
+		if ((sotoc = check_case(cfp, pp_kstr_to_code("外の関係"))) >= 0) {
+		    ;
+		}
 		/* 格フレームに「外の関係」格を追加 
-		   下で cfp->element_num を戻しているので、
-		   同じ格が複数あるかどうかをチェックしていない */
-		if (cfp->element_num < CF_ELEMENT_MAX) {
+		   下で cfp->element_num を戻している */
+		else if (cfp->element_num < CF_ELEMENT_MAX) {
 		    _make_ipal_cframe_pp(cfp, "外の関係", cfp->element_num);
-		    list1.flag[target] = cfp->element_num;
-		    list1.score[target] = elmnt_score;
-		    list2.flag[cfp->element_num] = target;
-		    list2.score[cfp->element_num] = elmnt_score;
+		    sotoc = cfp->element_num;
 		    cfp->element_num++;
 		    soto_decide = 1;
 		}
+		list1.flag[target] = sotoc;
+		list1.score[target] = elmnt_score;
+		list2.flag[sotoc] = target;
+		list2.score[sotoc] = elmnt_score;
 	    }
 	}
 	else if (mikaku) {

@@ -657,11 +657,10 @@ int		SMP2SMGExist;
 {
     /* <時間> の意味素しかもっていなければ <時間> を与える */
 
-    if (sm_all_match(bp->SM_code, "1128********")) { /* 時間のコード */
-	assign_cfeature(&(bp->f), "強時間");
-	if (!check_feature(bp->f, "時間")) {
-	    assign_cfeature(&(bp->f), "時間");
-	}
+    if (!check_feature(bp->f, "時間") && 
+	sm_all_match(bp->SM_code, sm2code("時間"))) {
+	assign_cfeature(&(bp->f), "時間判定");
+	assign_cfeature(&(bp->f), "時間");
     }
 }
 
@@ -673,7 +672,7 @@ int		SMP2SMGExist;
     assign_time_feature(bp);
 
     /* <抽象>属性を付与する */
-    if (sm_all_match(bp->SM_code, "11**********")) {
+    if (sm_all_match(bp->SM_code, sm2code("抽象"))) {
 	assign_cfeature(&(bp->f), "抽象");
     }
 }

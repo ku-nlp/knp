@@ -157,6 +157,8 @@ struct PP_STR_TO_CODE {
     {NULL, NULL, -1}		/* 格助詞の非明示のもの(提題助詞等) */
 };
 
+/* ※ 格の最大数を変えたら、PP_NUMBER(const.h)を変えること */
+
 /*====================================================================
 			 文字−コード対応関数
 ====================================================================*/
@@ -686,14 +688,17 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     closest = get_closest_case_component(sp, cpm_ptr);
 
     /* 直前格要素のひとつ手前のノ格
-       ※ <数量>以外: 一五％の株式 
+       ※ <数量>以外: 一五％の株式を V
           <時間>以外: */
     if (OptCaseFlag & OPT_CASE_NO && 
 	closest > -1 && 
 	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
 	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "数量") && 
 	!check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "時間") && 
-	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")) {
+	check_feature((sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1)->f, "係:ノ格")
+	/* !check_feature(cpm_ptr->elem_b_ptr[closest]->f, "数量") && 
+	!check_feature(cpm_ptr->elem_b_ptr[closest]->f, "時間") */
+	) {
 	BNST_DATA *bp;
 	bp = sp->bnst_data+cpm_ptr->elem_b_ptr[closest]->num-1;
 
@@ -1120,6 +1125,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	    cpm_ptr->cmm[0].result_lists_d[0].score[i] = 0;
 	    cpm_ptr->cmm[0].result_lists_p[0].score[cpm_ptr->cmm[0].cf_ptr->element_num] = 0;
 	    cpm_ptr->cmm[0].cf_ptr->element_num++;
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "ガガ格作成");
 	}
     }
 }
@@ -1361,8 +1367,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    /* 格フレームに割りあててあるガガ格 */
 	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ２")) {
 		strcpy(relation, "ガガ");
-		sprintf(feature_buffer, "%s判定", relation);
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+		/* sprintf(feature_buffer, "%s判定", relation);
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer); */
 	    }
 	    else {
 		strcpy(relation, 

@@ -1,3 +1,9 @@
+2002-02-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_match.c, system/configfile.c system/const.h, system/context.c, system/corpus.c, system/lib_sm.c, system/main.c:
+	≥ÿΩ¨•Ÿ°º•πæ Œ¨≤Ú¿œ§ŒΩ§¿µ
+	•Œ≥ °¢≥∞§Œ¥ÿ∑∏§Œ≤Ú¿œΩ§¿µ
+
 2002-01-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c, system/configfile.c, system/const.h, system/context.c, system/extern.h:
