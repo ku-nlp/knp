@@ -36,8 +36,17 @@ if test "$with_svm" = yes; then
     KNP_LIBS="$KNP_LIBS $packagesrcdir/svm/libsvm.la -ltinysvm -lstdc++"
     LIBSVM_VERSION_INFO="0:0:1"
     AC_SUBST(LIBSVM_VERSION_INFO)
+
+    AC_MSG_CHECKING([SVM Model File])
+    if test -f "$packagesrcdir/svm/anaphora-ga.model"; then
+	svm_model_exist=yes
+    else
+	svm_model_exist=no
+    fi
+    AC_MSG_RESULT([$svm_model_exist])
 fi
 AM_CONDITIONAL(HAVE_SVM, test "x$with_svm" = xyes)
+AM_CONDITIONAL(SVM_MODEL_EXIST, test "x$svm_model_exist" = xyes)
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [build a debugging version (default=no)]))
 
