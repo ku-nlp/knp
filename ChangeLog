@@ -1,3 +1,9 @@
+2002-10-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/ipal.c: 受身, 使役の格フレームの扱いの不具合を解消
+
+	* system/case_ipal.c, case_print.c: 使役の格フレームへの対処
+
 2002-10-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/configfile.c, system/const.h, system/context.c, system/dpnd_analysis.c, system/extern.h, system/hash.c, system/main.c, system/noun.c, system/para_relation.c, system/read_data.c, system/read_rule.c, system/tree_conv.c:
