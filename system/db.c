@@ -10,18 +10,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "dbm.h"
 
 #ifdef GDBM
-
-#include <gdbm.h>
-typedef GDBM_FILE DBM_FILE;
 
 /* DB open for reading */
 DBM_FILE db_read_open(char *filename)
 {
     DBM_FILE db;
 
-    if (!(db = gdbm_open(filename, 1024, GDBM_READER, 0444, 0))) {
+    if (!(db = gdbm_open(filename, DBM_BLOCK_SIZE, GDBM_READER, 0444, 0))) {
         fprintf(stderr, "db_read_open: %s: %s\n", filename, (char *)strerror(errno));
         exit(1);
     }
@@ -83,11 +81,79 @@ char *db_get(DBM_FILE db, char *buf)
     return NULL;
 }
 
-#else
+/* DB put */
+int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
+{
+    datum content, key;
+    char *buffer;
+    int valuesize, i, storeflag;
 
-#include <fcntl.h>
-#include <db.h>
-typedef DB *DBM_FILE;
+    valuesize = strlen(value);
+
+    key.dptr = buf;
+    key.dsize = strlen(buf);
+    content.dptr = value;
+    content.dsize = valuesize;
+
+    if (mode == DBM_APPEND || mode == DBM_AND || mode == DBM_OR) {
+	storeflag = gdbm_store(db, key, content, DBM_INSERT);
+
+	/* key existence */
+	if (storeflag == 1) {
+	    /* get the content which already exists */
+	    content = gdbm_fetch(db, key);
+
+	    if (mode == DBM_APPEND) {
+		if (Separator)
+		    buffer = (char *)malloc_data(content.dsize+valuesize+strlen(Separator)+1, "db_put");
+		else
+		    buffer = (char *)malloc_data(content.dsize+valuesize+1, "db_put");
+		strncpy(buffer, content.dptr, content.dsize);
+		buffer[content.dsize] = '\0';
+		free(content.dptr);
+		if (Separator)
+		    strcat(buffer, Separator);
+		strcat(buffer, value);
+
+		content.dptr = buffer;
+		content.dsize = strlen(content.dptr);
+	    }
+	    else if (mode == DBM_AND) {
+		for (i = 0; i < content.dsize; i++)
+		    if (*((char *)(content.dptr)+i) == '0')
+			value[i] = '0';
+		free(content.dptr);
+		content.dptr = value;
+		content.dsize = valuesize;
+	    }
+	    else if (mode == DBM_OR) {
+		for (i = 0; i < content.dsize; i++)
+		    if (*((char *)(content.dptr)+i) == '1')
+			value[i] = '1';
+		free(content.dptr);
+		content.dptr = value;
+		content.dsize = valuesize;
+	    }
+	    storeflag = gdbm_store(db, key, content, DBM_REPLACE);
+	    if (mode == DBM_APPEND)
+		free(buffer);
+	}
+	else if (storeflag < 0) {
+	    fprintf(stderr, "dbstore : Cannot store key.\n");
+	    exit(4);
+	}
+    }
+    else if (mode == DBM_OVERRIDE) {
+	storeflag = gdbm_store(db, key, content, DBM_REPLACE);
+    }
+    else {
+	fprintf(stderr, "db_put : Invalid mode (%d)\n", mode);
+	exit(1);
+    }
+    return 0;
+}
+
+#else
 
 /* DB open for reading */
 DBM_FILE db_read_open(char *filename)
@@ -164,6 +230,8 @@ char *db_get(DBM_FILE db, char *buf)
     memset(&key, 0, sizeof(DBT));
     memset(&content, 0, sizeof(DBT));
 
+    content.flags = DB_DBT_MALLOC;
+
     key.data = buf;
     key.size = strlen(key.data);
     errno = db->get(db, NULL, &key, &content, 0);
@@ -173,7 +241,7 @@ char *db_get(DBM_FILE db, char *buf)
 	return NULL;
     /* Other errors */
     else if (errno) {
-        fprintf(stderr, "db_get: %s\n", (char *)strerror(errno));
+        fprintf(stderr, "db_get: %s (%d)\n", (char *)strerror(errno), errno);
         exit(1);
     }
 
@@ -182,6 +250,79 @@ char *db_get(DBM_FILE db, char *buf)
     *(rbuf+content.size) = '\0';
     free(content.data);
     return rbuf;
+}
+
+/* DB put */
+int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
+{
+    DBT content, key;
+    char *buffer;
+    int valuesize, i;
+
+    /* Initialization */
+    memset(&key, 0, sizeof(DBT));
+    memset(&content, 0, sizeof(DBT));
+
+    valuesize = strlen(value);
+
+    key.data = buf;
+    key.size = strlen(buf);
+    content.data = value;
+    content.size = valuesize;
+
+    if (mode == DBM_APPEND || mode == DBM_AND || mode == DBM_OR) {
+	errno = db->put(db, NULL, &key, &content, DB_NOOVERWRITE);
+
+	/* key existence */
+	if (errno == DB_KEYEXIST) {
+	    /* get the content which already exists */
+	    errno = db->get(db, NULL, &key, &content, 0);
+
+	    if (mode == DBM_APPEND) {
+		if (Separator)
+		    buffer = (char *)malloc_data(content.size+valuesize+strlen(Separator)+1, "db_put");
+		else
+		    buffer = (char *)malloc_data(content.size+valuesize+1, "db_put");
+		strncpy(buffer, content.data, content.size);
+		buffer[content.size] = '\0';
+		if (Separator)
+		    strcat(buffer, Separator);
+		strcat(buffer, value);
+
+		content.data = buffer;
+		content.size = strlen(content.data);
+	    }
+	    else if (mode == DBM_AND) {
+		for (i = 0; i < content.size; i++)
+		    if (*((char *)(content.data)+i) == '0')
+			value[i] = '0';
+		content.data = value;
+		content.size = valuesize;
+	    }
+	    else if (mode == DBM_OR) {
+		for (i = 0; i < content.size; i++)
+		    if (*((char *)(content.data)+i) == '1')
+			value[i] = '1';
+		content.data = value;
+		content.size = valuesize;
+	    }
+	    errno = db->put(db, NULL, &key, &content, 0);
+	    if (mode == DBM_APPEND)
+		free(buffer);
+	}
+	else if (errno) {
+	    fprintf(stderr, "dbstore : %s\n", (char *)strerror(errno));
+	    exit(4);
+	}
+    }
+    else if (mode == DBM_OVERRIDE) {
+	errno = db->put(db, NULL, &key, &content, 0);
+    }
+    else {
+	fprintf(stderr, "db_put : Invalid mode (%d)\n", mode);
+	exit(1);
+    }
+    return 0;
 }
 
 #endif
