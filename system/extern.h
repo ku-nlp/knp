@@ -120,6 +120,9 @@ extern int		CurDicForRulePSize;
 extern MrphRule         HelpsysArray[];
 extern int              CurHelpsysSize;
 
+void			*EtcRuleArray;
+int			CurEtcRuleSize;
+
 extern int DicForRuleDBExist;
 
 extern char 		*Case_name[];

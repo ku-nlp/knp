@@ -54,6 +54,10 @@
 #define NERule_MAX	512
 #define CNRule_MAX	512
 #define Helpsys_MAX	512
+#define EtcRule_MAX	512
+
+#define IsMrphRule	1
+#define IsBnstRule	2
 
 #ifndef SMALL
 #define ALL_CASE_FRAME_MAX 	1536
@@ -469,11 +473,11 @@ typedef struct sentence {
     struct sentence	*next;
 } SENTENCE_DATA;
 
-struct _check {
+typedef struct _check {
     int num;
     int def;
     int pos[BNST_MAX];
-};
+} CHECK_DATA;
 
 struct _optionalcase {
     int flag;
@@ -491,7 +495,8 @@ typedef struct {
     int         flag;           /* テンポラリフラグ */
     char        *comment;       /* テンポラリ */
     struct _optionalcase op[BNST_MAX];	/* 任意格使用 */
-    struct _check check[BNST_MAX];
+    CHECK_DATA	check[BNST_MAX];
+    FEATURE	*f[BNST_MAX];	/* feature */
 } DPND;
 
 /*====================================================================

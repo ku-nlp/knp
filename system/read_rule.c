@@ -54,6 +54,10 @@ int 	        CurCNauxRuleSize;
 MrphRule        HelpsysArray[Helpsys_MAX];
 int             CurHelpsysSize;
 
+void		*EtcRuleArray = NULL;
+int		CurEtcRuleSize;
+int		ExistEtcRule = 0;
+
 DicForRule	*DicForRuleVArray;
 int		CurDicForRuleVSize;
 DicForRule	*DicForRulePArray;
@@ -464,6 +468,45 @@ void read_NE_rule(char *file_name, MrphRule *rp, int *count, int max)
     }
     
     fclose(fp);
+}
+
+/*==================================================================*/
+		     void init_etc_rule(int flag)
+/*==================================================================*/
+{
+    if (ExistEtcRule)
+	usage();
+    ExistEtcRule = flag;
+    if (flag == IsMrphRule) {
+	EtcRuleArray = (MrphRule *)malloc_data(sizeof(MrphRule)*EtcRule_MAX, "init_etc_rule");
+    }
+    else if (flag == IsBnstRule) {
+	EtcRuleArray = (BnstRule *)malloc_data(sizeof(BnstRule)*EtcRule_MAX, "init_etc_rule");
+    }
+}
+
+/*==================================================================*/
+       void assign_etc_feature(void *r_ptr, int size, int mode)
+/*==================================================================*/
+{
+    if (ExistEtcRule == IsMrphRule) {
+	assign_mrph_feature((MrphRule *)r_ptr, size);
+    }
+    else if (ExistEtcRule == IsBnstRule) {
+	assign_bnst_feature((BnstRule *)r_ptr, size, mode);
+    }
+}
+
+/*==================================================================*/
+void read_etc_rule(char *file_name, BnstRule *rp, int *count, int max)
+/*==================================================================*/
+{
+    if (ExistEtcRule == IsMrphRule) {
+	read_mrph_rule(file_name, rp, count, max);
+    }
+    else if (ExistEtcRule == IsBnstRule) {
+	read_bnst_rule(file_name, rp, count, max);
+    }
 }
 
 /*====================================================================
