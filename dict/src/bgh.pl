@@ -17,7 +17,13 @@
 #      保証されない．
 
 #
-# モニター版(sakuin)のバグ修正
+#  フロッピー版の一行目
+#
+
+$FloppyFirstLine = 'あ,あ,4.310,1,10,*,';
+
+#
+# モニター版(sakuin)のバグ修正用
 #
 
 $bug_fix{"いらっしゃる,いらっしゃる,2.1527,B,1,3"} = "いらっしゃる,いらっしゃる,2.1527,5B,1,3";
@@ -66,11 +72,14 @@ $bug_fix{"なんぞ,なんぞ,4.318 ,1,3,1"} = "なんぞ,なんぞ,4.3180,1,3,1";
 
 $_ = <STDIN>;
 chomp;
-if ($_ eq "あ,あ,4.310,1,10,\*,") {
+s/\r//g;
+
+if ($_ eq $FloppyFirstLine) {
     print STDERR "Your BGH is Floppy Disk Version.\n";
     &fd_format($_);
     while ( <STDIN> ) {
 	chomp;
+	s/\r//g;
 	&fd_format($_);
     }
 } else {
@@ -78,6 +87,7 @@ if ($_ eq "あ,あ,4.310,1,10,\*,") {
     &monitor_format($_);
     while ( <STDIN> ) {
 	chomp;
+	s/\r//g;
 	&monitor_format($_);
     }
 }
@@ -89,6 +99,7 @@ if ($_ eq "あ,あ,4.310,1,10,\*,") {
 sub fd_format {
     
     my ($input) = @_;
+
     ($yomi, $hyouki, $code1, $code2, $code3, $code4) = split(/,|\./, $input);
 
     if ($hyouki =~ /（|\)/) {next;} # invalid items
@@ -115,10 +126,9 @@ sub fd_format {
 sub monitor_format {
     
     my ($input) = @_;
-    $input =~ s/\r//g;		# モニター版では\rが入っている
-    
+
     if ($bug_fix{$input}) {$input = $bug_fix{$input};}
-    
+
     ($hyouki, $yomi, $code1, $code2, $code3, $code4, $code5) 
 	= split(/,|\./, $input);
     
