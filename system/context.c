@@ -1849,8 +1849,19 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 	return;
     }
 
-    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("¥Î"), 
-				 cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
+    if (cpm_ptr->cf.type == CF_NOUN) {
+	/* Ì¾»ì¤Î¾ì¹ç: exact match or <agent> match */
+	if (ef->similarity > 1.0 || 
+	    ef->c_subject_flag && ef->p_cf_subject_flag) {
+	    score = classify_by_learning(ecp, pp_kstr_to_code("¥Î"), OptDiscNounMethod);
+	}
+	else {
+	    score = -1;
+	}
+    }
+    else {
+	score = classify_by_learning(ecp, cf_ptr->pp[n][0], OptDiscPredMethod);
+    }
 
     /* ¾ÊÎ¬¸õÊä */
     sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
