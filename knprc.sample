@@ -15,7 +15,7 @@
 	(kakari_uke 係り受け)
 	(koou 呼応)
 	(context 文節 逆方向 ルールループ先行)
-	(case_analysis 文節 逆方向)
+	(case_analysis タグ単位 逆方向)
 )
 
 ; (KNP辞書ディレクトリ
