@@ -133,7 +133,7 @@ int		SMP2SMGExist;
              void get_sm_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, last, stop, i, overflow_flag = 0;
+    int strt, end, stop, i, overflow_flag = 0;
     char str_buffer[BNST_LENGTH_MAX], *code;
     char feature_buffer[SM_CODE_SIZE*SM_ELEMENT_MAX+1];
 
@@ -154,17 +154,41 @@ int		SMP2SMGExist;
 
     for (stop = 0; stop < ptr->fuzoku_num; stop++) 
 	if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助詞") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞"))
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助動詞") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") ||
+	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") &&
+	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
 	    break;
 
-    for (last = stop; last >= 0; last--) {
-	end = ptr->settou_num + ptr->jiritu_num + last;
-	for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
+    end = ptr->settou_num + ptr->jiritu_num + stop;
+    for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
 
-	    /* 表記のまま */
+	/* 表記のまま */
 
+	*str_buffer = '\0';
+	for (i = strt; i < end; i++) {
+	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
+		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
+		return;
+	    }
+	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
+	}
+
+	code = get_sm(str_buffer);
+
+	if (code) {
+	    strcpy(ptr->SM_code, code);
+	    free(code);
+	}
+	if (*(ptr->SM_code)) goto Match;
+
+	/* 表記，最後原形 */
+
+	if (!str_eq((ptr->mrph_ptr + end - 1)->Goi,
+		    (ptr->mrph_ptr + end - 1)->Goi2)) {
 	    *str_buffer = '\0';
-	    for (i = strt; i < end; i++) {
+	    for (i = strt; i < end - 1; i++) {
 		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
 		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
 		    return;
@@ -172,63 +196,22 @@ int		SMP2SMGExist;
 		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 	    }
 
-	    code = get_sm(str_buffer);
-
-	    if (code) {
-		strcpy(ptr->SM_code, code);
-		free(code);
+	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
+		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
+		return;
 	    }
-	    if (*(ptr->SM_code)) goto Match;
+	    strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
 
-	    /* 表記，最後原形 */
-
-	    if (!str_eq((ptr->mrph_ptr + end - 1)->Goi,
-			(ptr->mrph_ptr + end - 1)->Goi2)) {
-		*str_buffer = '\0';
-		for (i = strt; i < end - 1; i++) {
-		    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
-			overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
-			return;
-		    }
-		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-		}
-
-		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
-
-		/* ナ形容詞の場合は語幹で検索 */
-		if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
-			   "形容詞") &&
-		    (str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナ形容詞") ||
-		     str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナ形容詞特殊") ||
-		     str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナノ形容詞"))) 
-		    str_buffer[strlen(str_buffer)-2] = NULL;
-
-		code = get_sm(str_buffer);
-
-		if (code) {
-		    strcpy(ptr->SM_code, code);
-		    free(code);
-		}
-		if (*(ptr->SM_code)) goto Match;
-	    }
-
-	    /* 読みのまま */
-
-	    *str_buffer = '\0';
-	    for (i = strt; i < end; i++) {
-		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Yomi)+2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_sm_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Yomi);
-	    }
+	    /* ナ形容詞の場合は語幹で検索 */
+	    if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
+		       "形容詞") &&
+		(str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナ形容詞") ||
+		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナ形容詞特殊") ||
+		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナノ形容詞"))) 
+		str_buffer[strlen(str_buffer)-2] = NULL;
 
 	    code = get_sm(str_buffer);
 
@@ -239,11 +222,14 @@ int		SMP2SMGExist;
 	    if (*(ptr->SM_code)) goto Match;
 	}
     }
+
   Match:
     ptr->SM_num = strlen(ptr->SM_code) / SM_CODE_SIZE;
 
-    sprintf(feature_buffer, "SM:%s", ptr->SM_code);
-    assign_cfeature(&(ptr->f), feature_buffer);
+    if (ptr->SM_num > 0) {
+	sprintf(feature_buffer, "SM:%s:%s", str_buffer, ptr->SM_code);
+	assign_cfeature(&(ptr->f), feature_buffer);
+    }
 }
 
 /*==================================================================*/

@@ -90,8 +90,9 @@ int		BGHExist;
              void get_bgh_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int strt, end, last, stop, i, overflow_flag = 0;
+    int strt, end, stop, i, overflow_flag = 0;
     char str_buffer[BNST_LENGTH_MAX], *code;
+    char feature_buffer[BNST_LENGTH_MAX];
 
     /* 初期化 */
     *(ptr->BGH_code) = '\0';
@@ -110,17 +111,47 @@ int		BGHExist;
 
     for (stop = 0; stop < ptr->fuzoku_num; stop++) 
 	if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助詞") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞"))
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助動詞") ||
+	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") ||
+	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") &&
+	    strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
 	    break;
 
-    for (last = stop; last >= 0; last--) {
-	end = ptr->settou_num + ptr->jiritu_num + last;
-	for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
+    end = ptr->settou_num + ptr->jiritu_num + stop;
+    for (strt =0 ; strt < (ptr->settou_num + ptr->jiritu_num); strt++) {
 
-	    /* 表記のまま */
+	/* 表記のまま */
 
+	*str_buffer = '\0';
+	for (i = strt; i < end; i++) {
+	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
+		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
+		return;
+	    }
+	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
+	}
+
+	code = get_bgh(str_buffer);
+
+	/* あるとき */
+	if (code) {
+	    if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
+		strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
+		ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
+		fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
+	    }
+	    strcpy(ptr->BGH_code, code);
+	    free(code);
+	}
+	if (*(ptr->BGH_code)) goto Match;
+
+	/* 表記，最後原形 */
+
+	if (!str_eq((ptr->mrph_ptr + end - 1)->Goi,
+		    (ptr->mrph_ptr + end - 1)->Goi2)) {
 	    *str_buffer = '\0';
-	    for (i = strt; i < end; i++) {
+	    for (i = strt; i < end - 1; i++) {
 		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
 		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
 		    return;
@@ -128,74 +159,22 @@ int		BGHExist;
 		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 	    }
 
-	    code = get_bgh(str_buffer);
-
-	    /* あるとき */
-	    if (code) {
-		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
-		    strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
-		    ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
-		    fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
-		}
-		strcpy(ptr->BGH_code, code);
-		free(code);
+	    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
+		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
+		return;
 	    }
-	    if (*(ptr->BGH_code)) goto Match;
+	    strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
 
-	    /* 表記，最後原形 */
-
-	    if (!str_eq((ptr->mrph_ptr + end - 1)->Goi,
-			(ptr->mrph_ptr + end - 1)->Goi2)) {
-		*str_buffer = '\0';
-		for (i = strt; i < end - 1; i++) {
-		    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
-			overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-			return;
-		    }
-		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-		}
-
-		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
-
-		/* ナ形容詞の場合は語幹で検索 */
-		if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
-			   "形容詞") &&
-		    (str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナ形容詞") ||
-		     str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナ形容詞特殊") ||
-		     str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
-			   "ナノ形容詞"))) 
-		    str_buffer[strlen(str_buffer)-2] = NULL;
-
-		code = get_bgh(str_buffer);
-
-		if (code) {
-		    if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
-			strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
-			ptr->BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE] = '\0';
-			fprintf(stderr, "Too many BGH code <%s>.\n", str_buffer);
-		    }
-		    strcpy(ptr->BGH_code, code);
-		    free(code);
-		}
-		if (*(ptr->BGH_code)) goto Match;
-	    }
-
-	    /* 読みのまま */
-
-	    *str_buffer = '\0';
-	    for (i = strt; i < end; i++) {
-		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Yomi)+2 > BNST_LENGTH_MAX) {
-		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    return;
-		}
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Yomi);
-	    }
+	    /* ナ形容詞の場合は語幹で検索 */
+	    if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
+		       "形容詞") &&
+		(str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナ形容詞") ||
+		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナ形容詞特殊") ||
+		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
+			"ナノ形容詞"))) 
+		str_buffer[strlen(str_buffer)-2] = NULL;
 
 	    code = get_bgh(str_buffer);
 
@@ -211,8 +190,14 @@ int		BGHExist;
 	    if (*(ptr->BGH_code)) goto Match;
 	}
     }
+
   Match:
     ptr->BGH_num = strlen(ptr->BGH_code) / BGH_CODE_SIZE;
+
+    if (ptr->BGH_num > 0) {
+	sprintf(feature_buffer, "BGH:%s", str_buffer);
+	assign_cfeature(&(ptr->f), feature_buffer);
+    }
 }
 
 /*==================================================================*/
