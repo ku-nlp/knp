@@ -251,6 +251,12 @@ char *TableNE[] = {"人名", "地名", "組織名", "固有名詞", ""};
 	    }
 	}
     }
+    else if (str_eq(type, "格情報")) {
+	if (!(str_eq(mrph_data[i].Goi, "する") && 
+	      str_eq(mrph_data[i].Goi, "ある") &&  
+	      str_eq(mrph_data[i].Goi, "なる")))
+	    assign_cfeature(&(mrph_data[i].f), feature+strlen(type)+1);
+    }
 }
 
 /*==================================================================*/
@@ -629,6 +635,11 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	/* 単語と文字種のコピー */
 	mrph_data[i].eNE.self = mrph_data[i].NE.self;
 	mrph_data[i].eNE.selfSM = mrph_data[i].NE.selfSM;
+
+	if (CheckJumanProper(i))
+	    assign_cfeature(&(mrph_data[i].f), "固有名詞のみ");
+	if (CheckNormalNoun(i))
+	    assign_cfeature(&(mrph_data[i].f), "普通名詞");
     }
 
     /* とりあえずすべての形態素にふっておこう */
@@ -668,8 +679,39 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	if (cp) {
 	    for (j = 0; CaseList[j][0]; j++) {
 		if (str_eq(cp+3, CaseList[j])) {
-		    bnst_data[i].mrph_ptr->eNE.Case = bnst_data[h].mrph_ptr->Case[j];
+		    /* 自立語すべてに与える */
+		    for (k = 0; k < bnst_data[i].jiritu_num; k++)
+			(bnst_data[i].jiritu_ptr+k)->eNE.Case = bnst_data[h].mrph_ptr->Case[j];
 		    break;
+		}
+	    }
+	}
+    }
+
+    /* 主体のマークの伝播 */
+    for (i = 0; i < Bnst_num; i++) {
+	if ( i > 0 && check_feature(bnst_data[i-1].f, "役割の〜")) 
+	    assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "役割の人名");
+	else if ( i > 0 && check_feature(bnst_data[i-1].f, "組織の〜")) 
+	    assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "組織の組織名");
+	else {
+	    if (bnst_data[i].dpnd_head != -1 && !check_feature(bnst_data[bnst_data[i].dpnd_head].f, "〜れる") && !check_feature(bnst_data[bnst_data[i].dpnd_head].f, "〜せる")) {
+		if ( check_feature(bnst_data[i].f, "係:ガ格") || check_feature(bnst_data[i].f, "係:未格")) {
+		    if (check_feature(bnst_data[bnst_data[i].dpnd_head].f, "〜役割だ")) 
+			assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "人名が役割だ");
+		    else if (check_feature(bnst_data[bnst_data[i].dpnd_head].f, "〜組織だ")) 
+			assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "組織名が組織だ");
+		}
+
+		/* 組織 */
+		if ((check_feature(bnst_data[i].f, "係:ガ格") && NEassignAgentFromHead(i, "ガ組織")) || 
+		    (check_feature(bnst_data[i].f, "係:ヲ格") && NEassignAgentFromHead(i, "ヲ組織"))) {
+		    assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "組織がを用言");
+		}
+		/* 人 */
+		else if ((check_feature(bnst_data[i].f, "係:ガ格") && (NEassignAgentFromHead(i, "ガ主体") || NEassignAgentFromHead(i, "ガ人"))) || 
+		    (check_feature(bnst_data[i].f, "係:ヲ格") && (NEassignAgentFromHead(i, "ヲ主体")) || NEassignAgentFromHead(i, "ヲ人"))) {
+		    assign_cfeature(&((bnst_data[i].jiritu_ptr)->f), "人がを用言");
 		}
 	    }
 	}
@@ -709,7 +751,111 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     }
 
     /* 複合名詞ルールの適用 */
-    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
+    assign_mrph_feature(CNpreRuleArray, CurCNpreRuleSize);
+    for (i = 0; i < Bnst_num; i++)
+	assign_mrph_feature2(CNRuleArray, CurCNRuleSize, 
+			     bnst_data[i].mrph_ptr, 
+			     bnst_data[i].mrph_num);
+    assign_mrph_feature(CNauxRuleArray, CurCNauxRuleSize);
+
+    /* 並列処理
+       並列句の数が 3 つ以上または、大きさが 2 文節以上のとき */
+    for (i = 0; i < Bnst_num; i++) {
+	/* 住所が入る並列はやめておく */
+	if (CheckJiritsuGoFeature(i, "住所"))
+	    continue;
+	cp = (char *)check_feature(bnst_data[i].f, "並結句数");
+	if (cp) {
+	    value = atoi(cp+strlen("並結句数:"));
+	    if (value > 2) {
+		/* 係り側を調べて固有名詞じゃなかったら、受け側を調べる */
+		if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+		    NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+		continue;
+	    }
+	}
+
+	cp = (char *)check_feature(bnst_data[i].f, "並結文節数");
+	if (cp) {
+	    value = atoi(cp+strlen("並結文節数:"));
+	    if (value > 1) {
+		if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+		    NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+	    }
+	}
+
+	/* 並列のとき
+	if (bnst_data[i].dpnd_type == 'P') {
+	    if (NEparaAssign(&(bnst_data[i]), &(bnst_data[bnst_data[i].dpnd_head])) == FALSE)
+		NEparaAssign(&(bnst_data[bnst_data[i].dpnd_head]), &(bnst_data[i]));
+	}
+	*/
+    }
+}
+
+/*==================================================================*/
+	 int NEparaAssign(BNST_DATA *b_ptr, BNST_DATA *h_ptr)
+/*==================================================================*/
+{
+    int j, code;
+    char *class = NULL, *preclass = NULL;
+
+    /* 自立語 Loop */
+    for (j = 0; j < b_ptr->jiritu_num; j++) {
+	if (class = (char *)check_feature((b_ptr->jiritu_ptr+j)->f, "複固")) {
+	    code = ReturnNEcode(class+strlen("複固:"));
+	    if (code == -1)
+		return TRUE;
+	    /* 文節内で単一のクラスではないときは無視 */
+	    if (preclass && strcmp(class, preclass))
+		return TRUE;
+	    preclass = class;
+	}
+    }
+
+    if (class) {
+	/* 係り先の自立語すべてを同じ固有名詞クラスにしよう */
+	for (j = 0; j < h_ptr->jiritu_num; j++) {
+	    if (!check_feature((h_ptr->jiritu_ptr+j)->f, "複固")) {
+		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), class);
+		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), "固並列OK");
+	    }
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
+	    int CheckJiritsuGoFeature(int i, char *type)
+/*==================================================================*/
+{
+    int j;
+
+    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
+    for (j = 0; j < bnst_data[i].jiritu_num; j++) {
+	if (check_feature((bnst_data[i].jiritu_ptr+j)->f, type))
+	    return 1;
+    }
+    return 0;
+}
+/*==================================================================*/
+	    int NEassignAgentFromHead(int i, char *type)
+/*==================================================================*/
+{
+    int j, k;
+
+    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
+    for (j = 0; j < bnst_data[bnst_data[i].dpnd_head].jiritu_num; j++) {
+	if ((char *)check_feature((bnst_data[bnst_data[i].dpnd_head].jiritu_ptr+j)->f, type)) {
+	    /* 格要素側の全自立語にマーク
+	    for (k = 0; k < bnst_data[i].jiritu_num; k++) {
+		assign_cfeature(&((bnst_data[i].jiritu_ptr+k)->f), "主体");
+	    } */
+	    return 1;;
+	}
+    }
+    return 0;
 }
 
 /*==================================================================*/
@@ -759,7 +905,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 			  void preserveNE()
 /*==================================================================*/
 {
-    int i, code, precode = -1;
+    int i, code, precode = -1, nameflag = 0;
     char *cp;
 
     for (i = 0; i < Mrph_num; i++) {
@@ -768,12 +914,20 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    /* 保存しない固有名詞 */
 	    if (code == -1)
 		continue;
+	    /* カタカナ人名の「・」のあとも登録したい */
+	    if (code == 0 && str_eq(mrph_data[i].Goi, "・"))
+		    nameflag = 1;
 	    /* 違う種類の固有名詞になるか、固有名詞が始まったとき */
 	    if (code != precode)
 		allocateNE(&pNE, code, i);
 	    /* 同じ種類の固有名詞 */
 	    else
 		allocateMRPH(&pNE, i);
+	    /* これが末尾でないと困る */
+	    if (nameflag && code == 0 && check_feature(mrph_data[i].f, "カタカナ")) {
+		allocateNE(&pNE, code, i);
+		nameflag = 0;
+	    }
 	    precode = code;
 	}
 	else
@@ -965,6 +1119,50 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	assign_cfeature(&(mrph_data[i].f), "NTT-組織名");
     if (flag & 0x08)
 	assign_cfeature(&(mrph_data[i].f), "NTT-固有名詞");
+}
+
+/*==================================================================*/
+		     int CheckJumanProper(int i)
+/*==================================================================*/
+{
+    if (mrph_data[i].Hinshi != 6 || mrph_data[i].Bunrui == 1 || 
+	mrph_data[i].Bunrui == 2)
+	return 0;
+
+    /* 品曖があるとき */
+    if (!check_feature(mrph_data[i].f, "品曖-その他") && 
+	!check_feature(mrph_data[i].f, "品曖-カタカナ") && 
+	!check_feature(mrph_data[i].f, "品曖-アルファベット")) {
+
+	/* どれかの固有名詞になるとき */
+	if (check_feature(mrph_data[i].f, "品曖-地名") || 
+	    check_feature(mrph_data[i].f, "品曖-人名") || 
+	    check_feature(mrph_data[i].f, "品曖-組織名") || 
+	    check_feature(mrph_data[i].f, "品曖-固有名詞") || 
+	    mrph_data[i].Bunrui == 4 || 
+	    mrph_data[i].Bunrui == 5 || 
+	    mrph_data[i].Bunrui == 6 || 
+	    mrph_data[i].Bunrui == 3)
+	    return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+		     int CheckNormalNoun(int i)
+/*==================================================================*/
+{
+    if (mrph_data[i].Hinshi != 6 || 
+	!(mrph_data[i].Bunrui == 1 || mrph_data[i].Bunrui == 2) || 
+	check_feature(mrph_data[i].f, "品曖-その他") || 
+	check_feature(mrph_data[i].f, "品曖-カタカナ") || 
+	check_feature(mrph_data[i].f, "品曖-アルファベット") || 
+	check_feature(mrph_data[i].f, "品曖-地名") || 
+	check_feature(mrph_data[i].f, "品曖-人名") || 
+	check_feature(mrph_data[i].f, "品曖-組織名") || 
+	check_feature(mrph_data[i].f, "品曖-固有名詞"))
+	return 0;
+    return 1;
 }
 
 /*====================================================================
