@@ -1,3 +1,11 @@
+2004-01-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c, system/const.h:
+	主体マッチングの修正, 格フレームの意味素<組織名>, <人名>への対応
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/mrph_basic.rule:
+	「〜を〜に疑」を限定された「〜に」のみに与えるように修正
+
 2004-01-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule, system/case_data.c, system/case_match.c, system/context.c, system/extern.h:
