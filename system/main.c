@@ -119,6 +119,7 @@ extern int	EX_match_subject;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
     OptUseScase = TRUE;
+    OptUseSmfix = TRUE;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
@@ -338,6 +339,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
+	}
+	else if (str_eq(argv[0], "-no-smfix")) {
+	    OptUseSmfix = FALSE;
 	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;

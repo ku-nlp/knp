@@ -829,7 +829,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 			}
 			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
-			specify_sm_from_cf(sp, &(sp->Best_mgr->cpm[i]));
+
+			if (OptUseSmfix == TRUE) {
+			    specify_sm_from_cf(sp, &(sp->Best_mgr->cpm[i]));
+			}
+
 			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
 
 			/* 格解析の結果を featureへ */
