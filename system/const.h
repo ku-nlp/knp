@@ -17,8 +17,9 @@
 #define sizeof_char(cp) (sizeof(cp) / sizeof(char *))
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 
-#define sm2code(cp) read_db(cp, sm2code_db)
-#define smp2smg(cp) read_db(cp, smp2smg_db)
+#ifdef _WIN32
+#define fprintf sjis_fprintf
+#endif 
 
 /*====================================================================
 				LENGTH
@@ -37,6 +38,7 @@
 #define BROTHER_MAX	20
 #define TEIDAI_TYPES	5
 
+#define BGH_CODE_SIZE	10
 #define SM_CODE_SIZE	12
 #define SM_CODE_MAX	100
 
