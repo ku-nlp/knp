@@ -287,7 +287,7 @@ extern FILE  *Outfp;
     int topic_score, optional_flag = 0;
     int optional_score = 0, total_optional_score = 0;
     int scase_check[11], ha_check, un_count, pred_p;
-    char *cp, *cp2;
+    char *cp, *cp2, *buffer;
     BNST_DATA *g_ptr, *d_ptr;
 
     /* 依存構造だけを評価する場合の関数
@@ -344,6 +344,40 @@ extern FILE  *Outfp;
 		    one_score -= 5;
 		}
 
+		/* 任意格の係り受けがコーパス中に存在するかどうか */
+		if ((cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
+		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) && 
+			check_optional_case(cp+3) == TRUE) {
+
+			/* 共起頻度による重み付け */
+			optional_score = CorpusExampleDependencyCalculation(d_ptr, cp+3, i, &(dpnd.check[j]));
+
+			/* optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr); */
+
+			/* one_score += optional_score*10; */
+			/* 距離重み */ /* j が i に係っている */
+			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(Bnst_num-1-i)/(Bnst_num-1-j); */
+			if (optional_score > 0) {
+			    dpnd.op[j].flag = TRUE;
+			    dpnd.op[j].weight = optional_score;
+			    dpnd.op[j].type = cp+3;
+			    if (dpnd.comment) {
+				buffer = dpnd.comment;
+				dpnd.comment = (char *)malloc(strlen(buffer)+strlen(CorpusComment[j])+2);
+				strcpy(dpnd.comment, buffer);
+				strcat(dpnd.comment, " ");
+				strcat(dpnd.comment, CorpusComment[j]);
+			    }
+			    else {
+				dpnd.comment = strdup(CorpusComment[j]);
+			    }
+			    optional_flag = 1;
+			    total_optional_score += optional_score;
+			    /* total_optional_score += optional_score*5; */
+			}
+		    }
+		}
+
 		if (pred_p &&
 		    (cp = (char *)check_feature(d_ptr->f, "係")) != NULL) {
 		    
@@ -373,23 +407,6 @@ extern FILE  *Outfp;
 		    }
 
 		    k = case2num(cp+3);
-
-		    /* 任意格の係り受けがコーパス中に存在するかどうか */
-		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) && 
-			check_optional_case(cp+3) == TRUE) {
-
-			optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr);
-			/* one_score += optional_score*10; */
-			/* 距離重み */ /* j が i に係っている */
-			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(Bnst_num-1-i)/(Bnst_num-1-j); */
-			if (optional_score > 0) {
-			    dpnd.op[j].flag = TRUE;
-			    dpnd.op[j].weight = optional_score;
-			    dpnd.op[j].type = cp+3;
-			    optional_flag = 1;
-			    total_optional_score += optional_score*5;
-			}
-		    }
 
 		    /* 格要素一般の扱い */
 
@@ -511,7 +528,12 @@ extern FILE  *Outfp;
 	}
     }
 
-    if (OptDisplay == OPT_DEBUG) fprintf(Outfp, "=%d\n", score);
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "=%d", score);
+	if (optional_flag)
+	    fprintf(Outfp, "+%d=%d", total_optional_score, score+total_optional_score);
+	fprintf(Outfp, "\n");
+    }
 
     if (OptDisplay == OPT_DEBUG) {
 	dpnd_info_to_bnst(&dpnd);
@@ -526,6 +548,7 @@ extern FILE  *Outfp;
 	Possibility++;
     }
 
+    /* 事例情報を使ったとき */
     if (optional_flag) {
 	if (!OptLearn) {
 	    score += total_optional_score;
@@ -536,7 +559,7 @@ extern FILE  *Outfp;
 	    }
 	}
 	else {
-	    printf(";;;OK 候補 %d %s %d\n", dpndID, SID, score);
+	    fprintf(stdout, ";;;OK 候補 %d %s %d\n", dpndID, SID, score);
 	    for (i = 0;i < Bnst_num; i++) {
 		if (dpnd.op[i].flag) {
 		    fprintf(stdout, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
@@ -591,6 +614,7 @@ extern FILE  *Outfp;
     }
 
     b_ptr = bnst_data + dpnd.pos;
+    dpnd.f[dpnd.pos] = b_ptr->f;
 
     /* (前の係りによる)非交差条件の設定 (dpnd.mask が 0 なら係れない) */
 
@@ -695,16 +719,20 @@ extern FILE  *Outfp;
 		dpnd.head[dpnd.pos] = possibilities[default_pos - 1];
 		if (corpus_possibilities_flag[0] == TRUE) {
 		    dpnd.flag = CORPUS_POSSIBILITY_1;
-		    if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
-		    dpnd.comment = CorpusComment[dpnd.pos];
+		    /*
+		      if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
+		      dpnd.comment = CorpusComment[dpnd.pos];
+		      */
 		}
 	    } else {
 		dpnd.head[dpnd.pos] = possibilities[count - 1];
 		/* default_pos が 2 なのに，countが 1 しかない場合 */
 		if (corpus_possibilities_flag[count -1] == TRUE) {
 		    dpnd.flag = CORPUS_POSSIBILITY_1;
-		    if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
-		    dpnd.comment = CorpusComment[dpnd.pos];
+		    /*
+		      if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
+		      dpnd.comment = CorpusComment[dpnd.pos];
+		      */
 		}
 	    }
 	    dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
@@ -720,8 +748,10 @@ extern FILE  *Outfp;
 		dpnd.head[dpnd.pos] = possibilities[i];
 		if (corpus_possibilities_flag[i] == TRUE) {
 		    dpnd.flag = CORPUS_POSSIBILITY_1;
-		    if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
-		    dpnd.comment = CorpusComment[dpnd.pos];
+		    /* 
+		       if (dpnd.comment) fprintf(stderr, "Event CORPUS_POSSIBILITY_1 appears over two times\n");
+		       dpnd.comment = CorpusComment[dpnd.pos];
+		       */
 		}
 		dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
 		dpnd.dflt[dpnd.pos] = abs(default_pos - 1 - i);
@@ -784,6 +814,7 @@ extern FILE  *Outfp;
 	dpnd.mask[i] = 1;
 	dpnd.check[i].num = -1;
 	memset(&(dpnd.op[i]), 0, sizeof(struct _optionalcase));
+	dpnd.f[i] = NULL;
     }
     dpnd.pos = Bnst_num - 1;
     dpnd.flag = 0;
