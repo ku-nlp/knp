@@ -102,10 +102,10 @@ $pos_repr{"\\∆√ºÏ:∂Á≈¿"} = "°•";
 ######################################################################
 # use Juman
 # $juman = new Juman("-e -B"); 
-#use KNP;
+use KNP;
 # $knp = new KNP("-bnst -tab -r /home/kuro/.jumanrc");
-use lib "/home/nobumoto/etc/lib/perl";
-BEGIN { require "/home/nobumoto/etc/lib/perl/KNP.pm"};
+#use lib "/home/nobumoto/etc/lib/perl";
+#BEGIN { require "/home/nobumoto/etc/lib/perl/KNP.pm"};
 $knp = new KNP("-bnst -tab");
 ######################################################################
 $bnstrule_flag = 1;
