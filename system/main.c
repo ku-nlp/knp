@@ -1058,6 +1058,7 @@ PARSED:
 		    if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
 		    if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
 		    if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
+		    if (strstr(buf, "-disc"))   OptDisc    = OPT_DISC;
 		    if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
 		    if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
 		    if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;
