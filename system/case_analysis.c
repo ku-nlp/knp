@@ -808,7 +808,12 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
-    dst->feature = strdup(src->feature);
+    if (src->feature) {
+	dst->feature = strdup(src->feature);
+    }
+    else {
+	dst->feature = NULL;
+    }
     if (src->entry) {
 	dst->entry = strdup(src->entry);
     }
