@@ -423,7 +423,8 @@ int knp_dict_file_already_defined = 0;
 		}
 
 		SVMFile[pp] = check_tilde(_Atom(car(car(cell1))));
-		if (OptDiscMethod == OPT_SVM && OptDisplay == OPT_DEBUG) {
+		if ((OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) && 
+		    OptDisplay == OPT_DEBUG) {
 		    fprintf(Outfp, "SVM model file ... %s for %s\n", SVMFile[pp], dicttype);
 		}
 
@@ -449,7 +450,8 @@ int knp_dict_file_already_defined = 0;
 		}
 
 		DTFile[pp] = check_tilde(_Atom(car(car(cell1))));
-		if (OptDiscMethod == OPT_DT && OptDisplay == OPT_DEBUG) {
+		if ((OptDiscPredMethod == OPT_DT || OptDiscNounMethod == OPT_DT) && 
+		    OptDisplay == OPT_DEBUG) {
 		    fprintf(Outfp, "DT file ... %s for %s\n", DTFile[pp], dicttype);
 		}
 

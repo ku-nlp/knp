@@ -40,7 +40,8 @@ int 		OptDisplay;
 int		OptExpandP;
 int		OptCheck;
 int		OptJuman;
-int		OptDiscMethod;
+int		OptDiscPredMethod;
+int		OptDiscNounMethod;
 int		OptLearn;
 int		OptCaseFlag;
 int		OptDiscFlag;
@@ -119,7 +120,8 @@ extern int	EX_match_subject;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
     OptJuman = OPT_NORMAL;
-    OptDiscMethod = OPT_NORMAL;
+    OptDiscPredMethod = OPT_NORMAL;
+    OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = 0;
     OptDiscFlag = 0;
@@ -160,57 +162,57 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-ellipsis-svm")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-ellipsis-svm-only")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
 	else if (str_eq(argv[0], "-demonstrative-svm")) {
 	    OptEllipsis |= OPT_DEMO;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm-best")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm-best-only")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_BEST;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm-flat")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm-flat-only")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_FLAT;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-anaphora-svm-twin")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscPredMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-relation-noun-svm")) {
 	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscMethod = OPT_SVM;
+	    OptDiscNounMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-print-svm-features")) {
 	    PrintFeatures = 1;
@@ -218,28 +220,28 @@ extern int	EX_match_subject;
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscMethod = OPT_DT;
+	    OptDiscPredMethod = OPT_DT;
 	}
 	else if (str_eq(argv[0], "-ellipsis-dt-only")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscMethod = OPT_DT;
+	    OptDiscPredMethod = OPT_DT;
 	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
 	}
 	else if (str_eq(argv[0], "-demonstrative-dt")) {
 	    OptEllipsis |= OPT_DEMO;
-	    OptDiscMethod = OPT_DT;
+	    OptDiscPredMethod = OPT_DT;
 	}
 	else if (str_eq(argv[0], "-anaphora-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
-	    OptDiscMethod = OPT_DT;
+	    OptDiscPredMethod = OPT_DT;
 	}
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
 	else if (str_eq(argv[0], "-relation-noun-dt")) {
 	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscMethod = OPT_DT;
+	    OptDiscNounMethod = OPT_DT;
 	}
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;
@@ -340,6 +342,11 @@ extern int	EX_match_subject;
 	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
 	}
 	/* 以下コスト調整用 */
+	else if (str_eq(argv[0], "-noun-th")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    AntecedentDecideThresholdForNoun = atoi(argv[0]);
+	}
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -527,11 +534,12 @@ extern int	EX_match_subject;
 
     if (OptEllipsis) {
 #ifdef USE_SVM
-	if (OptDiscMethod == OPT_SVM && OptLearn != TRUE) {
+	if ((OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) && 
+	    OptLearn != TRUE) {
 	    init_svm();
 	}
 #endif
-	if (OptDiscMethod == OPT_DT) {
+	if (OptDiscPredMethod == OPT_DT || OptDiscNounMethod == OPT_DT) {
 	    init_dt();
 	}
 	init_event();

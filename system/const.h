@@ -782,17 +782,13 @@ typedef struct sentence {
     char		*Comment;
 } SENTENCE_DATA;
 
-typedef struct anaphora_list {
-    char	*key;
-    int		count;
-    struct anaphora_list *next;
-} ALIST;
-
 #define	CREL	1	/* ≥ ¥ÿ∑∏ */
 #define	EREL	2	/* æ Œ¨¥ÿ∑∏ */
 
 typedef struct case_component {
     char	*word;
+    int		sent_num;
+    int		tag_num;
     int		count;
     int		flag;
     struct case_component *next;

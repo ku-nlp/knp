@@ -48,13 +48,11 @@ char *ETAG_name[] = {
     "前文", "後文"};
 
 /* 探すのを止める閾値 */
-float	AntecedentDecideThresholdGeneral = 0.60; /* 学習時は 0.01? */
+float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
+float	AntecedentDecideThresholdForNoun = 0.60;
 float	AntecedentDecideThresholdForNi = 0.90;
 
-ALIST alist[TBLSIZE];		/* リンクされた単語+頻度のリスト */
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
-PALIST **ClauseList;		/* 各文の主節 */
-int ClauseListMax = 0;
 
 E_CANDIDATE *ante_cands;
 int cand_num = 0;
@@ -163,7 +161,6 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 		       void InitAnaphoraList()
 /*==================================================================*/
 {
-    memset(alist, 0, sizeof(ALIST)*TBLSIZE);
     memset(palist, 0, sizeof(PALIST)*TBLSIZE);
 }
 
@@ -183,89 +180,14 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
-		 void ClearAnaphoraList(ALIST *list)
-/*==================================================================*/
-{
-    int i;
-    ALIST *p, *next;
-    for (i = 0; i < TBLSIZE; i++) {
-	if (list[i].key) {
-	    free(list[i].key);
-	    list[i].key = NULL;
-	}
-	if (list[i].next) {
-	    p = list[i].next;
-	    list[i].next = NULL;
-	    while (p) {
-		free(p->key);
-		next = p->next;
-		free(p);
-		p = next;
-	    }
-	}
-	list[i].count = 0;
-    }
-}
-
-/*==================================================================*/
-	     void RegisterAnaphor(ALIST *list, char *key)
-/*==================================================================*/
-{
-    ALIST *ap;
-
-    if (key == NULL) {
-	return;
-    }
-
-    ap = &(list[hash(key, strlen(key))]);
-    if (ap->key) {
-	ALIST **app;
-	app = &ap;
-	do {
-	    if (!strcmp((*app)->key, key)) {
-		(*app)->count++;
-		return;
-	    }
-	    app = &((*app)->next);
-	} while (*app);
-	*app = (ALIST *)malloc_data(sizeof(ALIST), "RegisterAnaphor");
-	(*app)->key = strdup(key);
-	(*app)->count = 1;
-	(*app)->next = NULL;
-    }
-    else {
-	ap->key = strdup(key);
-	ap->count = 1;
-    }
-}
-
-/*==================================================================*/
-	       int CheckAnaphor(ALIST *list, char *key)
-/*==================================================================*/
-{
-    ALIST *ap;
-
-    if (key == NULL) {
-	return 0;
-    }
-
-    ap = &(list[hash(key, strlen(key))]);
-    if (!ap->key) {
-	return 0;
-    }
-    while (ap) {
-	if (!strcmp(ap->key, key)) {
-	    return ap->count;
-	}
-	ap = ap->next;
-    }
-    return 0;
-}
-
-/*==================================================================*/
 		       int CheckBasicPP(int pp)
 /*==================================================================*/
 {
+    /* ノ格 ok */
+    if (pp == 41) {
+	return 1;
+    }
+
     /* 複合辞などの格は除く */
     if (pp == END_M || pp > 8 || pp < 0) {
 	return 0;
@@ -274,7 +196,7 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 }
 
 /*==================================================================*/
- void StoreCaseComponent(CASE_COMPONENT **ccpp, char *word, int flag)
+ void StoreCaseComponent(CASE_COMPONENT **ccpp, char *word, int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
     /* 格要素を登録する */
@@ -293,101 +215,16 @@ int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
     }
     *ccpp = (CASE_COMPONENT *)malloc_data(sizeof(CASE_COMPONENT), "StoreCaseComponent");
     (*ccpp)->word = strdup(word);
+    (*ccpp)->sent_num = sent_n;
+    (*ccpp)->tag_num = tag_n;
     (*ccpp)->count = 1;
     (*ccpp)->flag = flag;
     (*ccpp)->next = NULL;
 }
 
 /*==================================================================*/
-void RegisterClause(PALIST **list, char *key, int pp, char *word, int flag)
-/*==================================================================*/
-{
-    /* 主節を登録する */
-
-    if (CheckBasicPP(pp) == 0) {
-	return;
-    }
-
-    if (*list == NULL) {
-	*list = (PALIST *)malloc_data(sizeof(PALIST), "RegisterClause");
-	(*list)->key = strdup(key);
-	memset((*list)->cc, 0, sizeof(CASE_COMPONENT *)*CASE_MAX_NUM);
-	(*list)->next = NULL;
-    }
-    StoreCaseComponent(&((*list)->cc[pp]), word, flag);
-}
-
-/*==================================================================*/
-void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
-/*==================================================================*/
-{
-    /* 前文の主節を登録する */
-
-    /* 文番号は配列添字に対して 1 多い */
-    Snum--;
-
-    while (Snum >= ClauseListMax) {
-	int i, start;
-	start = ClauseListMax;
-	if (ClauseListMax == 0) {
-	    ClauseListMax = 1;
-	    ClauseList = (PALIST **)malloc_data(sizeof(PALIST *)*(ClauseListMax), 
-						"RegisterLastClause");
-	}
-	else {
-	    ClauseList = (PALIST **)realloc_data(ClauseList, 
-						 sizeof(PALIST *)*(ClauseListMax <<= 1), 
-						 "RegisterLastClause");
-	}
-	/* 初期化 */
-	for (i = start; i < ClauseListMax; i++) {
-	    *(ClauseList+i) = NULL;
-	}
-    }
-    RegisterClause(ClauseList+Snum, key, pp, word, flag);
-}
-
-/*==================================================================*/
-	  int CheckClause(PALIST *list, int pp, char *word)
-/*==================================================================*/
-{
-    int i;
-    CASE_COMPONENT *ccp;
-
-    if (list == NULL) {
-	return 0;
-    }
-
-    if (CheckBasicPP(pp) == 0) {
-	return 0;
-    }
-
-    /* 現在は格の一致はチェックしない */
-    for (i = 0; i < CASE_MAX_NUM; i++) {
-	ccp = list->cc[i];
-	while (ccp) {
-	    if (!strcmp(ccp->word, word)) {
-		return 1;
-	    }
-	    ccp = ccp->next;
-	}
-    }
-    return 0;
-}
-
-/*==================================================================*/
-	  int CheckLastClause(int Snum, int pp, char *word)
-/*==================================================================*/
-{
-    if (word == NULL || Snum < 1 || Snum > ClauseListMax) {
-	return 0;
-    }
-    return CheckClause(*(ClauseList + Snum - 1), pp, word);
-}
-
-/*==================================================================*/
    void RegisterPredicate(char *key, int voice, int cf_addr, 
-			  int pp, char *word, int flag)
+			  int pp, char *word, int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
     /* 用言と格要素をセットで登録する */
@@ -410,7 +247,7 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	    if (!strcmp((*papp)->key, key) && 
 		(*papp)->voice == voice && 
 		(*papp)->cf_addr == (*papp)->cf_addr) {
-		StoreCaseComponent(&((*papp)->cc[pp]), word, flag);
+		StoreCaseComponent(&((*papp)->cc[pp]), word, sent_n, tag_n, flag);
 		return;
 	    }
 	    papp = &((*papp)->next);
@@ -420,53 +257,46 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	(*papp)->voice = voice;
 	(*papp)->cf_addr = cf_addr;
 	memset((*papp)->cc, 0, sizeof(CASE_COMPONENT *)*CASE_MAX_NUM);
-	StoreCaseComponent(&((*papp)->cc[pp]), word, flag);
+	StoreCaseComponent(&((*papp)->cc[pp]), word, sent_n, tag_n, flag);
 	(*papp)->next = NULL;
     }
     else {
 	pap->key = strdup(key);
 	pap->voice = voice;
 	pap->cf_addr = cf_addr;
-	StoreCaseComponent(&(pap->cc[pp]), word, flag);
+	StoreCaseComponent(&(pap->cc[pp]), word, sent_n, tag_n, flag);
     }
 }
 
 /*==================================================================*/
-     int CheckPredicate(char *key, int voice, int cf_addr, 
-			int pp, char *word)
+  CASE_COMPONENT *CheckPredicate(char *key, int voice, int cf_addr,
+				 int pp)
 /*==================================================================*/
 {
     PALIST *pap;
     CASE_COMPONENT *ccp;
 
     if (CheckBasicPP(pp) == 0) {
-	return 0;
+	return NULL;
     }
 
     pap = &(palist[hash(key, strlen(key))]);
     if (!pap->key) {
-	return 0;
+	return NULL;
     }
     while (pap) {
 	if (!strcmp(pap->key, key) && 
 	    pap->voice == voice && 
 	    pap->cf_addr == cf_addr) {
 	    ccp = pap->cc[pp];
-	    while (ccp) {
-		if (!strcmp(ccp->word, word)) {
-		    /* 格関係 */
-		    if (ccp->flag == CREL) {
-			return 2;
-		    }
-		    return 1;
-		}
+	    while (ccp->next) {
 		ccp = ccp->next;
 	    }
-	    return 0;
+	    return ccp;
 	}
 	pap = pap->next;
     }
-    return 0;
+    return NULL;
 }
 
 /*==================================================================*/
@@ -499,9 +329,6 @@ void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag)
 	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
-    ClearAnaphoraList(alist);
-    /* palist の clear */
-    /* ClauseList の clear */
     InitAnaphoraList();
 }
 
@@ -896,7 +723,7 @@ float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos)
 }
 
 /*==================================================================*/
-int CheckEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, TAG_DATA *bp)
+int CheckEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, char *word)
 /*==================================================================*/
 {
     int i, num;
@@ -910,7 +737,7 @@ int CheckEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, T
 	num = cmm_ptr->result_lists_p[l].flag[i];
 	/* 省略の指示対象 */
 	if (num >= 0 && 
-	    str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, bp->head_ptr->Goi)) {
+	    str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word)) {
 	    return 1;
 	}
     }
@@ -1593,10 +1420,6 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
 
-    /* 参照回数 *
-       f->c_ac = CheckAnaphor(alist, bp->head_ptr->Goi);
-    */
-
     return f;
 }
 
@@ -1622,19 +1445,19 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
-	    float classify_by_learning(char *ecp, int pp)
+      float classify_by_learning(char *ecp, int pp, int method)
 /*==================================================================*/
 {
     if (OptLearn == TRUE) {
 	return -1;
     }
 
-    if (OptDiscMethod == OPT_SVM) {
+    if (method == OPT_SVM) {
 #ifdef USE_SVM
 	return svm_classify(ecp, pp);
 #endif
     }
-    else if (OptDiscMethod == OPT_DT) {
+    else if (method == OPT_DT) {
 	return dt_classify(ecp, pp);
     }
     return -1;
@@ -1705,7 +1528,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 		    TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
 		}
 		else {
-		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp);
+		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
 
 		    if (score > 0) {
 			vote[i]++;
@@ -1785,7 +1608,8 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
     EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 				      "?", -1, -1);
 
-    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"));
+    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"), 
+				 cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
 
     if (score > maxscore) {
 	maxscore = score;
@@ -1825,14 +1649,15 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
-    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp)) {
+    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	free(esf);
 	free(ecp);
 	return;
     }
 
-    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"));
+    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"), 
+				 cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
 
     /* 省略候補 */
     sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
@@ -1872,7 +1697,7 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 {
 
     if (cpm_ptr->cf.type == CF_PRED && 
-	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+	(OptDiscPredMethod == OPT_SVM || OptDiscPredMethod == OPT_DT)) {
 	EllipsisDetectForVerbSubcontractExtraTagsWithLearning(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 							      tag, cf_ptr, n);
     }
@@ -1927,7 +1752,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
     /* すでに他の格の指示対象になっているときはだめ */
-    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp)) {
+    if (CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	free(esf);
 	free(ecp);
@@ -1965,7 +1790,8 @@ int EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPS
 				     SENTENCE_DATA *vs, TAG_DATA *vp)
 /*==================================================================*/
 {
-    if ((OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+    if ((cpm_ptr->cf.type == CF_PRED && OptDiscPredMethod != OPT_NORMAL) || 
+	(cpm_ptr->cf.type == CF_NOUN && OptDiscNounMethod != OPT_NORMAL)) {
 	_EllipsisDetectForVerbSubcontractWithLearning(s, cs, em_ptr, 
 						      cpm_ptr, cmm_ptr, l, 
 						      bp, cf_ptr, n, loc, vs, vp);
@@ -2011,7 +1837,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     cmm_ptr->result_lists_p[l].pos[n] = maxpos;
 
     if (cpm_ptr->cf.type == CF_PRED && 
-	(OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+	(OptDiscPredMethod == OPT_SVM || OptDiscPredMethod == OPT_DT)) {
 	if (maxscore < 0) {
 	    cmm_ptr->result_lists_p[l].score[n] = 0;
 	}
@@ -2151,7 +1977,8 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 	}
     }
     else {
-	if (maxscore > AntecedentDecideThresholdGeneral) {
+	if ((cf_ptr->type == CF_PRED && maxscore > AntecedentDecideThresholdPredGeneral) || 
+	    (cf_ptr->type == CF_NOUN && maxscore > AntecedentDecideThresholdForNoun)) {
 	    return 1;
 	}
     }
@@ -3046,6 +2873,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 {
     SENTENCE_DATA *cs;
     char feature_buffer[DATA_LEN], etc_buffer[DATA_LEN];
+    CASE_COMPONENT *ccp;
 
     maxscore = 0;
     maxtag = NULL;
@@ -3055,6 +2883,17 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     cs = sentence_data + sp->Sen_num - 1;
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
 
+    if ((ccp = CheckPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+			      cpm_ptr->pred_b_ptr->voice, 
+			      cmm_ptr->cf_ptr->cf_address, 
+			      cf_ptr->pp[n][0]))) {
+	if (!CheckEllipsisComponent(cpm_ptr, cmm_ptr, l, ccp->word)) {
+	    maxs = sentence_data + ccp->sent_num - 1;
+	    maxi = ccp->tag_num;
+	    maxscore = 1.0;
+	    goto EvalAntecedentNoun;
+	}
+    }
 
     if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cs->tag_data + cs->Tag_num - 1, 
@@ -3282,7 +3121,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		if (result) {
 		    em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
 
-		    if (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT) {
+		    if (OptDiscPredMethod == OPT_SVM || OptDiscPredMethod == OPT_DT) {
 			em_ptr->score += maxscore > 1.0 ? EX_match_exact : maxscore < 0 ? 0 : 11*maxscore;
 		    }
 		    else {
@@ -3322,7 +3161,7 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 
 		/* 現在は、rule base */
 		if (0 && 
-		    (OptDiscMethod == OPT_SVM || OptDiscMethod == OPT_DT)) {
+		    (OptDiscNounMethod == OPT_SVM || OptDiscNounMethod == OPT_DT)) {
 		    em_ptr->score += maxscore > 1.0 ? EX_match_exact : maxscore < 0 ? 0 : 11*maxscore;
 		}
 		else {

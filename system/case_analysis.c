@@ -1298,7 +1298,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
 {
-    int i, num, soto, pos;
+    int i, num, soto, pos, sent_n, tag_n;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word;
 
     /* voice 決定 */
@@ -1325,20 +1325,14 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	if (num == NIL_ASSIGNED) {
 	    strcpy(relation, "--");
 
-	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative] */
+	    /* 格関係の保存 (文脈解析用) -- 割り当てない場合 [tentative]
 	    if (OptEllipsis) {
 		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
 				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cf.pp[i][0], 
 				  cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
-		if (lastflag > 0) {
-		    RegisterLastClause(sp->Sen_num, 
-				       cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				       cpm_ptr->cf.pp[i][0], 
-				       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
-		}
-	    }
+				  } */
 	}
 	/* 割り当てられている格 */
 	else if (num >= 0) {
@@ -1351,21 +1345,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    else {
 		strcpy(relation, 
 		       pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
-	    }
-
-	    /* 格関係の保存 (文脈解析用) */
-	    if (OptEllipsis) {
-		RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				  cpm_ptr->pred_b_ptr->voice, 
-				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
-				  cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				  cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
-		if (lastflag > 0) {
-		    RegisterLastClause(sp->Sen_num, 
-				       cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				       cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
-				       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, CREL);
-		}
 	    }
 	}
 	/* else: UNASSIGNED はないはず */
@@ -1422,15 +1401,15 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    else {
 		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
+		tag_n = cpm_ptr->elem_b_ptr[num]->num;
+
 		sprintf(buffer, "%s/%c/%s/%d", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			cpm_ptr->elem_b_num[num] == -2 ? 'O' : 	/* 省略 */
 			cpm_ptr->elem_b_num[num] == -3 ? 'D' : 	/* 照応 */
 			cpm_ptr->elem_b_num[num] == -1 ? 'N' : 'C', 
 			word ? word : "(null)", 
-			cpm_ptr->elem_b_ptr[num]->num);
-		if (word) free(word);
-
+			tag_n);
 		strcat(feature_buffer, buffer);
 
 		/* 省略の場合 (特殊タグ以外) */
@@ -1438,11 +1417,23 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    sprintf(buffer, "/%d/%s", em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].dist, 
 			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID ? 
 			    em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->KNPSID+5 : "?");
+		    sent_n = em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]].s->Sen_num;
 		}
 		/* 同文内 */
 		else {
 		    sprintf(buffer, "/0/%s", sp->KNPSID ? sp->KNPSID+5 : "?");
+		    sent_n = sp->Sen_num;
 		}
+
+		/* 格関係の保存 (文脈解析用) */
+		if (OptEllipsis) {
+		    RegisterPredicate(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+				      cpm_ptr->pred_b_ptr->voice, 
+				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
+				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
+				      word, sent_n, tag_n, CREL);
+		}
+		if (word) free(word);
 	    }
 	    strcat(feature_buffer, buffer);
 	}

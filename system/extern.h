@@ -40,7 +40,8 @@ extern int 		OptExpress;
 extern int 		OptDisplay;
 extern int 		OptExpandP;
 extern int		OptCheck;
-extern int		OptDiscMethod;
+extern int		OptDiscPredMethod;
+extern int		OptDiscNounMethod;
 extern int		OptLearn;
 extern int		OptCaseFlag;
 extern int		OptDiscFlag;
@@ -84,6 +85,7 @@ extern int	PrintDeletedSM;
 extern int	PrintFeatures;
 extern int 	EX_match_score[];
 extern int	EX_match_exact;
+extern float	AntecedentDecideThresholdForNoun;
 
 /* 関数プロトタイプ */
 
@@ -162,7 +164,8 @@ extern void server_read_rc(FILE *fp);
 
 /* context.c */
 extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int voice, int cf_addr, int pp, char *word, int flag);
+extern void RegisterPredicate(char *key, int voice, int cf_addr, 
+			      int pp, char *word, int sent_n, int tag_n, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
