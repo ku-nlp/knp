@@ -755,6 +755,7 @@ typedef struct ellipsis_cmm_list {
 typedef struct ellipsis_list {
     CF_PRED_MGR		*cpm;
     float		score;
+    float		pure_score;
     ELLIPSIS_COMPONENT cc[CASE_TYPE_NUM];	/* ¾ÊÎ¬³ÊÍ×ÁÇ¤Î¥ê¥¹¥È */
     FEATUREptr		f;
     int			result_num;

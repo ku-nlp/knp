@@ -39,7 +39,7 @@ int     EX_match_qua = 9; /* 10; */			/* ³ÊÍ×ÁÇ -- ¿ôÎÌ */
 int	EX_match_exact = 12;
 int	EX_match_subject = 8;
 int	EX_match_modification = 0;
-int	EX_match_demonstrative = 1;
+int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 8;
 int	CASE_ASSIGN_THRESHOLD = 0;

@@ -2360,7 +2360,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 				CASE_FRAME *cf_ptr, char **order, int mainflag, int onceflag)
 /*==================================================================*/
 {
-    int i, j, num, result, toflag = 0;
+    int i, j, num, result, toflag = 0, demoflag;
     int cases[PP_NUMBER], count = 0;
 
     /* onceflag が指定された場合には、
@@ -2391,13 +2391,22 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     /* 格を与えられた順番に */
     for (j = 0; cases[j] != END_M; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
-	    if (((cf_ptr->pp[i][0] == cases[j] && 
-		 cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED) || 
-		(OptDemo == TRUE && /* 割り当てがあって、指示詞のとき */
-		 cmm_ptr->result_lists_p[0].flag[i] != UNASSIGNED && 
-		 cf_ptr->pp[i][0] == cases[j] && 
-		 check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞"))) && 
-		!(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ"))) {
+	    /* 指示詞の解析 (割り当てあり) */
+	    if (OptDemo == TRUE && 
+		cmm_ptr->result_lists_p[0].flag[i] != UNASSIGNED && 
+		cf_ptr->pp[i][0] == cases[j] && 
+		check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[0].flag[i]]->f, "省略解析対象指示詞")) {
+		demoflag = 1;
+	    }
+	    else {
+		demoflag = 0;
+	    }
+
+	    if (demoflag == 1 || 
+		/* 割り当てなし => 省略 */
+		(cf_ptr->pp[i][0] == cases[j] && 
+		 cmm_ptr->result_lists_p[0].flag[i] == UNASSIGNED && 
+		 !(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ")))) {
 		if ((MarkEllipsisCase(cpm_ptr, cf_ptr, i)) == 0) {
 		    continue;
 		}
@@ -2428,6 +2437,9 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 			find_best_cf(sp, cpm_ptr, -1, 0);
 			return em_ptr->score;
 		    }
+		}
+		else if (demoflag == 1) {
+		    ; /* 割り当てなしにする */
 		}
 	    }
 	}
@@ -2643,6 +2655,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	if (cmm.score >= 0) {
 	    /* 直接の格要素の正規化していないスコアを足す */
 	    workem.score += cmm.pure_score[0];
+	    workem.pure_score = workem.score;
 	    /* 正規化 */
 	    workem.score /= sqrt((double)(count_pat_element(cmm.cf_ptr, 
 							     &(cmm.result_lists_p[0]))));
@@ -2672,6 +2685,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 		maxem->cc[k] = workem.cc[k];
 	    }
 	    maxem->score = workem.score;
+	    maxem->pure_score = workem.pure_score;
 	    maxem->f = workem.f;
 	    workem.f = NULL;
 
@@ -2831,6 +2845,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 						  CaseOrder[i], mainflag, 0);
 		/* 直接の格要素の正規化していないスコアを足す */
 		workem.score += cpm_ptr->cmm[0].pure_score[0];
+		workem.pure_score += workem.score;
 		workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
 								&(cpm_ptr->cmm[0].result_lists_p[0]))));
 		if (workem.score > maxem.score) {
@@ -2873,6 +2888,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	if (maxem.score > -2) {
 	    cpm_ptr->score = maxem.score;
 	    maxem.ecmm[0].cmm.score = maxem.score;
+	    maxem.ecmm[0].cmm.pure_score[0] = maxem.pure_score;
 	    /* cmm を復元 */
 	    cpm_ptr->result_num = maxem.result_num;
 	    for (k = 0; k < cpm_ptr->result_num; k++) {

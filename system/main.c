@@ -53,7 +53,7 @@ VerboseType	VerboseLevel = VERBOSE0;
 /* Server Client Extention */
 int		OptMode = STAND_ALONE_MODE;
 int		OptPort = DEFAULT_PORT;
-char		OptHostname[256];
+char		OptHostname[SMALL_DATA_LEN];
 
 FILE		*Infp;
 FILE		*Outfp;
@@ -88,6 +88,7 @@ extern int	EX_match_tim;
 extern int	EX_match_subject;
 extern int	EllipsisSubordinateClauseScore;
 extern float	AssignReferentThreshold;
+extern float	AssignGaCaseThreshold;
 
 /*==================================================================*/
 			     void usage()
@@ -178,7 +179,7 @@ extern float	AssignReferentThreshold;
 	    OptMode = CLIENT_MODE;
 	    argv++; argc--;
 	    if (argc < 1) usage();
-	    strcpy(OptHostname,argv[0]);
+	    strcpy(OptHostname, argv[0]);
 	}
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
@@ -303,10 +304,17 @@ extern float	AssignReferentThreshold;
 	    if (argc < 1) usage();
 	    EX_match_subject = atoi(argv[0]);
 	}
-	else if (str_eq(argv[0], "-ellipsis-threshold")) {
+	else if (str_eq(argv[0], "-disc-th")) {
+	    OptDisc = OPT_DISC;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    AssignReferentThreshold = (float)atof(argv[0]);
+	}
+	else if (str_eq(argv[0], "-disc-ga-th")) {
+	    OptDisc = OPT_DISC;
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    AssignGaCaseThreshold = (float)atof(argv[0]);
 	}
 	else {
 	    usage();

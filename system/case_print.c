@@ -20,13 +20,12 @@ int	EX_PRINT_NUM = 10;
        flag == FALSE : 対応可能な格を出力しない
     */
 
-
-
     /* 省略のとき */
     if (cpm_ptr->elem_b_num[num] == -2) {
 	fputs("《省》", Outfp);
 	return;
     }
+    /* 照応のとき */
     else if (cpm_ptr->elem_b_num[num] == -3) {
 	fputs("《照》", Outfp);
 	return;
