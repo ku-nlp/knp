@@ -867,6 +867,7 @@ static int max_width;			/* 木の最大幅 */
 /*==================================================================*/
 {
     int i, j, k;
+    char *date_p;
 
     TOTAL_MGR *tm = &Best_mgr;
     
@@ -892,11 +893,10 @@ static int max_width;			/* 木の最大幅 */
 	fprintf(stdout, "# S-ID:%d", Sen_num);
     }
 
-/*
-    if (OptAnalysis != OPT_PM && getenv("DATE")) {
-	fprintf(stdout, " KNP:%s", (char *) getenv("DATE"));
+    if (OptAnalysis != OPT_PM && (date_p = (char *)getenv("DATE"))) {
+	fprintf(stdout, " KNP:%s", date_p);
     }
-    */
+
     if (PM_Memo[0]) {
 	if (strstr(Comment, "MEMO")) {
 	    fprintf(stdout, "%s", PM_Memo);
