@@ -335,8 +335,12 @@ void stand_alone_mode()
 		/* この段階では成功していない */
 		success = 0;
 
-		if (setjmp(timeout))
-		    fprintf(stderr, "Parse timeout.\n");
+		if (setjmp(timeout)) {
+		    fprintf(stderr, "Parse timeout.\n(");
+		    for (i = 0; i < Mrph_num; i++)
+			fprintf(stderr, "%s", mrph_data[i].Goi);
+		    fprintf(stderr, ")\n");
+		}
 
 		for (i = 0; i < Mrph_num; i++) clear_feature(&(mrph_data[i].f));
 		for (i = 0; i < Bnst_num; i++) clear_feature(&(bnst_data[i].f));
