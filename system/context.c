@@ -1684,7 +1684,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 		    TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
 		}
 		else {
-		    score = svm_classify(cp, (ante_cands + i)->ef->p_pp);
+		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp);
 
 		    if (score > 0) {
 			vote[i]++;
