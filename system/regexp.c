@@ -499,6 +499,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     int ret_mrph;
 
+    /* '?' */
     if (ptr1->type_flag == QST_FLG)
       return TRUE;
     else {
@@ -771,6 +772,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     int ret_mrph;
 
+    /* '?' */
     if (ptr1->type_flag == QST_FLG)
       return TRUE;
     else {
@@ -797,43 +799,82 @@ const REGEXPBNST RegexpBnstInitValue = {
 	   int regexpbnsts_match(REGEXPBNST *r_ptr,int r_num,
 				 BNST_DATA *d_ptr, int d_num, 
 				 int fw_or_bw, 
-				 int all_or_part)
+				 int all_or_part, 
+				 int short_or_long)
 /*==================================================================*/
 {
-    int ret, step;
+    int ret, step, return_num;
 
     (fw_or_bw == FW_MATCHING) ? (step = 1) : (step = -1);
 
     if (r_num == 0) {
 	if (d_num == 0 || all_or_part == PART_MATCHING)
-	    return TRUE;
+	    return d_num;
 	else 
-	    return FALSE;
+	    return -1;
     } else {
         if (r_ptr->ast_flag == AST_FLG) {
 	    
-	    /* パターンに"condition*"がある場合 :
-	       	パターンのみ進める(パターンの"*"をスキップ) or
-		conditionがデータとマッチすればデータのみ進める */
-	    
-            if (regexpbnsts_match(r_ptr+step,r_num-1,d_ptr,d_num,
-				  fw_or_bw,all_or_part))
-		return TRUE;
-	    else if (d_num &&
+	    /* 
+	       パターンに"condition*"がある場合，次の可能性を調べる
+
+	        1. パターンのみ進める(パターンの"*"をスキップ)
+	        2. データのみ進める(conditionがデータとマッチすれば)
+
+	       1を先にすればSHORT_MATCHING, 2を先にすればLONG_MATCHING
+	    */
+
+	    if (short_or_long == SHORT_MATCHING) {
+		if ((return_num = 
+		     regexpbnsts_match(r_ptr+step, r_num-1, 
+				       d_ptr, d_num, 
+				       fw_or_bw, 
+				       all_or_part, 
+				       short_or_long)) != -1)
+		    return return_num;
+		else if (d_num &&
 		     regexpbnst_match(r_ptr, d_ptr) &&
-		     regexpbnsts_match(r_ptr,r_num,d_ptr+step,d_num-1, 
-				      fw_or_bw,all_or_part))
-		return TRUE;
-            else 
-		return FALSE;
-        } else {
+		     (return_num = 
+		      regexpbnsts_match(r_ptr, r_num, 
+					d_ptr+step, d_num-1, 
+					fw_or_bw, 
+					all_or_part, 
+					short_or_long)) != -1)
+		    return return_num;
+		else 
+		    return -1;
+	    } else {
+		if (d_num &&
+		    regexpbnst_match(r_ptr, d_ptr) &&
+		    (return_num = 
+		     regexpbnsts_match(r_ptr, r_num, 
+				       d_ptr+step, d_num-1, 
+				       fw_or_bw, 
+				       all_or_part, 
+				       short_or_long)) != -1)
+		    return return_num;
+		else if ((return_num = 
+			  regexpbnsts_match(r_ptr+step, r_num-1, 
+					    d_ptr, d_num, 
+					    fw_or_bw, 
+					    all_or_part, 
+					    short_or_long)) != -1)
+		    return return_num;
+		else
+		    return -1;
+	    }
+	} else {
 	    if (d_num &&
 		regexpbnst_match(r_ptr,d_ptr) &&
-		regexpbnsts_match(r_ptr+step,r_num-1,d_ptr+step,d_num-1,
-				 fw_or_bw,all_or_part))
-		return TRUE;
+		(return_num = 
+		 regexpbnsts_match(r_ptr+step, r_num-1, 
+				   d_ptr+step, d_num-1, 
+				   fw_or_bw, 
+				   all_or_part, 
+				   short_or_long)) != -1)
+		return return_num;
 	    else 
-		return FALSE;
+		return -1;
 	} 
     }
 }
@@ -846,21 +887,97 @@ const REGEXPBNST RegexpBnstInitValue = {
 	 regexpbnst_match(r_ptr->self_pattern->bnst, d_ptr) == TRUE) &&
 	(r_ptr->pre_pattern == NULL ||
 	 regexpbnsts_match(r_ptr->pre_pattern->bnst + 
-			   r_ptr->pre_pattern->bnstsize - 1,
-			   r_ptr->pre_pattern->bnstsize,
+			   r_ptr->pre_pattern->bnstsize - 1, 
+			   r_ptr->pre_pattern->bnstsize, 
 			   d_ptr - 1, 
-			   d_ptr - bnst_data,
-			   BW_MATCHING, PART_MATCHING) == TRUE) &&
+			   d_ptr - bnst_data, 
+			   BW_MATCHING, 
+			   PART_MATCHING, 
+			   SHORT_MATCHING) == TRUE) &&
 	(r_ptr->post_pattern == NULL ||
 	 regexpbnsts_match(r_ptr->post_pattern->bnst, 
-			   r_ptr->post_pattern->bnstsize,
-			   d_ptr + 1,
+			   r_ptr->post_pattern->bnstsize, 
+			   d_ptr + 1, 
 			   Bnst_num - (d_ptr - bnst_data) - 1,
-			   FW_MATCHING, PART_MATCHING) == TRUE)) {
+			   FW_MATCHING, 
+			   PART_MATCHING, 
+			   SHORT_MATCHING) == TRUE)) {
 	return TRUE;
     } else {
 	return FALSE;
     }
+}
+
+/*==================================================================*/
+     int regexpbnstrule_match_M(BnstRule *r_ptr, BNST_DATA *d_ptr,
+				int bw_length, int fw_length)
+/*==================================================================*/
+{
+    /* 
+       pre_pattern  (shortest match でよい)
+       self_pattern (longest match  がよい)
+       post_pattern (shortest match でよい)
+       
+       まず，pre_patternを調べ，次にself_patternのlongest matchから
+       順に，その後でpost_patternを調べる
+    */
+
+    int match_length, match_rest;
+
+    /* まず，pre_patternを調べる */
+
+    if ((r_ptr->pre_pattern == NULL &&	/* 違い */
+	 bw_length != 0) ||
+	(r_ptr->pre_pattern != NULL &&
+	 regexpbnsts_match(r_ptr->pre_pattern->bnst + 
+			   r_ptr->pre_pattern->bnstsize - 1,
+			   r_ptr->pre_pattern->bnstsize,
+			   d_ptr - 1, 
+			   bw_length,	/* 違い */
+			   BW_MATCHING, 
+			   ALL_MATCHING,/* 違い */
+			   SHORT_MATCHING) == -1))
+	return -1;
+
+    
+    /* 次にself_patternのlongest matchから順に，その後でpost_patternを調べる
+       match_length は self_pattern の match の(可能性の)長さ */
+
+    match_length = fw_length;		/* 違い */
+
+    while (match_length > 0) {
+	if (r_ptr->self_pattern == NULL) {
+	    match_length = 1;	/* self_pattern がなければ
+				   マッチの長さは1にしておく */
+	}
+	else if ((match_rest = 
+		  regexpbnsts_match(r_ptr->self_pattern->bnst, 
+				    r_ptr->self_pattern->bnstsize,
+				    d_ptr,
+				    match_length,
+				    FW_MATCHING, 
+				    PART_MATCHING,
+				    LONG_MATCHING)) != -1) {
+	    match_length -= match_rest;
+	}
+	else {
+	    return -1;
+	}
+
+	if (r_ptr->post_pattern == NULL || 
+	    regexpbnsts_match(r_ptr->post_pattern->bnst, 
+			      r_ptr->post_pattern->bnstsize,
+			      d_ptr + match_length,
+			      fw_length - match_length,	/* 違い */
+			      FW_MATCHING, 
+			      ALL_MATCHING,		/* 違い */ 
+			      SHORT_MATCHING) != -1) {
+	    return match_length;
+	}
+	match_length --;
+    }
+
+    return -1;
 }
 
 /*====================================================================
