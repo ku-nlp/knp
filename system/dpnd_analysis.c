@@ -641,6 +641,16 @@ extern FILE  *Outfp;
 	default_pos = (b_ptr->dpnd_rule->preference == -1) ?
 	    count: b_ptr->dpnd_rule->preference;
 
+	/* チェック用 */
+	dpnd.check[dpnd.pos].num = count;	/* 候補数 */
+	dpnd.check[dpnd.pos].def = default_pos;	/* デフォルトの位置 */
+	for (i = 0; i < count; i++) {
+	    if (i < BNST_MAX)
+		dpnd.check[dpnd.pos].pos[i] = possibilities[i];
+	    else
+		fprintf(stderr, "; MAX checks overflowed.\n");
+	}
+
 	/* 一意に決定する場合 */
 
 	if (b_ptr->dpnd_rule->barrier.fp[0] == NULL) {
@@ -666,16 +676,9 @@ extern FILE  *Outfp;
 	} 
 
 	/* すべての可能性をつくり出す場合 */
+	/* 節間の係り受けの場合は一意に決めるべき */
 
 	else {
-	    dpnd.check[dpnd.pos].num = count;
-	    dpnd.check[dpnd.pos].def = default_pos;
-	    for (i = 0; i < count; i++) {
-		if (i < BNST_MAX)
-		    dpnd.check[dpnd.pos].pos[i] = possibilities[i];
-		else
-		    fprintf(stderr, "; MAX checks overflowed.\n");
-	    }
 	    for (i = 0; i < count; i++) {
 		dpnd.head[dpnd.pos] = possibilities[i];
 		if (corpus_possibilities_flag[i] == TRUE) {
