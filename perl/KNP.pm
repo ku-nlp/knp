@@ -56,7 +56,7 @@ package KNP;
 require 5.000;
 use Juman;
 use strict;
-use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN $VERBOSE $HOST $VERSION $MRPH_TYPE $BNST_TYPE );
+use vars qw( $COMMAND $KNP_OPTION $JUMAN_OPTION $JUMAN_SERVER $JUMAN $VERBOSE $HOST $VERSION $MRPH_TYPE $BNST_TYPE );
 
 
 # プログラム内部で利用される大域変数
@@ -64,6 +64,7 @@ $COMMAND      = "/share/tool/knp/system/knp";
 $HOST         = "grape";		# KNP サーバーのホスト名 ( サーバーを利用しない場合は空にしておく )
 $KNP_OPTION   = "-case2 -tab";		# KNP に渡されるオプション
 $JUMAN_OPTION = "-e";			# Juman に渡されるオプション
+$JUMAN_SERVER = "grape:1";		# Juman サーバー
 $VERBOSE      = 0;			# エラーなどが発生した場合に警告させるためには 1 を設定する
 $JUMAN        = 0;
 $VERSION      = sprintf("%d.%02d", q$Revision$ =~ /(\d+)\.(\d+)/);
@@ -104,7 +105,7 @@ sub new {
     }
 
     unless( $JUMAN ){
-	$JUMAN = new Juman( $JUMAN_OPTION, "grape:1" ) || die "KNP.pm: Can't make JUMAN object\n";
+	$JUMAN = new Juman( $JUMAN_OPTION, $JUMAN_SERVER ) || die "KNP.pm: Can't make JUMAN object\n";
     }
 
     if( $HOST ){
