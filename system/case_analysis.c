@@ -246,7 +246,8 @@ char *sm_code_to_str(int code)
     int i;
     int one_case_point;
     
-    if (b_ptr->para_top_p != TRUE && check_feature(b_ptr->f, "用言")) {
+    if (b_ptr->para_top_p != TRUE && check_feature(b_ptr->f, "用言") && 
+	!check_feature(b_ptr->f, "複合辞")) {
 
 	cpm_ptr = &(t_ptr->cpm[t_ptr->pred_num]);
 
