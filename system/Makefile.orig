@@ -1,0 +1,120 @@
+#=============================================================================
+#
+#	GNU make "Makefile" for KN-PARSER (System)
+#
+#		1995/07/10  Sadao Kurohashi (kuro@kuee.kyoto-u.ac.jp)
+#
+#=============================================================================
+
+#----------------------------------------
+#	Search Paths
+#----------------------------------------
+
+KNP_DIR  := /home/kawahara/Laboratory/knp
+JUMANLIB := /home/kawahara/Laboratory/knp/juman
+RCPATH   := /home/kawahara/Laboratory/knp/juman/jumanrc.sample
+
+
+KNP_SYS  := $(KNP_DIR)/system
+KNP_DICT := $(KNP_DIR)/dict
+KNP_RULE := $(KNP_DIR)/rule
+
+#----------------------------------------
+#	Compiler Options
+#----------------------------------------
+
+CC        := gcc
+DEBUG     := -g
+WARNING   := -W
+INCDIR    := -I/usr/local/include -I$(JUMANLIB)
+LIBDIR    := -L/usr/local/lib
+OPTIMIZE  := # -O2
+LIBS      := -lm -lgdbm -lsocket -lnsl # if gdbm
+OPT       := -DANSI $(WARNING) $(INCDIR) $(OPTIMIZE) $(DEBUG) \
+		-DKNP_SYS="\"$(KNP_SYS)\"" \
+		-DKNP_DICT="\"$(KNP_DICT)\"" \
+		-DKNP_RULE="\"$(KNP_RULE)\"" \
+		-DRC_DEFAULT="\"$(RCPATH)\"" -DGDBM # if gdbm
+LOPT      :=
+RMF       := rm -f 
+
+#----------------------------------------
+#	Suffixes
+#----------------------------------------
+
+O         := o
+
+#----------------------------------------
+#	Header files and Object files
+#----------------------------------------
+
+LIB_H     := juman.h
+LIB_F     := iotool lisp grammar katuyou connect getid
+
+KNP_T     := knp
+KNP_H     := knp.h path.h const.h extern.h
+KNP_C     := main.c
+KNP_F     := lib_bgh lib_sm lib_lib lib_print lib_scase tree_conv lib_ps \
+	regexp feature read_data read_rule \
+	dpnd_analysis \
+	para_analysis para_dpnd para_relation para_revision para_similarity \
+	case_analysis case_data case_ipal case_match case_print \
+	koou quote proper context tools corpus unsupervised db configfile
+
+#----------------------------------------
+#	Header files and Object files 
+#		(expansion)
+#----------------------------------------
+
+LIBHEADER := $(addprefix $(JUMANLIB)/, $(LIB_H))
+LIBOBJ    := $(addprefix $(JUMANLIB)/, $(addsuffix .$(O), $(LIB_F)))
+
+KNPTARGET := $(addprefix $(KNP_SYS)/, $(KNP_T))
+KNPHEADER := $(addprefix $(KNP_SYS)/, $(KNP_H))
+KNPSOURCE := $(addprefix $(KNP_SYS)/, $(KNP_C))
+KNPOBJ    := $(addprefix $(KNP_SYS)/, $(addsuffix .$(O), $(KNP_F)))
+
+#----------------------------------------
+#	Default Targets
+#----------------------------------------
+
+default : knp dbtools
+
+all : clean knp dbtools
+
+#----------------------------------------
+#	Target(1): lib
+#----------------------------------------
+
+$(LIBOBJ)  : %.$(O) : %.c $(LIBHEADER)
+	$(CC) $(OPT) -c $< -o $@
+
+#----------------------------------------
+#	Target(2): knp
+#----------------------------------------
+
+knp : $(KNPTARGET)
+
+$(KNPTARGET) : $(KNPSOURCE) $(LIBHEADER) $(LIBOBJ) \
+		$(KNPHEADER) $(KNPOBJ)
+	$(CC) $(OPT) -o $@ $< $(LIBDIR) $(LIBOBJ) $(KNPOBJ) $(LIBS)
+
+$(KNPOBJ): %.$(O): %.c $(LIBHEADER) $(KNPHEADER)
+	$(CC) $(OPT) -c $< -o $@
+
+#----------------------------------------
+#	Target(3): dbtools
+#----------------------------------------
+
+dbtools : $(KNPOBJ)
+	$(CC) -o make_db make_db.c db.o tools.o -DGDBM -lgdbm
+	$(CC) -o ipal ipal.c
+
+#----------------------------------------
+#	Target(4): clean
+#----------------------------------------
+
+clean :
+	$(RMF) $(KNPTARGET) $(KNPOBJ) make_db ipal
+
+#=============================================================================

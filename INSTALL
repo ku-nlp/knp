@@ -1,0 +1,9 @@
+JUMAN を指定するとき。
+
+1) ./configure --enable-juman-lib-dir=/home/kawahara/CHUN-LI/knp/juman --enable-rcpath=/home/kawahara/CHUN-LI/knp/juman/jumanrc.sample
+2) make
+
+JUMAN を指定しないとき。
+
+1) ./configure
+2) make
