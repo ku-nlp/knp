@@ -162,9 +162,10 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	amb_flag = 0;
 	if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
 	    for (i = 0; i < homo_num; i++) {
-		if (i != pref_mrph && 
-		    strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) { /* 原形がpref_mrphと異なる場合 */
-		    amb_flag = 1;
+		if (i != pref_mrph) {
+		    if (strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) { /* 原形がpref_mrphと異なる場合 */
+			amb_flag = 1;
+		    }
 		    buf = malloc_data(strlen((m_ptr+i)->Goi2)+
 				      strlen((m_ptr+i)->Yomi)+
 				      strlen((m_ptr+i)->Goi)+

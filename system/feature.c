@@ -303,6 +303,21 @@
 
     sscanf(fname, "%[^:]", type);	/* ※ fnameに":"がない場合は
 					   typeはfname全体になる */
+
+    /* quote('"')中の":"で切っていれば、もとに戻す */
+    if (strcmp(type, fname)) {
+	int i, count = 0;
+
+	for (i = 0; i < strlen(type); i++) {
+	    if (type[i] == '"') {
+		count++;
+	    }
+	}
+	if (count % 2 == 1) { /* '"'が奇数 */
+	    strcpy(type, fname);
+	}
+    }
+
     while (*fpp) {
 	if (comp_feature((*fpp)->cp, type) == TRUE) {
 	    free((*fpp)->cp);
