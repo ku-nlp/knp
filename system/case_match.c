@@ -652,10 +652,11 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     fputc('\n', Outfp);
 #endif
 
-    if (local_m_e < dat_element || 
-	(closest > -1 && list1->flag[closest] == NIL_ASSIGNED) || 
+    if ((local_m_e < dat_element) || 
+	/* (入力側)必須格の直前格のマッチを条件とする */
+	(closest > -1 && cfd->oblig[closest] == TRUE && list1->flag[closest] == NIL_ASSIGNED) || 
 	/* 外の関係だけのマッチを避ける */
-	(OptDisc != OPT_DISC && 
+	(!OptEllipsis && 
 	 cf_element == 1 && MatchPP(lastpp, "外の関係"))) {
 	local_score = -1;
     }
@@ -681,7 +682,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     /* 並列の expand を行ったときのスコアを考慮する必要がある */
     /* local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE; */
 
-    if (0 && OptDisc == OPT_DISC) {
+    if (0 && OptEllipsis) {
 	if (local_score > Current_max_score) {
 	    Current_max_list1[0] = *list1;
 	    Current_max_list2[0] = *list2;
@@ -963,15 +964,10 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
     }
 
     /* 直前格要素のスコアのみを用いるとき */
-    if (closest > -1 && Current_max_score >= 0) {
+    if (closest > -1 && Current_max_score >= 0 && 
+	Current_max_list1[0].flag[closest] != NIL_ASSIGNED) {
 	/* 直前格要素の割り当てがあることが条件 */
-	if (Current_max_list1[0].flag[closest] != NIL_ASSIGNED) {
-	    cmm_ptr->score = (float)Current_max_list1[0].score[closest];
-	}
-	else {
-	    cmm_ptr->score = -1;
-	    return 0;
-	}
+	cmm_ptr->score = (float)Current_max_list1[0].score[closest];
     }
     else {
 	cmm_ptr->score = Current_max_score;
