@@ -18,6 +18,7 @@
 #define KOOU_FILE  	KNP_RULE "/koou.data"
 #define DPND_FILE  	KNP_RULE "/kakari_uke.data"
 #define NE_FILE  	KNP_RULE "/ne.data"
+#define NE_JUMAN_FILE  	KNP_RULE "/ne-juman.data"
 #define CN_FILE  	KNP_RULE "/compoundnoun.data"
 
 #define BGH_DB_NAME	KNP_DICT "/bgh/bgh"

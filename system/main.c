@@ -256,7 +256,10 @@ jmp_buf timeout;
     read_koou_rule(KOOU_FILE);			/* 呼応表現ルール */
     if (OptNE != OPT_NORMAL) {
 	read_NE_rule(NE_FILE);			/* 固有名詞ルール */
-	read_CN_rule(CN_FILE);			/* 固有名詞ルール */
+	read_CN_rule(CN_FILE);			/* 複合名詞ルール */
+    }
+    else {
+	read_CN_rule(NE_JUMAN_FILE);		/* 固有名詞ルール */
     }
 
     read_bnst_rule(CONT_FILE, ContRuleArray,	/* 文脈処理のルール */
@@ -481,7 +484,9 @@ void stand_alone_mode()
 
 		/* 固有名詞認識処理 */
 		if (OptNE != OPT_NORMAL)
-			NE_analysis();
+		    NE_analysis();
+		else
+		    assign_mrph_feature(CNRuleArray, CurCNRuleSize);
 
 		memo_by_program();	/* メモへの書き込み */
 
