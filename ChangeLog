@@ -1,3 +1,8 @@
+2003-04-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/context.c, system/dpnd_analysis.c, system/main.c:
+	格フレーム<主体>をみて<主体>を与える処理をしないようにした。
+
 2003-04-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/para_analysis.c, system/para_relation.c:
