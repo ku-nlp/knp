@@ -278,12 +278,12 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    fprintf(Outfp, " (");
 	    
 	    if (ptr->cpm_ptr->cmm[0].cf_ptr == NULL)
-		fprintf(Outfp, "-2");	/* IPALにENTRYなし */
-	    else if ((ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_address == -1)
+		fprintf(Outfp, "-2");	/* 格フレームにENTRYなし */
+	    else if ((ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address == -1)
 		fprintf(Outfp, "-1");	/* 格要素なし */
 	    else {
 		fprintf(Outfp, "%s", 
-			(ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_id);
+			(ptr->cpm_ptr->cmm[0].cf_ptr)->cf_id);
 		switch (ptr->cpm_ptr->cmm[0].cf_ptr->voice) {
 		case FRAME_ACTIVE:
 		    fprintf(Outfp, " 能動"); break;
@@ -316,9 +316,9 @@ char pos2symbol(char *hinshi, char *bunrui)
 	    /* ------------変更:述語素, 格形式を出力-----------------
 	    if (ptr->cpm_ptr != NULL &&
 		ptr->cpm_ptr->cmm[0].cf_ptr != NULL &&
-		(ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_address != -1) {
+		(ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address != -1) {
 		get_ipal_frame(i_ptr, 
-			       (ptr->cpm_ptr->cmm[0].cf_ptr)->ipal_address);
+			       (ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address);
 		if (i_ptr->DATA[i_ptr->jyutugoso]) {
 		    fprintf(Outfp, " 述語素 %s", 
 			    i_ptr->DATA+i_ptr->jyutugoso);

@@ -283,7 +283,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    if (sscanf(input_buffer, "* %d%c", 
 		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
 		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2)  {
-		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
+		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
 		OptInput = OPT_RAW;
 		return readtoeos(fp);
 	    }
@@ -295,7 +295,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		sscanf(input_buffer, "* %d%c", 
 		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
 		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2) {
-		fprintf(stderr, "Invalid input <%s> !\n", input_buffer);
+		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
 		return readtoeos(fp);
 	    }
 	    Bnst_start[sp->Mrph_num] = 1;
@@ -371,7 +371,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		strcpy(m_ptr->Imi, "NIL");
 	    }
 	    else {
-		fprintf(stderr, "Invalid input (%d items)<%s> !\n", 
+		fprintf(stderr, ";; Invalid input (%d items)<%s> !\n", 
 			mrph_item, input_buffer);
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);

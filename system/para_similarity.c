@@ -219,7 +219,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	 int calc_match(SENTENCE_DATA *sp, int pre, int pos)
 /*==================================================================*/
 {
-    int		i, j, part_mt_point, bgh_mt_point, point = 0;
+    int		i, j, part_mt_point, mt_point, point = 0;
     int		flag1, flag2, content_word_match;
     BNST_DATA 	*ptr1, *ptr2;
 
@@ -356,38 +356,38 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		
 	    } else {
 
-		/* 分類語彙表による類似度 */
+		/* シソーラスによる類似度 */
 
 		if (ParaThesaurus == USE_NTT) {
-		    bgh_mt_point = ntt_match(ptr1, ptr2) * 2;
+		    mt_point = ntt_match(ptr1, ptr2) * 2;
 		}
 		else if (ParaThesaurus == USE_NONE) {
-		    bgh_mt_point = -1;
+		    mt_point = -1;
 		}
 		else {
-		    bgh_mt_point = bgh_match(ptr1, ptr2) * 2;
+		    mt_point = bgh_match(ptr1, ptr2) * 2;
 		}
 
-		/* 自立語の部分一致 (少なくとも一方の分類語彙表コードがない場合) */
+		/* 自立語の部分一致 (少なくとも一方の意味属性コードがない場合) */
 	    
 		part_mt_point = 0;
-		if (bgh_mt_point < 0) {
-		    bgh_mt_point = 0;
+		if (mt_point < 0) {
+		    mt_point = 0;
 		    if (check_feature(ptr1->f, "体言") &&
 			check_feature(ptr2->f, "体言"))
 			part_mt_point = str_part_cmp(ptr1->Jiritu_Go, ptr2->Jiritu_Go);
 		}
 
-		/* 分類語彙表と部分一致の得点は最大10 */
+		/* シソーラスと部分一致の得点は最大10 */
 
-		if ((part_mt_point + bgh_mt_point) > 10)
+		if ((part_mt_point + mt_point) > 10)
 		    point += 10;
 		else
-		    point += (part_mt_point + bgh_mt_point);
+		    point += (part_mt_point + mt_point);
 	    }
 	}
 
-	/* 附属語の一致 */
+	/* 付属語の一致 */
 	
 	for (i = 0; i < ptr1->fuzoku_num; i++) 
 	    for (j = 0; j < ptr2->fuzoku_num; j++) 

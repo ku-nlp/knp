@@ -39,7 +39,7 @@ BNST_DATA *t_add_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     }
     else {
 	for (i = child_num; i >= pos; i--)
-	  parent->child[i + 1] = parent->child[i];
+	    parent->child[i + 1] = parent->child[i];
 	parent->child[pos] = child;
     }
 
@@ -109,7 +109,7 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 
     for (j = sp->Bnst_num - 1; j >= 0; j--) {
 	child_num = 0;
-	for (i = j - 1; i >= 0; i--)
+	for (i = j - 1; i >= 0; i--) {
 	    if (buffer[i] == j) {
 		sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
 		if (child_num >= PARA_PART_MAX) {
@@ -122,9 +122,10 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 		}
 		/* PARA_NORMALは展開時にセット */
 	    }
+	}
 	sp->bnst_data[j].child[child_num] = NULL;
     }
-    
+
     return TRUE;
 }
 

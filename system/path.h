@@ -7,7 +7,7 @@
     $Id$
 ====================================================================*/
 
-#define IPAL_DAT_NAME	"cf/ipal.dat"
+#define CF_DAT_NAME	"cf/cf.dat"
 #define RULEV_DIC_FILE	"rule/rulev.dic"
 #define RULEP_DIC_FILE	"rule/rulep.dic"
 
@@ -18,7 +18,7 @@
 #define CODE2SM_DB_NAME	"sm/code2sm"
 #define SMP2SMG_DB_NAME	"sm/smp2smg"
 #define SCASE_DB_NAME	"scase/scase"
-#define IPAL_DB_NAME	"cf/ipal"
+#define CF_DB_NAME	"cf/cf"
 #define PROPER_DB_NAME	"proper/word"
 #define PROPERC_DB_NAME	"proper/class"
 #define PROPERCASE_DB_NAME	"proper/case"

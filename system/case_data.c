@@ -494,8 +494,10 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     BNST_DATA *cel_b_ptr;
-    int i, child_num, first, closest;
+    int i, child_num, first, closest, orig_child_num = -1;
     char *vtype = NULL;
+
+    cpm_ptr->cf.voice = b_ptr->voice;
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
@@ -507,6 +509,9 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     else {
 	cpm_ptr->cf.pred_type[0] = '\0';
     }
+
+    cpm_ptr->cf.samecase[0][0] = END_M;
+    cpm_ptr->cf.samecase[0][1] = END_M;
 
     cpm_ptr->cf.pred_b_ptr = b_ptr;
     b_ptr->cpm_ptr = cpm_ptr;
@@ -584,8 +589,37 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
     }
 
+    /* 自分(用言)が複合名詞内のときの親 */
+    if (b_ptr->num == -1) {
+	if (b_ptr->parent && b_ptr->parent->num == -1) {
+	    _make_data_cframe_pp(cpm_ptr, NULL);
+	    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
+	    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
+	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	    cpm_ptr->cf.element_num ++;
+	}
+	/* 主辞 */
+	else {
+	    for (child_num = 0; b_ptr->child[child_num]; child_num++);
+	    orig_child_num = child_num;
+	    for (i = 0; b_ptr->parent->child[i]; i++) {
+		b_ptr->child[child_num+i] = b_ptr->parent->child[i];
+	    }
+	}
+    }
+
+    /* 子供を格要素に */
     for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
+	/* 「〜化」, 「〜的だ」を除く */
+	if (b_ptr->child[i]->num == -1 && 
+	    (check_feature(b_ptr->f, "名詞+接尾辞") || 
+	     !check_feature(b_ptr->f, "サ変名詞格解析"))) {
+	    continue;
+	}
 	if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i]))) {
 	    /* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
 	       「みかんを三個食べる」 の場合はそのまま両方格要素になる
@@ -624,6 +658,11 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
     }
 
+    /* 複合名詞: 子供をもとにもどす */
+    if (orig_child_num >= 0) {
+	b_ptr->child[orig_child_num] = NULL;
+    }
+
     /* 用言が並列のとき、格要素を expand する */
     if (b_ptr->para_type == PARA_NORMAL && 
 	b_ptr->parent && 
@@ -650,23 +689,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 		    return;
 		}
 	    }
-	}
-    }
-
-    /* 複合名詞のとき */
-    if (b_ptr->internal_num && !check_feature(b_ptr->f, "名詞+接尾辞")) {
-	/* とりあえず後から 2 つめの形態素を扱う */
-	_make_data_cframe_pp(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
-	_make_data_cframe_sm(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
-	_make_data_cframe_ex(cpm_ptr, b_ptr->internal+b_ptr->internal_num-1);
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->internal+b_ptr->internal_num-1;
-	cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-	cpm_ptr->cf.element_num ++;
-	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
-	    cpm_ptr->cf.element_num = 0;
-	    return;
 	}
     }
 

@@ -63,7 +63,7 @@ int	EX_PRINT_NUM = 10;
     else
 	fputs("】", Outfp);
 
-    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.ipal_id, 
+    fprintf(Outfp, " %s [%d]", cpm_ptr->cf.cf_id, 
 	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
 
     /* 格フレームを決定した方法 */
@@ -123,15 +123,15 @@ int	EX_PRINT_NUM = 10;
 {
     int i, j, k, num, print_num;
 
-    if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
+    if (cmm_ptr->cf_ptr->cf_address == -1)	/* 格フレームがない場合 */
 	return;
 
     /* 得点, 意味の表示 */
 
-    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->ipal_id);
+    fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", cmm_ptr->score, cmm_ptr->pure_score[0], sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, &(cmm_ptr->result_lists_p[0])))), cmm_ptr->cf_ptr->cf_id);
 
     if (cmm_ptr->cf_ptr->concatenated_flag == 1)
-	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
+	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->cf_id);
 
     if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);

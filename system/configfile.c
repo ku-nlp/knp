@@ -482,7 +482,7 @@ int knp_dict_file_already_defined = 0;
     status = stat(rulename, &sb);
     if (!status) {
 	if (data < sb.st_mtime) {
-	    fprintf(stderr, "%s: older than rule file!\n", datapath);
+	    fprintf(stderr, ";; %s: older than rule file!\n", datapath);
 	}
     }
     free(rulename);

@@ -7,7 +7,7 @@
 #include "knp.h"
 
 SENTENCE_DATA	current_sentence_data;
-SENTENCE_DATA	sentence_data[256];
+SENTENCE_DATA	sentence_data[SENTENCE_MAX];
 
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
 BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
@@ -19,7 +19,7 @@ TOTAL_MGR	Op_Best_mgr;
 int 		Revised_para_num;			
 
 char		*ErrorComment = NULL;		/* エラーコメント */
-char		PM_Memo[256];			/* パターンマッチ結果 */
+char		PM_Memo[DATA_LEN];		/* パターンマッチ結果 */
 
 char  		cont_str[DBM_CON_MAX];
 
@@ -655,7 +655,7 @@ extern float	AssignReferentThreshold;
 
 	/* 格解析を行うサ変名詞を含む文節に feature を与え、
 	   複合名詞をばらして格要素として認識する */
-	MakeInternalBnst(sp);
+	make_internal_bnst(sp);
 
 	/* それぞれの用言の格フレームを取得 */
 	set_pred_caseframe(sp);
@@ -868,6 +868,7 @@ PARSED:
 		if (sp->bnst_data[i].internal_num) {
 		    sp->bnst_data[i].internal_num = 0;
 		    sp->bnst_data[i].internal_max = 0;
+		    sp->bnst_data[i].internal = NULL;
 		}
 	    }
 	    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
@@ -1009,7 +1010,7 @@ PARSED:
 	}
     
 	if((pid = fork()) < 0) {
-	    fprintf(stderr, "Fork Error\n");
+	    fprintf(stderr, ";; Fork Error\n");
 	    sleep(1);
 	    continue;
 	}

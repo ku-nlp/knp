@@ -819,7 +819,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
 		/* 格フレームがある場合 */
 		if (sp->Best_mgr->cpm[i].result_num != 0 && 
-		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->ipal_address != -1 && 
+		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
 		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
 		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
 		    if (OptDisc != OPT_DISC || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {

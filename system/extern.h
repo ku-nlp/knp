@@ -17,7 +17,7 @@ extern char 		PM_Memo[];
 
 extern char  		cont_str[];
 
-extern int		IPALExist;
+extern int		CFExist;
 extern int		BGHExist;
 extern int		SMExist;
 extern int		SM2CODEExist;
@@ -152,7 +152,7 @@ extern void set_pred_caseframe(SENTENCE_DATA *sp);
 extern void clear_cf(int flag);
 extern void init_mgr_cf(TOTAL_MGR *tmp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
-extern void MakeInternalBnst(SENTENCE_DATA *sp);
+extern void make_internal_bnst(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
@@ -401,6 +401,7 @@ extern unsigned char *katakana2hiragana(unsigned char *cp);
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);
 extern void init_bnst_tree_property(SENTENCE_DATA *sp);
+extern BNST_DATA *t_add_node(BNST_DATA *parent, BNST_DATA *child, int pos);
 
 extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 extern int ParseSentence(SENTENCE_DATA *s, char *input);

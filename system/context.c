@@ -1420,7 +1420,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 
     /* すでに出現した用言とその格要素のセット */
     pac = CheckPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, cpm_ptr->pred_b_ptr->voice, 
-			 cf_ptr->ipal_address, 
+			 cf_ptr->cf_address, 
 			 cf_ptr->pp[n][0], bp->Jiritu_Go);
     pascore = 1.0+0.5*pac; /* 0.2 */
 
@@ -2031,7 +2031,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    MatchPP(cf_ptr->pp[n][0], "ガ２") || 
 	    MatchPP(cf_ptr->pp[n][0], "ノ") || 
 	    MatchPP(cf_ptr->pp[n][0], "外の関係")) {
-	    sprintf(feature_buffer, "省略処理なし-%s", 
+	    sprintf(feature_buffer, "省略解析なし-%s", 
 		    pp_code_to_kstr(cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    return 0;
@@ -2185,7 +2185,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	      MatchPP(cf_ptr->pp[n][0], "ガ２") || 
 	      MatchPP(cf_ptr->pp[n][0], "ノ") || 
 	      MatchPP(cf_ptr->pp[n][0], "外の関係"))) {
-	sprintf(feature_buffer, "省略処理なし-%s", 
+	sprintf(feature_buffer, "省略解析なし-%s", 
 		pp_code_to_kstr(cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
@@ -2855,28 +2855,25 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 
 	/* 格フレームがない場合 (ガ格ぐらい探してもいいかもしれない) */
 	if (cpm_ptr->result_num == 0 || 
-	    cpm_ptr->cmm[0].cf_ptr->ipal_address == -1 || 
+	    cpm_ptr->cmm[0].cf_ptr->cf_address == -1 || 
 	    cpm_ptr->cmm[0].score == -2) {
 	    continue;
 	}
 
 	/* 省略解析しない用言
-	   1. ルールで「省略処理なし」feature がついているもの
+	   1. ルールで「省略解析なし」feature がついているもの (「〜みられる」 など)
 	   2. 準用言 (「サ変名詞格解析」は除く)
-	   3. 格解析無視 (「〜みられる」 など) check_feature(cpm_ptr->pred_b_ptr->f, "格解析無視") || 
-	   4. カタカナのサ変名詞
-	   5. レベル:A-
-	   6. （〜を）〜に
-	   7. 〜て（用言） (A), ※ 〜く（用言） は A- 
-	   check_feature(cpm_ptr->pred_b_ptr->f, "ID:〜て（用言）") */
-	if (check_feature(cpm_ptr->pred_b_ptr->f, "省略処理なし")) {
+	   3. カタカナのサ変名詞
+	   4. レベル:A- (〜て（用言） (A), ※ 〜く（用言） は A-)
+	   5. （〜を）〜に */
+	if (check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
 	    continue;
 	}
 	else if((!check_feature(cpm_ptr->pred_b_ptr->f, "サ変名詞格解析") && 
 		 check_feature(cpm_ptr->pred_b_ptr->f, "準用言")) || 
 		check_feature(cpm_ptr->pred_b_ptr->f, "レベル:A-") || 
 		check_feature(cpm_ptr->pred_b_ptr->f, "ID:（〜を）〜に")) {
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略処理なし");
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 	    continue;
 	}
 	    
@@ -2887,7 +2884,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 	/* その文の主節 */
 	if (lastflag == 1 && 
 	    !check_feature(cpm_ptr->pred_b_ptr->f, "非主節") && 
-	    !check_feature(cpm_ptr->pred_b_ptr->f, "格解析無視")) {
+	    !check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし")) {
 	    mainflag = 1;
 	    lastflag = 0;
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "主節");
@@ -3010,7 +3007,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *c
 			/* 用言と格要素のセットを記録 (格関係とは区別したい) */
 			RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 					  cpm_ptr->pred_b_ptr->voice, 
-					  cpm_ptr->cmm[0].cf_ptr->ipal_address, 
+					  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 					  i, 
 					  (maxem.cc[i].s->bnst_data+maxem.cc[i].bnst)->Jiritu_Go, 
 					  EREL);

@@ -633,24 +633,6 @@ typedef struct {
 #define MATCH_NONE	-2
 
 typedef struct {
-    int id;				/* ID */
-    int yomi;				/* 読み */
-    int hyouki;				/* 表記 */
-    int imi;				/* 意味 */
-    int jyutugoso;			/* 述語素 */
-    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
-    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
-    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
-    int sase;				/* 態１ */
-    int rare;				/* 態２ */
-    int tyoku_noudou1;			/* 態３ */
-    int tyoku_ukemi1;			/* 態４ */
-    int tyoku_noudou2;			/* 態５ */
-    int tyoku_ukemi2;			/* 態６ */
-    int voice;				/* 態７ */
-} IPAL_FRAME_INDEX;
-
-typedef struct {
     char *kaku_keishiki;	/* 格形式 */
     char *meishiku;		/* 名詞句 */
     char *imisosei;		/* 意味素性 */
@@ -667,7 +649,7 @@ typedef struct {
     CF_CASE_SLOT cs[CASE_MAX_NUM];
     int	samecase[CF_ELEMENT_MAX][2];
     unsigned char *DATA;
-} IPAL_FRAME;
+} CF_FRAME;
 
 /* 格フレーム構造体
 	○ 入力文に対して作られる
@@ -691,9 +673,9 @@ typedef struct cf_def {
     char	*examples[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
-    int 	ipal_address;				/* IPALのアドレス */
-    int 	ipal_size;				/* IPALのサイズ */
-    char 	ipal_id[SMALL_DATA_LEN];		/* IPALのID */
+    int 	cf_address;				/* 格フレームのアドレス */
+    int 	cf_size;				/* 格フレームのサイズ */
+    char 	cf_id[SMALL_DATA_LEN];		/* 格フレームのID */
     char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];

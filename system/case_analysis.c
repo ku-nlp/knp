@@ -682,7 +682,6 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     cpm_ptr->decided = CF_UNDECIDED;
 
     /* 入力文側の格要素設定 */
-    cpm_ptr->cf.voice = b_ptr->voice;
     make_data_cframe(sp, cpm_ptr);
 
     /* 格フレーム解析スキップ
@@ -726,7 +725,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	b_ptr->cf_num > 0 && 
 	((check_feature(b_ptr->f, "用言") && !check_feature(b_ptr->f, "ID:（弱連体）")) || 
 	 /* check_feature(b_ptr->f, "準用言") || */
-	 check_feature(b_ptr->f, "サ変名詞格解析")) && 
+	 (check_feature(b_ptr->f, "サ変名詞格解析") && b_ptr->internal == NULL)) && 
 	!check_feature(b_ptr->f, "複合辞") && 
 	!check_feature(b_ptr->f, "格解析なし")) {
 
@@ -742,14 +741,21 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	t_ptr->score += one_case_point;
 
 	if (t_ptr->pred_num++ >= CPM_MAX) {
-	    fprintf(stderr, "too many predicates in a sentence.\n");
+	    fprintf(stderr, ";; too many predicates in a sentence.\n");
 	    exit(1);
 	}
     }
 
-    for (i = 0; b_ptr->child[i]; i++)
-	if (all_case_analysis(sp, b_ptr->child[i], t_ptr) == FALSE)
+    for (i = 0; b_ptr->child[i]; i++) {
+	if (all_case_analysis(sp, b_ptr->child[i], t_ptr) == FALSE) {
 	    return FALSE;
+	}
+    }
+
+    if (b_ptr->internal_num > 0 && 
+	all_case_analysis(sp, b_ptr->internal, t_ptr) == FALSE) {
+	return FALSE;
+    }
 
     return TRUE;
 }
@@ -805,9 +811,9 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	}
     }
     dst->voice = src->voice;
-    dst->ipal_address = src->ipal_address;
-    dst->ipal_size = src->ipal_size;
-    strcpy(dst->ipal_id, src->ipal_id);
+    dst->cf_address = src->cf_address;
+    dst->cf_size = src->cf_size;
+    strcpy(dst->cf_id, src->cf_id);
     strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
@@ -823,6 +829,10 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
     }
     else {
 	dst->entry = NULL;
+    }
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	dst->samecase[i][0] = src->samecase[i][0];
+	dst->samecase[i][1] = src->samecase[i][1];
     }
     /* weight, pred_b_ptr は未設定 */
 }
@@ -852,15 +862,19 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 	dst->examples[i] = src->examples[i];	/* これを使う場合問題あり */
     }
     dst->voice = src->voice;
-    dst->ipal_address = src->ipal_address;
-    dst->ipal_size = src->ipal_size;
-    strcpy(dst->ipal_id, src->ipal_id);
+    dst->cf_address = src->cf_address;
+    dst->cf_size = src->cf_size;
+    strcpy(dst->cf_id, src->cf_id);
     strcpy(dst->pred_type, src->pred_type);
     strcpy(dst->imi, src->imi);
     dst->concatenated_flag = src->concatenated_flag;
     dst->etcflag = src->etcflag;
     dst->feature = src->feature;
     dst->entry = src->entry;
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	dst->samecase[i][0] = src->samecase[i][0];
+	dst->samecase[i][1] = src->samecase[i][1];
+    }
     dst->pred_b_ptr = src->pred_b_ptr;
 }
 
@@ -1238,7 +1252,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格フレームID */
-    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id);
+    sprintf(feature_buffer, "格フレーム:%s", cpm_ptr->cmm[0].cf_ptr->cf_id);
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
 
     /* 入力側の各格要素の記述 */
@@ -1287,7 +1301,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    if (OptDisc == OPT_DISC) {
 		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
-				  cpm_ptr->cmm[0].cf_ptr->ipal_address, 
+				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cf.pp[i][0], 
 				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
 		if (lastflag > 0) {
@@ -1315,7 +1329,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    if (OptDisc == OPT_DISC) {
 		RegisterPredicate(L_Jiritu_M(cpm_ptr->pred_b_ptr)->Goi, 
 				  cpm_ptr->pred_b_ptr->voice, 
-				  cpm_ptr->cmm[0].cf_ptr->ipal_address, 
+				  cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				  cpm_ptr->cmm[0].cf_ptr->pp[num][0], 
 				  cpm_ptr->elem_b_ptr[i]->Jiritu_Go, CREL);
 		if (lastflag > 0) {
@@ -1349,7 +1363,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格解析結果 ★buffer溢れ未対応★ */
-    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->ipal_id);
+    sprintf(feature_buffer, "格解析結果:%s", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	if (num == UNASSIGNED) {
