@@ -1,3 +1,7 @@
+2002-04-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.in: debug message をデフォルトで表示しないようにした
+
 2002-04-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule: 「通し(て)」を複合辞にした

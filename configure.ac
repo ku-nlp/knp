@@ -79,13 +79,14 @@ JUMAN_LDFLAGS="-L$JUMAN_LIB_DIR"
 AC_SUBST(JUMAN_CFLAGS)
 
 AC_ARG_ENABLE(debug, 
-	[  --disable-debug         build a non-debugging version [default=no]])
+	[  --enable-debug          build a debugging version [default=no]])
 
 AC_MSG_CHECKING("debug version")
-if test ! "x$enable_debug" = "xno"; then
+if test "x$enable_debug" = "xyes"; then
     dnl    AC_DEFINE(DEBUG)
     ETC_CFLAGS="-DDEBUG $ETC_CFLAGS"
-    enable_debug=yes
+else
+    enable_debug=no
 fi
 AC_MSG_RESULT("$enable_debug")
 
