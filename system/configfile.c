@@ -323,7 +323,7 @@ int knp_dict_file_already_defined = 0;
 }
 
 /*==================================================================*/
-		char *check_dict_filename(char *file)
+	   char *check_dict_filename(char *file, int flag)
 /*==================================================================*/
 {
     char *fullname, *home;
@@ -331,12 +331,22 @@ int knp_dict_file_already_defined = 0;
     struct stat sb;
 
     if (!Knpdict_Dirname) {
+#ifdef KNP_DICT
+	Knpdict_Dirname = strdup(KNP_DICT);
+#else
 	fprintf(stderr, "Please specify dict directory in .jumanrc\n");
 	exit(0);
+#endif
     }
 
     fullname = (char *)malloc_data(strlen(Knpdict_Dirname)+strlen(file)+2, "check_dict_filename");
     sprintf(fullname, "%s/%s", Knpdict_Dirname, file);
+
+    /* flag が FALSE のときはファイルが存在するかどうかチェックしない */
+    if (flag == FALSE) {
+	return fullname;
+    }
+
     /* dir + filename */
     status = stat(fullname, &sb);
 

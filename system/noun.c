@@ -20,10 +20,10 @@ int	NounExist = 0;
     char *db_filename;
 
     if (DICT[NOUN_DB]) {
-	db_filename = (char *)check_dict_filename(DICT[NOUN_DB]);
+	db_filename = (char *)check_dict_filename(DICT[NOUN_DB], TRUE);
     }
     else {
-	db_filename = strdup(NOUN_DB_NAME);
+	db_filename = (char *)check_dict_filename(NOUN_DB_NAME, FALSE);
     }
 
     if ((noun_db = DBM_open(db_filename, O_RDONLY, 0)) == NULL) {

@@ -19,14 +19,17 @@ int		BGHExist;
     char *filename;
 
     if (DICT[BGH_DB]) {
-	filename = (char *)check_dict_filename(DICT[BGH_DB]);
+	filename = (char *)check_dict_filename(DICT[BGH_DB], TRUE);
     }
     else {
-	filename = strdup(BGH_DB_NAME);
+	filename = (char *)check_dict_filename(BGH_DB_NAME, FALSE);
     }
 
     if ((bgh_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	BGHExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open BGH dictionary <%s>.\n", filename);
+#endif
     } else {
 	BGHExist = TRUE;
     }
@@ -45,7 +48,10 @@ int		BGHExist;
                     char *get_bgh(char *cp)
 /*==================================================================*/
 {
-    return db_get(bgh_db, cp);
+    if (BGHExist == TRUE)
+	return db_get(bgh_db, cp);
+    else
+	return NULL;
 }
 
 /*==================================================================*/

@@ -46,17 +46,17 @@ int	IPALExist;
     char *index_db_filename, *data_filename;
 
     if (DICT[CF_DATA]) {
-	data_filename = (char *)check_dict_filename(DICT[CF_DATA]);
+	data_filename = (char *)check_dict_filename(DICT[CF_DATA], TRUE);
     }
     else {
-	data_filename = strdup(IPAL_DAT_NAME);
+	data_filename = (char *)check_dict_filename(IPAL_DAT_NAME, FALSE);
     }
 
     if (DICT[CF_INDEX_DB]) {
-	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB]);
+	index_db_filename = (char *)check_dict_filename(DICT[CF_INDEX_DB], TRUE);
     }
     else {
-	index_db_filename = strdup(IPAL_DB_NAME);
+	index_db_filename = (char *)check_dict_filename(IPAL_DB_NAME, FALSE);
     }
 
     if ((ipal_fp = fopen(data_filename, "rb")) == NULL) {

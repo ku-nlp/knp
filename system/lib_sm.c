@@ -24,14 +24,17 @@ int		SMP2SMGExist;
 
     /* 単語 <=> 意味素コード */
     if (DICT[SM_DB]) {
-	filename = (char *)check_dict_filename(DICT[SM_DB]);
+	filename = (char *)check_dict_filename(DICT[SM_DB], TRUE);
     }
     else {
-	filename = strdup(SM_DB_NAME);
+	filename = (char *)check_dict_filename(SM_DB_NAME, FALSE);
     }
 
     if ((sm_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SMExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open NTT word dictionary <%s>.\n", filename);
+#endif
     }
     else {
 	SMExist = TRUE;
@@ -40,14 +43,17 @@ int		SMP2SMGExist;
 
     /* 意味素 <=> 意味素コード */
     if (DICT[SM2CODE_DB]) {
-	filename = (char *)check_dict_filename(DICT[SM2CODE_DB]);
+	filename = (char *)check_dict_filename(DICT[SM2CODE_DB], TRUE);
     }
     else {
-	filename = strdup(SM2CODE_DB_NAME);
+	filename = (char *)check_dict_filename(SM2CODE_DB_NAME, FALSE);
     }
 
     if ((sm2code_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SM2CODEExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open NTT sm dictionary <%s>.\n", filename);
+#endif
     }
     else {
 	SM2CODEExist = TRUE;
@@ -56,14 +62,17 @@ int		SMP2SMGExist;
 
     /* 固有名詞体系 <=> 一般名詞体系 */
     if (DICT[SMP2SMG_DB]) {
-	filename = (char *)check_dict_filename(DICT[SMP2SMG_DB]);
+	filename = (char *)check_dict_filename(DICT[SMP2SMG_DB], TRUE);
     }
     else {
-	filename = strdup(SMP2SMG_DB_NAME);
+	filename = (char *)check_dict_filename(SMP2SMG_DB_NAME, FALSE);
     }
 
     if ((smp2smg_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	SMP2SMGExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open NTT smp smg table <%s>.\n", filename);
+#endif
     }
     else {
 	SMP2SMGExist = TRUE;

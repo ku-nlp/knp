@@ -19,14 +19,17 @@ int		ScaseDicExist;
     char *filename;
 
     if (DICT[SCASE_DB]) {
-	filename = (char *)check_dict_filename(DICT[SCASE_DB]);
+	filename = (char *)check_dict_filename(DICT[SCASE_DB], TRUE);
     }
     else {
-	filename = strdup(SCASE_DB_NAME);
+	filename = (char *)check_dict_filename(SCASE_DB_NAME, FALSE);
     }
 
     if ((scase_db = DBM_open(filename, O_RDONLY, 0)) == NULL) {
 	ScaseDicExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "Cannot open SCASE dictionary <%s>.\n", filename);
+#endif
     } else {
 	ScaseDicExist = TRUE;
     }
