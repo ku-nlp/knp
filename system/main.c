@@ -108,9 +108,10 @@ char *Opt_jumanrc = NULL;
     fprintf(stderr, "Usage: knp [-case|dpnd|bnst|-disc]\n" 
 	    "           [-tree|sexp|-tab]\n" 
 	    "           [-normal|detail|debug]\n" 
-	    "           [-expand] [-mrule|-brule filename]\n"
+	    "           [-expand]\n"
 	    "           [-C host:port] [-S] [-N port]\n"
-	    "           [-timeout second] [-r rcfile]\n");
+	    "           [-timeout second] [-r rcfile]\n"
+	    "           [-thesaurus [BGH|NTT]]\n");
     exit(1);    
 }
 
@@ -249,6 +250,19 @@ char *Opt_jumanrc = NULL;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
 	}
+	else if (str_eq(argv[0], "-thesaurus")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if (!strcasecmp(argv[0], "ntt")) {
+		Thesaurus = USE_NTT;
+	    }
+	    else if (!strcasecmp(argv[0], "bgh")) {
+		Thesaurus = USE_BGH;
+	    }
+	    else {
+		usage();
+	    }
+	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -346,12 +360,13 @@ char *Opt_jumanrc = NULL;
 
     init_configfile();	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
-    init_ipal();	/* 格フレームオープン */
+    init_cf();		/* 格フレームオープン */
     init_bgh();		/* シソーラスオープン */
     init_sm();		/* NTT 辞書オープン */
     init_scase();	/* 表層格辞書オープン */
-    if (OptNE != OPT_NORMAL)
-	init_proper();	/* 固有名詞解析辞書オープン */
+    init_case_analysis();
+    			/* 格解析の準備 */
+
     if (!(OptInhibit & OPT_INHIBIT_CLAUSE))
 	init_clause();
     if (!((OptInhibit & OPT_INHIBIT_CASE_PREDICATE) && (OptInhibit & OPT_INHIBIT_BARRIER)))
@@ -367,6 +382,11 @@ char *Opt_jumanrc = NULL;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
+
+    /* 固有名詞解析辞書オープン */
+    if (OptNE != OPT_NORMAL) {
+	init_proper(&current_sentence_data);
+    }
 }
 
 /*==================================================================*/
@@ -450,7 +470,7 @@ char *Opt_jumanrc = NULL;
 
 	/* 形態素への意味情報付与 */
 
-	if (SMExist == TRUE) {
+	if (OptNE != OPT_NORMAL && SMExist == TRUE) {
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		code = (char *)get_sm(sp->mrph_data[i].Goi);
 		if (code) {
@@ -459,6 +479,9 @@ char *Opt_jumanrc = NULL;
 		}
 		assign_ntt_dict(i);
 	    }
+	}
+	else {
+	    sp->mrph_data[i].SM = NULL;
 	}
 
 	/* 形態素へのFEATURE付与 */
@@ -519,6 +542,8 @@ char *Opt_jumanrc = NULL;
 	/**************/
 
 	if (OptInput == OPT_PARSED) {
+	    dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
+	    para_recovery();
 	    after_decide_dpnd();
 	    goto PARSED;
 	}
@@ -614,7 +639,7 @@ char *Opt_jumanrc = NULL;
 	/* 係り受け情報を bnst 構造体に記憶 */
 	dpnd_info_to_bnst(&(Best_mgr.dpnd)); 
 	para_recovery();
-	
+
 	/* 固有名詞認識処理 */
 
 	if (OptNE != OPT_NORMAL)
@@ -668,10 +693,17 @@ char *Opt_jumanrc = NULL;
 		unsupervised_debug_print();
 	}
 	fflush(Outfp);
-	success = 1;/* OK 成功 */
+
+	if (OptAnalysis == OPT_CASE || 
+	    OptAnalysis == OPT_CASE2 || 
+	    OptAnalysis == OPT_DISC) {
+	    clear_cf();
+	}
+
+	success = 1;	/* OK 成功 */
     }
 
-    close_ipal();
+    close_cf();
     close_bgh();
     close_sm();
     close_scase();
@@ -1006,6 +1038,7 @@ char *Opt_jumanrc = NULL;
     } else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
+    exit(0);
 }
 
 /*====================================================================

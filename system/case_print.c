@@ -12,6 +12,32 @@ extern FILE  *Infp;
 extern FILE  *Outfp;
 
 /*==================================================================*/
+	void print_depend_type(CF_PRED_MGR *cpm_ptr, int num)
+/*==================================================================*/
+{
+    char *cp;
+    int i;
+
+    /* 係タイプの出力 */
+    if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係")) != NULL) {
+	fprintf(Outfp, "《");
+	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
+	    if (i) {
+		fprintf(Outfp, "/");
+	    }
+	    if (cpm_ptr->cf.pp[num][i] < 0) {
+		/* 3 は strlen("係:") */
+		fprintf(Outfp, "--");
+	    }
+	    else {
+		fprintf(Outfp, "%s", pp_code_to_kstr(cpm_ptr->cf.pp[num][i]));
+	    }
+	}
+	fprintf(Outfp, "》");
+    }
+}
+
+/*==================================================================*/
 	      void print_data_cframe(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
@@ -33,16 +59,8 @@ extern FILE  *Outfp;
 	fprintf(Outfp, " ");
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
 
-	/* 格の出力 */
-	if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[i]->f, "係"))
-	    != NULL) {
-	    if (cpm_ptr->cf.pp[i][0] < 0) {
-		fprintf(Outfp, "(%s)", cp + strlen("係:"));
-	    }
-	    else {
-		fprintf(Outfp, "(%s)", pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
-	    }
-	}
+	/* 係タイプの出力 */
+	print_depend_type(cpm_ptr, i);
 
 	/*
 	fprintf(Outfp, " %s%s", cpm_ptr->elem_b_ptr[i]->Jiritu_Go,
@@ -68,17 +86,19 @@ extern FILE  *Outfp;
 
 	/* 分類語彙表コード */
 
-	if (cpm_ptr->cf.ex[i][0]) {
-	    fprintf(Outfp, "BGH:○");
-	    /*
-	    for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
-		if (j != 0) fprintf(Outfp,  "/");
-		fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+	if (Thesaurus == USE_BGH) {
+	    if (cpm_ptr->cf.ex[i][0]) {
+		fprintf(Outfp, "BGH:○");
+		/*
+		  for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
+		  if (j != 0) fprintf(Outfp,  "/");
+		  fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
+		  }
+		*/
 	    }
-	    */
-	}
-	else {
-	    fprintf(Outfp, "BGH:×");
+	    else {
+		fprintf(Outfp, "BGH:×");
+	    }
 	}
 
 	fprintf(Outfp, "]");	
@@ -113,19 +133,23 @@ extern FILE  *Outfp;
     IPAL_FRAME *i_ptr = &Ipal_frame;
 
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
-      return;
+	return;
     else
-      get_ipal_frame(i_ptr, cmm_ptr->cf_ptr->ipal_address);
+	get_ipal_frame(i_ptr, cmm_ptr->cf_ptr->ipal_address, cmm_ptr->cf_ptr->ipal_size);
     
     /* 得点，意味の表示 */
 
     fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
 
+    if (cmm_ptr->cf_ptr->concatenated_flag == 1)
+	fprintf(Outfp, "<文節結合フレーム:%s> ", cmm_ptr->cf_ptr->ipal_id);
+
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
-      fprintf(Outfp, "(間受)");
-    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1 ||
-	     cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
-      fprintf(Outfp, "(直受)");
+	fprintf(Outfp, "(間受)");
+    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1)
+	fprintf(Outfp, "(直受1)");
+    else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
+	fprintf(Outfp, "(直受2)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
@@ -150,10 +174,9 @@ extern FILE  *Outfp;
 	else {
 	    fprintf(Outfp, " ● ");
 	    _print_bnst(cpm_ptr->elem_b_ptr[num]);
-	    if ((cp = (char *)check_feature(cpm_ptr->elem_b_ptr[num]->f, "係"))
-		!= NULL) {
-		fprintf(Outfp, "(%s)", cp + strlen("係:"));
-	    }
+
+	    /* 係タイプの出力 */
+	    print_depend_type(cpm_ptr, num);
 
 	    /*
 	    fprintf(Outfp," %s%s", cpm_ptr->elem_b_ptr[num]->Jiritu_Go, 
@@ -168,6 +191,10 @@ extern FILE  *Outfp;
 
 	    if (num != UNASSIGNED && cfd->oblig[num] == FALSE)
 		fprintf(Outfp, "*");
+
+	    /* 格ごとのスコアを表示 */
+	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
+		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]);
 
 	    /* 用例による解析の場合
 	       最大マッチのコードを求める 
@@ -206,12 +233,13 @@ extern FILE  *Outfp;
 	     */
 	}
 	
-	fprintf(Outfp, " : ");
+	fprintf(Outfp, " : 《");
 	
-	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= -1; j++) {
+	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
 	    if (j != 0) fprintf(Outfp,  "/");
 	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
 	}
+	fprintf(Outfp, "》");
 
 	if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
@@ -219,11 +247,13 @@ extern FILE  *Outfp;
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	    if (i == 0)
 		fprintf(Outfp, "(彼)");
-	    else
+	    else if (cmm_ptr->cf_ptr->examples[i])
 		fprintf(Outfp, "(%s)", 
-			i_ptr->DATA+i_ptr->meishiku[i-1]);
-	} else
-	    fprintf(Outfp, "(%s)", i_ptr->DATA+i_ptr->meishiku[i]);
+			cmm_ptr->cf_ptr->examples[i]);
+	} else if (cmm_ptr->cf_ptr->examples[i]) {
+	    /* 用例の出力 */
+	    fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
+	}
 	  
 	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
 	    fprintf(Outfp, "*");
@@ -242,7 +272,9 @@ extern FILE  *Outfp;
 	*/
 
 	/* 意味素による解析の場合 */
-	fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	if (i_ptr->DATA+i_ptr->imisosei[i]) {
+	    fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	}
 
 	/* 意味素コードを書く場合
 	fprintf(Outfp, " [");
@@ -267,7 +299,7 @@ extern FILE  *Outfp;
 				   CF_MATCH_MGR *cmm_ptr,int ipal_num)
 /*==================================================================*/
 {
-    int i, j, check[IPAL_FRAME_MAX*3];
+    int i, j, check[ALL_CASE_FRAME_MAX];
     int max_num, max_score, max_counts, all_max_score = 0;
     int print_flag = TRUE;
     

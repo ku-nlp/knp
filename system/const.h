@@ -59,18 +59,16 @@
 
 #ifndef SMALL
 #define ALL_CASE_FRAME_MAX 	1536
-#define IPAL_FRAME_MAX 		512
 #else
 #define ALL_CASE_FRAME_MAX 	0
-#define IPAL_FRAME_MAX 		0
 #endif
-#define CF_ELEMENT_MAX 		10
+#define CF_ELEMENT_MAX 		20
 #define PP_ELEMENT_MAX		5
-#define SM_ELEMENT_MAX		64
-#define EX_ELEMENT_MAX		64
+#define SM_ELEMENT_MAX		256
+#define EX_ELEMENT_MAX		256
 #define MAX_MATCH_MAX 		10
 
-#define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
+#define CMM_MAX 	5				/* 最適格フレーム数 */
 #define CPM_MAX 	32				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
@@ -151,7 +149,7 @@
 #define UNASSIGNED	-1
 #define NIL_ASSIGNED	-2
 
-#define END_M		-1
+#define END_M		-10
 
 #define CONTINUE	-1
 #define GUARD		'\n'
@@ -445,7 +443,7 @@ typedef struct {
     char	Imi[IMI_MAX];
     char	type;
     FEATUREptr	f;
-    char 	SM[SM_ELEMENT_MAX*SM_CODE_SIZE+1];	/* 追加 */
+    char 	*SM;				/* 追加 */
     NamedEntity	NE;				/* 追加 */
     NamedEntity	eNE;				/* 追加 */
     struct _pos_s	Case[23];		/* 追加 */
@@ -473,7 +471,7 @@ typedef struct tnode_b {
     char	to_para_p;	/* コピー */
     int 	sp_level;	/* 並列構造に対するバリア */
   /* 意味情報 */
-    char 	BGH_code[500];
+    char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
     int		BGH_num;
     char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
@@ -572,12 +570,16 @@ typedef struct {
 /*====================================================================
 				格解析
 ====================================================================*/
-#define IPAL_FIELD_NUM	27
-#define IPAL_DATA_SIZE	1026
-#define CASE_MAX_NUM	5	/* CF_ELEMENT_MAX との違いは? */
+#define IPAL_FIELD_NUM	72
+#define IPAL_DATA_SIZE	12800
+#define CASE_MAX_NUM	20
+#define	EX_PRINT_NUM	10
 
 #define USE_BGH	1
 #define	USE_NTT	2
+#define	STOREtoCF	4
+#define	USE_BGH_WITH_STORE	5
+#define	USE_NTT_WITH_STORE	6
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -612,20 +614,28 @@ typedef struct cf_def {
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* 格助詞 */
-    char	sm[CF_ELEMENT_MAX][SM_ELEMENT_MAX*SM_CODE_SIZE]; 	
+    char	*sm[CF_ELEMENT_MAX]; 	
 							/* 意味マーカ */
-    int         sm_flag[CF_ELEMENT_MAX][SM_ELEMENT_MAX];/* 意味マーカのフラグ */
-    char 	ex[CF_ELEMENT_MAX][EX_ELEMENT_MAX*BGH_CODE_SIZE];
-    							/* 例 */
+    int         *sm_false[CF_ELEMENT_MAX];		/* 意味マーカのフラグ */
+    char 	*ex[CF_ELEMENT_MAX];
+    							/* 用例 (BGH) */
+    char	*ex2[CF_ELEMENT_MAX];
+							/* 用例 (NTT) */
+    char	*examples[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
+    int 	ipal_size;				/* IPALのサイズ */
     char 	ipal_id[128];				/* IPALのID */
     char 	imi[128];
+    char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
+    int		weight[CF_ELEMENT_MAX];
+    BNST_DATA	*pred_b_ptr;
 } CASE_FRAME;
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
 typedef struct {
     int  	flag[CF_ELEMENT_MAX];
+    int		score[CF_ELEMENT_MAX];
 } LIST;
 
 /* 文と格フレームの対応付け結果の記録 */
@@ -660,6 +670,10 @@ typedef struct {
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
+
+#define	SOTO_SCORE		7 /* 10 */
+#define	OPTIONAL_CASE_SCORE	2
+#define	SOTO_ADD_SCORE		5
 
 /*====================================================================
 		      固有名詞解析 - 文脈処理へ

@@ -7,9 +7,9 @@
 #include <stdio.h>
 
 /* from ipal.h */
-#define IPAL_FIELD_NUM	27
-#define IPAL_DATA_SIZE	1026
-#define CASE_MAX_NUM	5
+#define IPAL_FIELD_NUM	72
+#define IPAL_DATA_SIZE	12800
+#define CASE_MAX_NUM	20
 
 typedef struct {
     int point[IPAL_FIELD_NUM];
@@ -40,20 +40,20 @@ char buffer[IPAL_DATA_SIZE];
 IPAL_TRANS_FRAME ipal_frame;
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
-		     unsigned char *hyouki, int address)
+		     unsigned char *hyouki, int address, int size)
 {
     unsigned char output_buf[256];
     unsigned char *point;
     int length = 0, flag = 1;
 
-    fprintf(fp, "%s %d\n", entry, address);
+    fprintf(fp, "%s %d:%d\n", entry, address, size);
 
     for (point = hyouki; *point; point+=2) {
 
 	if (*point == 0xa1 && *(point+1) == 0xa4) { /* "，" */
 	    output_buf[length] = '\0';
 	    if (strcmp(output_buf, entry)) {
-		fprintf(fp, "%s %d\n", output_buf, address);
+		fprintf(fp, "%s %d:%d\n", output_buf, address, size);
 	    }
 	    length = 0;
 	} else {
@@ -63,7 +63,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
     }
     output_buf[length] = '\0';
     if (strcmp(output_buf, entry)) {
-	fprintf(fp, "%s %d\n", output_buf, address);
+	fprintf(fp, "%s %d:%d\n", output_buf, address, size);
     }
 }
 
@@ -71,7 +71,7 @@ main(int argc, char **argv)
 {
     FILE *fp_idx, *fp_dat;
     char tag[256];
-    int i, line, pos, address = 0;
+    int i, line, pos, address = 0, writesize;
 
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s index-filename data-filename\n", argv[0]);
@@ -126,21 +126,23 @@ main(int argc, char **argv)
 	    }
 	}
 
+	writesize = sizeof(int)*IPAL_FIELD_NUM+pos;
+
 	/* アドレス書き出し */
 
 	fprint_ipal_idx(fp_idx, 
 			ipal_frame.DATA+ipal_frame.point[1], 
 			ipal_frame.DATA+ipal_frame.point[2], 
-			address);
+			address, writesize);
 
 	/* データ書き出し */
 
-	if (fwrite(&ipal_frame, sizeof(IPAL_TRANS_FRAME), 1, fp_dat) < 1) {
+	if (fwrite(&ipal_frame, writesize, 1, fp_dat) < 1) {
 	    fprintf(stderr, "Error in fwrite.\n");
 	    exit(1);
 	}
 
-	address += (int)sizeof(IPAL_TRANS_FRAME);
+	address += writesize;
     }
 }
 

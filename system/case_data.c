@@ -42,14 +42,14 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 
     /* 前の文節の助詞 */
     strcat(fukugoji_string, 
-	   ((sp->bnst_data+b_ptr->num-1)->fuzoku_ptr+(sp->bnst_data+b_ptr->num-1)->fuzoku_num-1)->Goi);
+	   ((b_ptr-1)->fuzoku_ptr+(b_ptr-1)->fuzoku_num-1)->Goi);
 
     /* この文節 */
-    for (i = 0; i < b_ptr->mrph_num; i++) {
-	if ((b_ptr->mrph_ptr+i)->Hinshi == 1)	/* 特殊以外 */
+    for (i = 0; i < b_ptr->jiritu_num; i++) {
+	if ((b_ptr->jiritu_ptr+i)->Hinshi == 1)	/* 特殊以外 */
 	    continue;
 	strcat(fukugoji_string, 
-	       (b_ptr->mrph_ptr+i)->Goi);
+	       (b_ptr->jiritu_ptr+i)->Goi);
     }
 
     /* 原形の読みに統一 */
@@ -66,11 +66,16 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, num;
+    int i, num, pp_num = 0, jiritsu_num = 0;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
+
+    if (b_ptr && !check_feature(b_ptr->f, "数量")) {
+	jiritsu_num = b_ptr->jiritu_num;
+    }
 
     if (b_ptr == NULL) {	/* 埋め込み文の被修飾詞 */
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("＊");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
@@ -78,77 +83,147 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	     (!check_feature(cpm_ptr->pred_b_ptr->f, "用言:判") &&
 	      check_feature(b_ptr->f, "係:ノ格"))) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("が");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ヲ格")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("を");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ヘ格")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("へ");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
 	return b_ptr;
     }
 
     else if (check_feature(b_ptr->f, "係:ニ格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("に");
-	if (check_feature(b_ptr->f, "時間"))
-	  c_ptr->oblig[c_ptr->element_num] = FALSE;
-	else
-	  c_ptr->oblig[c_ptr->element_num] = TRUE;
+	/* ニ格で時間なら時間格 */
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    c_ptr->oblig[c_ptr->element_num] = FALSE;
+	    if (jiritsu_num > 1) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	    }
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("に");
+	    c_ptr->oblig[c_ptr->element_num] = TRUE;
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ヨリ格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("より");
-	if (check_feature(b_ptr->f, "時間"))
-	  c_ptr->oblig[c_ptr->element_num] = FALSE;
-	else
-	  c_ptr->oblig[c_ptr->element_num] = TRUE;
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("より");
+	    c_ptr->oblig[c_ptr->element_num] = FALSE;
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("より");
+	    c_ptr->oblig[c_ptr->element_num] = TRUE;
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	return b_ptr;
     }
 
     else if (check_feature(b_ptr->f, "係:デ格")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("で");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
+	if (check_feature(b_ptr->f, "デモ")) {
+	    c_ptr->pp[c_ptr->element_num][1] = -1;
+	    c_ptr->pp[c_ptr->element_num][2] = END_M;
+	}
+	else if (check_feature(b_ptr->f, "デ") && 
+		 check_feature(b_ptr->f, "ハ")) {
+	    c_ptr->pp[c_ptr->element_num][1] = -1;
+	    c_ptr->pp[c_ptr->element_num][2] = END_M;
+	}
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:カラ格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("から");
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    if (jiritsu_num > 1) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("から");
+	    }
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("から");
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:ト格")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("と");
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:マデ格")) {
-	c_ptr->pp[c_ptr->element_num][0] = -1;
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    if (jiritsu_num > 1) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	    }
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("まで");
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "係:無格")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("φ");
+	/* 無格で時間なら時間格 */
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    if (jiritsu_num > 1) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("φ");
+	    }
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("φ");
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }
-    else if (check_feature(b_ptr->f, "係:未格")) {
-	c_ptr->pp[c_ptr->element_num][0] = -1;
-	if (check_feature(b_ptr->f, "時間"))
-	  c_ptr->oblig[c_ptr->element_num] = FALSE;
-	else 
-	  c_ptr->oblig[c_ptr->element_num] = TRUE;
+    else if (check_feature(b_ptr->f, "係:未格") || 
+	     check_feature(b_ptr->f, "係:同格未格")) {
+	if (check_feature(b_ptr->f, "時間")) {
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = pp_hstr_to_code("時間");
+	    c_ptr->oblig[c_ptr->element_num] = FALSE;
+	    if (jiritsu_num > 1) {
+		c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	    }
+	}
+	else {
+	    /* 提題ではないときにする?
+	    if (check_feature(b_ptr->f, "提題")) {
+		return NULL;
+	    } */
+	    c_ptr->pp[c_ptr->element_num][pp_num++] = -1;
+	    c_ptr->oblig[c_ptr->element_num] = FALSE;
+	}
+	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
 	return b_ptr;
     }
-    /* 
-    else if (check_feature(b_ptr->f, "複合辞") && b_ptr->child[0]) {
+    else if (check_feature(b_ptr->f, "複合辞") && 
+	     check_feature(b_ptr->f, "係:連用") && 
+	     b_ptr->child[0]) {
 	c_ptr->pp[c_ptr->element_num][0] = 
 	    pp_hstr_to_code(make_fukugoji_string(b_ptr));
+	c_ptr->pp[c_ptr->element_num][1] = END_M;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr->child[0];
-    } */
+    }
     else {
 	return NULL;
     }
@@ -161,10 +236,15 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     int i, sm_num = 0, qua_flag = FALSE, tim_flag = FALSE;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
-    if (check_feature(b_ptr->f, "係:ト格") && /* 格要素 -- 文 */
-	check_feature(b_ptr->f, "用言")) {
+    /* 格要素 -- 文 */
+    if ((check_feature(b_ptr->f, "係:ト格") && 
+	 check_feature(b_ptr->f, "用言")) || 
+	(check_feature(b_ptr->f, "係:ヲ格") && 
+	 check_feature(b_ptr->f, "用言") && 
+	 check_feature(b_ptr->f, "形副名詞"))) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
 	       (char *)sm2code("補文"));
+	assign_cfeature(&(b_ptr->f), "補文");
 	sm_num++;
     }
     else {
@@ -192,17 +272,34 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 {
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
-    strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
+    if (Thesaurus == USE_BGH) {
+	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
+    }
+    else if (Thesaurus == USE_NTT) {
+	strcpy(c_ptr->ex2[c_ptr->element_num], b_ptr->SM_code);
+    }
 }
 
 /*==================================================================*/
-     void make_data_cframe(CF_PRED_MGR *cpm_ptr)
+	      int make_data_cframe(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     BNST_DATA *cel_b_ptr;
-    int i, j, k, child_num;
-    
+    int i, j, k, child_num, score = 0;
+    char *vtype = NULL;
+
+    if (vtype = (char *)check_feature(b_ptr->f, "用言")) {
+	vtype += 5;
+	strcpy(cpm_ptr->cf.ipal_id, vtype);
+    }
+    else {
+	cpm_ptr->cf.ipal_id[0] = '\0';
+    }
+
+    cpm_ptr->cf.pred_b_ptr = b_ptr;
+    b_ptr->cpm_ptr = cpm_ptr;
+
     /* 表層格 etc. の設定 */
 
     cpm_ptr->cf.element_num = 0;
@@ -216,27 +313,35 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
         */
 
 	if (b_ptr->para_type != PARA_NORMAL) {
-	    if (b_ptr->parent && 
-		!check_feature(b_ptr->parent->f, "外の関係")) {
-
-		_make_data_cframe_pp(cpm_ptr, NULL);
-		_make_data_cframe_sm(cpm_ptr, b_ptr->parent);
-		_make_data_cframe_ex(cpm_ptr, b_ptr->parent);
-		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
-		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		cpm_ptr->cf.element_num ++;
+	    if (b_ptr->parent) {
+		if (!check_feature(b_ptr->parent->f, "外の関係")) {
+		    _make_data_cframe_pp(cpm_ptr, NULL);
+		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent);
+		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent);
+		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent;
+		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+		    cpm_ptr->cf.element_num ++;
+		}
+		else {
+		    score = SOTO_SCORE;
+		}
 	    }
 	} else {
 	    if (b_ptr->parent && 
-		b_ptr->parent->parent && 
-		!check_feature(b_ptr->parent->parent->f, "外の関係")) {
-
-		_make_data_cframe_pp(cpm_ptr, NULL);
-		_make_data_cframe_sm(cpm_ptr, b_ptr->parent->parent);
-		_make_data_cframe_ex(cpm_ptr, b_ptr->parent->parent);
-		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent->parent;
-		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		cpm_ptr->cf.element_num ++;
+		b_ptr->parent->parent) {
+		if (!check_feature(b_ptr->parent->parent->f, "外の関係")) {
+		    _make_data_cframe_pp(cpm_ptr, NULL);
+		    _make_data_cframe_sm(cpm_ptr, b_ptr->parent->parent);
+		    _make_data_cframe_ex(cpm_ptr, b_ptr->parent->parent);
+		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->parent->parent;
+		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+		    cpm_ptr->cf.element_num ++;
+		}
+		else {
+		    score = SOTO_SCORE;
+		}
 	    }
 	}
     }
@@ -248,13 +353,44 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
+	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	    cpm_ptr->cf.element_num ++;
 	}
 	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
-	    return;
+	    return score;
 	}
     }
+
+    /* 用言が並列のとき、格要素を expand する */
+    if (b_ptr->para_type == PARA_NORMAL && 
+	b_ptr->parent && 
+	b_ptr->parent->para_top_p) {
+	child_num = 0;
+	for (i = 0; b_ptr->parent->child[i]; i++) {
+	    if (b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
+		child_num++;
+	    }
+	}
+	for (i = 0; b_ptr->parent->child[i]; i++) {
+	    if (b_ptr->parent->child[i]->para_type == PARA_NIL) {
+		if (cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->parent->child[i])) {
+		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
+		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
+		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
+		    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
+		    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = child_num;
+		    cpm_ptr->cf.element_num ++;
+		}
+		if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+		    cpm_ptr->cf.element_num = 0;
+		    return score;
+		}
+	    }
+	}
+    }
+
+    return score;
 }
 
 /*==================================================================*/

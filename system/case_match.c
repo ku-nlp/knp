@@ -19,20 +19,25 @@ LIST 	Current_max_list1[MAX_MATCH_MAX];
 LIST 	Current_max_list2[MAX_MATCH_MAX];
 
 
-int 	SM_match_score[] = {0, 100, 100, 100, 100, 100, 100, 100, 100, 
-			    100, 100, 100, 100};
+int 	SM_match_score[] = {0, 10, 10, 10, 10, 10, 10, 10, 10, 
+			    10, 10, 10, 10};
   				/*{0, 5, 8, 10, 12};*/	/* ＳＭ対応スコア */
 int     SM_match_unknown = 10;			 	/* データ未知     */
 
-int 	EX_match_score[] = {0, 0, 50, 70, 80, 90, 100, 110}; 
+int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11};
+/* int 	EX_match_score[] = {10, 10, 10, 10, 10, 10, 10, 10}; */
 							/* 用例対応スコア */
-int     EX_match_unknown = 50; 				/* データ未知     */
-int     EX_match_sentence = 80;				/* 格要素 -- 文   */
-int     EX_match_tim = 80;				/* 格要素 -- 時間 */
-int     EX_match_qua = 80;				/* 格要素 -- 数量 */
+int     EX_match_unknown = 7; /* 10; */			/* データ未知     */
+int     EX_match_sentence = 10;				/* 格要素 -- 文   */
+int     EX_match_tim = 5;				/* 格要素 -- 時間 */
+int     EX_match_qua = 10;				/* 格要素 -- 数量 */
+int	EX_match_exact = 12;
+
+int	Thesaurus = USE_BGH;
 
 extern FILE  *Infp;
 extern FILE  *Outfp;
+extern float ntt_code_match(char *c1, char *c2);
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
@@ -182,10 +187,14 @@ extern FILE  *Outfp;
 {
     int i, j;
 
+    if (p == NULL) {
+	return FALSE;
+    }
+
     for (i = 0; *(d+i); i += unit) {
 	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
 	    for (j = 0; *(p+j); j += unit) {
-		if (!strncmp(p+i, (char *)sm2code(target), unit)) {
+		if (!strncmp(p+j, (char *)sm2code(target), unit)) {
 		    return TRUE;
 		}
 	    }
@@ -203,14 +212,14 @@ extern FILE  *Outfp;
     /* 意味マーカのマッチング度の計算 */
 
     int i, j, k, tmp_score, score = -100, ex_score = -100;
-    int thesaurus = USE_BGH, step;
+    int step;
     char *exd, *exp;
     int (*match_function)();
     int *match_score;
 
     if (flag == SEMANTIC_MARKER) {
 	
-	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2][0] == '\0') 
+	if (cfd->sm[as1][0] == '\0'|| cfp->sm[as2] == NULL || cfp->sm[as2][0] == '\0') 
 	    return SM_match_unknown;
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
@@ -221,8 +230,8 @@ extern FILE  *Outfp;
 			tmp_score = 
 			    EX_match_score[_ex_match_score(cfp->ex[as2]+k, 
 							   cfd->ex[as1]+i)];
-			if (tmp_score == 110) {
-			    return 100;
+			if (tmp_score == 11) {
+			    return 10;
 			}
 		    }
 		}
@@ -232,7 +241,7 @@ extern FILE  *Outfp;
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
 						       cfd->sm[as1]+i, SM_NO_EXPAND_NE)];
-		    if (tmp_score && (cfp->sm_flag[as2][j/SM_CODE_SIZE] == FALSE))
+		    if (tmp_score && (cfp->sm_false[as2] && cfp->sm_false[as2][j/SM_CODE_SIZE] == TRUE))
 			return -100;
 		    if (tmp_score > score) score = tmp_score;
 		}
@@ -243,11 +252,24 @@ extern FILE  *Outfp;
 
     else if (flag == EXAMPLE) {
 
-	if (thesaurus == USE_BGH) {
+	if (cfp->concatenated_flag == 0 && 
+	    !check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "形副名詞") && 
+	    check_examples(L_Jiritu_M(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1])->Goi, cfp->examples[as2])) {
+	    return EX_match_exact;
+	}
+
+	if (Thesaurus == USE_BGH) {
 	    exd = cfd->ex[as1];
 	    exp = cfp->ex[as2];
 	    step = BGH_CODE_SIZE;
 	    match_function = _ex_match_score;
+	    match_score = EX_match_score;
+	}
+	else if (Thesaurus == USE_NTT) {
+	    exd = cfd->ex2[as1];
+	    exp = cfp->ex2[as2];
+	    step = SM_CODE_SIZE;
+	    match_function = _sm_match_score;
 	    match_score = EX_match_score;
 	}
 
@@ -268,14 +290,24 @@ extern FILE  *Outfp;
 	}
 
 	/* 用例がどちらか一方でもなかったら */
-	if (*exd == '\0' || *exp == '\0') 
-	    return EX_match_unknown;
-
-	/* 用例のマッチング */
-	for (j = 0; exp[j]; j+=step) {
-	    for (i = 0; exd[i]; i+=step) {
-		tmp_score = *(match_score+match_function(exp+j, exd+i));
-		if (tmp_score > ex_score) ex_score = tmp_score;
+	if (*exd == '\0' || exp == NULL || *exp == '\0') {
+	    if (score < 0) {
+		score = EX_match_unknown;
+	    }
+	}
+	else {
+	    /* 用例のマッチング */
+	    for (j = 0; exp[j]; j+=step) {
+		for (i = 0; exd[i]; i+=step) {
+		    /* とりあえず… */
+		    if (Thesaurus == USE_BGH) {
+			tmp_score = *(match_score+match_function(exp+j, exd+i));
+		    }
+		    else if (Thesaurus == USE_NTT) {
+			tmp_score = *(match_score+(int)(ntt_code_match(exp+j, exd+i)*7));
+		    }
+		    if (tmp_score > ex_score) ex_score = tmp_score;
+		}
 	    }
 	}
 
@@ -321,19 +353,19 @@ extern FILE  *Outfp;
     /* 文中の要素数(任意でマッチしていない要素以外) */
     /* ※ 埋め込み文の被修飾語は任意扱い */
     for (i = 0; i < cfd->element_num; i++)
-      if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED))
-	dat_element++;
+	if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED))
+	    dat_element++;
 
     /* 格フレーム中の要素数(任意でマッチしていない要素以外) */
     for (i = 0; i < cfp->element_num; i++)
-      if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED))
-	pat_element++;
+	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED))
+	    pat_element++;
 
     if (local_m_e < dat_element)
 	local_score = -1;
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0)
 	local_score = 0;
-    else 
+    /* else */
 	/* local_score = local_score * sqrt((double)local_m_e)
 	   / sqrt((double)dat_element * pat_element);*/
 
@@ -343,12 +375,12 @@ extern FILE  *Outfp;
 	/* local_score = local_score / sqrt((double)pat_element); */
 
 	/* corpus based case analysis 00/01/04 */
-	local_score /= 10;	/* 正規化しない,最大11に */
+	/* local_score /= 10;	* 正規化しない,最大11に */
 
     /* corpus based case analysis 00/01/04 */
-    /* 任意格にとりあえず 2点 */
-    local_score += (cfd->element_num - dat_element) * 2;
-
+    /* 任意格に加点 */
+    /* 並列の expand を行ったときのスコアを考慮する必要がある */
+    local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE;
 
     if (local_score > Current_max_score || 
 	(local_score == Current_max_score &&
@@ -411,7 +443,8 @@ extern FILE  *Outfp;
 			     対応無:                   0 */
 
     int target = -1;	/* データ側の処理対象の格要素 */
-    int elmnt_score;
+    int target_pp = 0;
+    int elmnt_score, multi_pp = 0;
     int i, j;
 
 #ifdef CASE_DEBUG
@@ -427,10 +460,17 @@ extern FILE  *Outfp;
     
     /* 明示されている格助詞のチェック */
     for (i = 0; i < cfd->element_num; i++) {
-	if (list1.flag[i] == UNASSIGNED &&
-	    cfd->pp[i][0] >= 0) {
-	    target = i;
-	    break;
+	if (list1.flag[i] == UNASSIGNED) {
+	    for (j = 0; cfd->pp[i][j] != END_M; j++) {
+		if (cfd->pp[i][j] >= 0) {
+		    target = i;
+		    target_pp = j;
+		    break;
+		}
+	    }
+	    if (target >= 0) {
+		break;
+	    }
 	}
     }
 
@@ -439,42 +479,54 @@ extern FILE  *Outfp;
 	ec_match_flag = 0;
 	for (i = 0; i < cfp->element_num; i++) {
 	    if (list2.flag[i] == UNASSIGNED) {
-		for (j = 0; cfp->pp[i][j] >= 0; j++) {
-		    if (cfd->pp[target][0] == cfp->pp[i][j] ||
-			(cfd->pp[target][0] == pp_hstr_to_code("によって") &&
-			 cfp->pp[i][j] == pp_kstr_to_code("デ"))) {
+		for (target_pp = 0; cfd->pp[target][target_pp] != END_M; target_pp++) {
+		    if (cfd->pp[target][target_pp] < 0) {
+			continue;
+		    }
+		    for (j = 0; cfp->pp[i][j] >= 0; j++) {
+			if (cfd->pp[target][target_pp] == cfp->pp[i][j] ||
+			    (cfd->pp[target][target_pp] == pp_hstr_to_code("によって") &&
+			     cfp->pp[i][j] == pp_kstr_to_code("デ"))) {
 
-			elmnt_score = 
-			  elmnt_match_score(target, cfd, i, cfp, flag);
+			    elmnt_score = 
+				elmnt_match_score(target, cfd, i, cfp, flag);
 
-			if (flag == EXAMPLE || 
-			    (flag == SEMANTIC_MARKER && elmnt_score != 0)) {
+			    if (flag == EXAMPLE || 
+				(flag == SEMANTIC_MARKER && elmnt_score != 0)) {
 
-			    /* 対応付けをして，残りの格要素の処理に進む */
+				/* 対応付けをして，残りの格要素の処理に進む */
 
-			    ec_match_flag = 1;
-			    list1.flag[target] = i;
-			    list2.flag[i] = target;
-			    assign_list(cfd, list1, cfp, list2, 
-					score + elmnt_score, flag);
-			    list2.flag[i] = UNASSIGNED;
-			} 
+				ec_match_flag = 1;
+				if (cfd->weight[target]) {
+				    elmnt_score /= cfd->weight[target];
+				}
+				list1.flag[target] = i;
+				list2.flag[i] = target;
+				list1.score[target] = elmnt_score;
+				list2.score[i] = elmnt_score;
+				assign_list(cfd, list1, cfp, list2, 
+					    score + elmnt_score, flag);
+				list2.flag[i] = UNASSIGNED;
+			    } 
 			
-			else {
-			    /* flag == SEMANTIC_MARKER && elmnt_score == 0
-			       すなわち，格助詞の対応する格スロットがあるのに
-			       意味マーカ不一致の場合も，処理を進める */
+			    else {
+				/* flag == SEMANTIC_MARKER && elmnt_score == 0
+				   すなわち，格助詞の対応する格スロットがあるのに
+				   意味マーカ不一致の場合も，処理を進める */
 
-			    if (ec_match_flag == 0) ec_match_flag = -1;
+				if (ec_match_flag == 0) ec_match_flag = -1;
 
-			    list1.flag[target] = i;
-			    list2.flag[i] = target;
-			    /* 対応付けをして，残りの格要素の処理に進む */
-			    assign_list(cfd, list1, cfp, list2, 
-					score + elmnt_score, flag);
-			    list2.flag[i] = UNASSIGNED;
+				list1.flag[target] = i;
+				list2.flag[i] = target;
+				list1.score[target] = elmnt_score;
+				list2.score[i] = elmnt_score;
+				/* 対応付けをして，残りの格要素の処理に進む */
+				assign_list(cfd, list1, cfp, list2, 
+					    score + elmnt_score, flag);
+				list2.flag[i] = UNASSIGNED;
+			    }
+			    break;
 			}
-			break;
 		    }
 		}
 	    }
@@ -506,51 +558,108 @@ extern FILE  *Outfp;
 	 */
 	else {
 	    for (i = target + 1; i < cfd->element_num; i++) {
-		if ( cfd->pp[target][0] == cfd->pp[i][0]) {
+		if ( cfd->pp[target][target_pp] == cfd->pp[i][0]) {
 		    assign_list(cfd, list1, cfp, list2, score, flag);
 		    break;
 		}
 	    }
 	}
-	return;
+	/* return; */
+	list1.flag[target] = UNASSIGNED;
+	target = -1;
+	multi_pp = 1;
     }
 
     /* 明示されていない格助詞のチェック */
     for (i = 0; i < cfd->element_num; i++) {
 	if (list1.flag[i] == UNASSIGNED) {
-	    target = i;
-	    break;
+	    for (j = 0; cfd->pp[i][j] != END_M; j++) {
+		if (cfd->pp[i][j] < 0) {
+		    target = i;
+		    target_pp = j;
+		    break;
+		}
+	    }
+	    if (target >= 0) {
+		break;
+	    }
 	}
     }
 
     /* 明示されていない格助詞の処理 */
     if (target >= 0) {
+	int renkaku, mikaku, verb;
+
+	if (cfd->pp[target][target_pp] == -2) {
+	    renkaku = 1;
+	}
+	else {
+	    renkaku = 0;
+	}
+	if (cfd->pp[target][target_pp] == -1) {
+	    mikaku = 1;
+	}
+	else {
+	    mikaku = 0;
+	}
+	if (cfd->ipal_id[0] && str_eq(cfd->ipal_id, "動")) {
+	    verb = 1;
+	}
+	else {
+	    verb = 0;
+	}
+
 	for (i = 0; i < cfp->element_num; i++) {
 
 	    /* "〜は" --> "が，を，に" と 対応可
 	       埋込文 --> 何とでも対応可 */
 
 	    if (list2.flag[i] == UNASSIGNED &&
-		((cfd->pp[target][0] == -1 &&
-		  cfp->pp[i][1] == -1 &&
+		((mikaku &&
+		  cfp->pp[i][1] == END_M &&
+		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
+		   cfp->pp[i][0] == pp_kstr_to_code("ヲ"))) ||
+		 (renkaku &&
+		  cfp->pp[i][1] == END_M &&
 		  (cfp->pp[i][0] == pp_kstr_to_code("ガ") ||
 		   cfp->pp[i][0] == pp_kstr_to_code("ヲ") ||
-		   cfp->pp[i][0] == pp_kstr_to_code("ニ"))) ||
-		 (cfd->pp[target][0] == -2))) {
+		   (verb && cfp->voice == FRAME_ACTIVE && cfp->pp[i][0] == pp_kstr_to_code("ニ")))))) {
 		elmnt_score = elmnt_match_score(target, cfd, i, cfp, flag);
 		if (elmnt_score != 0 || flag == EXAMPLE) {
+		    if (cfd->weight[target]) {
+			elmnt_score /= cfd->weight[target];
+		    }
 		    list1.flag[target] = i;
 		    list2.flag[i] = target;
+		    list1.score[target] = elmnt_score;
+		    list2.score[i] = elmnt_score;
 		    assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 		    list2.flag[i] = UNASSIGNED;
 		}
 	    }
 	}
-	
+
 	list1.flag[target] = NIL_ASSIGNED;
-	assign_list(cfd, list1, cfp, list2, score, flag);
+	elmnt_score = 0;
+
+	/* 外の関係だと推定してボーナスを与える */
+	if (renkaku && verb) {
+	    elmnt_score = SOTO_ADD_SCORE;
+	    if (cfd->weight[target]) {
+		elmnt_score += OPTIONAL_CASE_SCORE;
+		elmnt_score /= cfd->weight[target];
+		elmnt_score -= OPTIONAL_CASE_SCORE; /* 任意格ボーナスの分 */
+	    }
+	}
+	else if (mikaku) {
+	    elmnt_score -= OPTIONAL_CASE_SCORE;
+	}
+	assign_list(cfd, list1, cfp, list2, score + elmnt_score, flag);
 	return;
-    } 
+    }
+    else if (multi_pp == 1) {
+	return;
+    }
 
     /* 評価 : すべての対応付けが終った場合 */
     eval_assign(cfd, &list1, cfp, &list2, score);
@@ -574,9 +683,11 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     Current_max_c_e = 0;
     for (i = 0; i < cfd->element_num; i++) {
 	assign_d_list.flag[i] = UNASSIGNED;
+	assign_d_list.score[i] = -1;
     }
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	assign_p_list.flag[i] = UNASSIGNED;
+	assign_p_list.score[i] = -1;
     }
 
     /* 処理 */
@@ -594,6 +705,10 @@ void case_frame_match(CASE_FRAME *cfd, CF_MATCH_MGR *cmm_ptr, int flag)
     for (i = 0; i < Current_max_num; i++)
 	cmm_ptr->result_lists_p[i] = Current_max_list2[i];
 
+    /* tentative */
+    if (cmm_ptr->cf_ptr->concatenated_flag == 1) {
+	cmm_ptr->score += 1;
+    }
 
 #ifdef CASE_DEBUG
     print_crrspnd(cfd, cmm_ptr);
