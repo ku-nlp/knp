@@ -335,7 +335,7 @@ void store_NE(SENTENCE_DATA *sp, NamedEntity *np, char *feature, int i)
 void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 /*==================================================================*/
 {
-    int n, length, i, first = 0;
+    int n, i, first = 0;
     char buffer[256], element[5][13];	/* ★ */
 
     n = p->Location + p->Person + p->Organization + p->Artifact + p->Others;
@@ -480,7 +480,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	  void assign_f_from_dic(SENTENCE_DATA *sp, int num)
 /*==================================================================*/
 {
-    char *dic_content, *pre_pos, *cp, *sm, *type;
+    char *dic_content, *pre_pos, *cp, *type;
     char code[SM_CODE_SIZE+1];
     int i, smn;
     NamedEntity ne[2];
@@ -596,14 +596,153 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
+	    int CheckJumanProper(SENTENCE_DATA *sp, int i)
+/*==================================================================*/
+{
+    if (sp->mrph_data[i].Hinshi != 6 || sp->mrph_data[i].Bunrui == 1 || 
+	sp->mrph_data[i].Bunrui == 2)
+	return 0;
+
+    /* 品曖があるとき */
+    if (!check_feature(sp->mrph_data[i].f, "品曖-その他") && 
+	!check_feature(sp->mrph_data[i].f, "品曖-カタカナ") && 
+	!check_feature(sp->mrph_data[i].f, "品曖-アルファベット")) {
+
+	/* どれかの固有名詞になるとき */
+	if (check_feature(sp->mrph_data[i].f, "品曖-地名") || 
+	    check_feature(sp->mrph_data[i].f, "品曖-人名") || 
+	    check_feature(sp->mrph_data[i].f, "品曖-組織名") || 
+	    check_feature(sp->mrph_data[i].f, "品曖-固有名詞") || 
+	    sp->mrph_data[i].Bunrui == 4 || 
+	    sp->mrph_data[i].Bunrui == 5 || 
+	    sp->mrph_data[i].Bunrui == 6 || 
+	    sp->mrph_data[i].Bunrui == 3)
+	    return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+	    int CheckNormalNoun(SENTENCE_DATA *sp, int i)
+/*==================================================================*/
+{
+    if (sp->mrph_data[i].Hinshi != 6 || 
+	!(sp->mrph_data[i].Bunrui == 1 || sp->mrph_data[i].Bunrui == 2) || 
+	check_feature(sp->mrph_data[i].f, "品曖-その他") || 
+	check_feature(sp->mrph_data[i].f, "品曖-カタカナ") || 
+	check_feature(sp->mrph_data[i].f, "品曖-アルファベット") || 
+	check_feature(sp->mrph_data[i].f, "品曖-地名") || 
+	check_feature(sp->mrph_data[i].f, "品曖-人名") || 
+	check_feature(sp->mrph_data[i].f, "品曖-組織名") || 
+	check_feature(sp->mrph_data[i].f, "品曖-固有名詞"))
+	return 0;
+    return 1;
+}
+
+/*==================================================================*/
+   int NEassignAgentFromHead(SENTENCE_DATA *sp, int i, char *type)
+/*==================================================================*/
+{
+    int j;
+
+    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
+    for (j = 0; j < sp->bnst_data[sp->bnst_data[i].dpnd_head].jiritu_num; j++) {
+	if ((char *)check_feature((sp->bnst_data[sp->bnst_data[i].dpnd_head].jiritu_ptr+j)->f, type)) {
+	    /* 格要素側の全自立語にマーク
+	    for (k = 0; k < sp->bnst_data[i].jiritu_num; k++) {
+		assign_cfeature(&((sp->bnst_data[i].jiritu_ptr+k)->f), "主体");
+	    } */
+	    return 1;;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
+		      int ReturnNEcode(char *cp)
+/*==================================================================*/
+{
+    int i = 0;
+
+    while (TableNE[i][0]) {
+	if (str_eq(cp, TableNE[i]))
+	    return i;
+	i++;
+    }
+    return -1;
+}
+
+/*==================================================================*/
+int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
+/*==================================================================*/
+{
+    int code, old = i;
+    PreservedNamedEntity *p = pNE;
+    MRPH_P *mp;
+
+    code = ReturnNEcode(rule);
+    if (code == -1)
+	return 0;
+
+    while (p) {
+	mp = p->mrph;
+	if (code == p->Type && str_eq(sp->mrph_data[i].Goi, mp->data.Goi)) {
+	    i++;
+	    mp = mp->next;
+	    while (mp && i < sp->Mrph_num) {
+		if (str_eq(sp->mrph_data[i].Goi, mp->data.Goi)) {
+		    i++;
+		    mp = mp->next;
+		}
+		else
+		    break;
+	    }
+	    return i-old;
+	}
+	p = p->next;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+	 int NEparaAssign(BNST_DATA *b_ptr, BNST_DATA *h_ptr)
+/*==================================================================*/
+{
+    int j, code;
+    char *class = NULL, *preclass = NULL;
+
+    /* 自立語 Loop */
+    for (j = 0; j < b_ptr->jiritu_num; j++) {
+	if ((class = (char *)check_feature((b_ptr->jiritu_ptr+j)->f, "複固"))) {
+	    code = ReturnNEcode(class+strlen("複固:"));
+	    if (code == -1)
+		return TRUE;
+	    /* 文節内で単一のクラスではないときは無視 */
+	    if (preclass && strcmp(class, preclass))
+		return TRUE;
+	    preclass = class;
+	}
+    }
+
+    if (class) {
+	/* 係り先の自立語すべてを同じ固有名詞クラスにしよう */
+	for (j = 0; j < h_ptr->jiritu_num; j++) {
+	    if (!check_feature((h_ptr->jiritu_ptr+j)->f, "複固")) {
+		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), class);
+		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), "固並列OK");
+	    }
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 		 void NE_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, h, pos, apos = 0, flag = 0, match_tail, value;
-    char decision[9], *cp;	/* ★ */
-    MrphRule *r_ptr;
-    MRPH_DATA *m_ptr;
-    BNST_DATA *b_ptr;
+    int i, j, k, h, apos = 0, flag = 0, value;
+    char *cp;
     TOTAL_MGR *tm = sp->Best_mgr;
 
     for (i = 0; i < sp->Mrph_num; i++) {
@@ -713,7 +852,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
     /* 照応処理 */
     if (1) {
 	for (i = 0; i < sp->Mrph_num; i++) {
-	    if (value = check_correspond_NE_longest(sp, i, "人名")) {
+	    if ((value = check_correspond_NE_longest(sp, i, "人名"))) {
 		for (j = 0; j < value; j++) {
 		    assign_cfeature(&(sp->mrph_data[i+j].f), "単固:人名");
 		    assign_cfeature(&(sp->mrph_data[i+j].f), "固照応OK");
@@ -721,7 +860,7 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 	    }
 	}
 	for (i = 0; i < sp->Mrph_num; i++) {
-	    if (value = check_correspond_NE_longest(sp, i, "地名")) {
+	    if ((value = check_correspond_NE_longest(sp, i, "地名"))) {
 		for (j = 0; j < value; j++) {
 		    assign_cfeature(&(sp->mrph_data[i+j].f), "単固:地名");
 		    assign_cfeature(&(sp->mrph_data[i+j].f), "固照応OK");
@@ -776,72 +915,6 @@ void _NE2feature(struct _pos_s *p, MRPH_DATA *mp, char *type, int flag)
 }
 
 /*==================================================================*/
-	 int NEparaAssign(BNST_DATA *b_ptr, BNST_DATA *h_ptr)
-/*==================================================================*/
-{
-    int j, code;
-    char *class = NULL, *preclass = NULL;
-
-    /* 自立語 Loop */
-    for (j = 0; j < b_ptr->jiritu_num; j++) {
-	if (class = (char *)check_feature((b_ptr->jiritu_ptr+j)->f, "複固")) {
-	    code = ReturnNEcode(class+strlen("複固:"));
-	    if (code == -1)
-		return TRUE;
-	    /* 文節内で単一のクラスではないときは無視 */
-	    if (preclass && strcmp(class, preclass))
-		return TRUE;
-	    preclass = class;
-	}
-    }
-
-    if (class) {
-	/* 係り先の自立語すべてを同じ固有名詞クラスにしよう */
-	for (j = 0; j < h_ptr->jiritu_num; j++) {
-	    if (!check_feature((h_ptr->jiritu_ptr+j)->f, "複固")) {
-		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), class);
-		assign_cfeature(&((h_ptr->jiritu_ptr+j)->f), "固並列OK");
-	    }
-	}
-	return TRUE;
-    }
-    return FALSE;
-}
-
-/*==================================================================*/
-   int NEassignAgentFromHead(SENTENCE_DATA *sp, int i, char *type)
-/*==================================================================*/
-{
-    int j, k;
-
-    /* 係り先の自立語が「ガ主体」などを持っているかどうか */
-    for (j = 0; j < sp->bnst_data[sp->bnst_data[i].dpnd_head].jiritu_num; j++) {
-	if ((char *)check_feature((sp->bnst_data[sp->bnst_data[i].dpnd_head].jiritu_ptr+j)->f, type)) {
-	    /* 格要素側の全自立語にマーク
-	    for (k = 0; k < sp->bnst_data[i].jiritu_num; k++) {
-		assign_cfeature(&((sp->bnst_data[i].jiritu_ptr+k)->f), "主体");
-	    } */
-	    return 1;;
-	}
-    }
-    return 0;
-}
-
-/*==================================================================*/
-		      int ReturnNEcode(char *cp)
-/*==================================================================*/
-{
-    int i = 0;
-
-    while (TableNE[i][0]) {
-	if (str_eq(cp, TableNE[i]))
-	    return i;
-	i++;
-    }
-    return -1;
-}
-
-/*==================================================================*/
 void allocateMRPH(SENTENCE_DATA *sp, PreservedNamedEntity **p, int i)
 /*==================================================================*/
 {
@@ -878,7 +951,7 @@ void allocateNE(SENTENCE_DATA *sp, PreservedNamedEntity **p, int code, int i)
     char *cp;
 
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (cp = (char *)check_feature(sp->mrph_data[i].f, "複固")) {
+	if ((cp = (char *)check_feature(sp->mrph_data[i].f, "複固"))) {
 	    code = ReturnNEcode(cp+strlen("複固:"));
 	    /* 保存しない固有名詞 */
 	    if (code == -1)
@@ -926,38 +999,6 @@ void allocateNE(SENTENCE_DATA *sp, PreservedNamedEntity **p, int code, int i)
 }
 
 /*==================================================================*/
-int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
-/*==================================================================*/
-{
-    int code, old = i;
-    PreservedNamedEntity *p = pNE;
-    MRPH_P *mp;
-
-    code = ReturnNEcode(rule);
-    if (code == -1)
-	return 0;
-
-    while (p) {
-	mp = p->mrph;
-	if (code == p->Type && str_eq(sp->mrph_data[i].Goi, mp->data.Goi)) {
-	    i++;
-	    mp = mp->next;
-	    while (mp && i < sp->Mrph_num) {
-		if (str_eq(sp->mrph_data[i].Goi, mp->data.Goi)) {
-		    i++;
-		    mp = mp->next;
-		}
-		else
-		    break;
-	    }
-	    return i-old;
-	}
-	p = p->next;
-    }
-    return 0;
-}
-
-/*==================================================================*/
 	 int check_correspond_NE(MRPH_DATA *data, char *rule)
 /*==================================================================*/
 {
@@ -980,7 +1021,7 @@ int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
 }
 
 /*==================================================================*/
-		 int assign_agent(SENTENCE_DATA *sp)
+		 void assign_agent(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, child, flag, num;
@@ -991,7 +1032,7 @@ int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
     sm[SM_CODE_SIZE] = '\0';
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (cp = (char *)check_feature(sp->bnst_data[i].f, "深層格N1")) {
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "深層格N1"))) {
 	    num = sscanf(cp, "%*[^:]:%[^:]:%[^:]:%[^:]", 
 		   Childs, Case, SM);
 	    /* 意味素がないときなど */
@@ -1091,50 +1132,6 @@ int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
 }
 
 /*==================================================================*/
-	    int CheckJumanProper(SENTENCE_DATA *sp, int i)
-/*==================================================================*/
-{
-    if (sp->mrph_data[i].Hinshi != 6 || sp->mrph_data[i].Bunrui == 1 || 
-	sp->mrph_data[i].Bunrui == 2)
-	return 0;
-
-    /* 品曖があるとき */
-    if (!check_feature(sp->mrph_data[i].f, "品曖-その他") && 
-	!check_feature(sp->mrph_data[i].f, "品曖-カタカナ") && 
-	!check_feature(sp->mrph_data[i].f, "品曖-アルファベット")) {
-
-	/* どれかの固有名詞になるとき */
-	if (check_feature(sp->mrph_data[i].f, "品曖-地名") || 
-	    check_feature(sp->mrph_data[i].f, "品曖-人名") || 
-	    check_feature(sp->mrph_data[i].f, "品曖-組織名") || 
-	    check_feature(sp->mrph_data[i].f, "品曖-固有名詞") || 
-	    sp->mrph_data[i].Bunrui == 4 || 
-	    sp->mrph_data[i].Bunrui == 5 || 
-	    sp->mrph_data[i].Bunrui == 6 || 
-	    sp->mrph_data[i].Bunrui == 3)
-	    return 1;
-    }
-    return 0;
-}
-
-/*==================================================================*/
-	    int CheckNormalNoun(SENTENCE_DATA *sp, int i)
-/*==================================================================*/
-{
-    if (sp->mrph_data[i].Hinshi != 6 || 
-	!(sp->mrph_data[i].Bunrui == 1 || sp->mrph_data[i].Bunrui == 2) || 
-	check_feature(sp->mrph_data[i].f, "品曖-その他") || 
-	check_feature(sp->mrph_data[i].f, "品曖-カタカナ") || 
-	check_feature(sp->mrph_data[i].f, "品曖-アルファベット") || 
-	check_feature(sp->mrph_data[i].f, "品曖-地名") || 
-	check_feature(sp->mrph_data[i].f, "品曖-人名") || 
-	check_feature(sp->mrph_data[i].f, "品曖-組織名") || 
-	check_feature(sp->mrph_data[i].f, "品曖-固有名詞"))
-	return 0;
-    return 1;
-}
-
-/*==================================================================*/
 		   char *NEcheck(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
@@ -1153,7 +1150,6 @@ int check_correspond_NE_longest(SENTENCE_DATA *sp, int i, char *rule)
 	 int NEparaCheck(BNST_DATA *b_ptr, BNST_DATA *h_ptr)
 /*==================================================================*/
 {
-    int j, code;
     char *class, str[11];
 
     /* b_ptr が固有表現である */

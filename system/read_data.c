@@ -224,7 +224,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 {
     U_CHAR input_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, i, len, homo_flag;
+    int homo_num, offset, mrph_item, i, homo_flag;
 
     sp->Mrph_num = 0;
     homo_num = 0;

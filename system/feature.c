@@ -171,7 +171,7 @@
     int nth = 0;
     char buffer[256], *scp, *ecp;
 
-    if (cp == NULL || cp[0] == NULL) {
+    if (cp == NULL || cp[0] == '\0') {
 	f->fp[nth] = NULL;
 	return;
     }
@@ -180,7 +180,7 @@
     scp = ecp = buffer;
     while (*ecp) {
 	if (*ecp == '|') {
-	    *ecp = NULL;
+	    *ecp = '\0';
 	    clear_feature(f->fp+nth);		/* ?? &(f->fp[nth]) */
 	    copy_cfeature(f->fp+nth, scp);	/* ?? &(f->fp[nth]) */
 	    nth++;
@@ -305,7 +305,7 @@
      *  構造体自身に対する処理も可能としておく
      */
 
-    int i, flag;
+    int i;
     char *cp;
     FEATURE **fpp, *next;
 
@@ -1101,7 +1101,7 @@
 	int gnum;
 	char fname[64];
 	sscanf(rule, "&#%d:%s", &gnum, fname);
-	if (cp = check_feature(fd, fname)) {
+	if ((cp = check_feature(fd, fname))) {
 	    strcpy(G_Feature[gnum], cp);
 	    return TRUE;
 	} else {

@@ -125,10 +125,17 @@ extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
 extern char *make_print_string(BNST_DATA *bp);
 extern void InitCPMcache();
 extern void ClearCPMcache();
+extern void fix_sm_person(SENTENCE_DATA *sp);
+extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest);
+extern void assign_gaga_slot(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 
 /* case_data.c */
 extern void make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
+extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
+extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr);
 
 /* case_ipal.c */
 extern void init_cf();
@@ -141,6 +148,7 @@ extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern void MakeInternalBnst(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num);
 extern int check_examples(char *cp, char **ex_list, int ex_num);
+extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -155,6 +163,7 @@ extern int cf_match_exactly(BNST_DATA *d, char **ex_list, int ex_num, int *pos);
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int ipal_num);
 extern void print_case_result(SENTENCE_DATA *sp);
+extern void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 
 /* configfile.c */
 extern char *check_dict_filename(char *file, int flag);
@@ -169,6 +178,10 @@ extern void RegisterPredicate(char *key, int voice, int cf_addr, int pp, char *w
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void discourse_analysis(SENTENCE_DATA *sp);
 extern void copy_sentence(SENTENCE_DATA *sp);
+extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
+extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
+extern void DiscourseAnalysis(SENTENCE_DATA *sp);
+extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
 
 /* corpus.c */
 extern int CorpusExampleDependencyCalculation(SENTENCE_DATA *sp, BNST_DATA *ptr1, 
@@ -220,6 +233,7 @@ extern void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr);
 extern void list2feature_pattern(FEATURE_PATTERN *f, CELL *cell);
 extern void list2feature(CELL *cp, FEATURE **fpp);
 extern void clear_feature(FEATURE **fpp);
+extern void append_feature(FEATURE **fpp, FEATURE *afp);
 
 /* koou.c */
 int koou(SENTENCE_DATA *sp);
@@ -243,6 +257,8 @@ extern void print_result(SENTENCE_DATA *sp);
 extern void print_bnst(BNST_DATA *ptr, char *cp);
 extern void check_bnst(SENTENCE_DATA *sp);
 extern void print_para_relation(SENTENCE_DATA *sp);
+extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
+extern void prepare_all_entity(SENTENCE_DATA *sp);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);
@@ -266,9 +282,14 @@ extern char *smp2smg(char *cpd, int flag);
 extern int sm_fix(BNST_DATA *bp, char *targets);
 extern void merge_smp2smg(BNST_DATA *bp);
 extern int DeleteMatchedSM(char *sm, char *del);
+extern void assign_sm_aux_feature(BNST_DATA *bp);
+extern int sm_match_check(char *pat, char *codes);
+extern int assign_sm(BNST_DATA *bp, char *cp);
+extern int sm_code_depth(char *cp);
+extern int sm_all_match(char *c, char *target);
 
 /* main.c */
-extern int main_analysis(SENTENCE_DATA *sp, FILE *input);
+extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
 extern void usage();
 
 /* noun.c */
@@ -312,6 +333,7 @@ extern void preserveNE(SENTENCE_DATA *sp);
 extern void printNE();
 extern void close_proper();
 extern void assign_ne_rule(SENTENCE_DATA *sp);
+extern void NEparaAnalysis(SENTENCE_DATA *sp);
 
 /* quote.c */
 extern int quote(SENTENCE_DATA *sp);
@@ -327,6 +349,7 @@ extern int make_bunsetsu(SENTENCE_DATA *sp);
 extern int make_bunsetsu_pm(SENTENCE_DATA *sp);
 extern void print_mrphs(SENTENCE_DATA *sp, int flag);
 extern void assign_dpnd_rule(SENTENCE_DATA *sp);
+extern void _assign_general_feature(void *data, int size, int flag);
 
 /* read_rule.c */
 extern int case2num(char *cp);
@@ -351,6 +374,7 @@ extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);
 extern void *realloc_data(void *ptr, size_t size, char *comment);
+extern void init_hash();
 extern int hash(unsigned char *key, int keylen);
 extern unsigned char *katakana2hiragana(unsigned char *cp);
 

@@ -197,10 +197,8 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     int start_pos;
     int invalid_flag = FALSE;
     int no_more_error, no_more_error_here;
-    int error_type = -1, error_type_here = -1;
     int error_check[PARA_PART_MAX], error_pos[PARA_PART_MAX];
     int revised_p_num;
-    BNST_DATA *k_ptr, *u_ptr;
     
     for (i = 0; i < m_ptr->child_num; i++)	/* 子供の再帰処理 */
 	if (check_para_d_struct(sp, m_ptr->child[i]) == FALSE)

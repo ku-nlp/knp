@@ -64,7 +64,6 @@ int	TEIDAI_STEP	= 2;
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
-	int i;
 
 	/* 作業cmm領域確保 */
 	Cf_match_mgr = 
@@ -374,7 +373,6 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest)
 
 	/* 文脈解析ではないときは、すべての格のスコアを正規化したものにする */
 	if (closest > -1 && OptDisc != OPT_DISC) {
-	    int score;
 	    for (i = 0; i < cpm_ptr->result_num; i++) {
 		/* 割り当て失敗のとき(score==-1)は、pure_score は定義されていない */
 		/* 入力側に任意格しかなく割り当てがないとき(score==0)は、分子分母ともに0になる */
@@ -545,7 +543,7 @@ CPM_CACHE *CPMcache[TBLSIZE];
 }
 
 /*==================================================================*/
-		int RegisterCPM(CF_PRED_MGR *cpm_ptr)
+		void RegisterCPM(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     int num;
@@ -997,7 +995,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 
     for (i = sp->Bnst_num-1; i > 0; i--) {
 	/* 文末から用言ごとに提題を処理する */
-	if (cp = (char *)check_feature((sp->bnst_data+i)->f, "提題受")) {
+	if ((cp = (char *)check_feature((sp->bnst_data+i)->f, "提題受"))) {
 
 	    /* topic_slot[0]	時間以外のハ格のスロット
 	       topic_slot[1]	「<<時間>>は」のスロット
@@ -1101,7 +1099,7 @@ int all_case_analysis(SENTENCE_DATA *sp, BNST_DATA *b_ptr, TOTAL_MGR *t_ptr)
 		void fix_sm_person(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, num;
+    int i;
 
     /* 人名のとき: 
        o 一般名詞体系の<主体>以下の意味素を削除

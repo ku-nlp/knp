@@ -127,7 +127,6 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 {
     FILE     *fp;
     CELL     *body_cell;
-    REGEXPMRPHS *pattern_bp;
     KoouRule  *rp = KoouRuleArray;
 
     /* 重複してルールファイルが指定されているとき */
@@ -189,7 +188,6 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     FILE     *fp;
     CELL     *body_cell;
     HomoRule  *rp = HomoRuleArray;
-    FEATURE   **fpp;	
 
     /* 重複してルールファイルが指定されているとき */
     if (CurHomoRuleSize) {
@@ -243,7 +241,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 {
     FILE     *fp;
     CELL     *body_cell;
-    FEATURE   **fpp;	
 
     /* 重複してルールファイルが指定されているとき */
     if (*count) {
@@ -299,7 +296,6 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     FILE	*fp;
     CELL	*body_cell, *loop_cell;
     DpndRule	*rp = DpndRuleArray;
-    FEATURE	**fpp;	
 
     /* 重複してルールファイルが指定されているとき */
     if (CurDpndRuleSize) {

@@ -556,21 +556,23 @@ extern float	AssignReferentThreshold;
 }
 
 /*==================================================================*/
-	  int main_analysis(SENTENCE_DATA *sp, FILE *input)
+      int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input)
 /*==================================================================*/
 {
     int flag, i;
     int relation_error, d_struct_error;
-    char *code;
 
     sp->Sen_num ++;
+
+    /* 形態素の読み込み */
 
     if ((flag = read_mrph(sp, input)) == EOF) return EOF;
     if (flag == FALSE) return FALSE;
 
-    /* 形態素への意味情報付与 */
+    /* 形態素への意味情報付与 (固有表現解析のとき) */
 
     if ((OptNE == OPT_NE || OptNE == OPT_NESM) && SMExist == TRUE) {
+	char *code;
 	for (i = 0; i < sp->Mrph_num; i++) {
 	    code = get_sm(sp->mrph_data[i].Goi);
 	    if (code) {
@@ -779,7 +781,7 @@ PARSED:
 
     memo_by_program(sp);	/* メモへの書き込み */
 
-    /* チェック用 */
+    /* 係り先候補数チェック用 */
     if (OptCheck == TRUE)
 	CheckCandidates(sp);
 
@@ -806,7 +808,8 @@ PARSED:
     init_cf2(sp);
     init_case_analysis();
 
-    /* ルール読み込み */
+    /* ルール読み込み
+       Server Mode において、読み込むルールの変更がありえるので、ここで行う */
     read_rules();
 
     while ( 1 ) {
@@ -814,7 +817,7 @@ PARSED:
 	/* Server Mode の場合 前回の出力が成功してない場合は 
 	   ERROR とはく Server/Client モードの場合は,出力の同期をこれで行う */
 	if (!success && OptMode == SERVER_MODE) {
-	    fprintf(Outfp,"EOS ERROR\n");
+	    fprintf(Outfp, "EOS ERROR\n");
 	    fflush(Outfp);
 	}
 
@@ -900,11 +903,11 @@ PARSED:
 #ifdef INTEGRATE_JUMAN
 	if (OptJuman == OPT_JUMAN) {
 	    if ((Jumanfp = JumanSentence(Infp)) == NULL) break;
-	    if ((flag = main_analysis(sp, Jumanfp)) == EOF) break;
+	    if ((flag = one_sentence_analysis(sp, Jumanfp)) == EOF) break;
 	}
 	else
 #endif
-	    if ((flag = main_analysis(sp, Infp)) == EOF) break;
+	    if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
 
 	if (flag == FALSE) continue;
 
@@ -983,14 +986,14 @@ PARSED:
   
     /* bind */  
     if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	fprintf(stderr,"bind Error\n");
+	fprintf(stderr, "bind Error\n");
 	close(sfd);
 	exit(1);
     }
   
     /* listen */  
     if (listen(sfd, SOMAXCONN) < 0) {
-	fprintf(stderr,"listen Error\n");
+	fprintf(stderr, "listen Error\n");
 	close(sfd);
 	exit(1);
     }
@@ -1002,7 +1005,7 @@ PARSED:
 	if((fd = accept(sfd, NULL, NULL)) < 0) {
 	    if (errno == EINTR) 
 		continue;
-	    fprintf(stderr,"accept Error\n");
+	    fprintf(stderr, "accept Error\n");
 	    close(sfd);
 	    exit(1);
 	}
@@ -1046,8 +1049,8 @@ PARSED:
 		}
 
 		/* RUN */
-		/* Option 解析は strstr なんかでかなりええかげん 
-		   つまり間違ったオプションはエラーにならん... */
+		/* Option 解析は strstr なんかでかなりいいかげん 
+		   つまり間違ったオプションはエラーにならない */
 		if (strncasecmp(buf, "RUN", 3) == 0) {
 		    char *p;
 
@@ -1062,20 +1065,20 @@ PARSED:
 		    if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
 		    if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
 		    if (strstr(buf, "-expand")) OptExpandP = TRUE;
-		    /* うーん 引数とるのは困るんだなぁ..
+		    /* 引数とるのは困るんだなぁ..
 		       とおもいつつかなり強引... */
 		    if ((p = strstr(buf, "-i")) != NULL) {
 			p += 3;
 			while(*p != '\0' && (*p == ' ' || *p == '\t')) p++;
 			if (*p != '\0') OptIgnoreChar = *p;
 		    } 
-		    fprintf(Outfp,"200 OK option=[Analysis=%d Express=%d"
+		    fprintf(Outfp, "200 OK option=[Analysis=%d Express=%d"
 			    " Display=%d IgnoreChar=%c]\n",
-			    OptAnalysis,OptExpress,OptDisplay,OptIgnoreChar);
+			    OptAnalysis, OptExpress, OptDisplay, OptIgnoreChar);
 		    fflush(Outfp);
 		    break;
 		} else {
-		    fprintf(Outfp,"500 What?\n");
+		    fprintf(Outfp, "500 What?\n");
 		    fflush(Outfp);
 		}
 	    }
@@ -1084,7 +1087,7 @@ PARSED:
 	    knp_main();
 
 	    /* 後処理 */
-	    shutdown(fd,2);
+	    shutdown(fd, 2);
 	    fclose(Infp);
 	    fclose(Outfp);
 	    close(fd);
@@ -1100,12 +1103,12 @@ PARSED:
 			  void client_mode()
 /*==================================================================*/
 {
-    /* クライアントモード */
+    /* クライアントモード (TCP/IPで接続するだけ) */
 
     struct sockaddr_in sin;
     struct hostent *hp;
     int fd;
-    FILE *fi,*fo;
+    FILE *fi, *fo;
     char *p;
     char buf[1024*8];
     char option[1024];
@@ -1115,15 +1118,15 @@ PARSED:
     /* 文字列を送って、ステータスコードを返す */  
     int send_string(char *str)
 	{
-	    int len,result = 0;
+	    int len, result = 0;
 	    char buf[1024];
     
 	    if (str != NULL){
-		fwrite(str,sizeof(char),strlen(str),fo);
+		fwrite(str, sizeof(char), strlen(str), fo);
 		fflush(fo);
 	    }
 
-	    while (fgets(buf,sizeof(buf)-1,fi) != NULL){
+	    while (fgets(buf, sizeof(buf)-1, fi) != NULL){
 		len = strlen(buf);
 		if (len >= 3 && buf[3] == ' ') {
 		    buf[3] = '\0';
@@ -1143,12 +1146,12 @@ PARSED:
 
     /* つなげる準備 */
     if ((hp = gethostbyname(OptHostname)) == NULL) {
-	fprintf(stderr,"host unkown\n");
+	fprintf(stderr, "host unkown\n");
 	exit(1);
     }
   
-    while ((fd = socket(AF_INET,SOCK_STREAM,0 )) < 0 ){
-	fprintf(stderr,"socket error\n");
+    while ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
+	fprintf(stderr, "socket error\n");
 	exit(1);
     }
   
@@ -1156,74 +1159,74 @@ PARSED:
     sin.sin_port   = htons(port);
     sin.sin_addr = *((struct in_addr * )hp->h_addr);
 
-    if (connect(fd,(struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	fprintf(stderr,"connect error\n");
+    if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	fprintf(stderr, "connect error\n");
 	exit(1);
     }
 
     /* Server 用との通信ハンドルを作成 */
     if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
-	close (fd);
-	fprintf(stderr,"fd error\n");
+	close(fd);
+	fprintf(stderr, "fd error\n");
 	exit(1);
     }
 
     /* 挨拶 */
     if (send_string(NULL) != 200) {
-	fprintf(stderr,"greet error\n");
+	fprintf(stderr, "greet error\n");
 	exit(1);
     }
 
     /* オプション解析 (いいかげん) */
     option[0] = '\0';
     switch (OptAnalysis) {
-    case OPT_CASE: strcat(option," -case"); break;
-    case OPT_DPND: strcat(option," -dpnd"); break;
-    case OPT_BNST: strcat(option," -bnst"); break;
+    case OPT_CASE: strcat(option, " -case"); break;
+    case OPT_DPND: strcat(option, " -dpnd"); break;
+    case OPT_BNST: strcat(option, " -bnst"); break;
     }
 
     switch (OptExpress) {
-    case OPT_TREE: strcat(option," -tree"); break;
-    case OPT_SEXP: strcat(option," -sexp"); break;
-    case OPT_TAB:  strcat(option," -tab");  break;
+    case OPT_TREE: strcat(option, " -tree"); break;
+    case OPT_SEXP: strcat(option, " -sexp"); break;
+    case OPT_TAB:  strcat(option, " -tab");  break;
     }
 
     switch (OptDisplay) {
-    case OPT_NORMAL: strcat(option," -normal"); break;
-    case OPT_DETAIL: strcat(option," -detail"); break;
-    case OPT_DEBUG:  strcat(option," -debug");  break;
+    case OPT_NORMAL: strcat(option, " -normal"); break;
+    case OPT_DETAIL: strcat(option, " -detail"); break;
+    case OPT_DEBUG:  strcat(option, " -debug");  break;
     }
     
-    if (OptExpandP) strcat(option," -expand");
+    if (OptExpandP) strcat(option, " -expand");
     if (!OptIgnoreChar) {
-	sprintf(buf," -i %c",OptIgnoreChar);
-	strcat(option,buf);
+	sprintf(buf, " -i %c", OptIgnoreChar);
+	strcat(option, buf);
     }
 
     /* これから動作 */
-    sprintf(buf,"RUN%s\n",option);
+    sprintf(buf, "RUN%s\n", option);
     if (send_string(buf) != 200) {
-	fprintf(stderr,"argument error OK? [%s]\n",option);
+	fprintf(stderr, "argument error OK? [%s]\n", option);
 	close(fd);
 	exit(1);
     }
 
     /* LOOP */
     strnum = 0;
-    while (fgets(buf,sizeof(buf),stdin) != NULL) {
-	if (strncmp(buf,"EOS",3) == 0) {
+    while (fgets(buf, sizeof(buf), stdin) != NULL) {
+	if (strncmp(buf, "EOS", 3) == 0) {
 	    if (strnum != 0) {
-		fwrite(buf,sizeof(char),strlen(buf),fo);
+		fwrite(buf, sizeof(char), strlen(buf), fo);
 		fflush(fo);
 		strnum = 0;
-		while (fgets(buf,sizeof(buf),fi) != NULL) {
-		    fwrite(buf,sizeof(char),strlen(buf),stdout);
+		while (fgets(buf, sizeof(buf), fi) != NULL) {
+		    fwrite(buf, sizeof(char), strlen(buf), stdout);
 		    fflush(stdout);
-		    if (strncmp(buf,"EOS",3) == 0)  break;
+		    if (strncmp(buf, "EOS", 3) == 0)  break;
 		}
 	    }
 	} else {
-	    fwrite(buf,sizeof(char),strlen(buf),fo);
+	    fwrite(buf, sizeof(char), strlen(buf), fo);
 	    fflush(fo);
 	    strnum++;
 	}

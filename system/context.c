@@ -969,7 +969,7 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithSVM(SENTENCE_DATA *cs, ELLIPSI
 	renkaku = 0;
     }
 
-    if (b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr)) {
+    if ((b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr))) {
 	if (check_feature(b_ptr->f, "外の関係")) {
 	    soto1 = 1;
 	}
@@ -1066,8 +1066,7 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
 					      BNST_DATA *bp, CASE_FRAME *cf_ptr, int n, int type)
 /*==================================================================*/
 {
-    float score, weight, ascore, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
-    float addscore = 0;
+    float score, weight, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
     char feature_buffer[50000], *cp;
     int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
     int exception = 0, pos = MATCH_NONE, casematch, candagent, scopeflag, passive, headscope;
@@ -1302,7 +1301,7 @@ void _EllipsisDetectForVerbSubcontractWithSVM(SENTENCE_DATA *s, SENTENCE_DATA *c
     }
 
     /* critical!! (★本当の親を求める必要がある) */
-    if (b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr)) {
+    if ((b_ptr = GetRealParent(cs, cpm_ptr->pred_b_ptr))) {
 	if (check_feature(b_ptr->f, "外の関係")) {
 	    soto1 = 1;
 	}
@@ -1482,7 +1481,7 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
 				       BNST_DATA *bp, CASE_FRAME *cf_ptr, int n, int type)
 /*==================================================================*/
 {
-    float score, weight, ascore, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
+    float score, weight, pascore, pcscore, mcscore, rawscore, topicscore, distscore;
     float addscore = 0;
     char feature_buffer[DATA_LEN];
     int ac, pac, pcc, pcc2, mcc, topicflag, distance, agentflag, firstsc, subtopicflag, sameflag;
@@ -2049,7 +2048,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    if (cp = check_feature(cpm_ptr->pred_b_ptr->f, "照応ヒント")) {
+    if ((cp = check_feature(cpm_ptr->pred_b_ptr->f, "照応ヒント"))) {
 	if (str_eq(cp, "照応ヒント:係")) {
 	    /* 係り先の用言に係る格要素をみる (サ変名詞のとき) */
 	    SearchCaseComponent(cs, em_ptr, cpm_ptr, cmm_ptr, 
@@ -2116,7 +2115,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		}
 
 		/* A の B を 〜 V */
-		if (cp = check_feature((s->bnst_data+i)->f, "省略候補チェック")) {
+		if ((cp = check_feature((s->bnst_data+i)->f, "省略候補チェック"))) {
 		    if ((s->bnst_data+i+atoi(cp+17))->dpnd_head == cpm_ptr->pred_b_ptr->num) {
 			RegisterAnaphor(banlist, (s->bnst_data+i)->Jiritu_Go);
 			continue;
@@ -2683,7 +2682,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 			  CF_PRED_MGR *bp, CF_MATCH_MGR *b)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
 
     /* 異なる場合は 1 を返す */
 
@@ -2746,8 +2745,8 @@ int CompareAssignList(ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm, CF_MATCH_MGR *cmm)
 }
 
 /*==================================================================*/
-int FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm_ptr, 
-			 char **order, int mainflag)
+void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm_ptr, 
+			  char **order, int mainflag)
 /*==================================================================*/
 {
     int k, l, frame_num;
@@ -2874,7 +2873,7 @@ int FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *cp
 	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, l, num, lastflag = 1, mainflag, anum;
+    int i, j, k, lastflag = 1, mainflag, anum;
     float score;
     ELLIPSIS_MGR workem, maxem;
     SENTENCE_DATA *sp_new;
@@ -3017,8 +3016,6 @@ int FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem, CF_PRED_MGR *cp
 
 	    /* 文脈解析において格フレームを決定した場合 */
 	    if (cpm_ptr->decided != CF_DECIDED) {
-		SENTENCE_DATA *cs;
-		int bn;
 		assign_gaga_slot(sp, cpm_ptr);
 		assign_ga_subject(sp, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		/* fix_sm_place(sp, cpm_ptr); */

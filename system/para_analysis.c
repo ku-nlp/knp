@@ -35,7 +35,7 @@ extern QUOTE_DATA quote_data;
 	void mask_quote_scope(SENTENCE_DATA *sp, int key_pos)
 /*==================================================================*/
 {
-    int i, j, k, l, start, end;
+    int i, j, k, l;
 
     /* 括弧がある場合に並列構造の範囲に制限を設ける */
 
@@ -293,11 +293,11 @@ void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
     else {
 	sim_threshold = 100.0;
 	nth = 0;
-	while (fp = (ptr->f_pattern).fp[nth]) {
+	while ((fp = (ptr->f_pattern).fp[nth])) {
 	    if (feature_AND_match(fp, sp->bnst_data[jend_pos].f,
 				  sp->bnst_data + key_pos,
 				  sp->bnst_data + jend_pos) == TRUE) {
-		if (cp = (char *)check_feature(fp, "&ST")) {
+		if ((cp = (char *)check_feature(fp, "&ST"))) {
 		    sscanf(cp, "&ST:%f", &new_threshold);
 		} else {
 		    new_threshold = 0.0;
@@ -469,8 +469,8 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    sp->para_data[sp->Para_num].para_char = 'a'+ sp->Para_num;
 	    sp->para_data[sp->Para_num].key_pos = i;
 
-	    type[0] = NULL;
-	    condition[0] = NULL;
+	    type[0] = '\0';
+	    condition[0] = '\0';
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
 	    if (!strncmp(type, "名", 2)) {

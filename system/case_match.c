@@ -95,7 +95,7 @@ int	Thesaurus = USE_NTT;
        flag == SM_CHECK_FULL   : コードの一文字目からチェックする
      */
 
-    int i, current_score, score = 0;
+    int current_score, score = 0;
     char *cp;
 
     if (flag == SM_CHECK_FULL)

@@ -10,7 +10,7 @@
 
 static char buffer[DATA_LEN];
 char CorpusComment[BNST_MAX][DATA_LEN];
-static DBM_FILE c_db, cc_db, op_db, op_sm_db, cp_db, wc_db, c_temp_db;
+static DBM_FILE c_db, cc_db, op_db, op_sm_db, cp_db, c_temp_db;
 
 extern char *ClauseDBname;
 extern char *ClauseCDBname;
@@ -232,7 +232,7 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 	else */
 
 	if (!score && !score2) {
-	    if (sparse = (char *)check_feature(ptr1->f, "SPARSE"))
+	    if ((sparse = (char *)check_feature(ptr1->f, "SPARSE")))
 		sprintf(buffer, "%s:%d%c", sparse, ptr2->num, parallel1);
 	    else
 		sprintf(buffer, "SPARSE:%d%c", ptr2->num, parallel1);
@@ -672,9 +672,9 @@ void close_optional_case()
 /* 任意格からの係り受け頻度を調べる関数 */
 int corpus_optional_case_comp(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus)
 {
-    int i, j, k, score, flag, pos1, pos2, firstscore = 0, special = 0, smcore = 0;
+    int i, j, k, score, flag, pos1, pos2, firstscore = 0, special = 0;
     int fukugojiflag = 0;
-    char *cp1 = NULL, *cp2 = NULL, *cp, *sm, backup, *string = NULL;
+    char *cp1 = NULL, *cp2 = NULL, *cp;
 
     /* 文節番号 */
     pos1 = ptr1->num;
@@ -923,9 +923,9 @@ void optional_case_evaluation(SENTENCE_DATA *sp)
 /* 実験 (強弱関係を一次元リストにした場合)*/
 int temp_corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 {
-    char *type1, *type2, *cp, *token, *type, *level1, *level2;
-    char parallel1, parallel2, touten1, touten2, touten;
-    int score1, score2, score3, offset, i;
+    char *type1, *type2, *level1, *level2;
+    char parallel1, parallel2, touten1, touten2;
+    int score1, score2, offset;
 
     /* para_flag == TRUE  : 並列を考慮 (並列解析まえの呼び出しでは意味がない)
        para_flag == FALSE : 並列を無視 */
@@ -1020,7 +1020,7 @@ void CheckChildCaseFrame(SENTENCE_DATA *sp) {
 
 /* これより下 Unsupervised 関連 (未整理) */
 
-int _make_sm_frame(char *buf, char *delimiter, _SMCaseFrame* cf) {
+void _make_sm_frame(char *buf, char *delimiter, _SMCaseFrame* cf) {
     char *token;
 
     token = strtok_r(buf, delimiter, &buf);
@@ -1039,7 +1039,7 @@ int _make_sm_frame(char *buf, char *delimiter, _SMCaseFrame* cf) {
     }
 }
 
-int make_sm_frame(char *buf, char *delimiter, SMCaseFrame* cf) {
+void make_sm_frame(char *buf, char *delimiter, SMCaseFrame* cf) {
     char *token, *cp;
 
     token = strtok_r(buf, delimiter, &buf);
@@ -1134,9 +1134,9 @@ char *get_unsupervised_data(DBM_FILE db, char *key, char c, char p) {
 /* 意味素の係り受け頻度を調べる関数 */
 float CorpusSMDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target)
 {
-    int i, j, k, flag, pos1, pos2, special = 0, smcore = 0;
+    int i, j, k, pos1, pos2;
     int fukugojiflag = 0;
-    char *cp2 = NULL, *cp, *sm, *string = NULL, causative = 0, passive = 0;
+    char *cp2 = NULL, *cp, *string = NULL, causative = 0, passive = 0;
     float score = 0;
 
     /* 文節番号 */
@@ -1195,7 +1195,7 @@ float CorpusSMDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case
 	    strcat(cp2, (ptr2->jiritu_ptr+k)->Goi);
 
 	/* DB 検索 */
-	if (string = get_unsupervised_data(op_sm_db, cp2, causative, passive))
+	if ((string = get_unsupervised_data(op_sm_db, cp2, causative, passive)))
 	    break; /* あれば break */
     }
 
@@ -1261,7 +1261,7 @@ float get_unsupervised_num(DBM_FILE db, char *cp1, char *case1, char *cp2, char 
 
 /* 事例の係り受け頻度を返す関数 */
 float CorpusExampleDependencyFrequency(SENTENCE_DATA *sp, BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2, CORPUS_DATA *corpus, int target) {
-    int i, k, score, flag, pos1, pos2, count, special = 0;
+    int i, k, score, flag, pos1, pos2, special = 0;
     int fukugojiflag = 0;
     char *cp1, *cp2, *cp;
     float maxscore = 0, tempscore;

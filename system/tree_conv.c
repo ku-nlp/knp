@@ -175,7 +175,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
     BNST_DATA *new_ptr, *end_ptr, *pre_end_ptr;
 
     /* 並列をまとめるノードの挿入
@@ -275,7 +275,6 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 {
     int i, j, para_pos;
     int new_num, child_num;
-    int find_type = FALSE, incomp_type = -1;
     BNST_DATA *para_ptr, *new_ptr;
     BNST_DATA *pre_childs[10], *pos_childs[10];
 

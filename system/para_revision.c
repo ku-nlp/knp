@@ -59,7 +59,7 @@ static int judge_matrix_pre_str[4][4] = { /* 前が強並列 */
 {
     /* 制限行列の処理 */
 
-    int i, rel_pre, rel_pos;
+    int rel_pre, rel_pos;
     
     switch ( flag ) {
       case REVISE_SPRE: case REVISE_PRE:

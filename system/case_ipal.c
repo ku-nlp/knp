@@ -232,7 +232,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     }
 
     point = cp; 
-    while (point = extract_ipal_str(point, ipal_str_buf)) {
+    while ((point = extract_ipal_str(point, ipal_str_buf))) {
 	if (pp_num == 0 && c_ptr->oblig[num] == END_M) {
 	    if (str_eq(ipal_str_buf, "ガ") || 
 		str_eq(ipal_str_buf, "ヲ") || 
@@ -258,8 +258,8 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 {
     /* 意味マーカの読みだし */
 
-    unsigned char *point, *loc;
-    int i, sm_num = 0, length = 0, mlength, sm_delete_sm_max = 0;
+    unsigned char *point;
+    int sm_num = 0, length = 0, mlength, sm_delete_sm_max = 0;
     char buf[SM_ELEMENT_MAX*SM_CODE_SIZE], *sm_delete_sm = NULL, *temp;
 
     if (*cp == '\0') {
@@ -268,7 +268,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     point = cp;
     buf[0] = '\0';
-    while (point = extract_ipal_str(point, ipal_str_buf)) {
+    while ((point = extract_ipal_str(point, ipal_str_buf))) {
 	/* 使ってはいけない意味素 */
         if (ipal_str_buf[0] == '-') {
 	    if (c_ptr->sm_delete[num] == NULL) {
@@ -407,7 +407,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     /* 例の読みだし */
 
     unsigned char *point, *point2;
-    int i, max, count = 0, length = 0;
+    int max, count = 0, length = 0;
     char *code, **destination, *buf;
     extern char *get_bgh();
     extern char *get_sm();
@@ -434,7 +434,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     point = cp;
     *buf = '\0';
-    while (point = extract_ipal_str(point, ipal_str_buf)) {
+    while ((point = extract_ipal_str(point, ipal_str_buf))) {
 	point2 = ipal_str_buf;
 
 	/* 「ＡのＢ」の「Ｂ」だけを処理
@@ -525,8 +525,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     unsigned char *point;
 
     point = cp;
-    while (point = extract_ipal_str(point, ipal_str_buf))
-      if (!strcmp(ipal_str_buf, "Ａ")) return TRUE;
+    while ((point = extract_ipal_str(point, ipal_str_buf)))
+	if (!strcmp(ipal_str_buf, "Ａ")) return TRUE;
     return FALSE;
 }
 
@@ -733,10 +733,10 @@ int _make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start,
     if (!address_str)
 	return f_num;
 
-    if (vtype = check_feature(b_ptr->f, "用言")) {
+    if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
     }
-    else if (vtype = check_feature(b_ptr->f, "準用言")) {
+    else if ((vtype = check_feature(b_ptr->f, "準用言"))) {
 	;
     }
 
@@ -896,9 +896,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
  int make_ipal_cframe(SENTENCE_DATA *sp, BNST_DATA *b_ptr, int start)
 /*==================================================================*/
 {
-    int f_num = 0, plus_num, i, j;
+    int f_num = 0, i;
     char *verb, buffer[3][WORD_LEN_MAX];
-    BNST_DATA *pre_ptr;
 
     /* 自立語末尾語を用いて格フレーム辞書を引く */
 

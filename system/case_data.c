@@ -68,7 +68,7 @@ char *FukugojiTable[] = {"を除く", "をのぞく",
 BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, num, pp_num = 0, jiritsu_num = 0, closest = FALSE;
+    int pp_num = 0, jiritsu_num = 0, closest = FALSE;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     if (b_ptr) {
@@ -405,7 +405,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
    void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, sm_num = 0, qua_flag = FALSE, tim_flag = FALSE;
+    int sm_num = 0;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     /* 格要素 -- 文 */
@@ -466,10 +466,10 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     BNST_DATA *cel_b_ptr;
-    int i, j, k, child_num;
+    int i, child_num;
     char *vtype = NULL;
 
-    if (vtype = check_feature(b_ptr->f, "用言")) {
+    if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
 	strcpy(cpm_ptr->cf.ipal_id, vtype);
     }
@@ -558,7 +558,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 
     for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
-	if (cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i])) {
+	if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i]))) {
 	    /* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
 	       「みかんを三個食べる」 の場合はそのまま両方格要素になる
 	     */
@@ -606,7 +606,7 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	}
 	for (i = 0; b_ptr->parent->child[i]; i++) {
 	    if (b_ptr->parent->child[i]->para_type == PARA_NIL) {
-		if (cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->parent->child[i])) {
+		if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->parent->child[i]))) {
 		    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
 		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
@@ -662,8 +662,6 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /* ヴォイスの設定 */ /* ★★★ 修正必要 ★★★ */
-
-    int i;
 
     if (check_feature(b_ptr->f, "〜せる") ||
 	check_feature(b_ptr->f, "〜させる")) {

@@ -897,9 +897,8 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
      *  プログラムによるメモへの書き込み
      */
 
-    int i;
-
     /* 緩和をメモに記録する場合
+    int i;
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
 	if (sp->Best_mgr->dpnd.type[i] == 'd') {

@@ -125,7 +125,7 @@ int		ScaseDicExist;
 		    if (ptr->num > 0) {
 			cp = check_feature((ptr-1)->f, "ทธ");
 			if (cp && (ptr-1)->jiritu_ptr != NULL) {
-			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1)), cp+3, predicate, vtype);
+			    sprintf(str_buffer, "%s:%s:%s:%s", L_Jiritu_M((ptr-1))->Goi, cp+3, predicate, vtype);
 			    ans = get_scase(str_buffer);
 			}
 		    }

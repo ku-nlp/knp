@@ -78,7 +78,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	      void init_para_manager(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
 
     sp->Para_M_num = 0;
 
@@ -258,7 +258,6 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
     /* 並列構造間の関係の整理 */
 
     int i, j, k, flag;
-    int a1, a2, a3, b1, b2, b3;
     PARA_MANAGER *m_ptr, *m_ptr1, *m_ptr2;
     char buffer1[64], buffer2[64];
 

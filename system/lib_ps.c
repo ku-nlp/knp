@@ -301,8 +301,7 @@ void show_link2ps(int depth, char *ans_flag, int para_flag, int x_pos)
 void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 /*==================================================================*/
 {
-    int i, j, comb_count = 0, c_count = 0;
-    BNST_DATA *ptr_buffer[10], *child_buffer[10];
+    int i, j;
     char ans_flag[BNST_MAX];
 
     if (ans_flag_p) {

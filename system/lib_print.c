@@ -236,9 +236,8 @@ char pos2symbol(char *hinshi, char *bunrui)
 		void print_bnst_detail(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
     MRPH_DATA *m_ptr;
-    char *cp;
      
     fputc('(', Outfp);	/* 文節始り */
 
@@ -270,7 +269,7 @@ char pos2symbol(char *hinshi, char *bunrui)
 	fprintf(Outfp, " ");
 	print_feature2(ptr->f, Outfp);
 
-	if (OptAnalysis = OPT_DPND ||
+	if (OptAnalysis == OPT_DPND ||
 	    !check_feature(ptr->f, "用言") ||	/* 用言でない場合 */
 	    ptr->cpm_ptr == NULL) { 		/* 解析前 */
 	    fprintf(Outfp, " NIL");
@@ -423,7 +422,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
      void print_matrix(SENTENCE_DATA *sp, int type, int key_pos)
 /*==================================================================*/
 {
-    int i, j, space, length;
+    int i, j, length;
     int over_flag = 0;
     int max_length = 0;
     int para_char = 0;     /* para_key の表示用 */
@@ -563,7 +562,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 void print_para_manager(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int level)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
     
     for (i = 0; i < level * 5; i++)
 	fputc(' ', Outfp);
@@ -700,8 +699,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
        そうでなければ '1'(この場合枝の描画が必要)
     */
 
-    int i, j, comb_count = 0, c_count = 0;
-    BNST_DATA *ptr_buffer[10], *child_buffer[10];
+    int i, j;
     char ans_flag[BNST_MAX];
 
     if (ans_flag_p) {
@@ -761,8 +759,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	 void show_sexp(BNST_DATA *ptr, int depth, int pars)
 /*==================================================================*/
 {
-    int i, j, comb_count = 0, c_count = 0;
-    BNST_DATA *ptr_buffer[10], *child_buffer[10];
+    int i;
 
     for (i = 0; i < depth; i++) fputc(' ', Outfp);
     fprintf(Outfp, "(");

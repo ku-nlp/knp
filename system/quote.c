@@ -50,7 +50,7 @@ QUOTE_DATA quote_data;
       "﹣﹣﹣﹣﹣﹣﹣﹣﹣﹣﹣﹣＝‘‘"  卅升及由正□件卞覆質
     */
 
-    int i, j, k, stack[QUOTE_MAX], s_num, quote_p = FALSE;
+    int i, k, stack[QUOTE_MAX], s_num, quote_p = FALSE;
 
     k = 0;
     s_num = -1;
@@ -193,7 +193,7 @@ QUOTE_DATA quote_data;
 
     init_quote(sp);
 
-    if (quote_p = check_quote(sp)) {	/* 傢喟裡及腹請 */
+    if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
 	if (quote_p == CONTINUE) return quote_p;
 
 	if (OptDisplay == OPT_DEBUG) print_quote();

@@ -83,7 +83,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     REGEXPMRPHS *tmp;
-    int i;
     
     if (!(tmp = (REGEXPMRPHS *)malloc(sizeof(REGEXPMRPHS)))) {
 	fprintf(stderr, "Can't allocate memory for REGEXPMRPHS\n");
@@ -115,7 +114,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     REGEXPBNSTS *tmp;
-    int i;
     
     if (!(tmp = (REGEXPBNSTS *)malloc(sizeof(REGEXPBNSTS)))) {
 	fprintf(stderr, "Can't allocate memory for REGEXPBNSTS\n");
@@ -276,7 +274,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     int mrph_num = 0;
-    REGEXPMRPH *mrph;
     
     if (cell == NULL) {
 	*mspp = NULL;
@@ -350,7 +347,6 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     int bnst_num = 0;
-    REGEXPBNST *bnst;
     
     if (cell == NULL) {
 	*bspp = NULL;
@@ -534,7 +530,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 {
     /* 形態素列に対してもfeatureを与えられるように変更 99/04/09 */
 
-    int ret, step, return_num;
+    int step, return_num;
 
     (fw_or_bw == FW_MATCHING) ? (step = 1) : (step = -1);
 
@@ -732,7 +728,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 				 int short_or_long)
 /*==================================================================*/
 {
-    int ret, step, return_num;
+    int step, return_num;
 
     (fw_or_bw == FW_MATCHING) ? (step = 1) : (step = -1);
 

@@ -235,7 +235,7 @@ int		SMP2SMGExist;
     char *code;
     unsigned char *hira;
 
-    if (code = _get_sm(cp)) {
+    if ((code = _get_sm(cp))) {
 	return code;
     }
 
