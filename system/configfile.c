@@ -347,6 +347,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* 新たなシソーラス */
 	else if (!strcmp(DEF_THESAURUS, _Atom(car(cell1)))) {
 	    int i;
 	    cell1 = cdr(cell1);
@@ -360,6 +361,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* 格解析用シソーラス */
 	else if (!strcmp(DEF_CASE_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -369,21 +371,24 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		int i;
 
 		Thesaurus = USE_NONE;
-		for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
-		    if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
-			Thesaurus = i;
-			if (OptDisplay == OPT_DEBUG) {
-			    fprintf(Outfp, "Thesaurus for case analysis ... %s\n", THESAURUS[i].name);
+		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONEではないとき */
+		    for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
+			if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
+			    Thesaurus = i;
+			    if (OptDisplay == OPT_DEBUG) {
+				fprintf(Outfp, "Thesaurus for case analysis ... %s\n", THESAURUS[i].name);
+			    }
+			    break;
 			}
-			break;
 		    }
-		}
-		if (Thesaurus == USE_NONE) {
-		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
-		    exit(0);
+		    if (Thesaurus == USE_NONE) {
+			fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+			exit(0);
+		    }
 		}
 	    }
 	}
+	/* 並列解析用シソーラス */
 	else if (!strcmp(DEF_PARA_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -393,18 +398,20 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		int i;
 
 		ParaThesaurus = USE_NONE;
-		for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
-		    if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
-			ParaThesaurus = i;
-			if (OptDisplay == OPT_DEBUG) {
-			    fprintf(Outfp, "Thesaurus for para analysis ... %s\n", THESAURUS[i].name);
+		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONEではないとき */
+		    for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
+			if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
+			    ParaThesaurus = i;
+			    if (OptDisplay == OPT_DEBUG) {
+				fprintf(Outfp, "Thesaurus for para analysis ... %s\n", THESAURUS[i].name);
+			    }
+			    break;
 			}
-			break;
 		    }
-		}
-		if (ParaThesaurus == USE_NONE) {
-		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
-		    exit(0);
+		    if (ParaThesaurus == USE_NONE) {
+			fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+			exit(0);
+		    }
 		}
 	    }
 	}

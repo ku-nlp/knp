@@ -19,7 +19,7 @@ int	ParaThesaurus = USE_BGH;
     char *filename;
 
     /* tentative: 新しいシソーラスはNTTと排他的 */
-    if (Thesaurus != USE_BGH && Thesaurus != USE_NTT && 
+    if (Thesaurus != USE_NONE && Thesaurus != USE_BGH && Thesaurus != USE_NTT && 
 	ParaThesaurus == USE_NTT) {
 	ParaThesaurus = Thesaurus;
 	if (OptDisplay == OPT_DEBUG) {
@@ -27,7 +27,7 @@ int	ParaThesaurus = USE_BGH;
 	}
 	
     }
-    else if (ParaThesaurus != USE_BGH && ParaThesaurus != USE_NTT && 
+    else if (ParaThesaurus != USE_NONE && ParaThesaurus != USE_BGH && ParaThesaurus != USE_NTT && 
 	     Thesaurus == USE_NTT) {
 	Thesaurus = ParaThesaurus;
 	if (OptDisplay == OPT_DEBUG) {
