@@ -210,6 +210,8 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define LtoR		1
 #define RtoL		-1
 
+#define	CF_DECIDE_THRESHOLD	7
+
 /*====================================================================
 				  ?
 ====================================================================*/
@@ -881,7 +883,9 @@ typedef struct ellipsis_svm_features {
     float	event1;
     float	event2;
 #endif
+#ifndef DISC_DONT_USE_FREQ
     float	frequency;
+#endif
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST

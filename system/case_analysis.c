@@ -407,7 +407,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
     /* 文脈解析: 直前格要素のスコアが閾値以上なら格フレームを決定 */
     if (decide) {
 	if (OptEllipsis) {
-	    if (closest > -1 && cpm_ptr->score > 7) {
+	    if (closest > -1 && cpm_ptr->score > CF_DECIDE_THRESHOLD) {
 		if (cpm_ptr->tie_num > 1) {
 		    cpm_ptr->decided = CF_CAND_DECIDED;
 		}

@@ -1065,9 +1065,17 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     char *buffer, *sbuf;
 
 #ifdef DISC_USE_EVENT
+#ifndef DISC_DONT_USE_FREQ
     prenum = 4;
 #else
+    prenum = 3;
+#endif
+#else
+#ifndef DISC_DONT_USE_FREQ
     prenum = 2;
+#else
+    prenum = 1;
+#endif
 #endif
 
     /* 桁数の計算は常用対数の代わりに自然対数でやる (1000でも6.9) */
@@ -1081,6 +1089,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 #else
     sprintf(buffer, "1:%.5f", esf->similarity);
 #endif
+#ifndef DISC_DONT_USE_FREQ
     if (OptLearn == TRUE) {
 	sprintf(sbuf, " %d:%d", prenum, (int)esf->frequency);
     }
@@ -1088,6 +1097,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 	sprintf(sbuf, " %d:%.5f", prenum, esf->frequency);
     }
     strcat(buffer, sbuf);
+#endif
 
     for (i = prenum + 1; i <= max; i++) {
 	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - prenum - 1));
@@ -1217,6 +1227,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->event1 = ef->event1;
     f->event2 = ef->event2;
 #endif
+#ifndef DISC_DONT_USE_FREQ
     if (OptLearn == TRUE) {
 	f->frequency = ef->frequency;
     }
@@ -1229,6 +1240,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 	    f->frequency = (float)ef->frequency / SVM_FREQ_SD;
 	}
     }
+#endif
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
     }
@@ -2102,7 +2114,7 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
     if (!strcmp(bp->head_ptr->Goi, cpm_ptr->pred_b_ptr->head_ptr->Goi) || /* 用言と同じ表記はだめ */
 	(s == cs && /* 対象文 */
 	 ((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
-	   (cpm_ptr->cf.type == CF_PRED || bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head)) || 
+	   (cpm_ptr->cf.type == CF_PRED || bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head)) || /* 名詞: 親が同じとき以外はだめ */
 	  (!check_feature(bp->f, "係:連用") && 
 	   bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
 	  (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
