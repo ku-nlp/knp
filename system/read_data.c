@@ -188,6 +188,20 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+			int readtonl(FILE *fp)
+/*==================================================================*/
+{
+    int input_buffer;
+
+    while (1) {
+	if ((input_buffer = fgetc(fp)) == EOF) return EOF;
+	if (input_buffer == '\n') {
+	    return FALSE;
+	}
+    }
+}
+
+/*==================================================================*/
 	     int read_mrph_file(FILE *fp, U_CHAR *buffer)
 /*==================================================================*/
 {
@@ -236,8 +250,13 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     while (1) {
 	if (read_mrph_file(fp, input_buffer) == EOF) return EOF;
 
-	if (input_buffer[DATA_LEN-1] != '\n' || input_buffer[strlen(input_buffer)-1] != '\n') {
-	    fprintf(stderr, "Too long mrph <%s> !\n", input_buffer);
+	if (input_buffer[DATA_LEN-1] != '\n') {
+	    input_buffer[DATA_LEN-1] = '\0';
+	    fprintf(stderr, ";; Too long mrph <%s> !\n", input_buffer);
+	    return readtonl(fp);
+	}
+	else if (input_buffer[strlen(input_buffer)-1] != '\n') {
+	    fprintf(stderr, ";; Too long mrph <%s> !\n", input_buffer);
 	    return FALSE;
 	}
 
@@ -261,7 +280,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		index(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
 		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
-		    if (OptDisc == OPT_DISC) {
+		    if (OptEllipsis) {
 			ClearSentences(sp);
 		    }
 		}
@@ -273,7 +292,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
 	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
 	    OptInput = OPT_PARSED;
-	    if (OptDisc == OPT_DISC) {
+	    if (OptEllipsis) {
 		OptAnalysis = OPT_CASE2;
 	    }
 	    sp->Bnst_num = 0;
