@@ -726,7 +726,6 @@
 	else
 	    return FALSE;
     }
-    
 
     /* &意味素: 意味素チェック */
 
@@ -743,8 +742,31 @@
 	    
 	for (i = 0; ((MRPH_DATA *)ptr2)->SM[i]; i+=SM_CODE_SIZE) {
 	    if (_sm_match_score(cp, 
-			    &((MRPH_DATA *)ptr2)->SM[i], flag))
+			    &(((MRPH_DATA *)ptr2)->SM[i]), flag))
 		return TRUE;
+	}
+	return FALSE;
+    }
+
+    /* 形態素の長さ */
+    
+    else if (!strncmp(rule, "&形態素長:", strlen("&形態素長:"))) {
+	cp = rule + strlen("&形態素長:");
+	if (cp)
+	    code = atoi(cp);
+	else
+	    code = 0;
+	if (strlen(((MRPH_DATA *)ptr2)->Goi) >= code*2) {
+	    return TRUE;
+	}
+	return FALSE;
+    }
+
+    else if (!strncmp(rule, "&形態素末尾:", strlen("&形態素末尾:"))) {
+	cp = rule + strlen("&形態素末尾:");
+	i = strlen(((MRPH_DATA *)ptr2)->Goi) - strlen(cp);
+	if (*cp && i >= 0 && !strcmp((((MRPH_DATA *)ptr2)->Goi)+i, cp)) {
+	    return TRUE;
 	}
 	return FALSE;
     }
