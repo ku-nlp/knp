@@ -34,7 +34,7 @@ int Bcheck[BNST_MAX];
 
 /* ※ 位置の数を変えたら、LOC_NUMBER(const.h)を変えること */
 
-char *ExtraTags[] = {"対象外", "一人称", "不特定-人", "不特定-状況"};
+char *ExtraTags[] = {"対象外", "一人称", "不特定-人", "不特定-状況", ""};
 
 char *ETAG_name[] = {
     "", "", "不特定:人", "一人称", "不特定:状況", 

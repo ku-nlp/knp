@@ -6,6 +6,8 @@
 	NTTを用いた強時間, 時間判定をルールに
 	固有名詞の接尾語を mrph_basic.rule に
 
+	* system/context.c: 文脈解析で segmentation fault するバグを修正
+
 2002-10-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/feature.c, system/lib_bgh.c, system/lib_sm.c, system/main.c, system/path.h, system/thesaurus.c:
