@@ -59,7 +59,7 @@
 #define IsMrph2Rule	3
 
 #ifndef SMALL
-#define ALL_CASE_FRAME_MAX 	1536
+#define ALL_CASE_FRAME_MAX 	1024
 #else
 #define ALL_CASE_FRAME_MAX 	0
 #endif
@@ -107,8 +107,6 @@
 #define OPT_INHIBIT_OPTIONAL_CASE	0x0010
 #define OPT_INHIBIT_CASE_PREDICATE	0x0100
 #define OPT_INHIBIT_BARRIER		0x1000
-#define CORPUS_POSSIBILITY_1	2
-#define CORPUS_POSSIBILITY_1_FLAG	'l'
 
 #define PARA_KEY_O          0
 #define PARA_KEY_N          1	/* 体言の並列 */
@@ -572,7 +570,6 @@ typedef struct {
 				格解析
 ====================================================================*/
 #define IPAL_FIELD_NUM	72
-#define IPAL_DATA_SIZE	12800
 #define CASE_MAX_NUM	20
 #define	EX_PRINT_NUM	10
 
@@ -583,9 +580,22 @@ typedef struct {
 #define	USE_NTT_WITH_STORE	6
 
 typedef struct {
-    int point[IPAL_FIELD_NUM];
-    unsigned char DATA[IPAL_DATA_SIZE];
-} IPAL_TRANS_FRAME;
+    int id;				/* ID */
+    int yomi;				/* 読み */
+    int hyouki;				/* 表記 */
+    int imi;				/* 意味 */
+    int jyutugoso;			/* 述語素 */
+    int kaku_keishiki[CASE_MAX_NUM];	/* 格形式 */
+    int imisosei[CASE_MAX_NUM];		/* 意味素性 */
+    int meishiku[CASE_MAX_NUM];		/* 名詞句 */
+    int sase;				/* 態１ */
+    int rare;				/* 態２ */
+    int tyoku_noudou1;			/* 態３ */
+    int tyoku_ukemi1;			/* 態４ */
+    int tyoku_noudou2;			/* 態５ */
+    int tyoku_ukemi2;			/* 態６ */
+    int voice;				/* 態７ */
+} IPAL_FRAME_INDEX;
 
 typedef struct {
     int id;			/* ID */
@@ -603,7 +613,7 @@ typedef struct {
     int tyoku_noudou2;		/* 態５ */
     int tyoku_ukemi2;		/* 態６ */
     int voice;			/* 態７ */
-    unsigned char DATA[IPAL_DATA_SIZE];
+    unsigned char *DATA;
 } IPAL_FRAME;
 
 /* 格フレーム構造体
@@ -623,6 +633,7 @@ typedef struct cf_def {
     char	*ex2[CF_ELEMENT_MAX];
 							/* 用例 (NTT) */
     char	*examples[CF_ELEMENT_MAX];
+    char	*semantics[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	ipal_address;				/* IPALのアドレス */
     int 	ipal_size;				/* IPALのサイズ */

@@ -511,13 +511,10 @@ char *Opt_jumanrc = NULL;
 	/* 文節へのFEATURE付与 */
 
 	assign_cfeature(&(sp->bnst_data[0].f), "文頭");
-	assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
-	/* 意味不明 将来削除 99/12/29
-	   if (sp->Bnst_num > 0)
-	     assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
-	   else
-	     assign_cfeature(&(sp->bnst_data[0].f), "文末");
-	*/
+	if (sp->Bnst_num > 0)
+	    assign_cfeature(&(sp->bnst_data[sp->Bnst_num-1].f), "文末");
+	else
+	    assign_cfeature(&(sp->bnst_data[0].f), "文末");
 	assign_general_feature(BnstRuleType);
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
@@ -530,7 +527,10 @@ char *Opt_jumanrc = NULL;
 
 	assign_dpnd_rule();			/* 係り受け規則 */
 
-	set_pred_caseframe();			/* 用言の格フレーム */
+	if (OptAnalysis == OPT_CASE ||
+	    OptAnalysis == OPT_CASE2 ||
+	    OptAnalysis == OPT_DISC)
+	    set_pred_caseframe();		/* 用言の格フレーム */
 
 	if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	    check_bnst();

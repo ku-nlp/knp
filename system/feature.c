@@ -1082,8 +1082,6 @@
 	value = feature_AND_match(fr->fp[i], fd, p1, p2);
 	if (value == TRUE) 
 	    return TRUE;
-	else if (value == CORPUS_POSSIBILITY_1) 
-	    return CORPUS_POSSIBILITY_1;
     }
     return FALSE;
 }
@@ -1092,7 +1090,7 @@
  int feature_AND_match(FEATURE *fp, FEATURE *fd, void *p1, void *p2)
 /*==================================================================*/
 {
-    int value, flag = TRUE;
+    int value;
 
     while (fp) {
 	if (fp->cp[0] == '^' && fp->cp[1] == '&') {
@@ -1105,9 +1103,6 @@
 	    if (value == FALSE) {
 		return FALSE;
 	    }
-	    else if (value == CORPUS_POSSIBILITY_1) {
-		flag = CORPUS_POSSIBILITY_1;
-	    }
 	} else if (fp->cp[0] == '^') {
 	    if (check_feature(fd, fp->cp+1)) {
 		return FALSE;
@@ -1119,7 +1114,7 @@
 	}
 	fp = fp->next;
     }
-    return flag;
+    return TRUE;
 }
 
 /*====================================================================

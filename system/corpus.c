@@ -223,19 +223,7 @@ int corpus_clause_comp(BNST_DATA *ptr1, BNST_DATA *ptr2, int para_flag)
 
     /* 頻度があるか、補完されているとき */
     if (score > 0 || score == -2) {
-	if (score == 1) {
-	    /*
-	    if (!CorpusComment[ptr1->num][0])
-		sprintf(CorpusComment[ptr1->num], "%s%c %s%c", type1+3, touten1, type2+3, touten2);
-	    if (CorpusComment[ptr1->num][DATA_LEN-1] != '\n') {
-		fprintf(stderr, "corpus_clause_comp: data length overflow(2).\n");
-		exit(1);
-	    }
-	    */
-	    return CORPUS_POSSIBILITY_1;
-	}
-	else
-	    return TRUE;
+	return TRUE;
     }
     else {
 	/* 並列のときでスコアがないなら条件緩和して並列を無視

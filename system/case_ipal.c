@@ -13,14 +13,31 @@ DBM_FILE ipal_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
+int 	   	MAX_Case_frame_num = 0;		/* 最大格フレーム数 */
 
 IPAL_FRAME Ipal_frame;
+int MAX_ipal_frame_length = 0;
+unsigned char *ipal_str_buf;
 
 int	IPALExist;
 
-/*
- *	IPAL の 読み出し
- */
+/*==================================================================*/
+	   void init_cf_structure(CASE_FRAME *p, int size)
+/*==================================================================*/
+{
+    memset(p, 0, sizeof(CASE_FRAME)*size);
+}
+
+/*==================================================================*/
+			  void realloc_cf()
+/*==================================================================*/
+{
+    Case_frame_array = (CASE_FRAME *)realloc_data(Case_frame_array, 
+						  sizeof(CASE_FRAME)*(MAX_Case_frame_num+ALLOCATION_STEP), 
+						  "realloc_cf");
+    init_cf_structure(Case_frame_array+MAX_Case_frame_num, ALLOCATION_STEP);
+    MAX_Case_frame_num += ALLOCATION_STEP;
+}
 
 /*==================================================================*/
 			    void init_cf()
@@ -62,18 +79,8 @@ int	IPALExist;
 	free(index_db_filename);
 
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, "init_cf");
-	for (i = 0; i < ALL_CASE_FRAME_MAX; i++) {
-	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
-		if (Thesaurus == USE_BGH) {
-		    (Case_frame_array+i)->ex[j] = NULL;
-		}
-		else if (Thesaurus == USE_NTT) {
-		    (Case_frame_array+i)->ex2[j] = NULL;
-		}
-		(Case_frame_array+i)->sm[j] = NULL;
-		(Case_frame_array+i)->sm_false[j] = NULL;
-	    }
-	}
+	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
+	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
 	for (i = 0; i < CPM_MAX; i++) {
 	    for (j = 0; j < CF_ELEMENT_MAX; j++) {
@@ -113,21 +120,32 @@ int	IPALExist;
 }
 
 /*==================================================================*/
-    void get_ipal_frame(IPAL_FRAME *i_ptr, int address, int size)
+	  IPAL_FRAME *get_ipal_frame(int address, int size)
 /*==================================================================*/
 {
+    if (size > MAX_ipal_frame_length) {
+	MAX_ipal_frame_length += ALLOCATION_STEP*((size-MAX_ipal_frame_length)/ALLOCATION_STEP+1);
+	Ipal_frame.DATA = 
+	    (unsigned char *)realloc_data(Ipal_frame.DATA, 
+					  sizeof(unsigned char)*MAX_ipal_frame_length, 
+					  "get_ipal_frame");
+	ipal_str_buf = 
+	    (unsigned char *)realloc_data(ipal_str_buf, 
+					  sizeof(unsigned char)*MAX_ipal_frame_length, 
+					  "get_ipal_frame");
+    }
+
     fseek(ipal_fp, (long)address, 0);
-    if (fread(i_ptr, size, 1, ipal_fp) < 1) {
+    if (fread(&Ipal_frame, sizeof(IPAL_FRAME_INDEX), 1, ipal_fp) < 1) {
 	fprintf(stderr, "Error in fread.\n");
 	exit(1);
     }
+    if (fread(Ipal_frame.DATA, size-sizeof(IPAL_FRAME_INDEX), 1, ipal_fp) < 1) {
+	fprintf(stderr, "Error in fread.\n");
+	exit(1);
+    }
+    return &Ipal_frame;
 }
-
-/*
- *	IPAL -> 格フレーム
- */
-
-unsigned char ipal_str_buf[IPAL_DATA_SIZE];
 
 /*==================================================================*/
 unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret)
@@ -168,18 +186,18 @@ void _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     int pp_num = 0;
 
     if (!strcmp(cp+strlen(cp)-2, "＊"))
-      c_ptr->oblig[num] = FALSE;
+	c_ptr->oblig[num] = FALSE;
     else
-      c_ptr->oblig[num] = TRUE;
+	c_ptr->oblig[num] = TRUE;
 
     point = cp; 
     while (point = extract_ipal_str(point, ipal_str_buf))
-      c_ptr->pp[num][pp_num++] = pp_kstr_to_code(ipal_str_buf);
+	c_ptr->pp[num][pp_num++] = pp_kstr_to_code(ipal_str_buf);
     c_ptr->pp[num][pp_num] = END_M;
 }
     
 /*==================================================================*/
-void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num)
+void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag)
 /*==================================================================*/
 {
     /* 意味マーカの読みだし */
@@ -187,6 +205,10 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num)
     unsigned char *point;
     int i, sm_num = 0;
     char buf[SM_ELEMENT_MAX*SM_CODE_SIZE];
+
+    if (*cp == '\0') {
+	return;
+    }
 
     point = cp;
     buf[0] = '\0';
@@ -213,6 +235,10 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num)
 	strcat(buf, (char *)sm2code(ipal_str_buf));
     }
     c_ptr->sm[num] = strdup(buf);
+
+    if (flag & STOREtoCF) {
+	c_ptr->semantics[num] = strdup(cp);
+    }
 }
 
 /*==================================================================*/
@@ -228,6 +254,10 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     extern char *get_sm();
     char *(*get_code)();
 
+    if (*cp == '\0') {
+	return;
+    }
+
     /* 引くリソースによって関数などをセット */
     if (flag & USE_BGH) {
 	get_code = get_bgh;
@@ -240,7 +270,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
     }
 
-    buf = (char *)malloc_data(sizeof(char)*max);
+    /* 最大値やめないといけませんな */
+    buf = (char *)malloc_data(sizeof(char)*max, "_make_ipal_cframe_ex");
 
     point = cp;
     *buf = '\0';
@@ -324,11 +355,10 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
-  void _make_ipal_cframe(CASE_FRAME *cf_ptr, int address, int size)
+  void _make_ipal_cframe(IPAL_FRAME *i_ptr, CASE_FRAME *cf_ptr, int address, int size)
 /*==================================================================*/
 {
     int i, j = 0, ga_p = NULL;
-    IPAL_FRAME *i_ptr = &Ipal_frame;
     char ast_cap[32];
 
     cf_ptr->ipal_address = address;
@@ -344,7 +374,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j);
-	_make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j);
+	_make_ipal_cframe_sm(cf_ptr, "ＤＩＶ／ＨＵＭ", j, Thesaurus);	/* 現在無効 */
 	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus);
 	j++;
     }
@@ -353,7 +383,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
     for (i = 0; i < CASE_MAX_NUM && *(i_ptr->DATA+i_ptr->kaku_keishiki[i]); i++, j++) { 
 	_make_ipal_cframe_pp(cf_ptr, i_ptr->DATA+i_ptr->kaku_keishiki[i], j);
-	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j);
+	_make_ipal_cframe_sm(cf_ptr, i_ptr->DATA+i_ptr->imisosei[i], j, USE_NTT_WITH_STORE);
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->DATA+i_ptr->meishiku[i], j, USE_BGH_WITH_STORE);
 	}
@@ -438,22 +468,25 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 /*==================================================================*/
 {
     (*f_num_p)++;
-    if ((Case_frame_num + *f_num_p) >= ALL_CASE_FRAME_MAX) {
-	fprintf(stderr, "Not enough Case_frame_array !!\n");
-	exit(1);
+    if ((Case_frame_num + *f_num_p) >= MAX_Case_frame_num) {
+	realloc_cf();
+	realloc_cmm();
     }
 }
 
 /*==================================================================*/
-int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *verb)
+int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 /*==================================================================*/
 {
-    IPAL_FRAME *i_ptr = &Ipal_frame;
+    IPAL_FRAME *i_ptr;
+    CASE_FRAME *cf_ptr;
     int f_num = 0, address, break_flag = 0, size, match;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
 
     if (!verb)
     	return f_num;
+
+    cf_ptr = Case_frame_array+start;
 
     address_str = get_ipal_address(verb);
 
@@ -477,8 +510,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		fprintf(stderr, "CaseFrame Dictionary Index error (it seems version 1.).\n");
 		exit(1);
 	    }
-	    
-	    get_ipal_frame(i_ptr, address, size);
+
+	    i_ptr = get_ipal_frame(address, size);
 	    pre_pos = cp + 1;
 
 	    /* 用言のタイプがマッチしなければ (準用言なら通過) */
@@ -492,8 +525,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    /* 能動態 */
 	    if (b_ptr->voice == NULL) {
 		(cf_ptr+f_num)->voice = FRAME_ACTIVE;
-		_make_ipal_cframe(cf_ptr+f_num, address, size);
+		_make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		f_num_inc(&f_num);
+		cf_ptr = Case_frame_array+start;
 	    }
 
 	    /* 使役 */
@@ -506,8 +540,9 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		else if (!strcmp(i_ptr->DATA+i_ptr->sase, "ニ使役"))
 		  (cf_ptr+f_num)->voice = FRAME_CAUSATIVE_NI;
 		
-		_make_ipal_cframe(cf_ptr+f_num, address, size);
+		_make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		f_num_inc(&f_num);
+		cf_ptr = Case_frame_array+start;
 	    }
 	    
 	    /* 受身 */
@@ -516,38 +551,44 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		/* 直接受身１ */
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou1)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_1;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 		/* 直接受身２ */
 		if (*(i_ptr->DATA+i_ptr->tyoku_noudou2)) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_2;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 		/* 間接受身 */
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "間受")) {
 		    (cf_ptr+f_num)->voice = FRAME_PASSIVE_I;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 	    }
 	    /* 可能，尊敬，自発 */
 	    if (b_ptr->voice == VOICE_UKEMI) {
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "可能")) {
 		    (cf_ptr+f_num)->voice = FRAME_POSSIBLE;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "尊敬")) {
 		    (cf_ptr+f_num)->voice = FRAME_POLITE;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 		if (str_part_eq(i_ptr->DATA+i_ptr->rare, "自発")) {
 		    (cf_ptr+f_num)->voice = FRAME_SPONTANE;
-		    _make_ipal_cframe(cf_ptr+f_num, address, size);
+		    _make_ipal_cframe(i_ptr, cf_ptr+f_num, address, size);
 		    f_num_inc(&f_num);
+		    cf_ptr = Case_frame_array+start;
 		}
 	    }
 	    if (break_flag)
@@ -559,7 +600,7 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 }
 
 /*==================================================================*/
-      int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
+	  int make_ipal_cframe(BNST_DATA *b_ptr, int start)
 /*==================================================================*/
 {
     int f_num = 0, plus_num, i, j;
@@ -581,10 +622,10 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	verb = L_Jiritu_M(b_ptr)->Goi;
     }
 
-    f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
+    f_num = make_ipal_cframe_subcontract(b_ptr, start, verb);
     Case_frame_num += f_num;
     for (i = 0; i < f_num; i++) {
-	(cf_ptr+i)->concatenated_flag = 0;
+	(Case_frame_array+start+i)->concatenated_flag = 0;
     }
 
     if (b_ptr->num < 1) {
@@ -636,10 +677,10 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	}
 
 	verb = buffer[i];
-	plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+	plus_num = make_ipal_cframe_subcontract(b_ptr, start+f_num, verb);
 	Case_frame_num += plus_num;
 	for (j = f_num; j < f_num+plus_num; j++) {
-	    (cf_ptr+j)->concatenated_flag = 1;
+	    (Case_frame_array+start+j)->concatenated_flag = 1;
 	}
 	f_num += plus_num;
     }
@@ -648,10 +689,13 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 }
 
 /*==================================================================*/
-    int make_default_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
+	 int make_default_cframe(BNST_DATA *b_ptr, int start)
 /*==================================================================*/
 {
     int i, num = 0, f_num = 0;
+    CASE_FRAME *cf_ptr;
+
+    cf_ptr = Case_frame_array+start;
 
     _make_ipal_cframe_pp(cf_ptr, "ガ＊", num++);
     _make_ipal_cframe_pp(cf_ptr, "ヲ＊", num++);
@@ -667,6 +711,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
     }
 
     f_num_inc(&f_num);
+    Case_frame_num++;
+    b_ptr->cf_num = 1;
     return 1;
 }
 
@@ -674,15 +720,8 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	       void make_case_frames(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int f_num;
-
-    b_ptr->cf_ptr = Case_frame_array + Case_frame_num;	
-    if ((f_num = make_ipal_cframe(b_ptr, Case_frame_array + Case_frame_num)) 
-	!= 0) {
-	b_ptr->cf_num = f_num;
-    } else {
-	make_default_cframe(b_ptr, Case_frame_array + Case_frame_num);
-	b_ptr->cf_num = 1;
+    if ((b_ptr->cf_num = make_ipal_cframe(b_ptr, Case_frame_num)) == 0) {
+	make_default_cframe(b_ptr, Case_frame_num);
     }
 }
 
@@ -690,12 +729,13 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 		      void set_pred_caseframe()
 /*==================================================================*/
 {
-    int i;
+    int i, start[BNST_MAX];
     BNST_DATA  *b_ptr;
 
     Case_frame_num = 0;
 
-    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++)
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	/* 準用言は辞書にないだろうけど… */
 	if (check_feature(b_ptr->f, "用言") ||
 	    check_feature(b_ptr->f, "準用言")) {
 
@@ -703,11 +743,23 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    /* set_pred_voice(b_ptr); ヴォイス */
 	    /* get_scase_code(b_ptr); 表層格 */
 
- 	    if (OptAnalysis == OPT_CASE ||
- 		OptAnalysis == OPT_CASE2 ||
- 		OptAnalysis == OPT_DISC)
-		make_case_frames(b_ptr);
+	    start[i] = Case_frame_num;
+	    make_case_frames(b_ptr);
 	}
+	else {
+	    start[i] = -1;
+	}
+    }
+
+    /* 格フレームを文節へリンクする */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (start[i] >= 0) {
+	    (sp->bnst_data+i)->cf_ptr = Case_frame_array+start[i];
+	}
+	else {
+	    b_ptr->cf_ptr = NULL;
+	}
+    }
 }
 
 /*==================================================================*/
@@ -717,10 +769,6 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
     int i, j;
 
     for (i = 0; i < Case_frame_num; i++) {
-	if ((Case_frame_array+i)->examples) {
-	    free((Case_frame_array+i)->examples);
-	}
-
 	for (j = 0; j < CF_ELEMENT_MAX; j++) {
 	    if (Thesaurus == USE_BGH) {
 		if ((Case_frame_array+i)->ex[j]) {
@@ -741,6 +789,14 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *ver
 	    if ((Case_frame_array+i)->sm_false[j]) {
 		free((Case_frame_array+i)->sm_false[j]);
 		(Case_frame_array+i)->sm_false[j] = NULL;
+	    }
+	    if ((Case_frame_array+i)->examples[j]) {
+		free((Case_frame_array+i)->examples[j]);
+		(Case_frame_array+i)->examples[j] = NULL;
+	    }
+	    if ((Case_frame_array+i)->semantics[j]) {
+		free((Case_frame_array+i)->semantics[j]);
+		(Case_frame_array+i)->semantics[j] = NULL;
 	    }
 	}
     }

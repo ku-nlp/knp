@@ -23,7 +23,7 @@ extern FILE  *Outfp;
 	fprintf(Outfp, "《");
 	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
 	    if (i) {
-		fprintf(Outfp, "/");
+		fputc('/', Outfp);
 	    }
 	    if (cpm_ptr->cf.pp[num][i] < 0) {
 		/* 3 は strlen("係:") */
@@ -41,44 +41,33 @@ extern FILE  *Outfp;
 	      void print_data_cframe(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    int i, j;
-    char *cp;
-    char setubi_buffer[256];
+    int i;
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-      fprintf(Outfp, "【%s(使役)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "【%s(使役)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-      fprintf(Outfp, "【%s(受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "【%s(受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-      fprintf(Outfp, "【%s(使役or受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "【%s(使役or受身)】", cpm_ptr->pred_b_ptr->Jiritu_Go);
     else
-      fprintf(Outfp, "【%s】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+	fprintf(Outfp, "【%s】", cpm_ptr->pred_b_ptr->Jiritu_Go);
+
+    fprintf(Outfp, " [%d]", cpm_ptr->pred_b_ptr->cf_num);
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 
-	fprintf(Outfp, " ");
+	fputc(' ', Outfp);
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
 
 	/* 係タイプの出力 */
 	print_depend_type(cpm_ptr, i);
 
-	/*
-	fprintf(Outfp, " %s%s", cpm_ptr->elem_b_ptr[i]->Jiritu_Go,
-		meishi_setubi(cpm_ptr->elem_b_ptr[i], setubi_buffer));
-		*/
-		
-	fprintf(Outfp, "[");
-
 	/* 意味マーカ */
+
+	fputc('[', Outfp);
 
 	if (cpm_ptr->cf.sm[i][0]) {
 	    fprintf(Outfp, "SM:○");
-	    /*
-	    for (j = 0; cpm_ptr->cf.sm[i][j]; j+=SM_CODE_SIZE) {
-		if (j != 0) fprintf(Outfp,  "/");
-		fprintf(Outfp, "%12.12s", &(cpm_ptr->cf.sm[i][j]));
-	    }
-	    */
 	}
 	else {
 	    fprintf(Outfp, "SM:×");
@@ -89,32 +78,16 @@ extern FILE  *Outfp;
 	if (Thesaurus == USE_BGH) {
 	    if (cpm_ptr->cf.ex[i][0]) {
 		fprintf(Outfp, "BGH:○");
-		/*
-		  for (j = 0; cpm_ptr->cf.ex[i][j]; j+=BGH_CODE_SIZE) {
-		  if (j != 0) fprintf(Outfp,  "/");
-		  fprintf(Outfp, "%7.7s", &(cpm_ptr->cf.ex[i][j]));
-		  }
-		*/
 	    }
 	    else {
 		fprintf(Outfp, "BGH:×");
 	    }
 	}
 
-	fprintf(Outfp, "]");	
+	fputc(']', Outfp);	
 
-	/*
-	if (cpm_ptr->cf.pp[i][0] >= 0) 
-	  fprintf(Outfp, "%s", pp_code_to_hstr(cpm_ptr->cf.pp[i][0]));
-	else if (cpm_ptr->elem_b_ptr[i]->fuzoku_ptr)
-	  fprintf(Outfp, "(%s)", (cpm_ptr->elem_b_ptr[i]->fuzoku_ptr +
-				   cpm_ptr->elem_b_ptr[i]->fuzoku_num-1)->Goi);
-	else
-	  fprintf(Outfp, "(φ)");
-	  */
-	
 	if (cpm_ptr->cf.oblig[i] == FALSE)
-	  fprintf(Outfp, "*");
+	    fprintf(Outfp, "*");
     }
     fputc('\n', Outfp);
 }
@@ -123,21 +96,12 @@ extern FILE  *Outfp;
    void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr)
 /*==================================================================*/
 {
-    int i, j, k, num;
-    int match_num, max_match_num, max_match_nth;
-    char *cp;
-    char setubi_buffer[256];
-    char match_code_buffer[16];
-    CASE_FRAME *cfd = &(cpm_ptr->cf);
-    IPAL_FRAME Ipal_frame;
-    IPAL_FRAME *i_ptr = &Ipal_frame;
+    int i, j, num;
 
     if (cmm_ptr->cf_ptr->ipal_address == -1)	/* IPALにない場合 */
 	return;
-    else
-	get_ipal_frame(i_ptr, cmm_ptr->cf_ptr->ipal_address, cmm_ptr->cf_ptr->ipal_size);
     
-    /* 得点，意味の表示 */
+    /* 得点, 意味の表示 */
 
     fprintf(Outfp, "★%3d点 ", cmm_ptr->score);
 
@@ -153,16 +117,16 @@ extern FILE  *Outfp;
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
-      fprintf(Outfp, "(使役)");
+	fprintf(Outfp, "(使役)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POSSIBLE)
-      fprintf(Outfp, "(可能)");
+	fprintf(Outfp, "(可能)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POLITE)
-      fprintf(Outfp, "(尊敬)");
+	fprintf(Outfp, "(尊敬)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_SPONTANE)
-      fprintf(Outfp, "(自発)");
+	fprintf(Outfp, "(自発)");
 
-    fprintf(Outfp, "%s\n", i_ptr->DATA+i_ptr->imi);
-    /* i_ptr->DATA+i_ptr->bunrei1 */
+    /* fprintf(Outfp, "%s\n", i_ptr->DATA+i_ptr->imi); */
+    fputc('\n', Outfp);
 
     /* 格要素対応の表示 */
 
@@ -178,69 +142,23 @@ extern FILE  *Outfp;
 	    /* 係タイプの出力 */
 	    print_depend_type(cpm_ptr, num);
 
-	    /*
-	    fprintf(Outfp," %s%s", cpm_ptr->elem_b_ptr[num]->Jiritu_Go, 
-		    meishi_setubi(cpm_ptr->elem_b_ptr[num], setubi_buffer));
-	    if (cfd->pp[num][0] >= 0) 
-	      fprintf(Outfp, "%s", pp_code_to_hstr(cfd->pp[num][0]));
-	    else if (l_fuzoku_goi(cpm_ptr->elem_b_ptr[num]))
-	      fprintf(Outfp, "(%s)", l_fuzoku_goi(cpm_ptr->elem_b_ptr[num]));
-	    else
-	      fprintf(Outfp, "(φ)");
-	    */
-
-	    if (num != UNASSIGNED && cfd->oblig[num] == FALSE)
-		fprintf(Outfp, "*");
+	    if (num != UNASSIGNED && cpm_ptr->cf.oblig[num] == FALSE)
+		fputc('*', Outfp);
 
 	    /* 格ごとのスコアを表示 */
 	    if (cmm_ptr->result_lists_p[0].score[i] >= 0)
 		fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[0].score[i]);
-
-	    /* 用例による解析の場合
-	       最大マッチのコードを求める 
-
-	    max_match_num = -1;
-	    max_match_nth = -1;
-	    for (j = 0; cfd->ex[num][j]; j+=10) {
-		for (k = 0; cmm_ptr->cf_ptr->ex[i][k]; k+=10) {
-		    match_num = _ex_match_score(cfd->ex[num]+j, 
-						cmm_ptr->cf_ptr->ex[i]+k);
-		    if (match_num > max_match_num) {
-			max_match_num = match_num;
-			max_match_nth = j;
-		    }
-		}
-	    }
-	    if (max_match_num >= 6) max_match_num = 7;
-	    
-	    fprintf(Outfp, " [");
-	    for (j = 0; cfd->ex[num][j]; j+=10) {
-		if (j != 0) fprintf(Outfp, "/");
-		if (j == max_match_nth) {
-		    for (k = 0; k < 7; k++) {
-			fputc(cfd->ex[num][j+k], Outfp);
-			if (k + 1 == max_match_num)
-			  fputc('*', Outfp);
-		    }
-		} else
-		  fprintf(Outfp, "%7.7s", &(cfd->ex[num][j]));
-	    }
-	    fprintf(Outfp, "]");
-	    */
-
-	    /* 意味素による解析の場合
-	       とりあえず何も書かない
-	     */
 	}
-	
+
 	fprintf(Outfp, " : 《");
-	
+
 	for (j = 0; cmm_ptr->cf_ptr->pp[i][j]!= END_M; j++) {
-	    if (j != 0) fprintf(Outfp,  "/");
+	    if (j != 0) fputc('/', Outfp);
 	    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
 	}
 	fprintf(Outfp, "》");
 
+	/* 用例の出力 */
 	if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	    cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO ||
@@ -251,47 +169,19 @@ extern FILE  *Outfp;
 		fprintf(Outfp, "(%s)", 
 			cmm_ptr->cf_ptr->examples[i]);
 	} else if (cmm_ptr->cf_ptr->examples[i]) {
-	    /* 用例の出力 */
 	    fprintf(Outfp, "(%s)", cmm_ptr->cf_ptr->examples[i]);
 	}
 	  
 	if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
-	    fprintf(Outfp, "*");
+	    fputc('*', Outfp);
 
-	/* 用例による解析の場合
-	fprintf(Outfp, " [");
-	for (j = 0; cmm_ptr->cf_ptr->ex[i][j]; j+=10) {
-	    for (k = 0; k < j; k++)
-	      if (!strncmp(cmm_ptr->cf_ptr->ex[i]+j, cmm_ptr->cf_ptr->ex[i]+k, 5))
-		goto SAME_BREAK_2;
-	    if (j != 0) fprintf(Outfp, "/");
-	    fprintf(Outfp, "%5.5s", cmm_ptr->cf_ptr->ex[i]+j);
-	  SAME_BREAK_2:
-	}
-	fprintf(Outfp, "]");
-	*/
-
-	/* 意味素による解析の場合 */
-	if (i_ptr->DATA+i_ptr->imisosei[i]) {
-	    fprintf(Outfp, "[%s]", i_ptr->DATA+i_ptr->imisosei[i]);
+	/* 意味素の出力 */
+	if (cmm_ptr->cf_ptr->semantics[i]) {
+	    fprintf(Outfp, "[%s]", cmm_ptr->cf_ptr->semantics[i]);
 	}
 
-	/* 意味素コードを書く場合
-	fprintf(Outfp, " [");
-	for (j = 0; cmm_ptr->cf_ptr->sm[i][j]; j+=12) {
-	    for (k = 0; k < j; k++)
-	      if (!strncmp(cmm_ptr->cf_ptr->sm[i]+j, cmm_ptr->cf_ptr->sm[i]+k, 5))
-		goto SAME_BREAK_2;
-	    if (j != 0) fprintf(Outfp, "/");
-	    fprintf(Outfp, "%5.5s", cmm_ptr->cf_ptr->sm[i]+j);
-	  SAME_BREAK_2:
-	}
-	fprintf(Outfp, "]");
-	*/
-
-	fprintf(Outfp, "\n");
+	fputc('\n', Outfp);
     }
-
 }
 
 /*==================================================================*/
@@ -299,10 +189,10 @@ extern FILE  *Outfp;
 				   CF_MATCH_MGR *cmm_ptr,int ipal_num)
 /*==================================================================*/
 {
-    int i, j, check[ALL_CASE_FRAME_MAX];
+    int i, j, *check;
     int max_num, max_score, max_counts, all_max_score = 0;
-    int print_flag = TRUE;
-    
+
+    check = (int *)malloc_data(sizeof(int)*ipal_num, "print_good_crrspnds");
     for (i = 0; i < ipal_num; i++) check[i] = 1;
     for (i = 0; i < ipal_num; i++) {
 	max_num = -1;
@@ -329,6 +219,7 @@ extern FILE  *Outfp;
 	print_crrspnd(cpm_ptr, cmm_ptr+max_num);
 	check[max_num] = 0;
     }
+    free(check);
 }
 
 /*====================================================================

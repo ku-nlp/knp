@@ -264,8 +264,6 @@ char pos2symbol(char *hinshi, char *bunrui)
 {
     int i, j;
     MRPH_DATA *m_ptr;
-    IPAL_FRAME Ipal_frame;
-    IPAL_FRAME *i_ptr = &Ipal_frame;
     char *cp;
      
     fputc('(', Outfp);	/*  ∏¿·ªœ§Í */

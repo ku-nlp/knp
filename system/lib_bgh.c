@@ -121,20 +121,15 @@ int		BGHExist;
 
 	    *str_buffer = '\0';
 	    for (i = strt; i < end; i++) {
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-		if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
-		    overflow_flag = 1;
+		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
 		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    break;
+		    return;
 		}
-	    }
-
-	    if (overflow_flag) {
-		overflow_flag = 0;
-		return;
+		strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 	    }
 
 	    code = get_bgh(str_buffer);
+
 	    /* あるとき */
 	    if (code) {
 		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
@@ -153,30 +148,18 @@ int		BGHExist;
 			(ptr->mrph_ptr + end - 1)->Goi2)) {
 		*str_buffer = '\0';
 		for (i = strt; i < end - 1; i++) {
-		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-		    if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
-			overflow_flag = 1;
+		    if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Goi2)+2 > BNST_LENGTH_MAX) {
 			overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-			break;
+			return;
 		    }
+		    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
 		}
 
-		if (overflow_flag) {
-		    overflow_flag = 0;
-		    return;
-		}
-
-		strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
-		if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
-		    overflow_flag = 1;
+		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + end - 1)->Goi)+2 > BNST_LENGTH_MAX) {
 		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    break;
-		}
-
-		if (overflow_flag) {
-		    overflow_flag = 0;
 		    return;
 		}
+		strcat(str_buffer, (ptr->mrph_ptr + end - 1)->Goi);
 
 		/* ナ形容詞の場合は語幹で検索 */
 		if (str_eq(Class[(ptr->mrph_ptr + end - 1)->Hinshi][0].id,
@@ -190,6 +173,7 @@ int		BGHExist;
 		    str_buffer[strlen(str_buffer)-2] = NULL;
 
 		code = get_bgh(str_buffer);
+
 		if (code) {
 		    if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
 			strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);
@@ -206,20 +190,15 @@ int		BGHExist;
 
 	    *str_buffer = '\0';
 	    for (i = strt; i < end; i++) {
-		strcat(str_buffer, (ptr->mrph_ptr + i)->Yomi);
-		if (str_buffer[BNST_LENGTH_MAX-1] != GUARD) {
-		    overflow_flag = 1;
+		if (strlen(str_buffer)+strlen((ptr->mrph_ptr + i)->Yomi)+2 > BNST_LENGTH_MAX) {
 		    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bgh_code");
-		    break;
+		    return;
 		}
-	    }
-
-	    if (overflow_flag) {
-		overflow_flag = 0;
-		return;
+		strcat(str_buffer, (ptr->mrph_ptr + i)->Yomi);
 	    }
 
 	    code = get_bgh(str_buffer);
+
 	    if (code) {
 		if (strlen(code) > EX_ELEMENT_MAX*BGH_CODE_SIZE) {
 		    strncpy(ptr->BGH_code, code, EX_ELEMENT_MAX*BGH_CODE_SIZE);

@@ -10,10 +10,19 @@
 #include "knp.h"
 
 extern int Possibility;
+extern int MAX_Case_frame_num;
 
 CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* 作業領域 */
-/* TOTAL_MGR	Dflt_mgr; */
 TOTAL_MGR	Work_mgr;
+
+/*==================================================================*/
+			  void realloc_cmm()
+/*==================================================================*/
+{
+    Cf_match_mgr = (CF_MATCH_MGR *)realloc_data(Cf_match_mgr, 
+						sizeof(CF_MATCH_MGR)*(MAX_Case_frame_num), 
+						"realloc_cmm");
+}
 
 /*==================================================================*/
 		      void init_case_analysis()
@@ -107,13 +116,13 @@ int pp_kstr_to_code(char *cp)
 {
     int i;
     for (i = 0; PP_str_to_code[i].kstr; i++)
-      if (str_eq(PP_str_to_code[i].kstr, cp))
-	return PP_str_to_code[i].code;
+	if (str_eq(PP_str_to_code[i].kstr, cp))
+	    return PP_str_to_code[i].code;
     
     if (str_eq(cp, "ニトッテ"))		/* 「待つ」 IPALのバグ ?? */
-      return pp_kstr_to_code("ニヨッテ");
+	return pp_kstr_to_code("ニヨッテ");
     else if (str_eq(cp, "ノ"))		/* 格要素でなくなる場合 */
-      return END_M;
+	return END_M;
 
     /* fprintf(stderr, "Invalid string (%s) in PP !\n", cp); */
     return END_M;
@@ -123,8 +132,8 @@ int pp_hstr_to_code(char *cp)
 {
     int i;
     for (i = 0; PP_str_to_code[i].hstr; i++)
-      if (str_eq(PP_str_to_code[i].hstr, cp))
-	return PP_str_to_code[i].code;
+	if (str_eq(PP_str_to_code[i].hstr, cp))
+	    return PP_str_to_code[i].code;
     return END_M;
 }
 
@@ -137,40 +146,6 @@ char *pp_code_to_hstr(int num)
 {
     return PP_str_to_code[num].hstr;
 }
-
-/*
-int sm_zstr_to_code(char *cp)
-{
-    int i;
-    for (i = 0; SM_str_to_code[i].zstr; i++)
-      if (str_eq(SM_str_to_code[i].zstr, cp))
-	return SM_str_to_code[i].code;
-    * fprintf(stderr, "Invalid string (%s) in SM !\n", cp); *
-    return -1;
-}
-
-int sm_str_to_code(char *cp)
-{
-    int i;
-    
-    for (i = 0; SM_str_to_code[i].str; i++)
-      if (str_eq(SM_str_to_code[i].str, cp))
-	return SM_str_to_code[i].code;
-    * fprintf(stderr, "Invalid string (%s) in SM !\n", cp); *
-    return -1;
-}
-
-char *sm_code_to_str(int code)
-{
-    int i;
-
-    for (i = 0; SM_str_to_code[i].str; i++)
-      if (SM_str_to_code[i].code == code)
-	return SM_str_to_code[i].str;
-    fprintf(stderr, "Invalid code (%d) in SM !\n", code);
-    return NULL;
-}
-*/
 
 /*==================================================================*/
      int case_analysis(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
@@ -254,23 +229,12 @@ char *sm_code_to_str(int code)
 
 	    else if ((Cf_match_mgr+i)->score == cpm_ptr->score) {
 		if (cpm_ptr->result_num >= CMM_MAX)
-		    fprintf(stderr, "Not enough cmm.\n");
+		    /* fprintf(stderr, "Not enough cmm.\n") */ ;
 		else
 		    cpm_ptr->cmm[cpm_ptr->result_num++] = *(Cf_match_mgr+i);
 	    }
 	}
     }
-
-    /* corpus based case analysis 00/01/04
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (cpm_ptr->elem_b_num[i] == -1) {
-	    score -= cpm_ptr->cf.pred_b_ptr.dpnd_dflt * 2;
-	} else {
-	    score -= cpm_ptr->elem_b_ptr[i].dpnd_dflt * 2;
-	}	
-    }
-    */
 
     /* 外の関係のスコアを足す */
     if (cpm_ptr->score > -1)  {
@@ -292,7 +256,8 @@ char *sm_code_to_str(int code)
     CF_PRED_MGR *cpm_ptr;
     int i;
     int one_case_point;
-    
+
+    /* 準用言は辞書にないだろうけど… */
     if (b_ptr->para_top_p != TRUE && 
 	(check_feature(b_ptr->f, "用言") || 
 	 check_feature(b_ptr->f, "準用言")) && 
@@ -424,8 +389,7 @@ char *sm_code_to_str(int code)
     else
 	return;
 
-    /* corpus based case analysis 00/01/04
-       ここで default との距離のずれ, 提題を処理 */
+    /* ここで default との距離のずれ, 提題を処理 */
 
     for (i = 0; i < sp->Bnst_num-1; i++) {
 	/* ガ格 -> レベル:A (ルールでこの係り受けを許した場合は、
@@ -462,7 +426,16 @@ char *sm_code_to_str(int code)
 		    }
 		}
 	    }
-	    distance_cost += dpnd.dflt[i]*2;
+
+	    /* デフォルトとの差 x 2 を距離のコストとする
+	       ただし、形容詞を除く連格の場合は x 1 */
+	    if (!check_feature((sp->bnst_data+i)->f, "係:連格") || 
+		check_feature((sp->bnst_data+i)->f, "用言:形")) {
+		distance_cost += dpnd.dflt[i]*2;
+	    }
+	    else {
+		distance_cost += dpnd.dflt[i];
+	    }
 	}		    
     }
 
@@ -519,7 +492,6 @@ char *sm_code_to_str(int code)
 	(Work_mgr.score == Best_mgr.score && 
 	 compare_dpnd(&Work_mgr, &Best_mgr) == TRUE))
 	copy_mgr(&Best_mgr, &Work_mgr);
-    /* if (Work_mgr.dflt == 0) Dflt_mgr = Work_mgr; */
 }
 
 /*==================================================================*/
@@ -574,7 +546,7 @@ char *sm_code_to_str(int code)
 		sprintf(feature_buffer+strlen(feature_buffer), "*");
 
 	    sprintf(feature_buffer+strlen(feature_buffer), ":");
-	    
+
 	    /* 意味素 */
 
 	    if (cf_ptr->sm[i]) {

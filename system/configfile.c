@@ -99,7 +99,7 @@ int knp_dict_file_already_defined = 0;
 	    while (!Null(car(cell1))) {
 		if (CurrentRuleNum >= RuleNumMax) {
 		    RuleNumMax += RuleIncrementStep;
-		    RULE = (RuleVector *)realloc(RULE, sizeof(RuleVector)*RuleNumMax);
+		    RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 		}
 
 		/* デフォルト値設定 */

@@ -23,7 +23,7 @@ void CheckCandidates()
     for (i = 0; i < sp->Bnst_num; i++)
 	if (tm->dpnd.check[i].num != -1) {
 	    /* ∑∏§Í¬¶ -> ∑∏§Í¿Ë */
-	    sprintf(buffer, "Check:%2d %2d", i, tm->dpnd.head[i]);
+	    sprintf(buffer, "∏ı ‰");
 	    for (j = 0; j < tm->dpnd.check[i].num; j++) {
 
 		/* •∆•π•» -check -optionalcase •«≥  */

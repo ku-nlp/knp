@@ -237,14 +237,9 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     /* ³ÊÍ×ÁÇ -- Ê¸ */
-    if ((check_feature(b_ptr->f, "·¸:¥È³Ê") && 
-	 check_feature(b_ptr->f, "ÍÑ¸À")) || 
-	(check_feature(b_ptr->f, "·¸:¥ò³Ê") && 
-	 check_feature(b_ptr->f, "ÍÑ¸À") && 
-	 check_feature(b_ptr->f, "·ÁÉûÌ¾»ì"))) {
+    if (check_feature(b_ptr->f, "ÊäÊ¸")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+SM_CODE_SIZE*sm_num, 
 	       (char *)sm2code("ÊäÊ¸"));
-	assign_cfeature(&(b_ptr->f), "ÊäÊ¸");
 	sm_num++;
     }
     else {
