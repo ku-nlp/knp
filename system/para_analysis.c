@@ -540,7 +540,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 }
 
 /*==================================================================*/
-		void para_recovery(SENTENCE_DATA *sp)
+		 int para_recovery(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 並列構造の情報の再現 */
@@ -553,6 +553,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
+	    if (sp->Para_num >= PARA_MAX) {
+		break;
+	    }
 	    sp->para_data[sp->Para_num].key_pos = i;
 	    sp->para_data[sp->Para_num].jend_pos = b_ptr->dpnd_head;
 	    for (j = i - 1; 
@@ -566,7 +569,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    sp->Para_num++;
 	}
     }
-    detect_para_relation(sp);
+    return detect_para_relation(sp);
 }
 
 /*====================================================================

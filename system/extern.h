@@ -266,7 +266,7 @@ extern void init_mask_matrix(SENTENCE_DATA *sp);
 extern int check_dpnd_in_para(SENTENCE_DATA *sp);
 
 /* para_analysis.c */
-extern void para_recovery(SENTENCE_DATA *sp);
+extern int para_recovery(SENTENCE_DATA *sp);
 extern int check_para_key(SENTENCE_DATA *sp);
 extern void detect_all_para_scope(SENTENCE_DATA *sp);
 extern int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p);
