@@ -3,6 +3,9 @@
 	* system/lib_print.c:
 	-detail時のbuffer overflow修正
 
+	* system/configfile.c, system/const.h, system/context.c, system/context.h, system/extern.h:
+	SVM標準偏差をknprcに記述できるようにした。
+
 2004-01-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule, rule/case_analysis.rule, rule/context.rule, rule/mrph_basic.rule:
