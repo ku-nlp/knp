@@ -1,3 +1,9 @@
+2004-01-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c: 意味属性マッチに<場所>を追加
+
+	* rule/context.rule: 地名に<場所>を付与
+
 2004-01-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
