@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-dicdir = $(pkgdatadir)
+dicdir = $(pkgdatadir)/ebcf
 nodist_dic_DATA = cf.db cf.dat
 
 
@@ -26,7 +26,10 @@ IPALN_DIR   = /share/dict/ipal_noun_31/3.1/data
 # 	fi
 
 
-cf.dat:
+cf.knpdict:
+	true
+
+cf.dat: cf.knpdict
 	if [ -f cf.knpdict ]; then \
 		@CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
 	fi

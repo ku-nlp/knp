@@ -2,7 +2,7 @@ SUBDIRS = .
 
 EXTRA_DIST = sm2code.dat
 
-dicdir = $(pkgdatadir)
+dicdir = $(pkgdatadir)/scode/bgh
 nodist_dic_DATA = bgh.db sm2code.db
 
 bgh.dat:

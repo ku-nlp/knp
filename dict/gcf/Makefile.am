@@ -2,7 +2,7 @@ SUBDIRS = .
 
 EXTRA_DIST = scase.dat
 
-dicdir = $(pkgdatadir)
+dicdir = $(pkgdatadir)/gcf
 nodist_dic_DATA = scase.db
 
 
