@@ -697,6 +697,13 @@ int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, int start, char *verb)
 
     cf_ptr = Case_frame_array+start;
 
+    if (MAX_ipal_frame_length == 0) {
+	ipal_str_buf = 
+	    (unsigned char *)realloc_data(ipal_str_buf, 
+					  sizeof(unsigned char)*ALLOCATION_STEP, 
+					  "make_default_cframe");
+    }
+
     _make_ipal_cframe_pp(cf_ptr, "¥¬¡ö", num++);
     _make_ipal_cframe_pp(cf_ptr, "¥ò¡ö", num++);
     _make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++);
