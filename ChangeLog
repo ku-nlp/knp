@@ -1,5 +1,9 @@
 1999-11-18  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
+	* Makefile.in: Makefile.am の変更に伴なう変更。
+
+	* ChangeLog: ChageLog の追加。
+
 	* docs/manual.tex, docs/EXAMPLES, docs/INSTALL, docs/knp.1, docs/manual.short:
 	ファイル追加。
 
