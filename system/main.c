@@ -424,22 +424,32 @@ extern int	EX_match_subject;
 }
 
 /*==================================================================*/
-	       static void timeout_function(int signal)
+			   void close_all()
 /*==================================================================*/
 {
-    if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2) {
-	int i;
+    close_cf();
+    close_thesaurus();
+    close_scase();
 
-	fprintf(stderr, ";; Parse timeout.\n;; %s (", current_sentence_data.KNPSID);
-	for (i = 0; i < current_sentence_data.Mrph_num; i++)
-	    fprintf(stderr, "%s", current_sentence_data.mrph_data[i].Goi2);
-	fprintf(stderr, ")\n");
-	exit(1);
-    }
-    else {
-	longjmp(timeout, 1);
-    }
+#ifdef DB3DEBUG
+    db_teardown();
+#endif
+}
+
+/*==================================================================*/
+		static void timeout_function(int sig)
+/*==================================================================*/
+{
+    int i;
+
+    fprintf(stderr, ";; Parse timeout.\n;; %s (", current_sentence_data.KNPSID);
+    for (i = 0; i < current_sentence_data.Mrph_num; i++)
+	fprintf(stderr, "%s", current_sentence_data.mrph_data[i].Goi2);
+    fprintf(stderr, ")\n");
+
+    close_all();
+    exit(100);
+    /* longjmp(timeout, 1); */
 }
 
 /*==================================================================*/
@@ -496,18 +506,9 @@ extern int	EX_match_subject;
     if (OptEllipsis) {
 	InitAnaphoraList();
     }
-}
 
-/*==================================================================*/
-			   void close_all()
-/*==================================================================*/
-{
-    close_cf();
-    close_thesaurus();
-    close_scase();
-
-#ifdef DB3DEBUG
-    db_teardown();
+#ifndef _WIN32
+    signal(SIGALRM, timeout_function);
 #endif
 }
 
@@ -701,7 +702,6 @@ extern int	EX_match_subject;
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 #ifndef _WIN32
-    signal(SIGALRM, timeout_function);
     alarm(0);
     alarm(ParseTimeout);
 #endif
