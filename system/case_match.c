@@ -187,7 +187,7 @@ extern FILE  *Outfp;
     for (i = 0; *(d+i); i += unit) {
 	if (!strncmp(d+i, (char *)sm2code(target), unit)) {
 	    for (j = 0; *(p+j); j += unit) {
-		if (!strncmp(p+i, (char *)sm2code(target), unit)) {
+		if (!strncmp(p+j, (char *)sm2code(target), unit)) {
 		    return TRUE;
 		}
 	    }
@@ -276,22 +276,19 @@ extern FILE  *Outfp;
 	    score = EX_match_qua;
 	}
 
-	/* tentative
-	if (score > 0)
-	    return score;
-	else
-	    return EX_match_unknown;
-	*/
-
 	/* 用例がどちらか一方でもなかったら */
-	if (*exd == '\0' || *exp == '\0') 
-	    return EX_match_unknown;
-
-	/* 用例のマッチング */
-	for (j = 0; exp[j]; j+=step) {
-	    for (i = 0; exd[i]; i+=step) {
-		tmp_score = *(match_score+match_function(exp+j, exd+i));
-		if (tmp_score > ex_score) ex_score = tmp_score;
+	if (*exd == '\0' || *exp == '\0') {
+	    if (score < EX_match_unknown) {
+		score = EX_match_unknown;
+	    }
+	}
+	else {
+	    /* 用例のマッチング */
+	    for (j = 0; exp[j]; j+=step) {
+		for (i = 0; exd[i]; i+=step) {
+		    tmp_score = *(match_score+match_function(exp+j, exd+i));
+		    if (tmp_score > ex_score) ex_score = tmp_score;
+		}
 	    }
 	}
 

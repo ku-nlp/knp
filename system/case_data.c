@@ -93,11 +93,14 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
     }
 
     else if (check_feature(b_ptr->f, "·¸:¥Ë³Ê")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤Ë");
-	if (check_feature(b_ptr->f, "»þ´Ö"))
-	  c_ptr->oblig[c_ptr->element_num] = FALSE;
-	else
-	  c_ptr->oblig[c_ptr->element_num] = TRUE;
+	if (check_feature(b_ptr->f, "»þ´Ö")) {
+	    c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("»þ´Ö");
+	    c_ptr->oblig[c_ptr->element_num] = FALSE;
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤Ë");
+	    c_ptr->oblig[c_ptr->element_num] = TRUE;
+	}
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥è¥ê³Ê")) {
@@ -130,7 +133,12 @@ BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
 	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:Ìµ³Ê")) {
-	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¦Õ");
+	if (check_feature(b_ptr->f, "»þ´Ö")) {
+	    c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("»þ´Ö");
+	}
+	else {
+	    c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¦Õ");
+	}
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 	return b_ptr;
     }

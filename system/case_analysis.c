@@ -73,6 +73,9 @@ struct PP_STR_TO_CODE {
     {"とする", "トスル", 34},
     {"によるぬ", "ニヨルヌ", 35},
     {"にかぎるぬ", "ニカギルヌ", 36},
+    {"時間", "時間", 37},	/* ニ格, 無格で時間であるものを時間という格として扱う */
+    {"まで", "マデ", 38},	/* 明示されない格であるが、辞書側の格として表示するために
+				   書いておく */
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
@@ -290,7 +293,7 @@ char *sm_code_to_str(int code)
 /*==================================================================*/
 {
     int i, j;
-    int topic_score, topic_score_sum = 0, topic_slot[2];
+    int topic_score, topic_score_sum = 0, topic_slot[2], distance_cost = 0;
     char *cp;
 
     /* 格構造解析のメイン関数 */
@@ -322,10 +325,30 @@ char *sm_code_to_str(int code)
 
     /* corpus based case analysis 00/01/04
        ここで default との距離のずれ, 提題を処理 */
-    Work_mgr.score -= Work_mgr.dflt * 2;
+    /* Work_mgr.score -= Work_mgr.dflt * 2; */
+
+    for (i = 0; i < sp->Bnst_num-1; i++) {
+	if (dpnd.dflt[i] > 0) {
+	    if (check_feature((sp->bnst_data+i)->f, "提題")) {
+		distance_cost += dpnd.dflt[i];
+		continue;
+	    }
+	    /* となりの強い用言 (連体以外) を越えているとき */
+	    if (dpnd.head[i] > i+1 && subordinate_level_check("B", sp->bnst_data+i+1) && 
+		(cp = (char *)check_feature((sp->bnst_data+i+1)->f, "係:"))) {
+		if (strcmp(cp+3, "連体") && strcmp(cp+3, "連格")) {
+		    distance_cost += dpnd.dflt[i]*4;
+		    continue;
+		}
+	    }
+	    distance_cost += dpnd.dflt[i]*2;
+	}		    
+    }
+
+    Work_mgr.score -= distance_cost;
 
     for (i = sp->Bnst_num-1; i > 0; i--) {
-	/* 用言ごとに提題を処理する */
+	/* 文末から用言ごとに提題を処理する */
 	if (cp = (char *)check_feature((sp->bnst_data+i)->f, "提題受")) {
 
 	    /* topic_slot[0]	時間以外のハ格のスロット
@@ -350,9 +373,10 @@ char *sm_code_to_str(int code)
 	    if ((topic_slot[0] == 1 || topic_slot[1] == 1) && 
 		(topic_slot[0] < 2 && topic_slot[1] < 2)) {
 		sscanf(cp, "%*[^:]:%d", &topic_score);
-		Work_mgr.score += topic_score;
+		/* とりあえず、時間は 8 点にしてみる */
+		Work_mgr.score += topic_score*topic_slot[0]+8*topic_slot[1];
 		if (OptDisplay == OPT_DEBUG) {
-		    topic_score_sum += topic_score;
+		    topic_score_sum += topic_score*topic_slot[0]+8*topic_slot[1];
 		}
 	    }
 
@@ -360,7 +384,7 @@ char *sm_code_to_str(int code)
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	fprintf(stdout, "■ %d点 (距離減点 %d点 提題スコア %d点)\n", Work_mgr.score, Work_mgr.dflt*2, topic_score_sum);
+	fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
     }
         
     /* 後処理 */
