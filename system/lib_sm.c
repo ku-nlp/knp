@@ -830,6 +830,7 @@ char  		cont_str[DBM_CON_MAX];
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && num >= 0 && cpm_ptr->cmm[0].cf_ptr->ex[num] && 
+	    cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] != MATCH_SUBJECT && 
 	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* 格フレームとある程度マッチするとき */
 
 	    if (cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
@@ -844,14 +845,12 @@ char  		cont_str[DBM_CON_MAX];
 	    /* もっとも類似している意味属性に決定 */
 	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, sm_codes)) {
 		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* 意味素更新 */
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
-				cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
-			codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
-			fprintf(stderr, "] -> [");
-			codes2sm_print(stderr, new_code);
-			fprintf(stderr, "]\n");
-		    }
+		    fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
+			    cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
+		    codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
+		    fprintf(stderr, "] -> [");
+		    codes2sm_print(stderr, new_code);
+		    fprintf(stderr, "]\n");
 
 		    strcpy(cpm_ptr->elem_b_ptr[i]->SM_code, new_code);
 		    cpm_ptr->elem_b_ptr[i]->SM_num = strlen(cpm_ptr->elem_b_ptr[i]->SM_code) / SM_CODE_SIZE;
