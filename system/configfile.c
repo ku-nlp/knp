@@ -283,6 +283,12 @@ int knp_dict_file_already_defined = 0;
 		else if (!strcmp(dicttype, "格フレームDATA")) {
 		    DICT[CF_DATA] = strdup(_Atom(car(car(cell1))));
 		}
+		else if (!strcmp(dicttype, "名詞格フレームINDEXDB")) {
+		    DICT[CF_NOUN_INDEX_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "名詞格フレームDATA")) {
+		    DICT[CF_NOUN_DATA] = strdup(_Atom(car(car(cell1))));
+		}
 		else if (!strcmp(dicttype, "分類語彙表DB")) {
 		    DICT[BGH_DB] = strdup(_Atom(car(car(cell1))));
 		}
