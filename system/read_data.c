@@ -423,6 +423,39 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+		    int break_feature(FEATURE *fp)
+/*==================================================================*/
+{
+    while (fp) {
+	if (!strcmp(fp->cp, "&break")) return 1;
+	fp = fp->next;
+    }
+    return 0;
+}
+
+/*==================================================================*/
+	 void assign_mrph_feature2(MrphRule *r_ptr, int size, 
+				   MRPH_DATA *s_m_ptr, int length)
+/*==================================================================*/
+{
+    /* ある範囲に対して形態素のマッチングを行う */
+
+    int j, k, match_start, match_end;
+    MRPH_DATA	*m_ptr;
+
+    for (j = 0; j < size; j++, r_ptr++) {
+	if (regexpmrphrule_match2(r_ptr, s_m_ptr, length,
+				  &match_start, &match_end) != -1) {
+	    for (k = match_start; k < match_end; k++) {
+		m_ptr = s_m_ptr + k;
+		assign_feature(&(m_ptr->f), &(r_ptr->f), m_ptr);
+	    }
+	    if (break_feature(r_ptr->f)) break;
+	}
+    }
+}
+
+/*==================================================================*/
 	       BNST_DATA *init_bnst(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
