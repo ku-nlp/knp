@@ -1798,8 +1798,8 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectForVerbSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
 	    Bcheck[cs - s][tp->num] = 1;
-	    if (!(OptEllipsis & OPT_REL_NOUN) && 
-		!(OptDiscFlag & OPT_DISC_BEST) && 
+	    /* BEST解を求めるとき以外は、スコアをチェックしてreturn */
+	    if (!(OptDiscFlag & OPT_DISC_BEST) && 
 		ScoreCheck(cf_ptr, n)) {
 		return 1;
 	    }
@@ -2604,32 +2604,41 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     cs = sentence_data + sp->Sen_num - 1;
     memset(Bcheck, 0, sizeof(int) * TAG_MAX * PREV_SENTENCE_MAX);
 
-    /* best解を探す */
 
-    EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-			    cs->tag_data + cs->Tag_num - 1, 
-			    cf_ptr, n, LOC_OTHERS);
-    /* 前文 */
-    if (cs - sentence_data > 0) {
-	EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				(cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				cf_ptr, n, LOC_OTHERS);
-	/* 2文前 */
-	if (cs - sentence_data > 1) {
-	    EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-				    cf_ptr, n, LOC_OTHERS);
-	}
-    }
-
-    /* 閾値を越えるものが見つからなかった */
-    if (!ScoreCheck(cf_ptr, n)) {
-	/* 閾値を越えるものがなく、格フレームに<主体>があるとき */
-	if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	    maxtag = ExtraTags[1]; /* 不特定-人 */
+    if (!EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				 cs->tag_data + cs->Tag_num - 1, 
+				 cf_ptr, n, LOC_OTHERS)) {
+	/* 前文 */
+	if (cs - sentence_data > 0) {
+	    if (!EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					 (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
+					 cf_ptr, n, LOC_OTHERS)) {
+		/* 2文前 */
+		if (cs - sentence_data > 1) {
+		    if (!EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+						 cf_ptr, n, LOC_OTHERS)) {
+			return 0;
+		    }
+		}
+		else {
+		    return 0;
+		}
+	    }
 	}
 	else {
 	    return 0;
 	}
+    }
+
+    /* 閾値を越えるものが見つかった */
+
+    /* 閾値を越えるものがなく、格フレームに<主体>があるとき */
+    if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	maxtag = ExtraTags[1]; /* 不特定-人 */
+    }
+    else {
+	return 0;
     }
 
     if (maxtag) {
