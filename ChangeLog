@@ -3,6 +3,12 @@
 	* system/context.c, system/main.c:
 	名詞解析においてbest first手法を実装した
 
+	* rule/bnst_basic.rule, rule/case_analysis.rule:
+	タグ単位間の係り受けルールを記述
+
+	* system/case_data.c, system/dpnd_analysis.c, system/tree_conv.c:
+	タグ単位間の係り受けの制御
+
 2004-09-01  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule:
