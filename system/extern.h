@@ -17,6 +17,7 @@ extern int		Revised_para_num;
 
 extern int		Sen_num;
 extern char 		Comment[];
+extern char		SID[];
 extern char		*ErrorComment;
 extern char 		PM_Memo[];
 
@@ -50,6 +51,7 @@ extern int 		Mask_matrix[][BNST_MAX];
 extern char		G_Feature[][64];
 
 extern TOTAL_MGR	Best_mgr;
+extern TOTAL_MGR	Op_Best_mgr;
 
 extern int 		OptAnalysis;
 extern int 		OptExpress;
@@ -59,8 +61,10 @@ extern int 		OptInhibit;
 extern int		OptCheck;
 extern int		OptNE;
 extern int		OptHelpsys;
+extern int		OptLearn;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
+extern char		*OptOptionalCase;
 
 extern enum OPTION1	Option1;
 extern enum OPTION2	Option2;

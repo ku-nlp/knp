@@ -10,6 +10,7 @@
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 int Possibility;	/* 依存構造の可能性の何番目か */
+static int dpndID = 0;
 
 extern FILE  *Infp;
 extern FILE  *Outfp;
@@ -283,7 +284,8 @@ extern FILE  *Outfp;
 /*==================================================================*/
 {
     int i, j, k, one_score, score, flag, rentai, vacant_slot_num;
-    int topic_score, optional_score;
+    int topic_score, optional_flag = 0;
+    int optional_score = 0, total_optional_score = 0;
     int scase_check[11], ha_check, un_count, pred_p;
     char *cp, *cp2;
     BNST_DATA *g_ptr, *d_ptr;
@@ -370,6 +372,25 @@ extern FILE  *Outfp;
 			}
 		    }
 
+		    k = case2num(cp+3);
+
+		    /* 任意格の係り受けがコーパス中に存在するかどうか */
+		    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) && 
+			check_optional_case(cp+3) == TRUE) {
+
+			optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr);
+			/* one_score += optional_score*10; */
+			/* 距離重み */ /* j が i に係っている */
+			/* optional_score += corpus_optional_case_comp(d_ptr, cp+3, g_ptr)*10*(Bnst_num-1-i)/(Bnst_num-1-j); */
+			if (optional_score > 0) {
+			    dpnd.op[j].flag = TRUE;
+			    dpnd.op[j].weight = optional_score;
+			    dpnd.op[j].type = cp+3;
+			    optional_flag = 1;
+			    total_optional_score += optional_score*5;
+			}
+		    }
+
 		    /* 格要素一般の扱い */
 
 		    /* 未格 : 数えておき，後で空スロットを調べる (時間は別) */
@@ -414,19 +435,10 @@ extern FILE  *Outfp;
 
 		    /* 他の格 : 各格1つは点数をあたえる
 		       ※ ニ格の場合，時間とそれ以外は区別する方がいいかも？ */
-		    else if ((k = case2num(cp+3)) != -1) {
+		    else if (k != -1) {
 			if (scase_check[k] == 0) {
 			    scase_check[k] = 1;
-			    /* 任意格のコーパスチェックを抑制しているか
-			       任意格ではないとき */
-			    if ((OptInhibit & OPT_INHIBIT_OPTIONAL_CASE) || 
-				check_optional_case(k) == FALSE)
-				one_score += 10;
-			    else {
-				/* 任意格の係り受けがコーパス中に存在するかどうか */
-				optional_score = corpus_optional_case_comp(d_ptr, cp+3, g_ptr);
-				one_score += optional_score*10+10;
-			    }
+			    one_score += 10;
 			} 
 		    }
 		}
@@ -510,8 +522,29 @@ extern FILE  *Outfp;
     if (score > Best_mgr.score) {
 	Best_mgr.dpnd = dpnd;
 	Best_mgr.score = score;
+	Best_mgr.ID = dpndID;
 	Possibility++;
     }
+
+    if (optional_flag) {
+	if (!OptLearn) {
+	    score += total_optional_score;
+	    if (score > Op_Best_mgr.score) {
+		Op_Best_mgr.dpnd = dpnd;
+		Op_Best_mgr.score = score;
+		Op_Best_mgr.ID = dpndID;
+	    }
+	}
+	else {
+	    printf(";;;OK 候補 %d %s %d\n", dpndID, SID, score);
+	    for (i = 0;i < Bnst_num; i++) {
+		if (dpnd.op[i].flag) {
+		    fprintf(stdout, ";;;OK * %d %d %d %s\n", i, dpnd.head[i], dpnd.op[i].weight, dpnd.op[i].type);
+		}
+	    }
+	}
+    }
+    dpndID++;
 }
 
 /*==================================================================*/
@@ -647,8 +680,12 @@ extern FILE  *Outfp;
 	for (i = 0; i < count; i++) {
 	    if (i < BNST_MAX)
 		dpnd.check[dpnd.pos].pos[i] = possibilities[i];
-	    else
-		fprintf(stderr, "; MAX checks overflowed.\n");
+	    else {
+#ifdef DEBUG
+		fprintf(stderr, ";; MAX checks overflowed.\n");
+#endif
+		break;
+	    }
 	}
 
 	/* 一意に決定する場合 */
@@ -732,7 +769,12 @@ extern FILE  *Outfp;
     Best_mgr.score = -10000; /* スコアは「より大きい」時に入れ換えるので，
 				初期値は十分小さくしておく */
     Best_mgr.dflt = 0;
+    Best_mgr.ID = -1;
     Possibility = 0;
+    dpndID = 0;
+
+    Op_Best_mgr.score = -10000;
+    Op_Best_mgr.ID = -1;
 
     /* 係り状態の初期化 */
 
@@ -741,6 +783,7 @@ extern FILE  *Outfp;
 	dpnd.dflt[i] = 0;
 	dpnd.mask[i] = 1;
 	dpnd.check[i].num = -1;
+	memset(&(dpnd.op[i]), 0, sizeof(struct _optionalcase));
     }
     dpnd.pos = Bnst_num - 1;
     dpnd.flag = 0;

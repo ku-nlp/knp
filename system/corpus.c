@@ -671,7 +671,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 
     /* 文節 feature のチェック */
     if (check_feature_for_optional_case(ptr1->f) == TRUE)
-	return FALSE;
+	return 0;
 
     /* Memory 確保 */
     cp1 = (char *)malloc_data(strlen(ptr1->Jiritu_Go), "optional case");
@@ -687,7 +687,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		flag = 0;
 		break;
 	    }
-	    strcat(cp1, ptr1->jiritu_ptr+k);
+	    strcat(cp1, (ptr1->jiritu_ptr+k)->Goi);
 	}
 
 	if (!flag)
@@ -704,7 +704,7 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		    flag = 0;
 		    break;
 		}
-		strcat(cp2, ptr2->jiritu_ptr+k);
+		strcat(cp2, (ptr2->jiritu_ptr+k)->Goi);
 	    }
 
 	    if (!flag)
@@ -727,49 +727,45 @@ int corpus_optional_case_comp(BNST_DATA *ptr1, char *case1, BNST_DATA *ptr2) {
 		free(cp2);
 		/* full match */
 		if (!i && !j)
-		    return 1;
+		    return 2;
 		/* part match */
 		else
-		    return 0.5;
+		    return 1;
 	    }
+	    /*
 	    else
 		fprintf(Outfp, ";;;(O) %d %d %s:%s %s ->%d\n", pos1, pos2, cp1, case1, cp2, score);
+		*/
 	}
     }
 
     free(cp1);
     free(cp2);
     return 0;
-
-    /* データベースの検索
-    sprintf(buffer, "%s:%s %s", ptr1->Jiritu_Go, 
-	    case1, ptr2->Jiritu_Go);
-    if (buffer[DATA_LEN-1] != '\n') {
-	fprintf(stderr, "corpus_optional_case_comp: data length overflow.\n");
-	exit(1);
-    }
-    score = dbfetch(op_db, buffer);
-
-    fprintf(Outfp, ";;;(O) %s:%s %s ->%d\n", ptr1->Jiritu_Go, case1, 
-	    ptr2->Jiritu_Go, score);
-
-    if (score)
-	return TRUE;
-    else
-	return FALSE; */
 }
 
 /* 扱うべき任意格であれば真を返す関数 */
-int check_optional_case(int scase) {
+int check_optional_case(char *scase) {
 
-    /* デ, カラ, マデ, ト格かな */
-    if (scase == case2num("デ格") || 
-	scase == case2num("カラ格") || 
-	scase == case2num("マデ格") || 
-	scase == case2num("ト格"))
-	return TRUE;
-    else
-	return FALSE;
+    /* オプションで与えられた格 */
+    if (OptOptionalCase) {
+	if (str_eq(scase, OptOptionalCase))
+	    return TRUE;
+	else
+	    return FALSE;
+    }
+    else {
+	/* デ, カラ, マデ, ト格かな */
+	if (str_eq(scase, "デ格") || 
+	    str_eq(scase, "カラ格") || 
+	    str_eq(scase, "マデ格") || 
+	    str_eq(scase, "ト格") || 
+	    str_eq(scase, "未格") || 
+	    str_eq(scase, "ガ格"))
+	    return TRUE;
+	else
+	    return FALSE;
+    }
 }
 
 /* 自立語 : 文節 feature の制限 */
@@ -784,7 +780,8 @@ int check_feature_for_optional_case(FEATURE *f) {
 int check_JiritsuGo_for_optional_case(char *cp) {
      if (!strcmp(cp, "なる") || 
 	 !strcmp(cp, "ない") || 
-	 !strcmp(cp, "する")) {
+	 !strcmp(cp, "する") ||
+	 !strcmp(cp, "ある")) {
 	return TRUE;
     }
     return FALSE;
@@ -799,11 +796,37 @@ int check_Morph_for_optional_case(MRPH_DATA *m) {
     else if (m->Hinshi == 6 && m->Bunrui == 8)
 	return TRUE;
     return FALSE;
-/*     int i; */
-/*     for (i = 0; i < b->jiritu_num; i++) { */
-/* 	if ((b->jiritu_ptr+i)->Hinshi == 6 && (b->jiritu_ptr+i)->Bunrui == 9) { */
-/* 	    return TRUE; */
-/* 	} */
-/*     } */
-/*     return FALSE; */
+}
+
+void optional_case_evaluation() {
+    int i;
+
+    if (Op_Best_mgr.ID < 0 || Best_mgr.ID == Op_Best_mgr.ID)
+	return;
+
+    /*
+    fprintf(stderr, "★ Best = %3d\n", Best_mgr.score);
+    for (i = 0;i < Bnst_num; i++) {
+	fprintf(stderr, "%2d %2d\n", i, Best_mgr.dpnd.head[i]);
+    }
+    fprintf(stderr, "★ Op_Best = %3d\n", Op_Best_mgr.score);
+    for (i = 0;i < Bnst_num; i++) {
+	fprintf(stderr, "%2d %2d\n", i, Op_Best_mgr.dpnd.head[i]);
+    }
+    */
+
+    /* 学習時でなければ */
+    if (!OptLearn) {
+	for (i = 0;i < Bnst_num; i++) {
+	    /* 事例を用いた文節 */
+	    if (Op_Best_mgr.dpnd.op[i].flag && Best_mgr.dpnd.head[i] != Op_Best_mgr.dpnd.head[i]) {
+		/* 事例を用いたときのほうが近いとき
+		   if (Op_Best_mgr.dpnd.head[i] < Best_mgr.dpnd.head[i] && */
+		if (Op_Best_mgr.score > Best_mgr.score) {
+		    Best_mgr = Op_Best_mgr;
+		    return;
+		}
+	    }
+	}
+    }
 }
