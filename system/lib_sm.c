@@ -533,7 +533,7 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
-	       int sm_match_check(char *pat, char *codes)
+	int sm_match_check(char *pat, char *codes, int expand)
 /*==================================================================*/
 {
     int i;
@@ -543,7 +543,7 @@ char  		cont_str[DBM_CON_MAX];
     }
 
     for (i = 0; *(codes+i); i += SM_CODE_SIZE) {
-	if (_sm_match_score(pat, codes+i, SM_NO_EXPAND_NE) > 0) {
+	if (_sm_match_score(pat, codes+i, expand) > 0) {
 	    return TRUE;
 	}
     }
@@ -558,7 +558,7 @@ char  		cont_str[DBM_CON_MAX];
     code = sm2code(cp);
 
     /* すでにその意味属性をもっているとき */
-    if (sm_match_check(code, bp->SM_code) == TRUE) {
+    if (sm_match_check(code, bp->SM_code, SM_NO_EXPAND_NE) == TRUE) {
 	return FALSE;
     }
 
@@ -591,7 +591,7 @@ char  		cont_str[DBM_CON_MAX];
 	    if (tempscore > score) {
 		score = tempscore;
 		/* 両方 target 意味素に属す */
-		if (sm_match_check(target, exd) && sm_match_check(target, exp)) {
+		if (sm_match_check(target, exd, expand) && sm_match_check(target, exp, expand)) {
 		    flag = TRUE;
 		}
 		else {
@@ -799,6 +799,33 @@ char  		cont_str[DBM_CON_MAX];
 }
 
 /*==================================================================*/
+   void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i, num;
+    char *new_code;
+
+    if (Thesaurus != USE_NTT) return;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (!cpm_ptr->elem_b_ptr[i]->SM_code[0]) {
+	    continue;
+	}
+	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	/* 省略格要素ではない割り当てがあったとき */
+	if (cpm_ptr->elem_b_num[i] > -2 && 
+	    num >= 0 && 
+	    cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
+	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, cpm_ptr->cmm[0].cf_ptr->sm_specify[num])) {
+		strcpy(cpm_ptr->elem_b_ptr[i]->SM_code, new_code);
+		cpm_ptr->elem_b_ptr[i]->SM_num = strlen(cpm_ptr->elem_b_ptr[i]->SM_code)/SM_CODE_SIZE;
+		free(new_code);
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
    void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
@@ -825,10 +852,10 @@ char  		cont_str[DBM_CON_MAX];
 		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
 		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
 		 /* (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && ( */
-		 sm_match_check(sm2code("具体"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
-		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code) || /* 組織名, 人名はすでに主体 */
-		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code) || 
-		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code))) {
+		 sm_match_check(sm2code("具体"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
+		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || /* 組織名, 人名はすでに主体 */
+		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
+		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
 		assign_sm((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "主体");
 		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "主体付与");
 	    }

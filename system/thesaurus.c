@@ -282,6 +282,53 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
+	  char *get_most_similar_code(char *exd, char *exp)
+/*==================================================================*/
+{
+    int i, j, step, ret_sm_num = 0;
+    float score = 0, tempscore;
+    char *ret_sm;
+
+    /* どちらかに用例のコードがないとき */
+    if (!(exd && exp && *exd && *exp)) {
+	return NULL;
+    }
+
+    if (Thesaurus == USE_BGH) {
+	step = BGH_CODE_SIZE;
+    }
+    else if (Thesaurus == USE_NTT) {
+	step = SM_CODE_SIZE;
+    }
+
+    ret_sm = (char *)malloc_data(sizeof(char)*strlen(exd)+1, "get_most_similar_code");
+
+    /* 最大マッチスコアを求める */
+    for (j = 0; exp[j]; j+=step) {
+	for (i = 0; exd[i]; i+=step) {
+	    if (Thesaurus == USE_BGH) {
+		tempscore = (float)bgh_code_match_for_case(exp+j, exd+i);
+	    }
+	    else if (Thesaurus == USE_NTT) {
+		tempscore = ntt_code_match(exp+j, exd+i, SM_NO_EXPAND_NE);
+	    }
+	    if (tempscore > score) {
+		score = tempscore;
+		strncpy(ret_sm, exd+i, step);
+		ret_sm_num = 1;
+		ret_sm[step] = '\0';
+	    }
+	    else if (tempscore == score) {
+		strncat(ret_sm, exd+i, step);
+		ret_sm_num++;
+	    }
+	}
+    }
+
+    return ret_sm;
+}
+
+/*==================================================================*/
 	    float CalcWordSimilarity(char *exd, char *exp)
 /*==================================================================*/
 {

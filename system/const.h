@@ -687,6 +687,9 @@ typedef struct cf_def {
     char	*sm_delete[CF_ELEMENT_MAX];		/* 使用禁止意味マーカ */
     int		sm_delete_size[CF_ELEMENT_MAX];
     int		sm_delete_num[CF_ELEMENT_MAX];
+    char	*sm_specify[CF_ELEMENT_MAX];		/* 制限意味マーカ */
+    int		sm_specify_size[CF_ELEMENT_MAX];
+    int		sm_specify_num[CF_ELEMENT_MAX];
     char 	*ex[CF_ELEMENT_MAX];			/* 用例 */
     char	**ex_list[CF_ELEMENT_MAX];
     int		*ex_freq[CF_ELEMENT_MAX];
