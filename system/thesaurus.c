@@ -30,7 +30,9 @@ int	ParaThesaurus = USE_BGH;
     else if (ParaThesaurus != USE_BGH && ParaThesaurus != USE_NTT && 
 	     Thesaurus == USE_NTT) {
 	Thesaurus = ParaThesaurus;
-	fprintf(Outfp, "Thesaurus for case analysis is forced to %s.\n", THESAURUS[Thesaurus].name);
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Thesaurus for case analysis is forced to %s.\n", THESAURUS[Thesaurus].name);
+	}
     }
 
     if (Thesaurus == USE_BGH || ParaThesaurus == USE_BGH) {
