@@ -1,3 +1,7 @@
+2004-10-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/scode/ntt/usr_word2code.dat: New file.
+
 2004-10-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/bgh.pl:
