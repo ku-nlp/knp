@@ -445,6 +445,12 @@ extern float	AssignReferentThreshold;
 {
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
+	int i;
+
+	fprintf(stderr, ";; Parse timeout.\n;; (");
+	for (i = 0; i < current_sentence_data.Mrph_num; i++)
+	    fprintf(stderr, "%s", current_sentence_data.mrph_data[i].Goi2);
+	fprintf(stderr, ")\n");
 	exit(1);
     }
     else {
@@ -471,11 +477,11 @@ extern float	AssignReferentThreshold;
     init_scase();	/* 表層格辞書オープン */
 
     if (OptDisc == OPT_DISC) {
-	init_noun();	/* 名詞辞書オープン */
+	/* init_noun();	 * 名詞辞書オープン */
 #ifdef USE_SVM
 	if (OptDiscMethod == OPT_SVM) {
 	    if (!init_svm()) {	/* SVM */
-		fprintf(stderr, "SVM initialization error.\n");
+		fprintf(stderr, ";; SVM initialization error.\n");
 		exit(1);
 	    }
 	}
@@ -971,7 +977,7 @@ PARSED:
     signal(SIGCHLD, sig_child);
   
     if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	fprintf(stderr,"Socket Error\n");
+	fprintf(stderr,";; Socket Error\n");
 	exit(1);
     }
   
@@ -982,14 +988,14 @@ PARSED:
   
     /* bind */  
     if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	fprintf(stderr, "bind Error\n");
+	fprintf(stderr, ";; bind Error\n");
 	close(sfd);
 	exit(1);
     }
   
     /* listen */  
     if (listen(sfd, SOMAXCONN) < 0) {
-	fprintf(stderr, "listen Error\n");
+	fprintf(stderr, ";; listen Error\n");
 	close(sfd);
 	exit(1);
     }
@@ -1001,7 +1007,7 @@ PARSED:
 	if((fd = accept(sfd, NULL, NULL)) < 0) {
 	    if (errno == EINTR) 
 		continue;
-	    fprintf(stderr, "accept Error\n");
+	    fprintf(stderr, ";; accept Error\n");
 	    close(sfd);
 	    exit(1);
 	}
@@ -1143,12 +1149,12 @@ PARSED:
 
     /* つなげる準備 */
     if ((hp = gethostbyname(OptHostname)) == NULL) {
-	fprintf(stderr, "host unkown\n");
+	fprintf(stderr, ";; host unkown\n");
 	exit(1);
     }
   
     while ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
-	fprintf(stderr, "socket error\n");
+	fprintf(stderr, ";; socket error\n");
 	exit(1);
     }
   
@@ -1157,20 +1163,20 @@ PARSED:
     sin.sin_addr = *((struct in_addr * )hp->h_addr);
 
     if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	fprintf(stderr, "connect error\n");
+	fprintf(stderr, ";; connect error\n");
 	exit(1);
     }
 
     /* Server 用との通信ハンドルを作成 */
     if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
 	close(fd);
-	fprintf(stderr, "fd error\n");
+	fprintf(stderr, ";; fd error\n");
 	exit(1);
     }
 
     /* 挨拶 */
     if (send_string(NULL) != 200) {
-	fprintf(stderr, "greet error\n");
+	fprintf(stderr, ";; greet error\n");
 	exit(1);
     }
 
@@ -1203,7 +1209,7 @@ PARSED:
     /* これから動作 */
     sprintf(buf, "RUN%s\n", option);
     if (send_string(buf) != 200) {
-	fprintf(stderr, "argument error OK? [%s]\n", option);
+	fprintf(stderr, ";; argument error OK? [%s]\n", option);
 	close(fd);
 	exit(1);
     }
