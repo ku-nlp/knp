@@ -1,3 +1,16 @@
+2003-04-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c:
+	文節が長すぎるなどで解析失敗したときにsegmentation faultすることが
+	あるバグを修正
+
+	* system/const.h, system/context.c, system/dpnd_analysis.c, system/main.c:
+	係り受け解析に失敗したときに格解析を行わないように修正
+
+	* system/context.c:
+	係り受け解析に失敗時に、文の情報を正しく保存できていなかったのを修
+	正
+
 2003-04-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
