@@ -37,6 +37,9 @@ struct PP_STR_TO_CODE {
     {"は", "ハ", 1},		/* NTT辞書では「ガガ」構文が「ハガ」
 				   ※ NTT辞書の「ハ」は1(code)に変換されるが,
 				      1は配列順だけで「ガ」に変換される */
+    {"をめぐり", "ヲメグリ", 10},	/* 複合辞関係 */
+
+
     {"＊", "＊", -2},		/* 埋め込み文の被修飾詞 */
     {NULL, NULL, -1}		/* 格助詞の非明示のもの(提題助詞等) */
 };
@@ -192,6 +195,17 @@ char *sm_code_to_str(int code)
 	}
     }
 
+    /* corpus based case analysis 00/01/04
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->elem_b_num[i] == -1) {
+	    score -= cpm_ptr->cf.pred_b_ptr.dpnd_dflt * 2;
+	} else {
+	    score -= cpm_ptr->elem_b_ptr[i].dpnd_dflt * 2;
+	}	
+    }
+    */
+
     if (OptDisplay == OPT_DEBUG) {
 	print_data_cframe(cf_ptr);
 	print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num);
@@ -239,6 +253,8 @@ char *sm_code_to_str(int code)
 /*==================================================================*/
 {
     int i;
+    int topic_score;
+    char *cp;
 
     /* 格構造解析のメイン関数 */
 
@@ -266,6 +282,18 @@ char *sm_code_to_str(int code)
 	Possibility++;
     else
 	return;
+
+    /* corpus based case analysis 00/01/04
+       ここでdefaultとの距離のずれ,提題を処理 */
+    Work_mgr.score -= Work_mgr.dflt * 2;
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data+i)->f, "提題") &&
+	    (cp = (char *)check_feature(
+		(sp->bnst_data+(sp->bnst_data+i)->dpnd_head)->f, "提題受"))) {
+	    sscanf(cp, "%*[^:]:%d", &topic_score);
+	    Work_mgr.score += topic_score;
+	}
+    }
         
     /* 後処理 */
 

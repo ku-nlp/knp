@@ -8,34 +8,45 @@
 ====================================================================*/
 #include "knp.h"
 
+char fukugoji_string[64];
+
 /*==================================================================*/
-       int _make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+	     char *make_fukugoji_string(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, num, flag;
+    strcpy(fukugoji_string, "¥Ë¥ª¥¤¥Æ");
+
+    return fukugoji_string;
+}
+
+/*==================================================================*/
+BNST_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    int i, num;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
 
     if (b_ptr == NULL) {	/* Ëä¤á¹þ¤ßÊ¸¤ÎÈï½¤¾þ»ì */
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¡ö");
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥¬³Ê") || 
 	     (!check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:È½") &&
 	      check_feature(b_ptr->f, "·¸:¥Î³Ê"))) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤¬");
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥ò³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤ò");
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥Ø³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤Ø");
 	c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
     }
 
     else if (check_feature(b_ptr->f, "·¸:¥Ë³Ê")) {
@@ -44,7 +55,7 @@
 	  c_ptr->oblig[c_ptr->element_num] = FALSE;
 	else
 	  c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥è¥ê³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤è¤ê");
@@ -52,33 +63,33 @@
 	  c_ptr->oblig[c_ptr->element_num] = FALSE;
 	else
 	  c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
     }
 
     else if (check_feature(b_ptr->f, "·¸:¥Ç³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤Ç");
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥«¥é³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤«¤é");
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥È³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¤È");
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:¥Þ¥Ç³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = -1;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:Ìµ³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = pp_hstr_to_code("¦Õ");
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
-	flag = TRUE;
+	return b_ptr;
     }
     else if (check_feature(b_ptr->f, "·¸:Ì¤³Ê")) {
 	c_ptr->pp[c_ptr->element_num][0] = -1;
@@ -86,13 +97,17 @@
 	  c_ptr->oblig[c_ptr->element_num] = FALSE;
 	else 
 	  c_ptr->oblig[c_ptr->element_num] = TRUE;
-	flag = TRUE;
+	return b_ptr;
+    }
+    else if (check_feature(b_ptr->f, "Ê£¹ç¼­") && b_ptr->child[0]) {
+	c_ptr->pp[c_ptr->element_num][0] = 
+	    pp_hstr_to_code(make_fukugoji_string(b_ptr));
+	c_ptr->oblig[c_ptr->element_num] = FALSE;
+	return b_ptr->child[0];
     }
     else {
-	flag = FALSE;
+	return NULL;
     }
-
-    return flag;
 }
 
 /*==================================================================*/
@@ -141,6 +156,7 @@
 /*==================================================================*/
 {
     BNST_DATA *b_ptr = cpm_ptr->pred_b_ptr;
+    BNST_DATA *cel_b_ptr;
     int i, j, k, child_num;
     
     /* É½ÁØ³Ê etc. ¤ÎÀßÄê */
@@ -183,10 +199,10 @@
 
     for (child_num=0; b_ptr->child[child_num]; child_num++);
     for (i = child_num - 1; i >= 0; i--) {
-	if (_make_data_cframe_pp(cpm_ptr, b_ptr->child[i]) == TRUE) {
-	    _make_data_cframe_sm(cpm_ptr, b_ptr->child[i]);
-	    _make_data_cframe_ex(cpm_ptr, b_ptr->child[i]);
-	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = b_ptr->child[i];
+	if (cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i])) {
+	    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
+	    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
 	    cpm_ptr->cf.element_num ++;
 	}

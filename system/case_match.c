@@ -284,7 +284,8 @@ extern FILE  *Outfp;
 	}
     }
 
-    /* 文中の要素数(任意(埋め込み文の被修飾語)でマッチしていない要素以外) */
+    /* 文中の要素数(任意でマッチしていない要素以外) */
+    /* ※ 埋め込み文の被修飾語は任意扱い */
     for (i = 0; i < cfd->element_num; i++)
       if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED))
 	dat_element++;
@@ -295,15 +296,25 @@ extern FILE  *Outfp;
 	pat_element++;
 
     if (local_m_e < dat_element)
-      local_score = -1;
+	local_score = -1;
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0)
-      local_score = 0;
+	local_score = 0;
     else 
-      /* local_score = local_score * sqrt((double)local_m_e)
-	/ sqrt((double)dat_element * pat_element);*/
-      /* local_score = local_score * local_m_e
-	/ (dat_element * sqrt((double)pat_element)); */
-      local_score = local_score / sqrt((double)pat_element);
+	/* local_score = local_score * sqrt((double)local_m_e)
+	   / sqrt((double)dat_element * pat_element);*/
+
+	/* local_score = local_score * local_m_e
+	   / (dat_element * sqrt((double)pat_element)); */
+
+	/* local_score = local_score / sqrt((double)pat_element); */
+
+	/* corpus based case analysis 00/01/04 */
+	local_score /= 10;	/* 正規化しない,最大11に */
+
+    /* corpus based case analysis 00/01/04 */
+    /* 任意格にとりあえず5点 */
+    local_score += (cfd->element_num - dat_element) * 5;
+
 
     if (local_score > Current_max_score || 
 	(local_score == Current_max_score &&

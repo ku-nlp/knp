@@ -620,7 +620,7 @@ typedef struct cpm_def {
     CASE_FRAME 	cf;				/* 入力文の格構造 */
     BNST_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
     BNST_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
-    int 	elem_b_num[CF_ELEMENT_MAX];	/* ？ */
+    int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
     int 	score;				/* スコア最大値(=cmm[0].score) */
     int 	result_num;			/* 記憶する格フレーム数 */
     CF_MATCH_MGR cmm[CMM_MAX];			/* スコア最大の格フレームとの
