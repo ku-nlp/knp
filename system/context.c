@@ -7,6 +7,7 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
+#include "context.h"
 
 float maxscore;
 float maxrawscore;
@@ -16,30 +17,6 @@ char *maxtag, *maxfeatures;
 #define PREV_SENTENCE_MAX	3
 int Bcheck[PREV_SENTENCE_MAX][TAG_MAX];
 int PrintFeatures = 0;
-
-#define	LOC_PARENTV	0x000002
-#define	LOC_PARENTV_MC	0x000003
-#define	LOC_CHILDPV	0x000200
-#define	LOC_CHILDV	0x000400
-#define	LOC_PARENTNPARENTV	0x000004
-#define	LOC_PARENTNPARENTV_MC	0x000005
-#define	LOC_PV		0x000008
-#define	LOC_PV_MC	0x000009
-#define	LOC_PARENTVPARENTV	0x000010
-#define	LOC_PARENTVPARENTV_MC	0x000011
-#define	LOC_MC		0x002001
-#define	LOC_SC		0x004000
-#define	LOC_PRE_OTHERS	0x008000
-#define	LOC_POST_OTHERS	0x009000
-#define	LOC_S1_MC	0x012001
-#define	LOC_S1_SC	0x014000
-#define	LOC_S1_OTHERS	0x010000
-#define	LOC_S2_MC	0x022001
-#define	LOC_S2_SC	0x024000
-#define	LOC_S2_OTHERS	0x020000
-#define	LOC_OTHERS	0x000000
-/* LOC: 17文字が最大 */
-/* 位置の数を変えた場合 const.h の LOC_NUMBER を更新すること */
 
 char *ExtraTags[] = {"一人称", "不特定-人", "不特定-状況", ""};
 
@@ -66,24 +43,8 @@ char *CaseOrder[CASE_ORDER_MAX][4] = {
     {"ヲ", "ニ", "ガ", ""}, 
     {"ニ", "ヲ", "ガ", ""}, 
 };
+
 int DiscAddedCases[PP_NUMBER] = {END_M};
-
-int LocationOrder[][LOC_NUMBER] = {
-    {END_M}, 
-    {LOC_PARENTNPARENTV, LOC_PARENTV_MC, LOC_PARENTVPARENTV, LOC_PARENTV, LOC_PARENTNPARENTV_MC, 
-     LOC_PV_MC, LOC_CHILDPV, LOC_PV, LOC_PARENTVPARENTV_MC, LOC_CHILDV, LOC_MC, LOC_S1_MC, 
-     LOC_SC, LOC_S1_SC, LOC_S2_MC, LOC_PRE_OTHERS, LOC_S2_SC, LOC_POST_OTHERS, 
-     LOC_S1_OTHERS, LOC_S2_OTHERS, END_M}, 
-    {LOC_CHILDV, LOC_PARENTVPARENTV, LOC_PV, LOC_CHILDPV, LOC_PARENTVPARENTV_MC, 
-     LOC_PARENTNPARENTV, LOC_PARENTV, LOC_PV_MC, LOC_PARENTNPARENTV_MC, LOC_PARENTV_MC, 
-     LOC_PRE_OTHERS, LOC_S1_MC, LOC_S2_MC, LOC_MC, LOC_SC, LOC_S1_SC, LOC_S1_OTHERS, 
-     LOC_S2_SC, LOC_POST_OTHERS, LOC_S2_OTHERS, END_M}, 
-    {LOC_PV, LOC_PARENTVPARENTV, LOC_PARENTNPARENTV, LOC_CHILDPV, LOC_CHILDV, 
-     LOC_PARENTV, LOC_PARENTVPARENTV_MC, LOC_PARENTV_MC, LOC_S1_MC, LOC_PV_MC, 
-     LOC_S1_SC, LOC_SC, LOC_PRE_OTHERS, LOC_MC, LOC_PARENTNPARENTV_MC, LOC_S2_MC, 
-     LOC_S2_SC, LOC_S1_OTHERS, LOC_POST_OTHERS, LOC_S2_OTHERS, END_M}, 
-};
-
 int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
 
 
@@ -802,8 +763,13 @@ float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos,
     }
     else {
 	/* 最大マッチスコアを求める */
-	ex_score = CalcSmWordsSimilarity(exd, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos, 
-					 cf_ptr->sm_delete[n], expand);
+	if (cf_ptr->sm_specify[n]) {
+	    ex_score = calc_similarity(exd, cf_ptr->sm_specify[n], expand);
+	}
+	else {
+	    ex_score = CalcSmWordsSimilarity(exd, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos, 
+					     cf_ptr->sm_delete[n], expand);
+	}
     }
 
     /* 主体のマッチング */
@@ -1256,7 +1222,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     }
     else {
 	/* 標準偏差で割る */
-	f->frequency = (float)ef->frequency / 112.24212;
+	f->frequency = (float)ef->frequency / SVM_FREQ_SD;
     }
     for (i = 0; i < PP_NUMBER; i++) {
 	f->c_pp[i] = ef->c_pp == i ? 1 : 0;
@@ -1606,7 +1572,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->c_topic_flag = check_feature(bp->f, "主題表現") ? 1 : 0;
     f->c_no_topic_flag = check_feature(bp->f, "準主題表現") ? 1 : 0;
     f->c_in_cnoun_flag = bp->inum != 0 ? 1 : 0;
-    f->c_subject_flag = sm_match_check(sm2code("主体"), bp->SM_code) ? 1 : 0;
+    f->c_subject_flag = sm_match_check(sm2code("主体"), bp->SM_code, 
+				       check_feature(bp->f, "Ｔ固有一般展開禁止") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
     f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
     f->c_extra_tag = -1;
 
@@ -2129,7 +2096,8 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 
     if (!strcmp(bp->head_ptr->Goi, cpm_ptr->pred_b_ptr->head_ptr->Goi) || /* 用言と同じ表記はだめ */
 	(s == cs && /* 対象文 */
-	 (bp->num >= cpm_ptr->pred_b_ptr->num || /* 用言より後は許さない */
+	 ((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
+	   (cpm_ptr->cf.type == CF_PRED || bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head)) || 
 	  (!check_feature(bp->f, "係:連用") && 
 	   bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
 	  (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
@@ -2243,7 +2211,7 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 /*==================================================================*/
 int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
 			     CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
-			     TAG_DATA *tp, CASE_FRAME *cf_ptr, int n, int loc)
+			     TAG_DATA *tp, CASE_FRAME *cf_ptr, int n, int loc, int rec_flag)
 /*==================================================================*/
 {
     int i;
@@ -2287,11 +2255,15 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 	return 1;
     }
 
-    for (i = 0; tp->child[i]; i++) {
-	if (EllipsisDetectRecursive2(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp->child[i], cf_ptr, n, loc) == 1) {
-	    return 1;
+    /* 子供をたどる */
+    if (rec_flag == TRUE) {
+	for (i = 0; tp->child[i]; i++) {
+	    if (EllipsisDetectRecursive2(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp->child[i], cf_ptr, n, loc, TRUE) == 1) {
+		return 1;
+	    }
 	}
     }
+
     return 0;
 }
 
@@ -3113,23 +3085,30 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
+    /* 親 */
     if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				 cpm_ptr->pred_b_ptr->parent, 
+				 cf_ptr, n, LOC_OTHERS, FALSE)) {
+	goto EvalAntecedentNoun;
+    }
+    /* 主節 */
+    else if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cs->tag_data + cs->Tag_num - 1, 
-				 cf_ptr, n, LOC_OTHERS)) {
+				 cf_ptr, n, LOC_OTHERS, TRUE)) {
 	goto EvalAntecedentNoun;
     }
     /* 前文 */
     else if (cs - sentence_data > 0) { 
 	if (EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				     (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				     cf_ptr, n, LOC_OTHERS)) {
+				     cf_ptr, n, LOC_OTHERS, TRUE)) {
 	    goto EvalAntecedentNoun;
 	}
 	/* 2文前 */
 	else if (cs - sentence_data > 1) {
 	    if (EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					 cf_ptr, n, LOC_OTHERS)) {
+					 cf_ptr, n, LOC_OTHERS, TRUE)) {
 		goto EvalAntecedentNoun;
 	    }
 	}
@@ -3245,24 +3224,24 @@ void AppendCfFeature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_
 
     /* 格フレームが <主体準> をもつかどうか */
     if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
-	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
     /* 格フレームが <主体> をもつかどうか */
     else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 
 
     /* 格フレームが <補文> をもつかどうか */
     if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
-	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr(cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 
-    if (sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code)) {
-	sprintf(feature_buffer, "格フレーム-%s-抽象物", pp_code_to_kstr(cf_ptr->pp[n][0]));
+    if (sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE)) {
+	sprintf(feature_buffer, "格フレーム-%s-抽象物", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(em_ptr->f), feature_buffer);
     }
 }

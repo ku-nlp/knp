@@ -15,6 +15,7 @@ knp_SOURCES = \
 	case_print.c \
 	const.h \
 	context.c \
+	context.h \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \

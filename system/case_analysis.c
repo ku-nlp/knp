@@ -1385,7 +1385,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	if (num == UNASSIGNED) {
 	    /* 例外タグ */
 	    if (ccp && ccp->bnst < 0) {
-		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			ETAG_name[abs(ccp->bnst)]);
 	    }
 	    /* 割り当てなし */
@@ -1399,7 +1399,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	else {
 	    /* 例外タグ */
 	    if (ccp && ccp->bnst < 0) {
-		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+		sprintf(buffer, "%s/E/%s/-/-/-", pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			ETAG_name[abs(ccp->bnst)]);
 	    }
 	    else {
