@@ -53,6 +53,7 @@
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
 #define CNRule_MAX	512
+#define Helpsys_MAX	512
 
 #define ALL_CASE_FRAME_MAX 	1536
 #define IPAL_FRAME_MAX 		512
