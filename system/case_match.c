@@ -445,13 +445,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
     /* exact match */
     else if (cf_match_exactly(tp, cfp->ex_list[n], cfp->ex_num[n], pos)) {
-	/* 外の関係: 1.0 */
-	if (MatchPP(cfp->pp[n][0], "外の関係")) {
-	    ex_score = 1.0;
-	}
-	else {
-	    ex_score = 1.1;
-	}
+	ex_score = 1.1;
     }
     else {
 	/* 最大マッチスコアを求める */
@@ -556,16 +550,23 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	ex_rawscore = calc_similarity_word_cf_with_sm(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
 						      cfp, as2, pos);
 
-	/* exact match */
-	if (ex_rawscore > 1.0) {
-	    *score = EX_match_exact; /* (int)(ex_rawscore * EX_match_score[7]) */
-	    return TRUE;
-	}
-
-	/* 外の関係のときシソーラスを使わない */
 	if (MatchPP(cfp->pp[as2][0], "外の関係")) {
-	    *score = 0;
-	    return FALSE;
+	    /* 外の関係のときシソーラスを使わない */
+	    if (ex_rawscore > 1.0) {
+		*score = *(match_score + 7);
+		return TRUE;
+	    }
+	    else {
+		*score = 0;
+		return FALSE;
+	    }
+	}
+	else {
+	    /* exact match */
+	    if (ex_rawscore > 1.0) {
+		*score = EX_match_exact; /* (int)(ex_rawscore * EX_match_score[7]) */
+		return TRUE;
+	    }
 	}
 
 	/* <主体>共通スコア */
