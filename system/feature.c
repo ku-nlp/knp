@@ -534,7 +534,10 @@
 	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, cp1), 
 				     threshold, cp2);
 	else if (str_eq(category, "Ê¸»ú¼ï"))
-	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.self, cp1), 
+	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.selfSM, cp1), 
+				     threshold, cp2);
+	else if (str_eq(category, "³Ê"))
+	    return compare_threshold(_check_function_NE(&((MRPH_DATA *)ptr2)->eNE.Case, cp1), 
 				     threshold, cp2);
 
 	fprintf(stderr, "Invalid rule! (%s).\n", rule);
