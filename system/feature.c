@@ -1044,7 +1044,6 @@
 					       (BNST_DATA *)ptr2);
     }
 
-
     /* &格述 : 格と述語の嗜好性チェック */
 
     else if (!strncmp(rule, "&格述:", strlen("&格述:"))) {
@@ -1082,27 +1081,6 @@
 	    /* 統計的に処理する */
 	    /* return corpus_barrier_check((BNST_DATA *)ptr1, 
 					(BNST_DATA *)ptr2); */
-    }
-
-    /* &境界特別 : 格と述語の壁チェック (事例, 臨時) */
-
-    else if (!strncmp(rule, "&境界特別:", strlen("&境界特別:"))) {
-	/* ルールによる壁 */
-	if (OptInhibit & OPT_INHIBIT_BARRIER) {
-	    /* 事例を使うとき */
-	    if (!(OptInhibit & OPT_INHIBIT_OPTIONAL_CASE)) {
-		return subordinate_level_check_special(rule + strlen("&境界特別:"),
-						       (BNST_DATA *)ptr2);
-	    }
-	    else {
-		return subordinate_level_check(rule + strlen("&境界特別:"),
-					       (BNST_DATA *)ptr2);
-	    }
-	}
-	else{
-	    return corpus_barrier_check((BNST_DATA *)ptr1, 
-					(BNST_DATA *)ptr2);
-	}
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */
