@@ -3,13 +3,19 @@
 基本的なインストール方法
 ========================
 
-JUMAN のライブラリのディレクトリを指定してください。
+1) JUMAN のライブラリのディレクトリを指定してください。
 
 JUMAN が /share/tool/juman にインストールされている場合は、JUMAN のラ
 イブラリは /share/tool/juman/lib にあるので、次のように指定してくださ
 い。
 
-1) ./configure --with-jumanlib-dir=/share/tool/juman/lib
+    ./configure --with-jumanlib-dir=/share/tool/juman/lib
+
+JUMAN がインストールされていない場合や、インストールされている JUMAN
+ではコンパイルできない場合は、次のようにしてください。
+
+    ./configure --with-included-juman
+
 2) make
 
 
