@@ -604,7 +604,8 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    strcat(buf, sm2code(cf_str_buf));
 	}
 
-	if ((flag & STOREtoCF) && sm_print_num <= EX_PRINT_NUM) {
+	if ((flag & STOREtoCF) && 
+	    (EX_PRINT_NUM < 0 || sm_print_num <= EX_PRINT_NUM)) {
 	    if (str[0])	strcat(str, "/");
 	    strcat(str, cf_str_buf);
 	}
@@ -615,7 +616,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     }
 
     if (flag & STOREtoCF) {
-	if (sm_print_num <= EX_PRINT_NUM) {
+	if (EX_PRINT_NUM < 0 || sm_print_num <= EX_PRINT_NUM) {
 	    mlength = strlen(str)+1;
 	    if (sm_delete_sm) mlength += strlen(sm_delete_sm)+1; /* "/"の分 */
 	    c_ptr->semantics[num] = (char *)malloc_data(sizeof(char)*mlength, 
@@ -675,7 +676,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
               格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
-    int max, count = 0, length = 0, thesaurus = USE_NTT, freq;
+    int max, count = 0, thesaurus = USE_NTT, freq;
     char *code, **destination, *buf;
 
     if (*cp == '\0') {
@@ -750,33 +751,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
 
 	    count++;
-	    if (flag & STOREtoCF && count == EX_PRINT_NUM) {
-		length = point-cp-2;
-	    }
 	}
     }
 
     *destination = strdup(buf);
     free(buf);
-
-    if (flag & STOREtoCF) {
-	if (*cp) {
-	    if (count <= EX_PRINT_NUM) {
-		c_ptr->examples[num] = strdup(cp);
-	    }
-	    else {
-		/* "...\0" の 4 つ分増やす */
-		c_ptr->examples[num] = (char *)malloc_data(sizeof(char)*(length+4), 
-							   "_make_ipal_cframe_ex");
-		strncpy(c_ptr->examples[num], cp, length);
-		*(c_ptr->examples[num]+length) = '\0';
-		strcat(c_ptr->examples[num], "...");
-	    }
-	}
-	else {
-	    c_ptr->examples[num] = NULL;
-	}
-    }
 }
 
 /*==================================================================*/
@@ -1523,10 +1502,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		(Case_frame_array+i)->ex_list[j] = NULL;
 		(Case_frame_array+i)->ex_size[j] = 0;
 		(Case_frame_array+i)->ex_num[j] = 0;
-	    }
-	    if ((Case_frame_array+i)->examples[j]) {
-		free((Case_frame_array+i)->examples[j]);
-		(Case_frame_array+i)->examples[j] = NULL;
 	    }
 	    if ((Case_frame_array+i)->semantics[j]) {
 		free((Case_frame_array+i)->semantics[j]);

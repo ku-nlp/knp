@@ -798,12 +798,6 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
-	if (src->examples[i]) {
-	    dst->examples[i] = strdup(src->examples[i]);
-	}
-	else {
-	    dst->examples[i] = NULL;
-	}
 	if (src->semantics[i]) {
 	    dst->semantics[i] = strdup(src->semantics[i]);
 	}
@@ -864,7 +858,6 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
 	dst->ex_size[i] = src->ex_size[i];
 	dst->ex_num[i] = src->ex_num[i];
-	dst->examples[i] = src->examples[i];	/* これを使う場合問題あり */
     }
     dst->voice = src->voice;
     dst->cf_address = src->cf_address;
