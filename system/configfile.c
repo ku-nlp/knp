@@ -175,14 +175,35 @@ int RuleNumMax = 0;
 }
 
 /*==================================================================*/
+     void check_data_newer_than_rule(time_t data, char *datapath)
+/*==================================================================*/
+{
+    /* ルールファイルとの時間チェック */
+
+    char *rulename;
+    int status;
+    struct stat sb;
+
+    rulename = strdup(datapath);
+    *(rulename+strlen(rulename)-5) = '\0';
+    strcat(rulename, ".rule");
+    status = stat(rulename, &sb);
+    if (!status) {
+	if (data < sb.st_mtime) {
+	    fprintf(stderr, "%s: older than rule file!\n", datapath);
+	}
+    }
+    free(rulename);
+}
+
+/*==================================================================*/
 		   char *check_filename(char *file)
 /*==================================================================*/
 {
     /* ルールファイル (*.data) の fullpath を返す関数 */
 
-    char *fullname, *rulename;
+    char *fullname;
     int status;
-    time_t data;
     struct stat sb;
 
     if (!Knprule_Dirname) {
@@ -215,19 +236,8 @@ int RuleNumMax = 0;
 	}
     }
 
-    data = sb.st_mtime;
-
     /* ルールファイルとの時間チェック */
-    rulename = strdup(fullname);
-    *(rulename+strlen(rulename)-5) = '\0';
-    strcat(rulename, ".rule");
-    status = stat(rulename, &sb);
-    if (!status) {
-	if (data < sb.st_mtime) {
-	    fprintf(stderr, "%s: older than rule file!\n", fullname);
-	}
-    }
-    free(rulename);
+    check_data_newer_than_rule(sb.st_mtime, fullname);
 
     return fullname;
 }
