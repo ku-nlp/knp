@@ -1,4 +1,0 @@
-SUBDIRS = .
-
-EXTRA_DIST = \
-	KNP.pm
