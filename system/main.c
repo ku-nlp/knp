@@ -820,8 +820,10 @@ PARSED:
 {
     /* サーバモード */
 
-    int sfd,fd;
+    int i, sfd, fd;
     struct sockaddr_in sin;
+    FILE *pidfile;
+    struct passwd *ent_pw;
 
     /* シグナル処理 */
     static void sig_child()
@@ -838,6 +840,16 @@ PARSED:
 	    exit(0);
 	}
 
+    /* parent */
+    if ((i = fork()) > 0) {
+	return;
+    }
+    else if (i == -1) {
+	fprintf(stderr, ";; unable to fork new process\n");
+	return;
+    }
+    /* child */
+
     signal(SIGHUP,  SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
     signal(SIGTERM, sig_term);
@@ -846,7 +858,7 @@ PARSED:
     signal(SIGCHLD, sig_child);
   
     if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	fprintf(stderr,";; Socket Error\n");
+	fprintf(stderr,";; socket error\n");
 	exit(1);
     }
   
@@ -857,38 +869,61 @@ PARSED:
   
     /* bind */  
     if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	fprintf(stderr, ";; bind Error\n");
+	fprintf(stderr, ";; bind error\n");
 	close(sfd);
 	exit(1);
     }
   
     /* listen */  
     if (listen(sfd, SOMAXCONN) < 0) {
-	fprintf(stderr, ";; listen Error\n");
+	fprintf(stderr, ";; listen error\n");
 	close(sfd);
 	exit(1);
     }
 
+    /* make pid file */
+    umask(022);
+    pidfile = fopen(KNP_PIDFILE, "w");
+    if (!pidfile) {
+	fputs(";; can't write pidfile: " KNP_PIDFILE "\n", stderr);
+    }
+    fprintf(pidfile, "%d\n", getpid());
+    fclose(pidfile);
+    umask(0);
+
+    /* change uid and gid for security */
+    ent_pw = getpwnam(KNP_SERVER_USER);
+    if(ent_pw){
+	gid_t dummy;
+	struct group *gp;
+	/* remove all supplementary groups */
+	setgroups(0, &dummy);
+	if ((gp = getgrgid(ent_pw->pw_gid)))
+	    setgid(gp->gr_gid); 
+	/* finally drop root */
+	setuid(ent_pw->pw_uid);
+    }
+
     /* accept loop */
-    while(1) {
+    while (1) {
 	int pid;
 
-	if((fd = accept(sfd, NULL, NULL)) < 0) {
+	if ((fd = accept(sfd, NULL, NULL)) < 0) {
 	    if (errno == EINTR) 
 		continue;
-	    fprintf(stderr, ";; accept Error\n");
+	    fprintf(stderr, ";; accept error\n");
 	    close(sfd);
 	    exit(1);
 	}
     
-	if((pid = fork()) < 0) {
-	    fprintf(stderr, ";; Fork Error\n");
+	if ((pid = fork()) < 0) {
+	    fprintf(stderr, ";; fork error\n");
 	    sleep(1);
 	    continue;
 	}
 
 	/* 子供 */
-	if(pid == 0) {
+	if (pid == 0) {
 	    char buf[1024];
 
 	    /* ? */

@@ -226,6 +226,9 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define DEFAULT_PORT     31000
 #define EOf 0x0b
 
+#define KNP_SERVER_USER "nobody"
+#define KNP_PIDFILE     "/var/run/knp.pid"
+
 /*====================================================================
 			       FEATURE
 ====================================================================*/
