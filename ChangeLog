@@ -1,3 +1,39 @@
+2002-11-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/feature.c, system/lib_print.c, system/lib_scase.c:
+	すべてのサ変名詞を格解析するようにした
+
+	* system/configfile.c, system/main.c: 設定ファイルを jumanrc から knprc に変更した
+
+	* system/dpnd_analysis.c: check_candidates(): 移動
+
+	* system/hash.c, system/hash.h, system/knp.h, system/lib_bgh.c, system/lib_sm.c, system/tools.c:
+	マクロ名, コメント行の変更
+
+	* system/lib_dt.c: ルール適用時の返す値を類似度にした
+
+	* knprc.sample: added.
+
+	* rule/case_analysis.rule: added.
+
+	* configure.in: configure オプション変更
+
+2002-11-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_helpsys.rule, rule/compoundnoun.rule, rule/compoundnoun-preliminary.rule, rule/compoundnoun-auxiliary.rule, rule/ne.rule, rule/ne-juman.rule:
+	removed.
+
+	* rule/Makefile.am: 上記ファイルの削除に伴う修正
+
+2002-11-06  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule: bug fix ゆけく -> ゆける
+
+2002-11-05  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/kakari_uke.rule:
+	基本的な整理，数量名詞の削除等
+
 2002-11-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/feature.c, system/para_similarity.c:
