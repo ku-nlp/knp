@@ -19,7 +19,8 @@ extern FILE  *Outfp;
 		    int check_stop_extend(int num)
 /*==================================================================*/
 {
-    if (check_feature(sp->bnst_data[num].f, "読点") ||
+    if ((check_feature(sp->bnst_data[num].f, "読点") &&
+	 !check_feature(sp->bnst_data[num].f, "係:同格連体")) ||
 	check_feature(sp->bnst_data[num].f, "提題") ||
 	(check_feature(sp->bnst_data[num].f, "係:デ格") &&
 	 check_feature(sp->bnst_data[num].f, "ハ")))
