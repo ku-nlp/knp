@@ -125,12 +125,17 @@ int		BGHExist;
 
     /* ptr->BGH_num はinit_bnstで0に初期化されている */
 
+    /* 「する」以外の付属語の動詞は削除する
+       「結婚し始める」: 「始める」は削除し、「結婚する」で検索
+       (分類語彙表ではサ変名詞は「する」付きで登録されている) */
+
     for (stop = 0; stop < ptr->fuzoku_num; stop++) 
 	if (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助詞") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "判定詞") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "助動詞") ||
 	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "特殊") ||
-	    !strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "動詞") || /* 用言のときの付属語の動詞を排除 */
+	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "動詞") && 
+	     strcmp((ptr->fuzoku_ptr + stop)->Goi, "する")) || 
 	    (!strcmp(Class[(ptr->fuzoku_ptr + stop)->Hinshi][0].id, "接尾辞") &&
 	     strcmp(Class[(ptr->fuzoku_ptr + stop)->Bunrui][0].id, "名詞性名詞接尾辞")))
 	    break;
@@ -191,7 +196,7 @@ int		BGHExist;
 			"ナ形容詞特殊") ||
 		 str_eq(Type[(ptr->mrph_ptr + end - 1)->Katuyou_Kata].name,
 			"ナノ形容詞"))) 
-		str_buffer[strlen(str_buffer)-2] = NULL;
+		str_buffer[strlen(str_buffer)-2] = '\0';
 
 	    code = get_bgh(str_buffer);
 

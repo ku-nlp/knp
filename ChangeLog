@@ -1,3 +1,24 @@
+2001-08-06  Sadao KUROHASHI  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/rule_trans.pl, system/lib_print.c, system/para_analysis.c, system/para_similarity.c, system/tree_conv.c:
+	bnst_type.phrase
+		「と同様，」に対応
+	para_analysis.c
+		スコアがない場合の処理
+		「〜と〜と」のボーナスを厳密に
+	para_similarity.c
+		「ため」「せい」を普通の名詞と区別
+
+	bnst_type.phrase
+		「もまた」を並列扱いしない
+		「とが」をガ格に
+
+2001-07-31  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_etc.rule, rule/kakari_uke.rule:
+	格壁(動詞連体形副名)という格要素に対する壁が設定されていたが、格フレーム
+	収集において誤りを増やすので除去した。
+
 2001-07-29  Daisuke Kawahara  <kawahara@pine.kuee.kyoto-u.ac.jp>
 
 	* svm/getopt.h: New file.
