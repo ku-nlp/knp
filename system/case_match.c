@@ -328,16 +328,67 @@ int	CASE_ASSIGN_THRESHOLD = 0;
     else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "数量", TRUE)) {
 	return EX_match_qua;
     }
-    /* 意味素 : 格要素 -- 主体 (ガ格のみ) */
-    else if (((cfp->voice == FRAME_ACTIVE && 
-	       MatchPP(cfp->pp[as2][0], "ガ")) || 
-	      (cfp->voice == FRAME_PASSIVE_1 && 
-	       MatchPP(cfp->pp[as2][0], "ニ"))) && 
-	     cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE)) {
-	*pos = MATCH_SUBJECT;
-	return EX_match_subject;
-    }
     return -100;
+}
+
+/*==================================================================*/
+      int cf_match_subject(TAG_DATA *tp, CASE_FRAME *cfp, int n)
+/*==================================================================*/
+{
+    int step, expand;
+
+    if (check_feature(tp->f, "非主体")) {
+	return 0;
+    }
+
+    if (Thesaurus == USE_BGH) {
+	step = BGH_CODE_SIZE;
+    }
+    else if (Thesaurus == USE_NTT) {
+	step = SM_CODE_SIZE;
+    }
+
+    if (check_feature(tp->f, "Ｔ固有一般展開禁止")) {
+	expand = SM_NO_EXPAND_NE;
+    }
+    else {
+	expand = SM_EXPAND_NE;
+    }
+
+    /* 主体のマッチング (ガ格, ニ格) */
+    if (cfp->sm[n] && 
+	!MatchPP(cfp->pp[n][0], "ヲ")) {
+	int i, j, flag;
+
+	for (j = 0; cfp->sm[n][j]; j += step) {
+	    if (!strncmp(cfp->sm[n] + j, sm2code("主体"), SM_CODE_SIZE)) {
+		flag = 3;
+	    }
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("人"), SM_CODE_SIZE)) {
+		flag = 1;
+	    }
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("組織"), SM_CODE_SIZE)) {
+		flag = 2;
+	    }
+	    else {
+		continue;
+	    }
+
+	    /* 格フレーム側に <主体> があるときに、格要素側をチェック */
+	    if (((flag & 1) && check_feature(tp->f, "人名")) || 
+		((flag & 2) && check_feature(tp->f, "組織名"))) {
+		return 1;
+	    }
+
+	    for (i = 0; tp->SM_code[i]; i += step) {
+		if (_sm_match_score(cfp->sm[n] + j, tp->SM_code + i, expand)) {
+		    return 1;
+		}
+	    }
+	    break;
+	}
+    }
+    return 0;
 }
 
 /*==================================================================*/
@@ -354,6 +405,72 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 }
 
 /*==================================================================*/
+float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
+/*==================================================================*/
+{
+    char *exd, *exp;
+    int expand;
+    float ex_score;
+
+    exp = cfp->ex[n];
+    if (Thesaurus == USE_BGH) {
+	exd = tp->BGH_code;
+    }
+    else if (Thesaurus == USE_NTT) {
+	exd = tp->SM_code;
+    }
+
+    if (check_feature(tp->f, "Ｔ固有一般展開禁止")) {
+	expand = SM_NO_EXPAND_NE;
+    }
+    else {
+	expand = SM_EXPAND_NE;
+    }
+
+    /* 意味素なし
+       候補にするために -1 を返す */
+    if (!exd[0]) {
+	ex_score = -1;
+    }
+    /* exact match */
+    else if (cf_match_exactly(tp, cfp->ex_list[n], cfp->ex_num[n], pos)) {
+	/* 外の関係: 1.0 */
+	if (MatchPP(cfp->pp[n][0], "外の関係")) {
+	    ex_score = 1.0;
+	}
+	else {
+	    ex_score = 1.1;
+	}
+    }
+    else {
+	/* 最大マッチスコアを求める */
+	if (cfp->sm_specify[n]) { /* 意味素制限 */
+	    ex_score = calc_similarity(exd, cfp->sm_specify[n], expand);
+	}
+	else {
+	    ex_score = CalcSmWordsSimilarity(exd, cfp->ex_list[n], cfp->ex_num[n], pos, 
+					     cfp->sm_delete[n], expand);
+	}
+    }
+
+    return ex_score;
+}
+
+/*==================================================================*/
+float calc_similarity_word_cf_with_subject(TAG_DATA *tp, 
+					   CASE_FRAME *cfp, int n, int *pos)
+/*==================================================================*/
+{
+    /* 主体マッチ */
+    if (cf_match_subject(tp, cfp, n)) {
+	*pos = MATCH_SUBJECT;
+	return (float)EX_match_subject / 11;
+    }
+
+    return calc_similarity_word_cf(tp, cfp, n, pos);
+}
+
+/*==================================================================*/
 	   int elmnt_match_score(int as1, CASE_FRAME *cfd, 
 				 int as2, CASE_FRAME *cfp, 
 				 int flag, int *pos, int *score)
@@ -361,7 +478,7 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 {
     /* 意味マーカのマッチング度の計算 */
 
-    int i, j, k, ex_score = 0;
+    int i, j, k;
     char *exd, *exp;
     int *match_score;
 
@@ -404,7 +521,8 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
     }
 
     else if (flag == EXAMPLE) {
-	int subject_match;
+	int ex_score;
+	float ex_rawscore;
 
 	/* 修飾格のとき */
 	if (MatchPP(cfd->pp[as1][0], "修飾")) {
@@ -418,89 +536,50 @@ int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
 	    return TRUE;
 	}
 
-	/* 能動ガ格, 受身ニ格で<主体>のとき */
-	/* if (((cfp->voice == FRAME_ACTIVE && 
-	      MatchPP(cfp->pp[as2][0], "ガ")) || 
-	     (cfp->voice == FRAME_PASSIVE_1 && 
-	     MatchPP(cfp->pp[as2][0], "ニ"))) && */
-	if (!MatchPP(cfp->pp[as2][0], "ヲ") && 
-	    cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", FALSE) || 
-	    (cfd->ex[as1][0] == '\0' && /* ガ格で意味素なしのとき固有名詞だと思う */
+	/* 主体マッチ -- ガ格で意味素なしのとき固有名詞だと思う *
+	    (cfd->ex[as1][0] == '\0' && 
 	     cf_match_element(cfp->sm[as2], "主体", TRUE))) {
-	    subject_match = 1;
-	}
-	else {
-	    subject_match = 0;
-	}
+	*/
+
+	/* 用例のマッチング */
+	ex_rawscore = calc_similarity_word_cf_with_subject(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
+							   cfp, as2, pos);
 
 	/* exact match */
-	if (subject_match == 0 && 
-	    cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
-			     cfp->ex_list[as2], cfp->ex_num[as2], pos)) {
-	    if (MatchPP(cfp->pp[as2][0], "外の関係")) {
-		*score = EX_match_score[7]; /* 最大値 */
-	    }
-	    else {
-		*score = EX_match_exact;
-	    }
+	if (ex_rawscore > 1.0) {
+	    *score = EX_match_exact; /* (int)(ex_rawscore * EX_match_score[7]) */
 	    return TRUE;
 	}
 
-	/* 外の関係のときシソーラス使わない */
+	/* 外の関係のときシソーラスを使わない */
 	if (MatchPP(cfp->pp[as2][0], "外の関係")) {
 	    *score = 0;
 	    return FALSE;
 	}
 
 	/* <主体>共通スコア */
-	if (subject_match) {
-	    *pos = MATCH_SUBJECT;
+	if (*pos == MATCH_SUBJECT) {
 	    *score = EX_match_subject;
 	    return TRUE;
 	}
 	else {
+	    /* <補文>, <時間>, <数量> */
 	    *score = elmnt_match_score_each_sm(as1, cfd, as2, cfp, pos);
 	}
 
 	/* 入力側の用例の意味属性がない場合 */
-	if (*exd == '\0') {
-	    if (*cfd->sm[as1] == '\0') {
-		*score = EX_match_unknown;
-	    }
-	    else if (score < 0) {
-		*score = 0;
-	    }
+	if (*exd == '\0' && *cfd->sm[as1] == '\0') {
+	    *score = EX_match_unknown;
 	}
-	/* 格フレームの用例の意味属性がない場合 */
-	else if (exp == NULL || *exp == '\0') {
-	    /* 格フレーム側の意味属性がないとき */
-	    if (cfp->sm[as2] == NULL) {
-		*score = 0; /* EX_match_unknown; */
-	    }
-	    /* 意味属性はあるが、match しないとき */
-	    else if (score < 0) {
-		/* 格フレームに用例自体がないとき */
-		if (!MatchPP(cfp->pp[as2][0], "ガ") && cfp->ex_num[as2] == 0) {
-		    *score = 0;
-		    /* return FALSE; */
-		}
-		*score = 0;
-	    }
-	}
-	else {
-	    float rawscore;
 
-	    rawscore = CalcSmWordsSimilarity(exd, cfp->ex_list[as2], cfp->ex_num[as2], pos, 
-					     cfp->sm_delete[as2], 0);
-	    /* 用例のマッチング */
-	    if (Thesaurus == USE_NTT && 
-		sm_check_match_max(exd, exp, 0, sm2code("抽象"))) { /* <抽象>のマッチを低く */
-		ex_score = EX_match_score2[(int)(rawscore*7)];
-	    }
-	    else {
-		ex_score = *(match_score+(int)(rawscore*7));
-	    }
+	/* 格解析用スコアに変換 */
+	ex_score = *(match_score + (int)(ex_rawscore * 7));
+	/*
+	if (Thesaurus == USE_NTT && 
+	    sm_check_match_max(exd, exp, 0, sm2code("抽象"))) { * <抽象>のマッチを低く *
+	    ex_score = EX_match_score2[(int)(ex_rawscore * 7)];
 	}
+        */
 
 	/* 大きい方をかえす */
 	if (ex_score > *score) {

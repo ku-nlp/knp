@@ -728,135 +728,6 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 }
 
 /*==================================================================*/
-float CalcSimilarityForVerb(TAG_DATA *cand, CASE_FRAME *cf_ptr, int n, int *pos, int cf_flag)
-/*==================================================================*/
-{
-    char *exd, *exp;
-    int i, j, step, expand;
-    float score = 0, ex_score;
-
-    exp = cf_ptr->ex[n];
-    if (Thesaurus == USE_BGH) {
-	exd = cand->BGH_code;
-	step = BGH_CODE_SIZE;
-    }
-    else if (Thesaurus == USE_NTT) {
-	exd = cand->SM_code;
-	step = SM_CODE_SIZE;
-    }
-
-    if (check_feature(cand->f, "Ｔ固有一般展開禁止")) {
-	expand = SM_NO_EXPAND_NE;
-    }
-    else {
-	expand = SM_EXPAND_NE;
-    }
-
-    /* 意味素なし
-       候補にするために -1 を返す */
-    if (!exd[0]) {
-	ex_score = -1;
-    }
-    /* exact match */
-    else if (cf_match_exactly(cand, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos)) {
-	ex_score = 1.1;
-    }
-    else {
-	/* 最大マッチスコアを求める */
-	if (cf_ptr->sm_specify[n]) {
-	    ex_score = calc_similarity(exd, cf_ptr->sm_specify[n], expand);
-	}
-	else {
-	    ex_score = CalcSmWordsSimilarity(exd, cf_ptr->ex_list[n], cf_ptr->ex_num[n], pos, 
-					     cf_ptr->sm_delete[n], expand);
-	}
-    }
-
-    /* 主体のマッチング */
-    if (cf_ptr->sm[n] && 
-	!MatchPP(cf_ptr->pp[n][0], "ヲ")) {
-/*	(MatchPP(cf_ptr->pp[n][0], "ガ") || 
-	 MatchPP(cf_ptr->pp[n][0], "ヲ") || 
-	 MatchPP(cf_ptr->pp[n][0], "ニ"))) {
-	 cf_ptr->voice == FRAME_PASSIVE_1))) { */
-	int flag;
-	for (j = 0; cf_ptr->sm[n][j]; j+=step) {
-	    if (!strncmp(cf_ptr->sm[n]+j, sm2code("主体"), SM_CODE_SIZE)) {
-		flag = 3;
-	    }
-	    else if (!strncmp(cf_ptr->sm[n]+j, sm2code("人"), SM_CODE_SIZE)) {
-		flag = 1;
-	    }
-	    else if (!strncmp(cf_ptr->sm[n]+j, sm2code("組織"), SM_CODE_SIZE)) {
-		flag = 2;
-	    }
-	    else {
-		continue;
-	    }
-	    if (check_feature(cand->f, "非主体")) {
-		return 0;
-	    }
-	    /* 格フレーム側に <主体> があるときに、格要素側をチェック */
-	    if (((flag & 1) && check_feature(cand->f, "人名")) || 
-		((flag & 2) && check_feature(cand->f, "組織名"))) {
-		score = (float)EX_match_subject/11;
-		/* 固有名詞のときにスコアを高く
-		if (EX_match_subject > 8) {
-		    * 主体スコアが高いときは、それと同じにする *
-		    score = (float)EX_match_subject/11;
-		}
-		else {
-		    score = (float)9/11;
-		} */
-		break;
-	    }
-	    for (i = 0; cand->SM_code[i]; i+=step) {
-		if (_sm_match_score(cf_ptr->sm[n]+j, cand->SM_code+i, expand)) {
-		    score = (float)EX_match_subject/11;
-		    break;
-		}
-	    }
-	    break;
-	}
-    }
-
-    if (cf_flag == CF_PRED && score > 0) {
-	*pos = MATCH_SUBJECT;
-	return score;
-    }
-    else {
-	return ex_score;
-    }
-}
-
-/*==================================================================*/
-     float CalcSimilarityForNoun(BNST_DATA *dat, BNST_DATA *pat)
-/*==================================================================*/
-{
-    char *exd, *exp;
-    float score = 0, ex_score;
-
-    if (Thesaurus == USE_BGH) {
-	exd = dat->BGH_code;
-	exp = pat->BGH_code;
-    }
-    else if (Thesaurus == USE_NTT) {
-	exd = dat->SM_code;
-	exp = pat->SM_code;
-    }
-
-    /* 最大マッチスコアを求める */
-    ex_score = (float)calc_similarity(exd, exp, 0);
-
-    if (ex_score > score) {
-	return ex_score;
-    }
-    else {
-	return score;
-    }
-}
-
-/*==================================================================*/
       int CheckCaseComponent(CF_PRED_MGR *cpm_ptr, TAG_DATA *tp)
 /*==================================================================*/
 {
@@ -1516,7 +1387,9 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 類似度計算 */
     f->pos = MATCH_NONE;
-    f->similarity = CalcSimilarityForVerb(bp, cf_ptr, n, &f->pos, cpm_ptr->cf.type);
+    f->similarity = cpm_ptr->cf.type == CF_PRED ? 
+	calc_similarity_word_cf_with_subject(bp, cf_ptr, n, &f->pos) : 
+	calc_similarity_word_cf(bp, cf_ptr, n, &f->pos);
     f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* 用例の頻度 */
 
     if (vp) {
