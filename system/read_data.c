@@ -165,7 +165,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       int read_mrph(FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[1024+IMI_MAX];
+    U_CHAR input_buffer[DATA_LEN];
     U_CHAR imi_buffer[IMI_MAX];
     MRPH_DATA  *m_ptr = mrph_data, *ptr;
     int homo_num, offset, mrph_item, i,len;
@@ -176,10 +176,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     homo_num = 0;
     Comment[0] = '\0';
     PM_Memo[0] = '\0';
+    input_buffer[DATA_LEN-1] = '\n';
 
     while (1) {
 
-	if (fgets(input_buffer, 1024+IMI_MAX, fp) == NULL) return EOF;
+	if (fgets(input_buffer, DATA_LEN, fp) == NULL) return EOF;
 
 	/* Server モードの場合は 注意 \r\n になる*/
 	if (OptMode == SERVER_MODE) {
@@ -193,7 +194,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    return EOF;
 	} 
 
-	if (input_buffer[strlen(input_buffer)-1] != '\n') {
+	if (input_buffer[DATA_LEN-1] != '\n' || input_buffer[strlen(input_buffer)-1] != '\n') {
 	    fprintf(stderr, "Too long mrph <%s> !\n", input_buffer);
 	    return FALSE;
 	}
@@ -212,9 +213,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    strcpy(Comment, input_buffer);
 
 	    /* 文章が変わったら固有名詞スタックをクリア */
-	    sscanf(Comment, "# S-ID:%d", &ArticleID);
-	    if (ArticleID && ArticleID != preArticleID)
-		clearNE();
+	    if (OptNE != OPT_NORMAL) {
+		sscanf(Comment, "# S-ID:%d", &ArticleID);
+		if (ArticleID && ArticleID != preArticleID)
+		    clearNE();
+	    }
 	}
 
 	/* 解析済みの場合 */
