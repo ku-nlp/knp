@@ -55,8 +55,13 @@
 #define CNRule_MAX	512
 #define Helpsys_MAX	512
 
+#ifndef SMALL
 #define ALL_CASE_FRAME_MAX 	1536
 #define IPAL_FRAME_MAX 		512
+#else
+#define ALL_CASE_FRAME_MAX 	0
+#define IPAL_FRAME_MAX 		0
+#endif
 #define CF_ELEMENT_MAX 		10
 #define PP_ELEMENT_MAX		5
 #define SM_ELEMENT_MAX		64			/* SM_CODE_MAXとまとめるべき */
@@ -66,11 +71,6 @@
 #define CMM_MAX 	(IPAL_FRAME_MAX * 5)		/* 最適格フレーム数 */
 #define CPM_MAX 	32				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
-
-/* --> dbm.h
-#define DBM_KEY_MAX 	256
-#define DBM_CON_MAX 	1024
-*/
 
 #ifndef IMI_MAX
 	#define IMI_MAX	129	/* defined in "juman.h" */	
