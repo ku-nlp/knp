@@ -260,6 +260,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     char ast_cap[32];
 
     cf_ptr->ipal_address = address;
+    cf_ptr->concatenated_flag = 0;
     strcpy(cf_ptr->ipal_id, i_ptr->DATA+i_ptr->id); 
     strcpy(cf_ptr->imi, i_ptr->DATA+i_ptr->imi);
 
@@ -371,11 +372,54 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
       int make_ipal_cframe(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
+    int f_num, plus_num = 0, i;
+    char *verb, buffer[WORD_LEN_MAX];
+    BNST_DATA *pre_ptr;
+
+    verb = L_Jiritu_M(b_ptr)->Goi;
+    f_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr, verb);
+
+    if (str_eq(verb, "する") || 
+	str_eq(verb, "なる") || 
+	str_eq(verb, "ある") || 
+	str_eq(verb, "いう")) {
+	buffer[0] = '\0';
+	buffer[WORD_LEN_MAX-1] = '\n';
+	pre_ptr = sp->bnst_data+b_ptr->num-1;
+	/* 前隣の文節の単語をすべて結合
+	   構造決定後、係り受け関係にあるかどうかチェック */
+	for (i = 0; i < pre_ptr->mrph_num; i++) {
+	    strcat(buffer, (pre_ptr->mrph_ptr+i)->Goi);
+	}
+	/* 自分の文節すべて結合したほうがいいかも (学習時も) */
+	strcat(buffer, verb);
+	/* 先にチェックしないと… */
+	if (buffer[WORD_LEN_MAX-1] != '\n') {
+	    fprintf(stderr, "buffer overflowed.\n");
+	    return f_num;
+	}
+	verb = buffer;
+	plus_num = make_ipal_cframe_subcontract(b_ptr, cf_ptr+f_num, verb);
+	for (i = f_num; i < f_num+plus_num; i++) {
+	    (cf_ptr+i)->concatenated_flag = 1;
+	}
+    }
+
+    return f_num+plus_num;
+}
+
+/*==================================================================*/
+int make_ipal_cframe_subcontract(BNST_DATA *b_ptr, CASE_FRAME *cf_ptr, char *verb)
+/*==================================================================*/
+{
     IPAL_FRAME *i_ptr = &Ipal_frame;
     int f_num = 0, address, break_flag = 0;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
-    
-    address_str = get_ipal_address(L_Jiritu_M(b_ptr)->Goi);
+
+    if (!verb)
+    	return f_num;
+
+    address_str = get_ipal_address(verb);
 
     /* なければ */
     if (!address_str)

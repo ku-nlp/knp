@@ -213,6 +213,13 @@ char *sm_code_to_str(int code)
 	       オプションで選択       (1999/06/15)
 	       */
 
+	    /* 前隣を結合したフレームなのにもかかわらず、
+	       前隣が自分に係らない構造の場合はスキップ */
+	    if ((Cf_match_mgr+i)->cf_ptr->concatenated_flag == 1 && 
+		(sp->bnst_data+b_ptr->num-1)->dpnd_head != b_ptr->num) {
+		continue;
+	    }
+
 	    case_frame_match(cf_ptr, Cf_match_mgr+i, OptCFMode);
 
 	    /* その格フレームとの対応付けがスコア最大であれば記憶 */
@@ -325,20 +332,33 @@ char *sm_code_to_str(int code)
 
     /* corpus based case analysis 00/01/04
        ここで default との距離のずれ, 提題を処理 */
-    /* Work_mgr.score -= Work_mgr.dflt * 2; */
 
     for (i = 0; i < sp->Bnst_num-1; i++) {
 	if (dpnd.dflt[i] > 0) {
+	    /* 提題 */
 	    if (check_feature((sp->bnst_data+i)->f, "提題")) {
 		distance_cost += dpnd.dflt[i];
 		continue;
 	    }
-	    /* となりの強い用言 (連体以外) を越えているとき */
-	    if (dpnd.head[i] > i+1 && subordinate_level_check("B", sp->bnst_data+i+1) && 
-		(cp = (char *)check_feature((sp->bnst_data+i+1)->f, "係:"))) {
-		if (strcmp(cp+3, "連体") && strcmp(cp+3, "連格")) {
-		    distance_cost += dpnd.dflt[i]*4;
-		    continue;
+	    /* 提題以外 */
+	    /* 係り側が連用でないとき */
+	    if (!check_feature((sp->bnst_data+i)->f, "係:連用")) {
+		/* 自分に読点がなく、隣の強い用言 (連体以外) を越えているとき */
+		if (!check_feature((sp->bnst_data+i)->f, "読点")) {
+		    if (dpnd.head[i] > i+1 && 
+			subordinate_level_check("B", sp->bnst_data+i+1) && 
+			(cp = (char *)check_feature((sp->bnst_data+i+1)->f, "係"))) {
+			if (strcmp(cp+3, "連体") && strcmp(cp+3, "連格")) {
+			    distance_cost += 2;
+			}
+		    }
+		}
+		/* 自分に読点があり*/
+		else {
+		    /* 隣に係るとき */
+		    if (dpnd.head[i] == i+1) {
+			distance_cost += 2;
+		    }
 		}
 	    }
 	    distance_cost += dpnd.dflt[i]*2;
@@ -359,9 +379,13 @@ char *sm_code_to_str(int code)
 	    topic_slot[0] = 0;
 	    topic_slot[1] = 0;
 
-	    for (j = 0; (sp->bnst_data+i)->child[j]; j++) {
-		if (check_feature((sp->bnst_data+i)->child[j]->f, "提題")) {
-		    if (check_feature((sp->bnst_data+i)->child[j]->f, "時間")) {
+	    /* 係り側を探す */
+	    for (j = 0; j < i; j++) {
+		if (dpnd.head[j] != i) {
+		    continue;
+		}
+		if (check_feature((sp->bnst_data+j)->f, "提題")) {
+		    if (check_feature((sp->bnst_data+j)->f, "時間")) {
 			topic_slot[1]++;
 		    }
 		    else {
@@ -373,10 +397,10 @@ char *sm_code_to_str(int code)
 	    if ((topic_slot[0] == 1 || topic_slot[1] == 1) && 
 		(topic_slot[0] < 2 && topic_slot[1] < 2)) {
 		sscanf(cp, "%*[^:]:%d", &topic_score);
-		/* とりあえず、時間は 8 点にしてみる */
-		Work_mgr.score += topic_score*topic_slot[0]+8*topic_slot[1];
+		/* とりあえず、時間は topic_score 点にしてみる */
+		Work_mgr.score += topic_score*topic_slot[0]+topic_score*topic_slot[1];
 		if (OptDisplay == OPT_DEBUG) {
-		    topic_score_sum += topic_score*topic_slot[0]+8*topic_slot[1];
+		    topic_score_sum += topic_score*topic_slot[0]+topic_score*topic_slot[1];
 		}
 	    }
 

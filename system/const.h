@@ -611,6 +611,7 @@ typedef struct cf_def {
     int 	ipal_address;				/* IPALのアドレス */
     char 	ipal_id[128];				/* IPALのID */
     char 	imi[128];
+    char	concatenated_flag;			/* 表記を前隣の文節と結合しているか */
 } CASE_FRAME;
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
