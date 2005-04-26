@@ -524,6 +524,40 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+	       void *change_mrph_rep(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    int i;
+    char pre[WORD_LEN_MAX + 1], str[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
+
+    /* 「代表表記:動く」->「代表表記:動き」 */
+
+    if (cp = strstr(m_ptr->Imi, "代表表記:")) {
+	cp += 9;
+	sscanf(cp, "%[^ \"]", str);
+	pre[0] = '\0';
+	post[0] = '\0';
+	strncat(pre, m_ptr->Imi, cp - m_ptr->Imi);
+	strcat(post, cp + strlen(str));
+    }
+    else {
+	return;
+    }
+
+    /* 語幹にする */
+    str[strlen(str) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
+
+    /* 活用形をつける */
+    strcat(str, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
+
+    sprintf(m_ptr->Imi, "%s%*s%s", pre, strlen(str), str, post);
+
+    /* featureの修正 */
+    sprintf(pre, "代表表記:%*s", strlen(str), str);
+    assign_cfeature(&(m_ptr->f), pre);
+}
+
+/*==================================================================*/
 	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
@@ -537,6 +571,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
     assign_cfeature(&(m_ptr->f), org_buffer);
+
+    /* まず、代表表記を修正 */
+    change_mrph_rep(m_ptr);
 
     m_ptr->Hinshi = 0;
     m_ptr->Bunrui = 0;
@@ -564,8 +601,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     if (m_ptr->Katuyou_Kata == 0) {
 	strcpy(m_ptr->Goi, m_ptr->Goi2);
     }
-
-    
 }
 
 /*==================================================================*/
