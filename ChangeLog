@@ -1,3 +1,8 @@
+2005-04-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	品詞変更した際に代表表記も変更するように修正
+
 2005-03-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/context.rule:
