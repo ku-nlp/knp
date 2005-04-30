@@ -122,9 +122,11 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
     /* 後方チ(ェック)の d の係り受けを許す条件
 
        ・ 次の可能な係り先(D)が３つ以上後ろ ( d - - D など )
-       ・ dに読点がある
        ・ 係り元とdの後ろが同じ格	例) 日本で最初に京都で行われた
        ・ d(係り先)とdの後ろが同じ格	例) 東京で計画中に京都に変更された
+
+       ※ 「dに読点がある」ことでdを係り先とするのは不適切
+       例) 「うすい板を木目が直角になるように、何枚もはり合わせたもの。」
     */
 
     int i, next_D;
@@ -151,7 +153,6 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 
     if (next_D == 0 ||
 	gvnr + 2 < next_D ||
-	check_feature(sp->bnst_data[gvnr].f, "読点") ||
 	(gvnr + 2 == next_D && gvnr < sp->Bnst_num-1 &&
 	 check_feature(sp->bnst_data[gvnr+1].f, "体言") &&
 	 ((dpnd_cp && next_cp && !strcmp(dpnd_cp, next_cp)) ||

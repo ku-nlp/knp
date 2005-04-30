@@ -566,8 +566,8 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int num;
 
     /* もとの形態素情報をfeatureとして保存 */
-    sprintf(org_buffer, "ORG:%s-%s-%s-%d-%d-%d-%d", 
-	    m_ptr->Goi, m_ptr->Yomi, m_ptr->Goi2, 
+    sprintf(org_buffer, "品詞変更:%s-%s-%s-%d-%d-%d-%d", 
+	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
     assign_cfeature(&(m_ptr->f), org_buffer);

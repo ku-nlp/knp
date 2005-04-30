@@ -58,7 +58,9 @@
        (ただしＴではじまるfeatureは表示しない) */
 
     while (fp) {
-	if (fp->cp && strncmp(fp->cp, "Ｔ", 2))
+	if (fp->cp && 
+	    (strncmp(fp->cp, "Ｔ", 2) ||
+	     OptDisplay == OPT_DEBUG))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }

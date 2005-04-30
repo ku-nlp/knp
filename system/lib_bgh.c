@@ -107,7 +107,7 @@ int		BGHExist;
     if (c1[0] == c2[0]) {
 	point = 1;
 	for (i = 1; c1[i] == c2[i] && i < BGH_CODE_SIZE; i++)
-	    if (i != 5 && i != 7 && i != 8)
+	    if (i != 5 && i != 7 && i != 8 && i != 9)
 		point ++;
     }
     else if (c1[0] != '4' && c2[0] != '4' && c1[1] == c2[1]) {

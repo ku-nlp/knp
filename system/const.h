@@ -39,7 +39,7 @@
 #define HOMO_MAX	30
 #define HOMO_MRPH_MAX	10
 
-#define BGH_CODE_SIZE	10
+#define BGH_CODE_SIZE	11
 #define SM_CODE_SIZE	12
 #define SCASE_CODE_SIZE	11
 
