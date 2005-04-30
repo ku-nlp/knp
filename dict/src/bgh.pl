@@ -179,19 +179,7 @@ sub monitor_format {
     $hyouki =~ s/（[^\）]*）//g;
     $yomi =~ s/（[^\）]*）//g;
     $code3 =~ s/[A-Z]$//;
-    $code6 = ($code4 . $code5);
-
-#     if ($code2 !~ /^\d\d\d\d$/) {
-# 	print STDERR "$input\n";
-#     }
-#     if ($code3 !~ /^(\d|\d\d)$/) {
-# 	print STDERR "$input\n";
-#     } 
-#     if (length($code6) > 4) {
-# 	print STDERR "$input\n";
-#     } 
-
-    $code = sprintf("%d%d%02d%03d", $code1, $code2, $code3, $code6);
+    $code = sprintf("%d%d%02d%02d%02d", $code1, $code2, $code3, $code4, $code5);
 
     foreach $item (split(/・/,$hyouki)) {
 	print "$item $code\n";
