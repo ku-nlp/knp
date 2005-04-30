@@ -19,6 +19,12 @@ use encoding 'euc-jp';
 #      保証されない．
 
 #
+#  増補改訂版の一行目
+#
+
+$ZohoFirstLine = '000001,00001,A,体,関係,事柄,事柄,1.1000,01,01,01,者（もの）,者,もの,のも';
+
+#
 #  フロッピー版の一行目
 #
 
@@ -79,7 +85,15 @@ $_ = <STDIN>;
 chomp;
 s/\r//g;
 
-if ($_ eq $FloppyFirstLine) {
+if ($_ eq $ZohoFirstLine) {
+    print STDERR "Your BGH is Zoho Kaitei Version.\n";
+    &zoho_format($_);
+    while ( <STDIN> ) {
+	chomp;
+	s/\r//g;
+	&zoho_format($_);
+    }
+}elsif ($_ eq $FloppyFirstLine) {
     print STDERR "Your BGH is Floppy Disk Version.\n";
     &fd_format($_);
     while ( <STDIN> ) {
@@ -94,6 +108,31 @@ if ($_ eq $FloppyFirstLine) {
 	chomp;
 	s/\r//g;
 	&monitor_format($_);
+    }
+}
+
+#
+# zoho_format : 増補改訂版(bunruidb.txt)の整形
+# 11桁のコードを出力します
+#
+
+sub zoho_format {
+    
+    my ($input) = @_;
+
+    my ($a, $b, $c, $d, $e, $f, $g, $code1, $code2, $code3, $code4, $code5, $h, $hyouki, $yomi) = split(/,|\./, $input);
+
+    if ($hyouki =~ /＊|〓|（|\)/) {next;} # invalid items
+
+    $code = $code1.$code2.$code3.$code4.$code5;
+
+    foreach $item (split(/・/,$hyouki)) {
+	print "$item $code\n";
+    }	
+    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
+	foreach $item (split(/・/,$yomi)) {
+	    print "$item $code\n";
+	}
     }
 }
 
