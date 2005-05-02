@@ -48,7 +48,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	for (j = 0; j < i; j++) {
 	    loop_ptr2 = m_ptr + j;
 
-	    /* 読み以外すべて同じ --> 無視 --> mrph_homeを拡張して対応 */
+	    /* 読み以外すべて同じ --> 無視 --> mrph_homoを拡張して対応 */
 	    if (0 &&
 		loop_ptr2->Hinshi == loop_ptr->Hinshi &&
 		loop_ptr2->Bunrui == loop_ptr->Bunrui &&
@@ -529,6 +529,11 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 {
     int i;
     char pre[WORD_LEN_MAX + 1], str[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
+
+    /* 活用する品詞ではない場合 */
+    if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
+	return;
+    }
 
     /* 「代表表記:動く」->「代表表記:動き」 */
 
