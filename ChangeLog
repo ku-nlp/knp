@@ -1,7 +1,50 @@
+2005-05-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.ac: jumanのチェック強化
+
+2005-05-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	品詞変更において、活用する品詞でない場合に代表表記を変えようとするのを修正
+
+2005-04-30  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/lib_bgh.c:
+	BGHを11ケタに
+
+	* system/feature.c:
+	Ｔ〜をdebug時に表示
+
+	* system/dpnd_analysis.c:
+	dの読点の扱い
+
+	* system/read_data.c:
+	品詞変更のfeature名
+
+	* rule/Makefile.am, rule/phrase2rule.pl, rule/rule2data.pl:
+	ファイル名変更
+
+	* rule/mrph_basic.rule:
+	一人暮し などの複合語処理修正
+
 2005-04-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
 	品詞変更した際に代表表記も変更するように修正
+
+2005-04-19  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_type.phrase, rule/mrph_basic.rule:
+	二文の類似度を計算するためのルール整理
+	「〜なさる」を「〜する」と同じ扱いに
+
+2005-03-29  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule:
+	「〜しなければなるまい」を一文節に
+
+	* rule/mrph_homo.rule:
+	ナ形容詞語幹に続く場合も音読み優先に
 
 2005-03-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
