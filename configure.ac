@@ -82,13 +82,22 @@ eval KNP_DICT=`eval echo "$KNP_DICT"`
 eval KNP_RULE=`eval echo "$KNP_RULE"`
 eval RC_DEFAULT=`eval echo "$RC_DEFAULT"`
 
-if test x"$juman_prefix" != x; then
-    JUMAN_CFLAGS="-I$juman_prefix/include"
-    JUMAN_LDFLAGS="-L$juman_prefix/lib"
-else
+if test x"$juman_prefix" = x; then
     eval juman_prefix=`eval echo "$prefix"`
 fi
 AC_SUBST(juman_prefix)
+JUMAN_CFLAGS="-I$juman_prefix/include"
+JUMAN_LIBS="-L$juman_prefix/lib -ljuman"
+
+old_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$JUMAN_CFLAGS $CPPFLAGS"
+old_LIBS=$LIBS
+LIBS="$JUMAN_LIBS $LIBS"
+AC_CHECK_HEADER(juman.h, , AC_MSG_ERROR(juman.h: not found.))
+AC_CHECK_LIB(juman, grammar, , AC_MSG_ERROR(libjuman: not found.))
+CPPFLAGS=$old_CPPFLAGS
+LIBS=$old_LIBS
+ETC_CFLAGS="$JUMAN_CFLAGS $ETC_CFLAGS"
 
 
 # Checks for libraries.
@@ -101,7 +110,7 @@ elif ( test "x$with_berkeley_db2" = xyes ); then
     AC_SEARCH_LIBS(db_open, db2 db, , 
 		   AC_MSG_ERROR(not found.))
 elif ( test "x$with_berkeley_db" = xyes ); then
-    AC_CHECK_LIB(db-4.1, db_create, DB_LIBS="-ldb-4.1 $DB_LIBS" ETC_CFLAGS="-DDB41 -DDB3 $ETC_CFLAGS", 
+    AC_CHECK_LIB(db-4.2, db_create, DB_LIBS="-ldb-4.2 $DB_LIBS" ETC_CFLAGS="-DDB41 -DDB3 $ETC_CFLAGS", 
 		 AC_SEARCH_LIBS(db_create, db-3 db-4 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
 				AC_MSG_ERROR(not found.)))
 elif ( test "x$with_gdbm" = xyes ); then
@@ -115,7 +124,8 @@ AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
 AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
 
-KNP_LIBS="$KNP_LIBS $DB_LIBS $ETC_LIBS"
+
+KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
@@ -173,11 +183,11 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
-KNP_CFLAGS="$SVM_CFLAGS $JUMAN_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="$SVM_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
-LDFLAGS="$JUMAN_LDFLAGS $LDFLAGS"
+# LDFLAGS="$JUMAN_LDFLAGS $LDFLAGS"
 
 
 # Checks for header files.
