@@ -1011,7 +1011,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
 	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
 	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
-	    if (check_feature((ptr->mrph_ptr + i)->f, "有意味接尾辞") || 
+	    if (check_feature((ptr->mrph_ptr + i)->f, "独立接尾辞") || 
+		check_feature((ptr->mrph_ptr + i)->f, "非独立有意味接尾辞") || 
 		check_feature((ptr->mrph_ptr + i)->f, "独立無意味語")) { /* 「の」 */
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
@@ -1138,7 +1139,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	}
 	tp->settou_num++;
     }
-    else if (check_feature(mp->f, "独立語") || 
+    else if (check_feature(mp->f, "自立") || 
 	     check_feature(mp->f, "独立接頭辞") || 
 	     check_feature(mp->f, "独立接尾辞") || 
 	     check_feature(mp->f, "独立無意味語")) {
