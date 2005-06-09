@@ -1496,10 +1496,10 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	fp = cpm_ptr->pred_b_ptr->head_ptr->f;
 	while (fp) {
 	    if (!strncmp(fp->cp, "ALT-", 4)) {
-		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%s", 
+		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
-		       &m.Katuyou_Kata, &m.Katuyou_Kei, &m.Imi);
+		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 		/* 選択した格フレームの表記と一致する形態素を選択 */
 		if (!strcmp(cpm_ptr->cmm[0].cf_ptr->entry, m.Goi)) {
 		    char *imip, *cp;

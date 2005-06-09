@@ -1446,7 +1446,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%s", 
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
-		       &m.Katuyou_Kata, &m.Katuyou_Kei, &m.Imi);
+		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 		/* 代表と異なるもの */
 		if (strcmp(t_ptr->head_ptr->Goi, m.Goi)) {
 		    str = strdup(m.Goi);
