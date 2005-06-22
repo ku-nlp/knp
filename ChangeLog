@@ -1,3 +1,16 @@
+2005-06-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/ipal.c:
+	2G以上のファイルに対応
+
+	* system/tools.c:
+	Windowsでコンパイルできない不具合を修正
+
+2005-06-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_ipal.c, system/case_analysis.c:
+	原形曖昧のときに格解析によって選択する処理のbug fix.
+
 2005-05-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* configure.ac: jumanのチェック強化
