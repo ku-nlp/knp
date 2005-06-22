@@ -10,6 +10,27 @@
 
 unsigned int seed[NSEED][256];
 
+#ifdef _WIN32
+/*==================================================================*/
+	 int sjis_fprintf(FILE *output, const char *fmt, ...)
+/*==================================================================*/
+{
+    va_list ap;
+    char buffer[DATA_LEN];
+    char *SJISbuffer;
+
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+
+    SJISbuffer = (char *)toStringSJIS(buffer);
+    fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
+    free(SJISbuffer);
+
+    return TRUE;
+}
+#endif 
+
 /*==================================================================*/
 	    void *malloc_data(size_t size, char *comment)
 /*==================================================================*/
@@ -77,27 +98,6 @@ unsigned int seed[NSEED][256];
     }    
     return hira;	/* free してください */
 }
-
-#ifdef _WIN32
-/*==================================================================*/
-	 int sjis_fprintf(FILE *output, const char *fmt, ...)
-/*==================================================================*/
-{
-    va_list ap;
-    char buffer[DATA_LEN];
-    char *SJISbuffer;
-
-    va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
-    va_end(ap);
-
-    SJISbuffer = (char *)toStringSJIS(buffer);
-    fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
-    free(SJISbuffer);
-
-    return TRUE;
-}
-#endif 
 
 /*====================================================================
                                END
