@@ -9,7 +9,7 @@
 
 /* from ipal.h */
 #define IPAL_FIELD_NUM	64
-#define IPAL_DATA_SIZE	1024000
+#define IPAL_DATA_SIZE	2048000
 #define CASE_MAX_NUM	20
 
 typedef struct {
@@ -25,7 +25,7 @@ FILE *fp_idx, *fp_dat;
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
 		     unsigned char *hyouki, unsigned char *pp, 
-		     int address, int size, int flag)
+		     unsigned long address, int size, int flag)
 {
     unsigned char output_buf[IPAL_DATA_SIZE];
     unsigned char *point;
@@ -33,7 +33,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 
     /* 読みをキーするとき */
     if (flag == 1) {
-	fprintf(fp, "%s %d:%d\n", entry, address, size);
+	fprintf(fp, "%s %lu:%d\n", entry, address, size);
     }
 
     if (pp) {
@@ -41,7 +41,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    /* 用例の区切り */
 	    if (*point == ' ') {
 		output_buf[length] = '\0';
-		fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+		fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
 		length = 0;
 	    } else {
 		if (*point == ':') {
@@ -59,18 +59,18 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    }
 	}
 	output_buf[length] = '\0';
-	fprintf(fp, "%s-%s-%s %d:%d\n", output_buf, pp, entry, address, size);
+	fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
     }
     else {
 	/* 読みと異なる場合に出力 */
 	if (flag != 1 || strcmp(hyouki, entry)) {
-	    fprintf(fp, "%s %d:%d\n", hyouki, address, size);
+	    fprintf(fp, "%s %lu:%d\n", hyouki, address, size);
 	}
     }
 }
 
 void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest, 
-		 int writesize, int casenum, int *address, int flag) {
+		 int writesize, int casenum, unsigned long *address, int flag) {
     int i;
     char *pp;
 
@@ -110,8 +110,9 @@ void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest,
 main(int argc, char **argv)
 {
     char tag[256], DATA[IPAL_DATA_SIZE], *pp, *token;
-    int i, line = 0, pos = 0, address = 0, flag = 1, item, casenum;
+    int i, line = 0, pos = 0, flag = 1, item, casenum;
     int closest[CASE_MAX_NUM], point[IPAL_FIELD_NUM];
+    unsigned long address = 0;
 
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s index-filename data-filename\n", argv[0]);
