@@ -1,3 +1,8 @@
+2005-06-30  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c, system/const.h, system/extern.h:
+	featureを読みこめるオプションを追加
+
 2005-06-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/ipal.c:
