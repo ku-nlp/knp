@@ -47,6 +47,7 @@ int		OptDiscFlag;
 int		OptCFMode;
 int		OptServerFlag;
 char		OptIgnoreChar;
+int		OptReadFeature;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -127,6 +128,7 @@ extern int	EX_match_subject;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
+    OptReadFeature = 0;
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
 	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
@@ -453,6 +455,9 @@ extern int	EX_match_subject;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    EX_match_subject = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-readfeature")) {
+	    OptReadFeature = 1;
 	}
 	else {
 	    usage();

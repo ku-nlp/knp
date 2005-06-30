@@ -51,6 +51,7 @@ extern int		OptCaseFlag;
 extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
+extern int		OptReadFeature;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];

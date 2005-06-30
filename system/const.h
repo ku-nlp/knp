@@ -31,7 +31,7 @@
 #define	PARA_MAX	32
 #define PARA_PART_MAX	32
 #define WORD_LEN_MAX	128
-#define SENTENCE_MAX	256
+#define SENTENCE_MAX	512
 #define PRINT_WIDTH	100
 #define PARENT_MAX	20
 #define BROTHER_MAX	20

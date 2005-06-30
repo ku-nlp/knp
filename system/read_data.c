@@ -13,6 +13,8 @@ int Bnst_start[MRPH_MAX];
 int Tag_start[MRPH_MAX];
 int Tag_dpnd[TAG_MAX];
 int Tag_type[TAG_MAX];
+FEATURE *Input_bnst_feature[BNST_MAX];
+FEATURE *Input_tag_feature[TAG_MAX];
 
 int ArticleID = 0;
 int preArticleID = 0;
@@ -301,12 +303,25 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+	     int feature_string2f(char *str, FEATURE **f)
+/*==================================================================*/
+{
+    char *token;
+
+    token = strtok(str, "><");
+    while (token) {
+	assign_cfeature(f, token);
+	token = strtok(NULL, "><");
+    }
+}
+
+/*==================================================================*/
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
     U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, i, homo_flag;
+    int homo_num, offset, mrph_item, bnst_item, tag_item, i, homo_flag;
 
     sp->Mrph_num = 0;
     homo_num = 0;
@@ -356,47 +371,74 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
 
 	/* 解析済みの場合 */
-
-	else if (sp->Mrph_num == 0 && input_buffer[0] == '*') {
-	    OptInput |= OPT_PARSED;
-	    if (OptEllipsis) {
-		OptAnalysis = OPT_CASE2;
+	/* 文節行 */
+	else if (input_buffer[0] == '*') {
+	    if (sp->Mrph_num == 0) {
+		OptInput |= OPT_PARSED;
+		if (OptEllipsis) {
+		    OptAnalysis = OPT_CASE2;
+		}
+		sp->Bnst_num = 0;
+		sp->Tag_num = 0;
+		memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);
+		memset(Tag_start, 0, sizeof(int)*MRPH_MAX);
+		if (OptReadFeature) {
+		    memset(Input_bnst_feature, 0, sizeof(FEATURE *) *BNST_MAX);
+		    memset(Input_tag_feature, 0, sizeof(FEATURE *) *TAG_MAX);
+		}
 	    }
-	    sp->Bnst_num = 0;
-	    sp->Tag_num = 0;
-	    memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);
-	    memset(Tag_start, 0, sizeof(int)*MRPH_MAX);
-	    if (sscanf(input_buffer, "* %d%c", 
-		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
-		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2)  {
+
+	    if (OptInput == OPT_RAW) {
+		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+		return readtoeos(fp);
+	    }
+
+	    bnst_item = sscanf(input_buffer, "* %d%c %[^\n]", 
+			       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
+			       &(sp->Best_mgr->dpnd.type[sp->Bnst_num]),
+			       rest_buffer);
+
+	    /* 文節の入力されたfeatureを使う */
+	    if (bnst_item == 3) {
+		if (OptReadFeature) { 
+		    /* featureを<>でsplitしてfに変換 */
+		    feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
+		}
+	    }
+	    else if (bnst_item != 2) {
 		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
 		OptInput = OPT_RAW;
 		return readtoeos(fp);
 	    }
-	    Bnst_start[sp->Mrph_num] = 1;
-	    sp->Bnst_num++;
-	}
-	/* 文節行 */
-	else if (input_buffer[0] == '*') {
-	    if (OptInput == OPT_RAW || 
-		sscanf(input_buffer, "* %d%c", 
-		       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
-		       &(sp->Best_mgr->dpnd.type[sp->Bnst_num])) != 2) {
-		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-		return readtoeos(fp);
-	    }
+
 	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
 	}
 	/* タグ単位行 */
 	else if (input_buffer[0] == '+') {
-	    if (OptInput == OPT_RAW || 
-		sscanf(input_buffer, "+ %d%c", 
-		       &Tag_dpnd[sp->Tag_num],
-		       &Tag_type[sp->Tag_num]) != 2) {
+	    if (OptInput == OPT_RAW) {
 		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
 		return readtoeos(fp);
 	    }
+
+	    tag_item = sscanf(input_buffer, "+ %d%c %[^\n]", 
+			      &Tag_dpnd[sp->Tag_num],
+			      &Tag_type[sp->Tag_num],
+			      rest_buffer);
+
+	    /* タグ単位の入力されたfeatureを使う */
+	    if (tag_item == 3) {
+		if (OptReadFeature) { 
+		    /* featureを<>でsplitしてfに変換 */
+		    feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
+		}
+	    }
+	    else if (tag_item != 2) {
+		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+		OptInput = OPT_RAW;
+		return readtoeos(fp);
+	    }
+
 	    Tag_start[sp->Mrph_num] = 1;
 	    sp->Tag_num++;
 	}
@@ -1121,6 +1163,9 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	if (OptReadFeature) {
+	    b_ptr->f = Input_bnst_feature[i];
+	}
 	assign_cfeature(&(b_ptr->f), "解析済");
 	if (calc_bnst_length(sp, b_ptr) == FALSE) {
 	    return FALSE;
@@ -1181,6 +1226,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
 	/* 各タグ単位の長さを計算しておく */
 	calc_bnst_length(sp, (BNST_DATA *)tp);
+
+	if (OptReadFeature) {
+	    tp->f = Input_tag_feature[i];
+	}
     }
 
     /* <文頭>, <文末> */
