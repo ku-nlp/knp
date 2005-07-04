@@ -460,6 +460,23 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* æ Œ¨≤Ú¿œ√µ∫˜ ∏øÙ */
+	else if (!strcmp(DEF_DISC_SEN_NUM, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		PrevSentenceLimit = atoi(_Atom(cell2));
+		if (PrevSentenceLimit < 0 || PrevSentenceLimit >= SENTENCE_MAX) {
+		    fprintf(stderr, "%d is invalid in .knprc\n", PrevSentenceLimit);
+		    exit(0);
+		}
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Previous sentence limit ... %d\n", PrevSentenceLimit);
+		}
+	    }
+	}
 	/* æ Œ¨≤Ú¿œ√µ∫˜ΩÁΩ¯ */
 	else if (!strcmp(DEF_DISC_LOC_ORDER, _Atom(car(cell1)))) {
 	    int pp, count;

@@ -52,6 +52,7 @@ char *CaseOrder[CASE_ORDER_MAX][4] = {
 
 int DiscAddedCases[PP_NUMBER] = {END_M};
 int LocationLimit[PP_NUMBER] = {END_M, END_M, END_M, END_M};
+int PrevSentenceLimit = 2;
 int OptUseSmfix;
 
 
@@ -3287,19 +3288,13 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {
-	EllipsisDetectRecursive(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				cs->tag_data + cs->Tag_num - 1, 
-				cf_ptr, n, LOC_OTHERS);
-	/* 前文 */
-	if (cs - sentence_data > 0) {
-	    EllipsisDetectRecursive(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				    (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				    cf_ptr, n, LOC_OTHERS);
-	    /* 2文前 */
-	    if (cs - sentence_data > 1) {
-		EllipsisDetectRecursive(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					cf_ptr, n, LOC_OTHERS);
+	for (i = 0; i <= PrevSentenceLimit; i++) {
+	    if (cs - sentence_data < i) {
+		break;
 	    }
+	    EllipsisDetectRecursive(cs - i, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				    (cs - i)->tag_data + (cs - i)->Tag_num - 1, 
+				    cf_ptr, n, LOC_OTHERS);
 	}
 
 	/* 閾値を越えるものが見つからなかった */
@@ -3338,24 +3333,16 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    }
 	}
 
-	/* 前文 */
-	if (cs - sentence_data > 0) {
-	    for (i = (cs - 1)->Tag_num - 1; i >= 0; i--) {
-		EllipsisDetectOne(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				  (cs - 1)->tag_data + i, cf_ptr, n);
+	/* 前文以前 */
+	for (j = 1; j <= PrevSentenceLimit; j++) {
+	    if (cs - sentence_data < j) {
+		break;
+	    }
+	    for (i = (cs - j)->Tag_num - 1; i >= 0; i--) {
+		EllipsisDetectOne(cs - j, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				  (cs - j)->tag_data + i, cf_ptr, n);
 		if (ScoreCheck(cf_ptr, n)) {
 		    goto EvalAntecedent;
-		}
-	    }
-
-	    /* 2文前 */
-	    if (cs - sentence_data > 1) {
-		for (i = (cs - 2)->Tag_num - 1; i >= 0; i--) {
-		    EllipsisDetectOne(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				      (cs - 2)->tag_data + i, cf_ptr, n);
-		    if (ScoreCheck(cf_ptr, n)) {
-			goto EvalAntecedent;
-		    }
 		}
 	    }
 	}

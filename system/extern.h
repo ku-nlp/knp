@@ -81,6 +81,7 @@ extern char		*DTFile[];
 
 extern int	DiscAddedCases[];
 extern int	LocationLimit[];
+extern int	PrevSentenceLimit;
 extern int	LocationOrder[][LOC_NUMBER];
 
 extern SMLIST	smlist[];

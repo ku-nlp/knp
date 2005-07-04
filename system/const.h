@@ -422,6 +422,7 @@ typedef struct {
 #define		DEF_SVM_FREQ_SD_NO	"SVM裳刨筛洁市汗ノ呈"
 
 #define		DEF_DISC_LOC_ORDER	"KNP臼维豺老玫瑚界进"
+#define		DEF_DISC_SEN_NUM	"KNP臼维豺老玫瑚矢眶"
 
 typedef struct _RuleVector {
     char	*file;
