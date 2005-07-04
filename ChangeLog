@@ -1,3 +1,8 @@
+2005-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
+	省略解析で探索する文数を指定できるようにした。
+
 2005-06-30  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c, system/const.h, system/extern.h:
