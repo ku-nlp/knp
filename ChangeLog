@@ -1,3 +1,9 @@
+2005-07-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/extern.h, system/feature.c, system/main.c:
+	オプションをチェックするfeature functionの追加
+	-copula:追加
+
 2005-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
