@@ -32,6 +32,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    1:係り受けOK
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
+char		**Options;
 int 		OptAnalysis;
 int		OptEllipsis;
 int 		OptInput;
@@ -48,6 +49,7 @@ int		OptCFMode;
 int		OptServerFlag;
 char		OptIgnoreChar;
 int		OptReadFeature;
+int		OptCopula;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -109,6 +111,8 @@ extern int	EX_match_subject;
 	       void option_proc(int argc, char **argv)
 /*==================================================================*/
 {
+    int i, count = 0;
+
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
@@ -129,6 +133,16 @@ extern int	EX_match_subject;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
     OptReadFeature = 0;
+    OptCopula = 0;
+
+    /* オプションの保存 */
+    Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
+    for (i = 1; i < argc; i++) {
+	if (**(argv + i) == '-') {
+	    *(Options + count++) = strdup(*(argv + i) + 1);
+	}
+    }
+    *(Options + count) = NULL;
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
 	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
@@ -458,6 +472,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-readfeature")) {
 	    OptReadFeature = 1;
+	}
+	else if (str_eq(argv[0], "-copula")) {
+	    OptCopula = 1;
 	}
 	else {
 	    usage();

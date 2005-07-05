@@ -35,6 +35,7 @@ extern int 		Dpnd_matrix[][BNST_MAX];
 extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];
 
+extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptEllipsis;
 extern int 		OptInput;
@@ -52,6 +53,7 @@ extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern int		OptReadFeature;
+extern int		OptCopula;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];

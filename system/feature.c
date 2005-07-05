@@ -981,6 +981,24 @@
 	return TRUE;
     }
 
+    /* &OPTCHECK : オプションのチェック */
+    
+    else if (!strncmp(rule, "&OptCheck:", strlen("&OptCheck:"))) {
+	char **opt;
+
+	cp = rule + strlen("&OptCheck:");
+	if (*cp == '-') { /* '-'を含んでいたら飛ばす */
+	    cp++;
+	}
+
+	for (opt = Options; *opt != NULL; opt++) {
+	    if (!strcasecmp(cp, *opt)) {
+		return TRUE;	    
+	    }
+	}
+	return FALSE;
+    }
+
     /*
     else if (!strncmp(rule, "&時間", strlen("&時間"))) {
 	if (sm_all_match(((BNST_DATA *)ptr2)->SM_code, "1128********")) {
