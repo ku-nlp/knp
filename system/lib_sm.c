@@ -199,9 +199,9 @@ SMLIST smlist[TBLSIZE];
 	/* 溢れたら、縮める */
 	if (strlen(code) > SM_CODE_SIZE*SM_ELEMENT_MAX) {
 #ifdef DEBUG
-    fprintf(stderr, "Too long SM content <%s>.\n", code);
+	    fprintf(stderr, "Too long SM content <%s>.\n", code);
 #endif
-    code[SM_CODE_SIZE*SM_ELEMENT_MAX] = '\0';
+	    code[SM_CODE_SIZE*SM_ELEMENT_MAX] = '\0';
 	}
 	
 	pos = 0;

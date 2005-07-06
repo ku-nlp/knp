@@ -160,6 +160,7 @@
 
 	free(rkey);
 	if (target < 0) {
+	    free(hdp);
 	    return NULL;	/* マッチしなかった */
 	}
 

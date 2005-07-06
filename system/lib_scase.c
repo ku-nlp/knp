@@ -112,7 +112,7 @@ int		OptUseScase;
 	    str_buffer = make_pred_string(ptr->head_tag_ptr); /* 最後のタグ単位 (「〜のは」の場合は1つ前) */
 	}
 	else {
-	    str_buffer = make_pred_string(ptr);
+	    str_buffer = make_pred_string((TAG_DATA *)ptr);
 	}
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
@@ -137,6 +137,9 @@ int		OptUseScase;
 	    free(ans);
 	    free(str_buffer);
 	    goto Match;
+	}
+	else {
+	    free(str_buffer);
 	}
     }
 
