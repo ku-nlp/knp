@@ -3,6 +3,9 @@
 	* system/context.c:
 	省略解析で2文前以前も学習・解析できるようにした
 
+	* system/hash.c, system/lib_scase.c:
+	fixed memory leak.
+
 2005-07-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/extern.h, system/feature.c, system/main.c:
