@@ -3362,7 +3362,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
 
 
-    /* 予備実験で決めた順番で探す */
+    /* 位置カテゴリの順番で探す */
 
     /* (用言の)並列を吸収 */
     tp = cpm_ptr->pred_b_ptr;
@@ -3407,21 +3407,16 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* それ以外 */
-
-    /* 体言を探す (この用言の格要素になっているもの以外) *
-    for (s = cs - 3; s >= sentence_data; s--) {
-	if (EllipsisDetectRecursive(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, s->tag_data + s->Tag_num - 1, 
-				    cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-	* 2文前までで止める *
-	if (cs - s > 1) {
+    /* 2文より以前 */
+    for (i = 3; i <= PrevSentenceLimit; i++) {
+	if (cs - sentence_data < i) {
 	    break;
 	}
-	memset(Bcheck, 0, sizeof(int) * TAG_MAX);
+	CheckMatchedLC(cs - i, cs, em_ptr, cpm_ptr, cmm_ptr, l, ptp, cf_ptr, n, LOC_OTHERS);
+	if (ScoreCheck(cf_ptr, n)) {
+	    goto EvalAntecedent;
+	}
     }
-    */
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
@@ -4193,7 +4188,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
       int mark_location_classes(SENTENCE_DATA *sp, TAG_DATA *tp)
 /*==================================================================*/
 {
-    int i;
+    int i, j;
     SENTENCE_DATA *cs;
 
     cs = sentence_data + sp->Sen_num - 1;
@@ -4246,6 +4241,16 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[2][i] = LOC_S2_OTHERS;
+	}
+    }
+
+    /* 2文以前 */
+    for (j = 3; j <= PrevSentenceLimit; j++) {
+	if (cs - sentence_data < j) {
+	    break;
+	}
+	for (i = 0; i < (cs - j)->Tag_num; i++) {
+	    LC[j][i] = LOC_OTHERS;
 	}
     }
 
