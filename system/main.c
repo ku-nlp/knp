@@ -623,6 +623,7 @@ extern int	EX_match_subject;
     current_sentence_data.Mrph_num = 0;
     current_sentence_data.Bnst_num = 0;
     current_sentence_data.New_Bnst_num = 0;
+    current_sentence_data.Tag_num = 0;
     current_sentence_data.Best_mgr = &Best_mgr;
     current_sentence_data.KNPSID = NULL;
     current_sentence_data.Comment = NULL;
@@ -948,6 +949,9 @@ PARSED:
 	    for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }
+	    for (i = 0; i < sp->Tag_num; i++) {
+		(sp->tag_data+i)->f = NULL;
+	    }
 	}
 	else {
 	    for (i = 0; i < sp->Mrph_num; i++) {
@@ -955,6 +959,9 @@ PARSED:
 	    }
 	    for (i = 0; i < sp->Bnst_num; i++) {
 		clear_feature(&(sp->bnst_data[i].f));
+	    }
+	    for (i = 0; i < sp->Tag_num; i++) {
+		clear_feature(&(sp->tag_data[i].f));
 	    }
 	    /* New_Bnstはもともとpointer */
 	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
