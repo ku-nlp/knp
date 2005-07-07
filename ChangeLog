@@ -1,7 +1,10 @@
 2005-07-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
-	tag_dataのfeatureを解放するように修正。
+	tag_dataのfeatureを解放するように修正
+
+	* system/context.c:
+	名詞関係解析でも2文前以前も学習・解析できるようにした
 
 2005-07-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
@@ -20,7 +23,7 @@
 2005-07-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/context.c, system/extern.h:
-	省略解析で探索する文数を指定できるようにした。
+	省略解析で探索する文数を指定できるようにした
 
 2005-06-30  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
