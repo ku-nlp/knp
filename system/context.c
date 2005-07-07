@@ -3536,20 +3536,14 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {
-	EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				 cs->tag_data + cs->Tag_num - 1, 
-				 cf_ptr, n, LOC_OTHERS, TRUE);
-	if (cs - sentence_data > 0) {
-	    EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				     (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				     cf_ptr, n, LOC_OTHERS, TRUE);
-	    if (cs - sentence_data > 1) {
-		EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
-					 cf_ptr, n, LOC_OTHERS, TRUE);
+	for (i = 0; i <= PrevSentenceLimit; i++) {
+	    if (cs - sentence_data < i) {
+		break;
 	    }
+	    EllipsisDetectRecursive2(cs - i, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+				     (cs - i)->tag_data + (cs - i)->Tag_num - 1, 
+				     cf_ptr, n, LOC_OTHERS, TRUE);
 	}
-
 	/* 閾値を越えるものが見つからなかった */
 	if (!ScoreCheck(cf_ptr, n)) {
 	    return 0;
@@ -3569,17 +3563,14 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 				 cf_ptr, n, LOC_OTHERS, TRUE)) {
 	goto EvalAntecedentNoun;
     }
-    /* 前文 */
-    else if (cs - sentence_data > 0) { 
-	if (EllipsisDetectRecursive2(cs - 1, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-				     (cs - 1)->tag_data + (cs - 1)->Tag_num - 1, 
-				     cf_ptr, n, LOC_OTHERS, TRUE)) {
-	    goto EvalAntecedentNoun;
-	}
-	/* 2文前 */
-	else if (cs - sentence_data > 1) {
-	    if (EllipsisDetectRecursive2(cs - 2, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					 (cs - 2)->tag_data + (cs - 2)->Tag_num - 1, 
+    /* 前文より前 */
+    else {
+	for (i = 1; i <= PrevSentenceLimit; i++) {
+	    if (cs - sentence_data < i) {
+		break;
+	    }
+	    if (EllipsisDetectRecursive2(cs - i, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					 (cs - i)->tag_data + (cs - i)->Tag_num - 1, 
 					 cf_ptr, n, LOC_OTHERS, TRUE)) {
 		goto EvalAntecedentNoun;
 	    }
