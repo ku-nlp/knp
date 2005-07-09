@@ -1,3 +1,11 @@
+2005-07-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* Makefile.am, configure.ac, svm/Makefile.am:
+	svm_lightのサポート
+
+	* svm_light/svm.c, svm_light/svm.h, svm_light/Makefile.am:
+	Added.
+
 2005-07-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c:
