@@ -2,7 +2,7 @@ SUBDIRS = .
 
 EXTRA_DIST = svm.cc svm.h
 
-if HAVE_SVM
+if HAVE_TINYSVM
 noinst_LTLIBRARIES = libsvm.la
 
 libsvm_la_SOURCES = svm.cc svm.h
