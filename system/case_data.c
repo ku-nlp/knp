@@ -353,20 +353,22 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 }
 
 /*==================================================================*/
-    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+	      void set_data_cf_type(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
-    TAG_DATA *cel_b_ptr = NULL;
-    int i, child_num, first, closest, orig_child_num = -1, renkaku_exception_p;
     char *vtype = NULL;
 
     cpm_ptr->cf.type = CF_PRED;
+    cpm_ptr->cf.type_flag = 0;
     cpm_ptr->cf.voice = b_ptr->voice;
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += 5;
 	strcpy(cpm_ptr->cf.pred_type, vtype);
+	if (check_feature(b_ptr->f, "用言:判") && !OptCopula) {
+	    cpm_ptr->cf.type_flag = 1;
+	}
     }
     else if (check_feature(b_ptr->f, "サ変")) {
 	strcpy(cpm_ptr->cf.pred_type, "動");
@@ -384,6 +386,15 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     else {
 	cpm_ptr->cf.pred_type[0] = '\0';
     }
+}
+
+/*==================================================================*/
+    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
+    TAG_DATA *cel_b_ptr = NULL;
+    int i, child_num, first, closest, orig_child_num = -1, renkaku_exception_p;
 
     cpm_ptr->cf.samecase[0][0] = END_M;
     cpm_ptr->cf.samecase[0][1] = END_M;

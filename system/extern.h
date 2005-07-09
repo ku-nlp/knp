@@ -381,6 +381,7 @@ extern void *realloc_data(void *ptr, size_t size, char *comment);
 extern void init_hash();
 extern int hash(unsigned char *key, int keylen);
 extern unsigned char *katakana2hiragana(unsigned char *cp);
+extern char *strdup_with_check(const char *s);
 
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);

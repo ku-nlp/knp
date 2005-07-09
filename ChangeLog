@@ -1,3 +1,8 @@
+2005-07-09  Ryohei Sadao  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/tools.c:
+	判定詞についても間接照応解析を行うように修正
+
 2005-07-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* Makefile.am, configure.ac, svm/Makefile.am:

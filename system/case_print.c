@@ -258,14 +258,14 @@ struct _sort_kv {
 
 	    fprintf(Outfp, " : กิ");
 
-	    if (cmm_ptr->cf_ptr->type == CF_PRED) {
-		for (j = 0; cmm_ptr->cf_ptr->pp[i][j] != END_M; j++) {
-		    if (j != 0) fputc('/', Outfp);
-		    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
-		}
+	    if (cmm_ptr->cf_ptr->pp_str[i]) {	
+		fprintf(Outfp, "%s", cmm_ptr->cf_ptr->pp_str[i]);
 	    }
 	    else {
-		fprintf(Outfp, "%s", cmm_ptr->cf_ptr->pp_str[i]);
+		for (j = 0; cmm_ptr->cf_ptr->pp[i][j] != END_M; j++) {
+		    if (j != 0) fputc('/', Outfp);	    
+		    fprintf(Outfp, "%s", pp_code_to_kstr(cmm_ptr->cf_ptr->pp[i][j]));
+		}	
 	    }
 
 	    fprintf(Outfp, "กี");

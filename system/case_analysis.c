@@ -197,7 +197,10 @@ char *pp_code_to_hstr(int num)
 
 char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 {
-    return cpm_ptr->cf.type == CF_PRED ? pp_code_to_kstr(num) : "¥Î";
+    if ((cpm_ptr->cf.type_flag && MatchPP(num, "¦Õ")) || cpm_ptr->cf.type == CF_NOUN) {
+	return "¥Î";
+    }   
+    return pp_code_to_kstr(num);
 }
 
 /*==================================================================*/
@@ -685,6 +688,7 @@ int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
     cpm_ptr->decided = CF_UNDECIDED;
 
     /* ÆþÎÏÊ¸Â¦¤Î³ÊÍ×ÁÇÀßÄê */
+    set_data_cf_type(cpm_ptr);
     closest = make_data_cframe(sp, cpm_ptr);
 
     /* ³Ê¥Õ¥ì¡¼¥à²òÀÏ¥¹¥­¥Ã¥×
@@ -770,6 +774,9 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	if (src->pp_str[i]) {
 	    dst->pp_str[i] = strdup(src->pp_str[i]);
 	}
+	else {
+	    dst->pp_str[i] = NULL;
+	}
 	if (src->sm[i]) {
 	    dst->sm[i] = strdup(src->sm[i]);
 	}
@@ -839,6 +846,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     int i, j;
 
     dst->type = src->type;
+    dst->type_flag = src->type_flag;
     dst->element_num = src->element_num;
 /*    for (i = 0; i < CF_ELEMENT_MAX; i++) { */
     for (i = 0; i < src->element_num; i++) {
@@ -1270,7 +1278,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		/* ¤½¤ÎÂ¾ => ³°¤Î´Ø·¸
 		   Ê£¹çÌ¾»ì¤ÎÁ°Â¦: ÊÝÎ±
 		   ÍÑ¸ÀÄ¾Á°¤Î¥Î³Ê: ÊÝÎ± */
-		else if (cpm_ptr->cf.type == CF_PRED && 
+		else if (cpm_ptr->cf.type != CF_NOUN && 
 			 !(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
 			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
 			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("Ì¤") && 

@@ -662,7 +662,7 @@ typedef struct tnode_t {
 #define	USE_SUFFIX_SM	8
 #define	USE_PREFIX_SM	16
 
-#define	CF_PRED	1
+#define	CF_PRED 1
 #define	CF_NOUN	2
 
 #define	CF_NORMAL	0
@@ -703,6 +703,7 @@ typedef struct {
  */
 typedef struct cf_def {
     int		type;
+    int         type_flag;                              /* 判定詞であるかどうか */
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */
@@ -862,14 +863,14 @@ typedef struct ellipsis_component {
 typedef struct ellipsis_cmm_list {
     CF_MATCH_MGR	cmm;
     CF_PRED_MGR		cpm;
-    int			element_num;			/* 入力側 */
+    int			element_num;		/* 入力側 */
 } ELLIPSIS_CMM;
 
 typedef struct ellipsis_list {
     CF_PRED_MGR		*cpm;
     float		score;
     float		pure_score;
-    ELLIPSIS_COMPONENT cc[CASE_TYPE_NUM];	/* 省略格要素のリスト */
+    ELLIPSIS_COMPONENT  cc[CASE_TYPE_NUM];	/* 省略格要素のリスト */
     FEATUREptr		f;
     int			result_num;
     ELLIPSIS_CMM	ecmm[CMM_MAX];

@@ -3552,7 +3552,8 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
 
     /* 親 */
-    if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+    if (cpm_ptr->pred_b_ptr->parent &&
+	EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cpm_ptr->pred_b_ptr->parent, 
 				 cf_ptr, n, LOC_OTHERS, FALSE)) {
 	goto EvalAntecedentNoun;
@@ -3954,7 +3955,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 			  CF_PRED_MGR *cpm_ptr, char **order)
 /*==================================================================*/
 {
-    int i, k, l, frame_num;
+    int i, k, l, type, frame_num;
     CASE_FRAME **cf_array;
     CF_MATCH_MGR cmm;
     ELLIPSIS_CMM tempecmm;
@@ -4014,9 +4015,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 
 	    if (frame_num == 0) {
-		frame_num = cpm_ptr->pred_b_ptr->cf_num;
-		for (l = 0; l < frame_num; l++) {
-		    *(cf_array+l) = cpm_ptr->pred_b_ptr->cf_ptr+l;
+		for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
+		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type) {
+			*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
+		    }
 		}
 	    }
 	}
@@ -4037,7 +4039,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	/* 入力側格要素を設定
 	   照応解析時はすでにある格要素を上書きしてしまうのでここで再設定
 	   それ以外のときは下の DeleteFromCF() で省略要素をクリア */
-	if (OptEllipsis & OPT_DEMO) {
+	if (OptEllipsis & OPT_DEMO || cpm_ptr->cf.type_flag) {
 	    make_data_cframe(sp, cpm_ptr);
 	}
 
@@ -4048,7 +4050,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	/* for (i = 0; i < cmm.result_num; i++) */ {
 	i = 0;
 
-	    ClearEllipsisMGR(&workem);
+	ClearEllipsisMGR(&workem);
 
 	    if (cpm_ptr->cf.type == CF_NOUN) {
 		EllipsisDetectForNounMain(sp, &workem, cpm_ptr, &cmm, i, *(cf_array+l));
@@ -4259,12 +4261,121 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 }
 
 /*==================================================================*/
+	 void merge_cf_ptr(CASE_FRAME *cf_ptr1, CASE_FRAME *cf_ptr2)
+/*==================================================================*/
+{
+    int i, j, k;
+
+    for (i = 0; i < cf_ptr2->element_num; i++) {
+	j = cf_ptr1->element_num + i;
+	if (j >= CF_ELEMENT_MAX) {
+	    break;
+	}
+	cf_ptr1->oblig[j] = cf_ptr2->oblig[i];                       /* oblig */
+	cf_ptr1->adjacent[j] = cf_ptr2->adjacent[i];                 /* adjacent */
+	for (k = 0; k < PP_ELEMENT_MAX; k++) { 
+	    cf_ptr1->pp[j][k] = cf_ptr2->pp[i][k];                   /* pp */
+	}
+	cf_ptr1->sp[j] = cf_ptr2->sp[i];                             /* sp */
+	cf_ptr1->pp_str[j] = strdup_with_check(cf_ptr2->pp_str[i]);  /* pp_str */
+	cf_ptr1->sm[j] = strdup_with_check(cf_ptr2->sm[i]);          /* sm */
+	cf_ptr1->sm_delete[j] = strdup_with_check(cf_ptr2->sm_delete[i]); /* sm_delete */
+	if (cf_ptr2->sm_delete[i]) {
+	    cf_ptr1->sm_delete_size[j] = cf_ptr2->sm_delete_size[i]; /* sm_delete_size */
+	    cf_ptr1->sm_delete_num[j] = cf_ptr2->sm_delete_num[i];   /* sm_delete_num */
+	}
+	cf_ptr1->sm_specify[j] = strdup_with_check(cf_ptr2->sm_specify[i]); /* sm_specify */
+	if (cf_ptr1->sm_specify[i]) {
+	    cf_ptr1->sm_specify_size[j] = cf_ptr2->sm_specify_size[i];   /* sm_specify_size */
+	    cf_ptr1->sm_specify_num[j] = cf_ptr2->sm_specify_num[i];     /* sm_specify_num */
+	}
+	cf_ptr1->ex[j] = strdup_with_check(cf_ptr2->ex[i]);                     /* ex */
+	if (cf_ptr2->ex_num[i]) {
+	    cf_ptr1->ex_list[j] = (char **)malloc_data(sizeof(char *)*cf_ptr2->ex_num[i], "merge_cf_ptr");
+	    for (k = 0; k < cf_ptr2->ex_num[i]; k++) {
+		cf_ptr1->ex_list[j][k] = strdup_with_check(cf_ptr2->ex_list[i][k]); /* ex_list */
+	    }
+	    /* ex_freq */
+	    cf_ptr1->ex_freq[j] = (int *)malloc_data(sizeof(int)*cf_ptr2->ex_num[i], "merge_cf_ptr");
+	    for (k = 0; k < cf_ptr2->ex_num[i]; k++) {
+		cf_ptr1->ex_freq[j][k] = cf_ptr2->ex_freq[i][k];
+	    }
+	    cf_ptr1->ex_size[j] = cf_ptr2->ex_size[i];                   /* ex_size */
+	    cf_ptr1->ex_num[j] = cf_ptr2->ex_num[i];                     /* ex_num */
+	}
+	cf_ptr1->semantics[j] = strdup_with_check(cf_ptr2->semantics[i]); /* semantics */
+    }
+    cf_ptr1->element_num += i;                                          /* element_num */
+}
+
+/*==================================================================*/
+	 void merge_em(ELLIPSIS_MGR *em1, ELLIPSIS_MGR *em2)
+/*==================================================================*/
+{
+    int i, j, k;
+
+    em1->score += em2->score;
+    em1->pure_score += em2->pure_score;
+
+    for (i = 0; i < CASE_TYPE_NUM; i++) {
+	if (em2->cc[i].s) {
+	    em1->cc[i] = em2->cc[i];
+	    em2->cc[i].s = NULL;
+	    em2->cc[i].pp_str = NULL;
+	    em2->cc[i].bnst = 0;
+	    em2->cc[i].score = 0;
+	    em2->cc[i].dist = 0;
+	}
+    }
+
+    em1->ecmm[0].cpm.score += em2->ecmm[0].cpm.score;
+
+    for (i = 0; i < em2->ecmm[0].element_num; i++) {
+	j = em1->ecmm[0].element_num + i;
+	if (j >= CF_ELEMENT_MAX) {
+	    break;
+	}
+	/* CF_PRED */
+	for (k = 0; k < PP_ELEMENT_MAX; k++) { 
+	    em1->ecmm[0].cpm.cf.pp[j][k] = em2->ecmm[0].cpm.cf.pp[i][k];
+	}
+	strcpy(em1->ecmm[0].cpm.cf.sm[j], em2->ecmm[0].cpm.cf.sm[i]);
+	em1->ecmm[0].cpm.elem_b_ptr[j] = em2->ecmm[0].cpm.elem_b_ptr[i];
+	em1->ecmm[0].cpm.elem_s_ptr[j] = em2->ecmm[0].cpm.elem_s_ptr[i];
+	em1->ecmm[0].cpm.elem_b_num[j] = em2->ecmm[0].cpm.elem_b_num[i];
+	
+	/* CF_MATCH */
+	em1->ecmm[0].cmm.result_lists_d[0].flag[j]
+	    = em2->ecmm[0].cmm.result_lists_p[0].flag[i] 
+	    + em1->ecmm[0].cmm.cf_ptr->element_num;
+	em1->ecmm[0].cmm.result_lists_d[0].score[j]
+	    = em2->ecmm[0].cmm.result_lists_p[0].score[i];
+	em1->ecmm[0].cmm.result_lists_d[0].pos[j]
+	    = em2->ecmm[0].cmm.result_lists_p[0].pos[i];
+    }
+    if (em2->ecmm[0].cmm.cf_ptr) {
+	for (i = 0; i < em2->ecmm[0].cmm.cf_ptr->element_num; i++) {
+	    j = em1->ecmm[0].cmm.cf_ptr->element_num + i;
+	    em1->ecmm[0].cmm.result_lists_p[0].flag[j]
+		= em2->ecmm[0].cmm.result_lists_p[0].flag[i]
+		+ em1->ecmm[0].element_num;
+	    em1->ecmm[0].cmm.result_lists_p[0].score[j]
+		= em2->ecmm[0].cmm.result_lists_p[0].score[i];
+	    em1->ecmm[0].cmm.result_lists_p[0].pos[j]
+		= em2->ecmm[0].cmm.result_lists_p[0].pos[i];
+	}
+	merge_cf_ptr(em1->ecmm[0].cmm.cf_ptr, em2->ecmm[0].cmm.cf_ptr);
+    }
+    em1->ecmm[0].element_num += em2->ecmm[0].element_num;
+}
+
+/*==================================================================*/
 	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, mainflag;
+    int i, j, k, l, mainflag;
     float score;
-    ELLIPSIS_MGR workem, maxem;
+    ELLIPSIS_MGR workem, maxem, maxem_copula;
     SENTENCE_DATA *sp_new;
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
@@ -4272,6 +4383,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
     InitEllipsisMGR(&workem);
     InitEllipsisMGR(&maxem);
+    InitEllipsisMGR(&maxem_copula);
 
     AssignFeaturesByProgram(sp);
 
@@ -4363,14 +4475,22 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 			if (!(OptEllipsis & OPT_DEMO)) {
 			    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
 			}
+			
 		    }
 		    /* 格フレーム未決定のとき */
 		    else {
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
 		}
+		if (cpm_ptr->cf.type_flag) {
+		    cpm_ptr->cf.type = CF_NOUN;
+		    maxem_copula.score = -2;
+		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
+		    merge_em(&maxem, &maxem_copula);
+		    cpm_ptr->cf.type = CF_PRED;
+		} 
 	    }
-
+	    
 	    /* もっとも score のよかった組み合わせを登録 */
 	    if (maxem.score > -2) {
 		cpm_ptr->score = maxem.score;
@@ -4389,6 +4509,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    cpm_ptr->elem_b_ptr[k] = maxem.ecmm[0].cpm.elem_b_ptr[k];
 		    cpm_ptr->elem_b_num[k] = maxem.ecmm[0].cpm.elem_b_num[k];
 		    cpm_ptr->elem_s_ptr[k] = maxem.ecmm[0].cpm.elem_s_ptr[k];
+		    for (l = 0; l < PP_ELEMENT_MAX; l++) {
+			cpm_ptr->cf.pp[k][l] = maxem.ecmm[0].cpm.cf.pp[k][l];
+		    }
+		    strcpy(cpm_ptr->cf.sm[k], maxem.ecmm[0].cpm.cf.sm[k]);
 		}
 		/* feature の伝搬 */
 		append_feature(&(cpm_ptr->pred_b_ptr->f), maxem.f);
@@ -4411,6 +4535,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 	    }
 	    ClearEllipsisMGR(&maxem);
+	    ClearEllipsisMGR(&maxem_copula);
 
 	    /* 格フレームの保存 */
 	    if (cpm_ptr->cmm[0].score > 0) {

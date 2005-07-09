@@ -1136,7 +1136,10 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     if (!address_str)
 	return f_num;
 
-    if ((vtype = check_feature(t_ptr->f, "用言"))) {
+    if (flag == CF_NOUN && (vtype = check_feature(t_ptr->f, "体言"))) {
+	vtype = "名";
+    }
+    else if ((vtype = check_feature(t_ptr->f, "用言"))) {
 	vtype += 5;
     }
     else if ((vtype = check_feature(t_ptr->f, "サ変"))) {
@@ -1147,9 +1150,6 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     }
     else if ((vtype = check_feature(t_ptr->f, "準用言"))) {
 	;
-    }
-    else if (flag == CF_NOUN && (vtype = check_feature(t_ptr->f, "体言"))) {
-	vtype = "名";
     }
 
     for (cp = pre_pos = address_str; ; cp++) {
@@ -1526,7 +1526,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
   void make_caseframes(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int flag)
 /*==================================================================*/
 {
-    t_ptr->cf_num = make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
+    t_ptr->cf_num += make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
 
     if (flag == CF_PRED && t_ptr->cf_num == 0) {
 	make_default_cframe(t_ptr, Case_frame_num);
@@ -1544,6 +1544,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	/* 正解コーパスを入力したときに自立語がない場合がある */
+	t_ptr->cf_num = 0;
+
 	if (t_ptr->jiritu_ptr != NULL && 
 	    !check_feature(t_ptr->f, "格解析なし")) {
 	    if ((!OptEllipsis || 
@@ -1556,21 +1558,18 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		   set_pred_voice(t_ptr); ヴォイス
 		   get_scase_code(t_ptr); 表層格 */
 
-		start = Case_frame_num;
 		make_caseframes(sp, t_ptr, CF_PRED);
 		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレームはとりあえず、サ変名詞以外について */
-	    else if ((OptEllipsis & OPT_REL_NOUN) && 
+	    if ((OptEllipsis & OPT_REL_NOUN) && 
 		     check_feature(t_ptr->f, "体言") && 
 		     !check_feature(t_ptr->f, "サ変")) {
-		start = Case_frame_num;
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }
 	}
 	else {
 	    t_ptr->cf_ptr = NULL;
-	    t_ptr->cf_num = 0;
 	}
     }
 
