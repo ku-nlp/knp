@@ -1,3 +1,8 @@
+2005-07-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	省略解析において、各文の文節ポインタを保持していないバグを修正
+
 2005-07-09  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/case_print.c, system/const.h, system/context.c, system/extern.h, system/tools.c:
