@@ -1,3 +1,8 @@
+2005-07-11  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	間接照応オプションがないときは判定詞の解析結果をマージしないよう修正
+
 2005-07-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
