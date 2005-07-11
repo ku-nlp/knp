@@ -4484,7 +4484,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
 		}
-		if (cpm_ptr->cf.type_flag) {
+		if (cpm_ptr->cf.type_flag && OPT_REL_NOUN) {
 		    cpm_ptr->cf.type = CF_NOUN;
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
