@@ -787,6 +787,8 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	if (sp->tag_data[i].pred_b_ptr) {
 	    sp_new->tag_data[i].pred_b_ptr = sp_new->tag_data + (sp->tag_data[i].pred_b_ptr - sp->tag_data);
 	}
+
+	sp_new->tag_data[i].b_ptr = sp_new->bnst_data + (sp->tag_data[i].b_ptr - sp->bnst_data);
     }
 
     if (sp->KNPSID)
