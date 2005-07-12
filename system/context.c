@@ -4000,9 +4000,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		if (cfp) {
 		    for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
 			for (i = 0; i < cfp->cfid_num; i++) {
-			    if (((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_similarity = 
-				 get_cfs_similarity((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_id, 
-						    *(cfp->cfid + i))) > CFSimThreshold) {
+			    if (((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type) &&
+				 ((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_similarity = 
+				get_cfs_similarity((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_id, 
+						   *(cfp->cfid + i))) > CFSimThreshold) {
 				*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
 				break;
 			    }
@@ -4484,11 +4485,13 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
 		}
-		if (cpm_ptr->cf.type_flag && OPT_REL_NOUN) {
+		if (cpm_ptr->cf.type_flag && (OptEllipsis & OPT_REL_NOUN)) {
 		    cpm_ptr->cf.type = CF_NOUN;
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
-		    merge_em(&maxem, &maxem_copula);
+		    if (maxem_copula.score > -2) {
+			merge_em(&maxem, &maxem_copula);
+		    }
 		    cpm_ptr->cf.type = CF_PRED;
 		} 
 	    }
