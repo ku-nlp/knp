@@ -1,3 +1,8 @@
+2005-07-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	用言の解析結果のキャッシュを判定詞の間接照応解析時に参照するバグを修正
+
 2005-07-11  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
