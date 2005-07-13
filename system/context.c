@@ -1728,10 +1728,17 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 
 		if (OptLearn == TRUE) {
 		    /* 学習FEATURE */
-		    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, cp, 
-						      (ante_cands + i)->tp->head_ptr->Goi, (ante_cands + i)->ef->p_pp, 
-						      (ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?", 
-						      (ante_cands + i)->tp->num, (ante_cands + i)->ef->c_location);
+		    if ((ante_cands + i)->s && (ante_cands + i)->tp) {
+			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, cp, 
+							  (ante_cands + i)->tp->head_ptr->Goi, (ante_cands + i)->ef->p_pp, 
+							  (ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?", 
+							  (ante_cands + i)->tp->num, (ante_cands + i)->ef->c_location);
+		    }
+		    else if ((ante_cands + i)->tag) {
+			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, cp, 
+							  (ante_cands + i)->tag, (ante_cands + i)->ef->p_pp, 
+							  "?", -1, (ante_cands + i)->ef->c_location);
+		    }
 		}
 		else {
 		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
@@ -3389,10 +3396,10 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     /* 例外タグ */
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	for (i = 0; ExtraTags[i][0]; i++) {
+	/* for (i = 0; ExtraTags[i][0]; i++) */
+	i = 1; /* とりあえず 不特定-人 */
 	    EllipsisDetectForVerbSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 						      i, cf_ptr, n);
-	}
 	/*
 	if (ScoreCheck(cf_ptr, n)) {
 	    goto EvalAntecedent;
