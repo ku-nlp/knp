@@ -400,6 +400,11 @@ extern int	EX_match_subject;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
 	}
+	else if (str_eq(argv[0], "-ellipsis-or-cf-ranking")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptDiscFlag |= OPT_DISC_OR_CF;
+	    OptDiscFlag |= OPT_DISC_RANKING;
+	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-noun-th")) {
 	    argv++; argc--;

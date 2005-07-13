@@ -1726,14 +1726,28 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 		ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef);
 		cp = EllipsisSvmFeatures2String(ecf);
 
-		score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+		if (OptLearn == TRUE) {
+		    /* ³Ø½¬FEATURE */
+		    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, cp, 
+						      (ante_cands + i)->tp->head_ptr->Goi, (ante_cands + i)->ef->p_pp, 
+						      (ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?", 
+						      (ante_cands + i)->tp->num, (ante_cands + i)->ef->c_location);
+		}
+		else {
+		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+
+		    if (max < score) {
+			max = score;
+			max_num = i;
+		    }
+		}
+
 		free(ecf);
 		free(cp);
+	    }
 
-		if (max < score) {
-		    max = score;
-		    max_num = i;
-		}
+	    if (OptLearn == TRUE) {
+		return 0;
 	    }
 	}
 	else {
