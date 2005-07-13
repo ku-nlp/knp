@@ -3,6 +3,9 @@
 	* system/const.h, system/context.c, system/main.c:
 	SVM rankingによる省略解析の実装
 
+	* system/context.c, system/main.c:
+	ranking時の学習featureを出力できるようにした
+
 2005-07-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
