@@ -1710,64 +1710,87 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 			     CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    E_TWIN_CAND_SVM_FEATURES *f;
-    int i, j, *vote, max = 0, max_num = 0;
-    char *cp, feature_buffer[DATA_LEN];
+    int i, j, max_num = 0, max = 0;
+    char *cp;
     float score;
 
     if (cand_num == 0) {
 	return 0;
     }
     else if (cand_num > 1) {
-	vote = (int *)malloc_data(sizeof(int) * cand_num, "classify_twin_candidate");
-	for (i = 0; i < cand_num; i++) {
-	    vote[i] = 0;
-	}
+	if (OptDiscFlag & OPT_DISC_RANKING) {
+	    E_SVM_FEATURES *ecf;
 
-	for (i = 0; i < cand_num - 1; i++) {
-	    for (j = i + 1; j < cand_num; j++) {
-		f = MakeTwinCandSvmFeatures((ante_cands + i)->ef, (ante_cands + j)->ef);
-		cp = TwinCandSvmFeatures2String(f);
+	    max = -100000;
+	    for (i = 0; i < cand_num; i++) {
+		ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef);
+		cp = EllipsisSvmFeatures2String(ecf);
 
-		if (OptLearn == TRUE) {
-		    /* ³Ø½¬FEATURE */
-		    TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
+		score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+		free(ecf);
+		free(cp);
+
+		if (max < score) {
+		    max = score;
+		    max_num = i;
 		}
-		else {
-		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+	    }
+	}
+	else {
+	    E_TWIN_CAND_SVM_FEATURES *f;
+	    int *vote;
+	    char feature_buffer[DATA_LEN];
 
-		    if (score > 0) {
-			vote[i]++;
+	    vote = (int *)malloc_data(sizeof(int) * cand_num, "classify_twin_candidate");
+	    for (i = 0; i < cand_num; i++) {
+		vote[i] = 0;
+	    }
+
+	    for (i = 0; i < cand_num - 1; i++) {
+		for (j = i + 1; j < cand_num; j++) {
+		    f = MakeTwinCandSvmFeatures((ante_cands + i)->ef, (ante_cands + j)->ef);
+		    cp = TwinCandSvmFeatures2String(f);
+
+		    if (OptLearn == TRUE) {
+			/* ³Ø½¬FEATURE */
+			TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
 		    }
 		    else {
-			vote[j]++;
+			score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+
+			if (score > 0) {
+			    vote[i]++;
+			}
+			else {
+			    vote[j]++;
+			}
 		    }
+
+		    free(f);
+		    free(cp);
+		}
+	    }
+
+	    if (OptLearn == TRUE) {
+		return 0;
+	    }
+
+	    for (i = 0; i < cand_num; i++) {
+		if (max < vote[i]) {
+		    max = vote[i];
+		    max_num = i;
 		}
 
-		free(f);
-		free(cp);
+		/* ¾ÊÎ¬¸õÊä */
+		sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
+			(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+			pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+			loc_code_to_str((ante_cands + i)->ef->c_location), 
+			(ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+			(ante_cands + i)->ef->similarity, (float)vote[i]/cand_num);
+		assign_cfeature(&(em_ptr->f), feature_buffer);
 	    }
-	}
-
-	if (OptLearn == TRUE) {
-	    return 0;
-	}
-
-	/* voting */
-	for (i = 0; i < cand_num; i++) {
-	    if (max < vote[i]) {
-		max = vote[i];
-		max_num = i;
-	    }
-
-	    /* ¾ÊÎ¬¸õÊä */
-	    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
-		    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-		    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
-		    loc_code_to_str((ante_cands + i)->ef->c_location), 
-		    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
-		    (ante_cands + i)->ef->similarity, (float)vote[i]/cand_num);
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    free(vote);
 	}
     }
     else {
@@ -1775,6 +1798,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 	if (OptLearn == TRUE) {
 	    return 0;
 	}
+	max = 1;
     }
 
     /* ·èÄê */
@@ -1785,7 +1809,6 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
     maxi = (ante_cands + max_num)->tp ? (ante_cands + max_num)->tp->num : -1;
     maxtag = (ante_cands + max_num)->tag;
 
-    free(vote);
     return 1;
 }
 

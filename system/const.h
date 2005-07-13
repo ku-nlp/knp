@@ -126,6 +126,7 @@
 #define	OPT_DISC_CLASS_ONLY	4
 #define	OPT_DISC_FLAT	8
 #define	OPT_DISC_TWIN_CAND	16
+#define	OPT_DISC_RANKING	48
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2

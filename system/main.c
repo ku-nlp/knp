@@ -248,6 +248,12 @@ extern int	EX_match_subject;
 	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
 	    OptDiscPredMethod = OPT_SVM;
 	}
+	else if (str_eq(argv[0], "-anaphora-svm-ranking")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_RANKING;
+	    OptDiscPredMethod = OPT_SVM;
+	}
 	else if (str_eq(argv[0], "-relation-noun-svm")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscNounMethod = OPT_SVM;
