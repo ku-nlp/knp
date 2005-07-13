@@ -1,3 +1,8 @@
+2005-07-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/context.c, system/main.c:
+	SVM ranking¤Ë¤è¤ë¾ÊÎ¬²òÀÏ¤Î¼ÂÁõ
+
 2005-07-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
