@@ -2261,20 +2261,9 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 }
 
 /*==================================================================*/
-	      int ScoreCheck(CASE_FRAME *cf_ptr, int n)
+	      int ScoreCheckCore(CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* 学習用featureを出力するときは候補をすべて出す */
-    if (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
-	return 0;
-    }
-    /* 学習器の出力がpositiveなら 1 */
-    else if (OptDiscFlag & OPT_DISC_CLASS_ONLY) {
-	if (maxs) {
-	    return 1;
-	}
-    }
-
     if (MatchPP(cf_ptr->pp[n][0], "ニ")) {
 	if (maxscore > AntecedentDecideThresholdForNi) {
 	    return 1;
@@ -2290,6 +2279,23 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 	}
     }
     return 0;
+}
+
+/*==================================================================*/
+	      int ScoreCheck(CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    /* 学習用featureを出力するときは候補をすべて出す */
+    if (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
+	return 0;
+    }
+    /* 学習器の出力がpositiveなら 1 */
+    else if (OptDiscFlag & OPT_DISC_CLASS_ONLY) {
+	if (maxs) {
+	    return 1;
+	}
+    }
+    return ScoreCheckCore(cf_ptr, n);
 }
 
 /*==================================================================*/
@@ -3482,7 +3488,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
-	    if (ScoreCheck(cf_ptr, n)) {
+	    if (ScoreCheckCore(cf_ptr, n)) {
 		clear_cands();
 		goto EvalAntecedent;
 	    }
