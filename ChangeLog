@@ -1,3 +1,8 @@
+2005-07-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	ranking時にも格フレーム用例との類似度をチェックするように修正した
+
 2005-07-14  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
