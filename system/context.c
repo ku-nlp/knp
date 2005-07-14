@@ -1737,7 +1737,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 		    else if ((ante_cands + i)->tag) {
 			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, cp, 
 							  (ante_cands + i)->tag, (ante_cands + i)->ef->p_pp, 
-							  "?", -1, (ante_cands + i)->ef->c_location);
+							  "-1", -1, (ante_cands + i)->ef->c_location);
 		    }
 		}
 		else {
