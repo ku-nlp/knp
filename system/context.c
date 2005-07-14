@@ -1895,7 +1895,11 @@ void _EllipsisDetectForVerbSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DA
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	push_cand(ef, s, bp, NULL);
+	/* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	if (OptLearn == TRUE || 
+	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
+	    push_cand(ef, s, bp, NULL);
+	}
 	return;
     }
 
@@ -2018,7 +2022,11 @@ void _EllipsisDetectForVerbSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLI
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	push_cand(ef, s, bp, NULL);
+	/* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	if (OptLearn == TRUE || 
+	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
+	    push_cand(ef, s, bp, NULL);
+	}
 	return;
     }
 
