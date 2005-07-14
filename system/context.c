@@ -1711,7 +1711,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 /*==================================================================*/
 {
     int i, j, max_num = 0, max = 0;
-    char *cp;
+    char *cp, feature_buffer[DATA_LEN];
     float score;
 
     if (cand_num == 0) {
@@ -1747,6 +1747,15 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 			max = score;
 			max_num = i;
 		    }
+
+		    /* ¾ÊÎ¬¸õÊä */
+		    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
+			    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+			    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+			    loc_code_to_str((ante_cands + i)->ef->c_location), 
+			    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+			    (ante_cands + i)->ef->similarity, score);
+		    assign_cfeature(&(em_ptr->f), feature_buffer);
 		}
 
 		free(ecf);
@@ -1760,7 +1769,6 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag)
 	else {
 	    E_TWIN_CAND_SVM_FEATURES *f;
 	    int *vote;
-	    char feature_buffer[DATA_LEN];
 
 	    vote = (int *)malloc_data(sizeof(int) * cand_num, "classify_twin_candidate");
 	    for (i = 0; i < cand_num; i++) {
