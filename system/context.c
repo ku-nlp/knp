@@ -3466,8 +3466,10 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
-	    clear_cands();
-	    goto EvalAntecedent;
+	    if (ScoreCheck(cf_ptr, n)) {
+		clear_cands();
+		goto EvalAntecedent;
+	    }
 	}
 	clear_cands();
     }
