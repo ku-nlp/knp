@@ -1,3 +1,8 @@
+2005-07-14  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	不特定のfeatureのSIDを修正
+
 2005-07-13  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/context.c, system/main.c:
