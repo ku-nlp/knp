@@ -2,6 +2,12 @@
 
 	* system/context.c:
 	ranking時にも格フレーム用例との類似度をチェックするように修正した
+	ranking時に候補情報を出すようにした
+	ranking時の候補の絞り込みを従来と同様にした
+
+	* system/context.c:
+	ranking解析時に、格フレームとの類似度が閾値を越えない要素は候補に
+	しないようにした
 
 2005-07-14  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
