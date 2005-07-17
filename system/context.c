@@ -1755,9 +1755,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			     CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    int i, j, max_num = 0, max = 0;
+    int i, j, max_num = 0;
     char *cp, feature_buffer[DATA_LEN];
-    float score;
+    float score, max = 0;
 
     if (cand_num == 0) {
 	return 0;
@@ -1871,8 +1871,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     }
 
     /* ·èÄê */
-    maxscore = (float)max/cand_num;
     maxrawscore = (ante_cands + max_num)->ef->similarity;
+    maxscore = maxrawscore;
     maxs = (ante_cands + max_num)->s;
     maxpos = (ante_cands + max_num)->ef->pos;
     maxi = (ante_cands + max_num)->tp ? (ante_cands + max_num)->tp->num : -1;
