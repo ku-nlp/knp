@@ -130,6 +130,61 @@ int OptUseSmfix;
 }
 
 /*==================================================================*/
+		   int get_utype(TAG_DATA *bp)
+/*==================================================================*/
+{
+    // 親をたどって、発話タイプのfeatureがふられている文節を探す
+    BNST_DATA *bc;
+    char *utype;
+
+    bc = bp->b_ptr;
+    while (bc != NULL) {
+	if (utype = check_feature(bc->f, "発話タイプ")) {
+	    utype += strlen("発話タイプ:");
+	    if (str_eq(utype, "作業:大")) {
+		return UTYPE_ACTION_LARGE;
+	    }
+	    else if (str_eq(utype, "作業:中")) {
+		return UTYPE_ACTION_MIDDLE;
+	    }
+	    else if (str_eq(utype, "作業:小")) {
+		return UTYPE_ACTION_SMALL;
+	    }
+	    else if (str_eq(utype, "留意事項") || str_eq(utype, "留意事項・コツ") || str_eq(utype, "留意事項・注意")) {
+		return UTYPE_NOTES;
+	    }
+	    else if (str_eq(utype, "食品・道具提示")) {
+		return UTYPE_FOOD_PRESENTATION;
+	    }
+	    else if (str_eq(utype, "料理状態")) {
+		return UTYPE_FOOD_STATE;
+	    }
+	    else if (str_eq(utype, "程度")) {
+		return UTYPE_DEGREE;
+	    }
+	    else if (str_eq(utype, "効果")) {
+		return UTYPE_EFFECT;
+	    }
+	    else if (str_eq(utype, "補足")) {
+		return UTYPE_ADDITION;
+	    }
+	    else if (str_eq(utype, "代替可")) {
+		return UTYPE_SUBSTITUTION;
+	    }
+	    else if (str_eq(utype, "終了")) {
+		return UTYPE_END;
+	    }
+	    else {
+		return UTYPE_OTHERS;
+	    }
+	    break;
+	}
+	bc = bc->parent;
+    }
+    return UTYPE_OTHERS;
+}
+
+/*==================================================================*/
 		   int loc_name_to_code(char *loc)
 /*==================================================================*/
 {
@@ -1334,6 +1389,19 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 
     /* f->c_ac = ef->c_ac; */
 
+    /* 発話タイプ */
+    f->utype[0] = ef->utype == UTYPE_ACTION_LARGE ? 1 : 0;
+    f->utype[1] = ef->utype == UTYPE_ACTION_MIDDLE ? 1 : 0;
+    f->utype[2] = ef->utype == UTYPE_ACTION_SMALL ? 1 : 0;
+    f->utype[3] = ef->utype == UTYPE_NOTES ? 1 : 0;
+    f->utype[4] = ef->utype == UTYPE_FOOD_PRESENTATION ? 1 : 0;
+    f->utype[5] = ef->utype == UTYPE_FOOD_STATE ? 1 : 0;
+    f->utype[6] = ef->utype == UTYPE_DEGREE ? 1 : 0;
+    f->utype[7] = ef->utype == UTYPE_EFFECT ? 1 : 0;
+    f->utype[8] = ef->utype == UTYPE_ADDITION ? 1 : 0;
+    f->utype[9] = ef->utype == UTYPE_SUBSTITUTION ? 1 : 0;
+    f->utype[10] = ef->utype == UTYPE_END ? 1 : 0;
+    f->utype[11] = ef->utype == UTYPE_OTHERS ? 1 : 0;
     return f;
 }
 
@@ -1622,6 +1690,9 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 				       check_feature(bp->f, "Ｔ固有一般展開禁止") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
     f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
     f->c_extra_tag = -1;
+
+    /* 発話タイプに関するfeature */
+    f->utype = get_utype(bp);
 
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);

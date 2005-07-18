@@ -25,6 +25,21 @@
 /* LOC: 17文字が最大 */
 /* 位置の数を変えた場合 const.h の LOC_NUMBER を更新すること */
 
+/* 発話タイプ */
+#define UTYPE_ACTION_LARGE	0x000001	// 作業:大
+#define UTYPE_ACTION_MIDDLE	0x000002	// 作業:中
+#define UTYPE_ACTION_SMALL	0x000003	// 作業:小
+#define UTYPE_NOTES		0x000004	// 留意事項、留意事項・コツ、留意事項・注意
+#define UTYPE_FOOD_PRESENTATION	0x000005	// 食品・道具提示
+#define UTYPE_FOOD_STATE	0x000006	// 料理状態
+#define UTYPE_DEGREE		0x000007	// 程度
+#define UTYPE_EFFECT		0x000008	// 効果
+#define UTYPE_ADDITION		0x000009	// 補足
+#define UTYPE_SUBSTITUTION	0x000010	// 代替可
+#define UTYPE_END		0x000011	// 終了
+#define UTYPE_OTHERS		0x000000	// 全文無視、全文無視・中断、無視、その他
+
+
 char *LocationNames[] = {"PARENTV", "PARENTV_MC", "CHILDPV", "CHILDV", 
 			 "PARENTNPARENTV", "PARENTNPARENTV_MC", "PV", "PV_MC", 
 			 "PARENTVPARENTV", "PARENTVPARENTV_MC", "MC", "SC", 
