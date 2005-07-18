@@ -133,6 +133,7 @@
 
 #define	PP_NUMBER	44
 #define LOC_NUMBER	21
+#define UTYPE_NUMBER	12
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -912,6 +913,8 @@ typedef struct ellipsis_features {
 
     int		c_ac;
     int		match_sm_flag;
+    
+    int		utype;
 } E_FEATURES;
 
 typedef struct ellipsis_svm_features {
@@ -951,6 +954,8 @@ typedef struct ellipsis_svm_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
+
+    int 	utype[UTYPE_NUMBER];
 } E_SVM_FEATURES;
 
 typedef struct ellipsis_twin_cand_svm_features {
