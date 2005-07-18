@@ -1,6 +1,6 @@
 2005-07-18  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
-	* system/context.c, system/context.h:
+	* system/context.c, system/context.h, system/const.h:
 	発話タイプを省略解析のfeatureに追加
 	
 2005-07-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
