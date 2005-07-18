@@ -1709,7 +1709,14 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 
     f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeaturesExtraTags");
     memset(f, 0, sizeof(E_FEATURES));
-    f->similarity = -1;
+
+    if (!strcmp(ExtraTags[tag], "不特定-人") && 
+	cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	f->similarity = (float)EX_match_subject / 11;
+    }
+    else {
+	f->similarity = -1;
+    }
     f->c_pp = -1;
     f->c_distance = 0;
     f->c_dist_bnst = 0;
