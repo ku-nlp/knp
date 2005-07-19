@@ -36,6 +36,7 @@ float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
 CFLIST cflist[TBLSIZE];
+ENTITY_LIST elist[TBLSIZE];
 
 E_CANDIDATE *ante_cands;
 int cand_num = 0;
@@ -253,12 +254,13 @@ int OptUseSmfix;
 		       void ClearAnaphoraList()
 /*==================================================================*/
 {
-    int i, j;
+    int i;
     PALIST *pap, *next;
 
     for (i = 0; i < TBLSIZE; i++) {
 	if (palist[i].key) {
 	    free(palist[i].key);
+	    palist[i].key = NULL;
 	}
 	ClearCCList(&palist[i]);
 	pap = palist[i].next;
@@ -268,6 +270,28 @@ int OptUseSmfix;
 	    next = pap->next;
 	    free(pap);
 	    pap = next;
+	}
+    }
+}
+
+/*==================================================================*/
+			void ClearEntityList()
+/*==================================================================*/
+{
+    int i;
+    ENTITY_LIST *ep, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (elist[i].key) {
+	    free(elist[i].key);
+	    elist[i].key = NULL;
+	}
+	ep = elist[i].next;
+	while (ep) {
+	    free(ep->key);
+	    next = ep->next;
+	    free(ep);
+	    ep = next;
 	}
     }
 }
@@ -303,8 +327,9 @@ int OptUseSmfix;
 			void InitContextHash()
 /*==================================================================*/
 {
-    memset(palist, 0, sizeof(PALIST)*TBLSIZE);
-    memset(cflist, 0, sizeof(CFLIST)*TBLSIZE);
+    memset(palist, 0, sizeof(PALIST) * TBLSIZE);
+    memset(cflist, 0, sizeof(CFLIST) * TBLSIZE);
+    memset(elist, 0, sizeof(ENTITY_LIST) * TBLSIZE);
 }
 
 /*==================================================================*/
@@ -488,6 +513,105 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 	    }
 	    ccp = ccp->next;
 	}
+    }
+    return NULL;
+}
+
+/*==================================================================*/
+	       void RegisterEntity(char *key, int flag)
+/*==================================================================*/
+{
+    /* 単語の被参照回数を登録する */
+
+    /* flag: 1ならsurface, 0ならellipsis */
+
+    ENTITY_LIST *ep;
+
+    if (key == NULL) {
+	return;
+    }
+
+    ep = &(elist[hash(key, strlen(key))]);
+    if (ep->key) {
+	ENTITY_LIST **epp;
+	epp = &ep;
+	do {
+	    if (!strcmp((*epp)->key, key)) {
+		if (flag) {
+		    (*epp)->surface_num++;
+		}
+		else {
+		    (*epp)->ellipsis_num++;
+		}
+		return;
+	    }
+	    epp = &((*epp)->next);
+	} while (*epp);
+	*epp = (ENTITY_LIST *)malloc_data(sizeof(ENTITY_LIST), "RegisterEntity");
+	(*epp)->key = strdup(key);
+	if (flag) {
+	    (*epp)->surface_num = 1;
+	    (*epp)->ellipsis_num = 0;
+	}
+	else {
+	    (*epp)->surface_num = 0;
+	    (*epp)->ellipsis_num = 1;
+	}
+	(*epp)->next = NULL;
+    }
+    else {
+	ep->key = strdup(key);
+	if (flag) {
+	    ep->surface_num = 1;
+	    ep->ellipsis_num = 0;
+	}
+	else { /* 不特定のときにはここに来る */
+	    ep->surface_num = 0;
+	    ep->ellipsis_num = 1;
+	}
+    }
+}
+
+/*==================================================================*/
+ void RegisterEllipsisEntity(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->cmm[0].result_lists_d[0].flag[i] != NIL_ASSIGNED && /* 割り当てがある */
+	    cpm_ptr->elem_b_num[i] <= -2) { /* 省略 */
+	    RegisterEntity(cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, FALSE);
+	}
+    }
+}
+
+/*==================================================================*/
+       ENTITY_LIST *RegisterAllSurfaceEntity(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	RegisterEntity((sp->tag_data + i)->head_ptr->Goi, TRUE);
+    }
+}
+
+/*==================================================================*/
+		 ENTITY_LIST *CheckEntity(char *key)
+/*==================================================================*/
+{
+    ENTITY_LIST *ep;
+
+    ep = &(elist[hash(key, strlen(key))]);
+    if (!ep->key) {
+	return NULL;
+    }
+    while (ep) {
+	if (!strcmp(ep->key, key)) {
+	    return ep;
+	}
+	ep = ep->next;
     }
     return NULL;
 }
@@ -708,6 +832,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     }
     sp->Sen_num = 1;
     ClearAnaphoraList();
+    ClearEntityList();
     ClearCFList();
     InitContextHash();
 }
@@ -4617,7 +4742,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
     InitEllipsisMGR(&maxem_copula);
 
     AssignFeaturesByProgram(sp);
-
+    RegisterAllSurfaceEntity(sp); /* 表層に出現している要素を参照回数DBに登録 */
     sp_new = PreserveSentence(sp);
 
     if (sp->available) {
@@ -4626,7 +4751,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    Bcheck[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "DiscourseAnalysis");
 	}
 
-	/* for (j = 0; j < sp->Best_mgr->pred_num; j++) { */
 	/* 各用言をチェック (文頭から) */
 	for (j = sp->Best_mgr->pred_num - 1; j >= 0; j--) {
 	    cpm_ptr = &(sp->Best_mgr->cpm[j]);
@@ -4764,7 +4888,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
 		record_match_ex(sp, cpm_ptr);
 
-		/* 格解析の結果を feature へ */
+		/* 省略解析の結果を参照回数DBに登録 */
+		RegisterEllipsisEntity(sp, cpm_ptr);
+
+		/* 格・省略解析の結果をfeatureへ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 	    }
 	    ClearEllipsisMGR(&maxem);

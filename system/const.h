@@ -1020,6 +1020,14 @@ typedef struct sm_list {
     struct sm_list *next;
 } SMLIST;
 
+/* 名詞の被参照回数の構造体 */
+typedef struct entity_list {
+    char	*key;
+    int		surface_num;
+    int		ellipsis_num;
+    struct entity_list *next;
+} ENTITY_LIST;
+
 /*====================================================================
                                END
 ====================================================================*/
