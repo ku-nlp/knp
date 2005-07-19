@@ -1,3 +1,9 @@
+2005-07-19  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/const.h, system/extern.h, system/main.c:
+	談話構造の深さを省略解析のfeatureに追加
+	発話タイプ/談話構造深さを省略解析のfeatureに追加するオプションを追加
+
 2005-07-18  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/context.h, system/const.h:
