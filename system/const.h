@@ -884,6 +884,7 @@ typedef struct ellipsis_features {
     float	event2;
     int		pos;
     int		frequency;
+    int		discourse_depth;
 
     int		c_pp;
     int		c_distance;
@@ -915,6 +916,7 @@ typedef struct ellipsis_features {
     int		match_sm_flag;
     
     int		utype;
+
 } E_FEATURES;
 
 typedef struct ellipsis_svm_features {
@@ -926,6 +928,8 @@ typedef struct ellipsis_svm_features {
 #ifndef DISC_DONT_USE_FREQ
     float	frequency;
 #endif
+
+    float	discourse_depth_inverse;
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST
@@ -956,6 +960,7 @@ typedef struct ellipsis_svm_features {
     int		p_n_modify_flag;
 
     int 	utype[UTYPE_NUMBER];
+
 } E_SVM_FEATURES;
 
 typedef struct ellipsis_twin_cand_svm_features {
