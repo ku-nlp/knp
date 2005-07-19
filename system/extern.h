@@ -53,6 +53,8 @@ extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;
 extern int		OptReadFeature;
+extern int		OptAddSvmFeatureUtype;
+extern int		OptAddSvmFeatureDiscourseDepth;
 extern int		OptCopula;
 extern VerboseType	VerboseLevel;
 

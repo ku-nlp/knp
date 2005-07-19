@@ -181,7 +181,30 @@ int OptUseSmfix;
 	}
 	bc = bc->parent;
     }
+
     return UTYPE_OTHERS;
+}
+
+/*==================================================================*/
+		   int get_discourse_depth(TAG_DATA *bp)
+/*==================================================================*/
+{
+    // 親をたどって、談話構造深さのfeatureがふられている文節を探す
+    BNST_DATA *bc;
+    char* depth_char;
+    int depth = 1;
+
+    bc = bp->b_ptr;
+    while (bc != NULL) {
+	if (depth_char = check_feature(bc->f, "談話構造深さ")) {
+	    depth_char += strlen("談話構造深さ:");
+	    depth = atoi(depth_char);
+	    return depth;
+	}
+	bc = bc->parent;
+    }
+
+    return depth;
 }
 
 /*==================================================================*/
@@ -1140,17 +1163,18 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     int max, i, prenum;
     char *buffer, *sbuf;
 
+
 #ifdef DISC_USE_EVENT
 #ifndef DISC_DONT_USE_FREQ
-    prenum = 4;
+    prenum = 5;
 #else
-    prenum = 3;
+    prenum = 4;
 #endif
 #else
 #ifndef DISC_DONT_USE_FREQ
-    prenum = 2;
+    prenum = 3;
 #else
-    prenum = 1;
+    prenum = 2;
 #endif
 #endif
 
@@ -1165,6 +1189,13 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 #else
     sprintf(buffer, "1:%.5f", esf->similarity);
 #endif
+
+    prenum--;
+
+    if (!OptAddSvmFeatureDiscourseDepth) {
+	max--;
+    }
+
 #ifndef DISC_DONT_USE_FREQ
     if (OptLearn == TRUE) {
 	sprintf(sbuf, " %d:%d", prenum, (int)esf->frequency);
@@ -1173,7 +1204,14 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 	sprintf(sbuf, " %d:%.5f", prenum, esf->frequency);
     }
     strcat(buffer, sbuf);
+
 #endif
+
+    if (OptAddSvmFeatureDiscourseDepth) {
+	prenum++;
+	sprintf(sbuf, " %d:%.5f", prenum, esf->discourse_depth_inverse);
+	strcat(buffer, sbuf);
+    }
 
     for (i = prenum + 1; i <= max; i++) {
 	sprintf(sbuf, " %d:%d", i, *(esf->c_pp + i - prenum - 1));
@@ -1390,18 +1428,32 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     /* f->c_ac = ef->c_ac; */
 
     /* 発話タイプ */
-    f->utype[0] = ef->utype == UTYPE_ACTION_LARGE ? 1 : 0;
-    f->utype[1] = ef->utype == UTYPE_ACTION_MIDDLE ? 1 : 0;
-    f->utype[2] = ef->utype == UTYPE_ACTION_SMALL ? 1 : 0;
-    f->utype[3] = ef->utype == UTYPE_NOTES ? 1 : 0;
-    f->utype[4] = ef->utype == UTYPE_FOOD_PRESENTATION ? 1 : 0;
-    f->utype[5] = ef->utype == UTYPE_FOOD_STATE ? 1 : 0;
-    f->utype[6] = ef->utype == UTYPE_DEGREE ? 1 : 0;
-    f->utype[7] = ef->utype == UTYPE_EFFECT ? 1 : 0;
-    f->utype[8] = ef->utype == UTYPE_ADDITION ? 1 : 0;
-    f->utype[9] = ef->utype == UTYPE_SUBSTITUTION ? 1 : 0;
-    f->utype[10] = ef->utype == UTYPE_END ? 1 : 0;
-    f->utype[11] = ef->utype == UTYPE_OTHERS ? 1 : 0;
+    if (OptAddSvmFeatureUtype) {
+	f->utype[0] = ef->utype == UTYPE_ACTION_LARGE ? 1 : 0;
+	f->utype[1] = ef->utype == UTYPE_ACTION_MIDDLE ? 1 : 0;
+	f->utype[2] = ef->utype == UTYPE_ACTION_SMALL ? 1 : 0;
+	f->utype[3] = ef->utype == UTYPE_NOTES ? 1 : 0;
+	f->utype[4] = ef->utype == UTYPE_FOOD_PRESENTATION ? 1 : 0;
+	f->utype[5] = ef->utype == UTYPE_FOOD_STATE ? 1 : 0;
+	f->utype[6] = ef->utype == UTYPE_DEGREE ? 1 : 0;
+	f->utype[7] = ef->utype == UTYPE_EFFECT ? 1 : 0;
+	f->utype[8] = ef->utype == UTYPE_ADDITION ? 1 : 0;
+	f->utype[9] = ef->utype == UTYPE_SUBSTITUTION ? 1 : 0;
+	f->utype[10] = ef->utype == UTYPE_END ? 1 : 0;
+	f->utype[11] = ef->utype == UTYPE_OTHERS ? 1 : 0;
+    }
+    else {
+	memset(&(f->utype[0]), 0, sizeof(int) * UTYPE_NUMBER);
+    }
+
+
+    /* 談話構造深さ */
+    if (OptAddSvmFeatureDiscourseDepth) {
+	f->discourse_depth_inverse = (float) 1 / ef->discourse_depth;
+    }
+    else {
+	f->discourse_depth_inverse = 0;
+    }
     return f;
 }
 
@@ -1692,7 +1744,20 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->c_extra_tag = -1;
 
     /* 発話タイプに関するfeature */
-    f->utype = get_utype(bp);
+    if (OptAddSvmFeatureUtype) {
+	f->utype = get_utype(bp);
+    }
+    else {
+	f->utype = 0;
+    }
+
+    /* 談話構造の深さ */
+    if (OptAddSvmFeatureDiscourseDepth) {
+	f->discourse_depth = get_discourse_depth(bp);
+    }
+    else {
+	f->discourse_depth = 0;
+    }
 
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
@@ -1721,6 +1786,20 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     f->c_distance = 0;
     f->c_dist_bnst = 0;
     f->c_extra_tag = tag;
+
+    if (OptAddSvmFeatureUtype) {
+	f->utype = UTYPE_OTHERS;
+    }
+    else {
+	f->utype = 0;
+    }
+
+    if (OptAddSvmFeatureDiscourseDepth) {
+	f->discourse_depth = 1.0;
+    }
+    else {
+	f->discourse_depth = 0;
+    }
 
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
@@ -3892,7 +3971,8 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     int i, j, num, result, demoflag, toflag;
     int cases[PP_NUMBER], count = 0;
 
-    toflag = CheckToCase(cpm_ptr, cmm_ptr, l, cf_ptr);
+//    toflag = CheckToCase(cpm_ptr, cmm_ptr, l, cf_ptr);
+    toflag = 0;
 
     for (j = 0; *order[j]; j++) {
 	cases[count++] = pp_kstr_to_code(order[j]);

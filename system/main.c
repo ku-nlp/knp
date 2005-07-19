@@ -49,6 +49,8 @@ int		OptCFMode;
 int		OptServerFlag;
 char		OptIgnoreChar;
 int		OptReadFeature;
+int		OptAddSvmFeatureUtype;
+int		OptAddSvmFeatureDiscourseDepth;
 int		OptCopula;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -133,6 +135,8 @@ extern int	EX_match_subject;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
     OptReadFeature = 0;
+    OptAddSvmFeatureUtype = 0;
+    OptAddSvmFeatureDiscourseDepth = 0;
     OptCopula = 0;
 
     /* オプションの保存 */
@@ -483,6 +487,12 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-readfeature")) {
 	    OptReadFeature = 1;
+	}
+	else if (str_eq(argv[0], "-addsvmfeatureutype")) {
+	    OptAddSvmFeatureUtype = 1;
+	}
+	else if (str_eq(argv[0], "-addsvmfeaturediscoursedepth")) {
+	    OptAddSvmFeatureDiscourseDepth = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
