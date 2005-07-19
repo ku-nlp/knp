@@ -1,14 +1,30 @@
+2005-07-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/const.h:
+	名詞の被参照回数を計数するルーチンを追加
+
 2005-07-19  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/const.h, system/extern.h, system/main.c:
 	談話構造の深さを省略解析のfeatureに追加
 	発話タイプ/談話構造深さを省略解析のfeatureに追加するオプションを追加
 
+2005-07-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	ranking時に-relation-nounが動かないバグを修正
+	不特定:人の類似度を設定
+
 2005-07-18  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/context.h, system/const.h:
 	発話タイプを省略解析のfeatureに追加
-	
+
+2005-07-17  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	rankingのbug fix.
+
 2005-07-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
