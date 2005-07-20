@@ -1,3 +1,8 @@
+2005-07-20  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/const.h, system/extern.h, system/main.c:
+	画像認識結果を省略解析のfeatureに追加
+	
 2005-07-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/const.h:
