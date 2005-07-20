@@ -127,6 +127,7 @@
 #define	OPT_DISC_FLAT	8
 #define	OPT_DISC_TWIN_CAND	16
 #define	OPT_DISC_RANKING	48
+#define	OPT_DISC_NO_WO_TO	64
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
@@ -885,6 +886,8 @@ typedef struct ellipsis_features {
     int		pos;
     int		frequency;
     int		discourse_depth;
+    int		refered_num_surface;
+    int		refered_num_ellipsis;
 
     int		c_pp;
     int		c_distance;
@@ -928,8 +931,9 @@ typedef struct ellipsis_svm_features {
 #ifndef DISC_DONT_USE_FREQ
     float	frequency;
 #endif
-
     float	discourse_depth_inverse;
+    float	refered_num_surface;
+    float	refered_num_ellipsis;
 
     int		c_pp[PP_NUMBER];
 #ifdef DISC_USE_DIST

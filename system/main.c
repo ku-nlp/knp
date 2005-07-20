@@ -52,6 +52,7 @@ int		OptReadFeature;
 int		OptAddSvmFeatureUtype;
 int		OptAddSvmFeatureDiscourseDepth;
 int		OptAddSvmFeatureObjectRecognition;
+int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -139,6 +140,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureUtype = 0;
     OptAddSvmFeatureDiscourseDepth = 0;
     OptAddSvmFeatureObjectRecognition = 0;
+    OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
 
     /* オプションの保存 */
@@ -306,6 +308,9 @@ extern int	EX_match_subject;
 	    OptLearn = TRUE;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	    PrintFeatures = 1;
+	}
+	else if (str_eq(argv[0], "-no-wo-to")) {
+	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
 	}
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
@@ -498,6 +503,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-add-svmfeature-object-recognition")) {
 	    OptAddSvmFeatureObjectRecognition = 1;
+	}
+	else if (str_eq(argv[0], "-add-svmfeature-refered-num")) {
+	    OptAddSvmFeatureReferedNum = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
