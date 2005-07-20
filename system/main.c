@@ -504,7 +504,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-add-svmfeature-object-recognition")) {
 	    OptAddSvmFeatureObjectRecognition = 1;
 	}
-	else if (str_eq(argv[0], "-add-svmfeature-refered-num")) {
+	else if (str_eq(argv[0], "-add-svmfeature-referred-num")) {
 	    OptAddSvmFeatureReferedNum = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {

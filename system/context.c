@@ -5011,7 +5011,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		record_match_ex(sp, cpm_ptr);
 
 		/* 省略解析の結果を参照回数DBに登録 */
-		RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
+		if (OptLearn == FALSE) {
+		    RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
+		}
 
 		/* 格・省略解析の結果をfeatureへ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
