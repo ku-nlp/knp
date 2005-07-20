@@ -2094,7 +2094,8 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     /* 学習用featureを出力するときは候補をすべて出す */
-    if (OptLearn == TRUE || (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
+    if (OptLearn == TRUE || 
+	(cf_ptr->type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND))) {
 	return 0;
     }
     /* 学習器の出力がpositiveなら 1 */
