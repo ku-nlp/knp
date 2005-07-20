@@ -51,6 +51,7 @@ char		OptIgnoreChar;
 int		OptReadFeature;
 int		OptAddSvmFeatureUtype;
 int		OptAddSvmFeatureDiscourseDepth;
+int		OptAddSvmFeatureObjectRecognition;
 int		OptCopula;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -137,6 +138,7 @@ extern int	EX_match_subject;
     OptReadFeature = 0;
     OptAddSvmFeatureUtype = 0;
     OptAddSvmFeatureDiscourseDepth = 0;
+    OptAddSvmFeatureObjectRecognition = 0;
     OptCopula = 0;
 
     /* オプションの保存 */
@@ -485,14 +487,17 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    EX_match_subject = atoi(argv[0]);
 	}
-	else if (str_eq(argv[0], "-readfeature")) {
+	else if (str_eq(argv[0], "-read-feature")) {
 	    OptReadFeature = 1;
 	}
-	else if (str_eq(argv[0], "-addsvmfeatureutype")) {
+	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
 	    OptAddSvmFeatureUtype = 1;
 	}
-	else if (str_eq(argv[0], "-addsvmfeaturediscoursedepth")) {
+	else if (str_eq(argv[0], "-add-svmfeature-discourse-depth")) {
 	    OptAddSvmFeatureDiscourseDepth = 1;
+	}
+	else if (str_eq(argv[0], "-add-svmfeature-object-recognition")) {
+	    OptAddSvmFeatureObjectRecognition = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;

@@ -193,7 +193,7 @@ int OptUseSmfix;
     // 親をたどって、談話構造深さのfeatureがふられている文節を探す
     BNST_DATA *bc;
     char* depth_char;
-    int depth = 1;
+    int depth = 0;
 
     bc = bp->b_ptr;
     while (bc != NULL) {
@@ -206,6 +206,26 @@ int OptUseSmfix;
     }
 
     return depth;
+}
+
+/*==================================================================*/
+		   int objectrecognition_match(TAG_DATA *bp, TAG_DATA *pred_p)
+/*==================================================================*/
+{
+    // 親をたどって、物体認識結果のfeatureがふられている文節を探す
+    BNST_DATA *bc;
+    char* objectrecognition = NULL;
+
+    bc = pred_p->b_ptr;
+    while (bc != NULL) {
+	if (objectrecognition = check_feature(bc->f, "物体認識結果")) {
+	    objectrecognition += strlen("物体認識結果:");
+	    return str_eq(bp->head_ptr->Goi, objectrecognition);
+	}
+	bc = bc->parent;
+    }
+
+    return 0;
 }
 
 /*==================================================================*/
@@ -1574,11 +1594,25 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 
     /* 談話構造深さ */
     if (OptAddSvmFeatureDiscourseDepth) {
-	f->discourse_depth_inverse = (float) 1 / ef->discourse_depth;
+	/* 不特定 */
+	if (ef->discourse_depth == 0) {
+	    f->discourse_depth_inverse = 0.0;
+	}
+	else {
+	    f->discourse_depth_inverse = (float) 1 / ef->discourse_depth;
+	}
     }
     else {
 	f->discourse_depth_inverse = 0;
     }
+
+    if (OptAddSvmFeatureObjectRecognition) {
+	f->objectrecognition = ef->objectrecognition;
+    }
+    else {
+	f->objectrecognition = 0;
+    }
+
     return f;
 }
 
@@ -1884,6 +1918,13 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->discourse_depth = 0;
     }
 
+    /* 物体認識結果 */
+    if (OptAddSvmFeatureObjectRecognition) {
+	f->objectrecognition = objectrecognition_match(bp, cpm_ptr->pred_b_ptr);
+    }
+    else {
+	f->objectrecognition = 0;
+    }
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
 
@@ -1912,6 +1953,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     f->c_dist_bnst = 0;
     f->c_extra_tag = tag;
 
+    /* 発話タイプ */
     if (OptAddSvmFeatureUtype) {
 	f->utype = UTYPE_OTHERS;
     }
@@ -1919,12 +1961,15 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	f->utype = 0;
     }
 
+    /* 談話構造深さ */
     if (OptAddSvmFeatureDiscourseDepth) {
-	f->discourse_depth = 1.0;
+	f->discourse_depth = 0;
     }
     else {
 	f->discourse_depth = 0;
     }
+
+    f->objectrecognition = 0;
 
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);

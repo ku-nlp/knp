@@ -916,7 +916,7 @@ typedef struct ellipsis_features {
     int		match_sm_flag;
     
     int		utype;
-
+    int		objectrecognition;
 } E_FEATURES;
 
 typedef struct ellipsis_svm_features {
@@ -960,7 +960,7 @@ typedef struct ellipsis_svm_features {
     int		p_n_modify_flag;
 
     int 	utype[UTYPE_NUMBER];
-
+    int		objectrecognition;
 } E_SVM_FEATURES;
 
 typedef struct ellipsis_twin_cand_svm_features {

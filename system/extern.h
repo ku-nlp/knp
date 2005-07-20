@@ -55,6 +55,7 @@ extern char		OptIgnoreChar;
 extern int		OptReadFeature;
 extern int		OptAddSvmFeatureUtype;
 extern int		OptAddSvmFeatureDiscourseDepth;
+extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptCopula;
 extern VerboseType	VerboseLevel;
 
