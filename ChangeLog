@@ -1,3 +1,9 @@
+2005-07-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/const.h, system/extern.h, system/main.c:
+	名詞の被参照回数を省略解析のfeatureに追加
+	ト格<補文>があるときにヲ格の省略解析をしないのをオプション化
+	
 2005-07-20  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/const.h, system/extern.h, system/main.c:
