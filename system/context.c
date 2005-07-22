@@ -4803,6 +4803,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    em2->cc[i].bnst = 0;
 	    em2->cc[i].score = 0;
 	    em2->cc[i].dist = 0;
+	    em2->cc[i].next = NULL;
 	}
     }
 
@@ -4845,6 +4846,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	merge_cf_ptr(em1->ecmm[0].cmm.cf_ptr, em2->ecmm[0].cmm.cf_ptr);
     }
     em1->ecmm[0].element_num += em2->ecmm[0].element_num;
+
+    append_feature(&(em1->f), em2->f);
+    em2->f = NULL;
 }
 
 /*==================================================================*/
