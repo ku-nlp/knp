@@ -16,7 +16,7 @@ EXTRA_DIST = \
 	case_analysis.rule
 
 ruledir = $(pkgdatadir)/rule
-dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
+dist_rule_DATA = bnst_type.rule bnst_basic.data bnst_etc.data bnst_type.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data case_analysis.data
 
 .phrase.rule:
 	if [ -f $@ ]; then \
