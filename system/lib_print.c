@@ -1025,9 +1025,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     else if (OptExpress == OPT_NOTAG) {
 	print_mrphs(sp, 1);
     }
-    else if (OptExpress == OPT_PA) {
-	print_pa_structure(sp);
-    }
     else if (OptExpress == OPT_NOTAGTREE) {
 	/* tree出力 */
 	make_dpnd_tree(sp);
@@ -1038,21 +1035,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	make_dpnd_tree(sp);
 	bnst_to_tag_tree(sp); /* タグ単位 */
 	print_kakari(sp);
-    }
-
-    /* 格解析を行なった場合の出力 */
-
-    if (((OptAnalysis == OPT_CASE || 
-	 OptAnalysis == OPT_CASE2) && 
-	 (OptDisplay == OPT_DETAIL || 
-	  OptDisplay == OPT_DEBUG)) || 
-	(OptEllipsis && 
-	 VerboseLevel >= VERBOSE1)) {
-
-	print_case_result(sp);
-
-	/* 次の解析のために初期化しておく */
-	tm->pred_num = 0;
     }
 }
 

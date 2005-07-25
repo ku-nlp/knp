@@ -9,7 +9,6 @@ EXTRA_DIST = \
 	bnst_basic.rule \
 	bnst_etc.rule \
 	bnst_type.phrase \
-	context.rule \
 	kakari_uke.rule \
 	koou.rule \
 	mrph_basic.rule \

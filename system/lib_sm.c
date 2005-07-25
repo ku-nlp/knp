@@ -535,6 +535,134 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
+	     int comp_sm(char *cpp, char *cpd, int start)
+/*==================================================================*/
+{
+    /* start からチェックする
+       普通は 1 
+       品詞ごとチェックするときは 0 */
+
+    int i;
+
+    for (i = start; i < SM_CODE_SIZE; i++) {
+	if (cpp[i] == '*')
+	    return i;
+	else if (cpd[i] == '*')
+	    return 0;
+	else if (cpp[i] != cpd[i])
+	    return 0;
+    }
+    return SM_CODE_SIZE;
+}
+
+/*==================================================================*/
+	 int _sm_match_score(char *cpp, char *cpd, int flag)
+/*==================================================================*/
+{
+    /*
+      NTTの意味素の一桁目は品詞情報
+      格フレーム <-----> データ
+       x(補文)   <-----> xだけOK
+       1(名詞)   <-----> x以外OK
+                         (名詞以外のものはget_smの時点で排除 99/01/13)
+    */
+
+    /* 
+       flag == SM_EXPAND_NE    : 固有名詞意味属性を一般名詞意味属性に変換する
+       flag == SM_NO_EXPAND_NE : 固有名詞意味属性を一般名詞意味属性に変換しない
+       flag == SM_CHECK_FULL   : コードの一文字目からチェックする
+     */
+
+    int current_score, score = 0;
+    char *cp;
+
+    if (flag == SM_CHECK_FULL)
+	return comp_sm(cpp, cpd, 0);
+
+    if (cpp[0] == 'x') {
+	if (cpd[0] == 'x')
+	    return SM_CODE_SIZE;
+	else
+	    return 0;
+    } else {
+	if (cpd[0] == 'x')
+	    return 0;
+    }
+
+    /* 意味マーカのマッチング度の計算
+
+       ・パターンが先に* --- マッチ
+       ・データが先に* --- マッチしない
+       ・最後まで一致 --- マッチ
+
+         マッチ : マッチする階層の深さを返す
+	 マッチしないとき : 0を返す
+    */
+
+    /* データが固有名詞のとき */
+    if (cpd[0] == '2') {
+	if (flag == SM_EXPAND_NE && cpp[0] != '2') {
+	    if (SMP2SMGExist == FALSE) {
+		fprintf(stderr, ";;; Cannot open smp2smg table!\n");
+		return 0;
+	    }
+	    else {
+		char *start;
+		start = _smp2smg(cpd);
+		if (start == NULL) {
+		    return score;
+		}
+		for (cp = start; *cp; cp+=SM_CODE_SIZE) {
+		    if (*cp == '/') {
+			cp++;
+		    }
+		    else if (cp != start) {
+			fprintf(stderr, ";;; Invalid delimiter! <%c> (%s)\n", 
+				*cp, start);
+		    }
+
+		    /* 副作用フラグがある意味素変換は行わない */
+		    if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
+			cp += 12; /* " side-effect" の分進める */
+			continue;
+		    }
+
+		    current_score = comp_sm(cpp, cp, 1);
+		    if (current_score > score) {
+			score = current_score;
+		    }
+		}
+		free(start);
+		return score;
+	    }
+	}
+	else if (flag == SM_NO_EXPAND_NE && cpp[0] == '2')
+	    return comp_sm(cpp, cpd, 1);
+	else
+	    return 0;
+    }
+    /* 両方とも一般名詞のとき */
+    else if (cpp[0] != '2')
+	return comp_sm(cpp, cpd, 1);
+    else
+	return 0;
+}
+
+/*==================================================================*/
+	   int sms_match(char *cpp, char *cpd, int expand)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; cpd[i]; i += SM_CODE_SIZE) {
+	if (_sm_match_score(cpp, cpd + i, expand)) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	int sm_match_check(char *pat, char *codes, int expand)
 /*==================================================================*/
 {
@@ -772,35 +900,6 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
-      void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    /* そのうち汎用化する
-       現在は <場所> のみ */
-
-    int i, num;
-
-    if (Thesaurus != USE_NTT) return;
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    num >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
-	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
-	    /* 固有→一般変換しておく */
-	    merge_smp2smg((BNST_DATA *)cpm_ptr->elem_b_ptr[i]);
-	    /* <場所>のみに限定する */
-	    sm_fix((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "101*********20**********");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Ｔ固有一般展開禁止");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "非主体");
-	    break;
-	}
-    }
-}
-
-/*==================================================================*/
 	      void register_noun_sm(char *key, char *sm)
 /*==================================================================*/
 {
@@ -912,45 +1011,6 @@ SMLIST smlist[TBLSIZE];
 		free(new_code);
 	    }
 	    free(sm_codes);
-	}
-    }
-}
-
-/*==================================================================*/
-   void assign_ga_subject(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    int i, num;
-
-    if (Thesaurus != USE_NTT) return;
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
-	    /* o すでに主体付与されていない
-	       o <数量> ではない (<数量>のとき意味属性がない)
-	       o <用言:動>である 
-	       o 格フレームが<主体>をもつ, <主体準>ではない
-	       o 入力側が意味素がないか、(固有名詞と推定)
-	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
-	    */
-	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
-		!check_feature(cpm_ptr->elem_b_ptr[i]->f, "数量") && 
-		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
-		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
-		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
-		 /* (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && ( */
-		 sm_match_check(sm2code("具体"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
-		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || /* 組織名, 人名はすでに主体 */
-		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
-		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
-		assign_sm((BNST_DATA *)(sp->tag_data + cpm_ptr->elem_b_ptr[i]->num), "主体");
-		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "主体付与");
-	    }
-	    break;
 	}
     }
 }

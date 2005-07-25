@@ -403,12 +403,6 @@
 	    else if (!strncmp((*fpp2)->cp, "&°ÕÌ£ÁÇÉÕÍ¿:", strlen("&°ÕÌ£ÁÇÉÕÍ¿:"))) {
 		assign_sm((BNST_DATA *)ptr, (*fpp2)->cp + strlen("&°ÕÌ£ÁÇÉÕÍ¿:"));
 	    }
-	    else if (!strncmp((*fpp2)->cp, "&Ê£¹ç¼­³Ê²òÀÏ", strlen("&Ê£¹ç¼­³Ê²òÀÏ"))) {
-		cp = make_fukugoji_string((TAG_DATA *)ptr + 1);
-		if (cp) {
-		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp);
-		}
-	    }
 	    else if (!strncmp((*fpp2)->cp, "&ÅÁÈÂ:", strlen("&ÅÁÈÂ:"))) {
 		int dir;
 		char trans_feature[DATA_LEN];

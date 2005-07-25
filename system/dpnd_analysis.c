@@ -606,13 +606,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		dpnd.check[i].pos[0] = dpnd.head[i];
 	    }
 
-	if (OptAnalysis == OPT_DPND ||
-	    OptAnalysis == OPT_CASE2) {
+	if (OptAnalysis == OPT_DPND) {
 	    dpnd_evaluation(sp, dpnd);
 	} 
-	else if (OptAnalysis == OPT_CASE) {
-	    call_case_analysis(sp, dpnd);
-	}
 	return;
     }
 
@@ -779,91 +775,12 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	       int after_decide_dpnd(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
-    TAG_DATA *check_b_ptr;
-    
     /* 解析済: 構造は与えられたもの1つのみ */
     if (OptInput & OPT_PARSED) {
 	Possibility = 1;
     }
 
     if (Possibility != 0) {
-	/* 依存構造決定後 格解析を行う場合 */
-	if (OptAnalysis == OPT_CASE2) {
-	    sp->Best_mgr->score = -10000;
-	    call_case_analysis(sp, sp->Best_mgr->dpnd);
-	}
-
-	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2) {
-	    /* 格解析の結果を用言文節へ */
-	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
-		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);
-		/* ※ 暫定的
-		   並列のときに make_dpnd_tree() を呼び出すと cpm_ptr がなくなるので、
-		   ここでコピーしておく */
-		check_b_ptr = sp->Best_mgr->cpm[i].pred_b_ptr;
-		while (check_b_ptr->parent && check_b_ptr->parent->para_top_p == TRUE && 
-		       check_b_ptr->parent->cpm_ptr == NULL) {
-		    check_b_ptr->parent->cpm_ptr = &(sp->Best_mgr->cpm[i]);
-		    check_b_ptr = check_b_ptr->parent;
-		}
-
-		/* 各格要素の親用言を設定
-		   ※ 文脈解析のときに格フレームを決定してなくても格解析は行っているので
-		      これは成功する */
-		for (j = 0; j < sp->Best_mgr->cpm[i].cf.element_num; j++) {
-		    /* 省略解析の結果 or 連体修飾は除く */
-		    if (sp->Best_mgr->cpm[i].elem_b_num[j] <= -2 || 
-			sp->Best_mgr->cpm[i].elem_b_ptr[j]->num > sp->Best_mgr->cpm[i].pred_b_ptr->num) {
-			continue;
-		    }
-		    sp->Best_mgr->cpm[i].elem_b_ptr[j]->pred_b_ptr = sp->Best_mgr->cpm[i].pred_b_ptr;
-		}
-
-		/* 格フレームがある場合 */
-		if (sp->Best_mgr->cpm[i].result_num != 0 && 
-		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
-		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
-		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
-		    if (!OptEllipsis || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
-			    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
-			}
-			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
-			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
-
-			if (OptUseSmfix == TRUE) {
-			    specify_sm_from_cf(sp, &(sp->Best_mgr->cpm[i]));
-			}
-
-			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
-
-			/* 格解析の結果を featureへ */
-			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
-					     check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
-
-			/* 格解析の結果を用いて原形の曖昧性を解消 */
-			lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
-		    }
-		    else if (sp->Best_mgr->cpm[i].decided == CF_CAND_DECIDED) {
-			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
-			    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
-			}
-		    }
-
-		    if (sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-			assign_cfeature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), "格フレーム決定");
-		    }
-		}
-		/* 格フレームない場合も格解析結果を書く */
-		else {
-		    /* 格解析の結果を featureへ */
-		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
-					 check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
-		}
-	    }
-	}
 	return TRUE;
     }
     else { 
@@ -897,19 +814,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     }
     dpnd.pos = sp->Bnst_num - 1;
 
-    /* 格解析キャッシュの初期化 */
-    if (OptAnalysis == OPT_CASE) {
-	InitCPMcache();
-    }
-
-    /* 依存構造解析 --> 格構造解析 */
+    /* 依存構造解析 */
 
     decide_dpnd(sp, dpnd);
-
-    /* 格解析キャッシュの初期化 */
-    if (OptAnalysis == OPT_CASE) {
-	ClearCPMcache();
-    }
 
     /* 構造決定後の処理 */
 

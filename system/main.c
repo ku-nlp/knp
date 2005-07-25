@@ -34,25 +34,14 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    3:並列のgapとhead間 */
 char		**Options;
 int 		OptAnalysis;
-int		OptEllipsis;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int		OptExpandP;
 int		OptCheck;
-int		OptDiscPredMethod;
-int		OptDiscNounMethod;
-int		OptLearn;
-int		OptCaseFlag;
-int		OptDiscFlag;
-int		OptCFMode;
 int		OptServerFlag;
 char		OptIgnoreChar;
 int		OptReadFeature;
-int		OptAddSvmFeatureUtype;
-int		OptAddSvmFeatureDiscourseDepth;
-int		OptAddSvmFeatureObjectRecognition;
-int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -97,16 +86,12 @@ extern int	EX_match_subject;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|ellipsis|demonstrative|anaphora]\n" 
-#ifdef USE_SVM
-	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
-#endif
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst]\n" 
 	    "           [-tree|sexp|tab|notag]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S|F] [-N port]\n"
 	    "           [-timeout second] [-r rcfile]\n"
-	    "           [-scode [BGH|NTT]] (Default:NTT)\n"
 	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
     exit(1);    
 }
@@ -120,27 +105,15 @@ extern int	EX_match_subject;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
-    OptEllipsis = 0;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
-    OptCFMode = EXAMPLE;
     OptCheck = FALSE;
     OptUseScase = TRUE;
-    OptUseSmfix = TRUE;
-    OptDiscPredMethod = OPT_NORMAL;
-    OptDiscNounMethod = OPT_NORMAL;
-    OptLearn = FALSE;
-    OptCaseFlag = 0;
-    OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
     OptReadFeature = 0;
-    OptAddSvmFeatureUtype = 0;
-    OptAddSvmFeatureDiscourseDepth = 0;
-    OptAddSvmFeatureObjectRecognition = 0;
-    OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
 
     /* オプションの保存 */
@@ -153,10 +126,7 @@ extern int	EX_match_subject;
     *(Options + count) = NULL;
 
     while ((--argc > 0) && ((*++argv)[0] == '-')) {
-	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
-	else if (str_eq(argv[0], "-case2"))   OptAnalysis = OPT_CASE2;
-	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
-	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
+	if (str_eq(argv[0], "-dpnd"))         OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
@@ -165,7 +135,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
-	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
@@ -173,161 +142,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
-	else if (str_eq(argv[0], "-ellipsis")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	}
-	else if (str_eq(argv[0], "-demonstrative")) {
-	    OptEllipsis |= OPT_DEMO;
-	}
-	else if (str_eq(argv[0], "-anaphora")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	}
-#ifdef USE_SVM
-	else if (str_eq(argv[0], "-ellipsis-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-demonstrative-svm")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-twin")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-ranking")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm-best")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-print-svm-features")) {
-	    PrintFeatures = 1;
-	}
-#endif
-	else if (str_eq(argv[0], "-ellipsis-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-ellipsis-dt-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-demonstrative-dt")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-anaphora-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-relation-noun")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	}
-	else if (str_eq(argv[0], "-relation-noun-best")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	}
-	else if (str_eq(argv[0], "-relation-noun-dt")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscNounMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-learn")) {
-	    OptLearn = TRUE;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    PrintFeatures = 1;
-	}
-	else if (str_eq(argv[0], "-no-wo-to")) {
-	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
-	}
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    OptIgnoreChar = *argv[0];
-	}
-	else if (str_eq(argv[0], "-use-ex-all")) {
-	    OptCaseFlag |= OPT_CASE_USE_EX_ALL;
-	}
-	else if (str_eq(argv[0], "-print-ex-all")) {
-	    EX_PRINT_NUM = -1;
-	}
-	else if (str_eq(argv[0], "-print-deleted-sm")) {
-	    PrintDeletedSM = 1;
-	}
-	else if (str_eq(argv[0], "-print-frequency")) {
-	    PrintFrequency = 1;
 	}
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
@@ -382,9 +200,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
 	}
-	else if (str_eq(argv[0], "-no-smfix")) {
-	    OptUseSmfix = FALSE;
-	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -395,117 +210,8 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    VerboseLevel = atoi(argv[0]);
 	}
-	/* 格解析用オプション */
-	else if (str_eq(argv[0], "-assign-ga-subj")) {
-	    OptCaseFlag |= OPT_CASE_ASSIGN_GA_SUBJ;
-	}
-	else if (str_eq(argv[0], "-no")) {
-	    OptCaseFlag |= OPT_CASE_NO;
-	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf-twin")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf-ranking")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	}
-	/* 以下コスト調整用 */
-	else if (str_eq(argv[0], "-noun-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AntecedentDecideThresholdForNoun = atof(argv[0]);
-	}
-	else if (str_eq(argv[0], "-cffix-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    CFSimThreshold = atof(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sototh")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_THRESHOLD = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-dcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    DISTANCE_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-rcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    RENKAKU_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-svcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    STRONG_V_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-atcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ADJACENT_TOUTEN_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-lacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    LEVELA_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-tscost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    TEIDAI_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-quacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_qua = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-unknowncost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_unknown = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sentencecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_sentence = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-timecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_tim = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sotocost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_SCORE = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-score-agent")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_subject = atoi(argv[0]);
-	}
 	else if (str_eq(argv[0], "-read-feature")) {
 	    OptReadFeature = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
-	    OptAddSvmFeatureUtype = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-discourse-depth")) {
-	    OptAddSvmFeatureDiscourseDepth = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-object-recognition")) {
-	    OptAddSvmFeatureObjectRecognition = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-referred-num")) {
-	    OptAddSvmFeatureReferedNum = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
@@ -518,18 +224,8 @@ extern int	EX_match_subject;
 	usage();
     }
 
-    /* 文脈解析のときは必ず格解析を行う (CASE2)
-       解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptEllipsis) {
-	if (OptExpress == OPT_NOTAG) {
-	    usage();
-	}
-	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
-	    OptAnalysis = OPT_CASE2;
-	}
-    }
-    else if (OptExpress == OPT_NOTAG && 
-	     (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
+    if (OptExpress == OPT_NOTAG && 
+	(OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
 	usage();
     }
 }
@@ -590,14 +286,8 @@ extern int	EX_match_subject;
 			   void close_all()
 /*==================================================================*/
 {
-    close_cf();
-    close_noun_cf();
     close_thesaurus();
     close_scase();
-
-    if (OptEllipsis) {
-	close_event();
-    }
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -625,23 +315,8 @@ extern int	EX_match_subject;
     init_hash();
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
     init_juman();	/* JUMAN関係 */
-    init_cf();		/* 格フレームオープン */
-    init_noun_cf();	/* 格フレーム(名詞)オープン */
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
-
-    if (OptEllipsis) {
-#ifdef USE_SVM
-	if ((OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) && 
-	    OptLearn != TRUE) {
-	    init_svm();
-	}
-#endif
-	if (OptDiscPredMethod == OPT_DT || OptDiscNounMethod == OPT_DT) {
-	    init_dt();
-	}
-	init_event();
-    }
 
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
@@ -664,10 +339,6 @@ extern int	EX_match_subject;
 
     for (i = 0; i < BNST_MAX; i++) {
 	 current_sentence_data.bnst_data[i].f = NULL;
-    }
-
-    if (OptEllipsis) {
-	InitContextHash();
     }
 
 #ifndef _WIN32
@@ -774,12 +445,6 @@ extern int	EX_match_subject;
     if (OptAnalysis == OPT_AssignF) return TRUE;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
-
-    /* 格フレーム取得 */
-    if (OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2) {
-	set_caseframes(sp);
-    }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
@@ -911,10 +576,6 @@ PARSED:
 
     SENTENCE_DATA *sp = &current_sentence_data;
 
-    /* 格解析の準備 */
-    init_case_analysis_cpm(sp);
-    init_case_analysis_cmm();
-
     /* ルール読み込み
        Server Mode において、読み込むルールの変更がありえるので、ここで行う */
     read_rules();
@@ -947,21 +608,12 @@ PARSED:
 	    if (OptExpress != OPT_NOTAG) {
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	    }
-	    if (!OptEllipsis)
-		print_result(sp);
-	    else
-		PreserveCPM(PreserveSentence(sp), sp);
+	    print_result(sp);
 	    fflush(Outfp);
 
 	    /* とりあえず終わることに */
 	    close_all();
 	    exit(100);
-	}
-
-	/* 格フレームの初期化 */
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2) {
-	    clear_cf(0);
 	}
 
 	/* 初期化 */
@@ -975,33 +627,23 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptEllipsis) {
-	    /* 中身は保存しておくので */
-	    for (i = 0; i < sp->Mrph_num; i++) {
-		(sp->mrph_data+i)->f = NULL;
-	    }
-	    for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-		(sp->bnst_data+i)->f = NULL;
-	    }
-	    for (i = 0; i < sp->Tag_num; i++) {
-		(sp->tag_data+i)->f = NULL;
-	    }
+	for (i = 0; i < sp->Mrph_num; i++) {
+	    clear_feature(&(sp->mrph_data[i].f));
 	}
-	else {
-	    for (i = 0; i < sp->Mrph_num; i++) {
-		clear_feature(&(sp->mrph_data[i].f));
-	    }
-	    for (i = 0; i < sp->Bnst_num; i++) {
-		clear_feature(&(sp->bnst_data[i].f));
-	    }
-	    for (i = 0; i < sp->Tag_num; i++) {
-		clear_feature(&(sp->tag_data[i].f));
-	    }
-	    /* New_Bnstはもともとpointer */
-	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-		(sp->bnst_data+i)->f = NULL;
-	    }
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    clear_feature(&(sp->bnst_data[i].f));
 	}
+	for (i = 0; i < sp->Tag_num; i++) {
+	    clear_feature(&(sp->tag_data[i].f));
+	}
+	/* New_Bnstはもともとpointer */
+	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
+	    (sp->bnst_data+i)->f = NULL;
+	}
+	for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
+	    (sp->tag_data+i)->f = NULL;
+	}
+
 
 	/**************/
 	/* メイン解析 */
@@ -1013,15 +655,6 @@ PARSED:
 	if (flag == FALSE) { /* 解析失敗時には文の数を増やさない */
 	    sp->Sen_num--;	    
 	    continue;
-	}
-
-	/************/
-	/* 文脈解析 */
-	/************/
-
-	if (OptEllipsis) {
-	    make_dpnd_tree(sp);
-	    DiscourseAnalysis(sp);
 	}
 
 	/* entity 情報の feature の作成 */
@@ -1199,7 +832,6 @@ PARSED:
 		    if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
 		    if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
 		    if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
-		    if (strstr(buf, "-ellipsis")) OptEllipsis |= OPT_ELLIPSIS;
 		    if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
 		    if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
 		    if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;

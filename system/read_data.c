@@ -356,18 +356,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    sp->Comment = strdup(input_buffer);
 	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer), "read_mrph");
 	    sscanf(input_buffer, "# %s", sp->KNPSID);
-
-	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
-	    if (!strncmp(input_buffer, "# S-ID", 6) && 
-		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
-		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
-		if (ArticleID && preArticleID && ArticleID != preArticleID) {
-		    if (OptEllipsis) {
-			ClearSentences(sp);
-		    }
-		}
-		preArticleID = ArticleID;
-	    }
 	}
 
 	/* 解析済みの場合 */
@@ -375,9 +363,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	else if (input_buffer[0] == '*') {
 	    if (sp->Mrph_num == 0) {
 		OptInput |= OPT_PARSED;
-		if (OptEllipsis) {
-		    OptAnalysis = OPT_CASE2;
-		}
 		sp->Bnst_num = 0;
 		sp->Tag_num = 0;
 		memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);

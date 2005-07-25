@@ -185,6 +185,80 @@ int		OptUseScase;
     }
 }
 
+/*==================================================================*/
+		 void set_pred_voice(BNST_DATA *ptr)
+/*==================================================================*/
+{
+    /* ヴォイスの設定 */
+
+    char *cp;
+
+    ptr->voice = 0;
+
+    if (cp = check_feature(ptr->f, "態")) {
+	char *token, *str;
+
+	str = strdup(cp + 3);
+	token = strtok(str, "|");
+	while (token) {
+	    if (!strcmp(token, "受動")) {
+		ptr->voice |= VOICE_UKEMI;
+	    }
+	    else if (!strcmp(token, "使役")) {
+		ptr->voice |= VOICE_SHIEKI;
+	    }
+	    else if (!strcmp(token, "もらう")) {
+		ptr->voice |= VOICE_MORAU;
+	    }
+	    else if (!strcmp(token, "ほしい")) {
+		ptr->voice |= VOICE_HOSHII;
+	    }
+	    else if (!strcmp(token, "使役&受動")) {
+		ptr->voice |= VOICE_SHIEKI_UKEMI;
+	    }
+	    /* 「可能」は未扱い */
+
+	    token = strtok(NULL, "|");
+	}
+	free(str);
+    }
+}
+
+/*==================================================================*/
+	       char *make_pred_string(TAG_DATA *t_ptr)
+/*==================================================================*/
+{
+    char *buffer;
+
+    /* 用言タイプ, voiceの分(7)も確保しておく */
+
+    /* 「（〜を）〜に」 のときは 「する」 で探す */
+    if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
+	buffer = (char *)malloc_data(12, "make_pred_string"); /* 4 + 8 */
+	strcpy(buffer, "する");
+    }
+    /* 「形容詞+なる」など */
+    else if (check_feature(t_ptr->f, "Ｔ用言見出→")) {
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 8, 
+				     "make_pred_string");
+	strcpy(buffer, t_ptr->head_ptr->Goi2);
+	strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
+    }
+    /* 「形容詞語幹+的だ」など */
+    else if (check_feature(t_ptr->f, "Ｔ用言見出←")) {
+	buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(t_ptr->head_ptr->Goi) + 8, 
+				     "make_pred_string");
+	strcpy(buffer, (t_ptr->head_ptr - 1)->Goi2);
+	strcat(buffer, t_ptr->head_ptr->Goi);
+    }
+    else {
+	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 8, "make_pred_string");
+	strcpy(buffer, t_ptr->head_ptr->Goi);
+    }
+
+    return buffer;
+}
+
 /*====================================================================
                                END
 ====================================================================*/

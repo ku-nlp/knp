@@ -8,14 +8,7 @@ pkglibexecdir= $(libexecdir)/knp
 pkglibexec_PROGRAMS = ipal make_db
 
 knp_SOURCES = \
-	case_analysis.c \
-	case_data.c \
-	case_ipal.c \
-	case_match.c \
-	case_print.c \
 	const.h \
-	context.c \
-	context.h \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \
@@ -48,8 +41,7 @@ knp_SOURCES = \
 	thesaurus.c \
 	hash.c \
 	hash.h \
-	bnst_compare.c \
-	lib_event.c
+	bnst_compare.c
 
 knp_LDADD = @KNP_LIBS@
 
