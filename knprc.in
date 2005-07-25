@@ -21,15 +21,3 @@
 (KNPº≠ΩÒ•«•£•Ï•Ø•»•Í
         @pkgdatadir@/dict
 )
-
-(SVM•‚•«•Î•’•°•§•Î
-	(@pkgdatadir@/svm/anaphora-ga.model •¨)
-	(@pkgdatadir@/svm/anaphora-wo.model •Ú)
-	(@pkgdatadir@/svm/anaphora-ni.model •À)
-)
-
-(KNPæ Œ¨≤Ú¿œ√µ∫˜»œ∞œ
-        (•¨ 0)
-        (•Ú 12)
-        (•À 9)
-)

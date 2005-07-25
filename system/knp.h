@@ -7,10 +7,6 @@
     $Id$
 ====================================================================*/
 
-#ifdef USE_SVM
-#include <svm.h>
-#endif
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
