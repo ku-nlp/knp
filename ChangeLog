@@ -1,3 +1,11 @@
+2005-07-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/tree_conv.c:
+	タグ単位の係り受けのbug fix.
+
+	* system/Makefile.am:
+	リンク関係の修正
+
 2005-07-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
