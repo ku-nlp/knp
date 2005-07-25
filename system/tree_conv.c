@@ -404,6 +404,29 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 }
 
 /*==================================================================*/
+	      int find_head_tag_from_bnst(BNST_DATA *bp)
+/*==================================================================*/
+{
+    int offset;
+    char *cp;
+
+    /* <P>のときと「タグ単位受無視」のときは係り先を最後のタグ単位とする */
+    if (bp->para_type != PARA_NORMAL && 
+	(!check_feature(bp->f, "タグ単位受無視")) && 
+	(cp = check_feature(bp->parent->f, "タグ単位受"))) {
+	offset = atoi(cp + 11);
+	if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
+	    offset = 0;
+	}
+    }
+    else {
+	offset = 0;
+    }
+
+    return offset;
+}
+
+/*==================================================================*/
 	       int bnst_to_tag_tree(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -418,7 +441,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     sp->New_Tag_num = 0;
 
     /* new bnst -> tag */
-    for (i = 0; i < sp->New_Bnst_num; i++) {
+    for (i = sp->New_Bnst_num - 1; i >= 0; i--) { /* <PARA>(1)-<PARA>(2) のときのために後からする */
 	bp = sp->bnst_data + sp->Bnst_num + i;
 
 	/* new領域にcopy */
@@ -437,6 +460,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	}
 	else {
 	    if (bp->tag_num > 1) {
+		/* 文節内タグ単位の親が <P>(-<PARA>) のとき */
 		(bp->tag_ptr + bp->tag_num - 2)->parent = tp;
 		t_add_node((BNST_DATA *)tp, 
 			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 2), -1);
@@ -453,16 +477,8 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 		bp->tag_ptr = tp;
 	    }
 	}
-    }
 
-    sp->New_Tag_num = 0;
-
-    /* 親と子のリンクつけ (new) */
-    for (i = 0; i < sp->New_Bnst_num; i++) {
-	bp = sp->bnst_data + sp->Bnst_num + i;
-	sp->New_Tag_num++;
-	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1;
-
+	/* 親と子のリンクつけ (new) */
 	tp->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;	/* <PARA>へ */
 	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
 		   (BNST_DATA *)tp, -1);
@@ -488,17 +504,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 
 	/* 親と子 */
 	if (bp->parent) {
-	    if ((!check_feature(bp->f, "タグ単位受無視")) && 
-		(cp = check_feature(bp->parent->f, "タグ単位受"))) {
-		offset = atoi(cp + 11);
-		if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
-		    offset = 0;
-		}
-	    }
-	    else {
-		offset = 0;
-	    }
-
+	    offset = find_head_tag_from_bnst(bp); /* タグ単位内の係り先をルールから得る */
 	    (bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset;
 	    t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset), 
 		       (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
