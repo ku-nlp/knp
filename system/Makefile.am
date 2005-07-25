@@ -51,7 +51,7 @@ knp_SOURCES = \
 	bnst_compare.c \
 	lib_event.c
 
-knp_LDADD = -ljuman @KNP_LIBS@
+knp_LDADD = @KNP_LIBS@
 
 make_db_SOURCES = \
 	make_db.c \
