@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, 3.0, knp@kc.t.u-tokyo.ac.jp)
+AC_INIT(knp, 2.0, knp@kc.t.u-tokyo.ac.jp)
 AC_PREREQ(2.53)
 AM_INIT_AUTOMAKE
 AC_REVISION($Revision$)
@@ -19,8 +19,6 @@ AC_SYS_LARGEFILE
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
-AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
-AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
 AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
@@ -31,31 +29,6 @@ AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui 
 SUBDIRS="system rule docs dict"
 
 packagesrcdir=`cd $srcdir && pwd`
-
-if test "$with_svm" = yes; then
-    SUBDIRS="svm $SUBDIRS"
-    SVM_CFLAGS="-I$packagesrcdir/svm -DUSE_SVM"
-    KNP_LIBS="$KNP_LIBS $packagesrcdir/svm/libsvm.la -ltinysvm -lstdc++"
-    LIBSVM_VERSION_INFO="0:0:1"
-    AC_SUBST(LIBSVM_VERSION_INFO)
-
-    AC_MSG_CHECKING([SVM Model File])
-    if test -f "$packagesrcdir/svm/anaphora-ga.model"; then
-	svm_model_exist=yes
-    else
-	svm_model_exist=no
-    fi
-    AC_MSG_RESULT([$svm_model_exist])
-elif test "$with_svm_light" = yes; then
-    SUBDIRS="svm_light $SUBDIRS"
-    SVM_CFLAGS="-I$packagesrcdir/svm_light -DUSE_SVM"
-    KNP_LIBS="$KNP_LIBS $packagesrcdir/svm_light/libsvm.la -lsvmlight"
-    LIBSVM_VERSION_INFO="0:0:1"
-    AC_SUBST(LIBSVM_VERSION_INFO)
-fi
-AM_CONDITIONAL(HAVE_TINYSVM, test "x$with_svm" = xyes)
-AM_CONDITIONAL(HAVE_SVMLIGHT, test "x$with_svm_light" = xyes)
-AM_CONDITIONAL(SVM_MODEL_EXIST, test "x$svm_model_exist" = xyes)
 
 if test "$with_boehm_gc" = yes; then
     KNP_LIBS="$KNP_LIBS -lgc -ldl"
@@ -191,7 +164,7 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
-KNP_CFLAGS="$SVM_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="-DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
@@ -228,8 +201,6 @@ AC_SUBST(SUBDIRS)
 AC_CONFIG_FILES([
 Makefile
 system/Makefile
-svm/Makefile
-svm_light/Makefile
 rule/Makefile
 docs/Makefile
 dict/Makefile
