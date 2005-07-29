@@ -86,13 +86,12 @@ extern int	EX_match_subject;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst]\n" 
-	    "           [-tree|sexp|tab|notag]\n" 
+    fprintf(stderr, "Usage: knp [-dpnd|bnst]\n" 
+	    "           [-tree|tab|sexp|tagtree|tagtab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S|F] [-N port]\n"
-	    "           [-timeout second] [-r rcfile]\n"
-	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
+	    "           [-timeout second] [-r rcfile]\n");
     exit(1);    
 }
 
@@ -129,12 +128,13 @@ extern int	EX_match_subject;
 	if (str_eq(argv[0], "-dpnd"))         OptAnalysis = OPT_DPND;
 	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
 	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
-	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
+	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
-	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
-	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
-	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
+	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_NOTAG;
+	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-tagtree")) OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
