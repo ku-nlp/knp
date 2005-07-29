@@ -861,27 +861,26 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-		 void print_kakari(SENTENCE_DATA *sp)
+	    void print_kakari(SENTENCE_DATA *sp, int type)
 /*==================================================================*/
 {
     /* 依存構造木の表示 */
 
     /* tag単位のtreeを描くとき */
-    if (OptExpress == OPT_TREE || 
-	OptExpress == OPT_TREEF) {
+    if (type == OPT_TREE || type == OPT_TREEF) {
 	max_width = 0;
 
 	calc_tree_width((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1);
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num -1), 1, NULL, 0);
     }
     /* 文節のtreeを描くとき */
-    else if (OptExpress == OPT_NOTAGTREE) {
+    else if (type == OPT_NOTAGTREE) {
 	max_width = 0;
 
 	calc_tree_width((sp->bnst_data + sp->Bnst_num -1), 1);
 	show_self((sp->bnst_data + sp->Bnst_num -1), 1, NULL, 0);
     }
-    else if (OptExpress == OPT_SEXP) {
+    else if (type == OPT_SEXP) {
 	show_sexp((sp->bnst_data + sp->Bnst_num -1), 0, 0);
     }
 
@@ -1028,13 +1027,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     else if (OptExpress == OPT_NOTAGTREE) {
 	/* tree出力 */
 	make_dpnd_tree(sp);
-	print_kakari(sp);
+	print_kakari(sp, OptExpress);
     }
     else {
 	/* tree出力 */
 	make_dpnd_tree(sp);
 	bnst_to_tag_tree(sp); /* タグ単位 */
-	print_kakari(sp);
+	print_kakari(sp, OptExpress);
     }
 }
 

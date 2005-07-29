@@ -224,7 +224,7 @@ extern int	EX_match_subject;
 	usage();
     }
 
-    if (OptExpress == OPT_NOTAG && 
+    if ((OptExpress == OPT_NOTAG || OptExpress == OPT_NOTAGTREE) && 
 	(OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
 	usage();
     }
@@ -396,20 +396,24 @@ extern int	EX_match_subject;
 
     if (OptAnalysis == OPT_BNST) return TRUE;
 
-    /* タグ単位作成 (-notag時もscaseを引くために行う) */
-    if (OptInput == OPT_RAW || 
-	(OptInput & OPT_INPUT_BNST)) {
-	make_tag_units(sp);
-    }
-    else {
-	make_tag_units_pm(sp);
+    /* タグ単位作成 */
+    if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
+	if (OptInput == OPT_RAW || 
+	    (OptInput & OPT_INPUT_BNST)) {
+	    make_tag_units(sp);
+	}
+	else {
+	    make_tag_units_pm(sp);
+	}
     }
 
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	decide_head_ptr(sp->bnst_data + i);
-	decide_head_tag_ptr(sp->bnst_data + i);
+	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
+	    decide_head_tag_ptr(sp->bnst_data + i);
+	}
 	make_Jiritu_Go(sp, sp->bnst_data + i);
 	get_bnst_code_all(sp->bnst_data + i);
     }
@@ -555,7 +559,7 @@ PARSED:
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
     para_recovery(sp);
 
-    if (OptExpress != OPT_NOTAG) {
+    if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
@@ -605,7 +609,7 @@ PARSED:
 	    ErrorComment = strdup("Parse timeout");
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	    if (OptExpress != OPT_NOTAG) {
+	    if (OptExpress != OPT_NOTAG  && OptExpress != OPT_NOTAGTREE) {
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	    }
 	    print_result(sp);

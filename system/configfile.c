@@ -424,7 +424,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    fprintf(Outfp, "Setting default rules ... ");
 	}
 
-	RuleNumMax = 9;
+	RuleNumMax = 8;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
 	/* mrph_homo 同形異義語 */
@@ -481,14 +481,6 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = KoouRuleType;
 	(RULE+CurrentRuleNum)->direction = LtoR;
-	CurrentRuleNum++;
-
-	/* case_analysis タグ単位 逆方向 */
-	(RULE+CurrentRuleNum)->file = strdup("case_analysis");
-	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
-	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
-	(RULE+CurrentRuleNum)->type = TagRuleType;
-	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
 	if (OptDisplay == OPT_DEBUG) {

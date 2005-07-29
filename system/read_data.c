@@ -1040,7 +1040,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
 	    if (check_feature((ptr->mrph_ptr + i)->f, "独立接尾辞") || 
 		check_feature((ptr->mrph_ptr + i)->f, "非独立有意味接尾辞") || 
-		check_feature((ptr->mrph_ptr + i)->f, "独立無意味語")) { /* 「の」 */
+		(ptr->type == IS_TAG_DATA && check_feature((ptr->mrph_ptr + i)->f, "独立無意味語"))) { /* 「の」 */
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }

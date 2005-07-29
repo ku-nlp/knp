@@ -550,12 +550,14 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     if (OptDisplay == OPT_DEBUG) {
 	dpnd_info_to_bnst(sp, &dpnd);
-	if (OptExpress != OPT_NOTAG) {
+	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
 	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	}
 	make_dpnd_tree(sp);
-	bnst_to_tag_tree(sp); /* タグ単位 */
-	print_kakari(sp);
+	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
+	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	}
+	print_kakari(sp, (OptExpress == OPT_NOTAG || OptExpress == OPT_NOTAGTREE) ? OPT_NOTAGTREE : OPT_TREE);
     }
 
     if (score > sp->Best_mgr->score) {

@@ -142,7 +142,7 @@ extern float get_cf_event_value(CASE_FRAME *cf1, CASE_FRAME *cf2);
 extern int str_part_eq(char *dat, char *pat);
 
 /* lib_print.c */
-extern void print_kakari(SENTENCE_DATA *sp);
+extern void print_kakari(SENTENCE_DATA *sp, int type);
 extern void _print_bnst(TAG_DATA *ptr);
 extern void print_matrix(SENTENCE_DATA *sp, int type, int L_B);
 extern void print_result(SENTENCE_DATA *sp);
