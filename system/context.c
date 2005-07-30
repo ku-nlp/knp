@@ -4967,7 +4967,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    cpm_ptr->cf.type = CF_NOUN;
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
-		    if (maxem_copula.score > -2) {
+		    if (maxem.score > -2 && maxem_copula.score > -2) {
 			merge_em(&maxem, &maxem_copula);
 		    }
 		    cpm_ptr->cf.type = CF_PRED;
