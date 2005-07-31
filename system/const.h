@@ -135,6 +135,7 @@
 #define	PP_NUMBER	44
 #define LOC_NUMBER	21
 #define UTYPE_NUMBER	12
+#define NE_MODEL_NUMBER	33
 
 typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
@@ -418,6 +419,7 @@ typedef struct {
 #define		DEF_DISC_CASES		"KNP省略解析格"
 #define		DEF_DISC_ORDER		"KNP省略解析探索範囲"
 
+#define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ"
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
 #define		DEF_DT_MODEL_FILE	"決定木ファイル"
 

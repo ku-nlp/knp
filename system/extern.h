@@ -58,6 +58,7 @@ extern int		OptAddSvmFeatureDiscourseDepth;
 extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptAddSvmFeatureReferedNum;
 extern int		OptCopula;
+extern int		OptNE;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
@@ -83,6 +84,8 @@ extern char 		*Case_name[];
 extern char		*ETAG_name[];
 
 extern char		*SVMFile[];
+extern char		*SVMFileNE[];
+extern char             *DBforNE;
 extern char		*DTFile[];
 
 extern int	DiscAddedCases[];
@@ -324,6 +327,8 @@ extern void revise_para_kakari(SENTENCE_DATA *sp, int num, int *array);
 
 /* proper.c */
 extern void ne_para_analysis(SENTENCE_DATA *sp);
+extern int ne_tagposition_to_code(char *cp);
+extern char *ne_code_to_tagposition(int num);
 
 /* quote.c */
 extern int quote(SENTENCE_DATA *sp);

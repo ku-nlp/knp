@@ -54,6 +54,7 @@ int		OptAddSvmFeatureDiscourseDepth;
 int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
+int		OptNE;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -142,6 +143,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureObjectRecognition = 0;
     OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
+    OptNE = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -510,6 +512,11 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
 	}
+#ifdef USE_SVM
+	else if (str_eq(argv[0], "-ne")) {
+	    OptNE = 1;
+	}
+#endif
 	else {
 	    usage();
 	}
@@ -599,6 +606,11 @@ extern int	EX_match_subject;
 	close_event();
     }
 
+    if (OptNE) {
+	close_db_for_NE();
+	
+    }
+
 #ifdef DB3DEBUG
     db_teardown();
 #endif
@@ -623,7 +635,13 @@ extern int	EX_match_subject;
     db_setup();
 #endif
     init_hash();
+    if (OptNE) {
+	init_tagposition();
+    }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
+    if (OptNE) {
+	init_db_for_NE(); /* NE用 */
+    }
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_noun_cf();	/* 格フレーム(名詞)オープン */
@@ -642,6 +660,8 @@ extern int	EX_match_subject;
 	}
 	init_event();
     }
+    if (OptNE)
+	init_svm_for_NE();
 
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
@@ -894,8 +914,13 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
+    /* 固有表現認識を行う */
+    if (OptNE) {
+	ne_analysis(sp);
+    }
+
     /* 並列構造をみて固有表現認識を行う */
-    ne_para_analysis(sp);
+    /* ne_para_analysis(sp); */
 
     memo_by_program(sp);	/* メモへの書き込み */
 

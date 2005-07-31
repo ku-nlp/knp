@@ -50,10 +50,13 @@
 #include "svm.h"
 
 #define	PP_NUMBER	44
+#define NE_MODEL_NUMBER	33
 
 char *SVMFile[PP_NUMBER];	/* modelファイルの指定 */
+char *SVMFileNE[NE_MODEL_NUMBER]; /* ne解析用modelファイルの指定 */
 
 TinySVM::Model *model[PP_NUMBER];
+TinySVM::Model *modelNE[NE_MODEL_NUMBER];
 
 int init_svm() {
     int i;
@@ -77,6 +80,19 @@ int init_svm() {
     return 0;
 }
 
+int init_svm_for_NE() {
+    int i;
+
+    for (i = 0; i < NE_MODEL_NUMBER; i++) {
+	modelNE[i] = new TinySVM::Model;
+	if (!modelNE[i]->read(SVMFileNE[i])) {
+	    fprintf(stderr, ";; SVM initialization error (%s is corrupted?).\n", SVMFileNE[i]);
+	    exit(1);
+	}
+    }
+    return 0;
+}
+
 double svm_classify(char *line, int pp) {
     TinySVM::Model *m;
     int i = 0;
@@ -91,6 +107,21 @@ double svm_classify(char *line, int pp) {
 
     if (!m) {
 	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", i);
+	exit(1);
+    }
+
+    while (isspace(line[i])) i++;
+    return m->classify((const char *)(line + i));
+}
+
+double svm_classify_for_NE(char *line, int n) {
+    TinySVM::Model *m;
+    int i = 0;
+
+    m = modelNE[n];
+
+    if (!m) {
+	fprintf(stderr, ";; SVM model for NE [%d] cannot be read.\n", i);
 	exit(1);
     }
 

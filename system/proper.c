@@ -8,6 +8,94 @@
 ====================================================================*/
 #include "knp.h"
 
+#define SIZE               2
+#define NE_TAG_NUMBER      9
+#define NE_POSITION_NUMBER 4
+#define FEATIRE_MAX        1024
+#define HEAD               0
+#define MIDDLE             1
+#define TAIL               2
+#define SINGLE             3
+
+DBM_FILE ne_db;
+
+char *DBforNE;
+char TagPosition[NE_MODEL_NUMBER][20];
+char *Tag_name[] = {
+    "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
+    "DATE", "TIME", "MONEY", "PERCENT", "OTHER"};
+char *Position_name[] = {
+    "head", "middle", "tail", "single"};
+struct NE_MANAGER {
+    char feature[FEATIRE_MAX];          /* 素性 */
+    int NEresult;                       /* NEの解析結果 */
+    double SVMscore[NE_MODEL_NUMBER];  /* 各タグ・ポジションとなる確率 */
+    double max[NE_MODEL_NUMBER];        /* そこまでの最大スコア */
+    int parent[NE_MODEL_NUMBER];        /* 最大スコアの経路 */
+} NE_mgr[MRPH_MAX];
+
+/*====================================================================
+			 タグ・ポジション−コード対応
+====================================================================*/
+void init_tagposition()
+{
+    int i, j;
+    for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
+	for (j = 0; j < NE_POSITION_NUMBER; j++) {
+	    strcpy(TagPosition[i * NE_POSITION_NUMBER + j], Tag_name[i]);
+	    strcat(TagPosition[i * NE_POSITION_NUMBER + j], Position_name[j]);
+	}
+    }
+    strcpy(TagPosition[32], "OTHERsingle");
+}
+
+/*====================================================================
+			 タグ・ポジション−コード対応関数
+====================================================================*/
+int ne_tagposition_to_code(char *cp)
+{
+    int i;
+    for (i = 0; TagPosition[i]; i++)
+	if (str_eq(TagPosition[i], cp))
+	    return i;
+    return -1;
+}
+
+char *ne_code_to_tagposition(int num)
+{
+    return TagPosition[num];
+}
+
+/*==================================================================*/
+	       void init_db_for_NE()
+/*==================================================================*/
+{
+    char *db_filename;
+
+    db_filename = check_dict_filename(DBforNE, TRUE);
+
+    if ((ne_db = DB_open(db_filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Opening %s ... failed.\n", db_filename);
+	}
+	fprintf(stderr, ";; Cannot open CF(noun) Database <%s>.\n", db_filename);
+	exit(1);
+    } 
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "Opening %s ... done.\n", db_filename);
+	}
+    }
+    free(db_filename);
+}
+
+/*==================================================================*/
+	       void close_db_for_NE()
+/*==================================================================*/
+{
+    DB_close(ne_db);
+}
+
 /*==================================================================*/
 		   char *NEcheck(BNST_DATA *b_ptr)
 /*==================================================================*/
@@ -85,6 +173,173 @@
 	    }
 	}
     }
+}
+
+/*==================================================================*/
+               void init_NE_mgr()
+/*==================================================================*/
+{
+    memset(NE_mgr, 0, sizeof(struct NE_MANAGER)*MRPH_MAX);
+}
+
+/*==================================================================*/
+	       int get_chara(FEATURE *f)
+/*==================================================================*/
+{
+    int i;
+    char *Chara_name[] = {
+	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英字", "数字", ""};
+
+    for (i = 0; *Chara_name[i]; i++)
+	if (check_feature(f, Chara_name[i]))
+	    break;
+    return i + 1;
+}
+
+/*==================================================================*/
+	       char *get_pos(MRPH_DATA mrph_data)
+/*==================================================================*/
+{
+    char *ret;
+    ret = (char *)malloc_data(4, "get_pos");
+
+    if (mrph_data.Bunrui)
+	sprintf(ret, "%d%d", mrph_data.Hinshi, mrph_data.Bunrui);
+    else
+	sprintf(ret, "%d0", mrph_data.Hinshi);
+    return ret;
+}
+
+/*==================================================================*/
+               void make_feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    
+    for (i = 0; i < sp->Mrph_num; i++) {
+	for (j = i - SIZE; j <= i + SIZE; j++) {
+	    if (j < 0 || j >= sp->Mrph_num)
+		continue;
+
+	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d10:1 %d%d20:1 ",
+		    NE_mgr[i].feature,
+		    db_get(ne_db, sp->mrph_data[j].Goi2) ? 
+		    db_get(ne_db, sp->mrph_data[j].Goi2) : "", i - j + SIZE + 1,
+		    get_pos(sp->mrph_data[j]), i - j + SIZE + 1, 
+		    get_chara(sp->mrph_data[j].f), i - j + SIZE + 1);
+	}
+	/* fprintf(stderr, "%s\n", sp->mrph_data[j].Goi2); */
+	if (OptDisplay == OPT_DEBUG)
+	    fprintf(stderr, "%s\n", NE_mgr[i].feature);
+    }       
+}
+
+/*==================================================================*/
+               void apply_svm_model(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    
+    for (i = 0; i < sp->Mrph_num; i++) {
+	for (j = 0; j < NE_MODEL_NUMBER; j++) {
+	    NE_mgr[i].SVMscore[j] 
+		= 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
+	    /* fprintf(stderr, "%f\t", NE_mgr[i].SVMscore[j]); */
+	}
+    }
+}
+
+/*==================================================================*/
+               int constraint(int pre, int self)
+/*==================================================================*/
+{
+    /* 前後に来れるタグの制約に違反すれば1を返す  */
+    if (pre  == NE_MODEL_NUMBER - 1) pre  += 3;
+    if (self == NE_MODEL_NUMBER - 1) self += 3;
+
+    if (pre == -1) {
+	if (self % 4 == MIDDLE || self % 4 == TAIL) return 1;
+	return 0;
+    }
+	
+    if ((pre  % 4 == HEAD   || pre  % 4 == MIDDLE) &&
+	 self % 4 != MIDDLE && self % 4 != TAIL  ) return 1;
+    if ( pre  % 4 != HEAD   && pre  % 4 != MIDDLE  &&
+	(self % 4 == MIDDLE || self % 4 == TAIL  )) return 1;  
+    if ((pre  % 4 == HEAD   || pre  % 4 == MIDDLE) &&
+	pre/4 != self/4) return 1;   
+    return 0;
+}
+
+/*==================================================================*/
+               void viterbi(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k;
+    double score, max;
+  
+    for (i = 0; i < sp->Mrph_num; i++) {
+	for (j = 0; j < NE_MODEL_NUMBER; j++) {
+
+	    /* 文頭の場合 */
+	    if (i == 0) {
+		if (constraint(-1, j)) continue;
+		NE_mgr[i].max[j] = NE_mgr[i].SVMscore[j];
+		NE_mgr[i].parent[j] = -1; /* 文頭 */
+		continue;
+	    }
+	    
+	    /* 文頭以外 */
+	    NE_mgr[i].max[j] = 0;
+	    for (k = 0; k < NE_MODEL_NUMBER; k++) {
+		if (constraint(k, j)) continue;
+		score = NE_mgr[i-1].max[k]*NE_mgr[i].SVMscore[j];
+		if (score > NE_mgr[i].max[j]) { /* 同点の場合は無視 */
+		    NE_mgr[i].max[j] = score;
+		    NE_mgr[i].parent[j] = k;
+		}
+	    }
+	}
+    }       
+    max = 0;
+    for (j = 0; j < NE_MODEL_NUMBER; j++) {
+	if (NE_mgr[sp->Mrph_num-1].max[j] > max) {
+	    max = NE_mgr[sp->Mrph_num-1].max[j];
+	    NE_mgr[sp->Mrph_num-1].NEresult = j;
+	}
+    }
+    for (i = sp->Mrph_num - 1; i > 0; i--) {
+	NE_mgr[i-1].NEresult = NE_mgr[i].parent[NE_mgr[i].NEresult];
+    }
+}
+
+/*==================================================================*/
+	       void assign_ne_feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    char cp[256];
+
+    /* 形態素に付与 */
+    for (i = 0; i < sp->Mrph_num; i++) {
+	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
+	assign_cfeature(&(sp->mrph_data[i].f), cp);
+    }
+    /* 文節に付与 */
+    /* for (j = 0; j < sp->Bnst_num; j++) {
+	sp->bnst_data[j].mrph_num;
+	} */
+}
+
+/*==================================================================*/
+	       void ne_analysis(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    init_NE_mgr();
+    make_feature(sp);
+    apply_svm_model(sp);
+    viterbi(sp);
+    assign_ne_feature(sp);
 }
 
 /*====================================================================
