@@ -1,3 +1,8 @@
+2005-07-31  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* svm/svm.cc, svm/svm.h, system/configfile.c, system/const.h, system/extern.h, system/main.c, system/proper.c
+	SVMを用いた固有表現抽出機能を追加
+	
 2005-07-30  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
