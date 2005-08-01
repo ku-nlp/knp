@@ -1,3 +1,8 @@
+2005-08-01  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* svm/proper.c
+	固有表現解析結果をタグのfeatureにも付与するよう変更
+
 2005-07-31  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* svm/svm.cc, svm/svm.h, system/configfile.c, system/const.h, system/extern.h, system/main.c, system/proper.c
