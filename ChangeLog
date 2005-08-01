@@ -1,3 +1,8 @@
+2005-08-01  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c
+	rankingSVMにおいて不特定:人を候補とする時のバグを修正
+
 2005-08-01  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* svm/proper.c
