@@ -314,21 +314,62 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
+               int get_mrph_ne(FEATURE *fp)
+/*==================================================================*/
+{
+    int i;
+    char cp[32];
+
+    for (i = 0; i < NE_MODEL_NUMBER - 1; i++) {
+	sprintf(cp, "NE:%s", ne_code_to_tagposition(i));
+	if (check_feature(fp, cp)) return i;
+    }
+    return i;
+}
+
+/*==================================================================*/
 	       void assign_ne_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, flag;
     char cp[256];
+    FEATURE **fpp;
 
     /* 形態素に付与 */
     for (i = 0; i < sp->Mrph_num; i++) {
+	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue;
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
 	assign_cfeature(&(sp->mrph_data[i].f), cp);
     }
-    /* 文節に付与 */
-    /* for (j = 0; j < sp->Bnst_num; j++) {
-	sp->bnst_data[j].mrph_num;
-	} */
+    /* タグに付与 */
+    for (j = 0; j < sp->Tag_num; j++) { /* 同一タグの固有表現は一種類まで */
+	for (i = 0; i < sp->tag_data[j].mrph_num; i++) {
+	    if (check_feature((sp->tag_data[j].mrph_ptr + i)->f, "NE")) break;
+	}
+	/* 対象のタグに固有表現が無ければ次のタグへ */
+	if (i == sp->tag_data[j].mrph_num) continue;
+
+	fpp = &(sp->tag_data[j].f);
+	memset(cp, 0, sizeof(char)*256);
+	sprintf(cp, "NE:(%s)", 
+		Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
+	flag = 0;
+	while (!flag) {
+	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
+	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE || 
+		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
+		assign_cfeature(fpp, cp);
+		flag = 1;
+		continue;
+	    }
+	    /* 複数のタグにまたがっている場合は次のタグに進む */
+	    if (++i == sp->tag_data[j].mrph_num) {
+		if (++j == sp->Tag_num) flag = 1;
+		i = 0;
+	    }
+	}
+	if (flag) continue;       
+    }
 }
 
 /*==================================================================*/
