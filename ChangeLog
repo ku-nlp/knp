@@ -4,6 +4,9 @@
 	正解の関係情報を入力できるようにし、学習時に正例・負例を判定するようにした
 	学習時にも省略解析を行うようにした
 
+	* system/context.c, system/main.c, svm/svm.h, svm/svm.cc, svm_light/svm.h, svm_light/svm.c:
+	SVMまわりの関数名の整理
+
 2005-08-01  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c
