@@ -1,3 +1,8 @@
+2005-08-03  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/proper.c
+	NE´ØÏ¢¤Îbug fix.
+	
 2005-08-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/context.c, system/main.c, system/read_data.c:

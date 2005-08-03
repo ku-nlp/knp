@@ -29,10 +29,14 @@ char *Position_name[] = {
 struct NE_MANAGER {
     char feature[FEATIRE_MAX];          /* 素性 */
     int NEresult;                       /* NEの解析結果 */
-    double SVMscore[NE_MODEL_NUMBER];  /* 各タグ・ポジションとなる確率 */
+    double SVMscore[NE_MODEL_NUMBER];   /* 各タグ・ポジションとなる確率 */
     double max[NE_MODEL_NUMBER];        /* そこまでの最大スコア */
     int parent[NE_MODEL_NUMBER];        /* 最大スコアの経路 */
 } NE_mgr[MRPH_MAX];
+struct {
+    int code;       /* 形態素列 */
+    int result[33]; /* 解析結果 */
+} cache[1024];
 
 /*====================================================================
 			 タグ・ポジション−コード対応
@@ -242,9 +246,11 @@ char *ne_code_to_tagposition(int num)
     
     for (i = 0; i < sp->Mrph_num; i++) {
 	for (j = 0; j < NE_MODEL_NUMBER; j++) {
+#ifdef USE_SVM
 	    NE_mgr[i].SVMscore[j] 
 		= 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
 	    /* fprintf(stderr, "%f\t", NE_mgr[i].SVMscore[j]); */
+#endif
 	}
     }
 }

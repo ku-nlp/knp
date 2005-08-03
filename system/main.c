@@ -512,11 +512,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
 	}
-#ifdef USE_SVM
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
-#endif
 	else {
 	    usage();
 	}
@@ -606,10 +604,11 @@ extern int	EX_match_subject;
 	close_event();
     }
 
+#ifdef USE_SVM
     if (OptNE) {
 	close_db_for_NE();
-	
     }
+#endif
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -639,9 +638,11 @@ extern int	EX_match_subject;
 	init_tagposition();
     }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
+#ifdef USE_SVM
     if (OptNE) {
 	init_db_for_NE(); /* NE用 */
     }
+#endif
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_noun_cf();	/* 格フレーム(名詞)オープン */
@@ -660,8 +661,10 @@ extern int	EX_match_subject;
 	}
 	init_event();
     }
+#ifdef USE_SVM
     if (OptNE)
 	init_svm_for_NE();
+#endif
 
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
@@ -915,9 +918,11 @@ PARSED:
     }
 
     /* 固有表現認識を行う */
+#ifdef USE_SVM
     if (OptNE) {
 	ne_analysis(sp);
     }
+#endif
 
     /* 並列構造をみて固有表現認識を行う */
     /* ne_para_analysis(sp); */
