@@ -1,3 +1,9 @@
+2005-08-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/context.c, system/main.c, system/read_data.c:
+	正解の関係情報を入力できるようにし、学習時に正例・負例を判定するようにした
+	学習時にも省略解析を行うようにした
+
 2005-08-01  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c
@@ -17,6 +23,11 @@
 
 	* system/context.c:
 	bug fix of merge_em.
+
+2005-07-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule:
+	形容詞語幹+「さ」のときに用言の格フレームを引かないように修正
 
 2005-07-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
