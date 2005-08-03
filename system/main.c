@@ -652,7 +652,7 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	if ((OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) && 
 	    OptLearn != TRUE) {
-	    init_svm();
+	    init_svm_for_anaphora();
 	}
 #endif
 	if (OptDiscPredMethod == OPT_DT || OptDiscNounMethod == OPT_DT) {

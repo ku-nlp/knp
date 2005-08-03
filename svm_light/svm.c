@@ -13,10 +13,13 @@
 #include <svm_light/svm_common.h>
 
 #define	PP_NUMBER	44
+#define NE_MODEL_NUMBER	33
 
 char *SVMFile[PP_NUMBER];	/* modelファイルの指定 */
+char *SVMFileNE[NE_MODEL_NUMBER]; /* ne解析用modelファイルの指定 */
 
 MODEL *model[PP_NUMBER];
+MODEL *modelNE[NE_MODEL_NUMBER];
 
 int count_max_words_doc(char *line) {
     int wol = 0;
@@ -31,31 +34,8 @@ int count_max_words_doc(char *line) {
     return wol + 3;
 }
 
-int init_svm() {
-    int i;
-
-    for (i = 0; i < PP_NUMBER; i++) {
-	if (SVMFile[i]) {
-	    model[i] = read_model(SVMFile[i]);
-	    if (model[i]->kernel_parm.kernel_type == 0) { /* linear kernel */
-		/* compute weight vector */
-		add_weight_vector_to_linear_model(model[i]);
-	    }
-
-	    if (i == 0) { /* すべての格用 */
-		return 0;
-	    }
-	}
-	else {
-	    model[i] = NULL;
-	}
-    }
-    return 0;
-}
-
-double svm_classify(char *line, int pp)
+double _svm_classify(char *line, MODEL *m)
 {
-    MODEL *m;
     WORD *words;
     DOC *doc;
     char *r_line, *comment = "";
@@ -63,20 +43,6 @@ double svm_classify(char *line, int pp)
     double costfactor, doc_label, dist;
     long queryid, slackid, wnum;
 
-    /* 0はすべての格用 */
-    if (model[0]) {
-	m = model[0];
-    }
-    else {
-	m = model[pp];
-    }
-
-    if (!m) {
-	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", model[0] ? 0 : pp);
-	exit(1);
-    }
-
-    
     r_line = (char *)my_malloc(sizeof(char) * (strlen(line) + 4));
     sprintf(r_line, "0 %s", line);
 
@@ -106,4 +72,74 @@ double svm_classify(char *line, int pp)
     free(r_line);
     free(words);
     return dist;
+}
+
+int init_svm_for_anaphora() {
+    int i;
+
+    for (i = 0; i < PP_NUMBER; i++) {
+	if (SVMFile[i]) {
+	    model[i] = read_model(SVMFile[i]);
+	    if (model[i]->kernel_parm.kernel_type == 0) { /* linear kernel */
+		/* compute weight vector */
+		add_weight_vector_to_linear_model(model[i]);
+	    }
+
+	    if (i == 0) { /* すべての格用 */
+		return 0;
+	    }
+	}
+	else {
+	    model[i] = NULL;
+	}
+    }
+    return 0;
+}
+
+int init_svm_for_NE() {
+    int i;
+
+    for (i = 0; i < NE_MODEL_NUMBER; i++) {
+	modelNE[i] = read_model(SVMFileNE[i]);
+	if (model[i]->kernel_parm.kernel_type == 0) { /* linear kernel */
+	    /* compute weight vector */
+	    add_weight_vector_to_linear_model(model[i]);
+	}
+    }
+    return 0;
+}
+
+double svm_classify_for_anaphora(char *line, int pp)
+{
+    MODEL *m;
+
+    /* 0はすべての格用 */
+    if (model[0]) {
+	m = model[0];
+	pp = 0;
+    }
+    else {
+	m = model[pp];
+    }
+
+    if (!m) {
+	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", pp);
+	exit(1);
+    }
+
+    return _svm_classify(line, m);
+}
+
+double svm_classify_for_NE(char *line, int n)
+{
+    MODEL *m;
+
+    m = modelNE[n];
+
+    if (!m) {
+	fprintf(stderr, ";; SVM model for NE [%d] cannot be read.\n", n);
+	exit(1);
+    }
+
+    return _svm_classify(line, m);
 }

@@ -58,7 +58,14 @@ char *SVMFileNE[NE_MODEL_NUMBER]; /* ne解析用modelファイルの指定 */
 TinySVM::Model *model[PP_NUMBER];
 TinySVM::Model *modelNE[NE_MODEL_NUMBER];
 
-int init_svm() {
+double _svm_classify(char *line, TinySVM::Model *m) {
+    int i = 0;
+
+    while (isspace(line[i])) i++;
+    return m->classify((const char *)(line + i));
+}
+
+int init_svm_for_anaphora() {
     int i;
 
     for (i = 0; i < PP_NUMBER; i++) {
@@ -93,39 +100,35 @@ int init_svm_for_NE() {
     return 0;
 }
 
-double svm_classify(char *line, int pp) {
+double svm_classify_for_anaphora(char *line, int pp) {
     TinySVM::Model *m;
-    int i = 0;
 
     /* 0はすべての格用 */
     if (model[0]) {
 	m = model[0];
+	pp = 0;
     }
     else {
 	m = model[pp];
     }
 
     if (!m) {
-	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", i);
+	fprintf(stderr, ";; SVM model[%d] cannot be read.\n", pp);
 	exit(1);
     }
 
-    while (isspace(line[i])) i++;
-    return m->classify((const char *)(line + i));
+    return _svm_classify(line, m);
 }
 
 double svm_classify_for_NE(char *line, int n) {
     TinySVM::Model *m;
-    int i = 0;
 
     m = modelNE[n];
 
     if (!m) {
-	fprintf(stderr, ";; SVM model for NE [%d] cannot be read.\n", i);
+	fprintf(stderr, ";; SVM model for NE [%d] cannot be read.\n", n);
 	exit(1);
     }
 
-    while (isspace(line[i])) i++;
-    return m->classify((const char *)(line + i));
+    return _svm_classify(line, m);
 }
-

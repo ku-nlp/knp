@@ -2104,7 +2104,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 {
     if (method == OPT_SVM) {
 #ifdef USE_SVM
-	return svm_classify(ecp, pp);
+	return svm_classify_for_anaphora(ecp, pp);
 #endif
     }
     else if (method == OPT_DT) {
