@@ -316,6 +316,87 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
+/*==================================================================*/
+{
+    char flag, rel[SMALL_DATA_LEN], word[BNST_LENGTH_MAX];
+    int tag_n, sent_n;
+
+    sscanf(token, "%[^/]/%c/%[^/]/%d/%d/%*[^;]", rel, &flag, word, &tag_n, &sent_n);
+    tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][0] = pp_kstr_to_code(rel);
+    tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][1] = END_M;
+
+    if (tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][0] == END_M) {
+	fprintf(stderr, ";; Unknown case <%s>\n", rel);
+	return TRUE;
+    }
+
+    if (flag == 'E') { /* 不特定 */
+	tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;
+	tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;
+	
+    }
+    else {
+	if (sent_n > 0) {
+	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
+	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sentence_data + sp->Sen_num - 1 - sent_n;
+	}
+	/* 現在の対象文 (この文はまだsentence_dataに入っていないため、上のようには扱えない) */
+	else {
+	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = sp->tag_data + tag_n;
+	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sp;
+	}
+    }
+
+    if (flag == 'C') {
+	tp->c_cpm_ptr->elem_b_num[tp->c_cpm_ptr->cf.element_num] = tp->c_cpm_ptr->cf.element_num;
+    }
+    else if (flag == 'N') {
+	tp->c_cpm_ptr->elem_b_num[tp->c_cpm_ptr->cf.element_num] = -1;
+    }
+    else {
+	tp->c_cpm_ptr->elem_b_num[tp->c_cpm_ptr->cf.element_num] = -2;
+    }
+
+    tp->c_cpm_ptr->cf.element_num++;
+    if (tp->c_cpm_ptr->cf.element_num >= CF_ELEMENT_MAX) {
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*==================================================================*/
+	 int read_annotation(SENTENCE_DATA *sp, TAG_DATA *tp)
+/*==================================================================*/
+{
+    char *cp, *start_cp;
+
+    /* featureから格解析結果を取得 */
+    if (cp = check_feature(tp->f, "格解析結果")) {
+	tp->c_cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "read_annotation");
+	memset(tp->c_cpm_ptr, 0, sizeof(CF_PRED_MGR));
+
+	cp += 11;
+	cp = index(cp, ':') + 1;
+	start_cp = cp;
+	for (; *cp; cp++) {
+	    if (*cp == ';') {
+		if (store_one_annotation(sp, tp, start_cp) == FALSE) {
+		    return FALSE;
+		}
+		start_cp = cp + 1;
+	    }
+	}
+	if (store_one_annotation(sp, tp, start_cp) == FALSE) {
+	    return FALSE;
+	}
+    }
+
+    return TRUE;
+}
+
+/*==================================================================*/
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
@@ -1229,6 +1310,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
 	if (OptReadFeature) {
 	    tp->f = Input_tag_feature[i];
+	    read_annotation(sp, tp);
+	}
+	else {
+	    tp->c_cpm_ptr = NULL;
 	}
     }
 

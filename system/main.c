@@ -1008,7 +1008,7 @@ PARSED:
 	    for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
 	    }
-	    for (i = 0; i < sp->Tag_num; i++) {
+	    for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
 		(sp->tag_data+i)->f = NULL;
 	    }
 	}
@@ -1025,6 +1025,9 @@ PARSED:
 	    /* New_Bnstはもともとpointer */
 	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
 		(sp->bnst_data+i)->f = NULL;
+	    }
+	    for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
+		(sp->tag_data+i)->f = NULL;
 	    }
 	}
 
@@ -1052,6 +1055,15 @@ PARSED:
 	/* entity 情報の feature の作成 */
 	if (OptDisplay  == OPT_ENTITY) {
 	    prepare_all_entity(sp);
+	}
+
+	/* 入力した正解情報をクリア */
+	if (OptReadFeature) {
+	    for (i = 0; i < sp->Tag_num; i++) {
+		if ((sp->tag_data + i)->c_cpm_ptr) {
+		    free((sp->tag_data + i)->c_cpm_ptr);
+		}
+	    }
 	}
 
 	/************/

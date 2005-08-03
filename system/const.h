@@ -653,6 +653,8 @@ typedef struct tnode_t {
     int		settou_num, jiritu_num, fuzoku_num;
     MRPH_DATA 	*settou_ptr, *jiritu_ptr, *fuzoku_ptr;
     int 	e_cf_num;
+    /* 正解の関係データ */
+    CPM_ptr	c_cpm_ptr;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -882,6 +884,7 @@ typedef struct ellipsis_list {
 } ELLIPSIS_MGR;
 
 typedef struct ellipsis_features {
+    int		class;
     float	similarity;
     float	event1;
     float	event2;
