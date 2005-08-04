@@ -651,8 +651,7 @@ extern int	EX_match_subject;
 
     if (OptEllipsis) {
 #ifdef USE_SVM
-	if ((OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) && 
-	    OptLearn != TRUE) {
+	if (OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) {
 	    init_svm_for_anaphora();
 	}
 #endif
