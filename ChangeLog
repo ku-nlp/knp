@@ -1,3 +1,9 @@
+2005-08-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
+	-debug時におけるタグ単位木描画のbugを修正
+	-debug時の木表示オプションの整理
+
 2005-08-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
