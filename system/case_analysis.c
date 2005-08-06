@@ -947,7 +947,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     bnst_to_tag_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
-	print_kakari(sp);
+	print_kakari(sp, OPT_TREE);
 
     /* 格解析作業領域の初期化 */
 	
