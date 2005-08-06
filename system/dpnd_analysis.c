@@ -551,7 +551,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     if (OptDisplay == OPT_DEBUG) {
 	dpnd_info_to_bnst(sp, &dpnd);
 	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
-	    dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+	    dpnd_info_to_tag(sp, &dpnd); 
 	}
 	make_dpnd_tree(sp);
 	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
