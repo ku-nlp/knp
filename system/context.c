@@ -1512,7 +1512,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 }
 
 /*==================================================================*/
- E_SVM_FEATURES *EllipsisFeatures2EllipsisSvmFeatures(E_FEATURES *ef)
+ E_SVM_FEATURES *EllipsisFeatures2EllipsisSvmFeatures(E_FEATURES *ef, int learn_flag)
 /*==================================================================*/
 {
     E_SVM_FEATURES *f;
@@ -1526,7 +1526,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->event2 = ef->event2;
 #endif
 #ifndef DISC_DONT_USE_FREQ
-    if (OptLearn == TRUE) {
+    if (learn_flag == TRUE) {
 	f->frequency = ef->frequency;
     }
     else {
@@ -1540,7 +1540,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     }
 #endif
 
-    if (OptLearn == TRUE) {
+    if (learn_flag == TRUE) {
 	f->refered_num_surface = ef->refered_num_surface;
 	f->refered_num_ellipsis = ef->refered_num_ellipsis;
     }
@@ -2274,10 +2274,10 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 
 		max = -100000;
 		for (i = 0; i < cand_num; i++) {
-		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef);
-		    cp = EllipsisSvmFeatures2String(ecf);
-
 		    if (OptLearn == TRUE) {
+			ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, TRUE);
+			cp = EllipsisSvmFeatures2String(ecf);
+
 			/* 学習FEATURE */
 			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
 							  (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
@@ -2285,7 +2285,12 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 							  (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
 							  (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
 							  (ante_cands + i)->ef->c_location);
+
+			free(ecf);
+			free(cp);
 		    }
+		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, FALSE);
+		    cp = EllipsisSvmFeatures2String(ecf);
 
 		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
 
@@ -2390,16 +2395,22 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	free(ef);
 	return;
     }
 
-    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
-    ecp = EllipsisSvmFeatures2String(esf);
+    if (OptLearn == TRUE) {
+	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
+	ecp = EllipsisSvmFeatures2String(esf);
 
-    /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
-				      ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
-				      "?", -1, -1);
+	/* 学習FEATURE */
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+					  ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+					  "?", -1, -1);
+    }
+
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
+    ecp = EllipsisSvmFeatures2String(esf);
 
     score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ノ"), 
 				 cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
@@ -2435,16 +2446,25 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
 	}
+	free(ef);
 	return;
     }
 
-    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
-    ecp = EllipsisSvmFeatures2String(esf);
+    if (OptLearn == TRUE) {
+	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
+	ecp = EllipsisSvmFeatures2String(esf);
 
-    /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
-				      ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
-				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
+	/* 学習FEATURE */
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
+					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
+
+	free(esf);
+	free(ecp);
+    }
+
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
+    ecp = EllipsisSvmFeatures2String(esf);
 
     /* すでに他の格の指示対象になっているときはだめ */
     if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
@@ -2526,18 +2546,23 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 
 	if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	    free(ef);
 	    return;
 	}
 
-	esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
-	ecp = EllipsisSvmFeatures2String(esf);
-	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
-					  ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
-					  "?", -1, -1);
+	if (OptLearn == TRUE) {
+	    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
+	    ecp = EllipsisSvmFeatures2String(esf);
+
+	    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+					      ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
+					      "?", -1, -1);
+
+	    free(esf);
+	    free(ecp);
+	}
 
 	free(ef);
-	free(esf);
-	free(ecp);
     }
 
     return 0;
@@ -2563,16 +2588,25 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
 	}
+	free(ef);
 	return;
     }
 
-    esf = EllipsisFeatures2EllipsisSvmFeatures(ef);
-    ecp = EllipsisSvmFeatures2String(esf);
+    if (OptLearn == TRUE) {
+	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
+	ecp = EllipsisSvmFeatures2String(esf);
 
-    /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
-				      ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
-				      s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
+	/* 学習FEATURE */
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
+					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
+
+	free(esf);
+	free(ecp);
+    }
+
+    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
+    ecp = EllipsisSvmFeatures2String(esf);
 
     /* すでに他の格の指示対象になっているときはだめ */
     if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
