@@ -2173,7 +2173,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     /* 解析時には、特殊タグ以外のスコアをチェックして、
        閾値以下なら候補にしない */
     if (OptLearn == FALSE && 
-	tag == NULL && !ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
+	!ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
 	return;
     }
 
@@ -2217,47 +2217,95 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     int i, j, max_num = 0;
     char *cp, feature_buffer[DATA_LEN];
     float score, max = 0;
+    int closest_i, closest_s, closest_tnum;
 
     if (cand_num == 0) {
 	return 0;
     }
     else if (cand_num > 1) {
 	if (OptDiscFlag & OPT_DISC_RANKING) {
-	    E_SVM_FEATURES *ecf;
+	    /* ベースライン */
+	    /* 一番近いものをとる */
+	    if (OptAnaphoraBaseline) {
+		closest_i = -1;
+		closest_s = -1;
+		closest_tnum = -1;
 
-	    max = -100000;
-	    for (i = 0; i < cand_num; i++) {
-		ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef);
-		cp = EllipsisSvmFeatures2String(ecf);
+		for (i = 0; i < cand_num; i++) {
 
-		if (OptLearn == TRUE) {
-		    /* 学習FEATURE */
-		    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
-						      (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-						      (ante_cands + i)->ef->p_pp, 
-						      (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
-						      (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
-						      (ante_cands + i)->ef->c_location);
+		    score = 0;
+
+		    /* 省略候補 */
+		    /* 候補を出力するため (本当はいらない) */
+		    sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", 
+			    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+			    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+			    loc_code_to_str((ante_cands + i)->ef->c_location), 
+			    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+			    (ante_cands + i)->ef->similarity, score);
+		    assign_cfeature(&(em_ptr->f), feature_buffer);
+		    
+		    /* 例外タグ以外 */
+		    if ((ante_cands + i)->s) {
+			if ((ante_cands + i)->s->Sen_num > closest_s) {
+			    closest_s = (ante_cands + i)->s->Sen_num;
+			    closest_tnum = (ante_cands + i)->tp->num;
+			    closest_i = i;
+			}
+			/* 同じ文 */
+			else if ((ante_cands + i)->s->Sen_num == closest_s) {
+			    if ((ante_cands + i)->tp->num >= closest_tnum) {
+				closest_s = (ante_cands + i)->s->Sen_num;
+				closest_tnum = (ante_cands + i)->tp->num;
+				closest_i = i;
+			    }
+			}
+		    }
+		    /* 例外タグ */
+		    else {
+			closest_i = i;
+			break;
+		    }
 		}
+		max_num = closest_i;
+	    }
+	    else {
+		E_SVM_FEATURES *ecf;
 
-		score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+		max = -100000;
+		for (i = 0; i < cand_num; i++) {
+		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef);
+		    cp = EllipsisSvmFeatures2String(ecf);
 
-		if (max < score) {
-		    max = score;
-		    max_num = i;
+		    if (OptLearn == TRUE) {
+			/* 学習FEATURE */
+			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
+							  (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+							  (ante_cands + i)->ef->p_pp, 
+							  (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
+							  (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+							  (ante_cands + i)->ef->c_location);
+		    }
+
+		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+
+		    if (max < score) {
+			max = score;
+			max_num = i;
+		    }
+
+		    /* 省略候補 */
+		    sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", 
+			    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+			    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+			    loc_code_to_str((ante_cands + i)->ef->c_location), 
+			    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+			    (ante_cands + i)->ef->similarity, score);
+		    assign_cfeature(&(em_ptr->f), feature_buffer);
+
+		    free(ecf);
+		    free(cp);
 		}
-
-		/* 省略候補 */
-		sprintf(feature_buffer, "C用;%s;%s;%s;%d;%d;%.3f|%.3f", 
-			(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-			pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
-			loc_code_to_str((ante_cands + i)->ef->c_location), 
-			(ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
-			(ante_cands + i)->ef->similarity, score);
-		assign_cfeature(&(em_ptr->f), feature_buffer);
-
-		free(ecf);
-		free(cp);
 	    }
 	}
 	else {

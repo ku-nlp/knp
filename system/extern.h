@@ -59,6 +59,7 @@ extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptAddSvmFeatureReferedNum;
 extern int		OptCopula;
 extern int		OptNE;
+extern int		OptAnaphoraBaseline;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];

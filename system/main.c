@@ -55,6 +55,7 @@ int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
 int		OptNE;
+int		OptAnaphoraBaseline;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -144,6 +145,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
     OptNE = 0;
+    OptAnaphoraBaseline = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -305,6 +307,12 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun-dt")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscNounMethod = OPT_DT;
+	}
+	else if (str_eq(argv[0], "-anaphora-baseline")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_RANKING;
+	    OptAnaphoraBaseline = 1;
 	}
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;
