@@ -2395,7 +2395,6 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
-	free(ef);
 	return;
     }
 
@@ -2446,7 +2445,6 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
 	}
-	free(ef);
 	return;
     }
 
@@ -2546,7 +2544,6 @@ int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 
 	if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
-	    free(ef);
 	    return;
 	}
 
@@ -2588,7 +2585,6 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
 	}
-	free(ef);
 	return;
     }
 
