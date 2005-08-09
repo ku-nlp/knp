@@ -647,6 +647,7 @@ extern int	EX_match_subject;
     }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
 #ifdef USE_SVM
+    if (!DBforNE) OptNE = 0;
     if (OptNE) {
 	init_db_for_NE(); /* NE用 */
 	init_ne_cache();
