@@ -446,6 +446,11 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    if (OptEllipsis) {
 			ClearSentences(sp);
 		    }
+#ifdef USE_SVM
+		    if (OptNE) {
+			clear_ne_cache();
+		    }
+#endif
 		}
 		preArticleID = ArticleID;
 	    }

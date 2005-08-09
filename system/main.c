@@ -649,6 +649,7 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
     if (OptNE) {
 	init_db_for_NE(); /* NEÍÑ */
+	init_ne_cache();
     }
 #endif
     init_juman();	/* JUMAN´Ø·¸ */
