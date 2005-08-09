@@ -1,3 +1,8 @@
+2005-08-09  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/proper.c, system/read_data.c:
+	固有表現の解析の素性として以前の文の解析結果を追加
+
 2005-08-07  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/extern.h, system/main.c:
