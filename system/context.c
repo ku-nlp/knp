@@ -2170,8 +2170,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 	       CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* 解析時には、特殊タグ以外のスコアをチェックして、
-       閾値以下なら候補にしない */
+    /* 解析時には閾値以下なら候補にしない */
     if (OptLearn == FALSE && 
 	!ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
 	return;
