@@ -133,16 +133,31 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       char *get_pos(MRPH_DATA mrph_data, int i)
+	       char *get_pos(MRPH_DATA mrph_data, int num)
 /*==================================================================*/
 {
-    char *ret;
-    ret = (char *)malloc_data(12, "get_pos");
+    int i, j;
+    char *ret, pos[32];
+    ret = (char *)malloc_data(64, "get_pos");
+    memset(ret, 0, sizeof(char)*64);
 
-    if (mrph_data.Bunrui)
-	sprintf(ret, "%d%d%d10:1 ", mrph_data.Hinshi, mrph_data.Bunrui, i);
-    else
-	sprintf(ret, "%d0%d10:1 ", mrph_data.Hinshi, i);
+    if (!check_feature(mrph_data.f, "… €£")) {
+	if (mrph_data.Bunrui)
+	    sprintf(ret, "%d%d%d10:1 ", mrph_data.Hinshi, mrph_data.Bunrui, num);
+	else
+	    sprintf(ret, "%d0%d10:1 ", mrph_data.Hinshi, num);
+	return ret;
+    }
+	
+    /* … ªÏ€£ÀÊ¿≠§Œ§¢§ÎæÏπÁ */
+    for (i = 0; i < CLASSIFY_NO + 1; i++) {
+	for (j = 0; j < CLASSIFY_NO + 1; j++) {
+	    if (!Class[i][j].id) break;
+	    sprintf(pos, "… €£-%s", Class[i][j].id);   
+	    if (check_feature(mrph_data.f, pos))
+		sprintf(ret, "%s%d%d%d10:1 ", ret, i, j, num);
+	}
+    }
     return ret;
 }
 
