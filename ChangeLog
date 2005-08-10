@@ -1,3 +1,8 @@
+2005-08-10  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/extern.h, system/main.c:
+	用言の省略解析のベースラインを出力するオプション(-anaphora-baseline)を追加
+
 2005-08-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/read_data.c:
