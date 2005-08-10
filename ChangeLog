@@ -1,3 +1,9 @@
+2005-08-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/read_data.c:
+	入力された正解の関係情報の正当性のチェック
+	or-cf系のオプションの整理
+
 2005-08-09  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/proper.c, system/read_data.c:
