@@ -339,6 +339,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-print-frequency")) {
 	    PrintFrequency = 1;
 	}
+	else if (str_eq(argv[0], "-print-ex")) {
+	    PrintEx = 1;
+	}
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
