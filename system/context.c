@@ -16,6 +16,8 @@ int maxi, maxpos;
 char *maxtag, *maxfeatures;
 int **Bcheck;
 int **LC;
+int ExtraCheck;
+int ExtraLC;
 int PrintFeatures = 0;
 int PrintEx = 0;
 
@@ -604,20 +606,16 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 /*==================================================================*/
 {
     int i, num;
-    ELLIPSIS_COMPONENT *ccp;
 
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
-					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
-	if (ccp) {
-	    if (ccp->bnst < 0) {
-		/* ETAG_name[abs(ccp->bnst)] */
-		RegisterEntity(ExtraTags[1], FALSE); /* 不特定-人 */
-	    }
-	    else if (num != UNASSIGNED && 
-		  cpm_ptr->elem_b_num[num] <= -2) {
+	if (num != UNASSIGNED && 
+	    cpm_ptr->elem_b_num[num] <= -2) {
+	    if (cpm_ptr->elem_b_ptr[num]) {
 		RegisterEntity(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, FALSE);
+	    }
+	    else {
+		RegisterEntity(ExtraTags[1], FALSE); /* 不特定-人 */
 	    }
 	}
     }
@@ -1157,6 +1155,7 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
 	num = cmm_ptr->result_lists_p[l].flag[i];
 	/* 省略の指示対象 */
 	if (num >= 0 && 
+	    cpm_ptr->elem_b_ptr[num] && 
 	    str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word)) {
 	    return 1;
 	}
@@ -1215,6 +1214,7 @@ int GetCandCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, TAG_DATA *bp)
 	    num = cmm_ptr->result_lists_p[0].flag[i];
 	    /* これが調べる格要素 */
 	    if (num != UNASSIGNED && 
+		cpm_ptr->elem_b_ptr[num] && /* 不特定ではない */
 		cpm_ptr->elem_b_ptr[num]->num == bp->num) {
 		return cmm_ptr->cf_ptr->pp[i][0];
 	    }
@@ -2035,7 +2035,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
 /*==================================================================*/
 E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr, 
-					 CASE_FRAME *cf_ptr, int n)
+					 CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
     E_FEATURES *f;
@@ -2055,9 +2055,11 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     if (!strcmp(ExtraTags[tag], "不特定-人") && 
 	cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	f->similarity = (float)EX_match_subject / 11;
+	f->pos = MATCH_SUBJECT;
     }
     else {
 	f->similarity = -1;
+	f->pos = MATCH_NONE;
     }
 
     /* 被参照回数 */
@@ -2073,6 +2075,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     f->c_pp = -1;
     f->c_distance = 0;
     f->c_dist_bnst = 0;
+    f->c_location = loc;
     f->c_extra_tag = tag;
 
     /* 発話タイプ */
@@ -2386,9 +2389,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 }
 
 /*==================================================================*/
-void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
-							   CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
-							   int tag, CASE_FRAME *cf_ptr, int n)
+void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
+						    CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
+						    int tag, CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
     E_FEATURES *ef;
@@ -2396,7 +2399,7 @@ void EllipsisDetectForVerbSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, EL
     float score;
     char *ecp, feature_buffer[DATA_LEN];
 
-    ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+    ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
@@ -2529,23 +2532,23 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 }
 
 /*==================================================================*/
-int EllipsisDetectForVerbSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
-					      CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
-					      int tag, CASE_FRAME *cf_ptr, int n)
+int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, 
+				       CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, 
+				       int tag, CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
 
     if (cpm_ptr->cf.type == CF_PRED && 
 	(OptDiscPredMethod == OPT_SVM || OptDiscPredMethod == OPT_DT)) {
-	EllipsisDetectForVerbSubcontractExtraTagsWithLearning(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-							      tag, cf_ptr, n);
+	EllipsisDetectSubcontractExtraTagsWithLearning(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						       tag, cf_ptr, n, loc);
     }
     else {
 	E_FEATURES *ef;
 	E_SVM_FEATURES *esf;
 	char *ecp;
 
-	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n);
+	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
 	if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
@@ -2731,8 +2734,10 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     c_ptr->adjacent[d] = FALSE;
     if (!demonstrative) {
 	cpm_ptr->elem_b_num[d] = -2;	/* 省略を表す */
-	_make_data_cframe_sm(cpm_ptr, b_ptr);	/* 問題: 格納場所が c_ptr->element_num 固定 */
-	_make_data_cframe_ex(cpm_ptr, b_ptr);
+	if (b_ptr) {
+	    _make_data_cframe_sm(cpm_ptr, b_ptr);	/* 問題: 格納場所が c_ptr->element_num 固定 */
+	    _make_data_cframe_ex(cpm_ptr, b_ptr);
+	}
 	c_ptr->element_num++;
     }
     else {
@@ -3074,26 +3079,33 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-		if (num != UNASSIGNED && 
-		    CheckLocation(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
-				  cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
-		    CheckAppropriateCandidate(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
-					      cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
-					      cf_ptr, n, loc, flag)) {
-		    EllipsisDetectSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
-					      cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					      bp->cpm_ptr->elem_b_ptr[num], 
-					      cf_ptr, n, loc, s, bp);
-		    /* 省略を補ったものでなければ */
-		    if (bp->cpm_ptr->elem_b_num[num] > -2) {
-			Bcheck[cs - s][bp->cpm_ptr->elem_b_ptr[num]->num] = 1;
+		if (num != UNASSIGNED) {
+		    if ((OptDiscFlag & OPT_DISC_TWIN_CAND) && 
+			bp->cpm_ptr->elem_b_num[num] == -2 && 
+			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* 不特定 */
+			EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+							   1, cf_ptr, n, loc); /* "1"は不特定-人 */
 		    }
+		    else if (CheckLocation(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
+					   cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
+			     CheckAppropriateCandidate(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
+						       cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], bp->cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
+						       cf_ptr, n, loc, flag)) {
+			EllipsisDetectSubcontract(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
+						  cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+						  bp->cpm_ptr->elem_b_ptr[num], 
+						  cf_ptr, n, loc, s, bp);
+			/* 省略を補ったものでなければ */
+			if (bp->cpm_ptr->elem_b_num[num] > -2) {
+			    Bcheck[cs - s][bp->cpm_ptr->elem_b_ptr[num]->num] = 1;
+			}
 
-		    /* ノ格の子供をチェック */
-		    SearchCompoundChild(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
-					cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					bp->cpm_ptr->elem_b_ptr[num], 
-					cf_ptr, n, loc, bp->cpm_ptr->elem_b_num[num] <= -2 ? 1 : 0);
+			/* ノ格の子供をチェック */
+			SearchCompoundChild(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
+					    cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					    bp->cpm_ptr->elem_b_ptr[num], 
+					    cf_ptr, n, loc, bp->cpm_ptr->elem_b_num[num] <= -2 ? 1 : 0);
+		    }
 		}
 	    }
 	}
@@ -3136,20 +3148,27 @@ int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, 
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
-		    if (bp->cpm_ptr->elem_b_num[num] > -2) {
-			sent = dist;
+		    if (bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* 不特定 */
+			if (!ExtraLC) {
+			    ExtraLC = lc_num;
+			}
 		    }
-		    /* 省略 */
 		    else {
-			sent = dist + (cs - bp->cpm_ptr->elem_s_ptr[num]);
-		    }
+			if (bp->cpm_ptr->elem_b_num[num] > -2) {
+			    sent = dist;
+			}
+			/* 省略 */
+			else {
+			    sent = dist + (cs - bp->cpm_ptr->elem_s_ptr[num]);
+			}
 
-		    if (!lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num]) {
-			lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num] = lc_num;
-		    }
+			if (!lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num]) {
+			    lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num] = lc_num;
+			}
 
-		    /* ノ格の子供をチェック */
-		    _SearchCompoundChild(bp->cpm_ptr->elem_b_ptr[num], lc[sent], lc_num);
+			/* ノ格の子供をチェック */
+			_SearchCompoundChild(bp->cpm_ptr->elem_b_ptr[num], lc[sent], lc_num);
+		    }
 		}
 	    }
 	}
@@ -3428,6 +3447,13 @@ int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF
 {
     int sent, i, dist;
     SENTENCE_DATA *ts;
+
+    /* 不特定 */
+    if ((OptDiscFlag & OPT_DISC_TWIN_CAND) && ExtraLC == loc && !ExtraCheck) {
+	EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					   1, cf_ptr, n, loc); /* "1"は不特定-人 */
+	ExtraCheck = 1;
+    }
 
     for (sent = 0; sent < cs->Sen_num - (cs - s); sent++) {
 	ts = s - sent;
@@ -3861,6 +3887,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     for (i = 0; i < sp->Sen_num; i++) {
 	memset(Bcheck[i], 0, sizeof(int) * TAG_MAX);
     }
+    ExtraCheck = 0;
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {
@@ -3924,20 +3951,6 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* 例外タグ */
-    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	/* for (i = 0; ExtraTags[i][0]; i++) */
-	i = 1; /* とりあえず 不特定-人 */
-	    EllipsisDetectForVerbSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-						      i, cf_ptr, n);
-	/*
-	if (ScoreCheck(cf_ptr, n)) {
-	    goto EvalAntecedent;
-	}
-	*/
-    }
-
-
     /* 位置カテゴリの順番で探す */
 
     /* (用言の)並列を吸収 */
@@ -3999,6 +4012,14 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	/* 例外タグ */
+	/* for (i = 0; ExtraTags[i][0]; i++) */
+	i = 1; /* とりあえず 不特定-人 */
+	if (!ExtraCheck) {
+	    EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+					       i, cf_ptr, n, LOC_OTHERS);
+	}
+
 	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
 	    if (ScoreCheckCore(cf_ptr, n, maxscore, maxpos)) {
 		clear_cands();
@@ -4014,6 +4035,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	if (MatchPP(cf_ptr->pp[n][0], "ガ") || 
 	    cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	    maxtag = ExtraTags[1]; /* 不特定-人 */
+	    maxpos = MATCH_SUBJECT;
 	}
 	else {
 	    return 0;
@@ -4028,6 +4050,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
 	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
 	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
+
+	    /* 指示対象を格フレームに保存 */
+	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
 	    return 0;
 	}
 	else if (str_eq(maxtag, "一人称")) {
@@ -4101,6 +4126,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     for (i = 0; i < sp->Sen_num; i++) {
 	memset(Bcheck[i], 0, sizeof(int) * TAG_MAX);
     }
+    ExtraCheck = 0;
 
     /* 共参照リンクを辿ってタグつけ */
     if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
@@ -4788,6 +4814,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	LC[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "mark_location_classes");
 	memset(LC[i], 0, sizeof(int) * TAG_MAX);
     }
+    ExtraLC = 0;
 
     LC[0][tp->num] = END_M; /* 自分は対象外 */
     _SearchCaseComponent(cs, tp, LC, END_M, 0); /* 自分の子供は対象外 */

@@ -172,8 +172,14 @@
 /*==================================================================*/
 {
     int i;
-    for (i = 0; i < ptr->mrph_num; i++)
-	fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
+
+    if (ptr) {
+	for (i = 0; i < ptr->mrph_num; i++)
+	    fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
+    }
+    else {
+	fputs("不特定:人", Outfp);
+    }
 }
 
 /*==================================================================*/
@@ -1035,7 +1041,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     else {
 	/* タグ単位のtree出力 */
 	make_dpnd_tree(sp);
-	bnst_to_tag_tree(sp); /* タグ単位 */
+	bnst_to_tag_tree(sp); /* タグ単位の木へ */
 	print_kakari(sp, OptExpress); /* OPT_TREE */
     }
 

@@ -1224,6 +1224,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	if (num != NIL_ASSIGNED && /* 割り当てがある */
+	    cpm_ptr->elem_b_ptr[i] && 
 	    cpm_ptr->elem_b_num[i] < 0) { /* 省略, 〜は, 連体修飾 */
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
@@ -1405,17 +1406,9 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {
-	    /* 例外タグ */
-	    if (ccp && ccp->bnst < 0) {
-		sprintf(buffer, "%s/E/%s/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[abs(ccp->bnst)]);
-	    }
 	    /* 割り当てなし */
-	    else {
-		sprintf(buffer, "%s/U/-/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
-	    }
+	    sprintf(buffer, "%s/U/-/-/-/-", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
 	    strcat(feature_buffer, buffer);
 	}
 	/* 割り当てあり */

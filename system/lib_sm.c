@@ -786,6 +786,7 @@ SMLIST smlist[TBLSIZE];
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && 
+	    cpm_ptr->elem_b_ptr[i] && /* 不特定ではない */
 	    num >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
 	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
@@ -873,7 +874,7 @@ SMLIST smlist[TBLSIZE];
     if (Thesaurus != USE_NTT) return;
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (!cpm_ptr->elem_b_ptr[i]->SM_code[0]) {
+	if (!cpm_ptr->elem_b_ptr[i] || !cpm_ptr->elem_b_ptr[i]->SM_code[0]) {
 	    continue;
 	}
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
@@ -928,6 +929,7 @@ SMLIST smlist[TBLSIZE];
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && 
+	    cpm_ptr->elem_b_ptr[i] && /* 不特定ではない */
 	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
 	    /* o すでに主体付与されていない
