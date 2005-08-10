@@ -412,19 +412,12 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
+	else if (str_eq(argv[0], "-disc-or-cf")) {
+	    OptDiscFlag |= OPT_DISC_OR_CF;
+	}
 	else if (str_eq(argv[0], "-ellipsis-or-cf")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
-	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf-twin")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf-ranking")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    OptDiscFlag |= OPT_DISC_RANKING;
 	}
 	/* 以下コスト調整用 */
 	else if (str_eq(argv[0], "-noun-th")) {
@@ -764,6 +757,11 @@ extern int	EX_match_subject;
     }
     else {
 	make_tag_units_pm(sp);
+    }
+
+    /* 入力した正解情報をチェック */
+    if (OptReadFeature) {
+	check_annotation(sp);
     }
 
     /* 文節への意味情報付与 */

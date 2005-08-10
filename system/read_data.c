@@ -338,10 +338,17 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     }
     else {
 	if (sent_n > 0) {
+	    /* 異常なタグ単位が指定されているかチェック */
+	    if (sp->Sen_num - sent_n < 1 || 
+		tag_n >= (sentence_data + sp->Sen_num - 1 - sent_n)->Tag_num) {
+		fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
+		return FALSE;
+	    }
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
 	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sentence_data + sp->Sen_num - 1 - sent_n;
 	}
-	/* 現在の対象文 (この文はまだsentence_dataに入っていないため、上のようには扱えない) */
+	/* 現在の対象文 (この文はまだsentence_dataに入っていないため、上のようには扱えない)
+   	   異常なタグ単位が指定されているかのチェックはcheck_annotation()で行う */
 	else {
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = sp->tag_data + tag_n;
 	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sp;
@@ -394,6 +401,56 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     }
 
     return TRUE;
+}
+
+/*==================================================================*/
+	       int check_annotation(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k, check[CF_ELEMENT_MAX];
+    TAG_DATA *tp;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	tp = sp->tag_data + i;
+	if (tp->c_cpm_ptr) {
+	    for (j = 0; j < tp->c_cpm_ptr->cf.element_num; j++) {
+		/* 対象文の場合に、異常なタグ単位が指定されているかチェック */
+		if (sp == tp->c_cpm_ptr->elem_s_ptr[j] && 
+		    (tp->c_cpm_ptr->elem_b_ptr[j] - sp->tag_data) >= sp->Tag_num) {
+		    fprintf(stderr, ";; discarded inappropriate annotation: %s/?/%s/%d/0\n", 
+			    pp_code_to_kstr(tp->c_cpm_ptr->cf.pp[j][0]), 
+			    tp->c_cpm_ptr->elem_b_ptr[j]->head_ptr->Goi, 
+			    tp->c_cpm_ptr->elem_b_ptr[j]->num);
+		    check[j] = FALSE;
+		}
+		else {
+		    check[j] = TRUE;
+		}
+	    }
+
+	    /* ずらす */
+	    k = 0;
+	    for (j = 0; j < tp->c_cpm_ptr->cf.element_num; j++) {
+		if (check[j] == TRUE) {
+		    if (k != j) {
+			tp->c_cpm_ptr->cf.pp[k][0] = tp->c_cpm_ptr->cf.pp[j][0];
+			tp->c_cpm_ptr->elem_b_ptr[k] = tp->c_cpm_ptr->elem_b_ptr[j];
+			tp->c_cpm_ptr->elem_s_ptr[k] = tp->c_cpm_ptr->elem_s_ptr[j];
+			tp->c_cpm_ptr->elem_b_num[k] = tp->c_cpm_ptr->elem_b_num[j];
+		    }
+		    k++;
+		}
+	    }
+
+	    if (k) {
+		tp->c_cpm_ptr->cf.element_num = k;
+	    }
+	    else { /* 1つもなくなったらfree */
+		free(tp->c_cpm_ptr);
+		tp->c_cpm_ptr = NULL;
+	    }
+	}
+    }
 }
 
 /*==================================================================*/
