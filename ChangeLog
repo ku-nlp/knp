@@ -1,3 +1,8 @@
+2005-08-10  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/proper.c:
+	固有表現解析の際、品詞の曖昧性も考慮に入れるように変更
+
 2005-08-10  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/extern.h, system/main.c:
