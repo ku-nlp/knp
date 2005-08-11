@@ -88,7 +88,8 @@ int check_cc_relation(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, char *pp_str)
     }
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (cpm_ptr->elem_b_ptr[i]->num == b_ptr->num && 
+	if (cpm_ptr->elem_b_ptr[i] && 
+	    cpm_ptr->elem_b_ptr[i]->num == b_ptr->num && 
 	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[cpm_ptr->cmm[0].result_lists_d[0].flag[i]][0], 
 		    pp_str)) {
 	    return 1;

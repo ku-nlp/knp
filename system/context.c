@@ -3073,7 +3073,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
-		    if (bp->cpm_ptr->elem_b_num[num] == -2 && 
+		    if (bp->cpm_ptr->elem_b_num[num] <= -2 && 
 			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* 不特定 */
 			if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 			    EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
@@ -4042,8 +4042,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
+				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
 
 	    /* 指示対象を格フレームに保存 */
 	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
@@ -4053,16 +4053,16 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_I_WE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
+				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
 	}
 	else if (str_eq(maxtag, "不特定-状況")) {
 	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
+				   NULL, ELLIPSIS_TAG_UNSPECIFIED_CASE, 0, 0);
 	    return 1;
 	}
     }
@@ -4196,24 +4196,27 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_PEOPLE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
+
+	    /* 指示対象を格フレームに保存 */
+	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
 	    return 0;
 	}
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_I_WE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
 	}
 	else if (str_eq(maxtag, "不特定-状況")) {
 	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer);
-	    em_ptr->cc[cf_ptr->pp[n][0]].s = NULL;
-	    em_ptr->cc[cf_ptr->pp[n][0]].bnst = ELLIPSIS_TAG_UNSPECIFIED_CASE;
+	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
+				   NULL, ELLIPSIS_TAG_UNSPECIFIED_CASE, 0, 0);
 	    return 1;
 	}
     }
@@ -4937,7 +4940,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
     em1->pure_score += em2->pure_score;
 
     for (i = 0; i < CASE_TYPE_NUM; i++) {
-	if (em2->cc[i].s) {
+	if (em2->cc[i].s || em2->cc[i].bnst) {
 	    em1->cc[i] = em2->cc[i];
 	    em2->cc[i].s = NULL;
 	    em2->cc[i].pp_str = NULL;
@@ -4950,6 +4953,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
     em1->ecmm[0].cpm.score += em2->ecmm[0].cpm.score;
 
+    /* 名詞解析の入力格要素 */
     for (i = 0; i < em2->ecmm[0].element_num; i++) {
 	j = em1->ecmm[0].element_num + i;
 	if (j >= CF_ELEMENT_MAX) {
@@ -4973,16 +4977,23 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	em1->ecmm[0].cmm.result_lists_d[0].pos[j]
 	    = em2->ecmm[0].cmm.result_lists_p[0].pos[i];
     }
+
+    /* 名詞格フレーム */
     if (em2->ecmm[0].cmm.cf_ptr) {
 	for (i = 0; i < em2->ecmm[0].cmm.cf_ptr->element_num; i++) {
 	    j = em1->ecmm[0].cmm.cf_ptr->element_num + i;
-	    em1->ecmm[0].cmm.result_lists_p[0].flag[j]
-		= em2->ecmm[0].cmm.result_lists_p[0].flag[i]
-		+ em1->ecmm[0].element_num;
-	    em1->ecmm[0].cmm.result_lists_p[0].score[j]
-		= em2->ecmm[0].cmm.result_lists_p[0].score[i];
-	    em1->ecmm[0].cmm.result_lists_p[0].pos[j]
-		= em2->ecmm[0].cmm.result_lists_p[0].pos[i];
+	    if (em2->ecmm[0].cmm.result_lists_p[0].flag[i] == UNASSIGNED) {
+		em1->ecmm[0].cmm.result_lists_p[0].flag[j] = UNASSIGNED;
+	    }
+	    else {
+		em1->ecmm[0].cmm.result_lists_p[0].flag[j]
+		    = em2->ecmm[0].cmm.result_lists_p[0].flag[i]
+		    + em1->ecmm[0].element_num;
+		em1->ecmm[0].cmm.result_lists_p[0].score[j]
+		    = em2->ecmm[0].cmm.result_lists_p[0].score[i];
+		em1->ecmm[0].cmm.result_lists_p[0].pos[j]
+		    = em2->ecmm[0].cmm.result_lists_p[0].pos[i];
+	    }
 	}
 	merge_cf_ptr(em1->ecmm[0].cmm.cf_ptr, em2->ecmm[0].cmm.cf_ptr);
     }
