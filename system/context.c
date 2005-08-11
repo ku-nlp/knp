@@ -2401,7 +2401,7 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 
     ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
-    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+    if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	return;
     }
@@ -2550,7 +2550,7 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 
 	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
-	if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	    return;
 	}
@@ -3073,11 +3073,12 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
-		    if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND) && 
-			bp->cpm_ptr->elem_b_num[num] == -2 && 
+		    if (bp->cpm_ptr->elem_b_num[num] == -2 && 
 			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* 不特定 */
-			EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-							   1, cf_ptr, n, loc); /* "1"は不特定-人 */
+			if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
+			    EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
+							       1, cf_ptr, n, loc); /* "1"は不特定-人 */
+			}
 		    }
 		    else if (CheckLocation(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
 					   cpm_ptr, bp->cpm_ptr->elem_b_ptr[num], loc) && 
