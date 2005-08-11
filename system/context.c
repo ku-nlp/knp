@@ -2609,14 +2609,9 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	free(ecp);
     }
 
-    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
-    ecp = EllipsisSvmFeatures2String(esf);
-
     /* すでに他の格の指示対象になっているときはだめ */
     if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
-	free(esf);
-	free(ecp);
 	return;
     }
 
@@ -2655,8 +2650,6 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
     }
 
     free(ef);
-    free(esf);
-    free(ecp);
 }
 
 /*==================================================================*/
@@ -3080,7 +3073,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
-		    if ((OptDiscFlag & OPT_DISC_TWIN_CAND) && 
+		    if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND) && 
 			bp->cpm_ptr->elem_b_num[num] == -2 && 
 			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* 不特定 */
 			EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
