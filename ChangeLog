@@ -1,3 +1,8 @@
+2005-08-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	省略解析で不特定:人が他の要素になっているかどうかをチェック
+
 2005-08-10  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/proper.c:
