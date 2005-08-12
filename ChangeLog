@@ -1,3 +1,8 @@
+2005-08-12  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/const.h, system/extern.h
+	SVM参照回数をknprcに記述できるようにした
+	
 2005-08-12  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
