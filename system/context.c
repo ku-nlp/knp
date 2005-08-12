@@ -4034,18 +4034,19 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
 	clear_cands();
     }
-
-    /* 閾値を越えるものが見つからなかった */
-    if (!ScoreCheck(cf_ptr, n)) {
-	/* 閾値を越えるものがなく、ガ格または格フレームに<主体>があるとき */
-	if (MatchPP(cf_ptr->pp[n][0], "ガ") || 
-	    cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	    maxtag = ExtraTags[1]; /* 不特定-人 */
-	    maxpos = MATCH_SUBJECT;
-	    maxscore = (float)EX_match_subject / 11;
-	}
-	else {
-	    return 0;
+    else {
+	/* 閾値を越えるものが見つからなかった */
+	if (!ScoreCheck(cf_ptr, n)) {
+	    /* 閾値を越えるものがなく、ガ格または格フレームに<主体>があるとき */
+	    if (MatchPP(cf_ptr->pp[n][0], "ガ") || 
+		cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+		maxtag = ExtraTags[1]; /* 不特定-人 */
+		maxpos = MATCH_SUBJECT;
+		maxscore = (float)EX_match_subject / 11;
+	    }
+	    else {
+		return 0;
+	    }
 	}
     }
 
