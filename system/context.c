@@ -2205,6 +2205,34 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 }
 
 /*==================================================================*/
+     void print_svm_feature(E_CANDIDATE *ante_cands, int i, ELLIPSIS_MGR *em_ptr,
+			   CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    char *cp;
+    E_SVM_FEATURES *ecf;
+
+    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, TRUE);
+    cp = EllipsisSvmFeatures2String(ecf);
+
+    if (PrintEx || OptDisplay == OPT_DEBUG) {
+	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、参照回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格 */
+	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 参照回数=%d, 省略参照回数=%d, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d、用言補文=%d、用言連格=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag);
+    }
+
+    /* 学習FEATURE */
+    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
+				      (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+				      (ante_cands + i)->ef->p_pp, 
+				      (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
+				      (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
+				      (ante_cands + i)->ef->c_location);
+
+    free(ecf);
+    free(cp);
+}
+
+/*==================================================================*/
 			  void clear_cands()
 /*==================================================================*/
 {
@@ -2240,6 +2268,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 
 		for (i = 0; i < cand_num; i++) {
 
+		    if (OptLearn == TRUE) {
+			print_svm_feature(ante_cands, i, em_ptr, cpm_ptr);
+		    }
 		    score = 0;
 
 		    /* 省略候補 */
@@ -2282,25 +2313,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		max = -100000;
 		for (i = 0; i < cand_num; i++) {
 		    if (OptLearn == TRUE) {
-			ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, TRUE);
-			cp = EllipsisSvmFeatures2String(ecf);
-
-			if (PrintEx || OptDisplay == OPT_DEBUG) {
-			    /* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、参照回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格 */
-			    fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 参照回数=%d, 省略参照回数=%d, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d、用言補文=%d、用言連格=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag);
-			}
-
-			/* 学習FEATURE */
-			EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
-							  (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-							  (ante_cands + i)->ef->p_pp, 
-							  (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
-							  (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
-							  (ante_cands + i)->ef->c_location);
-
-			free(ecf);
-			free(cp);
+			print_svm_feature(ante_cands, i, em_ptr, cpm_ptr);
 		    }
+
 		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, FALSE);
 		    cp = EllipsisSvmFeatures2String(ecf);
 
