@@ -3,6 +3,10 @@
 	* system/context.c:
 	省略解析で不特定:人が他の要素になっているかどうかをチェック
 
+	* system/context.c:
+	不特定:人の得点を加算
+	得点表示を修正
+
 2005-08-10  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/proper.c:
