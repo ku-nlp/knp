@@ -1147,17 +1147,21 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
     int i, num;
 
     /* 用言が候補と同じ表記を
-       他の格の省略の指示対象としてもっているかどうか
-       cpm_ptr->elem_b_num[num] <= -2 
-       => 通常の格要素もチェック */
+       他の格要素としてもっているかどうか */
 
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	num = cmm_ptr->result_lists_p[l].flag[i];
-	/* 省略の指示対象 */
-	if (num >= 0 && 
-	    cpm_ptr->elem_b_ptr[num] && 
-	    str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word)) {
-	    return 1;
+	if (num >= 0) {
+	    if (cpm_ptr->elem_b_ptr[num]) {
+		if (word && str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word)) {
+		    return 1;
+		}
+	    }
+	    else {
+		if (word == NULL) {
+		    return 1;
+		}
+	    }
 	}
     }
     return 0;
@@ -2402,7 +2406,11 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
     ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
     if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
-	push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	/* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	if (OptLearn == TRUE || 
+	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL)) {
+	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	}
 	return;
     }
 
@@ -2551,7 +2559,11 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
 	if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
-	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	    /* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	    if (OptLearn == TRUE || 
+		!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL)) {
+		push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
+	    }
 	    return;
 	}
 
