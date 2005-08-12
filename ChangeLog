@@ -7,6 +7,9 @@
 	不特定:人の得点を加算
 	得点表示を修正
 
+	* system/context.c:
+	ranking時にガ格に不特定:人をdefaultでいれるのを止めた
+
 2005-08-10  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/proper.c:
