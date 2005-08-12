@@ -426,6 +426,9 @@ typedef struct {
 #define		DEF_SVM_FREQ_SD		"SVM頻度標準偏差"
 #define		DEF_SVM_FREQ_SD_NO	"SVM頻度標準偏差ノ格"
 
+#define		DEF_SVM_REFERRED_NUM_SURFACE_SD		"SVM表層参照回数標準偏差"
+#define		DEF_SVM_REFERRED_NUM_ELLIPSIS_SD	"SVM省略参照回数標準偏差"
+
 #define		DEF_DISC_LOC_ORDER	"KNP省略解析探索順序"
 #define		DEF_DISC_SEN_NUM	"KNP省略解析探索文数"
 

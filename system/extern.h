@@ -109,6 +109,8 @@ extern float	AntecedentDecideThresholdForNoun;
 extern float	CFSimThreshold;
 extern float	SVM_FREQ_SD;
 extern float	SVM_FREQ_SD_NO;
+extern float	SVM_R_NUM_S_SD;
+extern float	SVM_R_NUM_E_SD;
 
 /* 関数プロトタイプ */
 

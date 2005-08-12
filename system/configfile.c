@@ -550,6 +550,38 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
+	else if (!strcmp(DEF_SVM_REFERRED_NUM_SURFACE_SD, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		SVM_R_NUM_S_SD = atof(_Atom(cell2));
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "SVM REFERRED_NUM_SURFACE SD ... %f\n", SVM_R_NUM_S_SD);
+		}
+		if (SVM_R_NUM_S_SD <= 0) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
+	else if (!strcmp(DEF_SVM_REFERRED_NUM_ELLIPSIS_SD, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		SVM_R_NUM_E_SD = atof(_Atom(cell2));
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "SVM REFERRED_NUM_ELLIPSIS SD ... %f\n", SVM_R_NUM_E_SD);
+		}
+		if (SVM_R_NUM_E_SD <= 0) {
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(cell2));
+		    exit(0);
+		}
+	    }
+	}
 	else if (!strcmp(DEF_SVM_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 
