@@ -5127,10 +5127,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    else {
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
-		    /* Learn時は一回回れば十分 */
-		    if (OptLearn == TRUE) {
-			break;
-		    }
 		}
 		if (cpm_ptr->cf.type_flag && (OptEllipsis & OPT_REL_NOUN)) {
 		    cpm_ptr->cf.type = CF_NOUN;
