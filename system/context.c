@@ -4042,6 +4042,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	    maxtag = ExtraTags[1]; /* 不特定-人 */
 	    maxpos = MATCH_SUBJECT;
+	    maxscore = (float)EX_match_subject / 11;
 	}
 	else {
 	    return 0;
@@ -4059,7 +4060,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	    /* 指示対象を格フレームに保存 */
 	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
-	    return 0;
+	    return 1;
 	}
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
@@ -4213,7 +4214,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	    /* 指示対象を格フレームに保存 */
 	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
-	    return 0;
+	    return 1;
 	}
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
@@ -4749,7 +4750,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		maxem->ecmm[0].cmm.result_num = 1;
 		maxem->ecmm[0].cmm.result_lists_p[0] = cmm.result_lists_p[i];
 		maxem->ecmm[0].cmm.result_lists_d[0] = cmm.result_lists_d[i];
-		maxem->ecmm[0].cmm.pure_score[0] = cmm.pure_score[i];
+		maxem->ecmm[0].cmm.pure_score[0] = workem.pure_score;
 
 		if (maxem->result_num < CMM_MAX - 1) {
 		    maxem->result_num++;
@@ -4764,7 +4765,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		maxem->ecmm[maxem->result_num].cmm.result_num = 1;
 		maxem->ecmm[maxem->result_num].cmm.result_lists_p[0] = cmm.result_lists_p[i];
 		maxem->ecmm[maxem->result_num].cmm.result_lists_d[0] = cmm.result_lists_d[i];
-		maxem->ecmm[maxem->result_num].cmm.pure_score[0] = cmm.pure_score[i];
+		maxem->ecmm[maxem->result_num].cmm.pure_score[0] = workem.pure_score;
 
 		for (k = maxem->result_num - 1; k >= 0; k--) {
 		    if (maxem->ecmm[k].cmm.score < maxem->ecmm[k + 1].cmm.score) {
