@@ -9,6 +9,8 @@
 ====================================================================*/
 #include "knp.h"
 
+#define PARA_INCOMP_TH	3.0
+
 int D_check_array[BNST_MAX];
 int D_found_array[BNST_MAX];
 
@@ -278,7 +280,10 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
        */
 
     if (invalid_flag == TRUE) {
-	
+
+	/* Í×¸¡Æ¤ */
+        /* if (sp->para_data[m_ptr->para_data_num[0]].pure_score < PARA_INCOMP_TH) { */
+
 	if (m_ptr->status != 's') {
 	    if ((revised_p_num = check_error_state(sp, m_ptr, error_check)) 
 		!= -1) {

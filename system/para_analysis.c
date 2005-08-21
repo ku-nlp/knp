@@ -16,6 +16,8 @@
 #define ENOUGH_MINUS	-100.0
 #define START_HERE	-1
 
+#define STRONG_PARA_TH	3.9
+
 int 	score_matrix[BNST_MAX][BNST_MAX];
 int 	prepos_matrix[BNST_MAX][BNST_MAX];
 int 	maxpos_array[BNST_MAX];
@@ -437,7 +439,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	fprintf(Outfp, ">.\n");
 	*/
     } else if (para_ptr->status == 'n' &&
-	       para_ptr->pure_score > 4.0) {
+	       para_ptr->pure_score >= STRONG_PARA_TH) {
 	para_ptr->status = 's';
     }
     
