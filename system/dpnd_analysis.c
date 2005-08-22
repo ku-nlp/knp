@@ -554,7 +554,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    dpnd_info_to_tag(sp, &dpnd); 
 	}
 	make_dpnd_tree(sp);
-	bnst_to_tag_tree(sp); /* タグ単位 */
+	if (!(OptExpress & OPT_NOTAG)) {
+	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	}
 	print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
     }
 
