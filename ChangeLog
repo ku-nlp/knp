@@ -1,8 +1,31 @@
+2005-08-17  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* system/para_analysis.c:
+	強並列の閾値をdeine
+
+	* system/para_dpnd.c:
+	部分並列の扱い，少し整理
+
+	* rule/bnst_basic.rule:
+	「少し」「ちょっと」を数量に
+
+	* rule/bnst_etc.rule:
+	「教えて（ね）」などを依頼に
+
+	* rule/mrph_basic.rule:
+	「御知らせ下さい」をつけるルールで「御」がぬけていた
+	「しないといけません」の扱い
+
 2005-08-13  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c
 	-anaphora-baselineの時にも-learnを指定することによりSVM学習FEATUREを出力できるようにした
-	
+
+2005-08-12  Sadao Kurohashi  <kuro@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_etc.rule:
+	<疑問>のルール追加
+
 2005-08-12  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/extern.h
