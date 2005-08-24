@@ -105,7 +105,7 @@ extern int	EX_match_subject;
 
     OptAnalysis = OPT_DPND;
     OptInput = OPT_RAW;
-    OptExpress = OPT_TREE;
+    OptExpress = OPT_NOTAGTREE;
     OptDisplay = OPT_NORMAL;
     OptExpandP = FALSE;
     OptCheck = FALSE;
