@@ -32,23 +32,60 @@
 
 \maketitle
 
-%\thispagestyle{empty}
+\thispagestyle{empty}
 
-%\vspace*{\fill}
+\vspace*{\fill}
 
-%\begin{small}
+\begin{small}
+\noindent
+KN parser (Kurohashi-Nagao parser) 2.0 Users Manual
 
-%\begin{tabular}{ll}
-%Version 1.0 & ??? \\
-%Version 2.0b1 & 29 November 1996 \\
-%Version 2.0b2 & 3 December 1996 \\
-%Version 2.0b3 & 25 June 1997 \\
-%Version 2.0b4 & 5 September 1997 \\
-%Version 2.0b5 & 29 October 1997 \\
-%Version 2.0b6 & 9 June 1998 \\
-%Version 2.0 & 24 August 2005 \\
-%\end{tabular}
-%\end{small}
+\noindent
+Copyright (c) 2005 University of Tokyo \\
+All rights reserved.
+
+\noindent
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+\begin{enumerate}
+ \item Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+ \item Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+ \item The name University of Tokyo may not be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+\end{enumerate}
+
+\noindent
+THIS SOFTWARE IS PROVIDED BY University of Tokyo ``AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE University of Tokyo BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+\vspace{1cm}
+
+\begin{tabular}{ll}
+ Version 1.0 & ??? \\
+ Version 2.0b1 & 29 November 1996 \\
+ Version 2.0b2 & 3 December 1996 \\
+ Version 2.0b3 & 25 June 1997 \\
+ Version 2.0b4 & 5 September 1997 \\
+ Version 2.0b5 & 29 October 1997 \\
+ Version 2.0b6 & 9 June 1998 \\
+ Version 2.0 & 24 August 2005 \\
+\end{tabular}
+\end{small}
 
 \clearpage
 
@@ -153,7 +190,7 @@ KNPのインストールは以下の手順で行います．
        \begin{tabular}{ll}
 	\texttt{\$PREFIX/bin/knp} & 実行ファイル \\
 	\texttt{\$PREFIX/share/knp/dic/} & 辞書 \\
-	\texttt{\$PREFIX/share/knp/rule/} &  \\
+	\texttt{\$PREFIX/share/knp/rule/} & ルール \\
 	\texttt{\$PREFIX/etc/jumanrc} & 設定ファイル \\
 	\texttt{\$PREFIX/share/knp/doc/manual.pdf} & マニュアル \\
 	\texttt{\$PREFIX/libexec/knp/} & 辞書作成プログラム \\
@@ -173,6 +210,7 @@ KNPのインストールは以下の手順で行います．
 \begin{tabular}{ll}
  \texttt{\$PREFIX/knp.exe} & 実行ファイル \\
  \texttt{\$PREFIX/dic/} & 辞書 \\
+ \texttt{\$PREFIX/rule/} & ルール \\
  \texttt{\$PREFIX/manual.pdf} & マニュアル \\
 \end{tabular}
 
@@ -181,7 +219,7 @@ KNPのインストールは以下の手順で行います．
 Windows版には以下のような制限があります．
 \begin{itemize}
  \item 入出力は SJIS で行う(辞書などはUNIX版と同様にEUCであるが，入出力
-       の時点で漢字コードの変換をしている)．
+       の時点で文字コードの変換をしている)．
  \item サーバ・クライアント機能は備えていない．
 \end{itemize}
 
@@ -209,7 +247,7 @@ KNPには以下のオプションがあります．
 -tree (default) & 木構造による表示 \\
 -tagtab         & タグ単位\footnotemark[1]の表形式による表示 \\
 -tagtree        & タグ単位の木構造による表示 \\
-% -sexp           & リスト形式による表示 \\
+-sexp           & リスト形式による表示 \\
 \end{tabular}
 \item 解析結果の出力情報の指定
 
@@ -241,7 +279,7 @@ KNPは，JUMAN({\tt -e2 -B}オプション)の出力形態素列(同形異義語を含む)
 \item 各形態素に対して，その働きを示す種々のマーク(feature)を与えます．
   辞書的情報，文節にまとめるための自立語・付属語の例外的情報などです
   (mrph\_basic.rule)．
-\item 形態素に与えれられたfeatureにしたがって，形態素列を文節列に変換
+\item 形態素に与えられたfeatureにしたがって，形態素列を文節列に変換
   します．
 \item 各文節に対して，その働きを示すfeatureを与えます．用言，体言，ガ
   格，ヲ格，並列構造の可能性などのfeatureです(bnst\_basic.rule, 
@@ -266,19 +304,20 @@ KNPは，JUMAN({\tt -e2 -B}オプション)の出力形態素列(同形異義語を含む)
 %%%%%%%%%%%%%%%%%%%%
 
 KNPにおいて文法を記述するファイルの形式には，phrase, rule, dataの3種類あ
-ります．人が記述するのはphraseまたはruleで，KNPはdataを読み込みます．
-phraseを記述した場合には，phrase2rule.plプログラム
+ります．人が記述するのはphraseまたはrule形式で，KNPはdata形式を読み込み
+ます．phrase形式を記述した場合には，phrase2rule.plプログラム
 \footnote{phrase2rule.plプログラムは，perlモジュールKNP.pmを通してknpを
 呼び出し，それを用いてphrase形式をrule形式に変換します．そのため，本変換
-プログラムを実行するためには，KNP.pmとknpをインストールしておく必要があ
-ります．}によって，ruleに自動変換する必要があります．ruleは，rul2data.pl
-プログラムによってdataに自動変換する必要があります．
+プログラムを実行するためには，KNP.pmとknpをあらかじめインストールしてお
+く必要があります．}を用いて，rule形式に自動変換する必要があります．rule
+形式は，rul2data.plプログラムを用いてdata形式に自動変換する必要がありま
+す．
 
-phraseとruleの違いはルールの書きやすさで，phraseの方が人にとって書きやす
-い書式となっています．rule形式のファイルはリスト形式で記述しますが，その
-ルールの使用目的によって書式が異なります．ruleの書式には，同形異義語，形
-態素，文節，係り受けの4種類があります．KNPが用いているルールファイルは以
-下のとおりです．
+phrase形式とrule形式の違いはルールの書きやすさで，phrase形式の方が人にとっ
+て書きやすい書式となっています．rule形式のファイルはリスト形式で記述しま
+すが，そのルールの使用目的によって書式が異なり，同形異義語，形態素，文節，
+係り受けの4種類があります．KNPが用いているルールファイルは以下のとおりで
+す．
 
 \begin{center}
  \begin{tabular}{l|l|l} \hline
@@ -317,10 +356,10 @@ phrase形式は1行1ルールで，次のような書式になっています．
 に汎化されます．「\^」は文節の先頭に，「‥」は任意の形態素列にマッチしま
 す．
 
-記述の詳細はrule\_trans.plの冒頭部分を参照してください．
+phrase形式のルールは，bnst\_type.phraseにまとめられており，このルールに
+よって文節の係り受けに関して重要なfeatureを与えています．
 
-% KNPにおいて，文節の係り受けに関して重要なfeatureはbnst\_type.phraseで与
-% えられています．
+記述の詳細はrule\_trans.plの冒頭部分を参照してください．
 
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -420,9 +459,9 @@ feature集合とマッチします．
 というパターンは，「〜と」，「〜とも，」などの形態素列で，\fl 用言\fr 
 というfeatureを持つ文節にマッチします．
 
-なお形態素パターンを囲む括弧は[ ]，文節パターンを囲む括弧は$<$ $>$とし
-ていますが，これはルールの読みやすさのためのもので，
-KNPはこれらを( )に変換したファイル(拡張子data)を参照します．
+なお，形態素パターンを囲む括弧は[ ]，文節パターンを囲む括弧は$<$ $>$とし
+ていますが，これはルールの読みやすさのためのもので，KNPはこれらを( )に変
+換したファイル(拡張子data)を参照します．
 % \footnote{
 %   [  ] $<$ $>$などを用いたルールファイル(rule/*.rule)は，
 %   rule/rule\_conv.plによって
