@@ -1109,14 +1109,14 @@ PARSED:
     struct passwd *ent_pw;
 
     /* シグナル処理 */
-    static void sig_child()
+    void sig_child()
 	{
 	    int status;
 	    while(waitpid(-1, &status, WNOHANG) > 0) {}; 
 	    signal(SIGCHLD, sig_child); 
 	}
 
-    static void sig_term()
+    void sig_term()
 	{
 	    shutdown(sfd,2);
 	    shutdown(fd, 2);
