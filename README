@@ -1,13 +1,11 @@
 
-This is KN parser (Kurohashi-Nagao parser) which detects
-dependency/case structures of Japanese sentences.
+This is KN parser (Kurohashi-Nagao parser) which detects dependency of
+Japanese sentences.
 
-The file "INSTALL" contains installation instructions.
+The file "INSTALL" contains installation instructions in Japanese.
 
-The file "docs/manual.short" contains a brief description of this parser.
-
-The file "docs/manual.tex" contains a description of this parser in
+The file "docs/manual.pdf" contains a description of this parser in
 Japanese.
 
 Sadao Kurohashi
-kuro@i.kyoto-u.ac.jp
+kuro@kc.t.u-tokyo.ac.jp
