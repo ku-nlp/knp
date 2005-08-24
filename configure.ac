@@ -128,14 +128,6 @@ else
 fi
 AC_MSG_RESULT([$bgh_exist])
 
-AC_MSG_CHECKING([Goi Taikei (NTT)])
-if test -f "$packagesrcdir/dict/scode/ntt/word2code.orig"; then
-    ntt_exist=yes
-else
-    ntt_exist=no
-fi
-AC_MSG_RESULT([$ntt_exist])
-
 AC_MSG_CHECKING([Case Frame])
 if test -f "$packagesrcdir/dict/ebcf/cf.knpdict"; then
     cf_exist=yes
@@ -153,7 +145,6 @@ fi
 AC_MSG_RESULT([$cf_noun_exist])
 
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
-AM_CONDITIONAL(NTT_EXIST, test "$ntt_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
 AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 
@@ -207,7 +198,6 @@ dict/Makefile
 dict/src/Makefile
 dict/scode/Makefile
 dict/scode/bgh/Makefile
-dict/scode/ntt/Makefile
 dict/ebcf/Makefile
 dict/gcf/Makefile
 ])
