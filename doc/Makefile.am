@@ -1,9 +1,6 @@
 SUBDIRS = .
 
-man_MANS = knp.1
+EXTRA_DIST = manual.tex
 
-EXTRA_DIST = \
-	knp.1 \
-	EXAMPLES \
-	manual.short \
-	manual.tex
+docdir = $(pkgdatadir)/doc
+dist_doc_DATA = manual.pdf
