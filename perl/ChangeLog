@@ -1,3 +1,7 @@
+2005-08-24  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* File.pm: ファイルハンドルにset_encodingを追加
+
 2005-06-27  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* t/52-knp-old.t, t/56-simple.t: make testでエラーが出ていたものを削除

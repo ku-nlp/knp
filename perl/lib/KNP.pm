@@ -229,7 +229,7 @@ TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 
 ### バージョン表示
-$VERSION = '0.4.4';
+$VERSION = '0.4.5';
 
 # カスタマイズ用変数
 %DEFAULT =

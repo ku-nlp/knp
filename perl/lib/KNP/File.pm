@@ -1,5 +1,6 @@
 package KNP::File;
 require 5.000;
+use English qw/ $PERL_VERSION /;
 use IO::File;
 use KNP::Result;
 use POSIX qw/ SEEK_SET O_RDONLY O_CREAT /;
@@ -52,6 +53,7 @@ sub new {
     }
 
     if( my $fh = new IO::File( $opt{file}, "r" ) ){
+	&set_encoding( $fh );
 	my $new = { name    => $opt{file},
 		    dbname  => $opt{dbfile}  || $opt{file}.'.db',
 		    pattern => $opt{pattern} || $KNP::Result::DEFAULT{pattern},
@@ -206,6 +208,21 @@ sub setpos {
 }
 
 =back
+
+=head1 MEMO
+
+Perl-5.8 以降の場合，子プロセスとの通信には， C<encoding> プラグマで指
+定された文字コードが使われます．
+
+=cut
+BEGIN {
+    if( $PERL_VERSION > 5.008 ){
+	require Juman::Encode;
+	Juman::Encode->import( qw/ set_encoding / );
+    } else {
+	*{Juman::Fork::set_encoding} = sub { undef; };
+    }
+}
 
 =head1 SEE ALSO
 
