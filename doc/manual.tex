@@ -233,6 +233,8 @@ Windows版には以下のような制限があります．
 \section{利用方法}
 %%%%%%%%%%%%%%%%%%
 
+\subsection{コマンドラインからの利用方法}
+
 KNPの入力は，形態素解析システムJUMANの{\tt -e2 -B}オプションによる解析
 結果です．
 
@@ -269,6 +271,37 @@ KNPには以下のオプションがあります．
 す．現在のKNPでは，-tagtab, -tagtreeオプションによってタグ単位の出力を行
 いますが，文節内のタグ単位間の係り受けは扱っておらず隣に係るように解析さ
 れます．}
+
+
+\subsection{perlからの利用方法}
+
+perlモジュール``KNP''を用いることにより，perlからKNPを利用することが
+できます．
+
+\begin{itemize}
+ \item インストール方法
+
+       KNPを展開したディレクトリにある\texttt{perl}ディレクトリに移動
+       し，次の手順を実行します．
+       \begin{enumerate}
+	\item perl Makefile.PL
+	\item make
+	\item (rootで) make install
+       \end{enumerate}
+ \item 使用例
+
+       プログラムの例を以下に示します．このプログラムを実行すると，「この文
+       を形態素解析してください．」という文の解析結果が表示されます．
+
+       \begin{verbatim}
+	use KNP;
+	$knp = new KNP;
+	$result = $knp->parse( "この文を構文解析してください．" );
+	print $result->all();
+       \end{verbatim}
+
+       詳細は`\texttt{perldoc KNP}'の実行結果を参照してください．
+\end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
