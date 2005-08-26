@@ -2422,8 +2422,10 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 
     if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	/* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	/* 名詞+判定詞の名詞が主体じゃない場合はガ格に不特定-人を入れない */
 	if (OptLearn == TRUE || 
-	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL)) {
+	    (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) && 
+	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ")))) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	}
 	return;
