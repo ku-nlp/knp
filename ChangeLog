@@ -1,3 +1,8 @@
+2005-08-26  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c
+	名詞+判定詞の名詞が主体でない場合はガ格に不特定-人を入れないようにした
+	
 2005-08-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
