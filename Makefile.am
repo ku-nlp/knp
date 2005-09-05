@@ -2,7 +2,7 @@
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-`date +"%Y%m%d"`
 
-SUBDIRS = system rule dict docs
+SUBDIRS = system rule dict doc
 
 knprcdir=$(sysconfdir)
 nodist_knprc_DATA = knprc
