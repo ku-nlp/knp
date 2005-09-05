@@ -726,6 +726,14 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
+	/* bnst_basic タグ単位 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = TagRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
 	/* case_analysis タグ単位 逆方向 */
 	(RULE+CurrentRuleNum)->file = strdup("case_analysis");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;

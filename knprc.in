@@ -14,7 +14,8 @@
 	(bnst_etc 文節 逆方向 ルールループ先行)
 	(kakari_uke 係り受け)
 	(koou 呼応)
-	(context 文節 逆方向 ルールループ先行)
+	(bnst_basic タグ単位 逆方向 ルールループ先行)
+	(context タグ単位 逆方向 ルールループ先行)
 	(case_analysis タグ単位 逆方向)
 )
 
