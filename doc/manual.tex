@@ -184,10 +184,14 @@ KNPのインストールは以下の手順で行います．
        `\texttt{./configure}'にオプションを与えることにより，インストー
        ル先やコンパイルオプションなどを変更することができる．分類語彙表
        を用いる場合には，
-       \texttt{--with-bgh-file=/somewhere/bunruidb.txt} のようなオプショ
-       ンによって，分類語彙表のファイル(bunruidb.txt)の場所を指定する．
-       詳細は，同梱の INSTALL または`\texttt{./configure --help}' の出力
-       を参照のこと．
+
+       \begin{quote}
+	\texttt{--with-bgh-file=/somewhere/bunruidb.txt}
+       \end{quote}
+
+       のようなオプションによって，分類語彙表のファイル(bunruidb.txt)の
+       場所を指定する．詳細は，同梱の INSTALL または`\texttt{./configure
+       --help}' の出力を参照のこと．
  \item `make'を実行する．\\
        KNPシステムのコンパイルと辞書の構築が行われる．
  \item (rootで)`make install'を実行する．\\
