@@ -1,3 +1,9 @@
+2005-09-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/extern.h, system/feature.c, system/main.c, system/read_data.c:
+	タグ単位にfeatureを付与する方法をタグ単位専用のルールと文節からの
+	伝搬で行うように変更
+
 2005-08-26  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c
