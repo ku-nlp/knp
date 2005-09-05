@@ -14,6 +14,7 @@
 	(bnst_etc 文節 逆方向 ルールループ先行)
 	(kakari_uke 係り受け)
 	(koou 呼応)
+	(bnst_basic タグ単位 逆方向 ルールループ先行)
 )
 
 (KNP辞書ディレクトリ

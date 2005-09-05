@@ -396,17 +396,6 @@ extern int	EX_match_subject;
 
     if (OptAnalysis == OPT_BNST) return TRUE;
 
-    /* タグ単位作成 */
-    if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
-	if (OptInput == OPT_RAW || 
-	    (OptInput & OPT_INPUT_BNST)) {
-	    make_tag_units(sp);
-	}
-	else {
-	    make_tag_units_pm(sp);
-	}
-    }
-
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
@@ -436,6 +425,17 @@ extern int	EX_match_subject;
 	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
 	    delete_cfeature(&((sp->bnst_data+i)->f), "SM");
+	}
+    }
+
+    /* タグ単位作成 */
+    if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
+	if (OptInput == OPT_RAW || 
+	    (OptInput & OPT_INPUT_BNST)) {
+	    make_tag_units(sp);
+	}
+	else {
+	    make_tag_units_pm(sp);
 	}
     }
 

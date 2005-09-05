@@ -949,9 +949,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     for (i = 0; i < GeneralRuleNum; i++) {
-	/* タグ単位の場合は文節ルールでもよい */
-	if ((GeneralRuleArray + i)->type == flag || 
-	    (flag == TagRuleType && (GeneralRuleArray + i)->type == BnstRuleType)) {
+	if ((GeneralRuleArray + i)->type == flag) {
 	    assign_function((GeneralRuleArray+i)->RuleArray, 
 			    (GeneralRuleArray+i)->CurRuleSize, 
 			    data, size, 
@@ -1208,6 +1206,12 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    /* case_analysis.rule で使っている */
 	    assign_cfeature(&(tp->f), "文節内");
 	}
+	else {
+	    /* headのときは文節のfeatureをコピー */
+	    /* <文頭>, <文末>もつくが、文頭の文節が2タグ単位以上もつ場合は、
+	       <文頭>のつく位置が間違っているので下で修正する */
+	    copy_feature(&(tp->f), tp->b_ptr->f);
+	}
 
 	/* 各タグ単位の長さを計算しておく */
 	calc_bnst_length(sp, (BNST_DATA *)tp);
@@ -1217,16 +1221,13 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	}
     }
 
-    /* <文頭>, <文末> */
-    assign_cfeature(&(sp->tag_data->f), "文頭");
-    if (sp->Tag_num > 0) {
-	assign_cfeature(&((sp->tag_data + sp->Tag_num - 1)->f), "文末");
-    }
-    else {
-	assign_cfeature(&(sp->tag_data->f), "文末");
+    /* <文頭>の修正 */
+    if (sp->bnst_data->tag_num > 1) {
+	delete_cfeature(&((sp->bnst_data->tag_ptr + sp->bnst_data->tag_num - 1)->f), "文頭");
+	assign_cfeature(&(sp->tag_data->f), "文頭");
     }
 
-    /* 文節ルールを適用する */
+    /* タグ単位ルールを適用する */
     assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType);
 }
 
