@@ -1,5 +1,3 @@
-SUBDIRS = .
-
 EXTRA_DIST = \
 	bgh.pl \
 	edr.pl \

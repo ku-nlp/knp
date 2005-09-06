@@ -1,5 +1,3 @@
-SUBDIRS = .
-
 EXTRA_DIST = sm2code.dat
 
 if BGH_EXIST

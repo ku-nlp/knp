@@ -26,8 +26,6 @@ AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui 
 			  BGH_FILE="$withval")
 
 
-SUBDIRS="system rule doc dict"
-
 packagesrcdir=`cd $srcdir && pwd`
 
 if test "$with_boehm_gc" = yes; then
@@ -186,8 +184,6 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([alarm gethostbyname memset pow socket sqrt strcasecmp strchr strdup strerror strncasecmp strstr])
 
-
-AC_SUBST(SUBDIRS)
 
 AC_CONFIG_FILES([
 Makefile

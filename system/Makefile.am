@@ -1,5 +1,3 @@
-SUBDIRS = .
-
 INCLUDES = @KNP_CFLAGS@
 
 bin_PROGRAMS = knp

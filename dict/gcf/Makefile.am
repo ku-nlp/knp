@@ -1,5 +1,3 @@
-SUBDIRS = .
-
 EXTRA_DIST = scase.dat
 
 dicdir = $(pkgdatadir)/dict/gcf

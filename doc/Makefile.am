@@ -1,5 +1,3 @@
-SUBDIRS = .
-
 EXTRA_DIST = manual.tex
 
 docdir = $(pkgdatadir)/doc
