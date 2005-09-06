@@ -7,7 +7,7 @@ endif
 
 bgh.dat:
 	if [ ! -f bgh.dat -a -f "@BGH_FILE@" ]; then \
-		nkf -S -e < "@BGH_FILE@" | ../../src/bgh.pl > bgh.dat; \
+		../../src/bgh.pl < "@BGH_FILE@" > bgh.dat; \
 	fi
 
 bgh.db: bgh.dat
