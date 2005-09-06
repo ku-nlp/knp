@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use encoding 'euc-jp';
+binmode STDERR, ':encoding(euc-jp)';
 
 ######################################################################
 #
