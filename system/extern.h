@@ -175,17 +175,11 @@ extern void init_ntt();
 extern void close_ntt();
 extern char *_smp2smg(char *cp);
 extern char *smp2smg(char *cpd, int flag);
-extern int sm_fix(BNST_DATA *bp, char *targets);
 extern void merge_smp2smg(BNST_DATA *bp);
-extern void assign_sm_aux_feature(BNST_DATA *bp);
 extern int sm_match_check(char *pat, char *codes, int expand);
 extern int assign_sm(BNST_DATA *bp, char *cp);
 extern int sm_all_match(char *c, char *target);
-extern int sm_check_match_max(char *exd, char *exp, int expand, char *target);
-extern int delete_matched_sm(char *sm, char *del);
 extern int delete_specified_sm(char *sm, char *del);
-extern void fix_sm_person(SENTENCE_DATA *sp);
-extern void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void sm2feature(SENTENCE_DATA *sp);
 extern char *check_noun_sm(char *key);
 

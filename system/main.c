@@ -442,8 +442,6 @@ extern int	EX_match_subject;
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	print_mrphs(sp, 0);
 
-    fix_sm_person(sp);
-
     /* FEATURE付与だけの場合 */
 
     if (OptAnalysis == OPT_AssignF) return TRUE;

@@ -649,20 +649,6 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
-	   int sms_match(char *cpp, char *cpd, int expand)
-/*==================================================================*/
-{
-    int i;
-
-    for (i = 0; cpd[i]; i += SM_CODE_SIZE) {
-	if (_sm_match_score(cpp, cpd + i, expand)) {
-	    return 1;
-	}
-    }
-    return 0;
-}
-
-/*==================================================================*/
 	int sm_match_check(char *pat, char *codes, int expand)
 /*==================================================================*/
 {
@@ -692,75 +678,8 @@ SMLIST smlist[TBLSIZE];
 	return FALSE;
     }
 
-    /* ★溢れる?★ */
     strcat(bp->SM_code, code);
     bp->SM_num++;
-    return TRUE;
-}
-
-/*==================================================================*/
- int sm_check_match_max(char *exd, char *exp, int expand, char *target)
-/*==================================================================*/
-{
-    int i, j, step = SM_CODE_SIZE, flag;
-    float score = 0, tempscore;
-
-    /* どちらかに用例のコードがないとき */
-    if (!(exd && exp && *exd && *exp)) {
-	return FALSE;
-    }
-
-    if (expand != SM_NO_EXPAND_NE) {
-	expand = SM_EXPAND_NE_DATA;
-    }
-
-    /* 最大マッチスコアを求める */
-    for (j = 0; exp[j]; j+=step) {
-	for (i = 0; exd[i]; i+=step) {
-	    tempscore = ntt_code_match(exp+j, exd+i, expand);
-	    if (tempscore > score) {
-		score = tempscore;
-		/* 両方 target 意味素に属す */
-		if (sm_match_check(target, exd, expand) && sm_match_check(target, exp, expand)) {
-		    flag = TRUE;
-		}
-		else {
-		    flag = FALSE;
-		}
-	    }
-	}
-    }
-    return flag;
-}
-
-/*==================================================================*/
-	       int sm_fix(BNST_DATA *bp, char *targets)
-/*==================================================================*/
-{
-    int i, j, pos = 0;
-    char *codes;
-
-    if (bp->SM_code[0] == '\0') {
-	return FALSE;
-    }
-
-    codes = bp->SM_code;
-
-    for (i = 0; *(codes+i); i += SM_CODE_SIZE) {
-	for (j = 0; *(targets+j); j += SM_CODE_SIZE) {
-	    if (_sm_match_score(targets+j, codes+i, SM_NO_EXPAND_NE) > 0) {
-		strncpy(codes+pos, codes+i, SM_CODE_SIZE);
-		pos += SM_CODE_SIZE;
-		break;
-	    }
-	}
-    }
-
-    /* match しない場合ってどんなとき? */
-    if (pos != 0) {
-	*(codes+pos) = '\0';
-	bp->SM_num = strlen(codes)/SM_CODE_SIZE;
-    }
     return TRUE;
 }
 
@@ -795,64 +714,6 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
-	       void assign_time_feature(BNST_DATA *bp)
-/*==================================================================*/
-{
-    /* <時間> の意味素しかもっていなければ <時間> を与える */
-
-    if (!check_feature(bp->f, "時間") && 
-	sm_all_match(bp->SM_code, sm2code("時間"))) {
-	assign_cfeature(&(bp->f), "時間判定");
-	assign_cfeature(&(bp->f), "時間");
-    }
-}
-
-/*==================================================================*/
-	      void assign_sm_aux_feature(BNST_DATA *bp)
-/*==================================================================*/
-{
-    /* ルールに入れた */
-
-    if (Thesaurus != USE_NTT) {
-	return;
-    }
-
-    /* <時間>属性を付与する */
-    assign_time_feature(bp);
-
-    /* <抽象>属性を付与する */
-    if (sm_all_match(bp->SM_code, sm2code("抽象"))) {
-	assign_cfeature(&(bp->f), "抽象");
-    }
-}
-
-/*==================================================================*/
-	      int delete_matched_sm(char *sm, char *del)
-/*==================================================================*/
-{
-    int i, j, flag, pos = 0;
-
-    for (i = 0; sm[i]; i += SM_CODE_SIZE) {
-	flag = 1;
-	/* 固有ではないときチェック */
-	if (sm[i] != '2') {
-	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
-		if (_sm_match_score(sm+i, del+j, SM_NO_EXPAND_NE) > 0) {
-		    flag = 0;
-		    break;
-		}
-	    }
-	}
-	if (flag) {
-	    strncpy(sm+pos, sm+i, SM_CODE_SIZE);
-	    pos += SM_CODE_SIZE;
-	}
-    }
-    *(sm+pos) = '\0';
-    return 1;
-}
-
-/*==================================================================*/
 	     int delete_specified_sm(char *sm, char *del)
 /*==================================================================*/
 {
@@ -876,61 +737,6 @@ SMLIST smlist[TBLSIZE];
     }
     *(sm+pos) = '\0';
     return 1;
-}
-
-/*==================================================================*/
-		void fix_sm_person(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i;
-
-    if (Thesaurus != USE_NTT) return;
-
-    /* 人名のとき: 
-       o 一般名詞体系の<主体>以下の意味素を削除
-       o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
-
-    for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "人名")) {
-	    /* 固有の意味素だけ残したい */
-	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
-	    assign_cfeature(&((sp->bnst_data+i)->f), "Ｔ固有一般展開禁止");
-	}
-    }
-}
-
-/*==================================================================*/
-	      void register_noun_sm(char *key, char *sm)
-/*==================================================================*/
-{
-    SMLIST *slp;
-
-    if (key == NULL) {
-	return;
-    }
-
-    slp = &(smlist[hash(key, strlen(key))]);
-    if (slp->key) {
-	SMLIST **slpp;
-	slpp = &slp;
-	do {
-	    if (!strcmp((*slpp)->key, key)) {
-		/* すでにあるsmを上書き */
-		free((*slpp)->sm);
-		(*slpp)->sm = strdup(sm);
-		return;
-	    }
-	    slpp = &((*slpp)->next);
-	} while (*slpp);
-	*slpp = (SMLIST *)malloc_data(sizeof(SMLIST), "register_noun_sm");
-	(*slpp)->key = strdup(key);
-	(*slpp)->sm = strdup(sm);
-	(*slpp)->next = NULL;
-    }
-    else {
-	slp->key = strdup(key);
-	slp->sm = strdup(sm);
-    }
 }
 
 /*==================================================================*/
@@ -960,59 +766,6 @@ SMLIST smlist[TBLSIZE];
 	slp = slp->next;
     }
     return NULL;
-}
-
-/*==================================================================*/
-   void specify_sm_from_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
-/*==================================================================*/
-{
-    int i, num;
-    char *new_code, *sm_codes;
-
-    if (Thesaurus != USE_NTT) return;
-
-    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (!cpm_ptr->elem_b_ptr[i]->SM_code[0]) {
-	    continue;
-	}
-	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* 省略格要素ではない割り当てがあったとき */
-	if (cpm_ptr->elem_b_num[i] > -2 && num >= 0 && cpm_ptr->cmm[0].cf_ptr->ex[num] && 
-	    cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] != MATCH_SUBJECT && 
-	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* 格フレームとある程度マッチするとき */
-
-	    if (cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
-		sm_codes = strdup(cpm_ptr->cmm[0].cf_ptr->sm_specify[num]);
-	    }
-	    else {
-		sm_codes = strdup(cpm_ptr->cmm[0].cf_ptr->ex[num]);
-		if (cpm_ptr->cmm[0].cf_ptr->sm_delete[num]) {
-		    delete_specified_sm(sm_codes, cpm_ptr->cmm[0].cf_ptr->sm_delete[num]);
-		}
-	    }
-	    /* もっとも類似している意味属性に決定 */
-	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, sm_codes)) {
-		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* 意味素更新 */
-		    if (VerboseLevel >= VERBOSE2) {
-			fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
-				cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
-			codes2sm_print(stderr, cpm_ptr->elem_b_ptr[i]->SM_code);
-			fprintf(stderr, "] -> [");
-			codes2sm_print(stderr, new_code);
-			fprintf(stderr, "]\n");
-		    }
-
-		    strcpy((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_code, new_code);
-		    (sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_num = strlen(new_code) / SM_CODE_SIZE;
-
-		    /* 意味素登録 */
-		    register_noun_sm(cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, new_code);
-		}
-		free(new_code);
-	    }
-	    free(sm_codes);
-	}
-    }
 }
 
 /*==================================================================*/
