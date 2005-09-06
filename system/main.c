@@ -400,9 +400,6 @@ extern int	EX_match_subject;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	decide_head_ptr(sp->bnst_data + i);
-	if (OptExpress != OPT_NOTAG && OptExpress != OPT_NOTAGTREE) {
-	    decide_head_tag_ptr(sp->bnst_data + i);
-	}
 	make_Jiritu_Go(sp, sp->bnst_data + i);
 	get_bnst_code_all(sp->bnst_data + i);
     }

@@ -1055,24 +1055,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-	       void decide_head_tag_ptr(BNST_DATA *ptr)
-/*==================================================================*/
-{
-    int i;
-
-    for (i = ptr->tag_num - 1; i >= 0 ; i--) {
-	if (check_feature((ptr->tag_ptr + i)->head_ptr->f, "独立無意味語")) { /* 「の」 */
-	    continue;
-	}
-	ptr->head_tag_ptr = ptr->tag_ptr + i;
-	return;
-    }
-
-    ptr->head_tag_ptr = ptr->tag_ptr;
-    return;
-}
-
-/*==================================================================*/
       int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
