@@ -753,6 +753,20 @@ extern int	EX_match_subject;
 
     if (OptAnalysis == OPT_BNST) return TRUE;
 
+    /* タグ単位作成 (-notag時もscaseを引くために行う) */
+    if (OptInput == OPT_RAW || 
+	(OptInput & OPT_INPUT_BNST)) {
+	make_tag_units(sp);
+    }
+    else {
+	make_tag_units_pm(sp);
+    }
+
+    /* 入力した正解情報をチェック */
+    if (OptReadFeature) {
+	check_annotation(sp);
+    }
+
     /* 文節への意味情報付与 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
@@ -783,19 +797,8 @@ extern int	EX_match_subject;
 	}
     }
 
-    /* タグ単位作成 (-notag時もscaseを引くために行う) */
-    if (OptInput == OPT_RAW || 
-	(OptInput & OPT_INPUT_BNST)) {
-	make_tag_units(sp);
-    }
-    else {
-	make_tag_units_pm(sp);
-    }
-
-    /* 入力した正解情報をチェック */
-    if (OptReadFeature) {
-	check_annotation(sp);
-    }
+    /* タグ単位へのFEATURE付与 */
+    assign_feature_for_tag(sp);
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	print_mrphs(sp, 0);

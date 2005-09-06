@@ -1360,6 +1360,21 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	/* BNST_DATAにcastしている tricky? */
 	get_bnst_code_all((BNST_DATA *)tp);
 
+	/* 各タグ単位の長さを計算しておく */
+	calc_bnst_length(sp, (BNST_DATA *)tp);
+    }
+}
+
+/*==================================================================*/
+	    void assign_feature_for_tag(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    TAG_DATA *tp;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	tp = sp->tag_data + i;
+
 	if (tp->inum != 0) {
 	    /* case_analysis.rule で使っている */
 	    assign_cfeature(&(tp->f), "文節内");
@@ -1370,9 +1385,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	       <文頭>のつく位置が間違っているので下で修正する */
 	    copy_feature(&(tp->f), tp->b_ptr->f);
 	}
-
-	/* 各タグ単位の長さを計算しておく */
-	calc_bnst_length(sp, (BNST_DATA *)tp);
 
 	if (OptReadFeature) {
 	    tp->f = Input_tag_feature[i];

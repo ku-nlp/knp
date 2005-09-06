@@ -352,6 +352,7 @@ extern void print_mrphs(SENTENCE_DATA *sp, int flag);
 extern void assign_dpnd_rule(SENTENCE_DATA *sp);
 extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
 extern void make_tag_units(SENTENCE_DATA *sp);
+extern void assign_feature_for_tag(SENTENCE_DATA *sp);
 
 /* read_rule.c */
 extern int case2num(char *cp);
