@@ -108,12 +108,7 @@ int		OptUseScase;
 	    strcpy(voice, ":PC");
 	}
 
-	if (ptr->type == IS_BNST_DATA) {
-	    str_buffer = make_pred_string(ptr->head_tag_ptr); /* 最後のタグ単位 (「〜のは」の場合は1つ前) */
-	}
-	else {
-	    str_buffer = make_pred_string((TAG_DATA *)ptr);
-	}
+	str_buffer = make_pred_string((TAG_DATA *)ptr);
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
 	if (voice[0]) strcat(str_buffer, voice);

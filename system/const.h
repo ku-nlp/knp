@@ -549,7 +549,6 @@ typedef struct tnode_b {
 
     struct tnode_t *tag_ptr;
     int		tag_num;
-    struct tnode_t *head_tag_ptr;
 } BNST_DATA;
 
 /* 並列構造データ */

@@ -1196,7 +1196,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
 	    if (check_feature((ptr->mrph_ptr + i)->f, "独立接尾辞") || 
 		check_feature((ptr->mrph_ptr + i)->f, "非独立有意味接尾辞") || 
-		check_feature((ptr->mrph_ptr + i)->f, "独立無意味語")) { /* 「の」 */
+		(ptr->type == IS_TAG_DATA && check_feature((ptr->mrph_ptr + i)->f, "独立無意味語"))) { /* 「の」 */
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
@@ -1210,24 +1210,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
     /* 付属語しかない場合 */
     ptr->head_ptr = ptr->mrph_ptr + ptr->mrph_num - 1;
-}
-
-/*==================================================================*/
-	       void decide_head_tag_ptr(BNST_DATA *ptr)
-/*==================================================================*/
-{
-    int i;
-
-    for (i = ptr->tag_num - 1; i >= 0 ; i--) {
-	if (check_feature((ptr->tag_ptr + i)->head_ptr->f, "独立無意味語")) { /* 「の」 */
-	    continue;
-	}
-	ptr->head_tag_ptr = ptr->tag_ptr + i;
-	return;
-    }
-
-    ptr->head_tag_ptr = ptr->tag_ptr;
-    return;
 }
 
 /*==================================================================*/
@@ -1360,21 +1342,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	/* BNST_DATAにcastしている tricky? */
 	get_bnst_code_all((BNST_DATA *)tp);
 
-	/* 各タグ単位の長さを計算しておく */
-	calc_bnst_length(sp, (BNST_DATA *)tp);
-    }
-}
-
-/*==================================================================*/
-	    void assign_feature_for_tag(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i;
-    TAG_DATA *tp;
-
-    for (i = 0; i < sp->Tag_num; i++) {
-	tp = sp->tag_data + i;
-
 	if (tp->inum != 0) {
 	    /* case_analysis.rule で使っている */
 	    assign_cfeature(&(tp->f), "文節内");
@@ -1385,6 +1352,9 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	       <文頭>のつく位置が間違っているので下で修正する */
 	    copy_feature(&(tp->f), tp->b_ptr->f);
 	}
+
+	/* 各タグ単位の長さを計算しておく */
+	calc_bnst_length(sp, (BNST_DATA *)tp);
 
 	if (OptReadFeature) {
 	    tp->f = Input_tag_feature[i];
