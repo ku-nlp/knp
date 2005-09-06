@@ -125,27 +125,7 @@ else
     fi
 fi
 AC_MSG_RESULT([$bgh_exist])
-
-AC_MSG_CHECKING([Case Frame])
-if test -f "$packagesrcdir/dict/ebcf/cf.knpdict"; then
-    cf_exist=yes
-else
-    cf_exist=no
-fi
-AC_MSG_RESULT([$cf_exist])
-
-AC_MSG_CHECKING([Case Frame (noun)])
-if test -f "$packagesrcdir/dict/ebcf/noun.knpdict"; then
-    cf_noun_exist=yes
-else
-    cf_noun_exist=no
-fi
-AC_MSG_RESULT([$cf_noun_exist])
-
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
-AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
-AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
-
 
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
@@ -194,7 +174,6 @@ dict/Makefile
 dict/src/Makefile
 dict/scode/Makefile
 dict/scode/bgh/Makefile
-dict/ebcf/Makefile
 dict/gcf/Makefile
 ])
 AC_OUTPUT
