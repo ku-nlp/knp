@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, 2.0, knp@kc.t.u-tokyo.ac.jp)
+AC_INIT(knp, 2.0, nl-resource@kc.t.u-tokyo.ac.jp)
 AC_PREREQ(2.53)
 AM_INIT_AUTOMAKE
 AC_REVISION($Revision$)
