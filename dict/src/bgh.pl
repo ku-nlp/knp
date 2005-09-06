@@ -1,6 +1,6 @@
-#! /usr/bin/perl
+#!/usr/bin/env perl
 
-use encoding 'euc-jp';
+use encoding 'euc-jp', STDIN => 'shiftjis';
 
 # 分類語彙表データの整形
 #
