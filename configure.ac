@@ -145,9 +145,9 @@ if test x"$BGH_FILE" != x; then
 else
     if test -f "$packagesrcdir/dict/scode/bgh/bgh.dat"; then
 	bgh_exist=yes
-    elif test -f /share/dict/bgh/monitor/sakuin; then
+    elif test -f /share/dict/bgh/zouho/bunruidb.txt; then
 	bgh_exist=yes
-	BGH_FILE=/share/dict/bgh/monitor/sakuin
+	BGH_FILE=/share/dict/bgh/zouho/bunruidb.txt
     else
 	bgh_exist=no
 	BGH_FILE=
