@@ -1,17 +1,6 @@
 PHRASE2RULE = ./phrase2rule.pl
 RULE2DATA = ./rule2data.pl
 
-EXTRA_DIST = \
-	rule2data.pl \
-	phrase2rule.pl \
-	bnst_basic.rule \
-	bnst_etc.rule \
-	bnst_type.phrase \
-	kakari_uke.rule \
-	koou.rule \
-	mrph_basic.rule \
-	mrph_homo.rule
-
 ruledir = $(pkgdatadir)/rule
 dist_rule_DATA = bnst_type.phrase bnst_basic.rule bnst_etc.rule bnst_type.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_homo.rule bnst_basic.data bnst_etc.data bnst_type.data kakari_uke.data koou.data mrph_basic.data mrph_homo.data rule2data.pl phrase2rule.pl
 
@@ -45,7 +34,7 @@ diff:
 	    rm -f bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	fi
 
-CLEANFILES = bnst_type.rule.old $(dist_rule_DATA)
+CLEANFILES = bnst_type.rule.old
 
 rulepack: $(dist_rule_DATA)
 	if [ ! -d rule ]; then \
