@@ -9,7 +9,6 @@ for ($i = 0; $i < @ARGV; $i++) {
 
     print "make $ARGV[$i] ... \n";
 
-    chmod 0640, $ARGV[$i];
     open(OUTPUT, "> $ARGV[$i]") || die;
 
     while (<INPUT>) {
@@ -24,6 +23,4 @@ for ($i = 0; $i < @ARGV; $i++) {
 
     close INPUT;
     close OUTPUT;
-
-    chmod 0444, $ARGV[$i];
 }
