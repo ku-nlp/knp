@@ -42,8 +42,6 @@ knp_SOURCES = \
 	tools.c \
 	tree_conv.c \
 	db.c \
-	japanese.c \
-	japanese.h \
 	configfile.c \
 	thesaurus.c \
 	hash.c \
@@ -57,7 +55,6 @@ make_db_SOURCES = \
 	make_db.c \
 	db.c \
 	tools.c \
-	japanese.c \
 	hash.c \
 	hash.h
 
