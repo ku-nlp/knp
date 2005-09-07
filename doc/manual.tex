@@ -157,6 +157,7 @@ KNPは以下のツール・辞書を用いますので，あらかじめインストールをしておい
  \item JUMAN 5.1以上 \\ (http://www.kc.t.u-tokyo.ac.jp/nl-resource/juman.html)
  \item 分類語彙表 増補改訂版 \\
 (http://www.kokken.go.jp/katsudo/kanko/data/index.html) \\
+ \item Perl \\ (http://www.perl.com/)
 %  フロッピーディスク版 (大日本図書 tel +81-03-3561-8679) \\
 %  または モニター版 (国立国語研究所:中野洋先生:nakano@kokken.go.jp)
 % \item EDR日本語単語辞書 (http://www.iijnet.or.jp/edr)
@@ -165,7 +166,8 @@ KNPは以下のツール・辞書を用いますので，あらかじめインストールをしておい
 %このうち，1はシステムのコンパイルに必要です．
 1は，テキストを形態素列に変換するプログラムで，KNPはこのプログラムの出力
 を入力とします．2は並列構造解析で利用しますが，なくても動作します(解析精
-度は若干低下します)．
+度は若干低下します)．3は分類語彙表をインストールする場合とルール
+を更新する場合に必要となります．
 %と格構造解析，4は格構造解析で利用しますが，これらがない場合でもシス
 %テムは動作します(とはいえ，少なくとも3の分類語彙表は準備されることをお勧
 %めします)．
@@ -189,9 +191,10 @@ KNPのインストールは以下の手順で行います．
 	\texttt{--with-bgh-file=/somewhere/bunruidb.txt}
        \end{quote}
 
-       のようなオプションによって，分類語彙表のファイル(bunruidb.txt)の
-       場所を指定する．詳細は，同梱の INSTALL または`\texttt{./configure
-       --help}' の出力を参照のこと．
+       のようなオプションによって，分類語彙表ファイル
+       (\texttt{bunruidb.txt})の場所を指定する．詳細は，同梱の
+       \texttt{INSTALL}または`\texttt{./configure --help}' の出力を参照
+       のこと．
  \item `make'を実行する．\\
        KNPシステムのコンパイルと辞書の構築が行われる．
  \item (rootで)`make install'を実行する．\\
@@ -221,18 +224,27 @@ KNPのインストールは以下の手順で行います．
 定できます．
 
 \begin{tabular}{ll}
- \texttt{\$PREFIX/knp.exe} & 実行ファイル \\
- \texttt{\$PREFIX/dic/} & 辞書 \\
- \texttt{\$PREFIX/rule/} & ルール \\
- \texttt{\$PREFIX/manual.pdf} & マニュアル \\
+ \texttt{\$PREFIX\yen knp.exe} & 実行ファイル \\
+ \texttt{\$PREFIX\yen dic} & 辞書 \\
+ \texttt{\$PREFIX\yen rule} & ルール \\
+ \texttt{\$PREFIX\yen manual.pdf} & マニュアル \\
 \end{tabular}
+
+\vspace*{4ex}
+
+分類語彙表を利用するには，KNPをインストールした後に，以下の手順を実行する
+必要があります．
+\begin{enumerate}
+ \item 分類語彙表CD-ROMに含まれている\texttt{bunruidb.txt}を
+       \texttt{\$PREFIX\yen dic\yen scode\yen bgh}にコピーする．
+ \item \texttt{\$PREFIX\yen dic\yen scode\yen bgh\yen make\_bgh\_db.bat}を実行する．
+\end{enumerate}
 
 \vspace*{3ex}
 
-Windows版には以下のような制限があります．
+Windows版はUNIX版と以下の点が異なります．
 \begin{itemize}
- \item 入出力は SJIS で行う(辞書などはUNIX版と同様にEUCであるが，入出力
-       の時点で文字コードの変換をしている)．
+ \item 入出力は SJIS で行う．
  \item サーバ・クライアント機能は備えていない．
 \end{itemize}
 
@@ -244,7 +256,27 @@ Windows版には以下のような制限があります．
 \subsection{コマンドラインからの利用方法}
 
 KNPの入力は，形態素解析システムJUMANの{\tt -e2 -B}オプションによる解析
-結果です．
+結果です．以下に典型的な利用方法を示します．
+
+\begin{quote}
+\tt{\% cat test} \\
+格文法は本質的に統語規則と意味規則を共存させた文法であり，日本語 \\
+の解析に広く用いられている．\\
+ \\
+\tt{\% juman -e2 -B < test | knp} \\
+\begin{tabular}[t]{r}
+　　　　　　　　　　　　　　格文法は──┐　\ \\[-4pt]
+　　　　　　本質的に──┐　　　　　　　│　\ \\[-4pt]
+統語規則と <P>─┐　　　│　　　　　　　│　\ \\[-4pt]
+意味規則を <P>─PARA──┤　　　　　　　│　\ \\[-4pt]
+　　　　　　　　　共存させた──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　文法であり，──┤　\ \\[-4pt]
+　　　　　　　　　　日本語の──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　　　　解析に──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　　　広く──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　用いられている．\ \\
+\end{tabular}
+\end{quote}
 
 KNPには以下のオプションがあります．
 \begin{itemize}
