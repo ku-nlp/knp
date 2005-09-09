@@ -801,6 +801,13 @@ extern int	EX_match_subject;
 
     fix_sm_person(sp);
 
+    /* 固有表現認識を行う */
+#ifdef USE_SVM
+    if (OptNE) {
+	ne_analysis(sp);
+    }
+#endif
+    
     /* FEATURE付与だけの場合 */
 
     if (OptAnalysis == OPT_AssignF) return TRUE;
@@ -925,13 +932,6 @@ PARSED:
     if (!(OptExpress & OPT_NOTAG)) {
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
-
-    /* 固有表現認識を行う */
-#ifdef USE_SVM
-    if (OptNE) {
-	ne_analysis(sp);
-    }
-#endif
 
     /* 並列構造をみて固有表現認識を行う */
     /* ne_para_analysis(sp); */
