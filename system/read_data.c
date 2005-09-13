@@ -1339,6 +1339,14 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
 	decide_head_ptr((BNST_DATA *)tp);
 
+	if (OptReadFeature) {
+	    tp->f = Input_tag_feature[i];
+	    read_annotation(sp, tp);
+	}
+	else {
+	    tp->c_cpm_ptr = NULL;
+	}
+
 	/* BNST_DATAにcastしている tricky? */
 	get_bnst_code_all((BNST_DATA *)tp);
 
@@ -1355,10 +1363,6 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 
 	/* 各タグ単位の長さを計算しておく */
 	calc_bnst_length(sp, (BNST_DATA *)tp);
-
-	if (OptReadFeature) {
-	    tp->f = Input_tag_feature[i];
-	}
     }
 
     /* <文頭>の修正 */
