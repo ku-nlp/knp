@@ -4878,7 +4878,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[1][i] = LOC_S1_OTHERS;
-	    mark_all_children(cs - 1, (cs - 1)->tag_data + i, LC, LOC_S1_OTHERS, 0);
+	    mark_all_children(cs - 1, (cs - 1)->tag_data + i, LC, LOC_S1_OTHERS, 1);
 	}
     }
 
@@ -4890,7 +4890,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[2][i] = LOC_S2_OTHERS;
-	    mark_all_children(cs - 2, (cs - 2)->tag_data + i, LC, LOC_S2_OTHERS, 0);
+	    mark_all_children(cs - 2, (cs - 2)->tag_data + i, LC, LOC_S2_OTHERS, 2);
 	}
     }
 
