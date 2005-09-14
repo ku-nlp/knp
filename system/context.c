@@ -3435,7 +3435,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
     TAG_DATA *tp, *tp2;
 
     for (i = s->Tag_num - 1; i >= 0; i--) {
-	tp = s->tag_data + i; 
+	tp = s->tag_data + i;
 	if (check_mc(tp)) {
 	    if (tp->para_top_p) {
 		/* 主節をチェックしないように */
@@ -4862,9 +4862,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
 	if (i < tp->num) {
 	    LC[0][i] = LOC_PRE_OTHERS;
+	    mark_all_children(cs, cs->tag_data + i, LC, LOC_PRE_OTHERS, 0);
 	}
 	else {
 	    LC[0][i] = LOC_POST_OTHERS;
+	    mark_all_children(cs, cs->tag_data + i, LC, LOC_POST_OTHERS, 0);
 	}
     }
 
@@ -4876,6 +4878,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[1][i] = LOC_S1_OTHERS;
+	    mark_all_children(cs - 1, (cs - 1)->tag_data + i, LC, LOC_S1_OTHERS, 0);
 	}
     }
 
@@ -4887,6 +4890,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		continue;
 	    }
 	    LC[2][i] = LOC_S2_OTHERS;
+	    mark_all_children(cs - 2, (cs - 2)->tag_data + i, LC, LOC_S2_OTHERS, 0);
 	}
     }
 
