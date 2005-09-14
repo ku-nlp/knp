@@ -1,3 +1,13 @@
+2005-09-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c:
+	OTHERS系の候補の(省略を含む)子供に親と同じ位置カテゴリを付与
+
+2005-09-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* dict/scode/bgh/Makefile.am, dict/src/bgh.pl:
+	bgh.plの標準入力をSJISとした
+
 2005-09-05  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/extern.h, system/feature.c, system/main.c, system/read_data.c:
