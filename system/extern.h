@@ -189,6 +189,7 @@ extern void print_pa_structure(SENTENCE_DATA *sp);
 /* configfile.c */
 extern char *check_dict_filename(char *file, int flag);
 extern char *check_rule_filename(char *file);
+extern DBM_FILE open_dict(int dic_num, char *dic_name, int *exist);
 extern void init_configfile(char *opfile);
 extern void server_read_rc(FILE *fp);
 

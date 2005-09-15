@@ -812,7 +812,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    /* filename + ".data" */
 	    if (*file == '~' && (home = getenv("HOME"))) {
 		free(fullname);
-		fullname = (char *)malloc_data(strlen(home)+strlen(file)+6, "check_dict_filename");
+		fullname = (char *)malloc_data(strlen(home)+strlen(file)+6, "check_rule_filename");
 		sprintf(fullname, "%s%s.data", home, strchr(file, '/'));
 	    }
 	    else {
@@ -880,6 +880,41 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	}
     }
     return fullname;
+}
+
+/*==================================================================*/
+     DBM_FILE open_dict(int dic_num, char *dic_name, int *exist)
+/*==================================================================*/
+{
+    char *index_db_filename;
+    DBM_FILE db;
+
+    if (DICT[dic_num]) {
+	index_db_filename = check_dict_filename(DICT[dic_num], TRUE);
+    }
+    else {
+	index_db_filename = check_dict_filename(dic_name, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", index_db_filename);
+    }
+
+    if ((db = DB_open(index_db_filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	*exist = FALSE;
+    } 
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	*exist = TRUE;
+    }
+
+    free(index_db_filename);
+    return db;
 }
 
 /*==================================================================*/

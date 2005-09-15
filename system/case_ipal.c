@@ -13,10 +13,14 @@ DBM_FILE cf_db;
 FILE *cf_noun_fp;
 DBM_FILE cf_noun_db;
 DBM_FILE cf_sim_db;
+DBM_FILE cf_case_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
 int 	   	MAX_Case_frame_num = 0;		/* 最大格フレーム数 */
+
+char *db_buf = NULL;
+int db_buf_size = 0;
 
 CF_FRAME CF_frame;
 int MAX_cf_frame_length = 0;
@@ -25,6 +29,8 @@ unsigned char *cf_str_buf;
 int	CFExist;
 int	CFNounExist;
 int	CFSimExist;
+int	CFCaseExist;
+
 int	PrintDeletedSM = 0;
 
 /*==================================================================*/
@@ -96,33 +102,12 @@ int	PrintDeletedSM = 0;
     free(data_filename);
     free(index_db_filename);
 
-    /* 格フレーム類似度DB */
+    /* 格フレーム類似度DB (cfsim.db) */
+    cf_sim_db = open_dict(CF_SIM_DB, CF_SIM_DB_NAME, &CFSimExist);
 
-    if (DICT[CF_SIM_DB]) {
-	index_db_filename = check_dict_filename(DICT[CF_SIM_DB], TRUE);
-    }
-    else {
-	index_db_filename = check_dict_filename(CF_SIM_DB_NAME, FALSE);
-    }
+    /* 格確率DB (cfcase.db) */
+    cf_case_db = open_dict(CF_CASE_DB, CF_CASE_DB_NAME, &CFCaseExist);
 
-    if (OptDisplay == OPT_DEBUG) {
-	fprintf(Outfp, "Opening %s ... ", index_db_filename);
-    }
-
-    if ((cf_sim_db = DB_open(index_db_filename, O_RDONLY, 0)) == NULL) {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("failed.\n", Outfp);
-	}
-	CFSimExist = FALSE;
-    } 
-    else {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("done.\n", Outfp);
-	}
-	CFSimExist = TRUE;
-    }
-
-    free(index_db_filename);
 }
 
 /*==================================================================*/
@@ -1659,6 +1644,22 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+		    char *malloc_db_buf(int size)
+/*==================================================================*/
+{
+    if (db_buf_size == 0) {
+	db_buf_size = DATA_LEN;
+	db_buf = (char *)malloc_data(db_buf_size, "malloc_db_buf");
+    }
+
+    while (db_buf_size < size) {
+	db_buf = (char *)realloc_data(db_buf, db_buf_size <<= 1, "malloc_db_buf");
+    }
+
+    return db_buf;
+}
+
+/*==================================================================*/
 	    float get_cfs_similarity(char *cf1, char *cf2)
 /*==================================================================*/
 {
@@ -1683,6 +1684,45 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    free(value);
     }
     free(key);
+
+    return ret;
+}
+
+/*==================================================================*/
+   double get_case_probability(int as2, CASE_FRAME *cfp, int aflag)
+/*==================================================================*/
+{
+    char *key, *value;
+    double ret;
+
+    key = malloc_db_buf(strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 
+			strlen(cfp->cf_id) + 2);
+
+    sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), cfp->cf_id);
+    value = db_get(cf_case_db, key);
+
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+	if (aflag == FALSE) {
+	    ret = 1 - ret;
+	}
+	ret = log(ret);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
+	}
+	if (aflag == FALSE) {
+	    ret = 0;
+	}
+	else {
+	    ret = UNKNOWN_CASE_SCORE;
+	}
+    }
 
     return ret;
 }

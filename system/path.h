@@ -17,6 +17,7 @@
 #define CF_DB_NAME		"ebcf/cf.db"
 #define CF_DAT_NAME		"ebcf/cf.dat"
 #define CF_SIM_DB_NAME		"ebcf/cfsim.db"
+#define CF_CASE_DB_NAME		"ebcf/cfcase.db"
 #define CF_NOUN_DB_NAME		"ebcf/noun.db"
 #define CF_NOUN_DAT_NAME	"ebcf/noun.dat"
 #define SM_ADD_DB_NAME		"scode/ntt/word2code_add.db"

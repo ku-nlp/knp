@@ -189,6 +189,8 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define UNASSIGNED	-1
 #define NIL_ASSIGNED	-2
 
+#define	UNKNOWN_CASE_SCORE	-11.512925 /* log(0.0000100) */
+
 #define END_M		-10
 
 #define CONTINUE	-1
@@ -456,7 +458,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	17
+#define DICT_MAX	18
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -474,6 +476,7 @@ typedef struct _RuleVector {
 #define CF_NOUN_INDEX_DB	14
 #define CF_NOUN_DATA		15
 #define CF_SIM_DB	16
+#define CF_CASE_DB	17
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
