@@ -3,6 +3,11 @@
 	* system/case_ipal.c, system/configfile.c, system/const.h, system/extern.h, system/path.h:
 	格フレームごとに各格をとる確率を調べる関数を追加
 
+	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c:
+	可能動詞で格フレームがないときは、もとの形でひくように変更した
+
+	* system/context.h: added comments.
+
 2005-09-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
