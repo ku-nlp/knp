@@ -1,3 +1,8 @@
+2005-09-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_ipal.c, system/configfile.c, system/const.h, system/extern.h, system/path.h:
+	格フレームごとに各格をとる確率を調べる関数を追加
+
 2005-09-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
