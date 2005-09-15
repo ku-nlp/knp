@@ -1372,10 +1372,12 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 }
 
 /*==================================================================*/
-	       char *make_pred_string(TAG_DATA *t_ptr)
+	char *make_pred_string(TAG_DATA *t_ptr, char *orig_form)
 /*==================================================================*/
 {
     char *buffer;
+
+    /* orig_form == 1: 可能動詞のもとの形を用いるとき */
 
     /* 用言タイプ, voiceの分(7)も確保しておく */
 
@@ -1399,8 +1401,14 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	strcat(buffer, t_ptr->head_ptr->Goi);
     }
     else {
-	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 8, "make_pred_string");
-	strcpy(buffer, t_ptr->head_ptr->Goi);
+	if (orig_form) {
+	    buffer = (char *)malloc_data(strlen(orig_form) + 8, "make_pred_string");
+	    strcpy(buffer, orig_form);
+	}
+	else {
+	    buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 8, "make_pred_string");
+	    strcpy(buffer, t_ptr->head_ptr->Goi);
+	}
     }
 
     return buffer;
@@ -1411,6 +1419,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 /*==================================================================*/
 {
     int f_num = 0;
+    char *cp;
 
     /* 自立語末尾語を用いて格フレーム辞書を引く */
 
@@ -1418,7 +1427,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return f_num;
     }
 
-    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, make_pred_string(t_ptr), flag);
+    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, make_pred_string(t_ptr, NULL), flag);
 
     /* 原形が曖昧な用言の場合 */
     if (check_feature(t_ptr->head_ptr->f, "原形曖昧")) {
@@ -1441,6 +1450,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    }
 	    fp = fp->next;
 	}
+    }
+
+    /* ないときで、可能動詞のときは、もとの形を使う */
+    if (f_num == 0 && 
+	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
+	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, 
+					      make_pred_string(t_ptr, cp + 9), flag);	
     }
 
     Case_frame_num += f_num;

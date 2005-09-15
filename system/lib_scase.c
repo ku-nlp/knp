@@ -108,7 +108,7 @@ int		OptUseScase;
 	    strcpy(voice, ":PC");
 	}
 
-	str_buffer = make_pred_string((TAG_DATA *)ptr);
+	str_buffer = make_pred_string((TAG_DATA *)ptr, NULL);
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
 	if (voice[0]) strcat(str_buffer, voice);
