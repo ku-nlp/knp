@@ -1555,9 +1555,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 check_feature(t_ptr->f, "非用言格解析"))) { /* サ変名詞, 形容詞語幹 */
 
-		/* 以下の2つの処理はfeatureレベルで起動している
-		   set_pred_voice(t_ptr); ヴォイス
-		   get_scase_code(t_ptr); 表層格 */
+		set_pred_voice((BNST_DATA *)t_ptr); /* ヴォイス */
 
 		make_caseframes(sp, t_ptr, CF_PRED);
 		t_ptr->e_cf_num = t_ptr->cf_num;
