@@ -1,3 +1,8 @@
+2005-09-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule:
+	英語フレーズはひとつのタグ単位とした
+
 2005-09-16  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c:
