@@ -1,3 +1,8 @@
+2005-09-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule:
+	「沢山」「少々」を数量にした
+
 2005-09-22  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule:
