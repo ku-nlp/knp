@@ -1,3 +1,8 @@
+2005-09-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	文節内の最後のタグ単位で<サ変>が間違って付与される問題を修正
+
 2005-09-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule:
