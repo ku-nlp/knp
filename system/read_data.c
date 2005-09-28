@@ -1359,6 +1359,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	    /* <文頭>, <文末>もつくが、文頭の文節が2タグ単位以上もつ場合は、
 	       <文頭>のつく位置が間違っているので下で修正する */
 	    copy_feature(&(tp->f), tp->b_ptr->f);
+	    delete_cfeature(&(tp->f), "サ変"); /* <サ変>は文節とタグ単位では異なる */
 	}
 
 	/* 各タグ単位の長さを計算しておく */
