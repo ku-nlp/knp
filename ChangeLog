@@ -1,5 +1,8 @@
 2005-09-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* system/read_data.c:
+	形態素に曖昧性のある場合に、採用した形態素以外の意味情報をすべて用いるように修正
+
 	* system/case_data.c:
 	格解析における数量の扱いの不備の修正
 
