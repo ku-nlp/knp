@@ -22,6 +22,43 @@ int preArticleID = 0;
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 /*==================================================================*/
+	void selected_imi2feature(char *str, MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *buf, *token, *cp, *imip;
+
+    if (!strcmp(str, "NIL")) {
+	return;
+    }
+
+    buf = strdup(str);
+
+    /* 通常 "" で括られている */
+    if (buf[0] == '\"') {
+	imip = &buf[1];
+	if (cp = strchr(imip, '\"')) {
+	    *cp = '\0';
+	}
+    }
+    else {
+	imip = buf;
+    }
+
+    token = strtok(imip, " ");
+    while (token) {
+	/* 以下のもの以外を付与 */
+	if (strncmp(token, "代表表記", 8) && 
+	    strncmp(token, "可能動詞", 8) && 
+	    strncmp(token, "漢字読み", 8)) {
+	    assign_cfeature(&(m_ptr->f), token);
+	}
+	token = strtok(NULL, " ");
+    }
+
+    free(buf);
+}
+
+/*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
@@ -160,7 +197,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	/* ルールに記述されているfeatureを与える (「品曖」を削除するルールもある) */
 	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
 
-	/* 原形が曖昧なときは形態素情報を保存する */
 	amb_flag = 0;
 	if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
 	    for (i = 0; i < homo_num; i++) {
@@ -180,10 +216,14 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 			    (m_ptr+i)->Imi);
 		    assign_cfeature(&((m_ptr+pref_mrph)->f), buf);
 		    free(buf);
+
+		    /* pref_mrph以外の形態素がもつ意味情報をすべて付与しておく */
+		    selected_imi2feature((m_ptr+i)->Imi, m_ptr+pref_mrph);
 		}
 	    }
 	}
 
+	/* 原形が曖昧なときはマークしておく */
 	if (amb_flag) {
 	    assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧");
 	}
