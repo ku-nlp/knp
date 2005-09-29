@@ -565,7 +565,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    if (check_feature(cel_b_ptr->f, "¿ôÎÌ") && 
 		(check_feature(cel_b_ptr->f, "·¸:¥¬³Ê") || check_feature(cel_b_ptr->f, "·¸:¥ò³Ê")) && 
 		cel_b_ptr->num > 0 && 
-		(check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "·¸:ÎÙÀÜ") || 
+		(check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "·¸:ÎÙ") || 
 		 check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "·¸:Æ±³ÊÌ¤³Ê")) && 
 		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "¿ôÎÌ") && 
 		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "»þ´Ö")) {
