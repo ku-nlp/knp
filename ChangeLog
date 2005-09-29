@@ -1,3 +1,8 @@
+2005-09-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_data.c:
+	格解析における数量の扱いの不備の修正
+
 2005-09-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
