@@ -1,3 +1,11 @@
+2005-10-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/Makefile.am, system/case_ipal.c, system/const.h, system/context.c, system/main.c, system/proper.c
+	共参照解析を追加
+	
+	* system/regexp.c
+	makeの際に警告が出ないように該当箇所の"NULL"を"(char) NULL"に変更
+
 2005-09-29  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
