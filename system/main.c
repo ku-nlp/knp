@@ -300,6 +300,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
+	else if (str_eq(argv[0], "-corefer")) {
+	    OptEllipsis |= OPT_COREFER;
+	}
 	else if (str_eq(argv[0], "-relation-noun-best")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscFlag |= OPT_DISC_BEST;
@@ -935,6 +938,8 @@ PARSED:
 
     /* 並列構造をみて固有表現認識を行う */
     /* ne_para_analysis(sp); */
+
+    assign_anaphor_feature(sp);
 
     memo_by_program(sp);	/* メモへの書き込み */
 

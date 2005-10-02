@@ -16,6 +16,7 @@ knp_SOURCES = \
 	const.h \
 	context.c \
 	context.h \
+	corefer.c \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \

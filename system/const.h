@@ -99,6 +99,7 @@
 #define OPT_ELLIPSIS	1
 #define OPT_DEMO	2
 #define OPT_REL_NOUN	4
+#define OPT_COREFER	8
 #define OPT_RAW		0
 #define OPT_PARSED	1
 #define OPT_INPUT_BNST	2
@@ -660,6 +661,10 @@ typedef struct tnode_t {
     int 	e_cf_num;
     /* 正解の関係データ */
     CPM_ptr	c_cpm_ptr;
+    /* 固有表現の形態素数 */
+    int		proper_mrph_num;
+    /* 照応詞候補の形態素数 */
+    int		anaphor_mrph_num;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20

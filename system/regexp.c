@@ -17,24 +17,24 @@
 #define MRPH_GOI	5
 
 const REGEXPMRPH RegexpMrphInitValue = { 
-    MAT_FLG, NULL, 
+    MAT_FLG, (char) NULL, 
     /* Hinshi */
-    NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    (char) NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     /* Bunrui */
-    NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    (char) NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     /* Katuyou_Kata */
-    NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    (char) NULL, {0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     /* Katuyou_Kei */
-    NULL, {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    (char) NULL, {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -43,7 +43,7 @@ const REGEXPMRPH RegexpMrphInitValue = {
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
     /* Goi */
-    NULL, {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    (char) NULL, {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -54,7 +54,7 @@ const REGEXPMRPH RegexpMrphInitValue = {
 const REGEXPMRPHS RegexpmrphsInitValue = {NULL, 0};
 
 const REGEXPBNST RegexpBnstInitValue = {
-    MAT_FLG, NULL, NULL
+    MAT_FLG, (char) NULL, (char) NULL
 };
 
 /*==================================================================*/
@@ -238,7 +238,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    fprintf(stderr, "Invalid string for meta mrph (%s).\n", 
 		    _Atom(mcell));
 	    error_in_lisp();
-	    return NULL;
+	    return (char) NULL;
 	}
     } 
 
@@ -264,7 +264,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	} else {
 	    fprintf(stderr, "Invalid string for NOT_FLAG.\n");
 	    error_in_lisp();
-	    return NULL;
+	    return (char) NULL;
 	}
     }
 }
@@ -325,7 +325,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    fprintf(stderr, "Invalid string for meta bnst (%s).\n", 
 		    _Atom(cell));
 	    error_in_lisp();
-	    return NULL;
+	    return (char) NULL;
 	}
     } 
 

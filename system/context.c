@@ -5058,6 +5058,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
     RegisterAllSurfaceEntity(sp); /* 表層に出現している要素を参照回数DBに登録 */
     sp_new = PreserveSentence(sp);
 
+    /* 共参照解析 */
+    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp);
+
     if (sp->available) {
 	Bcheck = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "DiscourseAnalysis");
 	for (i = 0; i < sp->Sen_num; i++) {

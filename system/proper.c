@@ -185,6 +185,7 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     /* NEの解析結果を登録する */
+    /* 解析が終了するまで破棄しないのでメモリを必要とする可能性あり */
 
     NE_CACHE *ncp;
 
@@ -369,9 +370,8 @@ char *ne_code_to_tagposition(int num)
 	       void assign_ne_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, flag;
-    char cp[256];
-    FEATURE **fpp;
+    int i, j, mrph_num;
+    char cp[128];
 
     /* 形態素に付与 */
     for (i = 0; i < sp->Mrph_num; i++) {
@@ -387,26 +387,24 @@ char *ne_code_to_tagposition(int num)
 	/* 対象のタグに固有表現が無ければ次のタグへ */
 	if (i == sp->tag_data[j].mrph_num) continue;
 
-	fpp = &(sp->tag_data[j].f);
-	memset(cp, 0, sizeof(char)*256);
-	sprintf(cp, "NE:(%s)", 
+	memset(cp, 0, sizeof(char)*128);
+	sprintf(cp, "NE:(%s)",
 		Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
-	flag = 0;
-	while (!flag) {
+	for (mrph_num = 1;; mrph_num++) {
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE || 
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
-		assign_cfeature(fpp, cp);
-		flag = 1;
-		continue;
+		assign_cfeature(&(sp->tag_data[j].f), cp);
+		sp->tag_data[j].proper_mrph_num = mrph_num;
+		break;
 	    }
 	    /* 複数のタグにまたがっている場合は次のタグに進む */
-	    if (++i == sp->tag_data[j].mrph_num) {
-		if (++j == sp->Tag_num) flag = 1;
+	    i++;
+	    if (i == sp->tag_data[j].mrph_num) {
 		i = 0;
+		j++;
 	    }
 	}
-	if (flag) continue;       
     }
 }
 
