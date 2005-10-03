@@ -422,7 +422,6 @@ typedef struct {
 #define		DEF_DISC_CASES		"KNP省略解析格"
 #define		DEF_DISC_ORDER		"KNP省略解析探索範囲"
 
-#define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ"
 #define		DEF_SVM_MODEL_FILE	"SVMモデルファイル"
 #define		DEF_DT_MODEL_FILE	"決定木ファイル"
 
@@ -434,6 +433,9 @@ typedef struct {
 
 #define		DEF_DISC_LOC_ORDER	"KNP省略解析探索順序"
 #define		DEF_DISC_SEN_NUM	"KNP省略解析探索文数"
+
+#define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ"
+#define         DEF_SYNONYM_FILE        "同義表現ファイル"
 
 typedef struct _RuleVector {
     char	*file;

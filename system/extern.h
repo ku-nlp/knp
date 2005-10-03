@@ -88,6 +88,7 @@ extern char		*SVMFile[];
 extern char		*SVMFileNE[];
 extern char             *DBforNE;
 extern char		*DTFile[];
+extern char             *SynonymFile;
 
 extern int	DiscAddedCases[];
 extern int	LocationLimit[];
