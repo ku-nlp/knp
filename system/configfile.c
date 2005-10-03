@@ -632,14 +632,6 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    }
 	}
 #endif
-	else if (!strcmp(DEF_SYNONYM_FILE, _Atom(car(cell1)))) {
-		DBforNE = (char *)malloc_data(strlen(KnpNE_Dirname)+12, "NE_db");
-		sprintf(DBforNE, "%s/table.db",	KnpNE_Dirname);
-		if (OptNE && OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "NE db file ... %s\n", DBforNE);
-		}
-	    }
-	}
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 
