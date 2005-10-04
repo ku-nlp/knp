@@ -5085,9 +5085,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	    /* 固有名詞は省略解析しない (用言に対して) */
 	    else if (cpm_ptr->cf.type == CF_PRED && 
-		     (check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "人名") || 
-		      check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "地名") || 
-		      check_feature((sp->bnst_data + cpm_ptr->pred_b_ptr->bnum)->f, "組織名"))) {
+		     (check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "人名") || 
+		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "地名") || 
+		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "組織名"))) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 		continue;
 	    }
