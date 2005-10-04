@@ -3,6 +3,9 @@
 	* system/read_data.c:
 	文節内部のタグ単位に<係:文節内>featureを付与
 
+	* system/context.c:
+	省略解析におけるタグ単位の固有名詞判定のバグfix
+
 2005-10-03  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/corefer.c
