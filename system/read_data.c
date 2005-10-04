@@ -1391,8 +1391,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	get_bnst_code_all((BNST_DATA *)tp);
 
 	if (tp->inum != 0) {
-	    /* case_analysis.rule で使っている */
-	    assign_cfeature(&(tp->f), "文節内");
+	    assign_cfeature(&(tp->f), "文節内"); /* case_analysis.rule で使っている */
+	    assign_cfeature(&(tp->f), "係:文節内");
 	}
 	else {
 	    /* headのときは文節のfeatureをコピー */
