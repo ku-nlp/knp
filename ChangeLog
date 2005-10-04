@@ -1,3 +1,8 @@
+2005-10-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	文節内部のタグ単位に<係:文節内>featureを付与
+
 2005-10-03  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/corefer.c
