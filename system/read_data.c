@@ -753,37 +753,44 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 /*==================================================================*/
 {
     int i;
-    char pre[WORD_LEN_MAX + 1], str[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
+    char pre[WORD_LEN_MAX + 1], str1[WORD_LEN_MAX + 1], str2[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
 
     /* 活用する品詞ではない場合 */
     if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
 	return;
     }
 
-    /* 「代表表記:動く」->「代表表記:動き」 */
+    /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
     if (cp = strstr(m_ptr->Imi, "代表表記:")) {
 	cp += 9;
-	sscanf(cp, "%[^ \"]", str);
+	sscanf(cp, "%[^/]", str1);
+
 	pre[0] = '\0';
-	post[0] = '\0';
 	strncat(pre, m_ptr->Imi, cp - m_ptr->Imi);
-	strcat(post, cp + strlen(str));
+
+	cp += strlen(str1) + 1;
+	sscanf(cp, "%[^ \"]", str2);
+	post[0] = '\0';
+	strcat(post, cp + strlen(str2));
     }
     else {
 	return;
     }
 
     /* 語幹にする */
-    str[strlen(str) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
+    str1[strlen(str1) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
+    str2[strlen(str2) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
 
     /* 活用形をつける */
-    strcat(str, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
+    strcat(str1, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
+    strcat(str2, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
 
-    sprintf(m_ptr->Imi, "%s%*s%s", pre, strlen(str), str, post);
+    /* 意味情報の修正 */
+    sprintf(m_ptr->Imi, "%s%s/%sv%s", pre, str1, str2, post);
 
     /* featureの修正 */
-    sprintf(pre, "代表表記:%*s", strlen(str), str);
+    sprintf(pre, "代表表記:%s/%sv", str1, str2);
     assign_cfeature(&(m_ptr->f), pre);
 }
 
