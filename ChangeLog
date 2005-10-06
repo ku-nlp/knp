@@ -1,3 +1,8 @@
+2005-10-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/read_data.c:
+	JUMANの意味情報フォーマットの変更に対応
+
 2005-10-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
