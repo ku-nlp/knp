@@ -632,6 +632,18 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    }
 	}
 #endif
+	else if (!strcmp(DEF_SYNONYM_FILE, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		SynonymFile = check_tilde(_Atom(cell2));
+		if (OptEllipsis & OPT_COREFER && OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Synonym db file ... %s\n", SynonymFile);
+		}
+	    }
+	}
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 

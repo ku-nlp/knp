@@ -86,7 +86,7 @@ char *ne_code_to_tagposition(int num)
 	if (OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Opening %s ... failed.\n", db_filename);
 	}
-	fprintf(stderr, ";; Cannot open CF(noun) Database <%s>.\n", db_filename);
+	fprintf(stderr, ";; Cannot open POS table for NE <%s>.\n", db_filename);
 	exit(1);
     } 
     else {
@@ -395,7 +395,6 @@ char *ne_code_to_tagposition(int num)
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE || 
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
 		assign_cfeature(&(sp->tag_data[j].f), cp);
-		sp->tag_data[j].proper_mrph_num = mrph_num;
 		break;
 	    }
 	    /* 複数のタグにまたがっている場合は次のタグに進む */

@@ -663,10 +663,6 @@ typedef struct tnode_t {
     int 	e_cf_num;
     /* 正解の関係データ */
     CPM_ptr	c_cpm_ptr;
-    /* 固有表現の形態素数 */
-    int		proper_mrph_num;
-    /* 照応詞候補の形態素数 */
-    int		anaphor_mrph_num;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20

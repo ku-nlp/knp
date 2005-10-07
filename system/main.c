@@ -616,6 +616,8 @@ extern int	EX_match_subject;
 	close_db_for_NE();
     }
 #endif
+    if (OptEllipsis & OPT_COREFER)
+	close_Synonym_db();
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -652,6 +654,9 @@ extern int	EX_match_subject;
 	init_ne_cache();
     }
 #endif
+    if (OptEllipsis & OPT_COREFER)
+	init_Synonym_db();
+
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
     init_noun_cf();	/* 格フレーム(名詞)オープン */
