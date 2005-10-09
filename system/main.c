@@ -944,7 +944,7 @@ PARSED:
     /* 並列構造をみて固有表現認識を行う */
     /* ne_para_analysis(sp); */
 
-    assign_anaphor_feature(sp);
+    if (OptEllipsis & OPT_COREFER) assign_anaphor_feature(sp);
 
     memo_by_program(sp);	/* メモへの書き込み */
 
