@@ -59,6 +59,25 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+    void assign_feature_alt_mrph(FEATURE **fpp, MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *buf;
+
+    buf = malloc_data(strlen(m_ptr->Goi2) + 
+		      strlen(m_ptr->Yomi) + 
+		      strlen(m_ptr->Goi) + 
+		      strlen(m_ptr->Imi) + 20, "assign_feature_alt_mrph");
+    sprintf(buf, "ALT-%s-%s-%s-%d-%d-%d-%d-%s", 
+	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+	    m_ptr->Hinshi, m_ptr->Bunrui, 
+	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, 
+	    m_ptr->Imi);
+    assign_cfeature(fpp, buf);
+    free(buf);
+}
+
+/*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
@@ -204,18 +223,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		    if (strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) { /* 原形がpref_mrphと異なる場合 */
 			amb_flag = 1;
 		    }
-		    buf = malloc_data(strlen((m_ptr+i)->Goi2)+
-				      strlen((m_ptr+i)->Yomi)+
-				      strlen((m_ptr+i)->Goi)+
-				      strlen((m_ptr+i)->Imi)+20, "lexical_disambiguation");
+
 		    /* もとの形態素情報をfeatureとして保存 */
-		    sprintf(buf, "ALT-%s-%s-%s-%d-%d-%d-%d-%s", 
-			    (m_ptr+i)->Goi2, (m_ptr+i)->Yomi, (m_ptr+i)->Goi, 
-			    (m_ptr+i)->Hinshi, (m_ptr+i)->Bunrui, 
-			    (m_ptr+i)->Katuyou_Kata, (m_ptr+i)->Katuyou_Kei, 
-			    (m_ptr+i)->Imi);
-		    assign_cfeature(&((m_ptr+pref_mrph)->f), buf);
-		    free(buf);
+		    assign_feature_alt_mrph(&((m_ptr+pref_mrph)->f), m_ptr + i);
 
 		    /* pref_mrph以外の形態素がもつ意味情報をすべて付与しておく */
 		    selected_imi2feature((m_ptr+i)->Imi, m_ptr+pref_mrph);
@@ -749,18 +759,18 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 }
 
 /*==================================================================*/
-	       void *change_mrph_rep(MRPH_DATA *m_ptr)
+ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag)
 /*==================================================================*/
 {
     int i;
     char pre[WORD_LEN_MAX + 1], str1[WORD_LEN_MAX + 1], str2[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
 
+    /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
+
     /* 活用する品詞ではない場合 */
     if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
 	return;
     }
-
-    /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
     if (cp = strstr(m_ptr->Imi, "代表表記:")) {
 	cp += 9;
@@ -790,27 +800,18 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     sprintf(m_ptr->Imi, "%s%s/%sv%s", pre, str1, str2, post);
 
     /* featureの修正 */
-    sprintf(pre, "代表表記:%s/%sv", str1, str2);
-    assign_cfeature(&(m_ptr->f), pre);
+    if (modify_feature_flag) {
+	sprintf(pre, "代表表記:%s/%sv", str1, str2);
+	assign_cfeature(&(m_ptr->f), pre);
+    }
 }
 
 /*==================================================================*/
-	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
+	  void change_one_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
     char h_buffer[62], b_buffer[62], kata_buffer[62], kei_buffer[62];
-    char org_buffer[512];
     int num;
-
-    /* もとの形態素情報をfeatureとして保存 */
-    sprintf(org_buffer, "品詞変更:%s-%s-%s-%d-%d-%d-%d", 
-	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
-	    m_ptr->Hinshi, m_ptr->Bunrui, 
-	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
-    assign_cfeature(&(m_ptr->f), org_buffer);
-
-    /* まず、代表表記を修正 */
-    change_mrph_rep(m_ptr);
 
     m_ptr->Hinshi = 0;
     m_ptr->Bunrui = 0;
@@ -838,6 +839,58 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     if (m_ptr->Katuyou_Kata == 0) {
 	strcpy(m_ptr->Goi, m_ptr->Goi2);
     }
+}
+
+/*==================================================================*/
+	  void change_alt_mrph(MRPH_DATA *m_ptr, FEATURE *f)
+/*==================================================================*/
+{
+    FEATURE **fpp = &(m_ptr->f), *ret_fp = NULL;
+    MRPH_DATA m;
+
+    /* ALT中の「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
+
+    while (*fpp) {
+	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
+	    sscanf((*fpp)->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+		   m.Goi2, m.Yomi, m.Goi, 
+		   &m.Hinshi, &m.Bunrui, 
+		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+	    change_one_mrph_rep(&m, 0);
+	    change_one_mrph(&m, f);
+	    assign_feature_alt_mrph(&ret_fp, &m);
+	    free((*fpp)->cp); /* 古いALTは削除 */
+	    *fpp = (*fpp)->next;
+	}
+	else {
+	    fpp = &((*fpp)->next);
+	}
+    }
+
+    /* 新しいALT */
+    if (ret_fp) {
+	append_feature(&(m_ptr->f), ret_fp);
+    }
+}
+
+/*==================================================================*/
+	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
+/*==================================================================*/
+{
+    char org_buffer[512];
+    int num;
+
+    /* もとの形態素情報をfeatureとして保存 */
+    sprintf(org_buffer, "品詞変更:%s-%s-%s-%d-%d-%d-%d-%s", 
+	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+	    m_ptr->Hinshi, m_ptr->Bunrui, 
+	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
+    assign_cfeature(&(m_ptr->f), org_buffer);
+
+    change_one_mrph_rep(m_ptr, 1); /* 代表表記を修正 */
+    change_one_mrph(m_ptr, f); /* 品詞などを修正 */
+
+    change_alt_mrph(m_ptr, f); /* ALTの中も修正 */
 }
 
 /*==================================================================*/
