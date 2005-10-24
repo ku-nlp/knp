@@ -1,3 +1,8 @@
+2005-10-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_ipal.c, system/read_data.c:
+	ALTの中も品詞変更するように修正
+
 2005-10-07  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/corefer.c:
