@@ -3,6 +3,9 @@
 	* system/case_ipal.c, system/read_data.c:
 	ALTの中も品詞変更するように修正
 
+	* system/main.c:
+	互換性のため-tag, -tagtabオプションを追加
+
 2005-10-07  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/corefer.c:
