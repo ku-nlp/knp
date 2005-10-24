@@ -167,6 +167,8 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
