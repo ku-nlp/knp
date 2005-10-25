@@ -763,7 +763,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	sprintf(ret, "%s:%s", verb, type);
     }
     else {
-	fprintf(stderr, ";; Unknown cfid format (%s)!\n", cfid);
+	/* Unknown cfid format */
 	ret = NULL;
     }
 
