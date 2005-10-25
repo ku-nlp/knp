@@ -4639,29 +4639,30 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		CFLIST *cfp;
 		char *key;
 
-		key = get_pred_id(cpm_ptr->pred_b_ptr->cf_ptr->cf_id);
-		cfp = CheckCF(key);
-		free(key);
+		if ((key = get_pred_id(cpm_ptr->pred_b_ptr->cf_ptr->cf_id)) != NULL) {
+		    cfp = CheckCF(key);
+		    free(key);
 
-		if (cfp) {
-		    for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
-			for (i = 0; i < cfp->cfid_num; i++) {
-			    if (((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type) &&
-				 ((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_similarity = 
-				get_cfs_similarity((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_id, 
-						   *(cfp->cfid + i))) > CFSimThreshold) {
-				*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
-				break;
+		    if (cfp) {
+			for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
+			    for (i = 0; i < cfp->cfid_num; i++) {
+				if (((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type) &&
+				    ((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_similarity = 
+				     get_cfs_similarity((cpm_ptr->pred_b_ptr->cf_ptr + l)->cf_id, 
+							*(cfp->cfid + i))) > CFSimThreshold) {
+				    *(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
+				    break;
+				}
 			    }
 			}
-		    }
 
-		    cpm_ptr->pred_b_ptr->e_cf_num = frame_num;
+			cpm_ptr->pred_b_ptr->e_cf_num = frame_num;
 
-		    if (VerboseLevel >= VERBOSE2) {
-			fprintf(stderr, ";; ¡ú %s [%s] CF -> %d/%d\n", sp->KNPSID, 
-				cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				frame_num, cpm_ptr->pred_b_ptr->cf_num);
+			if (VerboseLevel >= VERBOSE2) {
+			    fprintf(stderr, ";; ¡ú %s [%s] CF -> %d/%d\n", sp->KNPSID, 
+				    cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+				    frame_num, cpm_ptr->pred_b_ptr->cf_num);
+			}
 		    }
 		}
 	    }
