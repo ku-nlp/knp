@@ -1518,6 +1518,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     cf_ptr->element_num = num;
     cf_ptr->etcflag = CF_NORMAL;
     sprintf(cf_ptr->cf_id, "%s:%s0", t_ptr->head_ptr->Goi, cf_ptr->pred_type);
+    cf_ptr->entry = strdup(t_ptr->head_ptr->Goi);
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
