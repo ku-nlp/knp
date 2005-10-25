@@ -65,13 +65,7 @@ int	PrintFrequency = 0;
     int i;
 
     fputs("【", Outfp);
-
-    if (cpm_ptr->result_num > 0 && cmm_ptr->cf_ptr->entry) {
-	fprintf(Outfp, "%s", cmm_ptr->cf_ptr->entry);
-    }
-    else {
-	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi);
-    }
+    fputs(cpm_ptr->pred_b_ptr->head_ptr->Goi, Outfp); /* 用言表記 */
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
 	fputs("(使役)】", Outfp);

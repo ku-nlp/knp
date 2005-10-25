@@ -81,7 +81,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
-    int i, j, k, flag, amb_flag, pref_mrph, pref_rule;
+    int i, j, k, flag, orig_amb_flag, pref_mrph, pref_rule;
     int bw_length;
     int real_homo_num;
     int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
@@ -216,12 +216,12 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	/* ルールに記述されているfeatureを与える (「品曖」を削除するルールもある) */
 	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
 
-	amb_flag = 0;
+	orig_amb_flag = 0;
 	if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
 	    for (i = 0; i < homo_num; i++) {
 		if (i != pref_mrph) {
 		    if (strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) { /* 原形がpref_mrphと異なる場合 */
-			amb_flag = 1;
+			orig_amb_flag = 1;
 		    }
 
 		    /* もとの形態素情報をfeatureとして保存 */
@@ -234,7 +234,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
 
 	/* 原形が曖昧なときはマークしておく */
-	if (amb_flag) {
+	if (orig_amb_flag) {
 	    assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧");
 	}
 

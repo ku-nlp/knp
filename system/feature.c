@@ -599,6 +599,25 @@
 }
 
 /*==================================================================*/
+		int check_str_type(unsigned char *ucp)
+/*==================================================================*/
+{
+    int code = 0, precode = 0;
+
+    while (*ucp) {
+	code = (*ucp << 8) + *(ucp + 1);
+	code = check_char_type(code);
+	if (precode && precode != code) {
+	    return 0;
+	}
+	precode = code;
+	ucp += 2;
+    }
+
+    return code;
+}
+
+/*==================================================================*/
  int check_function(char *rule, FEATURE *fd, void *ptr1, void *ptr2)
 /*==================================================================*/
 {

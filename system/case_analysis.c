@@ -310,6 +310,26 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	cpm_ptr->result_num = 1;
     }
     else {
+	int hiragana_prefer_flag = 0;
+
+	/* 表記がひらがなの場合: 
+	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
+	   ひらがな以外が多ければひらがな以外のみを対象にする */
+	if (check_str_type(b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+	    int hiragana_count = 0;
+	    for (i = 0; i < b_ptr->cf_num; i++) {
+		if (check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) {
+		    hiragana_count++;
+		}
+	    }
+	    if (2 * hiragana_count > b_ptr->cf_num) {
+		hiragana_prefer_flag = 1;
+	    }
+	    else {
+		hiragana_prefer_flag = -1;
+	    }
+	}
+
 	/* 格フレーム設定 */
 	for (i = 0; i < b_ptr->cf_num; i++) {
 	    /* 格フレームが1個ではないとき */
@@ -320,6 +340,10 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		}
 		/* 直前格が修飾の場合などを除く */
 		else if (CheckCfAdjacent(b_ptr->cf_ptr+i) == FALSE) {
+		    continue;
+		}
+		else if ((hiragana_prefer_flag > 0 && check_str_type((b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA) || 
+			 (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA)) {
 		    continue;
 		}
 	    }
@@ -1485,12 +1509,31 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
+		 char *get_mrph_rep(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *cp;
+
+    if (cp = strstr(m_ptr->Imi, "代表表記:")) {
+	return cp + 9;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
   void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* 原形が曖昧な用言 */
-    if (check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") && 
-	strcmp(cpm_ptr->pred_b_ptr->head_ptr->Goi, cpm_ptr->cmm[0].cf_ptr->entry)) { /* 現在の形態素表記と格フレームの表記が異なる場合のみ変更 */
+    /* 格解析結果から形態素の曖昧性解消を行う */
+
+    char *rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr);
+
+    /* 現在の形態素代表表記と格フレームの表記が異なる場合のみ変更 */
+    if (rep_cp && 
+	strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, strlen(cpm_ptr->cmm[0].cf_ptr->entry)) && 
+	(check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") || /* 原形が曖昧な用言 */
+	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
+	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖")))) { /* 品曖なひらがな */
 	FEATURE *fp;
 	MRPH_DATA m;
 
@@ -1501,8 +1544,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		/* 選択した格フレームの表記と一致する形態素を選択 */
-		if (!strcmp(cpm_ptr->cmm[0].cf_ptr->entry, m.Goi)) {
+		rep_cp = get_mrph_rep(&m);
+		/* 選択した格フレームの表記と一致する代表表記をもつ形態素を選択 */
+		if (rep_cp && 
+		    !strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
+			     strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
 		    char *imip, *cp;
 
 		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Goi, m.Goi);

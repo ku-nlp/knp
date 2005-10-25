@@ -871,7 +871,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     cf_ptr->cf_size = size;
     strcpy(cf_ptr->cf_id, i_ptr->DATA); 
     cf_ptr->etcflag = i_ptr->etcflag;
-    cf_ptr->entry = strdup(verb);
+    cf_ptr->entry = strdup(cf_ptr->cf_id);
+    sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
     for (i = 0; i_ptr->samecase[i][0] != END_M; i++) {
 	cf_ptr->samecase[i][0] = i_ptr->samecase[i][0];
@@ -1092,25 +1093,33 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 
     /* 直前格要素をくっつけて検索 */
     if (flag == CF_PRED) {
-	cbp = get_quasi_closest_case_component(sp, t_ptr);
-	if (cbp) {
-	    char *buffer, *pp;
-
-	    pp = feature2case(cbp);
-	    if (pp) {
-		buffer = (char *)malloc_data(strlen(cbp->head_ptr->Goi) + strlen(pp) + strlen(verb) + 3, 
-					     "_make_ipal_cframe_subcontract");
-		sprintf(buffer, "%s-%s-%s", cbp->head_ptr->Goi, pp, verb);
-		address_str = get_ipal_address(buffer, flag);
-		free(buffer);
-		free(pp);
-	    }
-	    if (!pp || !address_str) {
-		address_str = get_ipal_address(verb, flag);
-	    }
+	/* ひらがなで曖昧性のあるときは、格解析で曖昧性解消するために
+	   ここではすべての格フレームを検索しておく */
+	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
+	    check_feature(t_ptr->head_ptr->f, "品曖")) {
+	    address_str = get_ipal_address(verb, flag);
 	}
 	else {
-	    address_str = get_ipal_address(verb, flag);
+	    cbp = get_quasi_closest_case_component(sp, t_ptr);
+	    if (cbp) {
+		char *buffer, *pp;
+
+		pp = feature2case(cbp);
+		if (pp) {
+		    buffer = (char *)malloc_data(strlen(cbp->head_ptr->Goi) + strlen(pp) + strlen(verb) + 3, 
+						 "_make_ipal_cframe_subcontract");
+		    sprintf(buffer, "%s-%s-%s", cbp->head_ptr->Goi, pp, verb);
+		    address_str = get_ipal_address(buffer, flag);
+		    free(buffer);
+		    free(pp);
+		}
+		if (!pp || !address_str) {
+		    address_str = get_ipal_address(verb, flag);
+		}
+	    }
+	    else {
+		address_str = get_ipal_address(verb, flag);
+	    }
 	}
     }
     else {
