@@ -1551,6 +1551,10 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			     strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
 		    char *imip, *cp;
 
+		    /* 現在の形態素をALTに保存 */
+		    assign_feature_alt_mrph(&(cpm_ptr->pred_b_ptr->head_ptr->f), 
+					    cpm_ptr->pred_b_ptr->head_ptr);
+
 		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Goi, m.Goi);
 		    strcpy(cpm_ptr->pred_b_ptr->head_ptr->Yomi, m.Yomi);
 		    cpm_ptr->pred_b_ptr->head_ptr->Hinshi = m.Hinshi;
@@ -1571,6 +1575,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			imip = m.Imi;
 		    }
 		    imi2feature(imip, cpm_ptr->pred_b_ptr->head_ptr);
+		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "形態素曖昧性解消");
 		    break;
 		}
 	    }
