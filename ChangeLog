@@ -1,3 +1,8 @@
+2005-10-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c:
+	ひらがな用言の曖昧性解消において最初に仮決定した形態素をALTに入れるように修正
+
 2005-10-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/case_print.c, system/extern.h, system/feature.c, system/read_data.c:
