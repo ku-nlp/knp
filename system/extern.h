@@ -141,10 +141,10 @@ extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
 extern char *make_print_string(TAG_DATA *bp, int flag);
 extern void InitCPMcache();
 extern void ClearCPMcache();
-extern int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
+extern int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp);
 
 /* case_data.c */
 extern char *make_fukugoji_string(TAG_DATA *b_ptr);
@@ -166,6 +166,13 @@ extern int check_examples(char *cp, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr, char *orig_form);
 extern float get_cfs_similarity(char *cf1, char *cf2);
+extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
+extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
+					     int as2, CASE_FRAME *cfp);
+extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
+extern double get_case_num_probability(CASE_FRAME *cfp, int num);
+extern double get_ex_probability(int as1, CASE_FRAME *cfd,
+				 int as2, CASE_FRAME *cfp);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -179,6 +186,7 @@ extern int check_case(CASE_FRAME *cf, int c);
 extern int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n);
 extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
+extern int dat_match_sm(int as1, CASE_FRAME *cfd, char *sm);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
@@ -356,6 +364,7 @@ extern void assign_dpnd_rule(SENTENCE_DATA *sp);
 extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
 extern void make_tag_units(SENTENCE_DATA *sp);
 extern void assign_feature_for_tag(SENTENCE_DATA *sp);
+extern void assign_feature_alt_mrph(FEATURE **fpp, MRPH_DATA *m_ptr);
 
 /* read_rule.c */
 extern int case2num(char *cp);

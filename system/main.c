@@ -179,6 +179,11 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
+	else if (str_eq(argv[0], "-probcase")) {
+	    OptAnalysis = OPT_CASE;
+	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
+	    SOTO_THRESHOLD = 0;
+	}
 	else if (str_eq(argv[0], "-ellipsis")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	}

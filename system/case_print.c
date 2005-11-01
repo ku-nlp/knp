@@ -82,7 +82,7 @@ int	PrintFrequency = 0;
 
     fprintf(Outfp, " %s ", cpm_ptr->cf.pred_type);
 
-    if (OptUseSmfix == TRUE && 
+    if (OptUseSmfix == TRUE && CFSimExist == TRUE && 
 	cpm_ptr->pred_b_ptr->cf_num != cpm_ptr->pred_b_ptr->e_cf_num) {
 	fprintf(Outfp, "[%d/%d]", 
 		cpm_ptr->pred_b_ptr->e_cf_num, 
@@ -170,19 +170,18 @@ struct _sort_kv {
 	return;
 
     /* 得点, 意味の表示 */
-    if (OptUseSmfix == TRUE) {
-	fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s (%.2f) ", 
-		cmm_ptr->score, cmm_ptr->pure_score[0], 
+    fprintf(Outfp, "★%6.3f点 ", cmm_ptr->score);
+    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {
+	fprintf(Outfp, "(%d/%.3f) ", 
+		(int)cmm_ptr->pure_score[0], 
 		sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
-						&(cmm_ptr->result_lists_p[0])))), 
-		cmm_ptr->cf_ptr->cf_id, cmm_ptr->cf_ptr->cf_similarity);
+						&(cmm_ptr->result_lists_p[0])))));
     }
-    else {
-	fprintf(Outfp, "★%6.2f点 (%d/%.3f) %s ", 
-		cmm_ptr->score, cmm_ptr->pure_score[0], 
-		sqrt((double)(count_pat_element(cmm_ptr->cf_ptr, 
-						&(cmm_ptr->result_lists_p[0])))), 
-		cmm_ptr->cf_ptr->cf_id);
+    fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->cf_id);
+
+    /* 格フレーム類似度 */
+    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
+	fprintf(Outfp, "(%.2f) ", cmm_ptr->cf_ptr->cf_similarity);
     }
 
     if (cmm_ptr->cf_ptr->feature) {
@@ -235,6 +234,8 @@ struct _sort_kv {
 
 	    if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
 		fputs("--", Outfp);
+		if (OptCaseFlag & OPT_CASE_USE_PROBABILITY)
+		    fprintf(Outfp, " ［%.3f］", cmm_ptr->result_lists_p[k].score[i]);
 	    }
 	    else {
 		_print_bnst(cpm_ptr->elem_b_ptr[num]);
@@ -246,8 +247,10 @@ struct _sort_kv {
 		    fputc('*', Outfp);
 
 		/* 格ごとのスコアを表示 */
-		if (cmm_ptr->result_lists_p[k].score[i] >= 0)
-		    fprintf(Outfp, "［%2d点］", cmm_ptr->result_lists_p[k].score[i]);
+		if (OptCaseFlag & OPT_CASE_USE_PROBABILITY)
+		    fprintf(Outfp, "［%.3f］", cmm_ptr->result_lists_p[k].score[i]);
+		else if (cmm_ptr->result_lists_p[k].score[i] >= 0)
+		    fprintf(Outfp, "［%2d点］", (int)cmm_ptr->result_lists_p[k].score[i]);
 	    }
 
 	    fprintf(Outfp, " : 《");
@@ -356,7 +359,7 @@ struct _sort_kv {
     TOTAL_MGR *tm = sp->Best_mgr;
 
     fputs("<Case Structure Analysis Data>\n", Outfp);
-    fprintf(Outfp, "■ %d Score:%d, Dflt:%d, Possibility:%d/%d ■\n", 
+    fprintf(Outfp, "■ %d Score:%.3f, Dflt:%d, Possibility:%d/%d ■\n", 
 	    sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
 
     /* 上記出力の最後の引数(依存構造の数)は1にしている．

@@ -121,6 +121,7 @@
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
 #define	OPT_CASE_USE_EX_ALL	8
+#define	OPT_CASE_USE_PROBABILITY	16
 
 #define	OPT_DISC_OR_CF	1
 #define	OPT_DISC_BEST	2
@@ -190,7 +191,13 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define UNASSIGNED	-1
 #define NIL_ASSIGNED	-2
 
+#define	NIL_ASSINED_SCORE	-20
+#define	FREQ0_ASSINED_SCORE	-13.815511 /* log(0.0000010) */
 #define	UNKNOWN_CASE_SCORE	-11.512925 /* log(0.0000100) */
+#define	UNKNOWN_CF_SCORE	-11.512925 /* log(0.0000100) */
+
+#define	CASE_MATCH_FAILURE_SCORE	-2
+#define	CASE_MATCH_FAILURE_PROB		-1001
 
 #define END_M		-10
 
@@ -461,7 +468,7 @@ typedef struct _RuleVector {
 #define TagRuleType 11
 
 /* 辞書の最大数 */
-#define DICT_MAX	18
+#define DICT_MAX	21
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -480,6 +487,9 @@ typedef struct _RuleVector {
 #define CF_NOUN_DATA		15
 #define CF_SIM_DB	16
 #define CF_CASE_DB	17
+#define CF_EX_DB	18
+#define CASE_DB		19
+#define CFP_DB		20
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -756,16 +766,16 @@ typedef struct cf_def {
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
 typedef struct {
     int  	flag[CF_ELEMENT_MAX];
-    int		score[CF_ELEMENT_MAX];
+    double	score[CF_ELEMENT_MAX];
     int		pos[CF_ELEMENT_MAX];
 } LIST;
 
 /* 文と格フレームの対応付け結果の記録 */
 typedef struct {
     CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
-    float 	score;				/* スコア */
-    int		pure_score[MAX_MATCH_MAX];	/* 正規化する前のスコア */
-    float	sufficiency;			/* 格フレームの埋まりぐあい */
+    double 	score;				/* スコア */
+    double	pure_score[MAX_MATCH_MAX];	/* 正規化する前のスコア */
+    double	sufficiency;			/* 格フレームの埋まりぐあい */
     int 	result_num;			/* 記憶する対応関係数 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
@@ -781,7 +791,7 @@ typedef struct cpm_def {
     TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
     struct sentence	*elem_s_ptr[CF_ELEMENT_MAX];	/* どの文の要素であるか (省略用) */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
-    int 	score;				/* スコア最大値(=cmm[0].score) */
+    double 	score;				/* スコア最大値(=cmm[0].score) */
     int 	result_num;			/* 記憶する格フレーム数 */
     int		tie_num;
     CF_MATCH_MGR cmm[CMM_MAX];			/* スコア最大の格フレームとの
@@ -795,7 +805,7 @@ typedef struct {
     DPND 	dpnd;		/* 依存構造 */
     int		pssb;		/* 依存構造の可能性の何番目か */
     int		dflt;		/* ？ */
-    int 	score;		/* スコア */
+    double 	score;		/* スコア */
     int 	pred_num;	/* 文中の用言数 */
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
     int		ID;		/* DPND の ID */

@@ -276,7 +276,7 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 }
 
 /*==================================================================*/
-int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide)
+double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide)
 /*==================================================================*/
 {
     int i, j, frame_num = 0, pat_num;
@@ -372,14 +372,15 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 	    if (OptDisplay == OPT_DEBUG && closest > -1 && !OptEllipsis) {
 		pat_num = count_pat_element((Cf_match_mgr+i)->cf_ptr, &((Cf_match_mgr+i)->result_lists_p[0]));
 		if (!((Cf_match_mgr+i)->score < 0 || pat_num == 0)) {
-		    (Cf_match_mgr+i)->score = (Cf_match_mgr+i)->pure_score[0] / sqrt((double)pat_num);
+		    (Cf_match_mgr+i)->score = (OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? (Cf_match_mgr+i)->pure_score[0] : ((Cf_match_mgr+i)->pure_score[0] / sqrt((double)pat_num));
 		}
 	    }
 
 	    /* スコア順にソート */
 	    for (j = cpm_ptr->result_num - 1; j >= 0; j--) {
 		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
-		    (cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && (
+		    (cpm_ptr->cmm[j].score != CASE_MATCH_FAILURE_PROB && 
+		     cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && (
 			(closest > -1 && 
 			 (CheckCfClosest(&(cpm_ptr->cmm[j+1]), closest) == TRUE && 
 			  CheckCfClosest(&(cpm_ptr->cmm[j]), closest) == FALSE)) || 
@@ -400,7 +401,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 
 	/* スコアが同点の格フレームの個数を設定 */
 	if (cpm_ptr->result_num > 0) {
-	    float top;
+	    double top;
 	    int cflag = 0;
 	    cpm_ptr->tie_num = 1;
 	    top = cpm_ptr->cmm[0].score;
@@ -467,7 +468,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		if (cpm_ptr->cmm[i].score < 0 || pat_num == 0) {
 		    break;
 		}
-		cpm_ptr->cmm[i].score = cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num);
+		cpm_ptr->cmm[i].score = (OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? cpm_ptr->cmm[i].pure_score[0] : (cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num));
 	    }
 	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
 	    for (i = cpm_ptr->tie_num - 1; i >= 1; i--) {
@@ -480,7 +481,7 @@ int find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decid
 		}
 	    }
 	}
-	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;
+	cpm_ptr->score = cpm_ptr->cmm[0].score;
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -689,7 +690,7 @@ CPM_CACHE *CPMcache[TBLSIZE];
 }
 
 /*==================================================================*/
-int case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
+double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
 /*==================================================================*/
 {
     /*
@@ -748,7 +749,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 {
     CF_PRED_MGR *cpm_ptr;
     int i;
-    int one_case_point;
+    double one_case_point;
 
     /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
     if (t_ptr->para_top_p != TRUE && 
@@ -995,14 +996,16 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     for (i = 0; i < sp->Bnst_num - 1; i++) {
 	/* ガ格 -> レベル:A (ルールでこの係り受けを許した場合は、
 	   ここでコストを与える) */
-	if (check_feature((sp->bnst_data + i)->f, "係:ガ格") && 
+	if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	    check_feature((sp->bnst_data + i)->f, "係:ガ格") && 
 	    check_feature((sp->bnst_data + dpnd.head[i])->f, "レベル:A")) {
 	    distance_cost += LEVELA_COST;
 	}
 
 	if (dpnd.dflt[i] > 0) {
 	    /* 提題 */
-	    if (check_feature((sp->bnst_data + i)->f, "提題")) {
+	    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		check_feature((sp->bnst_data + i)->f, "提題")) {
 		distance_cost += dpnd.dflt[i];
 
 		/* 提題につられて遠くに係ってしまった文節の距離コスト */
@@ -1019,7 +1022,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	    }
 	    /* 提題以外 */
 	    /* 係り側が連用でないとき */
-	    if (!check_feature((sp->bnst_data + i)->f, "係:連用")) {
+	    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		!check_feature((sp->bnst_data + i)->f, "係:連用")) {
 		/* 自分に読点がなく、隣の強い用言 (連体以外) を越えているとき */
 		if (!check_feature((sp->bnst_data + i)->f, "読点")) {
 		    if (dpnd.head[i] > i + 1 && 
@@ -1039,63 +1043,80 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		}
 	    }
 
+	    /* 確率的: 副詞などのコスト (tentative) */
+	    if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
+		if (check_feature((sp->bnst_data + i)->f, "係:連用") && 
+		    !check_feature((sp->bnst_data + i)->f, "用言")) {
+		    distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
+		}
+	    }
 	    /* デフォルトとの差 x 2 を距離のコストとする
 	       ただし、形容詞を除く連格の場合は x 1 */
-	    if (!check_feature((sp->bnst_data + i)->f, "係:連格") || 
-		check_feature((sp->bnst_data + i)->f, "用言:形")) {
-		distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
-	    }
 	    else {
-		distance_cost += dpnd.dflt[i]*RENKAKU_STEP;
+		if (!check_feature((sp->bnst_data + i)->f, "係:連格") || 
+		    check_feature((sp->bnst_data + i)->f, "用言:形")) {
+		    distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
+		}
+		else {
+		    distance_cost += dpnd.dflt[i]*RENKAKU_STEP;
+		}
 	    }
 	}		    
     }
 
     Work_mgr.score -= distance_cost;
 
-    for (i = sp->Bnst_num - 1; i > 0; i--) {
-	/* 文末から用言ごとに提題を処理する */
-	if ((cp = (char *)check_feature((sp->bnst_data + i)->f, "提題受"))) {
+    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {
+	for (i = sp->Bnst_num - 1; i > 0; i--) {
+	    /* 文末から用言ごとに提題を処理する */
+	    if ((cp = (char *)check_feature((sp->bnst_data + i)->f, "提題受"))) {
 
-	    /* topic_slot[0]	時間以外のハ格のスロット
-	       topic_slot[1]	「<<時間>>は」のスロット
-	       両方とも 1 以下しか許可しない
-	    */
+		/* topic_slot[0]	時間以外のハ格のスロット
+		   topic_slot[1]	「<<時間>>は」のスロット
+		   両方とも 1 以下しか許可しない
+		*/
 
-	    topic_slot[0] = 0;
-	    topic_slot[1] = 0;
-	    one_topic_score = 0;
+		topic_slot[0] = 0;
+		topic_slot[1] = 0;
+		one_topic_score = 0;
 
-	    /* 係り側を探す */
-	    for (j = i - 1; j >= 0; j--) {
-		if (dpnd.head[j] != i) {
-		    continue;
-		}
-		if (check_feature((sp->bnst_data + j)->f, "提題")) {
-		    if (check_feature((sp->bnst_data + j)->f, "時間")) {
-			topic_slot[1]++;
+		/* 係り側を探す */
+		for (j = i - 1; j >= 0; j--) {
+		    if (dpnd.head[j] != i) {
+			continue;
 		    }
-		    else {
-			topic_slot[0]++;
+		    if (check_feature((sp->bnst_data + j)->f, "提題")) {
+			if (check_feature((sp->bnst_data + j)->f, "時間")) {
+			    topic_slot[1]++;
+			}
+			else {
+			    topic_slot[0]++;
+			}
+			sscanf(cp, "%*[^:]:%d", &topic_score);
+			one_topic_score += topic_score;
 		    }
-		    sscanf(cp, "%*[^:]:%d", &topic_score);
-		    one_topic_score += topic_score;
 		}
-	    }
 
-	    if (topic_slot[0] > 0 || topic_slot[1] > 0) {
-		one_topic_score += 20;
-	    }
-	    Work_mgr.score += one_topic_score;
-	    if (OptDisplay == OPT_DEBUG) {
-		topic_score_sum += one_topic_score;
+		if (topic_slot[0] > 0 || topic_slot[1] > 0) {
+		    one_topic_score += 20;
+		}
+		Work_mgr.score += one_topic_score;
+		if (OptDisplay == OPT_DEBUG) {
+		    topic_score_sum += one_topic_score;
+		}
 	    }
 	}
     }
 
     if (OptDisplay == OPT_DEBUG) {
-	fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", 
-		Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
+	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
+	    fprintf(stdout, "■ %d点 (距離減点 %d点)\n", 
+		    Work_mgr.score, distance_cost);
+	}
+	else {
+	    fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", 
+		    Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
+	}
     }
         
     /* 後処理 */
@@ -1582,6 +1603,31 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    fp = fp->next;
 	}
     }
+}
+
+/*==================================================================*/
+       int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp)
+/*==================================================================*/
+{
+    int i, dist = 0;
+
+    /* 候補チェック */
+    if (Work_mgr.dpnd.check[bp->num].num == -1) {
+	return -1;
+    }
+    for (i = 0; i < Work_mgr.dpnd.check[bp->num].num; i++) {
+	if (Work_mgr.dpnd.check[bp->num].pos[i] == hp->num) {
+	    dist = ++i;
+	    break;
+	}
+    }
+    if (dist == 0) {
+	return -1;
+    }
+    else if (dist > 1) {
+	dist = 2;
+    }
+    return dist;
 }
 
 /*====================================================================
