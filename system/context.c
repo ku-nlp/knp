@@ -1141,6 +1141,39 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 }
 
 /*==================================================================*/
+int CheckHaveEllipsisComponentPara(TAG_DATA *tp, char *word)
+/*==================================================================*/
+{
+    /* 与えられた格要素の並列要素をチェック */
+
+    int j;
+
+    /* 省略のとき */
+    if (tp->para_type == PARA_NORMAL && 
+	tp->parent && 
+	tp->parent->para_top_p) {
+	for (j = 0; tp->parent->child[j]; j++) {
+	    if (tp != tp->parent->child[j] && 
+		tp->parent->child[j]->para_type == PARA_NORMAL && 
+		str_eq(tp->parent->child[j]->head_ptr->Goi, word)) {
+		return 1;
+	    }
+	}
+    }
+    /* 直接のとき */
+    else if (tp->para_top_p) {
+	for (j = 1; tp->child[j]; j++) { /* 0は自分と同じでチェックされている */
+	    if (tp->child[j]->para_type == PARA_NORMAL && 
+		str_eq(tp->child[j]->head_ptr->Goi, word)) {
+		return 1;
+	    }
+	}
+    }
+
+    return 0;
+}
+
+/*==================================================================*/
 int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, char *word)
 /*==================================================================*/
 {
@@ -1153,10 +1186,13 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
 	num = cmm_ptr->result_lists_p[l].flag[i];
 	if (num >= 0) {
 	    if (cpm_ptr->elem_b_ptr[num]) {
-		if (word && str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word)) {
+		if (word && 
+		    (str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word) || 
+		     CheckHaveEllipsisComponentPara(cpm_ptr->elem_b_ptr[num], word))) { /* 並列のチェック */
 		    return 1;
 		}
 	    }
+	    /* 不特定の場合 */
 	    else {
 		if (word == NULL) {
 		    return 1;
