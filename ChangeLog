@@ -1,3 +1,8 @@
+2005-11-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/extern.h, system/main.c, system/path.h:
+	³ÎÎ¨Åª³Ê²òÀÏ¤Î¼ÂÁõ
+
 2005-10-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c:
