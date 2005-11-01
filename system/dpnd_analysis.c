@@ -862,7 +862,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		    }
 		}
 		/* 格フレームない場合も格解析結果を書く */
-		else {
+		else if (sp->Best_mgr->cpm[i].result_num == 0 || 
+			 sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1) {
 		    /* 格解析の結果を featureへ */
 		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
 					 check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
