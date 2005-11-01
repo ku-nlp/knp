@@ -826,7 +826,10 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		/* 格フレームがある場合 */
 		if (sp->Best_mgr->cpm[i].result_num != 0 && 
 		    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
-		    sp->Best_mgr->cpm[i].cmm[0].score != -2) {
+		    (((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		      sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
+		     (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		      sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_SCORE))) {
 		    /* 文脈解析のときは格フレーム決定している用言についてのみ */
 		    if (!OptEllipsis || sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
 			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
