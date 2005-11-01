@@ -422,6 +422,8 @@ char *ne_code_to_tagposition(int num)
 	       void ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
+    /* SVMを用いた固有表現解析 */
+
     init_NE_mgr();
     make_feature(sp);
     apply_svm_model(sp);

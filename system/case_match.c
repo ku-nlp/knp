@@ -42,7 +42,8 @@ int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 8;
-int	NOUN_THRESHOLD = 8; /* == EX_match_subject */
+int	NOUN_THRESHOLD = 8; /* 間接照応解析の閾値 */
+int	NOUN_THRESHOLD_DIRECT = 3.5; /* 直接係っている場合の閾値 */
 int	CASE_ASSIGN_THRESHOLD = 0;
 
 /*==================================================================*/
@@ -1074,7 +1075,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 				  cfp->pp[i][j] == pp_kstr_to_code("ノ")) &&
 				 elmnt_score >= SOTO_THRESHOLD) || 
 				(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_NOUN && 
-				 elmnt_score >= NOUN_THRESHOLD)) {
+				 elmnt_score >= (closest == -1) ? NOUN_THRESHOLD_DIRECT : NOUN_THRESHOLD)) {
 				if ((flag == EXAMPLE) || 
 				    (flag == SEMANTIC_MARKER && elmnt_score >= 0)) {
 				    /* 対応付けをして，残りの格要素の処理に進む

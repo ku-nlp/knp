@@ -835,6 +835,10 @@ extern int	EX_match_subject;
 	set_caseframes(sp);
     }
 
+    /* 照応解析に必要なFEATUREの付与 */
+    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
+	assign_anaphor_feature(sp);
+
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
 
@@ -948,10 +952,11 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
+    /* 格解析結果を受けて人名、組織名のFeatureを追加する */
+    /* additional_ne_analysis(sp); */
+
     /* 並列構造をみて固有表現認識を行う */
     /* ne_para_analysis(sp); */
-
-    if (OptEllipsis & OPT_COREFER) assign_anaphor_feature(sp);
 
     memo_by_program(sp);	/* メモへの書き込み */
 

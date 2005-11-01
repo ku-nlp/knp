@@ -4190,7 +4190,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     ExtraCheck = 0;
 
     /* 共参照リンクを辿ってタグつけ */
-    if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+    /* if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 			      cpm_ptr->pred_b_ptr->voice, 
 			      cmm_ptr->cf_ptr->cf_address, 
 			      cf_ptr->pp[n][0], 
@@ -4202,7 +4202,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    maxscore = 1.0;
 	    goto EvalAntecedentNoun;
 	}
-    }
+    } */
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {
@@ -5126,6 +5126,28 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "地名") || 
 		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "組織名"))) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		continue;
+	    }
+
+	    /* 固有名詞は間接照応解析しない */
+	    else if (cpm_ptr->cf.type == CF_NOUN && 
+		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
+		      check_feature((cpm_ptr->pred_b_ptr->mrph_ptr + 
+				     cpm_ptr->pred_b_ptr->mrph_num - 1)->f, "NE"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		continue;
+	    }
+
+	    /* 照応詞候補でない体言は間接照応解析しない */
+	    if (cpm_ptr->cf.type == CF_NOUN &&
+		(OptEllipsis & OPT_COREFER) &&
+		!check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補")) {
+		continue;
+	    }
+
+	    /* 共参照解析結果のある語は解析しない */
+	    if (cpm_ptr->cf.type == CF_NOUN &&
+		check_feature(cpm_ptr->pred_b_ptr->f, "共参照")) {
 		continue;
 	    }
 
