@@ -1,3 +1,10 @@
+2005-11-01  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/case_match.c, context.c, corefer.c, main.c, proper.c
+	間接照応解析において直接係っている場合の閾値を変更。
+	共参照解析の結果が見つかった場合、固有表現と判断された場合、
+	照応詞候補でない場合は間接解析しないよう変更。
+
 2005-11-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/const.h, system/extern.h, system/main.c, system/path.h:
