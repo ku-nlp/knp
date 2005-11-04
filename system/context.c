@@ -4672,6 +4672,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*cpm_ptr->pred_b_ptr->cf_num, 
 						  "FindBestCFforContext");
 
+	    /* 格フレームcache */
 	    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
 		CFLIST *cfp;
 		char *key;
@@ -4705,8 +4706,26 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 
 	    if (frame_num == 0) {
+		int hiragana_prefer_flag = 0;
+
+		/* 表記がひらがなの場合: 
+		   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
+		   ひらがな以外が多ければひらがな以外のみを対象にする */
+		if (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+		    if (check_feature(cpm_ptr->pred_b_ptr->f, "代表ひらがな")) {
+			hiragana_prefer_flag = 1;
+		    }
+		    else {
+			hiragana_prefer_flag = -1;
+		    }
+		}
+
 		for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
-		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type) {
+		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type && 
+			((hiragana_prefer_flag > 0 && 
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) || 
+			 (hiragana_prefer_flag < 0 && 
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA))) {
 			*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
 		    }
 		}
@@ -5270,6 +5289,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
 		/* 格・省略解析の結果をfeatureへ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
+
+		/* 格・省略解析の結果を用いて原形の曖昧性を解消 */
+		lexical_disambiguation_by_case_analysis(cpm_ptr);
 	    }
 	    ClearEllipsisMGR(&maxem);
 	    ClearEllipsisMGR(&maxem_copula);

@@ -316,13 +316,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 	   ひらがな以外が多ければひらがな以外のみを対象にする */
 	if (check_str_type(b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
-	    int hiragana_count = 0;
-	    for (i = 0; i < b_ptr->cf_num; i++) {
-		if (check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) {
-		    hiragana_count++;
-		}
-	    }
-	    if (2 * hiragana_count > b_ptr->cf_num) {
+	    if (check_feature(b_ptr->f, "代表ひらがな")) {
 		hiragana_prefer_flag = 1;
 	    }
 	    else {
@@ -336,10 +330,6 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    if (b_ptr->cf_num != 1) {
 		/* OR の格フレームを除く */
 		if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
-		    continue;
-		}
-		/* 直前格が修飾の場合などを除く */
-		else if (CheckCfAdjacent(b_ptr->cf_ptr+i) == FALSE) {
 		    continue;
 		}
 		else if ((hiragana_prefer_flag > 0 && check_str_type((b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA) || 
@@ -379,13 +369,16 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    /* スコア順にソート */
 	    for (j = cpm_ptr->result_num - 1; j >= 0; j--) {
 		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
-		    (cpm_ptr->cmm[j].score != CASE_MATCH_FAILURE_PROB && 
-		     cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && (
-			(closest > -1 && 
-			 (CheckCfClosest(&(cpm_ptr->cmm[j+1]), closest) == TRUE && 
-			  CheckCfClosest(&(cpm_ptr->cmm[j]), closest) == FALSE)) || 
-			(closest < 0 && 
-			 cpm_ptr->cmm[j].sufficiency < cpm_ptr->cmm[j+1].sufficiency)))) {
+		    ((((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		       cpm_ptr->cmm[j].score != CASE_MATCH_FAILURE_PROB) || 
+		      (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		       cpm_ptr->cmm[j].score != CASE_MATCH_FAILURE_SCORE)) && 
+		     cpm_ptr->cmm[j].score == cpm_ptr->cmm[j+1].score && 
+		     ((closest > -1 && 
+		       (CheckCfClosest(&(cpm_ptr->cmm[j+1]), closest) == TRUE && 
+			CheckCfClosest(&(cpm_ptr->cmm[j]), closest) == FALSE)) || 
+		      (closest < 0 && 
+		       cpm_ptr->cmm[j].sufficiency < cpm_ptr->cmm[j+1].sufficiency)))) {
 		    tempcmm = cpm_ptr->cmm[j];
 		    cpm_ptr->cmm[j] = cpm_ptr->cmm[j+1];
 		    cpm_ptr->cmm[j+1] = tempcmm;
@@ -400,7 +393,11 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	}
 
 	/* スコアが同点の格フレームの個数を設定 */
-	if (cpm_ptr->result_num > 0) {
+	if (cpm_ptr->result_num > 0 && 
+	    (((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	      cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
+	     (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	      cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_SCORE))) {
 	    double top;
 	    int cflag = 0;
 	    cpm_ptr->tie_num = 1;

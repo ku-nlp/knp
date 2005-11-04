@@ -1553,7 +1553,25 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 {
     t_ptr->cf_num += make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
 
-    if (flag == CF_PRED && t_ptr->cf_num == 0) {
+    if (t_ptr->cf_num > 0) {
+	/* 表記がひらがなの場合: 
+	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
+	   ひらがな以外が多ければひらがな以外のみを対象にするためのfeatureを付与 */
+	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+	    int i, hiragana_count = 0;
+
+	    for (i = 0; i < t_ptr->cf_num; i++) {
+		if (check_str_type((t_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) {
+		    hiragana_count++;
+		}
+	    }
+	    if (2 * hiragana_count > t_ptr->cf_num) {
+		assign_cfeature(&(t_ptr->f), "代表ひらがな");
+	    }
+	}
+    }
+    else if (flag == CF_PRED) {
+	/* ないときで用言のときは、defaultの格フレームをつくる */
 	make_default_cframe(t_ptr, Case_frame_num);
     }
 }
