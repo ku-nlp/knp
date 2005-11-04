@@ -1188,7 +1188,8 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
 	    if (cpm_ptr->elem_b_ptr[num]) {
 		if (word && 
 		    (str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word) || 
-		     CheckHaveEllipsisComponentPara(cpm_ptr->elem_b_ptr[num], word))) { /* 並列のチェック */
+		     (cpm_ptr->cf.type == CF_NOUN &&
+		     CheckHaveEllipsisComponentPara(cpm_ptr->elem_b_ptr[num], word)))) { /* 並列のチェック */
 		    return 1;
 		}
 	    }

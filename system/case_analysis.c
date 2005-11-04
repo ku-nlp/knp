@@ -1481,7 +1481,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 		/* 並列の子供 
 		   省略時: OK 
-		   直接の係り受け時: 未実装(elem_b_ptrが para_top_p) */
+		   直接の係り受け時: 未実装(elem_b_ptrが para_top_p)
+		   ↑ 名詞の場合のみ簡易に実装 */
 		if (cpm_ptr->elem_b_ptr[num]->para_type == PARA_NORMAL && 
 		    cpm_ptr->elem_b_ptr[num]->parent && 
 		    cpm_ptr->elem_b_ptr[num]->parent->para_top_p) {
@@ -1503,6 +1504,23 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			if (word) free(word);
 		    }
 		}
+		/* elem_b_ptrが para_top_pのとき(名詞の場合のみ) */
+		if (cpm_ptr->cf.type == CF_NOUN && 
+		    cpm_ptr->elem_b_ptr[num]->para_top_p) {
+		    for (j = 1; cpm_ptr->elem_b_ptr[num]->child[j]; j++) { /* 0は自分と同じでチェックされている */
+			if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL) {
+			word = make_print_string(cpm_ptr->elem_b_ptr[num]->child[j], 0);
+			cp = make_cc_string(word ? word : "(null)", cpm_ptr->elem_b_ptr[num]->child[j]->num, 
+					    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+					    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
+			strcat(feature_buffer, cp);
+			strcat(feature_buffer, ";");
+			free(cp);
+			if (word) free(word);	    
+			}
+		    }
+		}
+
 
 		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
 		tag_n = cpm_ptr->elem_b_ptr[num]->num;
