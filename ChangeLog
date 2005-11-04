@@ -1,3 +1,8 @@
+2005-11-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/context.c:
+	省略解析のときもひらがな用言の曖昧性解消を行うように修正
+
 2005-11-01  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/case_match.c, context.c, corefer.c, main.c, proper.c
