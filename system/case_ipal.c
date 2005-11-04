@@ -1553,25 +1553,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 {
     t_ptr->cf_num += make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
 
-    if (t_ptr->cf_num > 0) {
-	/* 表記がひらがなの場合: 
-	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
-	   ひらがな以外が多ければひらがな以外のみを対象にするためのfeatureを付与 */
-	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
-	    int i, hiragana_count = 0;
-
-	    for (i = 0; i < t_ptr->cf_num; i++) {
-		if (check_str_type((t_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) {
-		    hiragana_count++;
-		}
-	    }
-	    if (2 * hiragana_count > t_ptr->cf_num) {
-		assign_cfeature(&(t_ptr->f), "代表ひらがな");
-	    }
-	}
-    }
-    else if (flag == CF_PRED) {
-	/* ないときで用言のときは、defaultの格フレームをつくる */
+    /* ないときで用言のときは、defaultの格フレームをつくる */
+    if (t_ptr->cf_num == 0 && flag == CF_PRED) {
 	make_default_cframe(t_ptr, Case_frame_num);
     }
 }
@@ -1580,7 +1563,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		void set_caseframes(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, start;
+    int i, j, start, hiragana_count;
     TAG_DATA  *t_ptr;
 
     Case_frame_num = 0;
@@ -1619,6 +1602,22 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->cf_num) {
 	    t_ptr->cf_ptr = Case_frame_array + start;
+
+	    /* 表記がひらがなの場合: 
+	       格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
+	       ひらがな以外が多ければひらがな以外のみを対象にするためのfeatureを付与 */
+	    if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+		hiragana_count = 0;
+		for (j = 0; j < t_ptr->cf_num; j++) {
+		    if (check_str_type((t_ptr->cf_ptr + j)->entry) == TYPE_HIRAGANA) {
+			hiragana_count++;
+		    }
+		}
+		if (2 * hiragana_count > t_ptr->cf_num) {
+		    assign_cfeature(&(t_ptr->f), "代表ひらがな");
+		}
+	    }
+
 	    start += t_ptr->cf_num;
 	}
     }
