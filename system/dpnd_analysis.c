@@ -290,6 +290,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    sp->para_data[(sp->bnst_data + i)->para_num].status != 'x') {
 	    
 	    assign_cfeature(&((sp->bnst_data + i)->f), "提題受:30");
+	    assign_cfeature(&(((sp->bnst_data + i)->tag_ptr + 
+			       (sp->bnst_data + i)->tag_num - 1)->f), "提題受:30");
 	}
     }
 }
