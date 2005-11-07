@@ -1291,20 +1291,22 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 {
     int i;
 
-    for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	if (check_feature((ptr->mrph_ptr + i)->f, "付属")) {
-	    /* カウンタなど、付属語であるが意味素をそこから得る場合 */
-	    if (check_feature((ptr->mrph_ptr + i)->f, "独立接尾辞") || 
-		check_feature((ptr->mrph_ptr + i)->f, "非独立有意味接尾辞") || 
-		(ptr->type == IS_TAG_DATA && check_feature((ptr->mrph_ptr + i)->f, "独立無意味語"))) { /* 「の」 */
+    if (ptr->type == IS_TAG_DATA) {
+	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
+	    if (check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
 	}
-	/* 最後の自立語 */
-	else {
-	    ptr->head_ptr = ptr->mrph_ptr + i;
-	    return;
+    }
+    /* 文節のときは形式名詞「の」をheadとしない */
+    else {
+	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
+	    if (!check_feature((ptr->mrph_ptr + i)->f, "独立タグ例外語") && /* 「の」 */
+		check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
+		ptr->head_ptr = ptr->mrph_ptr + i;
+		return;
+	    }
 	}
     }
 
@@ -1401,16 +1403,16 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	   void push_tag_units(TAG_DATA *tp, MRPH_DATA *mp)
 /*==================================================================*/
 {
-    if (check_feature(mp->f, "接頭非独立語")) {
+    if (check_feature(mp->f, "非独立タグ接頭辞")) {
 	if (tp->settou_num == 0) {
 	    tp->settou_ptr = mp;
 	}
 	tp->settou_num++;
     }
     else if (check_feature(mp->f, "自立") || 
-	     check_feature(mp->f, "独立接頭辞") || 
-	     check_feature(mp->f, "独立接尾辞") || 
-	     check_feature(mp->f, "独立無意味語")) {
+	     check_feature(mp->f, "独立タグ接頭辞") || 
+	     check_feature(mp->f, "独立タグ接尾辞") || 
+	     check_feature(mp->f, "独立タグ例外語")) {
 	if (tp->jiritu_num == 0) {
 	    tp->jiritu_ptr = mp;
 	}
@@ -1460,6 +1462,11 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 	       <文頭>のつく位置が間違っているので下で修正する */
 	    copy_feature(&(tp->f), tp->b_ptr->f);
 	    delete_cfeature(&(tp->f), "サ変"); /* <サ変>は文節とタグ単位では異なる */
+
+	    /* 形式名詞「の」に用言がコピーされるので削除 */
+	    if (check_feature(tp->head_ptr->f, "独立タグ例外語")) {
+		delete_cfeature(&(tp->f), "用言");
+	    }
 	}
 
 	/* 各タグ単位の長さを計算しておく */
