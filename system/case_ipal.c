@@ -2111,6 +2111,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	dist = 2;
     }
 
+    /* 格の解釈 */
     if (as2 != NIL_ASSIGNED) {
 	key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 10);
 	sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfp->pp[as2][0]));
@@ -2121,9 +2122,11 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
     value = db_get(case_db, key);
 
+    /* 読点の生成 */
     sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
     value2 = db_get(case_db, key);
 
+    /* 「は」の生成 */
     if (np_modifying_flag) {
 	value3 = "1.0";
     }
@@ -2136,7 +2139,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     if (value && value2 && value3) {
 	ret = atof(value) * atof(value2) * atof(value3);
 	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (%s * %s * %s)\n", 
+	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
 		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
 		    scase, wa_flag, touten_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
 		    dist, closest_pred_flag, topic_score, negation_flag, ret, value, value2, value3);

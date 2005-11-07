@@ -1107,7 +1107,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 
     if (OptDisplay == OPT_DEBUG) {
 	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	    fprintf(stdout, "ⅲ %d爬 (调违负爬 %d爬)\n", 
+	    fprintf(stdout, "ⅲ %.5f爬 (调违负爬 %d爬)\n", 
 		    Work_mgr.score, distance_cost);
 	}
 	else {

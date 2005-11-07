@@ -699,6 +699,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	}
     }
 
+    return closest; /* 以下は削除する予定 */
+
     /* 格要素がひとつで時間格のみの場合、格要素なしと同じように扱う
        ★直前の時間格でもとの格が強い格であるときは普通に扱う★ (現在はニ格のみ) */
 
