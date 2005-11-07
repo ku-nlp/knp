@@ -1,3 +1,15 @@
+2005-11-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* rule/bnst_basic.rule:
+	否定表現に「非」「不」を追加
+
+	* rule/bnst_basic.rule, rule/case_analysis.rule, rule/context.rule, rule/mrph_basic.rule, system/read_data.c:
+	タグ単位の独立/非独立のfeatureの整理
+	意味をもちキーワードとなる形態素にfeature付与
+
+	* system/dpnd_analysis.c:
+	並列解析の結果から付与している提題受をタグ単位にも付与するように修正
+
 2005-11-04  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/context.c:
