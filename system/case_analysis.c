@@ -1448,10 +1448,20 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {
-	    /* 割り当てなし */
-	    sprintf(buffer, "%s/U/-/-/-/-", 
-		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
-	    strcat(feature_buffer, buffer);
+	    /* 動作主featureをチェック */
+	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ガ") && 
+		(cp = check_feature(cpm_ptr->pred_b_ptr->f, "動作主"))) {
+		sprintf(buffer, "%s/E/%s/-/-/-", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
+			cp + 7);
+		strcat(feature_buffer, buffer);
+	    }
+	    else {
+		/* 割り当てなし */
+		sprintf(buffer, "%s/U/-/-/-/-", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+		strcat(feature_buffer, buffer);
+	    }
 	}
 	/* 割り当てあり */
 	else {
