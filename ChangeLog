@@ -1,3 +1,8 @@
+2005-11-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/extern.h, system/lib_sm.c, system/thesaurus.c:
+	代表表記で意味素をひくように変更
+
 2005-11-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule:
