@@ -4723,9 +4723,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
 		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type && 
 			((hiragana_prefer_flag > 0 && 
-			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA) || 
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry) == TYPE_HIRAGANA) || 
 			 (hiragana_prefer_flag < 0 && 
-			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA))) {
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry) != TYPE_HIRAGANA))) {
 			*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
 		    }
 		}
