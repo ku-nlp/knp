@@ -401,6 +401,7 @@ extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
 extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 extern void overflowed_function(char *str, int max, char *function);
 extern char *get_most_similar_code(char *exd, char *exp);
+extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);

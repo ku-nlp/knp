@@ -1555,18 +1555,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
-		 char *get_mrph_rep(MRPH_DATA *m_ptr)
-/*==================================================================*/
-{
-    char *cp;
-
-    if (cp = strstr(m_ptr->Imi, "代表表記:")) {
-	return cp + 9;
-    }
-    return NULL;
-}
-
-/*==================================================================*/
   void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {

@@ -175,15 +175,153 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
+		 char *get_mrph_rep(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *cp;
+
+    if (cp = strstr(m_ptr->Imi, "代表表記:")) {
+	return cp + 9;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
+   int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag)
+/*==================================================================*/
+{
+    char *rep_strt, *rep_end;
+    int add_len;
+
+    if ((rep_strt = get_mrph_rep(ptr)) && /* 代表表記 */
+	(rep_end = strchr(rep_strt, '/'))) {
+	add_len = rep_end - rep_strt;
+	if (strlen(str_buffer) + add_len + 2 > BNST_LENGTH_MAX) {
+	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "add_rep_str");
+	    return 0;
+	}
+	/* org_flag == 0 のときは活用させる必要がある */
+	strncat(str_buffer, rep_strt, add_len);
+    }
+    else {
+	add_len = strlen(org_flag ? ptr->Goi : ptr->Goi2);
+	if (strlen(str_buffer) + add_len + 2 > BNST_LENGTH_MAX) {
+	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "add_rep_str");
+	    return 0;
+	}
+	if (org_flag) {
+	    /* ナ形容詞の場合は語幹で検索 */
+	    if (str_eq(Class[ptr->Hinshi][0].id, "形容詞") && 
+		(str_eq(Type[ptr->Katuyou_Kata].name, "ナ形容詞") || 
+		 str_eq(Type[ptr->Katuyou_Kata].name, "ナ形容詞特殊") || 
+		 str_eq(Type[ptr->Katuyou_Kata].name, "ナノ形容詞"))) {
+		add_len -= 2;
+	    }
+	    strncat(str_buffer, ptr->Goi, add_len); /* 原形 */
+	}
+	else {
+	    strcat(str_buffer, ptr->Goi2); /* 表記 */
+	}
+    }
+
+    return add_len;
+}
+
+/*==================================================================*/
+void make_key_and_get_code(BNST_DATA *ptr, int strt, int end, 
+			   char *str_buffer, char *ret_buffer, char *used_key, int flag)
+/*==================================================================*/
+{
+    FEATURE **fpp = &((ptr->mrph_ptr + end)->f);
+    MRPH_DATA m;
+    char last_key[BNST_LENGTH_MAX];
+    int add_len;
+
+    /* 末尾まで文字列を作り出し終わり、DBを引く */
+    if (strt > end) {
+	char *code;
+
+	/* 「サ変+する」がなく「する」だけになるような場合はskip */
+	if (end > 0 && str_eq(str_buffer, "する")) {
+	    return;
+	}
+
+	if (code = get_str_code(str_buffer, flag)) { /* DBをひく */
+	    strcat(ret_buffer, code);
+	    free(code);
+
+	    if (strlen(used_key) + strlen(str_buffer) + 2 > BNST_LENGTH_MAX) {
+		overflowed_function(used_key, BNST_LENGTH_MAX, "make_key_and_get_code");
+		return;
+	    }
+	    if (*used_key) {
+		strcat(used_key, "/");
+	    }
+	    strcat(used_key, str_buffer);
+	}
+
+	return;
+    }
+    /* 複合名詞の前の部分 (表記のみ, 代表表記やALTは用いていない) */
+    else if (strt < end) {
+	if (strlen(str_buffer) + strlen((ptr->mrph_ptr + strt)->Goi2) + 2 > BNST_LENGTH_MAX) {
+	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "make_key_and_get_code");
+	    return;
+	}
+	strcat(str_buffer, (ptr->mrph_ptr + strt)->Goi2); /* 表記 */
+	make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
+	str_buffer[strlen(str_buffer) - strlen((ptr->mrph_ptr + strt)->Goi2)] = '\0';
+	return;
+    }
+
+    /* strt == end => 最後原形 */
+    if ((add_len = add_rep_str(ptr->mrph_ptr + end, str_buffer, TRUE)) == 0) { /* 代表表記 */
+	return;
+    }
+    make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
+    strcpy(last_key, str_buffer);
+    str_buffer[strlen(str_buffer) - add_len] = '\0';
+
+    /* ALTの代表表記 */
+    while (*fpp) {
+	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
+	    sscanf((*fpp)->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+		   m.Goi2, m.Yomi, m.Goi, 
+		   &m.Hinshi, &m.Bunrui, 
+		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+	    if ((add_len = add_rep_str(&m, str_buffer, TRUE)) == 0) { /* 代表表記 */
+		return;
+	    }
+	    if (strcmp(last_key, str_buffer)) { /* 異なる場合のみ調べる */
+		make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
+		str_buffer[strlen(str_buffer) - add_len] = '\0';
+	    }
+	}
+	fpp = &((*fpp)->next);
+    }
+
+    return;
+}
+
+/*==================================================================*/
 	     void get_bnst_code(BNST_DATA *ptr, int flag)
 /*==================================================================*/
 {
-    int strt, end, i, lookup_pos = 0;
-    char str_buffer[BNST_LENGTH_MAX], *code;
-    char *result_code;
-    int *result_num, exist, code_unit;
+    /* 文節の意味素コードを取得
 
-    /* 文節の意味素コードを取得 */
+       複合語の扱い
+       		まず付属語を固定，自立語を減らしていく
+		各形態素列に対して表記列で調べる
+
+       分類語彙表の場合:
+       「する」以外の付属語の動詞は削除する
+       「結婚し始める」: 「始める」は削除し、「結婚する」で検索
+       (分類語彙表ではサ変名詞は「する」付きで登録されている)
+    */
+
+    int strt, end, i, lookup_pos = 0;
+    char str_buffer[BNST_LENGTH_MAX], used_key[BNST_LENGTH_MAX], *code, *result_code;
+    int *result_num, exist, code_unit;
 
     if (flag == USE_BGH) {
 	result_code = ptr->BGH_code;
@@ -196,27 +334,17 @@ int	ParaThesaurus = USE_BGH;
     exist = THESAURUS[flag].exist;
     code_unit = THESAURUS[flag].code_size;
 
-    if (exist == FALSE) return;
+    if (exist == FALSE) {
+	return;
+    }
 
     /* 初期化 */
     *result_code = '\0';
-
-    /* 
-       複合語の扱い
-       		まず付属語を固定，自立語を減らしていく
-		各形態素列に対してまず表記列で調べ，次に読み列で調べる
-    */
-
+    used_key[0] = '\0';
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
-
     /* result_num はinit_bnstで0に初期化されている */
 
-    /* 分類語彙表の場合:
-       「する」以外の付属語の動詞は削除する
-       「結婚し始める」: 「始める」は削除し、「結婚する」で検索
-       (分類語彙表ではサ変名詞は「する」付きで登録されている) */
-
-    if (flag == USE_BGH && 
+    if (flag == USE_BGH && /* 分類語彙表ではサ変名詞は「する」付きで登録されている */
 	ptr->mrph_ptr + ptr->mrph_num - 1 > ptr->head_ptr && 
 	!strcmp(Class[(ptr->head_ptr + 1)->Hinshi][0].id, "動詞") && 
 	!strcmp((ptr->head_ptr + 1)->Goi, "する")) {
@@ -236,83 +364,28 @@ int	ParaThesaurus = USE_BGH;
 	strt = 0;
     }
 
+    /* もっとも長いものから順に試す */
     for (; strt <= end; strt++) {
-
-	/* 表記のまま *
-	*str_buffer = '\0';
-	for (i = strt; i <= end; i++) {
-	    if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi2) + 2 > BNST_LENGTH_MAX) {
-		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
-		return;
-	    }
-	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
+	str_buffer[0] = '\0';
+	make_key_and_get_code(ptr, strt, end, str_buffer, result_code, used_key, 
+			      flag | lookup_pos);
+	if (*result_code) {
+	    break;
 	}
-
-	code = get_str_code(str_buffer, flag | lookup_pos);
-
-	if (code) {
-	    strcpy(result_code, code);
-	    free(code);
-	}
-
-	if (*result_code) goto Match;
-	*/
-
-	/* 表記，最後原形 */
-
-	*str_buffer = '\0';
-	for (i = strt; i < end; i++) {
-	    if (strlen(str_buffer) + strlen((ptr->mrph_ptr + i)->Goi2) + 2 > BNST_LENGTH_MAX) {
-		overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
-		return;
-	    }
-	    strcat(str_buffer, (ptr->mrph_ptr + i)->Goi2);
-	}
-
-	if (strlen(str_buffer) + strlen((ptr->mrph_ptr + end)->Goi) + 2 > BNST_LENGTH_MAX) {
-	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "get_bnst_code");
-	    return;
-	}
-	strcat(str_buffer, (ptr->mrph_ptr + end)->Goi);
-
-	/* ナ形容詞の場合は語幹で検索 */
-	if (str_eq(Class[(ptr->mrph_ptr + end)->Hinshi][0].id, 
-		   "形容詞") && 
-	    (str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-		    "ナ形容詞") || 
-	     str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-		    "ナ形容詞特殊") || 
-	     str_eq(Type[(ptr->mrph_ptr + end)->Katuyou_Kata].name, 
-		    "ナノ形容詞")))
-	    str_buffer[strlen(str_buffer) - 2] = '\0';
-
-	/* 「共通する」がなく「する」だけになるような場合はskip */
-	if (end > 0 && str_eq(str_buffer, "する")) return;
-
-	code = get_str_code(str_buffer, flag | lookup_pos);
-
-	if (code) {
-	    strcpy(result_code, code);
-	    free(code);
-	}
-	if (*result_code) goto Match;
     }
 
-  Match:
-    *result_num = strlen(result_code) / code_unit;
-
-    if (*result_num > 0) {
+    if (*result_code) {
 	char feature_buffer[BNST_LENGTH_MAX + 4];
 
+	*result_num = strlen(result_code) / code_unit;
+
 	if (flag == USE_BGH) {
-	    sprintf(feature_buffer, "BGH:%s", str_buffer);
-	    assign_cfeature(&(ptr->f), feature_buffer);
+	    sprintf(feature_buffer, "BGH:%s", used_key);
 	}
 	else {
-	    sprintf(feature_buffer, "SM:%s", str_buffer);
-	    assign_cfeature(&(ptr->f), feature_buffer);
+	    sprintf(feature_buffer, "NTT:%s", used_key);
 	}
-
+	assign_cfeature(&(ptr->f), feature_buffer);
     }
 }
 
