@@ -1567,7 +1567,7 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (!cpm_ptr->elem_b_ptr[i] || 
-	    !check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ÉÊÛ£") && /* Û£Ëæ¤Ê·ÁÂÖÁÇ */
+	    !check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ÉÊÛ£") || /* Û£Ëæ¤Ê·ÁÂÖÁÇ */
 	    check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ÍÑ¸ÀÛ£ËæÀ­²ò¾Ã")) {
 	    continue;
 	}
