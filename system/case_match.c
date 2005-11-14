@@ -903,8 +903,11 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     /* 格フレーム確率 */
     score = get_cf_probability(cfd, cfp);
 
-    /* データ側チェック */
+    /* 入力側チェック */
     for (i = 0; i < cfd->element_num; i++) {
+	/* 連体修飾節生成確率 */
+	score += get_np_modifying_probability(i, cfd);
+
 	if (MatchPP(cfd->pp[i][0], "φ") || 
 	    MatchPP(cfd->pp[i][0], "修飾")) {
 	    ;

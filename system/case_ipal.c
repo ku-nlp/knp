@@ -2045,6 +2045,55 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+    double get_np_modifying_probability(int as1, CASE_FRAME *cfd)
+/*==================================================================*/
+{
+    int dist = 0;
+    char *type = NULL, *key, *value;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+
+    /* tp -> hp */
+    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* 連体修飾 */
+	if (type = check_feature(cfd->pred_b_ptr->f, "用言")) {
+	    type += 5;
+	}
+
+	/* 候補チェック */
+	dist = get_dist_from_work_mgr(cfd->pred_b_ptr->b_ptr, 
+				      cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->b_ptr);
+	if (dist <= 0) {
+	    return UNKNOWN_CASE_SCORE;
+	}
+	else if (dist > 1) {
+	    dist = 2;
+	}
+    }
+
+    key = malloc_db_buf(10);
+    sprintf(key, "%s,%d|R", type ? type : "NIL", dist);
+    if (value = db_get(case_db, key)) {
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (RE) %s -> %s: P(%s,%d|R) = %s\n", 
+		    type ? cfd->pred_b_ptr->head_ptr->Goi : "NIL", 
+		    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
+		    type ? type : "NIL", dist, value);
+	}
+
+	ret = log(atof(value));
+	free(value);
+    }
+    else {
+	ret = UNKNOWN_CASE_SCORE;
+    }
+
+    return ret;
+}
+
+/*==================================================================*/
      double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp)
 /*==================================================================*/
@@ -2100,6 +2149,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* 提題スコア */
     if (cp = check_feature(hp->f, "提題受")) {
 	sscanf(cp, "%*[^:]:%d", &topic_score);
+	if (topic_score > 0 && topic_score < 30) {
+	    topic_score = 10;
+	}
     }
 
     /* 候補チェック */
