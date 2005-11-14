@@ -1,3 +1,12 @@
+2005-11-14  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/corefer.c, main.c, proper.c
+	
+	共参照解析結果を用いた固有表現抽出を追加
+	格解析結果を用いた固有表現抽出を追加
+	固有表現抽出結果としてPERSONが与えられタグに<人名>の意味属性を
+	ORGANIZATIONが与えられタグに<組織>の意味属性を付与
+
 2005-11-14  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_ipal.c, system/case_match.c, system/extern.h:
