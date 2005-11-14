@@ -21,7 +21,7 @@
 DBM_FILE ne_db;
 
 char *DBforNE;
-char *TagPosition[NE_MODEL_NUMBER];
+char TagPosition[NE_MODEL_NUMBER][TAG_POSITION_MAX];
 char *Tag_name[] = {
     "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
     "DATE", "TIME", "MONEY", "PERCENT", "OTHER"};
@@ -51,14 +51,10 @@ void init_tagposition()
     int i, j;
     for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
 	for (j = 0; j < NE_POSITION_NUMBER; j++) {
-	    TagPosition[i * NE_POSITION_NUMBER + j] 
-		= (char *)malloc_data(TAG_POSITION_MAX, "init_tagposition");
 	    strcpy(TagPosition[i * NE_POSITION_NUMBER + j], Tag_name[i]);
 	    strcat(TagPosition[i * NE_POSITION_NUMBER + j], Position_name[j]);
 	}
     }
-    TagPosition[32] 
-	= (char *)malloc_data(TAG_POSITION_MAX, "init_tagposition");
     strcpy(TagPosition[32], "OTHERsingle");
 }
 
