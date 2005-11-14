@@ -5290,8 +5290,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		/* 格・省略解析の結果をfeatureへ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
 
-		/* 格・省略解析の結果を用いて原形の曖昧性を解消 */
-		lexical_disambiguation_by_case_analysis(cpm_ptr);
+		/* 格・省略解析の結果を用いて形態素曖昧性を解消 */
+		noun_lexical_disambiguation_by_case_analysis(cpm_ptr);
+		verb_lexical_disambiguation_by_case_analysis(cpm_ptr);
 	    }
 	    ClearEllipsisMGR(&maxem);
 	    ClearEllipsisMGR(&maxem_copula);

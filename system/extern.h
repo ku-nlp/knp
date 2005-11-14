@@ -182,7 +182,6 @@ extern int _ex_match_score(char *cp1, char *cp2);
 extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest);
 extern int cf_match_element(char *d, char *target, int flag);
 extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
-extern int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos);
 extern int check_case(CASE_FRAME *cf, int c);
 extern int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n);
 extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
@@ -366,6 +365,7 @@ extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
 extern void make_tag_units(SENTENCE_DATA *sp);
 extern void assign_feature_for_tag(SENTENCE_DATA *sp);
 extern void assign_feature_alt_mrph(FEATURE **fpp, MRPH_DATA *m_ptr);
+extern void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src);
 
 /* read_rule.c */
 extern int case2num(char *cp);
@@ -398,8 +398,8 @@ extern void get_bnst_code(BNST_DATA *ptr, int flag);
 extern int code_depth(char *cp, int code_size);
 extern float general_code_match(THESAURUS_FILE *th, char *c1, char *c2);
 extern float calc_similarity(char *exd, char *exp, int expand);
-extern float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos);
-extern float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
+extern float calc_words_similarity(char *exd, char **exp, int num, int *pos);
+extern float calc_sm_words_similarity(char *smd, char **exp, int num, int *pos, char *del, int expand);
 extern void overflowed_function(char *str, int max, char *function);
 extern char *get_most_similar_code(char *exd, char *exp);
 extern char *get_mrph_rep(MRPH_DATA *m_ptr);

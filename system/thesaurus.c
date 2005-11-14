@@ -542,7 +542,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 }
 
 /*==================================================================*/
-	    float CalcWordSimilarity(char *exd, char *exp)
+	   float calc_word_similarity(char *exd, char *exp)
 /*==================================================================*/
 {
     char *smd, *smp;
@@ -567,7 +567,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 }
 
 /*==================================================================*/
-float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
+float calc_sm_word_similarity(char *smd, char *exp, char *del, int expand)
 /*==================================================================*/
 {
     char *smp;
@@ -595,7 +595,7 @@ float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
 }
 
 /*==================================================================*/
- float CalcWordsSimilarity(char *exd, char **exp, int num, int *pos)
+float calc_words_similarity(char *exd, char **exp, int num, int *pos)
 /*==================================================================*/
 {
     int i;
@@ -604,7 +604,7 @@ float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
     /* Îà»÷ÅÙ·×»»: Ã±¸ì - Ã±¸ì·² */
 
     for (i = 0; i < num; i++) {
-	score = CalcWordSimilarity(exd, *(exp+i));
+	score = calc_word_similarity(exd, *(exp+i));
 	if (maxscore < score) {
 	    maxscore = score;
 	    *pos = i;
@@ -615,7 +615,8 @@ float CalcSmWordSimilarity(char *smd, char *exp, char *del, int expand)
 }
 
 /*==================================================================*/
-float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del, int expand)
+    float calc_sm_words_similarity(char *smd, char **exp, int num,
+				   int *pos, char *del, int expand)
 /*==================================================================*/
 {
     int i;
@@ -624,7 +625,7 @@ float CalcSmWordsSimilarity(char *smd, char **exp, int num, int *pos, char *del,
     /* Îà»÷ÅÙ·×»»: °ÕÌ£ÁÇ - Ã±¸ì·² */
 
     for (i = 0; i < num; i++) {
-	score = CalcSmWordSimilarity(smd, *(exp+i), del, expand);
+	score = calc_sm_word_similarity(smd, *(exp+i), del, expand);
 	if (maxscore < score) {
 	    maxscore = score;
 	    *pos = i;

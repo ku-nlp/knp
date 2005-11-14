@@ -353,6 +353,34 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+	    void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src)
+/*==================================================================*/
+{
+    char *imip, *cp;
+
+    strcpy(dst->Goi, src->Goi);
+    strcpy(dst->Yomi, src->Yomi);
+    dst->Hinshi = src->Hinshi;
+    dst->Bunrui = src->Bunrui;
+    dst->Katuyou_Kata = src->Katuyou_Kata;
+    dst->Katuyou_Kei = src->Katuyou_Kei;
+    strcpy(dst->Imi, src->Imi);
+
+    /* 意味情報をfeatureへ */
+    if (src->Imi[0] == '\"') { /* 通常 "" で括られている */
+	imip = &src->Imi[1];
+	if (cp = strchr(imip, '\"')) {
+	    *cp = '\0';
+	}
+    }
+    else {
+	imip = src->Imi;
+    }
+
+    imi2feature(imip, dst);
+}
+
+/*==================================================================*/
 	     int feature_string2f(char *str, FEATURE **f)
 /*==================================================================*/
 {

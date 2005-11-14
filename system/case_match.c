@@ -447,29 +447,43 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-int cf_match_exactly(TAG_DATA *d, char **ex_list, int ex_num, int *pos)
+int cf_match_exactly(char *word, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
     int ret_pos;
 
-    if (!check_feature(d->f, "形副名詞")) {
-	if ((ret_pos = check_examples(d->head_ptr->Goi, ex_list, ex_num)) >= 0) {
-	    *pos = ret_pos;
-	    return 1;
-	}
+    if ((ret_pos = check_examples(word, ex_list, ex_num)) >= 0) {
+	*pos = ret_pos;
+	return 1;
     }
+
     return 0;
+}
+
+/*==================================================================*/
+float _calc_similarity_sm_cf(char *exd, int expand, 
+			     CASE_FRAME *cfp, int n, int *pos)
+/*==================================================================*/
+{
+    /* 最大マッチスコアを求める */
+
+    if (cfp->sm_specify[n]) { /* 意味素制限 */
+	return calc_similarity(exd, cfp->sm_specify[n], expand);
+    }
+    else {
+	return calc_sm_words_similarity(exd, cfp->ex_list[n], cfp->ex_num[n], pos, 
+					cfp->sm_delete[n], expand);
+    }
 }
 
 /*==================================================================*/
 float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
-    char *exd, *exp;
+    char *exd;
     int expand;
     float ex_score;
 
-    exp = cfp->ex[n];
     if (Thesaurus == USE_BGH) {
 	exd = tp->BGH_code;
     }
@@ -490,18 +504,13 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	ex_score = -1;
     }
     /* exact match */
-    else if (cf_match_exactly(tp, cfp->ex_list[n], cfp->ex_num[n], pos)) {
+    else if (!check_feature(tp->f, "形副名詞") && 
+	     cf_match_exactly(tp->head_ptr->Goi, cfp->ex_list[n], cfp->ex_num[n], pos)) {
 	ex_score = 1.1;
     }
+    /* 意味素 match */
     else {
-	/* 最大マッチスコアを求める */
-	if (cfp->sm_specify[n]) { /* 意味素制限 */
-	    ex_score = calc_similarity(exd, cfp->sm_specify[n], expand);
-	}
-	else {
-	    ex_score = CalcSmWordsSimilarity(exd, cfp->ex_list[n], cfp->ex_num[n], pos, 
-					     cfp->sm_delete[n], expand);
-	}
+	ex_score = _calc_similarity_sm_cf(exd, expand, cfp, n, pos);
     }
 
     return ex_score;
