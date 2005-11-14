@@ -447,12 +447,12 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-int cf_match_exactly(char *word, char **ex_list, int ex_num, int *pos)
+int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
     int ret_pos;
 
-    if ((ret_pos = check_examples(word, ex_list, ex_num)) >= 0) {
+    if ((ret_pos = check_examples(word, word_len, ex_list, ex_num)) >= 0) {
 	*pos = ret_pos;
 	return 1;
     }
@@ -505,7 +505,8 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
     /* exact match */
     else if (!check_feature(tp->f, "∑¡…˚ÃæªÏ") && 
-	     cf_match_exactly(tp->head_ptr->Goi, cfp->ex_list[n], cfp->ex_num[n], pos)) {
+	     cf_match_exactly(tp->head_ptr->Goi, strlen(tp->head_ptr->Goi), 
+			      cfp->ex_list[n], cfp->ex_num[n], pos)) {
 	ex_score = 1.1;
     }
     /* ∞’Ã£¡« match */

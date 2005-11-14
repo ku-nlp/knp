@@ -162,7 +162,7 @@ extern void clear_cf(int flag);
 extern void init_mgr_cf(TOTAL_MGR *tmp);
 extern void clear_mgr_cf(SENTENCE_DATA *sp);
 extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag);
-extern int check_examples(char *cp, char **ex_list, int ex_num);
+extern int check_examples(char *cp, int cp_len, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr, char *orig_form);
 extern float get_cfs_similarity(char *cf1, char *cf2);
@@ -187,6 +187,7 @@ extern int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n);
 extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern int dat_match_sm(int as1, CASE_FRAME *cfd, char *sm);
+extern int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);

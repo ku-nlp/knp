@@ -117,6 +117,7 @@ char *SynonymFile;
 		/* 直後の名詞の格フレームの用例に存在する */
 		(tag_ptr + j + 1)->cf_ptr &&
 		check_examples(((tag_ptr + j)->mrph_ptr)->Goi2,
+			       strlen(((tag_ptr + j)->mrph_ptr)->Goi2),
 				((tag_ptr + j + 1)->cf_ptr)->ex_list[0],
 				((tag_ptr + j + 1)->cf_ptr)->ex_num[0]) >= 0) {
 

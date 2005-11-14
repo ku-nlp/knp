@@ -843,7 +843,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 }
 
 /*==================================================================*/
-       int check_examples(char *cp, char **ex_list, int ex_num)
+ int check_examples(char *cp, int cp_len, char **ex_list, int ex_num)
 /*==================================================================*/
 {
     int i;
@@ -853,7 +853,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     }
 
     for (i = 0; i < ex_num; i++) {
-	if (str_eq(cp, *(ex_list+i))) {
+	if (strlen(*(ex_list + i)) == cp_len && 
+	    !strncmp(cp, *(ex_list + i), cp_len)) {
 	    return i;
 	}
     }
