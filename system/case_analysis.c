@@ -1561,12 +1561,14 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
     /* 格解析結果から名詞の曖昧性解消を行う */
 
     int i, num, pos;
-    char *rep_strt, *rep_end, *cp;
+    char *rep_strt, *rep_end;
     FEATURE *fp;
     MRPH_DATA m;
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (!cpm_ptr->elem_b_ptr[i]) {
+	if (!cpm_ptr->elem_b_ptr[i] || 
+	    !check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "品曖") && /* 曖昧な形態素 */
+	    check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "用言曖昧性解消")) {
 	    continue;
 	}
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
@@ -1574,46 +1576,44 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 	if (cpm_ptr->elem_b_num[i] > -2 && num >= 0 && 
 	    cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] != MATCH_SUBJECT && 
 	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* 格フレームとある程度マッチするとき */
-	    /* 曖昧な形態素を対象とする */
-	    if (check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "品曖")) {
-		/* まず現在の形態素をチェック */
-		if ((rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr)) && 
-		    (rep_end = strchr(rep_strt, '/')) && 
-		    cf_match_exactly(rep_strt, rep_end - rep_strt, 
-				     cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
-				     cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
-		    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
-				    "形態素曖昧性解消");
-		    continue;
-		}
-
-		/* ALTをチェック */
-		fp = cpm_ptr->elem_b_ptr[i]->head_ptr->f;
-		while (fp) {
-		    if (!strncmp(fp->cp, "ALT-", 4)) {
-			sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
-			       m.Goi2, m.Yomi, m.Goi, 
-			       &m.Hinshi, &m.Bunrui, 
-			       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-			if ((rep_strt = get_mrph_rep(&m)) && 
-			    (rep_end = strchr(rep_strt, '/')) && 
-			    cf_match_exactly(rep_strt, rep_end - rep_strt, 
-					     cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
-					     cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
-			    /* 現在の形態素をALTに保存 */
-			    assign_feature_alt_mrph(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
-						    cpm_ptr->elem_b_ptr[i]->head_ptr);
-			    /* このALTを最終結果の形態素にする */
-			    copy_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, &m);
-			    delete_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), fp->cp);
-			    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
-					    "形態素曖昧性解消");
-			    break;
-			}
-		    }
-		    fp = fp->next;
-		}
+	    /* まず現在の形態素をチェック */
+	    if ((rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr)) && 
+		(rep_end = strchr(rep_strt, '/')) && 
+		cf_match_exactly(rep_strt, rep_end - rep_strt, 
+				 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
+				 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
+		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
+				"名詞曖昧性解消");
+		continue;
 	    }
+
+	    /* ALTをチェック */
+	    fp = cpm_ptr->elem_b_ptr[i]->head_ptr->f;
+	    while (fp) {
+		if (!strncmp(fp->cp, "ALT-", 4)) {
+		    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+			   m.Goi2, m.Yomi, m.Goi, 
+			   &m.Hinshi, &m.Bunrui, 
+			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+		    if ((rep_strt = get_mrph_rep(&m)) && 
+			(rep_end = strchr(rep_strt, '/')) && 
+			cf_match_exactly(rep_strt, rep_end - rep_strt, 
+					 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
+					 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
+			/* 現在の形態素をALTに保存 */
+			assign_feature_alt_mrph(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
+						cpm_ptr->elem_b_ptr[i]->head_ptr);
+			/* このALTを最終結果の形態素にする */
+			copy_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, &m);
+			delete_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), fp->cp);
+			assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->head_ptr->f), 
+					"名詞曖昧性解消");
+			break;
+		    }
+		}
+		fp = fp->next;
+	    }
+
 	}
     }
 }
@@ -1636,7 +1636,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 	if ((rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr)) && 
 	    strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
 		    strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "形態素曖昧性解消");
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
 	}
 
 	/* 現在の形態素代表表記と格フレームの表記が異なる場合のみ形態素を変更 */
@@ -1659,7 +1659,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 		    /* このALTを最終結果の形態素にする */
 		    copy_mrph(cpm_ptr->pred_b_ptr->head_ptr, &m);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
-		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "形態素曖昧性解消");
+		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
 		    break;
 		}
 	    }
