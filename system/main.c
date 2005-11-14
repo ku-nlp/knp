@@ -529,6 +529,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
+	else if (str_eq(argv[0], "-ne2")) {
+	    OptNE = 2;
+	}
 	else {
 	    usage();
 	}
@@ -816,18 +819,18 @@ extern int	EX_match_subject;
 
     fix_sm_person(sp);
 
+    /* FEATURE付与だけの場合 */
+
+    if (OptAnalysis == OPT_AssignF) return TRUE;
+
+    assign_dpnd_rule(sp);			/* 係り受け規則 */
+
     /* 固有表現認識を行う */
 #ifdef USE_SVM
     if (OptNE) {
 	ne_analysis(sp);
     }
 #endif
-    
-    /* FEATURE付与だけの場合 */
-
-    if (OptAnalysis == OPT_AssignF) return TRUE;
-
-    assign_dpnd_rule(sp);			/* 係り受け規則 */
 
     /* 格フレーム取得 */
     if (OptAnalysis == OPT_CASE ||
@@ -952,12 +955,13 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
-    /* 格解析結果を受けて人名、組織名のFeatureを追加する */
-    /* additional_ne_analysis(sp); */
-
-    /* 並列構造をみて固有表現認識を行う */
-    /* ne_para_analysis(sp); */
-
+    /* 格解析結果を用いた補助的な固有表現解析 */
+#ifdef USE_SVM
+    if (OptNE == 2) {
+	additional_ne_analysis(sp);
+    }
+#endif
+    
     memo_by_program(sp);	/* メモへの書き込み */
 
     return TRUE;
@@ -1101,6 +1105,13 @@ PARSED:
 		}
 	    }
 	}
+	
+	/* 固有表現認識のためのキャッシュ作成 */
+#ifdef USE_SVM
+	if (OptNE) {
+	    make_ne_cache(sp);
+	}
+#endif
 
 	/************/
 	/* 結果表示 */

@@ -13,7 +13,7 @@ DBM_FILE synonym_db;
 char *SynonymFile;
 
 /*==================================================================*/
-	       void init_Synonym_db()
+			void init_Synonym_db()
 /*==================================================================*/
 {
     char *db_filename;
@@ -37,7 +37,7 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-	       void close_Synonym_db()
+		       void close_Synonym_db()
 /*==================================================================*/
 {
     if (!SynonymFile) return;
@@ -45,11 +45,11 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-	       int get_modify_num(BNST_DATA *b_ptr)
+		 int get_modify_num(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
     /* 並列を除いていくつの文節に修飾されているかを返す */
-    
+
     int i;
 
     if (!b_ptr->child[0]) {
@@ -63,7 +63,7 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-	       void assign_anaphor_feature(SENTENCE_DATA *sp)
+	    void assign_anaphor_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 照応詞候補というfeatureを付与する */
@@ -74,7 +74,7 @@ char *SynonymFile;
     /* 	末尾の語がサ変名詞であれば切る */
     /* 	末尾の語とその前の語が名詞格フレームにある組合せの場合は切る */
 
-    int i, j, k, tag_num, mrph_num;
+    int i, j, k, l, tag_num, mrph_num;
     char word[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
     TAG_DATA *tag_ptr;
     
@@ -82,9 +82,9 @@ char *SynonymFile;
 	
 	if (!check_feature((sp->bnst_data + i)->f, "体言")) continue;
 
-	tag_num = (sp->bnst_data+i)->tag_num;
+	tag_num = (sp->bnst_data + i)->tag_num;
 	tag_ptr = (sp->bnst_data + i)->tag_ptr;
-
+	
   	for (j = tag_num - 1; j >= 0; j--) {
 
 	    /* 固有表現内である場合は後回し */
@@ -125,12 +125,9 @@ char *SynonymFile;
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
 		     k >= 0; k--) {
 
-		    /* 先頭の名詞接頭辞・特殊は含めない */
+		    /* 先頭の特殊は含めない */
 		    if (!strncmp(word, "\0", 1) &&
-			(((tag_ptr + j)->head_ptr - k)->Hinshi == 1 ||
-			 ((tag_ptr + j)->head_ptr - k)->Hinshi == 13 &&
-			 ((tag_ptr + j)->head_ptr - k)->Bunrui == 1))
-			continue;
+			((tag_ptr + j)->head_ptr - k)->Hinshi == 1) continue;
 		    strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
 		}
 		if (strncmp(word, "\0", 1)) {
@@ -167,12 +164,13 @@ char *SynonymFile;
 		
 		for (k = 0; !(cp = check_feature((tag_ptr + j + k)->f, "NE")); k++);
 		while (strncmp(cp, ")", 1)) cp++;
+		/* cp + 1 は対象の固有表現へのポインタ */
 		for (k = 0; 
 		     strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
 			     strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2));
 		     k++);
-		word[0] = '\0';
 		strncpy(word, cp + 1, k);
+		word[k] = '\0';
 		strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
 		sprintf(buf, "照応詞候補:%s", word);
 		assign_cfeature(&((tag_ptr + j)->f), buf);	
@@ -182,7 +180,7 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-               int compare_strings(char *antecedent, char *anaphor)
+	 int compare_strings(char *antecedent, char *anaphor)
 /*==================================================================*/
 {
     /* 照応詞候補と先行詞候補を比較 */
@@ -219,6 +217,7 @@ char *SynonymFile;
 	    break;
 	} 
     }
+    if (strlen(anaphor) < i + j) return 0; /* 公文書公開 公開 のとき */
 
     memset(word, 0, sizeof(char) * WORD_LEN_MAX * 4);
     strncpy(word, anaphor + i, strlen(anaphor) - i - j);
@@ -233,8 +232,8 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-               int search_antecedent(SENTENCE_DATA *sp, int i, 
-				     char *anaphor, char *setubi)
+    int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor,
+			  char *setubi)
 /*==================================================================*/
 {
     /* 入力されたタグと、共参照関係にあるタグを以前の文から検索する */
@@ -245,7 +244,7 @@ char *SynonymFile;
     /* 見つからなかった場合は-2を返す */
 
     int j, k, l, m;
-    char word[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2];
+    char word[WORD_LEN_MAX], buf[WORD_LEN_MAX], *cp;
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
  
@@ -278,106 +277,63 @@ char *SynonymFile;
 				word, setubi ? setubi : "", j, k, 
 				sp->KNPSID ? sp->KNPSID + 5 : "?", j, k);
 		    }
-		    assign_cfeature(&((sp->tag_data + i)->f), "共参照");
 		    assign_cfeature(&((sp->tag_data + i)->f), buf);
-		    
-		    /* 複数のタグに関係する場合の処理 */
-		    for (m = 0; m < l; i--) 
-			m += (sp->tag_data + i)->mrph_num;
-		    return i;
+		    assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
+		    assign_cfeature(&(((sp->tag_data + i)->b_ptr)->f), "共参照"); 
+#ifdef USE_SVM
+		    if (OptNE) {
+			if ((cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
+			    while (strncmp(cp, ")", 1)) cp++;
+			    if (!strcmp(cp + 1, word)) {
+				ne_corefer(sp, i, anaphor,
+					   check_feature(tag_ptr->f, "NE"));
+			    }
+			} 
+		    }
+#endif
+		    return 1;
 		}
 	    }
 	}	    
     }
-    return -2;
-}
-
-/*==================================================================*/
-               int search_antecedent_NE(SENTENCE_DATA *sp, int i, 
-					char *anaphor)
-/*==================================================================*/
-{
-    int j, k;
-    char *word, buf[WORD_LEN_MAX * 2];
-    SENTENCE_DATA *sdp;
-    TAG_DATA *tag_ptr;
- 
-    sdp = sentence_data + sp->Sen_num - 1;
-    for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
-	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */  
-	    tag_ptr = (sdp - j)->tag_data + k;	    		
-	    if (!(word = check_feature(tag_ptr->f, "NE"))) continue;
-
-	    while (strncmp(word, ")", 1)) word++;
-	    if (compare_strings(++word, anaphor)) {
-		if (j == 0) {
-		    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
-			    word, k, sp->KNPSID ? sp->KNPSID + 5 : "?", k);
-		}
-		else {
-		    sprintf(buf, "C用;【%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
-			    word, j, k, sp->KNPSID ? sp->KNPSID + 5 : "?", j, k);
-		}
-		assign_cfeature(&((sp->tag_data + i)->f), "共参照");
-		assign_cfeature(&((sp->tag_data + i)->f), buf);
-
-		while (i > 0 &&
-		       check_feature(((sp->tag_data + i)->mrph_ptr +
-				      (sp->tag_data + i)->mrph_num)->f, "NE")) i--;
-		return i;
-	    }
-	}
-    }
-    return -2;
+    return 0;
 }
 
 /*==================================================================*/
 	       void corefer_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, next_i;
+    int i;
     char *anaphor;
     MRPH_DATA *mrph_ptr;
     
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-
+	
 	/* 共参照解析を行う条件 */
 	/* 照応詞候補であり、固有表現中の語、または */
 	/* 連体詞形態指示詞以外に修飾されていない語 */
-	if (!(anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) ||
-	    !check_feature((sp->tag_data + i)->f, "NE") &&
-	    !check_feature(((sp->tag_data + i)->mrph_ptr +
-			    (sp->tag_data + i)->mrph_num)->f, "NE") &&
-	    get_modify_num((sp->tag_data + i)->b_ptr) && /* 修飾されている */
-	    !check_feature((((sp->tag_data + i)->b_ptr)->child[0])->f, "連体詞形態指示詞"))
-	    continue;
-
-	/* 指示詞の場合 */
-	if (check_feature((sp->tag_data + i)->f, "指示詞")) {
-	    continue;
-	}
-
-	/* 固有表現の場合 */
-	if (check_feature((sp->tag_data + i)->f, "NE")) {
-	    next_i = search_antecedent_NE(sp, i, anaphor+11);
-	    if (next_i != -2) {
-		i = next_i;
+	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
+	    (check_feature((sp->tag_data + i)->f, "NE") ||
+	     check_feature(((sp->tag_data + i)->mrph_ptr +
+			    (sp->tag_data + i)->mrph_num)->f, "NE") ||
+	     !get_modify_num((sp->tag_data + i)->b_ptr) || /* 修飾されていない */
+	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
+	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が句点である */
+	     check_feature((((sp->tag_data + i)->b_ptr)->child[0])->f, 
+			   "連体詞形態指示詞"))) {
+	    /* 指示詞の場合 */
+	    if (check_feature((sp->tag_data + i)->f, "指示詞")) {
 		continue;
+	    }   
+	    mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
+	    if (/* 名詞性接尾辞が付いている場合はまず接尾辞も含めたものを調べる */
+		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
+		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2) ||
+		/* 一般の場合 */
+		search_antecedent(sp, i, anaphor+11, NULL)) {
+		    continue;
 	    }
 	}
-	
-	/* 名詞性接尾辞が付いている場合はまず接尾辞も含めたものを調べる */
-	mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
-	if (mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5) {
-	    next_i = search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2);
-	    if (next_i != -2) {
-		i = next_i;
-		continue;
-	    }
-	}
-	/* 一般の場合 */
-	next_i = search_antecedent(sp, i, anaphor+11, NULL);
-	i = (next_i == -2) ? i : next_i;
     }
 }
 

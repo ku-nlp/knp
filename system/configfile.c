@@ -624,7 +624,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 			fprintf(Outfp, "NE model file ... %s\n", SVMFileNE[i]);
 		    }
 		}
-		DBforNE = (char *)malloc_data(strlen(KnpNE_Dirname)+12, "NE_db");
+		DBforNE = (char *)malloc_data(strlen(KnpNE_Dirname)+9, "NE_db");
 		sprintf(DBforNE, "%s/table.db",	KnpNE_Dirname);
 		if (OptNE && OptDisplay == OPT_DEBUG) {
 		    fprintf(Outfp, "NE db file ... %s\n", DBforNE);

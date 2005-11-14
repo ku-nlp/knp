@@ -1,8 +1,8 @@
 /*====================================================================
 
-			     固有名詞処理
+			     固有表現処理
 
-                                               S.Kurohashi 96. 7. 4
+                                               R.SASANO 05. 7. 31
 
     $Id$
 ====================================================================*/
@@ -12,6 +12,7 @@
 #define NE_TAG_NUMBER      9
 #define NE_POSITION_NUMBER 4
 #define FEATIRE_MAX        1024
+#define TAG_POSITION_MAX   20
 #define HEAD               0
 #define MIDDLE             1
 #define TAIL               2
@@ -20,7 +21,7 @@
 DBM_FILE ne_db;
 
 char *DBforNE;
-char TagPosition[NE_MODEL_NUMBER][20];
+char *TagPosition[NE_MODEL_NUMBER];
 char *Tag_name[] = {
     "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
     "DATE", "TIME", "MONEY", "PERCENT", "OTHER"};
@@ -36,29 +37,33 @@ struct NE_MANAGER {
 
 typedef struct ne_cache {
     char            *key;
-    int	            ne_result[NE_MODEL_NUMBER];
+    int	            ne_result[NE_MODEL_NUMBER + 1];
     struct ne_cache *next;
 } NE_CACHE;
 
 NE_CACHE ne_cache[TBLSIZE];
 
 /*====================================================================
-			 タグ・ポジション−コード対応
+		     タグ・ポジション−コード対応
 ====================================================================*/
 void init_tagposition()
 {
     int i, j;
     for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
 	for (j = 0; j < NE_POSITION_NUMBER; j++) {
+	    TagPosition[i * NE_POSITION_NUMBER + j] 
+		= (char *)malloc_data(TAG_POSITION_MAX, "init_tagposition");
 	    strcpy(TagPosition[i * NE_POSITION_NUMBER + j], Tag_name[i]);
 	    strcat(TagPosition[i * NE_POSITION_NUMBER + j], Position_name[j]);
 	}
     }
+    TagPosition[32] 
+	= (char *)malloc_data(TAG_POSITION_MAX, "init_tagposition");
     strcpy(TagPosition[32], "OTHERsingle");
 }
 
 /*====================================================================
-			 タグ・ポジション−コード対応関数
+		   タグ・ポジション−コード対応関数
 ====================================================================*/
 int ne_tagposition_to_code(char *cp)
 {
@@ -75,7 +80,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       void init_db_for_NE()
+			void init_db_for_NE()
 /*==================================================================*/
 {
     char *db_filename;
@@ -98,34 +103,35 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       void close_db_for_NE()
+			void close_db_for_NE()
 /*==================================================================*/
 {
     DB_close(ne_db);
 }
 
 /*==================================================================*/
-               void init_NE_mgr()
+			  void init_NE_mgr()
 /*==================================================================*/
 {
     memset(NE_mgr, 0, sizeof(struct NE_MANAGER)*MRPH_MAX);
 }
 
 /*==================================================================*/
-		void init_ne_cache()
+			 void init_ne_cache()
 /*==================================================================*/
 {
     memset(ne_cache, 0, sizeof(NE_CACHE)*TBLSIZE);
 }
 
 /*==================================================================*/
-	       int get_chara(FEATURE *f)
+		 int get_chara(FEATURE *f, char *Goi)
 /*==================================================================*/
 {
     int i;
     char *Chara_name[] = {
-	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英字", "数字", ""};
+	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字", ""};
 
+    if (Goi && !strcmp(Goi, "・")) return 5; /* 記号 */
     for (i = 0; *Chara_name[i]; i++)
 	if (check_feature(f, Chara_name[i]))
 	    break;
@@ -133,13 +139,13 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       char *get_pos(MRPH_DATA mrph_data, int num)
+	     char *get_pos(MRPH_DATA mrph_data, int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, pos[32];
-    ret = (char *)malloc_data(64, "get_pos");
-    memset(ret, 0, sizeof(char)*64);
+    char *ret, pos[SMALL_DATA_LEN];
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
+    ret[0] = '\0'; /* 再帰的に代入する可能性があるため */
 
     if (!check_feature(mrph_data.f, "品曖")) {
 	if (mrph_data.Bunrui)
@@ -162,7 +168,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-		void clear_ne_cache()
+			void clear_ne_cache()
 /*==================================================================*/
 {
     int i;
@@ -181,16 +187,18 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       void register_ne_cache(char *key, int NEresult)
+       void register_ne_cache(char *key, int NEresult, int tag)
 /*==================================================================*/
 {
     /* NEの解析結果を登録する */
-    /* 解析が終了するまで破棄しないのでメモリを必要とする可能性あり */
+    /* ひとつの文章が終了するまで破棄しないのでメモリを必要とする可能性あり */
+    /* NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持 */
+    /* その場合のみtagが与えられ、TAGの種類+1を記憶する */
 
     NE_CACHE *ncp;
 
     ncp = &(ne_cache[hash(key, strlen(key))]);
-    while (ncp && ncp->key && !strcmp(ncp->key, key)) {
+    while (ncp && ncp->key && strcmp(ncp->key, key)) {
 	ncp = ncp->next;
     }
     if (!ncp) {
@@ -201,11 +209,11 @@ char *ne_code_to_tagposition(int num)
 	ncp->key = strdup(key);
 	ncp->next = NULL;
     }
-    ncp->ne_result[NEresult] = 1;
+    ncp->ne_result[NEresult] = tag;
 }
 
 /*==================================================================*/
-		 int check_ne_cache(char *key, int NEresult)
+	     int check_ne_cache(char *key, int NEresult)
 /*==================================================================*/
 {
     NE_CACHE *ncp;
@@ -216,8 +224,7 @@ char *ne_code_to_tagposition(int num)
     }
     while (ncp) {
 	if (!strcmp(ncp->key, key)) {
-	    if (ncp->ne_result[NEresult]) return 1;
-	    return 0;
+	    return ncp->ne_result[NEresult];
 	}
 	ncp = ncp->next;
     }
@@ -225,26 +232,25 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-		 char *get_cache(char *key, int i)
+		  char *get_cache(char *key, int i)
 /*==================================================================*/
 {
     int NEresult;
     NE_CACHE *ncp;
     char *ret;
 
-    ret = (char *)malloc_data(32, "get_cache");
-    memset(ret, 0, sizeof(char)*32);
-    /* return ret; */
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
+    ret[0] = '\0'; /* 再帰的に代入する可能性があるため */
 
-    for (NEresult = 0; NEresult < NE_MODEL_NUMBER-1; NEresult++) {
+    for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
 	if (check_ne_cache(key, NEresult))
-	    sprintf(ret, "%s%d%d30:1 ", ret, NEresult+1, i);
+	    sprintf(ret, "%s%d%d30:1 ", ret, NEresult + 1, i);
     }
     return ret;
 }
 
 /*==================================================================*/
-               void make_feature(SENTENCE_DATA *sp)
+		 void make_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k;
@@ -261,7 +267,7 @@ char *ne_code_to_tagposition(int num)
 	    k = i - j + SIZE + 1;
 	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
 		    NE_mgr[i].feature, s[0] ? s[0] : "", k,
-		    s[1], get_chara(sp->mrph_data[j].f), k, s[2]);
+		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k, s[2]);
 	    free(s[0]);
 	    free(s[1]);
 	    free(s[2]);
@@ -272,7 +278,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-               void apply_svm_model(SENTENCE_DATA *sp)
+	       void apply_svm_model(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -282,14 +288,15 @@ char *ne_code_to_tagposition(int num)
 #ifdef USE_SVM
 	    NE_mgr[i].SVMscore[j] 
 		= 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
-	    /* fprintf(stderr, "%f\t", NE_mgr[i].SVMscore[j]); */
+	if (OptDisplay == OPT_DEBUG)
+	    fprintf(stderr, "%d %d %f\n", i, j, NE_mgr[i].SVMscore[j]);
 #endif
 	}
     }
 }
 
 /*==================================================================*/
-               int constraint(int pre, int self)
+		  int constraint(int pre, int self)
 /*==================================================================*/
 {
     /* 前後に来れるタグの制約に違反すれば1を返す  */
@@ -311,7 +318,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-               void viterbi(SENTENCE_DATA *sp)
+		   void viterbi(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k;
@@ -353,7 +360,98 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-               int get_mrph_ne(FEATURE *fp)
+void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
+/*==================================================================*/
+{
+    /* 格フレームに組織、人名、主体が与えられている場合の処理 */
+  
+    /* flag = 1, 3 : 組織 */
+    if (flag == 1) {
+	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
+	    check_feature(mp->f, "品曖-アルファベット")) {
+	    NE_mgr[mp - sp->mrph_data].NEresult = 
+		ne_tagposition_to_code("ORGANIZATIONsingle");
+	}
+    }
+
+    /* flag = 2, 3 : 人名 */
+    if (flag == 2 || flag == 3) {
+	if (check_feature(mp->f, "呼掛")) {
+	    mp--;
+	}
+	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
+	    check_feature(mp->f, "品曖-カタカナ")) {
+	    NE_mgr[mp - sp->mrph_data].NEresult = 
+		ne_tagposition_to_code("PERSONsingle");
+	}
+    }
+}
+
+/*==================================================================*/
+		void modify_result(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* SVMによる固有表現認識の修正 */
+    /* 前文までで見つかった固有表現が認識されなかった場合は追加 */
+    /* より短い固有表現と認識されている場合は上書きする */
+
+    int i, j, k, l, start, end, ne_tag, break_flag;
+    char word[WORD_LEN_MAX];
+    
+    /* 対象とするのは文節の先頭から主辞までのすべての形態素列 */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	
+	break_flag = 0;
+	/* チェックする形態素列の形態素数 */
+	for (j = (sp->bnst_data + i)->mrph_num; j >= 1; j--) {
+
+	    /* チェックする形態素列の開始位置(k=0のとき文節先頭で開始) */
+	    for (k = 0; k + j <= (sp->bnst_data  + i)->mrph_num; k++) {
+		start = (sp->bnst_data + i)->mrph_ptr + k - sp->mrph_data;
+		end = start + j - 1;
+
+		/* 対象の形態素列を含む固有表現がある場合は修正しない */
+ 		if (NE_mgr[start].NEresult % 4 == TAIL ||
+ 		    NE_mgr[start].NEresult % 4 == MIDDLE ||
+		    NE_mgr[end].NEresult != NE_MODEL_NUMBER - 1 &&
+ 		    NE_mgr[end].NEresult % 4 == HEAD ||
+ 		    NE_mgr[end].NEresult % 4 == MIDDLE ||
+		    NE_mgr[start].NEresult != NE_MODEL_NUMBER - 1 &&
+ 		    NE_mgr[start].NEresult % 4 == HEAD &&
+ 		    NE_mgr[end].NEresult % 4 == TAIL) continue;	      
+		
+		word[0] = '\0';
+		for (l = 0; l < j; l++) {
+		    strcat(word, (sp->mrph_data + start + l)->Goi2);
+		}
+		if ((ne_tag = check_ne_cache(word, NE_MODEL_NUMBER))) {
+		    break_flag = 1;
+		    ne_tag--; /* check_ne_cacheは1ずれている */
+		    /* NEresultに記録 */
+		    if (j == 1) {
+			NE_mgr[start].NEresult = ne_tag * 4 + 3; /* single */
+		    }
+		    else for (l = 0; l < j; l++) {
+			if (l == 0) {
+			    NE_mgr[start + l].NEresult = ne_tag * 4; /* head */
+			}
+			else if (l == j - 1) {
+			    NE_mgr[start + l].NEresult = ne_tag * 4 + 2; /* tail */
+			}
+			else {
+			    NE_mgr[start + l].NEresult = ne_tag * 4 + 1; /* middle */
+			}
+		    }
+		}
+		if (break_flag) break;
+	    }
+	    if (break_flag) break;
+	}
+    }
+}
+
+/*==================================================================*/
+		     int get_mrph_ne(FEATURE *fp)
 /*==================================================================*/
 {
     int i;
@@ -367,15 +465,15 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       void assign_ne_feature(SENTENCE_DATA *sp)
+	      void assign_ne_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, mrph_num;
-    char cp[128];
+    int i, j;
+    char cp[WORD_LEN_MAX];
 
     /* 形態素に付与 */
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue;
+	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue; /* OTHERの場合 */
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
 	assign_cfeature(&(sp->mrph_data[i].f), cp);
     }
@@ -387,10 +485,19 @@ char *ne_code_to_tagposition(int num)
 	/* 対象のタグに固有表現が無ければ次のタグへ */
 	if (i == sp->tag_data[j].mrph_num) continue;
 
-	memset(cp, 0, sizeof(char)*128);
+	/* ORGANIZATION、PERSONの場合は意味素として与える */
+	if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4],
+		    "ORGANIZATION")) {
+	    assign_sm((BNST_DATA *)(sp->tag_data +j), "組織");
+	}
+	else if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4],
+			 "PERSON")) {
+	    assign_sm((BNST_DATA *)(sp->tag_data + j), "人");
+	}
+ 
 	sprintf(cp, "NE:(%s)",
 		Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
-	for (mrph_num = 1;; mrph_num++) {
+	while(1) {
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE || 
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
@@ -408,109 +515,143 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	       void make_ne_cache(SENTENCE_DATA *sp)
+		 void ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i;
-
-    for (i = 0; i < sp->Mrph_num; i++) {
-	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult);
-    }
-}
-
-/*==================================================================*/
-	       void ne_analysis(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    /* SVMを用いた固有表現解析 */
-
     init_NE_mgr();
+    /* SVMを用いた固有表現解析 */
     make_feature(sp);
     apply_svm_model(sp);
     viterbi(sp);
+    /* 前文までの解析結果を用いた修正 */
+    if (OptEllipsis & OPT_COREFER) {
+	modify_result(sp);
+    }
+    /* 結果を付与 */
     assign_ne_feature(sp);
-    make_ne_cache(sp);
 }
 
-/* /\*==================================================================*\/ */
-/* 		   char *NEcheck(BNST_DATA *b_ptr) */
-/* /\*==================================================================*\/ */
-/* { */
-/*     char *class; */
+/*==================================================================*/
+	    void additional_ne_analysis(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 格解析結果から、組織名と人名を付与する */
+    /* ガ、ヲ、ニ格でかつその格フレームに<主体>が与えられている場合 */
 
-/*     if (!(class = check_feature(b_ptr->f, "人名")) &&  */
-/* 	!(class = check_feature(b_ptr->f, "地名")) &&  */
-/* 	!(class = check_feature(b_ptr->f, "組織名")) &&  */
-/* 	!(class = check_feature(b_ptr->f, "固有名詞"))) { */
-/* 	return NULL; */
-/*     } */
-/*     return class; */
-/* } */
+    int i, j, num;
+    CF_PRED_MGR *cpm_ptr;
 
-/* /\*==================================================================*\/ */
-/* 	 int NEparaCheck(BNST_DATA *b_ptr, BNST_DATA *h_ptr) */
-/* /\*==================================================================*\/ */
-/* { */
-/*     char *class, str[11]; */
+    /* タグを後からチェック */
+    for (j = sp->Tag_num - 1; j > 0 ; j--) {
+	if (!(cpm_ptr = sp->tag_data[j].cpm_ptr)) continue;
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ") ||
+		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ヲ") ||
+		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ニ")) {
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE) &&
+		    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
+		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 3);
+		} 
+		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
+		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 1);
+		}		    
+		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
+		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 2);
+		}		    
+		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
+		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 3);
+		}
+	    }
+	}
+    }
+    /* 結果を付与 */
+    assign_ne_feature(sp);      
+}
 
-/*     /\* b_ptr が固有表現である *\/ */
-/*     if ((class = NEcheck(b_ptr)) == NULL) { */
-/* 	return FALSE; */
-/*     } */
+/*==================================================================*/
+  int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
+/*==================================================================*/
+{
+    /* 固有表現と共参照関係にあると判断された固有表現タグの付与されていない表現に */
+    /* 固有表現タグを付与する */
+   
+    int start, end, ne_tag, j, k;
+    char cp[WORD_LEN_MAX], word[WORD_LEN_MAX];
 
-/*     sprintf(str, "%s疑", class); */
+    for (ne_tag = 0; ne_tag < NE_TAG_NUMBER; ne_tag++) {
+	/* どのタグであるかを"NE:("に続く4文字で判断する */
+	if (!strncmp(ne + 4, Tag_name[ne_tag], 4)) break;
+    }
 
-/*     /\* h_ptr は固有表現ではない */
-/*        class と一致する「〜疑」がついている *\/ */
-/*     if (NEcheck(h_ptr) ||  */
-/* 	!check_feature(h_ptr->f, str)) { */
-/* 	return FALSE; */
-/*     } */
+    end = (sp->tag_data + i)->head_ptr - sp->mrph_data;  /* 接尾辞を含むものには未対応 */
+    for (start = ((sp->tag_data + i)->b_ptr)->mrph_ptr - sp->mrph_data; 
+	 start <= end; start++) {
+	word[0] = '\0';
+	for (k = start; k <= end; k++) {
+	    strcat(word, (sp->mrph_data + k)->Goi2); /* 先行詞候補 */
+	}
+	if (!strcmp(word, anaphor)) break;
+    }
 
-/*     /\* h_ptr を同じ固有表現クラスにする *\/ */
-/*     assign_cfeature(&(h_ptr->f), class); */
-/*     assign_cfeature(&(h_ptr->f), "固並列OK"); */
+    /* とりあえずORGANIZATIONの場合のみ、start > endとなることはないはず */
+    if (strcmp(Tag_name[ne_tag], "ORGANIZATION") || start > end) return 0;
 
-/*     return TRUE; */
-/* } */
+    /* タグに付与 */
+    sprintf(cp, "NE:(%s)%s", Tag_name[ne_tag], anaphor);
+    assign_cfeature(&(sp->tag_data[i].f), cp);
+    
+    /* 形態素に付与、NEresultに記録 */
+    if ((j = start) == end) {
+	sprintf(cp, "NE:%ssingle", Tag_name[ne_tag]);
+	assign_cfeature(&(sp->mrph_data[j].f), cp);
+	NE_mgr[j].NEresult = ne_tag * 4 + 3; /* single */
+    }
+    else for (j = start; j <= end; j++) {
+	if (j == start) {
+	    sprintf(cp, "NE:%shead", Tag_name[ne_tag]);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    NE_mgr[j].NEresult = ne_tag * 4; /* head */
+	}
+	else if (j == end) {
+	    sprintf(cp, "NE:%stail", Tag_name[ne_tag]);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    NE_mgr[j].NEresult = ne_tag * 4 + 2; /* tail */
+	}
+	else {
+	    sprintf(cp, "NE:%smiddle", Tag_name[ne_tag]);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    NE_mgr[j].NEresult = ne_tag * 4 + 1; /* middle */
+	}
+    }
+    return 1;
+}
 
-/* /\*==================================================================*\/ */
-/* 	       void ne_para_analysis(SENTENCE_DATA *sp) */
-/* /\*==================================================================*\/ */
-/* { */
-/*     int i, value; */
-/*     char *cp; */
+/*==================================================================*/
+		void make_ne_cache(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, ne_tag;
+    char *cp;
 
-/*     for (i = 0; i < sp->Bnst_num; i++) { */
-/* 	/\* 住所が入る並列はやめておく *\/ */
-/* 	if (check_feature(sp->bnst_data[i].f, "住所") ||  */
-/* 	    !check_feature(sp->bnst_data[i].f, "体言") ||  */
-/* 	    (sp->bnst_data[i].dpnd_head > 0 &&  */
-/* 	     !check_feature(sp->bnst_data[sp->bnst_data[i].dpnd_head].f, "体言"))) { */
-/* 	    continue; */
-/* 	} */
-/* 	cp = check_feature(sp->bnst_data[i].f, "並結句数"); */
-/* 	if (cp) { */
-/* 	    value = atoi(cp+strlen("並結句数:")); */
-/* 	    if (value > 2) { */
-/* 		/\* 係り側を調べて固有名詞じゃなかったら、受け側を調べる *\/ */
-/* 		if (NEparaCheck(&(sp->bnst_data[i]), &(sp->bnst_data[sp->bnst_data[i].dpnd_head])) == FALSE) */
-/* 		    NEparaCheck(&(sp->bnst_data[sp->bnst_data[i].dpnd_head]), &(sp->bnst_data[i])); */
-/* 		continue; */
-/* 	    } */
-/* 	} */
+    /* 各形態素の情報を記憶 */
+    for (i = 0; i < sp->Mrph_num; i++) {
+	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult, 1);
+    }
 
-/* 	cp = check_feature(sp->bnst_data[i].f, "並結文節数"); */
-/* 	if (cp) { */
-/* 	    value = atoi(cp+strlen("並結文節数:")); */
-/* 	    if (value > 1) { */
-/* 		if (NEparaCheck(&(sp->bnst_data[i]), &(sp->bnst_data[sp->bnst_data[i].dpnd_head])) == FALSE) */
-/* 		    NEparaCheck(&(sp->bnst_data[sp->bnst_data[i].dpnd_head]), &(sp->bnst_data[i])); */
-/* 	    } */
-/* 	} */
-/*     } */
-/* } */
-
+    /* 固有表現と認識された文字列を記憶 */
+    for (i = 0; i < sp->Tag_num; i++) {   
+	if ((cp = check_feature(sp->tag_data[i].f, "NE"))) {
+	    for (ne_tag = 0; ne_tag < NE_TAG_NUMBER; ne_tag++) {
+		/* どのタグであるかを"NE:("に続く4文字で判断する */
+		if (!strncmp(cp + 4, Tag_name[ne_tag], 4)) break;
+	    }   
+	    while (strncmp(cp, ")", 1)) cp++;
+	    register_ne_cache(cp + 1, NE_MODEL_NUMBER, ne_tag + 1);
+	} 
+    }
+}
+	  
 /*====================================================================
                                END
 ====================================================================*/
