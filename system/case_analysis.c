@@ -1622,21 +1622,22 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* 格解析結果から動詞の曖昧性解消を行う */
+    /* 格解析結果から用言の曖昧性解消を行う */
 
     char *rep_cp;
     FEATURE *fp;
     MRPH_DATA m;
 
-    if ((check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") || /* 原形が曖昧な用言 */
-	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
-	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖")))) { /* 品曖なひらがな */
-
+    if (check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") || /* 原形が曖昧な用言 */
+	(check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
+	 check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖"))) { /* 品曖なひらがな */
 	/* 現在の形態素でよいとき */
 	if ((rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr)) && 
 	    strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
 		    strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
+	    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "名詞曖昧性解消"); /* あれば削除 */
+	    return;
 	}
 
 	/* 現在の形態素代表表記と格フレームの表記が異なる場合のみ形態素を変更 */
@@ -1660,6 +1661,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 		    copy_mrph(cpm_ptr->pred_b_ptr->head_ptr, &m);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
 		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
+		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "名詞曖昧性解消"); /* あれば削除 */
 		    break;
 		}
 	    }
