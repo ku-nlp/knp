@@ -143,7 +143,8 @@ extern void InitCPMcache();
 extern void ClearCPMcache();
 extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
-extern void lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
+extern void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
+extern void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp);
 
 /* case_data.c */
@@ -188,6 +189,7 @@ extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *
 extern float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern int dat_match_sm(int as1, CASE_FRAME *cfd, char *sm);
 extern int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos);
+extern float _calc_similarity_sm_cf(char *exd, int expand, CASE_FRAME *cfp, int n, int *pos);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
@@ -404,6 +406,7 @@ extern float calc_sm_words_similarity(char *smd, char **exp, int num, int *pos, 
 extern void overflowed_function(char *str, int max, char *function);
 extern char *get_most_similar_code(char *exd, char *exp);
 extern char *get_mrph_rep(MRPH_DATA *m_ptr);
+extern char *get_str_code_with_len(char *cp, int len, int flag);
 
 /* tools.c */
 extern void *malloc_data(size_t size, char *comment);

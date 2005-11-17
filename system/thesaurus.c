@@ -155,6 +155,20 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
+       char *get_str_code_with_len(char *cp, int len, int flag)
+/*==================================================================*/
+{
+    char bak_char = cp[len];
+    char *code;
+
+    cp[len] = '\0';
+    code = get_str_code(cp, flag);
+    cp[len] = bak_char;
+
+    return code;
+}
+
+/*==================================================================*/
 	void overflowed_function(char *str, int max, char *function)
 /*==================================================================*/
 {
