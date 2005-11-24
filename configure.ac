@@ -118,7 +118,7 @@ elif ( test "x$with_berkeley_db2" = xyes ); then
     AC_SEARCH_LIBS(db_open, db2 db, , 
 		   AC_MSG_ERROR(not found.))
 elif ( test "x$with_berkeley_db" = xyes ); then
-    AC_CHECK_LIB(db-4.2, db_create, DB_LIBS="-ldb-4.2 $DB_LIBS" ETC_CFLAGS="-DDB41 -DDB3 $ETC_CFLAGS", 
+    AC_CHECK_LIB(db-4.3, db_create, DB_LIBS="-ldb-4.3 $DB_LIBS" ETC_CFLAGS="-DDB41 -DDB3 $ETC_CFLAGS", 
 		 AC_SEARCH_LIBS(db_create, db-3 db-4 db, ETC_CFLAGS="-DDB3 $ETC_CFLAGS", 
 				AC_MSG_ERROR(not found.)))
 elif ( test "x$with_gdbm" = xyes ); then
