@@ -1,3 +1,7 @@
+2005-11-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* configure.ac: support for BerkeleyDB 4.3.
+
 2005-11-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/dpnd_analysis.c, system/main.c, system/para_analysis.c:
