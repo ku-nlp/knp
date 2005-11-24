@@ -573,6 +573,75 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
+void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
+/*==================================================================*/
+{
+    int i, count = 0, d_possibility = 1;
+    BNST_DATA *b_ptr = sp->bnst_data + pos;
+
+    if (pos == -1) {
+	return;
+    }
+
+    if (pos < sp->Bnst_num - 2) {
+	for (i = pos + 2; i < dpnd->head[pos + 1]; i++) {
+	    dpnd->mask[i] = 0;
+	}
+    }
+
+    for (i = pos + 1; i < sp->Bnst_num; i++) {
+	if (Quote_matrix[pos][i] &&
+	    dpnd->mask[i]) {
+
+	    if (d_possibility && Dpnd_matrix[pos][i] == 'd') {
+		if (check_uncertain_d_condition(sp, dpnd, i)) {
+		    dpnd->check[pos].pos[count] = i;
+		    count++;
+		}
+		d_possibility = 0;
+	    }
+	    else if (Dpnd_matrix[pos][i] && 
+		     Dpnd_matrix[pos][i] != 'd') {
+		dpnd->check[pos].pos[count] = i;
+		count++;
+		d_possibility = 0;
+	    }
+
+	    /* バリアのチェック */
+	    if (count && 
+		b_ptr->dpnd_rule->barrier.fp[0] && 
+		feature_pattern_match(&(b_ptr->dpnd_rule->barrier), 
+				      sp->bnst_data[i].f, 
+				      b_ptr, sp->bnst_data + i) == TRUE) {
+		break;
+	    }
+	}
+    }
+
+    if (count) {
+	dpnd->check[pos].num = count;	/* 候補数 */
+	dpnd->check[pos].def = b_ptr->dpnd_rule->preference == -1 ? count : b_ptr->dpnd_rule->preference;	/* デフォルトの位置 */
+    }
+
+    count_dpnd_candidates(sp, dpnd, pos - 1);
+}
+
+/*==================================================================*/
+    void call_count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	dpnd->mask[i] = 1;
+	memset(&(dpnd->check[i]), 0, sizeof(CHECK_DATA));
+	dpnd->check[i].num = -1;
+    }
+
+    count_dpnd_candidates(sp, dpnd, sp->Bnst_num - 1);
+}
+
+/*==================================================================*/
 	    void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {

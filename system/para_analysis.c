@@ -495,6 +495,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    
 	    sp->Para_num ++;
 	    if (sp->Para_num >= PARA_MAX) {
+		for (i++; i < sp->Bnst_num; i++) { /* 残りの文節に-1を与える */
+		    sp->bnst_data[i].para_num = -1;
+		}
 		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
 	    }
@@ -556,8 +559,13 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
 	    if (sp->Para_num >= PARA_MAX) {
+		for (; i < sp->Bnst_num; i++, b_ptr++) { /* 残りの文節に-1を与える */
+		    b_ptr->para_num = -1;
+		}
+		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
 		break;
 	    }
+	    b_ptr->para_num = sp->Para_num;
 	    sp->para_data[sp->Para_num].key_pos = i;
 	    sp->para_data[sp->Para_num].jend_pos = b_ptr->dpnd_head;
 	    for (j = i - 1; 
@@ -569,6 +577,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    sp->para_data[sp->Para_num].max_path[0] = j + 1;
 	    sp->para_data[sp->Para_num].status = 'n';
 	    sp->Para_num++;
+	}
+	else {
+	    b_ptr->para_num = -1;
 	}
     }
     return detect_para_relation(sp);

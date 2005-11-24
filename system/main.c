@@ -849,13 +849,6 @@ extern int	EX_match_subject;
     /* ËÜ³ÊÅª²òÀÏ */
     /**************/
 
-    if (OptInput & OPT_PARSED) {
-	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
-	para_recovery(sp);
-	after_decide_dpnd(sp);
-	goto PARSED;
-    }
-
     calc_dpnd_matrix(sp);			/* °ÍÂ¸²ÄÇ½À­·×»» */
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
@@ -876,6 +869,20 @@ extern int	EX_match_subject;
     if (relax_dpnd_matrix(sp) == TRUE && OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Relaxation ... \n");
 	print_matrix(sp, PRINT_DPND, 0);
+    }
+
+    if (OptInput & OPT_PARSED) {
+	if (OptCheck == TRUE) {
+	    call_count_dpnd_candidates(sp, &(sp->Best_mgr->dpnd));
+	}
+	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+	para_recovery(sp);
+	para_postprocess(sp);
+	after_decide_dpnd(sp);
+	if (OptCheck == TRUE) {
+	    check_candidates(sp);
+	}
+	goto PARSED;
     }
 
     /****************/
