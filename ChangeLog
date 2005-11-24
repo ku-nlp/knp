@@ -1,3 +1,8 @@
+2005-11-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/dpnd_analysis.c, system/main.c, system/para_analysis.c:
+	正解構文構造を入力したときにも係り先の候補を出力できるようにした
+
 2005-11-23  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/read_data.c:
