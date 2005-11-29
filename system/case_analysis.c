@@ -1475,9 +1475,10 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    else {
 		/* 省略の場合 (特殊タグ以外) */
 		if (ccp && cpm_ptr->elem_b_num[num] <= -2) {
-		    sid = ccp->s->KNPSID ? ccp->s->KNPSID + 5 : NULL;
-		    dist_n = ccp->dist;
-		    sent_n = ccp->s->Sen_num;
+		    sid = cpm_ptr->elem_s_ptr[num]->KNPSID ? 
+			cpm_ptr->elem_s_ptr[num]->KNPSID + 5 : NULL;
+		    dist_n = sp->Sen_num - cpm_ptr->elem_s_ptr[num]->Sen_num;
+		    sent_n = cpm_ptr->elem_s_ptr[num]->Sen_num;
 		}
 		/* 同文内 */
 		else {
