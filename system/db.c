@@ -447,6 +447,77 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 }
 
 #else
+
+#ifdef CDB
+
+/* DB open for reading */
+DBM_FILE db_read_open(char *filename)
+{
+    DBM_FILE db;
+
+    db = (DBM_FILE)malloc_data(sizeof(CDB_FILE), "db_read_open");
+    db->mode = O_RDONLY;
+
+    if ((db->fd = open(filename, db->mode)) < 0) {
+#ifdef DEBUG
+        fprintf(stderr, "db_read_open: %s\n", filename);
+#endif
+	return NULL;
+    }
+    return db;
+}
+
+/* DB open for writing */
+DBM_FILE db_write_open(char *filename)
+{
+    DBM_FILE db;
+
+    db = (DBM_FILE)malloc_data(sizeof(CDB_FILE), "db_write_open");
+    db->mode = O_CREAT | O_RDWR | O_TRUNC;
+
+    if ((db->fd = open(filename, db->mode)) < 0) {
+        fprintf(stderr, "db_write_open: %s: %s\n", filename, (char *)strerror(errno));
+	return NULL;
+    }
+
+    cdb_make_start(&(db->cdbm), db->fd);
+    return db;
+}
+
+/* DB close */
+void db_close(DBM_FILE db)
+{
+    if (db->mode & O_CREAT) {
+	cdb_make_finish(&(db->cdbm));
+	fchmod(db->fd, S_IREAD | S_IWRITE | S_IRGRP | S_IROTH);
+    }
+    close(db->fd);
+    free(db);
+}
+
+/* DB get */
+char *db_get(DBM_FILE db, char *buf)
+{
+    cdbi_t vlen;
+    char *rbuf;
+
+    if (cdb_seek(db->fd, buf, strlen(buf), &vlen) > 0) {
+	rbuf = (char *)malloc_data(vlen, "db_get");
+	cdb_bread(db->fd, rbuf, vlen);
+	return rbuf;
+    }
+    return NULL;
+}
+
+/* DB put */
+int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
+{
+    /* overwrite anytime ignoring the mode (CDB doesn't support rewriting) */
+    cdb_make_add(&(db->cdbm), buf, strlen(buf), value, strlen(value));
+    return 0;
+}
+
+#else
 /* BerkeleyDB 2 */
 
 /* DB open for reading */
@@ -623,6 +694,7 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
     return 0;
 }
 
+#endif
 #endif
 #endif
 #endif

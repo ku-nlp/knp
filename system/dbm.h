@@ -60,9 +60,23 @@ typedef HASH_FILE *DBM_FILE;
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
-#include <db.h>
 
+#ifdef CDB
+
+#include <cdb.h>
+typedef struct {
+    int fd;
+    int mode;
+    struct cdb_make cdbm;
+} CDB_FILE;
+typedef CDB_FILE *DBM_FILE;
+
+#else
+
+#include <db.h>
 typedef DB *DBM_FILE;
+
+#endif
 
 /*  functions  */
 

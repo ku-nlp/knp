@@ -19,6 +19,7 @@ AC_SYS_LARGEFILE
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
+AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (optional)]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
 AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
 AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
@@ -111,6 +112,9 @@ ETC_CFLAGS="$JUMAN_CFLAGS $ETC_CFLAGS"
 # Checks for libraries.
 
 if ( test \( "x$with_berkeley_db2" = xyes -a "x$with_berkeley_db" = xyes \) \
+    -o \( "x$with_berkeley_db2" = xyes -a "x$with_cdb" = xyes \) \
+    -o \( "x$with_berkeley_db" = xyes -a "x$with_cdb" = xyes \) \
+    -o \( "x$with_berkeley_gdbm" = xyes -a "x$with_cdb" = xyes \) \
     -o \( "x$with_berkeley_db2" = xyes -a "x$with_gdbm" = xyes \) \
     -o \( "x$with_berkeley_db" = xyes -a "x$with_gdbm" = xyes \) ); then
     AC_MSG_ERROR("More than two DBs are specified.")    
@@ -123,6 +127,9 @@ elif ( test "x$with_berkeley_db" = xyes ); then
 				AC_MSG_ERROR(not found.)))
 elif ( test "x$with_gdbm" = xyes ); then
     AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
+	         AC_MSG_ERROR(not found.))
+elif ( test "x$with_cdb" = xyes ); then
+    AC_CHECK_LIB(cdb, cdb_make_start, DB_LIBS="-lcdb $DB_LIBS" ETC_CFLAGS="-DCDB $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
 else
     ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS"    
