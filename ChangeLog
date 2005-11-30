@@ -1,5 +1,14 @@
 2005-11-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* rule/case_analysis.rule:
+	「〜のは」の格解析ルールの修正
+
+	* rule/bnst_basic.rule:
+	「異なる」など否定的な表現に<準否定表現>featureを付与
+
+	* configure.ac, system/db.c, system/dbm.h:
+	support cdb (Constant DB).
+
 	* system/case_analysis.c:
 	省略解析において同じ格が2つあるときの表示のバグを修正
 
