@@ -734,7 +734,12 @@ extern int	EX_match_subject;
     /* 形態素の読み込み */
 
     if ((flag = read_mrph(sp, input)) == EOF) return EOF;
-    if (flag == FALSE) return FALSE; /* EOSしかない空の文 */
+    if (flag == FALSE) { /* EOSしかない空の文 */
+	sp->available = 0;
+	sp->Mrph_num = 0;
+	ErrorComment = strdup("Cannot make mrph");
+	return TRUE;
+    }
 
     /* 形態素への意味情報付与 (固有表現解析のとき) */
 
@@ -761,10 +766,22 @@ extern int	EX_match_subject;
     /* 形態素を文節にまとめる */
 
     if (OptInput == OPT_RAW) {
-	if (make_bunsetsu(sp) == FALSE) return FALSE;
+	if (make_bunsetsu(sp) == FALSE) {
+	    sp->available = 0;
+	    sp->Bnst_num = 0;
+	    sp->Tag_num = 0;
+	    ErrorComment = strdup("Cannot make bunsetsu");
+	    return TRUE;
+	}
     }
     else {
-	if (make_bunsetsu_pm(sp) == FALSE) return FALSE;
+	if (make_bunsetsu_pm(sp) == FALSE) {
+	    sp->available = 0;
+	    sp->Bnst_num = 0;
+	    sp->Tag_num = 0;
+	    ErrorComment = strdup("Cannot make bunsetsu");
+	    return TRUE;
+	}
     }
 
     /* 文節化だけの場合 */
@@ -1014,6 +1031,7 @@ PARSED:
 	    fprintf(stderr, ")\n");
 
 	    ErrorComment = strdup("Parse timeout");
+	    sp->available = 0;
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
 	    if (!(OptExpress & OPT_NOTAG)) {
