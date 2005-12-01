@@ -737,6 +737,8 @@ extern int	EX_match_subject;
     if (flag == FALSE) { /* EOSしかない空の文 */
 	sp->available = 0;
 	sp->Mrph_num = 0;
+	sp->Bnst_num = 0;
+	sp->Tag_num = 0;
 	ErrorComment = strdup("Cannot make mrph");
 	return TRUE;
     }
