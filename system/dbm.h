@@ -67,7 +67,8 @@ typedef HASH_FILE *DBM_FILE;
 typedef struct {
     int fd;
     int mode;
-    struct cdb_make cdbm;
+    struct cdb_make cdbm; /* for creation */
+    struct cdb cdb;       /* for querying */
 } CDB_FILE;
 typedef CDB_FILE *DBM_FILE;
 

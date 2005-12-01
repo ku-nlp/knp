@@ -464,6 +464,8 @@ DBM_FILE db_read_open(char *filename)
 #endif
 	return NULL;
     }
+
+    cdb_init(&(db->cdb), db->fd);
     return db;
 }
 
@@ -498,12 +500,14 @@ void db_close(DBM_FILE db)
 /* DB get */
 char *db_get(DBM_FILE db, char *buf)
 {
-    cdbi_t vlen;
-    char *rbuf;
+    if (cdb_find(&(db->cdb), buf, strlen(buf)) > 0) {
+	char *rbuf;
+	unsigned int datalen;
 
-    if (cdb_seek(db->fd, buf, strlen(buf), &vlen) > 0) {
-	rbuf = (char *)malloc_data(vlen, "db_get");
-	cdb_bread(db->fd, rbuf, vlen);
+	datalen = cdb_datalen(&(db->cdb));
+	rbuf = (char *)malloc_data(datalen + 1, "db_get");
+	cdb_read(&(db->cdb), rbuf, datalen, cdb_datapos(&(db->cdb)));
+	*(rbuf + datalen) = '\0';
 	return rbuf;
     }
     return NULL;
