@@ -1,3 +1,11 @@
+2005-12-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c:
+	形態素数、文節数が多すぎるなどで解析失敗したときにも、S-IDとEOSを出力するように変更
+
+	* system/case_analysis.c:
+	格解析結果に動作主情報などを出力するのを省略解析ではしないように変更
+
 2005-11-30  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/case_analysis.rule:
@@ -14,7 +22,7 @@
 
 2005-11-25  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
-	* configure.ac: support for BerkeleyDB 4.3.
+	* configure.ac: support BerkeleyDB 4.3.
 
 2005-11-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
