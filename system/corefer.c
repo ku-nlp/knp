@@ -12,6 +12,83 @@ DBM_FILE synonym_db;
 
 char *SynonymFile;
 
+/* 文の要素を保持する */
+typedef struct entity_cache {
+    char            *key;
+    int	            frequency;
+    struct entity_cache *next;
+} ENTITY_CACHE;
+
+ENTITY_CACHE entity_cache[TBLSIZE];
+
+/*==================================================================*/
+			 void init_entity_cache()
+/*==================================================================*/
+{
+    memset(entity_cache, 0, sizeof(ENTITY_CACHE)*TBLSIZE);
+}
+
+/*==================================================================*/
+			void clear_entity_cache()
+/*==================================================================*/
+{
+    int i;
+    ENTITY_CACHE *ecp, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	ecp = entity_cache[i].next;
+	while (ecp) {
+	    free(ecp->key);
+	    next = ecp->next;
+	    free(ecp);
+	    ecp = next;
+	}
+    }
+    init_entity_cache();
+}
+
+/*==================================================================*/
+       void register_entity_cache(char *key)
+/*==================================================================*/
+{
+    /* 文の要素を登録する */
+
+    ENTITY_CACHE *ecp;
+
+    ecp = &(entity_cache[hash(key, strlen(key))]);
+    while (ecp && ecp->key && strcmp(ecp->key, key)) {
+	ecp = ecp->next;
+    }
+    if (!ecp) {
+	ecp = (ENTITY_CACHE *)malloc_data(sizeof(ENTITY_CACHE), "register_entity_cache");
+	memset(entity_cache, 0, sizeof(ENTITY_CACHE));
+    }
+    if (!ecp->key) {
+	ecp->key = strdup(key);
+	ecp->next = NULL;
+    }
+    ecp->frequency++;
+}
+
+/*==================================================================*/
+	     int check_entity_cache(char *key)
+/*==================================================================*/
+{
+    ENTITY_CACHE *ecp;
+
+    ecp = &(entity_cache[hash(key, strlen(key))]);
+    if (!ecp->key) {
+	return 0;
+    }
+    while (ecp) {
+	if (!strcmp(ecp->key, key)) {
+	    return ecp->frequency;
+	}
+	ecp = ecp->next;
+    }
+    return 0;
+}
+
 /*==================================================================*/
 			void init_Synonym_db()
 /*==================================================================*/
@@ -45,16 +122,36 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-		 int get_modify_num(BNST_DATA *b_ptr)
+		int get_modify_num(TAG_DATA *tag_ptr)
 /*==================================================================*/
 {
     /* 並列を除いていくつの文節に修飾されているかを返す */
+    /* ＡのＢＣ・・・となっている場合はＡがＢに係っているかの判断も行う */
 
     int i;
+    BNST_DATA *b_ptr;
 
+    b_ptr = tag_ptr->b_ptr;
+
+    /* 所属する文節が修飾されていない場合 */
     if (!b_ptr->child[0]) {
 	return 0;
     }
+
+    /* 文節の先頭のタグで主辞でない場合 */
+    /* 直前の文節の主辞との間に名詞格フレームに記された関係がなければ */
+    /* 直前の文節は主辞に係っていると考え、修飾されていないとみなす */
+    if (tag_ptr == b_ptr->tag_ptr && 
+	b_ptr->tag_num > 1 &&
+	!((tag_ptr)->cf_ptr &&
+	check_examples(((tag_ptr - 1)->mrph_ptr)->Goi2,
+		       strlen(((tag_ptr - 1)->mrph_ptr)->Goi2),
+		       (tag_ptr->cf_ptr)->ex_list[0],
+		       (tag_ptr->cf_ptr)->ex_num[0]) >= 0)) {
+	return 0;
+    }
+
+    /* 上記以外 */
     if ((b_ptr->child[0])->para_type) {
 	b_ptr = b_ptr->child[0];
     }
@@ -66,11 +163,10 @@ char *SynonymFile;
 	    void assign_anaphor_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* 照応詞候補というfeatureを付与する */
-    /* 照応詞候補とは強い複合名詞の末尾となっている語のこと */
+    /* 複合名詞に照応詞候補というfeatureを付与する */
 
-    /* 強い複合名詞の基準 */
-    /* 	固有表現(LOCATION、DATEは切る) */
+    /* 複合名詞 */   
+    /* 	固有表現(LOCATION、DATEは分解) */
     /* 	末尾の語がサ変名詞であれば切る */
     /* 	末尾の語とその前の語が名詞格フレームにある組合せの場合は切る */
 
@@ -78,6 +174,9 @@ char *SynonymFile;
     char word[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
     TAG_DATA *tag_ptr;
     
+    
+
+    /* 文節単位で文の前から処理 */
     for (i = 0; i < sp->Bnst_num; i++) {
 	
 	if (!check_feature((sp->bnst_data + i)->f, "体言")) continue;
@@ -85,12 +184,15 @@ char *SynonymFile;
 	tag_num = (sp->bnst_data + i)->tag_num;
 	tag_ptr = (sp->bnst_data + i)->tag_ptr;
 	
+	/* まずは文節末尾から複合名詞の末尾のタグに照応詞候補と付与していく */
+	/* ex. 「金融派生商品取引を」という文節に対しては */
+	/*      ラストのタグに<照応詞候補:金融派生商品取引>を */
+	/*      その前のタグに<照応詞候補:金融派生商品>を付与する */
   	for (j = tag_num - 1; j >= 0; j--) {
 
 	    /* 固有表現内である場合は後回し */
 	    if (check_feature((tag_ptr + j)->f, "NE") ||
-		check_feature(((tag_ptr + j)->mrph_ptr + 
-			       (tag_ptr + j)->mrph_num - 1)->f, "NE")) {
+		check_feature(((tag_ptr + j)->mrph_ptr)->f, "NE")) {
 		break;
 	    }
 
@@ -106,9 +208,10 @@ char *SynonymFile;
  	    if (/* 主辞である */
 		j == tag_num - 1 ||
 		
-		/* 直後の名詞がサ変名詞である */
+		/* 直後の名詞がサ変名詞、形容詞である */
 		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 6 &&
 		((tag_ptr + j + 1)->mrph_ptr)->Bunrui == 2 ||
+		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 3 ||
 
 		/* 直後が名詞性接尾辞である */
 		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 14 &&
@@ -125,30 +228,35 @@ char *SynonymFile;
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
 		     k >= 0; k--) {
 
-		    /* 先頭の特殊は含めない */
+		    /* 先頭の特殊、照応接頭辞は含めない */
 		    if (!strncmp(word, "\0", 1) &&
-			((tag_ptr + j)->head_ptr - k)->Hinshi == 1) continue;
+			(((tag_ptr + j)->head_ptr - k)->Hinshi == 1 ||
+			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "照応接頭辞")))
+			continue;
 		    strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
 		}
 		if (strncmp(word, "\0", 1)) {
 		    sprintf(buf, "照応詞候補:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf);
+		    register_entity_cache(word);
 		}
 	    } else {
 		break;
 	    }
 	}
 	
+	/* 固有表現を含む文節である場合 */
  	for (j = tag_num - 1; j >= 0; j--) {   
 	    
 	    /* 固有表現の主辞には付与 */
 	    if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
 		while (strncmp(cp, ")", 1)) cp++;
+		register_entity_cache(cp + 1);
 		sprintf(buf, "照応詞候補:%s", cp + 1);
 		assign_cfeature(&((tag_ptr + j)->f), buf);
 		continue;
 	    } 
-	    /* 固有表現中である場合 */
+	    /* 固有表現中である場合(DATEまたはLOCATIONの場合) */
 	    mrph_num = (tag_ptr + j)->mrph_num - 1;
 	    if ((cp = check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE")) &&
 		/* DATEであれば時相名詞、名詞性名詞助数辞で切る */
@@ -172,10 +280,49 @@ char *SynonymFile;
 		strncpy(word, cp + 1, k);
 		word[k] = '\0';
 		strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
+		register_entity_cache(word);
 		sprintf(buf, "照応詞候補:%s", word);
-		assign_cfeature(&((tag_ptr + j)->f), buf);	
-	    }			
+		assign_cfeature(&((tag_ptr + j)->f), buf);
+	    }
+	    /* 固有の前に来る表現(ex. 首都グロズヌイ) */
+	    if (j < tag_num - 1 && 
+		check_feature(((tag_ptr + j + 1)->mrph_ptr + mrph_num)->f, "NE") &&
+		!check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE")) {
+		word[0] = '\0';
+		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
+		     k >= 0; k--) {
+		    
+		    /* 先頭の特殊、照応接頭辞は含めない */
+		    if (!strncmp(word, "\0", 1) &&
+			(((tag_ptr + j)->head_ptr - k)->Hinshi == 1 ||
+			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "照応接頭辞")))
+			continue;
+		    strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
+		}
+		if (strncmp(word, "\0", 1)) {
+		    register_entity_cache(word);
+		    sprintf(buf, "照応詞候補:%s", word);
+		    assign_cfeature(&((tag_ptr + j)->f), buf);
+		}
+	    }	    
 	}   
+	/* 最後に文節頭から見ていきentity_cacheに存在する表現であれば付与する */
+  	for (j = 0; j < tag_num; j++) {
+
+	    if (check_feature((tag_ptr + j)->f, "照応詞候補") ||
+		check_feature((tag_ptr + j)->f, "NE")) break;
+
+	    word[0] = '\0';
+	    for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
+		 k >= 0; k--) 
+		strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
+
+	    if (check_entity_cache(word)) {
+		register_entity_cache(word);
+		sprintf(buf, "照応詞候補:%s", word);
+		assign_cfeature(&((tag_ptr + j)->f), buf);
+	    }
+	}
     }
 }
 
@@ -279,7 +426,6 @@ char *SynonymFile;
 		    }
 		    assign_cfeature(&((sp->tag_data + i)->f), buf);
 		    assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
-		    assign_cfeature(&(((sp->tag_data + i)->b_ptr)->f), "共参照"); 
 #ifdef USE_SVM
 		    if (OptNE) {
 			if ((cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
@@ -300,23 +446,69 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
+int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
+/*==================================================================*/
+{
+    /* PERSON + 役職 に"="タグを付与 */
+
+    int i, flag;
+    char buf[WORD_LEN_MAX];
+    MRPH_DATA *mrph_ptr;
+
+    mrph_ptr = tag_ptr->mrph_ptr;
+    /* タグ末尾までNE中である場合のみ対象とする */
+    if (!check_feature((mrph_ptr - 1)->f, "NE")) return 0;
+    
+    flag = 0;
+    for (i = 0;; i++) {
+	if (check_feature((mrph_ptr + i)->f, "固有修飾")) {
+	    continue;
+	}
+	else if (check_feature((mrph_ptr + i)->f, "人名末尾")) {
+	    flag = 1;
+	    continue;
+	}
+	else break;
+    }
+    if (!flag) return 0;
+	
+    /* 複数のタグにまたがっている場合は次のタグに進む */
+    while (i >= tag_ptr->mrph_num) {
+	i -= tag_ptr->mrph_num;
+	tag_ptr++;
+    }
+    
+    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
+	    cp, j, sp->KNPSID ? sp->KNPSID + 5 : "?", 
+	    tag_ptr - sp->tag_data);
+    assign_cfeature(&(tag_ptr->f), buf);
+    assign_cfeature(&(tag_ptr->f), "共参照");    
+}
+
+/*==================================================================*/
 	       void corefer_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
-    char *anaphor;
+    char *anaphor, *cp;
     MRPH_DATA *mrph_ptr;
     
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-	
+
+	/* PERSON + 人名末尾 の処理 */
+	if ((cp = check_feature((sp->tag_data + i)->f, "NE")) &&
+	    !strncmp(cp + 4, "PERSON", 6)) {
+	    person_post(sp, sp->tag_data + i + 1, cp + 11, i);
+	}
+
 	/* 共参照解析を行う条件 */
 	/* 照応詞候補であり、固有表現中の語、または */
 	/* 連体詞形態指示詞以外に修飾されていない語 */
 	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
 	    (check_feature((sp->tag_data + i)->f, "NE") ||
 	     check_feature(((sp->tag_data + i)->mrph_ptr +
-			    (sp->tag_data + i)->mrph_num)->f, "NE") ||
-	     !get_modify_num((sp->tag_data + i)->b_ptr) || /* 修飾されていない */
+			    (sp->tag_data + i)->mrph_num - 1)->f, "NE") ||
+	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
 	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が句点である */
 	     check_feature((((sp->tag_data + i)->b_ptr)->child[0])->f, 

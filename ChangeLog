@@ -1,3 +1,16 @@
+2005-12-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/corefer.c, system/read_data.c:
+	照応詞候補として出現した語のキャッシュを作成
+	照応詞候補というタグの条件を変更
+	固有表現PERSONの直後に人名末尾が来た場合に共参照タグを付けるように変更
+
+	* system/main.c
+	固有表現認識を行なうタイミングを基本的に、形態素へのFEATURE付与の直後に変更
+
+	* system/proper.c, rule/mrph_basic.rule, rule/mrph_ne.rule:
+	固有表現認識に、人名末尾、組織名末尾というFEATUREを用いるように変更
+	
 2005-12-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:

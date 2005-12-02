@@ -597,6 +597,10 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			clear_ne_cache();
 		    }
 #endif
+		    if (OptEllipsis & OPT_COREFER) {
+			clear_entity_cache();
+		    }
+
 		}
 		preArticleID = ArticleID;
 	    }

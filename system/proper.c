@@ -29,6 +29,7 @@ char *Position_name[] = {
     "head", "middle", "tail", "single"};
 struct NE_MANAGER {
     char feature[FEATIRE_MAX];          /* 素性 */
+    int notHEAD;                         /* head, singleにはならない場合1 */
     int NEresult;                       /* NEの解析結果 */
     double SVMscore[NE_MODEL_NUMBER];   /* 各タグ・ポジションとなる確率 */
     double max[NE_MODEL_NUMBER];        /* そこまでの最大スコア */
@@ -125,7 +126,7 @@ char *ne_code_to_tagposition(int num)
 {
     int i;
     char *Chara_name[] = {
-	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字", ""};
+	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字"};
 
     if (Goi && !strcmp(Goi, "・")) return 5; /* 記号 */
     for (i = 0; *Chara_name[i]; i++)
@@ -135,19 +136,19 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_pos(MRPH_DATA mrph_data, int num)
+	     char *get_pos(MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
     int i, j;
     char *ret, pos[SMALL_DATA_LEN];
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
-    ret[0] = '\0'; /* 再帰的に代入する可能性があるため */
+    ret[0] = '\0'; /* 再帰的に代入するため */
 
-    if (!check_feature(mrph_data.f, "品曖")) {
-	if (mrph_data.Bunrui)
-	    sprintf(ret, "%d%d%d10:1 ", mrph_data.Hinshi, mrph_data.Bunrui, num);
+    if (!check_feature(mrph_data->f, "品曖")) {
+	if (mrph_data->Bunrui)
+	    sprintf(ret, "%d%d%d10:1 ", mrph_data->Hinshi, mrph_data->Bunrui, num);
 	else
-	    sprintf(ret, "%d0%d10:1 ", mrph_data.Hinshi, num);
+	    sprintf(ret, "%d0%d10:1 ", mrph_data->Hinshi, num);
 	return ret;
     }
 	
@@ -156,7 +157,7 @@ char *ne_code_to_tagposition(int num)
 	for (j = 0; j < CLASSIFY_NO + 1; j++) {
 	    if (!Class[i][j].id) break;
 	    sprintf(pos, "品曖-%s", Class[i][j].id);   
-	    if (check_feature(mrph_data.f, pos))
+	    if (check_feature(mrph_data->f, pos))
 		sprintf(ret, "%s%d%d%d10:1 ", ret, i, j, num);
 	}
     }
@@ -190,6 +191,7 @@ char *ne_code_to_tagposition(int num)
     /* ひとつの文章が終了するまで破棄しないのでメモリを必要とする可能性あり */
     /* NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持 */
     /* その場合のみtagが与えられ、TAGの種類+1を記憶する */
+    /* この場合、古いデータがあれば上書きされる */
 
     NE_CACHE *ncp;
 
@@ -228,7 +230,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-		  char *get_cache(char *key, int i)
+		  char *get_cache(char *key, int num)
 /*==================================================================*/
 {
     int NEresult;
@@ -236,12 +238,44 @@ char *ne_code_to_tagposition(int num)
     char *ret;
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
-    ret[0] = '\0'; /* 再帰的に代入する可能性があるため */
+    ret[0] = '\0'; /* 再帰的に代入するため */
 
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
 	if (check_ne_cache(key, NEresult))
-	    sprintf(ret, "%s%d%d30:1 ", ret, NEresult + 1, i);
+	    sprintf(ret, "%s%d%d30:1 ", ret, NEresult + 1, num);
     }
+    return ret;
+}
+
+/*==================================================================*/
+	     char *get_tail(MRPH_DATA *mrph_data, int num)
+/*==================================================================*/
+{
+    int i, j;
+    char *ret;
+    char *feature_name[] = {"人名末尾", "組織名末尾"};
+
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
+    ret[0] = '\0'; /* 再帰的に代入するため */
+
+     /* 文節後方に人名末尾、組織名末尾という語があるか */
+    for (j = 1;; j++) {
+	if (!(mrph_data + j)->f || 
+	    check_feature((mrph_data + j)->f, "文節始") ||
+	    check_feature((mrph_data + j)->f, "記号") ||
+	    check_feature((mrph_data + j)->f, "括弧")) break;
+	for (i = 0; i < 2; i++) {
+	    if (check_feature((mrph_data + j)->f, feature_name[i]))
+		sprintf(ret, "%d%d40:1 ", i + 3, num);
+	}
+    }
+
+    /* 人名末尾、組織名末尾であるか */
+    for (i = 0; i < 2; i++) {
+	if (check_feature(mrph_data->f, feature_name[i]))
+	    sprintf(ret, "%s%d%d40:1 ", ret, i + 1, num);
+    }
+    
     return ret;
 }
 
@@ -250,26 +284,34 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j, k;
-    char *s[3];
+    char *s[4];
 
     for (i = 0; i < sp->Mrph_num; i++) {
+	
+	/* 括弧始を除く記号は固有表現の先頭にはならないというルール  */
+	NE_mgr[i].notHEAD = 0;
+	if (get_chara(sp->mrph_data[i].f, sp->mrph_data[i].Goi) == 5 &&
+	    !check_feature(sp->mrph_data[i].f, "括弧始"))
+	    NE_mgr[i].notHEAD = 1;
+	
 	for (j = i - SIZE; j <= i + SIZE; j++) {
 	    if (j < 0 || j >= sp->Mrph_num)
 		continue;
 	    
 	    s[0] = db_get(ne_db, sp->mrph_data[j].Goi2);
-	    s[1] = get_pos(sp->mrph_data[j], i - j + SIZE + 1);
-	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1);
+	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
+	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白*/
+	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白*/
 	    k = i - j + SIZE + 1;
-	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
+	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s",
 		    NE_mgr[i].feature, s[0] ? s[0] : "", k,
-		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k, s[2]);
+		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
+		    s[2], s[3]);
 	    free(s[0]);
 	    free(s[1]);
 	    free(s[2]);
+	    free(s[3]);
 	}
-	if (OptDisplay == OPT_DEBUG)
-	    fprintf(stderr, "%s\t%s\n", sp->mrph_data[i].Goi2, NE_mgr[i].feature);
     }       
 }
 
@@ -280,19 +322,31 @@ char *ne_code_to_tagposition(int num)
     int i, j;
     
     for (i = 0; i < sp->Mrph_num; i++) {
+	if (OptDisplay == OPT_DEBUG)
+	    fprintf(stderr, "%d %s\t%s\n", i, sp->mrph_data[i].Goi2, NE_mgr[i].feature);
+
 	for (j = 0; j < NE_MODEL_NUMBER; j++) {
 #ifdef USE_SVM
-	    NE_mgr[i].SVMscore[j] 
-		= 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
-	if (OptDisplay == OPT_DEBUG)
-	    fprintf(stderr, "%d %d %f\n", i, j, NE_mgr[i].SVMscore[j]);
+	    if (NE_mgr[i].notHEAD && 
+		j  != NE_MODEL_NUMBER - 1 &&
+		(j % 4 == HEAD || j % 4 == SINGLE))
+		NE_mgr[i].SVMscore[j] = 0; /* ヒューリスティックルール */
+	    else
+		NE_mgr[i].SVMscore[j] 
+		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
+
+	    if (OptDisplay == OPT_DEBUG) {
+		fprintf(stderr, "%2d %f\t", j, NE_mgr[i].SVMscore[j]);
+		if (j % 4 == SINGLE && j  != NE_MODEL_NUMBER - 2) fprintf(stderr, "\n");
+		if (j  == NE_MODEL_NUMBER - 1) fprintf(stderr, "\n\n");
+	    }
 #endif
 	}
     }
 }
 
 /*==================================================================*/
-		  int constraint(int pre, int self)
+		  int constraint(int pre, int self, int last)
 /*==================================================================*/
 {
     /* 前後に来れるタグの制約に違反すれば1を返す  */
@@ -303,6 +357,8 @@ char *ne_code_to_tagposition(int num)
 	if (self % 4 == MIDDLE || self % 4 == TAIL) return 1;
 	return 0;
     }
+
+    if (last && (self % 4 == HEAD || self % 4 == MIDDLE)) return 1;
 	
     if ((pre  % 4 == HEAD   || pre  % 4 == MIDDLE) &&
 	 self % 4 != MIDDLE && self % 4 != TAIL  ) return 1;
@@ -325,16 +381,21 @@ char *ne_code_to_tagposition(int num)
 
 	    /* 文頭の場合 */
 	    if (i == 0) {
-		if (constraint(-1, j)) continue;
+		if (constraint(-1, j, 0)) continue;
 		NE_mgr[i].max[j] = NE_mgr[i].SVMscore[j];
 		NE_mgr[i].parent[j] = -1; /* 文頭 */
 		continue;
 	    }
-	    
-	    /* 文頭以外 */
+
+	    /* 文頭、文末以外 */
 	    NE_mgr[i].max[j] = 0;
 	    for (k = 0; k < NE_MODEL_NUMBER; k++) {
-		if (constraint(k, j)) continue;
+		if (i == sp->Mrph_num - 1) {
+		    if (constraint(k, j, 1)) continue;
+		}
+		else {
+		    if (constraint(k, j, 0)) continue;
+		}
 		score = NE_mgr[i-1].max[k]*NE_mgr[i].SVMscore[j];
 		if (score > NE_mgr[i].max[j]) { /* 同点の場合は無視 */
 		    NE_mgr[i].max[j] = score;
@@ -387,7 +448,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 		void modify_result(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* SVMによる固有表現認識の修正 */
+    /* SVMによる固有表現認識を修正する */
     /* 前文までで見つかった固有表現が認識されなかった場合は追加 */
     /* より短い固有表現と認識されている場合は上書きする */
 
@@ -461,10 +522,10 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 }
 
 /*==================================================================*/
-	      void assign_ne_feature(SENTENCE_DATA *sp)
+	    void assign_ne_feature_mrph(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i;
     char cp[WORD_LEN_MAX];
 
     /* 形態素に付与 */
@@ -473,6 +534,15 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
 	assign_cfeature(&(sp->mrph_data[i].f), cp);
     }
+}
+
+/*==================================================================*/
+	    void assign_ne_feature_tag(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    char cp[WORD_LEN_MAX];
+
     /* タグに付与 */
     for (j = 0; j < sp->Tag_num; j++) { /* 同一タグの固有表現は一種類まで */
 	for (i = 0; i < sp->tag_data[j].mrph_num; i++) {
@@ -495,7 +565,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 		Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 	while(1) {
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
-	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE || 
+	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE ||
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
 		assign_cfeature(&(sp->tag_data[j].f), cp);
 		break;
@@ -524,7 +594,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	modify_result(sp);
     }
     /* 結果を付与 */
-    assign_ne_feature(sp);
+    assign_ne_feature_mrph(sp);
 }
 
 /*==================================================================*/
@@ -562,7 +632,8 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	}
     }
     /* 結果を付与 */
-    assign_ne_feature(sp);      
+    assign_ne_feature_mrph(sp);      
+    assign_ne_feature_tag(sp);      
 }
 
 /*==================================================================*/

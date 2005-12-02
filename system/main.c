@@ -664,8 +664,10 @@ extern int	EX_match_subject;
 	init_ne_cache();
     }
 #endif
-    if (OptEllipsis & OPT_COREFER)
+    if (OptEllipsis & OPT_COREFER) {
 	init_Synonym_db();
+	init_entity_cache();
+    }
 
     init_juman();	/* JUMAN関係 */
     init_cf();		/* 格フレームオープン */
@@ -765,6 +767,13 @@ extern int	EX_match_subject;
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType);
 
+    /* 固有表現認識を行う */
+#ifdef USE_SVM
+    if (OptNE) {
+	ne_analysis(sp);
+    }
+#endif
+
     /* 形態素を文節にまとめる */
 
     if (OptInput == OPT_RAW) {
@@ -828,6 +837,11 @@ extern int	EX_match_subject;
 	make_tag_units_pm(sp);
     }
 
+    /* 固有表現認識結果をタグに付与 */
+    if (OptNE) {
+	assign_ne_feature_tag(sp);
+    }
+
     /* 入力した正解情報をチェック */
     if (OptReadFeature) {
 	check_annotation(sp);
@@ -843,13 +857,6 @@ extern int	EX_match_subject;
     if (OptAnalysis == OPT_AssignF) return TRUE;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
-
-    /* 固有表現認識を行う */
-#ifdef USE_SVM
-    if (OptNE) {
-	ne_analysis(sp);
-    }
-#endif
 
     /* 格フレーム取得 */
     if (OptAnalysis == OPT_CASE ||
