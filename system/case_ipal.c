@@ -2135,9 +2135,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     /* 隣にレベル:B-より強い用言があるかどうか */
     if (np_modifying_flag == 0) {
-	if (get_dist_from_work_mgr(tp2->b_ptr, (tp2 + 1)->b_ptr) > 0 && 
-	    check_feature((tp2 + 1)->f, "係:連用") && 
-	    subordinate_level_check("B-", (tp2 + 1)->b_ptr)) {
+	if (get_dist_from_work_mgr(tp2->b_ptr, (tp2 + 1)->b_ptr) > 0) {
 	    closest_pred_flag = 1;
 	}
     }
@@ -2145,7 +2143,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* 「は」, 読点, 否定のチェック */
     wa_flag = check_feature(tp2->f, "ハ") ? 1 : 0;
     touten_flag = check_feature(tp2->f, "読点") ? 1 : 0;
-    negation_flag = check_feature(hp->f, "否定表現") ? 1 : 0;
+    negation_flag = check_feature(hp->f, "否定表現")   ? 1 
+		  : check_feature(hp->f, "準否定表現") ? 1
+		  : 0;
 
     /* 提題スコア */
     if (cp = check_feature(hp->f, "提題受")) {
@@ -2194,7 +2194,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
 		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
-		    scase, wa_flag, touten_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
+		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
 		    dist, closest_pred_flag, topic_score, negation_flag, ret, value, value2, value3);
 	}
 	free(value);
@@ -2206,9 +2206,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
     else {
 	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = 0 (%s * %s * %s)\n", 
+	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = 0 (C:%s * P:%s * T:%s)\n", 
 		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
-		    scase, wa_flag, touten_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
+		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
 		    dist, closest_pred_flag, topic_score, negation_flag, value ? value : "", value2 ? value2 : "", value3 ? value3 : "");
 	}
 	ret = UNKNOWN_CASE_SCORE;

@@ -1112,7 +1112,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
 	else {
 	    fprintf(stdout, "■ %d点 (距離減点 %d点 (%d点) 提題スコア %d点)\n", 
-		    Work_mgr.score, distance_cost, Work_mgr.dflt*2, topic_score_sum);
+		    (int)Work_mgr.score, distance_cost, (int)Work_mgr.dflt*2, topic_score_sum);
 	}
     }
         
