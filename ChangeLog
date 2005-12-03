@@ -1,3 +1,16 @@
+2005-12-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/make_db.c:
+	入力のチェックを厳しくした
+
+2005-12-02  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c:
+	確率的格解析の微調整
+
+	* rule/mrph_basic.rule:
+	接尾辞「性」を<意味有>に追加
+
 2005-12-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/corefer.c, system/read_data.c:
@@ -10,7 +23,7 @@
 
 	* system/proper.c, rule/mrph_basic.rule, rule/mrph_ne.rule:
 	固有表現認識に、人名末尾、組織名末尾というFEATUREを用いるように変更
-	
+
 2005-12-01  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
