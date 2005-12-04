@@ -588,7 +588,8 @@ extern int	EX_match_subject;
 	    read_homo_rule((RULE+i)->file);
 	}
 	/* 形態素ルール or 文節ルール */
-	else if ((RULE+i)->type == MorphRuleType || 
+	else if ((RULE+i)->type == MorphRuleType ||
+		 (RULE+i)->type == NeMorphRuleType || 
 		 (RULE+i)->type == TagRuleType || 
 		 (RULE+i)->type == BnstRuleType) {
 	    read_general_rule(RULE+i);
@@ -771,8 +772,10 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
     if (OptNE) {
 	ne_analysis(sp);
+	/* 人名をひとつのタグにするためのルールを読む */
+	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType);
     }
-#endif
+#endif 
 
     /* 形態素を文節にまとめる */
 

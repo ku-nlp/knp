@@ -1239,7 +1239,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     void (*assign_function)();
 
     /* 形態素, タグ単位, 文節の場合分け */
-    if (flag == MorphRuleType) {
+    if (flag == MorphRuleType || flag == NeMorphRuleType) {
 	assign_function = assign_mrph_feature;
     }
     else if (flag == TagRuleType) {

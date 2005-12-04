@@ -388,7 +388,8 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     (GeneralRuleArray+GeneralRuleNum)->direction = rule->direction;
     (GeneralRuleArray+GeneralRuleNum)->CurRuleSize = 0;
 
-    if ((GeneralRuleArray+GeneralRuleNum)->type == MorphRuleType) {
+    if ((GeneralRuleArray+GeneralRuleNum)->type == MorphRuleType ||
+	(GeneralRuleArray+GeneralRuleNum)->type == NeMorphRuleType) {
 	(GeneralRuleArray+GeneralRuleNum)->RuleArray = 
 	    (MrphRule *)malloc_data(sizeof(MrphRule)*GeneralRule_MAX, "read_general_rule");
 	read_mrph_rule(rule->file, (MrphRule *)((GeneralRuleArray+GeneralRuleNum)->RuleArray), 

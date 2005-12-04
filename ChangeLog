@@ -1,3 +1,14 @@
+2005-12-04  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/Makefile.am
+	mrph_ne.ruleも認識するように修正
+	
+	* system/corefer.c, system/main.c, system/read_data.c, system/read_rule.c, rule/mrph_ne.rule
+	固有表現解析の結果PERSONとなったものを一つタグにするように変更
+		
+	* system/proper.c
+	キャシュを用いた固有表現抽出のバグを修正
+
 2005-12-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/make_db.c:

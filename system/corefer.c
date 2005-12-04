@@ -515,7 +515,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 			   "連体詞形態指示詞"))) {
 	    /* 指示詞の場合 */
 	    if (check_feature((sp->tag_data + i)->f, "指示詞")) {
-		continue;
+		continue; /* ここでは処理をしない */
 	    }   
 	    mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
 	    if (/* 名詞性接尾辞が付いている場合はまず接尾辞も含めたものを調べる */

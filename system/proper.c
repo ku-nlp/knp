@@ -17,6 +17,8 @@
 #define MIDDLE             1
 #define TAIL               2
 #define SINGLE             3
+#define SIGX               10 /* SVMの結果を確率に近似するシグモイド関数の係数 */
+#define NE_LEN_MAX         12 /* modify_resultにおけるチェックする最長の形態素数 */
 
 DBM_FILE ne_db;
 
@@ -333,7 +335,7 @@ char *ne_code_to_tagposition(int num)
 		NE_mgr[i].SVMscore[j] = 0; /* ヒューリスティックルール */
 	    else
 		NE_mgr[i].SVMscore[j] 
-		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j)*5));
+		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j) * SIGX));
 
 	    if (OptDisplay == OPT_DEBUG) {
 		fprintf(stderr, "%2d %f\t", j, NE_mgr[i].SVMscore[j]);
@@ -452,57 +454,50 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
     /* 前文までで見つかった固有表現が認識されなかった場合は追加 */
     /* より短い固有表現と認識されている場合は上書きする */
 
-    int i, j, k, l, start, end, ne_tag, break_flag;
+    int len, start, end, position, ne_tag;
     char word[WORD_LEN_MAX];
-    
-    /* 対象とするのは文節の先頭から主辞までのすべての形態素列 */
-    for (i = 0; i < sp->Bnst_num; i++) {
-	
-	break_flag = 0;
-	/* チェックする形態素列の形態素数 */
-	for (j = (sp->bnst_data + i)->mrph_num; j >= 1; j--) {
 
-	    /* チェックする形態素列の開始位置(k=0のとき文節先頭で開始) */
-	    for (k = 0; k + j <= (sp->bnst_data  + i)->mrph_num; k++) {
-		start = (sp->bnst_data + i)->mrph_ptr + k - sp->mrph_data;
-		end = start + j - 1;
+    /* チェックする形態素列の形態素数 */
+    for (len = sp->Mrph_num; len > 0; len--) {
+	if (len > NE_LEN_MAX) continue;
 
-		/* 対象の形態素列を含む固有表現がある場合は修正しない */
- 		if (NE_mgr[start].NEresult % 4 == TAIL ||
- 		    NE_mgr[start].NEresult % 4 == MIDDLE ||
-		    NE_mgr[end].NEresult != NE_MODEL_NUMBER - 1 &&
- 		    NE_mgr[end].NEresult % 4 == HEAD ||
- 		    NE_mgr[end].NEresult % 4 == MIDDLE ||
-		    NE_mgr[start].NEresult != NE_MODEL_NUMBER - 1 &&
- 		    NE_mgr[start].NEresult % 4 == HEAD &&
- 		    NE_mgr[end].NEresult % 4 == TAIL) continue;	      
-		
-		word[0] = '\0';
-		for (l = 0; l < j; l++) {
-		    strcat(word, (sp->mrph_data + start + l)->Goi2);
-		}
-		if ((ne_tag = check_ne_cache(word, NE_MODEL_NUMBER))) {
-		    break_flag = 1;
-		    ne_tag--; /* check_ne_cacheは1ずれている */
-		    /* NEresultに記録 */
-		    if (j == 1) {
-			NE_mgr[start].NEresult = ne_tag * 4 + 3; /* single */
-		    }
-		    else for (l = 0; l < j; l++) {
-			if (l == 0) {
-			    NE_mgr[start + l].NEresult = ne_tag * 4; /* head */
-			}
-			else if (l == j - 1) {
-			    NE_mgr[start + l].NEresult = ne_tag * 4 + 2; /* tail */
-			}
-			else {
-			    NE_mgr[start + l].NEresult = ne_tag * 4 + 1; /* middle */
-			}
-		    }
-		}
-		if (break_flag) break;
+	/* チェックする形態素列の開始位置(k=0のとき文先頭で開始) */
+	for (start = 0; start + len < sp->Mrph_num; start++) {
+	    end = start + len - 1;
+
+	    /* 対象の形態素列を含む固有表現解析結果がある場合は修正しない */
+	    if (NE_mgr[start].NEresult % 4 == TAIL ||
+		NE_mgr[start].NEresult % 4 == MIDDLE ||
+		NE_mgr[end].NEresult != NE_MODEL_NUMBER - 1 &&
+		NE_mgr[end].NEresult % 4 == HEAD ||
+		NE_mgr[end].NEresult % 4 == MIDDLE ||
+		NE_mgr[start].NEresult != NE_MODEL_NUMBER - 1 &&
+		NE_mgr[start].NEresult % 4 == HEAD &&
+		NE_mgr[end].NEresult % 4 == TAIL) continue;
+
+	    word[0] = '\0';
+	    for (position = 0; position < len; position++) {
+		strcat(word, (sp->mrph_data + start + position)->Goi2);
 	    }
-	    if (break_flag) break;
+
+	    if ((ne_tag = check_ne_cache(word, NE_MODEL_NUMBER))) {
+		ne_tag--; /* check_ne_cacheは1ずれている */
+		/* NEresultに記録 */
+		if (len == 1) {
+		    NE_mgr[start].NEresult = ne_tag * 4 + 3; /* single */
+		}
+		else for (position = 0; position < len; position++) {
+		    if (position == 0) {
+			NE_mgr[start + position].NEresult = ne_tag * 4; /* head */
+		    }
+		    else if (position == len - 1) {
+			NE_mgr[start + position].NEresult = ne_tag * 4 + 2; /* tail */
+		    }
+		    else {
+			NE_mgr[start + position].NEresult = ne_tag * 4 + 1; /* middle */
+		    }
+		}
+	    }
 	}
     }
 }
