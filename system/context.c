@@ -4615,6 +4615,37 @@ int CompareAssignList(ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm, CF_MATCH_MGR *cmm, 
 }
 
 /*==================================================================*/
+      int CompareClosestExFrequency(CF_MATCH_MGR *a, CF_MATCH_MGR *b)
+/*==================================================================*/
+{
+    /* マッチした直前格の用例の頻度を比較する関数 */
+
+    int i;
+    int afreq = 0, bfreq = 0;
+
+    for (i = 0; i < a->cf_ptr->element_num; i++) {
+	if (a->result_lists_p[0].flag[i] != UNASSIGNED && 
+	    a->cf_ptr->adjacent[i] == TRUE && 
+	    a->result_lists_p[0].pos[i] >= 0) {
+	    afreq += a->cf_ptr->ex_freq[i][a->result_lists_p[0].pos[i]]; /* 直前格が複数あれば足す */
+	}
+    }
+
+    for (i = 0; i < b->cf_ptr->element_num; i++) {
+	if (b->result_lists_p[0].flag[i] != UNASSIGNED && 
+	    b->cf_ptr->adjacent[i] == TRUE && 
+	    b->result_lists_p[0].pos[i] >= 0) {
+	    bfreq += b->cf_ptr->ex_freq[i][b->result_lists_p[0].pos[i]];
+	}
+    }
+
+    if (afreq < bfreq) {
+	return 1;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 	  int CheckClosestAssigned(CF_MATCH_MGR *cmm, int l)
 /*==================================================================*/
 {
@@ -4800,8 +4831,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		fputc('\n', Outfp);
 	    }
 
-	    if (workem.score > maxem->score || 
-		(workem.score == maxem->score && 
+	    if (workem.score > maxem->score || /* スコアが最大 */
+		(workem.score == maxem->score && /* スコアがこれまでの最大と同じだが、直前のスコアが高いとき */
 		 CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i))) {
 		maxem->cpm = workem.cpm;
 		for (k = 0; k < CASE_TYPE_NUM; k++) {
@@ -4844,7 +4875,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		maxem->ecmm[maxem->result_num].cmm.pure_score[0] = workem.pure_score;
 
 		for (k = maxem->result_num - 1; k >= 0; k--) {
-		    if (maxem->ecmm[k].cmm.score < maxem->ecmm[k + 1].cmm.score) {
+		    if (maxem->ecmm[k].cmm.score < maxem->ecmm[k + 1].cmm.score || 
+			(maxem->ecmm[k].cmm.score == maxem->ecmm[k + 1].cmm.score && 
+			 CompareClosestExFrequency(&(maxem->ecmm[k].cmm), &(maxem->ecmm[k + 1].cmm)))) {
 			tempecmm = maxem->ecmm[k];
 			maxem->ecmm[k] = maxem->ecmm[k + 1];
 			maxem->ecmm[k + 1] = tempecmm;

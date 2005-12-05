@@ -458,6 +458,8 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	/* 直前格があるときは直前格のスコアしか考慮されていないので、
 	   すべての格のスコアを足して正規化したものにする */
 	if (closest > -1) {
+	    int slot_i, slot_j, pos_i, pos_j;
+
 	    for (i = 0; i < cpm_ptr->result_num; i++) {
 		/* 割り当て失敗のとき(score==-1)は、pure_score は定義されていない */
 		/* 入力側に任意格しかなく割り当てがないとき(score==0)は、分子分母ともに0になる */
@@ -469,8 +471,14 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    }
 	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
 	    for (i = cpm_ptr->tie_num - 1; i >= 1; i--) {
+		slot_i = cpm_ptr->cmm[i].result_lists_d[0].flag[closest];
+		pos_i = slot_i >= 0 ? cpm_ptr->cmm[i].result_lists_p[0].pos[slot_i] : -1;
 		for (j = i - 1; j >= 0; j--) {
-		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score) {
+		    slot_j = cpm_ptr->cmm[j].result_lists_d[0].flag[closest];
+		    pos_j = slot_j >= 0 ? cpm_ptr->cmm[j].result_lists_p[0].pos[slot_j] : -1;
+		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score || 
+			(pos_i >= 0 && pos_j >= 0 && /* マッチした用例頻度の大きい方を選択 */
+			 cpm_ptr->cmm[i].cf_ptr->ex_freq[slot_i][pos_i] > cpm_ptr->cmm[j].cf_ptr->ex_freq[slot_j][pos_j])) {
 			tempcmm = cpm_ptr->cmm[i];
 			cpm_ptr->cmm[i] = cpm_ptr->cmm[j];
 			cpm_ptr->cmm[j] = tempcmm;
