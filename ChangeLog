@@ -1,3 +1,8 @@
+2005-12-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/context.c:
+	格・省略解析において、格フレーム選択がスコア同点の場合に頻度を考慮するように修正
+
 2005-12-04  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/Makefile.am
