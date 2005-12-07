@@ -1,3 +1,8 @@
+2005-12-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/case_match.c:
+	³ÎÎ¨Åª³Ê²òÀÏ¤ÎÈùÄ´À°
+
 2005-12-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/context.c:
