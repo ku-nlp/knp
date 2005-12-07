@@ -276,6 +276,26 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 }
 
 /*==================================================================*/
+	     int have_real_component(CASE_FRAME *cf_ptr)
+/*==================================================================*/
+{
+    /* 入力側が修飾、無格以外をもっているかどうか */
+
+    int i;
+
+    for (i = 0; i < cf_ptr->element_num; i++) {
+	if (MatchPP(cf_ptr->pp[i][0], "修飾") || 
+	    MatchPP(cf_ptr->pp[i][0], "φ")) {
+	    ;
+	}
+	else {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide)
 /*==================================================================*/
 {
@@ -285,7 +305,8 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
     CF_MATCH_MGR tempcmm;
 
     /* 格要素なしの時の実験 */
-    if (cf_ptr->element_num == 0) {
+    if (cf_ptr->element_num == 0 || 
+	have_real_component(cf_ptr) == FALSE) {
 	/* この用言のすべての格フレームの OR、または
 	   格フレームが 1 つのときはそれそのもの にする予定 */
 	if (b_ptr->cf_num > 1) {

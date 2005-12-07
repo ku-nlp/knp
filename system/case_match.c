@@ -587,7 +587,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 
 	/* 確率的格解析のとき */
 	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	    *score = get_ex_probability(as1, cfd, as2, cfp);
+	    *score = get_ex_probability(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_interpret_probability(as1, cfd, as2, cfp);
 	    return TRUE;
 	}
 
@@ -915,34 +915,40 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 
     /* 入力側チェック */
     for (i = 0; i < cfd->element_num; i++) {
+	cf_element++;
+
 	/* 連体修飾節生成確率 */
 	score += get_np_modifying_probability(i, cfd);
 
+	score += list1->score[i];
+	/*
 	if (MatchPP(cfd->pp[i][0], "φ") || 
 	    MatchPP(cfd->pp[i][0], "修飾")) {
 	    ;
 	}
-	/* 割り当てなしの場合 */
+	* 割り当てなしの場合 *
 	else if (list1->flag[i] == NIL_ASSIGNED) {
-	    score += NIL_ASSINED_SCORE; /* 割り当てなしの減点 */
+	    score += NIL_ASSINED_SCORE;
 	    score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp);
 	}
-	/* 格解釈確率 P(表層格|格スロット) */
+	* 格解釈確率 P(表層格|格スロット) *
 	else {
 	    score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp);
 	}
+	*/
     }
 
     /* 格フレームの格生成確率 */
     for (i = 0; i < cfp->element_num; i++) {
-	if (list2->flag[i] != UNASSIGNED) {
-	    cf_element++;
-	    list2->score[i] += get_case_probability(i, cfp, TRUE); /* 割り当てあり */
+	if (list2->flag[i] != UNASSIGNED) { /* 割り当てあり */
+	    /* cf_element++; */
+	    /* list2->score[i]: 用例を生成する確率が入っている */
+	    /* list2->score[i] += get_case_probability(i, cfp, TRUE) / cfd->weight[list2->flag[i]]; */
 	}
-	else {
-	    list2->score[i] = get_case_probability(i, cfp, FALSE); /* 割り当てなし */
+	else { /* 割り当てなし */
+	    list2->score[i] = get_case_probability(i, cfp, FALSE);
+	    score += list2->score[i];
 	}
-	score += list2->score[i];
     }
     score += get_case_num_probability(cfp, cf_element); /* 割り当てのある個数 */
 
@@ -1020,12 +1026,12 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
     /* まだ割り当てのない格助詞のチェック */
     for (i = 0; i < cfd->element_num; i++) {
 	if (list1.flag[i] == UNASSIGNED) {
-	    if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		/* if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 		(MatchPP(cfd->pp[i][0], "修飾") || 
-		 MatchPP(cfd->pp[i][0], "φ"))) {
+		MatchPP(cfd->pp[i][0], "φ"))) {
 		list1.flag[i] = NIL_ASSIGNED;
 		continue;
-	    }
+		} */
 	    if ((assign_flag == TRUE && cfd->pred_b_ptr->cpm_ptr->elem_b_num[i] != -1) || 
 		(assign_flag == FALSE && cfd->pred_b_ptr->cpm_ptr->elem_b_num[i] == -1)) {
 		target = i;
@@ -1130,8 +1136,15 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	       必須格で対応有の場合
 	       => 後ろに同じ格助詞があれば対応付けをしない可能性も試す? */
 
+	    /* 割り当てなしのスコア */
+	    elmnt_score = NIL_ASSINED_SCORE + get_case_interpret_probability(target, cfd, NIL_ASSIGNED, cfp);
+	    if (cfd->weight[target]) {
+		elmnt_score /= cfd->weight[target];
+	    }
+	    list1.score[target] = elmnt_score;
+
 	    assign_list(cfd, list1, cfp, list2, 
-			(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? score + NIL_ASSINED_SCORE: score, 
+			(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? score + elmnt_score : score, 
 			flag, closest);
 	}
 	return FALSE;

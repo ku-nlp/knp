@@ -1785,14 +1785,14 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (CF) %s: P(%s) = %lf\n", tp->head_ptr->Goi, key, ret);
 	}
 	free(value);
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (CF) %s: P(%s) = 0\n", tp->head_ptr->Goi, key);
 	}
 	ret = UNKNOWN_CF_SCORE;
@@ -1823,7 +1823,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
 	}
 	free(value);
@@ -1833,7 +1833,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	}
 	if (aflag == FALSE) {
@@ -1873,14 +1873,14 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
 	}
 	free(value);
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	}
 	ret = UNKNOWN_CASE_SCORE;
@@ -1899,7 +1899,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     value = db_get(cf_ex_db, key);
 
     if (value) {
-	ret = atof(value);
+	ret = exp(-1 * atof(value));
 	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
 	}
@@ -2077,7 +2077,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     key = malloc_db_buf(10);
     sprintf(key, "%s,%d|R", type ? type : "NIL", dist);
     if (value = db_get(case_db, key)) {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (RE) %s -> %s: P(%s,%d|R) = %s\n", 
 		    type ? cfd->pred_b_ptr->head_ptr->Goi : "NIL", 
 		    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
@@ -2100,7 +2100,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 /*==================================================================*/
 {
     int wa_flag, topic_score = 0, touten_flag, i, dist, negation_flag, 	np_modifying_flag, closest_pred_flag = 0;
-    char *scase, *cp, *key, *value, *value2, *value3;
+    char *scase, *cp, *key, *value, *value2, *value3, *vtype;
     double ret;
     TAG_DATA *tp, *tp2, *hp;
 
@@ -2120,6 +2120,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	np_modifying_flag = 0;
     }
 
+    if (vtype = check_feature(hp->f, "用言")) {
+	vtype += 5;
+    }
+
     /* 複合辞 */
     if (cfd->pp[as1][0] > 8 && cfd->pp[as1][0] < 38) {
 	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* 入力側の表層格 */
@@ -2133,7 +2137,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	tp2 = tp;
     }
 
-    /* 隣にレベル:B-より強い用言があるかどうか */
+    /* 隣に用言があるかどうか */
     if (np_modifying_flag == 0) {
 	if (get_dist_from_work_mgr(tp2->b_ptr, (tp2 + 1)->b_ptr) > 0) {
 	    closest_pred_flag = 1;
@@ -2176,16 +2180,21 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     value = db_get(case_db, key);
 
     /* 読点の生成 */
-    sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
+    if (np_modifying_flag) {
+	sprintf(key, "%d|P連格:%d", touten_flag, dist);
+    }
+    else {
+	sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
+    }
     value2 = db_get(case_db, key);
 
     /* 「は」の生成 */
-    if (np_modifying_flag) {
+    if (np_modifying_flag || !vtype) {
 	value3 = "1.0";
     }
     else {
-	sprintf(key, "%d|T:%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag);
-	/* sprintf(key, "%d|T:%s,%d,%d", wa_flag, scase, dist, topic_score); */
+	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag); */
+	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "判") == 0 ? 1 : 0);
 	value3 = db_get(case_db, key);
     }
 
@@ -2199,7 +2208,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
 	free(value);
 	free(value2);
-	if (!np_modifying_flag) {
+	if (!np_modifying_flag && vtype) {
 	    free(value3);
 	}
 	ret = log(ret);
