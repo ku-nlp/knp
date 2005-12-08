@@ -1,3 +1,11 @@
+2005-12-08  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_ne.rule:
+	固有表現抽出で人名と判断された形態素列中にに文節区切りが来ないようルールを追加
+	
+	* system/corefer.c:
+	人名 (地名|組織名) 人名末尾 の場合にも人名末尾=人名となるように変更
+	
 2005-12-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/feature.c, system/main.c, system/read_data.c, system/read_rule.c:

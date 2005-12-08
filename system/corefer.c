@@ -219,8 +219,8 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 
 		/* 直後の名詞の格フレームの用例に存在する */
 		(tag_ptr + j + 1)->cf_ptr &&
-		check_examples(((tag_ptr + j)->mrph_ptr)->Goi2,
-			       strlen(((tag_ptr + j)->mrph_ptr)->Goi2),
+		check_examples(((tag_ptr + j)->head_ptr)->Goi2,
+			       strlen(((tag_ptr + j)->head_ptr)->Goi2),
 				((tag_ptr + j + 1)->cf_ptr)->ex_list[0],
 				((tag_ptr + j + 1)->cf_ptr)->ex_num[0]) >= 0) {
 
@@ -327,16 +327,20 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 }
 
 /*==================================================================*/
-	 int compare_strings(char *antecedent, char *anaphor)
+	 int compare_strings(char *antecedent, char *anaphor, int flag)
 /*==================================================================*/
 {
     /* 照応詞候補と先行詞候補を比較 */
+    /* flagが立っている場合はantecedntの先頭にanaphorが含まれておればOK */
 
     int i, j;
     char word[WORD_LEN_MAX * 4];
 
     /* 同表記の場合 */
     if (!strcmp(antecedent, anaphor)) return 1;
+
+    /* flagが立っている場合 */
+    if (flag && !strncmp(antecedent, anaphor, strlen(anaphor))) return 1;
 
     /* 同義表現辞書が読み込めなかった場合はここで終了 */
     if (!synonym_db) return 0;
@@ -379,8 +383,7 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 }
 
 /*==================================================================*/
-    int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor,
-			  char *setubi)
+int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, char *ne)
 /*==================================================================*/
 {
     /* 入力されたタグと、共参照関係にあるタグを以前の文から検索する */
@@ -390,7 +393,7 @@ ENTITY_CACHE entity_cache[TBLSIZE];
     /* 共参照関係にあるとされた照応詞文字列の先頭のタグの番号 */
     /* 見つからなかった場合は-2を返す */
 
-    int j, k, l, m;
+    int j, k, l, m, flag;
     char word[WORD_LEN_MAX], buf[WORD_LEN_MAX], *cp;
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
@@ -402,18 +405,39 @@ ENTITY_CACHE entity_cache[TBLSIZE];
    
 	    tag_ptr = (sdp - j)->tag_data + k;	    		
 
+	    /* 照応詞候補、先行詞候補がともに固有表現である場合は */
+	    /* 同種の固有表現のみを先行詞とする */ 
+	    if (ne && check_feature(tag_ptr->f, "NE") &&
+		strncmp(ne, check_feature(tag_ptr->f, "NE"), 7))
+		continue;
+		
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
 	    if (setubi && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi))
 		continue;
-		
+
+	    /* 固有名詞中である場合は主辞以外は先行詞候補としない */
+	    /* ただしPERSONの場合のみ例外とする */
+	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
+		check_feature((tag_ptr->head_ptr)->f, "NE")) continue;
+
 	    for (l = tag_ptr->head_ptr - (tag_ptr->b_ptr)->mrph_ptr; l >= 0; l--) {
+
+		/* flagが立った場合は照応詞候補が先行詞候補の先頭に含まれていればOK */
+		flag = 0;
+		if (check_feature((tag_ptr->head_ptr)->f, "NE:PERSONtail") ||
+		    check_feature((tag_ptr->head_ptr)->f, "NE:LOCATIONtail"))
+		    flag = 1;
 
 		word[0] = '\0';
 		for (m = l; m >= 0; m--) {
 		    strcat(word, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補 */
+		    if (flag && m < l &&
+			(check_feature((tag_ptr->head_ptr - m)->f, "NE:PERSONhead") ||
+			 check_feature((tag_ptr->head_ptr - m)->f, "NE:LOCATIONhead")))
+			flag = 0;				
 		}	
 
-		if (compare_strings(word, anaphor)) { /* 同義表現であれば */
+		if (compare_strings(word, anaphor, flag)) { /* 同義表現であれば */
 		    if (j == 0) {
 			sprintf(buf, "C用;【%s%s】;=;0;%d;9.99:%s(同一文):%d文節",
 				word, setubi ? setubi : "", k, 
@@ -457,11 +481,17 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 
     mrph_ptr = tag_ptr->mrph_ptr;
     /* タグ末尾までNE中である場合のみ対象とする */
-    if (!check_feature((mrph_ptr - 1)->f, "NE")) return 0;
-    
+    if (!check_feature((mrph_ptr - 1)->f, "NE") &&
+	!(check_feature((mrph_ptr - 2)->f, "NE") &&
+	  (mrph_ptr - 1)->Hinshi == 1 && 
+	  (mrph_ptr - 1)->Bunrui == 5)) /* 直前が記号である */
+	return 0;
+	
     flag = 0;
     for (i = 0;; i++) {
-	if (check_feature((mrph_ptr + i)->f, "固有修飾")) {
+	if (check_feature((mrph_ptr + i)->f, "NE")) {
+	    /* 基本的には、ブッシュ・アメリカ大統領 */
+	    /* 武部自民党幹事長などを想定している */
 	    continue;
 	}
 	else if (check_feature((mrph_ptr + i)->f, "人名末尾")) {
@@ -490,7 +520,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 /*==================================================================*/
 {
     int i;
-    char *anaphor, *cp;
+    char *anaphor, *cp, *ne;
     MRPH_DATA *mrph_ptr;
     
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
@@ -510,7 +540,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 			    (sp->tag_data + i)->mrph_num - 1)->f, "NE") ||
 	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
-	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が句点である */
+	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が読点である */
 	     check_feature((((sp->tag_data + i)->b_ptr)->child[0])->f, 
 			   "連体詞形態指示詞"))) {
 	    /* 指示詞の場合 */
@@ -518,11 +548,12 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 		continue; /* ここでは処理をしない */
 	    }   
 	    mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
-	    if (/* 名詞性接尾辞が付いている場合はまず接尾辞も含めたものを調べる */
+	    if (/* 名詞性接尾辞が付いた固有表現以外の語はまず接尾辞も含めたものを調べる */
+		!((ne = check_feature((sp->tag_data + i)->f, "NE"))) &&
 		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
-		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2) ||
+		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2, NULL) ||
 		/* 一般の場合 */
-		search_antecedent(sp, i, anaphor+11, NULL)) {
+		search_antecedent(sp, i, anaphor+11, NULL, ne)) {
 		    continue;
 	    }
 	}

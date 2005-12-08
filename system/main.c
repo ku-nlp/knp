@@ -865,7 +865,8 @@ extern int	EX_match_subject;
 
     /* 格フレーム取得 */
     if (OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2) {
+	OptAnalysis == OPT_CASE2 ||
+	OptEllipsis & OPT_COREFER) {
 	set_caseframes(sp);
     }
 
