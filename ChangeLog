@@ -1,3 +1,20 @@
+2005-12-08  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/configfile.c, system/const.h, system/feature.c, system/main.c, system/read_data.c, system/read_rule.c:
+	構文構造決定後にルールを適用する枠組みを実装
+
+	* system/configfile.c, system/main.c, system/read_data.c, system/read_rule.c, system/const.h, system/dpnd_analysis.c, system/extern.h:
+	構造決定後文節ルールをheadのタグ単位にも適用するように修正
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/bnst_etc.rule:
+	疑問、動作主などを付与するルールをbnst_etcからbnst_after_dpndへ移動
+	疑問詞に<疑問詞>featureを付与
+
+	* rule/bnst_after_dpnd.rule: added.
+
+	* rule/context.rule:
+	直前格のない「する」「なる」「ある」を格・省略解析するように変更
+
 2005-12-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c:
