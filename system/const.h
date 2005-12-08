@@ -467,6 +467,7 @@ typedef struct _RuleVector {
 #define ContextRuleType 10
 #define TagRuleType 11
 #define AfterDpndBnstRuleType 12
+#define AfterDpndTagRuleType 13
 
 /* 辞書の最大数 */
 #define DICT_MAX	21

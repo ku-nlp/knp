@@ -967,7 +967,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 /*==================================================================*/
        void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
 				MRPH_DATA *s_m_ptr, int m_length,
-				int mode, int break_mode, int direction)
+				int mode, int break_mode, int direction, 
+				int also_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
@@ -1056,7 +1057,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 /*==================================================================*/
 void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 			TAG_DATA *s_b_ptr, int b_length,
-			int mode, int break_mode, int direction)
+			int mode, int break_mode, int direction, 
+			int also_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対してタグ単位のマッチングを行う */
@@ -1090,9 +1092,14 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 		     regexptagrule_match(r_ptr, b_ptr, 
 					 direction == LtoR ? i : b_length-i-1, 
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
-		    for (k = 0; k < match_length; k++)
+		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
+			if (also_assign_flag) { /* 属する文節にも付与する場合 */
+			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
+					   &(r_ptr->f), s_b_ptr+i*direction+k);
+			}
+		    }
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			feature_break_mode == RLOOP_BREAK_NORMAL) {
@@ -1127,9 +1134,14 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 		     regexptagrule_match(r_ptr, b_ptr, 
 					 direction == LtoR ? i : b_length-i-1, 
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
-		    for (k = 0; k < match_length; k++)
+		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
+			if (also_assign_flag) { /* 属する文節にも付与する場合 */
+			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
+					   &(r_ptr->f), s_b_ptr+i*direction+k);
+			}
+		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
 			feature_break_mode == RLOOP_BREAK_NORMAL ||
@@ -1145,7 +1157,8 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 /*==================================================================*/
 void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 			 BNST_DATA *s_b_ptr, int b_length,
-			 int mode, int break_mode, int direction)
+			 int mode, int break_mode, int direction, 
+			 int also_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して文節のマッチングを行う */
@@ -1179,9 +1192,14 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		     regexpbnstrule_match(r_ptr, b_ptr, 
 					  direction == LtoR ? i : b_length-i-1, 
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
-		    for (k = 0; k < match_length; k++)
+		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
+			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
+			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
+					   &(r_ptr->f), s_b_ptr+i*direction+k);
+			}
+		    }
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			feature_break_mode == RLOOP_BREAK_NORMAL) {
@@ -1216,9 +1234,14 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		     regexpbnstrule_match(r_ptr, b_ptr, 
 					  direction == LtoR ? i : b_length-i-1, 
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
-		    for (k = 0; k < match_length; k++)
+		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction+k);
+			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
+			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
+					   &(r_ptr->f), s_b_ptr+i*direction+k);
+			}
+		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
 			feature_break_mode == RLOOP_BREAK_NORMAL ||
@@ -1232,7 +1255,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-     void assign_general_feature(void *data, int size, int flag)
+void assign_general_feature(void *data, int size, int flag, int also_assign_flag)
 /*==================================================================*/
 {
     int i;
@@ -1242,7 +1265,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     if (flag == MorphRuleType || flag == NeMorphRuleType) {
 	assign_function = assign_mrph_feature;
     }
-    else if (flag == TagRuleType) {
+    else if (flag == TagRuleType || flag == AfterDpndTagRuleType) {
 	assign_function = assign_tag_feature;
     }
     else if (flag == BnstRuleType || flag == AfterDpndBnstRuleType) {
@@ -1256,7 +1279,8 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 			    data, size, 
 			    (GeneralRuleArray+i)->mode, 
 			    (GeneralRuleArray+i)->breakmode, 
-			    (GeneralRuleArray+i)->direction);
+			    (GeneralRuleArray+i)->direction, 
+			    also_assign_flag);
 	}
     }
 }
@@ -1523,7 +1547,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     /* タグ単位ルールを適用する */
-    assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType);
+    assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType, FALSE);
 }
 
 /*==================================================================*/

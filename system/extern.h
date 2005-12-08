@@ -356,10 +356,7 @@ extern int quote(SENTENCE_DATA *sp);
 extern int imi2feature(char *str, MRPH_DATA *m_ptr);
 extern int read_mrph(SENTENCE_DATA *sp, FILE *fp);
 extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
-extern void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
-				MRPH_DATA *s_m_ptr, int m_length,
-				int mode, int break_mode, int direction);
-extern void assign_general_feature(void *data, int size, int flag);
+extern void assign_general_feature(void *data, int size, int flag, int also_assign_flag);
 extern int make_bunsetsu(SENTENCE_DATA *sp);
 extern int make_bunsetsu_pm(SENTENCE_DATA *sp);
 extern void print_mrphs(SENTENCE_DATA *sp, int flag);

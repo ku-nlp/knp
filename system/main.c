@@ -592,7 +592,8 @@ extern int	EX_match_subject;
 		 (RULE+i)->type == NeMorphRuleType || 
 		 (RULE+i)->type == TagRuleType || 
 		 (RULE+i)->type == BnstRuleType || 
-		 (RULE+i)->type == AfterDpndBnstRuleType) {
+		 (RULE+i)->type == AfterDpndBnstRuleType || 
+		 (RULE+i)->type == AfterDpndTagRuleType) {
 	    read_general_rule(RULE+i);
 	}
 	/* 係り受けルール */
@@ -767,14 +768,14 @@ extern int	EX_match_subject;
 
     assign_cfeature(&(sp->mrph_data[0].f), "文頭");
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
-    assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType);
+    assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE);
 
     /* 固有表現認識を行う */
 #ifdef USE_SVM
     if (OptNE) {
 	ne_analysis(sp);
 	/* 人名をひとつのタグにするためのルールを読む */
-	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType);
+	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE);
     }
 #endif 
 
@@ -818,7 +819,7 @@ extern int	EX_match_subject;
 	assign_cfeature(&(sp->bnst_data[sp->Bnst_num - 1].f), "文末");
     else
 	assign_cfeature(&(sp->bnst_data[0].f), "文末");
-    assign_general_feature(sp->bnst_data, sp->Bnst_num, BnstRuleType);
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, BnstRuleType, FALSE);
 
     /* サ変動詞以外の動詞の意味素を引くのは意味がない
        ルール適用前には、featureがないためにチェックできない
@@ -1002,10 +1003,6 @@ PARSED:
 #endif
     
     memo_by_program(sp);	/* メモへの書き込み */
-
-    /* 構造決定後のルール適用 */
-    make_dpnd_tree(sp);
-    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType);
 
     return TRUE;
 }

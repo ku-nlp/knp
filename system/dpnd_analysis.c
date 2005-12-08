@@ -989,7 +989,15 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	ClearCPMcache();
     }
 
-    /* 構造決定後の処理 */
+    /* 以下は構造決定後の処理 */
+
+    /* 構造決定後のルール適用準備 */
+    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+    make_dpnd_tree(sp);
+
+    /* 構造決定後のルール適用
+       この文節ルールをheadのタグ単位にも適用するために、最後の引き数をTRUEにする */
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE);
 
     return after_decide_dpnd(sp);
 }
