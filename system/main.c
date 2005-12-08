@@ -591,7 +591,8 @@ extern int	EX_match_subject;
 	else if ((RULE+i)->type == MorphRuleType ||
 		 (RULE+i)->type == NeMorphRuleType || 
 		 (RULE+i)->type == TagRuleType || 
-		 (RULE+i)->type == BnstRuleType) {
+		 (RULE+i)->type == BnstRuleType || 
+		 (RULE+i)->type == AfterDpndBnstRuleType) {
 	    read_general_rule(RULE+i);
 	}
 	/* 係り受けルール */
@@ -969,6 +970,8 @@ extern int	EX_match_subject;
     alarm(0);
     alarm(ParseTimeout);
 #endif
+
+    /* 依存・格構造解析の呼び出し */
     if (detect_dpnd_case_struct(sp) == FALSE) {
 	sp->available = 0;
 	ErrorComment = strdup("Cannot detect dependency structure");
@@ -984,7 +987,7 @@ extern int	EX_match_subject;
 
 PARSED:
     /* 係り受け情報を bnst 構造体に記憶 */
-    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd)); 
+    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
     para_recovery(sp);
 
     if (!(OptExpress & OPT_NOTAG)) {
@@ -999,6 +1002,10 @@ PARSED:
 #endif
     
     memo_by_program(sp);	/* メモへの書き込み */
+
+    /* 構造決定後のルール適用 */
+    make_dpnd_tree(sp);
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType);
 
     return TRUE;
 }

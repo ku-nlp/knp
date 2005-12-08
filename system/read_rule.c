@@ -396,7 +396,8 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 		       &((GeneralRuleArray+GeneralRuleNum)->CurRuleSize), GeneralRule_MAX);
     }
     else if ((GeneralRuleArray+GeneralRuleNum)->type == TagRuleType || 
-	     (GeneralRuleArray+GeneralRuleNum)->type == BnstRuleType) {
+	     (GeneralRuleArray+GeneralRuleNum)->type == BnstRuleType || 
+	     (GeneralRuleArray+GeneralRuleNum)->type == AfterDpndBnstRuleType) {
 	(GeneralRuleArray+GeneralRuleNum)->RuleArray = 
 	    (BnstRule *)malloc_data(sizeof(BnstRule)*GeneralRule_MAX, "read_general_rule");
 	read_bnst_rule(rule->file, (BnstRule *)((GeneralRuleArray+GeneralRuleNum)->RuleArray), 

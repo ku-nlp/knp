@@ -979,6 +979,18 @@
 	}
     }
 
+    /* &係側チェック : 係側のFEATUREチェック (文節ルール) */
+    
+    else if (!strncmp(rule, "&係側チェック:", strlen("&係側チェック:"))) {
+	cp = rule + strlen("&係側チェック:");
+	for (i = 0; ((BNST_DATA *)ptr2)->child[i]; i++) {
+	    if (check_feature(((BNST_DATA *)ptr2)->child[i]->f, cp)) {
+		return TRUE;
+	    }
+	}
+	return FALSE;
+    }
+
     /* &自立語一致 : 自立語が同じかどうか */
     
     else if (!strncmp(rule, "&自立語一致", strlen("&自立語一致"))) {

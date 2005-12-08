@@ -1245,7 +1245,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     else if (flag == TagRuleType) {
 	assign_function = assign_tag_feature;
     }
-    else if (flag == BnstRuleType) {
+    else if (flag == BnstRuleType || flag == AfterDpndBnstRuleType) {
 	assign_function = assign_bnst_feature;
     }
 

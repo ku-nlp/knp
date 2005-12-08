@@ -223,6 +223,10 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = BnstRuleType;
 		    }
+		    else if (!strcmp(_Atom(car(cell2)), "文節-構造決定後")) {
+			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
+			(RULE+CurrentRuleNum)->type = AfterDpndBnstRuleType;
+		    }
 		    else if (!strcmp(_Atom(car(cell2)), "係り受け")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = DpndRuleType;
