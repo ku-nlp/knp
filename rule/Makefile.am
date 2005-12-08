@@ -4,7 +4,7 @@ PHRASE2RULE = ./phrase2rule.pl
 RULE2DATA = ./rule2data.pl
 
 ruledir = $(pkgdatadir)/rule
-dist_rule_DATA = bnst_type.phrase bnst_basic.rule bnst_etc.rule bnst_type.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule case_analysis.rule bnst_basic.data bnst_etc.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data case_analysis.data rule2data.pl phrase2rule.pl
+dist_rule_DATA = bnst_type.phrase bnst_basic.rule bnst_etc.rule bnst_after_dpnd.rule bnst_type.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule case_analysis.rule bnst_basic.data bnst_etc.data bnst_after_dpnd.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data case_analysis.data rule2data.pl phrase2rule.pl
 
 .phrase.rule:
 	if [ -f $@ ]; then \
