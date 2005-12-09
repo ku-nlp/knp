@@ -461,18 +461,19 @@ int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *
 }
 
 /*==================================================================*/
-float _calc_similarity_sm_cf(char *exd, int expand, 
+float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word, 
 			     CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
-    /* 最大マッチスコアを求める */
+    /* 類似度計算: 意味素群 - 格フレームの格
+       unmatch_word: マッチさせたくない単語 */
 
     if (cfp->sm_specify[n]) { /* 意味素制限 */
 	return calc_similarity(exd, cfp->sm_specify[n], expand);
     }
     else {
 	return calc_sm_words_similarity(exd, cfp->ex_list[n], cfp->ex_num[n], pos, 
-					cfp->sm_delete[n], expand);
+					cfp->sm_delete[n], expand, unmatch_word);
     }
 }
 
@@ -511,7 +512,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
     /* 意味素 match */
     else {
-	ex_score = _calc_similarity_sm_cf(exd, expand, cfp, n, pos);
+	ex_score = _calc_similarity_sm_cf(exd, expand, NULL, cfp, n, pos);
     }
 
     return ex_score;

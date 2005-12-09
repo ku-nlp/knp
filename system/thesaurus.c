@@ -630,7 +630,8 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
 
 /*==================================================================*/
     float calc_sm_words_similarity(char *smd, char **exp, int num,
-				   int *pos, char *del, int expand)
+				   int *pos, char *del, int expand, 
+				   char *unmatch_word)
 /*==================================================================*/
 {
     int i;
@@ -639,6 +640,10 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
     /* 類似度計算: 意味素 - 単語群 */
 
     for (i = 0; i < num; i++) {
+	if (unmatch_word && 
+	    !strcmp(*(exp+i), unmatch_word)) { /* マッチさせない単語 */
+	    continue;
+	}
 	score = calc_sm_word_similarity(smd, *(exp+i), del, expand);
 	if (maxscore < score) {
 	    maxscore = score;

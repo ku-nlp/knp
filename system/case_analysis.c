@@ -1661,7 +1661,9 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	}
 	else { /* 意味素によるチェック */
 	    if (exd = get_str_code_with_len(rep_strt, rep_end - rep_strt, Thesaurus)) {
-		score = _calc_similarity_sm_cf(exd, expand, cpm_ptr->cmm[0].cf_ptr, num, &pos);
+		score = _calc_similarity_sm_cf(exd, expand, 
+					       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
+					       cpm_ptr->cmm[0].cf_ptr, num, &pos);
 		if (score > 0) {
 		    alt_num = alt_count; /* 0 */
 		}
@@ -1691,7 +1693,9 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		}
 		else { /* 意味素によるチェック */
 		    if (exd = get_str_code_with_len(rep_strt, rep_end - rep_strt, Thesaurus)) {
-			tmp_score = _calc_similarity_sm_cf(exd, expand, cpm_ptr->cmm[0].cf_ptr, num, &pos);
+			tmp_score = _calc_similarity_sm_cf(exd, expand, 
+							   cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
+							   cpm_ptr->cmm[0].cf_ptr, num, &pos);
 			if (score < tmp_score) {
 			    score = tmp_score;
 			    alt_num = alt_count;
