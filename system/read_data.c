@@ -1369,7 +1369,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     /* 文節のときは形式名詞「の」をheadとしない */
     else {
 	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	    if (!check_feature((ptr->mrph_ptr + i)->f, "独立タグ例外語") && /* 「の」 */
+	    if (!check_feature((ptr->mrph_ptr + i)->f, "独立タグ非見出語") && /* 「の」 */
 		check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
@@ -1479,7 +1479,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     else if (check_feature(mp->f, "自立") || 
 	     check_feature(mp->f, "独立タグ接頭辞") || 
 	     check_feature(mp->f, "独立タグ接尾辞") || 
-	     check_feature(mp->f, "独立タグ例外語")) {
+	     check_feature(mp->f, "独立タグ非見出語")) {
 	if (tp->jiritu_num == 0) {
 	    tp->jiritu_ptr = mp;
 	}
@@ -1531,7 +1531,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    delete_cfeature(&(tp->f), "サ変"); /* <サ変>は文節とタグ単位では異なる */
 
 	    /* 形式名詞「の」に用言がコピーされるので削除 */
-	    if (check_feature(tp->head_ptr->f, "独立タグ例外語")) {
+	    if (check_feature(tp->head_ptr->f, "独立タグ非見出語")) {
 		delete_cfeature(&(tp->f), "用言");
 	    }
 	}
