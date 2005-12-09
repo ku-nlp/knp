@@ -1,3 +1,8 @@
+2005-12-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_match.c, system/extern.h, system/thesaurus.c:
+	名詞曖昧性解消において、ひらがな用例の意味素にマッチする問題を修正
+
 2005-12-08  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_ne.rule:
