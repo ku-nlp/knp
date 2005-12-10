@@ -1,7 +1,19 @@
+2005-12-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/const.h, system/extern.h, system/path.h:
+	確率的格解析において連用節の係り受けの扱いを追加
+
 2005-12-09  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_analysis.c, system/case_match.c, system/extern.h, system/thesaurus.c:
 	名詞曖昧性解消において、ひらがな用例の意味素にマッチする問題を修正
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule, system/read_data.c:
+	「(サ変+)予定」を<自立><独立タグ非見出語>とし、独立のタグであるが
+	辞書引きの対象としないように変更
+
+	* rule/mrph_basic.rule:
+	接尾辞「造り」が<独立タグ接尾辞>になっていなかったのを修正
 
 2005-12-08  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
