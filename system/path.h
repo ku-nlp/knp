@@ -21,6 +21,7 @@
 #define CF_EX_DB_NAME		"ebcf/cfex.db"
 #define CASE_DB_NAME		"ebcf/case.db"
 #define CFP_DB_NAME		"ebcf/cfp.db"
+#define RENYOU_DB_NAME		"ebcf/renyou.db"
 #define CF_NOUN_DB_NAME		"ebcf/noun.db"
 #define CF_NOUN_DAT_NAME	"ebcf/noun.dat"
 #define SM_ADD_DB_NAME		"scode/ntt/word2code_add.db"

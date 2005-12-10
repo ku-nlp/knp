@@ -17,6 +17,7 @@ DBM_FILE cf_case_db;
 DBM_FILE cf_ex_db;
 DBM_FILE case_db;
 DBM_FILE cfp_db;
+DBM_FILE renyou_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -36,6 +37,7 @@ int	CFCaseExist;
 int	CFExExist;
 int	CaseExist;
 int	CfpExist;
+int	RenyouExist;
 
 int	PrintDeletedSM = 0;
 
@@ -122,6 +124,9 @@ int	PrintDeletedSM = 0;
 
     /* 格解釈確率DB (case.db) */
     case_db = open_dict(CASE_DB, CASE_DB_NAME, &CaseExist);
+
+    /* 連用確率DB (renyou.db) */
+    renyou_db = open_dict(RENYOU_DB, RENYOU_DB_NAME, &RenyouExist);
 }
 
 /*==================================================================*/
@@ -1873,14 +1878,14 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE3) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
 	}
 	free(value);
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE3) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	}
 	ret = UNKNOWN_CASE_SCORE;
@@ -2224,6 +2229,153 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
 
     return ret;
+}
+
+/*==================================================================*/
+double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf)
+/*==================================================================*/
+{
+    int touten_flag, dist, closest_pred_flag = 0;
+    char *g_id, *d_id, *key, *value, *g_level;
+    double ret1 = 0, ret2 = 0, ret3 = 0;
+
+    if (RenyouExist == FALSE) {
+	return 0;
+    }
+
+    touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
+
+    if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
+	return UNKNOWN_RENYOU_SCORE;
+    }
+
+    if (get_dist_from_work_mgr(dp->b_ptr, dp->b_ptr + 1) > 0) {
+	closest_pred_flag = 1;
+    }
+
+    /* 読点の生成 */
+    key = malloc_db_buf(12);
+    sprintf(key, "%d|P連用:%d,%d", touten_flag, dist, closest_pred_flag);
+    value = db_get(case_db, key);
+    if (value) {
+	ret1 = atof(value);
+	if (VerboseLevel >= VERBOSE3) {
+	    fprintf(Outfp, ";; (R1) %s: P(%s|%s) = %lf\n", touten_flag, dist, closest_pred_flag, ret1);
+	}
+	free(value);
+    }
+
+    /* ID -> ID */
+    if ((g_id = check_feature(gp->f, "ID")) && 
+	(d_id = check_feature(dp->f, "ID"))) {
+	g_id += 3;
+	d_id += 3;
+	key = malloc_db_buf(strlen(g_id) + strlen(d_id) + 2);
+	sprintf(key, "%s|%s", d_id, g_id);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret2 = atof(value);
+	    if (VerboseLevel >= VERBOSE3) {
+		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret1);
+	    }
+	    free(value);
+	}
+    }
+
+    /* 格フレームID => 格フレームID */
+    if (0 && g_cf && d_cf) {
+	key = malloc_db_buf(strlen(g_cf->cf_id) + strlen(d_cf->cf_id) + 2);
+	sprintf(key, "%s|%s", d_cf->cf_id, g_cf->cf_id);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret3 = atof(value);
+	    if (VerboseLevel >= VERBOSE3) {
+		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_cf->cf_id, g_cf->cf_id, ret2);
+	    }
+	    free(value);
+	}
+    }
+    else {
+	ret3 = 1;
+    }
+
+    /* レベル => レベル *
+    if ((g_level = check_feature(gp->f, "レベル")) == NULL) {
+	return UNKNOWN_RENYOU_SCORE;
+    }
+    g_level += 7;
+
+    key = malloc_db_buf(strlen(g_level) + 6);
+    sprintf(key, "%d|%d,%s", check_feature(dp->f, "読点") ? 1 : 0, dist, g_level);
+    value = db_get(renyou_func_db, key);
+    if (value) {
+	ret3 = atof(value);
+	if (VerboseLevel >= VERBOSE3) {
+	    fprintf(Outfp, ";; (R) %s -> %s: P(,=%d|%d,%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, 
+		    check_feature(dp->f, "読点") ? 1 : 0, dist, g_level, ret3);
+	}
+	free(value);
+    }
+    ret3 = 1;
+    */
+
+    if (ret1 && ret2 && ret3) {
+	return log(ret1) + log(ret2) + log(ret3);
+    }
+    else {
+	return UNKNOWN_RENYOU_SCORE;
+    }
+}
+
+/*==================================================================*/
+double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num)
+/*==================================================================*/
+{
+    char *id, *key, *value;
+    double ret1 = 0, ret2 = 0;
+
+    if (RenyouExist == FALSE) {
+	return 0;
+    }
+
+    /* ID */
+    if (id = check_feature(t_ptr->f, "ID")) {
+	id += 3;
+	key = malloc_db_buf(strlen(id) + 6);
+	sprintf(key, "%d|N:%s", num, id);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret1 = atof(value);
+	    if (VerboseLevel >= VERBOSE3) {
+		fprintf(Outfp, ";; (RN) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, id, ret1);
+	    }
+	    free(value);
+	}
+    }
+
+    /* 格フレーム */
+    if (0 && cfp) {
+	key = malloc_db_buf(strlen(cfp->cf_id) + 6);
+	sprintf(key, "%d|N:%s", num, cfp->cf_id);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret2 = atof(value);
+	    if (VerboseLevel >= VERBOSE3) {
+		fprintf(Outfp, ";; (R) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, cfp->cf_id, ret2);
+	    }
+	    free(value);
+	}
+    }
+    else {
+	ret2 = 1;
+    }
+
+    if (ret1 && ret2) {
+	return log(ret1) + log(ret2);
+    }
+    else {
+	return UNKNOWN_RENYOU_SCORE;
+    }
 }
 
 /*====================================================================

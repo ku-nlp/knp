@@ -195,6 +195,7 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define	FREQ0_ASSINED_SCORE	-13.815511 /* log(0.0000010) */
 #define	UNKNOWN_CASE_SCORE	-11.512925 /* log(0.0000100) */
 #define	UNKNOWN_CF_SCORE	-11.512925 /* log(0.0000100) */
+#define	UNKNOWN_RENYOU_SCORE	-16.118096 /* log(0.0000001) */
 
 #define	CASE_MATCH_FAILURE_SCORE	-2
 #define	CASE_MATCH_FAILURE_PROB		-1001
@@ -470,7 +471,7 @@ typedef struct _RuleVector {
 #define AfterDpndTagRuleType 13
 
 /* 辞書の最大数 */
-#define DICT_MAX	21
+#define DICT_MAX	22
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -492,6 +493,7 @@ typedef struct _RuleVector {
 #define CF_EX_DB	18
 #define CASE_DB		19
 #define CFP_DB		20
+#define RENYOU_DB		21
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

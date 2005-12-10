@@ -774,7 +774,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 /*==================================================================*/
 {
     CF_PRED_MGR *cpm_ptr;
-    int i;
+    int i, modifying_num, current_pred_num;
     double one_case_point;
 
     /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
@@ -799,10 +799,29 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	t_mgr->pred_num++;
     }
 
+    modifying_num = 0;
     for (i = 0; t_ptr->child[i]; i++) {
+	current_pred_num = t_mgr->pred_num;
 	if (all_case_analysis(sp, t_ptr->child[i], t_mgr) == FALSE) {
 	    return FALSE;
 	}
+
+	if (t_ptr->para_top_p != TRUE && 
+	    t_ptr->cf_num > 0 && 
+	    check_feature(t_ptr->child[i]->f, "係:連用") && 
+	    check_feature(t_ptr->child[i]->f, "用言") && 
+	    !check_feature(t_ptr->child[i]->f, "複合辞")) {
+	    t_mgr->score += calc_vp_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
+							  t_ptr->child[i], 
+							  t_mgr->cpm[current_pred_num].cmm[0].cf_ptr);
+	    modifying_num++;
+	}
+    }
+
+    if (t_ptr->para_top_p != TRUE && 
+	t_ptr->cf_num > 0 && 
+	check_feature(t_ptr->f, "用言")) {
+	t_mgr->score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, modifying_num);
     }
 
     return TRUE;
