@@ -177,6 +177,7 @@ extern double get_ex_probability(int as1, CASE_FRAME *cfd,
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
+extern double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

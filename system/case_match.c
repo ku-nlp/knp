@@ -908,7 +908,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     /* フレームのマッチング度の評価 (確率版) */
 
     int i;
-    int cf_element = 0;
+    int cf_element = 0, have_topic = 0;
     double local_score;
 
     /* 格フレーム確率 */
@@ -917,6 +917,12 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     /* 入力側チェック */
     for (i = 0; i < cfd->element_num; i++) {
 	cf_element++;
+
+	if (list1->flag[i] == NIL_ASSIGNED && 
+	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[i]->num < cfd->pred_b_ptr->num && 
+	    check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[i]->f, "提題")) {
+	    have_topic = 1;
+	}
 
 	/* 連体修飾節生成確率 */
 	score += get_np_modifying_probability(i, cfd);
@@ -938,6 +944,8 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	}
 	*/
     }
+
+    score += get_topic_generating_probability(have_topic, cfd->pred_b_ptr);
 
     /* 格フレームの格生成確率 */
     for (i = 0; i < cfp->element_num; i++) {

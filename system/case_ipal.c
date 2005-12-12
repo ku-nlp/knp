@@ -2100,6 +2100,45 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
+/*==================================================================*/
+{
+    int topic_score = 0;
+    char *cp, *key, *value;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+
+    /* 提題スコア */
+    if (cp = check_feature(g_ptr->f, "提題受")) {
+	sscanf(cp, "%*[^:]:%d", &topic_score);
+	if (topic_score > 0 && topic_score < 30) {
+	    topic_score = 10;
+	}
+    }
+
+    key = malloc_db_buf(7);
+    sprintf(key, "%d|W:%d", have_topic, topic_score);
+    if (value = db_get(case_db, key)) {
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (W) %s: P(%d|W:%d) = %s\n", 
+		    g_ptr->head_ptr->Goi, have_topic, 
+		    topic_score, value);
+	}
+
+	ret = log(atof(value));
+	free(value);
+    }
+    else {
+	ret = UNKNOWN_CASE_SCORE;
+    }
+
+    return ret;
+}
+
+/*==================================================================*/
      double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp)
 /*==================================================================*/
