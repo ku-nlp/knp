@@ -55,10 +55,11 @@ void init_tagposition()
     for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
 	for (j = 0; j < NE_POSITION_NUMBER; j++) {
 	    strcpy(TagPosition[i * NE_POSITION_NUMBER + j], Tag_name[i]);
+	    strcat(TagPosition[i * NE_POSITION_NUMBER + j], ":");
 	    strcat(TagPosition[i * NE_POSITION_NUMBER + j], Position_name[j]);
 	}
     }
-    strcpy(TagPosition[32], "OTHERsingle");
+    strcpy(TagPosition[32], "OTHER:single");
 }
 
 /*====================================================================
@@ -429,7 +430,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
 	    check_feature(mp->f, "品曖-アルファベット")) {
 	    NE_mgr[mp - sp->mrph_data].NEresult = 
-		ne_tagposition_to_code("ORGANIZATIONsingle");
+		ne_tagposition_to_code("ORGANIZATION:single");
 	}
     }
 
@@ -441,7 +442,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
 	    check_feature(mp->f, "品曖-カタカナ")) {
 	    NE_mgr[mp - sp->mrph_data].NEresult = 
-		ne_tagposition_to_code("PERSONsingle");
+		ne_tagposition_to_code("PERSON:single");
 	}
     }
 }
@@ -556,7 +557,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	    assign_sm((BNST_DATA *)(sp->tag_data + j), "人");
 	}
  
-	sprintf(cp, "NE:(%s)",
+	sprintf(cp, "NE:%s:",
 		Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 	while(1) {
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
@@ -660,28 +661,28 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
     if (strcmp(Tag_name[ne_tag], "ORGANIZATION") || start > end) return 0;
 
     /* タグに付与 */
-    sprintf(cp, "NE:(%s)%s", Tag_name[ne_tag], anaphor);
+    sprintf(cp, "NE:%s:%s", Tag_name[ne_tag], anaphor);
     assign_cfeature(&(sp->tag_data[i].f), cp);
     
     /* 形態素に付与、NEresultに記録 */
     if ((j = start) == end) {
-	sprintf(cp, "NE:%ssingle", Tag_name[ne_tag]);
+	sprintf(cp, "NE:%s:single", Tag_name[ne_tag]);
 	assign_cfeature(&(sp->mrph_data[j].f), cp);
 	NE_mgr[j].NEresult = ne_tag * 4 + 3; /* single */
     }
     else for (j = start; j <= end; j++) {
 	if (j == start) {
-	    sprintf(cp, "NE:%shead", Tag_name[ne_tag]);
+	    sprintf(cp, "NE:%s:head", Tag_name[ne_tag]);
 	    assign_cfeature(&(sp->mrph_data[j].f), cp);
 	    NE_mgr[j].NEresult = ne_tag * 4; /* head */
 	}
 	else if (j == end) {
-	    sprintf(cp, "NE:%stail", Tag_name[ne_tag]);
+	    sprintf(cp, "NE:%s:tail", Tag_name[ne_tag]);
 	    assign_cfeature(&(sp->mrph_data[j].f), cp);
 	    NE_mgr[j].NEresult = ne_tag * 4 + 2; /* tail */
 	}
 	else {
-	    sprintf(cp, "NE:%smiddle", Tag_name[ne_tag]);
+	    sprintf(cp, "NE:%s:middle", Tag_name[ne_tag]);
 	    assign_cfeature(&(sp->mrph_data[j].f), cp);
 	    NE_mgr[j].NEresult = ne_tag * 4 + 1; /* middle */
 	}

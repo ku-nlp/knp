@@ -250,7 +250,8 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 	    
 	    /* 固有表現の主辞には付与 */
 	    if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
-		while (strncmp(cp, ")", 1)) cp++;
+		cp += 3;
+		while (strncmp(cp, ":", 1)) cp++;
 		register_entity_cache(cp + 1);
 		sprintf(buf, "照応詞候補:%s", cp + 1);
 		assign_cfeature(&((tag_ptr + j)->f), buf);
@@ -258,20 +259,20 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 	    } 
 	    /* 固有表現中である場合(DATEまたはLOCATIONの場合) */
 	    mrph_num = (tag_ptr + j)->mrph_num - 1;
-	    if ((cp = check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE")) &&
-		/* DATEであれば時相名詞、名詞性名詞助数辞で切る */
-		(!strncmp(cp + 3, "DATE", 4) && 
-		 (((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 6 &&
-		  ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 10 ||
-		  ((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 14 &&
-		  ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 3) || 
-		 /* LOCATIONであれば名詞性特殊接尾辞で切る */
-		 !strncmp(cp + 3, "LOCATION", 8) && 
+	    if (/* DATEであれば時相名詞、名詞性名詞助数辞で切る */
+		check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE:DATE") &&
+		(((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 6 &&
+		 ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 10 ||
 		 ((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 14 &&
-		 ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 4)) {
+		 ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 3) || 
+		/* LOCATIONであれば名詞性特殊接尾辞で切る */
+		check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE:LOCATION") &&
+		((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 14 &&
+		((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 4) {
 		
 		for (k = 0; !(cp = check_feature((tag_ptr + j + k)->f, "NE")); k++);
-		while (strncmp(cp, ")", 1)) cp++;
+		cp += 3;
+		while (strncmp(cp, ":", 1)) cp++;
 		/* cp + 1 は対象の固有表現へのポインタ */
 		for (k = 0; 
 		     strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
@@ -408,7 +409,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    /* 照応詞候補、先行詞候補がともに固有表現である場合は */
 	    /* 同種の固有表現のみを先行詞とする */ 
 	    if (ne && check_feature(tag_ptr->f, "NE") &&
-		strncmp(ne, check_feature(tag_ptr->f, "NE"), 7))
+		strncmp(ne, check_feature(tag_ptr->f, "NE"), 6))
 		continue;
 		
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
@@ -424,16 +425,16 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
 		/* flagが立った場合は照応詞候補が先行詞候補の先頭に含まれていればOK */
 		flag = 0;
-		if (check_feature((tag_ptr->head_ptr)->f, "NE:PERSONtail") ||
-		    check_feature((tag_ptr->head_ptr)->f, "NE:LOCATIONtail"))
+		if (check_feature((tag_ptr->head_ptr)->f, "NE:PERSON:tail") ||
+		    check_feature((tag_ptr->head_ptr)->f, "NE:LOCATION:tail"))
 		    flag = 1;
 
 		word[0] = '\0';
 		for (m = l; m >= 0; m--) {
 		    strcat(word, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補 */
 		    if (flag && m < l &&
-			(check_feature((tag_ptr->head_ptr - m)->f, "NE:PERSONhead") ||
-			 check_feature((tag_ptr->head_ptr - m)->f, "NE:LOCATIONhead")))
+			(check_feature((tag_ptr->head_ptr - m)->f, "NE:PERSON:head") ||
+			 check_feature((tag_ptr->head_ptr - m)->f, "NE:LOCATION:head")))
 			flag = 0;				
 		}	
 
@@ -446,14 +447,15 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    else {
 			sprintf(buf, "C用;【%s%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
 				word, setubi ? setubi : "", j, k, 
-				sp->KNPSID ? sp->KNPSID + 5 : "?", j, k);
+				(sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		    }
 		    assign_cfeature(&((sp->tag_data + i)->f), buf);
 		    assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
 #ifdef USE_SVM
 		    if (OptNE) {
 			if ((cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
-			    while (strncmp(cp, ")", 1)) cp++;
+			    cp += 3;
+			    while (strncmp(cp, ":", 1)) cp++;
 			    if (!strcmp(cp + 1, word)) {
 				ne_corefer(sp, i, anaphor,
 					   check_feature(tag_ptr->f, "NE"));
@@ -526,9 +528,8 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
 
 	/* PERSON + 人名末尾 の処理 */
-	if ((cp = check_feature((sp->tag_data + i)->f, "NE")) &&
-	    !strncmp(cp + 4, "PERSON", 6)) {
-	    person_post(sp, sp->tag_data + i + 1, cp + 11, i);
+	if (cp = check_feature((sp->tag_data + i)->f, "NE:PERSON")) {
+	    person_post(sp, sp->tag_data + i + 1, cp + 10, i);
 	}
 
 	/* 共参照解析を行う条件 */

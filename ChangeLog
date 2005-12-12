@@ -1,3 +1,9 @@
+2005-12-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/corefer.c, system/proper.c:
+	固有表現解析結果を表記を変更
+	共参照解析のおける先行詞の文節番号が誤って表記されるバグを修正
+
 2005-12-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule:
