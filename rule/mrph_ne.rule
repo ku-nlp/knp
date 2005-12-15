@@ -18,7 +18,7 @@
   人名末尾 )
 
 ;;; 人名の連続はひとつのタグ単位とする
-( ( ?* ) ( [* * * * * ((NE:PERSONmiddle)(NE:PERSONtail))] ) ( ?* ) ^タグ単位始 )
+( ( ?* ) ( [* * * * * ((NE:PERSON:middle)(NE:PERSON:tail))] ) ( ?* ) ^タグ単位始 )
 
 ;;; 人名の連続はひとつの文節単位とする
-( ( ?* ) ( [* * * * * ((NE:PERSONmiddle)(NE:PERSONtail))] ) ( ?* ) ^文節始 )
+( ( ?* ) ( [* * * * * ((NE:PERSON:middle)(NE:PERSON:tail))] ) ( ?* ) ^文節始 )

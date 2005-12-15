@@ -409,7 +409,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    /* 照応詞候補、先行詞候補がともに固有表現である場合は */
 	    /* 同種の固有表現のみを先行詞とする */ 
 	    if (ne && check_feature(tag_ptr->f, "NE") &&
-		strncmp(ne, check_feature(tag_ptr->f, "NE"), 6))
+		strncmp(ne, check_feature(tag_ptr->f, "NE"), 7))
 		continue;
 		
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
@@ -419,7 +419,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    /* 固有名詞中である場合は主辞以外は先行詞候補としない */
 	    /* ただしPERSONの場合のみ例外とする */
 	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
-		check_feature((tag_ptr->head_ptr)->f, "NE")) continue;
+		check_feature((tag_ptr->head_ptr)->f, "NE") &&
+		!check_feature((tag_ptr->head_ptr)->f, "NE:PERSON")) continue;
 
 	    for (l = tag_ptr->head_ptr - (tag_ptr->b_ptr)->mrph_ptr; l >= 0; l--) {
 
@@ -515,6 +516,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	    tag_ptr - sp->tag_data);
     assign_cfeature(&(tag_ptr->f), buf);
     assign_cfeature(&(tag_ptr->f), "共参照");    
+    return 1;
 }
 
 /*==================================================================*/
@@ -528,8 +530,8 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
 
 	/* PERSON + 人名末尾 の処理 */
-	if (cp = check_feature((sp->tag_data + i)->f, "NE:PERSON")) {
-	    person_post(sp, sp->tag_data + i + 1, cp + 10, i);
+	if ((cp = check_feature((sp->tag_data + i)->f, "NE:PERSON"))) {
+	    if (person_post(sp, sp->tag_data + i + 1, cp + 10, i)) continue;
 	}
 
 	/* 共参照解析を行う条件 */
