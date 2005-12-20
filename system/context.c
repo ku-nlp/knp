@@ -4832,8 +4832,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 
 	    if (workem.score > maxem->score || /* スコアが最大 */
-		(workem.score == maxem->score && /* スコアがこれまでの最大と同じだが、直前のスコアが高いとき */
-		 CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i))) {
+		(workem.score == maxem->score && /* スコアはこれまでの最大と同じだが、↓ */
+		 (CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i) || /* 直前格のスコアが高いとき */
+		  CompareClosestExFrequency(&(maxem->ecmm[0].cmm), &cmm)))) { /* 頻度が高いとき */
 		maxem->cpm = workem.cpm;
 		for (k = 0; k < CASE_TYPE_NUM; k++) {
 		    ClearEllipsisComponent(&(maxem->cc[k]));
@@ -4875,9 +4876,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		maxem->ecmm[maxem->result_num].cmm.pure_score[0] = workem.pure_score;
 
 		for (k = maxem->result_num - 1; k >= 0; k--) {
-		    if (maxem->ecmm[k].cmm.score < maxem->ecmm[k + 1].cmm.score || 
-			(maxem->ecmm[k].cmm.score == maxem->ecmm[k + 1].cmm.score && 
-			 CompareClosestExFrequency(&(maxem->ecmm[k].cmm), &(maxem->ecmm[k + 1].cmm)))) {
+		    if (maxem->ecmm[k].cmm.score < maxem->ecmm[k + 1].cmm.score) {
 			tempecmm = maxem->ecmm[k];
 			maxem->ecmm[k] = maxem->ecmm[k + 1];
 			maxem->ecmm[k + 1] = tempecmm;
