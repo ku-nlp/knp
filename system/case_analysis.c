@@ -492,11 +492,13 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    }
 	    /* 直前格スコアが同点の格フレームを、すべてのスコアでsort */
 	    for (i = cpm_ptr->tie_num - 1; i >= 1; i--) {
-		slot_i = cpm_ptr->cmm[i].result_lists_d[0].flag[closest];
-		pos_i = slot_i >= 0 ? cpm_ptr->cmm[i].result_lists_p[0].pos[slot_i] : -1;
 		for (j = i - 1; j >= 0; j--) {
+		    slot_i = cpm_ptr->cmm[i].result_lists_d[0].flag[closest];
+		    pos_i = (slot_i >= 0 && cpm_ptr->cmm[i].cf_ptr->ex_freq[slot_i]) ? 
+			cpm_ptr->cmm[i].result_lists_p[0].pos[slot_i] : -1;
 		    slot_j = cpm_ptr->cmm[j].result_lists_d[0].flag[closest];
-		    pos_j = slot_j >= 0 ? cpm_ptr->cmm[j].result_lists_p[0].pos[slot_j] : -1;
+		    pos_j = (slot_j >= 0 && cpm_ptr->cmm[j].cf_ptr->ex_freq[slot_j]) ? 
+			    cpm_ptr->cmm[j].result_lists_p[0].pos[slot_j] : -1;
 		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score || 
 			(pos_i >= 0 && pos_j >= 0 && /* マッチした用例頻度の大きい方を選択 */
 			 cpm_ptr->cmm[i].cf_ptr->ex_freq[slot_i][pos_i] > cpm_ptr->cmm[j].cf_ptr->ex_freq[slot_j][pos_j])) {
