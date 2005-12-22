@@ -1,3 +1,8 @@
+2005-12-23  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c
+	省略解析において同じ格が2つあるときのbug fix.
+
 2005-12-20  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
