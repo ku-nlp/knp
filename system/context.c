@@ -1599,6 +1599,9 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->c_distance = ef->c_distance;
     f->c_dist_bnst = ef->c_dist_bnst;
 #else
+    f->c_distance = ef->c_distance;
+//    f->c_dist_bnst = ef->c_dist_bnst;
+
     f->c_location[0] = ef->c_location == LOC_PARENTV ? 1 : 0;
     f->c_location[1] = ef->c_location == LOC_PARENTV_MC ? 1 : 0;
     f->c_location[2] = ef->c_location == LOC_CHILDPV ? 1 : 0;
@@ -1663,6 +1666,12 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->p_dep_p_level[5] = str_eq(ef->p_dep_p_level, "C") ? 1 : 0; */
 
     /* f->c_ac = ef->c_ac; */
+
+    /* 先行詞の格と省略解析対象格が一致するかどうか */
+    f->match_case = ef->match_case;
+
+    /* 先行詞が係る用言とゼロ代名詞をもつ用言が一致するかどうか */
+    f->match_verb = ef->match_verb;
 
     /* 発話タイプ */
     if (OptAddSvmFeatureUtype) {
@@ -2045,6 +2054,14 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
     f->c_extra_tag = -1;
 
+    /* 先行詞が係る用言とゼロ代名詞をもつ用言が一致するかどうか */
+    if (vp && str_eq(cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, vp->jiritu_ptr->Goi)) {
+	f->match_verb = 1;
+    }
+    else {
+	f->match_verb = 0;
+    }
+
     /* 発話タイプに関するfeature */
     if (OptAddSvmFeatureUtype) {
 	f->utype = get_utype(bp);
@@ -2070,6 +2087,14 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     }
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
+
+    /* 先行詞の格と省略解析対象格が一致するかどうか */
+    if (f->c_pp == f->p_pp) {
+	f->match_case = 1;
+    }
+    else {
+	f->match_case = 0;
+    }
 
     return f;
 }
@@ -2139,6 +2164,14 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 
     /* 用言に関するfeatureを設定 */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
+
+    /* 先行詞の格と省略解析対象格が一致するかどうか */
+    if (f->c_pp == f->p_pp) {
+	f->match_case = 1;
+    }
+    else {
+	f->match_case = 0;
+    }
 
     return f;
 }
@@ -2253,8 +2286,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     cp = EllipsisSvmFeatures2String(ecf);
 
     if (PrintEx || OptDisplay == OPT_DEBUG) {
-	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、参照回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格 */
-	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 参照回数=%d, 省略参照回数=%d, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d、用言補文=%d、用言連格=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag);
+	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、参照回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格、格一致、用言一致 */
+	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 参照回数=%d, 省略参照回数=%d, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d, 用言補文=%d, 用言連格=%d, 格一致=%d, 用言一致=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag,(ante_cands + i)->ef->match_case, (ante_cands + i)->ef->match_verb);
     }
 
     /* 学習FEATURE */
@@ -2462,7 +2495,8 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 	/* 名詞+判定詞の名詞が主体じゃない場合はガ格に不特定-人を入れない */
 	if (OptLearn == TRUE || 
 	    (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) && 
-	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ")))) {
+//	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ")))) {
+	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT))) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	}
 	return;
@@ -2614,8 +2648,10 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 
 	if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	    /* 解析時に、すでに他の格の指示対象になっているときはだめ */
+	    /* 名詞+判定詞の名詞が主体じゃない場合はガ格に不特定-人を入れない */
 	    if (OptLearn == TRUE || 
-		!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL)) {
+		!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) &&
+		!(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
 		push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	    }
 	    return;

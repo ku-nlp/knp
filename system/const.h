@@ -944,7 +944,9 @@ typedef struct ellipsis_features {
 
     int		c_ac;
     int		match_sm_flag;
-    
+    int		match_case;
+    int		match_verb;
+
     int		utype;
     int		objectrecognition;
 } E_FEATURES;
@@ -969,6 +971,8 @@ typedef struct ellipsis_svm_features {
 #else
     int		c_location[LOC_NUMBER];
 #endif
+    int		c_distance;
+//    int		c_dist_bnst;
     int		c_fs_flag;
     int		c_topic_flag;
     int		c_no_topic_flag;
@@ -989,6 +993,9 @@ typedef struct ellipsis_svm_features {
     int		p_cf_subject_flag;
     int		p_cf_sentence_flag;
     int		p_n_modify_flag;
+
+    int		match_case;
+    int		match_verb;
 
     int 	utype[UTYPE_NUMBER];
     int		objectrecognition;
