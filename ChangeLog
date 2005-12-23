@@ -1,5 +1,8 @@
 2005-12-23  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
 
+	* system/context.c, system/const.h
+	用言省略解析のSVMのFeatureを追加(先行詞の格と省略解析対象格が一致、先行詞が係る用言とゼロ代名詞をもつ用言が一致)
+
 	* system/case_analysis.c
 	省略解析において同じ格が2つあるときのbug fix.
 
