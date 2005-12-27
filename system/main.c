@@ -1060,9 +1060,11 @@ PARSED:
 		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 
-	    /* とりあえず終わることに */
-	    close_all();
-	    exit(100);
+	    /* 格・省略解析のときはとりあえず終わることに */
+	    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+		close_all();
+		exit(100);
+	    }
 	}
 
 	/* 格フレームの初期化 */
