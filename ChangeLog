@@ -1,3 +1,11 @@
+2005-12-28  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c, system/corefer.c, system/proper.c:
+	固有表現に含まれるタグに<NE内>というFeatureを与えるように変更
+	固有表現解析、共参照解析で用いているキャッシュに関連するバグを修正
+	橋渡し指示に関係する閾値を調整
+	橋渡し指示において主題であるや、頻度などを考慮するように変更
+
 2005-12-28  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c:
