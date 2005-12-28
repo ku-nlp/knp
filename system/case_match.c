@@ -42,8 +42,7 @@ int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 8;
-int	NOUN_THRESHOLD = 8; /* 間接照応解析の閾値 */
-int	NOUN_THRESHOLD_DIRECT = 3.5; /* 直接係っている場合の閾値 */
+int	NOUN_THRESHOLD = 5; /* 橋渡し指示関係の閾値 */
 int	CASE_ASSIGN_THRESHOLD = 0;
 
 /*==================================================================*/
@@ -609,10 +608,14 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	     cf_match_element(cfp->sm[as2], "主体", TRUE))) {
 	*/
 
-	/* 用例のマッチング */
-	ex_rawscore = calc_similarity_word_cf_with_sm(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], 
-						      cfp, as2, pos);
-
+	if (cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED) {   
+	    /* 用例のマッチング */
+	    ex_rawscore = calc_similarity_word_cf_with_sm(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], cfp, as2, pos);
+	}
+	else {
+	    ex_rawscore = calc_similarity_word_cf(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], cfp, as2, pos);
+	}
+	
 	if (MatchPP(cfp->pp[as2][0], "外の関係")) {
 	    /* 外の関係のときシソーラスを使わない */
 	    if (ex_rawscore > 1.0) {
@@ -1103,7 +1106,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 				  cfp->pp[i][j] == pp_kstr_to_code("ノ")) &&
 				 elmnt_score >= SOTO_THRESHOLD) || 
 				(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_NOUN && 
-				 elmnt_score >= (closest == -1) ? NOUN_THRESHOLD_DIRECT : NOUN_THRESHOLD)) {
+				 elmnt_score >= NOUN_THRESHOLD)) {
 				if ((flag == EXAMPLE) || 
 				    (flag == SEMANTIC_MARKER && elmnt_score >= 0)) {
 				    /* 対応付けをして，残りの格要素の処理に進む

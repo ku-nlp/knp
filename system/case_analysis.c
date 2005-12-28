@@ -1542,7 +1542,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		   省略時: OK 
 		   直接の係り受け時: 未実装(elem_b_ptrが para_top_p)
 		   ↑ 名詞の場合のみ簡易に実装 */
-		if (cpm_ptr->elem_b_ptr[num]->para_type == PARA_NORMAL && 
+		if (!cpm_ptr->cf.type == CF_NOUN && 
+		    cpm_ptr->elem_b_ptr[num]->para_type == PARA_NORMAL && 
 		    cpm_ptr->elem_b_ptr[num]->parent && 
 		    cpm_ptr->elem_b_ptr[num]->parent->para_top_p) {
 		    for (j = 0; cpm_ptr->elem_b_ptr[num]->parent->child[j]; j++) {
@@ -1564,7 +1565,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    }
 		}
 		/* elem_b_ptrが para_top_pのとき(名詞の場合のみ) */
-		if (cpm_ptr->cf.type == CF_NOUN && 
+		if (0 && cpm_ptr->cf.type == CF_NOUN && 
 		    cpm_ptr->elem_b_ptr[num]->para_top_p) {
 		    for (j = 1; cpm_ptr->elem_b_ptr[num]->child[j]; j++) { /* 0は自分と同じでチェックされている */
 			if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL) {

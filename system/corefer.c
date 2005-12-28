@@ -19,13 +19,13 @@ typedef struct entity_cache {
     struct entity_cache *next;
 } ENTITY_CACHE;
 
-ENTITY_CACHE entity_cache[TBLSIZE];
+ENTITY_CACHE *entity_cache[TBLSIZE];
 
 /*==================================================================*/
 			 void init_entity_cache()
 /*==================================================================*/
 {
-    memset(entity_cache, 0, sizeof(ENTITY_CACHE)*TBLSIZE);
+    memset(entity_cache, 0, sizeof(ENTITY_CACHE *)*TBLSIZE);
 }
 
 /*==================================================================*/
@@ -36,15 +36,15 @@ ENTITY_CACHE entity_cache[TBLSIZE];
     ENTITY_CACHE *ecp, *next;
 
     for (i = 0; i < TBLSIZE; i++) {
-	ecp = entity_cache[i].next;
+	ecp = entity_cache[i];
 	while (ecp) {
 	    free(ecp->key);
 	    next = ecp->next;
 	    free(ecp);
 	    ecp = next;
 	}
+	entity_cache[i] = NULL;
     }
-    init_entity_cache();
 }
 
 /*==================================================================*/
@@ -53,21 +53,21 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 {
     /* 文の要素を登録する */
 
-    ENTITY_CACHE *ecp;
+    ENTITY_CACHE **ecpp;
 
-    ecp = &(entity_cache[hash(key, strlen(key))]);
-    while (ecp && ecp->key && strcmp(ecp->key, key)) {
-	ecp = ecp->next;
+    ecpp = &(entity_cache[hash(key, strlen(key))]);
+    while (*ecpp && (*ecpp)->key && strcmp((*ecpp)->key, key)) {
+	ecpp = &((*ecpp)->next);
     }
-    if (!ecp) {
-	ecp = (ENTITY_CACHE *)malloc_data(sizeof(ENTITY_CACHE), "register_entity_cache");
-	memset(entity_cache, 0, sizeof(ENTITY_CACHE));
+    if (!(*ecpp)) {
+	*ecpp = (ENTITY_CACHE *)malloc_data(sizeof(ENTITY_CACHE), "register_entity_cache");
+	memset(*ecpp, 0, sizeof(ENTITY_CACHE));
     }
-    if (!ecp->key) {
-	ecp->key = strdup(key);
-	ecp->next = NULL;
+    if (!(*ecpp)->key) {
+	(*ecpp)->key = strdup(key);
+	(*ecpp)->next = NULL;
     }
-    ecp->frequency++;
+    (*ecpp)->frequency++;
 }
 
 /*==================================================================*/
@@ -76,8 +76,8 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 {
     ENTITY_CACHE *ecp;
 
-    ecp = &(entity_cache[hash(key, strlen(key))]);
-    if (!ecp->key) {
+    ecp = entity_cache[hash(key, strlen(key))];
+    if (!ecp || !ecp->key) {
 	return 0;
     }
     while (ecp) {
@@ -172,9 +172,7 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 
     int i, j, k, l, tag_num, mrph_num;
     char word[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
-    TAG_DATA *tag_ptr;
-    
-    
+    TAG_DATA *tag_ptr;      
 
     /* 文節単位で文の前から処理 */
     for (i = 0; i < sp->Bnst_num; i++) {
@@ -192,14 +190,15 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 
 	    /* 固有表現内である場合は後回し */
 	    if (check_feature((tag_ptr + j)->f, "NE") ||
-		check_feature(((tag_ptr + j)->mrph_ptr)->f, "NE")) {
+		check_feature((tag_ptr + j)->f, "NE内")) {
 		break;
 	    }
 
-	    /* 数詞、形式名詞、副詞的名詞、時相名詞 */
+	    /* 数詞、形式名詞、副詞的名詞 */
 	    /* および隣に係る形容詞は除外 */
 	    if (((tag_ptr + j)->head_ptr)->Hinshi == 6 &&
-		((tag_ptr + j)->head_ptr)->Bunrui > 7 ||
+		((tag_ptr + j)->head_ptr)->Bunrui > 7 &&
+		((tag_ptr + j)->head_ptr)->Bunrui != 10 ||
 		((tag_ptr + j)->head_ptr)->Hinshi == 3 &&
 		check_feature((tag_ptr + j)->f, "係:隣")) {
 		continue;
@@ -250,7 +249,7 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 	    
 	    /* 固有表現の主辞には付与 */
 	    if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
-		cp += 3;
+		cp += 3; /* "NE:"を読み飛ばす */
 		while (strncmp(cp, ":", 1)) cp++;
 		register_entity_cache(cp + 1);
 		sprintf(buf, "照応詞候補:%s", cp + 1);
@@ -271,7 +270,7 @@ ENTITY_CACHE entity_cache[TBLSIZE];
 		((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 4) {
 		
 		for (k = 0; !(cp = check_feature((tag_ptr + j + k)->f, "NE")); k++);
-		cp += 3;
+		cp += 3; /* "NE:"を読み飛ばす */
 		while (strncmp(cp, ":", 1)) cp++;
 		/* cp + 1 は対象の固有表現へのポインタ */
 		for (k = 0; 
@@ -454,8 +453,10 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
 #ifdef USE_SVM
 		    if (OptNE) {
-			if ((cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
-			    cp += 3;
+			if (!check_feature((sp->tag_data + i)->f, "NE") &&
+			    !check_feature((sp->tag_data + i)->f, "NE内") &&
+			    (cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
+			    cp += 3; /* "NE:"を読み飛ばす */
 			    while (strncmp(cp, ":", 1)) cp++;
 			    if (!strcmp(cp + 1, word)) {
 				ne_corefer(sp, i, anaphor,
@@ -515,6 +516,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	    cp, j, sp->KNPSID ? sp->KNPSID + 5 : "?", 
 	    tag_ptr - sp->tag_data);
     assign_cfeature(&(tag_ptr->f), buf);
+    assign_cfeature(&(tag_ptr->f), "役職");
     assign_cfeature(&(tag_ptr->f), "共参照");    
     return 1;
 }
@@ -539,8 +541,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	/* 連体詞形態指示詞以外に修飾されていない語 */
 	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
 	    (check_feature((sp->tag_data + i)->f, "NE") ||
-	     check_feature(((sp->tag_data + i)->mrph_ptr +
-			    (sp->tag_data + i)->mrph_num - 1)->f, "NE") ||
+	     check_feature((sp->tag_data + i)->f, "NE内") ||
 	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
 	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が読点である */

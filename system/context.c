@@ -29,7 +29,9 @@ char *ETAG_name[] = {
 
 /* 探すのを止める閾値 */
 float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
-float	AntecedentDecideThresholdForNoun = 0.60;
+float	AntecedentDecideThresholdForNoun = 1.00;
+float	AntecedentDecideThresholdForNounBonus = 0.60;
+float	AntecedentDecideThresholdForNounSM = 0.80;
 float	AntecedentDecideThresholdForNi = 0.90;
 
 float	CFSimThreshold = 0.80;
@@ -2205,7 +2207,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     }
     else {
 	if ((cf_ptr->type == CF_PRED && score > AntecedentDecideThresholdPredGeneral) || 
-	    (cf_ptr->type == CF_NOUN && score > AntecedentDecideThresholdForNoun)) {
+	    (cf_ptr->type == CF_NOUN && score >= AntecedentDecideThresholdForNounBonus)) {
 	    return 1;
 	}
     }
@@ -2578,11 +2580,11 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     if (cpm_ptr->cf.type == CF_NOUN) {
 	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
-	if (ef->similarity >= 1.0) {
+	if (ef->similarity >= AntecedentDecideThresholdForNoun) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	    similarity = ef->similarity;
 	}
-	else if (ef->match_sm_flag && ef->similarity > 0.6) {
+	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
 	    score = classify_by_learning(ecp, pp_kstr_to_code("ノ"), OptDiscNounMethod);
 	    similarity = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
@@ -2718,13 +2720,27 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
-	if (ef->similarity >= 1.0) {
-	    score = ef->similarity;
+	/* 連続するタグの場合はボーナス */
+	if (ef->c_dist_bnst == 1 && !check_feature(em_ptr->f, "文頭") &&
+	    ef->similarity >= AntecedentDecideThresholdForNounBonus) {
+	    score = ef->similarity + 
+		AntecedentDecideThresholdForNoun -
+		AntecedentDecideThresholdForNounBonus;
 	}
-	else if (ef->match_sm_flag && ef->similarity > 0.6) {
+	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
+	else if (ef->similarity >= AntecedentDecideThresholdForNoun) {
+	    /* 頻度を考慮や主題表現などを考慮(暫定的) */
+/*	    score = ef->similarity; */
+ 	    score = ef->similarity + 
+		(ef->similarity > 1 ? 0.05 * ef->frequency / (ef->frequency + 100) : 0) +
+		0.05 * ef->c_topic_flag +
+		0.02 * ef->c_no_topic_flag;
+	    if (ef->c_dist_bnst < 0) score -= 0.05;
+	}
+	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
 	    score = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
+	    if (ef->c_dist_bnst < 0) score -= 0.05;
 	}
 	else {
 	    score = -1;
@@ -2893,8 +2909,8 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 
     if (s == cs && /* 対象文 */
 	((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
-	  (cpm_ptr->cf.type == CF_PRED || 
 	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
+	  (cpm_ptr->cf.type == CF_PRED || 
 	 (!check_feature(bp->f, "係:連用") && 
 	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
 	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
@@ -2990,7 +3006,10 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 
     /* 省略要素となるための条件 */
     if (tp->para_top_p == TRUE || 
-	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
+	!cpm_ptr->cf.type == CF_NOUN &&
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE) ||
+	!cpm_ptr->cf.type == CF_NOUN &&
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, TRUE)) {
 	if (!Bcheck[cs - s][tp->num]) {
 	    Bcheck[cs - s][tp->num] = 1;
 	}
@@ -5220,8 +5239,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    }
 	    if (cpm_ptr->cf.type == CF_PRED && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
-		      check_feature((cpm_ptr->pred_b_ptr->mrph_ptr + 
-				     cpm_ptr->pred_b_ptr->mrph_num - 1)->f, "NE"))) {
+		      check_feature(cpm_ptr->pred_b_ptr->f, "NE内"))) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 		continue;
 	    }
@@ -5229,15 +5247,15 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    /* 固有名詞は間接照応解析しない */
 	    if (cpm_ptr->cf.type == CF_NOUN && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
-		      check_feature((cpm_ptr->pred_b_ptr->mrph_ptr + 
-				     cpm_ptr->pred_b_ptr->mrph_num - 1)->f, "NE"))) {
+		      check_feature(cpm_ptr->pred_b_ptr->f, "NE内"))) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 		continue;
 	    }
 
-	    /* 共参照解析結果のある語は解析しない */
+	    /* 共参照解析結果のある語、照応詞候補でない語は解析しない */
 	    if (cpm_ptr->cf.type == CF_NOUN &&
-		check_feature(cpm_ptr->pred_b_ptr->f, "共参照")) {
+		(check_feature(cpm_ptr->pred_b_ptr->f, "共参照") ||
+		 !check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補"))) {
 		continue;
 	    }
 
