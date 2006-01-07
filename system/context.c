@@ -29,6 +29,7 @@ char *ETAG_name[] = {
 
 /* 探すのを止める閾値 */
 float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
+float	AntecedentDecideThresholdForGa = 0.60;
 float	AntecedentDecideThresholdForNoun = 1.00;
 float	AntecedentDecideThresholdForNounBonus = 0.60;
 float	AntecedentDecideThresholdForNounSM = 0.80;
@@ -2205,6 +2206,11 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	    return 1;
 	}
     }
+    else if (MatchPP(cf_ptr->pp[n][0], "ガ")) {
+	if (score > AntecedentDecideThresholdForGa) {
+	    return 1;
+	}
+    }
     else {
 	if ((cf_ptr->type == CF_PRED && score > AntecedentDecideThresholdPredGeneral) || 
 	    (cf_ptr->type == CF_NOUN && score >= AntecedentDecideThresholdForNounBonus)) {
@@ -2909,8 +2915,8 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 
     if (s == cs && /* 対象文 */
 	((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
-	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
 	  (cpm_ptr->cf.type == CF_PRED || 
+	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
 	 (!check_feature(bp->f, "係:連用") && 
 	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
 	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
