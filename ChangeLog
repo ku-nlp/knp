@@ -1,3 +1,9 @@
+2006-01-07  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* system/context.c
+	省略解析における格フレームの用例との類似度の閾値を格ごとに指定できるようにした
+	bug fix.
+
 2005-12-28  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c, system/corefer.c, system/proper.c:
