@@ -131,6 +131,9 @@
 #define	OPT_DISC_RANKING	48
 #define	OPT_DISC_NO_WO_TO	64
 
+#define	OPT_BASELINE_NORMAL	1
+#define	OPT_BASELINE_COOK	2
+
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
 

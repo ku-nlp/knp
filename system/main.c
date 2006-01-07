@@ -322,7 +322,13 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_DEMO;
 	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptAnaphoraBaseline = 1;
+	    OptAnaphoraBaseline = OPT_BASELINE_NORMAL;
+	}
+	else if (str_eq(argv[0], "-anaphora-baseline-cook")) {
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_DEMO;
+	    OptDiscFlag |= OPT_DISC_RANKING;
+	    OptAnaphoraBaseline = OPT_BASELINE_COOK;
 	}
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;

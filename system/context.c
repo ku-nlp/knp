@@ -2377,13 +2377,16 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			    }
 			}
 		    }
-		    /* 例外タグ */
-		    else {
+		    /* 例外タグを優先する場合 */
+		    else if (OptAnaphoraBaseline == OPT_BASELINE_COOK) {
 			closest_i = i;
 			break;
 		    }
 		}
-		max_num = closest_i;
+
+		if (closest_i >= 0) { /* OPT_BASELINE_NORMALで、すべての候補が例外タグのとき(現時点ではありえない)は満たされない */
+		    max_num = closest_i;
+		}
 	    }
 	    else {
 		E_SVM_FEATURES *ecf;
