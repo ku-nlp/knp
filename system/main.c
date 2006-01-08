@@ -532,6 +532,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
 	}
+	else if (str_eq(argv[0], "-def-sentence")) {
+	    ;
+	}
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
