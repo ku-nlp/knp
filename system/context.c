@@ -3015,10 +3015,10 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 
     /* 省略要素となるための条件 */
     if (tp->para_top_p == TRUE || 
-	!cpm_ptr->cf.type == CF_NOUN &&
-	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE) ||
-	!cpm_ptr->cf.type == CF_NOUN &&
-	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, TRUE)) {
+	(!cpm_ptr->cf.type == CF_NOUN &&
+	 !CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) ||
+	(cpm_ptr->cf.type == CF_NOUN &&
+	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, TRUE))) {
 	if (!Bcheck[cs - s][tp->num]) {
 	    Bcheck[cs - s][tp->num] = 1;
 	}

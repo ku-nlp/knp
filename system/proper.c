@@ -306,10 +306,29 @@ char *ne_code_to_tagposition(int num)
 	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白*/
 	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白*/
 	    k = i - j + SIZE + 1;
-	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s",
-		    NE_mgr[i].feature, s[0] ? s[0] : "", k,
-		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
-		    s[2], s[3]);
+	    if (OptNE <= 2) {
+		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s",
+			NE_mgr[i].feature, s[0] ? s[0] : "", k,
+			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
+			s[2], s[3]);
+	    } 
+	    else if (OptNE == 3) { /* キャッシュを用いない */
+		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
+			NE_mgr[i].feature, s[0] ? s[0] : "", k,
+			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k, 
+			s[3]);
+	    }
+	    else if (OptNE == 4) { /* 末尾文字を使用しない */
+		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
+			NE_mgr[i].feature, s[0] ? s[0] : "", k,
+			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
+			s[2]);
+	    }
+	    else if (OptNE == 5) { /* キャッシュを用いない、末尾文字を使用しない */
+		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 ",
+			NE_mgr[i].feature, s[0] ? s[0] : "", k,
+			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k);
+	    }
 	    free(s[0]);
 	    free(s[1]);
 	    free(s[2]);
@@ -587,7 +606,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
     apply_svm_model(sp);
     viterbi(sp);
     /* 前文までの解析結果を用いた修正 */
-     if (OptEllipsis & OPT_COREFER) {
+     if (0 && OptEllipsis & OPT_COREFER) {
 	 modify_result(sp);
     }
     /* 結果を付与 */

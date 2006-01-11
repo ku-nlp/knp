@@ -285,6 +285,21 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-print-svm-features")) {
 	    PrintFeatures = 1;
 	}
+	else if (str_eq(argv[0], "-ne")) {
+	    OptNE = 1;
+	}
+	else if (str_eq(argv[0], "-ne2")) { /* 格解析結果を用いる場合 */
+	    OptNE = 2;
+	}
+	else if (str_eq(argv[0], "-ne3")) { /* キャッシュを使用しない */
+	    OptNE = 3;
+	}
+	else if (str_eq(argv[0], "-ne4")) { /* 末尾文字を使用しない */
+	    OptNE = 4;
+	}
+	else if (str_eq(argv[0], "-ne5")) { /* キャッシュ、末尾文字を使用しない */
+	    OptNE = 5;
+	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -534,12 +549,6 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-def-sentence")) {
 	    ;
-	}
-	else if (str_eq(argv[0], "-ne")) {
-	    OptNE = 1;
-	}
-	else if (str_eq(argv[0], "-ne2")) {
-	    OptNE = 2;
 	}
 	else {
 	    usage();
