@@ -1,3 +1,8 @@
+2005-12-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/proper.c:
+	固有表現解析のオプションを追加(-ne3, -ne4, ne5)
+
 2006-01-07  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/const.h, system/context.c, system/main.c:
