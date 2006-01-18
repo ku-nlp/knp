@@ -4431,36 +4431,6 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 }
 
 /*==================================================================*/
-void AppendCfFeature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
-/*==================================================================*/
-{
-    char feature_buffer[DATA_LEN];
-
-    /* 格フレームが <主体準> をもつかどうか */
-    if (cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) {
-	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-    /* 格フレームが <主体> をもつかどうか */
-    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-
-
-    /* 格フレームが <補文> をもつかどうか */
-    if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
-	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-
-    if (sm_match_check(sm2code("抽象物"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE)) {
-	sprintf(feature_buffer, "格フレーム-%s-抽象物", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(&(em_ptr->f), feature_buffer);
-    }
-}
-
-/*==================================================================*/
  int CheckToCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
@@ -4534,7 +4504,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		 cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED && 
 		 !(toflag && MatchPP(cf_ptr->pp[i][0], "ヲ")))) {
 		result = EllipsisDetectForVerb(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i);
-		AppendCfFeature(em_ptr, cpm_ptr, cf_ptr, i);
+		/* append_cf_feature(&(em_ptr->f), cpm_ptr, cf_ptr, i); */
 		if (result) {
 		    em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
 
@@ -4572,7 +4542,7 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 	if ((OptEllipsis & OPT_REL_NOUN) && 
 	    cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED) {
 	    result = EllipsisDetectForNoun(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i);
-	    AppendCfFeature(em_ptr, cpm_ptr, cf_ptr, i);
+	    /* append_cf_feature(&(em_ptr->f), cpm_ptr, cf_ptr, i); */
 	    if (result) {
 		em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
 

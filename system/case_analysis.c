@@ -1418,6 +1418,32 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 }
 
 /*==================================================================*/
+void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
+/*==================================================================*/
+{
+    char feature_buffer[DATA_LEN];
+
+    /* 格フレームのガ格が<主体準>をもつかどうか */
+    if ((cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
+	MatchPP(cf_ptr->pp[n][0], "ガ")) {
+	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	assign_cfeature(fpp, feature_buffer);
+    }
+    /* 格フレームが<主体>をもつかどうか */
+    else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
+	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	assign_cfeature(fpp, feature_buffer);
+    }
+
+    /* 格フレームが<補文>をもつかどうか *
+    if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
+	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	assign_cfeature(fpp, feature_buffer);
+    }
+    */
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int lastflag)
 /*==================================================================*/
@@ -1488,6 +1514,9 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* 格解析結果 buffer溢れ注意 */
     sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	/* 格フレームの意味情報をfeatureとして出力 */
+	append_cf_feature(&(cpm_ptr->pred_b_ptr->f), cpm_ptr, cpm_ptr->cmm[0].cf_ptr, i);
+
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
 					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
