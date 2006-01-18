@@ -3,6 +3,9 @@
 	* system/context.c:
 	指示詞の照応解析の結果を共参照タグとして出力するようにした
 
+	* system/context.c, system/case_analysis.c:
+	格解析したときにも格フレームの各格のもつ意味情報を出力するようにした
+
 2005-12-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/proper.c:
