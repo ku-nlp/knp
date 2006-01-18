@@ -4212,13 +4212,25 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    sprintf(etc_buffer, "%d文前", distance);
 	}
 
-	/* 決定した省略関係 */
-	sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
-		word ? word : "?", 
-		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
-		distance, maxi, 
-		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
-		etc_buffer, maxi);
+	/* 決定した照応関係 */
+	if (cmm_ptr->result_lists_p[l].flag[n] != UNASSIGNED) {
+	    sprintf(feature_buffer, "照応仮決定;%d;C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
+		    cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[n]]->num, 
+		    word ? word : "?", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
+		    distance, maxi, 
+		    maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
+		    etc_buffer, maxi);
+	}
+	else {
+	    /* 決定した省略関係 */
+	    sprintf(feature_buffer, "C用;【%s】;%s;%d;%d;%.3f:%s(%s):%d文節", 
+		    word ? word : "?", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
+		    distance, maxi, 
+		    maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
+		    etc_buffer, maxi);
+	}
 	assign_cfeature(&(em_ptr->f), feature_buffer);
 
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
@@ -5193,6 +5205,41 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 }
 
 /*==================================================================*/
+void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    /* 用言についている<照応仮決定...>を指示詞のタグに移動する */
+
+    int num;
+    char feature_buffer[DATA_LEN], target[DATA_LEN], rel[DATA_LEN], rest_buffer[DATA_LEN];
+    FEATURE **fpp = &(cpm_ptr->pred_b_ptr->f), *pre_fp = NULL, *next;
+
+    while (*fpp) {
+	if (!strncmp((*fpp)->cp, "照応仮決定", 10)) {
+	    sscanf((*fpp)->cp + 11, "%d;C用;%[^;];%[^;];%s", &num, 
+		   target, rel, rest_buffer);
+	    sprintf(feature_buffer, "C用;%s;=;%s", target, rest_buffer);
+	    assign_cfeature(&((sp->tag_data + num)->f), feature_buffer);
+	    free((*fpp)->cp);
+	    if (pre_fp == NULL) {
+		next = (*fpp)->next;
+		free(*fpp);
+		*fpp = next;
+	    }
+	    else {
+		next = (*fpp)->next;
+		free(*fpp);
+		pre_fp->next = next;
+		fpp = &next;
+	    }
+	    continue;
+	}
+	pre_fp = *fpp;
+	fpp = &((*fpp)->next);
+    }
+}
+
+/*==================================================================*/
 	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -5383,6 +5430,11 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
 		/* 省略解析の結果を参照回数DBに登録 */
 		RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
+
+		/* 指示詞の解析結果を=のタグに変換する */
+		if (OptEllipsis & OPT_DEMO) {
+		    demonstrative2coreference(sp, cpm_ptr);
+		}
 
 		/* 格・省略解析の結果をfeatureへ */
 		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
