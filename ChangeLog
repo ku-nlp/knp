@@ -1,3 +1,14 @@
+2006-01-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_print.c, system/lib_print.c:
+	Windowsにおける表示の文字化けへの対処
+
+	* system/read_data.c:
+	Windowsでコンパイルできない問題を修正
+
+	* system/case_ipal.c:
+	格フレームの意味素制限情報の表示の修正
+
 2006-01-18  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/context.c:
