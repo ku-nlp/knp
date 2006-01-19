@@ -23,20 +23,20 @@ int	PrintFrequency = 0;
 
     /* 省略のとき */
     if (cpm_ptr->elem_b_num[num] == -2) {
-	fputs("《省》", Outfp);
+	fprintf(Outfp, "《省》");
 	return;
     }
     /* 照応のとき */
     else if (cpm_ptr->elem_b_num[num] == -3) {
-	fputs("《照》", Outfp);
+	fprintf(Outfp, "《照》");
 	return;
     }
     else if (flag == FALSE && cpm_ptr->elem_b_num[num] == -1) {
-	fputs("《--》", Outfp);
+	fprintf(Outfp, "《--》");
 	return;
     }
 
-    fputs("《", Outfp);
+    fprintf(Outfp, "《");
 
     if (cpm_ptr->cf.type == CF_PRED) {
 	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
@@ -55,7 +55,7 @@ int	PrintFrequency = 0;
 	fputs("--", Outfp);
     }
 
-    fputs("》", Outfp);
+    fprintf(Outfp, "》");
 }
 
 /*==================================================================*/
@@ -64,21 +64,21 @@ int	PrintFrequency = 0;
 {
     int i;
 
-    fputs("【", Outfp);
-    fputs(cpm_ptr->pred_b_ptr->head_ptr->Goi, Outfp); /* 用言表記 */
+    fprintf(Outfp, "【");
+    fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* 用言表記 */
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-	fputs("(使役)】", Outfp);
+	fprintf(Outfp, "(使役)】");
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-	fputs("(受身)】", Outfp);
+	fprintf(Outfp, "(受身)】");
     else if (cpm_ptr->cf.voice == VOICE_SHIEKI_UKEMI)
-	fputs("(使役&受身)】", Outfp);
+	fprintf(Outfp, "(使役&受身)】");
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-	fputs("(もらう)】", Outfp);
+	fprintf(Outfp, "(もらう)】");
     else if (cpm_ptr->cf.voice == VOICE_HOSHII)
-	fputs("(ほしい)】", Outfp);
+	fprintf(Outfp, "(ほしい)】");
     else
-	fputs("】", Outfp);
+	fprintf(Outfp, "】");
 
     fprintf(Outfp, " %s ", cpm_ptr->cf.pred_type);
 
@@ -118,10 +118,10 @@ int	PrintFrequency = 0;
 
 	if (Thesaurus == USE_NTT) {
 	    if (cpm_ptr->cf.sm[i][0]) {
-		fputs("SM:○", Outfp);
+		fprintf(Outfp, "SM:○");
 	    }
 	    else {
-		fputs("SM:×", Outfp);
+		fprintf(Outfp, "SM:×");
 	    }
 	}
 
@@ -129,10 +129,10 @@ int	PrintFrequency = 0;
 
 	else if (Thesaurus == USE_BGH) {
 	    if (cpm_ptr->cf.ex[i][0]) {
-		fputs("BGH:○", Outfp);
+		fprintf(Outfp, "BGH:○");
 	    }
 	    else {
-		fputs("BGH:×", Outfp);
+		fprintf(Outfp, "BGH:×");
 	    }
 	}
 
@@ -228,9 +228,9 @@ struct _sort_kv {
 	    num = cmm_ptr->result_lists_p[k].flag[i];
 
 	    if (cmm_ptr->cf_ptr->adjacent[i] == TRUE)
-		fputs(" ◎ ", Outfp);
+		fprintf(Outfp, " ◎ ");
 	    else
-		fputs(" ● ", Outfp);
+		fprintf(Outfp, " ● ");
 
 	    if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2は全体で不一致 */
 		fputs("--", Outfp);
@@ -275,17 +275,17 @@ struct _sort_kv {
 		fputc('(', Outfp);
 		for (j = 0; j < print_num; j++) {
 		    if (j != 0) fputc('/', Outfp);
-		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("【", Outfp);
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "【");
 		    if (PrintFrequency) {
 			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][j], cmm_ptr->cf_ptr->ex_freq[i][j]);
 		    }
 		    else {
 			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
 		    }
-		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fputs("】", Outfp);
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "】");
 		}
 		if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
-		    fputs("/【", Outfp);
+		    fprintf(Outfp, "/【");
 		    if (PrintFrequency) {
 			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]], 
 				cmm_ptr->cf_ptr->ex_freq[i][cmm_ptr->result_lists_p[k].pos[i]]);
@@ -293,7 +293,7 @@ struct _sort_kv {
 		    else {
 			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
 		    }
-		    fputs("】", Outfp);
+		    fprintf(Outfp, "】");
 		}
 		if (print_num != cmm_ptr->cf_ptr->ex_num[i])
 		    fputs("...", Outfp);

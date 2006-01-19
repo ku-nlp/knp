@@ -178,7 +178,7 @@
 	    fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
     }
     else {
-	fputs("不特定:人", Outfp);
+	fprintf(Outfp, "不特定:人");
     }
 }
 
