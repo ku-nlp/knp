@@ -587,14 +587,16 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    if (cf_str_buf[1] == '1') {
 		strcat(c_ptr->sm_specify[num], &cf_str_buf[1]);
 		temp = code2sm(&cf_str_buf[1]);
-		/* -1 ではないのは '/' の分 */
-		if (strlen(sm_specify_sm)+strlen(temp) > sm_specify_sm_max-2) {
-		    sm_specify_sm = (char *)realloc_data(sm_specify_sm, 
-							 sm_specify_sm_max <<= 1, 
-							 "_make_ipal_cframe_sm");
+		if (temp[0]) {
+		    /* -1 ではないのは '/' の分 */
+		    if (strlen(sm_specify_sm)+strlen(temp) > sm_specify_sm_max-2) {
+			sm_specify_sm = (char *)realloc_data(sm_specify_sm, 
+							     sm_specify_sm_max <<= 1, 
+							     "_make_ipal_cframe_sm");
+		    }
+		    strcat(sm_specify_sm, "/");
+		    strcat(sm_specify_sm, temp);
 		}
-		strcat(sm_specify_sm, "/");
-		strcat(sm_specify_sm, temp);
 	    }
 	    else {
 		strcat(c_ptr->sm_specify[num], sm2code(&cf_str_buf[1]));
@@ -634,14 +636,16 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
 		if (PrintDeletedSM) {
 		    temp = code2sm(&cf_str_buf[1]);
-		    /* -1 ではないのは '/' の分 */
-		    if (strlen(sm_delete_sm)+strlen(temp) > sm_delete_sm_max-2) {
-			sm_delete_sm = (char *)realloc_data(sm_delete_sm, 
-							    sm_delete_sm_max <<= 1, 
-							    "_make_ipal_cframe_sm");
+		    if (temp[0]) {
+			/* -1 ではないのは '/' の分 */
+			if (strlen(sm_delete_sm)+strlen(temp) > sm_delete_sm_max-2) {
+			    sm_delete_sm = (char *)realloc_data(sm_delete_sm, 
+								sm_delete_sm_max <<= 1, 
+								"_make_ipal_cframe_sm");
+			}
+			strcat(sm_delete_sm, "/");
+			strcat(sm_delete_sm, temp);
 		    }
-		    strcat(sm_delete_sm, "/");
-		    strcat(sm_delete_sm, temp);
 		}
 	    }
 	    else {
