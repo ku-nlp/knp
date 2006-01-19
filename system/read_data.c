@@ -474,7 +474,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	memset(tp->c_cpm_ptr, 0, sizeof(CF_PRED_MGR));
 
 	cp += 11;
-	cp = index(cp, ':') + 1;
+	cp = strchr(cp, ':') + 1;
 	start_cp = cp;
 	for (; *cp; cp++) {
 	    if (*cp == ';') {
