@@ -1,3 +1,9 @@
+2006-01-22  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* corefer.c, proper.c
+	PERSONとLOCATIONについては前方一致を許可するようにするなど照応のルールを変更
+	NE内というfeatureにNEの種類も記載するように変更
+
 2006-01-19  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/case_print.c, system/lib_print.c:
@@ -17,7 +23,7 @@
 	* system/context.c, system/case_analysis.c:
 	格解析したときにも格フレームの各格のもつ意味情報を出力するようにした
 
-2005-12-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+2006-01-12  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/main.c, system/proper.c:
 	固有表現解析のオプションを追加(-ne3, -ne4, ne5)

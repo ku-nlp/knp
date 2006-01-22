@@ -557,6 +557,7 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 {
     int i, j;
     char cp[WORD_LEN_MAX];
+    char cp_nai[WORD_LEN_MAX];
 
     /* タグに付与 */
     for (j = 0; j < sp->Tag_num; j++) { /* 同一タグの固有表現は一種類まで */
@@ -587,9 +588,11 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 	    }
 	    /* 複数のタグにまたがっている場合は次のタグに進む */
 	    i++;
+	    sprintf(cp_nai, "NE内:%s",
+		    Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 	    if (i == sp->tag_data[j].mrph_num) {
 		i = 0;
-		assign_cfeature(&(sp->tag_data[j].f), "NE内");
+		assign_cfeature(&(sp->tag_data[j].f), cp_nai);
 		j++;
 	    }
 	}
@@ -717,9 +720,10 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
     /* タグに付与 */
     sprintf(cp, "NE:%s:%s", Tag_name[ne_tag], anaphor);
     assign_cfeature(&(sp->tag_data[i].f), cp);  
+    sprintf(cp, "NE内:%s", Tag_name[ne_tag]);
     for (k = 0; start < sp->tag_data[i - k].mrph_ptr - sp->mrph_data;) {
 	k++;
-	assign_cfeature(&(sp->tag_data[i - k].f), "NE内");
+	assign_cfeature(&(sp->tag_data[i - k].f), cp);
     }
     
     return 1;
