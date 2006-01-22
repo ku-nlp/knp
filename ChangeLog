@@ -1,5 +1,12 @@
 2006-01-22  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
+	* rule/mrph_ne.rule, system/corefer.c
+	普通名詞 + NE(TIMEなどは除く)となった場合に異なるタグになるように変更
+	および、それに伴いcorefer中の例外処理を削除
+
+	* system/case_ipal.c
+	-coreferのオプション時に名詞格フレームを読むように修正
+
 	* corefer.c, proper.c
 	PERSONとLOCATIONについては前方一致を許可するようにするなど照応のルールを変更
 	NE内というfeatureにNEの種類も記載するように変更

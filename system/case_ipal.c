@@ -1596,7 +1596,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレームはとりあえず、サ変名詞以外について */
-	    if ((OptEllipsis & OPT_REL_NOUN) && 
+	    if ((OptEllipsis & OPT_REL_NOUN || OptEllipsis & OPT_COREFER) && 
 		check_feature(t_ptr->f, "体言") /*&& 
 		!check_feature(t_ptr->f, "サ変") */) {
 		make_caseframes(sp, t_ptr, CF_NOUN);

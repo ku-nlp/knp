@@ -310,29 +310,6 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 		sprintf(buf, "照応詞候補:%s", word);
 		assign_cfeature(&((tag_ptr + j)->f), buf);
 	    }
-
-	    /* 固有の前に来る表現(ex. 首都グロズヌイ) */
-	    /* 同格を検出できないため */
-	    if (j < tag_num - 1 && 
-		check_feature(((tag_ptr + j + 1)->mrph_ptr + mrph_num)->f, "NE") &&
-		!check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE")) {
-		word[0] = '\0';
-		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
-		     k >= 0; k--) {
-		    
-		    /* 先頭の特殊、照応接頭辞は含めない */
-		    if (!strncmp(word, "\0", 1) &&
-			(((tag_ptr + j)->head_ptr - k)->Hinshi == 1 ||
-			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "照応接頭辞")))
-			continue;
-		    strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
-		}
-		if (strncmp(word, "\0", 1)) {
-		    register_entity_cache(word);
-		    sprintf(buf, "照応詞候補:%s", word);
-		    assign_cfeature(&((tag_ptr + j)->f), buf);
-		}
-	    }	    
 	}   
 	
 	/* 最後に文節頭から見ていきentity_cacheに存在する表現であれば付与する */	
@@ -448,8 +425,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    ant_ne = check_feature(tag_ptr->f, "NE");
 		
 	    /* 固有名詞中である場合は照応詞候補である場合以外は先行詞候補としない */
-	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
-		check_feature(tag_ptr->f, "NE内")) continue;
+//	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
+//		check_feature(tag_ptr->f, "NE内")) continue;
 			
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
 	    if (setubi && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
