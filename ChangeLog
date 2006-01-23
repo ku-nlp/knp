@@ -1,3 +1,12 @@
+2006-01-23  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_ne.rule
+	ORGANIZATIONsingleと判断された動詞の品詞を組織名に変更するルールを追加
+	
+	* system/corefer.c
+	対象の照応詞候補が修飾されているかどうかを判断する関数get_modify_numにおいて
+	子がカラ格、同格で係っている場合は修飾されているとカウントしないように変更
+
 2006-01-22  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_ne.rule, system/corefer.c

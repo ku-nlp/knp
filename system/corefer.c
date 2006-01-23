@@ -128,7 +128,7 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
     /* 並列を除いていくつの文節に修飾されているかを返す */
     /* ＡのＢＣとなっている場合はＡがＢに係っているかの判断も行う */
 
-    int i;
+    int i, ret;
     BNST_DATA *b_ptr;
 
     b_ptr = tag_ptr->b_ptr;
@@ -144,10 +144,10 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
     if (tag_ptr == b_ptr->tag_ptr && 
 	b_ptr->tag_num > 1 &&
 	!((tag_ptr)->cf_ptr &&
-	check_examples(((tag_ptr - 1)->mrph_ptr)->Goi2,
-		       strlen(((tag_ptr - 1)->mrph_ptr)->Goi2),
-		       (tag_ptr->cf_ptr)->ex_list[0],
-		       (tag_ptr->cf_ptr)->ex_num[0]) >= 0)) {
+	check_examples((tag_ptr - 1)->mrph_ptr->Goi2,
+		       strlen((tag_ptr - 1)->mrph_ptr->Goi2),
+		       tag_ptr->cf_ptr->ex_list[0],
+		       tag_ptr->cf_ptr->ex_num[0]) >= 0)) {
 	return 0;
     }
 
@@ -155,8 +155,14 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
     if ((b_ptr->child[0])->para_type) {
 	b_ptr = b_ptr->child[0];
     }
-    for (i = 0; b_ptr->child[i]; i++);
-    return i;
+    for (i = ret = 0; b_ptr->child[i]; i++) {
+	if (!check_feature((b_ptr->child[i])->f, "係:カラ格") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格未格") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格連体") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格連用"))
+	    ret++; 
+    }
+    return ret;
 }
 
 /*==================================================================*/
@@ -198,10 +204,10 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 	    
 	    /* 数詞、形式名詞、副詞的名詞 */
 	    /* および隣に係る形容詞は除外 */
-	    if (((tag_ptr + j)->head_ptr)->Hinshi == 6 &&
-		((tag_ptr + j)->head_ptr)->Bunrui > 7 &&
-		((tag_ptr + j)->head_ptr)->Bunrui != 10 ||
-		((tag_ptr + j)->head_ptr)->Hinshi == 3 &&
+	    if ((tag_ptr + j)->head_ptr->Hinshi == 6 &&
+		(tag_ptr + j)->head_ptr->Bunrui > 7 &&
+		(tag_ptr + j)->head_ptr->Bunrui != 10 ||
+		(tag_ptr + j)->head_ptr->Hinshi == 3 &&
 		check_feature((tag_ptr + j)->f, "係:隣")) {
 		continue;
 	    }
@@ -214,20 +220,20 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 			 (tag_ptr + j)->mrph_num -1)->Goi2, "・") ||
 
 		/* 直後の名詞がサ変名詞、形容詞である */
-		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 6 &&
-		((tag_ptr + j + 1)->mrph_ptr)->Bunrui == 2 ||
-		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 3 ||
+		(tag_ptr + j + 1)->mrph_ptr->Hinshi == 6 &&
+		(tag_ptr + j + 1)->mrph_ptr->Bunrui == 2 ||
+		(tag_ptr + j + 1)->mrph_ptr->Hinshi == 3 ||
 
 		/* 直後が名詞性接尾辞である */
-		((tag_ptr + j + 1)->mrph_ptr)->Hinshi == 14 &&
-		((tag_ptr + j + 1)->mrph_ptr)->Bunrui < 5 ||
+		(tag_ptr + j + 1)->mrph_ptr->Hinshi == 14 &&
+		(tag_ptr + j + 1)->mrph_ptr->Bunrui < 5 ||
 
 		/* 直後の名詞の格フレームの用例に存在する */
 		(tag_ptr + j + 1)->cf_ptr &&
-		check_examples(((tag_ptr + j)->head_ptr)->Goi2,
-			       strlen(((tag_ptr + j)->head_ptr)->Goi2),
-				((tag_ptr + j + 1)->cf_ptr)->ex_list[0],
-				((tag_ptr + j + 1)->cf_ptr)->ex_num[0]) >= 0) {
+		check_examples((tag_ptr + j)->head_ptr->Goi2,
+			       strlen((tag_ptr + j)->head_ptr->Goi2),
+				(tag_ptr + j + 1)->cf_ptr->ex_list[0],
+				(tag_ptr + j + 1)->cf_ptr->ex_num[0]) >= 0) {
 		
 		word[0] = '\0';
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
@@ -425,8 +431,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    ant_ne = check_feature(tag_ptr->f, "NE");
 		
 	    /* 固有名詞中である場合は照応詞候補である場合以外は先行詞候補としない */
-//	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
-//		check_feature(tag_ptr->f, "NE内")) continue;
+	    if (!check_feature(tag_ptr->f, "照応詞候補") &&
+		check_feature(tag_ptr->f, "NE内")) continue;
 			
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
 	    if (setubi && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
@@ -494,9 +500,11 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	
     flag = 0;
     for (i = 0;; i++) {
-	if (check_feature((mrph_ptr + i)->f, "NE")) {
+	if (check_feature((mrph_ptr + i)->f, "NE") ||
+	    check_feature((mrph_ptr + i)->f, "固有修飾")) {
 	    /* 基本的には、ブッシュ・アメリカ大統領 */
 	    /* 武部自民党幹事長などを想定している */
+	    /* ギングリッチ新下院議長 */
 	    continue;
 	}
 	else if (check_feature((mrph_ptr + i)->f, "人名末尾")) {
@@ -508,7 +516,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     if (!flag) return 0;
 	
     /* 複数のタグにまたがっている場合は次のタグに進む */
-    while (i >= tag_ptr->mrph_num) {
+    while (i > tag_ptr->mrph_num) {
 	i -= tag_ptr->mrph_num;
 	tag_ptr++;
     }
@@ -531,17 +539,17 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     MRPH_DATA *mrph_ptr;
     
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-
+	
 	/* PERSON + 人名末尾 の処理 */
 	if ((cp = check_feature((sp->tag_data + i)->f, "NE:PERSON"))) {
-	    if (person_post(sp, sp->tag_data + i + 1, cp + 10, i)) continue;
+	    person_post(sp, sp->tag_data + i + 1, cp + 10, i);
 	}
-
+	
 	/* 共参照解析を行う条件 */
 	/* 照応詞候補であり、固有表現中の語、または */
 	/* 連体詞形態指示詞以外に修飾されていない語 */
 	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
-	    (check_feature((sp->tag_data + i)->f, "NE") ||
+	    (check_feature((sp->tag_data + i)->f, "NE") ||  
 	     check_feature((sp->tag_data + i)->f, "NE内") || /* DATA、LOCATIONなど一部 */
 	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
@@ -555,14 +563,13 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	    }
 	    
 	    mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
-	    if (/* 名詞性接尾辞が付いた固有表現以外の語はまず接尾辞も含めたものを調べる */
-		!((ne = check_feature((sp->tag_data + i)->f, "NE"))) &&
-		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
-		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2, NULL) ||
-		/* 一般の場合 */
-		search_antecedent(sp, i, anaphor+11, NULL, ne)) {
-		    continue;
-	    }
+	    /* 名詞性接尾辞が付いた固有表現以外の語はまず接尾辞も含めたものを調べる */
+	    if (!((ne = check_feature((sp->tag_data + i)->f, "NE"))) &&
+		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5)
+		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2, NULL);
+	    
+	    /* 一般の場合 */
+	    search_antecedent(sp, i, anaphor+11, NULL, ne);
 	}
     }
 }
