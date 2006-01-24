@@ -1,5 +1,14 @@
 2006-01-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* dict/gcf/scase.dat:
+	sorted to make db in cdb format
+
+	* svm_light/Makefile.am:
+	small fix for packaging
+
+	* system/dpnd_analysis.c, system/case_analysis.c:
+	確率的格解析の微修正
+
 	* system/case_analysis.c, system/context.c, system/dpnd_analysis.c, system/extern.h:
 	直前格のマッチスコアをfeatureに出力する関数の追加
 
