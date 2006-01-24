@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = svm.c svm_common.h
+EXTRA_DIST = svm.c svm.h
 
 if HAVE_SVMLIGHT
 noinst_LTLIBRARIES = libsvm.la
