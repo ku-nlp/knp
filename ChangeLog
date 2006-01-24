@@ -1,3 +1,9 @@
+2006-01-24  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_ne.rule
+	「対ロシア」「訪日」などがあるため、普通名詞+NEであっても
+	普通名詞が一文字の場合は文節として独立させないようにルールを修正
+
 2006-01-23  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_ne.rule

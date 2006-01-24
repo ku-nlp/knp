@@ -20,7 +20,10 @@
 ( ( ?* ) ( [* * * * * ((NE:PERSON:middle)(NE:PERSON:tail))] ) ( ?* ) ^文節始 ^タグ単位始 )
 
 ;;; 普通名詞＋組織、人名、場所、人工物の場合別の文節、タグにする
-( ( ?* [名詞 普通名詞] ) ( [* * * * * ((NE:ORGANIZATION:head)(NE:ORGANIZATION:single)(NE:PERSON:head)(NE:PERSON:single)(NE:LOCATION:head)(NE:LOCATION:single)(NE:ARTIFACT:head)(NE:ARTIFACT:single))] ) ( ?* ) 文節始 タグ単位始)
+;;; ただし「訪米」「対ロシア」「駐日」「在日」などがあるので一文字限定
+( ( ?* [名詞 普通名詞 * * * ((^&一文字))] ) ( [* * * * * ((NE:ORGANIZATION:head)(NE:ORGANIZATION:single)(NE:PERSON:head)(NE:PERSON:single)(NE:LOCATION:head)(NE:LOCATION:single)(NE:ARTIFACT:head)(NE:ARTIFACT:single))] ) ( ?* ) 文節始 タグ単位始)
+;;; 「美食の国フランス」などのため一文字でもノ格で修飾されている場合は可
+( ( ?* [助詞 * * * の] [名詞 普通名詞] ) ( [* * * * * ((NE:ORGANIZATION:head)(NE:ORGANIZATION:single)(NE:PERSON:head)(NE:PERSON:single)(NE:LOCATION:head)(NE:LOCATION:single)(NE:ARTIFACT:head)(NE:ARTIFACT:single))] ) ( ?* ) 文節始 タグ単位始)
 
 ;;; 組織名と判断された動詞は組織名に変更
 ( ( ?* ) ( [^名詞 * * * * ((NE:ORGANIZATION:single))] ) ( ?* ) &品詞変更:名詞:組織名 )
