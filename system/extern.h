@@ -143,6 +143,7 @@ extern void InitCPMcache();
 extern void ClearCPMcache();
 extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp);

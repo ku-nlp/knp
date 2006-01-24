@@ -536,8 +536,11 @@ int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
     /* 直前格要素を走査 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->elem_b_ptr[i] == NULL) {
+	    ;
+	}
 	/* 複合名詞の一部: 直前としない */
-	if (cpm_ptr->elem_b_ptr[i]->inum > 0) {
+	else if (cpm_ptr->elem_b_ptr[i]->inum > 0) {
 	    return -1;
 	}
 	/* 「〜を〜に」 */
@@ -1333,6 +1336,33 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 			cpm_ptr->cmm[0].result_lists_p[0].score[num]);
 	    }
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	}
+    }
+}
+
+/*==================================================================*/
+void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    /* 用言について、直前格要素のマッチスコアをfeatureに */
+
+    int num, pos, closest;
+    char feature_buffer[DATA_LEN];
+
+    if (!check_feature(cpm_ptr->pred_b_ptr->f, "用言")) {
+	return;
+    }
+
+    if ((closest = get_closest_case_component(sp, cpm_ptr)) >= 0 && 
+	cpm_ptr->elem_b_ptr[closest]->num + 1 == cpm_ptr->pred_b_ptr->num) {
+	num = cpm_ptr->cmm[0].result_lists_d[0].flag[closest];
+	if (num != NIL_ASSIGNED) {
+	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
+	    if (pos != MATCH_SUBJECT) {
+		sprintf(feature_buffer, "直前格マッチ:%d", 
+			(int)cpm_ptr->cmm[0].result_lists_p[0].score[num]);
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	    }
 	}
     }
 }

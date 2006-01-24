@@ -5398,6 +5398,9 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		/* マッチした用例をfeatureに出力 */
 		record_match_ex(sp, cpm_ptr);
 
+		/* 直前格のマッチスコアをfeatureに出力 *
+		   record_closest_cc_match(sp, cpm_ptr); */
+
 		/* 省略解析の結果を参照回数DBに登録 */
 		RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
 

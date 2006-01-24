@@ -913,7 +913,11 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 			    specify_sm_from_cf(sp, &(sp->Best_mgr->cpm[i]));
 			}
 
-			/* record_match_ex(sp, &(sp->Best_mgr->cpm[i])); 類似度最大マッチの用例を記録 */
+			/* マッチした用例をfeatureに出力 *
+			   record_match_ex(sp, &(sp->Best_mgr->cpm[i])); */
+
+			/* 直前格のマッチスコアをfeatureに出力 *
+			   record_closest_cc_match(sp, &(sp->Best_mgr->cpm[i])); */
 
 			/* 格解析の結果を featureへ */
 			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
