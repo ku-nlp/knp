@@ -4,7 +4,10 @@ PHRASE2RULE = ./phrase2rule.pl
 RULE2DATA = ./rule2data.pl
 
 ruledir = $(pkgdatadir)/rule
-dist_rule_DATA = bnst_type.phrase bnst_basic.rule bnst_etc.rule bnst_after_dpnd.rule bnst_type.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule case_analysis.rule bnst_basic.data bnst_etc.data bnst_after_dpnd.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data case_analysis.data rule2data.pl phrase2rule.pl
+
+orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule bnst_after_dpnd.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule case_analysis.rule
+generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data bnst_after_dpnd.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data case_analysis.data
+dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRASE2RULE)
 
 .phrase.rule:
 	if [ -f $@ ]; then \
@@ -41,7 +44,7 @@ CLEANFILES = bnst_type.rule.old
 rulepack: $(dist_rule_DATA)
 	if [ ! -d rule ]; then \
 	    mkdir rule; \
-	    cp -p $(dist_rule_DATA) rule; \
+	    cp -p $(generated_rule_files) rule; \
 	    $(AMTAR) chof - rule | GZIP=$(GZIP_ENV) gzip -c > $(PACKAGE)-rule-`date +"%Y%m%d"`.tar.gz; \
 	    rm -rf rule; \
 	fi
