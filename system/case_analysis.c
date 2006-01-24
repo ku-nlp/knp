@@ -756,6 +756,7 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
 
     /* cache */
     if (OptAnalysis == OPT_CASE && 
+	!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	(cache_ptr = CheckCPM(cpm_ptr))) {
 	copy_cpm(cpm_ptr, cache_ptr, 0);
 	return cpm_ptr->score;
@@ -767,7 +768,8 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
     find_best_cf(sp, cpm_ptr, closest, 1);
 
-    if (OptAnalysis == OPT_CASE) {
+    if (OptAnalysis == OPT_CASE && 
+	!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {
 	RegisterCPM(cpm_ptr);
     }
 
