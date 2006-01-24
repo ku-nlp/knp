@@ -1,5 +1,8 @@
 2006-01-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
+	* system/case_analysis.c, system/context.c, system/dpnd_analysis.c, system/extern.h:
+	直前格のマッチスコアをfeatureに出力する関数の追加
+
 	* rule/Makefile.am:
 	コンパイル済みルールファイルのパッケージを作るtargetを修正
 
