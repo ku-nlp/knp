@@ -1160,14 +1160,8 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     else if ((vtype = check_feature(t_ptr->f, "用言"))) {
 	vtype += 5;
     }
-    else if ((vtype = check_feature(t_ptr->f, "サ変"))) {
-	vtype = "動";
-    }
-    else if ((vtype = check_feature(t_ptr->f, "名詞的形容詞語幹"))) {
-	vtype = "形";
-    }
-    else if ((vtype = check_feature(t_ptr->f, "準用言"))) {
-	;
+    else if ((vtype = check_feature(t_ptr->f, "非用言格解析"))) {
+	vtype += 13;
     }
 
     for (cp = pre_pos = address_str; ; cp++) {

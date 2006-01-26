@@ -371,11 +371,9 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    cpm_ptr->cf.type_flag = 1;
 	}
     }
-    else if (check_feature(b_ptr->f, "サ変")) {
-	strcpy(cpm_ptr->cf.pred_type, "動");
-    }
-    else if (check_feature(b_ptr->f, "名詞的形容詞語幹")) {
-	strcpy(cpm_ptr->cf.pred_type, "形");
+    else if ((vtype = check_feature(b_ptr->f, "非用言格解析"))) {
+	vtype += 13;
+	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
     else if (check_feature(b_ptr->f, "準用言")) {
 	strcpy(cpm_ptr->cf.pred_type, "準");
