@@ -1,3 +1,11 @@
+2006-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/caes_data.c, system/case_ipal.c, rule/context.rule, rule/case_analysis.rule:
+	「お礼の言いようもありません」の「言う」を格解析するように修正
+
+	* rule/bnst_basic.rule:
+	「ありません」の部分に<機能的用言>をマーク
+
 2006-01-24  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* dict/gcf/scase.dat:
