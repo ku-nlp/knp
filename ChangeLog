@@ -1,3 +1,18 @@
+2006-01-30  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/context.rule, rule/mrph_basic.rule, rule/mrph_ne.rule 
+	連語となる人名末尾のruleを追加
+	固有表現抽出結果からタグ区切り、文節区切りを修正するルールを追加
+
+	* configfile.c,
+	bug fix.
+
+	* system/context.c, system/corefer.c, system/extern.h, system/main.c 
+	橋渡し指示解析の結果を使用した直接照応解析を追加
+	直接照応解析のオプションを追加
+	直接照応解析において照応詞候補とする対象を変更
+	直接照応解析で同一性が認定された語にCOREFER_IDを付与するように変更
+
 2006-01-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/caes_data.c, system/case_ipal.c, rule/context.rule, rule/case_analysis.rule:
