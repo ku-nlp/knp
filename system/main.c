@@ -35,6 +35,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 char		**Options;
 int 		OptAnalysis;
 int		OptEllipsis;
+int		OptCorefer;
 int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
@@ -123,6 +124,7 @@ extern int	EX_match_subject;
 
     OptAnalysis = OPT_DPND;
     OptEllipsis = 0;
+    OptCorefer = 0;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
@@ -288,6 +290,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
+	else if (str_eq(argv[0], "-ne-delete")) { /* 構文解析に用いた後、消去 */
+	    OptNE = -1;
+	}
 	else if (str_eq(argv[0], "-ne2")) { /* 格解析結果を用いる場合 */
 	    OptNE = 2;
 	}
@@ -324,6 +329,19 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-corefer")) {
 	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 1;
+	}
+	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
+	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 2;
+	}
+	else if (str_eq(argv[0], "-corefer3")) { /* 係り受け判定のオプション */
+	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 3;
+	}
+	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
+	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 4;
 	}
 	else if (str_eq(argv[0], "-relation-noun-best")) {
 	    OptEllipsis |= OPT_REL_NOUN;

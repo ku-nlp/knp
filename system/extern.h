@@ -38,6 +38,7 @@ extern int 		Mask_matrix[][BNST_MAX];
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptEllipsis;
+extern int		OptCorefer;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;

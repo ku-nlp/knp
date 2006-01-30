@@ -5437,6 +5437,10 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	}
 	free(Bcheck);
     }
+
+    /* 共参照解析(橋渡し指示解析の結果を使用) */
+    if (OptEllipsis & OPT_COREFER) corefer_analysis_after_br(sp);
+
     clear_cf(0);
 }
 
