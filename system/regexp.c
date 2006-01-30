@@ -16,6 +16,8 @@
 #define MRPH_KEI	4
 #define MRPH_GOI	5
 
+void *matched_ptr; /* マッチした形態素or文節のポインタの記憶 */
+
 const REGEXPMRPH RegexpMrphInitValue = { 
     MAT_FLG, (char) NULL, 
     /* Hinshi */
@@ -604,6 +606,8 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     int match_length, match_rest;
 
+    matched_ptr = NULL;	/* マッチした形態素or文節のポインタの記憶の初期化 */
+
     /* まず，pre_patternを調べる */
 
     if ((r_ptr->pre_pattern == NULL &&	/* 違い */
@@ -802,6 +806,8 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     int match_length, match_rest;
 
+    matched_ptr = NULL;	/* マッチした形態素or文節のポインタの記憶の初期化 */
+
     /* まず，pre_patternを調べる */
 
     if ((r_ptr->pre_pattern == NULL &&	/* 違い */
@@ -957,6 +963,8 @@ const REGEXPBNST RegexpBnstInitValue = {
     */
 
     int match_length, match_rest;
+
+    matched_ptr = NULL;	/* マッチした形態素or文節のポインタの記憶の初期化 */
 
     /* まず，pre_patternを調べる */
 

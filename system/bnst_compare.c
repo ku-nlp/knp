@@ -232,6 +232,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 {
     int		i, j, part_mt_point, mt_point, point = 0;
     int		flag1, flag2, content_word_match;
+    char	*counter1, *counter2;
     BNST_DATA 	*ptr1, *ptr2;
 
     ptr1 = &(sp->bnst_data[pre]);
@@ -338,16 +339,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    }
 	    else if (flag1 == 3 && flag2 == 3) {
 		point += 2;
-		for (i = 0; i < ptr1->mrph_num; i++) 
-		    for (j = 0; j < ptr2->mrph_num; j++) 
-			if (str_eq((ptr1->mrph_ptr + i)->Goi, 
-				   (ptr2->mrph_ptr + j)->Goi) &&
-			    check_feature((ptr1->mrph_ptr + i)->f, "カウンタ") &&
-			    check_feature((ptr2->mrph_ptr + j)->f, "カウンタ")) {
-			    point += 5;
-			    goto Counter_check;
-			}
-	      Counter_check:
+
+		counter1 = check_feature(ptr1->f, "カウンタ");
+		counter2 = check_feature(ptr2->f, "カウンタ");
+		if ((!counter1 && !counter2) ||
+		    !counter1 ||
+		    (counter1 && counter2 && !strcmp(counter1, counter2))) {
+		    point += 5;
+		}
 		content_word_match = 0;
 	    }
 	    else if (flag1 == 4 && flag2 == 4) {

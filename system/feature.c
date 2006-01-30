@@ -355,6 +355,7 @@
 
     int i;
     char *cp;
+    char buffer[256];
     FEATURE **fpp, *next;
 
     while (*fpp2) {
@@ -409,18 +410,11 @@
 		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp);
 		}
 	    }
-	    else if (!strncmp((*fpp2)->cp, "&≈¡»¬:", strlen("&≈¡»¬:"))) {
-		int dir;
-		char trans_feature[DATA_LEN];
-		sscanf((*fpp2)->cp, "&≈¡»¬:%d:%s", &dir, trans_feature);
-
-
-		cp = check_feature(*fpp1, trans_feature);
-
-
-		if (cp) {
-		    assign_cfeature(&((((BNST_DATA *)ptr)+dir)->f), cp);
-		}
+	    else if (!strncmp((*fpp2)->cp, "&µ≠≤±∏Ï◊√…’Õø:", strlen("&µ≠≤±∏Ï◊√…’Õø:"))) {
+		sprintf(buffer, "%s:%s", 
+			(*fpp2)->cp + strlen("&µ≠≤±∏Ï◊√…’Õø:"), 
+			((MRPH_DATA *)matched_ptr)->Goi);
+		assign_cfeature(&(((BNST_DATA *)ptr)->f), buffer);
 	    }
 	} else {			/* ƒ…≤√§ŒæÏπÁ */
 	    assign_cfeature(fpp1, (*fpp2)->cp);	
@@ -1064,6 +1058,13 @@
 	else {
 	    return FALSE;
 	}
+    }
+
+    /* &µ≠≤± : ∑¡¬÷¡«§ﬁ§ø§œ ∏¿·§Œ•›•§•Û•ø§Úµ≠≤± */
+
+    else if (!strcmp(rule, "&µ≠≤±")) {
+	matched_ptr = ptr2;
+	return TRUE;
     }
 
     else {

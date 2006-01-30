@@ -113,6 +113,8 @@ extern float	SVM_FREQ_SD_NO;
 extern float	SVM_R_NUM_S_SD;
 extern float	SVM_R_NUM_E_SD;
 
+extern void *matched_ptr;
+
 /* 関数プロトタイプ */
 
 /* bnst_compare.c */
