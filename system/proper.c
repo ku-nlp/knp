@@ -26,9 +26,9 @@ char *DBforNE;
 char TagPosition[NE_MODEL_NUMBER][TAG_POSITION_MAX];
 char *Tag_name[] = {
     "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
-    "DATE", "TIME", "MONEY", "PERCENT", "OTHER"};
+    "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "\0"};
 char *Position_name[] = {
-    "head", "middle", "tail", "single"};
+    "head", "middle", "tail", "single", "\0"};
 struct NE_MANAGER {
     char feature[FEATIRE_MAX];          /* 素性 */
     int notHEAD;                         /* head, singleにはならない場合1 */
@@ -129,7 +129,7 @@ char *ne_code_to_tagposition(int num)
 {
     int i;
     char *Chara_name[] = {
-	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字"};
+	"漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字", "\0"};
 
     if (Goi && !strcmp(Goi, "・")) return 5; /* 記号 */
     for (i = 0; *Chara_name[i]; i++)
@@ -256,7 +256,7 @@ char *ne_code_to_tagposition(int num)
 {
     int i, j;
     char *ret;
-    char *feature_name[] = {"人名末尾", "組織名末尾"};
+    char *feature_name[] = {"人名末尾", "組織名末尾", "\0"};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
     ret[0] = '\0'; /* 再帰的に代入するため */

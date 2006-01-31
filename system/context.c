@@ -2729,8 +2729,10 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* 連続するタグの場合はボーナス */
-	if (ef->c_dist_bnst == 1 && !check_feature(em_ptr->f, "文頭") &&
+	/* 直前がノ格の場合、係り受けに曖昧性があるため */
+	if (ef->c_dist_bnst == 1 &&
+	    check_feature(bp->f, "係:ノ格") &&
+	    bp->num < cpm_ptr->pred_b_ptr->num &&
 	    ef->similarity >= AntecedentDecideThresholdForNounBonus) {
 	    score = ef->similarity + 
 		AntecedentDecideThresholdForNoun -
@@ -2739,7 +2741,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
 	else if (ef->similarity >= AntecedentDecideThresholdForNoun) {
 	    /* 頻度を考慮や主題表現などを考慮(暫定的) */
-/*	    score = ef->similarity; */
+            /* score = ef->similarity; */
  	    score = ef->similarity + 
 		(ef->similarity > 1 ? 0.05 * ef->frequency / (ef->frequency + 100) : 0) +
 		0.05 * ef->c_topic_flag +
@@ -2919,6 +2921,7 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
     if (s == cs && /* 対象文 */
 	((bp->num >= cpm_ptr->pred_b_ptr->num && /* 用言より後は許さない */
 	  (cpm_ptr->cf.type == CF_PRED || 
+	   bp->num == cpm_ptr->pred_b_ptr->num || /* 自分自身はダメ */
 	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
 	 (!check_feature(bp->f, "係:連用") && 
 	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
@@ -4556,7 +4559,8 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 			em_ptr->score += EX_match_subject;
 		    }
 		    else {
-			em_ptr->score += maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore * 7));
+			em_ptr->score += maxscore * 11;
+			    /* maxscore > 1.0 ? EX_match_exact : *(EX_match_score+(int)(maxscore * 7)); */
 		    }
 		}
 	    }
@@ -5281,7 +5285,9 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    /* 共参照解析結果のある語、照応詞候補でない語は解析しない */
 	    if (cpm_ptr->cf.type == CF_NOUN &&
 		(check_feature(cpm_ptr->pred_b_ptr->f, "共参照") ||
-		 !check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補"))) {
+		 !check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補")||
+		 check_feature(cpm_ptr->pred_b_ptr->f, "一人称"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
 		continue;
 	    }
 
