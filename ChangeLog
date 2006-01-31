@@ -1,3 +1,12 @@
+2006-01-31  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/proper.c
+	segmentation faultするバグを修正
+
+	* system/context.c
+	橋渡し指示解析の際、自分自身を先行詞としないように修正
+	橋渡し指示解析の際、格スロット間の類似度を丸めないように変更
+
 2006-01-30  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/context.rule, rule/mrph_basic.rule, rule/mrph_ne.rule 
