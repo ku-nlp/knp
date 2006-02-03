@@ -31,7 +31,8 @@ char *ETAG_name[] = {
 float	AntecedentDecideThresholdPredGeneral = 0.60; /* 学習時は 0.01? */
 float	AntecedentDecideThresholdForGa = 0.60;
 float	AntecedentDecideThresholdForNoun = 1.00;
-float	AntecedentDecideThresholdForNounBonus = 0.60;
+float	AntecedentDecideThresholdForNounBonus1 = 0.50;
+float	AntecedentDecideThresholdForNounBonus2 = 0.70;
 float	AntecedentDecideThresholdForNounSM = 0.80;
 float	AntecedentDecideThresholdForNi = 0.90;
 
@@ -2213,7 +2214,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     }
     else {
 	if ((cf_ptr->type == CF_PRED && score > AntecedentDecideThresholdPredGeneral) || 
-	    (cf_ptr->type == CF_NOUN && score >= AntecedentDecideThresholdForNounBonus)) {
+	    (cf_ptr->type == CF_NOUN && score >= AntecedentDecideThresholdForNounBonus1)) {
 	    return 1;
 	}
     }
@@ -2695,6 +2696,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 {
     E_FEATURES *ef;
     E_SVM_FEATURES *esf;
+    TAG_DATA *tmp_bp;
     char *ecp, feature_buffer[DATA_LEN];
     float score;
 
@@ -2729,29 +2731,43 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
+
 	/* 直前がノ格の場合、係り受けに曖昧性があるため */
 	if (ef->c_dist_bnst == 1 &&
 	    check_feature(bp->f, "係:ノ格") &&
-	    bp->num < cpm_ptr->pred_b_ptr->num &&
-	    ef->similarity >= AntecedentDecideThresholdForNounBonus) {
+	    ef->similarity >= AntecedentDecideThresholdForNounBonus1) {
 	    score = ef->similarity + 
 		AntecedentDecideThresholdForNoun -
-		AntecedentDecideThresholdForNounBonus;
+		AntecedentDecideThresholdForNounBonus1;
+	}
+	/* 直前が「ハ」「デ」のときも少しゆるめに */
+	else if (ef->c_dist_bnst == 1 && 
+		 (check_feature(bp->f, "ハ") || check_feature(bp->f, "デ")) &&
+ 		 !check_feature(cpm_ptr->pred_b_ptr->f, "括弧始") &&
+		 ef->similarity >= AntecedentDecideThresholdForNounBonus2) {
+	    score = ef->similarity + 
+		AntecedentDecideThresholdForNoun -
+		AntecedentDecideThresholdForNounBonus2;
+	}
+	/* 直後は禁止 */
+	else if (ef->c_dist_bnst == -1) {
+	    score = -1;
 	}
 	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
 	else if (ef->similarity >= AntecedentDecideThresholdForNoun) {
 	    /* 頻度を考慮や主題表現などを考慮(暫定的) */
-            /* score = ef->similarity; */
  	    score = ef->similarity + 
+		/* 頻度の多い用例にマッチしたものを優先) */
 		(ef->similarity > 1 ? 0.05 * ef->frequency / (ef->frequency + 100) : 0) +
-		0.05 * ef->c_topic_flag +
+		(vs - cs) * 0.01 + /* 近い文を優先 */
+		(check_feature(bp->f, "ハ") ? 0.05 : 0) + /* 「ハ」「デハ」を優先 */
 		0.02 * ef->c_no_topic_flag;
-	    if (ef->c_dist_bnst < 0) score -= 0.05;
+	    /* 連体修飾先に必須要素が出現する場合が多い */
+	    if (ef->c_dist_bnst < 0 && ef->c_dist_bnst > -5) score += 0.12;
 	}
 	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
 	    score = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
 	    ef->pos = MATCH_SUBJECT;
-	    if (ef->c_dist_bnst < 0) score -= 0.05;
 	}
 	else {
 	    score = -1;
@@ -4269,8 +4285,12 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
     ExtraCheck = 0;
 
-    /* 共参照リンクを辿ってタグつけ */
-    /* if ((ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+    /* 共参照リンクを辿ってタグつけ
+       ただし名詞に限定し(接尾辞除く)ここでは同じ表記の語を辿るだけ
+       格解析の結果適当な格が埋まらなかった場合と
+       共参照解析結果がない場合のみ実行される */
+    if (cpm_ptr->pred_b_ptr->head_ptr->Hinshi == 6 &&
+	(ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 			      cpm_ptr->pred_b_ptr->voice, 
 			      cmm_ptr->cf_ptr->cf_address, 
 			      cf_ptr->pp[n][0], 
@@ -4282,7 +4302,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    maxscore = 1.0;
 	    goto EvalAntecedentNoun;
 	}
-    } */
+    }
 
     /* best解を探す場合 */
     if (OptDiscFlag & OPT_DISC_BEST) {

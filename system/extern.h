@@ -42,6 +42,7 @@ extern int		OptCorefer;
 extern int 		OptInput;
 extern int 		OptExpress;
 extern int 		OptDisplay;
+extern int 		OptDisplayNE;
 extern int 		OptExpandP;
 extern int		OptCheck;
 extern int		OptUseScase;

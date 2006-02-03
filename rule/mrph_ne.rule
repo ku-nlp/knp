@@ -33,4 +33,3 @@
 
 ;;; 固有表現である複合名詞はひとつの文節とする
 ( ( ?* [* * * * * ((名詞相当語))] ) ( [* * * * * ((NE:ORGANIZATION:middle)(NE:ORGANIZATION:tail)(NE:ARTIFACT:middle)(NE:ARTIFACT:tail))] ) ( ?* ) ^文節始 )
-

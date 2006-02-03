@@ -404,12 +404,16 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		}	
 		if (!strncmp(word, "\0", 1)) continue;
 		
-		/* fprintf(stderr, "%s %s ok?\n", word, anaphor); */
-
 		if (compare_strings(word, anaphor, ant_ne, ne) ||
 		    compare_strings(word2, anaphor, ant_ne, ne) ||
+		    /* 人称名詞の場合の特例 */
 		    (check_feature((sp->tag_data + i)->f, "人称代名詞") &&
-		     check_feature(tag_ptr->f, "NE:PERSON"))) {
+		     check_feature(tag_ptr->f, "NE:PERSON")) ||
+		    /* 自称名詞の場合の特例 */
+		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "解析格-ガ") &&
+		     check_feature((sp->tag_data + i)->f, "Ｔ自称名詞") &&
+		     sm_match_check(sm2code("主体"), tag_ptr->SM_code, SM_NO_EXPAND_NE)))
+		    {
 		    
 		    /* 「・」より前を含めた場合のみ同義表現があった場合 */
 		    if (!compare_strings(word, anaphor, ant_ne, ne) &&
@@ -671,6 +675,8 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 
 	/* 照応詞候補である場合以外は先行詞候補としない */
 	if (!check_feature((sp->tag_data + i)->f, "照応詞候補")) continue;
+	/* 名詞に限定(接尾辞は対象外) */
+	if ((sp->tag_data + i)->head_ptr->Hinshi != 6) continue;
 
 	/* 共参照タグがなく、格解析結果がある */
 	sprintf(buf, "格解析結果:%s:名1", (sp->tag_data + i)->head_ptr->Goi2);

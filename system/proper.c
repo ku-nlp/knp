@@ -344,7 +344,7 @@ char *ne_code_to_tagposition(int num)
     int i, j;
     
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (OptDisplay == OPT_DEBUG)
+	if (OptDisplayNE == OPT_DEBUG)
 	    fprintf(stderr, "%d %s\t%s\n", i, sp->mrph_data[i].Goi2, NE_mgr[i].feature);
 
 	for (j = 0; j < NE_MODEL_NUMBER; j++) {
@@ -357,7 +357,7 @@ char *ne_code_to_tagposition(int num)
 		NE_mgr[i].SVMscore[j] 
 		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j) * SIGX));
 
-	    if (OptDisplay == OPT_DEBUG) {
+	    if (OptDisplayNE == OPT_DEBUG) {
 		fprintf(stderr, "%2d %f\t", j, NE_mgr[i].SVMscore[j]);
 		if (j % 4 == SINGLE && j  != NE_MODEL_NUMBER - 2) fprintf(stderr, "\n");
 		if (j  == NE_MODEL_NUMBER - 1) fprintf(stderr, "\n\n");
