@@ -453,6 +453,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	     check_feature(ptr2->f, "〜ない"))) { 
 	    point += 2;
 	}
+	if (check_feature(ptr1->f, "タリ") &&
+	    check_feature(ptr2->f, "タリ")) { 
+	    point += 2;
+	}
 
 	/* 追加 */
 
