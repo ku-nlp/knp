@@ -1,3 +1,11 @@
+2006-02-03  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/case_analysis.rule, rule/context.rule, rule/mrph_ne.rule, system/context.c, systemu/corefer.c
+	橋渡し指示に用いるヒューリスティックなルールを変更
+	
+	* system/main.c, proper.c, system/extern.h
+	固有表現認識時にSVMのfeatureを出力するオプション -ne-debugを追加
+
 2006-01-31  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/proper.c
