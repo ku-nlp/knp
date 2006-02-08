@@ -42,6 +42,7 @@ int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 8;
+/*int	NOUN_THRESHOLD = 5; /* 橋渡し指示関係の閾値 */
 int	NOUN_THRESHOLD = 5; /* 橋渡し指示関係の閾値 */
 int	CASE_ASSIGN_THRESHOLD = 0;
 

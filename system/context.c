@@ -2732,6 +2732,13 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 
     if (cpm_ptr->cf.type == CF_NOUN) {
 
+	/* 係り受け関係にある場合 */
+	if (cpm_ptr->pred_b_ptr->num == bp->dpnd_head &&
+	    ef->similarity >= AntecedentDecideThresholdForNounBonus1) {
+	    score = ef->similarity + 
+		AntecedentDecideThresholdForNoun -
+		AntecedentDecideThresholdForNounBonus1;
+	}
 	/* 直前がノ格の場合、係り受けに曖昧性があるため */
 	if (ef->c_dist_bnst == 1 &&
 	    check_feature(bp->f, "係:ノ格") &&
@@ -2749,10 +2756,6 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 		AntecedentDecideThresholdForNoun -
 		AntecedentDecideThresholdForNounBonus2;
 	}
-	/* 直後は禁止 */
-	else if (ef->c_dist_bnst == -1) {
-	    score = -1;
-	}
 	/* 名詞の場合: exact match or (<sm> match and sim > 0.6) */
 	else if (ef->similarity >= AntecedentDecideThresholdForNoun) {
 	    /* 頻度を考慮や主題表現などを考慮(暫定的) */
@@ -2764,6 +2767,12 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 		0.02 * ef->c_no_topic_flag;
 	    /* 連体修飾先に必須要素が出現する場合が多い */
 	    if (ef->c_dist_bnst < 0 && ef->c_dist_bnst > -5) score += 0.12;
+	    /* 連体詞形態指示詞がある場合は前方に出現する可能性が高い */
+	    if (cpm_ptr->pred_b_ptr->child &&
+		cpm_ptr->pred_b_ptr->child[0] &&
+		check_feature(cpm_ptr->pred_b_ptr->child[0]->f, "連体詞形態指示詞") &&
+		ef->c_dist_bnst < 0)
+		score -= 0.1;
 	}
 	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
 	    score = (float)EX_match_subject / 11; /* 同点の候補比較のため一定の点を与える */
@@ -2939,10 +2948,10 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 	  (cpm_ptr->cf.type == CF_PRED || 
 	   bp->num == cpm_ptr->pred_b_ptr->num || /* 自分自身はダメ */
 	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* 名詞: 親が同じとき以外はだめ */
-	 (!check_feature(bp->f, "係:連用") && 
-	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可) */
+	 (!flag && !check_feature(bp->f, "係:連用") && 
+	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* 用言に直接係らない (連用は可、名詞も可) */
 	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* 用言が対象に係らない */
-	 CheckCaseComponent(cpm_ptr, bp))) { /* 元用言がその文節を格要素としてもたない */
+	 !flag && CheckCaseComponent(cpm_ptr, bp))) { /* 元用言がその文節を格要素としてもたない */
 	return FALSE;
     }
 

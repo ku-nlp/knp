@@ -31,7 +31,8 @@ char *Position_name[] = {
     "head", "middle", "tail", "single", "\0"};
 struct NE_MANAGER {
     char feature[FEATIRE_MAX];          /* 素性 */
-    int notHEAD;                         /* head, singleにはならない場合1 */
+    int notHEAD;                        /* head, singleにはならない場合1 */
+    int notOTHER;                        /* OTHERにはならない場合1 */
     int NEresult;                       /* NEの解析結果 */
     double SVMscore[NE_MODEL_NUMBER];   /* 各タグ・ポジションとなる確率 */
     double max[NE_MODEL_NUMBER];        /* そこまでの最大スコア */
@@ -142,28 +143,30 @@ char *ne_code_to_tagposition(int num)
 	     char *get_pos(MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, flag;
     char *ret, pos[SMALL_DATA_LEN];
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
     ret[0] = '\0'; /* 再帰的に代入するため */
+    flag = 0;
 
-    if (!check_feature(mrph_data->f, "品曖")) {
-	if (mrph_data->Bunrui)
-	    sprintf(ret, "%d%d%d10:1 ", mrph_data->Hinshi, mrph_data->Bunrui, num);
-	else
-	    sprintf(ret, "%d0%d10:1 ", mrph_data->Hinshi, num);
-	return ret;
-    }
-	
     /* 品詞曖昧性のある場合 */
     for (i = 0; i < CLASSIFY_NO + 1; i++) {
 	for (j = 0; j < CLASSIFY_NO + 1; j++) {
 	    if (!Class[i][j].id) break;
 	    sprintf(pos, "品曖-%s", Class[i][j].id);   
-	    if (check_feature(mrph_data->f, pos))
+	    if (check_feature(mrph_data->f, pos)) {
 		sprintf(ret, "%s%d%d%d10:1 ", ret, i, j, num);
+		flag = 1;
+	    }
 	}
     }
+    if (flag) return ret;
+
+    /* 品詞曖昧性のない場合 */
+    if (mrph_data->Bunrui)
+	sprintf(ret, "%d%d%d10:1 ", mrph_data->Hinshi, mrph_data->Bunrui, num);
+    else
+	sprintf(ret, "%d0%d10:1 ", mrph_data->Hinshi, num);
     return ret;
 }
 
@@ -297,6 +300,11 @@ char *ne_code_to_tagposition(int num)
 	    !check_feature(sp->mrph_data[i].f, "括弧始"))
 	    NE_mgr[i].notHEAD = 1;
 	
+	/* カタカナはOTHERとはなりにくい */
+	NE_mgr[i].notOTHER = 0;
+	if (check_feature(sp->mrph_data[i].f, "カタカナ"))
+ 	    NE_mgr[i].notOTHER = 1;
+
 	for (j = i - SIZE; j <= i + SIZE; j++) {
 	    if (j < 0 || j >= sp->Mrph_num)
 		continue;
@@ -356,6 +364,8 @@ char *ne_code_to_tagposition(int num)
 	    else
 		NE_mgr[i].SVMscore[j] 
 		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j) * SIGX));
+
+	    /* if (NE_mgr[i].notOTHER) NE_mgr[i].SVMscore[32] /= 100;*/
 
 	    if (OptDisplayNE == OPT_DEBUG) {
 		fprintf(stderr, "%2d %f\t", j, NE_mgr[i].SVMscore[j]);
@@ -653,6 +663,38 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
     /* 結果を付与 */
     assign_ne_feature_mrph(sp);      
     assign_ne_feature_tag(sp);      
+}
+
+/*==================================================================*/
+	    void for_ne_analysis(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 格解析結果から、組織と人名、主体というfeatureを付与する */
+    /* ガ、ヲ、ニ格でかつその格フレームに<主体>が与えられている場合 */
+
+    int i, j, num;
+    CF_PRED_MGR *cpm_ptr;
+
+    /* タグを後からチェック */
+    for (j = sp->Tag_num - 1; j > 0 ; j--) {
+	if (!(cpm_ptr = sp->tag_data[j].cpm_ptr)) continue;
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ") ||
+		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ヲ") ||
+		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ニ")) {
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織");
+		}		    
+		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人");
+		}		    
+		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-主体");
+		}
+	    }
+	}
+    }
 }
 
 /*==================================================================*/

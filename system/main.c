@@ -1041,7 +1041,8 @@ PARSED:
 	additional_ne_analysis(sp);
     }
 #endif
-    
+    for_ne_analysis(sp);        
+
     memo_by_program(sp);	/* メモへの書き込み */
 
     return TRUE;
