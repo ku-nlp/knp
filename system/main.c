@@ -57,6 +57,10 @@ int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
 int		OptNE;
+int		OptNEcache;
+int		OptNEend;
+int		OptNEdelete;
+int		OptNEcase;
 int		OptAnaphoraBaseline;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -149,6 +153,10 @@ extern int	EX_match_subject;
     OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
     OptNE = 0;
+    OptNEcache = 0;
+    OptNEend = 0;
+    OptNEdelete = 0;
+    OptNEcase = 0;
     OptAnaphoraBaseline = 0;
 
     /* オプションの保存 */
@@ -293,20 +301,25 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
-	else if (str_eq(argv[0], "-ne-delete")) { /* 構文解析に用いた後、消去 */
-	    OptNE = -1;
+	else if (str_eq(argv[0], "-ne-delete")) { /* 構文解析に用いた後NE解析結果を消去 */
+	    OptNE = 1;
+	    OptNEdelete = 1;
 	}
 	else if (str_eq(argv[0], "-ne2")) { /* 格解析結果を用いる場合 */
 	    OptNE = 2;
 	}
-	else if (str_eq(argv[0], "-ne3")) { /* キャッシュを使用しない */
-	    OptNE = 3;
+	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
+	    OptNE = 1;
+	    OptNEcache = 1;
 	}
-	else if (str_eq(argv[0], "-ne4")) { /* 末尾文字を使用しない */
-	    OptNE = 4;
+	else if (str_eq(argv[0], "-ne-end")) { /* 末尾文字を使用しない */
+	    OptNE = 1;
+	    OptNEend = 1;
 	}
-	else if (str_eq(argv[0], "-ne5")) { /* キャッシュ、末尾文字を使用しない */
-	    OptNE = 5;
+	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
+	    OptNE = 1;
+	    OptNEdelete = 1;
+	    OptNEcase = 1;
 	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
@@ -1035,13 +1048,30 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
-    /* 格解析結果を用いた補助的な固有表現解析 */
 #ifdef USE_SVM
+    /* 格解析結果を用いた補助的な固有表現解析 */
     if (OptNE == 2) {
 	additional_ne_analysis(sp);
     }
+  
+    /* 固有表現解析結果を削除 */
+    if (OptNEdelete == 1) {
+	for (i = 0; i < sp->Tag_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
+	    delete_cfeature(&((sp->tag_data + i)->f), "NE");
+	    delete_cfeature(&((sp->tag_data + i)->f), "NE内");
+	}
+	for (i = 0; i < sp->Mrph_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
+	    delete_cfeature(&((sp->mrph_data + i)->f), "NE");
+	}
+	for_ne_analysis(sp);            
+    }  
+
+    /* 格解析後に固有表現認識を行う */
+    if (OptNE && OptNEcase) {
+	ne_analysis(sp);
+	assign_ne_feature_tag(sp);
+    }
 #endif
-    for_ne_analysis(sp);        
 
     memo_by_program(sp);	/* メモへの書き込み */
 

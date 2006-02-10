@@ -286,11 +286,43 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
+	     char *get_imi(MRPH_DATA *mrph_data, int num)
+/*==================================================================*/
+{
+    int i, j;
+    char *ret;
+    char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "\0"};
+
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
+    ret[0] = '\0'; /* 再帰的に代入するため */
+
+     /* 文節後方に人名末尾、組織名末尾という語があるか */
+    for (j = 1;; j++) {
+	if (!(mrph_data + j)->f || 
+	    check_feature((mrph_data + j)->f, "文節始") ||
+	    check_feature((mrph_data + j)->f, "記号") ||
+	    check_feature((mrph_data + j)->f, "括弧")) break;
+	for (i = 0; i < 2; i++) {
+	    if (check_feature((mrph_data + j)->f, feature_name[i]))
+		sprintf(ret, "%d%d50:1 ", i + 4, num);
+	}
+    }
+
+    /* 人名末尾、組織名末尾であるか */
+    for (i = 0; i < 2; i++) {
+	if (check_feature(mrph_data->f, feature_name[i]))
+	    sprintf(ret, "%s%d%d50:1 ", ret, i + 1, num);
+    }
+    
+    return ret;
+}
+
+/*==================================================================*/
 		 void make_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k;
-    char *s[4];
+    char *s[5];
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	
@@ -313,34 +345,19 @@ char *ne_code_to_tagposition(int num)
 	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
 	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白*/
 	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白*/
+	    s[4] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
 	    k = i - j + SIZE + 1;
-	    if (OptNE <= 2) {
-		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s",
+	    if (!OptNEcache && !OptNEend) {
+		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s%s",
 			NE_mgr[i].feature, s[0] ? s[0] : "", k,
 			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
-			s[2], s[3]);
+			OptNEcache ? "" : s[2], OptNEend ? "" : s[3], OptNEcase ? s[4] : "");
 	    } 
-	    else if (OptNE == 3) { /* キャッシュを用いない */
-		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
-			NE_mgr[i].feature, s[0] ? s[0] : "", k,
-			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k, 
-			s[3]);
-	    }
-	    else if (OptNE == 4) { /* 末尾文字を使用しない */
-		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s",
-			NE_mgr[i].feature, s[0] ? s[0] : "", k,
-			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
-			s[2]);
-	    }
-	    else if (OptNE == 5) { /* キャッシュを用いない、末尾文字を使用しない */
-		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 ",
-			NE_mgr[i].feature, s[0] ? s[0] : "", k,
-			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k);
-	    }
 	    free(s[0]);
 	    free(s[1]);
 	    free(s[2]);
 	    free(s[3]);
+	    free(s[4]);
 	}
     }       
 }

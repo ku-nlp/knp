@@ -542,13 +542,6 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     char *anaphor, *cp, *ne;
     MRPH_DATA *mrph_ptr;
 
-    if (OptNE == -1) {
-	for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-	    delete_cfeature(&((sp->tag_data + i)->f), "NE");
-	    delete_cfeature(&((sp->tag_data + i)->f), "NE内");
-	}
-    }
-    
     for (i = 0; i < sp->Tag_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
 
 	/* 共参照解析を行う条件 */

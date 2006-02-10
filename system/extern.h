@@ -61,6 +61,10 @@ extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptAddSvmFeatureReferedNum;
 extern int		OptCopula;
 extern int		OptNE;
+extern int		OptNEcache;
+extern int		OptNEend;
+extern int		OptNEdelete;
+extern int		OptNEcase;
 extern int		OptAnaphoraBaseline;
 extern VerboseType	VerboseLevel;
 
