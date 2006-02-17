@@ -985,6 +985,18 @@
 	return FALSE;
     }
 
+    /* &受側チェック : 受側のFEATUREチェック (文節ルール) */
+    
+    else if (!strncmp(rule, "&受側チェック:", strlen("&受側チェック:"))) {
+	cp = rule + strlen("&受側チェック:");
+	if (((BNST_DATA *)ptr2)->parent &&
+	    check_feature(((BNST_DATA *)ptr2)->parent->f, cp)) {
+	    return TRUE;
+	} else {
+	    return FALSE;
+	}
+    }
+
     /* &自立語一致 : 自立語が同じかどうか */
     
     else if (!strncmp(rule, "&自立語一致", strlen("&自立語一致"))) {
