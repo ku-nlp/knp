@@ -347,12 +347,10 @@ char *ne_code_to_tagposition(int num)
 	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白*/
 	    s[4] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
 	    k = i - j + SIZE + 1;
-	    if (!OptNEcache && !OptNEend) {
-		sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s%s",
-			NE_mgr[i].feature, s[0] ? s[0] : "", k,
-			s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
-			OptNEcache ? "" : s[2], OptNEend ? "" : s[3], OptNEcase ? s[4] : "");
-	    } 
+	    sprintf(NE_mgr[i].feature, "%s%s%d:1 %s%d%d20:1 %s%s%s",
+		    NE_mgr[i].feature, s[0] ? s[0] : "", k,
+		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
+		    OptNEcache ? "" : s[2], OptNEend ? "" : s[3], OptNEcase ? s[4] : "");
 	    free(s[0]);
 	    free(s[1]);
 	    free(s[2]);
