@@ -926,7 +926,8 @@ extern int	EX_match_subject;
     if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
 	assign_anaphor_feature(sp);
 
-    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
+    /*この時点の文節情報を表示 */
+    if (OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
 
     /**************/
@@ -1072,6 +1073,11 @@ PARSED:
 	assign_ne_feature_tag(sp);
     }
 #endif
+
+    /* 文節情報の表示 */
+    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+	check_bnst(sp);
+    }
 
     memo_by_program(sp);	/* メモへの書き込み */
 
