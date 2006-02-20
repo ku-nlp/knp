@@ -60,4 +60,46 @@ noun.db: noun.dat
 		@MAKE_DB_COMMAND@ $@ -append / < noun.idx; \
 	fi
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx
+case.prob:
+	true
+
+case.db: case.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+cfcase.prob:
+	true
+
+cfcase.db: cfcase.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+cfex.logprob:
+	true
+
+cfex.db: cfex.logprob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+cfp.prob:
+	true
+
+cfp.db: cfp.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+renyou.prob:
+	true
+
+renyou.db: renyou.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+prob: case.db cfcase.db cfex.db cfp.db renyou.db
+
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx case.db cfcase.db cfex.db cfp.db renyou.db
