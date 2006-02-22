@@ -1764,18 +1764,17 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return 0;
     }
 
-    if (vtype = check_feature(tp->f, "用言")) {
+    if ((vtype = check_feature(tp->f, "用言"))) {
 	vtype += 5;
     }
-    else if ((vtype = check_feature(tp->f, "サ変"))) {
-	vtype = "動";
-    }
-    else if ((vtype = check_feature(tp->f, "名詞的形容詞語幹"))) {
-	vtype = "形";
+    else if ((vtype = check_feature(tp->f, "非用言格解析"))) {
+	vtype += 13;
     }
     else {
 	return UNKNOWN_CF_SCORE;
     }
+
+    /* 用言表記は格フレームIDから抽出しない */
 
     key = malloc_db_buf(strlen(cfp->cf_id) + strlen(tp->head_ptr->Goi) + 8);
     if ((num = sscanf(cfp->cf_id, "%*[^:]:%*[^:]:%[PC]%*d", voice)) == 1) {
@@ -1812,18 +1811,29 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* 格確率 P(ガ格○|食べる:動2)
        KNP格解析結果から計算 (cfcases.prob) */
 
-    char *key, *value;
+    char *key, *value, *verb;
     double ret;
 
     if (CFCaseExist == FALSE) {
 	return 0;
     }
 
+    /* 用言表記 */
+    verb = strdup(cfp->cf_id);
+    sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
+
     key = malloc_db_buf(strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 
 			strlen(cfp->cf_id) + 2);
 
-    sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), cfp->cf_id);
+    /* 用言表記でやった方がよいみたい */
+    sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), verb); /* cfp->cf_id); */
     value = db_get(cf_case_db, key);
+
+    /* if (!value) { * back-off *
+	sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), verb);
+	value = db_get(cf_case_db, key);
+	} */
+    free(verb);
 
     if (value) {
 	ret = atof(value);
@@ -1873,18 +1883,23 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     sprintf(key, "%d|N:%s", num, verb); /* cfp->cf_id */
     value = db_get(cf_case_db, key);
+
+    /* if (!value) {
+	sprintf(key, "%d|N:%s", num, verb);
+	value = db_get(cf_case_db, key);
+	} */
     free(verb);
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
 	}
 	free(value);
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	}
 	ret = UNKNOWN_CASE_SCORE;
@@ -1904,7 +1919,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     if (value) {
 	ret = exp(-1 * atof(value));
-	if (VerboseLevel >= VERBOSE3) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
 	}
 	free(value);
@@ -1919,13 +1934,12 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-	 double _get_sm_probability(int as1, CASE_FRAME *cfd,
-				    int as2, CASE_FRAME *cfp)
+  double _get_sm_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     int i;
     double ret, max = 0;
-    char *key, *sm_code = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->SM_code;
+    char *key, *sm_code = dp->SM_code;
     char code[SM_CODE_SIZE + 1];
     code[SM_CODE_SIZE] = '\0';
 
@@ -1949,26 +1963,24 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-    double _get_soto_default_probability(int as1, CASE_FRAME *cfd,
-					 int as2, CASE_FRAME *cfp)
+double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     int i;
     double ret, max = 0;
-    char *key, *sm_code = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->SM_code;
+    char *key, *sm_code = dp->SM_code;
     char code[SM_CODE_SIZE + 1];
     code[SM_CODE_SIZE] = '\0';
 
-    if (strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi) > SM_CODE_SIZE) {
-	key = malloc_db_buf(strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi) + 18);
+    if (strlen(dp->head_ptr->Goi) > SM_CODE_SIZE) {
+	key = malloc_db_buf(strlen(dp->head_ptr->Goi) + 18);
     }
     else {
 	key = malloc_db_buf(SM_CODE_SIZE + 18);
     }
 
     /* 表記でsearch */
-    sprintf(key, "%s|DEFAULT,外の関係", 
-	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi);
+    sprintf(key, "%s|DEFAULT,外の関係", dp->head_ptr->Goi);
     if (ret = _get_ex_probability(key)) {
 	return ret;
     }
@@ -1987,8 +1999,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-	 double get_ex_probability(int as1, CASE_FRAME *cfd,
-				   int as2, CASE_FRAME *cfp)
+  double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
+			    int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     /* 用例確率 P(弁当|食べる:動2,ヲ格)
@@ -2001,22 +2013,27 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return 0;
     }
 
+    /* dpの指定がなければ、as1とcfdから作る */
+    if (dp == NULL) {
+	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    }
+
     key = malloc_db_buf(strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 9);
     *key = '\0';
 
-    if (dat_match_sm(as1, cfd, "補文")) {
+    if (check_feature(dp->f, "補文")) {
 	sprintf(key, "<補文>|%s,%s", 
 		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
     }
-    else if (dat_match_sm(as1, cfd, "主体")) {
+    else if (dat_match_sm(as1, cfd, dp, "主体")) {
 	sprintf(key, "<主体>|%s,%s", 
 		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
     }
-    else if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "時間")) {
+    else if (check_feature(dp->f, "時間")) {
 	sprintf(key, "<時間>|%s,%s", 
 		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
     }
-    else if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "数量")) {
+    else if (check_feature(dp->f, "数量")) {
 	sprintf(key, "<数量>|%s,%s", 
 		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
     }
@@ -2027,19 +2044,19 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
     }
 
-    key = malloc_db_buf(strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi) + 
+    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + 
 			strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
-    sprintf(key, "%s|%s,%s", cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
+    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, 
 	    cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
 
     if (ret = _get_ex_probability(key)) {
 	ret = log(ret);
     }
-    else if (ret = _get_sm_probability(as1, cfd, as2, cfp)) { /* 意味素にback-off */
+    else if (ret = _get_sm_probability(dp, as2, cfp)) { /* 意味素にback-off */
 	ret = log(ret);
     }
     else if (MatchPP(cfp->pp[as2][0], "外の関係") && 
-	     (ret = _get_soto_default_probability(as1, cfd, as2, cfp))) {
+	     (ret = _get_soto_default_probability(dp, as2, cfp))) {
 	ret = log(ret);
     }
     else {
@@ -2047,6 +2064,31 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
 
     return ret;
+}
+
+/*==================================================================*/
+    double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
+					int as2, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    int j, count = 1;
+    TAG_DATA *tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    double score;
+
+    /* 自分自身 */
+    score = get_ex_probability(as1, cfd, NULL, as2, cfp);
+
+    /* 自分と並列の要素 */
+    if (tp->para_top_p) {
+	for (j = 1; tp->child[j]; j++) { /* 0は自分と同じ */
+	    if (tp->child[j]->para_type == PARA_NORMAL) {
+		score += get_ex_probability(-1, cfd, tp->child[j], as2, cfp);
+		count++;
+	    }
+	}
+    }
+
+    return score / count;
 }
 
 /*==================================================================*/
@@ -2121,7 +2163,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     key = malloc_db_buf(7);
     sprintf(key, "%d|W:%d", have_topic, topic_score);
     if (value = db_get(case_db, key)) {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (W) %s: P(%d|W:%d) = %s\n", 
 		    g_ptr->head_ptr->Goi, have_topic, 
 		    topic_score, value);
@@ -2243,7 +2285,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 
     if (value && value2 && value3) {
 	ret = atof(value) * atof(value2) * atof(value3);
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
 		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
 		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
@@ -2257,7 +2299,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = 0 (C:%s * P:%s * T:%s)\n", 
 		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
 		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
@@ -2274,12 +2316,58 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 /*==================================================================*/
 {
     int touten_flag, dist, closest_pred_flag = 0;
-    char *g_id, *d_id, *key, *value, *g_level;
+    char *g_pred, *d_pred, *g_id, *d_id, *key, *value, *g_level;
     double ret1 = 0, ret2 = 0, ret3 = 0;
 
     if (RenyouExist == FALSE) {
 	return 0;
     }
+
+    /* EOS -> 文末 */
+    if (gp == NULL) {
+	g_pred = strdup("EOS");
+    }
+    else if (g_cf) {
+	g_pred = strdup(g_cf->cf_id);
+	sscanf(g_cf->cf_id, "%[^0-9]:%*d", g_pred);
+    }
+    else {
+	g_pred = NULL;
+    }
+
+    /* 用言 -> 用言 */
+    if (g_pred && d_cf) {
+	d_pred = strdup(d_cf->cf_id);
+	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
+
+	key = malloc_db_buf(strlen(g_pred) + strlen(d_pred) + 2);
+	sprintf(key, "%s|%s", d_pred, g_pred);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret3 = atof(value);
+	    free(value);
+	}
+
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp ? gp->head_ptr->Goi : "EOS", d_pred, g_pred, ret3);
+	}
+
+	free(g_pred);
+	free(d_pred);
+    }
+    else {
+	ret3 = 1;
+    }
+
+    if (gp == NULL) {
+	if (ret3) {
+	    return log(ret3);
+	}
+	else {
+	    return UNKNOWN_RENYOU_SCORE;
+	}
+    }
+
 
     touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
 
@@ -2297,8 +2385,8 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     value = db_get(case_db, key);
     if (value) {
 	ret1 = atof(value);
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (R1) %s: P(%s|%s) = %lf\n", touten_flag, dist, closest_pred_flag, ret1);
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (R1) %s: P(%d|P連用:%d,%d) = %lf\n", gp->head_ptr->Goi, touten_flag, dist, closest_pred_flag, ret1);
 	}
 	free(value);
     }
@@ -2313,14 +2401,14 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	value = db_get(renyou_db, key);
 	if (value) {
 	    ret2 = atof(value);
-	    if (VerboseLevel >= VERBOSE3) {
-		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret1);
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret2);
 	    }
 	    free(value);
 	}
     }
 
-    /* 格フレームID => 格フレームID */
+    /* 格フレームID => 格フレームID *
     if (0 && g_cf && d_cf) {
 	key = malloc_db_buf(strlen(g_cf->cf_id) + strlen(d_cf->cf_id) + 2);
 	sprintf(key, "%s|%s", d_cf->cf_id, g_cf->cf_id);
@@ -2328,7 +2416,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	if (value) {
 	    ret3 = atof(value);
 	    if (VerboseLevel >= VERBOSE3) {
-		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_cf->cf_id, g_cf->cf_id, ret2);
+		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_cf->cf_id, g_cf->cf_id, ret3);
 	    }
 	    free(value);
 	}
@@ -2336,6 +2424,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     else {
 	ret3 = 1;
     }
+    */
 
     /* レベル => レベル *
     if ((g_level = check_feature(gp->f, "レベル")) == NULL) {
@@ -2369,7 +2458,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num)
 /*==================================================================*/
 {
-    char *id, *key, *value;
+    char *pred, *id, *key, *value;
     double ret1 = 0, ret2 = 0;
 
     if (RenyouExist == FALSE) {
@@ -2384,14 +2473,35 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
 	value = db_get(renyou_db, key);
 	if (value) {
 	    ret1 = atof(value);
-	    if (VerboseLevel >= VERBOSE3) {
+	    if (VerboseLevel >= VERBOSE2) {
 		fprintf(Outfp, ";; (RN) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, id, ret1);
 	    }
 	    free(value);
 	}
     }
 
-    /* 格フレーム */
+    if (cfp) {
+	pred = strdup(cfp->cf_id);
+	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
+	key = malloc_db_buf(strlen(pred) + 6);
+	sprintf(key, "%d|N:%s", num, pred);
+	value = db_get(renyou_db, key);
+	if (value) {
+	    ret2 = atof(value);
+	    free(value);
+	}
+
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (RN) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, pred, ret2);
+	}
+
+	free(pred);
+    }
+    else {
+	ret2 = 1;
+    }
+
+    /* 格フレーム *
     if (0 && cfp) {
 	key = malloc_db_buf(strlen(cfp->cf_id) + 6);
 	sprintf(key, "%d|N:%s", num, cfp->cf_id);
@@ -2407,6 +2517,7 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
     else {
 	ret2 = 1;
     }
+    */
 
     if (ret1 && ret2) {
 	return log(ret1) + log(ret2);

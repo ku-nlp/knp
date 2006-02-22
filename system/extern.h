@@ -181,8 +181,8 @@ extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
 					     int as2, CASE_FRAME *cfp);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
-extern double get_ex_probability(int as1, CASE_FRAME *cfd,
-				 int as2, CASE_FRAME *cfp);
+extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
+					   int as2, CASE_FRAME *cfp);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
@@ -199,7 +199,7 @@ extern int check_case(CASE_FRAME *cf, int c);
 extern int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n);
 extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
-extern int dat_match_sm(int as1, CASE_FRAME *cfd, char *sm);
+extern int dat_match_sm(int as1, CASE_FRAME *cfd, TAG_DATA *tp, char *sm);
 extern int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos);
 extern float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word, 
 				    CASE_FRAME *cfp, int n, int *pos);

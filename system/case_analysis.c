@@ -806,6 +806,15 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	t_mgr->pred_num++;
     }
 
+    /* 文末はEOSからの生成 (どの構造も等しいので、今のところ考慮しない) *
+    if (check_feature(t_ptr->f, "文末") && 
+	t_ptr->para_top_p != TRUE && 
+	t_ptr->cf_num > 0 && 
+	check_feature(t_ptr->f, "用言")) {
+	t_mgr->score += calc_vp_modifying_probability(NULL, NULL, t_ptr, cpm_ptr->cmm[0].cf_ptr);
+    }
+    */
+
     modifying_num = 0;
     for (i = 0; t_ptr->child[i]; i++) {
 	current_pred_num = t_mgr->pred_num;
@@ -813,8 +822,10 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	    return FALSE;
 	}
 
-	if (t_ptr->para_top_p != TRUE && 
+	if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	    t_ptr->para_top_p != TRUE && 
 	    t_ptr->cf_num > 0 && 
+	    check_feature(t_ptr->f, "用言") && 
 	    check_feature(t_ptr->child[i]->f, "係:連用") && 
 	    check_feature(t_ptr->child[i]->f, "用言") && 
 	    !check_feature(t_ptr->child[i]->f, "複合辞")) {
@@ -825,7 +836,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
     }
 
-    if (t_ptr->para_top_p != TRUE && 
+    if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	t_ptr->para_top_p != TRUE && 
 	t_ptr->cf_num > 0 && 
 	check_feature(t_ptr->f, "用言")) {
 	t_mgr->score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, modifying_num);

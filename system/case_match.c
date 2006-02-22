@@ -409,23 +409,27 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-	 int dat_match_sm(int as1, CASE_FRAME *cfd, char *sm)
+  int dat_match_sm(int as1, CASE_FRAME *cfd, TAG_DATA *tp, char *sm)
 /*==================================================================*/
 {
     int expand;
     char *code;
-    TAG_DATA *tp;
 
     if (Thesaurus == USE_BGH) {
 	return 0;
     }
 
-    tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    if (tp == NULL) {
+	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    }
 
     if (!strcmp(sm, "主体")) {
 	if (check_feature(tp->f, "非主体")) {
 	    return 0;
 	}
+	code = tp->SM_code;
+    }
+    else if (!cfd || as1 < 0) {
 	code = tp->SM_code;
     }
     else {
@@ -588,7 +592,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 
 	/* 確率的格解析のとき */
 	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	    *score = get_ex_probability(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_interpret_probability(as1, cfd, as2, cfp);
+	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_interpret_probability(as1, cfd, as2, cfp);
 	    return TRUE;
 	}
 

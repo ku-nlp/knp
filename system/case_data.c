@@ -416,8 +416,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     if ((check_feature(b_ptr->f, "係:連格") && 
 	 (b_ptr->para_type != PARA_NORMAL || 
 	  b_ptr->num == b_ptr->parent->num)) || /* 用言並列なら、「Vした」と<PARA>が同じときのみ */
-	(b_ptr->para_type == PARA_NORMAL && /* 並列の連体修飾 (★weightを考える) */
-	 check_feature(b_ptr->f, "係:連用") && 
+	(b_ptr->para_type == PARA_NORMAL && /* 並列の連体修飾 */
+	 check_feature(b_ptr->f, "係:連用") && /* ★単純な連用形に限定すべき★ */
 	 b_ptr->parent->para_top_p && 
 	 check_feature(b_ptr->parent->child[0]->f, "係:連格")) || 
 	renkaku_exception_p) {
@@ -490,7 +490,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 		_make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
 		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 2; /* ★不正確★ */
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 		cpm_ptr->cf.element_num++;
 	    }
