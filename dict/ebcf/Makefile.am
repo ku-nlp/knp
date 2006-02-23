@@ -12,6 +12,12 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
+PROBCASE_DBS = case.db cfcase.db cfex.db cfp.db renyou.db
+
+if PROB_EXIST
+nodist_dic_DATA += $(PROBCASE_DBS)
+endif
+
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
 IPALV2_FILE = /share/dict/ipal/orig/dousi2/dousi2.txt
 IPALA1_FILE = /share/dict/ipal/orig/keiyou/keiyou1.txt
@@ -100,6 +106,6 @@ renyou.db: renyou.prob
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-prob: case.db cfcase.db cfex.db cfp.db renyou.db
+prob: $(PROBCASE_DBS)
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx case.db cfcase.db cfex.db cfp.db renyou.db
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx $(PROBCASE_DBS)

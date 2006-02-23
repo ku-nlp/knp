@@ -186,10 +186,19 @@ else
 fi
 AC_MSG_RESULT([$cf_noun_exist])
 
+AC_MSG_CHECKING([Probabilities for case analysis])
+if test -f "$packagesrcdir/dict/ebcf/case.prob"; then
+    prob_exist=yes
+else
+    prob_exist=no
+fi
+AC_MSG_RESULT([$prob_exist])
+
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
 AM_CONDITIONAL(NTT_EXIST, test "$ntt_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
 AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
+AM_CONDITIONAL(PROB_EXIST, test "$prob_exist" = yes)
 
 
 AC_SUBST(KNP_LIBS)
