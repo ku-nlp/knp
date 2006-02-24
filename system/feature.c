@@ -942,8 +942,8 @@
     /* &レベル:X : 用言がレベルX以上であるかどうか */
 
     else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
-	return subordinate_level_check(rule + strlen("&レベル:"), 
-				       (BNST_DATA *)ptr2);
+	return subordinate_level_check(rule + strlen("&レベル:"), fd);
+	/* (BNST_DATA *)ptr2); */
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */

@@ -124,10 +124,9 @@ extern void *matched_ptr;
 /* 関数プロトタイプ */
 
 /* bnst_compare.c */
-extern int subordinate_level_check(char *cp, BNST_DATA *ptr2);
-extern int levelcmp(char *cp1, char *cp2);
 extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);
-extern int subordinate_level_forbid(char *cp, BNST_DATA *ptr2);
+extern int subordinate_level_check(char *cp, FEATURE *f);
+extern int levelcmp(char *cp1, char *cp2);
 extern void calc_match_matrix(SENTENCE_DATA *sp);
 
 /* case_analysis.c */

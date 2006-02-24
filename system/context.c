@@ -3544,7 +3544,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 		}
 		/* レベルがBより強い従属節 */
 		if (check_feature(tp2->f, "係:連用") && 
-		    subordinate_level_check("B", (BNST_DATA *)tp2)) {
+		    subordinate_level_check("B", ((BNST_DATA *)tp2)->f)) {
 		    SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					tp2, cf_ptr, n, 
 					dist == 2 ? LOC_S2_SC : dist == 1 ? LOC_S1_SC : LOC_SC);
@@ -3581,7 +3581,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 		/* レベルがBより強い従属節 */
 		if ((ctp == NULL || tp2->num != ctp->num) && /* 対象ではない */
 		    check_feature(tp2->f, "係:連用") && 
-		    subordinate_level_check("B", (BNST_DATA *)tp2)) {
+		    subordinate_level_check("B", ((BNST_DATA *)tp2)->f)) {
 		    mark_all_children(s, tp2, lc, dist == 2 ? LOC_S2_SC : dist == 1 ? LOC_S1_SC : LOC_SC, dist);
 		}
 	    }

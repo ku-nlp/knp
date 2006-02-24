@@ -1091,7 +1091,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		/* 自分に読点がなく、隣の強い用言 (連体以外) を越えているとき */
 		if (!check_feature((sp->bnst_data + i)->f, "読点")) {
 		    if (dpnd.head[i] > i + 1 && 
-			subordinate_level_check("B", sp->bnst_data + i + 1) && 
+			subordinate_level_check("B", (sp->bnst_data + i + 1)->f) && 
 			(cp = (char *)check_feature((sp->bnst_data + i + 1)->f, "係"))) {
 			if (strcmp(cp+3, "連体") && strcmp(cp+3, "連格")) {
 			    distance_cost += STRONG_V_COST;

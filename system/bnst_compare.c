@@ -189,18 +189,18 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 }
 
 /*==================================================================*/
-	int subordinate_level_check(char *cp, BNST_DATA *ptr2)
+	int subordinate_level_check(char *cp, FEATURE *f)
 /*==================================================================*/
 {
     char *level1, *level2;
 
     level1 = cp;
-    level2 = check_feature(ptr2->f, "レベル");
+    level2 = check_feature(f, "レベル");
 
     if (level1 == NULL) return TRUE;		/* なし:何でも -> T */
     else if (level2 == NULL) return FALSE;	/* 何でも:なし -> F */
     else if (levelcmp(level1, level2 + strlen("レベル:")) <= 0)
-	return TRUE;				/* cp <= ptr2 -> T */
+	return TRUE;				/* cp <= f -> T */
     else return FALSE;
 }
 
