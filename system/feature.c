@@ -617,8 +617,8 @@
 {
     /* rule : ルール
        fd : データ側のFEATURE
-       p1 : ルール側の構造体(MRPH_DATA,BNST_DATAなど)
-       p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
+       p1 : 係り受けの場合，係り側の構造体(MRPH_DATA,BNST_DATAなど)
+       p2 : データの構造体(MRPH_DATA,BNST_DATAなど)
     */
 
     int i, code, type, pretype, flag;
@@ -932,33 +932,18 @@
 	}
     }
 
-    /* &レベル : 用言のレベル比較 (係受レベル) */
+    /* &レベル:強 : 用言のレベル比較 (係受レベル) */
 
-    else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
-	if (!strcmp(rule + strlen("&レベル:"), "強")) {
-	    /* 述語間の強弱の比較 */
-	    return subordinate_level_comp((BNST_DATA *)ptr1, 
-					  (BNST_DATA *)ptr2);
-	}
-	else {
-	    /* 述語は係り受け可能か */
-	    return subordinate_level_check(rule + strlen("&レベル:"), 
-					   (BNST_DATA *)ptr2);
-	}
+    else if (!strcmp(rule, "&レベル:強")) {
+	return subordinate_level_comp((BNST_DATA *)ptr1, 
+				      (BNST_DATA *)ptr2);
     }
 
+    /* &レベル:X : 用言がレベルX以上であるかどうか */
 
-    /* &節境界 : 節間の壁チェック */
-
-    else if (!strncmp(rule, "&節境界:", strlen("&節境界:"))) {
-	/* 
-	   1. ルールに書いてあるレベルより強いことをチェック
-	   2. 係り側より受け側のレベルが強いことをチェック
-	*/
-	return (subordinate_level_check(rule + strlen("&節境界:"), 
-					(BNST_DATA *)ptr2) && 
-		subordinate_level_comp((BNST_DATA *)ptr1, 
-				       (BNST_DATA *)ptr2));
+    else if (!strncmp(rule, "&レベル:", strlen("&レベル:"))) {
+	return subordinate_level_check(rule + strlen("&レベル:"), 
+				       (BNST_DATA *)ptr2);
     }
 
     /* &係側 : 係側のFEATUREチェック (係受レベル) */
@@ -1125,7 +1110,7 @@ int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
 {
     /* fr : ルール側のFEATURE_PATTERN,
        fd : データ側のFEATURE
-       p1 : ルール側の構造体(MRPH_DATA,BNST_DATAなど)
+       p1 : 係り受けの場合，係り側の構造体(MRPH_DATA,BNST_DATAなど)
        p2 : データ側の構造体(MRPH_DATA,BNST_DATAなど)
     */
 

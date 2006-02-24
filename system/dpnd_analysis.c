@@ -22,7 +22,7 @@ static int dpndID = 0;
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = DpndRuleArray; j < CurDpndRuleSize; j++, r_ptr++) {
 
-	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, NULL) 
+	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, b_ptr) 
 		== TRUE) {
 		b_ptr->dpnd_rule = r_ptr; 
 		break;

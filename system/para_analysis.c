@@ -312,10 +312,6 @@ void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
 	if (sim_threshold == 100.0) return;
     }
 
-    /* if (feature_pattern_match(&(ptr->f_pattern), 
-       sp->bnst_data[jend_pos].f,
-       sp->bnst_data + key_pos,
-       sp->bnst_data + jend_pos) == FALSE) */
 
     /*		    */
     /* DP MATCHING  */
