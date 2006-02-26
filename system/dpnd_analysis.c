@@ -278,6 +278,74 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
+	     void tag_bnst_postprocess(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* タグ単位・文節を後処理して、機能的なタグ単位をマージ */
+
+    int	i, count = -1, t_table[TAG_MAX], b_table[BNST_MAX];
+    TAG_DATA *t_ptr;
+    BNST_DATA *b_ptr;
+    char *cp;
+
+    /* タグ後処理用ルールの適用 
+       FEATUREの伝搬はこの中で行う */
+    assign_general_feature(sp->tag_data, sp->Tag_num, PostProcessTagRuleType, FALSE);
+
+    /* マージするタグ・文節の処理 */
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (check_feature(t_ptr->f, "Ｔマージ←")) {
+	    t_ptr->num = -1; /* 無効なタグ単位である印をつけておく */
+	    (sp->tag_data + i - 1)->mrph_num += t_ptr->mrph_num;
+	    (sp->tag_data + i - 1)->dpnd_head = t_ptr->dpnd_head;
+	    (sp->tag_data + i - 1)->dpnd_type = t_ptr->dpnd_type;
+
+	    assign_cfeature(&((sp->tag_data + i - 1)->f), "タグ吸収");
+	    delete_cfeature(&(t_ptr->mrph_ptr->f), "文節始");
+	    delete_cfeature(&(t_ptr->mrph_ptr->f), "タグ単位始");
+
+	    if ((t_ptr)->bnum >= 0) { /* 文節区切りでもあるとき */
+		t_ptr->b_ptr->num = -1;
+		(t_ptr->b_ptr - 1)->dpnd_head = t_ptr->b_ptr->dpnd_head;
+		(t_ptr->b_ptr - 1)->dpnd_type = t_ptr->b_ptr->dpnd_type;
+	    }
+	}
+	else {
+	    count++;
+	}
+	t_table[i] = count;
+    }
+
+    count = -1;
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	if (b_ptr->num != -1) {
+	    count++;
+	}
+	b_table[i] = count;
+    }
+
+    /* タグ単位番号の更新 */
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (t_ptr->num != -1) {
+	    t_ptr->num = t_table[i];
+	    if (t_ptr->dpnd_head != -1) {
+		t_ptr->dpnd_head = t_table[t_ptr->dpnd_head];
+	    }
+	}
+    }
+
+    /* 文節番号の更新 */
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	if (b_ptr->num != -1) {
+	    b_ptr->num = b_table[i];
+	    if (b_ptr->dpnd_head != -1) {
+		b_ptr->dpnd_head = b_table[b_ptr->dpnd_head];
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 	       void para_postprocess(SENTENCE_DATA *sp)
 /*==================================================================*/
 {

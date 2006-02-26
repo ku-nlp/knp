@@ -92,11 +92,16 @@
 	     void print_tags(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
+    /* 現在は常に flag == 1 (0は旧形式出力) */
+
     int		i, j;
     MRPH_DATA	*m_ptr;
     TAG_DATA	*t_ptr;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (t_ptr->num == -1) {
+	    continue; /* 後処理でマージされたタグ */
+	}
 	if (flag == 1) {
 	    /* 文節行 */
 	    if (t_ptr->bnum >= 0) {
@@ -1025,6 +1030,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     if (OptExpress == OPT_TAB) {
 	sm2feature(sp);
+	tag_bnst_postprocess(sp); /* とりあえずここで後処理 -> 格解析結果の整合性をとる必要がある */
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {

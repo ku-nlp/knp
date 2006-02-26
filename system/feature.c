@@ -416,6 +416,29 @@
 			((MRPH_DATA *)matched_ptr)->Goi);
 		assign_cfeature(&(((BNST_DATA *)ptr)->f), buffer);
 	    }
+	    /* &伝搬:n:FEATURE : FEATUREの伝搬  */
+	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
+		cp = (*fpp2)->cp + strlen("&伝搬:");
+		sscanf(cp, "%d", &i);
+		cp = strchr(cp, ':');
+		cp++;
+		if ((cp = check_feature(((TAG_DATA *)ptr)->f, cp))) {
+		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp);
+		}
+		if (((TAG_DATA *)ptr)->bnum >= 0) { /* 文節区切りでもあるとき */
+		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, cp))) {
+			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp);
+		    }
+		}
+	    }
+	    /* 形態素付属化 : 属する形態素列をすべて<付属>にする */
+	    else if (!strncmp((*fpp2)->cp, "&形態素付属化", strlen("&形態素付属化"))) {
+		for (i = 0; i < ((TAG_DATA *)ptr)->mrph_num; i++) {
+		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "自立");
+		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "意味有");
+		    assign_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "付属");
+		}
+	    }
 	} else {			/* 追加の場合 */
 	    assign_cfeature(fpp1, (*fpp2)->cp);	
 	}

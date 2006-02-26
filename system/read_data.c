@@ -1265,7 +1265,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     if (flag == MorphRuleType || flag == NeMorphRuleType) {
 	assign_function = assign_mrph_feature;
     }
-    else if (flag == TagRuleType || flag == AfterDpndTagRuleType) {
+    else if (flag == TagRuleType || flag == AfterDpndTagRuleType || flag == PostProcessTagRuleType) {
 	assign_function = assign_tag_feature;
     }
     else if (flag == BnstRuleType || flag == AfterDpndBnstRuleType) {

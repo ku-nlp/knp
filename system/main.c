@@ -645,7 +645,8 @@ extern int	EX_match_subject;
 		 (RULE+i)->type == TagRuleType || 
 		 (RULE+i)->type == BnstRuleType || 
 		 (RULE+i)->type == AfterDpndBnstRuleType || 
-		 (RULE+i)->type == AfterDpndTagRuleType) {
+		 (RULE+i)->type == AfterDpndTagRuleType || 
+		 (RULE+i)->type == PostProcessTagRuleType) {
 	    read_general_rule(RULE+i);
 	}
 	/* 係り受けルール */
