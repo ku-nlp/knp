@@ -1030,7 +1030,9 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     if (OptExpress == OPT_TAB) {
 	sm2feature(sp);
-	tag_bnst_postprocess(sp); /* とりあえずここで後処理 -> 格解析結果の整合性をとる必要がある */
+	if (OptPostProcess) { /* とりあえずここで後処理 -> 格解析結果の整合性をとる必要がある */
+	    tag_bnst_postprocess(sp);
+	}
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {

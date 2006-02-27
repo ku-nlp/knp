@@ -56,6 +56,7 @@ int		OptAddSvmFeatureDiscourseDepth;
 int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
+int		OptPostProcess;
 int		OptNE;
 int		OptNEcache;
 int		OptNEend;
@@ -152,6 +153,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureObjectRecognition = 0;
     OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
+    OptPostProcess = 0;
     OptNE = 0;
     OptNEcache = 0;
     OptNEend = 0;
@@ -580,6 +582,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
+	}
+	else if (str_eq(argv[0], "-postprocess")) {
+	    OptPostProcess = 1;
 	}
 	else if (str_eq(argv[0], "-def-sentence")) {
 	    ;
