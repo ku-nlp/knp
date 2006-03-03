@@ -1,3 +1,13 @@
+2006-03-03  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
+	added N-best output option (experimental).
+
+2006-02-27  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/extern.h, system/lib_print.c, system/main.c:
+	後処理を行うオプション(-postprocess)を追加
+
 2006-02-26  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/configfile.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/main.c, system/read_data.c, system/read_rule.c:
