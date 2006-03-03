@@ -618,7 +618,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	fprintf(Outfp, "=%d\n", score);
     }
 
-    if (OptDisplay == OPT_DEBUG) {
+    if (OptDisplay == OPT_DEBUG || OptDisplay == OPT_NBEST) {
 	dpnd_info_to_bnst(sp, &dpnd);
 	if (!(OptExpress & OPT_NOTAG)) {
 	    dpnd_info_to_tag(sp, &dpnd); 
@@ -627,7 +627,14 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	if (!(OptExpress & OPT_NOTAG)) {
 	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
 	}
-	print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+
+	if (OptDisplay == OPT_NBEST) {
+	    sp->score = score;
+	    print_result(sp, 0);
+	}
+	else {
+	    print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+	}
     }
 
     if (score > sp->Best_mgr->score) {

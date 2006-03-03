@@ -970,9 +970,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-		 void print_result(SENTENCE_DATA *sp)
+      void print_result(SENTENCE_DATA *sp, int case_print_flag)
 /*==================================================================*/
 {
+    /* case_print_flag: 格解析結果を出力 */
+
     char *date_p, time_string[64];
     time_t t;
     struct tm *tms;
@@ -1010,6 +1012,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fprintf(Outfp, " KNP:%s", time_string);
     }
 
+    /* N-bestのときはスコアを出力 */
+    if (OptDisplay == OPT_NBEST && !ErrorComment) {
+	fprintf(Outfp, " SCORE:%.5f", sp->score);
+    }
+
     /* エラーがあれば、エラーの内容 */
     if (ErrorComment) {
 	fprintf(Outfp, " ERROR:%s", ErrorComment);
@@ -1024,6 +1031,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fprintf(Outfp, " MEMO:%s", PM_Memo);
 	}	
     }
+
     fprintf(Outfp, "\n");
 
     /* 解析結果のメインの出力 */
@@ -1055,12 +1063,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 格解析を行なった場合の出力 */
 
-    if (((OptAnalysis == OPT_CASE || 
-	 OptAnalysis == OPT_CASE2) && 
-	 (OptDisplay == OPT_DETAIL || 
-	  OptDisplay == OPT_DEBUG)) || 
-	(OptEllipsis && 
-	 VerboseLevel >= VERBOSE1)) {
+    if (case_print_flag && 
+	(((OptAnalysis == OPT_CASE || 
+	   OptAnalysis == OPT_CASE2) && 
+	  (OptDisplay == OPT_DETAIL || 
+	   OptDisplay == OPT_DEBUG)) || 
+	 (OptEllipsis && 
+	  VerboseLevel >= VERBOSE1))) {
 
 	print_case_result(sp);
 

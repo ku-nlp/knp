@@ -294,7 +294,7 @@ extern int str_part_eq(char *dat, char *pat);
 extern void print_kakari(SENTENCE_DATA *sp, int type);
 extern void _print_bnst(TAG_DATA *ptr);
 extern void print_matrix(SENTENCE_DATA *sp, int type, int L_B);
-extern void print_result(SENTENCE_DATA *sp);
+extern void print_result(SENTENCE_DATA *sp, int case_print_flag);
 extern void print_bnst(BNST_DATA *ptr, char *cp);
 extern void check_bnst(SENTENCE_DATA *sp);
 extern void print_para_relation(SENTENCE_DATA *sp);

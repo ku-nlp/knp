@@ -190,6 +190,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
+	else if (str_eq(argv[0], "-nbest"))   OptDisplay  = OPT_NBEST;
 	else if (str_eq(argv[0], "-ne-debug"))  OptDisplayNE  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
@@ -1137,7 +1138,7 @@ PARSED:
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	    }
 	    if (!OptEllipsis)
-		print_result(sp);
+		print_result(sp, 1);
 	    else
 		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
@@ -1245,8 +1246,9 @@ PARSED:
 
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(sp, 0);
-	} else {
-	    print_result(sp);
+	}
+	else if (OptDisplay != OPT_NBEST) {
+	    print_result(sp, 1);
 	}
 	fflush(Outfp);
 

@@ -1182,6 +1182,11 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 		    (int)Work_mgr.score, distance_cost, (int)Work_mgr.dflt*2, topic_score_sum);
 	}
     }
+
+    if (OptDisplay == OPT_NBEST) {
+	sp->score = Work_mgr.score;
+	print_result(sp, 0);
+    }
         
     /* ธๅฝ่อý */
 
