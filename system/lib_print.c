@@ -1037,7 +1037,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
-	sm2feature(sp);
 	if (OptPostProcess) { /* とりあえずここで後処理 -> 格解析結果の整合性をとる必要がある */
 	    tag_bnst_postprocess(sp);
 	}

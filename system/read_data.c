@@ -1548,6 +1548,9 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     /* タグ単位ルールを適用する */
     assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType, FALSE);
+
+    /* NTTコードをfeatureに表示 */
+    sm2feature(sp);
 }
 
 /*==================================================================*/
