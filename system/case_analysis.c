@@ -1523,41 +1523,23 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == NIL_ASSIGNED) {
-	    strcpy(relation, "--");
+	    continue;
 	}
 	/* 割り当てられている格 */
 	else if (num >= 0) {
-	    /* 格フレームに割りあててあるガ２格 */
-	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ２")) {
-		strcpy(relation, "ガガ");
-		/* sprintf(feature_buffer, "%s判定", relation);
-		assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer); */
-	    }
-	    else {
-		strcpy(relation, 
-		       pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
-	    }
+	    strcpy(relation, pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	}
 	/* else: UNASSIGNED はないはず */
 
+	/* featureを格要素文節に与える */
 
-	/* feature を用言文節に与える */
-	word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
-	if (word) {
-	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
-		sprintf(feature_buffer, "格関係%d:%s:%s", 
-			cpm_ptr->elem_b_ptr[i]->num, 
-			relation, word);
-	    }
-	    /* 文節内部の要素の場合 */
-	    else {
-		sprintf(feature_buffer, "格関係%d:%s:%s", 
-			cpm_ptr->elem_b_ptr[i]->parent->num, 
-			relation, word);
-	    }
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
-	    free(word);
+	if (cpm_ptr->elem_b_ptr[i]->num < cpm_ptr->pred_b_ptr->num) {
+	    sprintf(feature_buffer, "解析格:%s", relation);
 	}
+	else {
+	    sprintf(feature_buffer, "解析連格:%s", relation);
+	}
+	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
     }
 
     /* 格解析結果 buffer溢れ注意 */
