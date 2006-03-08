@@ -765,8 +765,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
               格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
-    int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0;
+    int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
+    int sub_agent_flag = 0;
     char *code, **destination, *buf;
+
+    c_ptr->freq[num] = 0;
 
     if (*cp == '\0') {
 	return;
@@ -794,8 +797,14 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	/* 頻度の抽出 */
 	freq = split_freq(point2);
 
+	if (!strcmp(point2, "<主体準>")) {
+	    sub_agent_flag = 1;
+	    continue;
+	}
+
 	/* fflag == TRUE: 頻度1を削除 */
-	if (fflag && freq < 2) {
+	if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	    fflag && freq < 2) {
 	    continue;
 	}
 
@@ -809,9 +818,14 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	*/
 
 	if (*point2 != '\0') {
-	    if (!over_flag) {
-		code = get_str_code(point2, thesaurus);
-		if (code) {
+	    code = get_str_code(point2, thesaurus);
+	    if (code) {
+		/* <主体>のチェック */
+		if (cf_match_element(code, "主体", FALSE)) {
+		    agent_count += freq;
+		}
+
+		if (!over_flag) {
 		    if (strlen(buf) + strlen(code) >= max) {
 			/* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
 			free(code);
@@ -842,8 +856,32 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(point2);
 	    c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
 
-
+	    c_ptr->freq[num] += freq;
 	    count++;
+	}
+    }
+
+    /* <主体>の追加 */
+    if (agent_count || sub_agent_flag) {
+	if (c_ptr->ex_size[num] == 0) {
+	    c_ptr->ex_size[num] = 1;	/* 初期確保数 */
+	    c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
+						       "_make_ipal_cframe_ex");
+	    c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
+						     "_make_ipal_cframe_ex");
+	}
+	else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
+	    c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
+							sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
+							"_make_ipal_cframe_ex");
+	    c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
+						      sizeof(int)*c_ptr->ex_size[num], 
+						      "_make_ipal_cframe_ex");
+	}
+	c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup("<主体>");
+	c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = agent_count ? agent_count : 1;
+	if (c_ptr->freq[num] == 0) {
+	    c_ptr->freq[num] = 1;
 	}
     }
 
@@ -1909,11 +1947,38 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    int i;
+    double ret = 0;
+
+    for (i = 0; i < cfp->ex_num[as2]; i++) {
+	if (!strcmp(key, cfp->ex_list[as2][i])) {
+	    ret = (double)cfp->ex_freq[as2][i] / cfp->freq[as2];
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
+	    }
+	    return ret;
+	}
+    }
+
+    if (VerboseLevel >= VERBOSE3) {
+	fprintf(Outfp, ";; P(%s) = 0\n", key);
+    }
+    return 0;
+}
+
+/*==================================================================*/
 		double _get_ex_probability(char *key)
 /*==================================================================*/
 {
     char *value;
     double ret = 0;
+
+    if (CFExExist == FALSE) {
+	return 0;
+    }
 
     value = db_get(cf_ex_db, key);
 
@@ -1972,6 +2037,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     char code[SM_CODE_SIZE + 1];
     code[SM_CODE_SIZE] = '\0';
 
+    if (CFExExist == FALSE) {
+	return 0;
+    }
+
     if (strlen(dp->head_ptr->Goi) > SM_CODE_SIZE) {
 	key = malloc_db_buf(strlen(dp->head_ptr->Goi) + 18);
     }
@@ -2009,10 +2078,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     char *key = NULL;
     double ret;
 
-    if (CFExExist == FALSE) {
-	return 0;
-    }
-
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
@@ -2022,43 +2087,44 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     *key = '\0';
 
     if (check_feature(dp->f, "補文")) {
-	sprintf(key, "<補文>|%s,%s", 
-		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
+	sprintf(key, "<補文>");
+	/* sprintf(key, "<補文>|%s,%s", 
+	   cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
     }
     else if (dat_match_sm(as1, cfd, dp, "主体")) {
-	sprintf(key, "<主体>|%s,%s", 
-		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
+	sprintf(key, "<主体>");
     }
     else if (check_feature(dp->f, "時間")) {
-	sprintf(key, "<時間>|%s,%s", 
-		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
+	sprintf(key, "<時間>");
     }
     else if (check_feature(dp->f, "数量")) {
-	sprintf(key, "<数量>|%s,%s", 
-		cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
+	sprintf(key, "<数量>");
     }
 
     if (*key) {
-	if (ret = _get_ex_probability(key)) {
+	/* if (ret = _get_ex_probability(key)) { */
+	if (ret = _get_ex_probability_internal(key, as2, cfp)) {
 	    return log(ret);
 	}
     }
 
     key = malloc_db_buf(strlen(dp->head_ptr->Goi) + 
 			strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
-    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, 
-	    cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0]));
+    sprintf(key, "%s", dp->head_ptr->Goi);
+    /* sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, 
+       cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
 
-    if (ret = _get_ex_probability(key)) {
+    /* if (ret = _get_ex_probability(key)) { */
+    if (ret = _get_ex_probability_internal(key, as2, cfp)) {
 	ret = log(ret);
     }
-    else if (ret = _get_sm_probability(dp, as2, cfp)) { /* 意味素にback-off */
+    /* else if (ret = _get_sm_probability(dp, as2, cfp)) { * 意味素にback-off *
 	ret = log(ret);
-    }
-    else if (MatchPP(cfp->pp[as2][0], "外の関係") && 
+    } */
+    /* else if (MatchPP(cfp->pp[as2][0], "外の関係") && 
 	     (ret = _get_soto_default_probability(dp, as2, cfp))) {
 	ret = log(ret);
-    }
+    } */
     else {
 	ret = FREQ0_ASSINED_SCORE; /* 頻度0用 */
     }

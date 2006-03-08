@@ -756,6 +756,7 @@ typedef struct cf_def {
     int		*ex_freq[CF_ELEMENT_MAX];
     int		ex_size[CF_ELEMENT_MAX];
     int		ex_num[CF_ELEMENT_MAX];
+    int		freq[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	cf_address;				/* 格フレームのアドレス */
