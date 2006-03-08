@@ -71,7 +71,7 @@ char *FukugojiTable[] = {"§ÚΩ¸§Ø", "§Ú§Œ§æ§Ø",
 
     fc = pp_hstr_to_code(buf);
     if (fc != END_M) {
-	sprintf(fukugoji_string, "≤Ú¿œ≥ -%s", pp_code_to_kstr(fc));
+	sprintf(fukugoji_string, "£‘≤Ú¿œ≥ -%s", pp_code_to_kstr(fc));
 	return fukugoji_string;
     }
     return NULL;
@@ -108,10 +108,10 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 
     /* Õ—∏¿§Œπ‡§»§ §Î§‚§Œ */
     if (cpm_ptr->cf.type == CF_PRED) {
-	if (!strncmp(fcp, "≤Ú¿œ≥ -", 7)) {
-	    cc = pp_kstr_to_code(fcp+7);
+	if (!strncmp(fcp, "£‘≤Ú¿œ≥ -", 9)) {
+	    cc = pp_kstr_to_code(fcp+9);
 	    if (cc == END_M) {
-		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+7);
+		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+9);
 		exit(1);
 	    }
 	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;
@@ -120,7 +120,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 		exit(1);
 	    }
 	}
-	else if (!strcmp(fcp, "…¨ø‹≥ ")) {
+	else if (!strcmp(fcp, "£‘…¨ø‹≥ ")) {
 	    c_ptr->oblig[c_ptr->element_num] = TRUE;
 	}
 	else if (!strcmp(fcp, "£‘Õ—∏¿∆± ∏¿·")) {	/* °÷°¡§Ú°¡§À°◊§Œ§»§≠ */
@@ -131,7 +131,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     }
     /* ÃæªÏ§Œπ‡§»§ §Î§‚§Œ */
     else {
-	if (!strcmp(fcp, "ÃæªÏπ‡")) {
+	if (!strcmp(fcp, "£‘ÃæªÏπ‡")) {
 	    /* æÚ∑Ô: ∆±≥ §«§œ§ §§ 
 	             œ¢¬ŒΩ§æ˛¿·§ŒæÏπÁ§œ§Ω§Œ¥ÿ∑∏§¨≥∞§Œ¥ÿ∑∏ */
 	    if (b_ptr->dpnd_type != 'A' &&
@@ -254,10 +254,10 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
 	while (fp) {
-	    if (!strncmp(fp->cp, "≤Ú¿œœ¢≥ -", 9)) {
-		cc = pp_kstr_to_code(fp->cp+9);
+	    if (!strncmp(fp->cp, "£‘≤Ú¿œœ¢≥ -", 11)) {
+		cc = pp_kstr_to_code(fp->cp+11);
 		if (cc == END_M) {
-		    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fp->cp+7);
+		    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fp->cp+11);
 		    exit(1);
 		}
 		c_ptr->pp[c_ptr->element_num][pp_num++] = cc;

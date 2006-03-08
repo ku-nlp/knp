@@ -410,7 +410,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    (check_feature((sp->tag_data + i)->f, "¿Í¾ÎÂåÌ¾»ì") &&
 		     check_feature(tag_ptr->f, "NE:PERSON")) ||
 		    /* ¼«¾ÎÌ¾»ì¤Î¾ì¹ç¤ÎÆÃÎã */
-		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "²òÀÏ³Ê-¥¬") &&
+		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "£Ô²òÀÏ³Ê-¥¬") &&
 		     check_feature((sp->tag_data + i)->f, "£Ô¼«¾ÎÌ¾»ì") &&
 		     sm_match_check(sm2code("¼çÂÎ"), tag_ptr->SM_code, SM_NO_EXPAND_NE)))
 		    {
