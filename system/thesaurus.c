@@ -375,7 +375,12 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	strt = end;
     }
     else {
-	strt = 0;
+	if (ptr->type == IS_TAG_DATA) {
+	    strt = ((TAG_DATA *)ptr)->settou_num;
+	}
+	else {
+	    strt = 0;
+	}
     }
 
     /* もっとも長いものから順に試す */
