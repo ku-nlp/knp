@@ -1,3 +1,8 @@
+2006-03-11  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/thesaurus.c:
+	基本句に対してシソーラスを引くときに接頭辞をみないように修正
+
 2006-03-10  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* rule/bnst_basic.rule:
