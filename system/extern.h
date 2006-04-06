@@ -242,7 +242,7 @@ extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_m
 extern int after_decide_dpnd(SENTENCE_DATA *sp);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
 extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
-extern void tag_bnst_postprocess(SENTENCE_DATA *sp);
+extern void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag);
 extern void para_postprocess(SENTENCE_DATA *sp);
 extern int detect_dpnd_case_struct(SENTENCE_DATA *sp);
 extern void when_no_dpnd_struct(SENTENCE_DATA *sp);

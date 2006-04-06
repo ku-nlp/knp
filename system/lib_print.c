@@ -147,6 +147,9 @@
     BNST_DATA	*b_ptr;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	if (b_ptr->num == -1) {
+	    continue; /* 後処理でマージされた文節 */
+	}
 	if (flag == 1) {
 	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
 	    if (b_ptr->f) {
@@ -1034,18 +1037,27 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     fprintf(Outfp, "\n");
 
+    /* 後処理 */
+    if (OptPostProcess) {
+	if (OptExpress == OPT_TAB || 
+	    OptExpress == OPT_NOTAG) {
+	    tag_bnst_postprocess(sp, 1);
+	}
+	else {
+	    tag_bnst_postprocess(sp, 0); /* 木構造出力のため、num, dpnd_head の番号の付け替えはしない */
+	}
+    }
+
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
-	if (OptPostProcess) { /* とりあえずここで後処理 -> 格解析結果の整合性をとる必要がある */
-	    tag_bnst_postprocess(sp);
-	}
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {
 	print_mrphs(sp, 1);
     }
     else if (OptExpress == OPT_PA) {
+	/* FIXME: 格解析結果の整合性をとる必要がある */
 	print_pa_structure(sp);
     }
     else if (OptExpress == OPT_NOTAGTREE) {
