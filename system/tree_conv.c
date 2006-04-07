@@ -123,8 +123,14 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     /* 依存構造木構造リンク付け */
 
     for (j = sp->Bnst_num - 1; j >= 0; j--) {
+	if (sp->bnst_data[j].num == -1) {
+	    continue; /* 後処理でマージされたタグ */
+	}
 	child_num = 0;
 	for (i = j - 1; i >= 0; i--) {
+	    if (sp->bnst_data[i].num == -1) {
+		continue; /* 後処理でマージされたタグ */
+	    }
 	    if (buffer[i] == j) {
 		sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
 		if (child_num >= PARA_PART_MAX) {
@@ -487,6 +493,9 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     /* orig */
     for (i = sp->Bnst_num - 1; i >= 0; i--) {
 	bp = sp->bnst_data + i;
+	if (bp->num == -1) { /* 後処理でマージされた文節 */
+	    continue;
+	}
 
 	para_info_to_tag(bp, bp->tag_ptr + bp->tag_num - 1);
 
