@@ -781,7 +781,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 /*==================================================================*/
 {
     CF_PRED_MGR *cpm_ptr;
-    int i, modifying_num, current_pred_num;
+    int i, renyou_modifying_num, adverb_modifying_num, current_pred_num;
     double one_case_point;
 
     /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
@@ -815,7 +815,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     }
     */
 
-    modifying_num = 0;
+    renyou_modifying_num = 0;
+    adverb_modifying_num = 0;
     for (i = 0; t_ptr->child[i]; i++) {
 	current_pred_num = t_mgr->pred_num;
 	if (all_case_analysis(sp, t_ptr->child[i], t_mgr) == FALSE) {
@@ -825,14 +826,24 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	    t_ptr->para_top_p != TRUE && 
 	    t_ptr->cf_num > 0 && 
-	    check_feature(t_ptr->f, "用言") && 
-	    check_feature(t_ptr->child[i]->f, "係:連用") && 
-	    check_feature(t_ptr->child[i]->f, "用言") && 
-	    !check_feature(t_ptr->child[i]->f, "複合辞")) {
-	    t_mgr->score += calc_vp_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
-							  t_ptr->child[i], 
-							  t_mgr->cpm[current_pred_num].cmm[0].cf_ptr);
-	    modifying_num++;
+	    check_feature(t_ptr->f, "用言")) {
+	    if (check_feature(t_ptr->child[i]->f, "係:連用") && 
+		check_feature(t_ptr->child[i]->f, "用言") && 
+		!check_feature(t_ptr->child[i]->f, "複合辞")) {
+		t_mgr->score += calc_vp_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
+							      t_ptr->child[i], 
+							      t_mgr->cpm[current_pred_num].cmm[0].cf_ptr);
+		renyou_modifying_num++;
+	    }
+
+	    /* この用言に係る副詞または修飾をカウント */
+	    if ((check_feature(t_ptr->child[i]->f, "係:連用") && 
+		 !check_feature(t_ptr->child[i]->f, "用言")) || 
+		check_feature(t_ptr->child[i]->f, "修飾")) {
+		t_mgr->score += calc_adv_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
+							       t_ptr->child[i]);
+		adverb_modifying_num++;
+	    }
 	}
     }
 
@@ -840,7 +851,10 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	t_ptr->para_top_p != TRUE && 
 	t_ptr->cf_num > 0 && 
 	check_feature(t_ptr->f, "用言")) {
-	t_mgr->score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, modifying_num);
+	t_mgr->score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
+							  renyou_modifying_num);
+	t_mgr->score += calc_adv_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
+							   adverb_modifying_num);
     }
 
     return TRUE;

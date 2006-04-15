@@ -476,7 +476,7 @@ typedef struct _RuleVector {
 #define PostProcessTagRuleType 14
 
 /* 辞書の最大数 */
-#define DICT_MAX	22
+#define DICT_MAX	23
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -498,7 +498,8 @@ typedef struct _RuleVector {
 #define CF_EX_DB	18
 #define CASE_DB		19
 #define CFP_DB		20
-#define RENYOU_DB		21
+#define RENYOU_DB	21
+#define ADVERB_DB	22
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

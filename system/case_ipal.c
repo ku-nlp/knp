@@ -18,6 +18,7 @@ DBM_FILE cf_ex_db;
 DBM_FILE case_db;
 DBM_FILE cfp_db;
 DBM_FILE renyou_db;
+DBM_FILE adverb_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* ³Ê¥Õ¥ì¡¼¥à */
 int 	   	Case_frame_num;			/* ³Ê¥Õ¥ì¡¼¥à¿ô */
@@ -38,6 +39,7 @@ int	CFExExist;
 int	CaseExist;
 int	CfpExist;
 int	RenyouExist;
+int	AdverbExist;
 
 int	PrintDeletedSM = 0;
 
@@ -127,6 +129,9 @@ int	PrintDeletedSM = 0;
 
     /* Ï¢ÍÑ³ÎÎ¨DB (renyou.db) */
     renyou_db = open_dict(RENYOU_DB, RENYOU_DB_NAME, &RenyouExist);
+
+    /* Éû»ì³ÎÎ¨DB (adverb.db) */
+    adverb_db = open_dict(ADVERB_DB, ADVERB_DB_NAME, &AdverbExist);
 }
 
 /*==================================================================*/
@@ -1058,12 +1063,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 }
 
 /*==================================================================*/
-TAG_DATA *get_quasi_closest_case_component(SENTENCE_DATA *sp, TAG_DATA *t_ptr)
+TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 /*==================================================================*/
 {
-    TAG_DATA *tp;
-
-    if (t_ptr->num < 1 || t_ptr->inum != 0) {
+    if (t_ptr->num < 1 || 
+	(t_ptr->type == IS_TAG_DATA && t_ptr->inum != 0)) {
 	return NULL;
     }
 
@@ -1071,33 +1075,30 @@ TAG_DATA *get_quasi_closest_case_component(SENTENCE_DATA *sp, TAG_DATA *t_ptr)
 	return t_ptr;
     }
 
-    /* Ê¸ÀáÃ±°Ì¤Ç¤Ï¹Í¤¨¤Æ¤¤¤Ê¤¤ */
-    tp = sp->tag_data+t_ptr->num - 1;
-
-    if (tp->inum != 0) {
+    if (pre_ptr->type == IS_TAG_DATA && pre_ptr->inum != 0) {
 	return NULL;
     }
 
-    if (!check_feature(tp->f, "ÂÎ¸À")) {
+    if (!check_feature(pre_ptr->f, "ÂÎ¸À")) {
 	return NULL;
     }
 
-    if (check_feature(tp->f, "»Ø¼¨»ì") || 
-	(tp->SM_code[0] == '\0' && 
-	 check_feature(tp->f, "·¸:¥¬³Ê"))) {
+    if (check_feature(pre_ptr->f, "»Ø¼¨»ì") || 
+	(pre_ptr->SM_code[0] == '\0' && 
+	 check_feature(pre_ptr->f, "·¸:¥¬³Ê"))) {
 	return NULL;
     }
 
-    if (check_feature(tp->f, "·¸:¥ò³Ê") || 
-	check_feature(tp->f, "·¸:¥Ë³Ê") || 
-	(!cf_match_element(tp->SM_code, "¼çÂÎ", FALSE) && 
-	(check_feature(tp->f, "·¸:¥¬³Ê") || 
-	 check_feature(tp->f, "·¸:¥«¥é³Ê") || 
-	 check_feature(tp->f, "·¸:¥Ø³Ê") || 
-	 check_feature(tp->f, "·¸:¥è¥ê³Ê") || 
-	 check_feature(tp->f, "·¸:¥È³Ê") || 
-	 check_feature(tp->f, "·¸:¥Þ¥Ç³Ê")))) {
-	return tp;
+    if (check_feature(pre_ptr->f, "·¸:¥ò³Ê") || 
+	check_feature(pre_ptr->f, "·¸:¥Ë³Ê") || 
+	(!cf_match_element(pre_ptr->SM_code, "¼çÂÎ", FALSE) && 
+	(check_feature(pre_ptr->f, "·¸:¥¬³Ê") || 
+	 check_feature(pre_ptr->f, "·¸:¥«¥é³Ê") || 
+	 check_feature(pre_ptr->f, "·¸:¥Ø³Ê") || 
+	 check_feature(pre_ptr->f, "·¸:¥è¥ê³Ê") || 
+	 check_feature(pre_ptr->f, "·¸:¥È³Ê") || 
+	 check_feature(pre_ptr->f, "·¸:¥Þ¥Ç³Ê")))) {
+	return pre_ptr;
     }
     return NULL;
 }
@@ -1162,7 +1163,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	    address_str = get_ipal_address(verb, flag);
 	}
 	else {
-	    cbp = get_quasi_closest_case_component(sp, t_ptr);
+	    cbp = get_quasi_closest_case_component(t_ptr, t_ptr->num < 1 ? NULL : t_ptr - 1);
 	    if (cbp) {
 		char *buffer, *pp;
 
@@ -2590,6 +2591,87 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
     }
     else {
 	return UNKNOWN_RENYOU_SCORE;
+    }
+}
+
+/*==================================================================*/
+double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *dp)
+/*==================================================================*/
+{
+    char *pred, *key, *value;
+    double ret = 0;
+
+    if (AdverbExist == FALSE) {
+	return 0;
+    }
+
+    /* ÍÑ¸À -> ÍÑ¸À */
+    if (cfp) {
+	pred = strdup(cfp->cf_id);
+	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
+	key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 2);
+	sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
+	value = db_get(adverb_db, key);
+	if (value) {
+	    ret = atof(value);
+	    free(value);
+	}
+
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (A) P(%s|%s) = %lf\n", dp->head_ptr->Goi, pred, ret);
+	}
+
+	free(pred);
+
+	if (ret) {
+	    return log(ret);
+	}
+	else {
+	    return UNKNOWN_RENYOU_SCORE;
+	}
+    }
+    else {
+	return 0;
+    }
+}
+
+/*==================================================================*/
+double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num)
+/*==================================================================*/
+{
+    char *pred, *key, *value;
+    double ret = 0;
+
+    if (AdverbExist == FALSE) {
+	return 0;
+    }
+
+    if (cfp) {
+	pred = strdup(cfp->cf_id);
+	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
+	key = malloc_db_buf(strlen(pred) + 6);
+	sprintf(key, "%d|N:%s", num, pred);
+	value = db_get(adverb_db, key);
+	if (value) {
+	    ret = atof(value);
+	    free(value);
+	}
+
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (AN) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, pred, ret);
+	}
+
+	free(pred);
+
+	if (ret) {
+	    return log(ret);
+	}
+	else {
+	    return UNKNOWN_RENYOU_SCORE;
+	}
+    }
+    else {
+	return 0;
     }
 }
 
