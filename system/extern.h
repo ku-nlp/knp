@@ -175,6 +175,7 @@ extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, i
 extern int check_examples(char *cp, int cp_len, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr, char *orig_form);
+extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
 extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
@@ -425,6 +426,7 @@ extern void *realloc_data(void *ptr, size_t size, char *comment);
 extern void init_hash();
 extern int hash(unsigned char *key, int keylen);
 extern unsigned char *katakana2hiragana(unsigned char *cp);
+extern unsigned char *hiragana2katakana(unsigned char *cp);
 extern char *strdup_with_check(const char *s);
 
 /* tree_conv.c */

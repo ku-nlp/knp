@@ -83,6 +83,62 @@ int		OptUseScase;
 }
 
 /*==================================================================*/
+		   char *mrph2case(BNST_DATA *bp)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = bp->mrph_num - 1; i >= 0 ; i--) {
+	if (check_feature((bp->mrph_ptr + i)->f, "付属")) {
+	    if (!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "助詞") && 
+		!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][(bp->mrph_ptr + i)->Bunrui].id, "格助詞")) {
+		return (bp->mrph_ptr + i)->Goi;
+	    }
+	}
+	else {
+	    return NULL;
+	}
+    }
+
+    return NULL;
+}
+
+/*==================================================================*/
+	   char *make_pred_string_for_scase(BNST_DATA *bp)
+/*==================================================================*/
+{
+    char *buffer, *pp = NULL, *verb;
+    BNST_DATA *cbp;
+
+    verb = make_pred_string((TAG_DATA *)bp, NULL);
+
+    /* cbp = get_quasi_closest_case_component((TAG_DATA *)bp, 
+       bp->num < 1 ? NULL : (TAG_DATA *)(bp - 1)); */
+
+    if (bp->num > 0) {
+	cbp = bp - 1;
+	pp = mrph2case(cbp);
+
+	if (pp) {
+	    char *pp_katakana = hiragana2katakana(pp);
+
+	    buffer = (char *)malloc_data(strlen(cbp->head_ptr->Goi) + strlen(pp_katakana) + strlen(verb) + 10, 
+					 "make_pred_string_for_scase");
+	    sprintf(buffer, "%s:%s-%s", cbp->head_ptr->Goi, pp_katakana, verb);
+	    free(verb);
+	    free(pp_katakana);
+	    return buffer;
+	}
+	else {
+	    return verb;
+	}
+    }
+    else {
+	return verb;
+    }
+}
+	
+/*==================================================================*/
 		 void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
@@ -108,12 +164,23 @@ int		OptUseScase;
 	    strcpy(voice, ":PC");
 	}
 
-	str_buffer = make_pred_string((TAG_DATA *)ptr, NULL);
+	/* まず、直前格要素との組で検索 */
+	str_buffer = make_pred_string_for_scase(ptr);
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
 	if (voice[0]) strcat(str_buffer, voice);
 
 	ans = get_scase(str_buffer);
+
+	if (ans == NULL) { /* なければ、用言だけで検索 */
+	    free(str_buffer);
+	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL);
+	    strcat(str_buffer, ":");
+	    strcat(str_buffer, vtype);
+	    if (voice[0]) strcat(str_buffer, voice);
+
+	    ans = get_scase(str_buffer);
+	}
 
 	if (ans != NULL) {
 	    /* DEBUG 表示 */

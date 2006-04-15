@@ -100,6 +100,23 @@ unsigned int seed[NSEED][256];
 }
 
 /*==================================================================*/
+	 unsigned char *hiragana2katakana(unsigned char *cp)
+/*==================================================================*/
+{
+    int i;
+    unsigned char *hira;
+
+    hira = strdup(cp);
+
+    for (i = 0; i < strlen(hira); i += 2) {
+	if (*(hira+i) == 0xa4) {
+	    *(hira+i) = 0xa5;
+	}
+    }    
+    return hira;	/* free してください */
+}
+
+/*==================================================================*/
 	 char *strdup_with_check(const char *s)
 /*==================================================================*/
 {
