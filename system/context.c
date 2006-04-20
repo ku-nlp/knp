@@ -2928,7 +2928,9 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
     /* flag == 1 (名詞のとき): 用言より後でもOKにする */
 
     if (Bcheck[cs - s][bp->num] || /* すでにチェックした */
-	!check_feature(bp->f, "先行詞候補") || 
+	!check_feature(bp->f, "先行詞候補") && cpm_ptr->cf.type == CF_PRED || 
+	!check_feature(bp->f, "名詞項") && !check_feature(bp->f, "先行詞候補") && 
+	cpm_ptr->cf.type == CF_NOUN || 
 	(s == cs && bp->num == cpm_ptr->pred_b_ptr->num)) {
 	return FALSE;
     }

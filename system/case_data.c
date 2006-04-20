@@ -385,6 +385,13 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     else {
 	cpm_ptr->cf.pred_type[0] = '\0';
     }
+
+    if(!(OptEllipsis & OPT_ELLIPSIS) && 
+       (OptEllipsis & OPT_REL_NOUN || OptEllipsis & OPT_COREFER) &&
+       check_feature(b_ptr->f, "бн╦ю")) {
+	strcpy(cpm_ptr->cf.pred_type, "л╬");
+	cpm_ptr->cf.type = CF_NOUN;
+    }  
 }
 
 /*==================================================================*/

@@ -144,18 +144,21 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j, flag;
-    char *ret, pos[SMALL_DATA_LEN];
+    char *ret, *buf, pos[SMALL_DATA_LEN];
+
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
     ret[0] = '\0'; /* 再帰的に代入するため */
     flag = 0;
 
     /* 品詞曖昧性のある場合 */
-    for (i = 0; i < CLASSIFY_NO + 1; i++) {
+    for (i = 0; i < CLASSIFY_NO + 1; i++) {    
 	for (j = 0; j < CLASSIFY_NO + 1; j++) {
-	    if (!Class[i][j].id) break;
+	    if (!Class[i][j].id) continue;
 	    sprintf(pos, "品曖-%s", Class[i][j].id);   
 	    if (check_feature(mrph_data->f, pos)) {
-		sprintf(ret, "%s%d%d%d10:1 ", ret, i, j, num);
+		sprintf(buf, "%s%d%d%d10:1 ", ret, i, j, num);
+		strcpy(ret, buf);
 		flag = 1;
 	    }
 	}
@@ -167,6 +170,8 @@ char *ne_code_to_tagposition(int num)
 	sprintf(ret, "%d%d%d10:1 ", mrph_data->Hinshi, mrph_data->Bunrui, num);
     else
 	sprintf(ret, "%d0%d10:1 ", mrph_data->Hinshi, num);
+    
+    free(buf);
     return ret;
 }
 
@@ -241,15 +246,19 @@ char *ne_code_to_tagposition(int num)
 {
     int NEresult;
     NE_CACHE *ncp;
-    char *ret;
+    char *ret, *buf;
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
-	if (check_ne_cache(key, NEresult))
-	    sprintf(ret, "%s%d%d30:1 ", ret, NEresult + 1, num);
+	if (check_ne_cache(key, NEresult)) {
+	    sprintf(buf, "%s%d%d30:1 ", ret, NEresult + 1, num);
+	    strcpy(ret, buf);
+	}
     }
+    free(buf);
     return ret;
 }
 
@@ -258,13 +267,14 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret;
+    char *ret, *buf;
     char *feature_name[] = {"人名末尾", "組織名末尾", "\0"};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
-     /* 文節後方に人名末尾、組織名末尾という語があるか */
+    /* 文節後方に人名末尾、組織名末尾という語があるか */
     for (j = 1;; j++) {
 	if (!(mrph_data + j)->f || 
 	    check_feature((mrph_data + j)->f, "文節始") ||
@@ -278,10 +288,13 @@ char *ne_code_to_tagposition(int num)
 
     /* 人名末尾、組織名末尾であるか */
     for (i = 0; i < 2; i++) {
-	if (check_feature(mrph_data->f, feature_name[i]))
-	    sprintf(ret, "%s%d%d40:1 ", ret, i + 1, num);
-    }
-    
+	if (check_feature(mrph_data->f, feature_name[i])) {
+	    sprintf(buf, "%d%d40:1 %s", i + 1, num, ret);
+	    strcpy(ret, buf);
+	}	
+    }   
+
+    free(buf);
     return ret;
 }
 
@@ -290,30 +303,36 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret;
-    char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "\0"};
+    char *ret, *buf;
+    char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "意味-場所", "\0"};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
-     /* 文節後方に人名末尾、組織名末尾という語があるか */
+     /* 文節後方にあるか */
     for (j = 1;; j++) {
 	if (!(mrph_data + j)->f || 
 	    check_feature((mrph_data + j)->f, "文節始") ||
 	    check_feature((mrph_data + j)->f, "記号") ||
 	    check_feature((mrph_data + j)->f, "括弧")) break;
-	for (i = 0; i < 2; i++) {
-	    if (check_feature((mrph_data + j)->f, feature_name[i]))
-		sprintf(ret, "%d%d50:1 ", i + 4, num);
+	for (i = 0; i < 4; i++) {
+	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
+		sprintf(buf, "%d%d50:1 ", i + 5, num);
+		strcpy(ret, buf);
+	    }
 	}
     }
 
-    /* 人名末尾、組織名末尾であるか */
-    for (i = 0; i < 2; i++) {
-	if (check_feature(mrph_data->f, feature_name[i]))
-	    sprintf(ret, "%s%d%d50:1 ", ret, i + 1, num);
+    /* 意味素性があるか */
+    for (i = 0; i < 4; i++) {
+	if (check_feature(mrph_data->f, feature_name[i])) {
+	    sprintf(buf, "%s%d%d50:1 ", ret, i + 1, num);
+	    strcpy(ret, buf);
+	}	    
     }
-    
+
+    free(buf);    
     return ret;
 }
 
@@ -701,11 +720,14 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
 		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織");
 		}		    
-		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
 		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人");
 		}		    
-		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
 		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-主体");
+		}
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-場所");
 		}
 	    }
 	}

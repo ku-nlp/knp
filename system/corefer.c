@@ -304,8 +304,8 @@ int compare_strings(char *antecedent, char *anaphor, char *ant_ne, char *ana_ne)
 	return 1;
     }
 
-    /* 先行詞がPERSONかである場合は照応詞候補が先行詞候補の先頭に含まれていればOK */
-    /* 先行詞がLOCATIONかである場合はさらに照応詞候補が1文字だけ短かい場合のみOK */
+    /* 先行詞がPERSONである場合は照応詞候補が先行詞候補の先頭に含まれていればOK */
+    /* 先行詞がLOCATIONである場合はさらに照応詞候補が1文字だけ短かい場合のみOK */
     /* ex. 村山富市=村山、大分県=大分 */
     if (ant_ne && strlen(ant_ne) > strlen(antecedent) && /* 先行詞がNE全体である */
 	!strcmp(ant_ne + strlen(ant_ne) - strlen(antecedent), antecedent) &&

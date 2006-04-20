@@ -324,6 +324,10 @@ extern int	EX_match_subject;
 	    OptNEdelete = 1;
 	    OptNEcase = 1;
 	}
+	else if (str_eq(argv[0], "-case-for-ne")) { /* 格解析結果も使用する */
+ 	    OptAnalysis = OPT_CASE2;
+	    OptNEcase = 1;
+	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -348,19 +352,19 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-corefer")) {
 	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 1;
+	    OptCorefer = 1; /* 名詞格フレームを用いる */
 	}
 	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 2;
+	    OptCorefer = 2; /* 主辞と同様に扱う */
 	}
 	else if (str_eq(argv[0], "-corefer3")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 3;
+	    OptCorefer = 3; /* 主辞以外は修飾されないと考える */
 	}
 	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4;
+	    OptCorefer = 4; /* 修飾を考慮しない */
 	}
 	else if (str_eq(argv[0], "-relation-noun-best")) {
 	    OptEllipsis |= OPT_REL_NOUN;
@@ -1071,8 +1075,12 @@ PARSED:
 	for (i = 0; i < sp->Mrph_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
 	    delete_cfeature(&((sp->mrph_data + i)->f), "NE");
 	}
-	for_ne_analysis(sp);            
     }  
+
+    /* 固有表現認識に必要なfeatureを与える */
+    if (OptNEcase == 1) {
+	for_ne_analysis(sp);   
+    }         
 
     /* 格解析後に固有表現認識を行う */
     if (OptNE && OptNEcase) {
