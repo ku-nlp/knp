@@ -1,3 +1,12 @@
+2006-04-20  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/case_data.c, system/case_ipal.c, system/corefer.c, system/main.c, system/proper.c:
+	固有表現解析のオプションの整理
+	コメントの追加
+
+	* system/context.c:
+	先行詞候補でなくても名詞項であれば橋渡し指示解析の対象にするように変更
+	
 2006-04-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
 
 	* system/extern.h, system/case_analysis.c, system/case_ipal.c, system/const.h, system/path.h:
