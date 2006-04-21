@@ -1,3 +1,8 @@
+2006-04-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+
+	* system/const.h, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/read_data.c:
+	bug fix for using -nbest and -postprocess together.
+
 2006-04-20  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/case_data.c, system/case_ipal.c, system/corefer.c, system/main.c, system/proper.c:
