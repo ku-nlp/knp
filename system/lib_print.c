@@ -1072,8 +1072,12 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	print_kakari(sp, OptExpress); /* OPT_TREE */
     }
 
-    /* 格解析を行なった場合の出力 */
+    /* nbestオプションなどではこの関数が複数回呼ばれるので後処理を元に戻しておく */
+    if (OptPostProcess) {
+	undo_tag_bnst_postprocess(sp);
+    }
 
+    /* 格解析を行なった場合の出力 */
     if (case_print_flag && 
 	(((OptAnalysis == OPT_CASE || 
 	   OptAnalysis == OPT_CASE2) && 

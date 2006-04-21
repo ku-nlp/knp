@@ -1318,7 +1318,6 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     b_ptr->cpm_ptr = NULL;
     b_ptr->voice = 0;
 
-    b_ptr->length = 0;
     b_ptr->space = 0;
 
     b_ptr->pred_b_ptr = NULL;
@@ -1388,6 +1387,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     int j;
     MRPH_DATA *m_ptr;
 
+    b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
 	if ((b_ptr->length += strlen(m_ptr->Goi2)) > BNST_LENGTH_MAX) {
 	    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
@@ -1440,7 +1440,6 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    b_ptr->num = b_ptr-sp->bnst_data;
 	    b_ptr->mrph_ptr = m_ptr;
 	    b_ptr->mrph_num = 1;
-	    b_ptr->length = 0;
 	    b_ptr->cpm_ptr = NULL;
 	    b_ptr->voice = 0;
 	    b_ptr->pred_b_ptr = NULL;

@@ -533,6 +533,7 @@ typedef struct tnode_b {
     int 	num;
     /* 形態素データ */
     int		mrph_num;
+    int		preserve_mrph_num;
     MRPH_DATA 	*mrph_ptr, *head_ptr;
     /* 意味情報 */
     char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
@@ -641,6 +642,7 @@ typedef struct tnode_t {
     int 	num;
     /* 形態素データ */
     int		mrph_num;
+    int		preserve_mrph_num;
     MRPH_DATA 	*mrph_ptr, *head_ptr;
     /* 意味情報 */
     char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];

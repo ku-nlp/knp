@@ -295,6 +295,12 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     /* マージするタグ・文節の処理 */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	/* もとのnum, mrph_numを保存 */
+	t_ptr->preserve_mrph_num = t_ptr->mrph_num;
+	if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
+	    t_ptr->b_ptr->preserve_mrph_num = t_ptr->b_ptr->mrph_num;
+	}
+
 	if (check_feature(t_ptr->f, "Ｔマージ←")) {
 	    t_ptr->num = -1; /* 無効なタグ単位である印をつけておく */
 	    (sp->tag_data + i - 1)->mrph_num += t_ptr->mrph_num;
@@ -304,9 +310,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		(sp->tag_data + i - 1)->length += strlen((t_ptr->mrph_ptr + j)->Goi2);
 	    }
 
+	    /* featureの書き換えは暫定的に停止
 	    assign_cfeature(&((sp->tag_data + i - 1)->f), "タグ吸収");
 	    delete_cfeature(&(t_ptr->mrph_ptr->f), "文節始");
 	    delete_cfeature(&(t_ptr->mrph_ptr->f), "タグ単位始");
+	    */
 
 	    if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
 		t_ptr->b_ptr->num = -1;
@@ -355,6 +363,29 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    }
 	}
     }
+}
+
+/*==================================================================*/
+	  void undo_tag_bnst_postprocess(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, b_count = 0;
+    TAG_DATA *t_ptr;
+
+    /* nbestオプションなどでprint_result()が複数回呼ばれるときのために
+       変更したnum, mrph_num, lengthを元に戻しておく */
+
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	t_ptr->num = i;
+	t_ptr->mrph_num = t_ptr->preserve_mrph_num;
+	calc_bnst_length(sp, (BNST_DATA *)t_ptr);
+
+	if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
+	    t_ptr->b_ptr->num = b_count++;
+	    t_ptr->b_ptr->mrph_num = t_ptr->b_ptr->preserve_mrph_num;
+	    calc_bnst_length(sp, t_ptr->b_ptr);
+	}
+    }    
 }
 
 /*==================================================================*/
