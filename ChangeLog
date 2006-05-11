@@ -1,4 +1,14 @@
-2006-04-21  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+2006-05-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/context.c:
+	指示詞の照応解析結果を共参照タグとして出力するのを-corefer時のみに制限
+
+2006-05-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	接尾辞に<住所末尾>を付与しているルールを削除し、JUMAN辞書へ
+
+2006-04-21  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/const.h, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/read_data.c:
 	bug fix for using -nbest and -postprocess together.
@@ -12,7 +22,7 @@
 	* system/context.c:
 	先行詞候補でなくても名詞項であれば橋渡し指示解析の対象にするように変更
 	
-2006-04-15  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+2006-04-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/extern.h, system/case_analysis.c, system/case_ipal.c, system/const.h, system/path.h:
 	確率的構文・格解析: 副詞の係り受けの考慮
@@ -20,7 +30,7 @@
 	* system/extern.h, system/lib_scase.c, system/tools.c:
 	表層格辞書引きを「直前格要素+用言」で行えるように修正
 
-2006-04-06  Daisuke Kawahara  <kawahara@kc.t.u-tokyo.ac.jp>
+2006-04-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/extern.h, system/dpnd_analysis.c, system/lib_print.c:
 	後処理(-postprocess)の結果を木構造出力にも反映するように修正
