@@ -5442,7 +5442,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
 
 		/* 指示詞の解析結果を=のタグに変換する */
-		if (OptEllipsis & OPT_DEMO) {
+		if ((OptEllipsis & OPT_DEMO) && (OptEllipsis & OPT_COREFER)) {
 		    demonstrative2coreference(sp, cpm_ptr);
 		}
 
