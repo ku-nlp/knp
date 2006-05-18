@@ -255,8 +255,8 @@ char *ne_code_to_tagposition(int num)
     NE_CACHE *ncp;
     char *ret, *buf;
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_cache");
+    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_cache");
+    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_cache");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
@@ -313,8 +313,8 @@ char *ne_code_to_tagposition(int num)
     char *ret, *buf;
     char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "意味-場所", "\0"};
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
-    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
      /* 文節後方にあるか */
