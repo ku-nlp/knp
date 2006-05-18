@@ -1,3 +1,8 @@
+2006-05-18  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/corefer.c, system/main.c, system/proper.c, system/read_data.c
+	固有表現解析のキャッシュに関するバグの修正
+
 2006-05-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/context.c:
