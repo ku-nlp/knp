@@ -183,14 +183,21 @@ char *ne_code_to_tagposition(int num)
     NE_CACHE *ncp, *next;
 
     for (i = 0; i < TBLSIZE; i++) {
+	if (!ne_cache[i]) continue;
 	ncp = ne_cache[i];
-	while (ncp) {
+	if (ncp->key) {
 	    free(ncp->key);
+	}
+	ncp = ncp->next;
+	while (ncp) {
+	    if (ncp->key) {
+		free(ncp->key);
+	    }
 	    next = ncp->next;
 	    free(ncp);
 	    ncp = next;
 	}
-	ne_cache[i] = NULL;
+	memset(ne_cache, 0, sizeof(NE_CACHE *)*TBLSIZE);
     }
 }
 
@@ -306,8 +313,8 @@ char *ne_code_to_tagposition(int num)
     char *ret, *buf;
     char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "意味-場所", "\0"};
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
+    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
+    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
      /* 文節後方にあるか */

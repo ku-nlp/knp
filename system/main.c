@@ -732,7 +732,7 @@ extern int	EX_match_subject;
 #endif
     if (OptEllipsis & OPT_COREFER) {
 	init_Synonym_db();
-	init_entity_cache();
+	/* init_entity_cache(); */
     }
 
     init_juman();	/* JUMAN´Ø·¸ */

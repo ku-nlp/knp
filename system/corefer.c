@@ -12,83 +12,6 @@ int COREFER_ID = 0;
 DBM_FILE synonym_db;
 char *SynonymFile;
 
-/* Ê¸¤ÎÍ×ÁÇ¤òÊÝ»ý¤¹¤ë */
-typedef struct entity_cache {
-    char            *key;
-    int	            frequency;
-    struct entity_cache *next;
-} ENTITY_CACHE;
-
-ENTITY_CACHE *entity_cache[TBLSIZE];
-
-/*==================================================================*/
-			 void init_entity_cache()
-/*==================================================================*/
-{
-    memset(entity_cache, 0, sizeof(ENTITY_CACHE *)*TBLSIZE);
-}
-
-/*==================================================================*/
-			void clear_entity_cache()
-/*==================================================================*/
-{
-    int i;
-    ENTITY_CACHE *ecp, *next;
-
-    for (i = 0; i < TBLSIZE; i++) {
-	ecp = entity_cache[i];
-	while (ecp) {
-	    free(ecp->key);
-	    next = ecp->next;
-	    free(ecp);
-	    ecp = next;
-	}
-	entity_cache[i] = NULL;
-    }
-}
-
-/*==================================================================*/
-       void register_entity_cache(char *key)
-/*==================================================================*/
-{
-    /* Ê¸¤ÎÍ×ÁÇ¤òÅÐÏ¿¤¹¤ë */
-
-    ENTITY_CACHE **ecpp;
-
-    ecpp = &(entity_cache[hash(key, strlen(key))]);
-    while (*ecpp && (*ecpp)->key && strcmp((*ecpp)->key, key)) {
-	ecpp = &((*ecpp)->next);
-    }
-    if (!(*ecpp)) {
-	*ecpp = (ENTITY_CACHE *)malloc_data(sizeof(ENTITY_CACHE), "register_entity_cache");
-	memset(*ecpp, 0, sizeof(ENTITY_CACHE));
-    }
-    if (!(*ecpp)->key) {
-	(*ecpp)->key = strdup(key);
-	(*ecpp)->next = NULL;
-    }
-    (*ecpp)->frequency++;
-}
-
-/*==================================================================*/
-	     int check_entity_cache(char *key)
-/*==================================================================*/
-{
-    ENTITY_CACHE *ecp;
-
-    ecp = entity_cache[hash(key, strlen(key))];
-    if (!ecp || !ecp->key) {
-	return 0;
-    }
-    while (ecp) {
-	if (!strcmp(ecp->key, key)) {
-	    return ecp->frequency;
-	}
-	ecp = ecp->next;
-    }
-    return 0;
-}
-
 /*==================================================================*/
 			void init_Synonym_db()
 /*==================================================================*/
@@ -207,7 +130,7 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 		if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
 		    cp += 3; /* "NE:"¤òÆÉ¤ßÈô¤Ð¤¹ */
 		    while (strncmp(cp, ":", 1)) cp++;
-		    register_entity_cache(cp + 1);
+		    /* register_entity_cache(cp + 1); */
 		    sprintf(buf, "¾È±þ»ì¸õÊä:%s", cp + 1);
 		    assign_cfeature(&((tag_ptr + j)->f), buf);
 		    continue;
@@ -237,7 +160,7 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 		    strncpy(word, cp + 1, k);
 		    word[k] = '\0';
 		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
-		    register_entity_cache(word);
+		    /* register_entity_cache(word); */
 		    sprintf(buf, "¾È±þ»ì¸õÊä:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf);
 		}
@@ -277,7 +200,7 @@ ENTITY_CACHE *entity_cache[TBLSIZE];
 		if (strncmp(word, "\0", 1)) {
 		    sprintf(buf, "¾È±þ»ì¸õÊä:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf);
-		    register_entity_cache(word);
+		    /* register_entity_cache(word); */
 		}
 	    }
 	}
