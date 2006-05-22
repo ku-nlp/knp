@@ -386,12 +386,16 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	cpm_ptr->cf.pred_type[0] = '\0';
     }
 
-    if(!(OptEllipsis & OPT_ELLIPSIS) && 
+    if (!(OptEllipsis & OPT_ELLIPSIS) && 
        (OptEllipsis & OPT_REL_NOUN || OptEllipsis & OPT_COREFER) &&
        check_feature(b_ptr->f, "体言")) {
 	strcpy(cpm_ptr->cf.pred_type, "名");
 	cpm_ptr->cf.type = CF_NOUN;
     }  
+    else if (cpm_ptr->cf.type == CF_PRED &&
+	     check_feature(b_ptr->f, "サ変")) {
+	cpm_ptr->cf.type_flag = 1;
+    }
 }
 
 /*==================================================================*/
