@@ -66,6 +66,7 @@ extern int		OptNEcache;
 extern int		OptNEend;
 extern int		OptNEdelete;
 extern int		OptNEcase;
+extern int		OptNElearn;
 extern int		OptAnaphoraBaseline;
 extern VerboseType	VerboseLevel;
 

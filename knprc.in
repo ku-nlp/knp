@@ -9,7 +9,7 @@
 (KNPルールファイル
 	(mrph_homo 同形異義語)
 	(mrph_basic 形態素 ルールループ先行)
-	(mrph_ne 形態素 逆方向 ルールループ先行)
+	(mrph_ne 固有表現形態素 ルールループ先行)
 	(bnst_basic 文節 逆方向 ルールループ先行)
 	(bnst_type 文節 逆方向 BREAK)
 	(bnst_etc 文節 逆方向 ルールループ先行)

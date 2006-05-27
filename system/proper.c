@@ -12,18 +12,17 @@
 #define NE_TAG_NUMBER      9
 #define NE_POSITION_NUMBER 4
 #define FEATIRE_MAX        1024
-#define TAG_POSITION_MAX   20
+#define TAG_POSITION_NAME   20
 #define HEAD               0
 #define MIDDLE             1
 #define TAIL               2
 #define SINGLE             3
 #define SIGX               10 /* SVMの結果を確率に近似するシグモイド関数の係数 */
-#define NE_LEN_MAX         12 /* modify_resultにおけるチェックする最長の形態素数 */
 
 DBM_FILE ne_db;
 
 char *DBforNE;
-char TagPosition[NE_MODEL_NUMBER][TAG_POSITION_MAX];
+char TagPosition[NE_MODEL_NUMBER][TAG_POSITION_NAME];
 char *Tag_name[] = {
     "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
     "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "\0"};
@@ -387,6 +386,33 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
+	      void output_svm_feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, code;
+    char *cp;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	if ((cp = check_feature(sp->mrph_data[i].f, "NE"))) {
+	    code = ne_tagposition_to_code(cp + 3);
+	}
+	else {
+	    code = 32;
+	}  
+	NE_mgr[i].NEresult = code;
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(stderr, "%d %s\t%s\n", code, sp->mrph_data[i].Goi2, NE_mgr[i].feature);
+	}
+	else {
+	    for (j = 0; j < NE_MODEL_NUMBER; j++) {
+		fprintf(stderr, (j == code) ? "+1 " : "-1 ");
+	    }
+	    fprintf(stderr, "%s\n", NE_mgr[i].feature);
+	}
+    }
+}
+
+/*==================================================================*/
 	       void apply_svm_model(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -405,8 +431,6 @@ char *ne_code_to_tagposition(int num)
 	    else
 		NE_mgr[i].SVMscore[j] 
 		    = 1/(1+exp(-svm_classify_for_NE(NE_mgr[i].feature, j) * SIGX));
-
-	    /* if (NE_mgr[i].notOTHER) NE_mgr[i].SVMscore[32] /= 100;*/
 
 	    if (OptDisplayNE == OPT_DEBUG) {
 		fprintf(stderr, "%2d %f\t", j, NE_mgr[i].SVMscore[j]);
@@ -486,90 +510,6 @@ char *ne_code_to_tagposition(int num)
     }
     for (i = sp->Mrph_num - 1; i > 0; i--) {
 	NE_mgr[i-1].NEresult = NE_mgr[i].parent[NE_mgr[i].NEresult];
-    }
-}
-
-/*==================================================================*/
-void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
-/*==================================================================*/
-{
-    /* 格フレームに組織、人名、主体が与えられている場合の処理 */
-  
-    /* flag = 1, 3 : 組織 */
-    if (flag == 1) {
-	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
-	    check_feature(mp->f, "品曖-アルファベット")) {
-	    NE_mgr[mp - sp->mrph_data].NEresult = 
-		ne_tagposition_to_code("ORGANIZATION:single");
-	}
-    }
-
-    /* flag = 2, 3 : 人名 */
-    if (flag == 2 || flag == 3) {
-	if (check_feature(mp->f, "呼掛")) {
-	    mp--;
-	}
-	if (NE_mgr[mp - sp->mrph_data].NEresult == NE_MODEL_NUMBER - 1 && /* OTHERsingle */
-	    check_feature(mp->f, "品曖-カタカナ")) {
-	    NE_mgr[mp - sp->mrph_data].NEresult = 
-		ne_tagposition_to_code("PERSON:single");
-	}
-    }
-}
-
-/*==================================================================*/
-		void modify_result(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    /* SVMによる固有表現認識を修正する */
-    /* 前文までで見つかった固有表現が認識されなかった場合は追加 */
-    /* より短い固有表現と認識されている場合は上書きする */
-
-    int len, start, end, position, ne_tag;
-    char word[WORD_LEN_MAX];
-
-    /* チェックする形態素列の形態素数 */
-    for (len = sp->Mrph_num; len > 0; len--) {
-	if (len > NE_LEN_MAX) continue;
-
-	/* チェックする形態素列の開始位置(k=0のとき文先頭で開始) */
-	for (start = 0; start + len < sp->Mrph_num; start++) {
-	    end = start + len - 1;
-
-	    /* 対象の形態素列を含む固有表現解析結果がある場合は修正しない */
-	    if (NE_mgr[start].NEresult % 4 == TAIL ||
-		NE_mgr[start].NEresult % 4 == MIDDLE ||
-		NE_mgr[end].NEresult != NE_MODEL_NUMBER - 1 &&
-		NE_mgr[end].NEresult % 4 == HEAD ||
-		NE_mgr[end].NEresult % 4 == MIDDLE ||
-		NE_mgr[start].NEresult != NE_MODEL_NUMBER - 1 &&
-		NE_mgr[start].NEresult % 4 == HEAD &&
-		NE_mgr[end].NEresult % 4 == TAIL) continue;
-
-	    word[0] = '\0';
-	    for (position = 0; position < len; position++) {
-		strcat(word, (sp->mrph_data + start + position)->Goi2);
-	    }
-
-	    if ((ne_tag = check_ne_cache(word, NE_MODEL_NUMBER))) {
-		ne_tag--; /* check_ne_cacheは1ずれている */
-		/* NEresultに記録 */
-		if (len == 1) {
-		    NE_mgr[start].NEresult = ne_tag * 4 + 3; /* single */
-		}
-		else for (position = 0; position < len; position++) {
-		    if (position == 0) {
-			NE_mgr[start + position].NEresult = ne_tag * 4; /* head */
-		    }
-		    else if (position == len - 1) {
-			NE_mgr[start + position].NEresult = ne_tag * 4 + 2; /* tail */
-		    }
-		    else {
-			NE_mgr[start + position].NEresult = ne_tag * 4 + 1; /* middle */
-		    }
-		}
-	    }
-	}
     }
 }
 
@@ -657,53 +597,15 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
     init_NE_mgr();
     /* SVMを用いた固有表現解析 */
     make_feature(sp);
-    apply_svm_model(sp);
-    viterbi(sp);
-    /* 前文までの解析結果を用いた修正 */
-     if (0 && OptEllipsis & OPT_COREFER) {
-	 modify_result(sp);
+    if (OptNElearn) {
+	output_svm_feature(sp);
     }
-    /* 結果を付与 */
-    assign_ne_feature_mrph(sp);
-}
-
-/*==================================================================*/
-	    void additional_ne_analysis(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    /* 格解析結果から、組織名と人名を付与する */
-    /* ガ、ヲ、ニ格でかつその格フレームに<主体>が与えられている場合 */
-
-    int i, j, num;
-    CF_PRED_MGR *cpm_ptr;
-
-    /* タグを後からチェック */
-    for (j = sp->Tag_num - 1; j > 0 ; j--) {
-	if (!(cpm_ptr = sp->tag_data[j].cpm_ptr)) continue;
-	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	    if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ") ||
-		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ヲ") ||
-		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ニ")) {
-		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE) &&
-		    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
-		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 3);
-		} 
-		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
-		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 1);
-		}		    
-		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
-		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 2);
-		}		    
-		else if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
-		    _additional_ne_analysis(sp, (cpm_ptr->elem_b_ptr[i])->mrph_ptr, 3);
-		}
-	    }
-	}
+    else {
+	apply_svm_model(sp);
+	viterbi(sp);
+	/* 結果を付与 */
+	assign_ne_feature_mrph(sp);
     }
-    /* 結果を付与 */
-    assign_ne_feature_mrph(sp);      
-    assign_ne_feature_tag(sp);      
 }
 
 /*==================================================================*/
@@ -745,7 +647,8 @@ void _additional_ne_analysis(SENTENCE_DATA *sp, MRPH_DATA *mp, int flag)
 int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
 /*==================================================================*/
 {
-    /* 固有表現と共参照関係にあると判断された固有表現タグの付与されていない表現に */
+    /* 固有表現(ORGANIZATION)と */
+    /* 共参照関係にあると判断された固有表現タグの付与されていない表現に */
     /* 固有表現タグを付与する */
    
     int start, end, ne_tag, j, k;
@@ -766,7 +669,7 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
 	if (!strcmp(word, anaphor)) break;
     }
 
-    /* とりあえずORGANIZATIONの場合のみ */
+    /* ORGANIZATIONの場合のみ */
     if (strcmp(Tag_name[ne_tag], "ORGANIZATION")) return 0;
 
     /* 形態素に付与、NEresultに記録 */
@@ -844,3 +747,4 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
 /*====================================================================
                                END
 ====================================================================*/
+

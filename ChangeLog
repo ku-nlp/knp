@@ -1,3 +1,8 @@
+2006-05-27  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* rule/mrph_basic.rule, rule/mrph_ne.rule, system/extern.h, system/main.c, system/proper.c
+	固有表現学習用データを作成するためのオプションン-ne-learnを追加
+	
 2006-05-23  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/case_data.c

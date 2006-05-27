@@ -62,6 +62,7 @@ int		OptNEcache;
 int		OptNEend;
 int		OptNEdelete;
 int		OptNEcase;
+int		OptNElearn;
 int		OptAnaphoraBaseline;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -159,6 +160,7 @@ extern int	EX_match_subject;
     OptNEend = 0;
     OptNEdelete = 0;
     OptNEcase = 0;
+    OptNElearn = 0;
     OptAnaphoraBaseline = 0;
 
     /* オプションの保存 */
@@ -308,9 +310,6 @@ extern int	EX_match_subject;
 	    OptNE = 1;
 	    OptNEdelete = 1;
 	}
-	else if (str_eq(argv[0], "-ne2")) { /* 格解析結果を用いる場合 */
-	    OptNE = 2;
-	}
 	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
 	    OptNE = 1;
 	    OptNEcache = 1;
@@ -324,9 +323,9 @@ extern int	EX_match_subject;
 	    OptNEdelete = 1;
 	    OptNEcase = 1;
 	}
-	else if (str_eq(argv[0], "-case-for-ne")) { /* 格解析結果も使用する */
- 	    OptAnalysis = OPT_CASE2;
-	    OptNEcase = 1;
+ 	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
+	    OptNE = 1;
+	    OptNElearn = 1;
 	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
@@ -753,7 +752,7 @@ extern int	EX_match_subject;
 	init_event();
     }
 #ifdef USE_SVM
-    if (OptNE)
+    if (OptNE && !OptNElearn)
 	init_svm_for_NE();
 #endif
 
@@ -838,12 +837,12 @@ extern int	EX_match_subject;
     if (OptNE) {
 	ne_analysis(sp);
 	/* 人名をひとつのタグにするためのルールを読む */
-	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE);
+	if (!OptNElearn) 
+	    assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE);
     }
 #endif 
-
+    
     /* 形態素を文節にまとめる */
-
     if (OptInput == OPT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) {
 	    sp->available = 0;
@@ -906,7 +905,7 @@ extern int	EX_match_subject;
     }
 
     /* 固有表現認識結果をタグに付与 */
-    if (OptNE) {
+    if (OptNE && !OptNElearn) {
 	assign_ne_feature_tag(sp);
     }
 
@@ -1061,10 +1060,6 @@ PARSED:
     }
 
 #ifdef USE_SVM
-    /* 格解析結果を用いた補助的な固有表現解析 */
-    if (OptNE == 2) {
-	additional_ne_analysis(sp);
-    }
   
     /* 固有表現解析結果を削除 */
     if (OptNEdelete == 1) {
