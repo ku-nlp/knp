@@ -1,3 +1,8 @@
+2006-05-31  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	名詞のカウンタを接尾辞と同等の扱いにした
+
 2006-05-27  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* rule/mrph_basic.rule, rule/mrph_ne.rule, system/extern.h, system/main.c, system/proper.c
