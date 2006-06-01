@@ -64,6 +64,7 @@ int		OptNEdelete;
 int		OptNEcase;
 int		OptNElearn;
 int		OptAnaphoraBaseline;
+int		OptTimeoutExit;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -162,6 +163,7 @@ extern int	EX_match_subject;
     OptNEcase = 0;
     OptNElearn = 0;
     OptAnaphoraBaseline = 0;
+    OptTimeoutExit = 1;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -433,6 +435,9 @@ extern int	EX_match_subject;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-timeout-no-exit")) {
+	    OptTimeoutExit = 0;
 	}
 	else if (str_eq(argv[0], "-scode")) {
 	    argv++; argc--;
@@ -1032,7 +1037,6 @@ extern int	EX_match_subject;
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 #ifndef _WIN32
-    alarm(0);
     alarm(ParseTimeout);
 #endif
 
@@ -1146,11 +1150,16 @@ PARSED:
 		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 
-	    /* 格・省略解析のときはとりあえず終わることに */
-	    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+	    signal(SIGALRM, timeout_function);
+
+	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */
+	    if (OptTimeoutExit || 
+		(OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
 		close_all();
 		exit(100);
 	    }
+
+	    continue;
 	}
 
 	/* 格フレームの初期化 */
