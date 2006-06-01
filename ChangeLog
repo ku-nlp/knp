@@ -1,3 +1,9 @@
+2006-06-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	2回目以降のタイムアウトが無視されるので、1回目のタイムアウト時に終了するように修正。
+	タイムアウト時に終了しないオプション(-timeout-no-exit)を追加。
+
 2006-05-31  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
