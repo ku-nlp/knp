@@ -494,7 +494,8 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	    search_antecedent(sp, i, anaphor+11, NULL, ne);
 	}
 	/* PERSON + 人名末尾 の処理 */
-	if ((cp = check_feature((sp->tag_data + i)->f, "NE:PERSON"))) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "NE:PERSON")) &&
+	    i + 1 < sp->Tag_num) {
 	    person_post(sp, sp->tag_data + i + 1, cp + 10, i);
 	}
     }

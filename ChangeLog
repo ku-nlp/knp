@@ -1,3 +1,8 @@
+2006-06-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/corefer.c
+	NE解析時に文末に人名が来るとsegmentation faultするバグを修正。
+
 2006-06-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/make_db.c:
