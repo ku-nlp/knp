@@ -145,7 +145,9 @@ int main(int argc, char *argv[])
 	}
     }
 
-    db_put(db, pre_key, pre_content, Separator, Type);
+    if (pre_key[0]) {
+	db_put(db, pre_key, pre_content, Separator, Type);
+    }
 
     if (pre_content_size > 0) {
 	free(pre_content);
