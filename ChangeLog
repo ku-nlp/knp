@@ -1,3 +1,8 @@
+2006-06-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/make_db.c:
+	入力が空のときのbug fix.
+
 2006-06-01  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:
