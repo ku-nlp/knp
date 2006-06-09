@@ -50,7 +50,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (strncmp(token, "代表表記", 8) && 
 	    strncmp(token, "可能動詞", 8) && 
 	    strncmp(token, "漢字読み", 8)) {
-	    assign_cfeature(&(m_ptr->f), token);
+	    assign_cfeature(&(m_ptr->f), token, FALSE);
 	}
 	token = strtok(NULL, " ");
     }
@@ -73,7 +73,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, 
 	    m_ptr->Imi);
-    assign_cfeature(fpp, buf);
+    assign_cfeature(fpp, buf, FALSE);
     free(buf);
 }
 
@@ -208,11 +208,11 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     }
 
     /* 多義性をマークするfeatureを与える */
-    assign_cfeature(&((m_ptr+pref_mrph)->f), "品曖");
+    assign_cfeature(&((m_ptr+pref_mrph)->f), "品曖", FALSE);
 
     if (flag == TRUE) { /* ルールにマッチ */
 	/* ルールに記述されているfeatureを与える (「品曖」を削除するルールもある) */
-	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr);
+	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr, FALSE);
 
 	if (0 && OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Lexical Disambiguation "
@@ -259,7 +259,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     /* 原形が曖昧なときはマークしておく */
     if (orig_amb_flag) {
-	assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧");
+	assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧", FALSE);
     }
 
     /* pref_mrph番目のデータをコピー */
@@ -281,14 +281,14 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	if (uniq_flag[i] == 0) continue;
 	sprintf(fname, "品曖-%s", 
 		Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
-	assign_cfeature(&(m_ptr->f), fname);
+	assign_cfeature(&(m_ptr->f), fname, FALSE);
 	    
 	/* 固有名詞以外には"その他"をふっておく */
 	if (m_ptr->Bunrui != 3 && /* 固有名詞 */
 	    m_ptr->Bunrui != 4 && /* 地名 */
 	    m_ptr->Bunrui != 5 && /* 人名 */
 	    m_ptr->Bunrui != 6) /* 組織名 */
-	    assign_cfeature(&(m_ptr->f), "品曖-その他");
+	    assign_cfeature(&(m_ptr->f), "品曖-その他", FALSE);
     }
 }
 
@@ -358,7 +358,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     token = strtok(str, " ");
     while (token) {
-	assign_cfeature(&(m_ptr->f), token);
+	assign_cfeature(&(m_ptr->f), token, FALSE);
 	token = strtok(NULL, " ");
     }
 }
@@ -399,7 +399,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     token = strtok(str, "><");
     while (token) {
-	assign_cfeature(f, token);
+	assign_cfeature(f, token, FALSE);
 	token = strtok(NULL, "><");
     }
 }
@@ -844,7 +844,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     /* featureの修正 */
     if (modify_feature_flag) {
 	sprintf(pre, "代表表記:%s/%sv", str1, str2);
-	assign_cfeature(&(m_ptr->f), pre);
+	assign_cfeature(&(m_ptr->f), pre, FALSE);
     }
 }
 
@@ -927,7 +927,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
-    assign_cfeature(&(m_ptr->f), org_buffer);
+    assign_cfeature(&(m_ptr->f), org_buffer, FALSE);
 
     change_one_mrph_rep(m_ptr, 1); /* 代表表記を修正 */
     change_one_mrph(m_ptr, f); /* 品詞などを修正 */
@@ -967,7 +967,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
        void assign_mrph_feature(MrphRule *s_r_ptr, int r_size,
 				MRPH_DATA *s_m_ptr, int m_length,
 				int mode, int break_mode, int direction, 
-				int also_assign_flag)
+				int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して形態素のマッチングを行う */
@@ -1003,7 +1003,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_m_ptr+i*direction+k);
+				       &(r_ptr->f), s_m_ptr+i*direction+k, temp_assign_flag);
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			feature_break_mode == RLOOP_BREAK_NORMAL) {
@@ -1040,7 +1040,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_m_ptr+i*direction+k);
+				       &(r_ptr->f), s_m_ptr+i*direction+k, temp_assign_flag);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
 			feature_break_mode == RLOOP_BREAK_NORMAL ||
@@ -1057,7 +1057,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 			TAG_DATA *s_b_ptr, int b_length,
 			int mode, int break_mode, int direction, 
-			int also_assign_flag)
+			int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対してタグ単位のマッチングを行う */
@@ -1093,10 +1093,10 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k);
+				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			if (also_assign_flag) { /* 属する文節にも付与する場合 */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k);
+					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			}
 		    }
 		    feature_break_mode = break_feature(r_ptr->f);
@@ -1135,10 +1135,10 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k);
+				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			if (also_assign_flag) { /* 属する文節にも付与する場合 */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k);
+					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			}
 		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
@@ -1157,7 +1157,7 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 			 BNST_DATA *s_b_ptr, int b_length,
 			 int mode, int break_mode, int direction, 
-			 int also_assign_flag)
+			 int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
     /* ある範囲(文全体,文節内など)に対して文節のマッチングを行う */
@@ -1193,10 +1193,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k);
+				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k);
+					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			}
 		    }
 		    feature_break_mode = break_feature(r_ptr->f);
@@ -1235,10 +1235,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k);
+				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k);
+					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
 			}
 		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
@@ -1254,7 +1254,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 }
 
 /*==================================================================*/
-void assign_general_feature(void *data, int size, int flag, int also_assign_flag)
+void assign_general_feature(void *data, int size, int flag, int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
     int i;
@@ -1279,7 +1279,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 			    (GeneralRuleArray+i)->mode, 
 			    (GeneralRuleArray+i)->breakmode, 
 			    (GeneralRuleArray+i)->direction, 
-			    also_assign_flag);
+			    also_assign_flag, temp_assign_flag);
 	}
     }
 }
@@ -1456,7 +1456,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	if (OptReadFeature) {
 	    b_ptr->f = Input_bnst_feature[i];
 	}
-	assign_cfeature(&(b_ptr->f), "解析済");
+	assign_cfeature(&(b_ptr->f), "解析済", FALSE);
 	if (calc_bnst_length(sp, b_ptr) == FALSE) {
 	    return FALSE;
 	}
@@ -1518,8 +1518,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	get_bnst_code_all((BNST_DATA *)tp);
 
 	if (tp->inum != 0) {
-	    assign_cfeature(&(tp->f), "文節内"); /* case_analysis.rule で使っている */
-	    assign_cfeature(&(tp->f), "係:文節内");
+	    assign_cfeature(&(tp->f), "文節内", FALSE); /* case_analysis.rule で使っている */
+	    assign_cfeature(&(tp->f), "係:文節内", FALSE);
 	}
 	else {
 	    /* headのときは文節のfeatureをコピー */
@@ -1541,11 +1541,11 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     /* <文頭>の修正 */
     if (sp->bnst_data->tag_num > 1) {
 	delete_cfeature(&((sp->bnst_data->tag_ptr + sp->bnst_data->tag_num - 1)->f), "文頭");
-	assign_cfeature(&(sp->tag_data->f), "文頭");
+	assign_cfeature(&(sp->tag_data->f), "文頭", FALSE);
     }
 
     /* タグ単位ルールを適用する */
-    assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType, FALSE);
+    assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType, FALSE, FALSE);
 
     /* NTTコードをfeatureに表示 */
     sm2feature(sp);

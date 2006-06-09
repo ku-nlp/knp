@@ -833,9 +833,9 @@ extern int	EX_match_subject;
 
     /* 形態素へのFEATURE付与 */
 
-    assign_cfeature(&(sp->mrph_data[0].f), "文頭");
-    assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末");
-    assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE);
+    assign_cfeature(&(sp->mrph_data[0].f), "文頭", FALSE);
+    assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
+    assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
     /* 固有表現認識を行う */
 #ifdef USE_SVM
@@ -843,7 +843,7 @@ extern int	EX_match_subject;
 	ne_analysis(sp);
 	/* 人名をひとつのタグにするためのルールを読む */
 	if (!OptNElearn) 
-	    assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE);
+	    assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
     }
 #endif 
     
@@ -881,12 +881,12 @@ extern int	EX_match_subject;
 
     /* 文節へのFEATURE付与 */
 
-    assign_cfeature(&(sp->bnst_data[0].f), "文頭");
+    assign_cfeature(&(sp->bnst_data[0].f), "文頭", FALSE);
     if (sp->Bnst_num > 0)
-	assign_cfeature(&(sp->bnst_data[sp->Bnst_num - 1].f), "文末");
+	assign_cfeature(&(sp->bnst_data[sp->Bnst_num - 1].f), "文末", FALSE);
     else
-	assign_cfeature(&(sp->bnst_data[0].f), "文末");
-    assign_general_feature(sp->bnst_data, sp->Bnst_num, BnstRuleType, FALSE);
+	assign_cfeature(&(sp->bnst_data[0].f), "文末", FALSE);
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, BnstRuleType, FALSE, FALSE);
 
     /* サ変動詞以外の動詞の意味素を引くのは意味がない
        ルール適用前には、featureがないためにチェックできない
@@ -1037,6 +1037,7 @@ extern int	EX_match_subject;
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 #ifndef _WIN32
+    alarm(0);
     alarm(ParseTimeout);
 #endif
 

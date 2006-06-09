@@ -538,7 +538,7 @@ char *ne_code_to_tagposition(int num)
     for (i = 0; i < sp->Mrph_num; i++) {
 	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue; /* OTHERの場合 */
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
-	assign_cfeature(&(sp->mrph_data[i].f), cp);
+	assign_cfeature(&(sp->mrph_data[i].f), cp, FALSE);
     }
 }
 
@@ -574,7 +574,7 @@ char *ne_code_to_tagposition(int num)
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE ||
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
-		assign_cfeature(&(sp->tag_data[j].f), cp);
+		assign_cfeature(&(sp->tag_data[j].f), cp, FALSE);
 		break;
 	    }
 	    /* 複数のタグにまたがっている場合は次のタグに進む */
@@ -583,7 +583,7 @@ char *ne_code_to_tagposition(int num)
 		    Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 	    if (i == sp->tag_data[j].mrph_num) {
 		i = 0;
-		assign_cfeature(&(sp->tag_data[j].f), cp_nai);
+		assign_cfeature(&(sp->tag_data[j].f), cp_nai, FALSE);
 		j++;
 	    }
 	}
@@ -627,16 +627,16 @@ char *ne_code_to_tagposition(int num)
 		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ヲ") ||
 		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ニ")) {
 		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織");
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織", FALSE);
 		}		    
 		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人");
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人", FALSE);
 		}		    
 		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-主体");
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-主体", FALSE);
 		}
 		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-場所");
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-場所", FALSE);
 		}
 	    }
 	}
@@ -675,23 +675,23 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
     /* 形態素に付与、NEresultに記録 */
     if ((j = start) == end) {
 	sprintf(cp, "NE:%s:single", Tag_name[ne_tag]);
-	assign_cfeature(&(sp->mrph_data[j].f), cp);
+	assign_cfeature(&(sp->mrph_data[j].f), cp, FALSE);
 	NE_mgr[j].NEresult = ne_tag * 4 + 3; /* single */
     }
     else for (j = start; j <= end; j++) {
 	if (j == start) {
 	    sprintf(cp, "NE:%s:head", Tag_name[ne_tag]);
-	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp, FALSE);
 	    NE_mgr[j].NEresult = ne_tag * 4; /* head */
 	}
 	else if (j == end) {
 	    sprintf(cp, "NE:%s:tail", Tag_name[ne_tag]);
-	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp, FALSE);
 	    NE_mgr[j].NEresult = ne_tag * 4 + 2; /* tail */
 	}
 	else {
 	    sprintf(cp, "NE:%s:middle", Tag_name[ne_tag]);
-	    assign_cfeature(&(sp->mrph_data[j].f), cp);
+	    assign_cfeature(&(sp->mrph_data[j].f), cp, FALSE);
 	    NE_mgr[j].NEresult = ne_tag * 4 + 1; /* middle */
 	}
     }
@@ -708,11 +708,11 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
 
     /* タグに付与 */
     sprintf(cp, "NE:%s:%s", Tag_name[ne_tag], anaphor);
-    assign_cfeature(&(sp->tag_data[i].f), cp);  
+    assign_cfeature(&(sp->tag_data[i].f), cp, FALSE);  
     sprintf(cp, "NE内:%s", Tag_name[ne_tag]);
     for (k = 0; start < sp->tag_data[i - k].mrph_ptr - sp->mrph_data;) {
 	k++;
-	assign_cfeature(&(sp->tag_data[i - k].f), cp);
+	assign_cfeature(&(sp->tag_data[i - k].f), cp, FALSE);
     }
     
     return 1;

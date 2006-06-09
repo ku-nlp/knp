@@ -674,8 +674,8 @@ SMLIST smlist[TBLSIZE];
 
     if (!check_feature(bp->f, "»þ´Ö") && 
 	sm_all_match(bp->SM_code, sm2code("»þ´Ö"))) {
-	assign_cfeature(&(bp->f), "»þ´ÖÈ½Äê");
-	assign_cfeature(&(bp->f), "»þ´Ö");
+	assign_cfeature(&(bp->f), "»þ´ÖÈ½Äê", FALSE);
+	assign_cfeature(&(bp->f), "»þ´Ö", FALSE);
     }
 }
 
@@ -694,7 +694,7 @@ SMLIST smlist[TBLSIZE];
 
     /* <Ãê¾Ý>Â°À­¤òÉÕÍ¿¤¹¤ë */
     if (sm_all_match(bp->SM_code, sm2code("Ãê¾Ý"))) {
-	assign_cfeature(&(bp->f), "Ãê¾Ý");
+	assign_cfeature(&(bp->f), "Ãê¾Ý", FALSE);
     }
 }
 
@@ -766,7 +766,7 @@ SMLIST smlist[TBLSIZE];
 	if (check_feature((sp->bnst_data+i)->f, "¿ÍÌ¾")) {
 	    /* ¸ÇÍ­¤Î°ÕÌ£ÁÇ¤À¤±»Ä¤·¤¿¤¤ */
 	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <¼çÂÎ>¤Î°ÕÌ£ÁÇ */
-	    assign_cfeature(&((sp->bnst_data+i)->f), "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß");
+	    assign_cfeature(&((sp->bnst_data+i)->f), "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß", FALSE);
 	}
     }
 }
@@ -794,8 +794,8 @@ SMLIST smlist[TBLSIZE];
 	    merge_smp2smg((BNST_DATA *)cpm_ptr->elem_b_ptr[i]);
 	    /* <¾ì½ê>¤Î¤ß¤Ë¸ÂÄê¤¹¤ë */
 	    sm_fix((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "101*********20**********");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Èó¼çÂÎ");
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß", FALSE);
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Èó¼çÂÎ", FALSE);
 	    break;
 	}
     }
@@ -950,7 +950,7 @@ SMLIST smlist[TBLSIZE];
 		 sm_match_check(sm2code("Ãê¾ÝÊª"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
 		 sm_match_check(sm2code("»ö"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
 		assign_sm((BNST_DATA *)(sp->tag_data + cpm_ptr->elem_b_ptr[i]->num), "¼çÂÎ");
-		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "¼çÂÎÉÕÍ¿");
+		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "¼çÂÎÉÕÍ¿", FALSE);
 	    }
 	    break;
 	}
@@ -968,7 +968,7 @@ SMLIST smlist[TBLSIZE];
 	/* thesaurus.c: get_bnst_code() ¤ÇÍ¿¤¨¤é¤ì¤¿feature¤ò¾å½ñ¤­ */
 	if (cp = check_feature((sp->tag_data + i)->f, "NTT")) {
 	    sprintf(feature_buffer, "%s:%s", cp, (sp->tag_data + i)->SM_code);
-	    assign_cfeature(&((sp->tag_data + i)->f), feature_buffer);
+	    assign_cfeature(&((sp->tag_data + i)->f), feature_buffer, FALSE);
 	}
     }
 }

@@ -47,7 +47,12 @@
 	    void print_one_feature(char *cp, FILE *filep)
 /*==================================================================*/
 {
-    fprintf(filep, "<%s>", cp); 
+    if (!strncmp(cp, "仮付与:", 7)) { /* 仮付与したものを表示するとき用(-nbest) */
+	fprintf(filep, "<%s>", cp + 7); 
+    }
+    else {
+	fprintf(filep, "<%s>", cp);
+    }
 }
 
 /*==================================================================*/
@@ -138,6 +143,36 @@
 		prep->next = next;
 	    }
 	    return;
+	}
+	prep = *fpp;
+	fpp = &(prep->next);
+    }
+}
+
+/*==================================================================*/
+	       void delete_temp_feature(FEATURE **fpp)
+/*==================================================================*/
+{
+    /* 仮付与したfeatureを削除 */
+
+    FEATURE *prep = NULL;
+
+    while (*fpp) {
+	if (comp_feature((*fpp)->cp, "仮付与") == TRUE) {
+	    FEATURE *next;
+	    free((*fpp)->cp);
+	    if (prep == NULL) {
+		next = (*fpp)->next;
+		free(*fpp);
+		*fpp = next;
+	    }
+	    else {
+		next = (*fpp)->next;
+		free(*fpp);
+		prep->next = next;
+	    }
+	    fpp = &(prep->next);
+	    continue;
 	}
 	prep = *fpp;
 	fpp = &(prep->next);
@@ -296,7 +331,7 @@
 }    
 
 /*==================================================================*/
-	   void assign_cfeature(FEATURE **fpp, char *fname)
+void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 /*==================================================================*/
 {
     char type[256];
@@ -336,16 +371,22 @@
     /* 上書きできなければ末尾に追加 */
 
     if (!((*fpp) = (FEATURE *)(malloc(sizeof(FEATURE)))) ||
-	!((*fpp)->cp = (char *)(malloc(strlen(fname) + 1)))) {
+	!((*fpp)->cp = (char *)(malloc(strlen(fname) + 8)))) {
 	fprintf(stderr, "Can't allocate memory for FEATURE\n");
 	exit(-1);
     }
-    strcpy((*fpp)->cp, fname);
+    if (temp_assign_flag) {
+	strcpy((*fpp)->cp, "仮付与:");
+	strcat((*fpp)->cp, fname);
+    }
+    else {
+	strcpy((*fpp)->cp, fname);
+    }
     (*fpp)->next = NULL;
 }    
 
 /*==================================================================*/
-    void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr)
+void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_flag)
 /*==================================================================*/
 {
     /*
@@ -407,14 +448,14 @@
 	    else if (!strncmp((*fpp2)->cp, "&複合辞格解析", strlen("&複合辞格解析"))) {
 		cp = make_fukugoji_string((TAG_DATA *)ptr + 1);
 		if (cp) {
-		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp);
+		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp, temp_assign_flag);
 		}
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&記憶語彙付与:", strlen("&記憶語彙付与:"))) {
 		sprintf(buffer, "%s:%s", 
 			(*fpp2)->cp + strlen("&記憶語彙付与:"), 
 			((MRPH_DATA *)matched_ptr)->Goi);
-		assign_cfeature(&(((BNST_DATA *)ptr)->f), buffer);
+		assign_cfeature(&(((BNST_DATA *)ptr)->f), buffer, temp_assign_flag);
 	    }
 	    /* &伝搬:n:FEATURE : FEATUREの伝搬  */
 	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
@@ -423,11 +464,11 @@
 		cp = strchr(cp, ':');
 		cp++;
 		if ((cp = check_feature(((TAG_DATA *)ptr)->f, cp))) {
-		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp);
+		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp, temp_assign_flag);
 		}
 		if (((TAG_DATA *)ptr)->bnum >= 0) { /* 文節区切りでもあるとき */
 		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, cp))) {
-			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp);
+			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp, temp_assign_flag);
 		    }
 		}
 	    }
@@ -436,11 +477,11 @@
 		for (i = 0; i < ((TAG_DATA *)ptr)->mrph_num; i++) {
 		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "自立");
 		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "意味有");
-		    assign_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "付属");
+		    assign_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "付属", temp_assign_flag);
 		}
 	    }
 	} else {			/* 追加の場合 */
-	    assign_cfeature(fpp1, (*fpp2)->cp);	
+	    assign_cfeature(fpp1, (*fpp2)->cp, temp_assign_flag);	
 	}
 
 	fpp2 = &((*fpp2)->next);
@@ -452,7 +493,7 @@
 /*==================================================================*/
 {
     while (src_fp) {
-	assign_cfeature(dst_fpp, src_fp->cp);
+	assign_cfeature(dst_fpp, src_fp->cp, FALSE);
 	src_fp = src_fp->next;
     }
 }

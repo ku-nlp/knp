@@ -291,7 +291,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     /* タグ後処理用ルールの適用 
        FEATUREの伝搬はこの中で行う */
-    assign_general_feature(sp->tag_data, sp->Tag_num, PostProcessTagRuleType, FALSE);
+    assign_general_feature(sp->tag_data, sp->Tag_num, PostProcessTagRuleType, FALSE, FALSE);
 
     /* マージするタグ・文節の処理 */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
@@ -400,9 +400,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    (sp->bnst_data + i)->para_num != -1 &&
 	    sp->para_data[(sp->bnst_data + i)->para_num].status != 'x') {
 	    
-	    assign_cfeature(&((sp->bnst_data + i)->f), "提題受:30");
+	    assign_cfeature(&((sp->bnst_data + i)->f), "提題受:30", FALSE);
 	    assign_cfeature(&(((sp->bnst_data + i)->tag_ptr + 
-			       (sp->bnst_data + i)->tag_num - 1)->f), "提題受:30");
+			       (sp->bnst_data + i)->tag_num - 1)->f), "提題受:30", FALSE);
 	}
     }
 }
@@ -1052,7 +1052,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 		    }
 
 		    if (sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
-			assign_cfeature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), "格フレーム決定");
+			assign_cfeature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), "格フレーム決定", FALSE);
 		    }
 		}
 		/* 格フレームない場合も格解析結果を書く */
@@ -1119,7 +1119,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     /* 構造決定後のルール適用
        この文節ルールをheadのタグ単位にも適用するために、最後の引き数をTRUEにする */
-    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE);
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, FALSE);
 
     return after_decide_dpnd(sp);
 }
@@ -1147,7 +1147,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 		}
 		strcat(buffer, buffer2);
 	    }
-	    assign_cfeature(&(sp->bnst_data[i].f), buffer);
+	    assign_cfeature(&(sp->bnst_data[i].f), buffer, FALSE);
 	}
 }
 

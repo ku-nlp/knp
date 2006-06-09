@@ -404,7 +404,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	else {
 	    sprintf(feature_buffer, "NTT:%s", used_key);
 	}
-	assign_cfeature(&(ptr->f), feature_buffer);
+	assign_cfeature(&(ptr->f), feature_buffer, FALSE);
     }
 }
 

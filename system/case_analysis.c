@@ -1197,9 +1197,21 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
     }
 
+    /* -nbestのため出力 */
     if (OptDisplay == OPT_NBEST) {
+	/* featureを仮付与 */
+	assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE);
+
 	sp->score = Work_mgr.score;
 	print_result(sp, 0);
+
+	/* 仮付与したfeatureを削除 */
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    delete_temp_feature(&(sp->bnst_data[i].f));
+	}
+	for (i = 0; i < sp->Tag_num; i++) {
+	    delete_temp_feature(&(sp->tag_data[i].f));
+	}
     }
         
     /* 後処理 */
@@ -1368,7 +1380,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
 			cpm_ptr->cmm[0].result_lists_p[0].score[num]);
 	    }
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 	}
     }
 }
@@ -1394,7 +1406,7 @@ void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    if (pos != MATCH_SUBJECT) {
 		sprintf(feature_buffer, "直前格マッチ:%d", 
 			(int)cpm_ptr->cmm[0].result_lists_p[0].score[num]);
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 	    }
 	}
     }
@@ -1490,18 +1502,18 @@ void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, 
     if ((cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
 	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(fpp, feature_buffer);
+	assign_cfeature(fpp, feature_buffer, FALSE);
     }
     /* 格フレームが<主体>をもつかどうか */
     else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
 	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(fpp, feature_buffer);
+	assign_cfeature(fpp, feature_buffer, FALSE);
     }
 
     /* 格フレームが<補文>をもつかどうか *
     if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
 	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(fpp, feature_buffer);
+	assign_cfeature(fpp, feature_buffer, FALSE);
     }
     */
 }
@@ -1522,7 +1534,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
     /* 「格フレーム変化」フラグがついている格フレームを使用した場合 */
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
-	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化");
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化", FALSE);
     }
 
     /* 入力側の各格要素の記述 */
@@ -1553,7 +1565,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	else {
 	    sprintf(feature_buffer, "解析連格:%s", relation);
 	}
-	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer);
+	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, FALSE);
     }
 
     /* 格解析結果 buffer溢れ注意 */
@@ -1678,7 +1690,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 }
 
 /*==================================================================*/
@@ -1686,7 +1698,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     if (alt_num == 0) {
-	assign_cfeature(&(m_ptr->f), f_str);
+	assign_cfeature(&(m_ptr->f), f_str, FALSE);
     }
     else {
 	int alt_count = 1;
@@ -1706,7 +1718,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    /* このALTを最終結果の形態素にする */
 		    copy_mrph(m_ptr, &m);
 		    delete_cfeature(&(m_ptr->f), fp->cp);
-		    assign_cfeature(&(m_ptr->f), f_str);
+		    assign_cfeature(&(m_ptr->f), f_str, FALSE);
 		    break;
 		}
 		alt_count++;
@@ -1859,7 +1871,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 	if ((rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr)) && 
 	    !strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
 		     strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消", FALSE);
 	    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "名詞曖昧性解消"); /* あれば削除 */
 	    return;
 	}
@@ -1884,7 +1896,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 		    /* このALTを最終結果の形態素にする */
 		    copy_mrph(cpm_ptr->pred_b_ptr->head_ptr, &m);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
-		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消");
+		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消", FALSE);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "名詞曖昧性解消"); /* あれば削除 */
 		    break;
 		}

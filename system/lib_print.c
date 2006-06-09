@@ -606,7 +606,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 
     for (i = 0; i < sp->Para_num; i++) {
 	sprintf(buffer, "ÊÂÎóÎà»÷ÅÙ:%.3f", sp->para_data[i].max_score);
-	assign_cfeature(&(sp->bnst_data[sp->para_data[i].key_pos].f), buffer);
+	assign_cfeature(&(sp->bnst_data[sp->para_data[i].key_pos].f), buffer, FALSE);
     }
 }
 
@@ -1196,7 +1196,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    if (i != 0) strcat(str, " ");
 	    strcat(str, list[i]);
 	}
-	assign_cfeature(&(bp->f), str);
+	assign_cfeature(&(bp->f), str, FALSE);
 	free(str);
 	free(list);
     }

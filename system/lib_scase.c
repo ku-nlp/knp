@@ -189,7 +189,7 @@ int		OptUseScase;
 
 		print_buffer = (char *)malloc_data(strlen(str_buffer) + 10, "get_scase_code");
 		sprintf(print_buffer, "SCASEUSE:%s", str_buffer);
-		assign_cfeature(&(ptr->f), print_buffer);
+		assign_cfeature(&(ptr->f), print_buffer, FALSE);
 		free(print_buffer);
 	    }
 

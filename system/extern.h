@@ -256,7 +256,7 @@ extern void memo_by_program(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
-extern void assign_cfeature(FEATURE **fpp, char *fname);
+extern void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag);
 extern int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd, void *p1, void *p2);
 extern void print_one_feature(char *cp, FILE *filep);
 extern void print_feature(FEATURE *fp, FILE *filep);
@@ -265,7 +265,7 @@ extern void print_feature2(FEATURE *fp, FILE *filep);
 extern void print_some_feature(FEATURE *fp, FILE *filep);
 extern int feature_AND_match(FEATURE *fp, FEATURE *fd, void *p1, void *p2);
 extern void string2feature_pattern(FEATURE_PATTERN *f, char *cp);
-extern void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr);
+extern void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_flag);
 extern void list2feature_pattern(FEATURE_PATTERN *f, CELL *cell);
 extern void list2feature(CELL *cp, FEATURE **fpp);
 extern void clear_feature(FEATURE **fpp);
@@ -375,7 +375,7 @@ extern int quote(SENTENCE_DATA *sp);
 extern int imi2feature(char *str, MRPH_DATA *m_ptr);
 extern int read_mrph(SENTENCE_DATA *sp, FILE *fp);
 extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
-extern void assign_general_feature(void *data, int size, int flag, int also_assign_flag);
+extern void assign_general_feature(void *data, int size, int flag, int also_assign_flag, int temp_assign_flag);
 extern int make_bunsetsu(SENTENCE_DATA *sp);
 extern int make_bunsetsu_pm(SENTENCE_DATA *sp);
 extern void print_mrphs(SENTENCE_DATA *sp, int flag);

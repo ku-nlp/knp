@@ -1498,7 +1498,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d:%d %s", 
 	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
 	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, class, ecp);
-    assign_cfeature(&(em_ptr->f), buffer);
+    assign_cfeature(&(em_ptr->f), buffer, FALSE);
     free(buffer);
 }
 
@@ -1553,7 +1553,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 	    c2->ef->c_location >= 0 ? loc_code_to_str(c2->ef->c_location) : "NONE", 
 	    sid2, n2, 
 	    ecp);
-    assign_cfeature(&(em_ptr->f), buffer);
+    assign_cfeature(&(em_ptr->f), buffer, FALSE);
     free(buffer);
 }
 
@@ -2360,7 +2360,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			    loc_code_to_str((ante_cands + i)->ef->c_location), 
 			    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
 			    (ante_cands + i)->ef->similarity, score);
-		    assign_cfeature(&(em_ptr->f), feature_buffer);
+		    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 		    
 		    /* 例外タグ以外 */
 		    if ((ante_cands + i)->s) {
@@ -2415,7 +2415,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			    loc_code_to_str((ante_cands + i)->ef->c_location), 
 			    (ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
 			    (ante_cands + i)->ef->similarity, score);
-		    assign_cfeature(&(em_ptr->f), feature_buffer);
+		    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
 		    free(ecf);
 		    free(cp);
@@ -2468,7 +2468,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			loc_code_to_str((ante_cands + i)->ef->c_location), 
 			(ante_cands + i)->ef->c_distance, (ante_cands + i)->tp ? (ante_cands + i)->tp->num : -1, 
 			(ante_cands + i)->ef->similarity, (float)vote[i]/cand_num);
-		assign_cfeature(&(em_ptr->f), feature_buffer);
+		assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    }
 	    free(vote);
 	}
@@ -2615,7 +2615,7 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
 	    ef->similarity, score);
-    assign_cfeature(&(em_ptr->f), feature_buffer);
+    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
     /* classifierがpositiveと分類 */
     if (score > 0) {
@@ -2792,7 +2792,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
 	    ef->similarity, ef->similarity);
-    assign_cfeature(&(em_ptr->f), feature_buffer);
+    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
     if (!AlreadyDecidedFlag && score > maxscore) {
 	maxscore = score;
@@ -4203,7 +4203,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	if (str_eq(maxtag, "不特定-人")) {
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
 
@@ -4214,7 +4214,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
@@ -4222,7 +4222,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	else if (str_eq(maxtag, "不特定-状況")) {
 	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_CASE, 0, 0);
 	    return 1;
@@ -4261,7 +4261,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		    maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		    etc_buffer, maxi);
 	}
-	assign_cfeature(&(em_ptr->f), feature_buffer);
+	assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 			       maxs, maxi, maxscore, distance);
@@ -4373,7 +4373,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	if (str_eq(maxtag, "不特定-人")) {
 	    sprintf(feature_buffer, "C用;【不特定-人】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
 
@@ -4384,7 +4384,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	else if (str_eq(maxtag, "一人称")) {
 	    sprintf(feature_buffer, "C用;【一人称】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
@@ -4392,7 +4392,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	else if (str_eq(maxtag, "不特定-状況")) {
 	    sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	    assign_cfeature(&(em_ptr->f), feature_buffer);
+	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_CASE, 0, 0);
 	    return 1;
@@ -4419,7 +4419,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		distance, maxi, 
 		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		etc_buffer, maxi);
-	assign_cfeature(&(em_ptr->f), feature_buffer);
+	assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 			       maxs, maxi, maxscore, distance);
@@ -4458,7 +4458,7 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
 	sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
-	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer);
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 	return 0;
     }
     return 1;
@@ -4995,7 +4995,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    check_feature((sp->tag_data + i)->f, "係:ノ格") && 
 	    (sp->tag_data + i)->parent && 
 	    check_feature((sp->tag_data + i)->parent->f, "主題表現")) {
-	    assign_cfeature(&((sp->tag_data + i)->f), "準主題表現");
+	    assign_cfeature(&((sp->tag_data + i)->f), "準主題表現", FALSE);
 	}
     }
 }
@@ -5224,7 +5224,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    sscanf((*fpp)->cp + 11, "%d;C用;%[^;];%[^;];%s", &num, 
 		   target, rel, rest_buffer);
 	    sprintf(feature_buffer, "C用;%s;=;%s", target, rest_buffer);
-	    assign_cfeature(&((sp->tag_data + num)->f), feature_buffer);
+	    assign_cfeature(&((sp->tag_data + num)->f), feature_buffer, FALSE);
 	    free((*fpp)->cp);
 	    if (pre_fp == NULL) {
 		next = (*fpp)->next;
@@ -5295,13 +5295,13 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		     (check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "人名") || 
 		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "地名") || 
 		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "組織名"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし", FALSE);
 		continue;
 	    }
 	    if (cpm_ptr->cf.type == CF_PRED && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
 		      check_feature(cpm_ptr->pred_b_ptr->f, "NE内"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし", FALSE);
 		continue;
 	    }
 
@@ -5309,7 +5309,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    if (cpm_ptr->cf.type == CF_NOUN && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
 		      check_feature(cpm_ptr->pred_b_ptr->f, "NE内"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし", FALSE);
 		continue;
 	    }
 
@@ -5318,7 +5318,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		(check_feature(cpm_ptr->pred_b_ptr->f, "共参照") ||
 		 !check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補")||
 		 check_feature(cpm_ptr->pred_b_ptr->f, "一人称"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし");
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし", FALSE);
 		continue;
 	    }
 

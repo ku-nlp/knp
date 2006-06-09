@@ -396,8 +396,8 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	    sprintf(buffer1, "ÊÂ·ë¶ç¿ô:%d", sp->para_manager[i].part_num);
 	    sprintf(buffer2, "ÊÂ·ëÊ¸Àá¿ô:%d", 
 		    sp->para_manager[i].end[1] - sp->para_manager[i].start[1] + 1);
-	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer1);
-	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer2);
+	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer1, FALSE);
+	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer2, FALSE);
 	}
     }
 

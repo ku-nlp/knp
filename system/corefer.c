@@ -132,7 +132,7 @@ char *SynonymFile;
 		    while (strncmp(cp, ":", 1)) cp++;
 		    /* register_entity_cache(cp + 1); */
 		    sprintf(buf, "照応詞候補:%s", cp + 1);
-		    assign_cfeature(&((tag_ptr + j)->f), buf);
+		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		    continue;
 		} 
 		
@@ -162,7 +162,7 @@ char *SynonymFile;
 		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
 		    /* register_entity_cache(word); */
 		    sprintf(buf, "照応詞候補:%s", word);
-		    assign_cfeature(&((tag_ptr + j)->f), buf);
+		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
 	    }
 	    
@@ -199,7 +199,7 @@ char *SynonymFile;
 		}
 		if (strncmp(word, "\0", 1)) {
 		    sprintf(buf, "照応詞候補:%s", word);
-		    assign_cfeature(&((tag_ptr + j)->f), buf);
+		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		    /* register_entity_cache(word); */
 		}
 	    }
@@ -355,18 +355,18 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 				word, setubi ? setubi : "", j, k, 
 				(sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		    }
-		    assign_cfeature(&((sp->tag_data + i)->f), buf);
-		    assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
+		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
+		    assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
 
 		    /* COREFER_IDを付与 */   
 		    if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
-			assign_cfeature(&((sp->tag_data + i)->f), cp);
+			assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
 		    }
 		    else {
 			COREFER_ID++;
 			sprintf(CO, "COREFER_ID:%d", COREFER_ID);
-			assign_cfeature(&((sp->tag_data + i)->f), CO);
-			assign_cfeature(&(tag_ptr->f), CO);
+			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
+			assign_cfeature(&(tag_ptr->f), CO, FALSE);
 		    }
     
 		    /* 固有表現とcoreferの関係にある語を固有表現とみなす */
@@ -437,21 +437,21 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 	    cp, j, sp->KNPSID ? sp->KNPSID + 5 : "?", 
 	    tag_ptr - sp->tag_data);
-    assign_cfeature(&(tag_ptr->f), buf);
-    assign_cfeature(&(tag_ptr->f), "共参照(役職)");
+    assign_cfeature(&(tag_ptr->f), buf, FALSE);
+    assign_cfeature(&(tag_ptr->f), "共参照(役職)", FALSE);
     
     /* COREFER_IDを付与 */   
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
-	assign_cfeature(&((tag_ptr_cp - 1)->f), cp);
+	assign_cfeature(&((tag_ptr_cp - 1)->f), cp, FALSE);
     }
     else if (cp = check_feature((tag_ptr_cp - 1)->f, "COREFER_ID")) {
-	assign_cfeature(&(tag_ptr->f), cp);
+	assign_cfeature(&(tag_ptr->f), cp, FALSE);
     }
     else {
 	COREFER_ID++;
 	sprintf(CO, "COREFER_ID:%d", COREFER_ID);
-	assign_cfeature(&(tag_ptr->f), CO);
-			assign_cfeature(&((sp->tag_data + i)->f), CO);
+	assign_cfeature(&(tag_ptr->f), CO, FALSE);
+	assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
     }
     
     return 1;
@@ -557,21 +557,21 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 			    cp, j, k, 
 			    (sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		}
-		assign_cfeature(&((sp->tag_data + i)->f), buf);
-		assign_cfeature(&((sp->tag_data + i)->f), "共参照"); 
+		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
+		assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
 		
 		/* COREFER_IDを付与 */   
 		if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
-		    assign_cfeature(&((sp->tag_data + i)->f), cp);
+		    assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
 		}
 		else if ((cp = check_feature((sp->tag_data + i)->f, "COREFER_ID"))) {
-		    assign_cfeature(&(tag_ptr->f), cp);
+		    assign_cfeature(&(tag_ptr->f), cp, FALSE);
 		}
 		else {
 		    COREFER_ID++;
 		    sprintf(CO, "COREFER_ID:%d", COREFER_ID);
-		    assign_cfeature(&((sp->tag_data + i)->f), CO);
-		    assign_cfeature(&(tag_ptr->f), CO);
+		    assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
+		    assign_cfeature(&(tag_ptr->f), CO, FALSE);
 		}
 		return 1;
 	    }    

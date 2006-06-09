@@ -1658,7 +1658,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		    }
 		}
 		if (2 * hiragana_count > t_ptr->cf_num) {
-		    assign_cfeature(&(t_ptr->f), "代表ひらがな");
+		    assign_cfeature(&(t_ptr->f), "代表ひらがな", FALSE);
 		}
 	    }
 
