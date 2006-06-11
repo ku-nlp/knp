@@ -143,7 +143,7 @@ extern char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num);
 extern int MatchPP(int n, char *pp);
 extern int MatchPPn(int n, int *list);
 extern void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
-extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int lastflag);
+extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int temp_assign_flag);
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag);
 extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);

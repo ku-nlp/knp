@@ -5248,7 +5248,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, l, mainflag;
+    int i, j, k, l;
     float score;
     ELLIPSIS_MGR workem, maxem, maxem_copula;
     SENTENCE_DATA *sp_new;
@@ -5326,14 +5326,6 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
 	    cmm_ptr = &(cpm_ptr->cmm[0]);
 	    cf_ptr = cmm_ptr->cf_ptr;
-
-	    /* その文の主節 */
-	    if (check_feature(cpm_ptr->pred_b_ptr->f, "主節")) {
-		mainflag = 1;
-	    }
-	    else {
-		mainflag = 0;
-	    }
 
 	    /* もっともスコアがよくなる順番で省略の指示対象を決定する */
 
@@ -5447,7 +5439,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		}
 
 		/* 格・省略解析の結果をfeatureへ */
-		record_case_analysis(sp, cpm_ptr, &maxem, mainflag);
+		record_case_analysis(sp, cpm_ptr, &maxem, FALSE);
 
 		/* 格・省略解析の結果を用いて形態素曖昧性を解消 */
 		verb_lexical_disambiguation_by_case_analysis(cpm_ptr);

@@ -1202,6 +1202,11 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	/* featureを仮付与 */
 	assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE);
 
+	/* 格解析の結果をfeatureとして仮付与 */
+	for (i = 0; i < Work_mgr.pred_num; i++) {
+	    record_case_analysis(sp, &(Work_mgr.cpm[i]), NULL, TRUE);
+	}
+
 	sp->score = Work_mgr.score;
 	print_result(sp, 0);
 
@@ -1520,9 +1525,11 @@ void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, 
 
 /*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
-			  ELLIPSIS_MGR *em_ptr, int lastflag)
+			  ELLIPSIS_MGR *em_ptr, int temp_assign_flag)
 /*==================================================================*/
 {
+    /* temp_assign_flag: TRUEのときfeatureを「仮付与」する */
+
     int i, j, num, sent_n, tag_n, dist_n;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp;
     ELLIPSIS_COMPONENT *ccp;
@@ -1532,9 +1539,13 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	decide_voice(sp, cpm_ptr);
     }
 
+    /* 主節かどうかチェック
+    check_feature(cpm_ptr->pred_b_ptr->f, "主節")
+    */
+
     /* 「格フレーム変化」フラグがついている格フレームを使用した場合 */
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
-	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化", FALSE);
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化", temp_assign_flag);
     }
 
     /* 入力側の各格要素の記述 */
@@ -1565,7 +1576,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	else {
 	    sprintf(feature_buffer, "解析連格:%s", relation);
 	}
-	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, FALSE);
+	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, temp_assign_flag);
     }
 
     /* 格解析結果 buffer溢れ注意 */
@@ -1690,7 +1701,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
 }
 
 /*==================================================================*/

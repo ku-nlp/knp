@@ -334,6 +334,8 @@
 void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 /*==================================================================*/
 {
+    /* temp_assign_flag: TRUEのとき「仮付与」を頭につける */
+
     char type[256];
 
     /* 上書きの可能性をチェック */

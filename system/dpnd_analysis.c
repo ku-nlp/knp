@@ -1038,8 +1038,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 			   record_closest_cc_match(sp, &(sp->Best_mgr->cpm[i])); */
 
 			/* 格解析の結果を featureへ */
-			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
-					     check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
+			record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, FALSE);
 
 			/* 格解析の結果を用いて形態素曖昧性を解消 */
 			verb_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
@@ -1059,8 +1058,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 		else if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 			 (sp->Best_mgr->cpm[i].result_num == 0 || 
 			  sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1)) {
-		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, 
-					 check_feature(sp->Best_mgr->cpm[i].pred_b_ptr->f, "主節") ? 1 : 0);
+		    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, FALSE);
 		}
 	    }
 	}
