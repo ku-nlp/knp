@@ -1,3 +1,23 @@
+2006-06-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	gxp上でtimeoutしない問題に対処 (thanks to tau@logos.t.u-tokyo.ac.jp)
+
+2006-06-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/context.c, system/dpnd_analysis.c, system/extern.h, system/feature.c:
+	nbest出力時にも格解析結果を出力するように修正
+
+2006-06-09  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/context.c, system/corefer.c, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/lib_scase.c, system/lib_sm.c, system/main.c, system/para_relation.c, system/proper.c, system/read_data.c, system/thesaurus.c:
+	nbest出力時に後処理ルールを適用するように修正
+
+2006-06-07  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase:
+	「〜ヘと(向かう)」の係タイプを「係:ヘ格」に修正
+
 2006-06-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/corefer.c
