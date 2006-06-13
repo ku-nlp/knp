@@ -789,6 +789,18 @@ extern int	EX_match_subject;
     }
 
 #ifndef _WIN32
+    {
+	sigset_t set;
+	if (-1 == sigfillset(&set)) {
+	    perror("sigfullset:"); 
+	    exit(1);
+	}
+	if (-1 == sigprocmask(SIG_UNBLOCK, &set, 0)) {
+	    perror("sigprocmask:"); 
+	    exit(1);
+	}
+    }
+
     signal(SIGALRM, timeout_function);
 #endif
 }
