@@ -1,3 +1,8 @@
+2006-06-21  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	「〜していらした」を一文節にまとめるようにした
+
 2006-06-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:
