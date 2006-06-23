@@ -666,7 +666,6 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	sm_num++;
 	sm_print_num++;
 	if (sm_num >= SM_ELEMENT_MAX){
-	    fprintf(stderr, ";;; Not enough sm_num !!\n");
 	    break;
 	}
 
@@ -1546,29 +1545,30 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 					  "make_default_cframe");
     }
 
-    cp = check_feature(t_ptr->f, "ÍÑ¸À");
-    if (cp && !strcmp(cp, "ÍÑ¸À:È½")) {
+    cf_ptr->pred_type[0] = '\0';
+    cf_ptr->cf_address = -1;
+    if (cp = check_feature(t_ptr->f, "ÍÑ¸À")) {
 	_make_ipal_cframe_pp(cf_ptr, "¥¬¡ö", num, CF_PRED);
 	_make_ipal_cframe_sm(cf_ptr, "¼çÂÎ½à", num++, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	cf_ptr->cf_address = -1;	/* ¡ú É½¼¨¤¹¤ë¤¿¤á¤Ë¤³¤ÎÃÍ¤òÊÑ¤¨¤ëÉ¬Í×¤¬¤¢¤ë */
-	strcpy(cf_ptr->pred_type, "È½");
-    }
-    else {
-	_make_ipal_cframe_pp(cf_ptr, "¥¬¡ö", num++, CF_PRED);
-	_make_ipal_cframe_pp(cf_ptr, "¥ò¡ö", num++, CF_PRED);
-	_make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++, CF_PRED);
-	_make_ipal_cframe_pp(cf_ptr, "¥Ø¡ö", num++, CF_PRED);
-	_make_ipal_cframe_pp(cf_ptr, "¥è¥ê¡ö", num++, CF_PRED);
-	cf_ptr->cf_address = -1;
-	cf_ptr->pred_type[0] = '\0';
-	if (cp) {
-	    if (!strcmp(cp, "ÍÑ¸À:Æ°")) {
-		strcpy(cf_ptr->pred_type, "È½");
-	    }
-	    else if (!strcmp(cp, "ÍÑ¸À:·Á")) {
-		strcpy(cf_ptr->pred_type, "·Á");
-	    }
+
+	if (!strcmp(cp, "ÍÑ¸À:È½")) {
+	    strcpy(cf_ptr->pred_type, "È½");
+	}
+	else if (!strcmp(cp, "ÍÑ¸À:Æ°")) {
+	    strcpy(cf_ptr->pred_type, "Æ°");
+	    _make_ipal_cframe_pp(cf_ptr, "¥ò¡ö", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "¥Ø¡ö", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "¥è¥ê¡ö", num++, CF_PRED);
+	}
+	else if (!strcmp(cp, "ÍÑ¸À:·Á")) {
+	    strcpy(cf_ptr->pred_type, "·Á");
+	    _make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "¥è¥ê¡ö", num++, CF_PRED);
+	}
+	else {
+	    return FALSE;
 	}
     }
 
@@ -1587,7 +1587,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     f_num_inc(start, &f_num);
     Case_frame_num++;
     t_ptr->cf_num = 1;
-    return 1;
+    return TRUE;
 }
 
 /*==================================================================*/
@@ -1883,7 +1883,12 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	if (aflag == FALSE) {
 	    ret = 1 - ret;
 	}
-	ret = log(ret);
+	if (ret == 0) {
+	    ret = UNKNOWN_CASE_SCORE;
+	}
+	else {
+	    ret = log(ret);
+	}
     }
     else {
 	if (VerboseLevel >= VERBOSE3) {
