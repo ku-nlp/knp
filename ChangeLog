@@ -1,3 +1,9 @@
+2006-06-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	エラーメッセージ(Not enough sm_num)を抑制
+	格フレームがない場合に作るdefault格フレームを修正
+
 2006-06-21  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
