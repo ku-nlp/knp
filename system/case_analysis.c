@@ -347,23 +347,21 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 
 	/* 格フレーム設定 */
 	for (i = 0; i < b_ptr->cf_num; i++) {
-	    /* 格フレームが1個ではないとき */
-	    if (b_ptr->cf_num != 1) {
-		/* OR の格フレームを除く */
-		if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
-		    continue;
-		}
-		else if ((hiragana_prefer_flag > 0 && check_str_type((b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA) || 
-			 (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA)) {
-		    continue;
-		}
+	    /* OR の格フレームを除く */
+	    if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
+		continue;
+	    }
+	    else if ((hiragana_prefer_flag > 0 && check_str_type((b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA) || 
+		     (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA)) {
+		continue;
 	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
 	}
 
-	if (frame_num == 0) {
-	    cpm_ptr->score = -2;
-	    return -2;
+	if (frame_num == 0) { /* 上の処理でひとつも残らないとき */
+	    for (i = 0; i < b_ptr->cf_num; i++) {
+		(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
+	    }
 	}
 
 	cpm_ptr->result_num = 0;
@@ -786,7 +784,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 
     /* 格フレームの有無をチェック: set_pred_caseframe()の条件に従う */
     if (t_ptr->para_top_p != TRUE && 
-	t_ptr->cf_num > 0) {
+	t_ptr->cf_num > 0) { /* 格フレーム辞書になくてもデフォルト格フレームがあるので1以上になる */
 
 	if (t_mgr->pred_num >= CPM_MAX) {
 	    fprintf(stderr, ";; too many predicates in a sentence. (> %d)\n", CPM_MAX);
@@ -1677,7 +1675,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			}
 		    }
 		}
-
 
 		word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
 		tag_n = cpm_ptr->elem_b_ptr[num]->num;
