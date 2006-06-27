@@ -94,19 +94,57 @@
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j;
+    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX];
+    char	*cp;
+    BNST_DATA	*pre_bp = NULL;
     MRPH_DATA	*m_ptr;
     TAG_DATA	*t_ptr;
 
+    /* ノードの挿入を考慮しながら、基本句、文節の変換テーブルを作成 */
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (t_ptr->num == -1) {
+	    continue; /* 後処理でマージされたタグ */
+	}
+
+	/* 追加ノード (現在はガ格固定) */
+	if (pre_bp != t_ptr->b_ptr && 
+	    (cp = check_feature(t_ptr->b_ptr->f, "Ｔ省略ノード挿入"))) {
+	    count++;
+	    b_count++;
+	    pre_bp = t_ptr->b_ptr;
+	}
+
+	t_table[i] = count++;
+
+	if (t_ptr->bnum >= 0) { /* 文節行 */
+	    b_table[t_ptr->bnum] = b_count++;
+	}
+    }
+
+    count = 0;
+    pre_bp = NULL;
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->num == -1) {
 	    continue; /* 後処理でマージされたタグ */
 	}
 	if (flag == 1) {
+	    /* 追加ノード (現在はガ格固定) */
+	    if (pre_bp != t_ptr->b_ptr && 
+		(cp = check_feature(t_ptr->b_ptr->f, "Ｔ省略ノード挿入"))) {
+		count++;
+		fprintf(Outfp, "* %dD <ノード挿入><係:ガ格>\n", b_table[t_ptr->b_ptr->num]); /* b_table[t_ptr->b_ptr->dpnd_head] */
+		fprintf(Outfp, "+ %dD <ノード挿入><係:ガ格><解析格:ガ>\n", 
+			t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
+		/* t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->dpnd_head] * head tagの係り先 */
+		fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp + 17, cp + 17, cp + 17);
+		fprintf(Outfp, "が が が 助詞 9 格助詞 1 * 0 * 0 NIL\n");
+		pre_bp = t_ptr->b_ptr;
+	    }
+
 	    /* 文節行 */
 	    if (t_ptr->bnum >= 0) {
 		fprintf(Outfp, "* %d%c", 
-			(sp->bnst_data + t_ptr->bnum)->dpnd_head, 
+			(sp->bnst_data + t_ptr->bnum)->dpnd_head == -1 ? -1 : b_table[(sp->bnst_data + t_ptr->bnum)->dpnd_head], 
 			(sp->bnst_data + t_ptr->bnum)->dpnd_type);
 		if ((sp->bnst_data + t_ptr->bnum)->f) {
 		    fputc(' ', Outfp);
@@ -114,7 +152,8 @@
 		}
 		fputc('\n', Outfp);
 	    }
-	    fprintf(Outfp, "+ %d%c", t_ptr->dpnd_head, t_ptr->dpnd_type);
+
+	    fprintf(Outfp, "+ %d%c", t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head], t_ptr->dpnd_type);
 	    if (t_ptr->f) {
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);

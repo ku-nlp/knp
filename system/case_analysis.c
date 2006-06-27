@@ -1601,6 +1601,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			cp + 7);
 		strcat(feature_buffer, buffer);
+
+		if (OptPostProcess) { /* 後処理の時 */
+		    sprintf(buffer, "Ｔ省略ノード挿入:%s", cp + 7); /* ノード挿入のためのfeature */
+		    assign_cfeature(&(cpm_ptr->pred_b_ptr->b_ptr->f), buffer, FALSE);
+		}
 	    }
 	    else {
 		/* 割り当てなし */
