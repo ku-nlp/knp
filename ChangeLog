@@ -1,3 +1,18 @@
+2006-06-29  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/extern.h, system/main.c:
+	人称代名詞のノードを補うオプションを-recover-personに変更
+
+	* system/case_analysis.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c:
+	人称代名詞の基本句ノードを補う枠組みを改正
+
+	* rule/bnst_after_dpnd.rule: deleted.
+
+	* rule/tag_after_dpnd_and_case.rule: added.
+
+	* knprc.in:
+	bnst_after_dpnd.rule => tag_after_dpnd_and_case.rule
+
 2006-06-28  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/lib_print.c:
