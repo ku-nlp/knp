@@ -1198,7 +1198,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     /* -nbestのため出力 */
     if (OptDisplay == OPT_NBEST) {
 	/* featureを仮付与 */
-	assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE);
+	/* assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE); */
+	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);
 
 	/* 格解析の結果をfeatureとして仮付与 */
 	for (i = 0; i < Work_mgr.pred_num; i++) {
@@ -1522,6 +1523,37 @@ void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, 
 }
 
 /*==================================================================*/
+void assign_case_component_feature(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
+				   int temp_assign_flag)
+/*==================================================================*/
+{
+    int i, num;
+    char feature_buffer[DATA_LEN], *word;
+
+    /* 用言の各スロットの割り当てを用言featureに */
+    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+
+	/* 割り当てなし */
+	if (num == UNASSIGNED) {
+	    sprintf(feature_buffer, "格要素-%s:NIL", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+	}
+	/* 割り当てあり (省略以外の場合) */
+	else if (cpm_ptr->elem_b_num[num] > -2) {
+	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
+	    if (word) {
+		sprintf(feature_buffer, "格要素-%s:%s", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), word);
+		free(word);
+	    }
+	}
+
+	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+    }
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int temp_assign_flag)
 /*==================================================================*/
@@ -1577,7 +1609,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, temp_assign_flag);
     }
 
-    /* 格解析結果 buffer溢れ注意 */
+    /* => ★「格要素-ガ」などを集めるように修正する */
     sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	/* 格フレームの意味情報をfeatureとして出力 */
@@ -1593,26 +1625,10 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {
-	    /* 動作主featureをチェック */
-	    if (!OptEllipsis && /* 省略解析ではない場合 */
-		MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ガ") && 
-		(cp = check_feature(cpm_ptr->pred_b_ptr->f, "動作主"))) {
-		sprintf(buffer, "%s/E/%s/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			cp + 7);
-		strcat(feature_buffer, buffer);
-
-		if (OptRecoverPerson) { /* 省略された人称代名詞を補うとき */
-		    sprintf(buffer, "Ｔ省略ノード挿入:%s", cp + 7); /* ノード挿入のためのfeature */
-		    assign_cfeature(&(cpm_ptr->pred_b_ptr->b_ptr->f), buffer, FALSE);
-		}
-	    }
-	    else {
-		/* 割り当てなし */
-		sprintf(buffer, "%s/U/-/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
-		strcat(feature_buffer, buffer);
-	    }
+	    /* 割り当てなし */
+	    sprintf(buffer, "%s/U/-/-/-/-", 
+		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
+	    strcat(feature_buffer, buffer);
 	}
 	/* 割り当てあり */
 	else {

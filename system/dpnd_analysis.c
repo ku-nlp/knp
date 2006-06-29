@@ -972,6 +972,24 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 {
     int i, j;
     TAG_DATA *check_b_ptr;
+
+    /* 依存構造・格構造決定後の処理 */
+
+    /* 格解析結果を用言基本句featureへ */
+    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+	for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+	    assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
+	}
+    }
+
+    /* 構造決定後のルール適用準備 */
+    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+    make_dpnd_tree(sp);
+
+    /* 構造決定後のルール適用 */
+    /* assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, FALSE); */
+    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
+
     
     /* 解析済: 構造は与えられたもの1つのみ */
     if (OptInput & OPT_PARSED) {
@@ -1108,16 +1126,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     if (OptAnalysis == OPT_CASE) {
 	ClearCPMcache();
     }
-
-    /* 以下は構造決定後の処理 */
-
-    /* 構造決定後のルール適用準備 */
-    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-    make_dpnd_tree(sp);
-
-    /* 構造決定後のルール適用
-       この文節ルールをheadのタグ単位にも適用するために、最後の引き数をTRUEにする */
-    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, FALSE);
 
     return after_decide_dpnd(sp);
 }

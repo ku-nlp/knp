@@ -9,6 +9,23 @@
 ====================================================================*/
 #include "knp.h"
 
+char mrph_buffer[SMALL_DATA_LEN];
+
+/*==================================================================*/
+		       char *pp2mrph(char *pp)
+/*==================================================================*/
+{
+    char *hira_pp = katakana2hiragana(pp);
+    int hinsi_id = get_hinsi_id("助詞");
+
+    sprintf(mrph_buffer, "%s %s %s 助詞 %d 格助詞 %d * 0 * 0 NIL", 
+	    hira_pp, hira_pp, hira_pp, 
+	    hinsi_id, 
+	    get_bunrui_id("格助詞", hinsi_id));
+
+    return mrph_buffer;
+}
+
 /*==================================================================*/
 	     char pos2symbol(char *hinshi, char *bunrui)
 /*==================================================================*/
@@ -95,7 +112,8 @@
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
     int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX];
-    char	*cp;
+    char	*cp, cc_feature[SMALL_DATA_LEN];
+    FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
     MRPH_DATA	*m_ptr;
     TAG_DATA	*t_ptr;
@@ -106,11 +124,16 @@
 	    continue; /* 後処理でマージされたタグ */
 	}
 
-	/* 追加ノード (現在はガ格固定) */
-	if (pre_bp != t_ptr->b_ptr && 
-	    (cp = check_feature(t_ptr->b_ptr->f, "Ｔ省略ノード挿入"))) {
-	    count++;
-	    b_count++;
+	/* 追加ノード */
+	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* 文節の切れ目ごとにチェック */
+	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
+	    while (fp) {
+		if (!strncmp(fp->cp, "Ｔ省略人称-", 11)) { /* tag_after_dpnd_and_case.ruleで定義されている */
+		    count++;
+		    b_count++;
+    		}
+		fp = fp->next;
+	    }
 	    pre_bp = t_ptr->b_ptr;
 	}
 
@@ -121,23 +144,32 @@
 	}
     }
 
-    count = 0;
     pre_bp = NULL;
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->num == -1) {
 	    continue; /* 後処理でマージされたタグ */
 	}
 	if (flag == 1) {
-	    /* 追加ノード (現在はガ格固定) */
-	    if (pre_bp != t_ptr->b_ptr && 
-		(cp = check_feature(t_ptr->b_ptr->f, "Ｔ省略ノード挿入"))) {
-		count++;
-		fprintf(Outfp, "* %dD <ノード挿入><係:ガ格>\n", b_table[t_ptr->b_ptr->num]); /* b_table[t_ptr->b_ptr->dpnd_head] */
-		fprintf(Outfp, "+ %dD <ノード挿入><係:ガ格><解析格:ガ>\n", 
-			t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
-		/* t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->dpnd_head] * head tagの係り先 */
-		fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp + 17, cp + 17, cp + 17);
-		fprintf(Outfp, "が が が 助詞 9 格助詞 1 * 0 * 0 NIL\n");
+	    /* 追加ノード */
+	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
+		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
+		while (fp) {
+		    if (!strncmp(fp->cp, "Ｔ省略人称-", 11)) {
+			fprintf(Outfp, "* %dD <ノード挿入><係:%s格>\n", b_table[t_ptr->b_ptr->num], fp->cp + 11);
+			fprintf(Outfp, "+ %dD <ノード挿入><係:%s格><解析格:%s>\n", 
+				t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], fp->cp + 11, fp->cp + 11);
+			sprintf(cc_feature, "格要素-%s", fp->cp + 11); /* 中身を取得 */
+			cp = check_feature((t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f, cc_feature);
+			cp += strlen(cc_feature) + 1;
+			if (!strcmp(cp, "NIL")) {
+			    fprintf(stderr, ";;; tag_after_dpnd_and_case.rule is incoherent.\n");
+			    exit(1);
+			}
+			fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp, cp, cp);
+			fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 11));
+		    }
+		    fp = fp->next;
+		}
 		pre_bp = t_ptr->b_ptr;
 	    }
 
