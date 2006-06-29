@@ -13,6 +13,9 @@
 	* knprc.in:
 	bnst_after_dpnd.rule => tag_after_dpnd_and_case.rule
 
+	* rule/tag_after_dpnd_and_case.rule:
+	「モダリティ-評価」の整理
+
 2006-06-28  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/lib_print.c:
