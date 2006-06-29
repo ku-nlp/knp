@@ -1602,7 +1602,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			cp + 7);
 		strcat(feature_buffer, buffer);
 
-		if (OptPostProcess) { /* ¸å½èÍý¤Î»þ */
+		if (OptRecoverPerson) { /* ¾ÊÎ¬¤µ¤ì¤¿¿Í¾ÎÂåÌ¾»ì¤òÊä¤¦¤È¤­ */
 		    sprintf(buffer, "£Ô¾ÊÎ¬¥Î¡¼¥ÉÁÞÆþ:%s", cp + 7); /* ¥Î¡¼¥ÉÁÞÆþ¤Î¤¿¤á¤Îfeature */
 		    assign_cfeature(&(cpm_ptr->pred_b_ptr->b_ptr->f), buffer, FALSE);
 		}

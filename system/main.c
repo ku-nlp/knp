@@ -57,6 +57,7 @@ int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
 int		OptCopula;
 int		OptPostProcess;
+int		OptRecoverPerson;
 int		OptNE;
 int		OptNEcache;
 int		OptNEend;
@@ -156,6 +157,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureReferedNum = 0;
     OptCopula = 0;
     OptPostProcess = 0;
+    OptRecoverPerson = 0;
     OptNE = 0;
     OptNEcache = 0;
     OptNEend = 0;
@@ -594,6 +596,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-postprocess")) {
 	    OptPostProcess = 1;
+	}
+	else if (str_eq(argv[0], "-recover-person")) {
+	    OptRecoverPerson = 1;
 	}
 	else if (str_eq(argv[0], "-def-sentence")) {
 	    ;

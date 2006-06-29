@@ -61,6 +61,7 @@ extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptAddSvmFeatureReferedNum;
 extern int		OptCopula;
 extern int		OptPostProcess;
+extern int		OptRecoverPerson;
 extern int		OptNE;
 extern int		OptNEcache;
 extern int		OptNEend;
