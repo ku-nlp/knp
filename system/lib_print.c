@@ -12,10 +12,11 @@
 char mrph_buffer[SMALL_DATA_LEN];
 
 /*==================================================================*/
-		       char *pp2mrph(char *pp)
+		 char *pp2mrph(char *pp, int pp_len)
 /*==================================================================*/
 {
-    char *hira_pp = katakana2hiragana(pp);
+    sprintf(mrph_buffer, "%.*s", pp_len, pp);
+    char *hira_pp = katakana2hiragana(mrph_buffer);
     int hinsi_id = get_hinsi_id("助詞");
 
     sprintf(mrph_buffer, "%s %s %s 助詞 %d 格助詞 %d * 0 * 0 NIL", 
@@ -23,6 +24,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    hinsi_id, 
 	    get_bunrui_id("格助詞", hinsi_id));
 
+    free(hira_pp);
     return mrph_buffer;
 }
 
@@ -111,8 +113,8 @@ char mrph_buffer[SMALL_DATA_LEN];
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX];
-    char	*cp, cc_feature[SMALL_DATA_LEN];
+    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len;
+    char	*cp;
     FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
     MRPH_DATA	*m_ptr;
@@ -128,7 +130,8 @@ char mrph_buffer[SMALL_DATA_LEN];
 	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* 文節の切れ目ごとにチェック */
 	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
 	    while (fp) {
-		if (!strncmp(fp->cp, "Ｔ省略人称-", 11)) { /* tag_after_dpnd_and_case.ruleで定義されている */
+		if (!strncmp(fp->cp, "格要素-", 7) && 
+		    strstr(fp->cp, ":＃")) { /* tag_after_dpnd_and_case.ruleで使われている */
 		    count++;
 		    b_count++;
     		}
@@ -154,19 +157,17 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
 		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
 		while (fp) {
-		    if (!strncmp(fp->cp, "Ｔ省略人称-", 11)) {
-			fprintf(Outfp, "* %dD <ノード挿入><係:%s格>\n", b_table[t_ptr->b_ptr->num], fp->cp + 11);
-			fprintf(Outfp, "+ %dD <ノード挿入><係:%s格><解析格:%s>\n", 
-				t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], fp->cp + 11, fp->cp + 11);
-			sprintf(cc_feature, "格要素-%s", fp->cp + 11); /* 中身を取得 */
-			cp = check_feature((t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f, cc_feature);
-			cp += strlen(cc_feature) + 1;
-			if (!strcmp(cp, "NIL")) {
-			    fprintf(stderr, ";;; tag_after_dpnd_and_case.rule is incoherent.\n");
-			    exit(1);
-			}
+		    if (!strncmp(fp->cp, "格要素-", 7) && 
+			(cp = strstr(fp->cp, ":＃"))) {
+			case_len = cp - fp->cp - 7; /* 格の部分の長さ */
+			fprintf(Outfp, "* %dD <ノード挿入><係:%.*s格>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + 7);
+			fprintf(Outfp, "+ %dD <ノード挿入><係:%.*s格><解析格:%.*s>\n", 
+				t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], 
+				case_len, fp->cp + 7, 
+				case_len, fp->cp + 7);
+			cp++; /* ＃の頭 */
 			fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp, cp, cp);
-			fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 11));
+			fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 7, case_len));
 		    }
 		    fp = fp->next;
 		}
