@@ -215,15 +215,15 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = MorphRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "タグ単位")) {
+		    else if (!strcmp(_Atom(car(cell2)), "基本句")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = TagRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "タグ-構造決定後")) {
+		    else if (!strcmp(_Atom(car(cell2)), "基本句-構造決定後")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = AfterDpndTagRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "タグ-後処理")) {
+		    else if (!strcmp(_Atom(car(cell2)), "基本句-後処理")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = PostProcessTagRuleType;
 		    }
@@ -750,7 +750,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* bnst_basic タグ単位 逆方向 ルールループ先行 */
+	/* bnst_basic 基本句 逆方向 ルールループ先行 */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -758,7 +758,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* case_analysis タグ単位 逆方向 */
+	/* case_analysis 基本句 逆方向 */
 	(RULE+CurrentRuleNum)->file = strdup("case_analysis");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;

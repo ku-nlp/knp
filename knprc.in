@@ -15,11 +15,11 @@
 	(bnst_etc 文節 逆方向 ルールループ先行)
 	(kakari_uke 係り受け)
 	(koou 呼応)
-	(bnst_basic タグ単位 逆方向 ルールループ先行)
-	(context タグ単位 逆方向 ルールループ先行)
-	(case_analysis タグ単位 逆方向)
-	(tag_after_dpnd_and_case タグ-構造決定後 逆方向 ルールループ先行)
-	(tag_postprocess タグ-後処理 逆方向 ルールループ先行)
+	(bnst_basic 基本句 逆方向 ルールループ先行)
+	(context 基本句 逆方向 ルールループ先行)
+	(case_analysis 基本句 逆方向)
+	(tag_after_dpnd_and_case 基本句-構造決定後 逆方向 ルールループ先行)
+	(tag_postprocess 基本句-後処理 逆方向 ルールループ先行)
 )
 
 (KNP辞書ディレクトリ
