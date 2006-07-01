@@ -140,9 +140,9 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    pre_bp = t_ptr->b_ptr;
 	}
 
-	t_table[i] = count++;
+	t_table[t_ptr->num] = count++; /* numを更新しているので使える */
 
-	if (t_ptr->bnum >= 0) { /* 文節行 */
+	if (t_ptr->bnum >= 0) { /* 文節行 (bnumを更新しているので使える) */
 	    b_table[t_ptr->bnum] = b_count++;
 	}
     }
@@ -177,11 +177,11 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    /* 文節行 */
 	    if (t_ptr->bnum >= 0) {
 		fprintf(Outfp, "* %d%c", 
-			(sp->bnst_data + t_ptr->bnum)->dpnd_head == -1 ? -1 : b_table[(sp->bnst_data + t_ptr->bnum)->dpnd_head], 
-			(sp->bnst_data + t_ptr->bnum)->dpnd_type);
-		if ((sp->bnst_data + t_ptr->bnum)->f) {
+			t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
+			t_ptr->b_ptr->dpnd_type);
+		if (t_ptr->b_ptr->f) {
 		    fputc(' ', Outfp);
-		    print_feature((sp->bnst_data + t_ptr->bnum)->f, Outfp);
+		    print_feature(t_ptr->b_ptr->f, Outfp);
 		}
 		fputc('\n', Outfp);
 	    }

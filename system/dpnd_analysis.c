@@ -346,11 +346,14 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     /* タグ単位番号の更新 */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
-	if (t_ptr->num != -1) {
+	if (t_ptr->num != -1) { /* numの更新 (★どこかで tag_data + num をするとだめ) */
 	    t_ptr->num = t_table[i];
 	    if (t_ptr->dpnd_head != -1) {
 		t_ptr->dpnd_head = t_table[t_ptr->dpnd_head];
 	    }
+	}
+	if (t_ptr->bnum >= 0) { /* bnumの更新 (★どこかで bnst_data + bnum をするとだめ) */
+	    t_ptr->bnum = b_table[t_ptr->bnum];
 	}
     }
 
