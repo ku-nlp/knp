@@ -1,7 +1,23 @@
+2006-07-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/dpnd_analysis.c, system/lib_print.c:
+	postprocessのbug fix.
+
 2006-06-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* knprc.in, system/configfile.c:
 	「タグ単位」を「基本句」に変更
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule:
+	用言の付属語化ルールの修正(「〜しては駄目だ」など)
+
+	* rule/modality.rule: added.
+
+	* rule/tag_after_dpnd_and_case.rule:
+	モダリティ部分をmodality.ruleへ
+
+	* system/lib_print.c:
+	ノード追加の仕様の変更
 
 2006-06-29  Daisuke Kawahara  <dk@nict.go.jp>
 
