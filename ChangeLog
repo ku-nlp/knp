@@ -1,3 +1,8 @@
+2006-07-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
+	「モダリティ-認識」、「モダリティ-依頼」のルール化
+
 2006-07-01  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/dpnd_analysis.c, system/lib_print.c:
