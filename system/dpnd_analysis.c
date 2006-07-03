@@ -385,6 +385,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
 	if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
 	    t_ptr->b_ptr->num = b_count++;
+	    t_ptr->bnum = t_ptr->b_ptr->num;
 	    t_ptr->b_ptr->mrph_num = t_ptr->b_ptr->preserve_mrph_num;
 	    calc_bnst_length(sp, t_ptr->b_ptr);
 	}

@@ -92,7 +92,7 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	       int make_simple_tree(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, child_num;
+    int i, j, k, child_num, pre_node_child_num;
     int buffer[BNST_MAX];
 
     /* dpnd.head[i]をbuffer[i]にコピーし，3つ以上からなる並列構造では
@@ -122,22 +122,36 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 
     /* 依存構造木構造リンク付け */
 
-    for (j = sp->Bnst_num - 1; j >= 0; j--) {
-	if (sp->bnst_data[j].num == -1) {
-	    continue; /* 後処理でマージされたタグ */
+    pre_node_child_num = 0;
+    for (j = sp->Bnst_num - 1; j >= 0; j--) { /* 受け側 */
+	if (pre_node_child_num != 0) {
+	    child_num = pre_node_child_num;
+	    pre_node_child_num = 0;
 	}
-	child_num = 0;
-	for (i = j - 1; i >= 0; i--) {
+	else {
+	    child_num = 0;
+	}
+	for (i = j - 1; i >= 0; i--) { /* 係り側 */
 	    if (sp->bnst_data[i].num == -1) {
-		continue; /* 後処理でマージされたタグ */
+		continue; /* 後処理でマージされたノード */
 	    }
-	    if (buffer[i] == j) {
-		sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
+	    if (buffer[i] == j) { /* i -> j */
+		if (sp->bnst_data[j].num == -1) { /* 後処理でマージされたノード */
+		    if (j - i == 1) { /* マージ側 -> マージされた側: スキップ */
+			continue;
+		    }
+		    else { /* マージされたノードに係るノード (直前以外) */
+			sp->bnst_data[j - 1].child[pre_node_child_num++] = sp->bnst_data + i;
+		    }
+		}
+		else {
+		    sp->bnst_data[j].child[child_num++] = sp->bnst_data + i;
+		}
 		if (child_num >= PARA_PART_MAX) {
 		    child_num = PARA_PART_MAX-1;
 		    break;
 		}
-		sp->bnst_data[i].parent = sp->bnst_data + j;
+		sp->bnst_data[i].parent = sp->bnst_data[j].num == -1 ? sp->bnst_data + j - 1 : sp->bnst_data + j; /* 後処理でマージされたノードならば -1 */
 		if (Mask_matrix[i][j] == 3) {
 		    sp->bnst_data[i].para_type = PARA_INCOMP;
 		}
