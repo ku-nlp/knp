@@ -160,14 +160,21 @@ char mrph_buffer[SMALL_DATA_LEN];
 		    if (!strncmp(fp->cp, "≥ Õ◊¡«-", 7) && 
 			(cp = strstr(fp->cp, ":°Ù"))) {
 			case_len = cp - fp->cp - 7; /* ≥ §Œ…Ù ¨§Œƒπ§µ */
-			fprintf(Outfp, "* %dD <•Œ°º•…¡ﬁ∆˛><∑∏:%.*s≥ >\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + 7);
-			fprintf(Outfp, "+ %dD <•Œ°º•…¡ﬁ∆˛><∑∏:%.*s≥ ><≤Ú¿œ≥ :%.*s>\n", 
-				t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], 
-				case_len, fp->cp + 7, 
-				case_len, fp->cp + 7);
 			cp++; /* °Ù§Œ∆¨ */
-			fprintf(Outfp, "%s %s %s ÃæªÏ 6 …·ƒÃÃæªÏ 1 * 0 * 0 NIL\n", cp, cp, cp);
-			fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 7, case_len));
+			if (!strncmp(fp->cp + 7, "°Ù", case_len)) {
+			    fprintf(Outfp, "* %dD <•Œ°º•…¡ﬁ∆˛>\n", b_table[t_ptr->b_ptr->num]);
+			    fprintf(Outfp, "+ %dD <•Œ°º•…¡ﬁ∆˛>\n", t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
+			    fprintf(Outfp, "%s %s %s ÃæªÏ 6 …·ƒÃÃæªÏ 1 * 0 * 0 NIL\n", cp, cp, cp);
+			}
+			else {
+			    fprintf(Outfp, "* %dD <•Œ°º•…¡ﬁ∆˛><∑∏:%.*s≥ >\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + 7);
+			    fprintf(Outfp, "+ %dD <•Œ°º•…¡ﬁ∆˛><∑∏:%.*s≥ ><≤Ú¿œ≥ :%.*s>\n", 
+				    t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], 
+				    case_len, fp->cp + 7, 
+				    case_len, fp->cp + 7);
+			    fprintf(Outfp, "%s %s %s ÃæªÏ 6 …·ƒÃÃæªÏ 1 * 0 * 0 NIL\n", cp, cp, cp);
+			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 7, case_len));
+			}
 		    }
 		    fp = fp->next;
 		}
