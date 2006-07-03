@@ -1,5 +1,11 @@
 2006-07-03  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/lib_print.c, rule/tag_after_dpnd_and_case.rule:
+	欲求主体のノードを出力
+
+	* rule/modality.rule:
+	「〜たい」をモダリティ-意志に追加
+
 	* system/dpnd_analysis.c, system/tree_conv.c:
 	postprocessのbug fix.
 
