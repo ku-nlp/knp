@@ -1,5 +1,8 @@
 2006-07-03  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/dpnd_analysis.c, system/tree_conv.c:
+	postprocessのbug fix.
+
 	* system/case_analysis.c, system/dpnd_analysis.c:
 	主題格を用いた人称推定が機能していなかった問題を修正
 
