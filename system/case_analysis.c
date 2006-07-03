@@ -1612,9 +1612,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* => ★「格要素-ガ」などを集めるように修正する */
     sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	/* 格フレームの意味情報をfeatureとして出力 */
-	append_cf_feature(&(cpm_ptr->pred_b_ptr->f), cpm_ptr, cpm_ptr->cmm[0].cf_ptr, i);
-
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
 					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;

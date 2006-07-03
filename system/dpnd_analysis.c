@@ -978,10 +978,17 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     /* 依存構造・格構造決定後の処理 */
 
-    /* 格解析結果を用言基本句featureへ */
+    /* 格解析結果の情報をfeatureへ */
     if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+	/* 格解析結果を用言基本句featureへ */
 	for (i = 0; i < sp->Best_mgr->pred_num; i++) {
 	    assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
+
+	    /* 格フレームの意味情報を用言基本句featureへ */
+	    for (j = 0; j < sp->Best_mgr->cpm[i].cmm[0].cf_ptr->element_num; j++) {
+		append_cf_feature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), 
+				  &(sp->Best_mgr->cpm[i]), sp->Best_mgr->cpm[i].cmm[0].cf_ptr, j);
+	    }
 	}
     }
 
