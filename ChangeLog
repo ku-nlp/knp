@@ -1,5 +1,8 @@
 2006-07-04  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule, rule/bnst_etc.rule:
+	モダリティ付与を文末と補文ではなく、レベル:Cの節に対して行うように変更
+
 	* rule/tag_after_dpnd_and_case.rule:
 	モダリティで人称推定できているならば、主題格の推定はしないように修正
 
