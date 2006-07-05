@@ -1,3 +1,8 @@
+2006-07-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_after_dpnd_and_case.rule:
+	ガ格に主体と思われる要素があるならば、主題格の推定はしないように修正
+
 2006-07-04  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule, rule/bnst_etc.rule:
