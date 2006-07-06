@@ -1,5 +1,10 @@
 2006-07-06  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
+	敬語を付与する対象を<レベル:C>に限定
+	意志よりも評価優先で人称推定するように修正
+	副詞、感動詞単独に対しては、主題格の推定をしないように修正
+
 	* system/extern.h, system/case_ipal.c:
 	bug fix for probabilistic case analysis.
 
