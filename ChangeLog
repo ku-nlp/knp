@@ -1,3 +1,11 @@
+2006-07-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_after_dpnd_and_case.rule:
+	丁寧表現による人称推定を停止
+
+	* rule/modality.rule:
+	「〜ます」を<敬語:丁寧表現>に
+
 2006-07-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_after_dpnd_and_case.rule:
