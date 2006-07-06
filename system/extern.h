@@ -27,6 +27,7 @@ DBM_FILE		sm2code_db;
 DBM_FILE		smp2smg_db;
 
 extern SENTENCE_DATA	sentence_data[];
+extern SENTENCE_DATA	current_sentence_data;
 
 extern int 		match_matrix[][BNST_MAX];
 extern int 		path_matrix[][BNST_MAX];

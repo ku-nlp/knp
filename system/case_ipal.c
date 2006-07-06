@@ -2284,7 +2284,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     /* 複合辞 */
     if (cfd->pp[as1][0] > 8 && cfd->pp[as1][0] < 38) {
 	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* 入力側の表層格 */
-	tp2 = tp + 1; /* 読点や「は」などをチェックするタグ単位 */
+	tp2 = &(current_sentence_data.tag_data[tp->num + 1]); /* 読点や「は」などをチェックするタグ単位 */
     }
     else { 
 	if ((scase = check_feature(tp->f, "係")) == NULL) {
@@ -2296,7 +2296,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 
     /* 隣に用言があるかどうか */
     if (np_modifying_flag == 0) {
-	if (get_dist_from_work_mgr(tp2->b_ptr, (tp2 + 1)->b_ptr) > 0) {
+	if (get_dist_from_work_mgr(tp2->b_ptr, current_sentence_data.tag_data[tp2->num + 1].b_ptr) > 0) {
 	    closest_pred_flag = 1;
 	}
     }
