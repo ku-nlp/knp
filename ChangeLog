@@ -1,3 +1,8 @@
+2006-07-07  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* tag_postprocess.rule:
+	postprocessで「〜のは」をまとめるようにした。
+
 2006-07-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
