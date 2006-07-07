@@ -310,10 +310,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
-	else if (str_eq(argv[0], "-ne-delete")) { /* 構文解析に用いた後NE解析結果を消去 */
-	    OptNE = 1;
-	    OptNEdelete = 1;
-	}
 	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
 	    OptNE = 1;
 	    OptNEcache = 1;
@@ -324,8 +320,8 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
 	    OptNE = 1;
-	    OptNEdelete = 1;
 	    OptNEcase = 1;
+	    OptAnalysis = OPT_CASE2;
 	}
  	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
 	    OptNE = 1;
@@ -856,11 +852,8 @@ extern int	EX_match_subject;
 
     /* 固有表現認識を行う */
 #ifdef USE_SVM
-    if (OptNE) {
+    if (OptNE && !OptNEcase) {
 	ne_analysis(sp);
-	/* 人名をひとつのタグにするためのルールを読む */
-	if (!OptNElearn) 
-	    assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
     }
 #endif 
     
@@ -1082,25 +1075,10 @@ PARSED:
     }
 
 #ifdef USE_SVM
-  
-    /* 固有表現解析結果を削除 */
-    if (OptNEdelete == 1) {
-	for (i = 0; i < sp->Tag_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
-	    delete_cfeature(&((sp->tag_data + i)->f), "NE");
-	    delete_cfeature(&((sp->tag_data + i)->f), "NE内");
-	}
-	for (i = 0; i < sp->Mrph_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
-	    delete_cfeature(&((sp->mrph_data + i)->f), "NE");
-	}
-    }  
-
-    /* 固有表現認識に必要なfeatureを与える */
-    if (OptNEcase == 1) {
+    if (OptNEcase) {
+	/* 固有表現認識に必要なfeatureを与える */
 	for_ne_analysis(sp);   
-    }         
-
-    /* 格解析後に固有表現認識を行う */
-    if (OptNE && OptNEcase) {
+	/* 格解析後に固有表現認識を行う */
 	ne_analysis(sp);
 	assign_ne_feature_tag(sp);
     }
