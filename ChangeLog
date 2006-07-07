@@ -1,3 +1,9 @@
+2006-07-07  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/main.c, system/proper.c:
+	固有表現関係のオプションの整理
+	固有表現の学習時にillegalな入力があった場合にbuffer overrun するバグを修正
+
 2006-07-07  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* tag_postprocess.rule:
