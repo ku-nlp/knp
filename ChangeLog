@@ -6,7 +6,10 @@
 
 2006-07-07  Daisuke Kawahara  <dk@nict.go.jp>
 
-	* tag_postprocess.rule:
+	* rule/mrph_basic.rule, rule/tag_postprocess.rule:
+	postprocessで「〜する予定です」を1基本句にまとめた。
+
+	* rule/tag_postprocess.rule:
 	postprocessで「〜のは」をまとめるようにした。
 
 2006-07-06  Daisuke Kawahara  <dk@nict.go.jp>
