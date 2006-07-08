@@ -397,7 +397,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
      */
 
     int i;
-    char *cp;
+    char *cp, *pat;
     char buffer[256];
     FEATURE **fpp, *next;
 
@@ -461,15 +461,15 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 	    }
 	    /* &ÅÁÈÂ:n:FEATURE : FEATURE¤ÎÅÁÈÂ  */
 	    else if (!strncmp((*fpp2)->cp, "&ÅÁÈÂ:", strlen("&ÅÁÈÂ:"))) {
-		cp = (*fpp2)->cp + strlen("&ÅÁÈÂ:");
-		sscanf(cp, "%d", &i);
-		cp = strchr(cp, ':');
-		cp++;
-		if ((cp = check_feature(((TAG_DATA *)ptr)->f, cp))) {
+		pat = (*fpp2)->cp + strlen("&ÅÁÈÂ:");
+		sscanf(pat, "%d", &i);
+		pat = strchr(pat, ':');
+		pat++;
+		if ((cp = check_feature(((TAG_DATA *)ptr)->f, pat))) {
 		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp, temp_assign_flag);
 		}
 		if (((TAG_DATA *)ptr)->bnum >= 0) { /* Ê¸Àá¶èÀÚ¤ê¤Ç¤â¤¢¤ë¤È¤­ */
-		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, cp))) {
+		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, pat))) {
 			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp, temp_assign_flag);
 		    }
 		}
