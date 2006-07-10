@@ -1,5 +1,8 @@
 2006-07-10  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/mrph_basic.rule, rule/bnst_basic.rule:
+	<否定表現>の精緻化
+
 	* rule/mrph_basic.rule, rule/tag_postprocess.rule, system/lib_print.c:
 	-copulaで判定詞を独立基本句にする処理を後処理で行うように修正
 
