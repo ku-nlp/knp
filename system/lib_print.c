@@ -113,7 +113,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len;
+    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len, bp_independent_offset = 0;
     char	*cp;
     FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
@@ -129,15 +129,18 @@ char mrph_buffer[SMALL_DATA_LEN];
 	/* 追加ノード */
 	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* 文節の切れ目ごとにチェック */
 	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
-	    while (fp) {
+	    while (fp) { /* featureのloop: featureをチェック */
 		if (!strncmp(fp->cp, "格要素-", 7) && 
 		    strstr(fp->cp, ":＃")) { /* tag_after_dpnd_and_case.ruleで使われている */
 		    count++;
 		    b_count++;
-    		}
+		}
 		fp = fp->next;
 	    }
 	    pre_bp = t_ptr->b_ptr;
+	}
+	if (check_feature(t_ptr->f, "Ｔ基本句分解")) { 
+	    count++;
 	}
 
 	t_table[t_ptr->num] = count++; /* numを更新しているので使える */
@@ -153,10 +156,12 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    continue; /* 後処理でマージされたタグ */
 	}
 	if (flag == 1) {
+	    bp_independent_offset = 0;
+
 	    /* 追加ノード */
 	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
 		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
-		while (fp) {
+		while (fp) { /* featureのloop: featureをチェック */
 		    if (!strncmp(fp->cp, "格要素-", 7) && 
 			(cp = strstr(fp->cp, ":＃"))) {
 			case_len = cp - fp->cp - 7; /* 格の部分の長さ */
@@ -181,8 +186,35 @@ char mrph_buffer[SMALL_DATA_LEN];
 		pre_bp = t_ptr->b_ptr;
 	    }
 
+	    if (check_feature(t_ptr->f, "Ｔ基本句分解")) {
+		if (t_ptr->bnum >= 0) { /* 文節行 */
+		    fprintf(Outfp, "* %d%c", 
+			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
+			    t_ptr->b_ptr->dpnd_type);
+		    if (t_ptr->b_ptr->f) {
+			fputc(' ', Outfp);
+			print_feature(t_ptr->b_ptr->f, Outfp);
+		    }
+		    fputc('\n', Outfp);
+		}
+		fprintf(Outfp, "+ %dD <判定詞基本句分解>\n", t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
+
+		for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
+		    if (check_feature(m_ptr->f, "後処理-基本句始")) {
+			break;
+		    }
+		    print_mrph(m_ptr);
+		    if (m_ptr->f) {
+			fputc(' ', Outfp);
+			print_feature(m_ptr->f, Outfp);
+		    }
+		    fputc('\n', Outfp);
+		    bp_independent_offset++;
+		}
+	    }
+
 	    /* 文節行 */
-	    if (t_ptr->bnum >= 0) {
+	    if (bp_independent_offset == 0 && t_ptr->bnum >= 0) {
 		fprintf(Outfp, "* %d%c", 
 			t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
 			t_ptr->b_ptr->dpnd_type);
@@ -204,7 +236,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    fprintf(Outfp, "%c\n", t_ptr->bnum < 0 ? '+' : '*');
 	}
 
-	for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
+	for (j = bp_independent_offset, m_ptr = t_ptr->mrph_ptr + bp_independent_offset; j < t_ptr->mrph_num; j++, m_ptr++) {
 	    print_mrph(m_ptr);
 	    if (m_ptr->f) {
 		fputc(' ', Outfp);
