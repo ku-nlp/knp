@@ -15,9 +15,15 @@ char mrph_buffer[SMALL_DATA_LEN];
 		 char *pp2mrph(char *pp, int pp_len)
 /*==================================================================*/
 {
+    char *hira_pp;
+    int hinsi_id;
+
+    if (pp_len == 4 && !strncmp(pp, "ガ２", pp_len)) {
+	pp_len -= 2; /* ガ２ -> ガ */
+    }
     sprintf(mrph_buffer, "%.*s", pp_len, pp);
-    char *hira_pp = katakana2hiragana(mrph_buffer);
-    int hinsi_id = get_hinsi_id("助詞");
+    hira_pp = katakana2hiragana(mrph_buffer);
+    hinsi_id = get_hinsi_id("助詞");
 
     sprintf(mrph_buffer, "%s %s %s 助詞 %d 格助詞 %d * 0 * 0 NIL", 
 	    hira_pp, hira_pp, hira_pp, 
@@ -113,7 +119,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len, bp_independent_offset = 0;
+    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len, bp_independent_offset = 0, dpnd_head;
     char	*cp;
     FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
@@ -139,6 +145,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    }
 	    pre_bp = t_ptr->b_ptr;
 	}
+	/* 判定詞(-copula)の基本句を分解するとき */
 	if (check_feature(t_ptr->f, "Ｔ基本句分解")) { 
 	    count++;
 	}
@@ -186,6 +193,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		pre_bp = t_ptr->b_ptr;
 	    }
 
+	    /* 判定詞(-copula)の基本句を分解するとき */
 	    if (check_feature(t_ptr->f, "Ｔ基本句分解")) {
 		if (t_ptr->bnum >= 0) { /* 文節行 */
 		    fprintf(Outfp, "* %d%c", 
@@ -225,7 +233,17 @@ char mrph_buffer[SMALL_DATA_LEN];
 		fputc('\n', Outfp);
 	    }
 
-	    fprintf(Outfp, "+ %d%c", t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head], t_ptr->dpnd_type);
+	    /* 判定詞分解時: 連体修飾は判定詞の前の名詞に係るように修正 */
+	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
+	    if (dpnd_head != -1 && 
+		check_feature((sp->tag_data + t_ptr->dpnd_head)->f, "Ｔ基本句分解")) {
+		if (check_feature(t_ptr->f, "連体修飾") || 
+		    check_feature((sp->tag_data + t_ptr->dpnd_head)->f, "Ｔ被連体修飾")) {
+		    dpnd_head--;
+		    assign_cfeature(&((sp->tag_data + t_ptr->dpnd_head)->f), "Ｔ被連体修飾", FALSE);
+		}
+	    }
+	    fprintf(Outfp, "+ %d%c", dpnd_head, t_ptr->dpnd_type);
 	    if (t_ptr->f) {
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);
@@ -246,6 +264,13 @@ char mrph_buffer[SMALL_DATA_LEN];
 	}
     }
     fputs("EOS\n", Outfp);
+
+    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
+	if (t_ptr->num == -1) {
+	    continue; /* 後処理でマージされたタグ */
+	}
+	delete_cfeature(&(t_ptr->f), "Ｔ被連体修飾");
+    }
 }
 
 /*==================================================================*/

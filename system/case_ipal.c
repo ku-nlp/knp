@@ -680,7 +680,9 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	}
 	else if (!strncmp(cf_str_buf, "主体準", 6)) {
 	    strcat(buf, sm2code("主体"));
-	    c_ptr->etcflag |= CF_GA_SEMI_SUBJECT;
+	    if (MatchPP(c_ptr->pp[num][0], "ガ")) {
+		c_ptr->etcflag |= CF_GA_SEMI_SUBJECT;
+	    }
 	}
 	else {
 	    strcat(buf, sm2code(cf_str_buf));
