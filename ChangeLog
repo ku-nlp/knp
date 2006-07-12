@@ -1,3 +1,14 @@
+2006-07-12  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
+	「欲しい」修正、ガ２対応を含むもろもろのモダリティの修正
+
+	* system/lib_print.c:
+	-copula時に連体修飾句の係り先を名詞に修正
+
+	* system/case_ipal.c:
+	bug fix.
+
 2006-07-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule, rule/bnst_basic.rule:
