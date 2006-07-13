@@ -1,3 +1,8 @@
+2006-07-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule, rule/case_analysis.rule:
+	≥ ≤Ú¿œ•Î°º•Î§ŒΩ§¿µ
+
 2006-07-12  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
