@@ -3,6 +3,9 @@
 	* rule/bnst_basic.rule, rule/case_analysis.rule:
 	格解析ルールの修正
 
+	* system/ipal.c:
+	コンパイル時の警告を抑制
+
 2006-07-12  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule, rule/tag_after_dpnd_and_case.rule:
