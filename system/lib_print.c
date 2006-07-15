@@ -205,7 +205,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		    }
 		    fputc('\n', Outfp);
 		}
-		fprintf(Outfp, "+ %dD <È½Äê»ì´ðËÜ¶çÊ¬²ò>\n", t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
+		fprintf(Outfp, "+ %dD <È½Äê»ì´ðËÜ¶çÊ¬²ò>\n", t_table[t_ptr->num]);
 
 		for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
 		    if (check_feature(m_ptr->f, "¸å½èÍý-´ðËÜ¶ç»Ï")) {
@@ -235,12 +235,13 @@ char mrph_buffer[SMALL_DATA_LEN];
 
 	    /* È½Äê»ìÊ¬²ò»þ: Ï¢ÂÎ½¤¾þ¤ÏÈ½Äê»ì¤ÎÁ°¤ÎÌ¾»ì¤Ë·¸¤ë¤è¤¦¤Ë½¤Àµ */
 	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
-	    if (dpnd_head != -1 && 
-		check_feature((sp->tag_data + t_ptr->dpnd_head)->f, "£Ô´ðËÜ¶çÊ¬²ò")) {
+	    if (OptPostProcess && 
+		dpnd_head != -1 && 
+		check_feature(t_ptr->parent->f, "£Ô´ðËÜ¶çÊ¬²ò")) {
 		if (check_feature(t_ptr->f, "Ï¢ÂÎ½¤¾þ") || 
-		    check_feature((sp->tag_data + t_ptr->dpnd_head)->f, "£ÔÈïÏ¢ÂÎ½¤¾þ")) {
+		    check_feature(t_ptr->parent->f, "£ÔÈïÏ¢ÂÎ½¤¾þ")) {
 		    dpnd_head--;
-		    assign_cfeature(&((sp->tag_data + t_ptr->dpnd_head)->f), "£ÔÈïÏ¢ÂÎ½¤¾þ", FALSE);
+		    assign_cfeature(&(t_ptr->parent->f), "£ÔÈïÏ¢ÂÎ½¤¾þ", FALSE);
 		}
 	    }
 	    fprintf(Outfp, "+ %d%c", dpnd_head, t_ptr->dpnd_type);
@@ -1175,8 +1176,12 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* ¸å½èÍý */
     if (OptPostProcess) {
-	if (OptExpress == OPT_TAB || 
-	    OptExpress == OPT_NOTAG) {
+	if (OptExpress == OPT_TAB) {
+	    make_dpnd_tree(sp);
+	    bnst_to_tag_tree(sp); /* ¥¿¥°Ã±°Ì¤ÎÌÚ¤Ø */
+	    tag_bnst_postprocess(sp, 1);
+	}
+	else if (OptExpress == OPT_NOTAG) {
 	    tag_bnst_postprocess(sp, 1);
 	}
 	else {
