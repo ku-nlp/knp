@@ -238,8 +238,11 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    if (OptPostProcess && 
 		dpnd_head != -1 && 
 		check_feature(t_ptr->parent->f, "£Ô´ðËÜ¶çÊ¬²ò")) {
-		if (check_feature(t_ptr->f, "Ï¢ÂÎ½¤¾þ") || 
-		    check_feature(t_ptr->parent->f, "£ÔÈïÏ¢ÂÎ½¤¾þ")) {
+		if (t_table[t_ptr->num] < dpnd_head - 1 && 
+		    (check_feature(t_ptr->f, "Ï¢ÂÎ½¤¾þ") || 
+		     check_feature(t_ptr->parent->f, "£ÔÈïÏ¢ÂÎ½¤¾þ")) && 
+		    (t_ptr->para_type == PARA_NIL || /* ÊÂÎó¤Î¤È¤­¤ÏºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤Î¤ß½¤Àµ */
+		     (t_ptr->parent->child[1] && t_ptr->num == t_ptr->parent->child[1]->num))) {
 		    dpnd_head--;
 		    assign_cfeature(&(t_ptr->parent->f), "£ÔÈïÏ¢ÂÎ½¤¾þ", FALSE);
 		}
