@@ -1,3 +1,8 @@
+2006-07-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_after_dpnd_and_case.rule:
+	判定詞に対しては主題格を用いた格人称推定をしないように修正
+
 2006-07-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:
