@@ -976,31 +976,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 {
     int i, j;
     TAG_DATA *check_b_ptr;
-
-    /* 依存構造・格構造決定後の処理 */
-
-    /* 格解析結果の情報をfeatureへ */
-    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
-	/* 格解析結果を用言基本句featureへ */
-	for (i = 0; i < sp->Best_mgr->pred_num; i++) {
-	    assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
-
-	    /* 格フレームの意味情報を用言基本句featureへ */
-	    for (j = 0; j < sp->Best_mgr->cpm[i].cmm[0].cf_ptr->element_num; j++) {
-		append_cf_feature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), 
-				  &(sp->Best_mgr->cpm[i]), sp->Best_mgr->cpm[i].cmm[0].cf_ptr, j);
-	    }
-	}
-    }
-
-    /* 構造決定後のルール適用準備 */
-    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-    make_dpnd_tree(sp);
-
-    /* 構造決定後のルール適用 */
-    /* assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, FALSE); */
-    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
-
     
     /* 解析済: 構造は与えられたもの1つのみ */
     if (OptInput & OPT_PARSED) {
@@ -1013,6 +988,30 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	    sp->Best_mgr->score = -10000;
 	    call_case_analysis(sp, sp->Best_mgr->dpnd);
 	}
+
+	/* 依存構造・格構造決定後の処理 */
+
+	/* 格解析結果の情報をfeatureへ */
+	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+	    /* 格解析結果を用言基本句featureへ */
+	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+		assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
+
+		/* 格フレームの意味情報を用言基本句featureへ */
+		for (j = 0; j < sp->Best_mgr->cpm[i].cmm[0].cf_ptr->element_num; j++) {
+		    append_cf_feature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), 
+				      &(sp->Best_mgr->cpm[i]), sp->Best_mgr->cpm[i].cmm[0].cf_ptr, j);
+		}
+	    }
+	}
+
+	/* 構造決定後のルール適用準備 */
+	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+	make_dpnd_tree(sp);
+	bnst_to_tag_tree(sp); /* タグ単位の木へ */
+
+	/* 構造決定後のルール適用 */
+	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
 
 	if (OptAnalysis == OPT_CASE ||
 	    OptAnalysis == OPT_CASE2) {

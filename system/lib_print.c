@@ -114,17 +114,34 @@ char mrph_buffer[SMALL_DATA_LEN];
 }
 
 /*==================================================================*/
+	  TAG_DATA *search_nearest_para_child(TAG_DATA *bp)
+/*==================================================================*/
+{
+    int i;
+
+    /* 並列のときに、最後から2番目の要素をかえす */
+    if (bp->para_top_p) {
+	for (i = 1; bp->child[i]; i++) { /* 0は最後の要素 */
+	    if (bp->child[i]->para_type != PARA_NIL) {
+		return bp->child[i];
+	    }
+	}
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 	     void print_tags(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], case_len, bp_independent_offset = 0, dpnd_head;
+    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], t_proj_table[TAG_MAX], case_len, bp_independent_offset = 0, dpnd_head;
     char	*cp;
     FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
     MRPH_DATA	*m_ptr;
-    TAG_DATA	*t_ptr;
+    TAG_DATA	*t_ptr, *bp;
 
     /* ノードの挿入を考慮しながら、基本句、文節の変換テーブルを作成 */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
@@ -157,6 +174,11 @@ char mrph_buffer[SMALL_DATA_LEN];
 	}
     }
 
+    for (i = 0; i < count; i++) { /* 非交差条件チェック用 */
+	t_proj_table[i] = 0;
+    }
+
+    count = 0;
     pre_bp = NULL;
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->num == -1) {
@@ -173,20 +195,25 @@ char mrph_buffer[SMALL_DATA_LEN];
 			(cp = strstr(fp->cp, ":＃"))) {
 			case_len = cp - fp->cp - 7; /* 格の部分の長さ */
 			cp++; /* ＃の頭 */
+
+			dpnd_head = t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]; /* 係り先はhead */
+			if (t_proj_table[count] && dpnd_head > t_proj_table[count]) { /* 非交差条件 */
+			    dpnd_head = t_proj_table[count];
+			}
+
 			if (!strncmp(fp->cp + 7, "＃", case_len)) {
 			    fprintf(Outfp, "* %dD <ノード挿入>\n", b_table[t_ptr->b_ptr->num]);
-			    fprintf(Outfp, "+ %dD <ノード挿入>\n", t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]);
+			    fprintf(Outfp, "+ %dD <ノード挿入>\n", dpnd_head);
 			    fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp, cp, cp);
 			}
 			else {
 			    fprintf(Outfp, "* %dD <ノード挿入><係:%.*s格>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + 7);
-			    fprintf(Outfp, "+ %dD <ノード挿入><係:%.*s格><解析格:%.*s>\n", 
-				    t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num], 
-				    case_len, fp->cp + 7, 
-				    case_len, fp->cp + 7);
+			    fprintf(Outfp, "+ %dD <ノード挿入><係:%.*s格><解析格:%.*s>\n", dpnd_head, 
+				    case_len, fp->cp + 7, case_len, fp->cp + 7);
 			    fprintf(Outfp, "%s %s %s 名詞 6 普通名詞 1 * 0 * 0 NIL\n", cp, cp, cp);
 			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 7, case_len));
 			}
+			count++;
 		    }
 		    fp = fp->next;
 		}
@@ -219,6 +246,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		    fputc('\n', Outfp);
 		    bp_independent_offset++;
 		}
+		count++;
 	    }
 
 	    /* 文節行 */
@@ -237,14 +265,13 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
 	    if (OptPostProcess && 
 		dpnd_head != -1 && 
-		check_feature(t_ptr->parent->f, "Ｔ基本句分解")) {
+		check_feature(t_ptr->f, "Ｔ受側基本句分解")) {
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
 		    (check_feature(t_ptr->f, "連体修飾") || 
-		     check_feature(t_ptr->parent->f, "Ｔ被連体修飾")) && 
+		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]])) && /* 非交差条件 */
 		    (t_ptr->para_type == PARA_NIL || /* 並列のときは最後から2番目の要素のみ修正 */
-		     (t_ptr->parent->child[1] && t_ptr->num == t_ptr->parent->child[1]->num))) {
+		     ((bp = search_nearest_para_child(t_ptr->parent)) && t_ptr->num == bp->num))) {
 		    dpnd_head--;
-		    assign_cfeature(&(t_ptr->parent->f), "Ｔ被連体修飾", FALSE);
 		}
 	    }
 	    fprintf(Outfp, "+ %d%c", dpnd_head, t_ptr->dpnd_type);
@@ -253,6 +280,12 @@ char mrph_buffer[SMALL_DATA_LEN];
 		print_feature(t_ptr->f, Outfp);
 	    }
 	    fputc('\n', Outfp);
+
+	    for (j = t_table[t_ptr->num]; j < dpnd_head; j++) {
+		if (!t_proj_table[j] || t_proj_table[j] > dpnd_head) {
+		    t_proj_table[j] = dpnd_head;
+		}
+	    }
 	}
 	else {
 	    fprintf(Outfp, "%c\n", t_ptr->bnum < 0 ? '+' : '*');
@@ -266,15 +299,9 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    }
 	    fputc('\n', Outfp);
 	}
+	count++;
     }
     fputs("EOS\n", Outfp);
-
-    for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
-	if (t_ptr->num == -1) {
-	    continue; /* 後処理でマージされたタグ */
-	}
-	delete_cfeature(&(t_ptr->f), "Ｔ被連体修飾");
-    }
 }
 
 /*==================================================================*/
@@ -1179,12 +1206,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 後処理 */
     if (OptPostProcess) {
-	if (OptExpress == OPT_TAB) {
-	    make_dpnd_tree(sp);
-	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	    tag_bnst_postprocess(sp, 1);
-	}
-	else if (OptExpress == OPT_NOTAG) {
+	make_dpnd_tree(sp);
+	bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	if (OptExpress == OPT_TAB || 
+	    OptExpress == OPT_NOTAG) {
 	    tag_bnst_postprocess(sp, 1);
 	}
 	else {
