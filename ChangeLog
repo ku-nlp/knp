@@ -1,5 +1,8 @@
 2006-07-20  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/dpnd_analysis.c, system/lib_print.c, rule/tag_postprocess.rule:
+	ノード挿入における非交差条件のチェック
+
 	* rule/tag_after_dpnd_and_case.rule:
 	判定詞に対しては主題格を用いた格人称推定をしないように修正
 
