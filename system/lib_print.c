@@ -268,6 +268,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		check_feature(t_ptr->f, "£Ô¼õÂ¦´ğËÜ¶çÊ¬²ò")) {
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
 		    (check_feature(t_ptr->f, "Ï¢ÂÎ½¤¾ş") || 
+		     check_feature(t_ptr->f, "·¸:Ê¸ÀáÆâ") || 
 		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]])) && /* Èó¸òº¹¾ò·ï */
 		    (t_ptr->para_type == PARA_NIL || /* ÊÂÎó¤Î¤È¤­¤ÏºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤Î¤ß½¤Àµ */
 		     ((bp = search_nearest_para_child(t_ptr->parent)) && t_ptr->num == bp->num))) {
