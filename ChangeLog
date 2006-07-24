@@ -1,3 +1,8 @@
+2006-07-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_print.c:
+	-copula, -postprocess: 複合名詞の前側も連体修飾と同様に、名詞側に係るように修正
+
 2006-07-20  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/dpnd_analysis.c, system/lib_print.c, rule/tag_postprocess.rule:
