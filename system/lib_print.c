@@ -232,7 +232,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		    }
 		    fputc('\n', Outfp);
 		}
-		fprintf(Outfp, "+ %dD <判定詞基本句分解>\n", t_table[t_ptr->num]);
+		fprintf(Outfp, "+ %dD <判定詞基本句分解><係:隣>\n", t_table[t_ptr->num]);
 
 		for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
 		    if (check_feature(m_ptr->f, "後処理-基本句始")) {
