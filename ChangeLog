@@ -1,3 +1,8 @@
+2006-07-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_print.c:
+	-copula, -postprocess: <·¸:ÎÙ>¤òÌ¾»ìÂ¦¤Ë·¸¤ë¤è¤¦¤Ë½¤Àµ
+
 2006-07-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:
