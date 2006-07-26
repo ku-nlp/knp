@@ -268,6 +268,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 		check_feature(t_ptr->f, "Ｔ受側基本句分解")) {
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
 		    (check_feature(t_ptr->f, "連体修飾") || 
+		     check_feature(t_ptr->f, "係:隣") || 
 		     check_feature(t_ptr->f, "係:文節内") || 
 		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]])) && /* 非交差条件 */
 		    (t_ptr->para_type == PARA_NIL || /* 並列のときは最後から2番目の要素のみ修正 */
