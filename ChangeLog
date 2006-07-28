@@ -1,3 +1,8 @@
+2006-07-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.rule:
+	「〜(さ)せて頂く」を敬語:謙譲表現に修正
+
 2006-07-26  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:
