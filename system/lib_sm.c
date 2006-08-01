@@ -256,6 +256,34 @@ SMLIST smlist[TBLSIZE];
 	strcpy(cont_str, code);
 	free(code);
     }
+    /* NEの場合は例外 */
+    else if (Thesaurus == USE_NTT) {
+	/* とりあえずNTTの場合のみ */
+	if (!strncmp(cp, "ORGANIZATION", 12)) {
+	    strcpy(cont_str, "ne1*********");
+	}
+	else if (!strncmp(cp, "PERSON", 6)) {
+	    strcpy(cont_str, "ne2*********");
+	}
+	else if (!strncmp(cp, "LOCATION", 8)) {
+	    strcpy(cont_str, "ne3*********");
+	}
+	else if (!strncmp(cp, "ARTIFACT", 8)) {
+	    strcpy(cont_str, "ne4*********");
+	}
+	else if (!strncmp(cp, "DATE", 4)) {
+	    strcpy(cont_str, "ne5*********");
+	}
+	else if (!strncmp(cp, "TIME", 4)) {
+	    strcpy(cont_str, "ne6*********");
+	}
+	else if (!strncmp(cp, "MONEY", 5)) {
+	    strcpy(cont_str, "ne7*********");
+	}
+	else if (!strncmp(cp, "PERCENT", 7)) {
+	    strcpy(cont_str, "ne8*********");
+	}
+    }
     else {
 	cont_str[0] = '\0';
     }

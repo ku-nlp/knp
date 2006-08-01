@@ -321,7 +321,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
 	    OptNE = 1;
 	    OptNEcase = 1;
-	    OptAnalysis = OPT_CASE2;
+	    OptAnalysis = OPT_CASE;
 	}
  	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
 	    OptNE = 1;
@@ -920,7 +920,7 @@ extern int	EX_match_subject;
     }
 
     /* 固有表現認識結果をタグに付与 */
-    if (OptNE && !OptNElearn) {
+    if (OptNE && !OptNEcase && !OptNElearn) {
 	assign_ne_feature_tag(sp);
     }
 

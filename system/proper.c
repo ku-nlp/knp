@@ -8,11 +8,24 @@
 ====================================================================*/
 #include "knp.h"
 
+/*
+  svmのfeature文字列について
+  (1) 末尾が0以外(〜a) : 文字列 (a:1〜5:対象の形態素の位置)   
+  (2) 末尾が10 (〜a10) : 品詞
+  (3) 末尾が20 (〜a20) : 文字種
+  (4) 末尾が30 (〜a30) : キャッシュ
+  (5) 末尾が40 (〜a40) : 末尾
+  (6) 末尾が50 (〜a50) : 文字数
+  (7) 末尾が60 (〜b60) : 格フレームの意味 (b:1〜4)
+  (8) 末尾が8   (〜c8) : 格解析結果 (c:1〜9:格の種類)
+  (9) 末尾が9   (〜c9) : 格解析結果
+*/
+
 #define SIZE               2
 #define NE_TAG_NUMBER      9
 #define NE_POSITION_NUMBER 4
-#define FEATIRE_MAX        1024
-#define TAG_POSITION_NAME   20
+#define FEATURE_MAX        5120
+#define TAG_POSITION_NAME  20
 #define HEAD               0
 #define MIDDLE             1
 #define TAIL               2
@@ -28,8 +41,11 @@ char *Tag_name[] = {
     "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "\0"};
 char *Position_name[] = {
     "head", "middle", "tail", "single", "\0"};
+char *Case_name_local[] = {
+    "ガ", "ヲ", "ニ", "デ", "カラ", "ト", "ヨリ", "ヘ", "マデ", "\0"};
+
 struct NE_MANAGER {
-    char feature[FEATIRE_MAX];          /* 素性 */
+    char feature[FEATURE_MAX];          /* 素性 */
     int notHEAD;                        /* head, singleにはならない場合1 */
     int NEresult;                       /* NEの解析結果 */
     double SVMscore[NE_MODEL_NUMBER];   /* 各タグ・ポジションとなる確率 */
@@ -51,6 +67,7 @@ NE_CACHE *ne_cache[TBLSIZE];
 void init_tagposition()
 {
     int i, j;
+
     for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
 	for (j = 0; j < NE_POSITION_NUMBER; j++) {
 	    strcpy(TagPosition[i * NE_POSITION_NUMBER + j], Tag_name[i]);
@@ -123,6 +140,78 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
+			void clear_ne_cache()
+/*==================================================================*/
+{
+    int i;
+    NE_CACHE *ncp, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (!ne_cache[i]) continue;
+	ncp = ne_cache[i];
+	if (ncp->key) {
+	    free(ncp->key);
+	}
+	ncp = ncp->next;
+	while (ncp) {
+	    if (ncp->key) {
+		free(ncp->key);
+	    }
+	    next = ncp->next;
+	    free(ncp);
+	    ncp = next;
+	}
+    }
+    memset(ne_cache, 0, sizeof(NE_CACHE *)*TBLSIZE);
+}
+
+/*==================================================================*/
+       void register_ne_cache(char *key, int NEresult, int tag)
+/*==================================================================*/
+{
+    /* NEの解析結果を登録する */
+    /* ひとつの文章が終了するまで破棄しないのでメモリを必要とする可能性あり */
+    /* NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持 */
+    /* その場合のみtagが与えられ、TAGの種類+1を記憶する */
+    /* この場合、古いデータがあれば上書きされる */
+
+    NE_CACHE **ncpp;
+
+    ncpp = &(ne_cache[hash(key, strlen(key))]);
+    while (*ncpp && (*ncpp)->key && strcmp((*ncpp)->key, key)) {
+	ncpp = &((*ncpp)->next);
+    }
+    if (!(*ncpp)) {
+	*ncpp = (NE_CACHE *)malloc_data(sizeof(NE_CACHE), "register_ne_cache");
+	memset(*ncpp, 0, sizeof(NE_CACHE));
+    }
+    if (!(*ncpp)->key) {
+	(*ncpp)->key = strdup(key);
+	(*ncpp)->next = NULL;
+    }
+    (*ncpp)->ne_result[NEresult] = tag;
+}
+
+/*==================================================================*/
+	     int check_ne_cache(char *key, int NEresult)
+/*==================================================================*/
+{
+    NE_CACHE *ncp;
+
+    ncp = ne_cache[hash(key, strlen(key))];
+    if (!ncp || !ncp->key) {
+	return 0;
+    }
+    while (ncp) {
+	if (!strcmp(ncp->key, key)) {
+	    return ncp->ne_result[NEresult];
+	}
+	ncp = ncp->next;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 		 int get_chara(FEATURE *f, char *Goi)
 /*==================================================================*/
 {
@@ -174,78 +263,6 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-			void clear_ne_cache()
-/*==================================================================*/
-{
-    int i;
-    NE_CACHE *ncp, *next;
-
-    for (i = 0; i < TBLSIZE; i++) {
-	if (!ne_cache[i]) continue;
-	ncp = ne_cache[i];
-	if (ncp->key) {
-	    free(ncp->key);
-	}
-	ncp = ncp->next;
-	while (ncp) {
-	    if (ncp->key) {
-		free(ncp->key);
-	    }
-	    next = ncp->next;
-	    free(ncp);
-	    ncp = next;
-	}
-	memset(ne_cache, 0, sizeof(NE_CACHE *)*TBLSIZE);
-    }
-}
-
-/*==================================================================*/
-       void register_ne_cache(char *key, int NEresult, int tag)
-/*==================================================================*/
-{
-    /* NEの解析結果を登録する */
-    /* ひとつの文章が終了するまで破棄しないのでメモリを必要とする可能性あり */
-    /* NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持 */
-    /* その場合のみtagが与えられ、TAGの種類+1を記憶する */
-    /* この場合、古いデータがあれば上書きされる */
-
-    NE_CACHE **ncpp;
-
-    ncpp = &(ne_cache[hash(key, strlen(key))]);
-    while (*ncpp && (*ncpp)->key && strcmp((*ncpp)->key, key)) {
-	ncpp = &((*ncpp)->next);
-    }
-    if (!(*ncpp)) {
-	*ncpp = (NE_CACHE *)malloc_data(sizeof(NE_CACHE), "register_ne_cache");
-	memset(*ncpp, 0, sizeof(NE_CACHE));
-    }
-    if (!(*ncpp)->key) {
-	(*ncpp)->key = strdup(key);
-	(*ncpp)->next = NULL;
-    }
-    (*ncpp)->ne_result[NEresult] = tag;
-}
-
-/*==================================================================*/
-	     int check_ne_cache(char *key, int NEresult)
-/*==================================================================*/
-{
-    NE_CACHE *ncp;
-
-    ncp = ne_cache[hash(key, strlen(key))];
-    if (!ncp || !ncp->key) {
-	return 0;
-    }
-    while (ncp) {
-	if (!strcmp(ncp->key, key)) {
-	    return ncp->ne_result[NEresult];
-	}
-	ncp = ncp->next;
-    }
-    return 0;
-}
-
-/*==================================================================*/
 		  char *get_cache(char *key, int num)
 /*==================================================================*/
 {
@@ -276,8 +293,8 @@ char *ne_code_to_tagposition(int num)
     char *feature_name[] = {"人名末尾", "組織名末尾", "\0"};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
     ret[0] = '\0'; /* 再帰的に代入するため */
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
 
     /* 文節後方に人名末尾、組織名末尾という語があるか */
     for (j = 1;; j++) {
@@ -286,15 +303,16 @@ char *ne_code_to_tagposition(int num)
 	    check_feature((mrph_data + j)->f, "記号") ||
 	    check_feature((mrph_data + j)->f, "括弧")) break;
 	for (i = 0; i < 2; i++) {
-	    if (check_feature((mrph_data + j)->f, feature_name[i]))
+	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
 		sprintf(ret, "%d%d40:1 ", i + 3, num);
+	    }
 	}
     }
 
     /* 人名末尾、組織名末尾であるか */
     for (i = 0; i < 2; i++) {
 	if (check_feature(mrph_data->f, feature_name[i])) {
-	    sprintf(buf, "%d%d40:1 %s", i + 1, num, ret);
+	    sprintf(buf, "%s%d%d40:1 ", ret, i + 1, num);
 	    strcpy(ret, buf);
 	}	
     }   
@@ -308,34 +326,97 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, *buf;
+    char *ret, *buf, cp[WORD_LEN_MAX];
     char *feature_name[] = {"意味-組織", "意味-人", "意味-主体", "意味-場所", "\0"};
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_imi");
+    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
+    if (num != SIZE + 1) return ret;
+    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
 
-     /* 文節後方にあるか */
-    for (i = 0; i < 4; i++) {	 
+    /* 組織、人、主体、場所 */
+    for (i = 0; i < 4; i++) {
+	/* 意味素性があるか */
+	if (check_feature(mrph_data->f, feature_name[i])) {
+	    sprintf(buf, "%s%d160:1 ", ret, i + 1);
+	    strcpy(ret, buf);
+	}
+	/* 文節後方にあるか */
 	for (j = 1;; j++) {
-	    if (!(mrph_data + j)->f || 
+	    if (!(mrph_data + j)->f ||
 		check_feature((mrph_data + j)->f, "文節始") ||
 		check_feature((mrph_data + j)->f, "記号") ||
 		check_feature((mrph_data + j)->f, "括弧")) break;
 	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
-		sprintf(buf, "%s%d%d50:1 ", ret, i + 5, num);
+		sprintf(buf, "%s%d260:1 ", ret, i + 1);
 		strcpy(ret, buf);
 		break;
 	    }
 	}
     }
 
-    /* 意味素性があるか */
-    for (i = 0; i < 4; i++) {
-	if (check_feature(mrph_data->f, feature_name[i])) {
-	    sprintf(buf, "%s%d%d50:1 ", ret, i + 1, num);
+    /* 固有表現 */
+    for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
+	sprintf (cp, "意味-%s", Tag_name[i]);
+	/* 意味素性があるか */
+	if (check_feature(mrph_data->f, cp)) {
+	    sprintf(buf, "%s%d360:1 ", ret, i + 1);
 	    strcpy(ret, buf);
-	}	    
+	}
+	/* 文節後方にあるか */
+	for (j = 1;; j++) {
+	    if (!(mrph_data + j)->f ||
+		check_feature((mrph_data + j)->f, "文節始") ||
+		check_feature((mrph_data + j)->f, "記号") ||
+		check_feature((mrph_data + j)->f, "括弧")) break;
+	    if (check_feature((mrph_data + j)->f, cp)) {
+		sprintf(buf, "%s%d460:1 ", ret, i + 1);
+		strcpy(ret, buf);
+		break;
+	    }
+	}
+    }
+
+    free(buf);
+    return ret;
+}
+
+/*==================================================================*/
+	     char *get_case(MRPH_DATA *mrph_data, int num)
+/*==================================================================*/
+{
+    int i, j;
+    char *ret, *buf, cp[WORD_LEN_MAX], *fcp, *ncp;
+
+    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_case");
+    ret[0] = '\0'; /* 再帰的に代入するため */
+    if (num != SIZE + 1) return ret;
+    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_case");
+
+    for (i = 0; Case_name_local[i] != "\0"; i++) {
+	sprintf (cp, "格-%s", Case_name_local[i]);
+	if ((fcp = check_feature(mrph_data->f, cp))) {
+	    while (strncmp(fcp, ":", 1)) fcp++;
+	    ncp = db_get(ne_db, fcp + 1);
+	    sprintf(buf, "%s%s%d8:1 ", ret, ncp ? ncp : "", i + 1);	
+	    free(ncp);
+	    strcpy(ret, buf);	    
+	}
+	/* 文節後方にあるか */
+	for (j = 1;; j++) {
+	    if (!(mrph_data + j)->f ||
+		check_feature((mrph_data + j)->f, "文節始") ||
+		check_feature((mrph_data + j)->f, "記号") ||
+		check_feature((mrph_data + j)->f, "括弧")) break;
+	    if ((fcp = check_feature((mrph_data + j)->f, cp))) {
+		while (strncmp(fcp, ":", 1)) fcp++;
+		ncp = db_get(ne_db, fcp + 1);
+		sprintf(buf, "%s%s%d9:1 ", ret, ncp ? ncp : "", i + 1);
+		free(ncp);
+		strcpy(ret, buf);	    
+		break;
+	    }
+	}
     }
 
     free(buf);
@@ -346,9 +427,9 @@ char *ne_code_to_tagposition(int num)
 		 void make_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k;
-    char *buf, *s[5];
-    buf = (char *)malloc_data(FEATIRE_MAX, "make_feature");
+    int i, j, k, l;
+    char *buf, *s[6];
+    buf = (char *)malloc_data(FEATURE_MAX, "make_feature");
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	
@@ -363,22 +444,26 @@ char *ne_code_to_tagposition(int num)
 		continue;
 	    
 	    s[0] = db_get(ne_db, sp->mrph_data[j].Goi2);
-	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
-	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白*/
-	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白*/
-	    s[4] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白*/
+	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
+	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白 */
+	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白 */
+	    s[4] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
+	    s[5] = get_case(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白 */
 	    k = i - j + SIZE + 1;
-	    sprintf(buf, "%s%s%d:1 %s%d%d20:1 %s%s%s%d%d60:1 ",
-		    NE_mgr[i].feature, s[0] ? s[0] : "", k,
-		    s[1], get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
-		    OptNEcache ? "" : s[2], OptNEend ? "" : s[3], OptNEcase ? s[4] : "",
-		    strlen(sp->mrph_data[j].Goi2) / 2, k);
+	    sprintf(buf, "%s%s%d:1 %s%d%d20:1 %s%s%d%d50:1 %s%s",
+		    NE_mgr[i].feature, 
+		    s[0] ? s[0] : "", k,
+		    s[1], 
+		    get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
+		    OptNEcache ? "" : s[2],
+		    OptNEend ? "" : s[3],
+		    strlen(sp->mrph_data[j].Goi2) / 2, k, 
+		    OptNEcase ? s[4] : "", 
+		    OptNEcase ? s[5] : "");
 	    strcpy(NE_mgr[i].feature, buf);
-	    free(s[0]);
-	    free(s[1]);
-	    free(s[2]);
-	    free(s[3]);
-	    free(s[4]);
+	    for (l = 0; l < 6; l++) {
+		free(s[l]);
+	    }
 	}
     }       
     free(buf);
@@ -619,10 +704,10 @@ char *ne_code_to_tagposition(int num)
 	    void for_ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* 格解析結果から、組織と人名、主体というfeatureを付与する */
-    /* ガ、ヲ、ニ格でかつその格フレームに<主体>が与えられている場合 */
+    /* 格解析結果から、固有表現解析用のfeatureを付与する */
 
-    int i, j, num;
+    int i, j, k, l, num;
+    char cp[WORD_LEN_MAX];
     CF_PRED_MGR *cpm_ptr;
 
     /* タグを後からチェック */
@@ -631,18 +716,55 @@ char *ne_code_to_tagposition(int num)
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 
-		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織", FALSE);
-		}		    
-		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人", FALSE);
-		}		    
-		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
+	    if (((cpm_ptr->elem_b_ptr[i])->head_ptr + 1)->Hinshi != 9 ||
+		cpm_ptr->elem_b_ptr[i]->num > j) continue;
+
+	    for (k = 0; Case_name_local[k] != "\0"; k++) {
+		if (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], Case_name_local[k])) { 
+		    sprintf (cp, "格-%s:%s", Case_name_local[k],
+			     cpm_ptr->cmm[0].cf_ptr->entry);
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), cp, FALSE);
+		}	    
+	    }
+
+	    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "組織", TRUE)) {
+		assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織", FALSE);
+	    }		    
+	    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "人", TRUE)) {
+		assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-人", FALSE);
+	    }		    
+	    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE)) {
 		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-主体", FALSE);
+	    }
+	    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
+		assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-場所", FALSE);
+	    }
+	    for (k = 0; k < NE_TAG_NUMBER - 1; k++) {
+		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], Tag_name[k], TRUE)) {
+		    sprintf (cp, "意味-%s", Tag_name[k]);
+		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), cp, FALSE);
 		}
-		if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
-		    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-場所", FALSE);
-		}
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	    void for_ne_analysis2(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 格解析結果から、その名詞がどの用言のどんな格であるかを表示する */
+
+    int i, j, k, num;
+    char cp[WORD_LEN_MAX];
+    CF_PRED_MGR *cpm_ptr;
+
+    /* タグを後からチェック */
+    for (j = sp->Tag_num - 1; j > 0 ; j--) {
+	if (!(cpm_ptr = sp->tag_data[j].cpm_ptr)) continue;
+	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
+	    assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), "意味-組織", FALSE);
 	}
     }
 }
