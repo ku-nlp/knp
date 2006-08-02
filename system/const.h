@@ -446,6 +446,8 @@ typedef struct {
 #define		DEF_DISC_LOC_ORDER	"KNP省略解析探索順序"
 #define		DEF_DISC_SEN_NUM	"KNP省略解析探索文数"
 
+#define		DEF_ANTECEDENT_DECIDE_TH	"KNP省略解析探索閾値"
+
 #define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ"
 #define         DEF_SYNONYM_FILE        "同義表現ファイル"
 

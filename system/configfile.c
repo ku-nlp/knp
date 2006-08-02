@@ -473,6 +473,35 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
+	/* æ Œ¨≤Ú¿œ√µ∫˜ÔÁ√Õ */
+	else if (!strcmp(DEF_ANTECEDENT_DECIDE_TH, _Atom(car(cell1)))) {
+	    int pp;
+
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(car(cell1)));
+		pp = pp_kstr_to_code(dicttype);
+		if (pp == 1) {
+		    AntecedentDecideThresholdForGa = atof(_Atom(car(cdr(car(cell1)))));
+		}
+		else if (pp == 2) {
+		    AntecedentDecideThresholdPredGeneral = atof(_Atom(car(cdr(car(cell1)))));
+		}
+		else if (pp == 3) {
+		    AntecedentDecideThresholdForNi = atof(_Atom(car(cdr(car(cell1)))));
+		}
+		else {
+		    fprintf(stderr, "%s is invalid in .knprc\n", dicttype);
+		    exit(0);
+		}
+
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Antecedent dicide th ... %s for %s\n", _Atom(car(cdr(car(cell1)))), dicttype);
+		}
+
+		cell1 = cdr(cell1);
+	    }
+	}
 	/* æ Œ¨≤Ú¿œ√µ∫˜ ∏øÙ */
 	else if (!strcmp(DEF_DISC_SEN_NUM, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
