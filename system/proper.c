@@ -24,8 +24,8 @@
 #define SIZE               2
 #define NE_TAG_NUMBER      9
 #define NE_POSITION_NUMBER 4
-#define FEATURE_MAX        5120
-#define TAG_POSITION_NAME  20
+#define FEATURE_MAX        1024 /* CRLデータにおける最長は272文字 */
+#define TAG_POSITION_NAME  20 /* 最長は ORGANIZATION:single など19文字 */
 #define HEAD               0
 #define MIDDLE             1
 #define TAIL               2
