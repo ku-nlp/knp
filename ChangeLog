@@ -1,3 +1,8 @@
+2006-08-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/feature.c:
+	featureを伝搬させるときに、対象featureがない場合は元のfeatureを削除
+
 2006-08-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* dict/scode/bgh/sm2code.data, system/lib_sm.c, system/proper.c
