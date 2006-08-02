@@ -1,3 +1,9 @@
+2006-08-02  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* dict/scode/bgh/sm2code.data, system/lib_sm.c, system/proper.c
+	分類語彙表のsm2codeの桁数を11桁に修正
+	固有表現認識において分類語彙表に対応するように変更
+
 2006-08-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_basic.rule:
