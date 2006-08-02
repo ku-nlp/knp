@@ -468,9 +468,15 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 		if ((cp = check_feature(((TAG_DATA *)ptr)->f, pat))) {
 		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp, temp_assign_flag);
 		}
+		else { /* ないなら、もとからあるものを削除 */
+		    delete_cfeature(&((((TAG_DATA *)ptr) + i)->f), pat);
+		}
 		if (((TAG_DATA *)ptr)->bnum >= 0) { /* 文節区切りでもあるとき */
 		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, pat))) {
 			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp, temp_assign_flag);
+		    }
+		    else {
+			delete_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), pat);
 		    }
 		}
 	    }
