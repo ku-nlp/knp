@@ -14,6 +14,9 @@
 				MACRO
 ====================================================================*/
 
+#define Max(x,y) (x < y ? y : x)
+#define Min(x,y) (x < y ? x : y)
+
 #define str_eq(c1, c2) ( ! strcmp(c1, c2) )
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 

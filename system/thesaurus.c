@@ -437,7 +437,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	return 0;
     }
 
-    min = d1 < d2 ? d1 : d2;
+    min = Min(d1, d2);
 
     if (min == 0) {
 	return 0;

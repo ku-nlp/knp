@@ -128,11 +128,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    point = bgh_code_match(ptr1->BGH_code+i, ptr2->BGH_code+j);
 	    if (max_point < point) max_point = point;
 	}
-    
-    if (max_point < 3) 
-	return 0;
-    else
-	return (max_point-2);
+
+    return Max(max_point - 2, 0);
 }
 
 /*==================================================================*/
@@ -386,6 +383,22 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		    mt_point = sm_match(ptr1, ptr2) * 2;
 		}
 
+		if (check_feature(ptr1->f, "用言") &&
+		    check_feature(ptr2->f, "用言")) {
+		    
+		    /* ★要整理★ 「する」のシソーラス類似度は最大2 */
+		    if (str_eq(ptr1->Jiritu_Go, "する") ||
+			str_eq(ptr2->Jiritu_Go, "する")) {
+			mt_point = Min(mt_point, 2);
+		    }
+		
+		    /* 前が敬語，後が敬語でなければ類似度をおさえる
+		       例)今日決心できるかどうか[分かりませんが、構わなければ]見せて欲しいんです */
+		    if (check_feature(ptr1->f, "敬語") &&
+			!check_feature(ptr2->f, "敬語")) {
+			mt_point = Min(mt_point, 2);
+		    }
+		}		    
 
 		/* 自立語の部分一致 (少なくとも一方の意味属性コードがない場合) */
 	    
@@ -398,11 +411,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		}
 
 		/* シソーラスと部分一致の得点は最大10 */
-
-		if ((part_mt_point + mt_point) > 10)
-		    point += 10;
-		else
-		    point += (part_mt_point + mt_point);
+		point += Min(part_mt_point + mt_point, 10);
 	    }
 	}
 

@@ -489,7 +489,7 @@ SMLIST smlist[TBLSIZE];
 	return 0;
     }
 
-    min = d1 < d2 ? d1 : d2;
+    min = Min(d1, d2);
 
     if (min == 0) {
 	return 0;
