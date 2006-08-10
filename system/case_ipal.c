@@ -1764,7 +1764,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 /*==================================================================*/
 {
     char *key, *value;
+    char *verb1, *verb2;
     float ret;
+    int id1, id2;
 
     if (CFSimExist == FALSE || cf1 == NULL || cf2 == NULL) {
 	return 0;
@@ -1775,15 +1777,30 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return 1.0;
     }
 
+    verb1 = strdup(cf1);
+    verb2 = strdup(cf2);
+    sscanf(cf1, "%[^0-9]%d", verb1, &id1);
+    sscanf(cf2, "%[^0-9]%d", verb2, &id2);
+
     key = (char *)malloc_data(sizeof(char) * (strlen(cf1) + strlen(cf2) + 2), 
 			      "get_cfs_similarity");
-    sprintf(key, "%s-%s", cf1, cf2);
+
+    /* 前側のidが小さくなるようにkeyを生成 */
+    if (id1 > id2) {
+	sprintf(key, "%s%d-%s%d", verb2, id2, verb1, id1);
+    }
+    else {
+	sprintf(key, "%s%d-%s%d", verb1, id1, verb2, id2);
+    }
+
     value = db_get(cf_sim_db, key);
     if (value) {
 	    ret = atof(value);
 	    free(value);
     }
     free(key);
+    free(verb1);
+    free(verb2);
 
     return ret;
 }
