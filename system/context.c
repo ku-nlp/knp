@@ -5415,7 +5415,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
 		/* 文脈解析において格フレームを決定した場合 */
 		if (cpm_ptr->decided != CF_DECIDED) {
-		    after_case_analysis(sp, cpm_ptr);
+		    assign_nil_assigned_components(sp, cpm_ptr);
 		    if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
 			assign_ga_subject(sp_new, cpm_ptr); /* CF_CAND_DECIDED の場合は行っているが */
 		    }

@@ -156,7 +156,7 @@ extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
 extern char *make_print_string(TAG_DATA *bp, int flag);
 extern void InitCPMcache();
 extern void ClearCPMcache();
-extern void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern void assign_nil_assigned_components(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_match_ex(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);

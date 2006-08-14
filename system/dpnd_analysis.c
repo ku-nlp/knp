@@ -995,6 +995,8 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
 	    /* 格解析結果を用言基本句featureへ */
 	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+		assign_nil_assigned_components(sp, &(sp->Best_mgr->cpm[i])); /* 未対応格要素の処理 */
+
 		assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
 
 		/* 格フレームの意味情報を用言基本句featureへ */
@@ -1013,8 +1015,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	/* 構造決定後のルール適用 */
 	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
 
-	if (OptAnalysis == OPT_CASE ||
-	    OptAnalysis == OPT_CASE2) {
+	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
 	    /* 格解析の結果を用言文節へ */
 	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
 		sp->Best_mgr->cpm[i].pred_b_ptr->cpm_ptr = &(sp->Best_mgr->cpm[i]);
@@ -1052,7 +1053,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 			if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
 			    assign_ga_subject(sp, &(sp->Best_mgr->cpm[i]));
 			}
-			after_case_analysis(sp, &(sp->Best_mgr->cpm[i]));
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
 
 			if (OptUseSmfix == TRUE) {

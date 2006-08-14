@@ -1267,8 +1267,9 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 {
     int i;
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	/* 割り当てなしのガ格, ヲ格, ニ格が存在するならば、ガ２不可 */
+	/* 割り当てなし、<主体>アリのガ格, ヲ格, ニ格が存在するならば、ガ２不可 */
 	if (cpm_ptr->cmm[0].result_lists_p[0].flag[i] == UNASSIGNED && 
+	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[i], "主体", FALSE) && 
 	    (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ガ") || 
 	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ヲ") || 
 	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ニ"))) {
@@ -1368,8 +1369,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 	if (num != NIL_ASSIGNED && /* 割り当てがある */
-	    cpm_ptr->elem_b_ptr[i] && 
-	    cpm_ptr->elem_b_num[i] < 0) { /* 省略, 〜は, 連体修飾 */
+	    cpm_ptr->elem_b_ptr[i]) { /* && cpm_ptr->elem_b_num[i] < 0) { * 省略, 〜は, 連体修飾に限定する場合 */
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
 		sprintf(feature_buffer, "マッチ用例;%s:%s-%s", 
@@ -1378,7 +1378,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 			pos == MATCH_NONE ? "NONE" : "SUBJECT");
 	    }
 	    else {
-		sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%d", 
+		sprintf(feature_buffer, "マッチ用例;%s:%s-%s:%.5f", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
 			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
@@ -1417,7 +1417,7 @@ void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
-  void after_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+  void assign_nil_assigned_components(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
     int i, c;
@@ -1607,6 +1607,24 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    sprintf(feature_buffer, "解析連格:%s", relation);
 	}
 	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, temp_assign_flag);
+
+	/* feature を用言文節に与える *
+	word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
+	if (word) {
+	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
+		sprintf(feature_buffer, "格関係%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->num, 
+			relation, word);
+	    }
+	    else {
+		sprintf(feature_buffer, "格関係%d:%s:%s", 
+			cpm_ptr->elem_b_ptr[i]->parent->num, 
+			relation, word);
+	    }
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+	    free(word);
+	}
+	*/
     }
 
     /* => ★「格要素-ガ」などを集めるように修正する */
