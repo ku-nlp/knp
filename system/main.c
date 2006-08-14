@@ -63,6 +63,7 @@ int		OptNEcache;
 int		OptNEend;
 int		OptNEdelete;
 int		OptNEcase;
+int		OptNEparent;
 int		OptNElearn;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
@@ -164,6 +165,7 @@ extern int	EX_match_subject;
     OptNEdelete = 0;
     OptNEcase = 0;
     OptNElearn = 0;
+    OptNEparent = 0;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 1;
 
@@ -317,6 +319,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne-end")) { /* 末尾文字を使用しない */
 	    OptNE = 1;
 	    OptNEend = 1;
+	}
+	else if (str_eq(argv[0], "-ne-parent")) { /* 親の情報を用いる */
+	    OptNE = 1;
+	    OptNEparent = 1;
 	}
 	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
 	    OptNE = 1;
@@ -852,7 +858,7 @@ extern int	EX_match_subject;
 
     /* 固有表現認識を行う */
 #ifdef USE_SVM
-    if (OptNE && !OptNEcase) {
+    if (OptNE && !OptNEcase && !OptNEparent) {
 	ne_analysis(sp);
     }
 #endif 
@@ -920,7 +926,7 @@ extern int	EX_match_subject;
     }
 
     /* 固有表現認識結果をタグに付与 */
-    if (OptNE && !OptNEcase && !OptNElearn) {
+    if (OptNE && !OptNEcase && !OptNElearn && !OptNEparent) {
 	assign_ne_feature_tag(sp);
     }
 
@@ -1075,7 +1081,7 @@ PARSED:
     }
 
 #ifdef USE_SVM
-    if (OptNEcase) {
+    if (OptNEparent || OptNEcase) {
 	/* 固有表現認識に必要なfeatureを与える */
 	for_ne_analysis(sp);   
 	/* 格解析後に固有表現認識を行う */
