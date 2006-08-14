@@ -1,3 +1,9 @@
+2006-08-14  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/extern.h, system/main.c, system/proper.c:
+
+	固有表現解析において係り先の情報を用いるオプション -ne-parent を追加
+
 2006-08-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/context.c, system/dpnd_analysis.c, system/extern.h:
