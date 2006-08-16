@@ -785,17 +785,20 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
     }
 
     end = (sp->tag_data + i)->head_ptr - sp->mrph_data;  /* 接尾辞を含むものには未対応 */
-    for (start = ((sp->tag_data + i)->b_ptr)->mrph_ptr - sp->mrph_data; 
-	 start <= end; start++) {
+    if (check_feature(((sp->tag_data + i)->head_ptr)->f, "記号")) end--;
+    
+    for (start = end; start >= 0; start--) {
 	word[0] = '\0';
 	for (k = start; k <= end; k++) {
 	    strcat(word, (sp->mrph_data + k)->Goi2); /* 先行詞候補 */
 	}
 	if (!strcmp(word, anaphor)) break;
-    }
+    }    
+    if (strcmp(word, anaphor)) return 0;
 
-    /* ORGANIZATIONの場合のみ */
-    if (strcmp(Tag_name[ne_tag], "ORGANIZATION")) return 0;
+    /* ORGANIZATION、PERSONの場合のみ */
+    if (strcmp(Tag_name[ne_tag], "ORGANIZATION") &&
+	strcmp(Tag_name[ne_tag], "PERSON")) return 0;
 
     /* 形態素に付与、NEresultに記録 */
     if ((j = start) == end) {

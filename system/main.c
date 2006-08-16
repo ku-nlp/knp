@@ -953,10 +953,6 @@ extern int	EX_match_subject;
 	set_caseframes(sp);
     }
 
-    /* 照応解析に必要なFEATUREの付与 */
-    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
-	assign_anaphor_feature(sp);
-
     /*この時点の文節情報を表示 */
     if (OptDisplay == OPT_DEBUG)
 	check_bnst(sp);
@@ -1089,6 +1085,10 @@ PARSED:
 	assign_ne_feature_tag(sp);
     }
 #endif
+
+    /* 照応解析に必要なFEATUREの付与 */
+    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
+	assign_anaphor_feature(sp);
 
     /* 文節情報の表示 */
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {

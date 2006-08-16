@@ -130,7 +130,6 @@ char *SynonymFile;
 		if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
 		    cp += 3; /* "NE:"を読み飛ばす */
 		    while (strncmp(cp, ":", 1)) cp++;
-		    /* register_entity_cache(cp + 1); */
 		    sprintf(buf, "照応詞候補:%s", cp + 1);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		    continue;
@@ -160,7 +159,6 @@ char *SynonymFile;
 		    strncpy(word, cp + 1, k);
 		    word[k] = '\0';
 		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
-		    /* register_entity_cache(word); */
 		    sprintf(buf, "照応詞候補:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
@@ -178,7 +176,7 @@ char *SynonymFile;
 		    check_feature((tag_ptr + j)->f, "係:隣")) {
 		    continue;
 		}
-		
+
 		word[0] = '\0';
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
 		     k >= 0; k--) {
@@ -189,32 +187,96 @@ char *SynonymFile;
 			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "照応接頭辞")))
 			continue;
 		    
-		    /* 「・」より前は含めない */
-		    if (!strcmp(((tag_ptr + j)->head_ptr - k)->Goi2, "・")) {
+		    /* 「・」などより前は含めない */
+		    if (!strcmp(((tag_ptr + j)->head_ptr - k)->Goi2, "・") ||
+			check_feature(((tag_ptr + j)->head_ptr - k)->f, "括弧終")) {
 			if (k > 0) word[0] = '\0';
 		    }
 		    else {
 			strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
 		    }
 		}
+
 		if (strncmp(word, "\0", 1)) {
 		    sprintf(buf, "照応詞候補:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
-		    /* register_entity_cache(word); */
 		}
 	    }
 	}
     }
+
+    /* 括弧内のふりがなへの対応 */
+    for (j = 0; j < sp->Tag_num; j++) {
+	
+	for (i = 0; i < (sp->tag_data + j)->mrph_num; i++) {
+
+	    if (j + 1 < sp->Tag_num &&
+		(check_feature(((sp->tag_data + j)->mrph_ptr + i + 1)->f, 
+			      "ひらがな") ||
+		!strcmp(((sp->tag_data + j)->mrph_ptr + i + 1)->Goi2, "・"))) break;
+	    
+	    word[0] = '\0';
+	    for (k = 0; (sp->tag_data + j)->mrph_ptr + i - k > sp->mrph_data; k++) {
+		if (!check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, 
+				   "ひらがな") &&
+		    strcmp(((sp->tag_data + j)->mrph_ptr + i - k)->Goi2, "・")) break;
+	    }
+	    if (k > 0 && 
+		check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, "括弧始")) {
+		for (k = k - 1; k >= 0; k--) 
+		    strcat(word, ((sp->tag_data + j)->mrph_ptr + i - k)->Goi2);
+	    }
+	    
+	    if (strncmp(word, "\0", 1)) {
+		sprintf(buf, "照応詞候補:%s", word);
+		assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
+		assign_cfeature(&((sp->tag_data + j)->f), "読み方", FALSE);
+	    }
+	}		
+    }
 }
 
 /*==================================================================*/
-int compare_strings(char *antecedent, char *anaphor, char *ant_ne, char *ana_ne)
+int compare_strings(char *antecedent, char *anaphor, char *ant_ne, char *ana_ne, int flag)
 /*==================================================================*/
 {
     /* 照応詞候補と先行詞候補を比較 */
+    /* 先行詞候補を絞り込んでいないためやや効率が悪い */
     
-    int i, j;
+    int i, j, left, right;
     char word[WORD_LEN_MAX * 4];
+
+    /* 読み方の場合 */
+    if (flag) { 
+    /* ex. 中島河太郎（なかじま・かわたろう) */
+    /* 基準
+       とりあえず人名の場合のみ
+       前方マッチ文字数×後方マッチ文字数×2 > anaphora文字数
+       である場合、読み方を表わしていると判定 
+       ただしantecedentの直後が<括弧始>の場合(flag=2)の場合は連続していると考え
+       マッチ文字数の少ない方に2文字ボーナス
+    */
+           
+	if (!ant_ne || strncmp(ant_ne, "NE:PERSON", 7)) return 0;
+
+	left = right = flag - 0;
+	for (i = 0; i < strlen(anaphor); i += 2) {
+	    if (strncmp(antecedent + i, anaphor + i, 2)) {
+		break;
+	    }
+	    left++;
+	}  
+	for (j = 0; j < strlen(anaphor); j += 2) {
+	    if (strncmp(antecedent + strlen(antecedent) - j - 2, 
+			anaphor + strlen(anaphor) - j - 2, 2)) {
+		break;
+	    } 
+	    right++;
+	}
+	if (flag == 2) (left > right) ? (right += 2) : (left += 2);
+	if (left * right * 4 > strlen(anaphor)) return 1;
+	return 0;
+    }
 
     /* 異なる種類の固有表現の場合は不可 */ 
     if (ana_ne && ant_ne && strncmp(ana_ne, ant_ne, 7)) return 0;
@@ -232,7 +294,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ant_ne, char *ana_ne)
     /* ex. 村山富市=村山、大分県=大分 */
     if (ant_ne && strlen(ant_ne) > strlen(antecedent) && /* 先行詞がNE全体である */
 	!strcmp(ant_ne + strlen(ant_ne) - strlen(antecedent), antecedent) &&
-	(!strncmp(ant_ne, "NE:PERSON", 7) || 
+	(!strncmp(ant_ne, "NE:PERSON", 7) && ana_ne && !strncmp(ana_ne, "NE:PERSON", 7) || 
 	 !strncmp(ant_ne, "NE:LOCATION", 7) && strlen(antecedent) - strlen(anaphor) == 2) &&
 	!strncmp(antecedent, anaphor, strlen(anaphor))) return 1;
     
@@ -258,7 +320,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ant_ne, char *ana_ne)
     }  
     for (j = 0; j < strlen(anaphor); j += 2) {
 	if (strncmp(antecedent + strlen(antecedent) - j - 2, 
-		    anaphor + strlen(anaphor) - j -2, 2)) {
+		    anaphor + strlen(anaphor) - j - 2, 2)) {
 	    break;
 	} 
     }
@@ -287,12 +349,14 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     /* 共参照関係にあるとされた照応詞文字列の先頭のタグの番号 */
     /* 見つからなかった場合は-2を返す */
 
-    int j, k, l, m;
-    char word[WORD_LEN_MAX], word2[WORD_LEN_MAX], buf[WORD_LEN_MAX];
+    int j, k, l, m, yomi_flag;
+    char word[WORD_LEN_MAX], word2[WORD_LEN_MAX], word3[WORD_LEN_MAX], buf[WORD_LEN_MAX];
     char *cp, *ant_ne, CO[WORD_LEN_MAX];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
  
+    yomi_flag = (check_feature((sp->tag_data + i)->f, "読み方")) ? 1 : 0;
+
     sdp = sentence_data + sp->Sen_num - 1;
     for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
 	
@@ -309,26 +373,37 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
 	    for (l = tag_ptr->head_ptr - (tag_ptr->b_ptr)->mrph_ptr; l >= 0; l--) {
 
-		word[0] = word2[0] = '\0';
+		word[0] = word2[0] = word3[0] = '\0';
 		for (m = l; m >= 0; m--) {
 		    /* 先頭の特殊、照応接頭辞は含めない */
 		    if (!strncmp(word, "\0", 1) &&
 			((tag_ptr->head_ptr - m)->Hinshi == 1 ||
 			 check_feature((tag_ptr->head_ptr - m)->f, "照応接頭辞")))
 			continue;
-		    /* 「・」より前は含めない */
-		    if (!strcmp((tag_ptr->head_ptr - m)->Goi2, "・")) {
+		    /* 「・」などより前は含めない */
+		    if (!strcmp((tag_ptr->head_ptr - m)->Goi2, "・") ||
+			!strcmp((tag_ptr->head_ptr - m)->Goi2, "＝") ||
+			check_feature((tag_ptr->head_ptr - m)->f, "括弧終")) {
 			word[0] = '\0';
 		    }
 		    else {
 			strcat(word, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補 */
 		    }
 		    strcat(word2, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補2 */
+		    strcat(word3, (tag_ptr->head_ptr - m)->Yomi); /* 先行詞候補3 */
 		}	
 		if (!strncmp(word, "\0", 1)) continue;
-		
-		if (compare_strings(word, anaphor, ant_ne, ne) ||
-		    compare_strings(word2, anaphor, ant_ne, ne) ||
+		if (strlen(word) > strlen(check_feature(tag_ptr->f, "照応詞候補")) - 11)
+		    continue;
+
+		if (compare_strings(word, anaphor, ant_ne, ne, 0) ||
+		    compare_strings(word2, anaphor, ant_ne, ne, 0) ||
+		    /* 読み方の場合 */
+		    yomi_flag && j == 0 && (i - k < 10) &&
+		    compare_strings(word3, anaphor, ant_ne, ne, 1) ||
+		    yomi_flag && j == 0 && (i - k < 10) &&
+		    check_feature((tag_ptr->head_ptr + 1)->f, "括弧始") &&
+		    compare_strings(word3, anaphor, ant_ne, ne, 2) ||
 		    /* 人称名詞の場合の特例 */
 		    (check_feature((sp->tag_data + i)->f, "人称代名詞") &&
 		     check_feature(tag_ptr->f, "NE:PERSON")) ||
@@ -338,9 +413,9 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		     sm_match_check(sm2code("主体"), tag_ptr->SM_code, SM_NO_EXPAND_NE)))
 		    {
 		    
-		    /* 「・」より前を含めた場合のみ同義表現があった場合 */
-		    if (!compare_strings(word, anaphor, ant_ne, ne) &&
-			compare_strings(word2, anaphor, ant_ne, ne)) {
+		    /* 「・」などより前を含めた場合のみ同義表現があった場合 */
+		    if (!compare_strings(word, anaphor, ant_ne, ne, 0) &&
+			compare_strings(word2, anaphor, ant_ne, ne, 0)) {
 			strcpy(word, word2);
 		    }
 
@@ -374,7 +449,10 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			if (!check_feature((sp->tag_data + i)->f, "NE") &&
 			    !check_feature((sp->tag_data + i)->f, "NE内") &&
 			    !check_feature((sp->tag_data + i)->f, "人称代名詞") &&
-			    (cp = check_feature(tag_ptr->f, "NE")) && !setubi) {
+			    !check_feature((sp->tag_data + i)->f, "Ｔ自称名詞") &&
+			    (cp = check_feature(tag_ptr->f, "NE")) && !setubi ||
+			    yomi_flag && 
+			    (cp = check_feature(tag_ptr->f, "NE:PERSON"))) {
 			    cp += 3; /* "NE:"を読み飛ばす */
 			    while (strncmp(cp, ":", 1)) cp++;
 			    if (!strcmp(cp + 1, word)) {
@@ -473,6 +551,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
 	    (check_feature((sp->tag_data + i)->f, "NE") ||  
 	     check_feature((sp->tag_data + i)->f, "NE内") || /* DATA、LOCATIONなど一部 */
+	     check_feature((sp->tag_data + i)->f, "読み方") ||
 	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
 	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が読点である */
