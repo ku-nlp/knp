@@ -834,14 +834,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 		if (!over_flag) {
 		    if (strlen(buf) + strlen(code) >= max) {
 			/* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
-			free(code);
 			over_flag = 1;
 		    }
 		    else {
 			strcat(buf, code);
-			free(code);
 		    }
 		}
+		free(code);
 	    }
 
 	    if (c_ptr->ex_size[num] == 0) {
