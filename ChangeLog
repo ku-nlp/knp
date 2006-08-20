@@ -1,3 +1,8 @@
+2006-08-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	fixed a memory leak.
+
 2006-08-16  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/corefer.c, system/main.c, system/proper.c
