@@ -42,6 +42,7 @@ int 		OptDisplay;
 int 		OptDisplayNE;
 int		OptExpandP;
 int		OptCheck;
+int		OptUseRN;
 int		OptDiscPredMethod;
 int		OptDiscNounMethod;
 int		OptLearn;
@@ -142,6 +143,7 @@ extern int	EX_match_subject;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
+    OptUseRN = 0;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
     OptDiscPredMethod = OPT_NORMAL;
@@ -471,6 +473,9 @@ extern int	EX_match_subject;
 	    else {
 		usage();
 	    }
+	}
+	else if (str_eq(argv[0], "-use-rn")) {
+	    OptUseRN = USE_RN;
 	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
@@ -832,22 +837,6 @@ extern int	EX_match_subject;
 	sp->Tag_num = 0;
 	ErrorComment = strdup("Cannot make mrph");
 	return TRUE;
-    }
-
-    /* 形態素への意味情報付与 (固有表現解析のとき) */
-
-    if (0 && SMExist == TRUE) {
-	char *code;
-	for (i = 0; i < sp->Mrph_num; i++) {
-	    code = get_str_code(sp->mrph_data[i].Goi, USE_NTT);
-	    if (code) {
-		strcpy(sp->mrph_data[i].SM, code);
-		free(code);
-	    }
-	    else {
-		sp->mrph_data[i].SM[0] = '\0';
-	    }
-	}
     }
 
     /* 形態素へのFEATURE付与 */

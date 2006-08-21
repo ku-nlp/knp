@@ -704,6 +704,9 @@ typedef struct tnode_t {
 #define	USE_NTT_WITH_STORE	6
 #define	USE_SUFFIX_SM	8
 #define	USE_PREFIX_SM	16
+#define USE_RN	32
+#define USE_BGH_WITH_RN	33
+#define USE_NTT_WITH_RN	34
 
 #define	CF_PRED 1
 #define	CF_NOUN	2

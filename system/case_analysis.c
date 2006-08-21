@@ -1801,8 +1801,14 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
     }
 
     /* まず現在の形態素をチェック */
-    if ((rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr)) && 
-	(rep_end = strchr(rep_strt, '/'))) {
+    rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr);
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
+	rep_end = rep_strt+strlen(rep_strt);
+    }
+    else {
+	rep_end = strchr(rep_strt, '/');
+    }
+    if (rep_strt && rep_end) {
 	if (exact_flag) { /* exact matchによるチェック */
 	    if (cf_match_exactly(rep_strt, rep_end - rep_strt, 
 				 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
@@ -1833,8 +1839,14 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-	    if ((rep_strt = get_mrph_rep(&m)) && 
-		(rep_end = strchr(rep_strt, '/'))) {
+	    rep_strt = get_mrph_rep(&m);
+	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
+		rep_end = rep_strt+strlen(rep_strt);
+	    }
+	    else {
+		rep_end = strchr(rep_strt, '/');
+	    }
+	    if (rep_strt && rep_end) {
 		if (exact_flag) { /* exact matchによるチェック */
 		    if (cf_match_exactly(rep_strt, rep_end - rep_strt, 
 					 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 

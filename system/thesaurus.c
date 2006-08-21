@@ -140,6 +140,8 @@ int	ParaThesaurus = USE_BGH;
 	return code;
     }
 
+    if (flag & USE_RN) return NULL;
+
     /* 意味素がない場合で、
        すべての文字がカタカナの場合はひらがなに変換して辞書引き */
 
@@ -189,14 +191,20 @@ int	ParaThesaurus = USE_BGH;
 }
 
 /*==================================================================*/
-   int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag)
+int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
 /*==================================================================*/
 {
     char *rep_strt, *rep_end;
     int add_len;
 
-    if ((rep_strt = get_mrph_rep(ptr)) && /* 代表表記 */
-	(rep_end = strchr(rep_strt, '/'))) {
+    rep_strt = get_mrph_rep_from_f(ptr);
+    if (flag & USE_RN) {
+	rep_end = rep_strt+strlen(rep_strt);
+    }
+    else {
+	rep_end = strchr(rep_strt, '/');
+    }
+    if (rep_strt && rep_end) {
 	add_len = rep_end - rep_strt;
 	if (strlen(str_buffer) + add_len + 2 > BNST_LENGTH_MAX) {
 	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "add_rep_str");
@@ -236,6 +244,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 {
     FEATURE **fpp = &((ptr->mrph_ptr + end)->f);
     MRPH_DATA m;
+    char *buf;
     char last_key[BNST_LENGTH_MAX];
     int add_len;
 
@@ -248,6 +257,9 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	    return;
 	}
 
+	if (str_buffer[strlen(str_buffer)-1] == '+') {
+	    str_buffer[strlen(str_buffer)-1] = '\0';
+	}
 	if (code = get_str_code(str_buffer, flag)) { /* DBをひく */
 	    strcat(ret_buffer, code);
 	    free(code);
@@ -266,18 +278,27 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     }
     /* 複合名詞の前の部分 (表記のみ, 代表表記やALTは用いていない) */
     else if (strt < end) {
-	if (strlen(str_buffer) + strlen((ptr->mrph_ptr + strt)->Goi2) + 2 > BNST_LENGTH_MAX) {
+	if (flag & USE_RN) {
+	    buf = get_mrph_rep_from_f(ptr->mrph_ptr + strt);
+	}
+	else {
+	    buf = (ptr->mrph_ptr + strt)->Goi2;
+	}
+	if (strlen(str_buffer) + strlen(buf) + 2 > BNST_LENGTH_MAX) {
 	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "make_key_and_get_code");
 	    return;
 	}
-	strcat(str_buffer, (ptr->mrph_ptr + strt)->Goi2); /* 表記 */
+	strcat(str_buffer, buf); /* 表記 */
+	if (flag & USE_RN) {
+	    strcat(str_buffer, "+");
+	}
 	make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
-	str_buffer[strlen(str_buffer) - strlen((ptr->mrph_ptr + strt)->Goi2)] = '\0';
+	str_buffer[strlen(str_buffer) - strlen(buf)] = '\0';
 	return;
     }
 
     /* strt == end => 最後原形 */
-    if ((add_len = add_rep_str(ptr->mrph_ptr + end, str_buffer, TRUE)) == 0) { /* 代表表記 */
+    if ((add_len = add_rep_str(ptr->mrph_ptr + end, str_buffer, TRUE, flag)) == 0) { /* 代表表記 */
 	return;
     }
     make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
@@ -291,7 +312,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-	    if ((add_len = add_rep_str(&m, str_buffer, TRUE)) == 0) { /* 代表表記 */
+	    if ((add_len = add_rep_str(&m, str_buffer, TRUE, flag)) == 0) { /* 代表表記 */
 		return;
 	    }
 	    if (strcmp(last_key, str_buffer)) { /* 異なる場合のみ調べる */
@@ -375,7 +396,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     for (; strt <= end; strt++) {
 	str_buffer[0] = '\0';
 	make_key_and_get_code(ptr, strt, end, str_buffer, result_code, used_key, 
-			      flag | lookup_pos);
+			      flag | lookup_pos | OptUseRN);
 	if (*result_code) {
 	    break;
 	}
