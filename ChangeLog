@@ -1,3 +1,8 @@
+2006-08-21  Koji OKABE  <okabe@kc.t.u-tokyo.ac.jp>
+
+	* case_analysis.c, const.h, extern.h, main.c, thesaurus.c:
+	代表表記化格フレームに対応
+
 2006-08-21  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/bnst_basic.rule
