@@ -126,6 +126,7 @@
 #define	OPT_CASE_NO	4
 #define	OPT_CASE_USE_EX_ALL	8
 #define	OPT_CASE_USE_PROBABILITY	16
+#define	OPT_CASE_USE_REP_CF	32
 
 #define	OPT_DISC_OR_CF	1
 #define	OPT_DISC_BEST	2
