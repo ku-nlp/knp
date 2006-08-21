@@ -392,6 +392,8 @@ extern void make_tag_units(SENTENCE_DATA *sp);
 extern void assign_feature_for_tag(SENTENCE_DATA *sp);
 extern void assign_feature_alt_mrph(FEATURE **fpp, MRPH_DATA *m_ptr);
 extern void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src);
+extern char *get_mrph_rep(MRPH_DATA *m_ptr);
+extern char *get_mrph_rep_from_f(MRPH_DATA *m_ptr);
 
 /* read_rule.c */
 extern int case2num(char *cp);
@@ -428,7 +430,6 @@ extern float calc_words_similarity(char *exd, char **exp, int num, int *pos);
 extern float calc_sm_words_similarity(char *smd, char **exp, int num, int *pos, char *del, int expand, char *unmatch_word);
 extern void overflowed_function(char *str, int max, char *function);
 extern char *get_most_similar_code(char *exd, char *exp);
-extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 extern char *get_str_code_with_len(char *cp, int len, int flag);
 
 /* tools.c */

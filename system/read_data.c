@@ -78,6 +78,30 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+		 char *get_mrph_rep(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *cp;
+
+    if ((cp = strstr(m_ptr->Imi, "代表表記:"))) {
+	return cp + 9;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
+	     char *get_mrph_rep_from_f(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *cp;
+
+    if ((cp = check_feature(m_ptr->f, "代表表記"))) {
+	return cp + 9;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
