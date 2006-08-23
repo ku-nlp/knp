@@ -197,7 +197,7 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
     char *rep_strt, *rep_end;
     int add_len;
 
-    rep_strt = get_mrph_rep_from_f(ptr);
+    rep_strt = get_mrph_rep(ptr);
     if (flag & USE_RN) {
 	rep_end = rep_strt+strlen(rep_strt);
     }
