@@ -1,3 +1,8 @@
+2006-08-23  Toshiaki Nakazawa  <nakazawa@kc.t.u-tokyo.ac.jp>
+
+	* rule/tag_after_dpnd_and_case.rule:
+	人称挿入の条件を、用言:判 以外にした
+
 2006-08-21  Koji OKABE  <okabe@kc.t.u-tokyo.ac.jp>
 
 	* case_analysis.c, const.h, extern.h, main.c, thesaurus.c:
@@ -13,6 +18,7 @@
 	* system/extern.h, system/read_data.c, system/thesaurus.c:
 	代表表記をとる関数を追加
 
+>>>>>>> 1.407
 2006-08-20  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c:
