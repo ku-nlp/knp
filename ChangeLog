@@ -1,5 +1,10 @@
 2006-08-23  Toshiaki Nakazawa  <nakazawa@kc.t.u-tokyo.ac.jp>
 
+	* rule/modality.rule:
+	モダリティ-依頼Ａに「書いてな」の「な」を追加
+
+2006-08-23  Toshiaki Nakazawa  <nakazawa@kc.t.u-tokyo.ac.jp>
+
 	* rule/tag_after_dpnd_and_case.rule:
 	人称挿入の条件を、用言:判 以外にした
 
