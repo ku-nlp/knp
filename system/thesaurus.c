@@ -198,11 +198,13 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
     int add_len;
 
     rep_strt = get_mrph_rep(ptr);
-    if (flag & USE_RN) {
-	rep_end = strchr(rep_strt, '\"');
-    }
-    else {
-	rep_end = strchr(rep_strt, '/');
+    if (rep_strt) {
+	if (flag & USE_RN) {
+	    rep_end = strchr(rep_strt, '\"');
+	}
+	else {
+	    rep_end = strchr(rep_strt, '/');
+	}
     }
     if (rep_strt && rep_end) {
 	add_len = rep_end - rep_strt;
