@@ -282,6 +282,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     else if (strt < end) {
 	if (flag & USE_RN) {
 	    buf = get_mrph_rep_from_f(ptr->mrph_ptr + strt);
+	    if (!buf) buf = (ptr->mrph_ptr + strt)->Goi2;
 	}
 	else {
 	    buf = (ptr->mrph_ptr + strt)->Goi2;
