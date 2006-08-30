@@ -284,7 +284,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     /* タグ単位・文節を後処理して、機能的なタグ単位をマージ
        flag == 0: num, dpnd_head の番号の付け替えはしない */
 
-    int	i, j, count = -1, t_table[TAG_MAX], b_table[BNST_MAX];
+    int	i, j, count = -1, t_table[TAG_MAX], b_table[BNST_MAX], merge_to;
     TAG_DATA *t_ptr;
     BNST_DATA *b_ptr;
     char *cp;
@@ -302,12 +302,17 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	}
 
 	if (check_feature(t_ptr->f, "Ｔマージ←")) {
+	    for (merge_to = i - 1; merge_to >= 0; merge_to--) {
+		if ((sp->tag_data + merge_to)->num >= 0) {
+		    break;
+		}
+	    }
 	    t_ptr->num = -1; /* 無効なタグ単位である印をつけておく */
-	    (sp->tag_data + i - 1)->mrph_num += t_ptr->mrph_num;
-	    (sp->tag_data + i - 1)->dpnd_head = t_ptr->dpnd_head;
-	    (sp->tag_data + i - 1)->dpnd_type = t_ptr->dpnd_type;
+	    (sp->tag_data + merge_to)->mrph_num += t_ptr->mrph_num;
+	    (sp->tag_data + merge_to)->dpnd_head = t_ptr->dpnd_head;
+	    (sp->tag_data + merge_to)->dpnd_type = t_ptr->dpnd_type;
 	    for (j = 0; j < t_ptr->mrph_num; j++) {
-		(sp->tag_data + i - 1)->length += strlen((t_ptr->mrph_ptr + j)->Goi2);
+		(sp->tag_data + merge_to)->length += strlen((t_ptr->mrph_ptr + j)->Goi2);
 	    }
 
 	    /* featureの書き換えは暫定的に停止
@@ -317,12 +322,17 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    */
 
 	    if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
+		for (merge_to = -1; t_ptr->b_ptr->num + merge_to >= 0; merge_to--) {
+		    if ((t_ptr->b_ptr + merge_to)->num >= 0) {
+			break;
+		    }
+		}
 		t_ptr->b_ptr->num = -1;
-		(t_ptr->b_ptr - 1)->mrph_num += t_ptr->b_ptr->mrph_num;
-		(t_ptr->b_ptr - 1)->dpnd_head = t_ptr->b_ptr->dpnd_head;
-		(t_ptr->b_ptr - 1)->dpnd_type = t_ptr->b_ptr->dpnd_type;
+		(t_ptr->b_ptr + merge_to)->mrph_num += t_ptr->b_ptr->mrph_num;
+		(t_ptr->b_ptr + merge_to)->dpnd_head = t_ptr->b_ptr->dpnd_head;
+		(t_ptr->b_ptr + merge_to)->dpnd_type = t_ptr->b_ptr->dpnd_type;
 		for (j = 0; j < t_ptr->mrph_num; j++) {
-		    (t_ptr->b_ptr - 1)->length += strlen((t_ptr->b_ptr->mrph_ptr + j)->Goi2);
+		    (t_ptr->b_ptr + merge_to)->length += strlen((t_ptr->b_ptr->mrph_ptr + j)->Goi2);
 		}
 	    }
 	}
