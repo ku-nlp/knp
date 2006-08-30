@@ -1,3 +1,8 @@
+2006-08-30  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/dpnd_analysis.c:
+	postprocessで基本句が連続してマージされるときに対応
+
 2006-08-23  Toshiaki Nakazawa  <nakazawa@kc.t.u-tokyo.ac.jp>
 
 	* rule/modality.rule:
@@ -23,7 +28,6 @@
 	* system/extern.h, system/read_data.c, system/thesaurus.c:
 	代表表記をとる関数を追加
 
->>>>>>> 1.407
 2006-08-20  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c:
