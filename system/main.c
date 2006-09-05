@@ -68,6 +68,7 @@ int		OptNEparent;
 int		OptNElearn;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
+int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
 /* Server Client Extention */
@@ -420,6 +421,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-print-ex")) {
 	    PrintEx = 1;
+	}
+	else if (str_eq(argv[0], "-print-num")) {
+	    PrintNum = 1;
 	}
 	else if (str_eq(argv[0], "-N")) {
 	    argv++; argc--;

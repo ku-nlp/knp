@@ -251,9 +251,18 @@ char mrph_buffer[SMALL_DATA_LEN];
 
 	    /* Ê¸Àá¹Ô */
 	    if (bp_independent_offset == 0 && t_ptr->bnum >= 0) {
-		fprintf(Outfp, "* %d%c", 
-			t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
-			t_ptr->b_ptr->dpnd_type);
+		if (PrintNum) {
+		    fprintf(Outfp, "* %d %d%c", 
+			    t_ptr->bnum,
+			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
+			    t_ptr->b_ptr->dpnd_type);
+		}
+		else {
+		    fprintf(Outfp, "* %d%c", 
+			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
+			    t_ptr->b_ptr->dpnd_type);
+		}
+		    
 		if (t_ptr->b_ptr->f) {
 		    fputc(' ', Outfp);
 		    print_feature(t_ptr->b_ptr->f, Outfp);
@@ -276,7 +285,12 @@ char mrph_buffer[SMALL_DATA_LEN];
 		    dpnd_head--;
 		}
 	    }
-	    fprintf(Outfp, "+ %d%c", dpnd_head, t_ptr->dpnd_type);
+	    if (PrintNum) {
+		fprintf(Outfp, "+ %d %d%c", t_ptr->num, dpnd_head, t_ptr->dpnd_type);
+	    } 
+	    else {
+		fprintf(Outfp, "+ %d%c", dpnd_head, t_ptr->dpnd_type);
+	    }
 	    if (t_ptr->f) {
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);

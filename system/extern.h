@@ -116,6 +116,7 @@ extern int	PrintFrequency;
 extern int	PrintDeletedSM;
 extern int	PrintFeatures;
 extern int	PrintEx;
+extern int	PrintNum;
 extern int 	EX_match_score[];
 extern int	EX_match_exact;
 extern float	AntecedentDecideThresholdPredGeneral;

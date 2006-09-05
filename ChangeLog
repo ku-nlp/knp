@@ -1,3 +1,8 @@
+2006-09-06  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
+
+	* system/system/extern.h, system/lib_print.c, system/main.c:
+	"*"の後に文節番号、"+"の後に基本句番号を表示するオプション -print-num を追加
+
 2006-08-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/dpnd_analysis.c:
