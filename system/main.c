@@ -170,7 +170,7 @@ extern int	EX_match_subject;
     OptNElearn = 0;
     OptNEparent = 0;
     OptAnaphoraBaseline = 0;
-    OptTimeoutExit = 1;
+    OptTimeoutExit = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -446,8 +446,8 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    ParseTimeout = atoi(argv[0]);
 	}
-	else if (str_eq(argv[0], "-timeout-no-exit")) {
-	    OptTimeoutExit = 0;
+	else if (str_eq(argv[0], "-timeout-exit")) {
+	    OptTimeoutExit = 1;
 	}
 	else if (str_eq(argv[0], "-scode")) {
 	    argv++; argc--;
@@ -728,6 +728,25 @@ extern int	EX_match_subject;
 }
 
 /*==================================================================*/
+		      void set_timeout_signal()
+/*==================================================================*/
+{
+#ifndef _WIN32
+    sigset_t set;
+    if (-1 == sigfillset(&set)) {
+	perror("sigfullset:"); 
+	exit(1);
+    }
+    if (-1 == sigprocmask(SIG_UNBLOCK, &set, 0)) {
+	perror("sigprocmask:"); 
+	exit(1);
+    }
+
+    signal(SIGALRM, timeout_function);
+#endif
+}
+
+/*==================================================================*/
 			   void init_all()
 /*==================================================================*/
 {
@@ -804,21 +823,7 @@ extern int	EX_match_subject;
 	InitContextHash();
     }
 
-#ifndef _WIN32
-    {
-	sigset_t set;
-	if (-1 == sigfillset(&set)) {
-	    perror("sigfullset:"); 
-	    exit(1);
-	}
-	if (-1 == sigprocmask(SIG_UNBLOCK, &set, 0)) {
-	    perror("sigprocmask:"); 
-	    exit(1);
-	}
-    }
-
-    signal(SIGALRM, timeout_function);
-#endif
+    set_timeout_signal();
 }
 
 /*==================================================================*/
@@ -1042,7 +1047,6 @@ extern int	EX_match_subject;
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
 #ifndef _WIN32
-    alarm(0);
     alarm(ParseTimeout);
 #endif
 
@@ -1145,15 +1149,13 @@ PARSED:
 		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 
-	    signal(SIGALRM, timeout_function);
-
 	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */
 	    if (OptTimeoutExit || 
 		(OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
-		close_all();
 		exit(100);
 	    }
 
+	    set_timeout_signal();
 	    continue;
 	}
 
