@@ -1,3 +1,10 @@
+2006-09-07  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	タイムアウトしたときの挙動を以下のように変更
+	  構文解析のとき: 次の文に進む (-timeout-exitオプション時は終了)
+	  格解析のとき  : 終了(DBまわりで固まるため)
+
 2006-09-06  Ryohei Sasano  <ryohei@kc.t.u-tokyo.ac.jp>
 
 	* system/system/extern.h, system/lib_print.c, system/main.c:
