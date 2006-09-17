@@ -1,3 +1,8 @@
+2006-09-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_data.c, system/case_ipal.c, system/case_match.c, system/main.c:
+	代表表記化格フレームに対応(-use-rn-cf)
+
 2006-09-07  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:
