@@ -478,6 +478,10 @@ extern int	EX_match_subject;
 		usage();
 	    }
 	}
+	else if (str_eq(argv[0], "-use-rn-cf")) {
+	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
+	    OptUseRN = USE_RN;
+	}
 	else if (str_eq(argv[0], "-use-rn")) {
 	    OptUseRN = USE_RN;
 	}

@@ -1441,30 +1441,71 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	char *make_pred_string(TAG_DATA *t_ptr, char *orig_form)
 /*==================================================================*/
 {
-    char *buffer;
+    char *buffer, *main_pred, *cp;
 
     /* orig_form == 1: 可能動詞のもとの形を用いるとき */
 
     /* 用言タイプ, voiceの分(7)も確保しておく */
 
+    /* 代表表記を使う場合で代表表記があるとき */
+    if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
+	(main_pred = get_mrph_rep_from_f(t_ptr->head_ptr))) {
+	;
+    }
+    else {
+	main_pred = t_ptr->head_ptr->Goi;
+    }
+
     /* 「（〜を）〜に」 のときは 「する」 で探す */
     if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
-	buffer = (char *)malloc_data(12, "make_pred_string"); /* 4 + 8 */
-	strcpy(buffer, "する");
+	buffer = (char *)malloc_data(17, "make_pred_string"); /* 4 + 5 + 8 */
+	if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	    strcpy(buffer, "する/する");
+	}
+	else {
+	    strcpy(buffer, "する");
+	}
     }
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→")) {
-	buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 8, 
-				     "make_pred_string");
-	strcpy(buffer, t_ptr->head_ptr->Goi2);
-	strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
+	if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1))) {
+		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
+					     "make_pred_string");
+		strcpy(buffer, main_pred);
+		strcat(buffer, "+");
+		strcat(buffer, cp);
+	    }
+	    else {
+		buffer = (char *)malloc_data(strlen(main_pred) + strlen((t_ptr->head_ptr + 1)->Goi) + 9, 
+					     "make_pred_string");
+		strcpy(buffer, main_pred);
+		strcat(buffer, "+");
+		strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
+	    }
+	}
+	else {
+	    buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi2) + strlen((t_ptr->head_ptr + 1)->Goi) + 8, 
+					 "make_pred_string");
+	    strcpy(buffer, t_ptr->head_ptr->Goi2);
+	    strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
+	}
     }
     /* 「形容詞語幹+的だ」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出←")) {
-	buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(t_ptr->head_ptr->Goi) + 8, 
-				     "make_pred_string");
-	strcpy(buffer, (t_ptr->head_ptr - 1)->Goi2);
-	strcat(buffer, t_ptr->head_ptr->Goi);
+	if ((OptCaseFlag & OPT_CASE_USE_REP_CF) &&
+	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1))) {
+	    buffer = (char *)malloc_data(strlen(cp) + strlen(main_pred) + 9, 
+					 "make_pred_string");
+	    strcpy(buffer, cp);
+	    strcat(buffer, "+");
+	}
+	else {
+	    buffer = (char *)malloc_data(strlen((t_ptr->head_ptr - 1)->Goi2) + strlen(main_pred) + 8, 
+					 "make_pred_string");
+	    strcpy(buffer, (t_ptr->head_ptr - 1)->Goi2);
+	}
+	strcat(buffer, main_pred);
     }
     else {
 	if (orig_form) {
@@ -1472,8 +1513,8 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	    strcpy(buffer, orig_form);
 	}
 	else {
-	    buffer = (char *)malloc_data(strlen(t_ptr->head_ptr->Goi) + 8, "make_pred_string");
-	    strcpy(buffer, t_ptr->head_ptr->Goi);
+	    buffer = (char *)malloc_data(strlen(main_pred) + 8, "make_pred_string");
+	    strcpy(buffer, main_pred);
 	}
     }
 
@@ -2098,7 +2139,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* 用例確率 P(弁当|食べる:動2,ヲ格)
        格フレームから計算 (cfex.prob) */
 
-    char *key = NULL;
+    char *key = NULL, *mrph_str;
     double ret;
 
     /* dpの指定がなければ、as1とcfdから作る */
@@ -2131,9 +2172,15 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	}
     }
 
-    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + 
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	mrph_str = get_mrph_rep_from_f(dp->head_ptr);
+    }
+    else {
+	mrph_str = dp->head_ptr->Goi;
+    }
+    key = malloc_db_buf(strlen(mrph_str) + 
 			strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
-    sprintf(key, "%s", dp->head_ptr->Goi);
+    sprintf(key, "%s", mrph_str);
     /* sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, 
        cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
 

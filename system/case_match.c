@@ -485,7 +485,7 @@ float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word,
 float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
-    char *exd;
+    char *exd, *strp;
     int expand;
     float ex_score;
 
@@ -503,6 +503,13 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	expand = SM_EXPAND_NE;
     }
 
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	strp = get_mrph_rep_from_f(tp->head_ptr);
+    }
+    else {
+	strp = tp->head_ptr->Goi;
+    }
+
     /* 意味素なし
        候補にするために -1 を返す */
     if (!exd[0]) {
@@ -510,7 +517,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
     /* exact match */
     else if (!check_feature(tp->f, "形副名詞") && 
-	     cf_match_exactly(tp->head_ptr->Goi, strlen(tp->head_ptr->Goi), 
+	     cf_match_exactly(strp, strlen(strp), 
 			      cfp->ex_list[n], cfp->ex_num[n], pos)) {
 	ex_score = 1.1;
     }
