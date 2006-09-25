@@ -503,8 +503,9 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	expand = SM_EXPAND_NE;
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	strp = get_mrph_rep_from_f(tp->head_ptr);
+    if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
+	(strp = get_mrph_rep_from_f(tp->head_ptr))) {
+	;
     }
     else {
 	strp = tp->head_ptr->Goi;

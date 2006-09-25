@@ -341,6 +341,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 /*==================================================================*/
 {
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
+    char *cp;
 
     if (Thesaurus == USE_BGH) {
 	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);
@@ -349,8 +350,9 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->SM_code);
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	strcpy(c_ptr->ex_list[c_ptr->element_num][0], get_mrph_rep_from_f(b_ptr->head_ptr));
+    if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
+	(cp = get_mrph_rep_from_f(b_ptr->head_ptr))) {
+	strcpy(c_ptr->ex_list[c_ptr->element_num][0], cp);
     }
     else {
 	strcpy(c_ptr->ex_list[c_ptr->element_num][0], b_ptr->head_ptr->Goi);
