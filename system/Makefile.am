@@ -48,7 +48,8 @@ knp_SOURCES = \
 	hash.c \
 	hash.h \
 	bnst_compare.c \
-	lib_event.c
+	lib_event.c \
+	cky.c
 
 knp_LDADD = @KNP_LIBS@
 

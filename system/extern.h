@@ -451,6 +451,9 @@ extern BNST_DATA *t_add_node(BNST_DATA *parent, BNST_DATA *child, int pos);
 extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 extern int ParseSentence(SENTENCE_DATA *s, char *input);
 
+/* cky.c */
+extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
+
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;
 extern char *Knpdict_Dirname;

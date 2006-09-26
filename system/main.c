@@ -34,6 +34,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    3:並列のgapとhead間 */
 char		**Options;
 int 		OptAnalysis;
+int		OptCKY;
 int		OptEllipsis;
 int		OptCorefer;
 int 		OptInput;
@@ -135,6 +136,7 @@ extern int	EX_match_subject;
     /* 引数処理 */
 
     OptAnalysis = OPT_DPND;
+    OptCKY = 0;
     OptEllipsis = 0;
     OptCorefer = 0;
     OptInput = OPT_RAW;
@@ -210,6 +212,9 @@ extern int	EX_match_subject;
 	    OptAnalysis = OPT_CASE;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
 	    SOTO_THRESHOLD = 0;
+	}
+	else if (str_eq(argv[0], "-cky")) {
+	    OptCKY = TRUE;
 	}
 	else if (str_eq(argv[0], "-ellipsis")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -1050,23 +1055,29 @@ extern int	EX_match_subject;
     /********************/
     para_postprocess(sp);	/* 各conjunctのheadを提題の係り先に */
 
+    if (OptCKY) {
+	/* CKY */
+	cky(sp, sp->Best_mgr);
+    }
+    else {
 #ifndef _WIN32
-    alarm(ParseTimeout);
+	alarm(ParseTimeout);
 #endif
 
-    /* 依存・格構造解析の呼び出し */
-    if (detect_dpnd_case_struct(sp) == FALSE) {
-	sp->available = 0;
-	ErrorComment = strdup("Cannot detect dependency structure");
-	when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
+	/* 依存・格構造解析の呼び出し */
+	if (detect_dpnd_case_struct(sp) == FALSE) {
+	    sp->available = 0;
+	    ErrorComment = strdup("Cannot detect dependency structure");
+	    when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
 					   すべて文節が隣に係ると扱う */
-    }
-    else if (OptCheck == TRUE) {
-	check_candidates(sp);
-    }
+	}
+	else if (OptCheck == TRUE) {
+	    check_candidates(sp);
+	}
 #ifndef _WIN32
-    alarm(0);
+	alarm(0);
 #endif
+    }
 
 PARSED:
     /* 係り受け情報を bnst 構造体に記憶 */
