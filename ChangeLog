@@ -1,3 +1,11 @@
+2006-09-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/Makefile.am, system/extern.h, system/main.c:
+	added CKY option(-cky).
+
+	* system/cky.c:
+	added.
+
 2006-09-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_data.c, system/case_match.c:
