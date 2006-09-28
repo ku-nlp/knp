@@ -68,26 +68,31 @@ char mrph_buffer[SMALL_DATA_LEN];
 {
     fprintf(Outfp, "%s %s %s ", m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi);
 
-    if (m_ptr->Hinshi >= CLASS_num) {
-	fprintf(Outfp, "\n;; Hinshi number is invalid. (%d)\n", m_ptr->Hinshi);
-	exit(1);
+    if (Language == JAPANESE) {
+	if (m_ptr->Hinshi >= CLASS_num) {
+	    fprintf(Outfp, "\n;; Hinshi number is invalid. (%d)\n", m_ptr->Hinshi);
+	    exit(1);
+	}
+	fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][0].id);
     }
-    fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][0].id);
+    else {
+	fprintf(Outfp, "* ");
+    }
     fprintf(Outfp, "%d ", m_ptr->Hinshi);
 	
-    if (m_ptr->Bunrui) 
+    if (Language == JAPANESE && m_ptr->Bunrui) 
 	fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][m_ptr->Bunrui].id);
     else
 	fprintf(Outfp, "* ");
     fprintf(Outfp, "%d ", m_ptr->Bunrui);
 	
-    if (m_ptr->Katuyou_Kata) 
+    if (Language == JAPANESE && m_ptr->Katuyou_Kata) 
 	fprintf(Outfp, "%s ", Type[m_ptr->Katuyou_Kata].name);
     else                    
 	fprintf(Outfp, "* ");
     fprintf(Outfp, "%d ", m_ptr->Katuyou_Kata);
     
-    if (m_ptr->Katuyou_Kei) 
+    if (Language == JAPANESE && m_ptr->Katuyou_Kei) 
 	fprintf(Outfp, "%s ", 
 		Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].name);
     else 
@@ -395,10 +400,9 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    fprintf(Outfp, "PARA");
 	} else {
 	    for (i = 0; i < ptr->mrph_num; i++) {
-		if (OptDisplay == OPT_NORMAL) {
-		    fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
-		} else { 
-		    fprintf(Outfp, "%s%c", (ptr->mrph_ptr + i)->Goi2, 
+		fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
+		if (Language == JAPANESE && OptDisplay != OPT_NORMAL) {
+		    fprintf(Outfp, "%c", 
 			    pos2symbol(Class[(ptr->mrph_ptr + i)->Hinshi]
 				       [0].id,
 				       Class[(ptr->mrph_ptr + i)->Hinshi]

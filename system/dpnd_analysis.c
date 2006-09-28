@@ -197,11 +197,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     BNST_DATA	*b_ptr;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-
-	if (i == sp->Bnst_num - 1) {		/* 最後の文節 */
-	    b_ptr->dpnd_head = -1;
-	    b_ptr->dpnd_type = 'D';
-	} else if (dp->type[i] == 'd' || dp->type[i] == 'R') {
+	if (dp->type[i] == 'd' || dp->type[i] == 'R') {
 	    b_ptr->dpnd_head = dp->head[i];
 	    b_ptr->dpnd_type = 'D';	/* relaxした場合もDに */
 	} else {
@@ -1125,6 +1121,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	dpnd.head[i] = -1;
+	dpnd.type[i] = 'D';
 	dpnd.dflt[i] = 0;
 	dpnd.mask[i] = 1;
 	memset(&(dpnd.check[i]), 0, sizeof(CHECK_DATA));

@@ -223,7 +223,8 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
 	}
 	if (org_flag) {
 	    /* ナ形容詞の場合は語幹で検索 */
-	    if (str_eq(Class[ptr->Hinshi][0].id, "形容詞") && 
+	    if (Language == JAPANESE && 
+		str_eq(Class[ptr->Hinshi][0].id, "形容詞") && 
 		(str_eq(Type[ptr->Katuyou_Kata].name, "ナ形容詞") || 
 		 str_eq(Type[ptr->Katuyou_Kata].name, "ナ形容詞特殊") || 
 		 str_eq(Type[ptr->Katuyou_Kata].name, "ナノ形容詞"))) {

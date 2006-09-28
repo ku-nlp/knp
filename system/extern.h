@@ -131,6 +131,8 @@ extern float	SVM_R_NUM_E_SD;
 
 extern void *matched_ptr;
 
+extern int Language;
+
 /* 関数プロトタイプ */
 
 /* bnst_compare.c */

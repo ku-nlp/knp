@@ -77,6 +77,8 @@ int		OptMode = STAND_ALONE_MODE;
 int		OptPort = DEFAULT_PORT;
 char		OptHostname[SMALL_DATA_LEN];
 
+int		Language;
+
 FILE		*Infp;
 FILE		*Outfp;
 
@@ -135,6 +137,7 @@ extern int	EX_match_subject;
 
     /* 引数処理 */
 
+    Language = JAPANESE;
     OptAnalysis = OPT_DPND;
     OptCKY = 0;
     OptEllipsis = 0;
@@ -215,6 +218,19 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
+	}
+	else if (str_eq(argv[0], "-language")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if (!strcasecmp(argv[0], "chinese")) {
+		Language = CHINESE;
+	    }
+	    else if (!strcasecmp(argv[0], "japaense")) {
+		Language = JAPANESE;
+	    }
+	    else {
+		usage();
+	    }
 	}
 	else if (str_eq(argv[0], "-ellipsis")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -920,6 +936,9 @@ extern int	EX_match_subject;
 	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
 	    delete_cfeature(&((sp->bnst_data+i)->f), "SM");
+	}
+	if (Language == CHINESE) {
+	    copy_feature(&(sp->bnst_data[i].f), sp->bnst_data[i].mrph_ptr->f);
 	}
     }
 

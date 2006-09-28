@@ -570,7 +570,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, bnst_item, tag_item, i, homo_flag;
 
@@ -769,13 +769,16 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	    offset = homo_flag ? 2 : 0;
 	    mrph_item = sscanf(input_buffer + offset,
-			       "%s %s %s %*s %d %*s %d %*s %d %*s %d %[^\n]", 
-			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+			       "%s %s %s %s %d %*s %d %*s %d %*s %d %[^\n]", 
+			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, Hinshi_str, 
 			       &(m_ptr->Hinshi), &(m_ptr->Bunrui),
 			       &(m_ptr->Katuyou_Kata), &(m_ptr->Katuyou_Kei),
 			       rest_buffer);
+	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
+		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
+	    }
 
-	    if (mrph_item == 8) {
+	    if (mrph_item == 9) {
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
 		    char *imip, *cp;
@@ -802,7 +805,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    strcpy(m_ptr->Imi, "NIL");
 		}
 	    }
-	    else if (mrph_item == 7) {
+	    else if (mrph_item == 8) {
 		strcpy(m_ptr->Imi, "NIL");
 	    }
 	    else {

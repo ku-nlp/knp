@@ -699,7 +699,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &記英数カ : 記英数カ チェック (句読点以外) (形態素レベル) */
 
-    if (!strcmp(rule, "&記英数カ")) {
+    if (!strcmp(rule, "&記英数カ")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -713,7 +713,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &漢字 : 漢字 チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&漢字")) {
+    else if (!strcmp(rule, "&漢字")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -732,7 +732,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &かな漢字 : かな漢字チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&かな漢字")) {
+    else if (!strcmp(rule, "&かな漢字")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -746,7 +746,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &ひらがな : ひらがな チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&ひらがな")) {
+    else if (!strcmp(rule, "&ひらがな")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -759,9 +759,9 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &末尾ひらがな : 末尾の一文字がひらがなか チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&末尾ひらがな")) {
+    else if (!strcmp(rule, "&末尾ひらがな")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;	/* 表記をチェック */
-	ucp += strlen(ucp)-2;
+	ucp += strlen(ucp) - BYTES4CHAR;
 	code = (*ucp)*0x100+*(ucp+1);
 	if (check_char_type(code) != TYPE_HIRAGANA)
 	    return FALSE;
@@ -786,7 +786,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&カタカナ")) {
+    else if (!strcmp(rule, "&カタカナ")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -799,7 +799,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &数字 : 数字 チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&数字")) {
+    else if (!strcmp(rule, "&数字")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -812,7 +812,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &英記号 : 英記号 チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&英記号")) {
+    else if (!strcmp(rule, "&英記号")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -826,7 +826,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &記号 : 記号 チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&記号")) {
+    else if (!strcmp(rule, "&記号")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	while (*ucp) {
 	    code = (*ucp)*0x100+*(ucp+1);
@@ -840,7 +840,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
     /* &混合 : 混合 (漢字+...) チェック (形態素レベル) */
 
-    else if (!strcmp(rule, "&混合")) {
+    else if (!strcmp(rule, "&混合")) { /* euc-jp */
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;
 	pretype = 0;
 	while (*ucp) {
@@ -857,7 +857,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
     /* &一文字 : 文字数 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&一文字")) {
-	if (strlen(((MRPH_DATA *)ptr2)->Goi2) == 2)
+	if (strlen(((MRPH_DATA *)ptr2)->Goi2) == BYTES4CHAR)
 	    return TRUE;
 	else 
 	    return FALSE;
@@ -872,7 +872,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
 	cp = rule + strlen("&意味素:");
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
-	if (*cp & 0x80) {
+	if (*cp & 0x80) { /* euc-jp */
 	    if (SM2CODEExist == TRUE)
 		cp = sm2code(cp);
 	    else
@@ -902,7 +902,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
 	cp = rule + strlen("&文節意味素:");
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
-	if (*cp & 0x80) {
+	if (*cp & 0x80) { /* euc-jp */
 	    if (SM2CODEExist == TRUE)
 		cp = sm2code(cp);
 	    else
@@ -931,7 +931,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 
 	cp = rule + strlen("&文節全意味素:");
 	/* 漢字だったら意味属性名, それ以外ならコードそのまま */
-	if (*cp & 0x80) {
+	if (*cp & 0x80) { /* euc-jp */
 	    if (SM2CODEExist == TRUE)
 		cp = sm2code(cp);
 	    else
@@ -953,7 +953,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 	    code = atoi(cp);
 	else
 	    code = 0;
-	if (strlen(((MRPH_DATA *)ptr2)->Goi2) >= code*2) {
+	if (strlen(((MRPH_DATA *)ptr2)->Goi2) >= code * BYTES4CHAR) {
 	    return TRUE;
 	}
 	return FALSE;

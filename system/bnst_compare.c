@@ -30,7 +30,8 @@
     }
     
     match = pre > post ? pre : post;
-    if (match % 2) match -= 1;
+    match -= match % BYTES4CHAR;
+    match = 2 * match / BYTES4CHAR; /* 5文字で10点 */
     return match;
 }
 
@@ -174,8 +175,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 {
     char *level1, *level2;
 
-    level1 = (char *)check_feature(ptr1->f, "レベル");
-    level2 = (char *)check_feature(ptr2->f, "レベル");
+    level1 = check_feature(ptr1->f, "レベル");
+    level2 = check_feature(ptr2->f, "レベル");
 
     if (level1 == NULL) return TRUE;		/* なし:何でも -> T */
     else if (level2 == NULL) return FALSE;	/* 何でも:なし -> F */
@@ -237,7 +238,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
     /* 用言，体言 */
 
-    if ((check_feature(ptr1->f, "用言") &&
+    if (Language == CHINESE || /* tentative for Chinese */
+	(check_feature(ptr1->f, "用言") &&
 	 check_feature(ptr2->f, "用言")) ||
 
 	(check_feature(ptr1->f, "体言") &&

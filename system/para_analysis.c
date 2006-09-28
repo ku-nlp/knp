@@ -103,7 +103,7 @@ extern QUOTE_DATA quote_data;
 
     cp1 = (char *)check_feature(ptr1->f, "·¸");
     cp2 = (char *)check_feature(ptr2->f, "·¸");
-    if (strcmp(cp1, cp2)) return 0;
+    if (!cp1 || !cp2 || strcmp(cp1, cp2)) return 0;
 	
     flag1 = check_feature(ptr1->f, "ÍÑ¸À") ? 1 : 0;
     flag2 = check_feature(ptr2->f, "ÍÑ¸À") ? 1 : 0;

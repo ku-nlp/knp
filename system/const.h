@@ -91,9 +91,15 @@
 #define	NSEED	32	/* 乱数表の種類。2 の羃乗でなければならない。 */
 #define NSIZE	256
 
+#define	BYTES4CHAR	2	/* euc-jp */
+
 /*====================================================================
 				DEFINE
 ====================================================================*/
+#define	JAPANESE	1
+#define	CHINESE		2
+#define	ENGLISH		3
+
 #define OPT_CASE	1
 #define OPT_CASE2	6
 #define OPT_DPND	2
