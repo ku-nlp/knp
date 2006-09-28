@@ -3,8 +3,11 @@
 	* system/bnst_compare.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/feature.c, system/lib_print.c, system/main.c, system/para_analysis.c, system/read_data.c, system/thesaurus.c:
 	supported Chinese language.
 
-	* chinese_rule/mrph_basic.rule, chinese_rule/bnst_basic.rule, chinese_rule/kakari_uke.rule:
+	* chinese_rule/mrph_basic.rule, chinese_rule/bnst_basic.rule, chinese_rule/kakari_uke.rule, chinese_rule/Makefile.am:
 	added.
+
+	* configure.ac:
+	modified to generate chinese_rule/Makefile.
 
 	* system/cky.c:
 	modified to handle dependency direction in CKY.
