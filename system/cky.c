@@ -11,6 +11,7 @@ typedef struct _CKY *CKYptr;
 typedef struct _CKY {
     char	cp;
     int		score;
+    int		direction; /* direction of dependency */
     BNST_DATA	*b_ptr;
     int 	scase_check[SCASE_CODE_SIZE];
     int		un_count;
@@ -48,16 +49,23 @@ int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr, int space, int flag) {
 	    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 'I';
 	}
 	else {
-	    /* head */
 	    if ((cp = check_feature(cky_ptr->left->b_ptr->f, "係:無格従属")) != NULL) {
 		sscanf(cp, "%*[^:]:%*[^:]:%d", &(Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num]));
+		Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 
+		    Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
 	    }
 	    else {
-		Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->b_ptr->num;
+		if (cky_ptr->direction == RtoL) { /* <- */
+		    Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = cky_ptr->left->b_ptr->num;
+		    Best_mgr->dpnd.type[cky_ptr->b_ptr->num] = 
+			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
+		}
+		else { /* -> */
+		    Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->b_ptr->num;
+		    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 
+			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
+		}
 	    }
-	    /* type */
-	    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 
-		Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
 	}
 
 	convert_to_dpnd(Best_mgr, cky_ptr->right, space + 2, 0);
@@ -102,7 +110,7 @@ int check_scase (BNST_DATA *g_ptr, int *scase_check, int rentai, int un_count) {
 int check_dpnd_possibility (int dep, int gov, int relax_flag) {
     if ((Dpnd_matrix[dep][gov] && 
 	 Quote_matrix[dep][gov] && 
-	 Mask_matrix[dep][gov] == 1) || 
+	 Mask_matrix[dep][gov] == 1) || /* 並列ではない場合、並列マスクを無視する場合を考慮するなら、この条件をはずす */
 	Mask_matrix[dep][gov] == 2 || /* 並列P */
 	Mask_matrix[dep][gov] == 3) { /* 並列I */
 	return TRUE;
@@ -337,8 +345,11 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
     cky_table_num = 0;
 
+    /* initialize */
     for (i = 0; i < sp->Bnst_num; i++) {
 	dep_check[i] = -1;
+	Best_mgr->dpnd.head[i] = -1;
+	Best_mgr->dpnd.type[i] = 'D';
     }
 
     /* ループは左から右,下から上
@@ -400,6 +411,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				cky_ptr->next = NULL;
 				cky_ptr->left = left_ptr;
 				cky_ptr->right = right_ptr;
+				cky_ptr->direction = Dpnd_matrix[i + k][j] == 'L' ? RtoL : LtoR;
 				cky_ptr->cp = 'a' + j;
 				cky_ptr->b_ptr = cky_ptr->right->b_ptr;
 				next_pp = &(cky_ptr->next);
