@@ -247,6 +247,7 @@ system/Makefile
 svm/Makefile
 svm_light/Makefile
 rule/Makefile
+chinese_rule/Makefile
 doc/Makefile
 dict/Makefile
 dict/src/Makefile
