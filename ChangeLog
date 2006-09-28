@@ -1,3 +1,8 @@
+2006-09-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	modified to handle dependency direction in CKY.
+
 2006-09-26  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/Makefile.am, system/extern.h, system/main.c:
