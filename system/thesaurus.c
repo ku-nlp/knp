@@ -145,7 +145,7 @@ int	ParaThesaurus = USE_BGH;
     /* 意味素がない場合で、
        すべての文字がカタカナの場合はひらがなに変換して辞書引き */
 
-    for (i = 0; i < strlen(cp); i += 2) {
+    for (i = 0; i < strlen(cp); i += 2) { /* euc-jp */
 	if (*(cp+i) != 0xa5) {
 	    return NULL;
 	}

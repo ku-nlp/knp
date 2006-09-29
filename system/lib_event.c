@@ -97,7 +97,7 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
     int closest;
 
     if (cp = check_feature(ptr->f, "用言")) {
-	vtype = strdup(cp + 4);
+	vtype = strdup(cp + strlen("用言"));
     }
     else {
 	vtype = strdup(":動");

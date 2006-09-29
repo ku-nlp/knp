@@ -47,8 +47,8 @@
 	    void print_one_feature(char *cp, FILE *filep)
 /*==================================================================*/
 {
-    if (!strncmp(cp, "仮付与:", 7)) { /* 仮付与したものを表示するとき用(-nbest) */
-	fprintf(filep, "<%s>", cp + 7); 
+    if (!strncmp(cp, "仮付与:", strlen("仮付与:"))) { /* 仮付与したものを表示するとき用(-nbest) */
+	fprintf(filep, "<%s>", cp + strlen("仮付与:")); 
     }
     else {
 	fprintf(filep, "<%s>", cp);
@@ -64,7 +64,7 @@
 
     while (fp) {
 	if (fp->cp && 
-	    (strncmp(fp->cp, "Ｔ", 2) ||
+	    (strncmp(fp->cp, "Ｔ", strlen("Ｔ")) ||
 	     OptDisplay == OPT_DEBUG))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
@@ -79,7 +79,7 @@
        指定したものだけを表示 */
 
     while (fp) {
-	if (fp->cp && strncmp(fp->cp, "Ｃ", 2) && !strncmp(fp->cp, "C", 1))
+	if (fp->cp && strncmp(fp->cp, "Ｃ", strlen("Ｃ")) && !strncmp(fp->cp, "C", 1))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }
@@ -93,7 +93,7 @@
     if (fp) {
 	fprintf(filep, "("); 
 	while (fp) {
-	    if (fp->cp && strncmp(fp->cp, "Ｔ", 2)) {
+	    if (fp->cp && strncmp(fp->cp, "Ｔ", strlen("Ｔ"))) {
 		fprintf(filep, "%s", fp->cp); 
 		if (fp->next) fprintf(filep, " "); 		
 	    }

@@ -1493,7 +1493,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
 	return;
     }
 
-    buffer = (char *)malloc_data(strlen(ecp) + 64 + strlen(word), 
+    buffer = (char *)malloc_data(strlen(ecp) + 128 + strlen(word), 
 				 "EllipsisSvmFeaturesString2FeatureString");
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d:%d %s", 
 	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
@@ -1543,7 +1543,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 	n2 = -1;
     }
 
-    buffer = (char *)malloc_data(strlen(ecp) + 128 + strlen(w1) + strlen(w2), 
+    buffer = (char *)malloc_data(strlen(ecp) + 256 + strlen(w1) + strlen(w2), 
 				 "TwinCandSvmFeaturesString2FeatureString");
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d;%s;%s;%s;%d:%s", 
 	    pp_code_to_kstr(c1->ef->p_pp), w1, 
@@ -5220,7 +5220,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     FEATURE **fpp = &(cpm_ptr->pred_b_ptr->f), *pre_fp = NULL, *next;
 
     while (*fpp) {
-	if (!strncmp((*fpp)->cp, "照応仮決定", 10)) {
+	if (!strncmp((*fpp)->cp, "照応仮決定", strlen("照応仮決定"))) {
 	    sscanf((*fpp)->cp + 11, "%d;C用;%[^;];%[^;];%s", &num, 
 		   target, rel, rest_buffer);
 	    sprintf(feature_buffer, "C用;%s;=;%s", target, rest_buffer);

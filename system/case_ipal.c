@@ -461,15 +461,15 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag
 	    *ret = '\0';
 	    return dat+1;
 	}
-	else if (*dat < 0x80) {
+	else if (*dat < 0x80) { /* OK? */
 	    *ret++ = *dat++;
 	}
-	else if (!strncmp(dat, "／", 2) || 
-		 !strncmp(dat, "，", 2) ||
-		 !strncmp(dat, "、", 2) ||
-		 !strncmp(dat, "＊", 2)) {
+	else if (!strncmp(dat, "／", strlen("／")) || 
+		 !strncmp(dat, "，", strlen("，")) ||
+		 !strncmp(dat, "、", strlen("、")) ||
+		 !strncmp(dat, "＊", strlen("＊"))) {
 	    *ret = '\0';
-	    return dat+2;
+	    return dat+strlen("／"); /* OK? */
 	}
 	else {
 	    *ret++ = *dat++;
@@ -492,13 +492,13 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
 	c_ptr->adjacent[num] = TRUE;
 	*(cp+strlen(cp)-1) = '\0';
     }
-    else if (!strcmp(cp+strlen(cp)-2, "＠")) {
+    else if (!strcmp(cp+strlen(cp)-strlen("＠"), "＠")) {
 	c_ptr->adjacent[num] = TRUE;
 	*(cp+strlen(cp)-2) = '\0';
     }
 
     /* 任意格 */
-    if (!strcmp(cp+strlen(cp)-2, "＊")) {
+    if (!strcmp(cp+strlen(cp)-strlen("＊"), "＊")) {
 	c_ptr->oblig[num] = FALSE;
     }
     else {
@@ -669,7 +669,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 	    break;
 	}
 
-	if (!strncmp(cf_str_buf, "数量", 4)) {
+	if (!strncmp(cf_str_buf, "数量", strlen("数量"))) {
 	    /* 前回も<数量>のときは入れない */
 	    if (sm_num > 1 && !strncmp(&buf[size*(sm_num-2)], sm2code("数量"), size)) {
 		sm_num--;
@@ -678,7 +678,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		strcat(buf, sm2code("数量"));
 	    }
 	}
-	else if (!strncmp(cf_str_buf, "主体準", 6)) {
+	else if (!strncmp(cf_str_buf, "主体準", strlen("主体準"))) {
 	    strcat(buf, sm2code("主体"));
 	    if (MatchPP(c_ptr->pp[num][0], "ガ")) {
 		c_ptr->etcflag |= CF_GA_SEMI_SUBJECT;
@@ -1110,14 +1110,14 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
     char *cp, *buffer;
 
     if (check_feature(tp->f, "ID:（〜を）〜に")) {
-	buffer = (char *)malloc_data(3, "feature2case");
+	buffer = (char *)malloc_data(strlen("ニ")+1, "feature2case");
 	strcpy(buffer, "ニ");
 	return buffer;
     }
     else if ((cp = check_feature(tp->f, "係"))) {
-	buffer = strdup(cp+3);
-	if (!strncmp(buffer+strlen(buffer)-2, "格", 2)) {
-	    *(buffer+strlen(buffer)-2) = '\0';
+	buffer = strdup(cp+strlen("係:"));
+	if (!strncmp(buffer+strlen(buffer)-strlen("格"), "格", strlen("格"))) {
+	    *(buffer+strlen(buffer)-strlen("格")) = '\0';
 	    if (pp_kstr_to_code(buffer) != END_M) {
 		return buffer;
 	    }
@@ -1197,10 +1197,10 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	vtype = "名";
     }
     else if ((vtype = check_feature(t_ptr->f, "用言"))) {
-	vtype += 5;
+	vtype += strlen("用言:");
     }
     else if ((vtype = check_feature(t_ptr->f, "非用言格解析"))) {
-	vtype += 13;
+	vtype += strlen("非用言格解析:");
     }
 
     for (cp = pre_pos = address_str; ; cp++) {
@@ -1222,7 +1222,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 
 	    /* 用言のタイプがマッチしなければ (準用言なら通過) */
 	    if (vtype) {
-		if (strncmp(vtype, i_ptr->pred_type, 2)) {
+		if (strncmp(vtype, i_ptr->pred_type, strlen("名"))) {
 		    if (break_flag)
 			break;
 		    else
@@ -1458,7 +1458,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 
     /* 「（〜を）〜に」 のときは 「する」 で探す */
     if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
-	buffer = (char *)malloc_data(17, "make_pred_string"); /* 4 + 5 + 8 */
+	buffer = (char *)malloc_data(strlen("する/する") + 8, "make_pred_string"); /* 9(euc) + 8 */
 	if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	    strcpy(buffer, "する/する");
 	}
@@ -2147,7 +2147,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     }
 
-    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 9);
+    key = malloc_db_buf(strlen("<補文>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
     *key = '\0';
 
     if (check_feature(dp->f, "補文")) {
@@ -2391,11 +2391,11 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 
     /* 格の解釈 */
     if (as2 != NIL_ASSIGNED) {
-	key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 10);
+	key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 20);
 	sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfp->pp[as2][0]));
     }
     else {
-	key = malloc_db_buf(strlen(scase) + 12);
+	key = malloc_db_buf(strlen(scase) + 24);
 	sprintf(key, "%s|C:--", scase);
     }
     value = db_get(case_db, key);

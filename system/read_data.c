@@ -47,9 +47,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     token = strtok(imip, " ");
     while (token) {
 	/* 以下のもの以外を付与 */
-	if (strncmp(token, "代表表記", 8) && 
-	    strncmp(token, "可能動詞", 8) && 
-	    strncmp(token, "漢字読み", 8)) {
+	if (strncmp(token, "代表表記", strlen("代表表記")) && 
+	    strncmp(token, "可能動詞", strlen("可能動詞")) && 
+	    strncmp(token, "漢字読み", strlen("漢字読み"))) {
 	    assign_cfeature(&(m_ptr->f), token, FALSE);
 	}
 	token = strtok(NULL, " ");
@@ -84,7 +84,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     char *cp;
 
     if ((cp = strstr(m_ptr->Imi, "代表表記:"))) {
-	return cp + 9;
+	return cp + strlen("代表表記:");
     }
     return NULL;
 }
@@ -96,7 +96,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     char *cp;
 
     if ((cp = check_feature(m_ptr->f, "代表表記"))) {
-	return cp + 9;
+	return cp + strlen("代表表記:");
     }
     return NULL;
 }

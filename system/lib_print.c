@@ -18,8 +18,8 @@ char mrph_buffer[SMALL_DATA_LEN];
     char *hira_pp;
     int hinsi_id;
 
-    if (pp_len == 4 && !strncmp(pp, "¥¬£²", pp_len)) {
-	pp_len -= 2; /* ¥¬£² -> ¥¬ */
+    if (pp_len == strlen("¥¬£²") && !strncmp(pp, "¥¬£²", pp_len)) {
+	pp_len -= strlen("£²"); /* ¥¬£² -> ¥¬ */
     }
     sprintf(mrph_buffer, "%.*s", pp_len, pp);
     hira_pp = katakana2hiragana(mrph_buffer);
@@ -158,7 +158,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* Ê¸Àá¤ÎÀÚ¤ìÌÜ¤´¤È¤Ë¥Á¥§¥Ã¥¯ */
 	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* head¤Î´ðËÜ¶ç */
 	    while (fp) { /* feature¤Îloop: feature¤ò¥Á¥§¥Ã¥¯ */
-		if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", 7) && 
+		if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", strlen("³ÊÍ×ÁÇ-")) && 
 		    strstr(fp->cp, ":¡ô")) { /* tag_after_dpnd_and_case.rule¤Ç»È¤ï¤ì¤Æ¤¤¤ë */
 		    count++;
 		    b_count++;
@@ -196,9 +196,9 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
 		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* head¤Î´ðËÜ¶ç */
 		while (fp) { /* feature¤Îloop: feature¤ò¥Á¥§¥Ã¥¯ */
-		    if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", 7) && 
+		    if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", strlen("³ÊÍ×ÁÇ-")) && 
 			(cp = strstr(fp->cp, ":¡ô"))) {
-			case_len = cp - fp->cp - 7; /* ³Ê¤ÎÉôÊ¬¤ÎÄ¹¤µ */
+			case_len = cp - fp->cp - strlen("³ÊÍ×ÁÇ-"); /* ³Ê¤ÎÉôÊ¬¤ÎÄ¹¤µ */
 			cp++; /* ¡ô¤ÎÆ¬ */
 
 			dpnd_head = t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]; /* ·¸¤êÀè¤Ïhead */
@@ -206,17 +206,17 @@ char mrph_buffer[SMALL_DATA_LEN];
 			    dpnd_head = t_proj_table[count];
 			}
 
-			if (!strncmp(fp->cp + 7, "¡ô", case_len)) {
+			if (!strncmp(fp->cp + strlen("³ÊÍ×ÁÇ-"), "¡ô", case_len)) {
 			    fprintf(Outfp, "* %dD <¥Î¡¼¥ÉÁÞÆþ>\n", b_table[t_ptr->b_ptr->num]);
 			    fprintf(Outfp, "+ %dD <¥Î¡¼¥ÉÁÞÆþ>\n", dpnd_head);
 			    fprintf(Outfp, "%s %s %s Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL\n", cp, cp, cp);
 			}
 			else {
-			    fprintf(Outfp, "* %dD <¥Î¡¼¥ÉÁÞÆþ><·¸:%.*s³Ê>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + 7);
+			    fprintf(Outfp, "* %dD <¥Î¡¼¥ÉÁÞÆþ><·¸:%.*s³Ê>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"));
 			    fprintf(Outfp, "+ %dD <¥Î¡¼¥ÉÁÞÆþ><·¸:%.*s³Ê><²òÀÏ³Ê:%.*s>\n", dpnd_head, 
-				    case_len, fp->cp + 7, case_len, fp->cp + 7);
+				    case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"), case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"));
 			    fprintf(Outfp, "%s %s %s Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL\n", cp, cp, cp);
-			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + 7, case_len));
+			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + strlen("³ÊÍ×ÁÇ-"), case_len));
 			}
 			count++;
 		    }

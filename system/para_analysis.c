@@ -471,11 +471,11 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    condition[0] = '\0';
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
-	    if (!strncmp(type, "名", 2)) {
+	    if (!strncmp(type, "名", strlen("名"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_N	;
-	    } else if (!strncmp(type, "述", 2)) {
+	    } else if (!strncmp(type, "述", strlen("述"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_P;
-	    } else if (!strncmp(type, "？", 2)) {
+	    } else if (!strncmp(type, "？", strlen("？"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
 	    sp->para_data[sp->Para_num].type = sp->bnst_data[i].para_key_type;

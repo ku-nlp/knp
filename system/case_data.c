@@ -108,8 +108,8 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 
     /* Õ—∏¿§Œπ‡§»§ §Î§‚§Œ */
     if (cpm_ptr->cf.type == CF_PRED) {
-	if (!strncmp(fcp, "£‘≤Ú¿œ≥ -", 9)) {
-	    cc = pp_kstr_to_code(fcp+9);
+	if (!strncmp(fcp, "£‘≤Ú¿œ≥ -", strlen("£‘≤Ú¿œ≥ -"))) {
+	    cc = pp_kstr_to_code(fcp+strlen("£‘≤Ú¿œ≥ -"));
 	    if (cc == END_M) {
 		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+9);
 		exit(1);
@@ -177,7 +177,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 
 	/* ∑∏§Í¿Ë§Ú§ﬂ§ÎæÏπÁ */
 	if (start_cp = check_feature(b_ptr->f, "∑∏•¡")) {
-	    buffer = strdup(start_cp+5);
+	    buffer = strdup(start_cp+strlen("∑∏•¡:"));
 	    start_cp = buffer;
 	    loop_cp = start_cp;
 	    flag = 1; /* 2: OK, 1: Ã§ƒÍ, 0: NG */
@@ -254,8 +254,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
 	while (fp) {
-	    if (!strncmp(fp->cp, "£‘≤Ú¿œœ¢≥ -", 11)) {
-		cc = pp_kstr_to_code(fp->cp+11);
+	    if (!strncmp(fp->cp, "£‘≤Ú¿œœ¢≥ -", strlen("£‘≤Ú¿œœ¢≥ -"))) {
+		cc = pp_kstr_to_code(fp->cp+strlen("£‘≤Ú¿œœ¢≥ -"));
 		if (cc == END_M) {
 		    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fp->cp+11);
 		    exit(1);
@@ -747,7 +747,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     if (cp = check_feature(ptr->f, "¬÷")) {
 	char *token, *str;
 
-	str = strdup(cp + 3);
+	str = strdup(cp + strlen("¬÷:"));
 	token = strtok(str, "|");
 	while (token) {
 	    if (!strcmp(token, "ºı∆∞")) {

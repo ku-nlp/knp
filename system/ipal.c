@@ -156,7 +156,7 @@ main(int argc, char **argv)
 	    casenum = 0;
 	    memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
 	}
-	else if (!strncmp(tag, "³Ê", 2)) {
+	else if (!strncmp(tag, "³Ê", strlen("³Ê"))) {
 	    casenum++;
 	    if (casenum > CASE_MAX_NUM) {
 		fprintf(stderr, "# of cases is more than MAX (%d).\n", CASE_MAX_NUM);
@@ -186,7 +186,7 @@ main(int argc, char **argv)
 	item++;
 
 	/* OR¤Î³Ê¥Õ¥ì¡¼¥à¤Ê¤éÆÉ¤ß¤òÅÐÏ¿¤·¤Ê¤¤ */
-	if (!strncmp(tag, "ÁÇÀ­", 4)) {
+	if (!strncmp(tag, "ÁÇÀ­", strlen("ÁÇÀ­"))) {
 	    flag = 1;
 	    /* Í×ÁÇ¤òsplit */
 	    token = strtok(DATA, " ");
