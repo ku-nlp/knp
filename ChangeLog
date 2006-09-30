@@ -1,3 +1,11 @@
+2006-09-30  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	a small fix for utf-8 handling.
+
+	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c, system/read_data.c:
+	代表表記が曖昧な用言の場合に、すべての代表表記について格フレームを引くように修正
+
 2006-09-29  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_data.c, system/case_ipal.c, system/context.c, system/feature.c, system/ipal.c, system/lib_event.c, system/lib_print.c, system/para_analysis.c, system/read_data.c, system/thesaurus.c, system/tools.c:
