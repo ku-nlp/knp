@@ -102,6 +102,23 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+	       int get_mrph_rep_length(char *rep_strt)
+/*==================================================================*/
+{
+    char *rep_end;
+
+    if (rep_strt == NULL) {
+	return 0;
+    }
+
+    if ((rep_end = strchr(rep_strt, ' ')) == NULL) {
+	rep_end = strchr(rep_strt, '\"');
+    }
+
+    return rep_end - rep_strt;
+}
+
+/*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
@@ -111,6 +128,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
     int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
 					   ルール内形態素パターンに 1 */
+    int rep_length, rep_length2;
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
     char fname[SMALL_DATA_LEN2], *cp, *cp2, *rep_strt, *rep_end, *rep_strt2, *rep_end2;
@@ -263,12 +281,18 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
     }
 
+    rep_strt = get_mrph_rep(m_ptr+pref_mrph);
+    rep_length = get_mrph_rep_length(rep_strt);
+
     orig_amb_flag = 0;
     if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
 	for (i = 0; i < homo_num; i++) {
 	    if (i != pref_mrph) {
-		/* 原形がpref_mrphと異なる場合 */
-		if (strcmp((m_ptr+i)->Goi, (m_ptr+pref_mrph)->Goi)) {
+		/* 代表表記がpref_mrphと異なる場合 */
+		rep_strt2 = get_mrph_rep(m_ptr+i);
+		rep_length2 = get_mrph_rep_length(rep_strt2);
+		if (rep_length > 0 && 
+		    (rep_length != rep_length2 || strncmp(rep_strt, rep_strt2, rep_length))) {
 		    orig_amb_flag = 1;
 		}
 
@@ -281,7 +305,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
     }
 
-    /* 原形が曖昧なときはマークしておく */
+    /* 代表表記が曖昧なときはマークしておく */
     if (orig_amb_flag) {
 	assign_cfeature(&((m_ptr+pref_mrph)->f), "原形曖昧", FALSE);
     }

@@ -110,7 +110,7 @@ int		OptUseScase;
     char *buffer, *pp = NULL, *verb;
     BNST_DATA *cbp;
 
-    verb = make_pred_string((TAG_DATA *)bp, NULL);
+    verb = make_pred_string((TAG_DATA *)bp, NULL, NULL);
 
     /* cbp = get_quasi_closest_case_component((TAG_DATA *)bp, 
        bp->num < 1 ? NULL : (TAG_DATA *)(bp - 1)); */
@@ -174,7 +174,7 @@ int		OptUseScase;
 
 	if (ans == NULL) { /* なければ、用言だけで検索 */
 	    free(str_buffer);
-	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL);
+	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL);
 	    strcat(str_buffer, ":");
 	    strcat(str_buffer, vtype);
 	    if (voice[0]) strcat(str_buffer, voice);
