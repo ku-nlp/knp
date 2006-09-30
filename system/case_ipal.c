@@ -1563,7 +1563,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     if (f_num == 0 && 
 	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
 	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, 
-					      make_pred_string(t_ptr, cp + 9), flag);	
+					      make_pred_string(t_ptr, cp + strlen("可能動詞:")), flag);	
     }
 
     Case_frame_num += f_num;
