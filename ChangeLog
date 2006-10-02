@@ -1,3 +1,8 @@
+2006-10-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/const.h, system/koou.c, read_rule.c:
+	modified koou to handle koou rules with direction.
+
 2006-09-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c:
