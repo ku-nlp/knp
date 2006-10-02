@@ -10,6 +10,7 @@
 #include "knp.h"
 
 int 	Koou_matrix[BNST_MAX][BNST_MAX];
+int	Koou_dpnd_matrix[BNST_MAX][BNST_MAX];
 int	koou_m_p[BNST_MAX];
 
 /*==================================================================*/
@@ -20,8 +21,10 @@ int	koou_m_p[BNST_MAX];
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	koou_m_p[i] = FALSE;
-	for (j = 0; j < sp->Bnst_num; j++)
+	for (j = 0; j < sp->Bnst_num; j++) {
 	    Koou_matrix[i][j] = 0;
+	    Koou_dpnd_matrix[i][j] = 0;
+	}
     }
 }
 
@@ -37,22 +40,22 @@ int	koou_m_p[BNST_MAX];
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = KoouRuleArray; j < CurKoouRuleSize; j++, r_ptr++) {
-	    if (_regexpbnst_match(r_ptr->start_pattern, b_ptr) == TRUE) {
+	    if (_regexpbnst_match(r_ptr->start_pattern, b_ptr) != -1) {
 		if (OptDisplay == OPT_DEBUG) 
 		    fprintf(stderr, "Start (%d) %d\n", j, i);
 		for (k = i, c_ptr = b_ptr; k < sp->Bnst_num; k++, c_ptr++) 
-		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr)
-			== TRUE) {
+		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr) != -1) {
 			koou_m_p[i] = TRUE;
 			flag = TRUE;
 			Koou_matrix[i][k] = 1;
+			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type;
 			if (OptDisplay == OPT_DEBUG) 
 			    fprintf(Outfp, "  End %d\n", k);
 		    }
 		    else if (r_ptr->uke_pattern &&
-			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) 
-			     == TRUE) {
+			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) != -1) {
 			Koou_matrix[i][k] = 2;
+			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type; /* 今のところ記述できない */
 			if (OptDisplay == OPT_DEBUG) 
 			    fprintf(Outfp, "  Uke %d\n", k);
 		    }
@@ -101,7 +104,7 @@ int	koou_m_p[BNST_MAX];
 	    f_end = -1;
 	    for (j = i; j < sp->Bnst_num; j++){
 		if (Koou_matrix[i][j] > 0) {
-		    Dpnd_matrix[i][j] = (int)'D';
+		    Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
 		    if (Koou_matrix[i][j] == 1) {
 			f_end = j;
 			if (f_start < 0)

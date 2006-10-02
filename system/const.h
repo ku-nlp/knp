@@ -405,6 +405,7 @@ typedef struct {
     REGEXPMRPHS 	*start_pattern;
     REGEXPMRPHS 	*end_pattern;
     REGEXPMRPHS 	*uke_pattern;
+    char		dpnd_type;
 } KoouRule;
 
 #define QUOTE_MAX 40

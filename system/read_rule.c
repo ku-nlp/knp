@@ -138,11 +138,17 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 	body_cell = cdr(body_cell);
 	store_regexpmrphs(&(rp->end_pattern), car(body_cell));
 
+	rp->dpnd_type = 'D'; /* default */
 	body_cell = cdr(body_cell);
 	if (!Null(car(body_cell))) {
 	    store_regexpmrphs(&(rp->uke_pattern), car(body_cell));
 	} else {
 	    rp->uke_pattern = NULL;
+	}
+
+	body_cell = cdr(body_cell);
+	if (!Null(car(body_cell))) {
+	    rp->dpnd_type = *(_Atom(car(body_cell)));
 	}
 
 	if (++CurKoouRuleSize == KoouRule_MAX) {
