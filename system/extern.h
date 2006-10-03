@@ -53,6 +53,7 @@ extern int		OptDiscPredMethod;
 extern int		OptDiscNounMethod;
 extern int		OptLearn;
 extern int		OptCaseFlag;
+extern int		OptCaseNoun;
 extern int		OptDiscFlag;
 extern int		OptCFMode;
 extern char		OptIgnoreChar;

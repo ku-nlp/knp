@@ -1,3 +1,9 @@
+2006-10-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal, system/extern.h, system/main.c
+	直接係り受け関係にある名詞の関係解析のみを行う-relation-noun-directを追加
+	省略解析としてではなく、用言の格解析と同様に処理する
+
 2006-10-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/const.h, system/koou.c, read_rule.c:
