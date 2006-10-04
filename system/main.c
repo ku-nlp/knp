@@ -1009,7 +1009,7 @@ extern int	EX_match_subject;
 
     /* 係り受け関係がない場合の弛緩 */
 	
-    if (relax_dpnd_matrix(sp) == TRUE && OptDisplay == OPT_DEBUG) {
+    if (Language != CHINESE && relax_dpnd_matrix(sp) == TRUE && OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Relaxation ... \n");
 	print_matrix(sp, PRINT_DPND, 0);
     }
