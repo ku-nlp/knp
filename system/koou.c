@@ -118,8 +118,18 @@ int	koou_m_p[BNST_MAX];
 				    Dpnd_matrix[i][k] = 0;
 				}
 			    }
+			    for (k = 0; k < i; k++){
+				if (Koou_matrix[k][i] <= 0 && Dpnd_matrix[k][i] == 'L') {
+				    Dpnd_matrix[k][i] = 0;
+				}
+			    }
 			}
 			else if (Koou_dpnd_matrix[i][j] == 'L') {
+			    for (k = j; k < sp->Bnst_num; k++){
+				if (Koou_matrix[j][k] <= 0 && Dpnd_matrix[j][k] == 'R') {
+				    Dpnd_matrix[j][k] = 0;
+				}
+			    }
 			    for (k = 0; k < j; k++){
 				if (Koou_matrix[k][j] <= 0 && Dpnd_matrix[k][j] == 'L') {
 				    Dpnd_matrix[k][j] = 0;
