@@ -98,24 +98,64 @@ int	koou_m_p[BNST_MAX];
 {
     int i, j, f_start, f_end;
 
-    for (i = 0; i < sp->Bnst_num; i++){
-	if (koou_m_p[i] == TRUE) {
-	    f_start = -1;
-	    f_end = -1;
-	    for (j = i; j < sp->Bnst_num; j++){
-		if (Koou_matrix[i][j] > 0) {
-		    Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
-		    if (Koou_matrix[i][j] == 1) {
-			f_end = j;
-			if (f_start < 0)
-			    f_start = j;
+    if (Language == CHINESE) {
+	for (i = 0; i < sp->Bnst_num; i++){
+	    if (koou_m_p[i] == TRUE) {
+		f_start = -1;
+		f_end = -1;
+		for (j = i; j < sp->Bnst_num; j++){
+		    if (Koou_matrix[i][j] > 0) {
+			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
+			if (Koou_matrix[i][j] == 1) {
+			    f_end = j;
+			    if (f_start < 0)
+				f_start = j;
+			}
+			int k;
+			if (Koou_dpnd_matrix[i][j] == 'R') {
+			    for (k = i; k < sp->Bnst_num; k++){
+				if (Koou_matrix[i][k] <= 0 && Dpnd_matrix[i][k] == 'R') {
+				    Dpnd_matrix[i][k] = 0;
+				}
+			    }
+			}
+			else if (Koou_dpnd_matrix[i][j] == 'L') {
+			    for (k = 0; k < j; k++){
+				if (Koou_matrix[k][j] <= 0 && Dpnd_matrix[k][j] == 'L') {
+				    Dpnd_matrix[k][j] = 0;
+				}
+			    }
+			}
 		    }
 		}
-		else
-		  Dpnd_matrix[i][j] = 0;
+
+		mask_for(sp, i, f_start, f_end);
+		mask_back(i, f_start);
 	    }
-	    mask_for(sp, i, f_start, f_end);
-	    mask_back(i, f_start);
+	}
+    }
+    else {
+	for (i = 0; i < sp->Bnst_num; i++){
+	    if (koou_m_p[i] == TRUE) {
+		f_start = -1;
+		f_end = -1;
+		for (j = i; j < sp->Bnst_num; j++){
+		    if (Koou_matrix[i][j] > 0) {
+			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
+			if (Koou_matrix[i][j] == 1) {
+			    f_end = j;
+			    if (f_start < 0)
+				f_start = j;
+			}
+		    }
+		    else {
+			Dpnd_matrix[i][j] = 0;
+		    }
+		}
+
+		mask_for(sp, i, f_start, f_end);
+		mask_back(i, f_start);
+	    }
 	}
     }
 }
@@ -132,7 +172,7 @@ int	koou_m_p[BNST_MAX];
     flag = (check_koou(sp) == TRUE) ? TRUE: FALSE;
 
     /* 行列の書き換え */
-    change_matrix(sp);
+    change_matrix(sp); 
 
     return flag;
 }
