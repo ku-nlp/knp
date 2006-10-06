@@ -1804,7 +1804,10 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
     rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr);
     if (rep_strt) {
 	if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
-	    rep_end = strchr(rep_strt, '\"');
+	    if ((rep_end = strchr(rep_strt, ' ')) == NULL) {
+		rep_end = strchr(rep_strt, '\"');
+	    }
+
 	}
 	else {
 	    rep_end = strchr(rep_strt, '/');
@@ -1844,7 +1847,9 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	    rep_strt = get_mrph_rep(&m);
 	    if (rep_strt) {
 		if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
-		    rep_end = strchr(rep_strt, '\"');
+		    if ((rep_end = strchr(rep_strt, ' ')) == NULL) {
+			rep_end = strchr(rep_strt, '\"');
+		    }
 		}
 		else {
 		    rep_end = strchr(rep_strt, '/');
