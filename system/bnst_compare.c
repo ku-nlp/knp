@@ -238,251 +238,272 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
     /* 用言，体言 */
 
-    if (Language == CHINESE || /* tentative for Chinese */
-	(check_feature(ptr1->f, "用言") &&
-	 check_feature(ptr2->f, "用言")) ||
+    if (Language != CHINESE) {
+	if ((check_feature(ptr1->f, "用言") &&
+	     check_feature(ptr2->f, "用言")) ||
 
-	(check_feature(ptr1->f, "体言") &&
-	 check_feature(ptr2->f, "体言")) || 
+	    (check_feature(ptr1->f, "体言") &&
+	     check_feature(ptr2->f, "体言")) || 
 	
-	/* 「的，」と「的だ」 */
-	(check_feature(ptr1->f, "並キ:名") && 
-	 check_feature(ptr1->f, "類似計算:的") && 
-	 check_feature(ptr2->f, "類似計算:的"))
-	 /* check_bnst_substr(ptr1, 0, 0, "的") && 
-	    check_bnst_substr(ptr2, 0, 0, "的だ")) */
-	) {
+	    /* 「的，」と「的だ」 */
+	    (check_feature(ptr1->f, "並キ:名") && 
+	     check_feature(ptr1->f, "類似計算:的") && 
+	     check_feature(ptr2->f, "類似計算:的"))
+	    /* check_bnst_substr(ptr1, 0, 0, "的") && 
+	       check_bnst_substr(ptr2, 0, 0, "的だ")) */
+	    ) {
 
-	/* ただし，判定詞 -- 体言 の類似度は 0 */
-	if (check_feature(ptr1->f, "用言:判") &&
-	    !check_feature(ptr1->f, "並キ:？") && /* 「〜ではなく」「ですとか」を除く */
-	    check_feature(ptr2->f, "体言") &&
-	    !check_feature(ptr2->f, "用言:判")) return 0;
+	    /* ただし，判定詞 -- 体言 の類似度は 0 */
+	    if (check_feature(ptr1->f, "用言:判") &&
+		!check_feature(ptr1->f, "並キ:？") && /* 「〜ではなく」「ですとか」を除く */
+		check_feature(ptr2->f, "体言") &&
+		!check_feature(ptr2->f, "用言:判")) return 0;
 	
-	/* 「ため」「せい」と他の体言に類似度を与えないように */
+	    /* 「ため」「せい」と他の体言に類似度を与えないように */
 
-	if ((check_feature(ptr1->f, "ため-せい") &&
-	     !check_feature(ptr2->f, "ため-せい")) ||
-	    (!check_feature(ptr1->f, "ため-せい") &&
-	     check_feature(ptr2->f, "ため-せい"))) return 0;
+	    if ((check_feature(ptr1->f, "ため-せい") &&
+		 !check_feature(ptr2->f, "ため-せい")) ||
+		(!check_feature(ptr1->f, "ため-せい") &&
+		 check_feature(ptr2->f, "ため-せい"))) return 0;
 
-	/* 複合辞とそれ以外も類似度 0 */
+	    /* 複合辞とそれ以外も類似度 0 */
 
-	if ((check_feature(ptr1->f, "複合辞") &&
-	     !check_feature(ptr2->f, "複合辞")) ||
-	    (!check_feature(ptr1->f, "複合辞") &&
-	     check_feature(ptr2->f, "複合辞"))) return 0;
+	    if ((check_feature(ptr1->f, "複合辞") &&
+		 !check_feature(ptr2->f, "複合辞")) ||
+		(!check_feature(ptr1->f, "複合辞") &&
+		 check_feature(ptr2->f, "複合辞"))) return 0;
 
-	point += 2;
+	    point += 2;
 
-	if (check_feature(ptr1->f, "体言") &&
-	    check_feature(ptr2->f, "体言")) {
+	    if (check_feature(ptr1->f, "体言") &&
+		check_feature(ptr2->f, "体言")) {
 
-	    /* 
-	       体言同士の場合
-	       ・人名同士 -- 5
-	       ・地名同士 -- 5
-	       ・組織名同士 -- 5
-	       ・人名地名組織名 -- 2 (形態素解析のズレを考慮)
-	       ・数量同士 -- 2 (続く名詞(助数辞)で評価)
-	       		※ 助数辞が一致しなくても類似することもある
-	       		例)「人口は八万七千人だったが、人口増加率は一位で、…」
-	       ・時間同士 -- 2			
-	       ・その他同士 -- 自立語の比較
-	    */
+		/* 
+		   体言同士の場合
+		   ・人名同士 -- 5
+		   ・地名同士 -- 5
+		   ・組織名同士 -- 5
+		   ・人名地名組織名 -- 2 (形態素解析のズレを考慮)
+		   ・数量同士 -- 2 (続く名詞(助数辞)で評価)
+		   ※ 助数辞が一致しなくても類似することもある
+		   例)「人口は八万七千人だったが、人口増加率は一位で、…」
+		   ・時間同士 -- 2			
+		   ・その他同士 -- 自立語の比較
+		*/
 
-	    if (check_feature(ptr1->f, "人名")) {
-		flag1 = 0;
-	    } else if (check_feature(ptr1->f, "地名")) {
-		flag1 = 1;
-	    } else if (check_feature(ptr1->f, "組織名")) {
-		flag1 = 2;
-	    } else if (check_feature(ptr1->f, "数量")) {
-		flag1 = 3;
-	    /* } else if (check_feature(ptr1->f, "時間")) {
-		flag1 = 4; */
-	    } else {
-		flag1 = 5;
-	    }
+		if (check_feature(ptr1->f, "人名")) {
+		    flag1 = 0;
+		} else if (check_feature(ptr1->f, "地名")) {
+		    flag1 = 1;
+		} else if (check_feature(ptr1->f, "組織名")) {
+		    flag1 = 2;
+		} else if (check_feature(ptr1->f, "数量")) {
+		    flag1 = 3;
+		    /* } else if (check_feature(ptr1->f, "時間")) {
+		       flag1 = 4; */
+		} else {
+		    flag1 = 5;
+		}
 
-	    if (check_feature(ptr2->f, "人名")) {
-		flag2 = 0;
-	    } else if (check_feature(ptr2->f, "地名")) {
-		flag2 = 1;
-	    } else if (check_feature(ptr2->f, "組織名")) {
-		flag2 = 2;
-	    } else if (check_feature(ptr2->f, "数量")) {
-		flag2 = 3;
-	    /* } else if (check_feature(ptr2->f, "時間")) {
-		flag2 = 4; */
-	    } else {
-		flag2 = 5;
-	    }
+		if (check_feature(ptr2->f, "人名")) {
+		    flag2 = 0;
+		} else if (check_feature(ptr2->f, "地名")) {
+		    flag2 = 1;
+		} else if (check_feature(ptr2->f, "組織名")) {
+		    flag2 = 2;
+		} else if (check_feature(ptr2->f, "数量")) {
+		    flag2 = 3;
+		    /* } else if (check_feature(ptr2->f, "時間")) {
+		       flag2 = 4; */
+		} else {
+		    flag2 = 5;
+		}
 
-	    if (flag1 == 0 && flag2 == 0) {
-		point += 5;
-		content_word_match = 0;
-	    }
-	    else if (flag1 == 1 && flag2 == 1) {
-		point += 5;
-		content_word_match = 0;
-	    }
-	    else if (flag1 == 2 && flag2 == 2) {
-		point += 5;
-		content_word_match = 0;
-	    }
-	    else if ((flag1 == 0 || flag1 == 1 || flag1 == 2) &&
-		     (flag2 == 0 || flag2 == 1 || flag2 == 2)) {
-		point += 2;	/* 組織と人名などの対応を考慮 */
-		content_word_match = 0;
-	    }
-	    else if (flag1 == 3 && flag2 == 3) {
-		point += 2;
-
-		counter1 = check_feature(ptr1->f, "カウンタ");
-		counter2 = check_feature(ptr2->f, "カウンタ");
-		if ((!counter1 && !counter2) ||
-		    !counter1 ||
-		    (counter1 && counter2 && !strcmp(counter1, counter2))) {
+		if (flag1 == 0 && flag2 == 0) {
 		    point += 5;
+		    content_word_match = 0;
 		}
-		content_word_match = 0;
-	    }
-	    else if (flag1 == 4 && flag2 == 4) {
-		point += 2;
-		content_word_match = 0;
-	    }
-	    else if (flag1 == 5 && flag2 == 5) {
-	        content_word_match = 1;
-	    }
-	    else {
-		content_word_match = 0;
-	    }
-	}
-	else {
-	    content_word_match = 1;
-	}
-
-	if (content_word_match == 1) {
-
-	    /* 自立語の一致 */
-	
-	    /* if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) { */
-	    if (str_eq(ptr1->Jiritu_Go, ptr2->Jiritu_Go)) {
-		point += 10;
-		
-	    } else {
-
-		/* シソーラスによる類似度 */
-
-		if (ParaThesaurus == USE_NONE) {
-		    mt_point = -1;
+		else if (flag1 == 1 && flag2 == 1) {
+		    point += 5;
+		    content_word_match = 0;
 		}
-		else if (ParaThesaurus == USE_BGH) {
-		    mt_point = bgh_match(ptr1, ptr2) * 2;
+		else if (flag1 == 2 && flag2 == 2) {
+		    point += 5;
+		    content_word_match = 0;
+		}
+		else if ((flag1 == 0 || flag1 == 1 || flag1 == 2) &&
+			 (flag2 == 0 || flag2 == 1 || flag2 == 2)) {
+		    point += 2;	/* 組織と人名などの対応を考慮 */
+		    content_word_match = 0;
+		}
+		else if (flag1 == 3 && flag2 == 3) {
+		    point += 2;
+
+		    counter1 = check_feature(ptr1->f, "カウンタ");
+		    counter2 = check_feature(ptr2->f, "カウンタ");
+		    if ((!counter1 && !counter2) ||
+			!counter1 ||
+			(counter1 && counter2 && !strcmp(counter1, counter2))) {
+			point += 5;
+		    }
+		    content_word_match = 0;
+		}
+		else if (flag1 == 4 && flag2 == 4) {
+		    point += 2;
+		    content_word_match = 0;
+		}
+		else if (flag1 == 5 && flag2 == 5) {
+		    content_word_match = 1;
 		}
 		else {
-		    mt_point = sm_match(ptr1, ptr2) * 2;
-		}
-
-		if (check_feature(ptr1->f, "用言") &&
-		    check_feature(ptr2->f, "用言")) {
-		    
-		    /* ★要整理★ 「する」のシソーラス類似度は最大2 */
-		    if (str_eq(ptr1->Jiritu_Go, "する") ||
-			str_eq(ptr2->Jiritu_Go, "する")) {
-			mt_point = Min(mt_point, 2);
-		    }
-		
-		    /* 前が敬語，後が敬語でなければ類似度をおさえる
-		       例)今日決心できるかどうか[分かりませんが、構わなければ]見せて欲しいんです */
-		    if (check_feature(ptr1->f, "敬語") &&
-			!check_feature(ptr2->f, "敬語")) {
-			mt_point = Min(mt_point, 2);
-		    }
-		}		    
-
-		/* 自立語の部分一致 (少なくとも一方の意味属性コードがない場合) */
-	    
-		part_mt_point = 0;
-		if (mt_point < 0) {
-		    mt_point = 0;
-		    if (check_feature(ptr1->f, "体言") &&
-			check_feature(ptr2->f, "体言"))
-			part_mt_point = str_part_cmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi);
-		}
-
-		/* シソーラスと部分一致の得点は最大10 */
-		point += Min(part_mt_point + mt_point, 10);
-	    }
-	}
-
-	/* 主辞形態素より後, 接尾辞以外の付属語の一致 */
-
-	for (i = ptr1->mrph_num - 1; i >= 0 ; i--) {
-	    if (check_feature((ptr1->mrph_ptr + i)->f, "付属") && 
-		ptr1->mrph_ptr + i > ptr1->head_ptr) {
-		if (!strcmp(Class[(ptr1->mrph_ptr + i)->Hinshi][0].id, "接尾辞")) {
-		    continue;
-		}
-		for (j = ptr2->mrph_num - 1; j >= 0 ; j--) {
-		    if (check_feature((ptr2->mrph_ptr + j)->f, "付属") && 
-			ptr2->mrph_ptr + j > ptr2->head_ptr) {
-			if (!strcmp(Class[(ptr2->mrph_ptr + j)->Hinshi][0].id, "接尾辞")) {
-			    continue;
-			}
-			if (str_eq((ptr1->mrph_ptr + i)->Goi, 
-				   (ptr2->mrph_ptr + j)->Goi)) {
-			    point += 2; /* 3 */
-			}
-		    }
-		    else {
-			break;
-		    }
+		    content_word_match = 0;
 		}
 	    }
 	    else {
-		break;
+		content_word_match = 1;
 	    }
+
+	    if (content_word_match == 1) {
+
+		/* 自立語の一致 */
+	
+		/* if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) { */
+		if (str_eq(ptr1->Jiritu_Go, ptr2->Jiritu_Go)) {
+		    point += 10;
+		
+		} else {
+
+		    /* シソーラスによる類似度 */
+
+		    if (ParaThesaurus == USE_NONE) {
+			mt_point = -1;
+		    }
+		    else if (ParaThesaurus == USE_BGH) {
+			mt_point = bgh_match(ptr1, ptr2) * 2;
+		    }
+		    else {
+			mt_point = sm_match(ptr1, ptr2) * 2;
+		    }
+
+		    if (check_feature(ptr1->f, "用言") &&
+			check_feature(ptr2->f, "用言")) {
+		    
+			/* ★要整理★ 「する」のシソーラス類似度は最大2 */
+			if (str_eq(ptr1->Jiritu_Go, "する") ||
+			    str_eq(ptr2->Jiritu_Go, "する")) {
+			    mt_point = Min(mt_point, 2);
+			}
+		
+			/* 前が敬語，後が敬語でなければ類似度をおさえる
+			   例)今日決心できるかどうか[分かりませんが、構わなければ]見せて欲しいんです */
+			if (check_feature(ptr1->f, "敬語") &&
+			    !check_feature(ptr2->f, "敬語")) {
+			    mt_point = Min(mt_point, 2);
+			}
+		    }		    
+
+		    /* 自立語の部分一致 (少なくとも一方の意味属性コードがない場合) */
+	    
+		    part_mt_point = 0;
+		    if (mt_point < 0) {
+			mt_point = 0;
+			if (check_feature(ptr1->f, "体言") &&
+			    check_feature(ptr2->f, "体言"))
+			    part_mt_point = str_part_cmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi);
+		    }
+
+		    /* シソーラスと部分一致の得点は最大10 */
+		    point += Min(part_mt_point + mt_point, 10);
+		}
+	    }
+
+	    /* 主辞形態素より後, 接尾辞以外の付属語の一致 */
+
+	    for (i = ptr1->mrph_num - 1; i >= 0 ; i--) {
+		if (check_feature((ptr1->mrph_ptr + i)->f, "付属") && 
+		    ptr1->mrph_ptr + i > ptr1->head_ptr) {
+		    if (!strcmp(Class[(ptr1->mrph_ptr + i)->Hinshi][0].id, "接尾辞")) {
+			continue;
+		    }
+		    for (j = ptr2->mrph_num - 1; j >= 0 ; j--) {
+			if (check_feature((ptr2->mrph_ptr + j)->f, "付属") && 
+			    ptr2->mrph_ptr + j > ptr2->head_ptr) {
+			    if (!strcmp(Class[(ptr2->mrph_ptr + j)->Hinshi][0].id, "接尾辞")) {
+				continue;
+			    }
+			    if (str_eq((ptr1->mrph_ptr + i)->Goi, 
+				       (ptr2->mrph_ptr + j)->Goi)) {
+				point += 2; /* 3 */
+			    }
+			}
+			else {
+			    break;
+			}
+		    }
+		}
+		else {
+		    break;
+		}
+	    }
+
+	    if ((check_feature(ptr1->f, "〜れる") &&
+		 check_feature(ptr2->f, "〜られる")) ||
+		(check_feature(ptr1->f, "〜られる") &&
+		 check_feature(ptr2->f, "〜れる"))) { 
+		point += 2;
+	    }
+	    if ((check_feature(ptr1->f, "〜せる") &&
+		 check_feature(ptr2->f, "〜させる")) ||
+		(check_feature(ptr1->f, "〜させる") &&
+		 check_feature(ptr2->f, "〜せる"))) { 
+		point += 2;
+	    }
+	    if ((check_feature(ptr1->f, "〜ない") &&
+		 check_feature(ptr2->f, "〜ぬ")) ||
+		(check_feature(ptr1->f, "〜ぬ") &&
+		 check_feature(ptr2->f, "〜ない"))) { 
+		point += 2;
+	    }
+	    if (check_feature(ptr1->f, "タリ") &&
+		check_feature(ptr2->f, "タリ")) { 
+		point += 2;
+	    }
+
+	    /* 追加 */
+
+	    if (check_feature(ptr1->f, "提題") &&
+		check_feature(ptr2->f, "提題"))
+		point += 3;
+
+	    /* 「する」,「できる」などの自立語付属語のずれ */
+
+	    if (jiritu_fuzoku_check(ptr1, ptr2, "する"))
+		point += 1;
+
+	    if (jiritu_fuzoku_check(ptr1, ptr2, "できる") ||
+		jiritu_fuzoku_check(ptr1, ptr2, "出来る"))
+		point += 3;
 	}
-
-	if ((check_feature(ptr1->f, "〜れる") &&
-	     check_feature(ptr2->f, "〜られる")) ||
-	    (check_feature(ptr1->f, "〜られる") &&
-	     check_feature(ptr2->f, "〜れる"))) { 
-	    point += 2;
+    }
+    else { /*for Chinese*/
+	if (((check_feature(ptr1->f, "NN") || 
+	      check_feature(ptr1->f, "NR") || 
+	      check_feature(ptr1->f, "NT") || 
+	      check_feature(ptr1->f, "PN")) && 
+	     (check_feature(ptr2->f, "NN") || 
+	      check_feature(ptr2->f, "NR") || 
+	      check_feature(ptr2->f, "NT") || 
+	      check_feature(ptr2->f, "PN"))) ||   
+	    ((check_feature(ptr1->f, "VV") || 
+	      check_feature(ptr1->f, "VA") || 
+	      check_feature(ptr1->f, "VC") || 
+	      check_feature(ptr1->f, "VE")) && 
+	     (check_feature(ptr2->f, "VV") || 
+	      check_feature(ptr2->f, "VA") || 
+	      check_feature(ptr2->f, "VC") || 
+	      check_feature(ptr2->f, "VE")))) {
+	    point += 10;
 	}
-	if ((check_feature(ptr1->f, "〜せる") &&
-	     check_feature(ptr2->f, "〜させる")) ||
-	    (check_feature(ptr1->f, "〜させる") &&
-	     check_feature(ptr2->f, "〜せる"))) { 
-	    point += 2;
-	}
-	if ((check_feature(ptr1->f, "〜ない") &&
-	     check_feature(ptr2->f, "〜ぬ")) ||
-	    (check_feature(ptr1->f, "〜ぬ") &&
-	     check_feature(ptr2->f, "〜ない"))) { 
-	    point += 2;
-	}
-	if (check_feature(ptr1->f, "タリ") &&
-	    check_feature(ptr2->f, "タリ")) { 
-	    point += 2;
-	}
-
-	/* 追加 */
-
-	if (check_feature(ptr1->f, "提題") &&
-	    check_feature(ptr2->f, "提題"))
-	    point += 3;
-
-	/* 「する」,「できる」などの自立語付属語のずれ */
-
-	if (jiritu_fuzoku_check(ptr1, ptr2, "する"))
-	    point += 1;
-
-	if (jiritu_fuzoku_check(ptr1, ptr2, "できる") ||
-	    jiritu_fuzoku_check(ptr1, ptr2, "出来る"))
-	    point += 3;
     }
     
     return point;
