@@ -115,7 +115,7 @@ int check_dpnd_possibility (int dep, int gov, int relax_flag) {
 	Mask_matrix[dep][gov] == 3) { /*  ¬ŒÛI */
 	return TRUE;
     }
-    else if (relax_flag) { /* relax */
+    else if (relax_flag && Language != CHINESE) { /* relax */
 	if (!Dpnd_matrix[dep][gov]) {
 	    Dpnd_matrix[dep][gov] = 'R';
 	}
