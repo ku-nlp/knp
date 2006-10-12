@@ -486,22 +486,22 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	}
     }
     else { /*for Chinese*/
-	if (((check_feature(ptr1->f, "NN") || 
-	      check_feature(ptr1->f, "NR") || 
-	      check_feature(ptr1->f, "NT") || 
-	      check_feature(ptr1->f, "PN")) && 
-	     (check_feature(ptr2->f, "NN") || 
-	      check_feature(ptr2->f, "NR") || 
-	      check_feature(ptr2->f, "NT") || 
-	      check_feature(ptr2->f, "PN"))) ||   
+	if (((check_feature(ptr1->f, "NN") ||
+	      check_feature(ptr1->f, "PN") ||
+	      check_feature(ptr1->f, "NR")) && 
+	     (check_feature(ptr2->f, "NN") ||
+	      check_feature(ptr2->f, "PN") ||
+	      check_feature(ptr2->f, "NR"))) ||
+	    ((check_feature(ptr1->f, "NT-SHORT") ||
+	      check_feature(ptr1->f, "NT")) && 
+	     check_feature(ptr2->f, "NT")) || 
 	    ((check_feature(ptr1->f, "VV") || 
-	      check_feature(ptr1->f, "VA") || 
-	      check_feature(ptr1->f, "VC") || 
-	      check_feature(ptr1->f, "VE")) && 
+	      check_feature(ptr1->f, "VA")) && 
 	     (check_feature(ptr2->f, "VV") || 
-	      check_feature(ptr2->f, "VA") || 
-	      check_feature(ptr2->f, "VC") || 
-	      check_feature(ptr2->f, "VE")))) {
+	      check_feature(ptr2->f, "VA"))) ||
+	    (check_feature(ptr1->f, "CD") && check_feature(ptr2->f, "CD")) ||
+	    (check_feature(ptr1->f, "M") && check_feature(ptr2->f, "M")) ||
+	    (check_feature(ptr1->f, "JJ") && check_feature(ptr2->f, "JJ"))) {
 	    point += 10;
 	}
     }
