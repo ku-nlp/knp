@@ -1,3 +1,8 @@
+2006-10-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	曖昧性のある形態素をすべて保持するように変更
+
 2006-10-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal, system/extern.h, system/main.c
