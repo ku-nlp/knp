@@ -125,7 +125,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int i, j, k, flag, orig_amb_flag, pref_mrph, pref_rule;
     int bw_length;
     int real_homo_num;
-    int uniq_flag[HOMO_MAX];		/* 他と品詞が異なる形態素なら 1 */
+    int uniq_flag[HOMO_MAX];		/* 実質的同形異義語なら 1 */
     int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
 					   ルール内形態素パターンに 1 */
     int rep_length, rep_length2;
@@ -138,47 +138,13 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	homo_num = HOMO_MAX;
     }
 
-    /* 品詞(細分類)が異なる形態素だけを残し，uniq_flagを1にする */
+    /* 品詞(細分類)が異なる形態素だけを残し，uniq_flagを1にする
+       => すべて残すように変更 (2006/10/16) */
 
     uniq_flag[0] = 1;
     real_homo_num = 1;
     for (i = 1; i < homo_num; i++) {
-	loop_ptr = m_ptr + i;
 	uniq_flag[i] = 1;
-	for (j = 0; j < i; j++) {
-	    loop_ptr2 = m_ptr + j;
-	    cp2 = check_feature(loop_ptr2->f, "漢字読み");
-	    cp = check_feature(loop_ptr->f, "漢字読み");
-
-	    /* 音訓解消できない読みの異なり --> 無視
-	       - 漢字読み情報をもたない場合 (市場[しじょう/いちば]) 
-	       - 漢字読みが同じ場合 (質[しつ/しち]: 2つとも「漢字読み:音」) */
-	    if (loop_ptr2->Hinshi == loop_ptr->Hinshi && 
-		loop_ptr2->Bunrui == loop_ptr->Bunrui && 
-		str_eq(loop_ptr2->Goi, loop_ptr->Goi) && 
-		loop_ptr2->Katuyou_Kata == loop_ptr->Katuyou_Kata && 
-		loop_ptr2->Katuyou_Kei == loop_ptr->Katuyou_Kei && 
-		((cp2 == NULL && cp == NULL) || /* 漢字読みなし */
-		 (cp && cp2 && str_eq(cp2, cp))) && /* 漢字読み一致 */
-		(rep_strt2 = get_mrph_rep(loop_ptr2)) && 
-		(rep_end2 = strchr(rep_strt2, '/')) && 
-		(rep_strt = get_mrph_rep(loop_ptr)) && 
-		(rep_end = strchr(rep_strt, '/')) && 
-		(rep_end2 - rep_strt2) == (rep_end - rep_strt) && 
-		!strncmp(rep_strt, rep_strt2, rep_end - rep_strt)) { /* 代表表記 */
-		uniq_flag[i] = 0;
-		break;		    
-	    }
-	    /* 活用型,活用形のいずれかが違う (いる, くる, ゆく, ...) --> 無視 */
-	    else if (loop_ptr2->Hinshi == loop_ptr->Hinshi &&
-		     loop_ptr2->Bunrui == loop_ptr->Bunrui &&
-		     str_eq(loop_ptr2->Goi, loop_ptr->Goi) &&
-		      (loop_ptr2->Katuyou_Kata != loop_ptr->Katuyou_Kata ||
-		      loop_ptr2->Katuyou_Kei != loop_ptr->Katuyou_Kei)) {
-		uniq_flag[i] = 0;
-		break;
-	    }
-	}
 	if (uniq_flag[i]) real_homo_num++;
     }
 
