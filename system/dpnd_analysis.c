@@ -44,15 +44,41 @@ static int dpndID = 0;
 	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, value, first_uke_flag;
+    int i, j, k, value, first_uke_flag, pu_flag;
     BNST_DATA *k_ptr, *u_ptr;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
+	pu_flag = 0;
+	if (Language == CHINESE && check_feature(k_ptr->f, "PU")) {
+	    if (k_ptr->head_ptr->Goi == "¡Ê" ||
+		k_ptr->head_ptr->Goi == "¡Æ" ||
+		k_ptr->head_ptr->Goi == "¡Ò" ||
+		k_ptr->head_ptr->Goi == "¡Ö" ||
+		k_ptr->head_ptr->Goi == "¡È" ||
+		k_ptr->head_ptr->Goi == "¡ã" ||
+		k_ptr->head_ptr->Goi == "¡Ø" ||
+		k_ptr->head_ptr->Goi == "¡Ú" ||
+		k_ptr->head_ptr->Goi == "¡Ô") {
+		pu_flag = 1;
+	    }
+	    else {
+		for (k = i - 1; k >= 0; k--) {
+		    if (!check_feature((sp->bnst_data + k)->f, "PU")) {
+			Dpnd_matrix[k][i] = 'L';
+			break;
+		    }
+		}
+	    }
+	}
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 	    Dpnd_matrix[i][j] = 0;
+	    if (Language == CHINESE && pu_flag == 1 && !check_feature(u_ptr->f, "PU")) {
+		Dpnd_matrix[i][j] = 'R';
+		pu_flag = 0;
+	    }
 	    for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
 		value = feature_pattern_match(&(k_ptr->dpnd_rule->governor[k]),
 					      u_ptr->f, k_ptr, u_ptr);

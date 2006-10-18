@@ -25,21 +25,12 @@ CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY¹ÔÎó¤Î³Æ°ÌÃÖ¤ÎºÇ½é¤ÎCKY¥Ç¡¼¥¿¤Ø¤Î¥Ý¥¤¥
 CKY cky_table[CKY_TABLE_MAX];	  /* CKY¥Ç¡¼¥¿¤ÎÇÛÎó */
 
 
-int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr, int space, int flag) {
-    /* flag == 1 : ±¦¤Î»Ò¤â½ñ¤¯
-       flag == 0 : ±¦¤Î»Ò¤Ï¤â¤¦½ñ¤«¤Ê¤¤ */
+int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
+
     int i;
     char *cp;
 
-    if (OptDisplay == OPT_DEBUG) {
-	if (flag == 1) {
-	    for (i = 0; i < space; i++) 
-		printf(" ");
-	    printf("%c\n", cky_ptr->cp);
-	}
-    }
-
-    if (cky_ptr->right) {
+    if (cky_ptr->left && cky_ptr->right) {
 	if (Mask_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num] == 2) {
 	    Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->b_ptr->num;
 	    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 'P';
@@ -56,20 +47,20 @@ int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr, int space, int flag) {
 	    }
 	    else {
 		if (cky_ptr->direction == RtoL) { /* <- */
-		    Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = cky_ptr->left->b_ptr->num;
-		    Best_mgr->dpnd.type[cky_ptr->b_ptr->num] = 
-			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
+		    Best_mgr->dpnd.head[cky_ptr->right->b_ptr->num] = cky_ptr->left->b_ptr->num;
+		    Best_mgr->dpnd.type[cky_ptr->right->b_ptr->num] = 
+			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->right->b_ptr->num];
 		}
 		else { /* -> */
-		    Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->b_ptr->num;
+		    Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->right->b_ptr->num;
 		    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 
-			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->b_ptr->num];
+			Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->right->b_ptr->num];
 		}
 	    }
 	}
 
-	convert_to_dpnd(Best_mgr, cky_ptr->right, space + 2, 0);
-	convert_to_dpnd(Best_mgr, cky_ptr->left, space + 2, 1);
+	convert_to_dpnd(Best_mgr, cky_ptr->left);
+	convert_to_dpnd(Best_mgr, cky_ptr->right);
     }
 }
 
@@ -180,19 +171,17 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		/* ·¸¤êÀè¤ÎDEFAULT¤Î°ÌÃÖ¤È¤Îº¹¤ò¥Ú¥Ê¥ë¥Æ¥£¤Ë
 		   ¢¨ ÄóÂê¤ÏC,B'¤òµá¤á¤Æ±ó¤¯¤Ë·¸¤ë¤³¤È¤¬¤¢¤ë¤¬¡¤¤½¤ì¤¬
 		   Â¾¤Î·¸¤êÀè¤Ë±Æ¶Á¤·¤Ê¤¤¤è¤¦,¥Ú¥Ê¥ë¥Æ¥£¤Ëº¹¤ò¤Ä¤±¤ë */
-		if (Language != CHINESE) {
-		    if (check_feature(d_ptr->f, "ÄóÂê")) {
-			one_score -= abs(default_pos - 1 - pos);
-		    }
-		    else {
-			one_score -= abs(default_pos - 1 - pos) * 2;
-		    }
+		if (check_feature(d_ptr->f, "ÄóÂê")) {
+		    one_score -= abs(default_pos - 1 - pos);
+		}
+		else {
+		    one_score -= abs(default_pos - 1 - pos) * 2;
 		}
 
 		/* ÆÉÅÀ¤ò¤â¤Ä¤â¤Î¤¬ÎÙ¤Ë¤«¤«¤ë¤³¤È¤òËÉ¤° */
 		if (d_ptr->num + 1 == g_ptr->num && 
 		    abs(default_pos - 1 - pos) > 0 && 
-		    check_feature(d_ptr->f, "ÆÉÅÀ")) {
+		    (check_feature(d_ptr->f, "ÆÉÅÀ") || (Language == CHINESE && check_feature(d_ptr->f, "PU")))) {
 		    one_score -= 5;
 		}
 	    }
@@ -385,62 +374,18 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 		/* i¤«¤éi+k¤Þ¤Ç¤È,i+k+1¤«¤éj¤Þ¤Ç¤ò¤Þ¤È¤á¤ë */
 		for (k = 0; k < j - i; k++) {
 		    /* ¾ò·ï¤¬¹ç¤¦¾ì¹ç¤Ë¶ç¤òºî¤ë */
-		    if ((dep_check[i + k] <= 0 || /* ¥Ð¥ê¥¢¤¬¤Ê¤¤¤È¤­ */
-			 dep_check[i + k] >= j) && /* ¥Ð¥ê¥¢¤¬¤¢¤ë¤È¤­¤Ï¤½¤³¤Þ¤Ç */
-			check_dpnd_possibility(i + k, j, (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) {
-			if (OptDisplay == OPT_DEBUG) {
-			    if (Dpnd_matrix[i + k][j] == 'L' && Language == CHINESE) {
-				printf("   (%d,%d), (%d,%d) [%s<-%s], score=", i, i + k, i + k + 1, j, 
-				   (sp->bnst_data + i + k)->head_ptr->Goi, 
-				   (sp->bnst_data + j)->head_ptr->Goi);
-			    }
-			    else {
-				printf("   (%d,%d), (%d,%d) [%s->%s], score=", i, i + k, i + k + 1, j, 
-				   (sp->bnst_data + i + k)->head_ptr->Goi, 
-				   (sp->bnst_data + j)->head_ptr->Goi);
-			    }
-			}
+		    if ((dep_check[i + k] <= 0 ||  /* ¥Ð¥ê¥¢¤¬¤Ê¤¤¤È¤­ */
+			 dep_check[i + k] >= j)) { /* ¥Ð¥ê¥¢¤¬¤¢¤ë¤È¤­¤Ï¤½¤³¤Þ¤Ç */
+
 			left_ptr = cky_matrix[i][i + k];
 			next_pp = NULL;
 			while (left_ptr) {
 			    right_ptr = cky_matrix[i + k + 1][j];
-			    int failed = 0;
-			    if (!right_ptr) {
-				failed = 1;
-			    }
 			    while (right_ptr) {
-				cky_ptr = &(cky_table[cky_table_num]);
-				cky_table_num++;
-				if (cky_table_num >= CKY_TABLE_MAX) {
-				    fprintf(stderr, ";;; cky_table_num exceeded maximum\n");
-				    exit(1);
-				}
-				if (next_pp == NULL) {
-				    start_ptr = cky_ptr;
-				}
-				else {
-				    *next_pp = cky_ptr;
-				}
-				cky_ptr->next = NULL;
-				cky_ptr->left = left_ptr;
-				cky_ptr->right = right_ptr;
-				cky_ptr->direction = Dpnd_matrix[i + k][j] == 'L' ? RtoL : LtoR;
-				cky_ptr->cp = 'a' + j;
-				cky_ptr->b_ptr = cky_ptr->right->b_ptr;
-				next_pp = &(cky_ptr->next);
-				cky_ptr->un_count = 0;
-				for (l = 0; l < SCASE_CODE_SIZE; l++) cky_ptr->scase_check[l] = 0;
-				cky_ptr->score = calc_score(sp, cky_ptr);
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("%d,", cky_ptr->score);
-				}
 
-				right_ptr = right_ptr->next;		
-			    }
+				if (check_dpnd_possibility(left_ptr->b_ptr->num, right_ptr->b_ptr->num, 
+							   (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) {
 
-			    if (Language == CHINESE && failed) {
-				right_ptr = cky_matrix[i + k][j - 1];
-				while (right_ptr) {
 				    cky_ptr = &(cky_table[cky_table_num]);
 				    cky_table_num++;
 				    if (cky_table_num >= CKY_TABLE_MAX) {
@@ -456,10 +401,21 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    cky_ptr->next = NULL;
 				    cky_ptr->left = left_ptr;
 				    cky_ptr->right = right_ptr;
-				    cky_ptr->direction = Dpnd_matrix[i + k][j] == 'L' ? RtoL : LtoR;
+				    cky_ptr->direction = Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR;
 				    cky_ptr->cp = 'a' + j;
-//				    cky_ptr->b_ptr = cky_ptr->right->b_ptr;
-				    cky_ptr->b_ptr = sp->bnst_data + j;
+				    if (cky_ptr->direction == RtoL) {
+					cky_ptr->b_ptr = cky_ptr->left->b_ptr;
+				    } else {
+					cky_ptr->b_ptr = cky_ptr->right->b_ptr;
+				    }
+
+				    if (OptDisplay == OPT_DEBUG) {
+					printf("   (%d,%d), (%d,%d) [%s %s %s], score=", i, i + k, i + k + 1, j, 
+					       left_ptr->b_ptr->head_ptr->Goi, 
+					       cky_ptr->direction == RtoL ? "<-" : "->",
+					       right_ptr->b_ptr->head_ptr->Goi);
+				    }
+
 				    next_pp = &(cky_ptr->next);
 				    cky_ptr->un_count = 0;
 				    for (l = 0; l < SCASE_CODE_SIZE; l++) cky_ptr->scase_check[l] = 0;
@@ -467,10 +423,11 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    if (OptDisplay == OPT_DEBUG) {
 					printf("%d,", cky_ptr->score);
 				    }
-
-				    right_ptr = right_ptr->next;		
 				}
+				right_ptr = right_ptr->next;		
+
 			    }
+
 			    left_ptr = left_ptr->next;
 			}
 
@@ -525,6 +482,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
     /* choose the best one */
     cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
+
+    if (!cky_ptr) {
+	return FALSE;
+    }
     if (cky_ptr->next) { /* if there are more than one possibility */
 	best_score = -INT_MAX;
 	pre_ptr = NULL;
@@ -559,7 +520,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	}
 
 	Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = -1;
-	convert_to_dpnd(Best_mgr, cky_ptr, 0, 1);
+	convert_to_dpnd(Best_mgr, cky_ptr);
 	cky_ptr = cky_ptr->next;
     }
 
@@ -574,4 +535,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    /* Best_mgr->dpnd.check[i].pos[0] = Best_mgr->dpnd.head[i]; */
 	}
     }
+
+    return TRUE;
 }

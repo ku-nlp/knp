@@ -211,10 +211,14 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 	    /* 他の行の処理:下からと左からのスコアを比較 */
 
 	    for (i=iend_pos-1; i>=0; i--) {
+		/*
 		score_upward = match_matrix[i][j] + maxsco_array[i+1]
 		    - calc_dynamic_level_penalty(sp, key_pos, i, j);
 		score_sideway = score_matrix[i][j+1] 
 		    - PENALTY - penalty_table[j];
+		*/
+		score_upward = match_matrix[i][j] + maxsco_array[i+1];
+		score_sideway = score_matrix[i][j+1];
 		
 		if (score_upward >= score_sideway) {
 		    score_matrix[i][j] = score_upward;

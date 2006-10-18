@@ -96,7 +96,7 @@ int	koou_m_p[BNST_MAX];
 		void change_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, f_start, f_end;
+    int i, j, k, f_start, f_end;
 
     if (Language == CHINESE) {
 	for (i = 0; i < sp->Bnst_num; i++){
@@ -111,7 +111,6 @@ int	koou_m_p[BNST_MAX];
 			    if (f_start < 0)
 				f_start = j;
 			}
-			int k;
 			if (Koou_dpnd_matrix[i][j] == 'R') {
 			    for (k = i; k < sp->Bnst_num; k++){
 				if (Koou_matrix[i][k] <= 0 && Dpnd_matrix[i][k] == 'R') {

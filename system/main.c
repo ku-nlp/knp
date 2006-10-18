@@ -1081,7 +1081,9 @@ extern int	EX_match_subject;
 
     if (OptCKY) {
 	/* CKY */
-	cky(sp, sp->Best_mgr);
+	if (cky(sp, sp->Best_mgr) == FALSE) {
+	    return FALSE;
+	}
     }
     else {
 #ifndef _WIN32
