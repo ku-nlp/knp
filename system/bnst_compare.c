@@ -504,6 +504,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    (check_feature(ptr1->f, "JJ") && check_feature(ptr2->f, "JJ"))) {
 	    point += 10;
 	}
+	if (strcmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi) == 0) {
+	    point += 5;
+	}
     }
     
     return point;
