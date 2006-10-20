@@ -134,6 +134,13 @@ extern void *matched_ptr;
 
 extern int Language;
 
+extern int bnst_dpnd[];
+extern int bnst_level[];
+extern char* bnst_word[];
+extern char* bnst_tree[][TREE_WIDTH_MAX];
+extern char* bnst_inverse_tree[][BNST_MAX];
+extern int sen_num;
+
 /* 関数プロトタイプ */
 
 /* bnst_compare.c */
@@ -317,6 +324,7 @@ extern void check_bnst(SENTENCE_DATA *sp);
 extern void print_para_relation(SENTENCE_DATA *sp);
 extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
+extern void print_tree_for_chinese(SENTENCE_DATA *sp);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);

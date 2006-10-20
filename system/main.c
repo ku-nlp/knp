@@ -73,6 +73,16 @@ int		OptTimeoutExit;
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
+/* sentence id, only for Chinese */
+int             sen_num;
+
+/* for printing Chinese parse tree */
+int         bnst_dpnd[BNST_MAX];
+int         bnst_level[BNST_MAX];
+char*       bnst_word[BNST_MAX];
+char*       bnst_tree[BNST_MAX][TREE_WIDTH_MAX];
+char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
+
 /* Server Client Extention */
 int		OptMode = STAND_ALONE_MODE;
 int		OptPort = DEFAULT_PORT;
@@ -863,6 +873,12 @@ extern int	EX_match_subject;
     int flag, i;
     int relation_error, d_struct_error;
 
+    /* get sentence id for Chinese */
+
+    if (Language == CHINESE) {
+	sen_num++;
+    }
+
     sp->Sen_num++;
     sp->available = 1;
 
@@ -1082,6 +1098,9 @@ extern int	EX_match_subject;
     if (OptCKY) {
 	/* CKY */
 	if (cky(sp, sp->Best_mgr) == FALSE) {
+	    if (Language == CHINESE) {
+		printf("sentence %d cannot be parsed\n",sen_num);
+	    }
 	    return FALSE;
 	}
     }
@@ -1299,6 +1318,9 @@ PARSED:
 	}
 	else if (OptDisplay != OPT_NBEST) {
 	    print_result(sp, 1);
+	}
+	if (Language == CHINESE) {
+	    print_tree_for_chinese(sp);
 	}
 	fflush(Outfp);
 

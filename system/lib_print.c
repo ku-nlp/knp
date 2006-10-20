@@ -1402,6 +1402,158 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 }
 
+/*==================================================================*/
+	    void print_tree_for_chinese(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int		i, j, k, max_len, len, max_inverse_len;
+    char*       up_corner = "игиб";
+    char*       down_corner = "ижиб";
+    char*       middle_corner = "изиб";
+    char*       link = "ив";
+
+    BNST_DATA	*b_ptr;
+
+    /* initialization */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < TREE_WIDTH_MAX; j++) {
+	    bnst_tree[i][j] = "";
+	}
+    }
+
+    /* read data */
+    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	bnst_word[i] = b_ptr->head_ptr->Goi;
+	bnst_dpnd[i] = b_ptr->dpnd_head;
+	bnst_level[i] = -1;
+    }
+
+    /* get root level */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	while (bnst_level[i] == -1) {
+	    j = i;
+	    while (bnst_dpnd[j] != -1 && bnst_level[bnst_dpnd[j]] == -1) {
+		j = bnst_dpnd[j];
+	    }
+	    if (bnst_dpnd[j] == -1) {
+		bnst_level[j] = 0;
+	    }
+	    else {
+		bnst_level[j] = bnst_level[bnst_dpnd[j]] + 1;
+	    }
+	}
+    }
+
+    /* get print tree */
+    max_len = -1;
+    for (i = 0; i < sp->Bnst_num; i++) {
+	len = 0;
+	for (j = 0; j < (bnst_level[i] * 4); j++) {
+	    if (bnst_dpnd[i] != -1 && j < (bnst_level[bnst_dpnd[i]] * 4)) {
+		if (len >= TREE_WIDTH_MAX) {
+		    fprintf(Outfp, ">>>tree width exceeds maximum length\n");
+		    return;
+		}
+		bnst_tree[i][len] = " ";
+		len++;
+	    }
+	    else if (bnst_dpnd[i] != -1 && j == (bnst_level[bnst_dpnd[i]] * 4)) {
+		if (bnst_dpnd[i] != -1 && bnst_dpnd[i] < i) {
+		    if (len >= TREE_WIDTH_MAX) {
+			fprintf(Outfp, ">>>tree width exceeds maximum length\n");
+			return;
+		    }
+		    bnst_tree[i][len] = down_corner;
+		    len++;
+		}
+		else if (bnst_dpnd[i] > i) {
+		    if (len >= TREE_WIDTH_MAX) {
+			fprintf(Outfp, ">>>tree width exceeds maximum length\n");
+			return;
+		    }
+		    bnst_tree[i][len] = up_corner;
+		    len++;
+		}
+	    }
+	}
+	if (len >= TREE_WIDTH_MAX) {
+	    fprintf(Outfp, ">>>tree width exceeds maximum length\n");
+	    return;
+	}
+	bnst_tree[i][len] = bnst_word[i];
+	len++;
+	if (len > max_len) {
+	    max_len = len;
+	}
+    }
+    
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < max_len; j++) {
+	    if (bnst_tree[i][j] == "") {
+		bnst_tree[i][j] = "***";
+	    }
+	}
+    }
+
+    /* inverse the tree */
+    max_inverse_len = -1;
+    for (i = 0; i < max_len; i++) {
+	len = 0;
+	for (j = sp->Bnst_num - 1; j > -1; j--) {
+	    bnst_inverse_tree[i][len] = bnst_tree[j][i];
+	    len++;
+	}
+	if (len > max_inverse_len) {
+	    max_inverse_len = len;
+	}
+    }
+
+    /* change bnst_inverse_tree */
+    for (i = 0; i < max_len; i++) {
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    if (bnst_inverse_tree[i][j] == down_corner) {
+		for (k = j + 1; k < sp->Bnst_num; k++) {
+		    if (bnst_inverse_tree[i][k] == down_corner) {
+			bnst_inverse_tree[i][k] = middle_corner;
+		    }
+		    else if (bnst_inverse_tree[i][k] == " ") {
+			bnst_inverse_tree[i][k] = link;
+		    }
+		    else {
+			break;
+		    }
+		}
+	    }
+	    else if (bnst_inverse_tree[i][j] == up_corner) {
+		for (k = j - 1; k > -1; k--) {
+		    if (bnst_inverse_tree[i][k] == up_corner) {
+			bnst_inverse_tree[i][k] = middle_corner;
+		    }
+		    else if (bnst_inverse_tree[i][k] == " ") {
+			bnst_inverse_tree[i][k] = link;
+		    }
+		    else {
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    /* inverse tree again and print */
+    for (i = max_inverse_len - 1; i > -1; i--) {
+	for (j = 0; j < max_len; j++) {
+	    if (bnst_inverse_tree[j][i] != "***") {
+		fprintf(Outfp, "%s", bnst_inverse_tree[j][i]);
+	    }
+	    else {
+		fprintf(Outfp, " ");
+	    }
+	}
+	fprintf(Outfp, "\n");
+    }
+}
+
 /*====================================================================
                                END
 ====================================================================*/
