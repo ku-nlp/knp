@@ -1599,7 +1599,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* else: UNASSIGNED はないはず */
 
 	/* featureを格要素文節に与える */
-
 	if (cpm_ptr->elem_b_ptr[i]->num < cpm_ptr->pred_b_ptr->num) {
 	    sprintf(feature_buffer, "解析格:%s", relation);
 	}
@@ -1608,7 +1607,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
 	assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), feature_buffer, temp_assign_flag);
 
-	/* feature を用言文節に与える *
+	/* feature を用言文節に与える */
 	word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
 	if (word) {
 	    if (cpm_ptr->elem_b_ptr[i]->num >= 0) {
@@ -1624,7 +1623,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
 	    free(word);
 	}
-	*/
     }
 
     /* => ★「格要素-ガ」などを集めるように修正する */
