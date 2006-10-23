@@ -181,7 +181,7 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		/* 読点をもつものが隣にかかることを防ぐ */
 		if (d_ptr->num + 1 == g_ptr->num && 
 		    abs(default_pos - 1 - pos) > 0 && 
-		    (check_feature(d_ptr->f, "読点") || (Language == CHINESE && check_feature(d_ptr->f, "PU")))) {
+		    (check_feature(d_ptr->f, "読点"))) {
 		    one_score -= 5;
 		}
 	    }
@@ -385,7 +385,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 				if (check_dpnd_possibility(left_ptr->b_ptr->num, right_ptr->b_ptr->num, 
 							   (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) {
-
 				    cky_ptr = &(cky_table[cky_table_num]);
 				    cky_table_num++;
 				    if (cky_table_num >= CKY_TABLE_MAX) {
@@ -424,8 +423,12 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					printf("%d,", cky_ptr->score);
 				    }
 				}
-				right_ptr = right_ptr->next;		
-
+				if (Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'B') {
+				    Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] = 'L';
+				}
+				else {
+				    right_ptr = right_ptr->next;		
+				}
 			    }
 
 			    left_ptr = left_ptr->next;
