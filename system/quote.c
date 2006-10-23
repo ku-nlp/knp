@@ -198,7 +198,9 @@ QUOTE_DATA quote_data;
 
 	if (OptDisplay == OPT_DEBUG) print_quote();
 
-	mask_quote(sp);			/* 行列の書き換え */
+	if (Language != CHINESE) {
+	    mask_quote(sp);			/* 行列の書き換え */
+	}
     }
 
     return quote_p;
