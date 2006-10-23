@@ -1,3 +1,9 @@
+2006-10-23  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule:
+	「半ば」-> <時間>
+	「幾らか」-> <数量>
+
 2006-10-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/read_data.c:
