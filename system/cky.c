@@ -126,10 +126,10 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
     while (tmp_cky_ptr) {
-	if (tmp_cky_ptr->left) {
-	    one_score += tmp_cky_ptr->left->score;
+	if (tmp_cky_ptr->direction == LtoR ? tmp_cky_ptr->left : tmp_cky_ptr->right) {
+	    one_score += tmp_cky_ptr->direction == LtoR ? tmp_cky_ptr->left->score : tmp_cky_ptr->right->score;
 	}
-	tmp_cky_ptr = tmp_cky_ptr->right;
+	tmp_cky_ptr = tmp_cky_ptr->direction == LtoR ? tmp_cky_ptr->right : tmp_cky_ptr->left;
     }
     if (OptDisplay == OPT_DEBUG) {
 	printf("%d=>", one_score);
@@ -146,8 +146,8 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
     /* すべての子供について */
     while (cky_ptr) {
-	if (cky_ptr->left) {
-	    d_ptr = cky_ptr->left->b_ptr;
+	if (cky_ptr->direction == LtoR ? cky_ptr->left : cky_ptr->right) {
+	    d_ptr = cky_ptr->direction == LtoR ? cky_ptr->left->b_ptr : cky_ptr->right->b_ptr;
 
 	    if (Mask_matrix[d_ptr->num][g_ptr->num] == 2 || /* 並列P */
 		Mask_matrix[d_ptr->num][g_ptr->num] == 3) { /* 並列I */
@@ -156,8 +156,12 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    else {
 		/* 距離コストを計算するために、まず係り先の候補を調べる */
 		count = 0;
-		for (i = d_ptr->num + 1; i < sp->Bnst_num; i++) {
-		    if (check_dpnd_possibility(d_ptr->num, i, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
+		for (i = 0; i < sp->Bnst_num; i++) {
+		    if (Language != CHINESE && i < d_ptr->num + 1) {
+			continue;
+		    }
+		    if ((i > d_ptr->num && check_dpnd_possibility(d_ptr->num, i, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) || 
+			(i <= d_ptr->num && check_dpnd_possibility(i ,d_ptr->num, FALSE))) {
 			if (i == g_ptr->num) {
 			    pos = count;
 			}
@@ -317,7 +321,7 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    }
 	}
 
-	cky_ptr = cky_ptr->right;
+	cky_ptr = cky_ptr->direction == LtoR ? cky_ptr->right : cky_ptr->left;
     }
 
     /* 用言の場合，最終的に未格,ガ格,ヲ格,ニ格,連体修飾に対して
