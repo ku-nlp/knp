@@ -345,6 +345,13 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
 	    Mask_matrix[i][j] = 0;
 
+    /* mask the corresponding column of Mask_matrix for Chinese */
+    if (Language == CHINESE) {
+	for (i = 0; i < m_ptr->start[k]; i++)
+	    for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++)
+		Mask_matrix[i][j] = 0;
+    }
+
     if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* ¶¯ÊÂÎó ??? */
 	for (i = 0; i < m_ptr->start[0]; i++)
 	    Mask_matrix[i][m_ptr->end[0]] = 0;
