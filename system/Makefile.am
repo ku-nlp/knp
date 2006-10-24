@@ -23,6 +23,7 @@ knp_SOURCES = \
 	feature.c \
 	knp.h \
 	koou.c \
+	base_phrase.c \
 	lib_bgh.c \
 	lib_dt.c \
 	lib_print.c \

@@ -1016,6 +1016,10 @@ extern int	EX_match_subject;
     if (koou(sp) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_DPND, 0);
 
+    /* base phrase for Chinese */
+    if (Language == CHINESE && base_phrase(sp) == TRUE && OptDisplay == OPT_DEBUG)
+	print_matrix(sp, PRINT_DPND, 0);
+
     /* ¸°³ç¸Ì¤Î½èÍý */
 
     if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
