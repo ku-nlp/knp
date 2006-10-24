@@ -23,7 +23,7 @@ typedef struct _CKY {
 #define	CKY_TABLE_MAX	50000
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* CKYデータの配列 */
-
+int frag_tag;    /* fragment tag, only for Chinese */
 
 int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
@@ -319,6 +319,37 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			check_scase(d_ptr, &(cky_ptr->left->scase_check[0]), 0, cky_ptr->left->un_count);
 		}
 	    }
+
+	    /* calc score for Chinese */
+	    if (Language == CHINESE) {
+		/* add score for stable dpnd */
+		if (cky_ptr->direction == LtoR && d_ptr->num + 1 == g_ptr->num) {
+		    if ((check_feature(d_ptr->f, "NN") && 
+			 check_feature(g_ptr->f, "NN")) ||
+			(check_feature(d_ptr->f, "CD") && 
+			 check_feature(g_ptr->f, "M")) ||
+			(check_feature(d_ptr->f, "OD") && 
+			 check_feature(g_ptr->f, "M"))) {
+			one_score += 10;
+		    }
+		}
+		if (cky_ptr->direction == RtoL && g_ptr->num + 1 == d_ptr->num) {
+		    if ((check_feature(d_ptr->f, "VV") && 
+			 check_feature(g_ptr->f, "VV")) ||
+			(check_feature(d_ptr->f, "DT") && 
+			 check_feature(g_ptr->f, "M"))) {
+			one_score += 10;
+		    }
+		}
+		/* for fragment, make the first noun as the root */
+		if ((cky_ptr->direction == RtoL && g_ptr->num == 0) && 
+		    (check_feature(g_ptr->f, "NN") ||
+		     check_feature(g_ptr->f, "NR") ||
+		     check_feature(g_ptr->f, "NT") ||
+		     check_feature(g_ptr->f, "PN"))) {
+		    one_score += 10;
+		}
+	    }
 	}
 
 	cky_ptr = cky_ptr->direction == LtoR ? cky_ptr->right : cky_ptr->left;
@@ -339,12 +370,20 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     CKY **next_pp, **next_pp_for_ij;
 
     cky_table_num = 0;
+    frag_tag = 0;
 
     /* initialize */
     for (i = 0; i < sp->Bnst_num; i++) {
 	dep_check[i] = -1;
 	Best_mgr->dpnd.head[i] = -1;
 	Best_mgr->dpnd.type[i] = 'D';
+	/* check if this sentence is a fragment, for Chinese */
+	if (check_feature((sp->bnst_data+i)->f, "VV") ||
+	    check_feature((sp->bnst_data+i)->f, "VA") ||
+	    check_feature((sp->bnst_data+i)->f, "VC") ||
+	    check_feature((sp->bnst_data+i)->f, "VE")) {
+	    frag_tag = 1;
+	}
     }
 
     /* ループは左から右,下から上
