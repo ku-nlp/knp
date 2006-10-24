@@ -323,22 +323,41 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
 		/* add score for stable dpnd */
-		if (cky_ptr->direction == LtoR && d_ptr->num + 1 == g_ptr->num) {
-		    if ((check_feature(d_ptr->f, "NN") && 
-			 check_feature(g_ptr->f, "NN")) ||
-			(check_feature(d_ptr->f, "CD") && 
-			 check_feature(g_ptr->f, "M")) ||
-			(check_feature(d_ptr->f, "OD") && 
-			 check_feature(g_ptr->f, "M"))) {
-			one_score += 10;
+		if (cky_ptr->direction == LtoR) {
+		    if (d_ptr->num + 1 == g_ptr->num &&
+			((check_feature(d_ptr->f, "NN") && 
+			  check_feature(g_ptr->f, "NN")) ||
+			 (check_feature(d_ptr->f, "CD") && 
+			  check_feature(g_ptr->f, "M")) ||
+			 (check_feature(d_ptr->f, "OD") && 
+			  check_feature(g_ptr->f, "M")))) {
+			one_score += 20;
 		    }
 		}
-		if (cky_ptr->direction == RtoL && g_ptr->num + 1 == d_ptr->num) {
-		    if ((check_feature(d_ptr->f, "VV") && 
-			 check_feature(g_ptr->f, "VV")) ||
-			(check_feature(d_ptr->f, "DT") && 
-			 check_feature(g_ptr->f, "M"))) {
-			one_score += 10;
+		if (cky_ptr->direction == RtoL) {
+		    if (g_ptr->num + 1 == d_ptr->num && 
+			((check_feature(g_ptr->f, "VV") && 
+			 check_feature(d_ptr->f, "VV")) ||
+			(check_feature(g_ptr->f, "DT") && 
+			 check_feature(d_ptr->f, "M")) ||
+			 (check_feature(g_ptr->f, "DT") && 
+			  check_feature(d_ptr->f, "CD")))) {
+			one_score += 20;
+		    }
+		    else if (g_ptr->num < d_ptr->num && 
+			     ((check_feature(g_ptr->f, "P") &&
+			       check_feature(d_ptr->f, "LC"))) || 
+			     (((check_feature(g_ptr->f, "VV") ||
+				check_feature(g_ptr->f, "VC") ||
+				check_feature(g_ptr->f, "VA") ||
+				check_feature(g_ptr->f, "VE")) &&
+			       check_feature(d_ptr->f, "DEC"))) || 
+			     (((check_feature(g_ptr->f, "VV") ||
+				check_feature(g_ptr->f, "VC") ||
+				check_feature(g_ptr->f, "VA") ||
+				check_feature(g_ptr->f, "VE")) &&
+			       check_feature(d_ptr->f, "AS")))) {
+			one_score += 20;
 		    }
 		}
 		/* for fragment, make the first noun as the root */
@@ -347,7 +366,7 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		     check_feature(g_ptr->f, "NR") ||
 		     check_feature(g_ptr->f, "NT") ||
 		     check_feature(g_ptr->f, "PN"))) {
-		    one_score += 10;
+		    one_score += 20;
 		}
 	    }
 	}
@@ -378,10 +397,11 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	Best_mgr->dpnd.head[i] = -1;
 	Best_mgr->dpnd.type[i] = 'D';
 	/* check if this sentence is a fragment, for Chinese */
-	if (check_feature((sp->bnst_data+i)->f, "VV") ||
+	if (Language == CHINESE && 
+	    (check_feature((sp->bnst_data+i)->f, "VV") ||
 	    check_feature((sp->bnst_data+i)->f, "VA") ||
 	    check_feature((sp->bnst_data+i)->f, "VC") ||
-	    check_feature((sp->bnst_data+i)->f, "VE")) {
+	    check_feature((sp->bnst_data+i)->f, "VE"))) {
 	    frag_tag = 1;
 	}
     }
