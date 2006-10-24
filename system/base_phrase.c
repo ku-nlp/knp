@@ -33,7 +33,7 @@ int     pp_matrix[BNST_MAX];
     for (i = 0; i < sp->Bnst_num; i++) {
 	if (check_feature((sp->bnst_data+i)->f, "NP_B")) {
 	    j = i + 1;
-	    while (!check_feature((sp->bnst_data+j)->f, "NP_B") && !check_feature((sp->bnst_data+j)->f, "NP_O")) {
+	    while (j < sp->Bnst_num && !check_feature((sp->bnst_data+j)->f, "NP_B") && !check_feature((sp->bnst_data+j)->f, "NP_O")) {
 		j++;
 	    }
 	    np_matrix[i] = j - 1;
@@ -48,7 +48,7 @@ int     pp_matrix[BNST_MAX];
     for (i = 0; i < sp->Bnst_num; i++) {
 	if (check_feature((sp->bnst_data+i)->f, "PP_B")) {
 	    j = i + 1;
-	    while (!check_feature((sp->bnst_data+j)->f, "PP_B") && !check_feature((sp->bnst_data+j)->f, "PP_O")) {
+	    while (j < sp->Bnst_num && !check_feature((sp->bnst_data+j)->f, "PP_B") && !check_feature((sp->bnst_data+j)->f, "PP_O")) {
 		j++;
 	    }
 	    pp_matrix[i] = j - 1;
