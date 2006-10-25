@@ -502,12 +502,43 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					printf("%d,", cky_ptr->score);
 				    }
 				}
+				/* if dpnd direction is B, check RtoL again */
 				if (Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'B') {
-				    Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] = 'L';
+				    cky_ptr = &(cky_table[cky_table_num]);
+				    cky_table_num++;
+				    if (cky_table_num >= CKY_TABLE_MAX) {
+					fprintf(stderr, ";;; cky_table_num exceeded maximum\n");
+					exit(1);
+				    }
+				    if (next_pp == NULL) {
+					start_ptr = cky_ptr;
+				    }
+				    else {
+					*next_pp = cky_ptr;
+				    }
+				    cky_ptr->next = NULL;
+				    cky_ptr->left = left_ptr;
+				    cky_ptr->right = right_ptr;
+				    cky_ptr->direction = RtoL;
+				    cky_ptr->cp = 'a' + j;
+				    cky_ptr->b_ptr = cky_ptr->left->b_ptr;
+
+				    if (OptDisplay == OPT_DEBUG) {
+					printf("   (%d,%d), (%d,%d) [%s %s %s], score=", i, i + k, i + k + 1, j, 
+					       left_ptr->b_ptr->head_ptr->Goi, 
+					       "<-",
+					       right_ptr->b_ptr->head_ptr->Goi);
+				    }
+
+				    next_pp = &(cky_ptr->next);
+				    cky_ptr->un_count = 0;
+				    for (l = 0; l < SCASE_CODE_SIZE; l++) cky_ptr->scase_check[l] = 0;
+				    cky_ptr->score = calc_score(sp, cky_ptr);
+				    if (OptDisplay == OPT_DEBUG) {
+					printf("%d,", cky_ptr->score);
+				    }
 				}
-				else {
-				    right_ptr = right_ptr->next;		
-				}
+				right_ptr = right_ptr->next;		
 			    }
 
 			    left_ptr = left_ptr->next;
