@@ -40,7 +40,7 @@ int     pp_matrix[BNST_MAX];
 	    if (OptDisplay == OPT_DEBUG) { 
 		fprintf(stderr, "NP (%d-%d)\n", i, j - 1);
 	    }
-	    i = j;
+	    i = j - 1;
 	    flag = TRUE;
 	}
     }
@@ -55,7 +55,7 @@ int     pp_matrix[BNST_MAX];
 	    if (OptDisplay == OPT_DEBUG) { 
 		fprintf(stderr, "PP (%d-%d)\n", i, j - 1);
 	    }
-	    i = j;
+	    i = j - 1;
 	    flag = TRUE;
 	}
     }
