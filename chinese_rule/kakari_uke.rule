@@ -1,6 +1,5 @@
-(((NN) (NR) (PN)) ([((NN))  B] [((NR))  B] [((PN))  B] [((VV))  R] [((VC))  R] [((VE))  R] [((VA))  R] [((LC))  R] [((DEG))  R] [((DEC))  R] [((ETC))  L])() 1)
-(((NT) (NT-SHORT)) ([((NT))  B] [((VV))  R] [((VC))  R] [((VE))  R] [((VA))  R] [((LC))  R] [((DEG))  R] [((DEC))  R] [((ETC))  L])() 1)
-(((VV) (VC) (VE) (VA)) ([((DEV))  R] [((LC))  R] [((NN))  L] [((NR))  L] [((NT))  L] [((PN))  L] [((AS))  L] [((DEC))  L] [((VV))  L] [((VC))  L] [((VE))  L] [((VA))  L] [((CC))  L] [((M))  L] [((CD))  L] [((OD))  L])() 1)
+(((NN) (NR) (PN) (NT) (NT-SHORT)) ([((NN))  R] [((NR))  R] [((PN))  R] [((NT))  R] [((VV))  R] [((VC))  R] [((VE))  R] [((VA))  R] [((LC))  R] [((DEG))  R] [((DEC))  R] [((ETC))  L])() 1)
+(((VV) (VC) (VE) (VA)) ([((DEV))  R] [((LC))  R] [((NN))  L] [((NR))  L] [((NT))  L] [((PN))  L] [((AS))  L] [((DEC))  L] [((VV))  B] [((VC))  B] [((VE))  B] [((VA))  B] [((CC))  L] [((M))  L] [((CD))  L] [((OD))  L])() 1)
 (((CC)) ([((NN))  R] [((NR))  R] [((NT))  R] [((PN))  R] [((VV))  R] [((VA))  R] [((VC))  R] [((VE))  R] [((CD))  R] [((M))  R] [((JJ))  R])() 1)
 (((JJ)) ([((NN))  R] [((NR))  R] [((NT))  R] [((PN))  R] [((DEG))  R])() 1)
 (((M)) ([((NN))  R] [((NR))  R] [((NT))  R] [((PN))  R] [((VV))  R] [((VA))  R] [((VC))  R] [((VE))  R] [((LC))  R] [((AD))  L])() 1)
