@@ -53,6 +53,7 @@ static int dpndID = 0;
 	pu_flag = 0;
 	if (Language == CHINESE && check_feature(k_ptr->f, "PU")) {
 	    if (k_ptr->head_ptr->Goi == "¡Ê" ||
+		k_ptr->head_ptr->Goi == "¡Ê" ||
 		k_ptr->head_ptr->Goi == "¡Æ" ||
 		k_ptr->head_ptr->Goi == "¡Ò" ||
 		k_ptr->head_ptr->Goi == "¡Ö" ||
@@ -60,7 +61,8 @@ static int dpndID = 0;
 		k_ptr->head_ptr->Goi == "¡ã" ||
 		k_ptr->head_ptr->Goi == "¡Ø" ||
 		k_ptr->head_ptr->Goi == "¡Ú" ||
-		k_ptr->head_ptr->Goi == "¡Ô") {
+		k_ptr->head_ptr->Goi == "¡Ô" ||
+		k_ptr->num == 0) {
 		pu_flag = 1;
 	    }
 	    else {
