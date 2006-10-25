@@ -325,10 +325,18 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		/* add score for stable dpnd */
 		if (cky_ptr->direction == LtoR) {
 		    if (d_ptr->num + 1 == g_ptr->num &&
-			((check_feature(d_ptr->f, "NN") && 
-			  check_feature(g_ptr->f, "NN")) ||
-			 (check_feature(d_ptr->f, "CD") && 
-			  check_feature(g_ptr->f, "M")) ||
+			(((check_feature(d_ptr->f, "NN") ||
+			   check_feature(d_ptr->f, "NR") ||
+			   check_feature(d_ptr->f, "NT") ||
+			   check_feature(d_ptr->f, "PN")) && 
+			  (check_feature(d_ptr->f, "NN") ||
+			   check_feature(d_ptr->f, "NR") ||
+			   check_feature(d_ptr->f, "NT") ||
+			   check_feature(d_ptr->f, "PN"))) ||
+			 ((check_feature(d_ptr->f, "CD") ||
+			   check_feature(d_ptr->f, "OD")) && 
+			  (check_feature(g_ptr->f, "M") ||
+			   check_feature(d_ptr->f, "NN"))) ||
 			 (check_feature(d_ptr->f, "OD") && 
 			  check_feature(g_ptr->f, "M")))) {
 			one_score += 20;
@@ -336,21 +344,29 @@ int calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		}
 		if (cky_ptr->direction == RtoL) {
 		    if (g_ptr->num + 1 == d_ptr->num && 
-			((check_feature(g_ptr->f, "VV") && 
-			 check_feature(d_ptr->f, "VV")) ||
-			(check_feature(g_ptr->f, "DT") && 
-			 check_feature(d_ptr->f, "M")) ||
+			(((check_feature(g_ptr->f, "VV") ||
+			   check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VC") ||
+			   check_feature(g_ptr->f, "VE")) && 
+			  (check_feature(d_ptr->f, "VV") ||
+			   check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VC") ||
+			   check_feature(g_ptr->f, "VE"))) ||
+			 (check_feature(g_ptr->f, "DT") && 
+			  check_feature(d_ptr->f, "M")) ||
 			 (check_feature(g_ptr->f, "DT") && 
 			  check_feature(d_ptr->f, "CD")))) {
 			one_score += 20;
 		    }
 		    else if (g_ptr->num < d_ptr->num && 
-			     ((check_feature(g_ptr->f, "P") &&
-			       check_feature(d_ptr->f, "LC"))) || 
+			     (check_feature(g_ptr->f, "P") &&
+			      (check_feature(d_ptr->f, "LC") ||
+			       check_feature(d_ptr->f, "NN") ||
+			       check_feature(d_ptr->f, "NR") ||
+			       check_feature(d_ptr->f, "PN") ||
+			       check_feature(d_ptr->f, "NT"))) || 
 			     (((check_feature(g_ptr->f, "VV") ||
-				check_feature(g_ptr->f, "VC") ||
-				check_feature(g_ptr->f, "VA") ||
-				check_feature(g_ptr->f, "VE")) &&
+				check_feature(g_ptr->f, "VA")) &&
 			       check_feature(d_ptr->f, "DEC"))) || 
 			     (((check_feature(g_ptr->f, "VV") ||
 				check_feature(g_ptr->f, "VC") ||
