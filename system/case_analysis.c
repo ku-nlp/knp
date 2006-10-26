@@ -326,7 +326,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr;
 	}
 	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode, -1);
-	cpm_ptr->score = (int)Cf_match_mgr->score;
+	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
     }
@@ -510,7 +510,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	cpm_ptr->score = cpm_ptr->cmm[0].score;
     }
 
-    if (OptDisplay == OPT_DEBUG) {
+    if (OptDisplay == OPT_DEBUG && OptCKY == FALSE) {
 	print_data_cframe(cpm_ptr, Cf_match_mgr);
 	/* print_good_crrspnds(cpm_ptr, Cf_match_mgr, frame_num); */
 	for (i = 0; i < cpm_ptr->result_num; i++) {

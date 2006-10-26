@@ -23,6 +23,8 @@
 #define CFP_DB_NAME		"ebcf/cfp.db"
 #define RENYOU_DB_NAME		"ebcf/renyou.db"
 #define ADVERB_DB_NAME		"ebcf/adverb.db"
+#define PARA_DB_NAME		"ebcf/para.db"
+#define NOUN_CO_DB_NAME		"ebcf/noun_co.db"
 #define CF_NOUN_DB_NAME		"ebcf/noun.db"
 #define CF_NOUN_DAT_NAME	"ebcf/noun.dat"
 #define SM_ADD_DB_NAME		"scode/ntt/word2code_add.db"

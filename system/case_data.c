@@ -372,14 +372,14 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     cpm_ptr->cf.voice = b_ptr->voice;
 
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
-	vtype += 5;
+	vtype += strlen("用言:");
 	strcpy(cpm_ptr->cf.pred_type, vtype);
 	if (check_feature(b_ptr->f, "用言:判") && !OptCopula) {
 	    cpm_ptr->cf.type_flag = 1;
 	}
     }
     else if ((vtype = check_feature(b_ptr->f, "非用言格解析"))) {
-	vtype += 13;
+	vtype += strlen("非用言格解析:");
 	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
     else if (check_feature(b_ptr->f, "準用言")) {
@@ -406,28 +406,70 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 }
 
 /*==================================================================*/
-    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *child_ptr, int child_num, int closest_flag)
 /*==================================================================*/
 {
-    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
-    TAG_DATA *cel_b_ptr = NULL;
-    int i, child_num, first, closest, orig_child_num = -1, renkaku_exception_p;
+    TAG_DATA *cel_b_ptr;
 
-    cpm_ptr->cf.samecase[0][0] = END_M;
-    cpm_ptr->cf.samecase[0][1] = END_M;
+    if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, child_ptr, TRUE))) {
+	/* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
+	   「みかんを三個食べる」 の場合はそのまま両方格要素になる
+	*/
+	if (check_feature(cel_b_ptr->f, "数量") && 
+	    (check_feature(cel_b_ptr->f, "係:ガ格") || check_feature(cel_b_ptr->f, "係:ヲ格")) && 
+	    cel_b_ptr->num > 0 && 
+	    (check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:隣") || 
+	     check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:同格未格")) && 
+	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "数量") && 
+	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "時間")) {
+	    _make_data_cframe_sm(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
+	    _make_data_cframe_ex(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->tag_data + cel_b_ptr->num - 1;
+	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	}
+	else {
+	    /* 直前格のマーク (厳しい版: 完全に直前のみ) */
+	    if (closest_flag) {
+		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
+	    }
+	    else {
+		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	    }
+	    _make_data_cframe_sm(cpm_ptr, cel_b_ptr);
+	    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
+	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
+	}
 
-    cpm_ptr->cf.pred_b_ptr = b_ptr;
-    b_ptr->cpm_ptr = cpm_ptr;
+	/* 格が明示されていないことをマーク */
+	if (check_feature(cel_b_ptr->f, "係:未格") || 
+	    check_feature(cel_b_ptr->f, "係:ノ格") || 
+	    cel_b_ptr->inum > 0) {
+	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
+	}
+	else {
+	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = child_num;
+	}
 
-    /* 表層格 etc. の設定 */
+	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
+	cpm_ptr->cf.element_num++;
+	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+	    cpm_ptr->cf.element_num = 0;
+	}
+	return TRUE;
+    }
 
-    cpm_ptr->cf.element_num = 0;
+    return FALSE;
+}
+
+/*==================================================================*/
+ int make_data_cframe_rentai(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr, *cel_b_ptr = NULL;
+    int renkaku_exception_p = 0;
 
     if (check_feature(b_ptr->f, "格要素指定:2")) {
 	renkaku_exception_p = 1;
-    }
-    else {
-	renkaku_exception_p = 0;
     }
 
     /* 被連体修飾詞 */
@@ -515,6 +557,30 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	}
     }
 
+    return TRUE;
+}
+
+/*==================================================================*/
+    int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
+/*==================================================================*/
+{
+    TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
+    TAG_DATA *cel_b_ptr = NULL;
+    int i, child_num, first, closest, orig_child_num = -1, renkaku_exception_p;
+
+    cpm_ptr->cf.samecase[0][0] = END_M;
+    cpm_ptr->cf.samecase[0][1] = END_M;
+
+    cpm_ptr->cf.pred_b_ptr = b_ptr;
+    b_ptr->cpm_ptr = cpm_ptr;
+
+    /* 表層格 etc. の設定 */
+
+    cpm_ptr->cf.element_num = 0;
+
+    /* 連体修飾 */
+    make_data_cframe_rentai(sp, cpm_ptr);
+
     for (child_num = 0; b_ptr->child[child_num]; child_num++);
 
     /* 自分(用言)が複合名詞内 */
@@ -574,52 +640,12 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 
     /* 子供を格要素に */
     for (i = child_num - 1; i >= 0; i--) {
-	if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, b_ptr->child[i], TRUE))) {
-	    /* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
-	       「みかんを三個食べる」 の場合はそのまま両方格要素になる
-	     */
-	    if (check_feature(cel_b_ptr->f, "数量") && 
-		(check_feature(cel_b_ptr->f, "係:ガ格") || check_feature(cel_b_ptr->f, "係:ヲ格")) && 
-		cel_b_ptr->num > 0 && 
-		(check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:隣") || 
-		 check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "係:同格未格")) && 
-		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "数量") && 
-		!check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "時間")) {
-		_make_data_cframe_sm(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
-		_make_data_cframe_ex(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
-		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->tag_data + cel_b_ptr->num - 1;
-		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
+	if (make_data_cframe_child(sp, cpm_ptr, b_ptr->child[i], i, 
+				   i == 0 && b_ptr->num == b_ptr->child[i]->num + 1 && 
+				   !check_feature(b_ptr->f, "Ｔ用言同文節") ? TRUE : FALSE)) {
+	    if (cpm_ptr->cf.element_num == 0) { /* 子供が作れるはずなのに、作れなかった */
+		return -1;
 	    }
-	    else {
-		/* 直前格のマーク (厳しい版: 完全に直前のみ) */
-		if (i == 0 && b_ptr->num == b_ptr->child[i]->num + 1 && 
-		    !check_feature(b_ptr->f, "Ｔ用言同文節")) {
-		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
-		}
-		else {
-		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
-		}
-		_make_data_cframe_sm(cpm_ptr, cel_b_ptr);
-		_make_data_cframe_ex(cpm_ptr, cel_b_ptr);
-		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
-	    }
-
-	    /* 格が明示されていないことをマーク */
-	    if (check_feature(cel_b_ptr->f, "係:未格") || 
-		check_feature(cel_b_ptr->f, "係:ノ格") || 
-		cel_b_ptr->inum > 0) {
-		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-	    }
-	    else {
-		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = i;
-	    }
-
-	    cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
-	    cpm_ptr->cf.element_num++;
-	}
-	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
-	    cpm_ptr->cf.element_num = 0;
-	    return -1;
 	}
     }
 

@@ -32,6 +32,8 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    1:係り受けOK
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
+double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
+
 char		**Options;
 int 		OptAnalysis;
 int		OptCKY;
@@ -70,6 +72,7 @@ int		OptNEparent;
 int		OptNElearn;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
+int		OptParaFix;
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -188,6 +191,7 @@ extern int	EX_match_subject;
     OptNEparent = 0;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
+    OptParaFix = 1;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -227,6 +231,9 @@ extern int	EX_match_subject;
 	    OptAnalysis = OPT_CASE;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
 	    SOTO_THRESHOLD = 0;
+	}
+	else if (str_eq(argv[0], "-probpara")) {
+	     OptParaFix = 0;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
@@ -1039,8 +1046,18 @@ extern int	EX_match_subject;
 	    call_count_dpnd_candidates(sp, &(sp->Best_mgr->dpnd));
 	}
 	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
+
+	sp->Para_num = 0;
+	sp->Para_M_num = 0;
+	if (check_para_key(sp)) {
+	    calc_match_matrix(sp);		/* 文節間類似度計算 */
+	    detect_all_para_scope(sp);    	/* 並列構造推定 */
+	    assign_para_similarity_feature(sp);
+	}
+
 	para_recovery(sp);
 	para_postprocess(sp);
+	assign_para_similarity_feature(sp);
 	after_decide_dpnd(sp);
 	if (OptCheck == TRUE) {
 	    check_candidates(sp);
@@ -1060,6 +1077,7 @@ extern int	EX_match_subject;
     Revised_para_num = -1;
 
     if ((flag = check_para_key(sp)) > 0) {
+	init_para_matrix(sp);
 	calc_match_matrix(sp);		/* 文節間類似度計算 */
 	detect_all_para_scope(sp);    	/* 並列構造推定 */
 	do {

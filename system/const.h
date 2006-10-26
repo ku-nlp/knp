@@ -490,7 +490,7 @@ typedef struct _RuleVector {
 #define PostProcessTagRuleType 14
 
 /* 辞書の最大数 */
-#define DICT_MAX	23
+#define DICT_MAX	25
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -514,6 +514,8 @@ typedef struct _RuleVector {
 #define CFP_DB		20
 #define RENYOU_DB	21
 #define ADVERB_DB	22
+#define PARA_DB		23
+#define NOUN_CO_DB	24
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -560,6 +562,7 @@ typedef struct tnode_b {
     CF_ptr 	cf_ptr;		/* 格フレーム管理配列(Case_frame_array)
 				   でのその用言の格フレームの位置 */
     CPM_ptr     cpm_ptr;	/* 格解析の結果の保持 */
+    int		pred_num;
     /* feature */
     FEATUREptr	f;
     /* 木構造ポインタ */
@@ -668,6 +671,7 @@ typedef struct tnode_t {
     int 	cf_num;
     CF_ptr 	cf_ptr;
     CPM_ptr     cpm_ptr;
+    int		pred_num;
     /* feature */
     FEATUREptr	f;
     /* 木構造ポインタ */

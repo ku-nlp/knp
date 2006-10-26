@@ -252,7 +252,7 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 }
 
 /*==================================================================*/
-void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
+void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jend_pos)
 /*==================================================================*/
 {
     int i, j, flag, nth;
@@ -339,6 +339,11 @@ void _detect_para_scope(SENTENCE_DATA *sp, PARA_DATA *ptr, int jend_pos)
 	      (float)score_matrix[i][key_pos+1]	/ norm[jend_pos - i + 1];
 	    /* pure_score は末尾表現のボーナスを除いた値 */
 	    max_pos = i;
+	}
+
+	if (restrict_matrix[i][jend_pos] && 
+	    pure_score >= sim_threshold) {
+	    Para_matrix[para_num][i][jend_pos] = current_score; /* 類似度を保存 */
 	}
     }
 
@@ -429,7 +434,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     }
 
     for (j = key_pos+1; j < sp->Bnst_num; j++)
-	_detect_para_scope(sp, para_ptr, j);
+	_detect_para_scope(sp, para_num, para_ptr, j);
 
     if (para_ptr->status == 'x') {
 	;
@@ -551,7 +556,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     /* 並列構造の情報の再現 */
 
     int		i, j;
+    int		ending_bonus_score = 0;
     BNST_DATA	*b_ptr;
+    char	*cp;
 
     sp->Para_num = 0;
     sp->Para_M_num = 0;
@@ -568,6 +575,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    b_ptr->para_num = sp->Para_num;
 	    sp->para_data[sp->Para_num].key_pos = i;
 	    sp->para_data[sp->Para_num].jend_pos = b_ptr->dpnd_head;
+	    sp->para_data[sp->Para_num].iend_pos = i; /* 不正確 */
 	    for (j = i - 1; 
 		 j >= 0 && 
 		     (sp->bnst_data[j].dpnd_head < i ||
@@ -576,6 +584,34 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 		 j--);
 	    sp->para_data[sp->Para_num].max_path[0] = j + 1;
 	    sp->para_data[sp->Para_num].status = 'n';
+
+	    /* 正解入力のときはスコア計算 */
+	    if (OptInput & OPT_PARSED) {
+		if ((cp = check_feature(b_ptr->f, "並キ"))) {
+		    cp += strlen("並キ:");
+		    if (!strncmp(cp, "名", strlen("名"))) {
+			sp->para_data[sp->Para_num].type = PARA_KEY_N;
+		    }
+		    else if (!strncmp(cp, "述", strlen("述"))) {
+			sp->para_data[sp->Para_num].type = PARA_KEY_P;
+		    }
+		    else {
+			sp->para_data[sp->Para_num].type = PARA_KEY_A;
+		    } 
+		}
+		else {
+		    sp->para_data[sp->Para_num].type = PARA_KEY_O;
+		}
+
+		dp_search_scope(sp, sp->para_data[sp->Para_num].key_pos, 
+				sp->para_data[sp->Para_num].iend_pos, sp->para_data[sp->Para_num].jend_pos);
+		ending_bonus_score = plus_bonus_score(sp, sp->para_data[sp->Para_num].jend_pos, &(sp->para_data[sp->Para_num]));
+		sp->para_data[sp->Para_num].max_score = 
+		    (float)score_matrix[sp->para_data[sp->Para_num].max_path[0]][sp->para_data[sp->Para_num].key_pos + 1] 
+		    / norm[sp->para_data[sp->Para_num].jend_pos - sp->para_data[sp->Para_num].max_path[0] + 1] 
+		    + ending_bonus_score;
+	    }
+
 	    sp->Para_num++;
 	}
 	else {

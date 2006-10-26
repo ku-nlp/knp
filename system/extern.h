@@ -35,9 +35,11 @@ extern int		restrict_matrix[][BNST_MAX];
 extern int 		Dpnd_matrix[][BNST_MAX];
 extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];
+extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 
 extern char		**Options;
 extern int 		OptAnalysis;
+extern int		OptCKY;
 extern int		OptEllipsis;
 extern int		OptCorefer;
 extern int 		OptInput;
@@ -73,6 +75,7 @@ extern int		OptNEcase;
 extern int		OptNEparent;
 extern int		OptNElearn;
 extern int		OptAnaphoraBaseline;
+extern int		OptParaFix;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
@@ -150,6 +153,7 @@ extern int levelcmp(char *cp1, char *cp2);
 extern void calc_match_matrix(SENTENCE_DATA *sp);
 
 /* case_analysis.c */
+extern TOTAL_MGR Work_mgr;
 extern void realloc_cmm();
 extern void init_case_frame(CASE_FRAME *cf);
 extern void init_case_analysis_cmm();
@@ -175,11 +179,16 @@ extern void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp);
+extern int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
+extern double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 
 /* case_data.c */
 extern char *make_fukugoji_string(TAG_DATA *b_ptr);
+extern int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *child_ptr, int child_num, int closest_flag);
+extern int make_data_cframe_rentai(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void set_pred_voice(BNST_DATA *b_ptr);
+extern TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag);
 extern void _make_data_cframe_sm(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr);
 extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr);
 
@@ -210,6 +219,10 @@ extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp
 extern double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *dp);
 extern double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
 extern double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr);
+extern double get_para_exist_probability(char *para_key, double score, int flag);
+extern double get_para_ex_probability(char *para_key, TAG_DATA *dp, TAG_DATA *gp);
+extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
+extern double get_noun_co_num_probability(TAG_DATA *gp, int num);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -368,6 +381,7 @@ extern void usage();
 extern int _check_para_d_struct(SENTENCE_DATA *sp, int str, int end,
 				int extend_p, int limit, int *s_p);
 extern void init_mask_matrix(SENTENCE_DATA *sp);
+extern void init_para_matrix(SENTENCE_DATA *sp);
 extern int check_dpnd_in_para(SENTENCE_DATA *sp);
 
 /* para_analysis.c */

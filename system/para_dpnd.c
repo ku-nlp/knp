@@ -408,6 +408,21 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 }
 
 /*==================================================================*/
+	       void init_para_matrix(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k;
+
+    for (k = 0; k < sp->Para_num; k++) {
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    for (j = 0; j < sp->Bnst_num; j++) {
+		Para_matrix[k][i][j] = -1;
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 	      int check_dpnd_in_para(SENTENCE_DATA *sp)
 /*==================================================================*/
 {

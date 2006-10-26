@@ -19,6 +19,8 @@ DBM_FILE case_db;
 DBM_FILE cfp_db;
 DBM_FILE renyou_db;
 DBM_FILE adverb_db;
+DBM_FILE para_db;
+DBM_FILE noun_co_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -40,6 +42,8 @@ int	CaseExist;
 int	CfpExist;
 int	RenyouExist;
 int	AdverbExist;
+int	ParaExist;
+int	NounCoExist;
 
 int	PrintDeletedSM = 0;
 
@@ -132,6 +136,12 @@ int	PrintDeletedSM = 0;
 
     /* 副詞確率DB (adverb.db) */
     adverb_db = open_dict(ADVERB_DB, ADVERB_DB_NAME, &AdverbExist);
+
+    /* 並列確率DB (para.db) */
+    para_db = open_dict(PARA_DB, PARA_DB_NAME, &ParaExist);
+
+    /* 名詞共起確率DB (noun-co.db) */
+    noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 }
 
 /*==================================================================*/
@@ -1666,7 +1676,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		void set_caseframes(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, start, hiragana_count;
+    int i, j, start, hiragana_count, pred_num = 0;
     TAG_DATA  *t_ptr;
 
     Case_frame_num = 0;
@@ -1681,7 +1691,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		 (OptEllipsis & OPT_ELLIPSIS) || 
 		 (OptEllipsis & OPT_DEMO)) && 
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
-		 check_feature(t_ptr->f, "非用言格解析"))) { /* サ変名詞, 形容詞語幹 */
+		 (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+		  check_feature(t_ptr->f, "非用言格解析")))) { /* サ変名詞, 形容詞語幹 (確率的以外) */
 		
 		set_pred_voice((BNST_DATA *)t_ptr); /* ヴォイス */
 
@@ -1704,6 +1715,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->cf_num) {
 	    t_ptr->cf_ptr = Case_frame_array + start;
+	    t_ptr->pred_num = pred_num++;
 
 	    /* 表記がひらがなの場合: 
 	       格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
@@ -2037,7 +2049,7 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
     for (i = 0; i < cfp->ex_num[as2]; i++) {
 	if (!strcmp(key, cfp->ex_list[as2][i])) {
 	    ret = (double)cfp->ex_freq[as2][i] / cfp->freq[as2];
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
 	    }
 	    return ret;
@@ -2065,7 +2077,7 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
 
     if (value) {
 	ret = exp(-1 * atof(value));
-	if (VerboseLevel >= VERBOSE2) {
+	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
 	}
 	free(value);
@@ -2231,6 +2243,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* 自分自身 */
     score = get_ex_probability(as1, cfd, NULL, as2, cfp);
 
+    if (OptCKY) {
+	return score;
+    }
+
     /* 自分と並列の要素 */
     if (tp->para_top_p) {
 	for (j = 1; tp->child[j]; j++) { /* 0は自分と同じ */
@@ -2259,7 +2275,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* tp -> hp */
     if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* 連体修飾 */
 	if (type = check_feature(cfd->pred_b_ptr->f, "用言")) {
-	    type += 5;
+	    type += strlen("用言:");
 	}
 
 	/* 候補チェック */
@@ -2533,7 +2549,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     }
 
     /* 読点の生成 */
-    key = malloc_db_buf(12);
+    key = malloc_db_buf(strlen("連用") + 8);
     sprintf(key, "%d|P連用:%d,%d", touten_flag, dist, closest_pred_flag);
     value = db_get(case_db, key);
     if (value) {
@@ -2599,12 +2615,25 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     ret3 = 1;
     */
 
-    if (ret1 && ret2 && ret3) {
-	return log(ret1) + log(ret2) + log(ret3);
+    if (ret1) {
+	ret1 = log(ret1);
     }
     else {
-	return UNKNOWN_RENYOU_SCORE;
+	ret1 = UNKNOWN_RENYOU_SCORE;
     }
+    if (ret2) {
+	ret2 = log(ret2);
+    }
+    else {
+	ret2 = UNKNOWN_RENYOU_SCORE;
+    }
+    if (ret3) {
+	ret3 = log(ret3);
+    }
+    else {
+	ret3 = UNKNOWN_RENYOU_SCORE;
+    }
+    return ret1 + ret2 + ret3;
 }
 
 /*==================================================================*/
@@ -2685,13 +2714,14 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 /*==================================================================*/
 {
     char *pred, *key, *value;
-    double ret = 0;
+    int touten_flag, dist;
+    double ret1, ret2;
 
     if (AdverbExist == FALSE) {
 	return 0;
     }
 
-    /* 用言 -> 用言 */
+    /* 副詞 -> 用言 */
     if (cfp) {
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
@@ -2699,22 +2729,53 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 	sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
 	value = db_get(adverb_db, key);
 	if (value) {
-	    ret = atof(value);
+	    ret1 = atof(value);
 	    free(value);
-	}
-
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (A) P(%s|%s) = %lf\n", dp->head_ptr->Goi, pred, ret);
-	}
-
-	free(pred);
-
-	if (ret) {
-	    return log(ret);
+	    if (VerboseLevel >= VERBOSE1) {
+		fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
+	    }
+	    ret1 = log(ret1);
 	}
 	else {
-	    return UNKNOWN_RENYOU_SCORE;
+	    if (VerboseLevel >= VERBOSE1) {
+		fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+	    }
+	    ret1 = UNKNOWN_RENYOU_SCORE;
 	}
+	free(pred);
+
+
+	/* 読点の生成 */
+	touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
+
+	if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
+	    ret2 = UNKNOWN_RENYOU_SCORE;
+	}
+	else {
+	    int closest_pred_flag = 0;
+
+	    if (get_dist_from_work_mgr(dp->b_ptr, dp->b_ptr + 1) > 0) {
+		closest_pred_flag = 1;
+	    }
+	    key = malloc_db_buf(strlen("副詞") + 8);
+	    sprintf(key, "%d|P副詞:%d,%d", touten_flag, dist, closest_pred_flag);
+	    value = db_get(case_db, key);
+	    if (value) {
+		ret2 = atof(value);
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (A_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
+		}
+		free(value);
+		ret2 = log(ret2);
+	    }
+	    else {
+		ret2 = UNKNOWN_RENYOU_SCORE;
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (A_P) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+		}
+	    }
+	}
+	return ret1 + ret2;
     }
     else {
 	return 0;
@@ -2759,6 +2820,197 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
     else {
 	return 0;
     }
+}
+
+/*==================================================================*/
+double get_para_exist_probability(char *para_key, double score, int flag)
+/*==================================================================*/
+{
+    char *key, *value;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+
+    if (score < 1.0) {
+	score = 0;
+    }
+    else if (score < 2.0) {
+	score = 1;
+    }
+    else if (score < 3.0) {
+	score = 2;
+    }
+    else if (score < 4.0) {
+	score = 3;
+    }
+    else {
+	score = 4;
+    }
+
+    key = malloc_db_buf(strlen(para_key) + 12);
+    sprintf(key, "%d|PARA:%d,%s", flag, (int)score, para_key);
+    value = db_get(case_db, key);
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PARA) : P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PARA) : P(%s) = 0\n", key);
+	}
+	return UNKNOWN_RENYOU_SCORE;
+    }
+
+    if (ret) {
+	return log(ret);
+    }
+    else {
+	return UNKNOWN_RENYOU_SCORE;
+    }
+}
+
+/*==================================================================*/
+double get_para_ex_probability(char *para_key, TAG_DATA *dp, TAG_DATA *gp)
+/*==================================================================*/
+{
+    char *key, *value;
+    double ret;
+
+    if (ParaExist == FALSE) {
+	return 0;
+    }
+
+    if (!strcmp(dp->head_ptr->Goi, gp->head_ptr->Goi)) {
+	return 0;
+    }
+
+    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 3);
+    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
+
+    value = db_get(para_db, key);
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PARA_EX) : P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PARA_EX) : P(%s) = 0\n", key);
+	}
+	return FREQ0_ASSINED_SCORE;
+    }
+
+    if (ret) {
+	return log(ret);
+    }
+    else {
+	return FREQ0_ASSINED_SCORE;
+    }
+}
+
+/*==================================================================*/
+double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
+/*==================================================================*/
+{
+    char *key, *value;
+    int touten_flag, dist;
+    double ret1, ret2;
+
+    if (NounCoExist == FALSE) {
+	return 0;
+    }
+
+    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(gp->head_ptr->Goi) + 2);
+    sprintf(key, "%s|%s", dp->head_ptr->Goi, gp->head_ptr->Goi);
+
+    value = db_get(noun_co_db, key);
+    if (value) {
+	ret1 = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = %lf\n", key, ret1);
+	}
+	free(value);
+	ret1 = log(ret1);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = 0\n", key);
+	}
+	ret1 = FREQ0_ASSINED_SCORE;
+    }
+
+    /* 読点の生成 */
+    touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
+
+    if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
+	ret2 = FREQ0_ASSINED_SCORE;
+    }
+    else {
+	int closest_ok_flag = 0;
+
+	if (get_dist_from_work_mgr(dp->b_ptr, dp->b_ptr + 1) > 0) {
+	    closest_ok_flag = 1;
+	}
+	key = malloc_db_buf(strlen("連体") + 8);
+	sprintf(key, "%d|P連体:%d,%d", touten_flag, dist, closest_ok_flag);
+	value = db_get(case_db, key);
+	if (value) {
+	    ret2 = atof(value);
+	    if (VerboseLevel >= VERBOSE1) {
+		fprintf(Outfp, ";; (NOUN_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
+	    }
+	    free(value);
+	    ret2 = log(ret2);
+	}
+	else {
+	    ret2 = FREQ0_ASSINED_SCORE;
+	    if (VerboseLevel >= VERBOSE1) {
+		fprintf(Outfp, ";; (NOUN_P) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+	    }
+	}
+    }
+
+    return ret1 + ret2;
+}
+
+/*==================================================================*/
+      double get_noun_co_num_probability(TAG_DATA *gp, int num)
+/*==================================================================*/
+{
+    char *key, *value;
+    double ret;
+
+    if (NounCoExist == FALSE) {
+	return 0;
+    }
+
+    key = malloc_db_buf(strlen(gp->head_ptr->Goi) + 6);
+    sprintf(key, "%d|N:%s", num, gp->head_ptr->Goi);
+
+    value = db_get(noun_co_db, key);
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+	ret = log(ret);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = 0\n", key);
+	}
+	ret = FREQ0_ASSINED_SCORE;
+    }
+
+    return ret;
 }
 
 /*====================================================================
