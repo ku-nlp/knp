@@ -1,5 +1,8 @@
 2006-10-27  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/cky.c:
+	Resolved inconsistency between Japanese and Chinese parsing.
+
 	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/cky.c, system/const.h, system/extern.h, system/main.c, system/para_analysis.c, system/para_dpnd.c, system/path.h:
 	added probabilistic coordination analysis.
 
