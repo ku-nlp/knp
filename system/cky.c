@@ -157,10 +157,7 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
 	     (OptParaFix == 0 || Mask_matrix[dep][gov] == 1)) {
 	return Dpnd_matrix[dep][gov];
     }
-    else if (Dpnd_matrix[dep][gov] == 'R') {
-	return 'R';
-    }
-    else if (relax_flag && Language != CHINESE) { /* relax */
+    else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
 	return 'R';
     }
     return '\0';
@@ -209,6 +206,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    else {
 		/* 距離コストを計算するために、まず係り先の候補を調べる */
 		count = 0;
+		pos = 0;
 		for (i = 0; i < sp->Bnst_num; i++) {
 		    if (Language != CHINESE && i < d_ptr->num + 1) {
 			continue;
@@ -918,7 +916,8 @@ void extend_para_matrix(SENTENCE_DATA* sp) {
     }
 }
 
-void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int i, int j, int k, char dpnd_type) {
+void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int i, int j, int k, 
+	     char dpnd_type, int direction) {
     int l;
 
     cky_ptr->i = i;
@@ -926,8 +925,7 @@ void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int
     cky_ptr->next = NULL;
     cky_ptr->left = left_ptr;
     cky_ptr->right = right_ptr;
-    cky_ptr->direction = (k >= 0 && (Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' || 
-				     Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'B')) ? RtoL : LtoR;
+    cky_ptr->direction = direction;
     cky_ptr->dpnd_type = dpnd_type;
     cky_ptr->cp = 'a' + j;
     if (cky_ptr->direction == RtoL) {
@@ -1004,7 +1002,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 		cky_ptr = new_cky_data(&cky_table_num);
 		cky_matrix[i][j] = cky_ptr;
 
-		set_cky(sp, cky_ptr, NULL, NULL, i, j, -1, 0);
+		set_cky(sp, cky_ptr, NULL, NULL, i, j, -1, 0, LtoR);
 		cky_ptr->score = OptAnalysis == OPT_CASE ? 
 		    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 	    }
@@ -1035,7 +1033,8 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    *next_pp = cky_ptr;
 				}
 
-				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type);
+				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
+					Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR);
 				next_pp = &(cky_ptr->next);
 
 				if (OptDisplay == OPT_DEBUG) {
@@ -1062,7 +1061,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    *next_pp = cky_ptr;
 				}
 
-				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type);
+				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'B', RtoL);
 				next_pp = &(cky_ptr->next);
 
 				if (OptDisplay == OPT_DEBUG) {
@@ -1150,7 +1149,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    *next_pp = cky_ptr;
 					}
 
-					set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'P');
+					set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'P', LtoR);
 					next_pp = &(cky_ptr->next);
 
 					cky_ptr->para_flag = 1;
