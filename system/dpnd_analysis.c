@@ -1006,6 +1006,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     int i;
 
     sp->Best_mgr->dpnd.head[sp->Bnst_num - 1] = -1;
+    sp->Best_mgr->dpnd.type[sp->Bnst_num - 1] = 'D';
 
     for (i = sp->Bnst_num - 2; i >= 0; i--) {
 	sp->Best_mgr->dpnd.head[i] = i + 1;
