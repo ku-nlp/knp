@@ -33,6 +33,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
+double          Dpnd_prob_matrix[BNST_MAX][BNST_MAX];
 
 char		**Options;
 int 		OptAnalysis;
