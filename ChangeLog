@@ -1,5 +1,8 @@
 2006-10-30  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/bnst_basic.rule:
+	A bug fix for the dependency of "ごぼうの洗い方".
+
 	* system/cky.c:
 	Modified not to use much memory.
 
