@@ -94,6 +94,8 @@
 #define	BYTES4CHAR	2	/* euc-jp */
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
+#define SMALL_PROB      0.000001 /* A small prob for Chinese relaxation */
+#define TIME_PROB       500    /* time to enlarge dpnd prob for Chinese */
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -393,6 +395,8 @@ typedef struct {
     FEATURE_PATTERN barrier;
     int 	    preference;
     int		    decide;	/* 一意に決定するかどうか */
+    double          prob_LtoR[DpndRule_G_MAX];  /* LtoR probability, only for Chinese */
+    double          prob_RtoL[DpndRule_G_MAX];  /* RtoL probability, only for Chinese */
 } DpndRule;
 
 /* ボーナス規則 */

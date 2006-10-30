@@ -69,6 +69,7 @@ static int dpndID = 0;
 		for (k = i - 1; k >= 0; k--) {
 		    if (!check_feature((sp->bnst_data + k)->f, "PU")) {
 			Dpnd_matrix[k][i] = 'L';
+			Dpnd_prob_matrix[k][i] = SMALL_PROB;
 			break;
 		    }
 		}
@@ -77,8 +78,11 @@ static int dpndID = 0;
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 	    Dpnd_matrix[i][j] = 0;
+	    Dpnd_prob_matrix[i][j] = 0.0;
+	    Dpnd_prob_matrix[j][i] = 0.0;
 	    if (Language == CHINESE && pu_flag == 1 && !check_feature(u_ptr->f, "PU")) {
 		Dpnd_matrix[i][j] = 'R';
+		Dpnd_prob_matrix[i][j] = SMALL_PROB;
 		pu_flag = 0;
 	    }
 	    for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
@@ -86,6 +90,15 @@ static int dpndID = 0;
 					      u_ptr->f, k_ptr, u_ptr);
 		if (value == TRUE) {
 		    Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
+		    /* assign probability for each dpnd */
+		    if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * k_ptr->dpnd_rule->prob_LtoR[k];
+			Dpnd_prob_matrix[j][i] = TIME_PROB * k_ptr->dpnd_rule->prob_RtoL[k];
+		    }
+		    else {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (k_ptr->dpnd_rule->dpnd_type[k] == 'R') ?
+			    k_ptr->dpnd_rule->prob_LtoR[k] : k_ptr->dpnd_rule->prob_RtoL[k];
+		    }
 		    first_uke_flag = 0;
 		    break;
 		}

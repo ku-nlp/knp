@@ -394,7 +394,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    one_score += 10;
 		}
 		/* add score for stable dpnd */
-		if (cky_ptr->direction == LtoR) {	    
+		if (cky_ptr->direction == LtoR) {
+		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
 		    if (d_ptr->num + 1 == g_ptr->num &&
 			(((check_feature(d_ptr->f, "AD")) &&
 			  (check_feature(g_ptr->f, "CD") ||
@@ -481,6 +482,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
+		    one_score += (Dpnd_matrix[g_ptr->num][d_ptr->num] == 'B') ?
+			Dpnd_prob_matrix[d_ptr->num][g_ptr->num] : Dpnd_prob_matrix[g_ptr->num][d_ptr->num];
 		    if (g_ptr->num + 1 == d_ptr->num && 
 			(((check_feature(d_ptr->f, "AS")) &&
 			  (check_feature(g_ptr->f, "VE") ||

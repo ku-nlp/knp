@@ -282,7 +282,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 {
     int		i;
     FILE	*fp;
-    CELL	*body_cell, *loop_cell;
+    CELL	*body_cell, *loop_cell, *prob_cell;
     DpndRule	*rp = DpndRuleArray;
 
     /* 重複してルールファイルが指定されているとき */
@@ -317,6 +317,15 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	while (!Null(car(loop_cell))) {
 	    list2feature_pattern(&(rp->governor[i]), car(car(loop_cell)));
 	    rp->dpnd_type[i] = *(_Atom(car(cdr(car(loop_cell)))));
+	    if (Language == CHINESE) {
+		prob_cell = car(cdr(cdr(car(loop_cell))));
+		rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell))));
+		rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell)))));
+	    }
+	    else {
+		rp->prob_LtoR[i] = 0.0;
+		rp->prob_RtoL[i] = 0.0;
+	    }
 	    loop_cell = cdr(loop_cell);
 	    if (++i == DpndRule_G_MAX) {
 		fprintf(stderr, ";; Too many Governors in a DpndRule.");
