@@ -20,7 +20,7 @@ typedef struct _CKY {
     BNST_DATA	*b_ptr;
     int 	scase_check[SCASE_CODE_SIZE];
     int		un_count;
-    CF_PRED_MGR cpm;		/* case components */
+    CF_PRED_MGR *cpm_ptr;	/* case components */
     CKYptr	left;		/* pointer to the left child */
     CKYptr	right;		/* pointer to the right child */
     CKYptr	next;		/* pointer to the next CKY data at this point */
@@ -62,14 +62,14 @@ int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     char *cp;
 
     /* case analysis result */
-    if (OptAnalysis == OPT_CASE && cky_ptr->cpm.pred_b_ptr && 
-	Best_mgr->cpm[cky_ptr->cpm.pred_b_ptr->pred_num].pred_b_ptr == NULL) {
-	if (check_feature(cky_ptr->cpm.pred_b_ptr->f, "·¸:Ï¢³Ê")) { /* clausal modifiee */
-	    /* make_data_cframe_rentai_simple(&(cky_ptr->cpm), d_ptr, g_ptr); ¡úfix me!¡ú left¤¬Ï¢³Ê¤Î¤È¤­ */
-	    cky_ptr->cpm.cf.element_num++;
+    if (OptAnalysis == OPT_CASE && cky_ptr->cpm_ptr->pred_b_ptr && 
+	Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num].pred_b_ptr == NULL) {
+	if (check_feature(cky_ptr->cpm_ptr->pred_b_ptr->f, "·¸:Ï¢³Ê")) { /* clausal modifiee */
+	    /* make_data_cframe_rentai_simple(cky_ptr->cpm_ptr, d_ptr, g_ptr); ¡úfix me!¡ú left¤¬Ï¢³Ê¤Î¤È¤­ */
+	    cky_ptr->cpm_ptr->cf.element_num++;
 	}
-	copy_cpm(&(Best_mgr->cpm[cky_ptr->cpm.pred_b_ptr->pred_num]), &(cky_ptr->cpm), 0);
-	cky_ptr->cpm.pred_b_ptr->cpm_ptr = &(Best_mgr->cpm[cky_ptr->cpm.pred_b_ptr->pred_num]);
+	copy_cpm(&(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]), cky_ptr->cpm_ptr, 0);
+	cky_ptr->cpm_ptr->pred_b_ptr->cpm_ptr = &(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]);
     }
 
     if (cky_ptr->left && cky_ptr->right) {
@@ -606,7 +606,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 
     if (t_ptr->cf_num > 0) { /* predicate or something which has case frames */
 	pred_p = 1;
-	cpm_ptr = &(cky_ptr->cpm);
+	cpm_ptr = cky_ptr->cpm_ptr;
 	cpm_ptr->pred_b_ptr = t_ptr;
 	cpm_ptr->score = -1;
 	cpm_ptr->result_num = 0;
@@ -621,7 +621,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	set_data_cf_type(cpm_ptr); /* set predicate type */
     }
     else {
-	cky_ptr->cpm.pred_b_ptr = NULL;
+	cky_ptr->cpm_ptr->pred_b_ptr = NULL;
     }
 
     /* check each child */
@@ -666,7 +666,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 
 	    /* clausal modifiee */
 	    if (check_feature(d_ptr->f, "·¸:Ï¢³Ê")) {
-		pre_cpm_ptr = &(cky_ptr->left->cpm);
+		pre_cpm_ptr = cky_ptr->left->cpm_ptr;
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		make_data_cframe_rentai_simple(pre_cpm_ptr, pre_cpm_ptr->pred_b_ptr, t_ptr);
@@ -739,7 +739,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 			make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 			one_score += calc_vp_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
 								   d_ptr->tag_ptr + d_ptr->tag_num - 1, 
-								   cky_ptr->left->cpm.cmm[0].cf_ptr);
+								   cky_ptr->left->cpm_ptr->cmm[0].cf_ptr);
 			renyou_modifying_num++;
 		    }
 
@@ -946,7 +946,8 @@ CKY *new_cky_data(int *cky_table_num) {
 
     cky_ptr = &(cky_table[*cky_table_num]);
     if (OptAnalysis == OPT_CASE && *cky_table_num > cpm_allocated_cky_num) {
-	init_case_frame(&(cky_ptr->cpm.cf));
+	cky_ptr->cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "new_cky_data");
+	init_case_frame(&(cky_ptr->cpm_ptr->cf));
 	cpm_allocated_cky_num = *cky_table_num;
     }
 
