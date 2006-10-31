@@ -31,9 +31,6 @@ CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY¹ÔÎó¤Î³Æ°ÌÃÖ¤ÎºÇ½é¤ÎCKY¥Ç¡¼¥¿¤Ø¤Î¥Ý¥¤¥
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
 
-/* verb num, only for Chinese */
-int verb_num;
-
 /* add a clausal modifiee to CPM */
 void make_data_cframe_rentai_simple(CF_PRED_MGR *pre_cpm_ptr, TAG_DATA *d_ptr, TAG_DATA *t_ptr) {
 
@@ -385,14 +382,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-		/* add score for dpnd depend on verb */
-		if ((check_feature(g_ptr->f, "VV") ||
-		     check_feature(g_ptr->f, "VC") ||
-		     check_feature(g_ptr->f, "VE") ||
-		     check_feature(g_ptr->f, "VA")) ||
-		    verb_num == 1) {
-		    one_score += 10;
-		}
 		/* add score for stable dpnd */
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
@@ -987,18 +976,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     cky_table_num = 0;
 
     /* initialize */
-    verb_num = 0;
     for (i = 0; i < sp->Bnst_num; i++) {
 	dep_check[i] = -1;
 	Best_mgr->dpnd.head[i] = -1;
 	Best_mgr->dpnd.type[i] = 'D';
-	if (Language == CHINESE && 
-	    (check_feature((sp->bnst_data+i)->f, "VV") ||
-	     check_feature((sp->bnst_data+i)->f, "VC") ||
-	     check_feature((sp->bnst_data+i)->f, "VA") ||
-	     check_feature((sp->bnst_data+i)->f, "VE"))) {
-	    verb_num++;
-	}
     }
 
     if (OptParaFix == 0) {
