@@ -22,17 +22,21 @@ my $result = <<'__result__';
 EOS
 __result__
 
-my $x = new KNP::Result( [ map("$_\n",split(/\n/,$result)) ], '^EOS$' );
+my $x = KNP::Result->new( $result );
 ok(defined $x);
 ok(scalar($x->mrph) == 7);
 ok(join('',map($_->midasi,$x->mrph)) eq '構文解析の実例を示す．');
 ok(scalar($x->bnst) == 3);
 
-$x = new KNP::Result( $result, '^EOS$' );
+$x = undef;
+$x = KNP::Result->new( [ map("$_\n",split(/\n/,$result)) ] );
 ok(defined $x);
-ok(scalar($x->mrph) == 7);
-ok(join('',map($_->midasi,$x->mrph)) eq '構文解析の実例を示す．');
-ok(scalar($x->bnst) == 3);
+ok($x->bnst == 3);
+
+$x = undef;
+$x = new KNP::Result( result => $result );
+ok(defined $x);
+ok($x->bnst == 3);
 
 ok($x->id == 123);
 ok($x->set_id(234) == 234);

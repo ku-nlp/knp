@@ -3,7 +3,7 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 19 }
+BEGIN { plan tests => 20 }
 
 use KNP::Bunsetsu;
 
@@ -23,12 +23,6 @@ ok( $b->pstring eq $pstring );
 ok( ! $b->pstring( "" ) );
 ok( ! $b->pstring );
 
-ok( $b->fstring );
-ok( $b->feature == 14 );
-ok( ! $b->fstring( "" ) );
-ok( ! $b->fstring );
-ok( $b->feature == 0 );
-
 my $m = KNP::Morpheme->new( <<'__koubun_mrph__' );
 構文 こうぶん 構文 名詞 6 普通名詞 1 * 0 * 0 NIL <文頭><漢字><かな漢字><自立><名詞相当語>
 __koubun_mrph__
@@ -44,3 +38,15 @@ $b->push_mrph( $m );
 ok( scalar($b->mrph) == 2 );
 
 ok( join('',map($_->midasi,$b->mrph)) eq '構文解析' );
+
+ok( $b->spec eq <<'__spec__' );
+* -1D <BGH:解析><SM:解析:711006601***71100650****><文頭><文末><サ変><体言><用言:動><体言止><レベル:C><区切:5-5><ID:（文末）><RID:110><提題受:30><抽象>
+構文 こうぶん 構文 名詞 6 普通名詞 1 * 0 * 0 NIL <文頭><漢字><かな漢字><自立><名詞相当語>
+解析 かいせき 解析 名詞 6 サ変名詞 2 * 0 * 0 NIL <文末><表現文末><漢字><かな漢字><サ変><自立><←複合><名詞相当語>
+__spec__
+
+ok( $b->fstring );
+ok( $b->feature == 14 );
+ok( ! $b->fstring( "" ) );
+ok( ! $b->fstring );
+ok( $b->feature == 0 );

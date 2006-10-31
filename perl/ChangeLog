@@ -1,3 +1,185 @@
+2006-10-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* Result.pm, Morpheme.pm: 形態素featureのALTから同形異義語を抽出するようにした
+
+2006-09-07  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* KNP.pm: "Mysterious error"というエラーメッセージでdieしないようにした
+
+2006-06-16  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* DrawTree.pm: use encoding下でdraw_treeの構文木がずれないようにした
+
+	* DrawTree.pm: New file.
+
+2005-11-22  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* KNP.pm: support "use utf8"
+
+2005-08-24  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* File.pm: ファイルハンドルにset_encodingを追加
+
+2005-06-27  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* t/52-knp-old.t, t/56-simple.t: make testでエラーが出ていたものを削除
+	
+2005-06-09  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Morpheme.pm: 意味情報を読み込むところを修正
+
+2005-01-27  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Morpheme.pm: KNPの出力が変ったのに対応(意味情報)
+
+2004-11-16  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Morpheme.pm: use encodingした時にquotewordsできないのを修正
+
+2004-11-15  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Release 0.4.0.
+	
+	* Morpheme.pm: Bug Fix.
+
+	* Result.pm: Bug Fix.
+
+2004-02-07  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.96.
+
+	* lib/KNP/KULM/Morpheme.pm (gets): Insert brackets that specify
+	method calls, in order to keep compatibility with Jperl.
+
+2004-01-28  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/File.pm (look, makedb): Use `Juman::DB_File' instead of
+	`DB_File'.
+
+2003-09-19  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/File.pm (new): Accept `pattern' option.
+	(each, _result): Follow the above change.
+
+2003-09-19  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.95.
+
+	* lib/KNP/BList.pm: Inherit KNP::KULM::BList, KNP::KULM::TList,
+	and Juman::KULM::MList.
+	(bnst): Export to KNP::KULM::BList.
+	(tag, mrph): Removed.
+	(bnst_list, tag_list, mrph_list): Redefined.
+	(push_bnst, push_tag, push_mrph, set_readonly, spec,
+	draw_tree_leaves, DESTROY): Call `bnst_list' instead of `bnst'.
+	(draw_tag_tree): Call `tag_list' instead of `tag'.
+
+	* lib/KNP/KULM/BList.pm: New module.
+
+	* lib/KNP/Bunsetsu.pm (mrph): Removed.
+	(mrph_list): New method.
+	(push_tag): Call `Juman::MList::mrph_list' instead of
+	`Juman::MList::mrph'.
+
+	* lib/KNP/KULM/Bunsetsu.pm (get): Ignore long names of attributes.
+
+	* lib/KNP/Fstring.pm (set_fstring): Use `carp' instead of `warn'.
+	(set_feature): Ditto.
+
+	* lib/KNP/KULM/Morpheme.pm: Inherit Juman::KULM::Morpheme instead
+	of Juman::Morpheme.
+	(gets): Follow the change of `Juman::KULM::Morpheme::get'.
+
+	* lib/KNP/TList.pm: Inherit KNP::KULM::TList and
+	Juman::KULM::MList.
+	(tag): Export to KNP::KULM::TList.
+	(mrph): Removed.
+	(tag_list, mrph_list): Redefined.
+	(push_mrph, set_readonly, spec, draw_tree_leaves, DESTROY): Call
+	`tag_list' instead of `tag'.
+
+	* lib/KNP/KULM/TList.pm: New module.
+
+	* MANIFEST: Add new files.
+
+	* Makefile.PL: Depends juman-perl-0.4.4, because of the above
+	change.
+
+2003-09-18  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP.pm (_real_parse): Check a number of stored strings
+	before call `splice' in order to avoid warning.
+
+	* lib/KNP/Bunsetsu.pm: Inherit KNP::KULM::Bunsetsu.
+
+	* lib/KNP/Morpheme.pm: Inherit KNP::KULM::Morpheme.
+
+	* lib/KNP/KULM/Bunsetsu.pm, lib/KNP/KULM/Morpheme.pm: New file.
+
+	* t/12-kulm-morpheme.t, t/42-kulm-result.t: New testsets.
+
+	* lib/KNP/Result.pm (new): Change its argument spec.
+
+	* t/40-result.t: Follow the change of KNP::Result.
+
+	* MANIFEST: Add new files and testsets.
+
+2003-09-14  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.94.
+
+	* lib/KNP.pm: Remove unnecessary dependency to Exporter.  Use
+	`base' pragma.
+	* lib/KNP/BList.pm: Ditto.
+	* lib/KNP/Bunsetsu.pm: Ditto.
+	* lib/KNP/Morpheme.pm: Ditto.
+	* lib/KNP/Result.pm: Ditto.
+	* lib/KNP/TList.pm: Ditto.
+	* lib/KNP/Tag.pm: Ditto.
+
+	* lib/KNP/File.pm: Remove unnecessary dependency to Exporter.
+
+	* lib/KNP/Obsolete.pm: Remove unnecessary dependency to
+	KNP::Result.
+
+	* lib/KNP/Simple.pm: New module.
+
+	* t/56-simple.t: New testset.
+
+	* MANIFEST: Add lib/KNP/Simple.pm and t/56-simple.t.
+
+	* Makefile.PL (MY::constants): Ignore unrelated files under lib/.
+
+2003-09-11  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP.pm (new): Print warning when unsafe rcfile option is
+	used.
+
+2003-06-23  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.93.
+
+	* lib/KNP/TList.pm (set_nodestroy): New method.
+	(DESTROY): When the above method is called, do not destroy itself.
+
+	* lib/KNP/Obsolete.pm (draw_tree): Do not destoy KNP::BList object
+	created by this method.
+
+	* lib/KNP/BList.pm (draw_tag_tree): Do not destoy KNP::TList
+	object created by this method.
+	(set_nodestroy): New method.
+	(DESTROY): When the above method is called, do not destroy itself.
+
+2003-05-13  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.92.
+
+	* lib/KNP/Bunsetsu.pm (spec): Fix.
+	(DESTROY): Call both destructors of KNP::Depend object and
+	KNP::TList object.
+
+	* t/30-bunsetsu.t: Check the result of `spec' method.
+
 2003-02-20  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 	* Release 0.3.91.
