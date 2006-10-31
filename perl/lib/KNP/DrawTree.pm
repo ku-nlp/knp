@@ -2,6 +2,7 @@
 package KNP::DrawTree;
 require 5.000;
 use Carp;
+use bytes ();
 use strict;
 
 =head1 NAME
@@ -31,6 +32,10 @@ C<KNP::DrawTree> クラスは，解析単位(文節，タグ)間の依存関係を木構造と
 構文木を指定された C<FILE_HANDLE> に出力する．指定を省略した場合は，標
 準出力に出力される．
 
+=item sprint_tree ( )
+
+構文木を文字列で返す．
+
 =cut
 my %POS_MARK = 
     ( '特殊'     => '*',
@@ -57,15 +62,43 @@ my %POS_MARK =
 sub _leaf_string {
     my( $obj ) = @_;
     my $string;
+    my $utf8_flag = 0;
     for my $mrph ( $obj->mrph() ) {
-	$string .= $mrph->midasi();
-	if ( $mrph->bunrui() =~ /^(?:固有名詞|人名|地名)$/ ) {
-	    $string .= $POS_MARK{$mrph->bunrui()};
+	my ($midasi, $bunrui, $hinsi) = ($mrph->midasi(), $mrph->bunrui(), $mrph->hinsi());
+	if ($utf8_flag or utf8::is_utf8($midasi)) { # euc-jpで処理し、最後にutf8_flagを再びたてる
+	    $utf8_flag = 1 unless $utf8_flag;
+	    $midasi = Encode::encode('euc-jp', $midasi);
+	    $bunrui = Encode::encode('euc-jp', $bunrui);
+	    $hinsi = Encode::encode('euc-jp', $hinsi);
+	}
+	$string .= $midasi;
+	if ( $bunrui =~ /^(?:固有名詞|人名|地名)$/ ) {
+	    $string .= $POS_MARK{$bunrui};
 	} else {
-	    $string .= $POS_MARK{$mrph->hinsi()};
+	    $string .= $POS_MARK{$hinsi};
 	}
     }
-    $string;
+    $utf8_flag ? Encode::decode('euc-jp', $string) : $string;
+}
+
+sub _str_real_length {
+    my ($str, $utf8_flag) = @_;
+
+    if ($utf8_flag) {
+	my $length = 0;
+	for my $chr (split(//, $str)) {
+	    if ($chr =~ /^[a-zA-Z\*\!\?]$/) {
+		$length++; # 品詞情報は長さ1
+	    }
+	    else {
+		$length += 2;
+	    }
+	}
+	return $length;
+    }
+    else {
+	return length($str);
+    }
 }
 
 sub draw_tree {
@@ -73,7 +106,11 @@ sub draw_tree {
 
     no strict qw/refs/;
     $fh ||= 'STDOUT';			# 指定なしの場合は標準出力を用いる．
+    print $fh $this->sprint_tree();
+}
 
+sub sprint_tree {
+    my( $this ) = @_;
     my( $i, $j, $para_row, @item );
 
     my $limit = scalar($this->draw_tree_leaves);
@@ -126,17 +163,20 @@ sub draw_tree {
     }
 
     my( @line ) = map( &_leaf_string($_), $this->draw_tree_leaves );
+    my $utf8_flag = utf8::is_utf8($line[0]) ? 1 : 0 if @line;
     for $i ( 0 .. $limit ){
 	for $j ( ( $i + 1 ) .. $limit ){
-	    $line[$i] .= $item[$i][$j];
+	    $line[$i] .= $utf8_flag ? Encode::decode('euc-jp', $item[$i][$j]) : $item[$i][$j];
 	}
     }
-    my $max_length = ( sort { $b <=> $a; } map( length, @line ) )[0];
+    my $max_length = ( sort { $b <=> $a; } map( &_str_real_length($_, $utf8_flag), @line ) )[0];
+    my $buf;
     for $i ( 0 .. $limit ){
-	my $diff = $max_length - length($line[$i]);
-	print $fh ' ' x $diff;
-	print $fh $line[$i], ($this->draw_tree_leaves)[$i]->pstring, "\n";
+	my $diff = $max_length - &_str_real_length($line[$i], $utf8_flag);
+	$buf .= ' ' x $diff;
+	$buf .= $line[$i] . ($this->draw_tree_leaves)[$i]->pstring . "\n";
     }
+    return $buf;
 }
 
 =item draw_tree_leaves

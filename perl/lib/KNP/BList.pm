@@ -1,13 +1,10 @@
 # $Id$
 package KNP::BList;
-require 5.003_07; # For UNIVERSAL->isa().
-use Exporter;
+require 5.004_04; # For base pragma.
 use KNP::Bunsetsu;
-use KNP::DrawTree;
 use KNP::TList;
 use strict;
-use vars qw/ @ISA /;
-@ISA = qw/ KNP::DrawTree Exporter /;
+use base qw/ KNP::DrawTree KNP::KULM::BList KNP::KULM::TList Juman::KULM::MList /;
 
 =head1 NAME
 
@@ -45,14 +42,26 @@ sub new {
 
 =over 4
 
+=item bnst ( NUM )
+
+第 I<NUM> 番目の文節を返す．
+
 =item bnst
+
+全ての文節のリストを返す．
+
+=begin comment
+
+C<bnst> メソッドの実体は，C<KNP::KULM::BList> クラスで定義されている．
+
+=end comment
 
 =item bnst_list
 
 全ての文節のリストを返す．
 
 =cut
-sub bnst {
+sub bnst_list {
     my( $this ) = @_;
     if( defined $this->{bnst} ){
 	@{$this->{bnst}};
@@ -61,14 +70,9 @@ sub bnst {
     }
 }
 
-sub bnst_list {
-    shift->bnst( @_ );
-}
-
 =item push_bnst( @BNST )
 
-指定された文節列を文末に追加する．同時に，文節列に含まれているタグ列・
-形態素列を追加する．
+指定された文節列を文末に追加する．
 
 =cut
 sub push_bnst {
@@ -82,19 +86,27 @@ sub push_bnst {
     }
 }
 
+=item tag ( NUM )
+
+第 I<NUM> 番目のタグを返す．
+
 =item tag
+
+全てのタグのリストを返す．
+
+=begin comment
+
+C<tag> メソッドの実体は，C<KNP::KULM::TList> クラスで定義されている．
+
+=end comment
 
 =item tag_list
 
 全てのタグのリストを返す．
 
 =cut
-sub tag {
-    map( $_->tag, shift->bnst );
-}
-
 sub tag_list {
-    shift->tag( @_ );
+    map( $_->tag_list, shift->bnst_list );
 }
 
 =item push_tag( @TAG )
@@ -105,26 +117,34 @@ sub tag_list {
 =cut
 sub push_tag {
     my $this = shift;
-    if( $this->bnst ){
-	( $this->bnst )[-1]->push_tag( @_ );
+    if( $this->bnst_list ){
+	( $this->bnst_list )[-1]->push_tag( @_ );
     } else {
 	0;
     }
 }
 
+=item mrph ( NUM )
+
+第 I<NUM> 番目の形態素を返す．
+
 =item mrph
+
+全ての形態素のリストを返す．
+
+=begin comment
+
+C<mrph> メソッドの実体は C<Juman::KULM::MList> で定義されている．
+
+=end comment
 
 =item mrph_list
 
 全ての形態素のリストを返す．
 
 =cut
-sub mrph {
-    map( $_->mrph, shift->bnst );
-}
-
 sub mrph_list {
-    shift->mrph( @_ );
+    map( $_->mrph_list, shift->bnst_list );
 }
 
 =item push_mrph( @MRPH )
@@ -136,8 +156,8 @@ sub mrph_list {
 =cut
 sub push_mrph {
     my $this = shift;
-    if( $this->bnst ){
-	( $this->bnst )[-1]->push_mrph( @_ );
+    if( $this->bnst_list ){
+	( $this->bnst_list )[-1]->push_mrph( @_ );
     } else {
 	0;
     }
@@ -150,7 +170,7 @@ sub push_mrph {
 =cut
 sub set_readonly {
     my( $this ) = @_;
-    for my $bnst ( $this->bnst ){
+    for my $bnst ( $this->bnst_list ){
 	$bnst->set_readonly();
     }
     $this->{BLIST_READONLY} = 1;
@@ -163,7 +183,7 @@ sub set_readonly {
 =cut
 sub spec {
     my( $this ) = @_;
-    join( '', map( $_->spec, $this->bnst ) );
+    join( '', map( $_->spec, $this->bnst_list ) );
 }
 
 =item draw_tree
@@ -183,12 +203,18 @@ sub draw_bnst_tree {
 
 =cut
 sub draw_tag_tree {
-    KNP::TList->new( shift->tag )->draw_tree( @_ );
+    my $tlist = KNP::TList->new( shift->tag_list );
+    $tlist->set_nodestroy();
+    $tlist->draw_tree( @_ );
 }
 
 # draw_tree メソッドとの通信用のメソッド．
 sub draw_tree_leaves {
-    shift->bnst( @_ );
+    shift->bnst_list( @_ );
+}
+
+sub set_nodestroy {
+    shift->{BLIST_NODESTROY} = 1;
 }
 
 =back
@@ -202,7 +228,9 @@ Collection によってはメモリが回収されなくなる．この問題を避けるために，
 =cut
 sub DESTROY {
     my( $this ) = @_;
-    grep( ref $_ && $_->isa('KNP::Bunsetsu') && $_->DESTROY, $this->bnst );
+    unless( $this->{BLIST_NODESTROY} ){
+	grep( ref $_ && $_->isa('KNP::Bunsetsu') && $_->DESTROY, $this->bnst_list );
+    }
 }
 
 =head1 SEE ALSO

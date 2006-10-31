@@ -1,12 +1,10 @@
 package KNP::File;
 require 5.000;
-use Exporter;
-use FileHandle;
-use POSIX qw/ SEEK_SET O_RDONLY O_CREAT /;
+use English qw/ $PERL_VERSION /;
+use IO::File;
 use KNP::Result;
+use POSIX qw/ SEEK_SET O_RDONLY O_CREAT /;
 use strict;
-use vars qw/ @ISA $PATTERN /;
-@ISA = qw/ Exporter /;
 
 =head1 NAME
 
@@ -54,18 +52,14 @@ sub new {
 	}
     }
 
-    my $name   = $opt{file};
-    my $dbname = $opt{dbfile} || $name.'.db';
-    my $bclass = $opt{bclass} || $KNP::Result::DEFAULT{bclass};
-    my $mclass = $opt{mclass} || $KNP::Result::DEFAULT{mclass};
-    my $tclass = $opt{tclass} || $KNP::Result::DEFAULT{tclass};
-
-    if( my $fh = new FileHandle( $name, "r" ) ){
-	my $new = { name   => $name,
-		    dbname => $dbname,
-		    bclass => $bclass,
-		    mclass => $mclass,
-		    tclass => $tclass,
+    if( my $fh = new IO::File( $opt{file}, "r" ) ){
+	&set_encoding( $fh );
+	my $new = { name    => $opt{file},
+		    dbname  => $opt{dbfile}  || $opt{file}.'.db',
+		    pattern => $opt{pattern} || $KNP::Result::DEFAULT{pattern},
+		    bclass  => $opt{bclass}  || $KNP::Result::DEFAULT{bclass},
+		    mclass  => $opt{mclass}  || $KNP::Result::DEFAULT{mclass},
+		    tclass  => $opt{tclass}  || $KNP::Result::DEFAULT{tclass},
 		    _file_handle => $fh };
 	bless $new, $class;
     } else {
@@ -94,17 +88,16 @@ sub name {
 格納されている構文解析結果を文を単位として順に返す．
 
 =cut
-$PATTERN ='^EOS$';
-
 sub each {
     my( $this ) = @_;
+    my $pattern = $this->{pattern};
     my $fh = $this->{_file_handle};
     $this->setpos( 0 )
 	unless $this->{_each_pos} and ( $this->getpos == $this->{_each_pos} );
     my @buf;
     while( <$fh> ){
 	push( @buf, $_ );
-	if( m!$PATTERN! ){
+	if( m!$pattern! ){
 	    $this->{_each_pos} = $this->getpos;
 	    return &_result( $this, \@buf );
 	}
@@ -116,7 +109,7 @@ sub each {
 sub _result {
     my( $this, $spec ) = @_;
     KNP::Result->new( result  => $spec,
-		      pattern => $PATTERN,
+		      pattern => $this->{pattern},
 		      bclass  => $this->{bclass},
 		      mclass  => $this->{mclass},
 		      tclass  => $this->{tclass} );
@@ -132,8 +125,8 @@ sub look {
     unless( $this->{_db} ){
 	my %db;
 	if( -f $this->dbname ){
-	    require DB_File;
-	    tie( %db, 'DB_File', $this->dbname, O_RDONLY ) or return undef;
+	    require Juman::DB_File;
+	    tie( %db, 'Juman::DB_File', $this->dbname, O_RDONLY ) or return undef;
 	} else {
 	    &_make_hash( $this, \%db );
 	}
@@ -158,8 +151,8 @@ sub makedb {
     my( $this ) = @_;
 
     my %db;
-    require DB_File;
-    tie( %db, 'DB_File', $this->dbname, O_CREAT ) or return 0;
+    require Juman::DB_File;
+    tie( %db, 'Juman::DB_File', $this->dbname, O_CREAT ) or return 0;
     &_make_hash( $this, \%db ) or return 0;
     untie %db;
     1;
@@ -215,6 +208,21 @@ sub setpos {
 }
 
 =back
+
+=head1 MEMO
+
+Perl-5.8 以降の場合，子プロセスとの通信には， C<encoding> プラグマで指
+定された文字コードが使われます．
+
+=cut
+BEGIN {
+    if( $PERL_VERSION > 5.008 ){
+	require Juman::Encode;
+	Juman::Encode->import( qw/ set_encoding / );
+    } else {
+	*{Juman::Fork::set_encoding} = sub { undef; };
+    }
+}
 
 =head1 SEE ALSO
 

@@ -1,16 +1,13 @@
 # $Id$
 package KNP;
-require 5.003_07; # For UNIVERSAL->isa().
-use English qw/ $LIST_SEPARATOR /;
-use Exporter;
+require 5.004_04; # For base pragma.
 use Carp;
+use English qw/ $LIST_SEPARATOR /;
 use Juman;
-use Juman::Process;
-use KNP::Obsolete;
 use KNP::Result;
 use strict;
-use vars qw/ @ISA $VERSION %DEFAULT /;
-@ISA = qw/ KNP::Obsolete Juman::Process Exporter /;
+use base qw/ KNP::Obsolete Juman::Process /;
+use vars qw/ $VERSION %DEFAULT /;
 
 =head1 NAME
 
@@ -25,7 +22,11 @@ KNP - 構文解析を行うモジュール
 
 =head1 DESCRIPTION
 
-KNP を利用して構文解析を行うモジュールである．
+C<KNP> は，KNP を用いて構文解析を行うモジュールである．
+
+単純に構文解析を行うだけならば、C<KNP::Simple> が利用できる．
+C<KNP::Simple> は，C<KNP> モジュールのラッパーであり，より簡単に構文解
+析器を利用できるように設計されている．
 
 =head1 CONSTRUCTOR
 
@@ -80,6 +81,10 @@ C<-Rcfile>, C<-IgnorePattern> によって指定するべきである．
 =item -Rcfile
 
 KNP の設定ファイルを指定するオプション．
+
+このオプションと，KNP サーバーの利用は両立しないことが多い．特に，サー
+バーが利用している辞書と違う辞書を指定している設定ファイルは，意図した
+通りには動作しない．
 
 =item -IgnorePattern
 
@@ -194,6 +199,10 @@ KNP サーバーとして利用する．
 
 =item *
 
+L<KNP::Simple>
+
+=item *
+
 L<KNP::Result>
 
 =back
@@ -220,7 +229,7 @@ TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 
 ### バージョン表示
-$VERSION = '0.3.91';
+$VERSION = '0.4.9';
 
 # カスタマイズ用変数
 %DEFAULT =
@@ -265,6 +274,10 @@ sub new {
 	# 新しい形式で呼び出された場合の処理
 	my( %option ) = @_;
 	$this->setup( \%option, \%DEFAULT );
+    }
+
+    if( $this->{OPTION}->{rcfile} and $this->{OPTION}->{server} ){
+	carp "Rcfile option may not work with KNP server";
     }
 
     $this;
@@ -321,10 +334,22 @@ sub _real_parse {
     return &_set_error( $this, ";; TIMEOUT is occured when Juman was called.\n" )
 	unless( @{$array} );
 
+    # UTFフラグをチェックする
+    if (utf8::is_utf8($str)) {
+	require Encode;
+	foreach my $str (@{$array}) {
+	    $str = Encode::encode('euc-jp', $str);
+	}
+	$this->{input_is_utf8} = 1;
+    }
+    else {
+	$this->{input_is_utf8} = 0;
+    }
+
     # Parse ERROR などが発生した場合に原因を調べるため，構文解析した文
     # の履歴を保存しておく．
     unshift( @{$this->{PREVIOUS}}, $str );
-    splice( @{$this->{PREVIOUS}}, 10 );
+    splice( @{$this->{PREVIOUS}}, 10 ) if @{$this->{PREVIOUS}} > 10;
 
     # 構文解析
     my @error;
@@ -339,13 +364,17 @@ sub _real_parse {
     my( @buf );
     my $skip = ( $this->{OPTION}->{option} =~ /\-detail/ ) ? 1 : 0;
     while( defined( $str = $sock->getline ) ){
+	if ($this->{input_is_utf8}) {
+	    $str = Encode::decode('euc-jp', $str);
+	}
 	push( @buf, $str );
 	last if $str =~ /$pattern/ and ! $skip--;
     }
+#    die "Mysterious error: KNP server or process gives no response" unless @buf;
 
     # 構文解析結果の最後に EOS のみの行が無い場合は，読み出し中にタイ
     # ムアウトが発生している．
-    unless( $buf[$#buf] =~ /$pattern/ ){
+    unless( @buf and $buf[$#buf] =~ /$pattern/ ){
  	if( $counter == 1 ){
  	    push( @error, ";; TIMEOUT is occured.\n" );
 	    my $i = $[;

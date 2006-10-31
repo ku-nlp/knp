@@ -1,9 +1,8 @@
 # $Id$
 package KNP::Obsolete;
-require 5.003_07; # For UNIVERSAL->can().
+require 5.003_09; # For UNIVERSAL->can().
 use Carp;
 use English qw/ $LIST_SEPARATOR /;
-use KNP::Result;
 use strict;
 
 =head1 NAME
@@ -236,7 +235,9 @@ sub bnst {
 }
 
 sub draw_tree {
-    KNP::BList->new( @{shift->{BNST}} )->draw_tree( @_ );
+    my $blist = KNP::BList->new( @{shift->{BNST}} );
+    $blist->set_nodestroy();
+    $blist->draw_tree( @_ );
 }
 
 =back

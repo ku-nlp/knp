@@ -1,13 +1,11 @@
 # $Id$
 package KNP::Morpheme;
-require 5.000;
-use Exporter;
-use Juman::Morpheme;
-use KNP::Fstring;
+require 5.004_04; # For base pragma.
 use strict;
-use vars qw/ @ISA @EXPORT_OK @ATTRS /;
-@ISA = qw/ KNP::Fstring Juman::Morpheme Exporter /;
-@EXPORT_OK = qw/ @ATTRS /;
+use base qw/ KNP::Fstring KNP::KULM::Morpheme Juman::Morpheme /;
+use vars qw/ @ATTRS /;
+use Juman::Hinsi qw/ get_hinsi get_bunrui get_type get_form /;
+use Encode;
 
 =head1 NAME
 
@@ -34,9 +32,32 @@ KNP::Morpheme - 形態素オブジェクト in KNP
 
 @ATTRS = ( 'fstring' );
 
+sub _alt2spec {
+    my( $str ) = @_;
+    my( $midasi, $yomi, $genkei, $hinsi_id, $bunrui_id, $katuyou1_id, $katuyou2_id, $imis ) = split( '-', $str );
+    my $hinsi = &get_hinsi( $hinsi_id );
+    my $bunrui = &get_bunrui( $hinsi_id, $bunrui_id );
+    my $katuyou1 = &get_type( $katuyou1_id );
+    my $katuyou2 = &get_form( $katuyou1_id, $katuyou2_id );
+    if( utf8::is_utf8( $str ) ){
+	$hinsi = decode('euc-jp', $hinsi);
+	$bunrui = decode('euc-jp', $bunrui);
+	$katuyou1 = decode('euc-jp', $katuyou1);
+	$katuyou2 = decode('euc-jp', $katuyou2);
+    }
+
+    return join( ' ', $midasi, $yomi, $genkei, $hinsi, $hinsi_id, $bunrui, $bunrui_id, 
+		 $katuyou1, $katuyou1_id, $katuyou2, $katuyou2_id, $imis );
+}
+
 sub new {
     my( $class, $spec, $id ) = @_;
     my $this = { id => $id };
+
+    # ALTは標準のJUMAN形式に変換する
+    if ($spec =~ /^ALT-(.+)/){
+	$spec = _alt2spec($1);
+    }
 
     my @value;
     my( @keys ) = @Juman::Morpheme::ATTRS;
@@ -46,7 +67,22 @@ sub new {
 	@value = ( '\ ', '\ ', '\ ', '特殊', '1', '空白', '6' );
 	push( @value, split( / /, $spec, scalar(@keys) - 7 ) );
     } else {
-	@value = split( / /, $spec, scalar(@keys) );
+#	@value = split( / /, $spec, scalar(@keys) );
+
+	# 意味情報は""でくくられている
+	
+	# 以下のような場合に対応するために正規表現を修正
+
+	# あった あった あう 動詞 2 * 0 子音動詞ワ行 12 タ形 8 "代表表記:会う" <代表表記:会う><品曖><ALT-あった-あった-あう-2-0-12-8-"付属動詞候補（基本） 代表表記:合う"><ALT-あった-あった-ある-2-0-10-8-"補文ト 代表表記:有る"><原形曖昧><品曖-動詞><品曖-その他><付属動詞候補基本><かな漢字><ひらがな><活用語><独立語><自立><タグ単位始><文節始>
+
+	while ($spec =~ s/\"([^\"\s]+)(\s)([^\"]+)\"/\"$1\@\@$3\"/) {
+	    ;
+	}
+	@value = split( / /, $spec);
+	$value[11] =~ s/\@\@/ /g;
+	$value[12] =~ s/\@\@/ /g;
+
+#	@value = &quotewords(" ", 1, $spec);
     }
     while( @keys and @value ){
 	my $key = shift @keys;

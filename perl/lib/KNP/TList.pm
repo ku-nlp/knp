@@ -1,12 +1,9 @@
 # $Id$
 package KNP::TList;
-require 5.003_07; # For UNIVERSAL->isa().
-use Exporter;
-use KNP::DrawTree;
+require 5.004_04; # For base pragma.
 use KNP::Tag;
 use strict;
-use vars qw/ @ISA /;
-@ISA = qw/ KNP::DrawTree Exporter /;
+use base qw/ KNP::DrawTree KNP::KULM::TList Juman::KULM::MList /;
 
 =head1 NAME
 
@@ -44,24 +41,32 @@ sub new {
 
 =over 4
 
+=item tag ( NUM )
+
+第 I<NUM> 番目のタグを返す．
+
 =item tag
+
+全てのタグのリストを返す．
+
+=begin comment
+
+C<tag> メソッドの実体は，C<KNP::KULM::TList> クラスで定義されている．
+
+=end comment
 
 =item tag_list
 
 全てのタグのリストを返す．
 
 =cut
-sub tag {
+sub tag_list {
     my( $this ) = @_;
     if( defined $this->{tag} ){
 	@{$this->{tag}};
     } else {
 	wantarray ? () : 0;
     }
-}
-
-sub tag_list {
-    shift->tag( @_ );
 }
 
 =item push_tag( @TAG )
@@ -80,19 +85,27 @@ sub push_tag {
     }
 }
 
+=item mrph ( NUM )
+
+第 I<NUM> 番目の形態素を返す．
+
 =item mrph
+
+全ての形態素のリストを返す．
+
+=begin comment
+
+C<mrph> メソッドの実体は C<Juman::KULM::MList> で定義されている．
+
+=end comment
 
 =item mrph_list
 
 全ての形態素のリストを返す．
 
 =cut
-sub mrph {
-    map( $_->mrph, shift->tag );
-}
-
 sub mrph_list {
-    shift->mrph( @_ );
+    map( $_->mrph_list, shift->tag_list );
 }
 
 =item push_mrph( @MRPH )
@@ -104,8 +117,8 @@ sub mrph_list {
 =cut
 sub push_mrph {
     my( $this, @mrph ) = @_;
-    if( $this->tag ){
-	( $this->tag )[-1]->push_mrph( @mrph );
+    if( $this->tag_list ){
+	( $this->tag_list )[-1]->push_mrph( @mrph );
     } else {
 	0;
     }
@@ -118,7 +131,7 @@ sub push_mrph {
 =cut
 sub set_readonly {
     my( $this ) = @_;
-    for my $tag ( $this->tag ){
+    for my $tag ( $this->tag_list ){
 	$tag->set_readonly();
     }
     $this->{TLIST_READONLY} = 1;
@@ -131,7 +144,7 @@ sub set_readonly {
 =cut
 sub spec {
     my( $this ) = @_;
-    join( '', map( $_->spec, $this->tag ) );
+    join( '', map( $_->spec, $this->tag_list ) );
 }
 
 =item draw_tree
@@ -147,7 +160,11 @@ sub draw_tag_tree {
 
 # draw_tree メソッドとの通信用のメソッド．
 sub draw_tree_leaves {
-    shift->tag( @_ );
+    shift->tag_list( @_ );
+}
+
+sub set_nodestroy {
+    shift->{TLIST_NODESTROY} = 1;
 }
 
 =back
@@ -161,7 +178,9 @@ Collection によってはメモリが回収されなくなる．この問題を避けるために，
 =cut
 sub DESTROY {
     my( $this ) = @_;
-    grep( ref $_ && $_->isa('KNP::Tag') && $_->DESTROY, $this->tag );
+    unless( $this->{TLIST_NODESTROY} ){
+	grep( ref $_ && $_->isa('KNP::Tag') && $_->DESTROY, $this->tag_list );
+    }
 }
 
 =head1 SEE ALSO

@@ -1,14 +1,12 @@
 # $Id$
 package KNP::Result;
-require 5.000;
-use Exporter;
-use KNP::BList;
+require 5.004_04; # For base pragma.
 use KNP::Bunsetsu;
 use KNP::Morpheme;
 use KNP::Tag;
 use strict;
-use vars qw/ @ISA %DEFAULT /;
-@ISA = qw/ KNP::BList Exporter /;
+use base qw/ KNP::BList /;
+use vars qw/ %DEFAULT /;
 
 =head1 NAME
 
@@ -16,7 +14,7 @@ KNP::Result - 構文解析結果オブジェクト
 
 =head1 SYNOPSIS
 
-  $result = new KNP::Result( "* -1D <BGH:解析>\n...\nEOS\n", "^EOS$" );
+  $result = new KNP::Result( "* -1D <BGH:解析>\n...\nEOS\n" );
 
 =head1 DESCRIPTION
 
@@ -26,12 +24,11 @@ KNP::Result - 構文解析結果オブジェクト
 
 =over 4
 
-=item new ( RESULT, EOS_PATTERN )
+=item new ( RESULT )
 
 KNP の出力文字列，または，その文字列を行を単位として格納されたリストに
-対するリファレンス RESULT と，その構文解析結果を終端するためのパターン 
-EOS_PATTERN を引数として呼び出すと，その構文解析結果を表すオブジェクト
-を生成する．
+対するリファレンス RESULT を引数として呼び出すと，その構文解析結果を表
+すオブジェクトを生成する．
 
 =item new ( OPTIONS )
 
@@ -63,33 +60,31 @@ KNP の出力文字列，または，その文字列を行を単位として格納されたリストに
 =back
 
 =cut
-%DEFAULT = qw/ bclass KNP::Bunsetsu
-	       mclass KNP::Morpheme
-	       tclass KNP::Tag /;
+%DEFAULT = ( pattern => '^EOS$',
+	     bclass  => 'KNP::Bunsetsu',
+	     mclass  => 'KNP::Morpheme',
+	     tclass  => 'KNP::Tag' );
 
 sub new {
     my $class = shift;
 
-    my( $result, $pattern, $bclass, $mclass, $tclass );
-    if( @_ == 2 ){
-	( $result, $pattern ) = @_;
+    my( %opt ) = %DEFAULT;
+    if( @_ == 1 ){
+	$opt{result} = shift;
     } else {
-	my %opt;
 	while( @_ ){
 	    my $key = shift;
 	    my $val = shift;
 	    $key =~ s/^-+//;
 	    $opt{lc($key)} = $val;
 	}
-	$result  = $opt{result};
-	$pattern = $opt{pattern};
-	$bclass  = $opt{bclass};
-	$mclass  = $opt{mclass};
-	$tclass  = $opt{tclass};
     }
-    $bclass ||= $DEFAULT{bclass};
-    $mclass ||= $DEFAULT{mclass};
-    $tclass ||= $DEFAULT{tclass};
+    my $result  = $opt{result};
+    my $pattern = $opt{pattern};
+    my $bclass  = $opt{bclass};
+    my $mclass  = $opt{mclass};
+    my $tclass  = $opt{tclass};
+    return undef unless( $result and $pattern and $bclass and $mclass and $tclass );
 
     # 文字列が直接指定された場合
     $result = [ map( "$_\n", split( /\n/, $result ) ) ] unless ref $result;
@@ -123,6 +118,10 @@ sub new {
 	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
 	} else {
 	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph) ) );
+	    my $fstring = ( $this->mrph )[-1]->fstring;
+	    while ( $fstring =~ /<(ALT-[^>]+)>/g ){ # ALT
+		( $this->mrph )[-1]->push_doukei( $mclass->new( $1, scalar($this->mrph) ) );
+	    }
 	}
     }
 
@@ -215,7 +214,7 @@ sub id {
 	$this->set_id( @_ );
     } else {
 	unless( defined $this->{_id} ){
-	    $this->{_id} = $this->{comment} =~ m/# S-ID:([-0-9]+)/ ? $1 : -1;
+	    $this->{_id} = $this->{comment} =~ m/# S-ID:([-A-z0-9]+)/ ? $1 : -1;
 	}
 	$this->{_id};
     }
@@ -229,7 +228,7 @@ sub id {
 sub set_id {
     my( $this, $id ) = @_;
     if( defined $this->{comment} ){
-	( $this->{comment} =~ s/# S-ID:[-0-9]+/# S-ID:$id/ )
+	( $this->{comment} =~ s/# S-ID:[-A-z0-9]+/# S-ID:$id/ )
 	    or ( $this->{comment} = "S-ID:$id\n" . $this->{comment} );
     } else {
 	$this->{comment} = "S-ID:$id\n";

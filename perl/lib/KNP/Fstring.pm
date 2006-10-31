@@ -1,6 +1,7 @@
 # $Id$
 package KNP::Fstring;
 require 5.000;
+use Carp;
 use strict;
 
 =head1 NAME
@@ -80,7 +81,7 @@ sub set_fstring {
 	$str =~ s/\A\s*//;
 	$str =~ s/\s*\Z//;
 	unless( $str =~ m/\A(<[^<>]*>)*\Z/ ){
-	    warn "Illegal feature string: $str";
+	    carp "Illegal feature string: $str";
 	    return undef;
 	}
 	$this->{fstring} = $str;
@@ -100,7 +101,7 @@ sub set_feature {
     my $this = shift;
     if( grep( /[<>]/, @_ ) ){
 	# <> を含むような特徴文字列は追加できない．
-	warn "Illegal feature string: @_";
+	carp "Illegal feature string: @_";
 	return ( wantarray ? () : 0 );
     }
     $this->{feature} = [ @_ ];

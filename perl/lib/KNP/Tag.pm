@@ -1,14 +1,9 @@
 # $Id$
 package KNP::Tag;
-require 5.000;
-use Exporter;
-use Juman::MList;
-use KNP::Depend;
-use KNP::Fstring;
+require 5.004_04; # For base pragma.
 use KNP::Morpheme;
 use strict;
-use vars qw/ @ISA /;
-@ISA = qw/ KNP::Depend KNP::Fstring Juman::MList Exporter /;
+use base qw/ KNP::Depend KNP::Fstring Juman::MList /;
 
 =head1 NAME
 

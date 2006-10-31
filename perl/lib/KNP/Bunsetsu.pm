@@ -1,16 +1,10 @@
 # $Id$
 package KNP::Bunsetsu;
-require 5.000;
+require 5.004_04; # For base pragma.
 use Carp;
-use Exporter;
-use Juman::MList;
-use KNP::Depend;
-use KNP::Fstring;
 use KNP::Morpheme;
-use KNP::TList;
 use strict;
-use vars qw/ @ISA /;
-@ISA = qw/ KNP::Depend KNP::Fstring KNP::TList Juman::MList Exporter /;
+use base qw/ KNP::Depend KNP::Fstring KNP::TList KNP::KULM::Bunsetsu Juman::MList /;
 
 =head1 NAME
 
@@ -66,17 +60,17 @@ sub new {
 
 =over 4
 
-=item mrph
+=item mrph_list
 
 文節に含まれる全ての形態素を返す．
 
 =cut
-sub mrph {
+sub mrph_list {
     my $this = shift;
     if( $this->tag ){
-	$this->KNP::TList::mrph( @_ );
+	$this->KNP::TList::mrph_list( @_ );
     } else {
-	$this->Juman::MList::mrph( @_ );
+	$this->Juman::MList::mrph_list( @_ );
     }
 }
 
@@ -101,12 +95,12 @@ sub push_mrph {
 =cut
 sub push_tag {
     my $this = shift;
-    if( $this->Juman::MList::mrph ){
+    if( $this->Juman::MList::mrph_list ){
 	# この文節には，タグに含まれていない形態素が既に存在しているの
 	# で，データの矛盾を引き起こす可能性がある．
 	carp "Unsafe addition of tags";
     }
-    $this->SUPER::push_tag( @_ );
+    $this->KNP::TList::push_tag( @_ );
 }
 
 =back
@@ -170,10 +164,23 @@ sub spec {
 	     $this->parent() ? $this->parent->id() : -1,
 	     $this->dpndtype(),
 	     $this->fstring(),
-	     $this->SUPER::spec() );
+	     ( $this->tag ? $this->KNP::TList::spec() : $this->Juman::MList::spec() ) );
 }
 
 =back
+
+=head1 DESTRUCTOR
+
+文節オブジェクトは，デストラクタを定義している2種類のオブジェクト 
+C<KNP::Depend>, C<KNP::TList> を継承している．両方のデストラクタをきち
+んと呼び出さないと，メモリリークの原因となる．
+
+=cut
+sub DESTROY {
+    my( $this ) = @_;
+    $this->KNP::TList::DESTROY();
+    $this->KNP::Depend::DESTROY();
+}
 
 =head1 SEE ALSO
 
