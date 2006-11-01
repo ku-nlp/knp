@@ -282,7 +282,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 {
     int		i;
     FILE	*fp;
-    CELL	*body_cell, *loop_cell, *prob_cell;
+    CELL	*body_cell, *loop_cell;
     DpndRule	*rp = DpndRuleArray;
 
     /* 重複してルールファイルが指定されているとき */
@@ -317,15 +317,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	while (!Null(car(loop_cell))) {
 	    list2feature_pattern(&(rp->governor[i]), car(car(loop_cell)));
 	    rp->dpnd_type[i] = *(_Atom(car(cdr(car(loop_cell)))));
-	    if (Language == CHINESE) {
-		prob_cell = car(cdr(cdr(car(loop_cell))));
-		rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell))));
-		rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell)))));
-	    }
-	    else {
-		rp->prob_LtoR[i] = 0.0;
-		rp->prob_RtoL[i] = 0.0;
-	    }
+
 	    loop_cell = cdr(loop_cell);
 	    if (++i == DpndRule_G_MAX) {
 		fprintf(stderr, ";; Too many Governors in a DpndRule.");
@@ -334,6 +326,89 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	}
 	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 がgovernorのある印 */
 
+	list2feature_pattern(&(rp->barrier), car(cdr(cdr(body_cell))));
+	rp->preference = atoi(_Atom(car(cdr(cdr(cdr(body_cell))))));
+
+	/* 一意に決定するかどうか */
+	if (!Null(car(cdr(cdr(cdr(cdr(body_cell)))))) && 
+	    str_eq(_Atom(car(cdr(cdr(cdr(cdr(body_cell)))))), "U"))
+	    rp->decide = 1;
+	else
+	    rp->decide = 0;
+
+	if (++CurDpndRuleSize == DpndRule_MAX) {
+	    fprintf(stderr, ";; Too many DpndRule.");
+	    exit(1);
+	}
+	
+	rp++;
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fputs("done.\n", Outfp);
+    }
+
+    fclose(fp);
+}
+
+/*==================================================================*/
+		 void read_dpnd_rule_for_chinese(char *file_name)
+/*==================================================================*/
+{
+    int		i;
+    int         num;
+    FILE	*fp;
+    CELL	*body_cell, *loop_cell, *prob_cell;
+    DpndRule	*rp = DpndRuleArray;
+
+    /* 重複してルールファイルが指定されているとき */
+    if (CurDpndRuleSize) {
+	fprintf(stderr, ";; Dpnd rule is duplicated (%s) !!\n", file_name);
+	exit(1);
+    }
+
+    file_name = check_rule_filename(file_name);
+
+    if ( (fp = fopen(file_name, "r")) == NULL ) {
+	fprintf(stderr, ";; Cannot open file (%s) !!\n", file_name);
+	exit(1);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Reading %s ... ", file_name);
+    }
+
+    free(file_name);
+
+    LineNo = 1;
+
+    while (!s_feof(fp)) {
+	LineNoForError = LineNo;
+	body_cell = s_read(fp);
+
+	list2feature_pattern(&(rp->dependant), car(car(body_cell)));
+
+	strcpy(rp->dep_word, _Atom(car(car(car(cdr(car(body_cell)))))));
+	loop_cell = car(cdr(body_cell));
+	i = 0;
+	while (!Null(car(loop_cell))) {
+	    list2feature_pattern(&(rp->governor[i]), car(car(car(loop_cell))));
+	    strcpy(rp->gov_word[i], _Atom(car(car(car(cdr(car(car(loop_cell))))))));
+	    rp->dpnd_type[i] = *(_Atom(car(cdr(car(loop_cell)))));
+	    prob_cell = car(cdr(cdr(car(loop_cell))));
+	    rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell))));
+	    rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell)))));
+
+	    loop_cell = cdr(loop_cell);
+
+	    if (++i == DpndRule_G_MAX) {
+		fprintf(stderr, ";; Too many Governors in a DpndRule.");
+		exit(1);
+	    }
+	}
+	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 がgovernorのある印 */
+	
+	num++;
 	list2feature_pattern(&(rp->barrier), car(cdr(cdr(body_cell))));
 	rp->preference = atoi(_Atom(car(cdr(cdr(cdr(body_cell))))));
 

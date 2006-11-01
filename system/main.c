@@ -729,7 +729,12 @@ extern int	EX_match_subject;
 	}
 	/* 係り受けルール */
 	else if ((RULE+i)->type == DpndRuleType) {
-	    read_dpnd_rule((RULE+i)->file);
+	    if (Language == CHINESE) {
+		read_dpnd_rule_for_chinese((RULE+i)->file);
+	    }
+	    else {
+		read_dpnd_rule((RULE+i)->file);
+	    }
 	}
 	/* 呼応表現ルール */
 	else if ((RULE+i)->type == KoouRuleType) {

@@ -4,7 +4,11 @@
 
                                                S.Kurohashi 93. 5.31
 
+<<<<<<< dpnd_analysis.c
     $Id$
+=======
+    $Id$
+>>>>>>> 1.91
 ====================================================================*/
 #include "knp.h"
 
@@ -18,14 +22,34 @@ static int dpndID = 0;
     int 	i, j;
     BNST_DATA	*b_ptr;
     DpndRule 	*r_ptr;
+    int         backoff_flag, backoff_pos;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+	backoff_flag = 1;
+	backoff_pos = -1;
 	for (j = 0, r_ptr = DpndRuleArray; j < CurDpndRuleSize; j++, r_ptr++) {
 
 	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, b_ptr) 
 		== TRUE) {
+		if (Language == CHINESE && strcmp(r_ptr->dep_word, "X") == 0) {
+		    backoff_pos = j;
+		}
+		else if ((Language != CHINESE) ||
+			 (Language == CHINESE && 
+			  strcmp(r_ptr->dep_word, "X") != 0 && 
+			  !strcmp(b_ptr->head_ptr->Goi, r_ptr->dep_word))) { /* for Chinese, check word */
+		    b_ptr->dpnd_rule = r_ptr; 
+		    backoff_flag = 0;
+		    break;
+		}
+	    }
+	}
+	if (Language == CHINESE && backoff_flag && backoff_pos != -1) {
+	    r_ptr = DpndRuleArray + backoff_pos;
+	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, b_ptr) 
+		== TRUE && 
+		strcmp(r_ptr->dep_word, "X") == 0) {
 		b_ptr->dpnd_rule = r_ptr; 
-		break;
 	    }
 	}
 
@@ -44,7 +68,7 @@ static int dpndID = 0;
 	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, value, first_uke_flag, pu_flag;
+    int i, j, k, value, first_uke_flag, pu_flag, backoff_dep;
     BNST_DATA *k_ptr, *u_ptr;
 
     for (i = 0; i < sp->Bnst_num; i++) {
@@ -77,6 +101,7 @@ static int dpndID = 0;
 	}
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
+	    backoff_dep = 0;
 	    Dpnd_matrix[i][j] = 0;
 	    Dpnd_prob_matrix[i][j] = 0.0;
 	    Dpnd_prob_matrix[j][i] = 0.0;
@@ -88,19 +113,28 @@ static int dpndID = 0;
 	    for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
 		value = feature_pattern_match(&(k_ptr->dpnd_rule->governor[k]),
 					      u_ptr->f, k_ptr, u_ptr);
+		if (strcmp(k_ptr->dpnd_rule->dep_word, "X") == 0) {
+		    backoff_dep = 1;
+		}
 		if (value == TRUE) {
-		    Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
-		    /* assign probability for each dpnd */
-		    if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * k_ptr->dpnd_rule->prob_LtoR[k];
-			Dpnd_prob_matrix[j][i] = TIME_PROB * k_ptr->dpnd_rule->prob_RtoL[k];
+		    if ((Language != CHINESE) ||
+			(Language == CHINESE && backoff_dep) || 
+			(Language == CHINESE && !backoff_dep &&
+			 (strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi) == 0 || 
+			  strcmp(k_ptr->dpnd_rule->gov_word[k], "X") == 0))) {
+			Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
+			/* assign probability for each dpnd */
+			if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
+			    Dpnd_prob_matrix[i][j] = TIME_PROB * k_ptr->dpnd_rule->prob_LtoR[k];
+			    Dpnd_prob_matrix[j][i] = TIME_PROB * k_ptr->dpnd_rule->prob_RtoL[k];
+			}
+			else {
+			    Dpnd_prob_matrix[i][j] = TIME_PROB * (k_ptr->dpnd_rule->dpnd_type[k] == 'R') ?
+				k_ptr->dpnd_rule->prob_LtoR[k] : k_ptr->dpnd_rule->prob_RtoL[k];
+			}
+			first_uke_flag = 0;
+			break;
 		    }
-		    else {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (k_ptr->dpnd_rule->dpnd_type[k] == 'R') ?
-			    k_ptr->dpnd_rule->prob_LtoR[k] : k_ptr->dpnd_rule->prob_RtoL[k];
-		    }
-		    first_uke_flag = 0;
-		    break;
 		}
 	    }
 	}

@@ -433,6 +433,7 @@ extern char *get_rulev(char *cp);
 extern void read_homo_rule(char *file_name);
 extern void read_general_rule(RuleVector *rule);
 extern void read_dpnd_rule(char *file_name);
+extern void read_dpnd_rule_for_chinese(char *file_name);
 extern void read_koou_rule(char *file_name);
 extern void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max);
 extern void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max);

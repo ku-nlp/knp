@@ -49,8 +49,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	124
-#define DpndRule_G_MAX	40
+#define DpndRule_MAX	2800
+#define DpndRule_G_MAX	800
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
@@ -94,8 +94,9 @@
 #define	BYTES4CHAR	2	/* euc-jp */
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
-#define SMALL_PROB      0.000001 /* A small prob for Chinese relaxation */
+#define SMALL_PROB      0.0000001 /* A small prob for Chinese relaxation */
 #define TIME_PROB       500    /* time to enlarge dpnd prob for Chinese */
+#define CHI_WORD_LEN_MAX 30    /* maximum Chinese word length */
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -397,6 +398,8 @@ typedef struct {
     int		    decide;	/* 一意に決定するかどうか */
     double          prob_LtoR[DpndRule_G_MAX];  /* LtoR probability, only for Chinese */
     double          prob_RtoL[DpndRule_G_MAX];  /* RtoL probability, only for Chinese */
+    char            dep_word[CHI_WORD_LEN_MAX];                  /* dependant word, only for Chinese */
+    char            gov_word[DpndRule_G_MAX][CHI_WORD_LEN_MAX];  /* governor word, only for Chinese */
 } DpndRule;
 
 /* ボーナス規則 */
