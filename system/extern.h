@@ -485,6 +485,9 @@ extern int ParseSentence(SENTENCE_DATA *s, char *input);
 /* cky.c */
 extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
 
+/* base_phrase.c */
+extern int base_phrase(SENTENCE_DATA *sp);
+
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;
 extern char *Knpdict_Dirname;
