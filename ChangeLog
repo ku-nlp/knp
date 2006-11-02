@@ -1,3 +1,8 @@
+2006-11-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/case_print.c, system/context.c, system/extern.h, system/read_data.c:
+	An adjustment for the use of representative names of morphemes.
+
 2006-10-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/dpnd_analysis.c:
