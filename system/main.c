@@ -134,7 +134,7 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
-	    "           [-tree|sexp|tab|notag]\n" 
+	    "           [-tree|notagtree|sexp|tab|notagtab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S|F] [-N port]\n"
@@ -217,6 +217,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
+	else if (str_eq(argv[0], "-notagtab"))  OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
@@ -673,16 +674,9 @@ extern int	EX_match_subject;
     /* 文脈解析のときは必ず格解析を行う (CASE2)
        解析済みデータのときは read_mrph() で CASE2 にしている */
     if (OptEllipsis) {
-	if (OptExpress & OPT_NOTAG) {
-	    usage();
-	}
 	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
 	    OptAnalysis = OPT_CASE2;
 	}
-    }
-    else if ((OptExpress & OPT_NOTAG) && 
-	     (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
-	usage();
     }
 }
 
