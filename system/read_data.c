@@ -119,6 +119,25 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+		 char *make_mrph_rn(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *buf;
+
+    /* (代表表記がないときに)代表表記を作る */
+
+    /* 基本形の方が長いかもしれないので、48バイト余分に確保 */
+    buf = (char *)malloc_data(strlen(m_ptr->Goi) + strlen(m_ptr->Yomi) + 50, "make_mrph_rn");
+    sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Yomi);
+
+    if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* 活用語 */
+	buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* 語幹にする */
+	strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* 基本形をつける */
+    }
+    return buf;
+}
+
+/*==================================================================*/
 void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
@@ -487,7 +506,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	tp->c_cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "read_annotation");
 	memset(tp->c_cpm_ptr, 0, sizeof(CF_PRED_MGR));
 
-	cp += 11;
+	cp += strlen("格解析結果:");
 	cp = strchr(cp, ':') + 1;
 	start_cp = cp;
 	for (; *cp; cp++) {
@@ -832,7 +851,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     }
 
     if (cp = strstr(m_ptr->Imi, "代表表記:")) {
-	cp += 9;
+	cp += strlen("代表表記:");
 	sscanf(cp, "%[^/]", str1);
 
 	pre[0] = '\0';

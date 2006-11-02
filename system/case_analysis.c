@@ -336,7 +336,8 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	/* 表記がひらがなの場合: 
 	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 	   ひらがな以外が多ければひらがな以外のみを対象にする */
-	if (check_str_type(b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+	if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
+	    check_str_type(b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
 	    if (check_feature(b_ptr->f, "代表ひらがな")) {
 		hiragana_prefer_flag = 1;
 	    }
@@ -1778,8 +1779,8 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 
     対象の形態素: cpm_ptr->elem_b_ptr[i]->head_ptr */
 
-    int num, pos, expand, alt_num, alt_count;
-    char *rep_strt, *rep_end, *exd;
+    int num, pos, expand, alt_num, alt_count, rep_length, rep_malloc_flag = 0;
+    char *rep_strt, *exd;
     float score, tmp_score;
     FEATURE *fp;
     MRPH_DATA m;
@@ -1799,29 +1800,33 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
     }
 
     /* まず現在の形態素をチェック */
-    rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr);
-    if (rep_strt) {
-	if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
-	    if ((rep_end = strchr(rep_strt, ' ')) == NULL) {
-		rep_end = strchr(rep_strt, '\"');
-	    }
-
-	}
-	else {
-	    rep_end = strchr(rep_strt, '/');
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
+	rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr); /* 代表表記 */
+	rep_length = get_mrph_rep_length(rep_strt);
+	if (rep_length == 0) { /* なければ作る */
+	    rep_strt = make_mrph_rn(cpm_ptr->elem_b_ptr[i]->head_ptr);
+	    rep_length = strlen(rep_strt);
+	    rep_malloc_flag = 1;
 	}
     }
-    if (rep_strt && rep_end) {
+    else {
+	rep_strt = cpm_ptr->elem_b_ptr[i]->head_ptr->Goi;
+	rep_length = strlen(rep_strt);
+    }
+    if (rep_strt && rep_length) {
 	if (exact_flag) { /* exact matchによるチェック */
-	    if (cf_match_exactly(rep_strt, rep_end - rep_strt, 
+	    if (cf_match_exactly(rep_strt, rep_length, 
 				 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 				 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
 		decide_alt_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, 0, "名詞曖昧性解消");
+		if (rep_malloc_flag) {
+		    free(rep_strt);
+		}
 		return TRUE;
 	    }
 	}
 	else { /* 意味素によるチェック */
-	    if (exd = get_str_code_with_len(rep_strt, rep_end - rep_strt, Thesaurus)) {
+	    if (exd = get_str_code_with_len(rep_strt, rep_length, Thesaurus)) {
 		score = _calc_similarity_sm_cf(exd, expand, 
 					       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
 					       cpm_ptr->cmm[0].cf_ptr, num, &pos);
@@ -1833,29 +1838,36 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	}
     }
 
+    if (rep_malloc_flag) {
+	free(rep_strt);
+    }
+
     /* ALTをチェック */
     alt_count++;
     fp = cpm_ptr->elem_b_ptr[i]->head_ptr->f;
     while (fp) {
 	if (!strncmp(fp->cp, "ALT-", 4)) {
+	    rep_malloc_flag = 0;
 	    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-	    rep_strt = get_mrph_rep(&m);
-	    if (rep_strt) {
-		if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
-		    if ((rep_end = strchr(rep_strt, ' ')) == NULL) {
-			rep_end = strchr(rep_strt, '\"');
-		    }
-		}
-		else {
-		    rep_end = strchr(rep_strt, '/');
+	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+		rep_strt = get_mrph_rep(&m); /* 代表表記 */
+		rep_length = get_mrph_rep_length(rep_strt);
+		if (rep_length == 0) { /* なければ作る */
+		    rep_strt = make_mrph_rn(&m);
+		    rep_length = strlen(rep_strt);
+		    rep_malloc_flag = 1;
 		}
 	    }
-	    if (rep_strt && rep_end) {
+	    else {
+		rep_strt = m.Goi;
+		rep_length = strlen(rep_strt);
+	    }
+	    if (rep_strt && rep_length) {
 		if (exact_flag) { /* exact matchによるチェック */
-		    if (cf_match_exactly(rep_strt, rep_end - rep_strt, 
+		    if (cf_match_exactly(rep_strt, rep_length, 
 					 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 					 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
 			alt_num = alt_count;
@@ -1863,7 +1875,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		    }
 		}
 		else { /* 意味素によるチェック */
-		    if (exd = get_str_code_with_len(rep_strt, rep_end - rep_strt, Thesaurus)) {
+		    if (exd = get_str_code_with_len(rep_strt, rep_length, Thesaurus)) {
 			tmp_score = _calc_similarity_sm_cf(exd, expand, 
 							   cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
 							   cpm_ptr->cmm[0].cf_ptr, num, &pos);
@@ -1874,6 +1886,10 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 			free(exd);
 		    }
 		}
+	    }
+
+	    if (rep_malloc_flag) {
+		free(rep_strt);
 	    }
 	    alt_count++;
 	}

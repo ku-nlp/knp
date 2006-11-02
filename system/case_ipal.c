@@ -1451,12 +1451,12 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
 /*==================================================================*/
 {
     char *buffer, *main_pred = NULL, *cp, *rep_strt;
-    int rep_length;
+    int rep_length, main_pred_malloc_flag = 0;
 
     /* orig_form == 1: 可能動詞のもとの形を用いるとき */
 
     /* m_ptr == NULL: 本動詞の形態素は t_ptr->head_ptr を用いる
-       otherwise    : 本動詞の形態素として m_ptr を用いる */
+       otherwise    : 本動詞の形態素として m_ptr を用いる (ALTのもの) */
 
     /* 用言タイプ, voiceの分(7)も確保しておく */
 
@@ -1469,10 +1469,14 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
 		main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string");
 		strncpy(main_pred, rep_strt, rep_length);
 		*(main_pred + rep_length) = '\0';
+		main_pred_malloc_flag = 1;
 	    }
 	}
 	else {
-	    main_pred = get_mrph_rep_from_f(t_ptr->head_ptr);
+	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL) {
+		main_pred = make_mrph_rn(t_ptr->head_ptr);
+		main_pred_malloc_flag = 1;
+	    }
 	}
     }
     if (main_pred == NULL) {
@@ -1539,6 +1543,10 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
 	    buffer = (char *)malloc_data(strlen(main_pred) + 8, "make_pred_string");
 	    strcpy(buffer, main_pred);
 	}
+    }
+
+    if (main_pred_malloc_flag) {
+	free(main_pred);
     }
 
     return buffer;
@@ -1720,7 +1728,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    /* 表記がひらがなの場合: 
 	       格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 	       ひらがな以外が多ければひらがな以外のみを対象にするためのfeatureを付与 */
-	    if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+	    if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
+		check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
 		hiragana_count = 0;
 		for (j = 0; j < t_ptr->cf_num; j++) {
 		    if (check_str_type((t_ptr->cf_ptr + j)->entry) == TYPE_HIRAGANA) {

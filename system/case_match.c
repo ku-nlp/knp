@@ -486,8 +486,10 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
     char *exd, *strp;
-    int expand;
-    float ex_score;
+    int expand, strp_malloc_flag = 0, rep_length, exact_matched_flag = 0;
+    float ex_score = 0;
+    FEATURE *fp;
+    MRPH_DATA m;
 
     if (Thesaurus == USE_BGH) {
 	exd = tp->BGH_code;
@@ -503,31 +505,69 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	expand = SM_EXPAND_NE;
     }
 
-    if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
-	(strp = get_mrph_rep_from_f(tp->head_ptr))) {
-	;
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	if ((strp = get_mrph_rep_from_f(tp->head_ptr)) == NULL) { /* FIX ME!: とりあえず主辞のみ */
+	    strp = make_mrph_rn(tp->head_ptr); /* なければ作る */
+	    strp_malloc_flag = 1;
+	}
     }
     else {
 	strp = tp->head_ptr->Goi;
     }
 
+    /* exact match */
+    if (!check_feature(tp->f, "形副名詞")) {
+	if (cf_match_exactly(strp, strlen(strp), 
+			     cfp->ex_list[n], cfp->ex_num[n], pos)) {
+	    exact_matched_flag = 1;
+	}
+	/* 代表表記の場合はALTも調べる */
+	else if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	    fp = tp->head_ptr->f;
+	    while (fp) {
+		if (!strncmp(fp->cp, "ALT-", 4)) {
+		    if (strp_malloc_flag) {
+			free(strp);
+			strp_malloc_flag = 0;
+		    }
+		    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+			   m.Goi2, m.Yomi, m.Goi, 
+			   &m.Hinshi, &m.Bunrui, 
+			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+		    strp = get_mrph_rep(&m); /* 代表表記 */
+		    rep_length = get_mrph_rep_length(strp);
+		    if (rep_length == 0) { /* なければ作る */
+			strp = make_mrph_rn(&m);
+			rep_length = strlen(strp);
+			strp_malloc_flag = 1;
+		    }
+
+		    if (cf_match_exactly(strp, rep_length, 
+					 cfp->ex_list[n], cfp->ex_num[n], pos)) {
+			exact_matched_flag = 1;
+			break;
+		    }
+		}
+		fp = fp->next;
+	    }
+	}
+    }
+    if (strp_malloc_flag) {
+	free(strp);
+    }
+
+    if (exact_matched_flag) {
+	return 1.1;
+    }
     /* 意味素なし
        候補にするために -1 を返す */
-    if (!exd[0]) {
-	ex_score = -1;
-    }
-    /* exact match */
-    else if (!check_feature(tp->f, "形副名詞") && 
-	     cf_match_exactly(strp, strlen(strp), 
-			      cfp->ex_list[n], cfp->ex_num[n], pos)) {
-	ex_score = 1.1;
+    else if (!exd[0]) {
+	return -1;
     }
     /* 意味素 match */
     else {
-	ex_score = _calc_similarity_sm_cf(exd, expand, NULL, cfp, n, pos);
+	return _calc_similarity_sm_cf(exd, expand, NULL, cfp, n, pos);
     }
-
-    return ex_score;
 }
 
 /*==================================================================*/

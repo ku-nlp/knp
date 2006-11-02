@@ -274,7 +274,7 @@ struct _sort_kv {
 		    EX_PRINT_NUM : cmm_ptr->cf_ptr->ex_num[i];
 		fputc('(', Outfp);
 		for (j = 0; j < print_num; j++) {
-		    if (j != 0) fputc('/', Outfp);
+		    if (j != 0) fputc('|', Outfp);
 		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "¡Ú");
 		    if (PrintFrequency) {
 			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][j], cmm_ptr->cf_ptr->ex_freq[i][j]);

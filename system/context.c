@@ -4823,7 +4823,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		/* 表記がひらがなの場合: 
 		   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 		   ひらがな以外が多ければひらがな以外のみを対象にする */
-		if (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+		if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
+		    check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
 		    if (check_feature(cpm_ptr->pred_b_ptr->f, "代表ひらがな")) {
 			hiragana_prefer_flag = 1;
 		    }
