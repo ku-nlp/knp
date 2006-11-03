@@ -1,3 +1,10 @@
+2006-11-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/corefer.c, system/dpnd_analysis.c, system/extern.h, system/main.c, system/tree_conv.c:
+	「ＡのＢＣ」があった場合、名詞格フレームに「ＡのＣ」がなく「ＡのＢ」がある
+	場合は、Ａの係り先をＢと認識するように変更 (ex. 「子供の体力低下」)
+	名詞格フレームを読み込むオプション -use-ncfを追加
+
 2006-11-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:
