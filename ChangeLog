@@ -1,3 +1,11 @@
+2006-11-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_print.c:
+	Fixed a bug in the tree printing function under -postprocess option.
+
+	* rule/tag_postprocess.rule:
+	Added some rules of mergeing functional expressions.
+
 2006-11-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/corefer.c, system/dpnd_analysis.c, system/extern.h, system/main.c, system/tree_conv.c:
