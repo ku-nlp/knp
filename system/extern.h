@@ -52,6 +52,7 @@ extern int 		OptDisplay;
 extern int 		OptDisplayNE;
 extern int 		OptExpandP;
 extern int		OptCheck;
+extern int		OptUseNCF;
 extern int		OptUseRN;
 extern int		OptUseScase;
 extern int		OptUseSmfix;

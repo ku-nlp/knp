@@ -56,8 +56,8 @@ char *SynonymFile;
 
     b_ptr = tag_ptr->b_ptr;
 
-    /* OptCorefer == 4の場合は修飾されているかどうかを用いない */
-    if (OptCorefer == 4) return 0;
+    /* OptCorefer >= 4の場合は修飾されているかどうかを用いない */
+    if (OptCorefer >= 4) return 0;
 
     /* 所属する文節が修飾されていない場合 */
     if (!b_ptr->child[0]) {
@@ -65,16 +65,12 @@ char *SynonymFile;
     }
 
     if (OptCorefer == 1) {
-	/* タグが主辞でない場合 */
-	/* 直前の文節の主辞との間に名詞格フレームに記された関係がなければ */
-	/* 直前の文節は主辞に係っていると考え、修飾されていないとみなす */
-	if (tag_ptr->head_ptr != b_ptr->head_ptr &&
-	    (!(tag_ptr)->cf_ptr ||
-	     check_examples((b_ptr - 1)->head_ptr->Goi2,
-			    strlen((b_ptr - 1)->head_ptr->Goi2),
-			    tag_ptr->cf_ptr->ex_list[0],
-			    tag_ptr->cf_ptr->ex_num[0]) == -1)) {
-	    return 0;
+	/* "直前タグ受"である場合は主辞以外でも修飾されていると考える */
+	if (tag_ptr->head_ptr != b_ptr->head_ptr) {
+	    if (check_feature(tag_ptr->f, "直前タグ受")) 
+		return 1;
+	    else 
+		return 0;
 	}
     }
     else if (OptCorefer == 3) {
@@ -193,6 +189,7 @@ char *SynonymFile;
 			if (k > 0) word[0] = '\0';
 		    }
 		    else {
+			if (OptCorefer == 5) word[0] = '\0';
 			strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
 		    }
 		}

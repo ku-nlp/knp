@@ -233,7 +233,8 @@ int	PrintDeletedSM = 0;
 /*==================================================================*/
 {
     if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2) {
+	OptAnalysis == OPT_CASE2 ||
+	OptUseNCF) {
 
 	/* 格フレーム領域確保 */
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, 
@@ -1708,7 +1709,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレーム */
-	    if ((OptCaseNoun || OptEllipsis & OPT_REL_NOUN || OptEllipsis & OPT_COREFER) && 
+	    if ((OptCaseNoun || OptEllipsis & OPT_REL_NOUN || OptUseNCF) && 
 		check_feature(t_ptr->f, "体言")) {
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }

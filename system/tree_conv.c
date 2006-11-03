@@ -433,7 +433,8 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     /* <P>のときと「タグ単位受無視」のときは係り先を最後のタグ単位とする */
     if (bp->para_type != PARA_NORMAL && 
 	(!check_feature(bp->f, "タグ単位受無視")) && 
-	(cp = check_feature(bp->parent->f, "タグ単位受"))) {
+	((cp = check_feature(bp->parent->f, "タグ単位受")) ||
+	 (cp = check_feature(bp->parent->f, "直前タグ受")))) {
 	offset = atoi(cp + 11);
 	if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
 	    offset = 0;

@@ -289,9 +289,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 {
     /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
 
-    int		i, last_b, offset;
-    char	*cp;
-    TAG_DATA	*t_ptr;
+    int		i, j, last_b, offset, score;
+    char	*cp, buf[16];
+    TAG_DATA	*t_ptr, *ht_ptr;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	/* もっとも近い文節行を記憶 */
@@ -320,6 +320,45 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    }
 	    else {
 		offset = 0;
+	    }
+
+	    /* ＡのＢＣなどがあった場合は、Ｃの格フレームにＡが存在せず、
+	       かつ、Ｂの格フレームにＡが存在した場合は、ＡがＢにかかると考える */
+	    if ((!check_feature((sp->bnst_data + last_b)->f, "タグ単位受無視")) &&
+		check_feature(t_ptr->f, "係:ノ格") && dp->head[last_b] - last_b == 1) {
+
+		/* 「ＡのＣ」のスコア */
+		ht_ptr = (sp->bnst_data + dp->head[last_b])->tag_ptr + 
+		    (sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset;	
+		if (ht_ptr->cf_ptr) {
+		    score = check_examples((t_ptr->head_ptr)->Goi2,
+					   strlen((t_ptr->head_ptr)->Goi2),
+					   ht_ptr->cf_ptr->ex_list[0],
+					   ht_ptr->cf_ptr->ex_num[0]);
+		}
+		else {
+		    score = -1;
+		}
+
+		/* Ｂが複数タグから成る場合のためのループ */
+		for (j = 0, ht_ptr = (sp->bnst_data + dp->head[last_b])->tag_ptr; 
+		     j < (sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset;
+		     j++, ht_ptr++) {
+	    
+		    /* 「ＡのＢ」のスコア */
+		    if (score == -1 && ht_ptr->cf_ptr &&
+			check_examples((t_ptr->head_ptr)->Goi2,
+				       strlen((t_ptr->head_ptr)->Goi2),
+				       ht_ptr->cf_ptr->ex_list[0],
+				       ht_ptr->cf_ptr->ex_num[0]) > score) {
+
+			offset = j - ((sp->bnst_data + dp->head[last_b])->tag_num - 1);
+			sprintf(buf, "直前タグ受:%d", offset);
+			assign_cfeature(&((sp->bnst_data + dp->head[last_b])->f), buf, FALSE);
+			assign_cfeature(&(ht_ptr->f), buf, FALSE);
+			break;
+		    }
+		}		 
 	    }
 
 	    t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 

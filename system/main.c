@@ -46,6 +46,7 @@ int 		OptDisplay;
 int 		OptDisplayNE;
 int		OptExpandP;
 int		OptCheck;
+int             OptUseNCF;
 int		OptUseRN;
 int		OptDiscPredMethod;
 int		OptDiscNounMethod;
@@ -164,6 +165,7 @@ extern int	EX_match_subject;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
+    OptUseNCF = FALSE;
     OptUseRN = 0;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
@@ -229,6 +231,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
+	else if (str_eq(argv[0], "-use-ncf")) OptUseNCF   = TRUE;
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
@@ -405,6 +408,7 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-corefer")) {
 	    OptEllipsis |= OPT_COREFER;
+	    OptUseNCF = 1;
 	    OptCorefer = 1; /* 名詞格フレームを用いる */
 	}
 	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
@@ -418,6 +422,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
 	    OptCorefer = 4; /* 修飾を考慮しない */
+	}
+	else if (str_eq(argv[0], "-corefer5")) { /* 係り受け判定のオプション */
+	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 5; /* 修飾を考慮しない */
 	}
 	else if (str_eq(argv[0], "-relation-noun-best")) {
 	    OptEllipsis |= OPT_REL_NOUN;
@@ -1003,7 +1011,7 @@ extern int	EX_match_subject;
     /* 格フレーム取得 */
     if (OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 ||
-	OptEllipsis & OPT_COREFER) {
+	OptUseNCF) {
 	set_caseframes(sp);
     }
 
@@ -1243,7 +1251,8 @@ PARSED:
 
 	/* 格フレームの初期化 */
 	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2) {
+	    OptAnalysis == OPT_CASE2 ||
+	    OptUseNCF) {
 	    clear_cf(0);
 	}
 
