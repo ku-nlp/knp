@@ -1,10 +1,15 @@
+2006-11-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* configure.ac, system/knp.h, system/main.c:
+	Modified a problem of compiling on MacOS X.
+
 2006-11-03  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:
 	Fixed a bug in the tree printing function under -postprocess option.
 
 	* rule/tag_postprocess.rule:
-	Added some rules of mergeing functional expressions.
+	Added some rules of merging functional expressions.
 
 2006-11-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
