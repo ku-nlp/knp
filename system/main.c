@@ -89,6 +89,7 @@ char*       bnst_tree[BNST_MAX][TREE_WIDTH_MAX];
 char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 
 /* Server Client Extention */
+static int	sfd, fd;
 int		OptMode = STAND_ALONE_MODE;
 int		OptPort = DEFAULT_PORT;
 char		OptHostname[SMALL_DATA_LEN];
@@ -1360,31 +1361,31 @@ PARSED:
 }
 
 #ifndef _WIN32
+/* シグナル処理 */
+static void sig_child()
+{
+    int status;
+    while(waitpid(-1, &status, WNOHANG) > 0) {}; 
+    signal(SIGCHLD, sig_child); 
+}
+
+static void sig_term()
+{
+    shutdown(sfd,2);
+    shutdown(fd, 2);
+    exit(0);
+}
+
 /*==================================================================*/
 			  void server_mode()
 /*==================================================================*/
 {
     /* サーバモード */
 
-    int i, sfd, fd;
+    int i;
     struct sockaddr_in sin;
     FILE *pidfile;
     struct passwd *ent_pw;
-
-    /* シグナル処理 */
-    void sig_child()
-	{
-	    int status;
-	    while(waitpid(-1, &status, WNOHANG) > 0) {}; 
-	    signal(SIGCHLD, sig_child); 
-	}
-
-    void sig_term()
-	{
-	    shutdown(sfd,2);
-	    shutdown(fd, 2);
-	    exit(0);
-	}
 
     if (OptServerFlag != OPT_SERV_FORE) {
 	/* parent */
@@ -1555,6 +1556,29 @@ PARSED:
     }
 }
 
+/* 文字列を送って、ステータスコードを返す */  
+static int send_string(FILE *fi, FILE *fo, char *str)
+{
+    int len, result = 0;
+    char buf[1024];
+    
+    if (str != NULL){
+	fwrite(str, sizeof(char), strlen(str), fo);
+	fflush(fo);
+    }
+
+    while (fgets(buf, sizeof(buf)-1, fi) != NULL){
+	len = strlen(buf);
+	if (len >= 3 && buf[3] == ' ') {
+	    buf[3] = '\0';
+	    result = atoi(&buf[0]);
+	    break;
+	}
+    }
+
+    return result;
+} 
+
 /*==================================================================*/
 			  void client_mode()
 /*==================================================================*/
@@ -1570,29 +1594,6 @@ PARSED:
     char option[1024];
     int  port = DEFAULT_PORT;
     int  strnum = 0;
-
-    /* 文字列を送って、ステータスコードを返す */  
-    int send_string(char *str)
-	{
-	    int len, result = 0;
-	    char buf[1024];
-    
-	    if (str != NULL){
-		fwrite(str, sizeof(char), strlen(str), fo);
-		fflush(fo);
-	    }
-
-	    while (fgets(buf, sizeof(buf)-1, fi) != NULL){
-		len = strlen(buf);
-		if (len >= 3 && buf[3] == ' ') {
-		    buf[3] = '\0';
-		    result = atoi(&buf[0]);
-		    break;
-		}
-	    }
-
-	    return result;
-	} 
 
     /* host:port という形の場合 */
     if ((p = strchr(OptHostname, ':')) != NULL) {
@@ -1628,7 +1629,7 @@ PARSED:
     }
 
     /* 挨拶 */
-    if (send_string(NULL) != 200) {
+    if (send_string(fi, fo, NULL) != 200) {
 	fprintf(stderr, ";; greet error\n");
 	exit(1);
     }
@@ -1661,7 +1662,7 @@ PARSED:
 
     /* これから動作 */
     sprintf(buf, "RUN%s\n", option);
-    if (send_string(buf) != 200) {
+    if (send_string(fi, fo, buf) != 200) {
 	fprintf(stderr, ";; argument error OK? [%s]\n", option);
 	close(fd);
 	exit(1);
