@@ -849,6 +849,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     free(s->tag_data);
     free(s->para_data);
     free(s->para_manager);
+    free(s->Comment);
     if (s->cpm)
 	free(s->cpm);
     if (s->cf)
@@ -866,8 +867,12 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 /*==================================================================*/
 {
     int i;
-    for (i = 0; i < sp->Sen_num - 1; i++) {
-	ClearSentence(sentence_data+i);
+
+    if (OptArticle) {
+	for (i = 0; i < sp->Sen_num - 1; i++) {
+	    print_result(sentence_data+i, 1);	    
+	    ClearSentence(sentence_data+i);
+	}
     }
     sp->Sen_num = 1;
     ClearAnaphoraList();
@@ -933,6 +938,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 
     sp_new->available = sp->available;
     sp_new->Sen_num = sp->Sen_num;
+    sp_new->Comment = strdup(sp->Comment);
 
     sp_new->Mrph_num = sp->Mrph_num;
     sp_new->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*sp->Mrph_num, 

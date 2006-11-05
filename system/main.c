@@ -44,6 +44,7 @@ int 		OptInput;
 int 		OptExpress;
 int 		OptDisplay;
 int 		OptDisplayNE;
+int             OptArticle;
 int		OptExpandP;
 int		OptCheck;
 int             OptUseNCF;
@@ -163,6 +164,7 @@ extern int	EX_match_subject;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
     OptDisplayNE = OPT_NORMAL;
+    OptArticle = FALSE;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
@@ -224,6 +226,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
+	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
@@ -1348,7 +1351,7 @@ PARSED:
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(sp, 0);
 	}
-	else if (OptDisplay != OPT_NBEST) {
+	else if (OptDisplay != OPT_NBEST && !(OptArticle && OptEllipsis)) {
 	    print_result(sp, 1);
 	}
 	if (Language == CHINESE) {
@@ -1357,6 +1360,12 @@ PARSED:
 	fflush(Outfp);
 
 	success = 1;	/* OK À®¸ù */
+    }
+
+    if (OptArticle && OptEllipsis) {
+	for (i = 0; i < sp->Sen_num - 1; i++) {
+	    print_result(sentence_data+i, 1);	    
+	}
     }
 }
 
