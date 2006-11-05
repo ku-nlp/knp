@@ -141,9 +141,7 @@ extern int	EX_match_subject;
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S|F] [-N port]\n"
-	    "           [-timeout second] [-r rcfile]\n"
-	    "           [-scode [BGH|NTT]] (Default:NTT)\n"
-	    "           [-para-scode [BGH|NTT]] (Default:BGH)\n");
+	    "           [-timeout second] [-r rcfile]\n");
     exit(1);    
 }
 
@@ -169,13 +167,13 @@ extern int	EX_match_subject;
     OptCFMode = EXAMPLE;
     OptCheck = FALSE;
     OptUseNCF = FALSE;
-    OptUseRN = 0;
+    OptUseRN = USE_RN;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = 0;
+    OptCaseFlag = OPT_CASE_USE_REP_CF;
     OptCaseNoun = 0;
     OptDiscFlag = 0;
     OptServerFlag = 0;
@@ -535,12 +533,12 @@ extern int	EX_match_subject;
 		usage();
 	    }
 	}
-	else if (str_eq(argv[0], "-use-rn-cf")) {
-	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
-	    OptUseRN = USE_RN;
+	else if (str_eq(argv[0], "-no-use-rn-cf")) {
+	    OptCaseFlag &= ~OPT_CASE_USE_REP_CF;
+	    OptUseRN = 0;
 	}
-	else if (str_eq(argv[0], "-use-rn")) {
-	    OptUseRN = USE_RN;
+	else if (str_eq(argv[0], "-no-use-rn")) {
+	    OptUseRN = 0;
 	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
