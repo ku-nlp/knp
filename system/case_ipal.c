@@ -1448,7 +1448,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 }
 
 /*==================================================================*/
-char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
+char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag)
 /*==================================================================*/
 {
     char *buffer, *main_pred = NULL, *cp, *rep_strt;
@@ -1462,7 +1462,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
     /* 用言タイプ, voiceの分(7)も確保しておく */
 
     /* 代表表記を使う場合で代表表記があるとき */
-    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+    if (use_rep_flag) {
 	if (m_ptr) {
 	    rep_strt = get_mrph_rep(m_ptr);
 	    rep_length = get_mrph_rep_length(rep_strt);
@@ -1487,7 +1487,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
     /* 「（〜を）〜に」 のときは 「する」 で探す */
     if (check_feature(t_ptr->f, "ID:（〜を）〜に")) {
 	buffer = (char *)malloc_data(strlen("する/する") + 8, "make_pred_string"); /* 9(euc) + 8 */
-	if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	if (use_rep_flag) {
 	    strcpy(buffer, "する/する");
 	}
 	else {
@@ -1496,7 +1496,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
     }
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→")) {
-	if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	if (use_rep_flag) {
 	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
 					     "make_pred_string");
@@ -1521,7 +1521,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form)
     }
     /* 「形容詞語幹+的だ」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出←")) {
-	if ((OptCaseFlag & OPT_CASE_USE_REP_CF) &&
+	if (use_rep_flag &&
 	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1))) {
 	    buffer = (char *)malloc_data(strlen(cp) + strlen(main_pred) + 9, 
 					 "make_pred_string");
@@ -1566,7 +1566,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return f_num;
     }
 
-    pred_string = make_pred_string(t_ptr, NULL, NULL);
+    pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF);
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
 
     /* 代表表記が曖昧な用言の場合 */
@@ -1582,7 +1582,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		new_pred_string = make_pred_string(t_ptr, &m, NULL);
+		new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF);
 		/* 代表と異なるもの */
 		if (strcmp(pred_string, new_pred_string)) {
 		    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, new_pred_string, flag);
@@ -1598,7 +1598,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* ないときで、可能動詞のときは、もとの形を使う */
     if (f_num == 0 && 
 	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
-	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"));
+	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"), OptCaseFlag & OPT_CASE_USE_REP_CF);
 	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);	
 	free(pred_string);
     }

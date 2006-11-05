@@ -110,7 +110,7 @@ int		OptUseScase;
     char *buffer, *pp = NULL, *verb;
     BNST_DATA *cbp;
 
-    verb = make_pred_string((TAG_DATA *)bp, NULL, NULL);
+    verb = make_pred_string((TAG_DATA *)bp, NULL, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
 
     /* cbp = get_quasi_closest_case_component((TAG_DATA *)bp, 
        bp->num < 1 ? NULL : (TAG_DATA *)(bp - 1)); */
@@ -137,13 +137,32 @@ int		OptUseScase;
 	return verb;
     }
 }
-	
+
+/*==================================================================*/
+	      void or_scase_code(char **dst, char *src)
+/*==================================================================*/
+{
+    if (*dst == NULL) {
+	*dst = src;
+    }
+    else if (src) {
+	int i;
+
+	for (i = 0; *(*dst + i) != '\0'; i++) {
+	    *(*dst + i) |= *(src + i);
+	}
+
+	free(src);
+    }
+    /* *dstがあってsrcがないときはなにもしない */
+}
+
 /*==================================================================*/
 		 void get_scase_code(BNST_DATA *ptr)
 /*==================================================================*/
 {
     int i;
-    char *cp, *ans, *anscp, *str_buffer, *vtype, voice[3];
+    char *cp, *ans = NULL, *anscp, *str_buffer = NULL, *vtype, voice[3];
 
     /* 初期化: init_bnst でもしている */
     for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
@@ -151,7 +170,7 @@ int		OptUseScase;
     if (ScaseDicExist == TRUE && 
 	(vtype = check_feature(ptr->f, "用言")) && 
 	strcmp(vtype, "用言:判")) { /* 判定詞ではない場合 */
-	vtype += 5;
+	vtype += strlen("用言:");
 
 	voice[0] = '\0';
 	if (ptr->voice & VOICE_UKEMI) {
@@ -164,22 +183,52 @@ int		OptUseScase;
 	    strcpy(voice, ":PC");
 	}
 
-	/* まず、直前格要素との組で検索 */
+	/* まず、直前格要素との組で検索 *
 	str_buffer = make_pred_string_for_scase(ptr);
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
 	if (voice[0]) strcat(str_buffer, voice);
 
 	ans = get_scase(str_buffer);
+	*/
 
 	if (ans == NULL) { /* なければ、用言だけで検索 */
-	    free(str_buffer);
-	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL);
+	    if (str_buffer) {
+		free(str_buffer);
+	    }
+	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
 	    strcat(str_buffer, ":");
 	    strcat(str_buffer, vtype);
 	    if (voice[0]) strcat(str_buffer, voice);
 
 	    ans = get_scase(str_buffer);
+
+	    /* 代表表記が曖昧な用言の場合 => scase.datが代表表記化され次第使用 */
+	    if (0 && check_feature(ptr->head_ptr->f, "原形曖昧")) {
+		FEATURE *fp;
+		MRPH_DATA m;
+		char *str;
+		char *new_ans;
+
+		fp = ptr->head_ptr->f;
+		while (fp) {
+		    if (!strncmp(fp->cp, "ALT-", 4)) {
+			sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+			       m.Goi2, m.Yomi, m.Goi, 
+			       &m.Hinshi, &m.Bunrui, 
+			       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+			free(str_buffer);
+			str_buffer = make_pred_string((TAG_DATA *)ptr, &m, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+			strcat(str_buffer, ":");
+			strcat(str_buffer, vtype);
+			if (voice[0]) strcat(str_buffer, voice);
+
+			new_ans = get_scase(str_buffer);
+			or_scase_code(&ans, new_ans);
+		    }
+		    fp = fp->next;
+		}
+	    }
 	}
 
 	if (ans != NULL) {
