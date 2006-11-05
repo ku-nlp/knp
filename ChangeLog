@@ -1,3 +1,11 @@
+2006-11-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c:
+	Added representative name handling to surface case processing.
+
+	* system/main.c, system/thesaurus.c:
+	Made it default to use representative names for thesauri and case frames.
+
 2006-11-05  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/extern.h, system/main.c:
