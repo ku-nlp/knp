@@ -1,3 +1,8 @@
+2006-11-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/tree_conv.c:
+	Modified not to die when failing to expand para top.
+
 2006-11-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c:
