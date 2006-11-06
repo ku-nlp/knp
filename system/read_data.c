@@ -126,8 +126,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     /* (代表表記がないときに)代表表記を作る */
 
-    /* 基本形の方が長いかもしれないので、48バイト余分に確保 */
-    buf = (char *)malloc_data(strlen(m_ptr->Goi) + strlen(m_ptr->Yomi) + 50, "make_mrph_rn");
+    /* 基本形の方が長いかもしれないので余分に確保 */
+    buf = (char *)malloc_data(strlen(m_ptr->Goi) + strlen(m_ptr->Yomi) + SMALL_DATA_LEN, "make_mrph_rn");
     sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Yomi);
 
     if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* 活用語 */
@@ -135,6 +135,30 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* 基本形をつける */
     }
     return buf;
+}
+
+/*==================================================================*/
+	       void supplement_bp_rn(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    char *buf, *rep_buf;
+
+    /* 「意味有」列に対して疑似代表表記をfeatureとして付与 */
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
+	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") && 
+		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "代表表記")) {
+		rep_buf = make_mrph_rn((sp->tag_data + i)->mrph_ptr + j);
+		buf = (char *)malloc_data(strlen(rep_buf) + strlen("疑似代表表記:") + 1, "supplement_bp_rn");
+		sprintf(buf, "疑似代表表記:%s", rep_buf);
+		assign_cfeature(&(((sp->tag_data + i)->mrph_ptr + j)->f), buf, FALSE);
+		free(rep_buf);
+		free(buf);
+	    }
+	}
+    }
 }
 
 /*==================================================================*/

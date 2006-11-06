@@ -429,6 +429,7 @@ extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 extern char *get_mrph_rep_from_f(MRPH_DATA *m_ptr);
 extern int get_mrph_rep_length(char *rep_strt);
 extern char *make_mrph_rn(MRPH_DATA *m_ptr);
+extern void supplement_bp_rn(SENTENCE_DATA *sp);
 
 /* read_rule.c */
 extern int case2num(char *cp);
