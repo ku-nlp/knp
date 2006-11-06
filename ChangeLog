@@ -3,6 +3,9 @@
 	* system/case_analysis.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/tree_conv.c:
 	Modified not to die when failing to expand para top.
 
+	* system/extern.h, system/main.c, system/read_data.c:
+	Give a pseudo representative name to a content word that has no representative name.
+
 2006-11-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c:
