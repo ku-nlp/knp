@@ -786,17 +786,18 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	if (!(OptExpress & OPT_NOTAG)) {
 	    dpnd_info_to_tag(sp, &dpnd); 
 	}
-	make_dpnd_tree(sp);
-	if (!(OptExpress & OPT_NOTAG)) {
-	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	}
+	if (make_dpnd_tree(sp)) {
+	    if (!(OptExpress & OPT_NOTAG)) {
+		bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	    }
 
-	if (OptDisplay == OPT_NBEST) {
-	    sp->score = score;
-	    print_result(sp, 0);
-	}
-	else {
-	    print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+	    if (OptDisplay == OPT_NBEST) {
+		sp->score = score;
+		print_result(sp, 0);
+	    }
+	    else {
+		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+	    }
 	}
     }
 
@@ -1103,7 +1104,9 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	/* 依存構造決定後 格解析を行う場合 */
 	if (OptAnalysis == OPT_CASE2) {
 	    sp->Best_mgr->score = -10000;
-	    call_case_analysis(sp, sp->Best_mgr->dpnd);
+	    if (call_case_analysis(sp, sp->Best_mgr->dpnd) == FALSE) {
+		return FALSE;
+	    }
 	}
 
 	/* 依存構造・格構造決定後の処理 */
@@ -1126,7 +1129,9 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
 	/* 構造決定後のルール適用準備 */
 	dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
-	make_dpnd_tree(sp);
+	if (make_dpnd_tree(sp) == FALSE) {
+	    return FALSE;
+	}
 	bnst_to_tag_tree(sp); /* タグ単位の木へ */
 
 	/* 構造決定後のルール適用 */

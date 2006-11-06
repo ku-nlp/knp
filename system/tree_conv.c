@@ -208,7 +208,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 }
 
 /*==================================================================*/
-void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
+     int para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
     int i;
@@ -223,8 +223,11 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 		B<P>(end_ptr) は PARA(並列をまとめるノード)となる
     */
 
-    for (i = 0; i < m_ptr->child_num; i++)
-	para_top_expand(sp, m_ptr->child[i]);
+    for (i = 0; i < m_ptr->child_num; i++) {
+	if (para_top_expand(sp, m_ptr->child[i]) == FALSE) {
+	    return FALSE;
+	}
+    }
 
     end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 1];
     pre_end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 2];
@@ -233,7 +236,7 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     sp->New_Bnst_num++;
     if ((sp->Bnst_num + sp->New_Bnst_num) > BNST_MAX) {
 	fprintf(stderr, ";; Too many nodes in expanding para top .\n");
-	exit(1);
+	return FALSE;
     }
     if (sp->Max_New_Bnst_num < sp->New_Bnst_num) {
 	sp->Max_New_Bnst_num = sp->New_Bnst_num;
@@ -267,6 +270,8 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     new_ptr->para_type = PARA_NORMAL;
     for (i = 0; i < m_ptr->part_num - 1; i++)
 	sp->bnst_data[m_ptr->end[i]].para_type = PARA_NORMAL;
+
+    return TRUE;
 }
 
 /*==================================================================*/
@@ -394,18 +399,30 @@ void para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 
     sp->New_Bnst_num = 0;    				/* 初期化 */
 
-    if (make_simple_tree(sp) == FALSE)			/* リンク付け */
+    if (make_simple_tree(sp) == FALSE) {		/* リンク付け */
 	return FALSE;
+    }
 	
-    if (OptExpandP == TRUE) 
-	for (i = 0; i < sp->Para_M_num; i++)		/* 強並列の展開 */
-	    if (sp->para_manager[i].parent == NULL)
-		strong_para_expand(sp, sp->para_manager + i);    
-    for (i = 0; i < sp->Para_M_num; i++) 		/* PARAの展開 */
-	if (sp->para_manager[i].parent == NULL)
-	    para_top_expand(sp, sp->para_manager + i);    
-    if (OptExpandP == TRUE) 
+    if (OptExpandP == TRUE) {
+	for (i = 0; i < sp->Para_M_num; i++) {		/* 強並列の展開 */
+	    if (sp->para_manager[i].parent == NULL) {
+		strong_para_expand(sp, sp->para_manager + i);
+	    }
+	}
+    }
+
+    for (i = 0; i < sp->Para_M_num; i++) {		/* PARAの展開 */
+	if (sp->para_manager[i].parent == NULL) {
+	    if (para_top_expand(sp, sp->para_manager + i) == FALSE) {
+		return FALSE;
+	    }
+	}
+    }
+
+    if (OptExpandP == TRUE) {
 	para_modifier_expand(sp->bnst_data + sp->Bnst_num - 1);	/* PARA修飾の展開 */
+    }
+
     /*
     incomplete_para_expand(sp->bnst_data + sp->Bnst_num - 1);*/	/* 部分並列の展開 */
 

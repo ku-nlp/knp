@@ -1245,14 +1245,15 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 後処理 */
     if (OptPostProcess) {
-	make_dpnd_tree(sp);
-	bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	if (OptExpress == OPT_TAB || 
-	    OptExpress == OPT_NOTAG) {
-	    tag_bnst_postprocess(sp, 1);
-	}
-	else {
-	    tag_bnst_postprocess(sp, 0); /* 木構造出力のため、num, dpnd_head の番号の付け替えはしない */
+	if (make_dpnd_tree(sp)) {
+	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	    if (OptExpress == OPT_TAB || 
+		OptExpress == OPT_NOTAG) {
+		tag_bnst_postprocess(sp, 1);
+	    }
+	    else {
+		tag_bnst_postprocess(sp, 0); /* 木構造出力のため、num, dpnd_head の番号の付け替えはしない */
+	    }
 	}
     }
 
@@ -1270,14 +1271,22 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
     else if (OptExpress == OPT_NOTAGTREE) {
 	/* 文節のtree出力 */
-	make_dpnd_tree(sp);
-	print_kakari(sp, OptExpress);
+	if (make_dpnd_tree(sp)) {
+	    print_kakari(sp, OptExpress);
+	}
+	else {
+	    fprintf(Outfp, "EOS\n");
+	}
     }
     else {
 	/* タグ単位のtree出力 */
-	make_dpnd_tree(sp);
-	bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	print_kakari(sp, OptExpress); /* OPT_TREE */
+	if (make_dpnd_tree(sp)) {
+	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	    print_kakari(sp, OptExpress); /* OPT_TREE */
+	}
+	else {
+	    fprintf(Outfp, "EOS\n");
+	}
     }
 
     /* nbestオプションなどではこの関数が複数回呼ばれるので後処理を元に戻しておく */

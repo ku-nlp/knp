@@ -1032,7 +1032,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 }
 
 /*==================================================================*/
-	void call_case_analysis(SENTENCE_DATA *sp, DPND dpnd)
+	 int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, j, k;
@@ -1045,7 +1045,9 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 
     dpnd_info_to_bnst(sp, &dpnd);
     dpnd_info_to_tag(sp, &dpnd);
-    make_dpnd_tree(sp);
+    if (make_dpnd_tree(sp) == FALSE) {
+	return FALSE;
+    }
     bnst_to_tag_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
@@ -1066,7 +1068,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     if (all_case_analysis(sp, sp->tag_data + sp->Tag_num - 1, &Work_mgr) == TRUE)
 	Possibility++;
     else
-	return;
+	return FALSE;
 
     /* ここで default との距離のずれ, 提題を処理 */
 
@@ -1225,6 +1227,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	(Work_mgr.score == sp->Best_mgr->score && 
 	 compare_dpnd(sp, &Work_mgr, sp->Best_mgr) == TRUE))
 	copy_mgr(sp->Best_mgr, &Work_mgr);
+
+    return TRUE;
 }
 
 /*==================================================================*/
