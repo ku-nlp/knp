@@ -71,7 +71,9 @@ static int dpndID = 0;
 	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
 	pu_flag = 0;
-	if (Language == CHINESE && check_feature(k_ptr->f, "PU")) {
+	if (Language == CHINESE && 
+	    (check_feature(k_ptr->f, "PU") ||
+	     check_feature(k_ptr->f, "PU-COMMA"))) {
 	    if (k_ptr->head_ptr->Goi == "¡Ê" ||
 		k_ptr->head_ptr->Goi == "¡Ê" ||
 		k_ptr->head_ptr->Goi == "¡Æ" ||
@@ -87,7 +89,7 @@ static int dpndID = 0;
 	    }
 	    else {
 		for (k = i - 1; k >= 0; k--) {
-		    if (!check_feature((sp->bnst_data + k)->f, "PU")) {
+		    if (!check_feature((sp->bnst_data + k)->f, "PU") && !check_feature((sp->bnst_data + k)->f, "PU-COMMA")) {
 			Dpnd_matrix[k][i] = 'L';
 			Dpnd_prob_matrix[k][i] = SMALL_PROB;
 			break;

@@ -168,6 +168,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     int ha_check = 0, *un_count;
     int rentai, vacant_slot_num, *scase_check;
     int count, pos, default_pos;
+    int verb, comma;
     double one_score = 0;
     char *cp, *cp2;
 
@@ -208,6 +209,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		/* 距離コストを計算するために、まず係り先の候補を調べる */
 		count = 0;
 		pos = 0;
+		verb = 0;
+		comma = 0;
 		if (d_ptr->num < g_ptr->num) {
 		    for (i = d_ptr->num + 1; i < sp->Bnst_num; i++) {
 			if (check_dpnd_possibility(sp, d_ptr->num, i, cky_ptr->i, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
@@ -215,6 +218,20 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				pos = count;
 			    }
 			    count++;
+			}
+			if (i >= g_ptr->num) {
+			    continue;
+			}
+			if (Language == CHINESE &&
+			    (check_feature((sp->bnst_data+i)->f, "VV") ||
+			     check_feature((sp->bnst_data+i)->f, "VA") ||
+			     check_feature((sp->bnst_data+i)->f, "VC") ||
+			     check_feature((sp->bnst_data+i)->f, "VE"))) {
+			    verb++;
+			}
+			if (Language == CHINESE &&
+			    check_feature((sp->bnst_data+i)->f, "PU-COMMA")) {
+			    comma++;
 			}
 		    }
 		}
@@ -226,11 +243,31 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    }
 			    count++;
 			}
+			if (i <= g_ptr->num) {
+			    continue;
+			}
+			if (Language == CHINESE &&
+			    (check_feature((sp->bnst_data+i)->f, "VV") ||
+			     check_feature((sp->bnst_data+i)->f, "VA") ||
+			     check_feature((sp->bnst_data+i)->f, "VC") ||
+			     check_feature((sp->bnst_data+i)->f, "VE"))) {
+			    verb++;
+			}
+			if (Language == CHINESE &&
+			    check_feature((sp->bnst_data+i)->f, "PU-COMMA")) {
+			    comma++;
+			}
 		    }
+		}
+
+		if (Language == CHINESE) {
+		    one_score -= 10 * verb; 
+		    one_score -= 10 * comma;
 		}
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
 		    count : d_ptr->dpnd_rule->preference;
+		
 
 		/* 係り先のDEFAULTの位置との差をペナルティに
 		   ※ 提題はC,B'を求めて遠くに係ることがあるが，それが
@@ -238,8 +275,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		if (check_feature(d_ptr->f, "提題")) {
 		    one_score -= abs(default_pos - 1 - pos);
 		}
-		else {
+		else if (Language != CHINESE){
 		    one_score -= abs(default_pos - 1 - pos) * 2;
+		}
+		else if (Language == CHINESE) {
+		    if (abs(default_pos - 1 - pos) > 20) {
+			one_score -= 20;
+		    }
 		}
 
 		/* 読点をもつものが隣にかかることを防ぐ */
