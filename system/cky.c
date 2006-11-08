@@ -230,7 +230,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    verb++;
 			}
 			if (Language == CHINESE &&
-			    check_feature((sp->bnst_data+i)->f, "PU-COMMA")) {
+			    check_feature((sp->bnst_data+i)->f, "PU") &&
+			    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "$A!C(B") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
 			    comma++;
 			}
 		    }
@@ -254,7 +260,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    verb++;
 			}
 			if (Language == CHINESE &&
-			    check_feature((sp->bnst_data+i)->f, "PU-COMMA")) {
+			    check_feature((sp->bnst_data+i)->f, "PU") &&
+			    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "$A!C(B") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
 			    comma++;
 			}
 		    }
