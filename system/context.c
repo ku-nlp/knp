@@ -938,7 +938,9 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 
     sp_new->available = sp->available;
     sp_new->Sen_num = sp->Sen_num;
-    sp_new->Comment = strdup(sp->Comment);
+    if (sp->Comment) {
+	sp_new->Comment = strdup(sp->Comment);
+    }
 
     sp_new->Mrph_num = sp->Mrph_num;
     sp_new->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*sp->Mrph_num, 

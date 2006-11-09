@@ -1,3 +1,11 @@
+2006-11-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c:
+	「ＡのＢＣ」の係り受け解析を代表表記化格フレームに対応
+	
+	* system/context.c:
+	bug fix.
+
 2006-11-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/tree_conv.c:
