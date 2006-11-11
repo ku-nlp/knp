@@ -444,21 +444,20 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	      int find_head_tag_from_bnst(BNST_DATA *bp)
 /*==================================================================*/
 {
-    int offset;
-    char *cp;
+    int offset = 0;
+    char *cp, *cp2;
 
     /* <P>のときと「タグ単位受無視」のときは係り先を最後のタグ単位とする */
     if (bp->para_type != PARA_NORMAL && 
 	(!check_feature(bp->f, "タグ単位受無視")) && 
 	((cp = check_feature(bp->parent->f, "タグ単位受")) ||
 	 (cp = check_feature(bp->parent->f, "直前タグ受")))) {
-	offset = atoi(cp + 11);
-	if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
-	    offset = 0;
+	if ((cp2 = strchr(cp, ':'))) {
+	    offset = atoi(cp2 + 1);
+	    if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
+		offset = 0;
+	    }
 	}
-    }
-    else {
-	offset = 0;
     }
 
     return offset;
@@ -468,7 +467,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	       int bnst_to_tag_tree(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, offset;
+    int i, j, offset, last_b_flag = 1;
     char *cp;
     BNST_DATA *bp;
     TAG_DATA *tp;
@@ -541,7 +540,10 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	    }
 	}
 
-	if (i == sp->Bnst_num - 1) continue;
+	if (last_b_flag) { /* 最後の文節 (後処理があるので i == Bnst_num - 1 とは限らない) */
+	    last_b_flag = 0;
+	    continue;
+	}
 
 	/* 親と子 */
 	if (bp->parent) {
