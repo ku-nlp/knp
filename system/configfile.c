@@ -720,7 +720,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    fprintf(Outfp, "Setting default rules ... ");
 	}
 
-	RuleNumMax = 9;
+	RuleNumMax = 10;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
 	/* mrph_homo 同形異義語 */
@@ -792,6 +792,14 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = TagRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+	/* tag_postprocess 基本句-後処理 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("tag_postprocess");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = PostProcessTagRuleType;
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
