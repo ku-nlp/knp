@@ -94,6 +94,7 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 {
     int i, j, k, child_num, pre_node_child_num;
     int buffer[BNST_MAX];
+    BNST_DATA *tmp_b_ptr;
 
     /* dpnd.head[i]をbuffer[i]にコピーし，3つ以上からなる並列構造では
        係先を隣のheadから末尾のheadに変更する．
@@ -161,6 +162,25 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	sp->bnst_data[j].child[child_num] = NULL;
     }
 
+    /* 子供をsort */
+    for (j = sp->Bnst_num - 1; j >= 0; j--) {
+	for (child_num = 0; sp->bnst_data[j].child[child_num]; child_num++) {
+	    ;
+	}
+	if (child_num < 2) { /* 2個以上のみ */
+	    continue;
+	}
+	for (i = 0; i < child_num - 1; i++) {
+	    for (k = i + 1; k < child_num; k++) {
+		if (sp->bnst_data[j].child[i]->num < sp->bnst_data[j].child[k]->num) {
+		    tmp_b_ptr = sp->bnst_data[j].child[i];
+		    sp->bnst_data[j].child[i] = sp->bnst_data[j].child[k];
+		    sp->bnst_data[j].child[k] = tmp_b_ptr;
+		}
+	    }
+	}
+    }
+
     return TRUE;
 }
 
@@ -208,6 +228,20 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 }
 
 /*==================================================================*/
+  int get_correct_postprocessed_bnst_num(SENTENCE_DATA *sp, int num)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = num; i >= 0; i--) {
+	if ((sp->bnst_data + i)->num != -1) {
+	    return i;
+	}
+    }
+    return i;
+}
+
+/*==================================================================*/
      int para_top_expand(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 /*==================================================================*/
 {
@@ -229,8 +263,8 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	}
     }
 
-    end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 1];
-    pre_end_ptr = sp->bnst_data + m_ptr->end[m_ptr->part_num - 2];
+    end_ptr = sp->bnst_data + get_correct_postprocessed_bnst_num(sp, m_ptr->end[m_ptr->part_num - 1]);
+    pre_end_ptr = sp->bnst_data + get_correct_postprocessed_bnst_num(sp, m_ptr->end[m_ptr->part_num - 2]);
 	
     new_ptr = sp->bnst_data + sp->Bnst_num + sp->New_Bnst_num;
     sp->New_Bnst_num++;
@@ -444,12 +478,11 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	      int find_head_tag_from_bnst(BNST_DATA *bp)
 /*==================================================================*/
 {
-    int offset = 0;
+    int offset = 0, gov;
     char *cp, *cp2;
 
-    /* <P>のときと「タグ単位受無視」のときは係り先を最後のタグ単位とする */
-    if (bp->para_type != PARA_NORMAL && 
-	(!check_feature(bp->f, "タグ単位受無視")) && 
+    /* 「タグ単位受無視」のときは係り先を最後のタグ単位とする */
+    if (!check_feature(bp->f, "タグ単位受無視") && 
 	((cp = check_feature(bp->parent->f, "タグ単位受")) ||
 	 (cp = check_feature(bp->parent->f, "直前タグ受")))) {
 	if ((cp2 = strchr(cp, ':'))) {
@@ -460,14 +493,19 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	}
     }
 
-    return offset;
+    for (gov = bp->parent->tag_num - 1 + offset; gov >= 0; gov--) {
+	if ((bp->parent->tag_ptr + gov)->num != -1) {
+	    break;
+	}
+    }
+    return gov;
 }
 
 /*==================================================================*/
 	       int bnst_to_tag_tree(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, offset, last_b_flag = 1;
+    int i, j, offset, last_b_flag = 1, gov, head;
     char *cp;
     BNST_DATA *bp;
     TAG_DATA *tp;
@@ -482,7 +520,13 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	bp = sp->bnst_data + sp->Bnst_num + i;
 
 	/* new領域にcopy */
-	*(sp->tag_data + sp->Tag_num + sp->New_Tag_num) = *(bp->tag_ptr + bp->tag_num - 1);
+
+	for (head = bp->tag_num - 1; head >= 0; head--) { /* 主辞基本句をさがす */
+	    if ((bp->tag_ptr + head)->num != -1) {
+		break;
+	    }
+	}
+	*(sp->tag_data + sp->Tag_num + sp->New_Tag_num) = *(bp->tag_ptr + head);
 	sp->New_Tag_num++;
 
 	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1;
@@ -496,16 +540,25 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	    bp->tag_num = 1;
 	}
 	else {
-	    if (bp->tag_num > 1) {
+	    if (bp->tag_num > 1 && head > 0) {
 		/* 文節内タグ単位の親が <P>(-<PARA>) のとき */
-		(bp->tag_ptr + bp->tag_num - 2)->parent = tp;
+		(bp->tag_ptr + head - 1)->parent = tp;
 		t_add_node((BNST_DATA *)tp, 
-			   (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 2), -1);
+			   (BNST_DATA *)(bp->tag_ptr + head - 1), -1);
 
 		/* 文節内 */
-		for (j = 0; j < bp->tag_num - 2; j++) {
-		    (bp->tag_ptr + j)->parent = bp->tag_ptr + j + 1;
-		    t_add_node((BNST_DATA *)(bp->tag_ptr + j + 1), 
+		for (j = 0; j < head - 1; j++) {
+		    for (gov = j + 1; gov < head; gov++) {
+			if ((bp->tag_ptr + gov)->num != -1) {
+			    break;
+			}
+		    }
+		    if (gov >= head || /* 後処理で係り先がなくなった基本句 */
+			(bp->tag_ptr + j)->num == -1) { /* 後処理でマージされた基本句 */
+			continue;
+		    }
+		    (bp->tag_ptr + j)->parent = bp->tag_ptr + gov;
+		    t_add_node((BNST_DATA *)(bp->tag_ptr + gov), 
 			       (BNST_DATA *)(bp->tag_ptr + j), -1);
 		}
 		/* bp->tag_ptr の最後のひとつは間違っている (<PARA>の方) */
@@ -516,8 +569,14 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	}
 
 	/* 親と子のリンクつけ (new) */
-	tp->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1;	/* <PARA>へ */
-	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1), 
+
+	for (head = bp->parent->tag_num - 1; head >= 0; head--) { /* 係り先の主辞基本句をさがす */
+	    if ((bp->parent->tag_ptr + head)->num != -1) {
+		break;
+	    }
+	}
+	tp->parent = bp->parent->tag_ptr + head; /* <PARA>へ */
+	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + head), 
 		   (BNST_DATA *)tp, -1);
     }
 
@@ -528,14 +587,28 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	    continue;
 	}
 
-	para_info_to_tag(bp, bp->tag_ptr + bp->tag_num - 1);
+	for (head = bp->tag_num - 1; head >= 0; head--) { /* 主辞基本句をさがす */
+	    if ((bp->tag_ptr + head)->num != -1) {
+		break;
+	    }
+	}
+	para_info_to_tag(bp, bp->tag_ptr + head);
 
 	/* <PARA>のときはheadのみだが、tag_ptr, tag_numの変更はしない */
 	if (bp->para_top_p == FALSE) {
 	    /* 文節内 */
 	    for (j = 0; j < bp->tag_num - 1; j++) {
-		(bp->tag_ptr + j)->parent = bp->tag_ptr + j + 1;
-		t_add_node((BNST_DATA *)(bp->tag_ptr + j + 1), 
+		for (gov = j + 1; gov < bp->tag_num; gov++) {
+		    if ((bp->tag_ptr + gov)->num != -1) {
+			break;
+		    }
+		}
+		if (gov >= bp->tag_num || /* 後処理で係り先がなくなった基本句 */
+		    (bp->tag_ptr + j)->num == -1) { /* 後処理でマージされた基本句 */
+		    continue;
+		}
+		(bp->tag_ptr + j)->parent = bp->tag_ptr + gov;
+		t_add_node((BNST_DATA *)(bp->tag_ptr + gov), 
 			   (BNST_DATA *)(bp->tag_ptr + j), -1);
 	    }
 	}
@@ -548,9 +621,9 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	/* 親と子 */
 	if (bp->parent) {
 	    offset = find_head_tag_from_bnst(bp); /* タグ単位内の係り先をルールから得る */
-	    (bp->tag_ptr + bp->tag_num - 1)->parent = bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset;
-	    t_add_node((BNST_DATA *)(bp->parent->tag_ptr + bp->parent->tag_num - 1 + offset), 
-		       (BNST_DATA *)(bp->tag_ptr + bp->tag_num - 1), -1);
+	    (bp->tag_ptr + head)->parent = bp->parent->tag_ptr + offset;
+	    t_add_node((BNST_DATA *)(bp->parent->tag_ptr + offset), 
+		       (BNST_DATA *)(bp->tag_ptr + head), -1);
 	}
 	else {
 	    fprintf(stderr, ";; %s(%d)'s parent doesn't exist!\n", bp->Jiritu_Go, i);
