@@ -1,3 +1,11 @@
+2006-11-21  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/tree_conv.c:
+	Modified a bug of tree printing with -postprocess option.
+
+	* rule/bnst_basic.rule:
+	Commented out the dependency handling of "ごぼうの洗い方".
+
 2006-11-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/configfile.c:
