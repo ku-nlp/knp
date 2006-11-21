@@ -6,6 +6,15 @@
 	* rule/bnst_basic.rule:
 	Commented out the dependency handling of "ごぼうの洗い方".
 
+	* system/dpnd_analysis.c:
+	Addressed an inconsistency between coordination and postprocess.
+
+	* knprc.in, system/configfile.c:
+	Changed the application method of tag_postprocess.rule.
+
+	* system/case_data.c, rule/case_analysis.rule:
+	Added a framework for dealing with "〜の方" in case analysis.
+
 2006-11-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/configfile.c:
