@@ -403,9 +403,6 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 /*==================================================================*/
 {
-    int i;
-    PARA_MANAGER *m_ptr;
-
     dst->para_num = src->para_num;
     dst->para_key_type = src->para_key_type;
     dst->para_top_p = src->para_top_p;
