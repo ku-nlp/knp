@@ -795,9 +795,9 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* tag_postprocess 基本句-後処理 逆方向 ルールループ先行 */
+	/* tag_postprocess 基本句-後処理 逆方向 */
 	(RULE+CurrentRuleNum)->file = strdup("tag_postprocess");
-	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = PostProcessTagRuleType;
 	(RULE+CurrentRuleNum)->direction = RtoL;
