@@ -244,7 +244,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 	    (check_feature(ptr1->f, "体言") &&
 	     check_feature(ptr2->f, "体言")) || 
-	
+
+	    (check_feature(ptr1->f, "数量") && /* 「一、二泊する」では体言、用言となるため */
+	     check_feature(ptr2->f, "数量")) || 
+
 	    /* 「的，」と「的だ」 */
 	    (check_feature(ptr1->f, "並キ:名") && 
 	     check_feature(ptr1->f, "類似計算:的") && 
