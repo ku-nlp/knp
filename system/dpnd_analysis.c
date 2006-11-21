@@ -400,6 +400,20 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
+void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
+/*==================================================================*/
+{
+    int i;
+    PARA_MANAGER *m_ptr;
+
+    dst->para_num = src->para_num;
+    dst->para_key_type = src->para_key_type;
+    dst->para_top_p = src->para_top_p;
+    dst->para_type = src->para_type;
+    dst->to_para_p = src->to_para_p;
+}
+
+/*==================================================================*/
 	void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
@@ -449,6 +463,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 			break;
 		    }
 		}
+		copy_para_info(sp, t_ptr->b_ptr + merge_to, t_ptr->b_ptr);
 		t_ptr->b_ptr->num = -1;
 		(t_ptr->b_ptr + merge_to)->mrph_num += t_ptr->b_ptr->mrph_num;
 		(t_ptr->b_ptr + merge_to)->dpnd_head = t_ptr->b_ptr->dpnd_head;
