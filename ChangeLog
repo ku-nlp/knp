@@ -1,3 +1,8 @@
+2006-11-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/src/add_usr_bgh.pl:
+	added.
+
 2006-11-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c, system/context.c, system/extern.h:
