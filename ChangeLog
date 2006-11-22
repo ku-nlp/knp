@@ -1,5 +1,8 @@
 2006-11-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
+	* rule/case_analysis.rule, system/case_data.c:
+	「Ｔ格要素表記直前参照」の「Ｔ」を削除
+
 	* dict/src/add_usr_bgh.pl:
 	added.
 
