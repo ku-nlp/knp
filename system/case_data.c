@@ -161,7 +161,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     /* 格要素 */
     if (flag == TRUE) {
 	if (b_ptr->num > 0 && /* 複合辞などはひとつ前の基本句をみる */
-	    check_feature(b_ptr->f, "Ｔ格要素表記直前参照")) {
+	    check_feature(b_ptr->f, "格要素表記直前参照")) {
 	    b_ptr--;
 	}
 
