@@ -63,6 +63,7 @@ int		OptAddSvmFeatureUtype;
 int		OptAddSvmFeatureDiscourseDepth;
 int		OptAddSvmFeatureObjectRecognition;
 int		OptAddSvmFeatureReferedNum;
+int		OptNoCandidateBehind;
 int		OptCopula;
 int		OptPostProcess;
 int		OptRecoverPerson;
@@ -183,6 +184,7 @@ extern int	EX_match_subject;
     OptAddSvmFeatureDiscourseDepth = 0;
     OptAddSvmFeatureObjectRecognition = 0;
     OptAddSvmFeatureReferedNum = 0;
+    OptNoCandidateBehind = 0;
     OptCopula = 0;
     OptPostProcess = 0;
     OptRecoverPerson = 0;
@@ -456,6 +458,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-no-wo-to")) {
 	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
+	}
+	else if (str_eq(argv[0], "-no-candidate-behind")) {
+	    OptNoCandidateBehind = 1;
 	}
 	else if (str_eq(argv[0], "-i")) {
 	    argv++; argc--;

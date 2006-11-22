@@ -70,6 +70,7 @@ extern int		OptAddSvmFeatureUtype;
 extern int		OptAddSvmFeatureDiscourseDepth;
 extern int		OptAddSvmFeatureObjectRecognition;
 extern int		OptAddSvmFeatureReferedNum;
+extern int		OptNoCandidateBehind;
 extern int		OptCopula;
 extern int		OptPostProcess;
 extern int		OptRecoverPerson;

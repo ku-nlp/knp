@@ -2402,7 +2402,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 
 		max = -100000;
 		for (i = 0; i < cand_num; i++) {
-		    if (OptLearn == TRUE) {
+		    if (OptLearn == TRUE || OptDisplay == OPT_DEBUG) {
 			print_svm_feature(ante_cands, i, em_ptr, cpm_ptr);
 		    }
 
@@ -2934,6 +2934,10 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
        cpm_ptr->pred_b_ptr: target predicate */
 
     /* flag == 1 (名詞のとき): 用言より後でもOKにする */
+
+    if (OptNoCandidateBehind) {
+	flag = 0;
+    }
 
     if (Bcheck[cs - s][bp->num] || /* すでにチェックした */
 	!check_feature(bp->f, "先行詞候補") && cpm_ptr->cf.type == CF_PRED || 
