@@ -1,3 +1,8 @@
+2006-11-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/context.c, system/extern.h:
+	名詞の関係解析時に、自分より後ろを先行詞候補にしないオプションを追加(-no-candidate-behind)
+
 2006-11-22  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/bnst_compare.c:
