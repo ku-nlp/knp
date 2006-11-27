@@ -277,7 +277,7 @@ char mrph_buffer[SMALL_DATA_LEN];
 
 	    /* È½Äê»ìÊ¬²ò»ş: Ï¢ÂÎ½¤¾ş¤ÏÈ½Äê»ì¤ÎÁ°¤ÎÌ¾»ì¤Ë·¸¤ë¤è¤¦¤Ë½¤Àµ */
 	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
-	    if (OptPostProcess && 
+	    if (OptCopula && 
 		dpnd_head != -1 && 
 		check_feature(t_ptr->f, "£Ô¼õÂ¦´ğËÜ¶çÊ¬²ò")) {
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
