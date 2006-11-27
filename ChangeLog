@@ -3,6 +3,12 @@
 	* system/cky.c, system/case_data.c:
 	A small fix for Japanese CKY parsing.
 
+	* system/lib_print.c, rule/tag_after_dpnd_and_case.rule, rule/tag_postprocess.rule:
+	Modified the -copula option to be used independently.
+
+	* system/main.c:
+	Modified options: -notagtree => -bnsttree, -notagtab => -bnsttab
+
 2006-11-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/case_analysis.rule, system/case_data.c:
