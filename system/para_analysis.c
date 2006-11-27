@@ -152,7 +152,33 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
 }
 
 /*==================================================================*/
-   int plus_bonus_score(SENTENCE_DATA *sp, int jend_pos, PARA_DATA *p_ptr)
+   int calc_starting_bonus_score(SENTENCE_DATA *sp, int istart_pos, PARA_DATA *p_ptr)
+/*==================================================================*/
+{
+    BNST_DATA *b_ptr;
+
+    b_ptr = &sp->bnst_data[istart_pos];
+
+    if (p_ptr->type == PARA_KEY_I) { 
+	return 0;
+    } 
+    else if (p_ptr->type == PARA_KEY_N) {
+	if (check_feature(b_ptr->f, "名並始点"))
+	    return BONUS;
+	else return 0;
+    }
+    else if (p_ptr->type == PARA_KEY_P) {
+	if (check_feature(b_ptr->f, "述並始点"))
+	    return BONUS;
+	else return 0;
+    }
+    else {
+	return 0;
+    }
+}
+
+/*==================================================================*/
+   int calc_ending_bonus_score(SENTENCE_DATA *sp, int jend_pos, PARA_DATA *p_ptr)
 /*==================================================================*/
 {
     BNST_DATA *b_ptr;
@@ -218,7 +244,13 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 		    score_matrix[i][j+1] :
 		    score_matrix[i][j+1] - PENALTY - penalty_table[j];
 		
-		if (score_upward >= score_sideway) {
+		/* 中国語で並列のキーが後部の先頭の場合 */
+		if (Language == CHINESE &&
+		    (check_feature((sp->bnst_data + j)->f, "CC") ||
+		     check_feature((sp->bnst_data + j)->f, "PU"))) {
+		    score_matrix[i][j] = score_sideway;
+		    prepos_matrix[i][j] = i;
+		} else if (score_upward >= score_sideway) {
 		    score_matrix[i][j] = score_upward;
 		    prepos_matrix[i][j] = maxpos_array[i+1];
 		} else {
@@ -256,6 +288,7 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     int i, j, flag, nth;
     int key_pos = ptr->key_pos;
     int iend_pos = ptr->iend_pos;
+    int starting_bonus_score;
     int ending_bonus_score;
     int max_pos = -1;
     float current_score, sim_threshold, new_threshold,
@@ -324,11 +357,12 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
 
     /* 最大パスの検出 */
 
-    ending_bonus_score = plus_bonus_score(sp, jend_pos, ptr);
+    ending_bonus_score = calc_ending_bonus_score(sp, jend_pos, ptr);
     for (i = iend_pos; i >= 0; i--) {
+	starting_bonus_score = calc_starting_bonus_score(sp, i, ptr);
 	current_score = 
 	  (float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1]
-	  + ending_bonus_score;
+	  + starting_bonus_score + ending_bonus_score;
 
 	if (restrict_matrix[i][jend_pos] && 
 	    max_score < current_score) {
@@ -339,9 +373,10 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
 	    max_pos = i;
 	}
 
+	/* 確率的並列構造解析のために類似度を保存 */
 	if (restrict_matrix[i][jend_pos] && 
 	    pure_score >= sim_threshold) {
-	    Para_matrix[para_num][i][jend_pos] = current_score; /* 類似度を保存 */
+	    Para_matrix[para_num][i][jend_pos] = current_score;
 	}
     }
 
@@ -555,6 +590,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     int		i, j;
     int		ending_bonus_score = 0;
+    int		starting_bonus_score = 0;
     BNST_DATA	*b_ptr;
     char	*cp;
 
@@ -603,11 +639,13 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
 		dp_search_scope(sp, sp->para_data[sp->Para_num].key_pos, 
 				sp->para_data[sp->Para_num].iend_pos, sp->para_data[sp->Para_num].jend_pos);
-		ending_bonus_score = plus_bonus_score(sp, sp->para_data[sp->Para_num].jend_pos, &(sp->para_data[sp->Para_num]));
+		ending_bonus_score = calc_ending_bonus_score(sp, sp->para_data[sp->Para_num].jend_pos, &(sp->para_data[sp->Para_num]));
+		starting_bonus_score = calc_ending_bonus_score(sp, sp->para_data[sp->Para_num].max_path[0], &(sp->para_data[sp->Para_num]));
+
 		sp->para_data[sp->Para_num].max_score = 
 		    (float)score_matrix[sp->para_data[sp->Para_num].max_path[0]][sp->para_data[sp->Para_num].key_pos + 1] 
 		    / norm[sp->para_data[sp->Para_num].jend_pos - sp->para_data[sp->Para_num].max_path[0] + 1] 
-		    + ending_bonus_score;
+		    + starting_bonus_score + ending_bonus_score;
 	    }
 
 	    sp->Para_num++;
