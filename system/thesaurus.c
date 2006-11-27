@@ -269,7 +269,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	    strcat(ret_buffer, code);
 	    free(code);
 
-	    if (strlen(used_key) + strlen(str_buffer) + 2 > BNST_LENGTH_MAX) {
+	    if (strlen(used_key) + strlen(str_buffer) + 3 > BNST_LENGTH_MAX) {
 		overflowed_function(used_key, BNST_LENGTH_MAX, "make_key_and_get_code");
 		return;
 	    }
@@ -290,7 +290,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	else {
 	    buf = (ptr->mrph_ptr + strt)->Goi2;
 	}
-	if (strlen(str_buffer) + strlen(buf) + 2 > BNST_LENGTH_MAX) {
+	if (strlen(str_buffer) + strlen(buf) + 3 > BNST_LENGTH_MAX) {
 	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "make_key_and_get_code");
 	    return;
 	}

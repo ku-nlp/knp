@@ -1,3 +1,8 @@
+2006-11-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/thesaurus.c
+	代表表記シソーラスを引く際に無限ループするバグを修正
+
 2006-11-27  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c, system/case_data.c:
