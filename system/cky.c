@@ -1314,6 +1314,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	if (Best_mgr->dpnd.head[i] < 0) {
 	    /* ありえない係り受け */
 	    if (i >= Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]]) {
+		Best_mgr->dpnd.head[i] = sp->Bnst_num - 1; /* 文末に緩和 */
 		continue;
 	    }
 	    Best_mgr->dpnd.head[i] = Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]];
