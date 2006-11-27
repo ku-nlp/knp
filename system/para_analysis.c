@@ -244,16 +244,18 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 		    score_matrix[i][j+1] :
 		    score_matrix[i][j+1] - PENALTY - penalty_table[j];
 		
-		/* 中国語で並列のキーが後部の先頭の場合 */
 		if (Language == CHINESE &&
 		    (check_feature((sp->bnst_data + j)->f, "CC") ||
 		     check_feature((sp->bnst_data + j)->f, "PU"))) {
+		    /* 中国語で並列のキーが後部の先頭の場合の例外処理 */
 		    score_matrix[i][j] = score_sideway;
 		    prepos_matrix[i][j] = i;
-		} else if (score_upward >= score_sideway) {
+		} 
+		else if (score_upward >= score_sideway) {
 		    score_matrix[i][j] = score_upward;
 		    prepos_matrix[i][j] = maxpos_array[i+1];
-		} else {
+		} 
+		else {
 		    score_matrix[i][j] = score_sideway;
 		    prepos_matrix[i][j] = i;
 		}
