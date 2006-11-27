@@ -138,7 +138,7 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
-	    "           [-tree|notagtree|sexp|tab|notagtab]\n" 
+	    "           [-tree|bnsttree|sexp|tab|bnsttab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 	    "           [-C host:port] [-S|F] [-N port]\n"
@@ -222,8 +222,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
-	else if (str_eq(argv[0], "-notagtab"))  OptExpress  = OPT_NOTAG;
-	else if (str_eq(argv[0], "-notagtree")) OptExpress  = OPT_NOTAGTREE;
+	else if (str_eq(argv[0], "-notagtab"))  OptExpress = OPT_NOTAG;
+	else if (str_eq(argv[0], "-bnsttab")) OptExpress  = OPT_NOTAG;
+	else if (str_eq(argv[0], "-notagtree")) OptExpress = OPT_NOTAGTREE;
+	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
