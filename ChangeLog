@@ -1,6 +1,9 @@
 2006-11-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* system/thesaurus.c
+	* system/quote.c:
+	40個目の括弧が、"括弧終２"である場合にsegmentation faultするバグを修正
+	
+	* system/thesaurus.c:
 	代表表記シソーラスを引く際に無限ループするバグを修正
 
 2006-11-27  Daisuke Kawahara  <dk@nict.go.jp>

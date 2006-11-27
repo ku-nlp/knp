@@ -98,6 +98,10 @@ QUOTE_DATA quote_data;
 	    /* ‥』」 を扱うため上のことを繰り返す */
 	    if (check_feature(sp->bnst_data[i].f, "括弧終２")) {
 		if (s_num == -1) {
+		    if (k >= QUOTE_MAX-1) {
+			fprintf(stderr, "Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
+			return CONTINUE;
+		    }
 		    quote_data.out_num[k] = i; /* 括弧終が多い場合 */
 		    k++;
 		} else {
