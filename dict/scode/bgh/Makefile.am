@@ -7,9 +7,17 @@ dicdir = $(pkgdatadir)/dict/scode/bgh
 nodist_dic_DATA = bgh.db sm2code.db
 endif
 
-bgh.dat:
+usr_bgh.dat:
+	touch $@
+
+bgh.orig:
 	if [ ! -f bgh.dat -a -f "@BGH_FILE@" ]; then \
-		../../src/bgh.pl < "@BGH_FILE@" > bgh.dat; \
+		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
+	fi
+
+bgh.dat: bgh.orig usr_bgh.dat
+	if [ -f bgh.orig -a -f usr_bgh.dat ]; then \
+		../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
 	fi
 
 bgh.db: bgh.dat
@@ -20,4 +28,4 @@ bgh.db: bgh.dat
 sm2code.db: sm2code.dat
 	@MAKE_DB_COMMAND@ $@ < $<
 
-CLEANFILES = bgh.db sm2code.db
+CLEANFILES = bgh.db bgh.dat sm2code.db
