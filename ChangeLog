@@ -1,6 +1,6 @@
 2006-11-30  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
-	* dict/src/scode/bgh/Makefile.am:
+	* dict/scode/bgh/Makefile.am:
 	ユーザがエントリを追加できる枠組みを追加
 
 	* dict/src/add_usr_bgh.pl:
