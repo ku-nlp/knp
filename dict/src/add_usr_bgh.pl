@@ -76,7 +76,8 @@ sub get_repname {
     my $result = $knp->parse($word);
 
     if ($result && $result->bnst == 1) {
-	return ($result->bnst)[0]->repname;
+	# 曖昧性がある場合(?で連結されている場合)、一番最初だけをとる
+	return (split(/\?/, ($result->bnst)[0]->repname))[0];
     }
     else {
 	print STDERR "Error!! Can't get the repname of $word\n";
