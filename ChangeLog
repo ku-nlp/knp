@@ -1,8 +1,13 @@
+2006-12-01  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_analysis.c:
+	省略解析において、受身の格フレームを生成した時に格が重複するとsegmentation faultするバグを修正
+
 2006-11-30  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/scode/bgh/Makefile.am:
 	ユーザがエントリを追加できる枠組みを追加
-
+	
 	* dict/src/add_usr_bgh.pl:
 	代表表記(repname)が「?」で連結されている場合、一番最初だけをエントリに追加するように変更
 
