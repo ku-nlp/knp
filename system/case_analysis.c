@@ -1651,7 +1651,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* 割り当てあり */
 	else {
 	    /* 例外タグ */
-	    if (ccp && ccp->bnst < 0) {
+	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
 		sprintf(buffer, "%s/E/%s/-/-/-", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
 			ETAG_name[abs(ccp->bnst)]);
@@ -1659,7 +1659,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    }
 	    else {
 		/* 省略の場合 (特殊タグ以外) */
-		if (ccp && cpm_ptr->elem_b_num[num] <= -2) {
+		if (cpm_ptr->elem_b_num[num] <= -2) {
 		    sid = cpm_ptr->elem_s_ptr[num]->KNPSID ? 
 			cpm_ptr->elem_s_ptr[num]->KNPSID + 5 : NULL;
 		    dist_n = sp->Sen_num - cpm_ptr->elem_s_ptr[num]->Sen_num;
