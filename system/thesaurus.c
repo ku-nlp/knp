@@ -609,9 +609,6 @@ float calc_sm_word_similarity(char *smd, char *exp, char *del, int expand)
 
     /* 類似度計算: 意味素 - 単語 */
 
-    /* NTTで野菜となるので，とりあえずこれだけ削除 03/03/27 by kuro */
-    if (!strcmp(exp, "ところ")) return 0;
-
     if ((smp = get_str_code(exp, Thesaurus)) == NULL) {
 	return 0;
     }
