@@ -2180,6 +2180,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     char *key = NULL, *mrph_str;
     double ret;
+    int rep_malloc_flag = 0;
 
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
@@ -2213,6 +2214,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	mrph_str = get_mrph_rep_from_f(dp->head_ptr);
+	if (mrph_str == NULL) {
+	    mrph_str = make_mrph_rn(dp->head_ptr);
+	    rep_malloc_flag = 1;
+	}
     }
     else {
 	mrph_str = dp->head_ptr->Goi;
@@ -2222,6 +2227,9 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     sprintf(key, "%s", mrph_str);
     /* sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, 
        cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
+    if (rep_malloc_flag) {
+	free(mrph_str);
+    }
 
     /* if (ret = _get_ex_probability(key)) { */
     if (ret = _get_ex_probability_internal(key, as2, cfp)) {
