@@ -48,3 +48,6 @@ rulepack: $(dist_rule_DATA)
 	    $(AMTAR) chof - rule | GZIP=$(GZIP_ENV) gzip -c > $(PACKAGE)-rule-`date +"%Y%m%d"`.tar.gz; \
 	    rm -rf rule; \
 	fi
+
+win: $(orig_rule_files) $(generated_rule_files)
+	nkf -sc --overwrite $(orig_rule_files) $(generated_rule_files)
