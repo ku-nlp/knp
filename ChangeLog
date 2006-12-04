@@ -1,3 +1,20 @@
+2006-12-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h, system/lib_bgh.c, system/main.c:
+	Probabilistic case structure analysis has become default.
+	If you'd like to use the conventional dependency analysis, use -dpnd option.
+
+2006-12-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* Makefile.am:
+	Modified a packaging problem.
+
+	* Makefile.am:
+	Added a target for MS-Windows.
+
+	* system/case_ipal.c:
+	Modified the probabilistic case structure analysis to support rn case frames (1).
+
 2006-12-01  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/thesaurus.c:
