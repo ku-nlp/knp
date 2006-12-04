@@ -320,6 +320,7 @@ int koou(SENTENCE_DATA *sp);
 extern char *_get_bgh(char *cp, char *arg);
 extern int bgh_code_match(char *c1, char *c2);
 extern int bgh_code_match_for_case(char *cp1, char *cp2);
+extern int bgh_match_check(char *pat, char *codes);
 extern void init_bgh();
 extern void close_bgh();
 

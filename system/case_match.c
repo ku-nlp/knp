@@ -41,7 +41,7 @@ int	EX_match_subject = 8;
 int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
-int	SOTO_THRESHOLD = 8;
+int	SOTO_THRESHOLD = 0; /* if -probcase; otherwise DEFAULT_SOTO_THRESHOLD */
 /*int	NOUN_THRESHOLD = 5; /* 橋渡し指示関係の閾値 */
 int	NOUN_THRESHOLD = 5; /* 橋渡し指示関係の閾値 */
 int	CASE_ASSIGN_THRESHOLD = 0;
@@ -182,9 +182,14 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 {
     int i;
 
-    for (i = 0; cpd[i]; i += SM_CODE_SIZE) {
-	if (_sm_match_score(cpp, cpd + i, expand)) {
-	    return 1;
+    if (Thesaurus == USE_BGH) {
+	return bgh_match_check(cpp, cpd);
+    }
+    else if (Thesaurus == USE_NTT) {
+	for (i = 0; cpd[i]; i += SM_CODE_SIZE) {
+	    if (_sm_match_score(cpp, cpd + i, expand)) {
+		return 1;
+	    }
 	}
     }
     return 0;
@@ -237,6 +242,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 /*==================================================================*/
 {
     char *code;
+    int size;
 
     /* flag == TRUE  : その意味素と exact match
        flag == FALSE : その意味素以下にあれば match */
@@ -245,19 +251,21 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	return FALSE;
     }
 
-    code = sm2code(target);
-
     if (Thesaurus == USE_BGH) {
-	return _cf_match_element(d, code, 0, BGH_CODE_SIZE);
+	size = BGH_CODE_SIZE;
     }
     else if (Thesaurus == USE_NTT) {
-	if (flag == TRUE) {
-	    return _cf_match_element(d, code, 0, SM_CODE_SIZE);
-	}
-	else {
-	    /* ※ コードが 2 文字以上ある必要がある */
-	    return _cf_match_element(d, code, 1, code_depth(code, SM_CODE_SIZE));
-	}
+	size = SM_CODE_SIZE;
+    }
+
+    code = sm2code(target);
+
+    if (flag == TRUE) {
+	return _cf_match_element(d, code, 0, size);
+    }
+    else {
+	/* ※ コードが2文字以上ある必要がある */
+	return _cf_match_element(d, code, 1, code_depth(code, size));
     }
 }
 
@@ -311,6 +319,21 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	    }
 	}
     }
+}
+
+/*==================================================================*/
+	      int cf_match_sm(int as1, CASE_FRAME *cfd,
+			      int as2, CASE_FRAME *cfp, int *pos)
+/*==================================================================*/
+{
+    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "主体", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "補文", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "時間", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "数量", TRUE)) {
+	*pos = MATCH_SUBJECT;
+	return 1;
+    }
+    return 0;
 }
 
 /*==================================================================*/
@@ -415,10 +438,6 @@ int	CASE_ASSIGN_THRESHOLD = 0;
     int expand;
     char *code;
 
-    if (Thesaurus == USE_BGH) {
-	return 0;
-    }
-
     if (tp == NULL) {
 	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     }
@@ -427,10 +446,21 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	if (check_feature(tp->f, "非主体")) {
 	    return 0;
 	}
-	code = tp->SM_code;
+
+	if (Thesaurus == USE_BGH) {
+	    code = tp->BGH_code;
+	}
+	else {
+	    code = tp->SM_code;
+	}
     }
     else if (!cfd || as1 < 0) {
-	code = tp->SM_code;
+	if (Thesaurus == USE_BGH) {
+	    code = tp->BGH_code;
+	}
+	else {
+	    code = tp->SM_code;
+	}
     }
     else {
 	code = cfd->sm[as1];
@@ -639,7 +669,15 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	float ex_rawscore;
 
 	/* 確率的格解析のとき */
-	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
+	if (cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED && /* とりあえず用言のみ */
+	    OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
+	    /* マッチを調べるとき *
+            cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
+			     strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi), 
+			     cfp->ex_list[as2], cfp->ex_num[as2], pos);
+	    cf_match_sm(as1, cfd, as2, cfp, pos);
+	    */
+
 	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_interpret_probability(as1, cfd, as2, cfp);
 	    return TRUE;
 	}

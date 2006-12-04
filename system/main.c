@@ -155,7 +155,7 @@ extern int	EX_match_subject;
     /* 引数処理 */
 
     Language = JAPANESE;
-    OptAnalysis = OPT_DPND;
+    OptAnalysis = OPT_CASE;
     OptCKY = 0;
     OptEllipsis = 0;
     OptCorefer = 0;
@@ -174,7 +174,7 @@ extern int	EX_match_subject;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = OPT_CASE_USE_REP_CF;
+    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY;
     OptCaseNoun = 0;
     OptDiscFlag = 0;
     OptServerFlag = 0;
@@ -243,6 +243,10 @@ extern int	EX_match_subject;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
 	    SOTO_THRESHOLD = 0;
 	}
+	else if (str_eq(argv[0], "-no-probcase")) {
+	    OptCaseFlag &= ~OPT_CASE_USE_PROBABILITY;
+	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
+	}
 	else if (str_eq(argv[0], "-probpara")) {
 	     OptParaFix = 0;
 	}
@@ -254,6 +258,8 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    if (!strcasecmp(argv[0], "chinese")) {
 		Language = CHINESE;
+		OptAnalysis = OPT_DPND;
+		OptCKY = TRUE;
 	    }
 	    else if (!strcasecmp(argv[0], "japaense")) {
 		Language = JAPANESE;

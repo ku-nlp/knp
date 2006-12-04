@@ -246,6 +246,7 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define RtoL		-1
 
 #define	CF_DECIDE_THRESHOLD	7
+#define	DEFAULT_SOTO_THRESHOLD	8
 
 /*====================================================================
 				  ?

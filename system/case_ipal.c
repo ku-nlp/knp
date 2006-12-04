@@ -122,8 +122,10 @@ int	PrintDeletedSM = 0;
     /* 格確率DB (cfcase.db) */
     cf_case_db = open_dict(CF_CASE_DB, CF_CASE_DB_NAME, &CFCaseExist);
 
-    /* 用例確率DB (cfex.db) */
+    /* 用例確率DB (cfex.db) *
     cf_ex_db = open_dict(CF_EX_DB, CF_EX_DB_NAME, &CFExExist);
+    */
+    CFExExist = FALSE;
 
     /* 格フレーム選択確率DB (cfp.db) */
     cfp_db = open_dict(CFP_DB, CFP_DB_NAME, &CfpExist);
