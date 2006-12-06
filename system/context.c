@@ -2410,7 +2410,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, FALSE);
 		    cp = EllipsisSvmFeatures2String(ecf);
 
-		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("ノ"), OptDiscPredMethod);
 
 		    if (max < score) {
 			max = score;
@@ -2450,7 +2450,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
 		    }
 
-		    score = classify_by_learning(cp, (ante_cands + i)->ef->p_pp, OptDiscPredMethod);
+		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("ノ"), OptDiscPredMethod);
 
 		    if (score > 0) {
 			vote[i]++;
@@ -2711,7 +2711,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
-    if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
 	/* 解析時に、すでに他の格の指示対象になっているときはだめ */
 	if (OptLearn == TRUE || 
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
@@ -4374,6 +4374,16 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
     if (OptLearn == TRUE && AlreadyDecidedFlag) {
 	goto EvalAntecedentNoun;
+    }
+
+    if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
+	if (classify_twin_candidate(cs, em_ptr, cpm_ptr)) {
+	    if (ScoreCheckCore(cf_ptr, n, maxscore, maxpos)) {
+		clear_cands();
+		goto EvalAntecedentNoun;
+	    }
+	}
+	clear_cands();
     }
     /* 閾値を越えるものがないとき */
     else {
