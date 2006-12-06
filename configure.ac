@@ -150,11 +150,8 @@ AC_MSG_CHECKING([Bunrui Goi Hyou (BGH)])
 if test x"$BGH_FILE" != x; then
     bgh_exist=yes
 else
-    if test -f "$packagesrcdir/dict/scode/bgh/bgh.dat"; then
+    if test -f "$packagesrcdir/dict/scode/bgh/bgh.orig"; then
 	bgh_exist=yes
-    elif test -f /share/dict/bgh/zouho/bunruidb.txt; then
-	bgh_exist=yes
-	BGH_FILE=/share/dict/bgh/zouho/bunruidb.txt
     else
 	bgh_exist=no
 	BGH_FILE=
