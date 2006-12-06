@@ -4776,7 +4776,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	frame_num = 0;
 	cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *), "FindBestCFforContext");
 	for (l = 0; l < cpm_ptr->pred_b_ptr->cf_num; l++) {
-	    if ((cpm_ptr->pred_b_ptr->cf_ptr+l)->etcflag & CF_SUM) {
+	    if ((cpm_ptr->pred_b_ptr->cf_ptr+l)->etcflag & CF_SUM ||
+		cpm_ptr->pred_b_ptr->cf_num == 1) {
 		*cf_array = cpm_ptr->pred_b_ptr->cf_ptr+l;
 		frame_num = 1;
 		break;
