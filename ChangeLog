@@ -2,6 +2,7 @@
 
 	* system/context.c:
 	SVMモデル学習時に格フレームが一つしかない場合、それを和フレームとみなすように変更
+	省略正解コーパスのノ格のクラスを正しく読めるように変更
 	
 	* system/main.c:
 	added -relation-noun-svm-ranking option.
