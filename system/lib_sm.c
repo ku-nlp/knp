@@ -609,17 +609,32 @@ SMLIST smlist[TBLSIZE];
 		int assign_sm(BNST_DATA *bp, char *cp)
 /*==================================================================*/
 {
-    char *code;
-    code = sm2code(cp);
+    char *target_code, *code;
+    int *num_p;
+
+    target_code = sm2code(cp);
+
+    if (Thesaurus == USE_BGH) {
+	code = bp->BGH_code;
+	num_p = &(bp->BGH_num);
+    }
+    else if (Thesaurus == USE_NTT) {
+	code = bp->SM_code;
+	num_p = &(bp->SM_num);
+    }
+    else {
+	return FALSE;
+    }
 
     /* すでにその意味属性をもっているとき */
-    if (sm_match_check(code, bp->SM_code, SM_NO_EXPAND_NE) == TRUE) {
+    if (sms_match(target_code, code, SM_NO_EXPAND_NE) == TRUE) {
 	return FALSE;
     }
 
     /* ★溢れる?★ */
-    strcat(bp->SM_code, code);
-    bp->SM_num++;
+    strcat(code, target_code);
+    (*num_p)++;
+
     return TRUE;
 }
 

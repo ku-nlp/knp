@@ -2061,8 +2061,8 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     f->c_topic_flag = check_feature(bp->f, "主題表現") ? 1 : 0;
     f->c_no_topic_flag = check_feature(bp->f, "準主題表現") ? 1 : 0;
     f->c_in_cnoun_flag = bp->inum != 0 ? 1 : 0;
-    f->c_subject_flag = sm_match_check(sm2code("主体"), bp->SM_code, 
-				       check_feature(bp->f, "Ｔ固有一般展開禁止") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
+    f->c_subject_flag = sms_match(sm2code("主体"), bp->SM_code, 
+				  check_feature(bp->f, "Ｔ固有一般展開禁止") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
     f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
     f->c_extra_tag = -1;
 
@@ -2515,8 +2515,8 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 	/* 名詞+判定詞の名詞が主体じゃない場合はガ格に不特定-人を入れない */
 	if (OptLearn == TRUE || 
 	    (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) && 
-//	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ")))) {
-	     !(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT))) {
+//	     !(str_eq(cf_ptr->pred_type, "判") && !sms_match(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ")))) {
+	     !(str_eq(cf_ptr->pred_type, "判") && !sms_match(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT))) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	}
 	return;
@@ -2671,7 +2671,7 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	    /* 名詞+判定詞の名詞が主体じゃない場合はガ格に不特定-人を入れない */
 	    if (OptLearn == TRUE || 
 		!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) &&
-		!(str_eq(cf_ptr->pred_type, "判") && !sm_match_check(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
+		!(str_eq(cf_ptr->pred_type, "判") && !sms_match(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
 		push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	    }
 	    return;

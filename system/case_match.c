@@ -186,12 +186,9 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	return bgh_match_check(cpp, cpd);
     }
     else if (Thesaurus == USE_NTT) {
-	for (i = 0; cpd[i]; i += SM_CODE_SIZE) {
-	    if (_sm_match_score(cpp, cpd + i, expand)) {
-		return 1;
-	    }
-	}
+	return sm_match_check(cpp, cpd, expand);
     }
+
     return 0;
 }
 

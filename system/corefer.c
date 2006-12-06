@@ -407,7 +407,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    /* 自称名詞の場合の特例 */
 		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "Ｔ解析格-ガ") &&
 		     check_feature((sp->tag_data + i)->f, "Ｔ自称名詞") &&
-		     sm_match_check(sm2code("主体"), tag_ptr->SM_code, SM_NO_EXPAND_NE)))
+		     sms_match(sm2code("主体"), tag_ptr->SM_code, SM_NO_EXPAND_NE)))
 		    {
 		    
 		    /* 「・」などより前を含めた場合のみ同義表現があった場合 */

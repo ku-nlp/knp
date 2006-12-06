@@ -234,7 +234,6 @@ extern double get_noun_co_num_probability(TAG_DATA *gp, int num);
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
 extern int _sm_match_score(char *cpp, char *cpd, int flag);
-extern int _ex_match_score(char *cp1, char *cp2);
 extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest);
 extern int cf_match_element(char *d, char *target, int flag);
 extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
@@ -246,6 +245,7 @@ extern int dat_match_sm(int as1, CASE_FRAME *cfd, TAG_DATA *tp, char *sm);
 extern int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos);
 extern float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word, 
 				    CASE_FRAME *cfp, int n, int *pos);
+extern int sms_match(char *cpp, char *cpd, int expand);
 
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);

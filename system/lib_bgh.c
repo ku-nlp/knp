@@ -179,7 +179,11 @@ int		BGHExist;
 		return 0;
 	    }
 	}
-    }	     
+    }
+    else {
+	return 0;
+    }
+
     return BGH_CODE_SIZE;
 }
 
