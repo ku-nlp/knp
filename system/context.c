@@ -1925,7 +1925,8 @@ int get_example_class(CF_PRED_MGR *c_cpm_ptr, SENTENCE_DATA *s, TAG_DATA *bp,
     /* 正解かどうかを判定する */
 
     for (i = 0; i < c_cpm_ptr->cf.element_num; i++) {
-	if (c_cpm_ptr->cf.pp[i][0] == cf_ptr->pp[n][0]) {
+	if ((cf_ptr->type == CF_PRED && c_cpm_ptr->cf.pp[i][0] == cf_ptr->pp[n][0]) || 
+	    cf_ptr->type == CF_NOUN && c_cpm_ptr->cf.pp[i][0] == pp_kstr_to_code("ノ")) {
 	    /* 不特定以外の普通のタグ */
 	    if (bp) {
 		if (c_cpm_ptr->elem_b_ptr[i] && 
