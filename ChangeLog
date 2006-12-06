@@ -1,6 +1,9 @@
 2006-12-06  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
-	* system/main.c
+	* system/context.c:
+	SVMモデル学習時に格フレームが一つしかない場合、それを和フレームとみなすように変更
+	
+	* system/main.c:
 	added -relation-noun-svm-ranking option.
 
 2006-12-06  Daisuke Kawahara  <dk@nict.go.jp>
