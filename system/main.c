@@ -369,7 +369,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun-svm-ranking")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscPredMethod = OPT_SVM;
+	    OptDiscNounMethod = OPT_SVM;
 	}
 	else if (str_eq(argv[0], "-print-svm-features")) {
 	    PrintFeatures = 1;
