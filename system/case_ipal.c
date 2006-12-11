@@ -1698,7 +1698,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレーム */
-	    if ((OptCaseNoun || OptEllipsis & OPT_REL_NOUN || OptUseNCF) && 
+	    if ((OptEllipsis & OPT_REL_NOUN || OptUseNCF) && 
 		check_feature(t_ptr->f, "体言")) {
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }

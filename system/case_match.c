@@ -1223,7 +1223,9 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	    }
 	}
 
-	if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) || !case_available) {
+	if (!(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED && /* とりあえず用言のみ */
+	      (OptCaseFlag & OPT_CASE_USE_PROBABILITY)) || 
+	    !case_available) {
 	    /* target番目の格要素には対応付けを行わないマーク */
 	    list1.flag[target] = NIL_ASSIGNED;
 

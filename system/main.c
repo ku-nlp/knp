@@ -53,7 +53,6 @@ int		OptDiscPredMethod;
 int		OptDiscNounMethod;
 int		OptLearn;
 int		OptCaseFlag;
-int		OptCaseNoun;
 int		OptDiscFlag;
 int		OptCFMode;
 int		OptServerFlag;
@@ -175,7 +174,6 @@ extern int	EX_match_subject;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
     OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY;
-    OptCaseNoun = 0;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
@@ -420,12 +418,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
-	else if (str_eq(argv[0], "-relation-noun-direct")) {
-	    OptCaseNoun = 1;
-	}
 	else if (str_eq(argv[0], "-corefer")) {
 	    OptEllipsis |= OPT_COREFER;
-	    OptUseNCF = 1;
+	    OptUseNCF = TRUE;
 	    OptCorefer = 1; /* 名詞格フレームを用いる */
 	}
 	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
