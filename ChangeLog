@@ -1,3 +1,9 @@
+2006-12-12  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* case_ipal.c, case_match.c, extern.h, main.c:
+	-relation-noun-directを-use-ncfに統合
+	確率的格解析と-use-ncfを同時に使用した場合にsegmentation faultするバグを修正
+
 2006-12-10  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_analysis.c:
