@@ -1,3 +1,8 @@
+2006-12-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule:
+	Modified the type of 「皮ごと(食べる)」 to a modifier.
+
 2006-12-12  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* case_ipal.c, case_match.c, extern.h, main.c:
