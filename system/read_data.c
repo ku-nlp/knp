@@ -312,6 +312,20 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		selected_imi2feature((m_ptr+i)->Imi, m_ptr+pref_mrph);
 	    }
 	}
+
+	for (i = 0; i < homo_num; i++) {
+	    if (uniq_flag[i] == 0) continue;
+	    sprintf(fname, "品曖-%s", 
+		    Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
+	    assign_cfeature(&((m_ptr+pref_mrph)->f), fname, FALSE);
+	    
+	    /* 固有名詞以外には"その他"をふっておく */
+	    if (m_ptr->Bunrui != 3 && /* 固有名詞 */
+		m_ptr->Bunrui != 4 && /* 地名 */
+		m_ptr->Bunrui != 5 && /* 人名 */
+		m_ptr->Bunrui != 6) /* 組織名 */
+		assign_cfeature(&((m_ptr+pref_mrph)->f), "品曖-その他", FALSE);
+	}
     }
 
     /* 代表表記が曖昧なときはマークしておく */
@@ -332,20 +346,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	clear_feature(&(m_ptr->f));
 	m_ptr->f = (m_ptr+pref_mrph)->f;
 	(m_ptr+pref_mrph)->f = NULL;
-    }
-
-    for (i = 0; i < homo_num; i++) {
-	if (uniq_flag[i] == 0) continue;
-	sprintf(fname, "品曖-%s", 
-		Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
-	assign_cfeature(&(m_ptr->f), fname, FALSE);
-	    
-	/* 固有名詞以外には"その他"をふっておく */
-	if (m_ptr->Bunrui != 3 && /* 固有名詞 */
-	    m_ptr->Bunrui != 4 && /* 地名 */
-	    m_ptr->Bunrui != 5 && /* 人名 */
-	    m_ptr->Bunrui != 6) /* 組織名 */
-	    assign_cfeature(&(m_ptr->f), "品曖-その他", FALSE);
     }
 }
 
