@@ -362,9 +362,14 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     ending_bonus_score = calc_ending_bonus_score(sp, jend_pos, ptr);
     for (i = iend_pos; i >= 0; i--) {
 	starting_bonus_score = calc_starting_bonus_score(sp, i, ptr);
-	current_score = 
-	  (float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1]
-	  + starting_bonus_score + ending_bonus_score;
+	if (Language == CHINESE && starting_bonus_score != 0) {
+	    current_score = max_score + starting_bonus_score;
+	}
+	else {
+	    current_score = 
+		(float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1]
+		+ starting_bonus_score + ending_bonus_score;
+	}
 
 	if (restrict_matrix[i][jend_pos] && 
 	    max_score < current_score) {

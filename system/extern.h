@@ -41,6 +41,10 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 /* for 'L' or 'R' dpnd, store in <i,j>; for 'B' <i,j> store LtoR, <j,i> store RtoL */
 extern double           Dpnd_prob_matrix[][BNST_MAX];  
 
+/* store probability for each pre-arg pair from case-frame for Chinese */
+/* for cell (i,j), i is the position of predicate, j is the position of argument */
+extern double           Chi_case_prob_matrix[][BNST_MAX];  
+
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;
@@ -219,6 +223,7 @@ extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
+extern double get_chi_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
@@ -291,6 +296,7 @@ extern int detect_dpnd_case_struct(SENTENCE_DATA *sp);
 extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
+extern void calc_chi_case_prob_matrix(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
@@ -492,6 +498,14 @@ extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
 
 /* base_phrase.c */
 extern int base_phrase(SENTENCE_DATA *sp);
+extern int fragment(SENTENCE_DATA *sp);
+
+/* similarity.c */
+extern float step(float a,float b,float c,float d);
+extern int def_cmp(char *string1,char *string2);
+extern char *pos_modify(BNST_DATA *ptr);
+extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2);
+extern void hownet_open();
 
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;

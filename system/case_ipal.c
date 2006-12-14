@@ -21,6 +21,7 @@ DBM_FILE renyou_db;
 DBM_FILE adverb_db;
 DBM_FILE para_db;
 DBM_FILE noun_co_db;
+DBM_FILE chi_case_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -44,6 +45,7 @@ int	RenyouExist;
 int	AdverbExist;
 int	ParaExist;
 int	NounCoExist;
+int     CHICaseExist;
 
 int	PrintDeletedSM = 0;
 
@@ -144,6 +146,9 @@ int	PrintDeletedSM = 0;
 
     /* 名詞共起確率DB (noun-co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
+
+    /* Chinese case-frame DB (chicase.db) */
+    chi_case_db = open_dict(CHI_CASE_DB, CHI_CASE_DB_NAME, &CHICaseExist);
 }
 
 /*==================================================================*/
@@ -3015,6 +3020,36 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = 0\n", key);
 	}
 	ret = FREQ0_ASSINED_SCORE;
+    }
+
+    return ret;
+}
+
+/* get case-frame probability for Chinese */
+/*==================================================================*/
+   double get_chi_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr)
+/*==================================================================*/
+{
+    char *key, *value;
+    double ret;
+
+    if (CHICaseExist == FALSE) {
+	return 0;
+    }
+
+    key = malloc_db_buf(strlen(g_ptr->head_ptr->Goi) + 
+			strlen(d_ptr->head_ptr->Goi) + 2);
+
+    /* 用言表記でやった方がよいみたい */
+    sprintf(key, "%s:%s", g_ptr->head_ptr->Goi, d_ptr->head_ptr->Goi);
+    value = db_get(chi_case_db, key);
+
+    if (value) {
+	ret = atof(value);
+	free(value);
+    }
+    else {
+	ret = 0.0;
     }
 
     return ret;

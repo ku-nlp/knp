@@ -41,6 +41,7 @@ knp_SOURCES = \
 	read_data.c \
 	read_rule.c \
 	regexp.c \
+	similarity.c \
 	tools.c \
 	tree_conv.c \
 	db.c \

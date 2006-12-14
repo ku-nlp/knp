@@ -30,3 +30,4 @@
 #define SM_ADD_DB_NAME		"scode/ntt/word2code_add.db"
 #define SM_DEL_DB_NAME		"scode/ntt/word2code_del.db"
 #define EVENT_DB_NAME		"event/event.db"
+#define CHI_CASE_DB_NAME	"ebcf/chicase.db"

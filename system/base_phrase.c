@@ -109,6 +109,32 @@ int     pp_matrix[BNST_MAX];
 }
 
 /*==================================================================*/
+		void change_matrix_for_fragment(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, head_pos = -1;
+
+    /* get the head position of this fragment, i.e. the last non-pu word */
+    for (i = sp->Bnst_num - 1; i >= 0; i--){
+	if (!(check_feature(sp->bnst_data[i].f, "PU"))) {
+	    head_pos = i;
+	    break;
+	}
+    }
+
+    /* change dpnd matrix, make all the words depend on the head word */
+    if (head_pos != -1) {
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    for (j = i + 1; j < sp->Bnst_num; j++) {
+		if (i != head_pos && j != head_pos) {
+		    Dpnd_matrix[i][j] = 0;
+		}
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 		     int base_phrase(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -121,6 +147,29 @@ int     pp_matrix[BNST_MAX];
 
     /* 行列の書き換え */
     change_matrix_for_phrase(sp); 
+
+    return flag;
+}
+
+/*==================================================================*/
+		     int fragment(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int flag = 1, i;
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature(sp->bnst_data[i].f, "VV") ||
+	    check_feature(sp->bnst_data[i].f, "VA") ||
+	    check_feature(sp->bnst_data[i].f, "VC") ||
+	    check_feature(sp->bnst_data[i].f, "VE")) {
+	    flag = 0;
+	    break;
+	}
+    }
+
+    if (flag) {
+	change_matrix_for_fragment(sp);
+    }
 
     return flag;
 }

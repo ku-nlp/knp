@@ -684,10 +684,25 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	    if (ptr->max_score < 0.0) continue;
 	    /* statusがxでもスコアがあれば参考のため表示 */
 
-	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ )
-		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
-		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
-		    -1 : 'a' + i;
+	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ ) {
+		if (Language != CHINESE) {
+		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+			path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
+			-1 : 'a' + i;
+		}
+		else {
+		    if (check_feature((sp->bnst_data + j)->f, "CC") || check_feature((sp->bnst_data + j)->f, "PU")) {
+			path_matrix[ptr->max_path[j-ptr->key_pos]][j] =
+			    path_matrix[ptr->max_path[j-ptr->key_pos]][j] ?
+			    -1 : 'a' + i;
+		    }
+		    else {
+			path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+			    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
+			    -1 : 'a' + i;
+		    }
+		}
+	    }
 	}
     }
 

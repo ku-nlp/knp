@@ -273,8 +273,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		}
 
 		if (Language == CHINESE) {
-		    one_score -= 10 * verb; 
-		    one_score -= 10 * comma;
+		    one_score -= 30 * verb; 
+		    one_score -= 40 * comma;
 		}
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
@@ -436,23 +436,22 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-		/* add score for stable dpnd */
+		/* add score from case frame */
+		if ((check_feature(g_ptr->f, "VV") ||
+		     check_feature(g_ptr->f, "VA") ||
+		     check_feature(g_ptr->f, "VC") ||
+		     check_feature(g_ptr->f, "VE") ||
+		     check_feature(g_ptr->f, "P"))) {
+		    /* calc case frame score for Chinese */
+		    one_score += TIME_CASE_FRAME * Chi_case_prob_matrix[g_ptr->num][d_ptr->num];
+		}
+
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
+		    /* add score for stable dpnd */
 		    if (d_ptr->num + 1 == g_ptr->num &&
-			(((check_feature(d_ptr->f, "AD")) &&
-			  (check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "VE") ||
-			   check_feature(g_ptr->f, "JJ"))) ||
-			 
-			 ((check_feature(d_ptr->f, "CC")) &&
-			  (check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "NT"))) ||
-			 
-			 ((check_feature(d_ptr->f, "CD")) &&
-			  (check_feature(g_ptr->f, "LC") ||
-			   check_feature(g_ptr->f, "DEG") ||
+			(((check_feature(d_ptr->f, "CD")) &&
+			  (check_feature(g_ptr->f, "DEG") ||
 			   check_feature(g_ptr->f, "M"))) ||
 			 
 			 ((check_feature(d_ptr->f, "DEG")) &&
@@ -465,12 +464,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "DEV")) &&
 			   check_feature(g_ptr->f, "VV")) ||
 			 
-			 ((check_feature(d_ptr->f, "LC")) &&
-			  (check_feature(g_ptr->f, "DEG"))) ||
-			 
-			 ((check_feature(d_ptr->f, "M")) &&
-			  (check_feature(g_ptr->f, "LC"))) ||
-			 
 			 ((check_feature(d_ptr->f, "NR-SHORT")) &&
 			  (check_feature(g_ptr->f, "NR"))) ||
 
@@ -479,7 +472,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 
 			 ((check_feature(d_ptr->f, "NR")) &&
 			  (check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "LC"))) ||
+			   check_feature(g_ptr->f, "NN"))) ||
 
 			 ((check_feature(d_ptr->f, "NT")) &&
 			  (check_feature(g_ptr->f, "DEG") ||
@@ -489,45 +482,177 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(g_ptr->f, "M"))) ||
 
 			 ((check_feature(d_ptr->f, "PN")) &&
-			  (check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "DEG"))) ||
+			  (check_feature(g_ptr->f, "DEG"))) ||
 
 			 ((check_feature(d_ptr->f, "SB")) &&
 			  (check_feature(g_ptr->f, "VV"))) ||
 
 			 ((check_feature(d_ptr->f, "VA")) &&
 			  (check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 15;
+			one_score += 10;
 		    }
-		    else if (d_ptr->num < g_ptr->num && 
-			     (((check_feature(d_ptr->f, "CC")) &&
-			       (check_feature(g_ptr->f, "M") ||
-				check_feature(g_ptr->f, "NN"))) ||
+		    if (d_ptr->num < g_ptr->num &&
+			(((check_feature(d_ptr->f, "AD")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DT") ||
+			   check_feature(g_ptr->f, "JJ") ||
+			   check_feature(g_ptr->f, "LB") ||
+			   check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VC") ||
+			   check_feature(g_ptr->f, "VE"))) ||
+			 
+			 ((check_feature(d_ptr->f, "CC")) &&
+			  (check_feature(g_ptr->f, "AD") ||
+			   check_feature(g_ptr->f, "CD") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "NT") ||
+			   check_feature(g_ptr->f, "PN") ||
+			   check_feature(g_ptr->f, "BA"))) ||
 			      
-			      ((check_feature(d_ptr->f, "CD") ||
-				check_feature(d_ptr->f, "CS")) &&
-			       (check_feature(g_ptr->f, "VV"))) ||
-			      
-			      ((check_feature(d_ptr->f, "NR")) &&
-			       (check_feature(g_ptr->f, "VE"))) ||
-			      
-			      ((check_feature(d_ptr->f, "NT")) &&
-			       (check_feature(g_ptr->f, "VA") ||
-				check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "NN"))) ||
-			      
-			      ((check_feature(d_ptr->f, "LC")) &&
-			       (check_feature(g_ptr->f, "NN") ||
-				check_feature(g_ptr->f, "VA") ||
-				check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "VV"))))) {
+			 ((check_feature(d_ptr->f, "AS")) &&
+			  (check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "CD")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DEV") ||
+			   check_feature(g_ptr->f, "LC") ||
+			   check_feature(g_ptr->f, "M") ||
+			   check_feature(g_ptr->f, "NN"))) ||
+
+			 ((check_feature(d_ptr->f, "DEC")) &&
+			  (check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "NT") ||
+			   check_feature(g_ptr->f, "PN"))) ||
+
+			 ((check_feature(d_ptr->f, "DEG")) &&
+			  (check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "LC") ||
+			   check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "PN") ||
+			   check_feature(g_ptr->f, "VE"))) ||
+
+			 ((check_feature(d_ptr->f, "DER")) &&
+			  (check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "DEV")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "LB") ||
+			   check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "DT")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "PN") ||
+			   check_feature(g_ptr->f, "NT"))) ||
+
+			 ((check_feature(d_ptr->f, "ETC")) &&
+			  (check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "FW")) &&
+			  (check_feature(g_ptr->f, "CD") ||
+			   check_feature(g_ptr->f, "FW") ||
+			   check_feature(g_ptr->f, "M"))) ||
+
+			 ((check_feature(d_ptr->f, "IJ")) &&
+			  (check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "JJ")) &&
+			  (check_feature(g_ptr->f, "CD") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DEV") ||
+			   check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "PN"))) ||
+
+			 ((check_feature(d_ptr->f, "LC")) &&
+			  (check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "NT"))) ||
+
+			 ((check_feature(d_ptr->f, "MSP")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "VA") ||
+			   check_feature(g_ptr->f, "VE"))) ||
+
+			 ((check_feature(d_ptr->f, "M")) &&
+			  (check_feature(g_ptr->f, "DEC") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DEV") ||
+			   check_feature(g_ptr->f, "DT") ||
+			   check_feature(g_ptr->f, "LC") ||
+			   check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "PN"))) ||
+
+			 ((check_feature(d_ptr->f, "NN")) &&
+			  (check_feature(g_ptr->f, "CS") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DEV") ||
+			   check_feature(g_ptr->f, "NP") ||
+			   check_feature(g_ptr->f, "SB"))) ||
+
+			 ((check_feature(d_ptr->f, "NR")) &&
+			  (check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DT") ||
+			   check_feature(g_ptr->f, "NP") ||
+			   check_feature(g_ptr->f, "PN"))) ||
+
+			 ((check_feature(d_ptr->f, "NP")) &&
+			  (check_feature(g_ptr->f, "NN"))) ||
+
+			 ((check_feature(d_ptr->f, "NT")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "JJ") ||
+			   check_feature(g_ptr->f, "VE"))) ||
+
+			 ((check_feature(d_ptr->f, "OD")) &&
+			  (check_feature(g_ptr->f, "DEC") ||
+			   check_feature(g_ptr->f, "JJ") ||
+			   check_feature(g_ptr->f, "M") ||
+			   check_feature(g_ptr->f, "VA"))) ||
+
+			 ((check_feature(d_ptr->f, "PN")) &&
+			  (check_feature(g_ptr->f, "BA") ||
+			   check_feature(g_ptr->f, "CD") ||
+			   check_feature(g_ptr->f, "DEG") ||
+			   check_feature(g_ptr->f, "DT") ||
+			   check_feature(g_ptr->f, "ETC") ||
+			   check_feature(g_ptr->f, "LB") ||
+			   check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR") ||
+			   check_feature(g_ptr->f, "NT") ||
+			   check_feature(g_ptr->f, "P") ||
+			   check_feature(g_ptr->f, "PN"))) ||
+
+			 ((check_feature(d_ptr->f, "SP")) &&
+			  (check_feature(g_ptr->f, "DEC"))) ||
+
+			 ((check_feature(d_ptr->f, "VA")) &&
+			  (check_feature(g_ptr->f, "DEC") ||
+			   check_feature(g_ptr->f, "DEV"))) ||
+
+			 ((check_feature(d_ptr->f, "VE")) &&
+			  (check_feature(g_ptr->f, "DEV"))) ||
+
+			 ((check_feature(d_ptr->f, "VV")) &&
+			  (check_feature(g_ptr->f, "DEC") ||
+			   check_feature(g_ptr->f, "DEV"))))) {
 			one_score += 10;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += (Dpnd_matrix[g_ptr->num][d_ptr->num] == 'B') ?
 			Dpnd_prob_matrix[d_ptr->num][g_ptr->num] : Dpnd_prob_matrix[g_ptr->num][d_ptr->num];
-		    if (g_ptr->num + 1 == d_ptr->num && 
+		    /* add score for stable dpnd */
+		    if (g_ptr->num + 1 == d_ptr->num &&
 			(((check_feature(d_ptr->f, "AS")) &&
 			  (check_feature(g_ptr->f, "VE") ||
 			   check_feature(g_ptr->f, "VV"))) ||
@@ -535,7 +660,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "CD")) &&
 			  (check_feature(g_ptr->f, "DT"))) ||
 
-			 ((check_feature(d_ptr->f, "PN")) && 
+			 ((check_feature(d_ptr->f, "PN")) &&
 			  (check_feature(g_ptr->f, "P"))) ||
 
 			 ((check_feature(d_ptr->f, "DEC")) &&
@@ -547,33 +672,61 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "DER")) &&
 			  (check_feature(g_ptr->f, "VV"))) ||
 
-			 ((check_feature(d_ptr->f, "VC") ||
-			   check_feature(d_ptr->f, "VA") ||
-			   check_feature(d_ptr->f, "VE") ||
-			   check_feature(d_ptr->f, "VV")) && 
-			  (check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VE") ||
-			   check_feature(g_ptr->f, "VV"))) ||
-
 			 ((check_feature(d_ptr->f, "ETC")) &&
 			  (check_feature(g_ptr->f, "NN") ||
 			   check_feature(g_ptr->f, "NR"))))) {
-			one_score += 15;
+			one_score += 10;
 		    }
-		    else if (g_ptr->num < d_ptr->num && 
-			     (((check_feature(d_ptr->f, "DEC")) &&
-			       (check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "VC") ||
-				check_feature(g_ptr->f, "VV")))||
+		    if (g_ptr->num < d_ptr->num &&
+			(((check_feature(g_ptr->f, "AD")) &&
+			  (check_feature(d_ptr->f, "CC")))||
 
-			      ((check_feature(d_ptr->f, "SP") ||
-				check_feature(d_ptr->f, "ETC")) &&
-			       (check_feature(g_ptr->f, "VV")))||
+			 ((check_feature(g_ptr->f, "CD")) &&
+			  (check_feature(d_ptr->f, "CC")))||
 
-			      ((check_feature(d_ptr->f, "NN") ||
-				check_feature(d_ptr->f, "LC")) &&
-			       (check_feature(g_ptr->f, "P"))))) {
+			 ((check_feature(g_ptr->f, "VV") ||
+			   check_feature(g_ptr->f, "VC") ||
+			   check_feature(g_ptr->f, "VE")) &&
+			  (check_feature(d_ptr->f, "VC") ||
+			   check_feature(d_ptr->f, "VE") ||
+			   check_feature(d_ptr->f, "VV")))||
+
+			 ((check_feature(g_ptr->f, "DT")) &&
+			  (check_feature(d_ptr->f, "CD")||
+			   check_feature(d_ptr->f, "M")))||
+
+			 ((check_feature(g_ptr->f, "LB")) &&
+			  (check_feature(d_ptr->f, "CC")))||
+
+			 ((check_feature(g_ptr->f, "NN")) &&
+			  (check_feature(d_ptr->f, "X")))||
+
+			 ((check_feature(g_ptr->f, "P")) &&
+			  (check_feature(d_ptr->f, "CS") ||
+			   check_feature(d_ptr->f, "DT") ||
+			   check_feature(d_ptr->f, "JJ") ||
+			   check_feature(d_ptr->f, "LC") ||
+			   check_feature(d_ptr->f, "NR") ||
+			   check_feature(d_ptr->f, "NN") ||
+			   check_feature(d_ptr->f, "NT") ||
+			   check_feature(d_ptr->f, "PN")))||
+
+			 ((check_feature(g_ptr->f, "VA")) &&
+			  (check_feature(d_ptr->f, "NR"))) ||
+
+			 ((check_feature(g_ptr->f, "VC")) &&
+			  (check_feature(d_ptr->f, "DT"))) ||
+
+			 ((check_feature(g_ptr->f, "VE")) &&
+			  (check_feature(d_ptr->f, "AS") ||
+			   check_feature(d_ptr->f, "CC") ||
+			   check_feature(d_ptr->f, "NT") ||
+			   check_feature(d_ptr->f, "PN")))||
+
+			 ((check_feature(g_ptr->f, "VV")) &&
+			  (check_feature(d_ptr->f, "AS") ||
+			   check_feature(d_ptr->f, "NN") ||
+			   check_feature(d_ptr->f, "DER"))))) {
 			one_score += 10;
 		    }
 		}
@@ -1314,7 +1467,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	if (Best_mgr->dpnd.head[i] < 0) {
 	    /* ありえない係り受け */
 	    if (i >= Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]]) {
-		Best_mgr->dpnd.head[i] = sp->Bnst_num - 1; /* 文末に緩和 */
+		if (Language != CHINESE) {
+		    Best_mgr->dpnd.head[i] = sp->Bnst_num - 1; /* 文末に緩和 */
+		}
 		continue;
 	    }
 	    Best_mgr->dpnd.head[i] = Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]];

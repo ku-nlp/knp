@@ -398,6 +398,8 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	    prob_cell = car(cdr(cdr(car(loop_cell))));
 	    rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell))));
 	    rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell)))));
+	    rp->count[i] = atoi(_Atom(car(cdr(cdr(cdr(car(loop_cell)))))));
+	    strcpy(rp->dpnd_relation[i], _Atom(car(cdr(cdr(cdr(cdr(car(loop_cell))))))));
 
 	    loop_cell = cdr(loop_cell);
 

@@ -49,8 +49,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	2800
-#define DpndRule_G_MAX	800
+#define DpndRule_MAX	2080
+#define DpndRule_G_MAX	2405
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
@@ -95,8 +95,31 @@
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
 #define SMALL_PROB      0.0000001 /* A small prob for Chinese relaxation */
-#define TIME_PROB       500    /* time to enlarge dpnd prob for Chinese */
-#define CHI_WORD_LEN_MAX 30    /* maximum Chinese word length */
+#define TIME_PROB       50    /* time to enlarge dpnd prob for Chinese */
+#define TIME_CASE_FRAME  50   /* time to enlarge case frame prob for Chinese */
+#define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
+#define CHI_POS_LEN_MAX  3    /* maximum Chinese pos length */
+
+/*====================================================================
+			    SIMILARITY
+====================================================================*/
+
+#define ENTITY_NUM 2220
+#define ENTITY_MAX 300
+#define HOWNET_NUM 56813
+#define HOWNET_WORD_MAX 100
+#define HOWNET_POS_MAX 10
+#define HOWNET_DEF_MAX 300
+#define LEVEL_NUM 20
+#define LEVEL_MAX 5
+#define LEVEL_PAR 1.6
+#define DEF_NUM 20
+#define DEF_MAX 100
+#define PARA_1 0
+#define PARA_2 0.4
+#define PARA_3 0.4
+#define PARA_4 0.2
+
 /*====================================================================
 				DEFINE
 ====================================================================*/
@@ -401,6 +424,8 @@ typedef struct {
     double          prob_RtoL[DpndRule_G_MAX];  /* RtoL probability, only for Chinese */
     char            dep_word[CHI_WORD_LEN_MAX];                  /* dependant word, only for Chinese */
     char            gov_word[DpndRule_G_MAX][CHI_WORD_LEN_MAX];  /* governor word, only for Chinese */
+    int             count[DpndRule_G_MAX];      /* occurrence of word_pos pair */
+    char            dpnd_relation[DpndRule_G_MAX][5];                /* dependant relation */
 } DpndRule;
 
 /* ボーナス規則 */
@@ -496,9 +521,10 @@ typedef struct _RuleVector {
 #define AfterDpndBnstRuleType 12
 #define AfterDpndTagRuleType 13
 #define PostProcessTagRuleType 14
+#define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	25
+#define DICT_MAX	26
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -524,6 +550,7 @@ typedef struct _RuleVector {
 #define ADVERB_DB	22
 #define PARA_DB		23
 #define NOUN_CO_DB	24
+#define CHI_CASE_DB	25
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

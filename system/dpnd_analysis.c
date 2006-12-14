@@ -5,6 +5,7 @@
                                                S.Kurohashi 93. 5.31
 
     $Id$
+
 ====================================================================*/
 #include "knp.h"
 
@@ -64,7 +65,10 @@ static int dpndID = 0;
 	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, value, first_uke_flag, pu_flag, backoff_dep;
+    int i, j, k, value, first_uke_flag, pu_flag, backoff_dep, dpnd_flag;
+    double p1_LtoR, p2_LtoR, p3_LtoR, p4_LtoR;
+    double p1_RtoL, p2_RtoL, p3_RtoL, p4_RtoL;
+    double lamda1, lamda2;
     BNST_DATA *k_ptr, *u_ptr;
 
     for (i = 0; i < sp->Bnst_num; i++) {
@@ -98,6 +102,17 @@ static int dpndID = 0;
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 	    backoff_dep = 0;
+	    p1_LtoR = 0.0;
+	    p2_LtoR = 0.0;
+	    p3_LtoR = 0.0;
+	    p4_LtoR = 0.0;
+	    p1_RtoL = 0.0;
+	    p2_RtoL = 0.0;
+	    p3_RtoL = 0.0;
+	    p4_RtoL = 0.0;
+	    lamda1 = 0.0;
+	    lamda2 = 0.0;
+	    dpnd_flag = 0;
 	    Dpnd_matrix[i][j] = 0;
 	    Dpnd_prob_matrix[i][j] = 0.0;
 	    Dpnd_prob_matrix[j][i] = 0.0;
@@ -114,20 +129,80 @@ static int dpndID = 0;
 		}
 		if (value == TRUE) {
 		    if ((Language != CHINESE) ||
-			(Language == CHINESE && backoff_dep) || 
+			(Language == CHINESE && backoff_dep && strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi) == 0) || 
+			(Language == CHINESE && backoff_dep && strcmp(k_ptr->dpnd_rule->gov_word[k], "X") == 0) || 
 			(Language == CHINESE && !backoff_dep &&
 			 (strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi) == 0 || 
 			  strcmp(k_ptr->dpnd_rule->gov_word[k], "X") == 0))) {
-			Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
+			if (Dpnd_matrix[i][j] == 0) {
+			    Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
+			}
+
 			/* assign probability for each dpnd */
-			if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
-			    Dpnd_prob_matrix[i][j] = TIME_PROB * k_ptr->dpnd_rule->prob_LtoR[k];
-			    Dpnd_prob_matrix[j][i] = TIME_PROB * k_ptr->dpnd_rule->prob_RtoL[k];
+			if (!backoff_dep) {
+			    if (!strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi)) {
+				p1_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
+				p1_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
+				lamda1 = (1.0 * k_ptr->dpnd_rule->count[k]) / (k_ptr->dpnd_rule->count[k] + 1);
+				dpnd_flag = 1;
+			    }
+			    else {
+				p2_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
+				p2_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
+				if (lamda1 == 0) {
+				    lamda1 = 0.95;
+				}
+				dpnd_flag = 2;
+			    }
 			}
 			else {
-			    Dpnd_prob_matrix[i][j] = TIME_PROB * (k_ptr->dpnd_rule->dpnd_type[k] == 'R') ?
-				k_ptr->dpnd_rule->prob_LtoR[k] : k_ptr->dpnd_rule->prob_RtoL[k];
+			    if (!strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi)) {
+				p3_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
+				p3_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
+				lamda2 = (1.0 * k_ptr->dpnd_rule->count[k]) / (k_ptr->dpnd_rule->count[k] + 1);
+				dpnd_flag = 1;
+			    }
+			    else {
+				p4_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
+				p4_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
+				if (lamda2 == 0) {
+				    lamda2 = 0.95;
+				}
+				dpnd_flag = 2;
+			    }
 			}
+
+			if (dpnd_flag < 2) {
+			    continue;
+			}
+
+			if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
+			    if (!backoff_dep) {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
+				Dpnd_prob_matrix[j][i] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
+			    }
+			    else {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
+				Dpnd_prob_matrix[j][i] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
+			    }
+			}
+			else if (k_ptr->dpnd_rule->dpnd_type[k] == 'R') {
+			    if (!backoff_dep) {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
+			    }
+			    else {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
+			    }
+			}
+			else if (k_ptr->dpnd_rule->dpnd_type[k] == 'L') {
+			    if (!backoff_dep) {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
+			    }
+			    else {
+				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
+			    }
+			}
+
 			first_uke_flag = 0;
 			break;
 		    }
@@ -1356,6 +1431,25 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
     */
+}
+
+/* get case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
+/*==================================================================*/
+	       void calc_chi_case_prob_matrix(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    if (i == j || check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
+		Chi_case_prob_matrix[i][j] = 0.0;
+	    }
+	    else {
+		Chi_case_prob_matrix[i][j] = get_chi_case_probability(sp->bnst_data+i, sp->bnst_data+j);
+	    }
+	}
+    }
 }
 
 /*====================================================================

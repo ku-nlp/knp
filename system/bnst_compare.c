@@ -231,6 +231,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     int		i, j, part_mt_point, mt_point, point = 0;
     int		flag1, flag2, content_word_match;
     char	*counter1, *counter2;
+    char        str1[3], str2[3];
+    char        str1_bk[WORD_LEN_MAX], str2_bk[WORD_LEN_MAX];
+    float       similarity = 0.0;
     BNST_DATA 	*ptr1, *ptr2;
 
     ptr1 = &(sp->bnst_data[pre]);
@@ -244,10 +247,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 	    (check_feature(ptr1->f, "¬Œ∏¿") &&
 	     check_feature(ptr2->f, "¬Œ∏¿")) || 
-
-	    (check_feature(ptr1->f, "øÙŒÃ") && /* °÷∞Ï°¢∆Û«Ò§π§Î°◊§«§œ¬Œ∏¿°¢Õ—∏¿§»§ §Î§ø§· */
-	     check_feature(ptr2->f, "øÙŒÃ")) || 
-
+	
 	    /* °÷≈™°§°◊§»°÷≈™§¿°◊ */
 	    (check_feature(ptr1->f, " ¬•≠:Ãæ") && 
 	     check_feature(ptr1->f, "Œ‡ª˜∑◊ªª:≈™") && 
@@ -489,24 +489,78 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	}
     }
     else { /*for Chinese*/
-	if (((check_feature(ptr1->f, "NN") ||
-	      check_feature(ptr1->f, "PN") ||
-	      check_feature(ptr1->f, "NR")) && 
-	     (check_feature(ptr2->f, "NN") ||
-	      check_feature(ptr2->f, "PN") ||
-	      check_feature(ptr2->f, "NR"))) ||
-	    ((check_feature(ptr1->f, "NT-SHORT") ||
-	      check_feature(ptr1->f, "NT")) && 
-	     check_feature(ptr2->f, "NT")) || 
-	    ((check_feature(ptr1->f, "VV") || 
-	      check_feature(ptr1->f, "VA")) && 
-	     (check_feature(ptr2->f, "VV") || 
-	      check_feature(ptr2->f, "VA"))) ||
-	    (check_feature(ptr1->f, "CD") && check_feature(ptr2->f, "CD")) ||
-	    (check_feature(ptr1->f, "M") && check_feature(ptr2->f, "M")) ||
-	    (check_feature(ptr1->f, "JJ") && check_feature(ptr2->f, "JJ"))) {
-	    point += 10;
+	/* if there is a PU between two words except for DunHao, similarity is 0 */
+	for (i = ptr1->num + 1; i < ptr2->num; i++) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "°¢") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "°®")) {
+		point = 0;
+		return point;
+	    }
 	}
+
+	/* Add point for nouns with similar characters */
+	if ((check_feature(ptr1->f, "NN") && check_feature(ptr2->f, "NN")) ||
+	    (check_feature(ptr1->f, "NR") && check_feature(ptr2->f, "NR"))) {
+	    for (i = 3; i <= (strlen(ptr1->head_ptr->Goi)  < strlen(ptr2->head_ptr->Goi) ? strlen(ptr1->head_ptr->Goi) : strlen(ptr2->head_ptr->Goi)); i += 3) {
+		strcpy(str1, "   ");
+		strcpy(str2, "   ");
+		strncpy(str1, ptr1->head_ptr->Goi + (strlen(ptr1->head_ptr->Goi) - i), 3);
+		strncpy(str2, ptr2->head_ptr->Goi + (strlen(ptr2->head_ptr->Goi) - i), 3);
+		if (strcmp(str1,str2) != 0) {
+		    break;
+		}
+	    }
+	    if (i > 3 && i < strlen(ptr1->head_ptr->Goi) && i < strlen(ptr2->head_ptr->Goi)) {
+		point += 5;
+	    }
+	}
+	
+	/* Normalize figures and add point for similar words regardless of figures */
+	if ((check_feature(ptr1->f, "CD") && check_feature(ptr2->f, "CD")) || 
+	    (check_feature(ptr1->f, "OD") && check_feature(ptr2->f, "OD")) || 
+	    ((check_feature(ptr1->f, "NT") || check_feature(ptr1->f, "NT-SHORT"))&& check_feature(ptr2->f, "NT"))) {
+	    strcpy(str1_bk, "");
+	    strcpy(str2_bk, "");
+	    for (i = 0; i < strlen(ptr1->head_ptr->Goi) - 3; i+=3) {
+		strcpy(str1, "   ");
+		strncpy(str1, ptr1->head_ptr->Goi + i, 3);
+		if (!is_figure(str1)) {
+		    strcat(str1_bk, str1);
+		}
+	    }
+	    for (i = 0; i < strlen(ptr2->head_ptr->Goi) - 3; i+=3) {
+		strcpy(str2, "   ");
+		strncpy(str2, ptr2->head_ptr->Goi + i, 3);
+		if (!is_figure(str2)) {
+		    strcat(str2_bk, str2);
+		}
+	    }
+	if (!strcmp(str1_bk, str2_bk)) {
+		point += 5;
+	    }
+	}
+	
+	similarity = similarity_chinese(ptr1, ptr2);
+	if (similarity >= 0.29) {
+	    point = 10 * similarity + 7.1;
+	}
+/* 	if (((check_feature(ptr1->f, "NN") || */
+/* 	      check_feature(ptr1->f, "PN") || */
+/* 	      check_feature(ptr1->f, "NR")) &&  */
+/* 	     (check_feature(ptr2->f, "NN") || */
+/* 	      check_feature(ptr2->f, "PN") || */
+/* 	      check_feature(ptr2->f, "NR"))) || */
+/* 	    ((check_feature(ptr1->f, "NT-SHORT") || */
+/* 	      check_feature(ptr1->f, "NT")) &&  */
+/* 	     check_feature(ptr2->f, "NT")) ||  */
+/* 	    ((check_feature(ptr1->f, "VV") ||  */
+/* 	      check_feature(ptr1->f, "VA")) &&  */
+/* 	     (check_feature(ptr2->f, "VV") ||  */
+/* 	      check_feature(ptr2->f, "VA"))) || */
+/* 	    (check_feature(ptr1->f, "CD") && check_feature(ptr2->f, "CD")) || */
+/* 	    (check_feature(ptr1->f, "M") && check_feature(ptr2->f, "M")) || */
+/* 	    (check_feature(ptr1->f, "JJ") && check_feature(ptr2->f, "JJ"))) { */
+/* 	    point += 10; */
+/* 	} */
 	if (strcmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi) == 0) {
 	    point += 5;
 	}
@@ -524,6 +578,49 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     for (i = 0; i < sp->Bnst_num; i++) 
 	for (j = i+1; j < sp->Bnst_num; j++)
 	    match_matrix[i][j] = calc_match(sp, i, j);
+}
+
+/*==================================================================*/
+	      int is_figure(char *s)
+/*==================================================================*/
+{
+    int value = 0;
+    if (!strcmp(s, "£∞") || 
+	!strcmp(s, "£±") || 
+	!strcmp(s, "£≤") || 
+	!strcmp(s, "£≥") || 
+	!strcmp(s, "£¥") || 
+	!strcmp(s, "£µ") || 
+	!strcmp(s, "£∂") || 
+	!strcmp(s, "£∑") || 
+	!strcmp(s, "£∏") || 
+	!strcmp(s, "£π") || 
+	!strcmp(s, "°•") || 
+	!strcmp(s, "∞Ï") || 
+	!strcmp(s, "∆Û") || 
+	!strcmp(s, "è∞®") || 
+	!strcmp(s, "ª∞") || 
+	!strcmp(s, "ªÕ") || 
+	!strcmp(s, "∏ﬁ") || 
+	!strcmp(s, "œª") || 
+	!strcmp(s, "º∑") || 
+	!strcmp(s, "»¨") || 
+	!strcmp(s, "∂Â") || 
+	!strcmp(s, "ΩΩ") || 
+	!strcmp(s, "ŒÌ") || 
+	!strcmp(s, "…¥") || 
+	!strcmp(s, "¿È") || 
+	!strcmp(s, "À¸") || 
+	!strcmp(s, "$ARZ(B") || 
+	!strcmp(s, "≈¿") || 
+	!strcmp(s, " ¨") || 
+	!strcmp(s, "«∑") ||
+	!strcmp(s, "«Ø") || 
+	!strcmp(s, "∑Ó") || 
+	!strcmp(s, "∆¸")) {
+	value = 1;
+    }
+    return value;
 }
 
 /*====================================================================
