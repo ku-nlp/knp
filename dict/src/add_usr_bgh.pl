@@ -22,7 +22,7 @@ my %word2code;
 
 open F, "<:encoding(euc-jp)", $ARGV[0] or die;
 
-# bgh.datの読み込み
+# bgh.origの読み込み
 while (<F>) {
     print;
 
@@ -30,7 +30,7 @@ while (<F>) {
 
     my ($word, $code) = split;
 
-    $word2code{$word} .= defined $word2code{$word} ? "/$code" : $code;
+    $word2code{$word}{$code} = 1;
 }
 close F;
 
@@ -51,19 +51,29 @@ while (<STDIN>) {
     }
 
     my ($new_repname, $repname);
-    $new_repname = &get_repname($newword);
-    $repname = &get_repname($word);
+    $new_repname = $newword =~ /\// ? $newword : &get_repname($newword);
+    $repname = $word =~ /\// ? $word : &get_repname($word);
 
     # すでにエントリがある
     if (defined $word2code{$new_repname}) {
-	print STDERR "!!$newword is already registered\n";
-	next;
+	my $outputted_flag = 0;
+	foreach my $code (keys %{$word2code{$repname}}) {
+	    unless (defined $word2code{$new_repname}{$code}) {
+		print "$new_repname $code\n";
+		$outputted_flag = 1;
+	    }		
+	}
+
+	print STDERR "!!$newword is already registered\n" unless $outputted_flag;
     }
     
-    if (defined $word2code{$repname}) {
-	foreach (split(/\//, $word2code{$repname})) {
-	    print "$new_repname $_\n";
+    elsif (defined $word2code{$repname}) {
+	foreach my $code (keys %{$word2code{$repname}}) {
+	    print "$new_repname $code\n";
 	}
+	
+	# 追加したものを登録しておく
+	$word2code{$new_repname} = $word2code{$repname};
     }
     else {
 	print STDERR "!!Not Found: $word($repname)\n";
