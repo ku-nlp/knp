@@ -1,3 +1,4 @@
 SUBDIRS = .
 
-EXTRA_DIST = MiniHownet.txt MiniHownet_Entity.txt
+dicdir = $(pkgdatadir)/dict/scode/hownet
+dist_dic_DATA = MiniHownet.txt MiniHownet_Entity.txt
