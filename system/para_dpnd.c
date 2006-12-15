@@ -436,10 +436,7 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 
 	/*  ¬ŒÛ§Œ∑∏§Í¿Ë */
 	for (k = 0; k < m_ptr->part_num - 1; k++) {
-	    if (Language == CHINESE) {
-		Mask_matrix[m_ptr->end[k]][m_ptr->end[m_ptr->part_num - 1]] = 2;
-	    }
-	    Mask_matrix[m_ptr->end[k]][m_ptr->end[k]] = 2;
+	    Mask_matrix[m_ptr->end[k]][m_ptr->end[k+1]] = 2;
 	    /*
 	      Mask_matrix[m_ptr->end[k]][m_ptr->end[m_ptr->part_num - 1]] = 2;
 	    */
