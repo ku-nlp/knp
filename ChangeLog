@@ -1,3 +1,9 @@
+2006-12-15  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/src/add_usr_bgh.pl:
+	代表表記で記述できるように変更
+	すでにエントリがあるものに対して意味素を追加できるように変更
+
 2006-12-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/read_data.c, rule/mrph_homo.rule:
