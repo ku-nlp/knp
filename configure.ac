@@ -251,6 +251,7 @@ dict/src/Makefile
 dict/scode/Makefile
 dict/scode/bgh/Makefile
 dict/scode/ntt/Makefile
+dict/scode/hownet/Makefile
 dict/ebcf/Makefile
 dict/gcf/Makefile
 ])
