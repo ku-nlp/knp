@@ -1,6 +1,6 @@
 /*====================================================================
 
-                                 é¡žä¼¼åº¦è¨ˆç®—
+                                 Îà»÷ÅÙ·×»»
 
                                                   Liu  06. 10.25
                                                  Modified Version
@@ -18,11 +18,17 @@ char entity[ENTITY_NUM][ENTITY_MAX];
 {
     /*read the Entity table*/
     FILE *fp,*fp2;
+    char* dict_file_name;
+    char* entity_file_name;
     char string_entity[ENTITY_MAX];
     int entity_flag = 0;
     int hownet_flag = 0;
-    fp = fopen("Entity_pure1.txt","r");
-    fp2 = fopen("MiniHownet2.txt","r");
+
+    dict_file_name = check_dict_filename(HOWNET_DICT, TRUE);
+    entity_file_name = check_dict_filename(HOWNET_ENTITY, TRUE);
+
+    fp = fopen(entity_file_name,"r");
+    fp2 = fopen(dict_file_name,"r");
     if(fp == NULL){
 	fprintf(stderr, ";; Cannot open file (%s) !!\n", fp);
     }
