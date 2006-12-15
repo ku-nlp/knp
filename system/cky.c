@@ -441,7 +441,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		     check_feature(g_ptr->f, "VA") ||
 		     check_feature(g_ptr->f, "VC") ||
 		     check_feature(g_ptr->f, "VE") ||
-		     check_feature(g_ptr->f, "P"))) {
+		     check_feature(g_ptr->f, "P")) &&
+		    !check_feature(d_ptr->f, "PU")) {
 		    /* calc case frame score for Chinese */
 		    one_score += TIME_CASE_FRAME * Chi_case_prob_matrix[g_ptr->num][d_ptr->num];
 		}
