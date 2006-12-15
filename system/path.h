@@ -31,3 +31,5 @@
 #define SM_DEL_DB_NAME		"scode/ntt/word2code_del.db"
 #define EVENT_DB_NAME		"event/event.db"
 #define CHI_CASE_DB_NAME	"ebcf/chicase.db"
+#define HOWNET_DICT             "scode/hownet/MiniHownet.txt"
+#define HOWNET_ENTITY           "scode/hownet/MiniHownet_Entity.txt"
