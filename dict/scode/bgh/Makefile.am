@@ -15,7 +15,7 @@ bgh.orig:
 		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
 	fi
 
-bgh.dat: usr_bgh.dat
+bgh.dat: usr_bgh.dat ../../src/add_usr_bgh.pl
 	if [ -f bgh.orig -a -f usr_bgh.dat ]; then \
 		../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
 	fi
