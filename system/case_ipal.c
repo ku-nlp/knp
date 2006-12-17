@@ -944,7 +944,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     strcpy(cf_ptr->cf_id, i_ptr->DATA); 
     cf_ptr->etcflag = i_ptr->etcflag;
     cf_ptr->entry = strdup(cf_ptr->cf_id);
-    sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 */
+    sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 (代表表記) */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
     for (i = 0; i_ptr->samecase[i][0] != END_M; i++) {
 	cf_ptr->samecase[i][0] = i_ptr->samecase[i][0];
@@ -1605,9 +1605,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	 int make_default_cframe(TAG_DATA *t_ptr, int start)
 /*==================================================================*/
 {
-    int i, num = 0, f_num = 0;
+    int i, num = 0, f_num = 0, rep_name_malloc_flag = 0;
     CASE_FRAME *cf_ptr;
-    char *cp;
+    char *cp, *rep_name;
 
     cf_ptr = Case_frame_array + start;
 
@@ -1647,8 +1647,24 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     cf_ptr->element_num = num;
     cf_ptr->etcflag = CF_NORMAL;
-    sprintf(cf_ptr->cf_id, "%s:%s0", t_ptr->head_ptr->Goi, cf_ptr->pred_type);
-    cf_ptr->entry = strdup(t_ptr->head_ptr->Goi);
+    /* 代表表記格フレームのときは、IDなどを代表表記にする */
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	if ((rep_name = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL) {
+	    rep_name = make_mrph_rn(t_ptr->head_ptr);
+	    rep_name_malloc_flag = 1;
+	}
+	sprintf(cf_ptr->cf_id, "%s:%s0", rep_name, cf_ptr->pred_type);
+	if (rep_name_malloc_flag) {
+	    cf_ptr->entry = rep_name;
+	}
+	else {
+	    cf_ptr->entry = strdup(rep_name);
+	}
+    }
+    else {
+	sprintf(cf_ptr->cf_id, "%s:%s0", t_ptr->head_ptr->Goi, cf_ptr->pred_type);
+	cf_ptr->entry = strdup(t_ptr->head_ptr->Goi);
+    }
 
     for (i = 0; i < num; i++) {
 	cf_ptr->pp[i][1] = END_M;
