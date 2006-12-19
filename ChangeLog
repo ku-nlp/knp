@@ -1,3 +1,8 @@
+2006-12-19  Michitaka Odani  <odani@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule:
+	「対応しかねる」に<否定表現>を付与
+
 2006-12-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c:
