@@ -57,6 +57,7 @@ extern int 		OptArticle;
 extern int 		OptDisplayNE;
 extern int 		OptExpandP;
 extern int		OptCheck;
+extern int		OptUseCF;
 extern int		OptUseNCF;
 extern int		OptUseRN;
 extern int		OptUseScase;

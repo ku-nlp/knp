@@ -1706,7 +1706,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
 	if (t_ptr->jiritu_ptr != NULL && 
 	    !check_feature(t_ptr->f, "格解析なし")) {
-	    if ((!OptEllipsis || 
+	    if (OptUseCF &&
+		(!OptEllipsis || 
 		 (OptEllipsis & OPT_ELLIPSIS) || 
 		 (OptEllipsis & OPT_DEMO)) && 
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
@@ -1719,7 +1720,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		t_ptr->e_cf_num = t_ptr->cf_num;
 	    }
 	    /* 名詞格フレーム */
-	    if ((OptEllipsis & OPT_REL_NOUN || OptUseNCF) && 
+	    if (OptUseNCF && 
 		check_feature(t_ptr->f, "体言")) {
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }

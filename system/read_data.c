@@ -644,7 +644,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
 		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
-		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
+		sscanf(input_buffer, "# S-ID:%d", &ArticleID) ||
+		    sscanf(input_buffer, "# S-ID:tsubame00-0000000100-%d", &ArticleID);
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptEllipsis) {
 			ClearSentences(sp);
