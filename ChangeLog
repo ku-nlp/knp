@@ -1,3 +1,10 @@
+2006-12-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/extern.h, system/main.c, system/read_data.c;
+	名詞格フレームを用いた解析をデフォルト化 (使用しない場合は -no-use-ncf)
+	格解析を行う際に用言格フレームを用いない(=名詞の関係解析のみ行う)オプション
+	-no-use-cfを追加
+
 2006-12-19  Michitaka Odani  <odani@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/bnst_basic.rule:
