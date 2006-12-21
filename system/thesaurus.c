@@ -274,7 +274,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 		return;
 	    }
 	    if (*used_key) {
-		strcat(used_key, "/");
+		strcat(used_key, "|");
 	    }
 	    strcat(used_key, str_buffer);
 	}
