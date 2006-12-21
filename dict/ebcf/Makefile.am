@@ -50,7 +50,7 @@ cf.dat: cf.knpdict
 
 cf.db: cf.dat
 	if [ -f cf.idx ]; then \
-		@MAKE_DB_COMMAND@ $@ -append / < cf.idx; \
+		sort cf.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 noun.knpdict:
@@ -63,7 +63,7 @@ noun.dat: noun.knpdict
 
 noun.db: noun.dat
 	if [ -f noun.idx ]; then \
-		@MAKE_DB_COMMAND@ $@ -append / < noun.idx; \
+		sort noun.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 case.prob:

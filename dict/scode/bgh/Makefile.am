@@ -22,7 +22,7 @@ bgh.dat: usr_bgh.dat ../../src/add_usr_bgh.pl
 
 bgh.db: bgh.dat
 	if [ -f bgh.dat ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
+		sort $< | @MAKE_DB_COMMAND@ $@; \
 	fi
 
 sm2code.db: sm2code.dat
