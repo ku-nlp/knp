@@ -1334,20 +1334,18 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 		/* coordination that consists of more than 2 phrases */
 		if (OptParaFix == 0) {
-		    for (k = 1; k < j - i; k++) {
-			next_pp = NULL;
-			left_ptr = cky_matrix[i][i + k];
-			while (left_ptr) {
-			    if (left_ptr->dpnd_type == 'P') {
-				right_ptr = cky_matrix[left_ptr->right->i][j];
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("** (%d,%d), (%d,%d) b=%d [%s--%s], P(para=--), score=", 
-					   i, i + k, left_ptr->right->i, j, dep_check[i + k], 
-					   (sp->bnst_data + i)->head_ptr->Goi, 
-					   (sp->bnst_data + j)->head_ptr->Goi);
-				}
-				while (right_ptr) {
-				    if (right_ptr->dpnd_type == 'P') {
+		    next_pp = NULL;
+		    for (k = 0; k < j - i - 1; k++) {
+			right_ptr = cky_matrix[i + k + 1][j];
+			while (right_ptr) {
+			    left_ptr = right_ptr;
+			    while (left_ptr && (left_ptr->dpnd_type == 'P' || left_ptr->para_flag)) {
+				left_ptr = left_ptr->left;
+			    }
+			    if (left_ptr && left_ptr != right_ptr) {
+				left_ptr = cky_matrix[i][left_ptr->j]; /* 上(i行)にあげる */
+				while (left_ptr) {
+				    if (left_ptr->dpnd_type == 'P') {
 					cky_ptr = new_cky_data(&cky_table_num);
 					if (next_pp == NULL) {
 					    start_ptr = cky_ptr;
@@ -1359,42 +1357,49 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'P', LtoR);
 					next_pp = &(cky_ptr->next);
 
+					if (OptDisplay == OPT_DEBUG) {
+					    printf("** (%d,%d), (%d,%d) b=%d [%s--%s], P(para=--), score=", 
+						   i, left_ptr->j, i + k + 1, j, dep_check[i], 
+						   (sp->bnst_data + i)->head_ptr->Goi, 
+						   (sp->bnst_data + left_ptr->j)->head_ptr->Goi);
+					}
+
 					cky_ptr->para_flag = 1;
 					cky_ptr->para_score = cky_ptr->left->para_score + cky_ptr->right->para_score;
 					cky_ptr->score = OptAnalysis == OPT_CASE ? 
 					    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 				    }
-				    right_ptr = right_ptr->next;
-				}
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("\n");
+				    left_ptr = left_ptr->next;
 				}
 			    }
-			    left_ptr = left_ptr->next;
+			    right_ptr = right_ptr->next;
 			}
+			/* if (next_pp) {
+			    break;
+			    } */
+		    }
 
-			if (next_pp) {
-			    /* choose the best one */
-			    cky_ptr = start_ptr;
-			    best_score = -INT_MAX;
-			    while (cky_ptr) {
-				if (cky_ptr->score > best_score) {
-				    best_score = cky_ptr->score;
-				    best_ptr = cky_ptr;
-				}
-				cky_ptr = cky_ptr->next;
+		    if (next_pp) {
+			/* choose the best one */
+			cky_ptr = start_ptr;
+			best_score = -INT_MAX;
+			while (cky_ptr) {
+			    if (cky_ptr->score > best_score) {
+				best_score = cky_ptr->score;
+				best_ptr = cky_ptr;
 			    }
-			    start_ptr = best_ptr;
-			    start_ptr->next = NULL;
-
-			    if (next_pp_for_ij == NULL) {
-				cky_matrix[i][j] = start_ptr;
-			    }
-			    else {
-				*next_pp_for_ij = start_ptr;
-			    }
-			    next_pp_for_ij = &(start_ptr->next);
+			    cky_ptr = cky_ptr->next;
 			}
+			start_ptr = best_ptr;
+			start_ptr->next = NULL;
+
+			if (next_pp_for_ij == NULL) {
+			    cky_matrix[i][j] = start_ptr;
+			}
+			else {
+			    *next_pp_for_ij = start_ptr;
+			}
+			next_pp_for_ij = &(start_ptr->next);
 		    }
 		}
 	    }
