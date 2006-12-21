@@ -1,3 +1,8 @@
+2006-12-21  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/thesaurus.c:
+	used_keyの区切りを「|」に変更
+
 2006-12-21  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_homo.rule:
