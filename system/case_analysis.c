@@ -1924,7 +1924,8 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 	else if (cpm_ptr->elem_b_num[i] < -1 || /* 省略ではない */
 		 cpm_ptr->cmm[0].result_lists_d[0].flag[i] < 0 || /* 割り当てあり */
 		 cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] == MATCH_SUBJECT || /* <主体>matchではない */
-		 cpm_ptr->cmm[0].result_lists_d[0].score[i] <= CF_DECIDE_THRESHOLD) { /* スコアが必要 */
+		 (cpm_ptr->cmm[0].result_lists_d[0].score[i] <= CF_DECIDE_THRESHOLD && !(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) || /* スコアが必要 */
+		 check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "音訓解消")) { /*音訓解消はされていない */
 	    continue;
 	}
 
@@ -1946,10 +1947,11 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
     FEATURE *fp;
     MRPH_DATA m;
 
-    if (cpm_ptr->cmm[0].score > 0 && /* スコアが必要 */
+    if ((cpm_ptr->cmm[0].score > 0 || OptCaseFlag & OPT_CASE_USE_PROBABILITY) && /* スコアが必要 */
 	(check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") || /* 原形が曖昧な用言 */
 	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
-	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖")))) { /* 品曖なひらがな */
+	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖"))) && /* 品曖なひらがな */
+	!check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "音訓解消")) { /*音訓解消はされていない */
 	/* 現在の形態素でよいとき */
 	if ((rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr)) && 
 	    !strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
