@@ -1,3 +1,9 @@
+2006-12-22  Koji Okabe  <okabe@kc.t.u-tokyo.ac.jp>
+
+	* system/case_analysis.c: 
+	確率的格解析時に格フレームを用いた曖昧性解消を行うよう変更
+	音訓解消時に格フレームを用いた曖昧性解消を行わないよう変更
+
 2006-12-21  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/thesaurus.c:
