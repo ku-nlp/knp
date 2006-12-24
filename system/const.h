@@ -144,7 +144,8 @@
 #define OPT_SEXP	8
 #define OPT_TAB		0
 #define OPT_NOTAG	2
-#define OPT_PA	       16
+#define OPT_FORMAT     16
+#define OPT_PA	       32
 #define OPT_NOTAGTREE	3
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2

@@ -10,6 +10,8 @@
 #include "knp.h"
 
 char mrph_buffer[SMALL_DATA_LEN];
+int Sen_Num = 1; /* -format のときのみ使用する */
+int Tag_Num = 1; /* -format のときのみ使用する */
 
 /*==================================================================*/
 		 char *pp2mrph(char *pp, int pp_len)
@@ -385,9 +387,16 @@ char mrph_buffer[SMALL_DATA_LEN];
     int i;
 
     if (cp && ptr) {
-	if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "<P>");
-	else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "<I>");
-	else			     cp[0] = '\0';
+	if (OptExpress == OPT_FORMAT) {
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "&lt;P&gt;");
+	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "&lt;I&gt;");
+	    else			     cp[0] = '\0';
+	}
+	else {
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "<P>");
+	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "<I>");
+	    else			     cp[0] = '\0';
+	}
 	if ( ptr->para_top_p == TRUE )
 	  strcat(cp, "PARA");
 	else {
@@ -411,9 +420,15 @@ char mrph_buffer[SMALL_DATA_LEN];
 	    }
 	}
 
-	if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "<P>");
-	else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "<I>");
-	if ( ptr->to_para_p == TRUE ) fprintf(Outfp, "(D)");
+	if (OptExpress == OPT_FORMAT) {
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "&lt;P&gt;");
+	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "&lt;I&gt;");
+	}
+	else {
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "<P>");
+	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "<I>");
+	}
+	if ( ptr->to_para_p == TRUE ) fprintf(Outfp, "(D)");   
     }
 }
 
@@ -964,6 +979,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
 	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
+	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);
     }
 
     if (ptr->child[0]) {
@@ -996,7 +1012,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     calc_self_space(ptr, depth);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
-	  fputc(' ', Outfp);
+	    if (OptExpress == OPT_FORMAT)
+		fprintf(Outfp, "&nbsp;");
+	    else
+		fputc(' ', Outfp);
     }
     print_bnst(ptr, NULL);
     
@@ -1005,9 +1024,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	if (OptExpress == OPT_TREEF) {
 	    print_some_feature(ptr->f, Outfp);
 	}
+	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "</tt>");
 	fputc('\n', Outfp);
+	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);
     } else if ( flag == 1 ) {
-	fprintf(Outfp, "─");
+	fprintf(Outfp, "ー");
     } else if ( flag == 2 ) {
 	fprintf(Outfp, "-");
     }
@@ -1119,9 +1140,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num - last_t_offset), 1, NULL, 0);
     }
 
-    fprintf(Outfp, "EOS\n");
+    fprintf(Outfp, "EOS%s\n", (OptExpress == OPT_FORMAT) ? "</tt>" : "");
+    Tag_Num = 1;
+    Sen_Num++;
 }
-
 
 /*====================================================================
 			      チェック用
@@ -1221,8 +1243,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
        if (OptAnalysis == OPT_AssignF && !PM_Memo[0]) return;
     */
 
-    /* ヘッダの出力 */
-
+    /* ヘッダの出力 */   
+    if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n", Sen_Num, Tag_Num++);
     if (sp->Comment) {
 	fprintf(Outfp, "%s", sp->Comment);
     } else {
