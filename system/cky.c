@@ -54,19 +54,75 @@ void make_data_cframe_rentai_simple(CF_PRED_MGR *pre_cpm_ptr, TAG_DATA *d_ptr, T
     pre_cpm_ptr->cf.element_num++;
 }
 
-int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
+char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
+    if ((OptParaFix == 0 && 
+	 begin >= 0 && 
+	 (sp->bnst_data + dep)->para_num != -1 && 
+	 Para_matrix[(sp->bnst_data + dep)->para_num][begin][gov] >= 0) || /* para score is not minus */
+	(OptParaFix == 1 && 
+	 Mask_matrix[dep][gov] == 2)) {   /* 事误P */
+	return 'P';
+    }
+    else if (OptParaFix == 1 && 
+	     Mask_matrix[dep][gov] == 3) { /* 事误I */
+	return 'I';
+    }
+    else if (Dpnd_matrix[dep][gov] && Quote_matrix[dep][gov] && 
+	     (OptParaFix == 0 || Mask_matrix[dep][gov] == 1)) {
+	return Dpnd_matrix[dep][gov];
+    }
+    else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
+	return 'R';
+    }
+    return '\0';
+}
+
+/* make an array of dependency possibilities */
+void make_work_mgr_dpnd_check(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *d_ptr) {
+    int i, count = 0, start;
+
+/*    if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P')
+	start = cky_ptr->right->j;
+	else */
+	start = d_ptr->num + 1;
+
+    for (i = start; i < sp->Bnst_num; i++) {
+	if (check_dpnd_possibility(sp, d_ptr->num, i, -1, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
+	    Work_mgr.dpnd.check[d_ptr->num].pos[count] = i;
+	    count++;
+	}
+    }
+
+    Work_mgr.dpnd.check[d_ptr->num].num = count;
+}
+
+int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     int i;
     char *cp;
 
-    /* case analysis result */
-    if (OptAnalysis == OPT_CASE && cky_ptr->cpm_ptr->pred_b_ptr && 
-	Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num].pred_b_ptr == NULL) {
-	if (check_feature(cky_ptr->cpm_ptr->pred_b_ptr->f, "犯:息呈")) { /* clausal modifiee */
-	    /* make_data_cframe_rentai_simple(cky_ptr->cpm_ptr, d_ptr, g_ptr); →fix me!→ leftが息呈のとき */
-	    cky_ptr->cpm_ptr->cf.element_num++;
+    /* make case analysis result for clausal modifiee */
+    if (OptAnalysis == OPT_CASE) {
+	if (cky_ptr->cpm_ptr->pred_b_ptr && 
+	    Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num].pred_b_ptr == NULL) {
+	    copy_cpm(&(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]), cky_ptr->cpm_ptr, 0);
+	    cky_ptr->cpm_ptr->pred_b_ptr->cpm_ptr = &(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]);
 	}
-	copy_cpm(&(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]), cky_ptr->cpm_ptr, 0);
-	cky_ptr->cpm_ptr->pred_b_ptr->cpm_ptr = &(Best_mgr->cpm[cky_ptr->cpm_ptr->pred_b_ptr->pred_num]);
+
+	if (cky_ptr->left && cky_ptr->right && 
+	    cky_ptr->left->cpm_ptr->pred_b_ptr && 
+	    check_feature(cky_ptr->left->cpm_ptr->pred_b_ptr->f, "犯:息呈")) { /* clausal modifiee */
+	    CF_PRED_MGR *cpm_ptr = &(Best_mgr->cpm[cky_ptr->left->cpm_ptr->pred_b_ptr->pred_num]);
+
+	    if (cpm_ptr->pred_b_ptr == NULL) { /* まだBest_mgrにコピ〖していないとき */
+		copy_cpm(cpm_ptr, cky_ptr->left->cpm_ptr, 0);
+		cky_ptr->left->cpm_ptr->pred_b_ptr->cpm_ptr = cpm_ptr;
+	    }
+
+	    make_work_mgr_dpnd_check(sp, cky_ptr->left, cky_ptr->right->b_ptr);
+	    make_data_cframe_rentai_simple(cpm_ptr, cpm_ptr->pred_b_ptr, 
+					   cky_ptr->right->b_ptr->tag_ptr + cky_ptr->right->b_ptr->tag_num - 1);
+	    find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), 1);
+	}
     }
 
     if (cky_ptr->left && cky_ptr->right) {
@@ -93,8 +149,8 @@ int convert_to_dpnd(TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    }
 	}
 
-	convert_to_dpnd(Best_mgr, cky_ptr->left);
-	convert_to_dpnd(Best_mgr, cky_ptr->right);
+	convert_to_dpnd(sp, Best_mgr, cky_ptr->left);
+	convert_to_dpnd(sp, Best_mgr, cky_ptr->right);
     }
     else {
 	if (OptDisplay == OPT_DEBUG) {
@@ -135,29 +191,6 @@ int check_scase (BNST_DATA *g_ptr, int *scase_check, int rentai, int un_count) {
     else {
 	return vacant_slot_num * 10;
     }
-}
-
-char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
-    if ((OptParaFix == 0 && 
-	 begin >= 0 && 
-	 (sp->bnst_data + dep)->para_num != -1 && 
-	 Para_matrix[(sp->bnst_data + dep)->para_num][begin][gov] >= 0) || /* para score is not minus */
-	(OptParaFix == 1 && 
-	 Mask_matrix[dep][gov] == 2)) {   /* 事误P */
-	return 'P';
-    }
-    else if (OptParaFix == 1 && 
-	     Mask_matrix[dep][gov] == 3) { /* 事误I */
-	return 'I';
-    }
-    else if (Dpnd_matrix[dep][gov] && Quote_matrix[dep][gov] && 
-	     (OptParaFix == 0 || Mask_matrix[dep][gov] == 1)) {
-	return Dpnd_matrix[dep][gov];
-    }
-    else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
-	return 'R';
-    }
-    return '\0';
 }
 
 /* conventional scoring function */
@@ -748,25 +781,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     }
 
     return one_score;
-}
-
-/* make an array of dependency possibilities */
-void make_work_mgr_dpnd_check(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *d_ptr) {
-    int i, count = 0, start;
-
-/*    if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P')
-	start = cky_ptr->right->j;
-	else */
-	start = d_ptr->num + 1;
-
-    for (i = start; i < sp->Bnst_num; i++) {
-	if (check_dpnd_possibility(sp, d_ptr->num, i, -1, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
-	    Work_mgr.dpnd.check[d_ptr->num].pos[count] = i;
-	    count++;
-	}
-    }
-
-    Work_mgr.dpnd.check[d_ptr->num].num = count;
 }
 
 /* count dependency possibilities */
@@ -1464,7 +1478,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 	Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = -1;
 	Best_mgr->score = cky_ptr->score;
-	convert_to_dpnd(Best_mgr, cky_ptr);
+	convert_to_dpnd(sp, Best_mgr, cky_ptr);
 	cky_ptr = cky_ptr->next;
     }
 
@@ -1480,6 +1494,17 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    }
 	    Best_mgr->dpnd.head[i] = Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]];
 	    /* Best_mgr->dpnd.check[i].pos[0] = Best_mgr->dpnd.head[i]; */
+	}
+    }
+
+    /* record case analysis results */
+    if (OptAnalysis == OPT_CASE) {
+	for (i = 0; i < Best_mgr->pred_num; i++) {
+	    if (Best_mgr->cpm[i].result_num != 0 && 
+		Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
+		Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+		record_case_analysis(sp, &(Best_mgr->cpm[i]), NULL, FALSE);
+	    }
 	}
     }
 
