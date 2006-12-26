@@ -1,3 +1,12 @@
+2006-12-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c, system/main.c:
+	-cky became default.
+	Improved the CKY framework accroding to phrase types (for Japanese).
+
+	* system/cky.c:
+	Modified the cky parsing to record case analysis results.
+
 2006-12-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/const.h, system/dpnd_analysis.c, system/lib_print.c, system/main.c:
@@ -16,11 +25,18 @@
 
 2006-12-21  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/cky.c:
+	Modified coordinate structures that consist of more than 2
+	phrases.
+
+	* dict/scode/bgh/Makefile.am, dict/ebcf/Makefile.am:
+	Sort the files that are registered in DB.
+
 	* rule/mrph_homo.rule:
 	Modified to keep morpheme candidates in "音訓解消".
 
 	* rule/tag_postprocess.rule:
-	Added a rule for mergeing "〜(を|が)できる" in postprocess.
+	Added a rule for merging "〜(を|が)できる" in postprocess.
 
 2006-12-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
