@@ -1024,9 +1024,12 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	if (OptExpress == OPT_TREEF) {
 	    print_some_feature(ptr->f, Outfp);
 	}
-	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "</tt>");
-	fputc('\n', Outfp);
-	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);
+	if (OptExpress == OPT_FORMAT) {
+	    fprintf(Outfp, "</tt>\n%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);	    
+	}
+	else {
+	    fputc('\n', Outfp);	
+	}
     } else if ( flag == 1 ) {
 	fprintf(Outfp, "ー");
     } else if ( flag == 2 ) {
@@ -1244,13 +1247,24 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     */
 
     /* ヘッダの出力 */   
-    if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n", Sen_Num, Tag_Num++);
+    if (OptExpress == OPT_FORMAT) {
+	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num, Tag_Num);
+	    fprintf(Outfp, "格解析結果\n", sp->Sen_num);
+	}
+	if (OptNE) {
+	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num, Tag_Num);
+	    fprintf(Outfp, "NE解析結果\n", sp->Sen_num);
+	}
+	fprintf(Outfp, "%%%% %d %d 1\n", Sen_Num, Tag_Num++);
+    }
+
     if (sp->Comment) {
 	fprintf(Outfp, "%s", sp->Comment);
     } else {
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
-
+    
     if (OptInput == OPT_RAW) {
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " KNP:%s", date_p);
@@ -1324,6 +1338,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	else {
 	    fprintf(Outfp, "EOS\n");
 	}
+    }
+
+    if (OptExpress == OPT_FORMAT) {
+	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) 
+	    print_case_for_format(sp);
+	if (OptNE)
+	    print_ne_for_format(sp);
     }
 
     /* nbestオプションなどではこの関数が複数回呼ばれるので後処理を元に戻しておく */
@@ -1616,6 +1637,54 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    }
 	}
 	fprintf(Outfp, "\n");
+    }
+}
+
+/*==================================================================*/
+	    void print_case_for_format(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *cp, *next, buf1[SMALL_DATA_LEN2], buf2[SMALL_DATA_LEN2], buf3[SMALL_DATA_LEN2];
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "格解析結果"))) {
+
+	    /* C N O */
+	    while ((next = strstr(cp, "/C/")) || 
+		   (next = strstr(cp, "/N/")) ||
+		   (next = strstr(cp, "/O/"))) {
+		cp = next;
+		while (cp[0] != ';' && cp[0] != ':') cp--;
+		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
+		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    if (strcmp(buf2, "O")) {
+			fprintf(Outfp, "<font size=-1>&nbsp;[%s:%s]&nbsp;</font>\n", buf1, buf3);
+		    }
+		    else {
+			fprintf(Outfp, "<font size=-1>&nbsp;%s:%s&nbsp;</font>\n", buf1, buf3);
+		    }
+		    cp = strstr(cp, buf2) + 1;
+		}
+		else break;
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	    void print_ne_for_format(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *cp;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "NE"))) {
+	    
+	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num - 1, i + 2);
+	    fprintf(Outfp, "<font size=-1>&nbsp;%s&nbsp;</font>\n", cp + 3);
+	}
     }
 }
 

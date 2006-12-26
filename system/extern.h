@@ -352,6 +352,7 @@ extern void print_para_relation(SENTENCE_DATA *sp);
 extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
 extern void print_tree_for_chinese(SENTENCE_DATA *sp);
+extern void print_case_for_format(SENTENCE_DATA *sp);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);

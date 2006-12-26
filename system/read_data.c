@@ -473,7 +473,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][1] = END_M;
 
     if (tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][0] == END_M) {
-	fprintf(stderr, ";; Unknown case <%s>\n", rel);
+	if (OptExpress != OPT_FORMAT) fprintf(stderr, ";; Unknown case <%s>\n", rel);
 	return TRUE;
     }
 
@@ -487,7 +487,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* 異常なタグ単位が指定されているかチェック */
 	    if (sp->Sen_num - sent_n < 1 || 
 		tag_n >= (sentence_data + sp->Sen_num - 1 - sent_n)->Tag_num) {
-		fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
+		if (OptExpress != OPT_FORMAT) 
+		    fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
 		return FALSE;
 	    }
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
