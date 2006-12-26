@@ -157,7 +157,7 @@ extern int	EX_match_subject;
 
     Language = JAPANESE;
     OptAnalysis = OPT_CASE;
-    OptCKY = 0;
+    OptCKY = TRUE;
     OptEllipsis = 0;
     OptCorefer = 0;
     OptInput = OPT_RAW;
@@ -213,9 +213,6 @@ extern int	EX_match_subject;
 	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
 	else if (str_eq(argv[0], "-case2"))   OptAnalysis = OPT_CASE2;
 	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
-	else if (str_eq(argv[0], "-dpnd"))    OptAnalysis = OPT_DPND;
-	else if (str_eq(argv[0], "-bnst"))    OptAnalysis = OPT_BNST;
-	else if (str_eq(argv[0], "-assignf")) OptAnalysis = OPT_AssignF;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
@@ -238,10 +235,28 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne-debug"))  OptDisplayNE  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
-	else if (str_eq(argv[0], "-check"))   OptCheck    = TRUE;
 	else if (str_eq(argv[0], "-no-use-cf")) OptUseCF   = FALSE;
 	else if (str_eq(argv[0], "-use-ncf")) OptUseNCF   = TRUE;
 	else if (str_eq(argv[0], "-no-use-ncf")) OptUseNCF   = FALSE;
+	else if (str_eq(argv[0], "-dpnd")) {
+	    OptAnalysis = OPT_DPND;
+	    OptUseCF = FALSE;
+	    OptUseNCF = FALSE;
+	}
+	else if (str_eq(argv[0], "-bnst")) {
+	    OptAnalysis = OPT_BNST;
+	    OptUseCF = FALSE;
+	    OptUseNCF = FALSE;
+	}
+	else if (str_eq(argv[0], "-assignf")) {
+	    OptAnalysis = OPT_AssignF;
+	    OptUseCF = FALSE;
+	    OptUseNCF = FALSE;
+	}
+	else if (str_eq(argv[0], "-check")) {
+	    OptCheck = TRUE;
+	    OptCKY = FALSE;
+	}
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
@@ -256,6 +271,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
+	}
+	else if (str_eq(argv[0], "-no-cky")) {
+	    OptCKY = FALSE;
 	}
 	else if (str_eq(argv[0], "-language")) {
 	    argv++; argc--;
@@ -850,11 +868,17 @@ extern int	EX_match_subject;
 	/* init_entity_cache(); */
     }
 
-    hownet_open();      /* open hownet */
+    if (Language == CHINESE) {
+	hownet_open();      /* open hownet */
+    }
 
     init_juman();	/* JUMAN関係 */
-    init_cf();		/* 格フレームオープン */
-    init_noun_cf();	/* 格フレーム(名詞)オープン */
+    if (OptUseCF) {
+	init_cf();	/* 格フレームオープン */
+    }
+    if (OptUseNCF) {
+	init_noun_cf();	/* 名詞格フレームオープン */
+    }
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
 
@@ -1162,8 +1186,13 @@ extern int	EX_match_subject;
 	if (cky(sp, sp->Best_mgr) == FALSE) {
 	    if (Language == CHINESE) {
 		printf("sentence %d cannot be parsed\n",sen_num);
+		return FALSE;
 	    }
-	    return FALSE;
+	    else {
+		sp->available = 0;
+		ErrorComment = strdup("Cannot detect dependency structure");
+		when_no_dpnd_struct(sp);
+	    }
 	}
     }
     else {

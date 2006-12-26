@@ -1182,7 +1182,7 @@ CKY *new_cky_data(int *cky_table_num) {
     (*cky_table_num)++;
     if (*cky_table_num >= CKY_TABLE_MAX) {
 	fprintf(stderr, ";;; cky_table_num exceeded maximum\n");
-	exit(1);
+	return NULL;
     }
 
     return cky_ptr;
@@ -1220,7 +1220,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    }
 	    cky_matrix[i][j] = NULL;
 	    if (i == j) {
-		cky_ptr = new_cky_data(&cky_table_num);
+		if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+		    return FALSE;
+		}
 		cky_matrix[i][j] = cky_ptr;
 
 		set_cky(sp, cky_ptr, NULL, NULL, i, j, -1, 0, LtoR);
@@ -1245,8 +1247,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
 				 dep_check[i + k] >= j || /* barrier */
-				 relax_barrier_for_P(right_ptr, i + k, j, dep_check))) { /* barrier relaxation for P */
-				cky_ptr = new_cky_data(&cky_table_num);
+				 (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))) { /* barrier relaxation for P */
+				if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+				    return FALSE;
+				}
 				if (next_pp == NULL) {
 				    start_ptr = cky_ptr;
 				}
@@ -1274,7 +1278,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 			    /* if dpnd direction is B, check RtoL again */
 			    if (Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'B') {
-				cky_ptr = new_cky_data(&cky_table_num);
+				if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+				    return FALSE;
+				}
 				if (next_pp == NULL) {
 				    start_ptr = cky_ptr;
 				}
@@ -1295,24 +1301,24 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				cky_ptr->score = OptAnalysis == OPT_CASE ? 
 				    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 			    }
+
+			    if (Language != CHINESE && 
+				!check_feature(right_ptr->b_ptr->f, "用言")) { /* consider only the best one if noun */
+				break;
+			    }
 			    right_ptr = right_ptr->next;
+			}
+
+			if (Language != CHINESE && 
+			    (!check_feature(left_ptr->b_ptr->f, "用言") || /* consider only the best one if noun or VP */
+			     check_feature(left_ptr->b_ptr->f, "係:連用"))) {
+			    break;
 			}
 			left_ptr = left_ptr->next;
 		    }
 
 		    if (next_pp) {
-			/* choose the best one */
-			cky_ptr = start_ptr;
-			best_score = -INT_MAX;
-			while (cky_ptr) {
-			    if (cky_ptr->score > best_score) {
-				best_score = cky_ptr->score;
-				best_ptr = cky_ptr;
-			    }
-			    cky_ptr = cky_ptr->next;
-			}
-			start_ptr = best_ptr;
-			start_ptr->next = NULL;
+			/* 名詞の場合はここで1つに絞ってもよい */
 
 			if (next_pp_for_ij == NULL) {
 			    cky_matrix[i][j] = start_ptr;
@@ -1360,7 +1366,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				left_ptr = cky_matrix[i][left_ptr->j]; /* 上(i行)にあげる */
 				while (left_ptr) {
 				    if (left_ptr->dpnd_type == 'P') {
-					cky_ptr = new_cky_data(&cky_table_num);
+					if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+					    return FALSE;
+					}
 					if (next_pp == NULL) {
 					    start_ptr = cky_ptr;
 					}
@@ -1414,6 +1422,27 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    *next_pp_for_ij = start_ptr;
 			}
 			next_pp_for_ij = &(start_ptr->next);
+		    }
+		}
+
+		/* move the best one to the beginning of the list */
+		if (next_pp_for_ij) {
+		    cky_ptr = cky_matrix[i][j];
+		    best_score = -INT_MAX;
+		    pre_ptr = NULL;
+		    while (cky_ptr) {
+			if (cky_ptr->score > best_score) {
+			    best_score = cky_ptr->score;
+			    best_ptr = cky_ptr;
+			    best_pre_ptr = pre_ptr;
+			}
+			pre_ptr = cky_ptr;
+			cky_ptr = cky_ptr->next;
+		    }
+		    if (best_pre_ptr) { /* bestが先頭ではない場合 */
+			best_pre_ptr->next = best_ptr->next;
+			best_ptr->next = cky_matrix[i][j];
+			cky_matrix[i][j] = best_ptr;
 		    }
 		}
 	    }
