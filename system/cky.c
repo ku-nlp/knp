@@ -1326,7 +1326,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			else {
 			    *next_pp_for_ij = start_ptr;
 			}
-			next_pp_for_ij = &(start_ptr->next);
+			next_pp_for_ij = next_pp;
 
 			/* barrier handling */
 			if (j != sp->Bnst_num - 1) { /* don't check in case of relaxation */
