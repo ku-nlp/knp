@@ -1031,7 +1031,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fputc('\n', Outfp);	
 	}
     } else if ( flag == 1 ) {
-	fprintf(Outfp, "б╝");
+	fprintf(Outfp, "иб");
     } else if ( flag == 2 ) {
 	fprintf(Outfp, "-");
     }

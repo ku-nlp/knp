@@ -1,3 +1,8 @@
+2006-12-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/extern.h, system/lib_print.c:
+	A small fix
+
 2006-12-26  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/extern.h, system/lib_print.c, system/read_data.c:
