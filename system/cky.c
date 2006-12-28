@@ -893,7 +893,8 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    }
 
 	    /* clausal modifiee */
-	    if (check_feature(d_ptr->f, "係:連格")) {
+	    if (check_feature(d_ptr->f, "係:連格") && 
+		cky_ptr->left->cpm_ptr->pred_b_ptr) { /* 格フレームをもっているべき */
 		pre_cpm_ptr = cky_ptr->left->cpm_ptr;
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
