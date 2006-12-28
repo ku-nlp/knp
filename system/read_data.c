@@ -604,9 +604,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, bnst_item, tag_item, i, homo_flag;
+    int homo_num, offset, mrph_item, bnst_item, tag_item, i, j, homo_flag;
 
     sp->Mrph_num = 0;
     homo_num = 0;
@@ -645,8 +645,19 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
 		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
-		sscanf(input_buffer, "# S-ID:%d", &ArticleID) ||
-		    sscanf(input_buffer, "# S-ID:tsubame00-0000000100-%d", &ArticleID);
+
+		/* 様々な文章IDに対応するためコメント行を逆順にしてsscanfする */
+		/* このためArticleIDは本来のArticleIDを逆順にしたもの(ex. 135→531)になっている*/
+		i = j = strlen(input_buffer);
+		rev_ibuffer[j] = '\0';
+		while (i > 0) {
+		    i--;
+		    rev_ibuffer[j - i - 1] = input_buffer[i];
+		}
+
+		/* intは2147483647までしか取れないため上位9桁(元の下位9桁)のみ読んで比較 */
+		sscanf(rev_ibuffer, "%*d-%9d", &ArticleID);
+
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptEllipsis) {
 			ClearSentences(sp);

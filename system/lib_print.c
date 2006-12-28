@@ -1219,6 +1219,54 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
+	    void print_case_for_format(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *cp, *next, buf1[SMALL_DATA_LEN2], buf2[SMALL_DATA_LEN2], buf3[SMALL_DATA_LEN2];
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "≥ ≤Ú¿œ∑Î≤Ã"))) {
+
+	    /* C N O */
+	    while ((next = strstr(cp, "/C/")) || 
+		   (next = strstr(cp, "/N/")) ||
+		   (next = strstr(cp, "/O/"))) {
+		cp = next;
+		while (cp[0] != ';' && cp[0] != ':') cp--;
+		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
+		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    if (strcmp(buf2, "O")) {
+			fprintf(Outfp, "<font size=-1>&nbsp;[%s:%s]&nbsp;</font>\n", buf1, buf3);
+		    }
+		    else {
+			fprintf(Outfp, "<font size=-1>&nbsp;%s:%s&nbsp;</font>\n", buf1, buf3);
+		    }
+		    cp = strstr(cp, buf2) + 1;
+		}
+		else break;
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	    void print_ne_for_format(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+    char *cp;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "NE"))) {
+	    
+	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num - 1, i + 2);
+	    fprintf(Outfp, "<font size=-1>&nbsp;%s&nbsp;</font>\n", cp + 3);
+	}
+    }
+}
+
+/*==================================================================*/
       void print_result(SENTENCE_DATA *sp, int case_print_flag)
 /*==================================================================*/
 {
@@ -1637,54 +1685,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    }
 	}
 	fprintf(Outfp, "\n");
-    }
-}
-
-/*==================================================================*/
-	    void print_case_for_format(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i;
-    char *cp, *next, buf1[SMALL_DATA_LEN2], buf2[SMALL_DATA_LEN2], buf3[SMALL_DATA_LEN2];
-
-    for (i = 0; i < sp->Tag_num; i++) {
-	if ((cp = check_feature((sp->tag_data + i)->f, "≥ ≤Ú¿œ∑Î≤Ã"))) {
-
-	    /* C N O */
-	    while ((next = strstr(cp, "/C/")) || 
-		   (next = strstr(cp, "/N/")) ||
-		   (next = strstr(cp, "/O/"))) {
-		cp = next;
-		while (cp[0] != ';' && cp[0] != ':') cp--;
-		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
-		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
-		    if (strcmp(buf2, "O")) {
-			fprintf(Outfp, "<font size=-1>&nbsp;[%s:%s]&nbsp;</font>\n", buf1, buf3);
-		    }
-		    else {
-			fprintf(Outfp, "<font size=-1>&nbsp;%s:%s&nbsp;</font>\n", buf1, buf3);
-		    }
-		    cp = strstr(cp, buf2) + 1;
-		}
-		else break;
-	    }
-	}
-    }
-}
-
-/*==================================================================*/
-	    void print_ne_for_format(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i;
-    char *cp;
-
-    for (i = 0; i < sp->Tag_num; i++) {
-	if ((cp = check_feature((sp->tag_data + i)->f, "NE"))) {
-	    
-	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num - 1, i + 2);
-	    fprintf(Outfp, "<font size=-1>&nbsp;%s&nbsp;</font>\n", cp + 3);
-	}
     }
 }
 

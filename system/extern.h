@@ -255,8 +255,6 @@ extern int sms_match(char *cpp, char *cpd, int expand);
 /* case_print.c */
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int ipal_num);
-extern void print_case_result(SENTENCE_DATA *sp);
-extern void print_ne_result(SENTENCE_DATA *sp);
 extern void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 extern void print_pa_structure(SENTENCE_DATA *sp);
 
