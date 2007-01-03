@@ -2240,11 +2240,49 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
        cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
     if (rep_malloc_flag) {
 	free(mrph_str);
+	rep_malloc_flag = 0;
     }
 
     /* if (ret = _get_ex_probability(key)) { */
     if (ret = _get_ex_probability_internal(key, as2, cfp)) {
 	ret = log(ret);
+    }
+    /* 代表表記の場合はALTも調べる */
+    else if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	int rep_length;
+	FEATURE *fp = dp->head_ptr->f;
+	MRPH_DATA m;
+
+	while (fp) {
+	    if (!strncmp(fp->cp, "ALT-", 4)) {
+		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+		       m.Goi2, m.Yomi, m.Goi, 
+		       &m.Hinshi, &m.Bunrui, 
+		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+		mrph_str = get_mrph_rep(&m); /* 代表表記 */
+		rep_length = get_mrph_rep_length(mrph_str);
+		if (rep_length == 0) { /* なければ作る */
+		    mrph_str = make_mrph_rn(&m);
+		    rep_length = strlen(mrph_str);
+		    rep_malloc_flag = 1;
+		}
+
+		key = malloc_db_buf(rep_length + 1);
+		strncpy(key, mrph_str, rep_length);
+		*(key + rep_length) = '\0';
+		if (rep_malloc_flag) {
+		    free(mrph_str);
+		    rep_malloc_flag = 0;
+		}
+
+		if (ret = _get_ex_probability_internal(key, as2, cfp)) {
+		    ret = log(ret);
+		    return ret;
+		}
+	    }
+	    fp = fp->next;
+	}
+	ret = FREQ0_ASSINED_SCORE;
     }
     /* else if (ret = _get_sm_probability(dp, as2, cfp)) { * 意味素にback-off *
 	ret = log(ret);
