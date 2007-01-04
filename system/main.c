@@ -265,6 +265,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-probcase")) {
 	    OptCaseFlag &= ~OPT_CASE_USE_PROBABILITY;
 	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
+	    OptCKY = FALSE;
 	}
 	else if (str_eq(argv[0], "-probpara")) {
 	     OptParaFix = 0;
