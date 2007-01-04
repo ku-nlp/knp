@@ -1,0 +1,35 @@
+;;; -*- Emacs-Lisp -*-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;	    □■□ ＫＮＰ文法規則 : mrph_ne.rule □■□
+;;
+;;	働き：形態素に固有表現抽出用のFEATURE付与
+;;
+;;	ルール：( (前方形態素列) (形態素) (後方形態素列) FEATURE列 )
+;;			※ 中央の「形態素」にFEATURE列が与えられる
+;;
+;;	適用方法：全ルールを前から順に，文中の後の形態素から順に
+;;			※ マッチしてもBREAKなし
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; 人名の連続はひとつのタグ単位とする
+( ( ?* ) ( (* * * * * ((NE:PERSON:middle)(NE:PERSON:tail))) ) ( ?* ) ^文節始 ^タグ単位始 )
+
+;;; 普通名詞＋組織、人名、場所、人工物の場合別の文節、タグにする
+;;; ただし「訪米」「対ロシア」「駐日」「在日」などがあるので一文字限定
+( ( ?* (名詞 普通名詞 * * * ((^&一文字))) ) ( (* * * * * ((NE:ORGANIZATION:head)(NE:ORGANIZATION:single)(NE:PERSON:head)(NE:PERSON:single)(NE:LOCATION:head)(NE:LOCATION:single)(NE:ARTIFACT:head)(NE:ARTIFACT:single))) ) ( ?* ) 文節始 タグ単位始)
+;;; 「美食の国フランス」などのため一文字でもノ格で修飾されている場合は可
+( ( ?* (助詞 * * * の) (名詞 普通名詞) ) ( (* * * * * ((NE:ORGANIZATION:head)(NE:ORGANIZATION:single)(NE:PERSON:head)(NE:PERSON:single)(NE:LOCATION:head)(NE:LOCATION:single)(NE:ARTIFACT:head)(NE:ARTIFACT:single))) ) ( ?* ) 文節始 タグ単位始)
+
+;;; 組織名と判断された動詞は組織名に変更
+( ( ?* ) ( (^名詞 * * * * ((NE:ORGANIZATION:single))) ) ( ?* ) &品詞変更:名詞:組織名 )
+
+;;; 人名+固有修飾(接尾辞)+人名末尾を人名+固有修飾(接頭辞)+人名末尾に
+( ( ?* (* * * * * ((NE:PERSON:single)(NE:PERSON:tail)))) ( (接尾辞 * * * * ((固有修飾))) ) ( (* * * * * ((人名末尾))) ?* ) &品詞変更:接頭辞:名詞接頭辞 タグ単位始 )
+
+;;; 固有表現である複合名詞はひとつの文節とする
+( ( ?* (* * * * * ((名詞相当語))) ) ( (* * * * * ((NE:ORGANIZATION:middle)(NE:ORGANIZATION:tail)(NE:ARTIFACT:middle)(NE:ARTIFACT:tail))) ) ( ?* ) ^文節始 )
+
+;;; 「さきがけ内部」の「さきがけ」が品詞変更された場合に文節をまとめる
+( ( ?* (名詞 組織名) ) ( (* * * * * ((Ｔ複合←))) ) ( ?* ) ^文節始 )
