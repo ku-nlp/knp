@@ -999,11 +999,17 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 int relax_barrier_for_P(CKY *cky_ptr, int dep, int gov, int *dep_check) {
     while (cky_ptr) {
 	if (cky_ptr->left && 
-	    cky_ptr->dpnd_type == 'P' && 
-	    *(dep_check + dep) >= cky_ptr->left->i) {
-	    return TRUE;
+	    cky_ptr->dpnd_type == 'P') {
+	    if (*(dep_check + dep) >= cky_ptr->left->j) { /* 並列の左側に壁があるなら、右側までOKとする */
+		return TRUE;
+	    }
+	    else if (cky_ptr->para_flag) {
+		if (relax_barrier_for_P(cky_ptr->left, dep, gov, dep_check)) {
+		    return TRUE;
+		}
+	    }
 	}
-	cky_ptr = cky_ptr->right;
+	cky_ptr = cky_ptr->right; /* go below */
     }
 
     return FALSE;
@@ -1247,7 +1253,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
-				 dep_check[i + k] >= j || /* barrier */
+				 dep_check[i + k] >= j || /* before barrier */
 				 (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))) { /* barrier relaxation for P */
 				if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
 				    return FALSE;
@@ -1397,32 +1403,17 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    }
 			    right_ptr = right_ptr->next;
 			}
-			/* if (next_pp) {
-			    break;
-			    } */
+			/* if (next_pp) break; */
 		    }
 
 		    if (next_pp) {
-			/* choose the best one */
-			cky_ptr = start_ptr;
-			best_score = -INT_MAX;
-			while (cky_ptr) {
-			    if (cky_ptr->score > best_score) {
-				best_score = cky_ptr->score;
-				best_ptr = cky_ptr;
-			    }
-			    cky_ptr = cky_ptr->next;
-			}
-			start_ptr = best_ptr;
-			start_ptr->next = NULL;
-
 			if (next_pp_for_ij == NULL) {
 			    cky_matrix[i][j] = start_ptr;
 			}
 			else {
 			    *next_pp_for_ij = start_ptr;
 			}
-			next_pp_for_ij = &(start_ptr->next);
+			next_pp_for_ij = next_pp;
 		    }
 		}
 
