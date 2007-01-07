@@ -1,3 +1,8 @@
+2007-01-07  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Modified the handling of coordinate structures that consist of more than two phrases.
+
 2007-01-04  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c:
