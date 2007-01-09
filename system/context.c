@@ -221,20 +221,18 @@ int OptUseSmfix;
 }
 
 /*==================================================================*/
-		   int objectrecognition_match(TAG_DATA *bp, TAG_DATA *pred_p)
+	int objectrecognition_match(TAG_DATA *bp, SENTENCE_DATA *s)
 /*==================================================================*/
 {
-    // 親をたどって、物体認識結果のfeatureがふられている文節を探す
-    BNST_DATA *bc;
-    char* objectrecognition = NULL;
+    char objectrecognition[32];
+    char *str = NULL;
 
-    bc = pred_p->b_ptr;
-    while (bc != NULL) {
-	if (objectrecognition = check_feature(bc->f, "物体認識結果")) {
-	    objectrecognition += strlen("物体認識結果:");
-	    return str_eq(bp->head_ptr->Goi, objectrecognition);
-	}
-	bc = bc->parent;
+    // コメント文から物体認識結果を抽出	
+    if (str = strstr(s->Comment, "物体認識結果:")) {
+	str += strlen("物体認識結果:");
+	sscanf(str, "%s", objectrecognition);
+
+	return str_eq(bp->head_ptr->Goi, objectrecognition);
     }
 
     return 0;
@@ -2093,7 +2091,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 物体認識結果 */
     if (OptAddSvmFeatureObjectRecognition) {
-	f->objectrecognition = objectrecognition_match(bp, cpm_ptr->pred_b_ptr);
+	f->objectrecognition = objectrecognition_match(bp, s);
     }
     else {
 	f->objectrecognition = 0;
