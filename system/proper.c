@@ -301,16 +301,19 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_tail(MRPH_DATA *mrph_data, int num)
+	     char *get_feature(MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
     int i, j;
     char *ret, *buf;
-    char *feature_name[] = {"人名末尾", "組織名末尾", "\0"};
+    char *feature_name[] = {"人名末尾", "組織名末尾", '\0'};
+    char *feature_name2[] = {"FULLNAME:H", "FULLNAME:M", "FULLNAME:T", "FULLNAME:S", 
+			     "NATION:H", "NATION:M", "NATION:T", "NATION:S", 
+			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S", '\0'};
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
+    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
     ret[0] = '\0'; /* 再帰的に代入するため */
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_tail");
+    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
 
     /* 文節後方に人名末尾、組織名末尾という語があるか */
     for (j = 1;; j++) {
@@ -326,9 +329,17 @@ char *ne_code_to_tagposition(int num)
     }
 
     /* 人名末尾、組織名末尾であるか */
-    for (i = 0; i < 2; i++) {
+    for (i = 0; feature_name[i]; i++) {
 	if (check_feature(mrph_data->f, feature_name[i])) {
 	    sprintf(buf, "%s%d%d40:1 ", ret, i + 1, num);
+	    strcpy(ret, buf);
+	}	
+    }   
+
+    /* 人名、組織 */
+    for (i = 0; feature_name2[i]; i++) {
+	if (check_feature(mrph_data->f, feature_name2[i])) {
+	    sprintf(buf, "%s%d%d40:1 ", ret, i + 11, num);
 	    strcpy(ret, buf);
 	}	
     }   
@@ -465,7 +476,7 @@ char *ne_code_to_tagposition(int num)
 	    s[0] = db_get(ne_db, sp->mrph_data[j].Goi2);
 	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
 	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白 */
-	    s[3] = get_tail(sp->mrph_data + j, i - j + SIZE + 1);      /* 末尾空白 */
+	    s[3] = get_feature(sp->mrph_data + j, i - j + SIZE + 1);   /* 末尾空白 */
 	    s[4] = get_parent(sp->mrph_data + j, i - j + SIZE + 1);    /* 末尾空白 */
 	    s[5] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
 	    k = i - j + SIZE + 1;
