@@ -1,3 +1,9 @@
+2007-01-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	人名リスト、組織名リストなどを使った固有表現解析を行えるように変更
+
+
 2007-01-07  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
