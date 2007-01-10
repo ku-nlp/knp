@@ -630,7 +630,9 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
     int i;
 
     for (i = 0; i < sp->Tag_num; i++) {
-	RegisterEntity((sp->tag_data + i)->head_ptr->Goi, TRUE);
+	if (check_feature((sp->tag_data + i)->f, "бн╦ю")) {
+	    RegisterEntity((sp->tag_data + i)->head_ptr->Goi, TRUE);
+	}
     }
 }
 
