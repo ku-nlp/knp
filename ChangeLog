@@ -1,3 +1,8 @@
+2007-01-10  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c:
+	関数RegisterAllSurfaceEntityの対象を体言に限定
+
 2007-01-09  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c:
