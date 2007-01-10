@@ -3,6 +3,9 @@
 	* rule/bnst_basic.rule:
 	Handle 使役俗形 (e.g., 書かす, 食べさす, 書かされる, 食べさされる).
 
+	* system/case_ipal.c, system/cky.c:
+	bug fix.
+
 2007-01-10  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c:
