@@ -1482,7 +1482,8 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     Best_mgr->pred_num = 0;
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((sp->tag_data + i)->cf_num > 0 && 
-	    ((sp->tag_data + i)->inum == 0 || /* the last basic phrase in a bunsetsu */
+	    (((sp->tag_data + i)->inum == 0 && /* the last basic phrase in a bunsetsu */
+	      !check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")) || 
 	     ((sp->tag_data + i)->inum == 1 && 
 	      check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")))) { 
 	    (sp->tag_data + i)->pred_num = Best_mgr->pred_num;

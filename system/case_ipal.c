@@ -1711,8 +1711,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		 (OptEllipsis & OPT_ELLIPSIS) || 
 		 (OptEllipsis & OPT_DEMO)) && 
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
-		 (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-		  check_feature(t_ptr->f, "非用言格解析")))) { /* サ変名詞, 形容詞語幹 (確率的以外) */
+		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
+		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
+		   (t_ptr->inum == 1 && /* 確率的の場合は、「公開予定だ」のようなときのみ */
+		    check_feature(t_ptr->b_ptr->f, "タグ単位受:-1")))))) { 
 		
 		set_pred_voice((BNST_DATA *)t_ptr); /* ヴォイス */
 
@@ -1912,10 +1914,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
 
     if ((vtype = check_feature(tp->f, "用言"))) {
-	vtype += 5;
+	vtype += strlen("用言:");
     }
     else if ((vtype = check_feature(tp->f, "非用言格解析"))) {
-	vtype += 13;
+	vtype += strlen("非用言格解析:");
     }
     else {
 	return UNKNOWN_CF_SCORE;
