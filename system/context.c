@@ -44,6 +44,8 @@ float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 float	SVM_R_NUM_S_SD = 1;
 float	SVM_R_NUM_E_SD = 1;
 
+/* 指数関数の底 */
+float	BaseForExponentialFunction = 0.9;
 
 PALIST palist[TBLSIZE];		/* 用言と格要素のセットのリスト */
 CFLIST cflist[TBLSIZE];
@@ -598,6 +600,29 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 	else { /* 不特定のときにはここに来る */
 	    ep->surface_num = 0;
 	    ep->ellipsis_num = 1;
+	}
+    }
+}
+
+/*==================================================================*/
+			void DecayEntityList()
+/*==================================================================*/
+{
+    /* 出現回数、参照回数を減衰させる */
+
+    int i;
+    ENTITY_LIST *ep, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (elist[i].key) {
+	    elist[i].surface_num *= BaseForExponentialFunction;
+	    elist[i].ellipsis_num *= BaseForExponentialFunction;
+	}
+	ep = elist[i].next;
+	while (ep) {
+	    ep->surface_num *= BaseForExponentialFunction;
+	    ep->ellipsis_num *= BaseForExponentialFunction;
+	    ep = ep->next;
 	}
     }
 }
@@ -1434,7 +1459,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     if (OptAddSvmFeatureReferedNum) {
 	prenum++;
 	if (OptLearn == TRUE) {
-	    sprintf(sbuf, " %d:%d", prenum, (int)esf->refered_num_surface);
+	    sprintf(sbuf, " %d:%.5f", prenum, esf->refered_num_surface);
 	}
 	else {
 	    sprintf(sbuf, " %d:%.5f", prenum, esf->refered_num_surface);
@@ -1443,7 +1468,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 
 	prenum++;
 	if (OptLearn == TRUE) {
-	    sprintf(sbuf, " %d:%d", prenum, (int)esf->refered_num_ellipsis);
+	    sprintf(sbuf, " %d:%.5f", prenum, esf->refered_num_ellipsis);
 	}
 	else {
 	    sprintf(sbuf, " %d:%.5f", prenum, esf->refered_num_ellipsis);
@@ -2267,8 +2292,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 /*==================================================================*/
 {
     /* 解析時には閾値以下なら候補にしない */
-    if (OptLearn == FALSE && 
-	!ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
+    /* 学習時も閾値以下なら候補にしないように変更 (要検討) */
+//    if (OptLearn == FALSE && 
+    if (!ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
 	return;
     }
 
@@ -2304,8 +2330,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     cp = EllipsisSvmFeatures2String(ecf);
 
     if (PrintEx || OptDisplay == OPT_DEBUG) {
-	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、参照回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格、格一致、用言一致 */
-	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 参照回数=%d, 省略参照回数=%d, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d, 用言補文=%d, 用言連格=%d, 格一致=%d, 用言一致=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag,(ante_cands + i)->ef->match_case, (ante_cands + i)->ef->match_verb);
+	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、出現回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格、格一致、用言一致 */
+	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 出現回数=%.3f, 省略参照回数=%.3f, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d, 用言補文=%d, 用言連格=%d, 格一致=%d, 用言一致=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag,(ante_cands + i)->ef->match_case, (ante_cands + i)->ef->match_verb);
     }
 
     /* 学習FEATURE */
@@ -5485,6 +5511,9 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	}
 
 	PreserveCPM(sp_new, sp);
+
+	/* 出現回数、参照回数を減衰させる */
+	DecayEntityList();
 
 	for (i = 0; i < sp->Sen_num; i++) {
 	    free(Bcheck[i]);
