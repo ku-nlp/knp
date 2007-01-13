@@ -604,7 +604,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN], Bunrui_str[DATA_LEN];
+    U_CHAR Katuyou_Kata_str[DATA_LEN], Katuyou_Kei_str[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, bnst_item, tag_item, i, j, homo_flag;
 
@@ -716,7 +717,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }
 
-	    Bnst_start[sp->Mrph_num] = 1;
+	    Bnst_start[sp->Mrph_num - homo_num] = 1;
 	    sp->Bnst_num++;
 	}
 	/* タグ単位行 */
@@ -744,7 +745,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }
 
-	    Tag_start[sp->Mrph_num] = 1;
+	    Tag_start[sp->Mrph_num - homo_num] = 1;
 	    sp->Tag_num++;
 	}
 
@@ -815,16 +816,17 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	    offset = homo_flag ? 2 : 0;
 	    mrph_item = sscanf(input_buffer + offset,
-			       "%s %s %s %s %d %*s %d %*s %d %*s %d %[^\n]", 
-			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, Hinshi_str, 
-			       &(m_ptr->Hinshi), &(m_ptr->Bunrui),
-			       &(m_ptr->Katuyou_Kata), &(m_ptr->Katuyou_Kei),
+			       "%s %s %s %s %d %s %d %s %d %s %d %[^\n]", 
+			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+			       Hinshi_str, &(m_ptr->Hinshi), Bunrui_str, &(m_ptr->Bunrui), 
+			       Katuyou_Kata_str, &(m_ptr->Katuyou_Kata), 
+			       Katuyou_Kei_str, &(m_ptr->Katuyou_Kei), 
 			       rest_buffer);
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
 	    }
 
-	    if (mrph_item == 9) {
+	    if (mrph_item == 12) {
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
 		    char *imip, *cp;
@@ -851,7 +853,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    strcpy(m_ptr->Imi, "NIL");
 		}
 	    }
-	    else if (mrph_item == 8) {
+	    else if (mrph_item == 11) {
 		strcpy(m_ptr->Imi, "NIL");
 	    }
 	    else {
@@ -860,6 +862,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
+
+	    if (OptInput & OPT_PARSED) {
+		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
+		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
+		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
+		m_ptr->Katuyou_Kei = get_form_id(Katuyou_Kei_str, m_ptr->Katuyou_Kata);
+	    }
 
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
