@@ -473,8 +473,13 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	  0 : calc_static_level_penalty(sp, key_pos, k);
     }
 
-    for (j = key_pos+1; j < sp->Bnst_num; j++)
-	_detect_para_scope(sp, para_num, para_ptr, j);
+    if (OptInput & OPT_PARSED) {
+	_detect_para_scope(sp, para_num, para_ptr, sp->bnst_data[key_pos].dpnd_head);
+    }
+    else {
+	for (j = key_pos+1; j < sp->Bnst_num; j++)
+	    _detect_para_scope(sp, para_num, para_ptr, j);
+    }
 
     if (para_ptr->status == 'x') {
 	;
@@ -647,7 +652,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 		dp_search_scope(sp, sp->para_data[sp->Para_num].key_pos, 
 				sp->para_data[sp->Para_num].iend_pos, sp->para_data[sp->Para_num].jend_pos);
 		ending_bonus_score = calc_ending_bonus_score(sp, sp->para_data[sp->Para_num].jend_pos, &(sp->para_data[sp->Para_num]));
-		starting_bonus_score = calc_ending_bonus_score(sp, sp->para_data[sp->Para_num].max_path[0], &(sp->para_data[sp->Para_num]));
+		starting_bonus_score = calc_starting_bonus_score(sp, sp->para_data[sp->Para_num].max_path[0], &(sp->para_data[sp->Para_num]));
 
 		sp->para_data[sp->Para_num].max_score = 
 		    (float)score_matrix[sp->para_data[sp->Para_num].max_path[0]][sp->para_data[sp->Para_num].key_pos + 1] 
