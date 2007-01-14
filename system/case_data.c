@@ -298,12 +298,12 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	       sm2code("ÊäÊ¸"));
 	sm_num++;
     }
-    /* ½¤¾þ */
+    /* ½¤¾þ *
     else if (check_feature(b_ptr->f, "½¤¾þ")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
 	       sm2code("½¤¾þ"));
 	sm_num++;
-    }
+	} */
     else {
 	if (check_feature(b_ptr->f, "»þ´Ö")) {
 	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
@@ -338,6 +338,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    }
 	}
     }
+
+    *(c_ptr->sm[c_ptr->element_num]+size*sm_num) = '\0';
 }
 
 /*==================================================================*/
