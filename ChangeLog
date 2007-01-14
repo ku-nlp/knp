@@ -1,3 +1,13 @@
+2007-01-14  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/para_analysis.c:
+	Modified the calculation of path similarity given a gold-standard parse.
+
+2007-01-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Improved reading of already parsed sentences.
+
 2007-01-11  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/const.h:
