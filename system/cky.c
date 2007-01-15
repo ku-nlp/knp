@@ -1195,6 +1195,110 @@ CKY *new_cky_data(int *cky_table_num) {
     return cky_ptr;
 }
 
+int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
+    int i, j;
+
+    /* count the number of predicates */
+    Best_mgr->pred_num = 0;
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((sp->tag_data + i)->cf_num > 0 && 
+	    (((sp->tag_data + i)->inum == 0 && /* the last basic phrase in a bunsetsu */
+	      !check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")) || 
+	     ((sp->tag_data + i)->inum == 1 && 
+	      check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")))) { 
+	    (sp->tag_data + i)->pred_num = Best_mgr->pred_num;
+	    Best_mgr->pred_num++;
+	}
+    }
+
+    /* for all possible structures */
+    while (cky_ptr) {
+	for (i = 0; i < Best_mgr->pred_num; i++) {
+	    Best_mgr->cpm[i].pred_b_ptr = NULL;
+	}
+
+	if (OptDisplay == OPT_DEBUG) {
+	    printf("---------------------\n");
+	    printf("score=%.3f\n", cky_ptr->score);
+	}
+
+	Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = -1;
+	Best_mgr->score = cky_ptr->score;
+	convert_to_dpnd(sp, Best_mgr, cky_ptr);
+
+	/* 無格従属: 前の文節の係り受けに従う場合 */
+	for (i = 0; i < sp->Bnst_num - 1; i++) {
+	    if (Best_mgr->dpnd.head[i] < 0) {
+		/* ありえない係り受け */
+		if (i >= Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]]) {
+		    if (Language != CHINESE) {
+			Best_mgr->dpnd.head[i] = sp->Bnst_num - 1; /* 文末に緩和 */
+		    }
+		    continue;
+		}
+		Best_mgr->dpnd.head[i] = Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]];
+		/* Best_mgr->dpnd.check[i].pos[0] = Best_mgr->dpnd.head[i]; */
+	    }
+	}
+
+	/* 格解析結果の情報をfeatureへ */
+	if (OptAnalysis == OPT_CASE) {
+	    /* 格解析結果を用言基本句featureへ */
+	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+		assign_nil_assigned_components(sp, &(sp->Best_mgr->cpm[i])); /* 未対応格要素の処理 */
+
+		assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
+
+		/* 格フレームの意味情報を用言基本句featureへ */
+		for (j = 0; j < sp->Best_mgr->cpm[i].cmm[0].cf_ptr->element_num; j++) {
+		    append_cf_feature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), 
+				      &(sp->Best_mgr->cpm[i]), sp->Best_mgr->cpm[i].cmm[0].cf_ptr, j);
+		}
+	    }
+	}
+
+	/* to tree structure */
+	dpnd_info_to_bnst(sp, &(Best_mgr->dpnd));
+	if (!(OptExpress & OPT_NOTAG)) {
+	    dpnd_info_to_tag(sp, &(Best_mgr->dpnd));
+	}
+	if (make_dpnd_tree(sp)) {
+	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
+
+	    /* 構造決定後のルール適用 */
+	    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
+
+	    /* record case analysis results */
+	    if (OptAnalysis == OPT_CASE) {
+		for (i = 0; i < Best_mgr->pred_num; i++) {
+		    if (Best_mgr->cpm[i].result_num != 0 && 
+			Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
+			Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+			record_case_analysis(sp, &(Best_mgr->cpm[i]), NULL, FALSE);
+
+			/* 格解析の結果を用いて形態素曖昧性を解消 */
+			verb_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
+			noun_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
+		    }
+		}
+	    }
+
+	    /* print for debug or nbest */
+	    if (OptDisplay == OPT_NBEST) {
+		sp->score = Best_mgr->score;
+		print_result(sp, 0);
+	    }
+	    else if (OptDisplay == OPT_DEBUG) {
+		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+	    }
+	}
+
+	cky_ptr = cky_ptr->next;
+    }
+
+    return TRUE;
+}
+
 int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     int i, j, k, l, sen_len, cky_table_num, dep_check[BNST_MAX];
     double best_score, para_score;
@@ -1474,61 +1578,13 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    best_ptr->next = NULL;
 	}
 
-	/* cky_ptr = cky_matrix[0][sp->Bnst_num - 1]; * when print all possible structures */
-	cky_ptr = best_ptr;
-    }
-
-    /* count the number of predicates */
-    Best_mgr->pred_num = 0;
-    for (i = 0; i < sp->Tag_num; i++) {
-	if ((sp->tag_data + i)->cf_num > 0 && 
-	    (((sp->tag_data + i)->inum == 0 && /* the last basic phrase in a bunsetsu */
-	      !check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")) || 
-	     ((sp->tag_data + i)->inum == 1 && 
-	      check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")))) { 
-	    (sp->tag_data + i)->pred_num = Best_mgr->pred_num;
-	    Best_mgr->cpm[Best_mgr->pred_num].pred_b_ptr = NULL;
-	    Best_mgr->pred_num++;
+	if (OptDisplay == OPT_NBEST) {
+	    cky_ptr = cky_matrix[0][sp->Bnst_num - 1]; /* when print all possible structures */
+	}
+	else {
+	    cky_ptr = best_ptr;
 	}
     }
 
-    while (cky_ptr) {
-	if (OptDisplay == OPT_DEBUG) {
-	    printf("---------------------\n");
-	    printf("score=%.3f\n", cky_ptr->score);
-	}
-
-	Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = -1;
-	Best_mgr->score = cky_ptr->score;
-	convert_to_dpnd(sp, Best_mgr, cky_ptr);
-	cky_ptr = cky_ptr->next;
-    }
-
-    /* 無格従属: 前の文節の係り受けに従う場合 */
-    for (i = 0; i < sp->Bnst_num - 1; i++) {
-	if (Best_mgr->dpnd.head[i] < 0) {
-	    /* ありえない係り受け */
-	    if (i >= Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]]) {
-		if (Language != CHINESE) {
-		    Best_mgr->dpnd.head[i] = sp->Bnst_num - 1; /* 文末に緩和 */
-		}
-		continue;
-	    }
-	    Best_mgr->dpnd.head[i] = Best_mgr->dpnd.head[i + Best_mgr->dpnd.head[i]];
-	    /* Best_mgr->dpnd.check[i].pos[0] = Best_mgr->dpnd.head[i]; */
-	}
-    }
-
-    /* record case analysis results */
-    if (OptAnalysis == OPT_CASE) {
-	for (i = 0; i < Best_mgr->pred_num; i++) {
-	    if (Best_mgr->cpm[i].result_num != 0 && 
-		Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
-		Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
-		record_case_analysis(sp, &(Best_mgr->cpm[i]), NULL, FALSE);
-	    }
-	}
-    }
-
-    return TRUE;
+    return after_cky(sp, Best_mgr, cky_ptr);
 }
