@@ -1,3 +1,10 @@
+2007-01-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/cky.c:
+	Added coordinated phrases to the result of case structure analysis.
+	Modified the postprocess of case structure analysis.
+	Added a facility for producing n-best parses in CKY.
+
 2007-01-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/para_analysis.c:
