@@ -1,3 +1,8 @@
+2007-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_print.c, system/lib_print.c:
+	A small fix for table option.
+	
 2007-01-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_print.c, system/const.h, system/lib_print.c, system/main.c, system/read_data.c:

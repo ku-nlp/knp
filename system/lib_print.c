@@ -990,7 +990,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
 	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
-	if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% %d %d 1\n<div align=\"right\">", Sen_Num, Tag_Num++);
+	if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% %d %d 1 align=right\n", Sen_Num, Tag_Num++);
     }
 
     if (ptr->child[0]) {
@@ -1033,7 +1033,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    print_some_feature(ptr->f, Outfp);
 	}
 	if (OptExpress == OPT_TABLE) {
-	    fprintf(Outfp, "</div>\n%%%% %d %d 1\n<div align=\"right\">", Sen_Num, Tag_Num++);	    
+	    fprintf(Outfp, "\n%%%% %d %d 1 align=right\n", Sen_Num, Tag_Num++);	    
 	}
 	else {
 	    fputc('\n', Outfp);	
@@ -1151,7 +1151,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num - last_t_offset), 1, NULL, 0);
     }
 
-    fprintf(Outfp, "EOS%s\n", (OptExpress == OPT_TABLE) ? "</div>" : "");
+    fprintf(Outfp, "EOS\n");
     Tag_Num = 1;
     Sen_Num++;
 }
@@ -1238,11 +1238,14 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	    /* OPT_TABLE */
 	    if (OptExpress == OPT_TABLE) {
-		fprintf(Outfp, "%%%% %d %d 2 LABEL=label%d_%d\n", 
-			Sen_Num - 1, i + 2, Sen_Num - 1, i + 2);
+		fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%d\n", 
+			Sen_Num - 1, i + 2, Sen_Num - 1, i + 1);
+		fprintf(Outfp, "%%%% %d %d 2 LABEL=%d_%d\n", 
+			Sen_Num - 1, i + 2, Sen_Num - 1, i + 1);
 		fprintf(Outfp, "*\n");
 	    }
 	    /* O */
+	    cp = check_feature((sp->tag_data + i)->f, "格解析結果");
 	    while (next = strstr(cp, "/O/")) {
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
