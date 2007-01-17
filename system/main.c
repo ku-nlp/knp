@@ -225,7 +225,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-notagtree")) OptExpress = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_NOTAGTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
-	else if (str_eq(argv[0], "-format"))   OptExpress  = OPT_FORMAT;
+	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
@@ -1266,7 +1266,7 @@ PARSED:
        Server Mode において、読み込むルールの変更がありえるので、ここで行う */
     read_rules();
 
-    if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% title=KNP解析結果\n");
+    if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% title=KNP解析結果\n");
 
     while ( 1 ) {
 

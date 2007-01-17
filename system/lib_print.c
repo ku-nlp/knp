@@ -10,8 +10,8 @@
 #include "knp.h"
 
 char mrph_buffer[SMALL_DATA_LEN];
-int Sen_Num = 1; /* -format のときのみ使用する */
-int Tag_Num = 1; /* -format のときのみ使用する */
+int Sen_Num = 1; /* -table のときのみ使用する */
+int Tag_Num = 1; /* -table のときのみ使用する */
 
 /*==================================================================*/
 		 char *pp2mrph(char *pp, int pp_len)
@@ -387,8 +387,8 @@ int Tag_Num = 1; /* -format のときのみ使用する */
     int i;
 
     if (cp && ptr) {
-	if (OptExpress == OPT_FORMAT) {
-	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "&lt;P&gt;");
+	if (OptExpress == OPT_TABLE) {
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "＜P＞");
 	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "&lt;I&gt;");
 	    else			     cp[0] = '\0';
 	}
@@ -420,8 +420,8 @@ int Tag_Num = 1; /* -format のときのみ使用する */
 	    }
 	}
 
-	if (OptExpress == OPT_FORMAT) {
-	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "&lt;P&gt;");
+	if (OptExpress == OPT_TABLE) {
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "＜P＞");
 	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "&lt;I&gt;");
 	}
 	else {
@@ -945,17 +945,28 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	else 
 	    fprintf(Outfp, "┐");
 
-	fprintf(Outfp, "　");
+	if (OptExpress == OPT_TABLE)
+	    fprintf(Outfp, "&nbsp;&nbsp;");
+	else
+	    fprintf(Outfp, "　");
 
 	/* 祖先の兄弟の枝 */
 
 	for (i = depth - 1; i > 1; i--) {
-	    fprintf(Outfp, "　　");
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "&nbsp;&nbsp;&nbsp;&nbsp;");
+	    else
+		fprintf(Outfp, "　　");
 	    if (ans_flag[i-1] == '1') 
 		fprintf(Outfp, "│");
-	    else 
+	    else if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "&nbsp;&nbsp;");
+	    else
 		fprintf(Outfp, "　");
-	    fprintf(Outfp, "　");
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "&nbsp;&nbsp;");
+	    else
+		fprintf(Outfp, "　");
 	}
     }
 }
@@ -979,7 +990,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
 	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
-	if (OptExpress == OPT_FORMAT) fprintf(Outfp, "%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);
+	if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% %d %d 1\n<div align=\"right\">", Sen_Num, Tag_Num++);
     }
 
     if (ptr->child[0]) {
@@ -1012,10 +1023,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     calc_self_space(ptr, depth);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
-	    if (OptExpress == OPT_FORMAT)
-		fprintf(Outfp, "&nbsp;");
-	    else
-		fputc(' ', Outfp);
+	    fputc(' ', Outfp);
     }
     print_bnst(ptr, NULL);
     
@@ -1024,8 +1032,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	if (OptExpress == OPT_TREEF) {
 	    print_some_feature(ptr->f, Outfp);
 	}
-	if (OptExpress == OPT_FORMAT) {
-	    fprintf(Outfp, "</tt>\n%%%% %d %d 1\n<tt>", Sen_Num, Tag_Num++);	    
+	if (OptExpress == OPT_TABLE) {
+	    fprintf(Outfp, "</div>\n%%%% %d %d 1\n<div align=\"right\">", Sen_Num, Tag_Num++);	    
 	}
 	else {
 	    fputc('\n', Outfp);	
@@ -1143,7 +1151,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num - last_t_offset), 1, NULL, 0);
     }
 
-    fprintf(Outfp, "EOS%s\n", (OptExpress == OPT_FORMAT) ? "</tt>" : "");
+    fprintf(Outfp, "EOS%s\n", (OptExpress == OPT_TABLE) ? "</div>" : "");
     Tag_Num = 1;
     Sen_Num++;
 }
@@ -1228,23 +1236,43 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((cp = check_feature((sp->tag_data + i)->f, "格解析結果"))) {
 
-	    /* C N O */
-	    while ((next = strstr(cp, "/C/")) || 
-		   (next = strstr(cp, "/N/")) ||
-		   (next = strstr(cp, "/O/"))) {
+	    /* OPT_TABLE */
+	    if (OptExpress == OPT_TABLE) {
+		fprintf(Outfp, "%%%% %d %d 2 LABEL=label%d_%d\n", 
+			Sen_Num - 1, i + 2, Sen_Num - 1, i + 2);
+		fprintf(Outfp, "*\n");
+	    }
+	    /* O */
+	    while (next = strstr(cp, "/O/")) {
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
 		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
 		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
-		    if (strcmp(buf2, "O")) {
-			fprintf(Outfp, "<font size=-1>&nbsp;[%s:%s]&nbsp;</font>\n", buf1, buf3);
-		    }
-		    else {
-			fprintf(Outfp, "<font size=-1>&nbsp;%s:%s&nbsp;</font>\n", buf1, buf3);
-		    }
+		    fprintf(Outfp, "&nbsp;%s:%s&nbsp;\n", buf1, buf3);
 		    cp = strstr(cp, buf2) + 1;
 		}
-		else break;
+	    }
+	    /* C */
+	    cp = check_feature((sp->tag_data + i)->f, "格解析結果");
+	    while (next = strstr(cp, "/C/")) {
+		cp = next;
+		while (cp[0] != ';' && cp[0] != ':') cp--;
+		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
+		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    fprintf(Outfp, "&nbsp;[%s:%s]&nbsp;\n", buf1, buf3);
+		    cp = strstr(cp, buf2) + 1;
+		}
+	    }
+	    /* N */
+	    cp = check_feature((sp->tag_data + i)->f, "格解析結果");
+	    while (next = strstr(cp, "/N/")) {
+		cp = next;
+		while (cp[0] != ';' && cp[0] != ':') cp--;
+		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
+		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    fprintf(Outfp, "&nbsp;[%s:%s]&nbsp;\n", buf1, buf3);
+		    cp = strstr(cp, buf2) + 1;
+		}
 	    }
 	}
     }
@@ -1260,8 +1288,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((cp = check_feature((sp->tag_data + i)->f, "NE"))) {
 	    
-	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num - 1, i + 2);
-	    fprintf(Outfp, "<font size=-1>&nbsp;%s&nbsp;</font>\n", cp + 3);
+	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+	    fprintf(Outfp, "&nbsp;%s&nbsp;\n", cp + 3);
 	}
     }
 }
@@ -1295,14 +1323,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     */
 
     /* ヘッダの出力 */   
-    if (OptExpress == OPT_FORMAT) {
-	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+    if (OptExpress == OPT_TABLE) {
+	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2 || OptNE) {
 	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num, Tag_Num);
-	    fprintf(Outfp, "格解析結果\n", sp->Sen_num);
-	}
-	if (OptNE) {
-	    fprintf(Outfp, "%%%% %d %d 3\n", Sen_Num, Tag_Num);
-	    fprintf(Outfp, "NE解析結果\n", sp->Sen_num);
+	    fprintf(Outfp, "解析結果\n");
 	}
 	fprintf(Outfp, "%%%% %d %d 1\n", Sen_Num, Tag_Num++);
     }
@@ -1388,7 +1412,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
     }
 
-    if (OptExpress == OPT_FORMAT) {
+    if (OptExpress == OPT_TABLE) {
 	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) 
 	    print_case_for_format(sp);
 	if (OptNE)
@@ -1405,11 +1429,12 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	(((OptAnalysis == OPT_CASE || 
 	   OptAnalysis == OPT_CASE2) && 
 	  (OptDisplay == OPT_DETAIL || 
-	   OptDisplay == OPT_DEBUG)) || 
+	   OptDisplay == OPT_DEBUG ||
+	   OptExpress == OPT_TABLE)) || 
 	 (OptEllipsis && 
 	  VerboseLevel >= VERBOSE1))) {
 
-	print_case_result(sp);
+	print_case_result(sp, Sen_Num);
 
 	/* 次の解析のために初期化しておく */
 	tm->pred_num = 0;

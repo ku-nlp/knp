@@ -143,6 +143,9 @@ int	PrintFrequency = 0;
 	    fputc('*', Outfp);
 	}
     }
+    if (OptExpress == OPT_TABLE) {
+	fprintf(Outfp, "<BR>");
+    }
     fputc('\n', Outfp);
 }
 
@@ -208,13 +211,22 @@ struct _sort_kv {
 	fprintf(Outfp, "(自発)");
 
     /* fprintf(Outfp, "%s\n", i_ptr->DATA + i_ptr->imi); */
-    fputs("-----------------------------------\n", Outfp);
+    if (OptExpress == OPT_TABLE) {
+	fprintf(Outfp, "<BR>\n");
+    }
+    else {
+	fputs("-----------------------------------\n", Outfp);
+    }
 
     /* 格要素対応の表示 */
 
     for (k = 0; k < cmm_ptr->result_num; k++) {
-	if (k != 0)
+	if (k != 0) {
 	    fputs("---\n", Outfp);
+	    if (OptExpress == OPT_TABLE) {
+		fprintf(Outfp, "<BR>");
+	    }
+	}
 
 	/* 格をソートして出力 */
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
@@ -308,8 +320,14 @@ struct _sort_kv {
 		fprintf(Outfp, "[%s]", cmm_ptr->cf_ptr->semantics[i]);
 	    }
 
+	    if (OptExpress == OPT_TABLE) {
+		fprintf(Outfp, "<BR>");
+	    }
 	    fputc('\n', Outfp);
 	}
+    }
+    if (OptExpress == OPT_TABLE) {
+	fprintf(Outfp, "<BR>\n");
     }
 }
 
@@ -352,16 +370,17 @@ struct _sort_kv {
 }
 
 /*==================================================================*/
-	      void print_case_result(SENTENCE_DATA *sp)
+	void print_case_result(SENTENCE_DATA *sp, int Sen_Num)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, tag_num;
     TOTAL_MGR *tm = sp->Best_mgr;
 
-    fputs("<Case Structure Analysis Data>\n", Outfp);
-    fprintf(Outfp, "■ %d Score:%.3f, Dflt:%d, Possibility:%d/%d ■\n", 
-	    sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
-
+    if (OptExpress != OPT_TABLE) {
+	fputs("<Case Structure Analysis Data>\n", Outfp);
+	fprintf(Outfp, "■ %d Score:%.3f, Dflt:%d, Possibility:%d/%d ■\n", 
+		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
+    }
     /* 上記出力の最後の引数(依存構造の数)は1にしている．
        ちゃんと扱ってない */
 
@@ -369,6 +388,12 @@ struct _sort_kv {
 	if (i != tm->pred_num - 1) {
 	    fputc('\n', Outfp);
 	}
+	tag_num = tm->cpm[i].pred_b_ptr->num;
+
+	if (OptExpress == OPT_TABLE) {
+	    fprintf(Outfp, "%%%% LABEL=label%d_%d\n", Sen_Num - 1, tag_num + 2);
+	}
+	 
 	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));
 	for (j = 0; j < tm->cpm[i].result_num; j++) {
 	    if (OptEllipsis) {
@@ -381,7 +406,9 @@ struct _sort_kv {
 	    }
 	}
     }
-    fputs("</Case Structure Analysis Data>\n", Outfp);
+    if (OptExpress != OPT_TABLE) {
+	fputs("</Case Structure Analysis Data>\n", Outfp);
+    }
 }
 
 /*==================================================================*/
