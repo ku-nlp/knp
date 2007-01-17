@@ -1,3 +1,9 @@
+2007-01-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_print.c, system/const.h, system/lib_print.c, system/main.c, system/read_data.c:
+	cgi用出力オプション-formatを-tableに変更
+	-tableオプションを使用したときに、詳しい格解析結果を表示できるように変更
+
 2007-01-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/cky.c:
