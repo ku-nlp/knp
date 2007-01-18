@@ -439,6 +439,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			sprintf(CO, "COREFER_ID:%d", COREFER_ID);
 			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
 			assign_cfeature(&(tag_ptr->f), CO, FALSE);
+			sprintf(CO, "REFERRED:%d-%d", j, k);
+			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
 		    }
     
 		    /* 固有表現とcoreferの関係にある語を固有表現とみなす */

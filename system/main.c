@@ -445,7 +445,11 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
-	else if (str_eq(argv[0], "-corefer")) {
+	else if (str_eq(argv[0], "-corefer")) { /* 係り受け判定のオプション */
+	    OptEllipsis |= OPT_COREFER;
+	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
+	}
+	else if (str_eq(argv[0], "-corefer1")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
 	    OptUseNCF = TRUE;
 	    OptCorefer = 1; /* 名詞格フレームを用いる */
@@ -460,7 +464,7 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4; /* 修飾を考慮しない */
+	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
 	}
 	else if (str_eq(argv[0], "-corefer5")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
@@ -1382,7 +1386,7 @@ PARSED:
 	/************/
 	/* 文脈解析 */
 	/************/
-
+	
 	if (OptEllipsis) {
 	    make_dpnd_tree(sp);
 	    DiscourseAnalysis(sp);

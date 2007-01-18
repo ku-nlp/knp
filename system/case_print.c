@@ -391,7 +391,7 @@ struct _sort_kv {
 	tag_num = tm->cpm[i].pred_b_ptr->num;
 
 	if (OptExpress == OPT_TABLE) {
-	    fprintf(Outfp, "%%%% LABEL=%d_%d\n", Sen_Num - 1, tag_num + 1);
+	    fprintf(Outfp, "%%%% LABEL=%d_%dd\n", Sen_Num - 1, tag_num + 1);
 	}
 	 
 	print_data_cframe(&(tm->cpm[i]), &(tm->cpm[i].cmm[0]));

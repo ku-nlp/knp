@@ -100,7 +100,7 @@ int Tag_Num = 1; /* -table のときのみ使用する */
     else 
 	fprintf(Outfp, "* ");
     fprintf(Outfp, "%d ", m_ptr->Katuyou_Kei);
-    
+
     fprintf(Outfp, "%s", m_ptr->Imi);
 }
 
@@ -194,6 +194,9 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	if (flag == 1) {
 	    bp_independent_offset = 0;
 
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "%%%% LABEL=%d_%db\n", Sen_Num - 1, i + 1);
+
 	    /* 追加ノード */
 	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
 		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headの基本句 */
@@ -274,6 +277,8 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 		    fputc(' ', Outfp);
 		    print_feature(t_ptr->b_ptr->f, Outfp);
 		}
+		if (OptExpress == OPT_TABLE)
+		    fprintf(Outfp, "<BR><BR>");
 		fputc('\n', Outfp);
 	    }
 
@@ -302,6 +307,8 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);
 	    }
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "<BR><BR>");
 	    fputc('\n', Outfp);
 
 	    for (j = t_table[t_ptr->num]; j < dpnd_head; j++) {
@@ -320,6 +327,8 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 		fputc(' ', Outfp);
 		print_feature(m_ptr->f, Outfp);
 	    }
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "<BR><BR>");
 	    fputc('\n', Outfp);
 	}
 	count++;
@@ -990,7 +999,9 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
 	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
-	if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% %d %d 1 align=right\n", Sen_Num, Tag_Num++);
+	if (OptExpress == OPT_TABLE) 
+	    fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+		    Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);	    
     }
 
     if (ptr->child[0]) {
@@ -1033,7 +1044,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    print_some_feature(ptr->f, Outfp);
 	}
 	if (OptExpress == OPT_TABLE) {
-	    fprintf(Outfp, "\n%%%% %d %d 1 align=right\n", Sen_Num, Tag_Num++);	    
+	    fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+		    Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
 	}
 	else {
 	    fputc('\n', Outfp);	
@@ -1227,7 +1239,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-	    void print_case_for_format(SENTENCE_DATA *sp)
+	    void print_case_for_table(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -1238,9 +1250,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	    /* OPT_TABLE */
 	    if (OptExpress == OPT_TABLE) {
-		fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%d\n", 
-			Sen_Num - 1, i + 2, Sen_Num - 1, i + 1);
-		fprintf(Outfp, "%%%% %d %d 2 LABEL=%d_%d\n", 
+		fprintf(Outfp, "%%%% %d %d 2 LABEL=%d_%dd style=white-space:nowrap\n", 
 			Sen_Num - 1, i + 2, Sen_Num - 1, i + 1);
 		fprintf(Outfp, "*\n");
 	    }
@@ -1250,7 +1260,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
 		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
-		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - 1, i + 2);
 		    fprintf(Outfp, "&nbsp;%s:%s&nbsp;\n", buf1, buf3);
 		    cp = strstr(cp, buf2) + 1;
 		}
@@ -1261,7 +1271,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
 		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
-		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - 1, i + 2);
 		    fprintf(Outfp, "&nbsp;[%s:%s]&nbsp;\n", buf1, buf3);
 		    cp = strstr(cp, buf2) + 1;
 		}
@@ -1272,7 +1282,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
 		if (sscanf(cp, "%*[:;]%[^/]%*[/]%[^/]%*[/]%[^/]%*[/]", buf1, buf2, buf3)) {
-		    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+		    fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - 1, i + 2);
 		    fprintf(Outfp, "&nbsp;[%s:%s]&nbsp;\n", buf1, buf3);
 		    cp = strstr(cp, buf2) + 1;
 		}
@@ -1282,7 +1292,30 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-	    void print_ne_for_format(SENTENCE_DATA *sp)
+	    void print_corefer_for_table(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, s_num, t_num;
+    char *cp;
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "COREFER_ID"))) {
+
+	    fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - 1, i + 2);
+	    fprintf(Outfp, "&nbsp;ID=%s&nbsp;\n", cp + 11);
+
+	    if (check_feature((sp->tag_data + i)->f, "REFERRED")) {
+		sscanf(check_feature((sp->tag_data + i)->f, "REFERRED"),
+		       "REFERRED:%d-%d", &s_num, &t_num);
+		fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - s_num - 1, t_num + 2);
+		fprintf(Outfp, "&nbsp;ID=%s&nbsp;\n", cp + 11);
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	    void print_ne_for_table(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -1291,7 +1324,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((cp = check_feature((sp->tag_data + i)->f, "NE"))) {
 	    
-	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num - 1, i + 2);
+	    fprintf(Outfp, "%%%% %d %d 2 style=white-space:nowrap\n", Sen_Num - 1, i + 2);
 	    fprintf(Outfp, "&nbsp;%s&nbsp;\n", cp + 3);
 	}
     }
@@ -1331,7 +1364,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num, Tag_Num);
 	    fprintf(Outfp, "解析結果\n");
 	}
-	fprintf(Outfp, "%%%% %d %d 1\n", Sen_Num, Tag_Num++);
+	fprintf(Outfp, "%%%% %d %d 1 style=white-space:nowrap\n", Sen_Num, Tag_Num++);
     }
 
     if (sp->Comment) {
@@ -1416,10 +1449,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     if (OptExpress == OPT_TABLE) {
+	print_tags(sp, 1);
 	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) 
-	    print_case_for_format(sp);
+	    print_case_for_table(sp);
 	if (OptNE)
-	    print_ne_for_format(sp);
+	    print_ne_for_table(sp);
+	if (OptEllipsis & OPT_COREFER) 
+	    print_corefer_for_table(sp);
     }
 
     /* nbestオプションなどではこの関数が複数回呼ばれるので後処理を元に戻しておく */
@@ -1429,6 +1465,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 格解析を行なった場合の出力 */
     if (case_print_flag && 
+	!OptArticle && /* 過去の記事のBest_mgrを保存していないのでセグフォする */
 	(((OptAnalysis == OPT_CASE || 
 	   OptAnalysis == OPT_CASE2) && 
 	  (OptDisplay == OPT_DETAIL || 

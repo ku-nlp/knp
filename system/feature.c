@@ -48,10 +48,16 @@
 /*==================================================================*/
 {
     if (!strncmp(cp, "仮付与:", strlen("仮付与:"))) { /* 仮付与したものを表示するとき用(-nbest) */
-	fprintf(filep, "<%s>", cp + strlen("仮付与:")); 
+	if (OptExpress == OPT_TABLE)
+	    fprintf(filep, "＜%s＞", cp + strlen("仮付与:")); 
+	else
+	    fprintf(filep, "<%s>", cp + strlen("仮付与:")); 
     }
     else {
-	fprintf(filep, "<%s>", cp);
+	if (OptExpress == OPT_TABLE)
+	    fprintf(filep, "＜%s＞", cp);
+	else
+	    fprintf(filep, "<%s>", cp);
     }
 }
 
