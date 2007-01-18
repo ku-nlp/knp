@@ -868,7 +868,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		if (d_ptr->para_num != -1 && (para_key = check_feature(d_ptr->f, "並キ"))) {
 		    if (cky_ptr->para_score >= 0) {
 			one_score += get_para_exist_probability(para_key, cky_ptr->para_score, TRUE);
-			one_score += get_para_ex_probability(para_key, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
+			one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 			flag++;
 		    }
 		    else {
@@ -1259,6 +1259,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	/* to tree structure */
 	dpnd_info_to_bnst(sp, &(Best_mgr->dpnd));
+	para_recovery(sp);
 	if (!(OptExpress & OPT_NOTAG)) {
 	    dpnd_info_to_tag(sp, &(Best_mgr->dpnd));
 	}
@@ -1284,9 +1285,18 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    }
 
 	    /* print for debug or nbest */
-	    if (OptDisplay == OPT_NBEST) {
+	    if (OptNbest == TRUE) {
 		sp->score = Best_mgr->score;
 		print_result(sp, 0);
+
+		if (OptDisplay == OPT_DEBUG) { /* case analysis results */
+		    for (i = 0; i < Best_mgr->pred_num; i++) {
+			print_data_cframe(&(Best_mgr->cpm[i]), &(Best_mgr->cpm[i].cmm[0]));
+			for (j = 0; j < Best_mgr->cpm[i].result_num; j++) {
+			    print_crrspnd(&(Best_mgr->cpm[i]), &(Best_mgr->cpm[i].cmm[j]));
+			}
+		    }
+		}
 	    }
 	    else if (OptDisplay == OPT_DEBUG) {
 		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
@@ -1414,6 +1424,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    }
 
 			    if (Language != CHINESE && 
+				OptNbest == FALSE && 
 				!check_feature(right_ptr->b_ptr->f, "用言")) { /* consider only the best one if noun */
 				break;
 			    }
@@ -1421,6 +1432,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			}
 
 			if (Language != CHINESE && 
+			    OptNbest == FALSE && 
 			    (!check_feature(left_ptr->b_ptr->f, "用言") || /* consider only the best one if noun or VP */
 			     check_feature(left_ptr->b_ptr->f, "係:連用"))) {
 			    break;
@@ -1578,7 +1590,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    best_ptr->next = NULL;
 	}
 
-	if (OptDisplay == OPT_NBEST) {
+	if (OptNbest == TRUE) {
 	    cky_ptr = cky_matrix[0][sp->Bnst_num - 1]; /* when print all possible structures */
 	}
 	else {

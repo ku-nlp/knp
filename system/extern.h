@@ -87,6 +87,7 @@ extern int		OptNEparent;
 extern int		OptNElearn;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
+extern int		OptNbest;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
@@ -232,7 +233,7 @@ extern double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_
 extern double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
 extern double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr);
 extern double get_para_exist_probability(char *para_key, double score, int flag);
-extern double get_para_ex_probability(char *para_key, TAG_DATA *dp, TAG_DATA *gp);
+extern double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num);
 

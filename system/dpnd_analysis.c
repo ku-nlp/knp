@@ -885,7 +885,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 	fprintf(Outfp, "=%d\n", score);
     }
 
-    if (OptDisplay == OPT_DEBUG || OptDisplay == OPT_NBEST) {
+    if (OptDisplay == OPT_DEBUG || OptNbest == TRUE) {
 	dpnd_info_to_bnst(sp, &dpnd);
 	if (!(OptExpress & OPT_NOTAG)) {
 	    dpnd_info_to_tag(sp, &dpnd); 
@@ -895,7 +895,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 		bnst_to_tag_tree(sp); /* タグ単位の木へ */
 	    }
 
-	    if (OptDisplay == OPT_NBEST) {
+	    if (OptNbest == TRUE) {
 		sp->score = score;
 		print_result(sp, 0);
 	    }

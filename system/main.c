@@ -78,6 +78,7 @@ int		OptNElearn;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
 int		OptParaFix;
+int		OptNbest;
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -198,7 +199,8 @@ extern int	EX_match_subject;
     OptNEparent = 0;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
-    OptParaFix = 1;
+    OptParaFix = TRUE;
+    OptNbest = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -231,7 +233,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
-	else if (str_eq(argv[0], "-nbest"))   OptDisplay  = OPT_NBEST;
+	else if (str_eq(argv[0], "-nbest"))   OptNbest    = TRUE;
 	else if (str_eq(argv[0], "-ne-debug"))  OptDisplayNE  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
@@ -1118,6 +1120,9 @@ extern int	EX_match_subject;
 	    calc_match_matrix(sp);		/* 文節間類似度計算 */
 	    detect_all_para_scope(sp);    	/* 並列構造推定 */
 	    assign_para_similarity_feature(sp);
+	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+		print_matrix(sp, PRINT_PARA, 0);
+	    }
 	}
 
 	para_recovery(sp);
@@ -1411,7 +1416,7 @@ PARSED:
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(sp, 0);
 	}
-	else if (OptDisplay != OPT_NBEST && !(OptArticle && OptEllipsis)) {
+	else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
 	    print_result(sp, 1);
 	}
 	if (Language == CHINESE) {

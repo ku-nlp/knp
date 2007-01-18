@@ -1348,7 +1348,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     /* N-bestのときはスコアを出力 */
-    if (OptDisplay == OPT_NBEST && !ErrorComment) {
+    if (OptNbest == TRUE && !ErrorComment) {
 	fprintf(Outfp, " SCORE:%.5f", sp->score);
     }
 

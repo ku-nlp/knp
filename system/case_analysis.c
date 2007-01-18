@@ -1199,7 +1199,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     }
 
     /* -nbestのため出力 */
-    if (OptDisplay == OPT_NBEST) {
+    if (OptNbest == TRUE) {
 	/* featureを仮付与 */
 	/* assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE); */
 	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);

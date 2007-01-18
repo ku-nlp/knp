@@ -2444,7 +2444,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     }
 
     if (vtype = check_feature(hp->f, "用言")) {
-	vtype += 5;
+	vtype += strlen("用言:");
     }
 
     /* 複合辞 */
@@ -2892,39 +2892,50 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
 }
 
 /*==================================================================*/
+		  int bin_sim_score(double score)
+/*==================================================================*/
+{
+    if (score < 1.0) {
+	return 0;
+    }
+    else if (score < 2.0) {
+	return 1;
+    }
+    else if (score < 3.0) {
+	return 2;
+    }
+    else if (score < 4.0) {
+	return 3;
+    }
+    else {
+	return 4;
+    }
+}
+
+/*==================================================================*/
 double get_para_exist_probability(char *para_key, double score, int flag)
 /*==================================================================*/
 {
     char *key, *value;
-    double ret;
+    double ret1 = 0, ret2 = 0;
+    int binned_score = bin_sim_score(score);
 
     if (CaseExist == FALSE) {
 	return 0;
     }
 
-    if (score < 1.0) {
-	score = 0;
-    }
-    else if (score < 2.0) {
-	score = 1;
-    }
-    else if (score < 3.0) {
-	score = 2;
-    }
-    else if (score < 4.0) {
-	score = 3;
+    key = malloc_db_buf(strlen(para_key) + 12);
+    if (flag) {
+	sprintf(key, "1,%d|PARA:%s", binned_score, para_key);
     }
     else {
-	score = 4;
+	sprintf(key, "0|PARA:%s", para_key);
     }
-
-    key = malloc_db_buf(strlen(para_key) + 12);
-    sprintf(key, "%d|PARA:%d,%s", flag, (int)score, para_key);
     value = db_get(case_db, key);
     if (value) {
-	ret = atof(value);
+	ret1 = atof(value);
 	if (VerboseLevel >= VERBOSE1) {
-	    fprintf(Outfp, ";; (PARA) : P(%s) = %lf\n", key, ret);
+	    fprintf(Outfp, ";; (PARA) : P(%s) = %lf\n", key, ret1);
 	}
 	free(value);
     }
@@ -2932,19 +2943,43 @@ double get_para_exist_probability(char *para_key, double score, int flag)
 	if (VerboseLevel >= VERBOSE1) {
 	    fprintf(Outfp, ";; (PARA) : P(%s) = 0\n", key);
 	}
-	return UNKNOWN_RENYOU_SCORE;
     }
 
-    if (ret) {
-	return log(ret);
+    /* 
+    sprintf(key, "%s|PTYPE:%d", para_key, binned_score);
+    value = db_get(case_db, key);
+    if (value) {
+	ret2 = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PTYPE) : P(%s) = %lf\n", key, ret2);
+	}
+	free(value);
     }
     else {
-	return UNKNOWN_RENYOU_SCORE;
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (PTYPE) : P(%s) = 0\n", key);
+	}
     }
+    */
+
+    if (ret1) {
+	ret1 = log(ret1);
+    }
+    else {
+	ret1 = UNKNOWN_RENYOU_SCORE;
+    }
+    /* if (ret2) {
+	ret2 = log(ret2);
+    }
+    else {
+	ret2 = UNKNOWN_RENYOU_SCORE;
+	} */
+
+    return ret1 + ret2;
 }
 
 /*==================================================================*/
-double get_para_ex_probability(char *para_key, TAG_DATA *dp, TAG_DATA *gp)
+double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
     char *key, *value;
@@ -2958,7 +2993,8 @@ double get_para_ex_probability(char *para_key, TAG_DATA *dp, TAG_DATA *gp)
 	return 0;
     }
 
-    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 3);
+    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 5);
+    /* sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi); */
     sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
 
     value = db_get(para_db, key);
