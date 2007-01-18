@@ -1,5 +1,8 @@
 2007-01-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/case_ipal.c:
+	名詞の関係解析時に、用言格フレームを読み込まないバグを修正
+
 	* system/case_print.c, system/corefer.c, system/extern.h, system/feature.c, system/lib_print.c:
 	-tableオプション時に、文節、基本句、形態素情報を埋めこむように変更
 	-tableオプション時に、共参照解析結果を表示するように変更
