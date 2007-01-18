@@ -1,3 +1,9 @@
+2007-01-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/cky.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
+	Fixed n-best parsing.
+	Modified a probabilistic model of coordinate structures.
+
 2007-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_print.c, system/lib_print.c:
