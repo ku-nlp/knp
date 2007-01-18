@@ -1,3 +1,12 @@
+2007-01-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_print.c, system/corefer.c, system/extern.h, system/feature.c, system/lib_print.c:
+	-tableオプション時に、文節、基本句、形態素情報を埋めこむように変更
+	-tableオプション時に、共参照解析結果を表示するように変更
+
+	* system/main.c:
+	共参照解析のデフォルト(-corefer)を文節間の修飾を考慮しないものに変更	
+
 2007-01-18  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/cky.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
