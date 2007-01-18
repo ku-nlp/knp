@@ -1707,9 +1707,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	if (t_ptr->jiritu_ptr != NULL && 
 	    !check_feature(t_ptr->f, "格解析なし")) {
 	    if (OptUseCF &&
-		(!OptEllipsis || 
-		 (OptEllipsis & OPT_ELLIPSIS) || 
-		 (OptEllipsis & OPT_DEMO)) && 
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
 		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
