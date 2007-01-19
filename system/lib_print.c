@@ -417,6 +417,9 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	if ( ptr->para_top_p == TRUE ) {
 	    fprintf(Outfp, "PARA");
 	} else {
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+			Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
 	    for (i = 0; i < ptr->mrph_num; i++) {
 		fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
 		if (Language == JAPANESE && OptDisplay != OPT_NORMAL) {
@@ -944,10 +947,16 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	if (para_type == PARA_NORMAL || 
 	    para_type == PARA_INCOMP ||
-	    to_para_p == TRUE)
-	    fprintf(Outfp, "─");
-	else 
-	    fprintf(Outfp, "──");
+	    to_para_p == TRUE) {
+	    if (OptExpress != OPT_TABLE)
+		fprintf(Outfp, "─");
+	}
+	else {
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "─");
+	    else
+		fprintf(Outfp, "──");
+	}
 
 	if (ans_flag[depth-1] == '1') 
 	    fprintf(Outfp, "┤");
@@ -1028,9 +1037,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
     }
 
-    if (OptExpress == OPT_TABLE)
-	fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
-		Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
     calc_self_space(ptr, depth);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
@@ -1045,9 +1051,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
 	fputc('\n', Outfp);	
     } else if ( flag == 1 ) {
-	fprintf(Outfp, "─");
+	if (OptExpress != OPT_TABLE)
+	    fprintf(Outfp, "─");
     } else if ( flag == 2 ) {
-	fprintf(Outfp, "-");
+	if (OptExpress != OPT_TABLE)
+	    fprintf(Outfp, "-");
     }
 }
 
