@@ -999,9 +999,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
 	ans_flag[0] = '0';	/* 最初に呼ばれるとき */
-	if (OptExpress == OPT_TABLE) 
-	    fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
-		    Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);	    
     }
 
     if (ptr->child[0]) {
@@ -1031,6 +1028,9 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
     }
 
+    if (OptExpress == OPT_TABLE)
+	fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+		Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
     calc_self_space(ptr, depth);
     if ( ptr->para_top_p != TRUE ) {
 	for (i = 0; i < max_width - ptr->space; i++) 
@@ -1043,13 +1043,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	if (OptExpress == OPT_TREEF) {
 	    print_some_feature(ptr->f, Outfp);
 	}
-	if (OptExpress == OPT_TABLE) {
-	    fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
-		    Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
-	}
-	else {
-	    fputc('\n', Outfp);	
-	}
+	fputc('\n', Outfp);	
     } else if ( flag == 1 ) {
 	fprintf(Outfp, "─");
     } else if ( flag == 2 ) {
@@ -1163,9 +1157,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	show_self((BNST_DATA *)(sp->tag_data + sp->Tag_num - last_t_offset), 1, NULL, 0);
     }
 
-    fprintf(Outfp, "EOS\n");
-    Tag_Num = 1;
-    Sen_Num++;
+    if (OptExpress == OPT_TABLE) {
+	Tag_Num = 1;
+	Sen_Num++;
+    }
+    else {
+	fprintf(Outfp, "EOS\n");
+    }
 }
 
 /*====================================================================

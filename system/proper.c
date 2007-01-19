@@ -495,7 +495,7 @@ char *ne_code_to_tagposition(int num)
 		    OptNEcache ? "" : s[2],
 		    OptNEend ? "" : s[3],
 		    strlen(sp->mrph_data[j].Goi2) / 2, k, 
-		    OptNEparent ? s[4] : "",
+		    OptNEparent ? "" : s[4],
 		    OptNEcase ? s[5] : "");
 	    strcpy(NE_mgr[i].feature, buf);
 	    
@@ -735,7 +735,7 @@ char *ne_code_to_tagposition(int num)
     CF_PRED_MGR *cpm_ptr;
 
     /* 親の情報 */
-    if (OptNEparent) {
+    if (!OptNEparent) {
 	/* 文節を前からチェック */
 	for (j = 0; j < sp->Bnst_num - 1; j++) {	    
 	    sprintf (cp, "親:%s",
