@@ -1,5 +1,9 @@
 2007-01-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/corefer.c, system/main.c:
+	共参照関係のバグを修正
+	固有表現解析でデフォルトで親の情報を用いるように変更	
+	
 	* system/case_ipal.c:
 	名詞の関係解析時に、用言格フレームを読み込まないバグを修正
 

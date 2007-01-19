@@ -439,8 +439,10 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			sprintf(CO, "COREFER_ID:%d", COREFER_ID);
 			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
 			assign_cfeature(&(tag_ptr->f), CO, FALSE);
-			sprintf(CO, "REFERRED:%d-%d", j, k);
-			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
+			if (j > 0) {
+			    sprintf(CO, "REFERRED:%d-%d", j, k);
+			    assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
+			}
 		    }
     
 		    /* 固有表現とcoreferの関係にある語を固有表現とみなす */
@@ -469,17 +471,17 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 }
 
 /*==================================================================*/
-int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
+	 int person_post(SENTENCE_DATA *sp, char *cp, int i)
 /*==================================================================*/
 {
     /* PERSON + 役職 に"="タグを付与 */
 
-    int i, flag;
+    int j, flag;
     char buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
     MRPH_DATA *mrph_ptr;
-    TAG_DATA *tag_ptr_cp;
-    
-    tag_ptr_cp = tag_ptr;
+    TAG_DATA *tag_ptr;
+
+    tag_ptr = sp->tag_data + i + 1;
     mrph_ptr = tag_ptr->mrph_ptr;
     /* タグ末尾までNE中である場合のみ対象とする */
     if (!check_feature((mrph_ptr - 1)->f, "NE") &&
@@ -489,13 +491,13 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	return 0;
 
     flag = 0;
-    for (i = 0;; i++) {
-	if (check_feature((mrph_ptr + i)->f, "人名末尾")) {
+    for (j = 0;; j++) {
+	if (check_feature((mrph_ptr + j)->f, "人名末尾")) {
 	    flag = 1;
 	    continue;
 	}
-	else if (check_feature((mrph_ptr + i)->f, "NE") ||
-		 check_feature((mrph_ptr + i)->f, "固有修飾")) {
+	else if (check_feature((mrph_ptr + j)->f, "NE") ||
+		 check_feature((mrph_ptr + j)->f, "固有修飾")) {
 	    /* 基本的には、ブッシュ・アメリカ大統領 */
 	    /* 武部自民党幹事長などを想定している */
 	    /* ギングリッチ新下院議長 */
@@ -506,8 +508,8 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     if (!flag) return 0;
 	
     /* 複数のタグにまたがっている場合は次のタグに進む */
-    while (i > tag_ptr->mrph_num) {
-	i -= tag_ptr->mrph_num;
+    while (j > tag_ptr->mrph_num) {
+	j -= tag_ptr->mrph_num;
 	tag_ptr++;
     }
     
@@ -519,9 +521,9 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
     
     /* COREFER_IDを付与 */   
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
-	assign_cfeature(&((tag_ptr_cp - 1)->f), cp, FALSE);
+	assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
     }
-    else if (cp = check_feature((tag_ptr_cp - 1)->f, "COREFER_ID")) {
+    else if (cp = check_feature((sp->tag_data + i)->f, "COREFER_ID")) {
 	assign_cfeature(&(tag_ptr->f), cp, FALSE);
     }
     else {
@@ -574,7 +576,7 @@ int person_post(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *cp, int j)
 	/* PERSON + 人名末尾 の処理 */
 	if ((cp = check_feature((sp->tag_data + i)->f, "NE:PERSON")) &&
 	    i + 1 < sp->Tag_num) {
-	    person_post(sp, sp->tag_data + i + 1, cp + 10, i);
+	    person_post(sp, cp + 10, i);
 	}
     }
 }

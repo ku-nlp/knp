@@ -266,7 +266,10 @@ char *ne_code_to_tagposition(int num)
 	    }
 	}
     }
-    if (flag) return ret;
+    if (flag) {
+	free(buf);
+    	return ret;
+    }
 
     /* 品詞曖昧性のない場合 */
     if (mrph_data->Bunrui)

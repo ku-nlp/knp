@@ -196,7 +196,7 @@ extern int	EX_match_subject;
     OptNEdelete = 0;
     OptNEcase = 0;
     OptNElearn = 0;
-    OptNEparent = 0;
+    OptNEparent = 1;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
@@ -234,7 +234,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-nbest"))   OptNbest    = TRUE;
-	else if (str_eq(argv[0], "-ne-debug"))  OptDisplayNE  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-no-use-cf")) OptUseCF   = FALSE;
@@ -402,6 +401,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
+	else if (str_eq(argv[0], "-ne-debug")) {
+	    OptDisplayNE  = OPT_DEBUG;
+	    OptNE = 1;
+	}
 	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
 	    OptNE = 1;
 	    OptNEcache = 1;
@@ -412,7 +415,7 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-ne-parent")) { /* 親の情報を用いる */
 	    OptNE = 1;
-	    OptNEparent = 1;
+	    OptNEparent = 0;
 	}
 	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
 	    OptNE = 1;
@@ -1600,7 +1603,6 @@ static void sig_term()
 		    if (strstr(buf, "-normal")) OptDisplay = OPT_NORMAL;
 		    if (strstr(buf, "-detail")) OptDisplay = OPT_DETAIL;
 		    if (strstr(buf, "-debug"))  OptDisplay = OPT_DEBUG;
-		    if (strstr(buf, "-ne-debug"))  OptDisplayNE = OPT_DEBUG;
 		    if (strstr(buf, "-expand")) OptExpandP = TRUE;
 		    if ((p = strstr(buf, "-i")) != NULL) {
 			p += 3;
