@@ -121,6 +121,33 @@ L<Juman::Morpheme> の各メソッドに加えて，KNP によって割り当てられた特
 
 =over 4
 
+=item repname
+
+形態素の代表表記を返す．
+
+=cut
+
+sub repname {
+    my ( $this ) = @_;
+
+    my $result = $this->Juman::Morpheme::repname;
+    return $result if ( defined $result );
+
+    my $pat = '(疑似)代表表記';
+    if( utf8::is_utf8( $this->midasi ) ){
+	$pat = decode('euc-jp', $pat);
+    }
+
+    if ( defined $this->{fstring} ){
+	if ($this->{fstring} =~ /<$pat:([^\>]+)>/){
+	    return $2;
+	}
+    }
+    return undef;
+}
+
+=back
+
 =item spec
 
 形態素の全ての諸元を指示する文字列を生成する．KNP の出力の1行に相当す
