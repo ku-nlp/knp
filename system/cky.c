@@ -48,10 +48,36 @@ void make_data_cframe_rentai_simple(CF_PRED_MGR *pre_cpm_ptr, TAG_DATA *d_ptr, T
     _make_data_cframe_sm(pre_cpm_ptr, t_ptr);
     _make_data_cframe_ex(pre_cpm_ptr, t_ptr);
     pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num] = t_ptr;
+    pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num]->next = NULL;
     pre_cpm_ptr->elem_b_num[pre_cpm_ptr->cf.element_num] = -1;
     pre_cpm_ptr->cf.weight[pre_cpm_ptr->cf.element_num] = 0;
     pre_cpm_ptr->cf.adjacent[pre_cpm_ptr->cf.element_num] = FALSE;
     pre_cpm_ptr->cf.element_num++;
+}
+
+/* add coordinated case components to CPM */
+TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA **next) {
+    /* while (cky_ptr) { * 修飾部分のスキップ *
+	if (cky_ptr->para_flag || cky_ptr->dpnd_type == 'P') {
+	    break;
+	}
+	cky_ptr = cky_ptr->right;
+	} */
+
+    if (!cky_ptr) {
+	return NULL;
+    }
+    else if (cky_ptr->para_flag) { /* parent of <PARA> + <PARA> */
+	return add_coordinated_phrases(cpm_ptr, cky_ptr->left, add_coordinated_phrases(cpm_ptr, cky_ptr->right, next));
+    }
+    else if (cky_ptr->dpnd_type == 'P') {
+	*next = cky_ptr->left->b_ptr->tag_ptr + cky_ptr->left->b_ptr->tag_num - 1;
+	(*next)->next = NULL;
+	return &((*next)->next);
+    }
+    else {
+	return NULL;
+    }
 }
 
 char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
@@ -81,9 +107,10 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
 void make_work_mgr_dpnd_check(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *d_ptr) {
     int i, count = 0, start;
 
-/*    if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P')
+    /* 隣にある並列構造(1+1)に係る場合は距離1とする */
+    if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P' && cky_ptr->right->j < d_ptr->num + 3)
 	start = cky_ptr->right->j;
-	else */
+    else
 	start = d_ptr->num + 1;
 
     for (i = start; i < sp->Bnst_num; i++) {
@@ -881,6 +908,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    if (cky_ptr->dpnd_type != 'P' && pred_p) {
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		if (make_data_cframe_child(sp, cpm_ptr, d_ptr->tag_ptr + d_ptr->tag_num - 1, child_num, t_ptr->num == d_ptr->num + 1 ? TRUE : FALSE)) {
+		    add_coordinated_phrases(cpm_ptr, cky_ptr->left, &(cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num - 1]->next));
 		    child_num++;
 		    flag++;
 		}
@@ -899,6 +927,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		make_data_cframe_rentai_simple(pre_cpm_ptr, pre_cpm_ptr->pred_b_ptr, t_ptr);
+		add_coordinated_phrases(pre_cpm_ptr, cky_ptr->right, &(pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num - 1]->next));
 
 		orig_score = pre_cpm_ptr->score;
 		one_score -= orig_score;

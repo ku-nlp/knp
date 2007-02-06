@@ -2309,19 +2309,22 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* ¼«Ê¬¼«¿È */
     score = get_ex_probability(as1, cfd, NULL, as2, cfp);
 
-    if (OptCKY) {
-	return score;
+    /* ÊÂÎó¤ÎÍ×ÁÇ */
+    while (tp->next) {
+	score += get_ex_probability(-1, cfd, tp->next, as2, cfp);
+	count++;
+	tp = tp->next;
     }
 
-    /* ¼«Ê¬¤ÈÊÂÎó¤ÎÍ×ÁÇ */
+    /* ¼«Ê¬¤ÈÊÂÎó¤ÎÍ×ÁÇ *
     if (tp->para_top_p) {
-	for (j = 1; tp->child[j]; j++) { /* 0¤Ï¼«Ê¬¤ÈÆ±¤¸ */
+	for (j = 1; tp->child[j]; j++) { * 0¤Ï¼«Ê¬¤ÈÆ±¤¸ *
 	    if (tp->child[j]->para_type == PARA_NORMAL) {
 		score += get_ex_probability(-1, cfd, tp->child[j], as2, cfp);
 		count++;
 	    }
 	}
-    }
+    } */
 
     return score / count;
 }
@@ -2453,7 +2456,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	if ((scase = check_feature(tp->f, "·¸")) == NULL) {
 	    return UNKNOWN_CASE_SCORE;
 	}
-	scase += 3; /* ÆþÎÏÂ¦¤ÎÉ½ÁØ³Ê */
+	scase += strlen("·¸:"); /* ÆþÎÏÂ¦¤ÎÉ½ÁØ³Ê */
 	tp2 = tp;
     }
 
@@ -2991,8 +2994,8 @@ double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_D
     }
 
     key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 5);
-    /* sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi); */
-    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
+    sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi);
+    /* sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi); */
 
     value = db_get(para_db, key);
     if (value) {

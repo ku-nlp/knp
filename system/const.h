@@ -739,6 +739,8 @@ typedef struct tnode_t {
     int 	e_cf_num;
     /* 正解の関係データ */
     CPM_ptr	c_cpm_ptr;
+    /* 格解析における並列格要素 */
+    struct tnode_t	*next;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20

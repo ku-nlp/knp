@@ -422,6 +422,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	/* 「みかん三個を食べる」 ひとつ前の名詞を格要素とするとき
 	   「みかんを三個食べる」 の場合はそのまま両方格要素になる
 	*/
+
 	if (check_feature(cel_b_ptr->f, "数量") && 
 	    (check_feature(cel_b_ptr->f, "係:ガ格") || check_feature(cel_b_ptr->f, "係:ヲ格")) && 
 	    cel_b_ptr->num > 0 && 
@@ -446,6 +447,8 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	}
+
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL;
 
 	/* 格が明示されていないことをマーク */
 	if (check_feature(cel_b_ptr->f, "係:未格") || 
