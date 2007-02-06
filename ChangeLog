@@ -1,3 +1,8 @@
+2007-02-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_data.c, system/case_ipal.c, system/cky.c, system/const.h:
+	Improved probabilistic case structure analysis to consider coordinate structures.
+
 2007-01-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c, system/main.c:
