@@ -448,8 +448,13 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		}		 
 	    }
 
-	    t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
-				(sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset)->num;
+	    if (dp->head[last_b] == -1) {
+		t_ptr->dpnd_head = -1;
+	    }
+	    else {
+		t_ptr->dpnd_head = ((sp->bnst_data + dp->head[last_b])->tag_ptr + 
+				    (sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset)->num;
+	    }
 
 	    if (dp->type[last_b] == 'd' || dp->type[last_b] == 'R') {
 		t_ptr->dpnd_type = 'D';
