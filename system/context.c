@@ -4339,7 +4339,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
        ただし名詞に限定し(接尾辞除く)ここでは同じ表記の語を辿るだけ
        格解析の結果適当な格が埋まらなかった場合と
        共参照解析結果がない場合のみ実行される */
-    if (cpm_ptr->pred_b_ptr->head_ptr->Hinshi == 6 &&
+    if (0 && cpm_ptr->pred_b_ptr->head_ptr->Hinshi == 6 &&
 	(ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 			      cpm_ptr->pred_b_ptr->voice, 
 			      cmm_ptr->cf_ptr->cf_address, 
