@@ -4,7 +4,7 @@
 	格解析結果の詳細を表示する際に、用言の見出しを代表表記化したものに変更
 
 	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c, system/main.c:
-	複合名詞格フレームを用いて照応解析を行うオプション-relation-noun2を追加
+	複合名詞格フレームを用いて照応解析を行うオプション-relation-comp-nounを追加
 
 2007-02-15  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 

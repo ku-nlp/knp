@@ -67,18 +67,9 @@ int	PrintFrequency = 0;
 
     fprintf(Outfp, "【");
     
-    if (OptUseCPNCF && cpm_ptr->cf.type == CF_NOUN &&
-	(cp = check_feature(cpm_ptr->pred_b_ptr->f, "BGH"))) {
-	fprintf(Outfp, "%s", cp + 4); /* 分類語彙表 */
-    }
-    else if (OptCaseFlag & OPT_CASE_USE_REP_CF &&
-	     (cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr))) {
-	/* 代表表記を出力するため一時的に末尾の文字を'\0'に変換 */
-	tmp = cp[get_mrph_rep_length(cp) + 1];
-	cp[get_mrph_rep_length(cp)] = '\0';
-	fprintf(Outfp, "%s", cp); /* 代表表記 */
-	cp[strlen(cp)] = tmp;
-    }
+    if (cpm_ptr->cmm[0].cf_ptr->entry) {
+	fprintf(Outfp, "%s", cpm_ptr->cmm[0].cf_ptr->entry);
+    }   
     else {
 	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* 用言表記 */
     }
