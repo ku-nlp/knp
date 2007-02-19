@@ -1,5 +1,8 @@
 2007-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/case_print.c:
+	格解析結果の詳細を表示する際に、用言の見出しを代表表記化したものに変更
+
 	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c, system/main.c:
 	複合名詞格フレームを用いて照応解析を行うオプション-relation-noun2を追加
 

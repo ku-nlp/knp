@@ -63,9 +63,25 @@ int	PrintFrequency = 0;
 /*==================================================================*/
 {
     int i;
+    char *cp, tmp;
 
     fprintf(Outfp, "【");
-    fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* 用言表記 */
+    
+    if (OptUseCPNCF && cpm_ptr->cf.type == CF_NOUN &&
+	(cp = check_feature(cpm_ptr->pred_b_ptr->f, "BGH"))) {
+	fprintf(Outfp, "%s", cp + 4); /* 分類語彙表 */
+    }
+    else if (OptCaseFlag & OPT_CASE_USE_REP_CF &&
+	     (cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr))) {
+	/* 代表表記を出力するため一時的に末尾の文字を'\0'に変換 */
+	tmp = cp[get_mrph_rep_length(cp) + 1];
+	cp[get_mrph_rep_length(cp)] = '\0';
+	fprintf(Outfp, "%s", cp); /* 代表表記 */
+	cp[strlen(cp)] = tmp;
+    }
+    else {
+	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* 用言表記 */
+    }
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
 	fprintf(Outfp, "(使役)】");
@@ -143,6 +159,9 @@ int	PrintFrequency = 0;
 	    fputc('*', Outfp);
 	}
     }
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "省略解析なし"))
+	printf (" <省略解析なし>");
+
     if (OptExpress == OPT_TABLE) {
 	fprintf(Outfp, "<BR>");
     }
