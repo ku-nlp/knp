@@ -110,7 +110,7 @@ int		OptUseScase;
     char *buffer, *pp = NULL, *verb;
     BNST_DATA *cbp;
 
-    verb = make_pred_string((TAG_DATA *)bp, NULL, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+    verb = make_pred_string((TAG_DATA *)bp, NULL, NULL, FALSE, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
 
     /* cbp = get_quasi_closest_case_component((TAG_DATA *)bp, 
        bp->num < 1 ? NULL : (TAG_DATA *)(bp - 1)); */
@@ -196,7 +196,7 @@ int		OptUseScase;
 	    if (str_buffer) {
 		free(str_buffer);
 	    }
-	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL, FALSE, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
 	    strcat(str_buffer, ":");
 	    strcat(str_buffer, vtype);
 	    if (voice[0]) strcat(str_buffer, voice);
@@ -218,7 +218,7 @@ int		OptUseScase;
 			       &m.Hinshi, &m.Bunrui, 
 			       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 			free(str_buffer);
-			str_buffer = make_pred_string((TAG_DATA *)ptr, &m, NULL, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+			str_buffer = make_pred_string((TAG_DATA *)ptr, &m, NULL, FALSE, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
 			strcat(str_buffer, ":");
 			strcat(str_buffer, vtype);
 			if (voice[0]) strcat(str_buffer, voice);

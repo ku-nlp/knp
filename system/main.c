@@ -50,6 +50,7 @@ int		OptExpandP;
 int		OptCheck;
 int             OptUseCF;
 int             OptUseNCF;
+int             OptUseCPNCF;
 int		OptUseRN;
 int		OptDiscPredMethod;
 int		OptDiscNounMethod;
@@ -171,6 +172,7 @@ extern int	EX_match_subject;
     OptCheck = FALSE;
     OptUseCF = TRUE;
     OptUseNCF = TRUE;
+    OptUseCPNCF = FALSE;
     OptUseRN = USE_RN;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
@@ -447,6 +449,10 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
+	}
+	else if (str_eq(argv[0], "-relation-noun2")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptUseCPNCF = TRUE;
 	}
 	else if (str_eq(argv[0], "-corefer")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;

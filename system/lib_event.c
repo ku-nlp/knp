@@ -111,7 +111,7 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
     }
 
     /* 用言部分 */
-    str = make_pred_string(ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF);
+    str = make_pred_string(ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag);
     strcat(str, vtype);
     if (voice[0]) strcat(str, voice);
     free(vtype);

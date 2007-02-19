@@ -1,3 +1,8 @@
+2007-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c, system/main.c:
+	複合名詞格フレームを用いて照応解析を行うオプション-relation-noun2を追加
+
 2007-02-15  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c:
