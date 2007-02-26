@@ -5431,7 +5431,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
 		    if (maxem.score > -2 && maxem_copula.score > -2) {
-			merge_em(&maxem, &maxem_copula);
+/* 			merge_em(&maxem, &maxem_copula); */
 		    }
 		    cpm_ptr->cf.type = CF_PRED;
 		} 
