@@ -34,7 +34,7 @@ KNP::Morpheme - 形態素オブジェクト in KNP
 
 sub _alt2spec {
     my( $str ) = @_;
-    my( $midasi, $yomi, $genkei, $hinsi_id, $bunrui_id, $katuyou1_id, $katuyou2_id, $imis ) = split( '-', $str );
+    my( $midasi, $yomi, $genkei, $hinsi_id, $bunrui_id, $katuyou1_id, $katuyou2_id, $imis ) = split( '-', $str , 8);
     my $hinsi = &get_hinsi( $hinsi_id );
     my $bunrui = &get_bunrui( $hinsi_id, $bunrui_id );
     my $katuyou1 = &get_type( $katuyou1_id );

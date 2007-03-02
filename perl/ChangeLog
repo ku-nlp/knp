@@ -1,3 +1,7 @@
+2007-03-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* Morpheme.pm: 意味素中の"-"に対応するため、ALTを"-"でsplitする際に分割数を8つに制限
+
 2006-10-26  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* Result.pm, Morpheme.pm: 形態素featureのALTから同形異義語を抽出するようにした
