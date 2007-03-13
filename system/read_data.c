@@ -263,7 +263,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     if (flag == TRUE) { /* ルールにマッチ */
 	/* ルールに記述されているfeatureを与える (「品曖」を削除するルールもある) */
-	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr, FALSE);
+	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr, 0, 1, FALSE);
 
 	if (0 && OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Lexical Disambiguation "
@@ -1085,7 +1085,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_m_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_m_ptr+i*direction, k, match_length - k, temp_assign_flag);
 		    feature_break_mode = break_feature(r_ptr->f);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			feature_break_mode == RLOOP_BREAK_NORMAL) {
@@ -1122,7 +1122,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 					  direction == LtoR ? m_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++)
 			assign_feature(&((s_m_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_m_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_m_ptr+i*direction, k, match_length - k, temp_assign_flag);
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
 			break_mode == RLOOP_BREAK_JUMP ||
 			feature_break_mode == RLOOP_BREAK_NORMAL ||
@@ -1175,10 +1175,10 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			if (also_assign_flag) { /* 属する文節にも付与する場合 */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
 		    }
 		    feature_break_mode = break_feature(r_ptr->f);
@@ -1217,10 +1217,10 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 					 direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			if (also_assign_flag) { /* 属する文節にも付与する場合 */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
 		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||
@@ -1275,10 +1275,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
 		    }
 		    feature_break_mode = break_feature(r_ptr->f);
@@ -1317,10 +1317,10 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 					  direction == LtoR ? b_length-i : i+1)) != -1) {
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
-				       &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			if (also_assign_flag) { /* headのタグ単位にも付与する場合 */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
-					   &(r_ptr->f), s_b_ptr+i*direction+k, temp_assign_flag);
+					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
 		    }
 		    if (break_mode == RLOOP_BREAK_NORMAL ||

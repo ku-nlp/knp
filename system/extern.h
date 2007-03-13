@@ -311,7 +311,7 @@ extern void print_feature2(FEATURE *fp, FILE *filep);
 extern void print_some_feature(FEATURE *fp, FILE *filep);
 extern int feature_AND_match(FEATURE *fp, FEATURE *fd, void *p1, void *p2);
 extern void string2feature_pattern(FEATURE_PATTERN *f, char *cp);
-extern void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_flag);
+extern void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int length, int temp_assign_flag);
 extern void list2feature_pattern(FEATURE_PATTERN *f, CELL *cell);
 extern void list2feature(CELL *cp, FEATURE **fpp);
 extern void clear_feature(FEATURE **fpp);
@@ -508,6 +508,9 @@ extern int def_cmp(char *string1,char *string2);
 extern char *pos_modify(BNST_DATA *ptr);
 extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2);
 extern void hownet_open();
+
+/* dic.c */
+extern int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);
 
 /* KNP ½é´ü²½ */
 extern char *Knprule_Dirname;

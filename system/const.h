@@ -525,7 +525,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	26
+#define DICT_MAX	27
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -552,6 +552,7 @@ typedef struct _RuleVector {
 #define PARA_DB		23
 #define NOUN_CO_DB	24
 #define CHI_CASE_DB	25
+#define AUTO_DIC_DB	26
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

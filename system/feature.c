@@ -394,7 +394,7 @@ void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 }    
 
 /*==================================================================*/
-void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_flag)
+void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int length, int temp_assign_flag)
 /*==================================================================*/
 {
     /*
@@ -427,20 +427,20 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 	} else if (*((*fpp2)->cp) == '&') {	/* 関数の場合 */
 
 	    if (!strcmp((*fpp2)->cp, "&表層:付与")) {
-		set_pred_voice((BNST_DATA *)ptr);	/* ヴォイス */
-		get_scase_code((BNST_DATA *)ptr);	/* 表層格 */
+		set_pred_voice((BNST_DATA *)ptr + offset);	/* ヴォイス */
+		get_scase_code((BNST_DATA *)ptr + offset);	/* 表層格 */
 	    }
 	    else if (!strcmp((*fpp2)->cp, "&表層:削除")) {
-		for (i = 0, cp = ((BNST_DATA *)ptr)->SCASE_code; 
+		for (i = 0, cp = ((BNST_DATA *)ptr + offset)->SCASE_code; 
 		     i < SCASE_CODE_SIZE; i++, cp++) 
 		    *cp = 0;		
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&表層:^", strlen("&表層:^"))) {
-		((BNST_DATA *)ptr)->
+		((BNST_DATA *)ptr + offset)->
 		    SCASE_code[case2num((*fpp2)->cp + strlen("&表層:^"))] = 0;
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&表層:", strlen("&表層:"))) {
-		((BNST_DATA *)ptr)->
+		((BNST_DATA *)ptr + offset)->
 		    SCASE_code[case2num((*fpp2)->cp + strlen("&表層:"))] = 1;
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&MEMO:", strlen("&MEMO:"))) {
@@ -448,22 +448,22 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 		strcat(PM_Memo, (*fpp2)->cp + strlen("&MEMO:"));
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&品詞変更:", strlen("&品詞変更:"))) {
-		change_mrph((MRPH_DATA *)ptr, *fpp2);
+		change_mrph((MRPH_DATA *)ptr + offset, *fpp2);
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&意味素付与:", strlen("&意味素付与:"))) {
-		assign_sm((BNST_DATA *)ptr, (*fpp2)->cp + strlen("&意味素付与:"));
+		assign_sm((BNST_DATA *)ptr + offset, (*fpp2)->cp + strlen("&意味素付与:"));
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&複合辞格解析", strlen("&複合辞格解析"))) {
-		cp = make_fukugoji_string((TAG_DATA *)ptr + 1);
+		cp = make_fukugoji_string((TAG_DATA *)ptr + offset + 1);
 		if (cp) {
-		    assign_cfeature(&(((TAG_DATA *)ptr)->f), cp, temp_assign_flag);
+		    assign_cfeature(&(((TAG_DATA *)ptr + offset)->f), cp, temp_assign_flag);
 		}
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&記憶語彙付与:", strlen("&記憶語彙付与:"))) {
 		sprintf(buffer, "%s:%s", 
 			(*fpp2)->cp + strlen("&記憶語彙付与:"), 
 			((MRPH_DATA *)matched_ptr)->Goi);
-		assign_cfeature(&(((BNST_DATA *)ptr)->f), buffer, temp_assign_flag);
+		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), buffer, temp_assign_flag);
 	    }
 	    /* &伝搬:n:FEATURE : FEATUREの伝搬  */
 	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
@@ -471,27 +471,35 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int temp_assign_f
 		sscanf(pat, "%d", &i);
 		pat = strchr(pat, ':');
 		pat++;
-		if ((cp = check_feature(((TAG_DATA *)ptr)->f, pat))) {
-		    assign_cfeature(&((((TAG_DATA *)ptr) + i)->f), cp, temp_assign_flag);
+		if ((cp = check_feature(((TAG_DATA *)ptr + offset)->f, pat))) {
+		    assign_cfeature(&(((TAG_DATA *)ptr + offset + i)->f), cp, temp_assign_flag);
 		}
 		else { /* ないなら、もとからあるものを削除 */
-		    delete_cfeature(&((((TAG_DATA *)ptr) + i)->f), pat);
+		    delete_cfeature(&(((TAG_DATA *)ptr + offset + i)->f), pat);
 		}
-		if (((TAG_DATA *)ptr)->bnum >= 0) { /* 文節区切りでもあるとき */
-		    if ((cp = check_feature((((TAG_DATA *)ptr)->b_ptr)->f, pat))) {
-			assign_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), cp, temp_assign_flag);
+		if (((TAG_DATA *)ptr + offset)->bnum >= 0) { /* 文節区切りでもあるとき */
+		    if ((cp = check_feature((((TAG_DATA *)ptr + offset)->b_ptr)->f, pat))) {
+			assign_cfeature(&((((TAG_DATA *)ptr + offset)->b_ptr + i)->f), cp, temp_assign_flag);
 		    }
 		    else {
-			delete_cfeature(&((((TAG_DATA *)ptr)->b_ptr + i)->f), pat);
+			delete_cfeature(&((((TAG_DATA *)ptr + offset)->b_ptr + i)->f), pat);
 		    }
 		}
 	    }
 	    /* 形態素付属化 : 属する形態素列をすべて<付属>にする */
 	    else if (!strncmp((*fpp2)->cp, "&形態素付属化", strlen("&形態素付属化"))) {
-		for (i = 0; i < ((TAG_DATA *)ptr)->mrph_num; i++) {
-		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "自立");
-		    delete_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "意味有");
-		    assign_cfeature(&((((TAG_DATA *)ptr)->mrph_ptr + i)->f), "付属", temp_assign_flag);
+		for (i = 0; i < ((TAG_DATA *)ptr + offset)->mrph_num; i++) {
+		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "自立");
+		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "意味有");
+		    assign_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "付属", temp_assign_flag);
+		}
+	    }
+	    /* 自動辞書 : 自動獲得した辞書をチェック (マッチ部分全体) */
+	    else if (!strncmp((*fpp2)->cp, "&自動辞書:", strlen("&自動辞書:"))) {
+		if (offset == 0 && check_auto_dic((MRPH_DATA *)ptr, length, (*fpp2)->cp + strlen("&自動辞書:"))) {
+		    for (i = 0; i < length; i ++) {
+			assign_cfeature(&(((MRPH_DATA *)ptr + i)->f), (*fpp2)->cp + strlen("&自動辞書:"), temp_assign_flag);
+		    }
 		}
 	    }
 	} else {			/* 追加の場合 */

@@ -1,1 +1,1 @@
-SUBDIRS = src scode ebcf gcf
+SUBDIRS = src scode ebcf gcf auto

@@ -812,6 +812,7 @@ extern int	EX_match_subject;
     close_noun_cf();
     close_thesaurus();
     close_scase();
+    close_auto_dic();
 
     if (OptEllipsis) {
 	close_event();
@@ -897,6 +898,7 @@ extern int	EX_match_subject;
     }
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
+    init_auto_dic();	/* 自動獲得辞書オープン */
 
     if (OptEllipsis) {
 #ifdef USE_SVM
