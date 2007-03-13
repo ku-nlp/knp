@@ -450,6 +450,9 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    else if (!strncmp((*fpp2)->cp, "&品詞変更:", strlen("&品詞変更:"))) {
 		change_mrph((MRPH_DATA *)ptr + offset, *fpp2);
 	    }
+	    else if (!strncmp((*fpp2)->cp, "&代表表記変更:", strlen("&代表表記変更:"))) {
+		change_one_mrph_rep((MRPH_DATA *)ptr + offset, 1, *((*fpp2)->cp + strlen("&代表表記変更:")));
+	    }
 	    else if (!strncmp((*fpp2)->cp, "&意味素付与:", strlen("&意味素付与:"))) {
 		assign_sm((BNST_DATA *)ptr + offset, (*fpp2)->cp + strlen("&意味素付与:"));
 	    }

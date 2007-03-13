@@ -883,7 +883,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 }
 
 /*==================================================================*/
- void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag)
+void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_char)
 /*==================================================================*/
 {
     int i;
@@ -921,11 +921,11 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     strcat(str2, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
 
     /* 意味情報の修正 */
-    sprintf(m_ptr->Imi, "%s%s/%sv%s", pre, str1, str2, post);
+    sprintf(m_ptr->Imi, "%s%s/%s%c%s", pre, str1, str2, suffix_char, post);
 
     /* featureの修正 */
     if (modify_feature_flag) {
-	sprintf(pre, "代表表記:%s/%sv", str1, str2);
+	sprintf(pre, "代表表記:%s/%s%c", str1, str2, suffix_char);
 	assign_cfeature(&(m_ptr->f), pre, FALSE);
     }
 }
@@ -980,7 +980,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-	    change_one_mrph_rep(&m, 0);
+	    change_one_mrph_rep(&m, 0, 'v');
 	    change_one_mrph(&m, f);
 	    assign_feature_alt_mrph(&ret_fp, &m);
 	    free((*fpp)->cp); /* 古いALTは削除 */
@@ -1001,7 +1001,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
-    char org_buffer[512];
+    char org_buffer[DATA_LEN];
     int num;
 
     /* もとの形態素情報をfeatureとして保存 */
@@ -1011,7 +1011,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
     assign_cfeature(&(m_ptr->f), org_buffer, FALSE);
 
-    change_one_mrph_rep(m_ptr, 1); /* 代表表記を修正 */
+    change_one_mrph_rep(m_ptr, 1, 'v'); /* 代表表記を修正 */
     change_one_mrph(m_ptr, f); /* 品詞などを修正 */
 
     change_alt_mrph(m_ptr, f); /* ALTの中も修正 */

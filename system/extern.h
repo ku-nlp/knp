@@ -423,6 +423,7 @@ extern int quote(SENTENCE_DATA *sp);
 /* read_data.c */
 extern int imi2feature(char *str, MRPH_DATA *m_ptr);
 extern int read_mrph(SENTENCE_DATA *sp, FILE *fp);
+extern void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_char);
 extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
 extern void assign_general_feature(void *data, int size, int flag, int also_assign_flag, int temp_assign_flag);
 extern int make_bunsetsu(SENTENCE_DATA *sp);
