@@ -1,5 +1,11 @@
 2007-03-13  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/const.h, system/extern.h, system/feature.c, system/main.c, system/path.h, system/read_data.c:
+	Modified to handle an automatically obtained dictionary.
+
+	* system/dic.c, rule/mrph_auto_dic.rule:
+	added.
+
 	* rule/case_analysis.rule:
 	Modified rules of "¥Î³Ê" depending on predicates.
 
