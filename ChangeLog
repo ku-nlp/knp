@@ -1,5 +1,8 @@
 2007-03-13  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/extern.h, system/feature.c, system/read_data.c:
+	Added a framework of modifying rep names as "代表表記:重要/じゅうようa".
+
 	* system/const.h, system/extern.h, system/feature.c, system/main.c, system/path.h, system/read_data.c:
 	Modified to handle an automatically obtained dictionary.
 
