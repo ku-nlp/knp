@@ -1,3 +1,8 @@
+2007-03-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Modified the rep name of "〜(方)" to "代表表記:〜/〜v" (e.g., 「歩き方」).
+
 2007-03-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
