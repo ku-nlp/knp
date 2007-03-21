@@ -12,7 +12,7 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-PROBCASE_DBS = case.db cfcase.db cfp.db renyou.db
+PROBCASE_DBS = case.db cfcase.db cfex.db cfp.db renyou.db chicase.db chicase_nominal.db ctbcase.db HowNet_Def.db HowNet_Sem_Def.db HowNet_Antonym.db HowNet_Category.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
@@ -78,6 +78,70 @@ cfcase.prob:
 	true
 
 cfcase.db: cfcase.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chicase.prob:
+	true
+
+chicase.db: chicase.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chicase_nominal.prob:
+	true
+
+chicase_nominal.db: chicase_nominal.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+ctbcase.prob:
+	true
+
+ctbcase.db: ctbcase.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.def:
+	true
+
+HowNet_Def.db: HowNet.def
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.SemDef:
+	true
+
+HowNet_Sem_Def.db: HowNet.SemDef
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.antonym:
+	true
+
+HowNet_Antonym.db: HowNet.antonym
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.category:
+	true
+
+HowNet_Category.db: HowNet.category
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+cfex.logprob:
+	true
+
+cfex.db: cfex.logprob
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
