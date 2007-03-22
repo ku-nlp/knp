@@ -41,9 +41,17 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 /* for 'L' or 'R' dpnd, store in <i,j>; for 'B' <i,j> store LtoR, <j,i> store RtoL */
 extern double           Dpnd_prob_matrix[][BNST_MAX];  
 
-/* store probability for each pre-arg pair from case-frame for Chinese */
+/* store probability for each verb pre-arg pair from case-frame for Chinese */
 /* for cell (i,j), i is the position of predicate, j is the position of argument */
-extern double           Chi_case_prob_matrix[][BNST_MAX];  
+extern double           Chi_case_prob_matrix[][BNST_MAX];
+
+/* store probability for each nominal pre-arg pair from case-frame for Chinese */
+/* for cell (i,j), i is the position of predicate, j is the position of argument */
+extern double           Chi_case_nominal_prob_matrix[][BNST_MAX];  
+ 
+/* store probability for each pre-arg pair from treebank case-frame for Chinese */
+/* for cell (i,j), i is the position of predicate, j is the position of argument */
+extern double           CTB_case_prob_matrix[][BNST_MAX];
 
 extern char		**Options;
 extern int 		OptAnalysis;
@@ -227,6 +235,8 @@ extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
 extern double get_chi_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
+extern double get_chi_case_nominal_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
+extern double get_ctb_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
@@ -237,6 +247,7 @@ extern double get_para_exist_probability(char *para_key, double score, int flag)
 extern double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num);
+extern char *malloc_db_buf(int size);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -299,6 +310,8 @@ extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_chi_case_prob_matrix(SENTENCE_DATA *sp);
+extern void calc_chi_case_nominal_prob_matrix(SENTENCE_DATA *sp);
+extern void calc_ctb_case_prob_matrix(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
@@ -319,6 +332,7 @@ extern void append_feature(FEATURE **fpp, FEATURE *afp);
 extern void delete_cfeature(FEATURE **fpp, char *type);
 extern void copy_feature(FEATURE **dst_fpp, FEATURE *src_fp);
 extern int check_str_type(unsigned char *ucp);
+extern char* get_feature_for_chi (BNST_DATA *p_ptr);
 
 /* koou.c */
 int koou(SENTENCE_DATA *sp);
@@ -504,11 +518,13 @@ extern int base_phrase(SENTENCE_DATA *sp);
 extern int fragment(SENTENCE_DATA *sp);
 
 /* similarity.c */
-extern float step(float a,float b,float c,float d);
-extern int def_cmp(char *string1,char *string2);
-extern char *pos_modify(BNST_DATA *ptr);
+/* extern float step(float a,float b,float c,float d); */
+/* extern int def_cmp(char *string1,char *string2); */
+/* extern char *pos_modify(BNST_DATA *ptr); */
+/* extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2); */
+/* extern void hownet_open(); */
+extern void init_hownet();
 extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2);
-extern void hownet_open();
 
 /* dic.c */
 extern int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);

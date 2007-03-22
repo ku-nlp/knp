@@ -5,7 +5,11 @@
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
 
+<<<<<<< read_data.c
     $Id$
+=======
+    $Id$
+>>>>>>> 1.108
 ====================================================================*/
 #include "knp.h"
 
@@ -473,7 +477,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][1] = END_M;
 
     if (tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][0] == END_M) {
-	if (OptExpress != OPT_TABLE) fprintf(stderr, ";; Unknown case <%s>\n", rel);
+	fprintf(stderr, ";; Unknown case <%s>\n", rel);
 	return TRUE;
     }
 
@@ -487,8 +491,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* 異常なタグ単位が指定されているかチェック */
 	    if (sp->Sen_num - sent_n < 1 || 
 		tag_n >= (sentence_data + sp->Sen_num - 1 - sent_n)->Tag_num) {
-		if (OptExpress != OPT_TABLE) 
-		    fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
+		fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
 		return FALSE;
 	    }
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
@@ -604,10 +607,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN], Bunrui_str[DATA_LEN];
-    U_CHAR Katuyou_Kata_str[DATA_LEN], Katuyou_Kei_str[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, bnst_item, tag_item, i, j, homo_flag;
+    int homo_num, offset, mrph_item, bnst_item, tag_item, i, homo_flag;
 
     sp->Mrph_num = 0;
     homo_num = 0;
@@ -646,19 +648,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
 		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
-
-		/* 様々な文章IDに対応するためコメント行を逆順にしてsscanfする */
-		/* このためArticleIDは本来のArticleIDを逆順にしたもの(ex. 135→531)になっている*/
-		i = j = strlen(input_buffer);
-		rev_ibuffer[j] = '\0';
-		while (i > 0) {
-		    i--;
-		    rev_ibuffer[j - i - 1] = input_buffer[i];
-		}
-
-		/* intは2147483647までしか取れないため上位9桁(元の下位9桁)のみ読んで比較 */
-		sscanf(rev_ibuffer, "%*d-%9d", &ArticleID);
-
+		sscanf(input_buffer, "# S-ID:%d", &ArticleID);
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptEllipsis) {
 			ClearSentences(sp);
@@ -717,7 +707,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }
 
-	    Bnst_start[sp->Mrph_num - homo_num] = 1;
+	    Bnst_start[sp->Mrph_num] = 1;
 	    sp->Bnst_num++;
 	}
 	/* タグ単位行 */
@@ -745,7 +735,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }
 
-	    Tag_start[sp->Mrph_num - homo_num] = 1;
+	    Tag_start[sp->Mrph_num] = 1;
 	    sp->Tag_num++;
 	}
 
@@ -816,17 +806,16 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	    offset = homo_flag ? 2 : 0;
 	    mrph_item = sscanf(input_buffer + offset,
-			       "%s %s %s %s %d %s %d %s %d %s %d %[^\n]", 
-			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
-			       Hinshi_str, &(m_ptr->Hinshi), Bunrui_str, &(m_ptr->Bunrui), 
-			       Katuyou_Kata_str, &(m_ptr->Katuyou_Kata), 
-			       Katuyou_Kei_str, &(m_ptr->Katuyou_Kei), 
+			       "%s %s %s %s %d %*s %d %*s %d %*s %d %[^\n]", 
+			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, Hinshi_str, 
+			       &(m_ptr->Hinshi), &(m_ptr->Bunrui),
+			       &(m_ptr->Katuyou_Kata), &(m_ptr->Katuyou_Kei),
 			       rest_buffer);
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
 	    }
 
-	    if (mrph_item == 12) {
+	    if (mrph_item == 9) {
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
 		    char *imip, *cp;
@@ -853,7 +842,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    strcpy(m_ptr->Imi, "NIL");
 		}
 	    }
-	    else if (mrph_item == 11) {
+	    else if (mrph_item == 8) {
 		strcpy(m_ptr->Imi, "NIL");
 	    }
 	    else {
@@ -862,13 +851,6 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
-
-	    if (OptInput & OPT_PARSED) {
-		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
-		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
-		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
-		m_ptr->Katuyou_Kei = get_form_id(Katuyou_Kei_str, m_ptr->Katuyou_Kata);
-	    }
 
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
@@ -1470,7 +1452,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
-	if ((b_ptr->length += strlen(m_ptr->Goi2)) > BNST_LENGTH_MAX) {
+	if (Language == CHINESE) {
+	    b_ptr->length += strlen(m_ptr->Goi2) * 2 / 3;
+	}
+	else {
+	    b_ptr->length += strlen(m_ptr->Goi2);
+	}
+
+	if (b_ptr->length > BNST_LENGTH_MAX) {
 	    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
 		    sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr);
 	    return FALSE;

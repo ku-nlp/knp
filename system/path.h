@@ -4,7 +4,11 @@
 
                                                S.Kurohashi 94. 8.25
 
+<<<<<<< path.h
     $Id$
+=======
+    $Id$
+>>>>>>> 1.30
 ====================================================================*/
 
 #define BGH_DB_NAME		"scode/bgh/bgh.db"
@@ -31,6 +35,11 @@
 #define SM_DEL_DB_NAME		"scode/ntt/word2code_del.db"
 #define EVENT_DB_NAME		"event/event.db"
 #define CHI_CASE_DB_NAME	"ebcf/chicase.db"
+#define CHI_CASE_NOMINAL_DB_NAME	"ebcf/chicase_nominal.db"
 #define AUTO_DIC_DB_NAME	"auto/auto.db"
 #define HOWNET_DICT             "scode/hownet/MiniHownet.txt"
 #define HOWNET_ENTITY           "scode/hownet/MiniHownet_Entity.txt"
+#define HOWNET_DEF_DB_NAME      "ebcf/HowNet_Def.db"
+#define HOWNET_ANTONYM_DB_NAME  "ebcf/HowNet_Antonym.db"
+#define HOWNET_CATEGORY_DB_NAME "ebcf/HowNet_Category.db"
+#define HOWNET_SEM_DEF_DB_NAME  "ebcf/HowNet_Sem_Def.db"

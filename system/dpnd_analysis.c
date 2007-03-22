@@ -1439,7 +1439,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     */
 }
 
-/* get case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
+/* get verb case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
 /*==================================================================*/
 	       void calc_chi_case_prob_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
@@ -1457,6 +1457,26 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
 }
+
+/* get nominal case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
+/*==================================================================*/
+	       void calc_chi_case_nominal_prob_matrix(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    if (i == j || check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
+		Chi_case_nominal_prob_matrix[i][j] = 0.0;
+	    }
+	    else {
+		Chi_case_nominal_prob_matrix[i][j] = get_chi_case_nominal_probability(sp->bnst_data+i, sp->bnst_data+j);
+	    }
+	}
+    }
+}
+
 
 /*====================================================================
                                END

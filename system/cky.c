@@ -293,7 +293,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature((sp->bnst_data+i)->f, "PU") &&
 			    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "$A!C(B") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
@@ -323,7 +322,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature((sp->bnst_data+i)->f, "PU") &&
 			    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "$A!C(B") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
 			     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
@@ -334,7 +332,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		if (Language == CHINESE) {
 		    one_score -= 30 * verb; 
-		    one_score -= 40 * comma;
+		    one_score -= 100 * comma;
 		}
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
@@ -493,19 +491,80 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			check_scase(d_ptr, &(cky_ptr->left->scase_check[0]), 0, cky_ptr->left->un_count);
 		}
 	    }
-
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-		/* add score from case frame */
+/* 		if (OptDisplay == OPT_DEBUG) { */
+/* 		    printf("%.3f(casebefore)=>", one_score); */
+/* 		} */
+
+		/* add score from verb case frame */
 		if ((check_feature(g_ptr->f, "VV") ||
 		     check_feature(g_ptr->f, "VA") ||
 		     check_feature(g_ptr->f, "VC") ||
 		     check_feature(g_ptr->f, "VE") ||
-		     check_feature(g_ptr->f, "P")) &&
-		    !check_feature(d_ptr->f, "PU")) {
+		     (check_feature(g_ptr->f, "P") && g_ptr->num < d_ptr->num)) &&
+		    (check_feature(d_ptr->f, "NN") ||
+		     check_feature(d_ptr->f, "M") ||
+		     check_feature(d_ptr->f, "NT") ||
+		     check_feature(d_ptr->f, "PN"))) {
 		    /* calc case frame score for Chinese */
-		    one_score += TIME_CASE_FRAME * Chi_case_prob_matrix[g_ptr->num][d_ptr->num];
+		    if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 40;
+		    }
+		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 3000;
+		    }
+		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
+		    }
+		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 100000;
+		    }
+		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 500000;
+		    }
 		}
+
+		/* add score from nominal case frame */
+		if ((check_feature(g_ptr->f, "NN") ||
+		     check_feature(g_ptr->f, "NT") ||
+		     check_feature(g_ptr->f, "PN") ||
+		     check_feature(g_ptr->f, "M")) &&
+		    (check_feature(d_ptr->f, "NN") ||
+		     check_feature(d_ptr->f, "NR") ||
+		     check_feature(d_ptr->f, "M") ||
+		     check_feature(d_ptr->f, "NT") ||
+		     check_feature(d_ptr->f, "PN"))) {
+		    if (check_feature((sp->bnst_data+d_ptr->num+1)->f, "DEG") ||
+			(check_feature(g_ptr->f, "NN") &&
+			 (check_feature(d_ptr->f, "NT") ||
+			  check_feature(d_ptr->f, "M"))) ||
+			(check_feature(g_ptr->f, "NN") &&
+			 check_feature(d_ptr->f, "NN") &&
+			 d_ptr->num - g_ptr->num == 1)) {}
+		    else {
+			/* calc case frame score for Chinese */
+			if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 40;
+			}
+			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 3000;
+			}
+			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
+			}
+			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 50000;
+			}
+			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 200000;
+			}
+		    }
+		}
+
+/* 		if (Language == CHINESE && OptDisplay == OPT_DEBUG) { */
+/* 		    printf("%.3f(caseafter)=>", one_score); */
+/* 		} */
 
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
@@ -712,6 +771,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += (Dpnd_matrix[g_ptr->num][d_ptr->num] == 'B') ?
 			Dpnd_prob_matrix[d_ptr->num][g_ptr->num] : Dpnd_prob_matrix[g_ptr->num][d_ptr->num];
+
+		    if (Language == CHINESE && OptDisplay == OPT_DEBUG) {
+			printf("%.3f(dpnd)=>", one_score);
+		    }
+
 		    /* add score for stable dpnd */
 		    if (g_ptr->num + 1 == d_ptr->num &&
 			(((check_feature(d_ptr->f, "AS")) &&
@@ -1580,6 +1644,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			best_pre_ptr->next = best_ptr->next;
 			best_ptr->next = cky_matrix[i][j];
 			cky_matrix[i][j] = best_ptr;
+		    }
+
+		    if (Language == CHINESE) {
+			best_ptr->next = NULL;
 		    }
 		}
 	    }

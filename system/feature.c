@@ -536,7 +536,6 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     /* 
      *  完全一致 または 部分一致(patternが短く,次の文字が':')ならマッチ
      */
-    
     if (data && !strcmp(data, pattern)) {
 	return TRUE;
     } else if (data && !strncmp(data, pattern, strlen(pattern)) &&
@@ -1215,6 +1214,117 @@ int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd,
 	    return TRUE;
     }
     return FALSE;
+}
+
+/*====================================================================*/
+                 char* get_feature_for_chi (BNST_DATA *p_ptr)
+/*====================================================================*/
+{
+    char* feature;
+    if (check_feature(p_ptr->f, "AD")) {
+	feature = "AD";
+    }
+    else if (check_feature(p_ptr->f, "AS")) {
+	feature = "AS";
+    }
+    else if (check_feature(p_ptr->f, "BA")) {
+	feature = "BA";
+    }
+    else if (check_feature(p_ptr->f, "CC")) {
+	feature = "CC";
+    }
+    else if (check_feature(p_ptr->f, "CD")) {
+	feature = "CD";
+    }
+    else if (check_feature(p_ptr->f, "CS")) {
+	feature = "CS";
+    }
+    else if (check_feature(p_ptr->f, "DEC")) {
+	feature = "DEC";
+    }
+    else if (check_feature(p_ptr->f, "DEG")) {
+	feature = "DEG";
+    }
+    else if (check_feature(p_ptr->f, "DER")) {
+	feature = "DER";
+    }
+    else if (check_feature(p_ptr->f, "DEV")) {
+	feature = "DEV";
+    }
+    else if (check_feature(p_ptr->f, "DT")) {
+	feature = "DT";
+    }
+    else if (check_feature(p_ptr->f, "ETC")) {
+	feature = "ETC";
+    }
+    else if (check_feature(p_ptr->f, "FW")) {
+	feature = "FW";
+    }
+    else if (check_feature(p_ptr->f, "IJ")) {
+	feature = "IJ";
+    }
+    else if (check_feature(p_ptr->f, "JJ")) {
+	feature = "JJ";
+    }
+    else if (check_feature(p_ptr->f, "LB")) {
+	feature = "LB";
+    }
+    else if (check_feature(p_ptr->f, "LC")) {
+	feature = "LC";
+    }
+    else if (check_feature(p_ptr->f, "M")) {
+	feature = "M";
+    }
+    else if (check_feature(p_ptr->f, "MSP")) {
+	feature = "MSP";
+    }
+    else if (check_feature(p_ptr->f, "NN")) {
+	feature = "NN";
+    }
+    else if (check_feature(p_ptr->f, "NR")) {
+	feature = "NR";
+    }
+    else if (check_feature(p_ptr->f, "NT")) {
+	feature = "NT";
+    }
+    else if (check_feature(p_ptr->f, "OD")) {
+	feature = "OD";
+    }
+    else if (check_feature(p_ptr->f, "ON")) {
+	feature = "ON";
+    }
+    else if (check_feature(p_ptr->f, "P")) {
+	feature = "P";
+    }
+    else if (check_feature(p_ptr->f, "PN")) {
+	feature = "PN";
+    }
+    else if (check_feature(p_ptr->f, "PU")) {
+	feature = "PU";
+    }
+    else if (check_feature(p_ptr->f, "SB")) {
+	feature = "SB";
+    }
+    else if (check_feature(p_ptr->f, "SP")) {
+	feature = "SP";
+    }
+    else if (check_feature(p_ptr->f, "VV")) {
+	feature = "VV";
+    }
+    else if (check_feature(p_ptr->f, "VA")) {
+	feature = "VA";
+    }
+    else if (check_feature(p_ptr->f, "VC")) {
+	feature = "VC";
+    }
+    else if (check_feature(p_ptr->f, "VE")) {
+	feature = "VE";
+    }
+    else {
+	feature = "";
+    }
+    
+    return feature;
 }
 
 /*====================================================================

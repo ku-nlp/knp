@@ -5,7 +5,12 @@
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
 
+<<<<<<< const.h
     $Id$
+
+=======
+    $Id$
+>>>>>>> 1.158
 ====================================================================*/
 
 #include "dbm.h"
@@ -49,8 +54,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	2080
-#define DpndRule_G_MAX	2405
+#define DpndRule_MAX	2625
+#define DpndRule_G_MAX	2800
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
@@ -96,7 +101,6 @@
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
 #define SMALL_PROB      0.0000001 /* A small prob for Chinese relaxation */
 #define TIME_PROB       50    /* time to enlarge dpnd prob for Chinese */
-#define TIME_CASE_FRAME  50   /* time to enlarge case frame prob for Chinese */
 #define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
 #define CHI_POS_LEN_MAX  3    /* maximum Chinese pos length */
 
@@ -110,6 +114,8 @@
 #define HOWNET_WORD_MAX 100
 #define HOWNET_POS_MAX 10
 #define HOWNET_DEF_MAX 300
+#define HOWNET_TRAN_MAX 20
+#define HOWNET_CONCEPT_MAX 20
 #define LEVEL_NUM 20
 #define LEVEL_MAX 5
 #define LEVEL_PAR 1.6
@@ -525,7 +531,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	27
+#define DICT_MAX	32
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -552,7 +558,12 @@ typedef struct _RuleVector {
 #define PARA_DB		23
 #define NOUN_CO_DB	24
 #define CHI_CASE_DB	25
-#define AUTO_DIC_DB	26
+#define CHI_CASE_NOMINAL_DB	26
+#define HOWNET_DEF_DB   27
+#define HOWNET_ANTONYM_DB       28
+#define HOWNET_CATEGORY_DB      29
+#define HOWNET_SEM_DEF_DB      30
+#define AUTO_DIC_DB	31
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -983,8 +994,8 @@ typedef struct ellipsis_features {
     int		pos;
     int		frequency;
     int		discourse_depth;
-    float	refered_num_surface;
-    float	refered_num_ellipsis;
+    int		refered_num_surface;
+    int		refered_num_ellipsis;
 
     int		c_pp;
     int		c_distance;
@@ -1131,8 +1142,8 @@ typedef struct sm_list {
 /* 名詞の被参照回数の構造体 */
 typedef struct entity_list {
     char	*key;
-    double	surface_num;
-    double	ellipsis_num;
+    int		surface_num;
+    int		ellipsis_num;
     struct entity_list *next;
 } ENTITY_LIST;
 

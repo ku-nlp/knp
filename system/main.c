@@ -35,6 +35,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
 double          Dpnd_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_prob_matrix[BNST_MAX][BNST_MAX];
+double          Chi_case_nominal_prob_matrix[BNST_MAX][BNST_MAX];
 
 char		**Options;
 int 		OptAnalysis;
@@ -889,6 +890,7 @@ extern int	EX_match_subject;
 	hownet_open();      /* open hownet */
     }
 
+//    init_hownet();      /* init hownet */
     init_juman();	/* JUMAN関係 */
     if (OptUseCF) {
 	init_cf();	/* 格フレームオープン */
@@ -1093,7 +1095,9 @@ extern int	EX_match_subject;
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
     if (Language == CHINESE) {
-	calc_chi_case_prob_matrix(sp);			/* get probability of case-frame for Chinese */
+	calc_chi_case_prob_matrix(sp);			/* get probability of verb case-frame for Chinese */
+	calc_chi_case_nominal_prob_matrix(sp);			/* get probability of nominal case-frame for Chinese */
+//	calc_ctb_case_prob_matrix(sp);			/* get probability of treebank case-frame for Chinese */
     }
 
     /* 呼応表現の処理 */
