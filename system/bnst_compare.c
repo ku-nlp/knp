@@ -231,7 +231,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     int		i, j, part_mt_point, mt_point, point = 0;
     int		flag1, flag2, content_word_match;
     char	*counter1, *counter2;
-    char        str1[10], str2[10];
+    char        str1[11], str2[11];
     char        str1_bk[WORD_LEN_MAX], str2_bk[WORD_LEN_MAX];
     float       similarity = 0.0;
     BNST_DATA 	*ptr1, *ptr2;
@@ -504,8 +504,8 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	if ((check_feature(ptr1->f, "NN") && check_feature(ptr2->f, "NN")) ||
 	    (check_feature(ptr1->f, "NR") && check_feature(ptr2->f, "NR"))) {
 	    for (i = 3; i <= (strlen(ptr1->head_ptr->Goi)  < strlen(ptr2->head_ptr->Goi) ? strlen(ptr1->head_ptr->Goi) : strlen(ptr2->head_ptr->Goi)); i += 3) {
-		strcpy(str1, "          ");
-		strcpy(str2, "          ");
+		strcpy(str1, "           ");
+		strcpy(str2, "           ");
 		strncpy(str1, ptr1->head_ptr->Goi + (strlen(ptr1->head_ptr->Goi) - i), 3);
 		strncpy(str2, ptr2->head_ptr->Goi + (strlen(ptr2->head_ptr->Goi) - i), 3);
 		if (strcmp(str1,str2) != 0) {
@@ -524,14 +524,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    strcpy(str1_bk, "");
 	    strcpy(str2_bk, "");
 	    for (i = 0; i < strlen(ptr1->head_ptr->Goi) - 3; i+=3) {
-		strcpy(str1, "          ");
+		strcpy(str1, "           ");
 		strncpy(str1, ptr1->head_ptr->Goi + i, 3);
 		if (!is_figure(str1)) {
 		    strcat(str1_bk, str1);
 		}
 	    }
 	    for (i = 0; i < strlen(ptr2->head_ptr->Goi) - 3; i+=3) {
-		strcpy(str2, "          ");
+		strcpy(str2, "           ");
 		strncpy(str2, ptr2->head_ptr->Goi + i, 3);
 		if (!is_figure(str2)) {
 		    strcat(str2_bk, str2);
