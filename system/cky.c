@@ -81,6 +81,21 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
 }
 
 char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
+    if (Language == CHINESE) {
+	if (dep > gov) {
+	    if ((Chi_np_end_matrix[gov][begin] != -1 && dep > Chi_np_end_matrix[gov][begin]) ||
+	    (Chi_np_start_matrix[begin][dep] != -1 && gov < Chi_np_start_matrix[begin][dep])){
+		return '\0';
+	    }
+	}
+	else {
+	    if ((Chi_np_end_matrix[dep][begin] != -1 && gov > Chi_np_end_matrix[dep][begin]) || 
+	    (Chi_np_start_matrix[begin][gov] != -1 && dep < Chi_np_start_matrix[begin][gov])){
+		return '\0';
+	    }
+	}
+    }
+	    
     if ((OptParaFix == 0 && 
 	 begin >= 0 && 
 	 (sp->bnst_data + dep)->para_num != -1 && 
@@ -491,6 +506,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			check_scase(d_ptr, &(cky_ptr->left->scase_check[0]), 0, cky_ptr->left->un_count);
 		}
 	    }
+
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
 /* 		if (OptDisplay == OPT_DEBUG) { */

@@ -36,6 +36,8 @@ double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
 double          Dpnd_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_nominal_prob_matrix[BNST_MAX][BNST_MAX];
+int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
+int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 
 char		**Options;
 int 		OptAnalysis;
@@ -1107,7 +1109,7 @@ extern int	EX_match_subject;
 
     /* base phrase for Chinese */
     if (Language == CHINESE && base_phrase(sp) == TRUE && OptDisplay == OPT_DEBUG)
-	print_matrix(sp, PRINT_DPND, 0);
+//	print_matrix(sp, PRINT_DPND, 0);
 
     /* fragment for Chinese */
     if (Language == CHINESE && fragment(sp) == TRUE && OptDisplay == OPT_DEBUG)

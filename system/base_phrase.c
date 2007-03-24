@@ -14,11 +14,15 @@ int     pp_matrix[BNST_MAX];
 		  void init_phrase(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i;
+    int i, j;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	np_matrix[i] = -1;
 	pp_matrix[i] = -1;
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    Chi_np_start_matrix[i][j] = -1;
+	    Chi_np_end_matrix[i][j] = -1;
+	}
     }
 }
 
@@ -135,6 +139,37 @@ int     pp_matrix[BNST_MAX];
 }
 
 /*==================================================================*/
+		void assign_np_matrix(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k;
+    int start = -1, end = -1;
+
+    for (i = 0; i < sp->Bnst_num; i++){
+	if (np_matrix[i] == -1) {
+	    for (j = i; j < sp->Bnst_num; j++) {
+		Chi_np_start_matrix[i][j] = -1;
+		Chi_np_end_matrix[i][j] = -1;
+	    }
+	    continue;
+	}
+	else {
+	    start = i;
+	    end = np_matrix[i];
+	    for (j = start; j <= end; j++) {
+		for (k = j; k <= end; k++) {
+		    Chi_np_start_matrix[j][k] = start;
+		    Chi_np_end_matrix[j][k] = end;
+		}
+	    }
+	    Chi_np_start_matrix[start][end] = -1;
+	    Chi_np_end_matrix[start][end] = -1;
+	    i = end + 1;
+	}
+    }
+}
+
+/*==================================================================*/
 		     int base_phrase(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -146,7 +181,8 @@ int     pp_matrix[BNST_MAX];
     flag = (check_phrase(sp) == TRUE) ? TRUE: FALSE;
 
     /* 行列の書き換え */
-    change_matrix_for_phrase(sp); 
+//    change_matrix_for_phrase(sp); 
+    assign_np_matrix(sp);
 
     return flag;
 }

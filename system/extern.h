@@ -53,6 +53,9 @@ extern double           Chi_case_nominal_prob_matrix[][BNST_MAX];
 /* for cell (i,j), i is the position of predicate, j is the position of argument */
 extern double           CTB_case_prob_matrix[][BNST_MAX];
 
+extern int              Chi_np_start_matrix[][BNST_MAX];
+extern int              Chi_np_end_matrix[][BNST_MAX];
+
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;

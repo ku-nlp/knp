@@ -674,7 +674,9 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 		       (BNST_DATA *)tp, -1);
 	}
 	else {
-	    fprintf(stderr, ";; %s(%d)'s parent doesn't exist!\n", bp->Jiritu_Go, i);
+	    if (Language != CHINESE) {
+		fprintf(stderr, ";; %s(%d)'s parent doesn't exist!\n", bp->Jiritu_Go, i);
+	    }
 	}
     }
 }
