@@ -1,3 +1,8 @@
+2007-03-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* configure.ac, dict/ebcf/Makefile.am:
+	Modified an installation problem of HowNet.
+
 2007-03-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
