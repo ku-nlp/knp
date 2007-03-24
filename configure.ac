@@ -191,11 +191,20 @@ else
 fi
 AC_MSG_RESULT([$prob_exist])
 
+AC_MSG_CHECKING([HowNet for Chinese])
+if test -f "$packagesrcdir/dict/ebcf/HowNet.def"; then
+    hownet_exist=yes
+else
+    hownet_exist=no
+fi
+AC_MSG_RESULT([$hownet_exist])
+
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
 AM_CONDITIONAL(NTT_EXIST, test "$ntt_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
 AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 AM_CONDITIONAL(PROB_EXIST, test "$prob_exist" = yes)
+AM_CONDITIONAL(HOWNET_EXIST, test "$hownet_exist" = yes)
 
 
 AC_SUBST(KNP_LIBS)
