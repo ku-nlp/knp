@@ -115,7 +115,7 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
     else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
 	return 'R';
     }
-    else if (Mask_matrix[dep][gov] == 'N' || Mask_matrix[dep][gov] == 'G' || Mask_matrix[dep][gov] == 'V' || Mask_matrix[dep][gov] == 'E') {
+    else if (Language == CHINESE && (Mask_matrix[dep][gov] == 'N' || Mask_matrix[dep][gov] == 'G' || Mask_matrix[dep][gov] == 'V' || Mask_matrix[dep][gov] == 'E')) {
 	return Dpnd_matrix[dep][gov];
     }
 
@@ -517,22 +517,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 		    printf("%.3f(casebefore)=>", one_score); */
 /* 		} */
 
-/* 		if (d_ptr->num < g_ptr->num) { */
-/* 		    if (Mask_matrix[d_ptr->num][g_ptr->num] == 'H') { */
-/* 			one_score += 50; */
-/* 		    } */
-/* 		    if (Mask_matrix[d_ptr->num][g_ptr->num] == 'N') { */
-/* 			one_score += 50; */
-/* 		    } */
-/* 		} */
-/* 		else { */
-/* 		    if (Mask_matrix[g_ptr->num][d_ptr->num] == 'H') { */
-/* 			one_score += 50; */
-/* 		    } */
-/* 		    if (Mask_matrix[g_ptr->num][d_ptr->num] == 'V') { */
-/* 			one_score += 50; */
-/* 		    } */
-/* 		} */
 		/* add score from verb case frame */
 		if ((check_feature(g_ptr->f, "VV") ||
 		     check_feature(g_ptr->f, "VA") ||
