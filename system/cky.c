@@ -115,6 +115,10 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
     else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
 	return 'R';
     }
+    else if (Mask_matrix[dep][gov] == 'N' || Mask_matrix[dep][gov] == 'G' || Mask_matrix[dep][gov] == 'V' || Mask_matrix[dep][gov] == 'E') {
+	return Dpnd_matrix[dep][gov];
+    }
+
     return '\0';
 }
 
@@ -244,7 +248,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     int rentai, vacant_slot_num, *scase_check;
     int count, pos, default_pos;
     int verb, comma;
-    double one_score = 0;
+    double one_score = cky_ptr->score;
     char *cp, *cp2;
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
@@ -513,6 +517,22 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 		    printf("%.3f(casebefore)=>", one_score); */
 /* 		} */
 
+/* 		if (d_ptr->num < g_ptr->num) { */
+/* 		    if (Mask_matrix[d_ptr->num][g_ptr->num] == 'H') { */
+/* 			one_score += 50; */
+/* 		    } */
+/* 		    if (Mask_matrix[d_ptr->num][g_ptr->num] == 'N') { */
+/* 			one_score += 50; */
+/* 		    } */
+/* 		} */
+/* 		else { */
+/* 		    if (Mask_matrix[g_ptr->num][d_ptr->num] == 'H') { */
+/* 			one_score += 50; */
+/* 		    } */
+/* 		    if (Mask_matrix[g_ptr->num][d_ptr->num] == 'V') { */
+/* 			one_score += 50; */
+/* 		    } */
+/* 		} */
 		/* add score from verb case frame */
 		if ((check_feature(g_ptr->f, "VV") ||
 		     check_feature(g_ptr->f, "VA") ||
@@ -1488,8 +1508,19 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    *next_pp = cky_ptr;
 				}
 
-				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
+				if (Language == CHINESE && Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
+				    cky_ptr->score += 100;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
+				    cky_ptr->score += 50;
+				}
+				else {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
 					Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR);
+				}
+
 				next_pp = &(cky_ptr->next);
 
 				if (OptDisplay == OPT_DEBUG) {
@@ -1518,7 +1549,18 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    *next_pp = cky_ptr;
 				}
 
-				set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL);
+				if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				    cky_ptr->score += 100;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				    cky_ptr->score += 50;
+				}
+				else {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				}
+
 				next_pp = &(cky_ptr->next);
 
 				if (OptDisplay == OPT_DEBUG) {

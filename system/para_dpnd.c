@@ -333,36 +333,20 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     for (k = start_pos; k < m_ptr->end[m_ptr->part_num-1]; k++)
 	D_check_array[k] = TRUE;
 
-    if (Language != CHINESE || 
-	(Language == CHINESE && sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N)) {
+    if (Language != CHINESE) { 
 	/* 先頭のconjunctのマスク */
 	k = 0;
 	for (i = 0; i < start_pos; i++) 	       /* < start_pos */
 	    for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-		if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[j].f, "VV") &&
-		     !check_feature(sp->bnst_data[j].f, "VA") &&
-		     !check_feature(sp->bnst_data[j].f, "VC") &&
-		     !check_feature(sp->bnst_data[j].f, "VE") &&
-		     !check_feature(sp->bnst_data[j].f, "P"))) {
-		    Mask_matrix[i][j] = 0;
-		}
+		Mask_matrix[i][j] = 0;
+
 	/* ★★ 実験 endの上のカバーしない
 	   for (i = start_pos; i < m_ptr->start[k]; i++)       end の上
 	   Mask_matrix[i][m_ptr->end[k]] = 0;
 	*/
 	for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
 	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[i].f, "VV") &&
-		     !check_feature(sp->bnst_data[i].f, "VA") &&
-		     !check_feature(sp->bnst_data[i].f, "VC") &&
-		     !check_feature(sp->bnst_data[i].f, "VE") &&
-		     !check_feature(sp->bnst_data[i].f, "P"))) {
-		    Mask_matrix[i][j] = 0;
-		}
+		Mask_matrix[i][j] = 0;
 
 	if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
 	    for (i = 0; i < m_ptr->start[0]; i++)
@@ -372,66 +356,22 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	for (k = 1; k < m_ptr->part_num - 1; k++) {
 	    for (i = 0; i < m_ptr->start[k]; i++)
 		for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-		    if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[j].f, "VV") &&
-		     !check_feature(sp->bnst_data[j].f, "VA") &&
-		     !check_feature(sp->bnst_data[j].f, "VC") &&
-		     !check_feature(sp->bnst_data[j].f, "VE") &&
-		     !check_feature(sp->bnst_data[j].f, "P"))) {
-			Mask_matrix[i][j] = 0;
-		    }
-	    for (i = (Language == CHINESE ? m_ptr->start[k] + 1 : m_ptr->start[k]); i <= m_ptr->end[k]; i++)
-		for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		    if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[i].f, "VV") &&
-		     !check_feature(sp->bnst_data[i].f, "VA") &&
-		     !check_feature(sp->bnst_data[i].f, "VC") &&
-		     !check_feature(sp->bnst_data[i].f, "VE") &&
-		     !check_feature(sp->bnst_data[i].f, "P"))) {
-			Mask_matrix[i][j] = 0;
-		    }
+		    Mask_matrix[i][j] = 0;
 
-	    /* for Chinese noun coor, make the coor key only depend on the last word in the coor */
-	    if (Language == CHINESE) {
-		for (j = m_ptr->start[k] + 1; j < m_ptr->end[m_ptr->part_num - 1]; j++) {
-		    Mask_matrix[m_ptr->start[k]][j] = 0;
-		}
-	    }
+	    for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
+		for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+		    Mask_matrix[i][j] = 0;
 	}
     
 	/* 末尾のconjunctのマスク */
 	k = m_ptr->part_num - 1;
 	for (i = 0; i < m_ptr->start[k]; i++)
 	    for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
-		if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[j].f, "VV") &&
-		     !check_feature(sp->bnst_data[j].f, "VA") &&
-		     !check_feature(sp->bnst_data[j].f, "VC") &&
-		     !check_feature(sp->bnst_data[j].f, "VE") &&
-		     !check_feature(sp->bnst_data[j].f, "P"))) {
-		    Mask_matrix[i][j] = 0;
-		}
-	for (i = (Language == CHINESE ? m_ptr->start[k] + 1 : m_ptr->start[k]); i < m_ptr->end[k]; i++)   /* < end */
-	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		if (Language != CHINESE || 
-		    (Language == CHINESE && 
-		     !check_feature(sp->bnst_data[i].f, "VV") &&
-		     !check_feature(sp->bnst_data[i].f, "VA") &&
-		     !check_feature(sp->bnst_data[i].f, "VC") &&
-		     !check_feature(sp->bnst_data[i].f, "VE") &&
-		     !check_feature(sp->bnst_data[i].f, "P"))) {
-		    Mask_matrix[i][j] = 0;
-		}
+		Mask_matrix[i][j] = 0;
 
-	/* for Chinese noun coor, make the coor key only depend on the last word in the coor */
-	if (Language == CHINESE) {
-	    for (j = m_ptr->start[k] + 1; j < m_ptr->end[k]; j++) {
-		Mask_matrix[m_ptr->start[k]][j] = 0;
-	    }
-	}
+	for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
+	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+		Mask_matrix[i][j] = 0;
 
 
 	/* 並列の係り先 */
@@ -454,69 +394,82 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     /* 部分並列の場合,Mask_matrixは最初のheadと最後のheadを3にしておく．
        最初のheadはdpnd.headをつくるとき，最後のheadはtreeを作る時に使う */
 
-    if (Language == CHINESE && sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
-	/* for PP and VP coordination, find the head pos in the first conjunction, i.e. the first verb or prep */
-	head_pos = -1;
-	for (i = m_ptr->end[0]; i >= start_pos; i--) {
-	    if (check_feature(sp->bnst_data[i].f, "P")) {
-		head_pos = i;
-	    }
-	    if (check_feature(sp->bnst_data[i].f, "VV") ||
-		check_feature(sp->bnst_data[i].f, "VA") ||
-		check_feature(sp->bnst_data[i].f, "VC") ||
-		check_feature(sp->bnst_data[i].f, "VE")) {
-		head_pos = i;
-	    }
-	}
-	    
-	/* 先頭のconjunctのマスク */
-	for (i = 0; i < m_ptr->start[0]; i++) 	       /* < start_pos */
-	    for (j = m_ptr->start[0]; j <= m_ptr->end[0]; j++)
-		if (j != head_pos) {
+    if (Language == CHINESE) {
+	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
+	    // for verb coordination, mask the outside area for the non-first conjunction
+	    for (i = 0; i < m_ptr->start[0]; i++) {
+		for (j = m_ptr->start[1]; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
 		    Mask_matrix[i][j] = 0;
 		}
-
-	for (i = m_ptr->start[0]; i <= m_ptr->end[0]; i++)
-	    for (j = m_ptr->end[0] + 1; j < sp->Bnst_num; j++)
-		if (i != head_pos) {
+	    }
+	    for (i = m_ptr->start[1]; i <= m_ptr->end[m_ptr->part_num - 1]; i++) {
+		for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
 		    Mask_matrix[i][j] = 0;
 		}
-
-	/* if there are two CC in this coordination */
-	if (check_feature(sp->bnst_data[m_ptr->start[0]].f, "CC")) {
-	    for (j = m_ptr->start[0] + 1; j < sp->Bnst_num; j++) {
-		if (j != head_pos) {
-		    Mask_matrix[m_ptr->start[0]][j] = 0;
-		}
 	    }
-	}
 
-	/* 内部のconjunctのマスク */
-	for (k = 1; k < m_ptr->part_num - 1; k++) {
-	    for (i = 0; i < m_ptr->start[k]; i++)
-		for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-		    if (i != head_pos) {
-			Mask_matrix[i][j] = 0;
+	    for (k = 0; k < m_ptr->part_num - 1; k++) {
+		if (k = 0) {
+		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k + 1]] = 'V'; // verb coordination
+		}
+		else {
+		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->start[k + 1]] = 'V'; // verb coordination
+		}
+		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'E'; // key for verb coordination
+		Mask_matrix[m_ptr->start[k + 1]][m_ptr->start[k + 1]] = 'E'; // key for verb coordination
+		// mask the dependency among two conjuctions
+		if (k > 0) {
+		    for (j = m_ptr->end[k] + 2; j <= m_ptr->end[k + 1]; j++) {
+			Mask_matrix[m_ptr->start[k] + 1][j] = 0;
 		    }
-	    for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-		for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		    Mask_matrix[i][j] = 0;
+		}
+		else {
+		    for (j = m_ptr->end[k] + 2; j <= m_ptr->end[k + 1]; j++) {
+			Mask_matrix[m_ptr->start[k]][j] = 0;
+		    }
+		}
+		for (j = m_ptr->start[k] + 2; j <= m_ptr->end[k]; j++) {
+		    Mask_matrix[j][m_ptr->end[k] + 1] = 0;
+		}
+	    }
+	    // for the last conjunction
+	    Mask_matrix[m_ptr->start[m_ptr->part_num - 1]+1][m_ptr->end[m_ptr->part_num - 1]] = 'V'; // verb coordination
+
+	    // mask the dependency among two conjuctions
+	    for (j = m_ptr->start[m_ptr->part_num - 2] + 2; j < m_ptr->end[m_ptr->part_num - 1]; j++) {
+		Mask_matrix[j][m_ptr->end[m_ptr->part_num]] = 0;
+	    }
 	}
-    
-	/* 末尾のconjunctのマスク */
-	k = m_ptr->part_num - 1;
-	for (i = 0; i < m_ptr->start[k]; i++)
-	    for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
-		if (i != head_pos) {
+	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	    // for noun coordination, mask the outside area for the non-last conjunction
+	    for (i = 0; i < m_ptr->start[0]; i++) {
+		for (j = m_ptr->start[0]; j < m_ptr->start[m_ptr->part_num - 1]; j++) {
 		    Mask_matrix[i][j] = 0;
 		}
-	for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
-	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		Mask_matrix[i][j] = 0;
+	    }
+	    for (i = m_ptr->start[0]; i < m_ptr->start[m_ptr->part_num - 1]; i++) {
+		for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
+		    Mask_matrix[i][j] = 0;
+		}
+	    }
 
-	/* 並列の係り先 */
-	for (k = 1; k < m_ptr->part_num; k++) {
-	    Mask_matrix[head_pos][m_ptr->start[k]] = 2;
+	    for (k = 0; k < m_ptr->part_num; k++) {
+		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'N'; // noun coordination
+		if (k > 0) {
+		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
+		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
+		}
+
+		// mask the dependency among two conjuctions
+		if (k < m_ptr->part_num - 1) {
+		    for (j = m_ptr->start[k + 1]; j < m_ptr->end[k + 1]; j++) {
+			Mask_matrix[m_ptr->start[k]][j] = 0;
+		    }
+		    for (j = m_ptr->start[k] + 1; j < m_ptr->end[k]; j++) {
+			Mask_matrix[j][m_ptr->end[k + 1]] = 0;
+		    }
+		}
+	    }
 	}
     }
 
