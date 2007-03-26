@@ -56,6 +56,9 @@ extern double           CTB_case_prob_matrix[][BNST_MAX];
 extern int              Chi_np_start_matrix[][BNST_MAX];
 extern int              Chi_np_end_matrix[][BNST_MAX];
 
+extern int              Chi_quote_start_matrix[][BNST_MAX];
+extern int              Chi_quote_end_matrix[][BNST_MAX];
+
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;

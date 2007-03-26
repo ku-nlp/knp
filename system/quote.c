@@ -22,9 +22,13 @@ QUOTE_DATA quote_data;
 	quote_data.out_num[i] = -1;    
     }
 
-    for (i = 0; i < sp->Bnst_num; i++)
-	for (j = 0; j < sp->Bnst_num; j++)
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < sp->Bnst_num; j++) {
 	    Quote_matrix[i][j] = 1;
+	    Chi_quote_start_matrix[i][j] = -1;
+	    Chi_quote_end_matrix[i][j] = -1;
+	}
+    }
 }
 
 /*==================================================================*/
@@ -190,6 +194,44 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
+		  void mask_quote_for_chi(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k, start, end;
+
+    for (k = 0; quote_data.in_num[k] >= 0; k++) {
+
+	start = quote_data.in_num[k];
+	end = quote_data.out_num[k];
+
+	if (start == end) continue;	/* １文節だけの括弧は無視 */
+
+	/* 括弧の上のマスク */
+
+	for (i = 0; i < start; i++) {
+	    Quote_matrix[i][start] = 0;
+	    Quote_matrix[i][end] = 0;
+	}
+
+	/* 括弧の右のマスク */
+
+	for (i = end + 1; i < sp->Bnst_num; i++) {
+	    Quote_matrix[start][i] = 0;
+	    Quote_matrix[end][i] = 0;
+	}	
+
+	for (j = start; j <= end; j++) {
+	    for (i = j; i <= end; i++) {
+		Chi_quote_start_matrix[j][i] = start;
+		Chi_quote_end_matrix[j][i] = end;
+	    }
+	}
+	Chi_quote_start_matrix[start][end] = -1;
+	Chi_quote_end_matrix[start][end] = -1;
+    }
+}
+
+/*==================================================================*/
 		     int quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -204,6 +246,9 @@ QUOTE_DATA quote_data;
 
 	if (Language != CHINESE) {
 	    mask_quote(sp);			/* 行列の書き換え */
+	}
+	else {
+	    mask_quote_for_chi(sp); // mask quote for Chinese
 	}
     }
 

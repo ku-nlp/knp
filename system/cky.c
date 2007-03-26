@@ -82,17 +82,13 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
 
 char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
     if (Language == CHINESE) {
-	if (dep > gov) {
-	    if ((Chi_np_end_matrix[gov][begin] != -1 && dep > Chi_np_end_matrix[gov][begin]) ||
-	    (Chi_np_start_matrix[begin][dep] != -1 && gov < Chi_np_start_matrix[begin][dep])){
-		return '\0';
-	    }
+	if ((Chi_np_end_matrix[begin][dep] != -1 && gov > Chi_np_end_matrix[begin][dep]) ||
+	    (Chi_np_start_matrix[dep][gov] != -1 && begin < Chi_np_start_matrix[dep][gov])){
+	    return '\0';
 	}
-	else {
-	    if ((Chi_np_end_matrix[dep][begin] != -1 && gov > Chi_np_end_matrix[dep][begin]) || 
-	    (Chi_np_start_matrix[begin][gov] != -1 && dep < Chi_np_start_matrix[begin][gov])){
-		return '\0';
-	    }
+	if ((Chi_quote_end_matrix[begin][dep] != -1 && gov > Chi_quote_end_matrix[begin][dep]) ||
+	    (Chi_quote_start_matrix[dep][gov] != -1 && begin < Chi_quote_start_matrix[dep][gov])){
+	    return '\0';
 	}
     }
 	    
@@ -1287,6 +1283,17 @@ void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int
     cky_ptr->para_flag = 0;
     cky_ptr->para_score = -1;
     cky_ptr->score = 0;
+
+    // set np and quote restriction matrix for Chinese 
+    Chi_np_start_matrix[i][i + k] = -1;
+    Chi_np_end_matrix[i][i + k] = -1;
+    Chi_np_start_matrix[i + k + 1][j] = -1;
+    Chi_np_end_matrix[i + k + 1][j] = -1;
+
+    Chi_quote_start_matrix[i][i + k] = -1;
+    Chi_quote_end_matrix[i][i + k] = -1;
+    Chi_quote_start_matrix[i + k + 1][j] = -1;
+    Chi_quote_end_matrix[i + k + 1][j] = -1;
 }
 
 CKY *new_cky_data(int *cky_table_num) {
