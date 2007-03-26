@@ -198,7 +198,8 @@ int     pp_matrix[BNST_MAX];
 	if (!check_feature(sp->bnst_data[i].f, "NN") &&
 	    !check_feature(sp->bnst_data[i].f, "NR") &&
 	    !check_feature(sp->bnst_data[i].f, "NT") &&
-	    !check_feature(sp->bnst_data[i].f, "PN")) {
+	    !check_feature(sp->bnst_data[i].f, "PN") &&
+	    !check_feature(sp->bnst_data[i].f, "PU")) {
 	    flag = 0;
 	    break;
 	}

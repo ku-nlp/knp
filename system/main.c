@@ -1109,8 +1109,9 @@ extern int	EX_match_subject;
 	print_matrix(sp, PRINT_DPND, 0);
 
     /* base phrase for Chinese */
-    if (Language == CHINESE && base_phrase(sp) == TRUE && OptDisplay == OPT_DEBUG)
-//	print_matrix(sp, PRINT_DPND, 0);
+    if (Language == CHINESE) {
+	base_phrase(sp);
+    }
 
     /* fragment for Chinese */
     if (Language == CHINESE && fragment(sp) == TRUE && OptDisplay == OPT_DEBUG)
