@@ -206,19 +206,21 @@ QUOTE_DATA quote_data;
 
 	if (start == end) continue;	/* ㄠ妐濡分仃及喟裡反拑骰 */
 
-	/* 喟裡及曉及穴旦弁 */
+	if (check_feature((sp->bnst_data+start)->f, "PU") && check_feature((sp->bnst_data+end)->f, "PU")) {
+	    /* 喟裡及曉及穴旦弁 */
 
-	for (i = 0; i < start; i++) {
-	    Quote_matrix[i][start] = 0;
-	    Quote_matrix[i][end] = 0;
+	    for (i = 0; i < start; i++) {
+		Quote_matrix[i][start] = 0;
+		Quote_matrix[i][end] = 0;
+	    }
+
+	    /* 喟裡及惘及穴旦弁 */
+
+	    for (i = end + 1; i < sp->Bnst_num; i++) {
+		Quote_matrix[start][i] = 0;
+		Quote_matrix[end][i] = 0;
+	    }	
 	}
-
-	/* 喟裡及惘及穴旦弁 */
-
-	for (i = end + 1; i < sp->Bnst_num; i++) {
-	    Quote_matrix[start][i] = 0;
-	    Quote_matrix[end][i] = 0;
-	}	
 
 	for (j = start; j <= end; j++) {
 	    for (i = j; i <= end; i++) {
