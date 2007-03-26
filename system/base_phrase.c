@@ -191,13 +191,14 @@ int     pp_matrix[BNST_MAX];
 		     int fragment(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
+    // deal with np phrase, i.e. with only nouns
     int flag = 1, i;
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature(sp->bnst_data[i].f, "VV") ||
-	    check_feature(sp->bnst_data[i].f, "VA") ||
-	    check_feature(sp->bnst_data[i].f, "VC") ||
-	    check_feature(sp->bnst_data[i].f, "VE")) {
+	if (!check_feature(sp->bnst_data[i].f, "NN") &&
+	    !check_feature(sp->bnst_data[i].f, "NR") &&
+	    !check_feature(sp->bnst_data[i].f, "NT") &&
+	    !check_feature(sp->bnst_data[i].f, "PN")) {
 	    flag = 0;
 	    break;
 	}
