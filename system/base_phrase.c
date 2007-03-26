@@ -164,18 +164,22 @@ int     pp_matrix[BNST_MAX];
 	    }
 	    Chi_np_start_matrix[start][end] = -1;
 	    Chi_np_end_matrix[start][end] = -1;
-	    i = end + 1;
+	    i = end;
 	}
     }
 }
 
 /*==================================================================*/
-		     int base_phrase(SENTENCE_DATA *sp)
+		     int base_phrase(SENTENCE_DATA *sp, int is_frag)
 /*==================================================================*/
 {
     int flag;
 
     init_phrase(sp);
+
+    if (is_frag) {
+	return FALSE;
+    }
 
     /* 呼応のチェック */
     flag = (check_phrase(sp) == TRUE) ? TRUE: FALSE;

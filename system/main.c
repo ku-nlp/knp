@@ -91,6 +91,9 @@ VerboseType	VerboseLevel = VERBOSE0;
 /* sentence id, only for Chinese */
 int             sen_num;
 
+/* Chinese fragment tag */
+int             is_frag;
+
 /* for printing Chinese parse tree */
 int         bnst_dpnd[BNST_MAX];
 int         bnst_level[BNST_MAX];
@@ -963,6 +966,7 @@ extern int	EX_match_subject;
 
     if (Language == CHINESE) {
 	sen_num++;
+	is_frag = 0;
     }
 
     sp->Sen_num++;
@@ -1108,14 +1112,20 @@ extern int	EX_match_subject;
     if (koou(sp) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_DPND, 0);
 
-    /* base phrase for Chinese */
+    /* fragment for Chinese */
     if (Language == CHINESE) {
-	base_phrase(sp);
+	if (fragment(sp) == TRUE) {
+	    if (OptDisplay == OPT_DEBUG) {
+		print_matrix(sp, PRINT_DPND, 0);
+	    }
+	    is_frag = 1;
+	}
     }
 
-    /* fragment for Chinese */
-    if (Language == CHINESE && fragment(sp) == TRUE && OptDisplay == OPT_DEBUG)
-	print_matrix(sp, PRINT_DPND, 0);
+    /* base phrase for Chinese */
+    if (Language == CHINESE) {
+	base_phrase(sp, is_frag);
+    }
 
     /* ¸°³ç¸Ì¤Î½èÍý */
 

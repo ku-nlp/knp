@@ -80,18 +80,24 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
     }
 }
 
-char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
-    if (Language == CHINESE) {
-	if ((Chi_np_end_matrix[begin][dep] != -1 && gov > Chi_np_end_matrix[begin][dep]) ||
-	    (Chi_np_start_matrix[dep][gov] != -1 && begin < Chi_np_start_matrix[dep][gov])){
-	    return '\0';
-	}
-	if ((Chi_quote_end_matrix[begin][dep] != -1 && gov > Chi_quote_end_matrix[begin][dep]) ||
-	    (Chi_quote_start_matrix[dep][gov] != -1 && begin < Chi_quote_start_matrix[dep][gov])){
-	    return '\0';
-	}
+int check_chi_dpnd_possibility (int i, int j, int k) {
+    if (Language != CHINESE) {
+	return 1;
     }
-	    
+    else {
+	if ((Chi_np_end_matrix[i][i + k] != -1 && j > Chi_np_end_matrix[i][i + k]) ||
+	    (Chi_np_start_matrix[i + k + 1][j] != -1 && i < Chi_np_start_matrix[i + k + 1][j])){
+	    return 0;
+	}
+	if ((Chi_quote_end_matrix[i][i + k] != -1 && j > Chi_quote_end_matrix[i][i + k]) ||
+	    (Chi_quote_start_matrix[i + k + 1][j] != -1 && i < Chi_quote_start_matrix[i + k + 1][j])){
+	    return 0;
+	}
+	return 1;
+    }
+}
+
+char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int relax_flag) {
     if ((OptParaFix == 0 && 
 	 begin >= 0 && 
 	 (sp->bnst_data + dep)->para_num != -1 && 
@@ -244,7 +250,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     int rentai, vacant_slot_num, *scase_check;
     int count, pos, default_pos;
     int verb, comma;
-    double one_score = cky_ptr->score;
+    double one_score = 0;
     char *cp, *cp2;
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
@@ -1283,17 +1289,6 @@ void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int
     cky_ptr->para_flag = 0;
     cky_ptr->para_score = -1;
     cky_ptr->score = 0;
-
-    // set np and quote restriction matrix for Chinese 
-    Chi_np_start_matrix[i][i + k] = -1;
-    Chi_np_end_matrix[i][i + k] = -1;
-    Chi_np_start_matrix[i + k + 1][j] = -1;
-    Chi_np_end_matrix[i + k + 1][j] = -1;
-
-    Chi_quote_start_matrix[i][i + k] = -1;
-    Chi_quote_end_matrix[i][i + k] = -1;
-    Chi_quote_start_matrix[i + k + 1][j] = -1;
-    Chi_quote_end_matrix[i + k + 1][j] = -1;
 }
 
 CKY *new_cky_data(int *cky_table_num) {
@@ -1485,6 +1480,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
+				check_chi_dpnd_possibility(i, j, k) &&
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
 				 dep_check[i + k] >= j || /* before barrier */
@@ -1501,11 +1497,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 				if (Language == CHINESE && Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
-				    cky_ptr->score += 100;
 				}
 				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
-				    cky_ptr->score += 50;
 				}
 				else {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
@@ -1526,6 +1520,13 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				cky_ptr->para_score = para_score;
 				cky_ptr->score = OptAnalysis == OPT_CASE ? 
 				    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
+
+				if (Language == CHINESE && Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+				    cky_ptr->score += 100;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+				    cky_ptr->score += 50;
+				}
 			    }
 
 			    /* if dpnd direction is B, check RtoL again */
@@ -1542,11 +1543,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 				if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				    cky_ptr->score += 100;
 				}
 				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				    cky_ptr->score += 50;
 				}
 				else {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
@@ -1563,6 +1562,13 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				cky_ptr->para_score = para_score;
 				cky_ptr->score = OptAnalysis == OPT_CASE ? 
 				    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
+
+				if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+				    cky_ptr->score += 100;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+				    cky_ptr->score += 50;
+				}
 			    }
 
 			    if (Language != CHINESE && 

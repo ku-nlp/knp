@@ -520,7 +520,7 @@ extern int ParseSentence(SENTENCE_DATA *s, char *input);
 extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
 
 /* base_phrase.c */
-extern int base_phrase(SENTENCE_DATA *sp);
+extern int base_phrase(SENTENCE_DATA *sp, int is_frag);
 extern int fragment(SENTENCE_DATA *sp);
 
 /* similarity.c */
