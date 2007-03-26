@@ -398,18 +398,18 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
 	    // for verb coordination, mask the outside area for the non-first conjunction
 	    for (i = 0; i < m_ptr->start[0]; i++) {
-		for (j = m_ptr->start[1]; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
+		for (j = m_ptr->start[1] + 1; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
 		    Mask_matrix[i][j] = 0;
 		}
 	    }
-	    for (i = m_ptr->start[1]; i <= m_ptr->end[m_ptr->part_num - 1]; i++) {
+	    for (i = m_ptr->start[1] + 1; i <= m_ptr->end[m_ptr->part_num - 1]; i++) {
 		for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
 		    Mask_matrix[i][j] = 0;
 		}
 	    }
 
-	    for (k = 0; k < m_ptr->part_num - 1; k++) {
-		if (k = 0) {
+	    for (k = 0; k < m_ptr->part_num -1; k++) {
+		if (k == 0) {
 		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k + 1]] = 'V'; // verb coordination
 		}
 		else {
@@ -417,28 +417,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		}
 		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'E'; // key for verb coordination
 		Mask_matrix[m_ptr->start[k + 1]][m_ptr->start[k + 1]] = 'E'; // key for verb coordination
-		// mask the dependency among two conjuctions
-		if (k > 0) {
-		    for (j = m_ptr->end[k] + 2; j <= m_ptr->end[k + 1]; j++) {
-			Mask_matrix[m_ptr->start[k] + 1][j] = 0;
-		    }
-		}
-		else {
-		    for (j = m_ptr->end[k] + 2; j <= m_ptr->end[k + 1]; j++) {
-			Mask_matrix[m_ptr->start[k]][j] = 0;
-		    }
-		}
-		for (j = m_ptr->start[k] + 2; j <= m_ptr->end[k]; j++) {
-		    Mask_matrix[j][m_ptr->end[k] + 1] = 0;
-		}
 	    }
 	    // for the last conjunction
 	    Mask_matrix[m_ptr->start[m_ptr->part_num - 1]+1][m_ptr->end[m_ptr->part_num - 1]] = 'V'; // verb coordination
-
-	    // mask the dependency among two conjuctions
-	    for (j = m_ptr->start[m_ptr->part_num - 2] + 2; j < m_ptr->end[m_ptr->part_num - 1]; j++) {
-		Mask_matrix[j][m_ptr->end[m_ptr->part_num]] = 0;
-	    }
 	}
 	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
 	    // for noun coordination, mask the outside area for the non-last conjunction
@@ -458,16 +439,6 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k > 0) {
 		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
 		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
-		}
-
-		// mask the dependency among two conjuctions
-		if (k < m_ptr->part_num - 1) {
-		    for (j = m_ptr->start[k + 1]; j < m_ptr->end[k + 1]; j++) {
-			Mask_matrix[m_ptr->start[k]][j] = 0;
-		    }
-		    for (j = m_ptr->start[k] + 1; j < m_ptr->end[k]; j++) {
-			Mask_matrix[j][m_ptr->end[k + 1]] = 0;
-		    }
 		}
 	    }
 	}
