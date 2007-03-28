@@ -395,6 +395,17 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
        最初のheadはdpnd.headをつくるとき，最後のheadはtreeを作る時に使う */
 
     if (Language == CHINESE) {
+
+	// check if the scope of coordination conflict with the scope of baseNP
+	for (k = 0; k < m_ptr->part_num; k++) {
+	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
+		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k])) ||
+		((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
+		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k]))) {
+		return FALSE;
+	    }
+	}
+
 	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
 	    // for verb coordination, mask the outside area for the non-first conjunction
 	    for (i = 0; i < m_ptr->start[0]; i++) {
