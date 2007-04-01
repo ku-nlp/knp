@@ -29,7 +29,7 @@
 				LENGTH
 ====================================================================*/
 #define	MRPH_MAX	200
-#define	BNST_MAX	64
+#define	BNST_MAX	200 /* 日本語の場合は64ぐらいで十分 */
 #define	BNST_LENGTH_MAX	256
 #define	TAG_MAX		200
 #define	PARA_MAX	32
