@@ -26,7 +26,7 @@ typedef struct _CKY {
     CKYptr	next;		/* pointer to the next CKY data at this point */
 } CKY;
 
-#define	CKY_TABLE_MAX	500000
+#define	CKY_TABLE_MAX	800000
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
