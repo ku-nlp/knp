@@ -1122,17 +1122,17 @@ extern int	EX_match_subject;
 	}
     }
 
+    /* ¸°³ç¸Ì¤Î½èÍý */
+
+    if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG && Language != CHINESE)
+	print_matrix(sp, PRINT_QUOTE, 0);
+
+    if (flag == CONTINUE) return FALSE;
+
     /* base phrase for Chinese */
     if (Language == CHINESE) {
 	base_phrase(sp, is_frag);
     }
-
-    /* ¸°³ç¸Ì¤Î½èÍý */
-
-    if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
-	print_matrix(sp, PRINT_QUOTE, 0);
-
-    if (flag == CONTINUE) return FALSE;
 
     /* ·¸¤ê¼õ¤±´Ø·¸¤¬¤Ê¤¤¾ì¹ç¤ÎÃÐ´Ë */
 	

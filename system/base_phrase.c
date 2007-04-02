@@ -156,6 +156,14 @@ int     pp_matrix[BNST_MAX];
 	else {
 	    start = i;
 	    end = np_matrix[i];
+
+	    // check if this np conflict with detected quote, if conflict, delete this np
+	    if ((Chi_quote_start_matrix[start][start] != -1 && Chi_quote_start_matrix[start][start] < start && Chi_quote_end_matrix[start][start] >= start && Chi_quote_end_matrix[start][start] <= end) ||
+		(Chi_quote_start_matrix[end][end] != -1 && Chi_quote_start_matrix[end][end] >= start && Chi_quote_start_matrix[end][end] <= end && Chi_quote_end_matrix[end][end] > end)) {
+		i = end;
+		continue;
+	    }
+
 	    for (j = start; j <= end; j++) {
 		for (k = j; k <= end; k++) {
 		    Chi_np_start_matrix[j][k] = start;
