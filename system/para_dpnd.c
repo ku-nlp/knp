@@ -204,8 +204,16 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     int head_pos;
 
     for (i = 0; i < m_ptr->child_num; i++)	/* 子供の再帰処理 */
-	if (check_para_d_struct(sp, m_ptr->child[i]) == FALSE)
-	    return FALSE;
+	if (check_para_d_struct(sp, m_ptr->child[i]) == FALSE) {
+	    if (Language == CHINESE) {
+		    if (i == m_ptr->child_num - 1) {
+			return FALSE;
+		    }
+		}
+		else {
+		    return FALSE;
+		}
+	}
     
     /* 体言文節の働きが曖昧なものが，並列構造解析で明確になる場合の処理
        ----------------------------------------------------------------
@@ -498,10 +506,20 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 
     /* 並列構造内の係受けチェック，マスク */
     
-    for (i = 0; i < sp->Para_M_num; i++)
-	if (sp->para_manager[i].parent == NULL)
-	    if (check_para_d_struct(sp, &sp->para_manager[i]) == FALSE)
-		return FALSE;
+    for (i = 0; i < sp->Para_M_num; i++) {
+	if (sp->para_manager[i].parent == NULL) {
+	    if (check_para_d_struct(sp, &sp->para_manager[i]) == FALSE) {
+		if (Language == CHINESE) {
+		    if (i == sp->Para_M_num - 1) {
+			return FALSE;
+		    }
+		}
+		else {
+		    return FALSE;
+		}
+	    }
+	}
+    }
 
     return TRUE;
 }
