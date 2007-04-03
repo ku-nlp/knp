@@ -214,7 +214,7 @@ char entity[ENTITY_NUM][ENTITY_MAX];
     m_input_pos_second = pos2;
 
     /* check the word and pos in the HowNet*/
-    if(m_input_pos_first != NULL){
+    if(m_input_pos_first != NULL && strcmp(m_input_pos_first, "PUNC")){
 	for(check_hownet_flag = 0;check_hownet_flag < HOWNET_NUM;){
 	    if(!strcmp(word1,hownet_word[check_hownet_flag]) && !strcmp(m_input_pos_first,hownet_pos[check_hownet_flag])){
 		def_first = hownet_def[check_hownet_flag];
@@ -226,7 +226,7 @@ char entity[ENTITY_NUM][ENTITY_MAX];
 	}
     }
 
-    if(m_input_pos_second != NULL){
+    if(m_input_pos_second != NULL && strcmp(m_input_pos_second, "PUNC")){
 	for(check_hownet_flag = 0;check_hownet_flag < HOWNET_NUM;check_hownet_flag++){
 	    if(!strcmp(word2,hownet_word[check_hownet_flag]) && !strcmp(m_input_pos_second,hownet_pos[check_hownet_flag])){
 		def_second = hownet_def[check_hownet_flag];
@@ -241,7 +241,7 @@ char entity[ENTITY_NUM][ENTITY_MAX];
 	    return similarity;
 	}
 	else{
-	    if(!strcmp(m_input_pos_first,m_input_pos_second)){
+	    if(!strcmp(m_input_pos_first,m_input_pos_second) && strcmp(m_input_pos_first, "PUNC") && strcmp(m_input_pos_second, "PUNC")){
 		similarity = 1.0 * PARA_4;
 		return similarity;
 	    }
