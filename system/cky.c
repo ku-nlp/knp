@@ -1501,6 +1501,12 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
 				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				}
 				else {
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
 					Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR);
@@ -1525,6 +1531,12 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    cky_ptr->score += 100;
 				}
 				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+				    cky_ptr->score += 50;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+				    cky_ptr->score += 100;
+				}
+				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 				    cky_ptr->score += 50;
 				}
 			    }
