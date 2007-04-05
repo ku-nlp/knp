@@ -80,7 +80,7 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
     }
 }
 
-int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENTENCE_DATA *sp) {
+int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENTENCE_DATA *sp, int direction) {
     if (Language != CHINESE) {
 	return 1;
     }
@@ -121,6 +121,16 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     (check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") ||
 	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") ||
 	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR")))) {
+	    return 0;
+	}
+
+	/* for verb, if there exists noun before, it should have a subject */
+	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) &&
+	    exist_chi(sp, left->i, right->i - 1, "noun") &&
+	    direction != 'R') {
 	    return 0;
 	}
 	
@@ -1528,7 +1538,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
-				check_chi_dpnd_possibility(i, j, k, left_ptr, right_ptr, sp) &&
+				check_chi_dpnd_possibility(i, j, k, left_ptr, right_ptr, sp, Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num]) &&
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
 				 dep_check[i + k] >= j || /* before barrier */
