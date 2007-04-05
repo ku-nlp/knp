@@ -81,6 +81,8 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
 }
 
 int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENTENCE_DATA *sp, int direction) {
+    int l;
+
     if (Language != CHINESE) {
 	return 1;
     }
@@ -104,7 +106,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
 	    left->j - left->i > 0 &&
-	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun")) {
+	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1) {
 	    return 0;
 	}
 
@@ -129,7 +131,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) &&
-	    exist_chi(sp, left->i, right->i - 1, "noun") &&
+	    exist_chi(sp, left->i, right->i - 1, "noun") != -1 &&
 	    direction != 'R') {
 	    return 0;
 	}
@@ -139,6 +141,23 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC") &&
 	    left->j - left->i > 0) {
 	    return 0;
+	}
+
+	/* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb */
+	if (left->i == 0 && right->j == sp->Bnst_num - 1) {
+	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") &&
+		((direction == 'L' && 
+		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") &&
+		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") &&
+		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") &&
+		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) ||
+		 (direction == 'R' && 
+		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
+		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") &&
+		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") &&
+		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) {
+		return 0;
+	    }
 	}
 
 	/* check if this cky corresponds with the constraint of NP and quote */
@@ -846,6 +865,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(g_ptr->f, "DEC") ||
 			   check_feature(g_ptr->f, "DEV"))))) {
 			one_score += 10;
+		    }
+		    if ((check_feature(d_ptr->f, "VA") || 
+			 check_feature(d_ptr->f, "VV")) &&
+			check_feature(g_ptr->f, "DEC") && 
+			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
+			one_score += 150;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
@@ -1834,10 +1859,51 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 		check_feature((sp->bnst_data + k)->f, "NT") ||
 		check_feature((sp->bnst_data + k)->f, "PN") ||
 		check_feature((sp->bnst_data + k)->f, "M")) {
-		return 1;
+		return k;
+	    }
+	}
+    }
+    else if (!strcmp(type, "DEC")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "DEC")) {
+		return k;
+	    }
+	}
+    }
+    else if (!strcmp(type, "verb")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "VV") ||
+		check_feature((sp->bnst_data + k)->f, "VA")) {
+		return k;
 	    }
 	}
     }
 
-    return 0;
+    return -1;
+}
+
+/* check the number of special pos-tag in a sentence */
+int check_pos_num_chi(SENTENCE_DATA *sp, char *type) {
+    int k;
+    int num = 0;
+
+    if (!strcmp(type, "verb")) {
+	for (k = 0; k < sp->Bnst_num; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "VV") ||
+		check_feature((sp->bnst_data + k)->f, "VA") ||
+		check_feature((sp->bnst_data + k)->f, "VC") ||
+		check_feature((sp->bnst_data + k)->f, "VE")) {
+		num++;
+	    }
+	}
+    }
+    else if (!strcmp(type, "DEC")) {
+	for (k = 0; k < sp->Bnst_num; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "DEC")) {
+		num++;
+	    }
+	}
+    }
+
+    return num;
 }
