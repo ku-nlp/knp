@@ -103,8 +103,31 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
-	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") &&
-	    (left->j - left->i > 0)) {
+	    left->j - left->i > 0 &&
+	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun")) {
+	    return 0;
+	}
+
+	/* for verb, there should be only one subject in front of it */
+	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
+	    (right->right != NULL && right->left != NULL &&
+	     right->right->b_ptr->num == right->b_ptr->num &&
+	     (check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") ||
+	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") ||
+	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR")))) {
+	    return 0;
+	}
+	
+	/* for preposition, if there is LC in the following, the words between P and LC should depend on LC */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC") &&
+	    left->j - left->i > 0) {
 	    return 0;
 	}
 
