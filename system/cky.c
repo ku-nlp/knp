@@ -86,15 +86,18 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
     }
     else {
         /* check if this cky corresponds with the grammar rules for Chinese */
+
 	/* for DEG, there should not be two modifiers */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && (right->j - right->i > 0)) {
 	    return 0;
 	}
+
 	/* for verb, there should be only one object afterword */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") || 
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) && 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "P")) && 
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
@@ -114,6 +117,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    (Chi_quote_start_matrix[i + k + 1][j] != -1 && i < Chi_quote_start_matrix[i + k + 1][j])){
 	    return 0;
 	}
+
 	return 1;
     }
 }
