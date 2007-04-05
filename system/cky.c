@@ -80,11 +80,18 @@ TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA 
     }
 }
 
-int check_chi_dpnd_possibility (int i, int j, int k) {
+int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENTENCE_DATA *sp) {
     if (Language != CHINESE) {
 	return 1;
     }
     else {
+        /* check if this cky corresponds with the grammar rules for Chinese */
+	/* for DEG, there should not be two modifiers */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && (right->j - right->i > 0)) {
+	    return 0;
+	}
+
+	/* check if this cky corresponds with the constraint of NP and quote */
 	if ((Chi_np_end_matrix[i][i + k] != -1 && j > Chi_np_end_matrix[i][i + k]) ||
 	    (Chi_np_start_matrix[i + k + 1][j] != -1 && i < Chi_np_start_matrix[i + k + 1][j])){
 	    return 0;
@@ -1480,7 +1487,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
-				check_chi_dpnd_possibility(i, j, k) &&
+				check_chi_dpnd_possibility(i, j, k, left_ptr, right_ptr, sp) &&
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
 				 dep_check[i + k] >= j || /* before barrier */
