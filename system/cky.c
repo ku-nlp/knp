@@ -90,6 +90,20 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && (right->j - right->i > 0)) {
 	    return 0;
 	}
+	/* for verb, there should be only one object afterword */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) && 
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
+	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") &&
+	    (left->j - left->i > 0)) {
+	    return 0;
+	}
 
 	/* check if this cky corresponds with the constraint of NP and quote */
 	if ((Chi_np_end_matrix[i][i + k] != -1 && j > Chi_np_end_matrix[i][i + k]) ||
@@ -1770,4 +1784,23 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     }
 
     return after_cky(sp, Best_mgr, cky_ptr);
+}
+
+/* check if there exists special word in one region */
+int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
+    int k;
+
+    if (!strcmp(type, "noun")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
+		check_feature((sp->bnst_data + k)->f, "NR") ||
+		check_feature((sp->bnst_data + k)->f, "NT") ||
+		check_feature((sp->bnst_data + k)->f, "PN") ||
+		check_feature((sp->bnst_data + k)->f, "M")) {
+		return 1;
+	    }
+	}
+    }
+
+    return 0;
 }
