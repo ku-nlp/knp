@@ -165,11 +165,25 @@ sub _make_hash {
     %$hash = ();			# 連想配列を初期化
     $this->setpos( 0 ) or return 0;
     my $pos = 0;
-    my( $end, $result );
-    while( $result = $this->each() ){
-	$end = $this->getpos;
-	$result->id and $hash->{ $result->id } = sprintf( "%d,%d", $pos, ( $end - $pos ) );
-	$pos = $end;
+    my $pattern = $this->{pattern};
+    my $fh = $this->{_file_handle};
+
+  OUTER:
+    while (1) {
+	my $len = 0;
+	my $id;
+	while( <$fh> ){
+	    $len += length;
+	    if( m!^# S-ID:([-A-z0-9]+)! ){
+		$id = $1;
+	    }elsif( m!$pattern! ){
+		$id and $hash->{ $id } = sprintf( "%d,%d", $pos, $len );
+		$pos = $this->getpos;
+		next OUTER;
+	    }
+	}
+	$this->{_each_pos} = 0;
+	last;
     }
     1;
 }
