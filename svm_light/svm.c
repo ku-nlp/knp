@@ -101,10 +101,10 @@ int init_svm_for_NE() {
 
     for (i = 0; i < NE_MODEL_NUMBER; i++) {
 	modelNE[i] = read_model(SVMFileNE[i]);
-	if (model[i]->kernel_parm.kernel_type == 0) { /* linear kernel */
+	if (modelNE[i]->kernel_parm.kernel_type == 0) { /* linear kernel */
 	    /* compute weight vector */
-	    add_weight_vector_to_linear_model(model[i]);
-	}
+	    add_weight_vector_to_linear_model(modelNE[i]);
+	}	
     }
     return 0;
 }
@@ -133,7 +133,7 @@ double svm_classify_for_anaphora(char *line, int pp)
 double svm_classify_for_NE(char *line, int n)
 {
     MODEL *m;
-
+    
     m = modelNE[n];
 
     if (!m) {

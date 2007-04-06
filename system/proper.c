@@ -312,7 +312,8 @@ char *ne_code_to_tagposition(int num)
     char *feature_name[] = {"人名末尾", "組織名末尾", '\0'};
     char *feature_name2[] = {"FULLNAME:H", "FULLNAME:M", "FULLNAME:T", "FULLNAME:S", 
 			     "NATION:H", "NATION:M", "NATION:T", "NATION:S", 
-			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S", '\0'};
+			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S", 
+			     '\0'};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
     ret[0] = '\0'; /* 再帰的に代入するため */
@@ -392,6 +393,7 @@ char *ne_code_to_tagposition(int num)
 	    sprintf(buf, "%s%s7:1 ", ret, ncp ? ncp : "");	
 	    free(ncp);
 	    strcpy(ret, buf);	    
+	    break;
 	}
     }
     free(buf);
@@ -457,14 +459,21 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
+	       int intcmp(const void *a, const void *b)
+/*==================================================================*/
+{
+    return *((int *)b) - *((int *)a);
+}
+
+/*==================================================================*/
 		 void make_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k;
-    char *buf, *s[6], bnstb[7];
-    buf = (char *)malloc_data(FEATURE_MAX, "make_feature");
-    
+    int i, j, k, f[FEATURE_MAX];
+    char buf[FEATURE_MAX], *s[6], bnstb[7], *cp, tmp[16];
+
     for (i = 0; i < sp->Mrph_num; i++) {
+	buf[0] = '\0';
 	
 	/* 括弧始を除く記号は固有表現の先頭にはならない(ルール)  */
 	NE_mgr[i].notHEAD = 0;
@@ -475,20 +484,19 @@ char *ne_code_to_tagposition(int num)
 	for (j = i - SIZE; j <= i + SIZE; j++) {
 	    if (j < 0 || j >= sp->Mrph_num)
 		continue;
-	    
+
+	    k = i - j + SIZE + 1;           
 	    s[0] = db_get(ne_db, sp->mrph_data[j].Goi2);
-	    s[1] = get_pos(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
-	    s[2] = get_cache(sp->mrph_data[j].Goi2, i - j + SIZE + 1); /* 末尾空白 */
-	    s[3] = get_feature(sp->mrph_data + j, i - j + SIZE + 1);   /* 末尾空白 */
-	    s[4] = get_parent(sp->mrph_data + j, i - j + SIZE + 1);    /* 末尾空白 */
-	    s[5] = get_imi(sp->mrph_data + j, i - j + SIZE + 1);       /* 末尾空白 */
-	    k = i - j + SIZE + 1;
+	    s[1] = get_pos(sp->mrph_data + j, k);       /* 末尾空白 */
+	    s[2] = get_cache(sp->mrph_data[j].Goi2, k); /* 末尾空白 */
+	    s[3] = get_feature(sp->mrph_data + j, k);   /* 末尾空白 */
+	    s[4] = get_parent(sp->mrph_data + j, k);    /* 末尾空白 */
+	    s[5] = get_imi(sp->mrph_data + j, k);       /* 末尾空白 */
 	    check_feature(sp->mrph_data[j].f, "文節始") ? 
 		sprintf(bnstb, "%d00:1 ", k) : (bnstb[0] = '\0');   /* 末尾空白 */
 	    
 	    sprintf(buf, "%s%s%d:1 %s%s%d%d20:1 %s%s%d%d50:1 %s%s",
-		    NE_mgr[i].feature, 
-		    s[0] ? s[0] : "", k,
+		    buf, s[0] ? s[0] : "", k,
 		    bnstb[0] ? bnstb : "",
 		    s[1], 
 		    get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
@@ -497,14 +505,24 @@ char *ne_code_to_tagposition(int num)
 		    strlen(sp->mrph_data[j].Goi2) / 2, k, 
 		    OptNEparent ? "" : s[4],
 		    OptNEcase ? s[5] : "");
-	    strcpy(NE_mgr[i].feature, buf);
-	    
+
 	    for (k = 0; k < 6; k++) {
 		free(s[k]);
 	    }
 	}
+
+	/* svm_lightでは素性が昇順である必要があるためソートする */
+	for (j = 0, cp = buf; sscanf(cp, "%d:1", &(f[j])); j++) {
+	    if (!(cp = strstr(cp, " "))) break;
+	    cp++;
+	}
+	qsort(f, j, sizeof(int), intcmp);
+	NE_mgr[i].feature[0] = '\0';
+	while (j-- > 0) {
+	    sprintf(tmp, "%d:1 ", f[j]);
+	    strcat(NE_mgr[i].feature, tmp);
+	}    
     }       
-    free(buf);
 }
 
 /*==================================================================*/
