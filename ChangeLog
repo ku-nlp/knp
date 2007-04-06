@@ -1,3 +1,8 @@
+2007-04-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* svm_light/svm.c, system/proper.c:
+	svm_lightを用いた固有表現解析に対応
+
 2007-04-01  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/const.h, system/cky.c:
