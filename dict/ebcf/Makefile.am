@@ -12,7 +12,10 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
+nodist_dic_DATA +=  chidpnd.db
+
 PROBCASE_DBS = case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db
+
 HOWNET_DBS = HowNet_Def.db HowNet_Sem_Def.db HowNet_Antonym.db HowNet_Category.db
 
 if PROB_EXIST
@@ -103,34 +106,10 @@ chicase_nominal.db: chicase_nominal.prob
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-HowNet.def:
+chidpnd.dict:
 	true
 
-HowNet_Def.db: HowNet.def
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.SemDef:
-	true
-
-HowNet_Sem_Def.db: HowNet.SemDef
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.antonym:
-	true
-
-HowNet_Antonym.db: HowNet.antonym
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.category:
-	true
-
-HowNet_Category.db: HowNet.category
+chidpnd.db: chidpnd.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
