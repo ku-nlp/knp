@@ -98,12 +98,12 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") || 
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "P")) && 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) && 
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
+//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
+//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
 	    left->j - left->i > 0 &&
 	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1) {
@@ -143,22 +143,22 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb */
-	if (left->i == 0 && right->j == sp->Bnst_num - 1) {
-	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") &&
-		((direction == 'L' && 
-		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") &&
-		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") &&
-		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") &&
-		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) ||
-		 (direction == 'R' && 
-		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
-		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") &&
-		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") &&
-		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) {
-		return 0;
-	    }
-	}
+/* 	/\* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb *\/ */
+/* 	if (left->i == 0 && right->j == sp->Bnst_num - 1) { */
+/* 	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") && */
+/* 		((direction == 'L' &&  */
+/* 		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) || */
+/* 		 (direction == 'R' &&  */
+/* 		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) { */
+/* 		return 0; */
+/* 	    } */
+/* 	} */
 
 	/* check if this cky corresponds with the constraint of NP and quote */
 	if ((Chi_np_end_matrix[i][i + k] != -1 && j > Chi_np_end_matrix[i][i + k]) ||
@@ -1856,9 +1856,9 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 	for (k = i; k <= j; k++) {
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
 		check_feature((sp->bnst_data + k)->f, "NR") ||
-		check_feature((sp->bnst_data + k)->f, "NT") ||
-		check_feature((sp->bnst_data + k)->f, "PN") ||
-		check_feature((sp->bnst_data + k)->f, "M")) {
+//		check_feature((sp->bnst_data + k)->f, "NT") ||
+//		check_feature((sp->bnst_data + k)->f, "M") ||
+		check_feature((sp->bnst_data + k)->f, "PN")) {
 		return k;
 	    }
 	}
