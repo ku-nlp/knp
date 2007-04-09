@@ -19,34 +19,13 @@ static int dpndID = 0;
     int 	i, j;
     BNST_DATA	*b_ptr;
     DpndRule 	*r_ptr;
-    int         backoff_flag, backoff_pos;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	backoff_flag = 1;
-	backoff_pos = -1;
 	for (j = 0, r_ptr = DpndRuleArray; j < CurDpndRuleSize; j++, r_ptr++) {
-
 	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, b_ptr) 
 		== TRUE) {
-		if (Language == CHINESE && strcmp(r_ptr->dep_word, "X") == 0) {
-		    backoff_pos = j;
-		}
-		else if ((Language != CHINESE) ||
-			 (Language == CHINESE && 
-			  strcmp(r_ptr->dep_word, "X") != 0 && 
-			  !strcmp(b_ptr->head_ptr->Goi, r_ptr->dep_word))) { /* for Chinese, check word */
-		    b_ptr->dpnd_rule = r_ptr; 
-		    backoff_flag = 0;
-		    break;
-		}
-	    }
-	}
-	if (Language == CHINESE && backoff_flag && backoff_pos != -1) {
-	    r_ptr = DpndRuleArray + backoff_pos;
-	    if (feature_pattern_match(&(r_ptr->dependant), b_ptr->f, NULL, b_ptr) 
-		== TRUE && 
-		strcmp(r_ptr->dep_word, "X") == 0) {
 		b_ptr->dpnd_rule = r_ptr; 
+		break;
 	    }
 	}
 
@@ -62,46 +41,60 @@ static int dpndID = 0;
 }
 
 /*==================================================================*/
+                      void close_chi_dpnd_db()
+/*==================================================================*/
+{
+    DB_close(chi_dpnd_db);
+}
+
+/*==================================================================*/
+                      void init_chi_dpnd_db()
+/*==================================================================*/
+{
+    chi_dpnd_db = open_dict(CHI_DPND_DB, CHI_DPND_DB_NAME, &CHIDpndExist);
+}
+ 
+/* get dpnd rule for Chinese */
+/*==================================================================*/
+   char* get_chi_dpnd_rule(char *word1, char *pos1, char *word2, char *pos2)
+/*==================================================================*/
+{
+    char *key;
+
+
+    if (CHIDpndExist == FALSE) {
+	return NULL;
+    }
+
+    key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 4);
+
+    /* 用言表記でやった方がよいみたい */
+    sprintf(key, "%s_%s_%s_%s", pos1, word1, pos2, word2);
+    return db_get(chi_dpnd_db, key);
+}
+
+/*==================================================================*/
 	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, value, first_uke_flag, pu_flag, backoff_dep, dpnd_flag;
-    double p1_LtoR, p2_LtoR, p3_LtoR, p4_LtoR;
-    double p1_RtoL, p2_RtoL, p3_RtoL, p4_RtoL;
+    int i, j, k, value, first_uke_flag;
+    float p1_LtoR, p2_LtoR, p3_LtoR, p4_LtoR;
+    float p1_RtoL, p2_RtoL, p3_RtoL, p4_RtoL;
     double lamda1, lamda2;
     BNST_DATA *k_ptr, *u_ptr;
+    char *lex_rule, *pos_rule_1, *pos_rule_2, *pos_rule;
+    char *type, *probL, *probR, *occur;
+    int count;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
-	pu_flag = 0;
-	if (Language == CHINESE && check_feature(k_ptr->f, "PU")) {
-	    if (k_ptr->head_ptr->Goi == "（" ||
-		k_ptr->head_ptr->Goi == "（" ||
-		k_ptr->head_ptr->Goi == "‘" ||
-		k_ptr->head_ptr->Goi == "〈" ||
-		k_ptr->head_ptr->Goi == "「" ||
-		k_ptr->head_ptr->Goi == "“" ||
-		k_ptr->head_ptr->Goi == "＜" ||
-		k_ptr->head_ptr->Goi == "『" ||
-		k_ptr->head_ptr->Goi == "【" ||
-		k_ptr->head_ptr->Goi == "《" ||
-		k_ptr->num == 0) {
-		pu_flag = 1;
-	    }
-	    else {
-		for (k = i - 1; k >= 0; k--) {
-		    if (!check_feature((sp->bnst_data + k)->f, "PU")) {
-			Dpnd_matrix[k][i] = 'L';
-			Dpnd_prob_matrix[k][i] = SMALL_PROB;
-			break;
-		    }
-		}
-	    }
-	}
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
-	    backoff_dep = 0;
+	    lex_rule = NULL;
+	    pos_rule_1 = NULL;
+	    pos_rule_2 = NULL;
+	    pos_rule = NULL;
 	    p1_LtoR = 0.0;
 	    p2_LtoR = 0.0;
 	    p3_LtoR = 0.0;
@@ -112,99 +105,182 @@ static int dpndID = 0;
 	    p4_RtoL = 0.0;
 	    lamda1 = 0.0;
 	    lamda2 = 0.0;
-	    dpnd_flag = 0;
+
 	    Dpnd_matrix[i][j] = 0;
 	    Dpnd_prob_matrix[i][j] = 0.0;
 	    Dpnd_prob_matrix[j][i] = 0.0;
-	    if (Language == CHINESE && pu_flag == 1 && !check_feature(u_ptr->f, "PU")) {
-		Dpnd_matrix[i][j] = 'R';
-		Dpnd_prob_matrix[i][j] = SMALL_PROB;
-		pu_flag = 0;
-	    }
-	    for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
-		value = feature_pattern_match(&(k_ptr->dpnd_rule->governor[k]),
+
+	    if (Language != CHINESE) {
+		for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
+		    value = feature_pattern_match(&(k_ptr->dpnd_rule->governor[k]),
 					      u_ptr->f, k_ptr, u_ptr);
-		if (strcmp(k_ptr->dpnd_rule->dep_word, "X") == 0) {
-		    backoff_dep = 1;
-		}
-		if (value == TRUE) {
-		    if ((Language != CHINESE) ||
-			(Language == CHINESE && backoff_dep && strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi) == 0) || 
-			(Language == CHINESE && backoff_dep && strcmp(k_ptr->dpnd_rule->gov_word[k], "X") == 0) || 
-			(Language == CHINESE && !backoff_dep &&
-			 (strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi) == 0 || 
-			  strcmp(k_ptr->dpnd_rule->gov_word[k], "X") == 0))) {
-			if (Dpnd_matrix[i][j] == 0) {
-			    Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
-			}
-
-			/* assign probability for each dpnd */
-			if (!backoff_dep) {
-			    if (!strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi)) {
-				p1_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
-				p1_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
-				lamda1 = (1.0 * k_ptr->dpnd_rule->count[k]) / (k_ptr->dpnd_rule->count[k] + 1);
-				dpnd_flag = 1;
-			    }
-			    else {
-				p2_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
-				p2_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
-				if (lamda1 == 0) {
-				    lamda1 = 0.95;
-				}
-				dpnd_flag = 2;
-			    }
-			}
-			else {
-			    if (!strcmp(k_ptr->dpnd_rule->gov_word[k], u_ptr->head_ptr->Goi)) {
-				p3_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
-				p3_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
-				lamda2 = (1.0 * k_ptr->dpnd_rule->count[k]) / (k_ptr->dpnd_rule->count[k] + 1);
-				dpnd_flag = 1;
-			    }
-			    else {
-				p4_LtoR = k_ptr->dpnd_rule->prob_LtoR[k];
-				p4_RtoL = k_ptr->dpnd_rule->prob_RtoL[k];
-				if (lamda2 == 0) {
-				    lamda2 = 0.95;
-				}
-				dpnd_flag = 2;
-			    }
-			}
-
-			if (dpnd_flag < 2) {
-			    continue;
-			}
-
-			if (k_ptr->dpnd_rule->dpnd_type[k] == 'B') {
-			    if (!backoff_dep) {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
-				Dpnd_prob_matrix[j][i] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
-			    }
-			    else {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
-				Dpnd_prob_matrix[j][i] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
-			    }
-			}
-			else if (k_ptr->dpnd_rule->dpnd_type[k] == 'R') {
-			    if (!backoff_dep) {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
-			    }
-			    else {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
-			    }
-			}
-			else if (k_ptr->dpnd_rule->dpnd_type[k] == 'L') {
-			    if (!backoff_dep) {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
-			    }
-			    else {
-				Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
-			    }
-			}
-
+		    if (value == TRUE) {
+			Dpnd_matrix[i][j] = (int)k_ptr->dpnd_rule->dpnd_type[k];
 			first_uke_flag = 0;
 			break;
+		    }
+		}
+	    }
+	    else { /* read dpnd rule from DB for Chinese */
+		lex_rule = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
+		pos_rule_1 = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
+
+		if (lex_rule == NULL && pos_rule_1 == NULL) {
+		    pos_rule_2 = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
+		    pos_rule = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
+		    
+		    if (pos_rule_2 != NULL) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+			count = 0;
+
+			type = strtok(pos_rule_2, "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+			
+			if (!strcmp(type, "R")) {
+			    Dpnd_matrix[i][j] = 'R';
+			}
+			else if (!strcmp(type, "L")) {
+			    Dpnd_matrix[i][j] = 'L';
+			}
+			else if (!strcmp(type, "B")) {
+			    Dpnd_matrix[i][j] = 'B';
+			}
+			p3_LtoR = atof(probR);
+			p3_RtoL = atof(probL);
+			count = atoi(occur);
+		    }
+
+		    if (pos_rule != NULL) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+
+			type = strtok(pos_rule, "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+
+			p4_LtoR = atof(probR);
+			p4_RtoL = atof(probL);
+			if (pos_rule_2 == NULL) {
+			    if (!strcmp(type, "R")) {
+				Dpnd_matrix[i][j] = 'R';
+			    }
+			    else if (!strcmp(type, "L")) {
+				Dpnd_matrix[i][j] = 'L';
+			    }
+			    else if (!strcmp(type, "B")) {
+				Dpnd_matrix[i][j] = 'B';
+			    }
+			}
+		    }
+
+		    if (pos_rule_2 != NULL) {
+			lamda2 = (1.0 * count) / (count + 1);
+		    }
+		    else {
+			lamda2 = 0.95;
+		    }
+
+		    if (Dpnd_matrix[i][j] == 'B') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
+			Dpnd_prob_matrix[j][i] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
+			first_uke_flag = 0;
+		    }
+		    else if (Dpnd_matrix[i][j] == 'R') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
+			first_uke_flag = 0;
+		    }
+		    else if (Dpnd_matrix[i][j] == 'L') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
+			first_uke_flag = 0;
+		    }
+		}
+		else {
+		    if (lex_rule != NULL) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+			count = 0;
+			
+			type = strtok(lex_rule, "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+
+			if (!strcmp(type, "R")) {
+			    Dpnd_matrix[i][j] = 'R';
+			}
+			else if (!strcmp(type, "L")) {
+			    Dpnd_matrix[i][j] = 'L';
+			}
+			else if (!strcmp(type, "B")) {
+			    Dpnd_matrix[i][j] = 'B';
+			}
+			p1_LtoR = atof(probR);
+			p1_RtoL = atof(probL);
+			count = atoi(occur);
+		    }
+
+		    if (pos_rule_1 != NULL) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+
+			type = strtok(pos_rule_1, "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+
+			p2_LtoR = atof(probR);
+			p2_RtoL = atof(probL);
+			if (lex_rule == NULL) {
+			    if (!strcmp(type, "R")) {
+				Dpnd_matrix[i][j] = 'R';
+			    }
+			    else if (!strcmp(type, "L")) {
+				Dpnd_matrix[i][j] = 'L';
+			    }
+			    else if (!strcmp(type, "B")) {
+				Dpnd_matrix[i][j] = 'B';
+			    }
+			}
+		    }
+
+		    if (lex_rule != NULL) {
+			lamda1 = (1.0 * count) / (count + 1);
+		    }
+		    else {
+			lamda1 = 0.95;
+		    }
+
+		    if (Dpnd_matrix[i][j] == 'B') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
+			Dpnd_prob_matrix[j][i] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
+			first_uke_flag = 0;
+		    }
+		    else if (Dpnd_matrix[i][j] == 'R') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
+			first_uke_flag = 0;
+		    }
+		    else if (Dpnd_matrix[i][j] == 'L') {
+			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
+			first_uke_flag = 0;
+		    }
+		}
+
+		if (lex_rule != NULL || pos_rule_1 != NULL || pos_rule_2 != NULL || pos_rule != NULL) {
+		    dpnd_total++;
+		    if (lex_rule != NULL) {
+			dpnd_lex++;
 		    }
 		}
 	    }
@@ -1476,7 +1552,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
 }
-
 
 /*====================================================================
                                END

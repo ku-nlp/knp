@@ -386,20 +386,19 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 	LineNoForError = LineNo;
 	body_cell = s_read(fp);
 
-	list2feature_pattern(&(rp->dependant), car(car(body_cell)));
+	list2feature_pattern(&(rp->dependant), car(body_cell));
 
-	strcpy(rp->dep_word, _Atom(car(car(car(cdr(car(body_cell)))))));
 	loop_cell = car(cdr(body_cell));
 	i = 0;
 	while (!Null(car(loop_cell))) {
-	    list2feature_pattern(&(rp->governor[i]), car(car(car(loop_cell))));
-	    strcpy(rp->gov_word[i], _Atom(car(car(car(cdr(car(car(loop_cell))))))));
-	    rp->dpnd_type[i] = *(_Atom(car(cdr(car(loop_cell)))));
-	    prob_cell = car(cdr(cdr(car(loop_cell))));
-	    rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell))));
-	    rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell)))));
-	    rp->count[i] = atoi(_Atom(car(cdr(cdr(cdr(car(loop_cell)))))));
-	    strcpy(rp->dpnd_relation[i], _Atom(car(cdr(cdr(cdr(cdr(car(loop_cell))))))));
+	    list2feature_pattern(&(rp->governor[i]), car(loop_cell));
+/* 	    strcpy(rp->gov_word[i], _Atom(car(car(car(cdr(car(car(loop_cell)))))))); */
+/* 	    rp->dpnd_type[i] = *(_Atom(car(cdr(car(loop_cell))))); */
+/* 	    prob_cell = car(cdr(cdr(car(loop_cell)))); */
+/* 	    rp->prob_LtoR[i] = atof(_Atom(car(car(prob_cell)))); */
+/* 	    rp->prob_RtoL[i] = atof(_Atom(car(car(cdr(prob_cell))))); */
+/* 	    rp->count[i] = atoi(_Atom(car(cdr(cdr(cdr(car(loop_cell))))))); */
+/* 	    strcpy(rp->dpnd_relation[i], _Atom(car(cdr(cdr(cdr(cdr(car(loop_cell)))))))); */
 
 	    loop_cell = cdr(loop_cell);
 

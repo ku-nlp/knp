@@ -809,6 +809,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			       rest_buffer);
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
+		strcpy(m_ptr->Pos, Hinshi_str);
 	    }
 
 	    if (mrph_item == 9) {

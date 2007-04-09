@@ -50,8 +50,10 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	2625
-#define DpndRule_G_MAX	2800
+//#define DpndRule_MAX	2625
+//#define DpndRule_G_MAX	2800
+#define DpndRule_MAX	35
+#define DpndRule_G_MAX	35
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
@@ -423,12 +425,6 @@ typedef struct {
     FEATURE_PATTERN barrier;
     int 	    preference;
     int		    decide;	/* 一意に決定するかどうか */
-    double          prob_LtoR[DpndRule_G_MAX];  /* LtoR probability, only for Chinese */
-    double          prob_RtoL[DpndRule_G_MAX];  /* RtoL probability, only for Chinese */
-    char            dep_word[CHI_WORD_LEN_MAX];                  /* dependant word, only for Chinese */
-    char            gov_word[DpndRule_G_MAX][CHI_WORD_LEN_MAX];  /* governor word, only for Chinese */
-    int             count[DpndRule_G_MAX];      /* occurrence of word_pos pair */
-    char            dpnd_relation[DpndRule_G_MAX][5];                /* dependant relation */
 } DpndRule;
 
 /* ボーナス規則 */
@@ -527,7 +523,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	32
+#define DICT_MAX	29
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -555,11 +551,8 @@ typedef struct _RuleVector {
 #define NOUN_CO_DB	24
 #define CHI_CASE_DB	25
 #define CHI_CASE_NOMINAL_DB	26
-#define HOWNET_DEF_DB   27
-#define HOWNET_ANTONYM_DB       28
-#define HOWNET_CATEGORY_DB      29
-#define HOWNET_SEM_DEF_DB      30
-#define AUTO_DIC_DB	31
+#define CHI_DPND_DB     27
+#define AUTO_DIC_DB	28
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -581,6 +574,7 @@ typedef struct {
     char	Imi[IMI_MAX];
     FEATUREptr	f;
     char 	*SM;				/* 追加 */
+    char        Pos[CHI_POS_LEN_MAX+1];    /* pos-tag for Chinese word */
 } MRPH_DATA;
 
 typedef struct cf_def *CF_ptr;

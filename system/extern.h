@@ -7,6 +7,9 @@
     $Id$
 ====================================================================*/
 
+extern int              dpnd_total;
+extern int              dpnd_lex;
+
 extern int		Thesaurus;
 extern int		ParaThesaurus;
 extern THESAURUS_FILE	THESAURUS[];
@@ -58,6 +61,10 @@ extern int              Chi_np_end_matrix[][BNST_MAX];
 
 extern int              Chi_quote_start_matrix[][BNST_MAX];
 extern int              Chi_quote_end_matrix[][BNST_MAX];
+
+/* DB file for Chinese dpnd rule */
+extern DBM_FILE chi_dpnd_db;
+extern int     CHIDpndExist;
 
 extern char		**Options;
 extern int 		OptAnalysis;
@@ -302,6 +309,8 @@ extern char *db_get(DBM_FILE db, char *buf);
 extern DBM_FILE db_read_open(char *filename);
 
 /* dpnd_analysis.c */
+extern void init_chi_dpnd_db();
+extern void close_chi_dpnd_db();
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);

@@ -101,6 +101,10 @@ char*       bnst_word[BNST_MAX];
 char*       bnst_tree[BNST_MAX][TREE_WIDTH_MAX];
 char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 
+/* DB file for Chinese dpnd rule */
+DBM_FILE chi_dpnd_db;
+int     CHIDpndExist;
+
 /* Server Client Extention */
 static int	sfd, fd;
 int		OptMode = STAND_ALONE_MODE;
@@ -140,6 +144,9 @@ extern int	EX_match_unknown;
 extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
+
+int      dpnd_total;
+int      dpnd_lex;
 
 /*==================================================================*/
 			     void usage()
@@ -822,6 +829,10 @@ extern int	EX_match_subject;
     close_scase();
     close_auto_dic();
 
+    if (Language == CHINESE) {
+	close_chi_dpnd_db();
+    }
+
     if (OptEllipsis) {
 	close_event();
     }
@@ -895,6 +906,7 @@ extern int	EX_match_subject;
 
     if (Language == CHINESE) {
 	hownet_open();      /* open hownet */
+	init_chi_dpnd_db();
     }
 
 //    init_hownet();      /* init hownet */
@@ -1818,6 +1830,7 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 	init_all();
 	knp_main();
 	close_all();
+	fprintf(stderr, "%d, %d\n", dpnd_total, dpnd_lex);
     }
 #ifndef _WIN32
     else if (OptMode == SERVER_MODE) {
