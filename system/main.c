@@ -1830,7 +1830,6 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 	init_all();
 	knp_main();
 	close_all();
-	fprintf(stderr, "%d, %d\n", dpnd_total, dpnd_lex);
     }
 #ifndef _WIN32
     else if (OptMode == SERVER_MODE) {
