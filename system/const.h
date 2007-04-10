@@ -50,10 +50,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-//#define DpndRule_MAX	2625
-//#define DpndRule_G_MAX	2800
-#define DpndRule_MAX	35
-#define DpndRule_G_MAX	35
+#define DpndRule_MAX	2625
+#define DpndRule_G_MAX	2800
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
