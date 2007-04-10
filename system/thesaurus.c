@@ -329,6 +329,16 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	fpp = &((*fpp)->next);
     }
 
+    /* 「幸運を得る」の「幸運」を引くためには、
+       「幸運/こううんa」ではなく、もとの「幸運だ/こううんだ」で引く必要がある */
+    if (!str_buffer[0] && (buf = check_feature((ptr->mrph_ptr + end)->f, "代表表記変更"))) { /* 最後の要素 */
+	strcpy(str_buffer, buf + strlen("代表表記変更:"));
+	if (strcmp(last_key, str_buffer)) { /* 異なる場合のみ調べる */
+	    make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
+	    str_buffer[0] = '\0';
+	}
+    }
+
     return;
 }
 

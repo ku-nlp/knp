@@ -904,6 +904,11 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 
     /* featureの修正 */
     if (modify_feature_flag) {
+	if (cp = check_feature(m_ptr->f, "代表表記")) { /* 古い代表表記の保存 */
+	    cp += strlen("代表表記:");
+	    sprintf(pre, "代表表記変更:%s", cp);
+	    assign_cfeature(&(m_ptr->f), pre, FALSE);
+	}
 	sprintf(pre, "代表表記:%s/%s%c", str1, str2, suffix_char);
 	assign_cfeature(&(m_ptr->f), pre, FALSE);
     }
