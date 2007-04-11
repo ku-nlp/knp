@@ -982,8 +982,8 @@ typedef struct ellipsis_features {
     int		pos;
     int		frequency;
     int		discourse_depth;
-    int		refered_num_surface;
-    int		refered_num_ellipsis;
+    float	refered_num_surface;
+    float	refered_num_ellipsis;
 
     int		c_pp;
     int		c_distance;
@@ -1130,8 +1130,8 @@ typedef struct sm_list {
 /* 名詞の被参照回数の構造体 */
 typedef struct entity_list {
     char	*key;
-    int		surface_num;
-    int		ellipsis_num;
+    double	surface_num;
+    double	ellipsis_num;
     struct entity_list *next;
 } ENTITY_LIST;
 

@@ -149,12 +149,13 @@ int	PrintDeletedSM = 0;
     /* Ì¾»ì¶¦µ¯³ÎÎ¨DB (noun-co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
-    /* Chinese verb case-frame DB (chicase.db) */
-    chi_case_db = open_dict(CHI_CASE_DB, CHI_CASE_DB_NAME, &CHICaseExist);
-
-    /* Chinese nominal case-frame DB (chicase_nominal.db) */
-    chi_case_nominal_db = open_dict(CHI_CASE_NOMINAL_DB, CHI_CASE_NOMINAL_DB_NAME, &CHICaseNominalExist);
-
+    if (Language == CHINESE) {
+	/* Chinese verb case-frame DB (chicase.db) */
+	chi_case_db = open_dict(CHI_CASE_DB, CHI_CASE_DB_NAME, &CHICaseExist);
+	
+	/* Chinese nominal case-frame DB (chicase_nominal.db) */
+	chi_case_nominal_db = open_dict(CHI_CASE_NOMINAL_DB, CHI_CASE_NOMINAL_DB_NAME, &CHICaseNominalExist);
+    }
 }
 
 /*==================================================================*/
