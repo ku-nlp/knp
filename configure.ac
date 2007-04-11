@@ -206,7 +206,6 @@ AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 AM_CONDITIONAL(PROB_EXIST, test "$prob_exist" = yes)
 AM_CONDITIONAL(HOWNET_EXIST, test "$hownet_exist" = yes)
 
-
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 AC_SUBST(MAKE_DB_COMMAND)
@@ -260,9 +259,7 @@ dict/src/Makefile
 dict/scode/Makefile
 dict/scode/bgh/Makefile
 dict/scode/ntt/Makefile
-dict/scode/hownet/Makefile
 dict/ebcf/Makefile
 dict/gcf/Makefile
-dict/auto/Makefile
 ])
 AC_OUTPUT

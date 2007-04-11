@@ -1,1 +1,1 @@
-SUBDIRS = bgh ntt hownet
+SUBDIRS = bgh ntt
