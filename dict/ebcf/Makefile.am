@@ -16,7 +16,7 @@ nodist_dic_DATA +=  chidpnd.db
 
 PROBCASE_DBS = case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db
 
-HOWNET_DBS = HowNet_Def.db HowNet_Sem_Def.db HowNet_Antonym.db HowNet_Category.db
+HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
@@ -110,6 +110,46 @@ chidpnd.dict:
 	true
 
 chidpnd.db: chidpnd.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.def:
+	true
+
+hownet_def.db: HowNet.def
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.tran:
+	true
+
+hownet_tran.db: HowNet.tran
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.antonym:
+	true
+
+hownet_antonym.db: HowNet.antonym
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.category:
+	true
+
+hownet_category.db: HowNet.category
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+HowNet.SemDef:
+	true
+
+hownet_sem_def.db: HowNet.SemDef
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
