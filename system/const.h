@@ -50,8 +50,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	2625
-#define DpndRule_G_MAX	2800
+#define DpndRule_MAX	128
+#define DpndRule_G_MAX	35
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
@@ -95,32 +95,11 @@
 #define	BYTES4CHAR	2	/* euc-jp */
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
-#define SMALL_PROB      0.0000001 /* A small prob for Chinese relaxation */
 #define TIME_PROB       50    /* time to enlarge dpnd prob for Chinese */
 #define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
 #define CHI_POS_LEN_MAX  3    /* maximum Chinese pos length */
-
-/*====================================================================
-			    SIMILARITY
-====================================================================*/
-
-#define ENTITY_NUM 2220
-#define ENTITY_MAX 300
-#define HOWNET_NUM 56813
-#define HOWNET_WORD_MAX 100
-#define HOWNET_POS_MAX 10
-#define HOWNET_DEF_MAX 300
-#define HOWNET_TRAN_MAX 20
-#define HOWNET_CONCEPT_MAX 20
-#define LEVEL_NUM 20
-#define LEVEL_MAX 5
-#define LEVEL_PAR 1.6
-#define DEF_NUM 20
-#define DEF_MAX 100
-#define PARA_1 0
-#define PARA_2 0.4
-#define PARA_3 0.4
-#define PARA_4 0.2
+#define HOWNET_TRAN_MAX  100  /* maximum Chinese word translation in HowNet */
+#define HOWNET_CONCEPT_MAX  50  /* maximum Chinese word definition in HowNet */
 
 /*====================================================================
 				DEFINE
@@ -521,7 +500,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	29
+#define DICT_MAX	34
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -551,6 +530,11 @@ typedef struct _RuleVector {
 #define CHI_CASE_NOMINAL_DB	26
 #define CHI_DPND_DB     27
 #define AUTO_DIC_DB	28
+#define HOWNET_DEF_DB   29
+#define HOWNET_TRAN_DB  30
+#define HOWNET_ANTONYM_DB       31
+#define HOWNET_CATEGORY_DB      32
+#define HOWNET_SEM_DEF_DB       33
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -982,8 +966,8 @@ typedef struct ellipsis_features {
     int		pos;
     int		frequency;
     int		discourse_depth;
-    float	refered_num_surface;
-    float	refered_num_ellipsis;
+    int		refered_num_surface;
+    int		refered_num_ellipsis;
 
     int		c_pp;
     int		c_distance;
@@ -1130,8 +1114,8 @@ typedef struct sm_list {
 /* 名詞の被参照回数の構造体 */
 typedef struct entity_list {
     char	*key;
-    double	surface_num;
-    double	ellipsis_num;
+    int		surface_num;
+    int		ellipsis_num;
     struct entity_list *next;
 } ENTITY_LIST;
 

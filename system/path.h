@@ -34,6 +34,9 @@
 #define CHI_CASE_NOMINAL_DB_NAME	"ebcf/chicase_nominal.db"
 #define CHI_DPND_DB_NAME	"ebcf/chidpnd.db"
 #define AUTO_DIC_DB_NAME	"auto/auto.db"
-#define HOWNET_DICT             "scode/hownet/HowNet.txt"
-#define HOWNET_ENTITY           "scode/hownet/HowNet_Entity.txt"
+#define HOWNET_DEF_DB_NAME      "ebcf/hownet_def.db"
+#define HOWNET_TRAN_DB_NAME      "ebcf/hownet_tran.db"
+#define HOWNET_ANTONYM_DB_NAME  "ebcf/hownet_antonym.db"
+#define HOWNET_CATEGORY_DB_NAME "ebcf/hownet_category.db"
+#define HOWNET_SEM_DEF_DB_NAME  "ebcf/hownet_sem_def.db"
 

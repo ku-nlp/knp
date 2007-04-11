@@ -1,395 +1,450 @@
 /*====================================================================
 
-                                 類似度計算
+                         中国語類似度計算
 
-                                                  Liu  06. 10.25
-                                                 Modified Version
+                                                  KunYu  2007.01.22
+
 ====================================================================*/
 #include "knp.h"
 
-char hownet_word[HOWNET_NUM][HOWNET_WORD_MAX];
-char hownet_pos[HOWNET_NUM][HOWNET_POS_MAX];
-char hownet_def[HOWNET_NUM][HOWNET_DEF_MAX];
-char entity[ENTITY_NUM][ENTITY_MAX];
+DBM_FILE hownet_def_db;
+DBM_FILE hownet_tran_db;
+DBM_FILE hownet_antonym_db;
+DBM_FILE hownet_category_db;
+DBM_FILE hownet_sem_def_db;
+int HownetDefExist;
+int HownetTranExist;
+int HownetAntonymExist;
+int HownetCategoryExist;
+int HownetSemDefExist;
 
 /*==================================================================*/
-                       void hownet_open()
+                       void init_hownet()
 /*==================================================================*/
 {
-    /*read the Entity table*/
-    FILE *fp,*fp2;
-    char* dict_file_name;
-    char* entity_file_name;
-    char string_entity[ENTITY_MAX];
-    int entity_flag = 0;
-    int hownet_flag = 0;
-
-    dict_file_name = check_dict_filename(HOWNET_DICT, TRUE);
-    entity_file_name = check_dict_filename(HOWNET_ENTITY, TRUE);
-
-    fp = fopen(entity_file_name,"r");
-    fp2 = fopen(dict_file_name,"r");
-    if(fp == NULL){
-	fprintf(stderr, ";; Cannot open file (%s) !!\n", fp);
-    }
-    if(fp2 == NULL){
-	fprintf(stderr, ";; Cannot open file (%s) !!\n", fp2);
-    } 
-    while((fgets(string_entity,ENTITY_MAX,fp)) != NULL && entity_flag < ENTITY_NUM){
-	entity_flag++;
-	strcpy(entity[entity_flag],string_entity);
-    }
-    while((fscanf(fp2,"%s %s %s",hownet_word[hownet_flag],hownet_pos[hownet_flag],hownet_def[hownet_flag])) && hownet_flag < HOWNET_NUM){
-	hownet_flag++;
-    }
-    fclose (fp);
-    fclose (fp2);
+    hownet_def_db = open_dict(HOWNET_DEF_DB, HOWNET_DEF_DB_NAME, &HownetDefExist);    
+    hownet_tran_db = open_dict(HOWNET_TRAN_DB, HOWNET_TRAN_DB_NAME, &HownetTranExist);    
+    hownet_antonym_db = open_dict(HOWNET_ANTONYM_DB, HOWNET_ANTONYM_DB_NAME, &HownetAntonymExist);    
+    hownet_category_db = open_dict(HOWNET_CATEGORY_DB, HOWNET_CATEGORY_DB_NAME, &HownetCategoryExist);    
+    hownet_sem_def_db = open_dict(HOWNET_SEM_DEF_DB, HOWNET_SEM_DEF_DB_NAME, &HownetSemDefExist);    
 }
 
+/* get hownet def for word */
 /*==================================================================*/
-           float step(float a, float b, float c, float d)
+   char* get_hownet_def(BNST_DATA *p_ptr)
+/*==================================================================*/
+{
+    char *key;
+
+    if (HownetDefExist == FALSE) {
+	return NULL;
+    }
+
+    key = malloc_db_buf(strlen(p_ptr->head_ptr->Goi)+1);
+
+    sprintf(key, "%s", p_ptr->head_ptr->Goi);
+    return db_get(hownet_def_db, key);
+}
+
+/* get hownet translation for word */
+/*==================================================================*/
+   char* get_hownet_tran(BNST_DATA *p_ptr)
+/*==================================================================*/
+{
+    char *key;
+
+    if (HownetTranExist == FALSE) {
+	return NULL;
+    }
+
+    key = malloc_db_buf(strlen(p_ptr->head_ptr->Goi)+1);
+
+    sprintf(key, "%s", p_ptr->head_ptr->Goi);
+    return db_get(hownet_tran_db, key);
+}
+
+/* get hownet antonym for word */
+/*==================================================================*/
+   int get_hownet_antonym(BNST_DATA *g_ptr, BNST_DATA *d_ptr)
+/*==================================================================*/
+{
+    char *key1, *key2, *value1, *value2;
+    int ret;
+
+    if (HownetAntonymExist == FALSE) {
+	return 0;
+    }
+
+    key1 = malloc_db_buf(strlen(g_ptr->head_ptr->Goi)+strlen(d_ptr->head_ptr->Goi)+2);
+
+    sprintf(key1, "%s:%s", g_ptr->head_ptr->Goi, d_ptr->head_ptr->Goi);
+    value1 = db_get(hownet_antonym_db, key1);
+
+    if (value1) {
+	ret = atoi(value1);
+	free(value1);
+    }
+    else {
+	key2 = malloc_db_buf(strlen(g_ptr->head_ptr->Goi)+strlen(d_ptr->head_ptr->Goi)+2);
+	sprintf(key2, "%s:%s", d_ptr->head_ptr->Goi, g_ptr->head_ptr->Goi);
+	value2 = db_get(hownet_antonym_db, key2);
+	if (value2) {
+	    ret = atoi(value2);
+	    free(value2);
+	}
+	else {
+	    ret = 0;
+	}
+    }
+    
+    return ret;
+}
+
+/* get hownet def for sememe */
+/*==================================================================*/
+   char* get_hownet_sem_def(char *key)
+/*==================================================================*/
+{
+    if (HownetSemDefExist == FALSE) {
+	return NULL;
+    }
+
+    return db_get(hownet_sem_def_db, key);
+}
+
+/* get hownet category for word */
+/*==================================================================*/
+   int get_hownet_category(char *key)
+/*==================================================================*/
+{
+    char *value;
+    int ret;
+
+    if (HownetCategoryExist == FALSE) {
+	return 0;
+    }
+
+    value = db_get(hownet_category_db, key);
+
+    if (value) {
+	ret = atoi(value);
+	free(value);
+    }
+    else {
+	ret = 0;
+    }
+    
+    return ret;
+}
+
+/* calculate word similarity */
+/*==================================================================*/
+     float similarity_chinese (BNST_DATA *g_ptr, BNST_DATA *d_ptr)
 /*==================================================================*/
 {    
     float sim;
-    sim  = a * PARA_1 + b * PARA_2 + c * PARA_3 + d * PARA_4;
-    return  sim;
-}
+    float p1, p2, p3, p4;
+    float dis;
+    float alpha;
+    int nc1, nc2, ns;
+    int nc1_sem, nc2_sem, ns_sem;
+    float beta1, beta2, beta3, beta4;
+    char *def_w1, *def_w2, *def_sem_w1, *def_sem_w2, *trans_w1, *trans_w2;
 
-/*==================================================================*/
-            int def_cmp(char *string1,char *string2)
-/*==================================================================*/
-{
-    if((strstr(string1,string2)) == NULL && (strstr(string2,string1)) == NULL){
-	return 0;
+    int i, j;
+    int tran_num_w1, tran_num_w2, concept_num_w1, concept_num_w2, concept_sem_num_w1, concept_sem_num_w2;
+    int is_include, diff, is_sim;
+
+    /* initialization */
+    sim = 0.0;
+    p1 = 0.0;
+    p2 = 0.0;
+    p3 = 0.0;
+    p4 = 0.0;
+    dis = 0.0;
+    nc1 = 0;
+    nc2 = 0;
+    ns = 0;
+    nc1_sem = 0;
+    nc2_sem = 0;
+    ns_sem = 0;
+    diff = 0;
+    is_sim = 0;
+
+    /* set parameters */
+    alpha = 1.6;
+    beta1 = 0.1;
+    beta2 = 0.1;
+    beta3 = 0.7;
+    beta4 = 0.1;
+
+    /* Do not calculate similarity for PU */
+    if (check_feature(g_ptr->f, "PU") || check_feature(d_ptr->f, "PU")) {
+	sim = 0.0;
+	return sim;
     }
-    return 1;
-}
 
-/*==================================================================*/
-              char *pos_modify(BNST_DATA *pos)
-/*==================================================================*/
-{
-    if(check_feature(pos->f,"AD"))
-	return "ADV";
-    if(check_feature(pos->f,"AS"))
-	return "SUFFIX";
-    if(check_feature(pos->f,"BA"))
-	return "PREP";
-    if(check_feature(pos->f,"CC"))
-	return "COOR";
-    if(check_feature(pos->f,"CD"))
-	return "NUM";
-    if(check_feature(pos->f,"CS"))
-	return "CONJ";
-    if(check_feature(pos->f,"DEC"))
-	return "STRU";
-    if(check_feature(pos->f,"DEG"))
-	return "STRU";
-    if(check_feature(pos->f,"DER"))
-	return "STRU";
-    if(check_feature(pos->f,"DEV"))
-	return "STRU";
-    if(check_feature(pos->f,"DT"))
-	return "N";
-    if(check_feature(pos->f,"FW"))
-	return "N";
-    if(check_feature(pos->f,"ETC"))
-	return "SUFFIX";
-    if(check_feature(pos->f,"IJ"))
-	return "ECHO";
-    if(check_feature(pos->f,"JJ"))
-	return "ADJ";
-    if(check_feature(pos->f,"LB"))
-	return "STRU";
-    if(check_feature(pos->f,"LC"))
-	return "P";
-    if(check_feature(pos->f,"M"))
-	return "CLAS";
-    if(check_feature(pos->f,"MSP"))
-	return "CLAS";
-    if(check_feature(pos->f,"NN"))
-	return "N";
-    if(check_feature(pos->f,"NR"))
-	return "N";
-    if(check_feature(pos->f,"NT"))
-	return "N";
-    if(check_feature(pos->f,"NT-SHORT"))
-	return "N";
-    if(check_feature(pos->f,"NR-SHORT"))
-	return "N";
-    if(check_feature(pos->f,"NR-PN"))
-	return "N";
-    if(check_feature(pos->f,"NN-SBJ"))
-	return "N";
-    if(check_feature(pos->f,"NN-SHORT"))
-	return "N";
-    if(check_feature(pos->f,"OD"))
-	return "NUM";
-    if(check_feature(pos->f,"ON"))
-	return "ECHO";
-    if(check_feature(pos->f,"P"))
-	return "PREP";
-    if(check_feature(pos->f,"PN"))
-	return "PRON";
-    if(check_feature(pos->f,"PU"))
-	return "PUNC";
-    if(check_feature(pos->f,"SB"))
-	return "STRU";
-    if(check_feature(pos->f,"SP"))
-	return "STRU";
-    if(check_feature(pos->f,"VA"))
-	return "V";
-    if(check_feature(pos->f,"VC"))
-	return "V";
-    if(check_feature(pos->f,"VE"))
-	return "V";
-    if(check_feature(pos->f,"VV"))
-	return "V";
-    
-    return NULL;
-}
+    /* get translation and concept definition for words */
+    def_w1 = get_hownet_def(g_ptr);
+    def_w2 = get_hownet_def(d_ptr);
+    trans_w1 = get_hownet_tran(g_ptr);
+    trans_w2 = get_hownet_tran(d_ptr);
 
-
-/*==================================================================*/
-      float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2)
-/*==================================================================*/
-{
-    char *m_input_pos_first,*m_input_pos_second;
-    float p1,p2,p3,p4,similarity;
-    int check_hownet_flag;
-    char *def_first,*def_second;
-    char def_first_copy[ENTITY_MAX],def_second_copy[ENTITY_MAX];
-    char *def_first_head,*def_second_head;
-    int entity_round_flag;
-    char *level_first,*level_second;
-    char entity_copy1[ENTITY_MAX];
-    char entity_copy2[ENTITY_MAX];
-    int first_level_num,second_level_num,same_level_num;
-    char *level_pointer;
-    char buffer_first_level[LEVEL_NUM][LEVEL_MAX];
-    char buffer_second_level[LEVEL_NUM][LEVEL_MAX];
-    int level_round_flag=1;
-    char def_first_copy2[ENTITY_MAX],def_second_copy2[ENTITY_MAX];
-    int first_def_num,second_def_num,same_def_num;
-    char *def_pointer;
-    char buffer_first_def[DEF_NUM][DEF_MAX];
-    char buffer_second_def[DEF_NUM][DEF_MAX];
-    int def_round_flag;
-    int def_round_flag2;
-    char word1[HOWNET_WORD_MAX];
-    char word2[HOWNET_WORD_MAX];
-    char pos1[HOWNET_POS_MAX];
-    char pos2[HOWNET_POS_MAX];
-
-    def_round_flag = 1;
-    first_level_num = 0;
-    second_level_num = 0;
-    same_level_num = 0;
-    first_def_num = 0;
-    second_def_num = 0;
-    same_def_num = 0;
-    def_first = NULL;
-    def_second = NULL;
-    def_first_head = NULL;
-    def_second_head = NULL;
-    level_first = NULL;
-    level_second = NULL;
-    m_input_pos_first = NULL;
-    m_input_pos_second = NULL;
-    def_pointer = NULL;
-    level_pointer = NULL;
-    p1 = 0;
-    p2 = 0;
-    p3 = 0;
-    p4 = 0;
-    similarity = 0;
-    strcpy(word1,ptr1->head_ptr->Goi);
-    strcpy(word2,ptr2->head_ptr->Goi);
-    if(pos_modify(ptr1)==NULL || pos_modify(ptr2)==NULL){
-      return 0;
-    }
-    strcpy(pos1,pos_modify(ptr1));
-    strcpy(pos2,pos_modify(ptr2));
-    m_input_pos_first = pos1;
-    m_input_pos_second = pos2;
-
-    /* check the word and pos in the HowNet*/
-    if(m_input_pos_first != NULL && strcmp(m_input_pos_first, "PUNC")){
-	for(check_hownet_flag = 0;check_hownet_flag < HOWNET_NUM;){
-	    if(!strcmp(word1,hownet_word[check_hownet_flag]) && !strcmp(m_input_pos_first,hownet_pos[check_hownet_flag])){
-		def_first = hownet_def[check_hownet_flag];
+    i = 0;
+    if (trans_w1 != NULL) {
+	tran_w1[0] = NULL;
+	tran_w1[0] = strtok(trans_w1, ":");
+	while (1) {
+	    if (++i == HOWNET_TRAN_MAX) {
+		fprintf(stderr, "Too many translations for one word");
+		return 0;
+	    }
+	    tran_w1[i] = NULL;
+	    tran_w1[i] = strtok(NULL, ":");
+	    if (tran_w1[i] == NULL) {
 		break;
 	    }
-	    else{
-		check_hownet_flag++;
-	    }
 	}
-    }
+	}
+    tran_num_w1 = i;
 
-    if(m_input_pos_second != NULL && strcmp(m_input_pos_second, "PUNC")){
-	for(check_hownet_flag = 0;check_hownet_flag < HOWNET_NUM;check_hownet_flag++){
-	    if(!strcmp(word2,hownet_word[check_hownet_flag]) && !strcmp(m_input_pos_second,hownet_pos[check_hownet_flag])){
-		def_second = hownet_def[check_hownet_flag];
+    i = 0;
+    if (trans_w2 != NULL) {
+	tran_w2[0] = NULL;
+	tran_w2[0] = strtok(trans_w2, ":");
+	while (1) {
+	    if (++i == HOWNET_TRAN_MAX) {
+		fprintf(stderr, "Too many translations for one word");
+		return 0;
+	    }
+	    tran_w2[i] = NULL;
+	    tran_w2[i] = strtok(NULL, ":");
+	    if (tran_w2[i] == NULL) {
 		break;
 	    }
 	}
     }
-   
-    if(def_first == NULL || def_second == NULL){
-	if(m_input_pos_first == NULL || m_input_pos_second == NULL){
-	    similarity = 0.0;
-	    return similarity;
-	}
-	else{
-	    if(!strcmp(m_input_pos_first,m_input_pos_second) && strcmp(m_input_pos_first, "PUNC") && strcmp(m_input_pos_second, "PUNC")){
-		similarity = 1.0 * PARA_4;
-		return similarity;
+    tran_num_w2 = i;
+
+    i = 0;
+    if (def_w1 != NULL) {
+	concept_w1[0] = NULL;
+	concept_w1[0] = strtok(def_w1, ":");
+	while (1) {
+	    if (++i == HOWNET_CONCEPT_MAX) {
+		fprintf(stderr, "Too many concept definitions for one word");
+		return 0;
 	    }
-	    else{
-		similarity = 0.0;
-		return similarity;
+	    concept_w1[i] = NULL;
+	    concept_w1[i] = strtok(NULL, ":");
+	    if (concept_w1[i] == NULL) {
+		break;
 	    }
 	}
     }
-   
-/*==================================================================*/
-/*step 1:defination comparision                                     */
-/*==================================================================*/
+    concept_num_w1 = i;
+
+    i = 0;
+    if (def_w2 != NULL) {
+	concept_w2[0] = NULL;
+	concept_w2[0] = strtok(def_w2, ":");
+	while (1) {
+	    if (++i == HOWNET_CONCEPT_MAX) {
+		fprintf(stderr, "Too many concept definitions for one word");
+		return 0;
+	    }
+	    concept_w2[i] = NULL;
+	    concept_w2[i] = strtok(NULL, ":");
+	    if (concept_w2[i] == NULL) {
+		break;
+	    }
+	}
+    }
+    concept_num_w2 = i;
+
+    /* get concept definition for the first sememe of two words */
+    def_sem_w1 = get_hownet_sem_def(concept_w1[0]);
+    def_sem_w2 = get_hownet_sem_def(concept_w2[0]);
+
+    i = 0;
+    if (def_sem_w1 != NULL) {
+	concept_sem_w1[0] = NULL;
+	concept_sem_w1[0] = strtok(def_sem_w1, ":");
+	while (1) {
+	    if (++i == HOWNET_CONCEPT_MAX) {
+		fprintf(stderr, "Too many concept definitions for one sememe");
+		return 0;
+	    }
+	    concept_sem_w1[i] = NULL;
+	    concept_sem_w1[i] = strtok(NULL, ":");
+	    if (concept_sem_w1[i] == NULL) {
+		break;
+	    }
+	}
+    }
+    concept_sem_num_w1 = i;
+
+    i = 0;
+    if (def_sem_w2 != NULL) {
+	concept_sem_w2[0] = NULL;
+	concept_sem_w2[0] = strtok(def_sem_w2, ":");
+	while (1) {
+	    if (++i == HOWNET_CONCEPT_MAX) {
+		fprintf(stderr, "Too many concept definitions for one sememe");
+		return 0;
+	    }
+	    concept_sem_w2[i] = NULL;
+	    concept_sem_w2[i] = strtok(NULL, ":");
+	    if (concept_sem_w2[i] == NULL) {
+		break;
+	    }
+	}
+    }
+    concept_sem_num_w2 = i;
   
-    if(def_cmp(def_first,def_second) != 0){
-	p1 = 1;
+    /* step 1 */
+    if (tran_num_w1 > 0 && tran_num_w2 > 0) {
+	is_sim = 1;
     }
-    else{
-	p1 = 0;
+    for (i = 0; i < tran_num_w1; i++) {
+	if (!is_sim) {
+	    break;
+	}
+	for (j = 0; j < tran_num_w2; j++) {
+	    if (tran_w1[i] != NULL && tran_w2[j] != NULL && !strcmp(tran_w1[i], tran_w2[j])) {
+		continue;
+	    }
+	    else {
+		is_sim = 0;
+		break;
+	    }
+	}
+    }
+    if (is_sim) {
+	sim = 1.0;
+	return sim;
     }
 
-/*==================================================================*/
-/*step 2:defination entity level computation                        */
-/*==================================================================*/
+    /* step 2 */
+    if (concept_num_w1 > 0 && concept_num_w2 > 0) {
+	is_sim = 1;
+    }
+    for (i = 0; i < concept_num_w1; i++) {
+	if (!is_sim) {
+	    break;
+	}
+	for (j = 0; j < concept_num_w2; j++) {
+	    if (concept_w1[i] != NULL && concept_w2[j] != NULL && !strcmp(concept_w1[i], concept_w2[j])) {
+		continue;
+	    }
+	    else {
+		is_sim = 0;
+		break;
+	    }
+	}
+    }
+    if (is_sim) {
+	sim = 0.95;
+	return sim;
+    }
 
-    strcpy(def_first_copy,def_first);
-    strcpy(def_second_copy,def_second);
-    def_first_head = strtok(def_first_copy,",");
-    def_second_head = strtok(def_second_copy,",");
+    /* step 3 */
+    if (get_hownet_antonym(g_ptr, d_ptr)) {
+	sim = 1.0;
+	return sim;
+    }
 
-    for(entity_round_flag = 0;entity_round_flag < ENTITY_NUM;entity_round_flag++){
-	if(strstr(entity[entity_round_flag],def_first_head)){
-	    strcpy(entity_copy1,entity[entity_round_flag]);
-	    level_first = strtok(entity_copy1,"{");
+    /* step 5 */
+    /* step 5.1 */
+    is_include = 0;
+    for (i = 0; i < (concept_num_w1 < concept_num_w2 ? concept_num_w1:concept_num_w2); i++) {
+	for (j = 0; j < (concept_num_w1 < concept_num_w2 ? concept_num_w2:concept_num_w1); j++) {
+	    if (concept_w1[(concept_num_w1 < concept_num_w2 ? i:j)] != NULL && concept_w2[(concept_num_w1 < concept_num_w2 ? j:i)] != NULL && !strcmp(concept_w1[(concept_num_w1 < concept_num_w2 ? i:j)], concept_w2[(concept_num_w1 < concept_num_w2 ? j:i)])) {
+		is_include++;
+		break;
+	    }
+	}
+    }
+    if (is_include == (concept_num_w1 < concept_num_w2 ? concept_num_w1:concept_num_w2)) {
+	p1 = 1.0;
+    }
+
+    /* step 5.2 */
+    diff = (concept_num_w1 < concept_num_w2 ? concept_num_w1:concept_num_w2);
+    for (i = 0; i < (concept_num_w1 < concept_num_w2 ? concept_num_w1:concept_num_w2); i++) {
+	if (concept_w1[i] != NULL && concept_w2[j] != NULL && strcmp(concept_w1[i], concept_w2[i]) != 0) {
+	    diff = i;
 	    break;
 	}
     }
-    for(entity_round_flag = 0;entity_round_flag < ENTITY_NUM;entity_round_flag++){
-	if(strstr(entity[entity_round_flag],def_second_head)){
-	    strcpy(entity_copy2,entity[entity_round_flag]);
-	    level_second = strtok(entity_copy2,"{");
-	    break;
-	}
+    if (diff > 0) {
+	dis = get_hownet_category(concept_w1[diff-1]);
+    }
+    if (dis > 0) {
+	p2 = 1.0*alpha/(dis + alpha);
     }
 
-    if(level_first == NULL || level_second == NULL){
+    /* step 5.3 */
+    if (is_include == (concept_num_w1 < concept_num_w2 ? concept_num_w1:concept_num_w2)) {
+	ns = is_include;
     }
-    else{
-	level_pointer = strtok(level_first,".");
-	if(strcpy(buffer_first_level[0],level_pointer)){
-	    first_level_num++;
-	}
-	while((level_pointer = strtok(NULL,"."))){
-	    strcpy(buffer_first_level[level_round_flag],level_pointer);
-	    first_level_num++;
-	    level_round_flag++;
-	}
-
-	level_round_flag = 1;
-   
-	level_pointer = strtok(level_second,".");
-  
-	if(strcpy(buffer_second_level[0],level_pointer)){
-	    second_level_num++;
-	}
-	while((level_pointer = strtok(NULL,"."))){
-	    strcpy(buffer_second_level[level_round_flag],level_pointer);
-	    level_round_flag++;
-	    second_level_num++;
-	}
-
-	if(!strcmp(buffer_first_level[0],buffer_second_level[0])){
-	for(level_round_flag = 0;level_round_flag < (first_level_num > second_level_num ? second_level_num : first_level_num);level_round_flag++){
-	    if(!strcmp(buffer_first_level[level_round_flag],buffer_second_level[level_round_flag]) && strcmp(buffer_first_level[level_round_flag],"")){
-		same_level_num++;
-	    }
-	    else
-		{
-		    break;
+    else {
+	for (i = 0; i < concept_num_w1; i++) {
+	    for (j = 0; j < concept_num_w2; j++) {
+		if (concept_w1[i] != NULL && concept_w2[j] != NULL && !strcmp(concept_w1[i], concept_w2[j])) {
+		    ns++;
 		}
-	}
-	p2 = 1.6/(1.6 + first_level_num + second_level_num - 2 * same_level_num);
-	}
-	else{
-	  p2 = 0;
+	    }
 	}
     }
-
-/*==================================================================*/
-/*step 3:defination  computation                                    */
-/*==================================================================*/
-  
-    strcpy(def_first_copy2,def_first);
-    strcpy(def_second_copy2,def_second);
-   
-    if(def_first_copy2 == NULL || def_second_copy2 == NULL){
+    nc1 = concept_num_w1;
+    nc2 = concept_num_w2;
+    if (nc1 != 0 || nc2 != 0) {
+	p3 = 2.0*ns/(nc1+nc2);
     }
-    else{
-	def_pointer = strtok(def_first_copy2,",");
-	if(strcpy(buffer_first_def[0],def_pointer)){
-	    first_def_num++;
-	}
-	while((def_pointer = strtok(NULL,","))){
-	    strcpy(buffer_first_def[def_round_flag],def_pointer);
-	    first_def_num++;
-	    def_round_flag++;
-	}
-	def_round_flag = 1;
-	def_pointer = strtok(def_second_copy2,",");
-	if(strcpy(buffer_second_def[0],def_pointer)){
-	    second_def_num++;
-	}
-	while((def_pointer = strtok(NULL,","))){
-	    strcpy(buffer_second_def[def_round_flag],def_pointer);
-	    def_round_flag++;
-	    second_def_num++;
-	}
-
-	for(def_round_flag = 0;def_round_flag < first_def_num;def_round_flag++){
-	  for(def_round_flag2 = 0;def_round_flag2 < second_def_num;def_round_flag2++){
-	  if(!strcmp(buffer_first_def[def_round_flag],buffer_second_def[def_round_flag2])){
-	    same_def_num++;
-	  }
-	  else{
-	    continue;
-	  }
-	  }
-	}
-
-	p3 = 2.0 * same_def_num / ( first_def_num + second_def_num );
-	if (p3 > 1) {
-	    p3 = 1;
-	}
+    else {
+	p3 = 0.0;
     }
 
-/*==================================================================*/
-/*step 4:POS similarity                                             */
-/*==================================================================*/
-
-    if(!strcmp(pos1,pos2)){
-	p4 = 1;
+    /* step 5.4 */
+    for (i = 0; i < concept_sem_num_w1; i++) {
+	for (j = 0; j < concept_sem_num_w2; j++) {
+	    if (concept_sem_w1[i] != NULL && concept_sem_w2[j] != NULL && !strcmp(concept_sem_w1[i], concept_sem_w2[j])) {
+		ns_sem++;
+	    }
+	}
     }
-    else{
-	p4 = 0;
+    nc1_sem = concept_sem_num_w1;
+    nc2_sem = concept_sem_num_w2;
+    if (nc1_sem != 0 || nc2_sem != 0) {
+	p4 = 2.0*ns_sem/(nc1_sem+nc2_sem);
+    }
+    else {
+	p4 = 0.0;
     }
 
-/*==================================================================*/
-/*step 5:similarity                                                 */
-/*==================================================================*/
-    return step(p1,p2,p3,p4);
+    /* step 5.5 */
+    sim = p1*beta1 + p2*beta2 + p3*beta3 + p4*beta4;
+
+    /* free memory */
+    if (trans_w1) {
+	free(trans_w1);
+    }
+    if (trans_w2) {
+	free(trans_w2);
+    }
+    if (def_w1) {
+	free(def_w1);
+    }
+    if (def_w2) {
+	free(def_w2);
+    }
+    if (def_sem_w1) {
+	free(def_sem_w1);
+    }
+    if (def_sem_w2) {
+	free(def_sem_w2);
+    }
+
+    return sim;
 }

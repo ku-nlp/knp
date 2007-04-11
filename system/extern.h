@@ -66,6 +66,14 @@ extern int              Chi_quote_end_matrix[][BNST_MAX];
 extern DBM_FILE chi_dpnd_db;
 extern int     CHIDpndExist;
 
+/* HowNet variables */
+extern char *tran_w1[];
+extern char *tran_w2[];
+extern char *concept_w1[];
+extern char *concept_w2[];
+extern char *concept_sem_w1[];
+extern char *concept_sem_w2[];
+
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;
@@ -533,11 +541,6 @@ extern int base_phrase(SENTENCE_DATA *sp, int is_frag);
 extern int fragment(SENTENCE_DATA *sp);
 
 /* similarity.c */
-/* extern float step(float a,float b,float c,float d); */
-/* extern int def_cmp(char *string1,char *string2); */
-/* extern char *pos_modify(BNST_DATA *ptr); */
-/* extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2); */
-/* extern void hownet_open(); */
 extern void init_hownet();
 extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2);
 
