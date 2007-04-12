@@ -103,8 +103,8 @@
 			    SIMILARITY
 ====================================================================*/
 
-#define HOWNET_TRAN_MAX 20
-#define HOWNET_CONCEPT_MAX 20
+#define HOWNET_TRAN_MAX 100
+#define HOWNET_CONCEPT_MAX 50
 
 /*====================================================================
 				DEFINE

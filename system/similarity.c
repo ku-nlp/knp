@@ -170,6 +170,12 @@ int HownetSemDefExist;
     ns_sem = 0;
     diff = 0;
     is_sim = 0;
+    def_w1 = NULL;
+    def_w2 = NULL;
+    trans_w1 = NULL;
+    trans_w2 = NULL;
+    def_sem_w1 = NULL;
+    def_sem_w2 = NULL;
 
     /* set parameters */
     alpha = 1.6;
