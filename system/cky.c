@@ -95,11 +95,11 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	}
 
 	/* for verb, there should be only one object afterword */
-	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") || 
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) && 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
 //	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
@@ -126,7 +126,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for verb, if there exists noun before, it should have a subject */
+	/* for verb, if there exists noun before (without comma), it should have a subject */
 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
@@ -592,10 +592,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-/* 		if (OptDisplay == OPT_DEBUG) { */
-/* 		    printf("%.3f(casebefore)=>", one_score); */
-/* 		} */
-
 		/* add score from verb case frame */
 		if ((check_feature(g_ptr->f, "VV") ||
 		     check_feature(g_ptr->f, "VA") ||
@@ -660,10 +656,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 		}
-
-/* 		if (Language == CHINESE && OptDisplay == OPT_DEBUG) { */
-/* 		    printf("%.3f(caseafter)=>", one_score); */
-/* 		} */
 
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
@@ -1854,6 +1846,14 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 
     if (!strcmp(type, "noun")) {
 	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "PU") && 
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
+		break;
+	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
 		check_feature((sp->bnst_data + k)->f, "NR") ||
 //		check_feature((sp->bnst_data + k)->f, "NT") ||
