@@ -1,3 +1,8 @@
+2007-04-14  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule:
+	Handled the verbal suffix 「る」 (e.g., 「ググる」).
+
 2007-04-12  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/scode/bgh/bgh.orig:
