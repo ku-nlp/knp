@@ -71,7 +71,7 @@ int     pp_matrix[BNST_MAX];
 		void change_matrix_for_phrase(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k;
+  int i, j, k, head;
 
     for (i = 0; i < sp->Bnst_num; i++){
 	if (np_matrix[i] == -1 && pp_matrix[i] == -1) {
@@ -79,21 +79,42 @@ int     pp_matrix[BNST_MAX];
 	}
 	else {
 	    /* the head of np must be the last word */
-	    if (np_matrix[i] != -1) {
+	  if (np_matrix[i] != -1) {
+	    head = np_matrix[i];
+	    for (j = np_matrix[i]; j >= i; j--) {
+	      if (check_feature((sp->bnst_data+j)->f, "NN") || check_feature((sp->bnst_data+j)->f, "NR")) {
+		head = j;
+		break;
+	      }
+	    }
 		/* mask upper dpnd */
 		for (j = 0; j < i; j++) {
-		    for (k = i; k < np_matrix[i]; k++) {
+		    for (k = i; k <= np_matrix[i]; k++) {
+		      if (k != head) {
 			Dpnd_matrix[j][k] = 0;
+		      }
 		    }
 		}
 		/* mask right dpnd */
-		for (j = i; j < np_matrix[i]; j++) {
+		for (j = i; j <= np_matrix[i]; j++) {
 		    for (k = np_matrix[i] + 1; k < sp->Bnst_num; k++) {
+		      if (j != head) {
 			Dpnd_matrix[j][k] = 0;
+		      }
 		    }
 		}
+		/* mask inside dpnd */
+		for (j = i; j <= np_matrix[i]; j++) {
+		  if (j != head && !check_feature((sp->bnst_data+j)->f, "JJ")) {
+		    for (k = j + 1; k <= np_matrix[i]; k++) {
+		      if (k != head) {
+			Dpnd_matrix[j][k] = 0;
+		      }
+		    }
+		  }
+		}
 	    }
-	    /* the head of np must be the first word */
+	    /* the head of pp must be the first word */
 	    if (pp_matrix[i] != -1) {
 		/* mask upper dpnd */
 		for (j = 0; j < i; j++) {
@@ -193,7 +214,7 @@ int     pp_matrix[BNST_MAX];
     flag = (check_phrase(sp) == TRUE) ? TRUE: FALSE;
 
     /* 行列の書き換え */
-//    change_matrix_for_phrase(sp); 
+    change_matrix_for_phrase(sp); 
     assign_np_matrix(sp);
 
     return flag;
