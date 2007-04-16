@@ -102,8 +102,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
-//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
-//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
 	    left->j - left->i > 0 &&
 	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1) {
@@ -430,7 +428,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		if (Language == CHINESE) {
 		    one_score -= 30 * verb; 
-		    one_score -= 100 * comma;
+		    one_score -= 50 * comma;
 		}
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
@@ -862,7 +860,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 check_feature(d_ptr->f, "VV")) &&
 			check_feature(g_ptr->f, "DEC") && 
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
-			one_score += 150;
+			one_score += 50;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
