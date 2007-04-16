@@ -372,9 +372,10 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 /*==================================================================*/
 {
     int step, expand, non_subj_flag = 0;
+    char *code;
 
     if (Thesaurus == USE_BGH) {
-	return 0;
+	step = BGH_CODE_SIZE;
     }
     else if (Thesaurus == USE_NTT) {
 	step = SM_CODE_SIZE;
@@ -391,6 +392,13 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	non_subj_flag = 1;
     }
 
+    if (Thesaurus == USE_BGH) {
+	code = tp->BGH_code;
+    }
+    else {
+	code = tp->SM_code;
+    }    
+
     /* 意味属性のマッチング */
     if (cfp->sm[n]) {
 	int i, j;
@@ -401,25 +409,25 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	       人   <=> <人>, 人名
 	       組織 <=> <組織>, 組織名
 	    ※ 人名には<人>, 組織名には<組織>をruleで付与ずみ */
-	    if (!strncmp(cfp->sm[n] + j, sm2code("主体"), SM_CODE_SIZE) || 
-		!strncmp(cfp->sm[n] + j, sm2code("人"), SM_CODE_SIZE) || 
-		!strncmp(cfp->sm[n] + j, sm2code("組織"), SM_CODE_SIZE)) {
+	    if (!strncmp(cfp->sm[n] + j, sm2code("主体"), step) || 
+		!strncmp(cfp->sm[n] + j, sm2code("人"), step) || 
+		!strncmp(cfp->sm[n] + j, sm2code("組織"), step)) {
 		if (non_subj_flag == 0 && 
 		    !MatchPP(cfp->pp[n][0], "ヲ") && /* 主体のマッチング (ヲ格以外) */
-		    sms_match(cfp->sm[n] + j, tp->SM_code, expand)) {
+		    sms_match(cfp->sm[n] + j, code, expand)) {
 		    return 1;
 		}
 	    }
 	    /* 格フレーム-動作 <=> <名(転生)>, <サ変> */
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("動作"), SM_CODE_SIZE)) {
-		if (sms_match(sm2code("名(転生)"), tp->SM_code, SM_CHECK_FULL) || 
-		    sms_match(sm2code("サ変"), tp->SM_code, SM_CHECK_FULL)) {
+	    else if (Thesaurus == USE_NTT && !strncmp(cfp->sm[n] + j, sm2code("動作"), SM_CODE_SIZE)) {
+		if (sms_match(sm2code("名(転生)"), code, SM_CHECK_FULL) || 
+		    sms_match(sm2code("サ変"), code, SM_CHECK_FULL)) {
 		    return 1;
 		}
 	    }
 	    /* 格フレーム-場所 <=> <場所> */
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("場所"), SM_CODE_SIZE)) {
-		if (sms_match(cfp->sm[n] + j, tp->SM_code, expand)) {
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("場所"), step)) {
+		if (sms_match(cfp->sm[n] + j, code, expand)) {
 		    return 1;
 		}
 	    }

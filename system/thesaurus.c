@@ -243,6 +243,27 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
 }
 
 /*==================================================================*/
+int bgh_code_match_for_sm(char *result_code, char *sm)
+/*==================================================================*/
+{
+    int i;
+    char *code;
+
+    if ((code = db_get(sm2code_db, sm))) {
+
+	for (i = 0; *(code + i); i += BGH_CODE_SIZE) {
+	    if (_cf_match_element(result_code, code + i, 0, code_depth(code + i, BGH_CODE_SIZE) + 1)) {
+		strcat(result_code, sm);
+		free(code);		
+		return 1;
+	    }
+	}
+	free(code);
+    }
+    return 0;
+}
+
+/*==================================================================*/
 void make_key_and_get_code(BNST_DATA *ptr, int strt, int end, 
 			   char *str_buffer, char *ret_buffer, char *used_key, int flag)
 /*==================================================================*/
@@ -414,6 +435,18 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	make_key_and_get_code(ptr, strt, end, str_buffer, result_code, used_key, 
 			      flag | lookup_pos | OptUseRN);
 	if (*result_code) {
+	    if (flag == USE_BGH && !strstr(result_code, "sm")) {
+		if (bgh_code_match_for_sm(result_code, "sm-sub*****"))
+		    assign_cfeature(&(ptr->f), "SM:主体", FALSE);
+		if (bgh_code_match_for_sm(result_code, "sm-act*****"))
+		    assign_cfeature(&(ptr->f), "SM:動作", FALSE);
+		if (bgh_code_match_for_sm(result_code, "sm-per*****")) 
+		    assign_cfeature(&(ptr->f), "SM:人", FALSE);
+		if (bgh_code_match_for_sm(result_code, "sm-loc*****"))
+		    assign_cfeature(&(ptr->f), "SM:場所", FALSE);
+		if (bgh_code_match_for_sm(result_code, "sm-org*****"))
+		    assign_cfeature(&(ptr->f), "SM:組織", FALSE);
+	    }
 	    break;
 	}
     }
