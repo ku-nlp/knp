@@ -673,8 +673,8 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char cp[WORD_LEN_MAX];
-    char cp_nai[WORD_LEN_MAX];
+    char cp[WORD_LEN_MAX * 16];
+    char cp_nai[WORD_LEN_MAX * 16];
 
     /* タグに付与 */
     for (j = 0; j < sp->Tag_num; j++) { /* 同一タグの固有表現は一種類まで */
