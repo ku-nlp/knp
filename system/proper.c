@@ -17,9 +17,9 @@
   末尾が30 (〜a30) : キャッシュ
   末尾が40 (〜a40) : 末尾
   末尾が50 (〜a50) : 文字数
-  末尾が6    (〜6) : 親の主辞(自分自身)
+  末尾が6    (〜6) : 係り先の主辞(自分自身)
   末尾が60  (〜60) : 表層格(自分自身)
-  末尾が7    (〜7) : 親の主辞(文節末)
+  末尾が7    (〜7) : 係り先の主辞(文節末)
   末尾が70  (〜70) : 表層格(文節末)
   末尾が80 (〜b80) : 格フレームの意味 (b:1〜4)
 */
@@ -364,7 +364,7 @@ char *ne_code_to_tagposition(int num)
     if (num != SIZE + 1) return ret;
     buf = (char *)malloc_data(SMALL_DATA_LEN, "get_parent");
 
-    if ((pcp = check_feature(mrph_data->f, "親"))) {
+    if ((pcp = check_feature(mrph_data->f, "Ｔ係り先の主辞"))) {
 	if ((ccp = check_feature(mrph_data->f, "係"))) {
 	    c = case2num(ccp + 3) + 3;
 	    if (!strcmp("係:未格", ccp)) c = 1;
@@ -382,7 +382,7 @@ char *ne_code_to_tagposition(int num)
 	if (!(mrph_data + j)->f ||
 	    check_feature((mrph_data + j)->f, "文節始") ||
 	    check_feature((mrph_data + j)->f, "括弧")) break;
-	if ((pcp = check_feature((mrph_data + j)->f, "親"))) {
+	if ((pcp = check_feature((mrph_data + j)->f, "Ｔ係り先の主辞"))) {
 	    if ((ccp = check_feature((mrph_data + j)->f, "係"))) {
 		c = case2num(ccp + 3) + 3;
 		if (!strcmp("係:未格", ccp)) c = 1;
@@ -703,6 +703,12 @@ char *ne_code_to_tagposition(int num)
 		    fprintf(stderr, "Illegal NE ending!!\n");
 		break;
 	    }    
+	    
+	    if (strlen(cp) + strlen((sp->tag_data[j].mrph_ptr + i)->Goi2) >= WORD_LEN_MAX * 16) {
+		fprintf(stderr, ";; Too long tag data for %s... .\n", cp);
+		exit(1);
+	    }
+
 	    strcat(cp, (sp->tag_data[j].mrph_ptr + i)->Goi2);
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == SINGLE ||
 		get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) % 4 == TAIL) {
@@ -756,7 +762,7 @@ char *ne_code_to_tagposition(int num)
     if (!OptNEparent) {
 	/* 文節を前からチェック */
 	for (j = 0; j < sp->Bnst_num - 1; j++) {	    
-	    sprintf (cp, "親:%s",
+	    sprintf (cp, "Ｔ係り先の主辞:%s",
 		     (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi);
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), 
