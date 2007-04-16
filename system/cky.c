@@ -134,10 +134,11 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 	
-	/* for preposition, if there is LC in the following, the words between P and LC should depend on LC */
+	/* for preposition, if there is LC in the following (no preposibion between them), the words between P and LC should depend on LC */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC") &&
-	    left->j - left->i > 0) {
+	    left->j - left->i > 0 &&
+	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "prep") == -1) {
 	    return 0;
 	}
 
@@ -1854,8 +1855,6 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
 		check_feature((sp->bnst_data + k)->f, "NR") ||
-//		check_feature((sp->bnst_data + k)->f, "NT") ||
-//		check_feature((sp->bnst_data + k)->f, "M") ||
 		check_feature((sp->bnst_data + k)->f, "PN")) {
 		return k;
 	    }
@@ -1876,7 +1875,14 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 	    }
 	}
     }
-
+    else if (!strcmp(type, "prep")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "P")) {
+		return k;
+	    }
+	}
+    }
+    
     return -1;
 }
 
