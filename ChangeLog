@@ -1,3 +1,11 @@
+2007-04-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/context.rule:
+	名詞性名詞助数辞を先行詞候補としないように変更
+	
+	* system/case_print.c, system/lib_print.c:
+	-table時の出力を微修正
+
 2007-04-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/proper.c:

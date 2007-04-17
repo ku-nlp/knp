@@ -418,7 +418,7 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	    fprintf(Outfp, "PARA");
 	} else {
 	    if (OptExpress == OPT_TABLE)
-		fprintf(Outfp, "\n%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+		fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
 			Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
 	    for (i = 0; i < ptr->mrph_num; i++) {
 		fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
@@ -669,7 +669,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	} else
 	  cp += len - space;
     } else
-      for ( i=0; i<space-len; i++ ) fputc(' ', Outfp);
+	for ( i=0; i<space-len; i++ ) fputc(' ', Outfp);
 
     if ( ptr->para_key_type ) {
 	fprintf(Outfp, "%c>", 'a'+ (*para_char));
@@ -1038,9 +1038,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     calc_self_space(ptr, depth);
-    if ( ptr->para_top_p != TRUE ) {
-	for (i = 0; i < max_width - ptr->space; i++) 
-	    fputc(' ', Outfp);
+    if (OptExpress != OPT_TABLE) {
+	if ( ptr->para_top_p != TRUE ) {
+	    for (i = 0; i < max_width - ptr->space; i++) 
+		fputc(' ', Outfp);
+	}
     }
     print_bnst(ptr, NULL);
     

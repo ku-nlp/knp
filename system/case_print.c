@@ -395,7 +395,7 @@ struct _sort_kv {
        ちゃんと扱ってない */
 
     for (i = tm->pred_num - 1; i >= 0; i--) {
-	if (i != tm->pred_num - 1) {
+	if (i != tm->pred_num - 1 && OptExpress != OPT_TABLE) {
 	    fputc('\n', Outfp);
 	}
 	tag_num = tm->cpm[i].pred_b_ptr->num;
