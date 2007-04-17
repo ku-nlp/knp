@@ -1,3 +1,7 @@
+2007-04-17  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* t/52-knp-old.t: deleted.
+
 2007-03-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* Morpheme.pm: 意味素中の"-"に対応するため、ALTを"-"でsplitする際に分割数を8つに制限
