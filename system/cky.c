@@ -129,8 +129,10 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) &&
-	    exist_chi(sp, left->i, right->i - 1, "noun") != -1 &&
-	    direction != 'R') {
+	    exist_chi(sp, left->i, left->b_ptr->num - 1, "noun") != -1 &&
+	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN")) &&
+	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
+	    direction == 'R') {
 	    return 0;
 	}
 	
