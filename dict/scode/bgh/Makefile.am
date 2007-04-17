@@ -16,8 +16,12 @@ bgh.orig:
 	fi
 
 bgh.dat: usr_bgh.dat ../../src/add_usr_bgh.pl
-	if [ -f bgh.orig -a -f usr_bgh.dat ]; then \
-		../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
+	if [ -f bgh.orig ]; then \
+		if [ -s usr_bgh.dat ]; then \
+			../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
+		else \
+			cp -f bgh.orig $@; \
+		fi \
 	fi
 
 bgh.db: bgh.dat
