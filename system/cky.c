@@ -823,6 +823,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(g_ptr->f, "BA") ||
 			   check_feature(g_ptr->f, "DEG") ||
 			   check_feature(g_ptr->f, "JJ") ||
+			   check_feature(g_ptr->f, "VV") ||
 			   check_feature(g_ptr->f, "VE"))) ||
 
 			 ((check_feature(d_ptr->f, "OD")) &&
@@ -863,6 +864,10 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 check_feature(d_ptr->f, "VV")) &&
 			check_feature(g_ptr->f, "DEC") && 
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
+			one_score += 50;
+		    }
+		    if (check_feature(d_ptr->f, "NT") &&  
+			check_feature(g_ptr->f, "VV")) {
 			one_score += 50;
 		    }
 		}
@@ -1856,8 +1861,8 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 		break;
 	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
-		check_feature((sp->bnst_data + k)->f, "NR") ||
-		check_feature((sp->bnst_data + k)->f, "PN")) {
+		check_feature((sp->bnst_data + k)->f, "NR")){
+//		check_feature((sp->bnst_data + k)->f, "PN")) {
 		return k;
 	    }
 	}
