@@ -95,6 +95,10 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     char *cp;
 
+    if ((cp = check_feature(m_ptr->f, "代表表記変更"))) {
+	return cp + strlen("代表表記変更:");
+    }
+    
     if ((cp = check_feature(m_ptr->f, "代表表記"))) {
 	return cp + strlen("代表表記:");
     }

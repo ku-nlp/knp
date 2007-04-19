@@ -6,6 +6,10 @@
 	* system/feature.c:
 	ルールにおける意味素チェック関数を分類語彙表にも対応するように変更
 
+	* system/read_data.c:
+	格フレームを検索する際、代表表記変更というFEATUREがある場合は代表表記ではなく
+	変更前の代表表記を使って格フレームを検索するように変更
+	
 2007-04-17  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/scode/bgh/Makefile.am:

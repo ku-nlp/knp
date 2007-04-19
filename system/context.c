@@ -2331,9 +2331,37 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 
     if (PrintEx || OptDisplay == OPT_DEBUG) {
 	/* 類似度、頻度、位置カテゴリ、談話構造深さ、発話タイプ、出現回数、省略参照回数、先行詞格、先行詞節の強さ、主節、連格、主題表現、準主題表現、複合名詞、例外、用言タイプ、用言態、用言節の強さ、用言主体、用言補文、用言連格、格一致、用言一致 */
-	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 出現回数=%.3f, 省略参照回数=%.3f, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d, 用言補文=%d, 用言連格=%d, 格一致=%d, 用言一致=%d\n", pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, (ante_cands + i)->ef->class, (ante_cands + i)->ef->similarity, (ante_cands + i)->ef->frequency, loc_code_to_str((ante_cands + i)->ef->c_location), (ante_cands + i)->ef->discourse_depth, (ante_cands + i)->ef->utype, (ante_cands + i)->ef->refered_num_surface, (ante_cands + i)->ef->refered_num_ellipsis, (ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", (ante_cands + i)->ef->c_dep_p_level, (ante_cands + i)->ef->c_dep_mc_flag, (ante_cands + i)->ef->c_n_modify_flag, (ante_cands + i)->ef->c_topic_flag, (ante_cands + i)->ef->c_no_topic_flag, (ante_cands + i)->ef->c_in_cnoun_flag, (ante_cands + i)->ef->c_extra_tag, (ante_cands + i)->ef->p_type, (ante_cands + i)->ef->p_voice, (ante_cands + i)->ef->p_dep_p_level, (ante_cands + i)->ef->p_cf_subject_flag, (ante_cands + i)->ef->p_cf_sentence_flag, (ante_cands + i)->ef->p_n_modify_flag,(ante_cands + i)->ef->match_case, (ante_cands + i)->ef->match_verb);
+	fprintf(stderr, ";; ★ SVM学習Feature(for %s %s) %s %d: 類似度=%f, 頻度=%d, 位置C=%s, 深さ=%d, 発話タイプ=%d, 出現回数=%.3f, 省略参照回数=%.3f, 先行詞格=%s, 先行詞節=%s, 主節=%d, 連格=%d, 主題=%d, 準主題=%d, 複合名詞=%d, 例外=%d, 用言タイプ=%d, 用言態=%d, 用言節=%s, 用言主体=%d, 用言補文=%d, 用言連格=%d, 格一致=%d, 用言一致=%d\n", 
+		pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
+		cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, 
+		(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
+		(ante_cands + i)->ef->class, /* 正解かどうか */
+		(ante_cands + i)->ef->similarity, /* 類似度 */
+		(ante_cands + i)->ef->frequency, /* 頻度 */
+		loc_code_to_str((ante_cands + i)->ef->c_location), /* 位置カテゴリ */
+		(ante_cands + i)->ef->discourse_depth, /* 談話構造深さ */
+		(ante_cands + i)->ef->utype, /* 発話タイプ */
+		(ante_cands + i)->ef->refered_num_surface, /* 出現回数 */
+		(ante_cands + i)->ef->refered_num_ellipsis, /* 省略参照回数 */
+		(ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", /* 先行詞格 */
+		(ante_cands + i)->ef->c_dep_p_level, /* 先行詞の強さ */
+		(ante_cands + i)->ef->c_dep_mc_flag, /* 主節 */
+		(ante_cands + i)->ef->c_n_modify_flag, /* 連格 */
+		(ante_cands + i)->ef->c_topic_flag, /* 主題表現 */
+		(ante_cands + i)->ef->c_no_topic_flag, /* 準主題表現 */
+		(ante_cands + i)->ef->c_in_cnoun_flag, /* 複合名詞 */
+		(ante_cands + i)->ef->c_extra_tag, /* 例外 */
+		(ante_cands + i)->ef->p_type, /* 用言タイプ */
+		(ante_cands + i)->ef->p_voice, /* 用言態 */
+		(ante_cands + i)->ef->p_dep_p_level, /* 用言節の強さ */
+		(ante_cands + i)->ef->p_cf_subject_flag, /* 用言主体 */
+		(ante_cands + i)->ef->p_cf_sentence_flag, /* 用言補文 */
+		(ante_cands + i)->ef->p_n_modify_flag, /* 用言連格 */
+		(ante_cands + i)->ef->match_case, /* 格一致 */
+		(ante_cands + i)->ef->match_verb /* 用言一致 */
+	    );
     }
-
+    
     /* 学習FEATURE */
     EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
 				      (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
