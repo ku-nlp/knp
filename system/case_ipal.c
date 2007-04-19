@@ -404,7 +404,7 @@ int	PrintDeletedSM = 0;
 		;
 	    }
 	    /* merged cases */
-	    else if ((cp = strstr(token, "¡á")) != NULL) {
+	    else if ((cp = strstr(token, "¡á")) != NULL && flag == CF_PRED) {
 		buf = strdup(token);
 		cp = buf+(cp-token);
 		*cp = '\0';
@@ -1479,7 +1479,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 			assign_cfeature(&((t_ptr - i)->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
 			if (check_feature((t_ptr - i)->head_ptr->f, "Ê¸Àá»Ï")) break;
 			cp = get_mrph_rep((t_ptr - i)->head_ptr);
-			if (!strncmp(cp, rep_strt, strlen(cp) - 1)) break;
+			if (!cp || !strncmp(cp, rep_strt, strlen(cp) - 1)) break;
 			i++;
 		    }
 		}
