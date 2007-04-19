@@ -1,3 +1,11 @@
+2007-04-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/scode/bgh/sm2code.dat:
+	場所の意味素を付与する分類語彙表コードを追加
+
+	* system/feature.c:
+	ルールにおける意味素チェック関数を分類語彙表にも対応するように変更
+
 2007-04-17  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/scode/bgh/Makefile.am:

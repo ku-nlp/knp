@@ -912,7 +912,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     /* &文節意味素: 意味素チェック (文節) */
 
     else if (!strncmp(rule, "&文節意味素:", strlen("&文節意味素:"))) {
-	if (Thesaurus != USE_NTT) {
+	if (Thesaurus != USE_NTT && Thesaurus != USE_BGH) {
 	    return FALSE;
 	}
 
@@ -930,8 +930,12 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	}
 
 	if (cp) {
-	    for (i = 0; ((BNST_DATA *)ptr2)->SM_code[i]; i+=SM_CODE_SIZE) {
-		if (_sm_match_score(cp, &(((BNST_DATA *)ptr2)->SM_code[i]), flag))
+	    if (Thesaurus == USE_NTT) {	
+		if (sm_match_check(cp, (((BNST_DATA *)ptr2)->SM_code), flag))
+		    return TRUE;
+	    }
+	    else if (Thesaurus == USE_BGH) {
+		if (bgh_match_check(cp, ((BNST_DATA *)ptr2)->BGH_code))
 		    return TRUE;
 	    }
 	}
@@ -941,7 +945,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     /* &文節全意味素: 文節のすべての意味素が指定意味素以下にあるかどうか */
 
     else if (!strncmp(rule, "&文節全意味素:", strlen("&文節全意味素:"))) {
-	if (Thesaurus != USE_NTT) {
+	if (Thesaurus != USE_NTT && Thesaurus != USE_BGH) {
 	    return FALSE;
 	}
 
@@ -954,9 +958,17 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		cp = NULL;
 	}
 
-	if (cp && ((BNST_DATA *)ptr2)->SM_code[0] && 
-	    sm_all_match(((BNST_DATA *)ptr2)->SM_code, cp)) {
+	if (Thesaurus == USE_NTT) {	
+	    if (cp && ((BNST_DATA *)ptr2)->SM_code[0] && 
+		sm_all_match(((BNST_DATA *)ptr2)->SM_code, cp)) {
 		return TRUE;
+	    }
+	}
+	else if (Thesaurus == USE_BGH) {
+	    if (cp && ((BNST_DATA *)ptr2)->BGH_code[0] && 
+		sm_all_match(((BNST_DATA *)ptr2)->BGH_code, cp)) {
+		return TRUE;
+	    }
 	}
 	return FALSE;
     }
