@@ -550,7 +550,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
 	    c_ptr->pp[num][pp_num] = pp_kstr_to_code(cf_str_buf);
 	    if (c_ptr->pp[num][pp_num] == END_M) {
 		fprintf(stderr, ";; Unknown case (%s) in PP!\n", cf_str_buf);
-		exit(1);
+		return FALSE;
 	    }
 	    c_ptr->pp_str[num] = NULL;
 	}
