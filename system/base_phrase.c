@@ -31,6 +31,7 @@ int     pp_matrix[BNST_MAX];
 /*==================================================================*/
 {
     int		i, j, flag;
+    int         start_np, end_np;
 
     flag = FALSE;
 
@@ -46,6 +47,19 @@ int     pp_matrix[BNST_MAX];
 	    }
 	    i = j - 1;
 	    flag = TRUE;
+	}
+    }
+
+    /* fix baseNP scope error, and combine continus one-word baseNP (including DEG) */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	/* if the last word of baseNP is not noun, then reduce baseNP scope */
+	if (np_matrix[i] != -1) {
+	    for (j = np_matrix[i]; j >= i; j--) {
+		if (check_feature((sp->bnst_data+j)->f, "NN") || check_feature((sp->bnst_data+j)->f, "NR") || check_feature((sp->bnst_data+j)->f, "NT")) {
+		    np_matrix[i] = j;
+		    break;
+		}
+	    }
 	}
     }
 

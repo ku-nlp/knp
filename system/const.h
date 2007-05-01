@@ -95,9 +95,12 @@
 #define	BYTES4CHAR	2	/* euc-jp */
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
-#define TIME_PROB       50    /* time to enlarge dpnd prob for Chinese */
+#define TIME_PROB       20    /* time to enlarge dpnd prob for Chinese */
 #define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
 #define CHI_POS_LEN_MAX  3    /* maximum Chinese pos length */
+#define CHI_DPND_TYPE_MAX 10 /* maximum dpnd type of Chinese word pair */
+#define CHI_DPND_TYPE_LEN_MAX 10 /* maximum length of dpnd type */
+#define CHI_DPND_RULE_LEN_MAX 50 /* maximum length of dpnd rule */
 
 /*====================================================================
 			    SIMILARITY
@@ -673,6 +676,41 @@ typedef struct thesaurus {
     int		exist;
     DBM_FILE	db;
 } THESAURUS_FILE;
+
+/* Chinese dpnd rule */
+typedef struct {
+    char  	direction_1[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
+    char  	direction_2[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
+    char  	direction_3[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
+    char  	direction_4[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
+    char  	direction[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
+    int         prob_LtoR_1[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    int         prob_RtoL_1[CHI_DPND_TYPE_MAX];
+    int         prob_LtoR_2[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    int         prob_RtoL_2[CHI_DPND_TYPE_MAX];
+    int         prob_LtoR_3[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    int         prob_RtoL_3[CHI_DPND_TYPE_MAX];
+    int         prob_LtoR_4[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    int         prob_RtoL_4[CHI_DPND_TYPE_MAX];
+    double      prob_LtoR[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    double      prob_RtoL[CHI_DPND_TYPE_MAX];
+    char        type_1[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
+    char        type_2[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
+    char        type_3[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
+    char        type_4[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
+    char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
+    int         occur_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    int         occur_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    int         occur_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    int         occur_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    int         count_1; /* number of dpnd type */
+    int         count_2; /* number of dpnd type */
+    int         count_3; /* number of dpnd type */
+    int         count_4; /* number of dpnd type */
+    int         count; /* number of dpnd type */
+    double      lamda1[CHI_DPND_TYPE_MAX]; /* parameter of each dpnd type */
+    double      lamda2[CHI_DPND_TYPE_MAX]; /* parameter of each dpnd type */
+} CHI_DPND;
 
 /*====================================================================
 				≥ ≤Ú¿œ

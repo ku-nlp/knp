@@ -77,14 +77,15 @@ static int dpndID = 0;
 	       void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, value, first_uke_flag;
-    float p1_LtoR, p2_LtoR, p3_LtoR, p4_LtoR;
-    float p1_RtoL, p2_RtoL, p3_RtoL, p4_RtoL;
-    double lamda1, lamda2;
+    int i, j, k, l, s, value, first_uke_flag;
     BNST_DATA *k_ptr, *u_ptr;
     char *lex_rule, *pos_rule_1, *pos_rule_2, *pos_rule;
-    char *type, *probL, *probR, *occur;
+    char *type, *probL, *probR, *occur, *dpnd;
     int count;
+    char *rule;
+    char *curRule[CHI_DPND_TYPE_MAX];
+    double totalProb;
+    int appear_LtoR_2, appear_RtoL_2, appear_LtoR_3, appear_RtoL_3, total_2, total_3;
 
     /* initialization */
     lex_rule = NULL;
@@ -95,26 +96,16 @@ static int dpndID = 0;
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
+	totalProb = 0.0;
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 	    lex_rule = NULL;
 	    pos_rule_1 = NULL;
 	    pos_rule_2 = NULL;
 	    pos_rule = NULL;
-	    p1_LtoR = 0.0;
-	    p2_LtoR = 0.0;
-	    p3_LtoR = 0.0;
-	    p4_LtoR = 0.0;
-	    p1_RtoL = 0.0;
-	    p2_RtoL = 0.0;
-	    p3_RtoL = 0.0;
-	    p4_RtoL = 0.0;
-	    lamda1 = 0.0;
-	    lamda2 = 0.0;
 
 	    Dpnd_matrix[i][j] = 0;
-	    Dpnd_prob_matrix[i][j] = 0.0;
-	    Dpnd_prob_matrix[j][i] = 0.0;
+	    Chi_dpnd_matrix[i][j].count = 0;
 
 	    if (Language != CHINESE) {
 		for (k = 0; k_ptr->dpnd_rule->dpnd_type[k]; k++) {
@@ -127,167 +118,318 @@ static int dpndID = 0;
 		    }
 		}
 	    }
-	    else { /* read dpnd rule from DB for Chinese */
+	    else { 
+                /* read dpnd rule from DB for Chinese */
 		lex_rule = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
 		pos_rule_1 = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
+		pos_rule_2 = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
+		pos_rule = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
 
-		if (lex_rule == NULL && pos_rule_1 == NULL) {
-		    pos_rule_2 = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
-		    pos_rule = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
-		    
-		    if (pos_rule_2 != NULL) {
+		if (lex_rule != NULL) {
+		    count = 0;
+		    rule = NULL;
+		    rule = strtok(lex_rule, ":");
+		    while (rule) {
+			curRule[count] = malloc(strlen(rule) + 1);
+			strcpy(curRule[count], rule);
+			count++;
+			rule = NULL;
+			rule = strtok(NULL, ":");
+		    }
+
+		    Chi_dpnd_matrix[i][j].count_1 = count;
+		    for (k = 0; k < count; k++) {
 			type = NULL;
 			probL = NULL;
 			probR = NULL;
 			occur = NULL;
-			count = 0;
-
-			type = strtok(pos_rule_2, "_");
+			    
+			type = strtok(curRule[k], "_");
 			probR = strtok(NULL, "_");
 			probL = strtok(NULL, "_");
 			occur = strtok(NULL, "_");
-			
+			dpnd = strtok(NULL, "_");
+			    
 			if (!strcmp(type, "R")) {
-			    Dpnd_matrix[i][j] = 'R';
+			    Chi_dpnd_matrix[i][j].direction_1[k] = 'R';
 			}
 			else if (!strcmp(type, "L")) {
-			    Dpnd_matrix[i][j] = 'L';
+			    Chi_dpnd_matrix[i][j].direction_1[k] = 'L';
 			}
 			else if (!strcmp(type, "B")) {
-			    Dpnd_matrix[i][j] = 'B';
+			    Chi_dpnd_matrix[i][j].direction_1[k] = 'B';
 			}
-			p3_LtoR = atof(probR);
-			p3_RtoL = atof(probL);
-			count = atoi(occur);
+			Chi_dpnd_matrix[i][j].occur_1[k] = atoi(occur);
+			strcpy(Chi_dpnd_matrix[i][j].type_1[k], dpnd);
+			Chi_dpnd_matrix[i][j].prob_LtoR_1[k] = atoi(probR);
+			Chi_dpnd_matrix[i][j].prob_RtoL_1[k] = atoi(probL);
+
+			if (curRule[k]) {
+			    free(curRule[k]);
+			}
+		    }
+		}
+
+		if (pos_rule_1 != NULL) {
+		    count = 0;
+		    rule = NULL;
+		    rule = strtok(pos_rule_1, ":");
+		    while (rule) {
+			curRule[count] = malloc(strlen(rule) + 1);
+			strcpy(curRule[count], rule);
+			count++;
+			rule = NULL;
+			rule = strtok(NULL, ":");
 		    }
 
-		    if (pos_rule != NULL) {
+		    Chi_dpnd_matrix[i][j].count_2 = count;
+		    for (k = 0; k < count; k++) {
 			type = NULL;
 			probL = NULL;
 			probR = NULL;
 			occur = NULL;
-
-			type = strtok(pos_rule, "_");
+			    
+			type = strtok(curRule[k], "_");
 			probR = strtok(NULL, "_");
 			probL = strtok(NULL, "_");
 			occur = strtok(NULL, "_");
+			dpnd = strtok(NULL, "_");
+			    
+			if (!strcmp(type, "R")) {
+			    Chi_dpnd_matrix[i][j].direction_2[k] = 'R';
+			}
+			else if (!strcmp(type, "L")) {
+			    Chi_dpnd_matrix[i][j].direction_2[k] = 'L';
+			}
+			else if (!strcmp(type, "B")) {
+			    Chi_dpnd_matrix[i][j].direction_2[k] = 'B';
+			}
+			Chi_dpnd_matrix[i][j].occur_2[k] = atoi(occur);
+			strcpy(Chi_dpnd_matrix[i][j].type_2[k], dpnd);
+			Chi_dpnd_matrix[i][j].prob_LtoR_2[k] = atoi(probR);
+			Chi_dpnd_matrix[i][j].prob_RtoL_2[k] = atoi(probL);
 
-			p4_LtoR = atof(probR);
-			p4_RtoL = atof(probL);
-			if (pos_rule_2 == NULL) {
-			    if (!strcmp(type, "R")) {
-				Dpnd_matrix[i][j] = 'R';
-			    }
-			    else if (!strcmp(type, "L")) {
-				Dpnd_matrix[i][j] = 'L';
-			    }
-			    else if (!strcmp(type, "B")) {
-				Dpnd_matrix[i][j] = 'B';
-			    }
+			if (curRule[k]) {
+			    free(curRule[k]);
 			}
 		    }
+		}
 
-		    if (pos_rule_2 != NULL) {
-			lamda2 = (1.0 * count) / (count + 1);
-		    }
-		    else {
-			lamda2 = 0.95;
+		if (pos_rule_2 != NULL) {
+		    count = 0;
+		    rule = NULL;
+		    rule = strtok(pos_rule_2, ":");
+		    while (rule) {
+			curRule[count] = malloc(strlen(rule) + 1);
+			strcpy(curRule[count], rule);
+			count++;
+			rule = NULL;
+			rule = strtok(NULL, ":");
 		    }
 
-		    if (Dpnd_matrix[i][j] == 'B') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
-			Dpnd_prob_matrix[j][i] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
-			first_uke_flag = 0;
+		    Chi_dpnd_matrix[i][j].count_3 = count;
+		    for (k = 0; k < count; k++) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+			    
+			type = strtok(curRule[k], "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+			dpnd = strtok(NULL, "_");
+			    
+			if (!strcmp(type, "R")) {
+			    Chi_dpnd_matrix[i][j].direction_3[k] = 'R';
+			}
+			else if (!strcmp(type, "L")) {
+			    Chi_dpnd_matrix[i][j].direction_3[k] = 'L';
+			}
+			else if (!strcmp(type, "B")) {
+			    Chi_dpnd_matrix[i][j].direction_3[k] = 'B';
+			}
+			Chi_dpnd_matrix[i][j].occur_3[k] = atoi(occur);
+			strcpy(Chi_dpnd_matrix[i][j].type_3[k], dpnd);
+			Chi_dpnd_matrix[i][j].prob_LtoR_3[k] = atoi(probR);
+			Chi_dpnd_matrix[i][j].prob_RtoL_3[k] = atoi(probL);
+
+			if (curRule[k]) {
+			    free(curRule[k]);
+			}
 		    }
-		    else if (Dpnd_matrix[i][j] == 'R') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_LtoR * lamda2 + p4_LtoR * (1 - lamda2));
-			first_uke_flag = 0;
+		}
+
+		if (pos_rule != NULL) {
+		    count = 0;
+		    rule = NULL;
+		    rule = strtok(pos_rule, ":");
+		    while (rule) {
+			curRule[count] = malloc(strlen(rule) + 1);
+			strcpy(curRule[count], rule);
+			count++;
+			rule = NULL;
+			rule = strtok(NULL, ":");
 		    }
-		    else if (Dpnd_matrix[i][j] == 'L') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p3_RtoL * lamda2 + p4_RtoL * (1 - lamda2));
-			first_uke_flag = 0;
+
+		    Chi_dpnd_matrix[i][j].count_4 = count;
+		    for (k = 0; k < count; k++) {
+			type = NULL;
+			probL = NULL;
+			probR = NULL;
+			occur = NULL;
+			    
+			type = strtok(curRule[k], "_");
+			probR = strtok(NULL, "_");
+			probL = strtok(NULL, "_");
+			occur = strtok(NULL, "_");
+			dpnd = strtok(NULL, "_");
+			    
+			if (!strcmp(type, "R")) {
+			    Chi_dpnd_matrix[i][j].direction_4[k] = 'R';
+			}
+			else if (!strcmp(type, "L")) {
+			    Chi_dpnd_matrix[i][j].direction_4[k] = 'L';
+			}
+			else if (!strcmp(type, "B")) {
+			    Chi_dpnd_matrix[i][j].direction_4[k] = 'B';
+			}
+			Chi_dpnd_matrix[i][j].occur_4[k] = atoi(occur);
+			strcpy(Chi_dpnd_matrix[i][j].type_4[k], dpnd);
+			Chi_dpnd_matrix[i][j].prob_LtoR_4[k] = atoi(probR);
+			Chi_dpnd_matrix[i][j].prob_RtoL_4[k] = atoi(probL);
+
+			if (curRule[k]) {
+			    free(curRule[k]);
+			}
+		    }
+		}
+
+		/* calculate probability */
+		if (lex_rule != NULL) {
+		    Chi_dpnd_matrix[i][j].count = Chi_dpnd_matrix[i][j].count_1;
+		    for (k = 0; k < Chi_dpnd_matrix[i][j].count; k++) {
+			Chi_dpnd_matrix[i][j].lamda1[k] = (1.0 * Chi_dpnd_matrix[i][j].occur_1[k])/(Chi_dpnd_matrix[i][j].occur_1[k] + 1);
+			appear_LtoR_2 = 0;
+			appear_RtoL_2 = 0;
+			appear_LtoR_3 = 0;
+			appear_RtoL_3 = 0;
+			total_2 = 0;
+			total_3 = 0;
+			for (l = 0; l < Chi_dpnd_matrix[i][j].count_2; l++) {
+			    if (!strcmp(Chi_dpnd_matrix[i][j].type_1[k], Chi_dpnd_matrix[i][j].type_2[l])) {
+				appear_LtoR_2 = Chi_dpnd_matrix[i][j].prob_LtoR_2[l];
+				appear_RtoL_2 = Chi_dpnd_matrix[i][j].prob_RtoL_2[l];
+				total_2 = Chi_dpnd_matrix[i][j].occur_2[l];
+				break;
+			    }
+			}
+			for (l = 0; l < Chi_dpnd_matrix[i][j].count_3; l++) {
+			    if (!strcmp(Chi_dpnd_matrix[i][j].type_1[k], Chi_dpnd_matrix[i][j].type_3[l])) {
+				appear_LtoR_3 = Chi_dpnd_matrix[i][j].prob_LtoR_3[l];
+				appear_RtoL_3 = Chi_dpnd_matrix[i][j].prob_RtoL_3[l];
+				total_3 = Chi_dpnd_matrix[i][j].occur_3[l];
+				break;
+			    }
+			}
+			if (total_2 != 0 || total_3 != 0) {
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]) +
+				(1.0 * (1 - Chi_dpnd_matrix[i][j].lamda1[k]) * (1.0 * (appear_LtoR_2 + appear_LtoR_3)/(total_2 + total_3)));
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]) +
+				(1.0 * (1 - Chi_dpnd_matrix[i][j].lamda1[k]) * (1.0 * (appear_RtoL_2 + appear_RtoL_3)/(total_2 + total_3)));
+			}
+			else {
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]);
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]);
+			}
+			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_1[k];
+			strcpy(Chi_dpnd_matrix[i][j].type[k],Chi_dpnd_matrix[i][j].type_1[k]);
+		    }
+		}
+		else if (pos_rule_1 != NULL || pos_rule_2 != NULL) {
+		    if (pos_rule_1 != NULL) {
+			Chi_dpnd_matrix[i][j].count = Chi_dpnd_matrix[i][j].count_2;
+			for (k = 0; k < Chi_dpnd_matrix[i][j].count; k++) {
+			    appear_LtoR_2 = Chi_dpnd_matrix[i][j].prob_LtoR_2[k];
+			    appear_RtoL_2 = Chi_dpnd_matrix[i][j].prob_RtoL_2[k];
+			    appear_LtoR_3 = 0;
+			    appear_RtoL_3 = 0;
+			    total_2 = Chi_dpnd_matrix[i][j].occur_2[k];
+			    total_3 = 0;
+			    for (l = 0; l < Chi_dpnd_matrix[i][j].count_3; l++) {
+				if (!strcmp(Chi_dpnd_matrix[i][j].type_2[k], Chi_dpnd_matrix[i][j].type_3[l])) {
+				    appear_LtoR_3 = Chi_dpnd_matrix[i][j].prob_LtoR_3[l];
+				    appear_RtoL_3 = Chi_dpnd_matrix[i][j].prob_RtoL_3[l];
+				    total_3 = Chi_dpnd_matrix[i][j].occur_3[l];
+				    break;
+				}
+			    }
+			    Chi_dpnd_matrix[i][j].lamda2[k] = (1.0 * (total_2 + total_3))/(total_2 + total_3 + 1);
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda2[k] * (1.0 * (appear_LtoR_2 + appear_LtoR_3)/(total_2 + total_3));
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda2[k] * (1.0 * (appear_RtoL_2 + appear_RtoL_3)/(total_2 + total_3));
+			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_2[k];
+			    strcpy(Chi_dpnd_matrix[i][j].type[k],Chi_dpnd_matrix[i][j].type_2[k]);
+			    for (l = 0; l < Chi_dpnd_matrix[i][j].count_4; l++) {
+				if (!strcmp(Chi_dpnd_matrix[i][j].type_2[k], Chi_dpnd_matrix[i][j].type_4[l])) {
+				    Chi_dpnd_matrix[i][j].prob_LtoR[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]);
+				    Chi_dpnd_matrix[i][j].prob_RtoL[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]);
+				    break;
+				}
+			    }
+
+			}
+		    }
+		    else if (pos_rule_2 != NULL) {
+			Chi_dpnd_matrix[i][j].count = Chi_dpnd_matrix[i][j].count_3;
+			for (k = 0; k < Chi_dpnd_matrix[i][j].count; k++) {
+			    Chi_dpnd_matrix[i][j].lamda2[k] = (1.0 * Chi_dpnd_matrix[i][j].occur_3[k]) / (Chi_dpnd_matrix[i][j].occur_3[k] + 1);
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda2[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_3[k] / Chi_dpnd_matrix[i][j].occur_3[k]);
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda2[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_3[k] / Chi_dpnd_matrix[i][j].occur_3[k]);
+			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_3[k];
+			    strcpy(Chi_dpnd_matrix[i][j].type[k], Chi_dpnd_matrix[i][j].type_3[k]);
+			    for (l = 0; l < Chi_dpnd_matrix[i][j].count_4; l++) {
+				if (!strcmp(Chi_dpnd_matrix[i][j].type_3[k], Chi_dpnd_matrix[i][j].type_4[l])) {
+				    Chi_dpnd_matrix[i][j].prob_LtoR[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[k]);
+				    Chi_dpnd_matrix[i][j].prob_RtoL[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[k]);
+				    break;
+				}
+			    }
+
+			}
 		    }
 		}
 		else {
-		    if (lex_rule != NULL) {
-			type = NULL;
-			probL = NULL;
-			probR = NULL;
-			occur = NULL;
-			count = 0;
-			
-			type = strtok(lex_rule, "_");
-			probR = strtok(NULL, "_");
-			probL = strtok(NULL, "_");
-			occur = strtok(NULL, "_");
-
-			if (!strcmp(type, "R")) {
-			    Dpnd_matrix[i][j] = 'R';
-			}
-			else if (!strcmp(type, "L")) {
-			    Dpnd_matrix[i][j] = 'L';
-			}
-			else if (!strcmp(type, "B")) {
-			    Dpnd_matrix[i][j] = 'B';
-			}
-			p1_LtoR = atof(probR);
-			p1_RtoL = atof(probL);
-			count = atoi(occur);
-		    }
-
-		    if (pos_rule_1 != NULL) {
-			type = NULL;
-			probL = NULL;
-			probR = NULL;
-			occur = NULL;
-
-			type = strtok(pos_rule_1, "_");
-			probR = strtok(NULL, "_");
-			probL = strtok(NULL, "_");
-			occur = strtok(NULL, "_");
-
-			p2_LtoR = atof(probR);
-			p2_RtoL = atof(probL);
-			if (lex_rule == NULL) {
-			    if (!strcmp(type, "R")) {
-				Dpnd_matrix[i][j] = 'R';
-			    }
-			    else if (!strcmp(type, "L")) {
-				Dpnd_matrix[i][j] = 'L';
-			    }
-			    else if (!strcmp(type, "B")) {
-				Dpnd_matrix[i][j] = 'B';
-			    }
-			}
-		    }
-
-		    if (lex_rule != NULL) {
-			lamda1 = (1.0 * count) / (count + 1);
-		    }
-		    else {
-			lamda1 = 0.95;
-		    }
-
-		    if (Dpnd_matrix[i][j] == 'B') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
-			Dpnd_prob_matrix[j][i] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
-			first_uke_flag = 0;
-		    }
-		    else if (Dpnd_matrix[i][j] == 'R') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_LtoR * lamda1 + p2_LtoR * (1 - lamda1));
-			first_uke_flag = 0;
-		    }
-		    else if (Dpnd_matrix[i][j] == 'L') {
-			Dpnd_prob_matrix[i][j] = TIME_PROB * (p1_RtoL * lamda1 + p2_RtoL * (1 - lamda1));
-			first_uke_flag = 0;
+		    Chi_dpnd_matrix[i][j].count = Chi_dpnd_matrix[i][j].count_4;
+		    for (k = 0; k < Chi_dpnd_matrix[i][j].count; k++) {
+			Chi_dpnd_matrix[i][j].prob_LtoR[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
+			Chi_dpnd_matrix[i][j].prob_RtoL[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
+			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_4[k];
+			strcpy(Chi_dpnd_matrix[i][j].type[k], Chi_dpnd_matrix[i][j].type_4[k]);
 		    }
 		}
 
+		for (l = 0; l < Chi_dpnd_matrix[i][j].count; l++) {
+		    totalProb += Chi_dpnd_matrix[i][j].prob_LtoR[l];
+		    totalProb += Chi_dpnd_matrix[i][j].prob_RtoL[l];
+		}
+		
 		if (lex_rule != NULL || pos_rule_1 != NULL || pos_rule_2 != NULL || pos_rule != NULL) {
+		    first_uke_flag = 0;
+		    if (Chi_dpnd_matrix[i][j].count > 0) {
+			Dpnd_matrix[i][j] = 'O';
+		    }
 		    dpnd_total++;
 		    if (lex_rule != NULL) {
 			dpnd_lex++;
 		    }
+		}
+	    }
+	}
+	if (Language == CHINESE) {
+	    for (j = i + 1; j < sp->Bnst_num; j++) {
+		for (l = 0; l < Chi_dpnd_matrix[i][j].count; l++) {
+		    Chi_dpnd_matrix[i][j].prob_LtoR[l] = Chi_dpnd_matrix[i][j].prob_LtoR[l]/totalProb;
+		    Chi_dpnd_matrix[i][j].prob_RtoL[l] = Chi_dpnd_matrix[i][j].prob_RtoL[l]/totalProb;
 		}
 	    }
 	}
@@ -305,6 +447,9 @@ static int dpndID = 0;
     }
     if (pos_rule) {
 	free(pos_rule);
+    }
+    if (rule) {
+	free(rule);
     }
 }
 

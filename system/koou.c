@@ -46,6 +46,7 @@ int	koou_m_p[BNST_MAX];
 		    fprintf(stderr, "Start (%d) %d\n", j, i);
 		for (k = i, c_ptr = b_ptr; k < sp->Bnst_num; k++, c_ptr++) {
 		    if (Language == CHINESE) {
+			pu_flag = 0;
 			for (l = i; l < k; l++) {
 			    if (check_feature((sp->bnst_data+l)->f, "PU")) {
 				pu_flag = 1;
@@ -112,7 +113,7 @@ int	koou_m_p[BNST_MAX];
 		void change_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, k, f_start, f_end;
+    int i, j, k, l, f_start, f_end;
 
     if (Language == CHINESE) {
 	for (i = 0; i < sp->Bnst_num; i++){
@@ -127,47 +128,22 @@ int	koou_m_p[BNST_MAX];
 			    if (f_start < 0)
 				f_start = j;
 			}
-			if (Koou_dpnd_matrix[i][j] == 'R') {
-			    for (k = i; k < sp->Bnst_num; k++){
-				if (Koou_matrix[i][k] <= 0) {
-				    if (Dpnd_matrix[i][k] == 'R') {
-					Dpnd_matrix[i][k] = 0;
-				    }
-				    else if (Dpnd_matrix[i][k] == 'B') {
-					Dpnd_matrix[i][k] = 'L';
-				    }
-				}
+			if (Koou_dpnd_matrix[i][j] == 'L') {
+			    for (k = j + 1; k < sp->Bnst_num; k++) {
+				Dpnd_matrix[j][k] = 0;
 			    }
-			    for (k = 0; k < i; k++){
-				if (Koou_matrix[k][i] <= 0) {
-				    if (Dpnd_matrix[k][i] == 'L') {
-					Dpnd_matrix[k][i] = 0;
-				    }
-				    else if (Dpnd_matrix[k][i] == 'B') {
-					Dpnd_matrix[k][i] = 'R';
-				    }
-				}
+			    for (k = 0; k < i; k ++) {
+				Dpnd_matrix[k][j] = 0;
 			    }
-			}
-			else if (Koou_dpnd_matrix[i][j] == 'L') {
-			    for (k = j; k < sp->Bnst_num; k++){
-				if (Koou_matrix[j][k] <= 0) {
-				    if (Dpnd_matrix[j][k] == 'R') {
-					Dpnd_matrix[j][k] = 0;
-				    }
-				    else if (Dpnd_matrix[j][k] == 'B') {
-					Dpnd_matrix[j][k] = 'L';
-				    }
-				}
+			    for (k = i + 1; k < j; k++) {
+				Dpnd_matrix[i][k] = 0;
 			    }
-			    for (k = 0; k < j; k++){
-				if (Koou_matrix[k][j] <= 0) {
-				    if (Dpnd_matrix[k][j] == 'L') {
-					Dpnd_matrix[k][j] = 0;
-				    }
-				    else if (Dpnd_matrix[k][j] == 'B') {
-					Dpnd_matrix[k][j] = 'R';
-				    }
+			    for (k = i + 1; k < j; k ++) {
+				for (l = 0; l <= i; l++) {
+				    Dpnd_matrix[l][k] = 0;
+				}
+				for (l = j + 1; l < sp->Bnst_num; l++) {
+				    Dpnd_matrix[k][l] = 0;
 				}
 			    }
 			}

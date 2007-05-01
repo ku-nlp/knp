@@ -17,6 +17,7 @@ typedef struct _CKY {
     int		para_flag;	/* coordination flag */
     char	dpnd_type;	/* type of dependency (D or P) */
     int		direction;	/* direction of dependency */
+    int         index;          /* index of dpnd rule for Chinese */
     BNST_DATA	*b_ptr;
     int 	scase_check[SCASE_CODE_SIZE];
     int		un_count;
@@ -87,7 +88,32 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	return 1;
     }
     else {
+	if (Dpnd_matrix[left->b_ptr->num][right->b_ptr->num] > 0 && Dpnd_matrix[left->b_ptr->num][right->b_ptr->num] != 'O') {
+	    if (direction != Dpnd_matrix[left->b_ptr->num][right->b_ptr->num] && direction != 'B') {
+		return 0;
+	    }
+	}
         /* check if this cky corresponds with the grammar rules for Chinese */
+
+	/* adj and verb cannot have dependency relation */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "JJ") && 
+	     (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") ||
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE"))) ||
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "JJ") && 
+	     (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") ||
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")))) {
+	    return 0;
+	}
+
+	/* PU cannot be head */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "PU") && direction == 'L') || 
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "PU") && direction == 'R')) { 
+	    return 0;
+	}
 
 	/* for DEG, there should not be two modifiers */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && (right->j - right->i > 0)) {
@@ -144,22 +170,16 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb *\/ */
-/* 	if (left->i == 0 && right->j == sp->Bnst_num - 1) { */
-/* 	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") && */
-/* 		((direction == 'L' &&  */
-/* 		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) || */
-/* 		 (direction == 'R' &&  */
-/* 		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) { */
-/* 		return 0; */
-/* 	    } */
-/* 	} */
+	/* for preposition, if there is noun between it and following verb, the noun should depend on this preposition */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
+	    left->j - left->i == 0 &&
+	    exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1) {
+	    return 0;
+	}
 
 	/* check if this cky corresponds with the constraint of NP and quote */
 	if ((Chi_np_end_matrix[i][i + k] != -1 && j > Chi_np_end_matrix[i][i + k]) ||
@@ -430,8 +450,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		}
 
 		if (Language == CHINESE) {
-		    one_score -= 30 * verb; 
-		    one_score -= 50 * comma;
+		    one_score -= 8 * verb;
+		    one_score -= 15 * comma;
 		}
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
@@ -447,11 +467,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		else if (Language != CHINESE){
 		    one_score -= abs(default_pos - 1 - pos) * 2;
 		}
-		else if (Language == CHINESE) {
-		    if (abs(default_pos - 1 - pos) > 20) {
-			one_score -= 20;
-		    }
-		}
+/* 		else if (Language == CHINESE) { */
+/* 		    if (abs(default_pos - 1 - pos) > 20) { */
+/* 			one_score -= 20; */
+/* 		    } */
+/* 		} */
 
 		/* 読点をもつものが隣にかかることを防ぐ */
 		if (d_ptr->num + 1 == g_ptr->num && 
@@ -605,19 +625,19 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		     check_feature(d_ptr->f, "PN"))) {
 		    /* calc case frame score for Chinese */
 		    if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 40;
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20;
 		    }
 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 3000;
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 1500;
 		    }
 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 10000;
 		    }
 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 100000;
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 50000;
 		    }
 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 500000;
+			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 200000;
 		    }
 		}
 
@@ -641,25 +661,26 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    else {
 			/* calc case frame score for Chinese */
 			if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 40;
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20;
 			}
 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 3000;
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 1500;
 			}
 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 10000;
 			}
 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 50000;
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
 			}
 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 200000;
+			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 100000;
 			}
 		    }
 		}
 
 		if (cky_ptr->direction == LtoR) {
-		    one_score += Dpnd_prob_matrix[d_ptr->num][g_ptr->num];
+		    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index] * TIME_PROB;
+
 		    /* add score for stable dpnd */
 		    if (d_ptr->num + 1 == g_ptr->num &&
 			(((check_feature(d_ptr->f, "CD")) &&
@@ -860,24 +881,15 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(g_ptr->f, "DEV"))))) {
 			one_score += 10;
 		    }
-		    if ((check_feature(d_ptr->f, "VA") || 
+		    if ((check_feature(d_ptr->f, "VA") ||
 			 check_feature(d_ptr->f, "VV")) &&
-			check_feature(g_ptr->f, "DEC") && 
+			check_feature(g_ptr->f, "DEC") &&
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
-			one_score += 50;
-		    }
-		    if (check_feature(d_ptr->f, "NT") &&  
-			check_feature(g_ptr->f, "VV")) {
-			one_score += 50;
+			one_score += 5;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
-		    one_score += (Dpnd_matrix[g_ptr->num][d_ptr->num] == 'B') ?
-			Dpnd_prob_matrix[d_ptr->num][g_ptr->num] : Dpnd_prob_matrix[g_ptr->num][d_ptr->num];
-
-		    if (Language == CHINESE && OptDisplay == OPT_DEBUG) {
-			printf("%.3f(dpnd)=>", one_score);
-		    }
+		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
 
 		    /* add score for stable dpnd */
 		    if (g_ptr->num + 1 == d_ptr->num &&
@@ -889,6 +901,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(g_ptr->f, "DT"))) ||
 
 			 ((check_feature(d_ptr->f, "PN")) &&
+			  (check_feature(g_ptr->f, "P"))) ||
+
+			 ((check_feature(d_ptr->f, "NT")) &&
 			  (check_feature(g_ptr->f, "P"))) ||
 
 			 ((check_feature(d_ptr->f, "DEC")) &&
@@ -933,7 +948,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(d_ptr->f, "CS") ||
 			   check_feature(d_ptr->f, "DT") ||
 			   check_feature(d_ptr->f, "JJ") ||
-			   check_feature(d_ptr->f, "LC") ||
 			   check_feature(d_ptr->f, "NR") ||
 			   check_feature(d_ptr->f, "NN") ||
 			   check_feature(d_ptr->f, "NT") ||
@@ -955,6 +969,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(d_ptr->f, "AS") ||
 			   check_feature(d_ptr->f, "NN") ||
 			   check_feature(d_ptr->f, "DER"))))) {
+			one_score += 5;
+		    }
+		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
 			one_score += 10;
 		    }
 		}
@@ -1348,9 +1365,10 @@ void extend_para_matrix(SENTENCE_DATA* sp) {
 }
 
 void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int i, int j, int k, 
-	     char dpnd_type, int direction) {
+	     char dpnd_type, int direction, int index) {
     int l;
 
+    cky_ptr->index = index;
     cky_ptr->i = i;
     cky_ptr->j = j;
     cky_ptr->next = NULL;
@@ -1542,7 +1560,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 		}
 		cky_matrix[i][j] = cky_ptr;
 
-		set_cky(sp, cky_ptr, NULL, NULL, i, j, -1, 0, LtoR);
+		set_cky(sp, cky_ptr, NULL, NULL, i, j, -1, 0, LtoR, -1);
 		cky_ptr->score = OptAnalysis == OPT_CASE ? 
 		    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 	    }
@@ -1561,106 +1579,143 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
-				check_chi_dpnd_possibility(i, j, k, left_ptr, right_ptr, sp, Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num]) &&
 				(dpnd_type == 'P' || 
 				 dep_check[i + k] <= 0 || /* no barrier */
 				 dep_check[i + k] >= j || /* before barrier */
 				 (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))) { /* barrier relaxation for P */
-				if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
-				    return FALSE;
-				}
-				if (next_pp == NULL) {
-				    start_ptr = cky_ptr;
-				}
-				else {
-				    *next_pp = cky_ptr;
-				}
 
-				if (Language == CHINESE && Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR); 
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
+				if (Language == CHINESE) {
+				    for (l = 0; l < Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].count; l++) {
+					if (!(check_chi_dpnd_possibility(i, j, k, left_ptr, right_ptr, sp, Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l]))) {
+					    continue;
+					}
+					if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+					    return FALSE;
+					}
+					if (next_pp == NULL) {
+					    start_ptr = cky_ptr;
+					}
+					else {
+					    *next_pp = cky_ptr;
+					}
+
+					if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+					    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
+					}
+					else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+					    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
+					}
+					else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+					    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
+					}
+					else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+					    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
+					}
+					else {
+					    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 
+						    Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l], 
+						    Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l] == 'L' ? RtoL : LtoR, l);
+					}
+
+					next_pp = &(cky_ptr->next);
+					
+					if (OptDisplay == OPT_DEBUG) {
+					    printf("   (%d,%d), (%d,%d) b=%d [%s%s%s], %c(para=%.3f), score=", 
+						   i, i + k, i + k + 1, j, dep_check[i + k], 
+						   left_ptr->b_ptr->head_ptr->Goi, 
+						   cky_ptr->direction == RtoL ? "<-" : "->", 
+						   right_ptr->b_ptr->head_ptr->Goi, 
+						   Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l], para_score);
+					}
+
+					cky_ptr->para_score = para_score;
+					cky_ptr->score = OptAnalysis == OPT_CASE ? 
+					    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
+
+					if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+					    cky_ptr->score += 20;
+					}
+					else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+					    cky_ptr->score += 20;
+					}
+					else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+					    cky_ptr->score += 20;
+					}
+					else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+					    cky_ptr->score += 20;
+					}
+
+					/* if dpnd direction is B, check RtoL again */
+					if (Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l] == 'B') {
+					    if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+						return FALSE;
+					    }
+					    if (next_pp == NULL) {
+						start_ptr = cky_ptr;
+					    }
+					    else {
+						*next_pp = cky_ptr;
+					    }
+					    
+					    if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
+					    }
+					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
+					    }
+					    else {
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
+					    }
+
+					    next_pp = &(cky_ptr->next);
+					    
+					    if (OptDisplay == OPT_DEBUG) {
+						printf("   (%d,%d), (%d,%d) [%s<-%s], score=", i, i + k, i + k + 1, j, 
+						       left_ptr->b_ptr->head_ptr->Goi, 
+						       right_ptr->b_ptr->head_ptr->Goi);
+					    }
+
+					    cky_ptr->para_score = para_score;
+					    cky_ptr->score = OptAnalysis == OPT_CASE ? 
+						calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
+
+					    if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+						cky_ptr->score += 20;
+					    }
+					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+						cky_ptr->score += 20;
+					    }
+					}
+				    }
 				}
 				else {
+				    if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
+					return FALSE;
+				    }
+				    if (next_pp == NULL) {
+					start_ptr = cky_ptr;
+				    }
+				    else {
+					*next_pp = cky_ptr;
+				    }
+				    
 				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, dpnd_type, 
-					Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR);
-				}
-
-				next_pp = &(cky_ptr->next);
-
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("   (%d,%d), (%d,%d) b=%d [%s%s%s], %c(para=%.3f), score=", 
-					   i, i + k, i + k + 1, j, dep_check[i + k], 
-					   left_ptr->b_ptr->head_ptr->Goi, 
-					   cky_ptr->direction == RtoL ? "<-" : "->", 
-					   right_ptr->b_ptr->head_ptr->Goi, 
-					   dpnd_type, para_score);
-				}
-
-				cky_ptr->para_score = para_score;
-				cky_ptr->score = OptAnalysis == OPT_CASE ? 
-				    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
-
-				if (Language == CHINESE && Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-				    cky_ptr->score += 100;
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-				    cky_ptr->score += 50;
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-				    cky_ptr->score += 100;
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-				    cky_ptr->score += 50;
-				}
-			    }
-
-			    /* if dpnd direction is B, check RtoL again */
-			    if (Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'B') {
-				if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
-				    return FALSE;
-				}
-				if (next_pp == NULL) {
-				    start_ptr = cky_ptr;
-				}
-				else {
-				    *next_pp = cky_ptr;
-				}
-
-				if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				}
-				else {
-				    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL); 
-				}
-
-				next_pp = &(cky_ptr->next);
-
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("   (%d,%d), (%d,%d) [%s<-%s], score=", i, i + k, i + k + 1, j, 
-					   left_ptr->b_ptr->head_ptr->Goi, 
-					   right_ptr->b_ptr->head_ptr->Goi);
-				}
-
-				cky_ptr->para_score = para_score;
-				cky_ptr->score = OptAnalysis == OPT_CASE ? 
-				    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
-
-				if (Language == CHINESE && Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-				    cky_ptr->score += 100;
-				}
-				else if (Language == CHINESE && Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-				    cky_ptr->score += 50;
+					    Dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num] == 'L' ? RtoL : LtoR, -1);
+				    
+				    next_pp = &(cky_ptr->next);
+					
+				    if (OptDisplay == OPT_DEBUG) {
+					printf("   (%d,%d), (%d,%d) b=%d [%s%s%s], %c(para=%.3f), score=", 
+					       i, i + k, i + k + 1, j, dep_check[i + k], 
+					       left_ptr->b_ptr->head_ptr->Goi, 
+					       cky_ptr->direction == RtoL ? "<-" : "->", 
+					       right_ptr->b_ptr->head_ptr->Goi, 
+					       dpnd_type, para_score);
+				    }
+				    
+				    cky_ptr->para_score = para_score;
+				    cky_ptr->score = OptAnalysis == OPT_CASE ? 
+					calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 				}
 			    }
 
@@ -1740,7 +1795,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    *next_pp = cky_ptr;
 					}
 
-					set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'P', LtoR);
+					set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'P', LtoR, -1);
 					next_pp = &(cky_ptr->next);
 
 					if (OptDisplay == OPT_DEBUG) {
@@ -1862,7 +1917,6 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
 		check_feature((sp->bnst_data + k)->f, "NR")){
-//		check_feature((sp->bnst_data + k)->f, "PN")) {
 		return k;
 	    }
 	}
