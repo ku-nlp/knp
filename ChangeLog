@@ -1,3 +1,14 @@
+2007-05-01  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/chidpnd.dict:
+	Change format of Chinese dependency rules.
+
+	* chinese_rule/koou.rule:
+	Delete some unstable rules.
+
+	* system/const.h, system/extern.h, system/cky.c, system/dpnd_analysis.c, system/base_phrase.c, system/koou.c:
+	Change the estimation of dependency probability between Chinese words. Use all the possible probabilities.
+
 2007-04-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/scode/bgh/sm2code.dat:
