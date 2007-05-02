@@ -43,10 +43,6 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 /* store Chinese dpnd between words */
 extern CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
 
-/* store probability for each dpnd rule for Chinese */
-/* for 'L' or 'R' dpnd, store in <i,j>; for 'B' <i,j> store LtoR, <j,i> store RtoL */
-extern double           Dpnd_prob_matrix[][BNST_MAX];  
-
 /* store probability for each verb pre-arg pair from case-frame for Chinese */
 /* for cell (i,j), i is the position of predicate, j is the position of argument */
 extern double           Chi_case_prob_matrix[][BNST_MAX];

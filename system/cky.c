@@ -130,6 +130,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
 	    left->j - left->i > 0 &&
+	    direction == 'L' &&
 	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1) {
 	    return 0;
 	}
@@ -1524,10 +1525,10 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 }
 
 int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
-    int i, j, k, l, sen_len, cky_table_num, dep_check[BNST_MAX];
+    int i, j, k, l, m, sort_flag, sen_len, cky_table_num, dep_check[BNST_MAX];
     double best_score, para_score;
     char dpnd_type;
-    CKY *cky_ptr, *left_ptr, *right_ptr, *best_ptr, *pre_ptr, *best_pre_ptr, *start_ptr;
+    CKY *cky_ptr, *left_ptr, *right_ptr, *best_ptr, *pre_ptr, *best_pre_ptr, *start_ptr, *sort_pre_ptr;
     CKY **next_pp, **next_pp_for_ij;
 
     cky_table_num = 0;
@@ -1849,8 +1850,54 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			cky_matrix[i][j] = best_ptr;
 		    }
 
-		    if (Language == CHINESE) {
-			best_ptr->next = NULL;
+		    if (Language == CHINESE && cky_matrix[i][j]->next && cky_matrix[i][j]->next->next) {
+			/* only keep CHI_CKY_MAX probabilities for word pair */
+			m = 1;
+			sort_flag = 1;
+			while (m < CHI_CKY_MAX && sort_flag) {
+			    cky_ptr = cky_matrix[i][j];			    
+			    sort_pre_ptr = NULL;
+			    for (l = 0; l < m; l++) {
+				if (cky_ptr->next) {
+				    sort_pre_ptr = cky_ptr;
+				    cky_ptr = cky_ptr->next;
+				}
+				else {
+				    break;
+				}
+			    }
+			    if (cky_ptr->next) {
+				sort_flag = 1;
+				best_score = -INT_MAX;
+				pre_ptr = NULL;
+				best_pre_ptr = NULL;
+				while (cky_ptr) {
+				    if (cky_ptr->score > best_score) {
+					best_score = cky_ptr->score;
+					best_ptr = cky_ptr;
+					best_pre_ptr = pre_ptr;
+				    }
+				    pre_ptr = cky_ptr;
+				    cky_ptr = cky_ptr->next;
+				}
+				if (best_pre_ptr) { /* bestが先頭ではない場合 */
+				    best_pre_ptr->next = best_ptr->next;
+				    best_ptr->next = sort_pre_ptr->next;
+				    sort_pre_ptr->next = best_ptr;
+				}
+			    }
+			    else {
+				sort_flag = 0;
+			    }
+			    m++;
+			}
+			cky_ptr = cky_matrix[i][j];
+			for (l = 0; l < m; l++) {
+			    if (cky_ptr->next) {
+				cky_ptr = cky_ptr->next;
+			    }
+			}
+			cky_ptr->next = NULL;
 		    }
 		}
 	    }

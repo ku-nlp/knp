@@ -33,13 +33,13 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* ÊÂÎó¥Þ¥¹¥¯
 						    2:ÊÂÎó¤Îhead´Ö,
 						    3:ÊÂÎó¤Îgap¤Èhead´Ö */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
-double          Dpnd_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_nominal_prob_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_end_matrix[BNST_MAX][BNST_MAX];
+CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
 
 char		**Options;
 int 		OptAnalysis;
@@ -153,8 +153,8 @@ extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
 
-int      dpnd_total;
-int      dpnd_lex;
+int      dpnd_total = 0;
+int      dpnd_lex = 0;
 
 /*==================================================================*/
 			     void usage()
@@ -1151,6 +1151,7 @@ int      dpnd_lex;
     /* base phrase for Chinese */
     if (Language == CHINESE) {
 	base_phrase(sp, is_frag);
+	print_matrix(sp, PRINT_DPND, 0);
     }
 
     /* ·¸¤ê¼õ¤±´Ø·¸¤¬¤Ê¤¤¾ì¹ç¤ÎÃÐ´Ë */
@@ -1837,6 +1838,7 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 	init_all();
 	knp_main();
 	close_all();
+//	fprintf(stderr,"total:%d, lex:%d\n", dpnd_total, dpnd_lex);
     }
 #ifndef _WIN32
     else if (OptMode == SERVER_MODE) {

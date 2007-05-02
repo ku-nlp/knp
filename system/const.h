@@ -101,6 +101,7 @@
 #define CHI_DPND_TYPE_MAX 10 /* maximum dpnd type of Chinese word pair */
 #define CHI_DPND_TYPE_LEN_MAX 10 /* maximum length of dpnd type */
 #define CHI_DPND_RULE_LEN_MAX 50 /* maximum length of dpnd rule */
+#define CHI_CKY_MAX 5 /* number of cky reserved for Chinese for each word pair */
 
 /*====================================================================
 			    SIMILARITY
