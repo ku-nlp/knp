@@ -196,6 +196,10 @@ int HownetSemDefExist;
     trans_w1 = get_hownet_tran(g_ptr);
     trans_w2 = get_hownet_tran(d_ptr);
 
+    if (def_w1 == NULL || def_w2 == NULL || trans_w1 == NULL || trans_w2 == NULL) {
+	return 0.0;
+    }
+
     i = 0;
     if (trans_w1 != NULL) {
 	tran_w1[0] = NULL;
@@ -211,7 +215,7 @@ int HownetSemDefExist;
 		break;
 	    }
 	}
-	}
+    }
     tran_num_w1 = i;
 
     i = 0;
