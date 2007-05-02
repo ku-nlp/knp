@@ -403,14 +403,63 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
        最初のheadはdpnd.headをつくるとき，最後のheadはtreeを作る時に使う */
 
     if (Language == CHINESE) {
+	/* if the last word in a noun coordination is not noun, then reduce the scope */
+	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	    for (k = m_ptr->end[m_ptr->part_num - 1]; k >= m_ptr->start[m_ptr->part_num - 1]; k--) {
+		if (check_feature((sp->bnst_data+k)->f, "NN") || 
+		    check_feature((sp->bnst_data+k)->f, "NR") || 
+		    check_feature((sp->bnst_data+k)->f, "NT") || 
+		    check_feature((sp->bnst_data+k)->f, "M") || 
+		    check_feature((sp->bnst_data+k)->f, "PN")) {
+		    m_ptr->end[m_ptr->part_num - 1] = k;
+		    break;
+		}
+	    }
+	}
 
-	// check if the scope of coordination conflict with the scope of baseNP
 	for (k = 0; k < m_ptr->part_num; k++) {
+	    // check if the scope of coordination conflict with the scope of baseNP
 	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
-		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k])) ||
-		((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
-		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k]))) {
-		return FALSE;
+		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
+		/* enlarge the coordination scope if it is the first conjunctive structure */
+		if (k == 0) {
+		    m_ptr->start[k] = Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
+		}
+		else {
+		    return FALSE;
+		}
+	    }
+	    else if ((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
+		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
+		/* enlarge the coordination scope if it is the last conjunctive structure */
+		if (k == m_ptr->part_num - 1) {
+		    m_ptr->end[k] = Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
+		}
+		else {
+		    return FALSE;
+		}
+	    }
+
+	    // check if the scope of coordination conflict with the scope of quote
+	    if (((Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
+		 (Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
+		/* enlarge the coordination scope if it is the first conjunctive structure */
+		if (k == 0) {
+		    m_ptr->start[k] = Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
+		}
+		else {
+		    return FALSE;
+		}
+	    }
+	    else if ((Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
+		 (Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
+		/* enlarge the coordination scope if it is the last conjunctive structure */
+		if (k == m_ptr->part_num - 1) {
+		    m_ptr->end[k] = Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
+		}
+		else {
+		    return FALSE;
+		}
 	    }
 	}
 

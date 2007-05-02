@@ -42,15 +42,12 @@ int     pp_matrix[BNST_MAX];
 		j++;
 	    }
 	    np_matrix[i] = j - 1;
-	    if (OptDisplay == OPT_DEBUG) { 
-		printf("NP (%d-%d)\n", i, j - 1);
-	    }
 	    i = j - 1;
 	    flag = TRUE;
 	}
     }
 
-    /* fix baseNP scope error, and combine continus one-word baseNP (including DEG) */
+    /* fix baseNP scope error */
     for (i = 0; i < sp->Bnst_num; i++) {
 	/* if the last word of baseNP is not noun, then reduce baseNP scope */
 	if (np_matrix[i] != -1) {
@@ -59,6 +56,9 @@ int     pp_matrix[BNST_MAX];
 		    np_matrix[i] = j;
 		    break;
 		}
+	    }
+	    if (OptDisplay == OPT_DEBUG) { 
+		printf("NP (%d-%d)\n", i, np_matrix[i]);
 	    }
 	}
     }
