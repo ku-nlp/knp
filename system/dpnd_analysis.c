@@ -321,9 +321,9 @@ static int dpndID = 0;
 				appear_LtoR_2 = Chi_dpnd_matrix[i][j].prob_LtoR_2[l];
 				appear_RtoL_2 = Chi_dpnd_matrix[i][j].prob_RtoL_2[l];
 				total_2 = Chi_dpnd_matrix[i][j].occur_2[l];
-				if (Chi_dpnd_matrix[i][j].direction_2[l] != Chi_dpnd_matrix[i][j].direction_1[k]) {
-				    Chi_dpnd_matrix[i][j].direction_1[k] = 'B';
-				}
+/* 				if (Chi_dpnd_matrix[i][j].direction_2[l] != Chi_dpnd_matrix[i][j].direction_1[k]) { */
+/* 				    Chi_dpnd_matrix[i][j].direction_1[k] = 'B'; */
+/* 				} */
 				break;
 			    }
 			}
@@ -332,9 +332,9 @@ static int dpndID = 0;
 				appear_LtoR_3 = Chi_dpnd_matrix[i][j].prob_LtoR_3[l];
 				appear_RtoL_3 = Chi_dpnd_matrix[i][j].prob_RtoL_3[l];
 				total_3 = Chi_dpnd_matrix[i][j].occur_3[l];
-				if (Chi_dpnd_matrix[i][j].direction_3[l] != Chi_dpnd_matrix[i][j].direction_1[k]) {
-				    Chi_dpnd_matrix[i][j].direction_1[k] = 'B';
-				}
+/* 				if (Chi_dpnd_matrix[i][j].direction_3[l] != Chi_dpnd_matrix[i][j].direction_1[k]) { */
+/* 				    Chi_dpnd_matrix[i][j].direction_1[k] = 'B'; */
+/* 				} */
 				break;
 			    }
 			}
@@ -367,9 +367,9 @@ static int dpndID = 0;
 				    appear_LtoR_3 = Chi_dpnd_matrix[i][j].prob_LtoR_3[l];
 				    appear_RtoL_3 = Chi_dpnd_matrix[i][j].prob_RtoL_3[l];
 				    total_3 = Chi_dpnd_matrix[i][j].occur_3[l];
-				    if (Chi_dpnd_matrix[i][j].direction_3[l] != Chi_dpnd_matrix[i][j].direction_2[k]) {
-					Chi_dpnd_matrix[i][j].direction_2[k] = 'B';
-				    }
+/* 				    if (Chi_dpnd_matrix[i][j].direction_3[l] != Chi_dpnd_matrix[i][j].direction_2[k]) { */
+/* 					Chi_dpnd_matrix[i][j].direction_2[k] = 'B'; */
+/* 				    } */
 				    break;
 				}
 			    }
@@ -381,9 +381,9 @@ static int dpndID = 0;
 				if (!strcmp(Chi_dpnd_matrix[i][j].type_2[k], Chi_dpnd_matrix[i][j].type_4[l])) {
 				    Chi_dpnd_matrix[i][j].prob_LtoR[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]);
 				    Chi_dpnd_matrix[i][j].prob_RtoL[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]);
-				    if (Chi_dpnd_matrix[i][j].direction_4[l] != Chi_dpnd_matrix[i][j].direction_2[k]) {
-					Chi_dpnd_matrix[i][j].direction_2[k] = 'B';
-				    }
+/* 				    if (Chi_dpnd_matrix[i][j].direction_4[l] != Chi_dpnd_matrix[i][j].direction_2[k]) { */
+/* 					Chi_dpnd_matrix[i][j].direction_2[k] = 'B'; */
+/* 				    } */
 				    break;
 				}
 			    }
@@ -401,9 +401,9 @@ static int dpndID = 0;
 				if (!strcmp(Chi_dpnd_matrix[i][j].type_3[k], Chi_dpnd_matrix[i][j].type_4[l])) {
 				    Chi_dpnd_matrix[i][j].prob_LtoR[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[k]);
 				    Chi_dpnd_matrix[i][j].prob_RtoL[k] += (1 - Chi_dpnd_matrix[i][j].lamda2[k]) * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[k]);
-				    if (Chi_dpnd_matrix[i][j].direction_4[l] != Chi_dpnd_matrix[i][j].direction_3[k]) {
-					Chi_dpnd_matrix[i][j].direction_3[k] = 'B';
-				    }
+/* 				    if (Chi_dpnd_matrix[i][j].direction_4[l] != Chi_dpnd_matrix[i][j].direction_3[k]) { */
+/* 					Chi_dpnd_matrix[i][j].direction_3[k] = 'B'; */
+/* 				    } */
 				    break;
 				}
 			    }
