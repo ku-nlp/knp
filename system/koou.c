@@ -135,11 +135,26 @@ int	koou_m_p[BNST_MAX];
 			    for (k = 0; k < i; k ++) {
 				Dpnd_matrix[k][j] = 0;
 			    }
-			    for (k = i + 1; k < j; k++) {
+			    for (k = i + 1; k < j; k ++) {
+				for (l = 0; l < i; l++) {
+				    Dpnd_matrix[l][k] = 0;
+				}
+				for (l = j + 1; l < sp->Bnst_num; l++) {
+				    Dpnd_matrix[k][l] = 0;
+				}
+			    }
+			}
+			if (Koou_dpnd_matrix[i][j] == 'R') {
+			    for (k = i + 1; k < sp->Bnst_num; k++) {
+				if (k != j) {
+				    Dpnd_matrix[i][k] = 0;
+				}
+			    }
+			    for (k = 0; k < i; k ++) {
 				Dpnd_matrix[i][k] = 0;
 			    }
 			    for (k = i + 1; k < j; k ++) {
-				for (l = 0; l <= i; l++) {
+				for (l = 0; l < i; l++) {
 				    Dpnd_matrix[l][k] = 0;
 				}
 				for (l = j + 1; l < sp->Bnst_num; l++) {
@@ -149,9 +164,6 @@ int	koou_m_p[BNST_MAX];
 			}
 		    }
 		}
-
-		mask_for(sp, i, f_start, f_end);
-		mask_back(i, f_start);
 	    }
 	}
     }
