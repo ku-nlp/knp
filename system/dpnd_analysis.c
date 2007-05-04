@@ -92,6 +92,7 @@ static int dpndID = 0;
     pos_rule_1 = NULL;
     pos_rule_2 = NULL;
     pos_rule = NULL;
+    rule = NULL;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
@@ -448,21 +449,23 @@ static int dpndID = 0;
 	}
     }
 
-    /* free memory */
-    if (lex_rule) {
-	free(lex_rule);
-    }
-    if (pos_rule_1) {
-	free(pos_rule_1);
-    }
-    if (pos_rule_2) {
-	free(pos_rule_2);
-    }
-    if (pos_rule) {
-	free(pos_rule);
-    }
-    if (rule) {
-	free(rule);
+    if (Language == CHINESE) {
+	/* free memory */
+	if (lex_rule) {
+	    free(lex_rule);
+	}
+	if (pos_rule_1) {
+	    free(pos_rule_1);
+	}
+	if (pos_rule_2) {
+	    free(pos_rule_2);
+	}
+	if (pos_rule) {
+	    free(pos_rule);
+	}
+	if (rule) {
+	    free(rule);
+	}
     }
 }
 
