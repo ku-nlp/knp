@@ -28,6 +28,8 @@ CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
 int 	   	MAX_Case_frame_num = 0;		/* 最大格フレーム数 */
 
+char *GENERAL_SOTO_WORDS ="展開/てんかい:1／要因/よういん:1／構え/かまえv:1／状況/じょうきょう:1／段階/だんかい:1／傾向/けいこう:1／制度/せいど:1／ケース/けーす:1／声/こえ:1／可能/かのうa+性/せい:1／見込み/みこみv:1／材料/ざいりょう:1／環境/かんきょう:1／必要だ/ひつようだ:1／考え/かんがえv:1／狙い/ねらいv:1／公算/こうさん:1／事実/じじつ:1／予定/よてい:1／効果/こうか:1／意向/いこう:1／政権/せいけん:1／体制/たいせい:1／問題/もんだい:1／懸念/けねん:1／地域/ちいき:1／方法/ほうほう:1／対策/たいさく:1／例/れい:1／事業/じぎょう:1／仕組み/しくみv:1／点/てん:1／作品/さくひん:1／理由/りゆう:1／疑い/うたがいv:1／恰好/かっこう:1／方針/ほうしん:1／様子/ようす:1／姿勢/しせい:1／恐れ/おそれv:1／模様/もよう:1／事件/じけん:1／作業/さぎょう:1／機会/きかい:1／見通し/みとおしv:1／政策/せいさく:1／内容/ないよう:1／措置/そち:1／背景/はいけい:1／面/おもて:1／方向/ほうこう:1／結果/けっか:1／状態/じょうたい:1／方式/ほうしき:1／商品/しょうひん:1／目的/もくてき:1／場面/ばめん:1／事態/じたい:1／動き/うごきv:1／計画/けいかく:1／案/あん:1";
+
 char *db_buf = NULL;
 int db_buf_size = 0;
 
@@ -519,7 +521,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
     }
     else if (!strcmp(cp+strlen(cp)-strlen("＠"), "＠")) {
 	c_ptr->adjacent[num] = TRUE;
-	*(cp+strlen(cp)-2) = '\0';
+	*(cp+strlen(cp)-strlen("＠")) = '\0';
     }
 
     /* 任意格 */
@@ -1151,6 +1153,54 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 }
 
 /*==================================================================*/
+	  void clear_cf_element(CASE_FRAME *cf_ptr, int num)
+/*==================================================================*/
+{
+    int k;
+
+    if (cf_ptr->pp_str[num]) {
+	free(cf_ptr->pp_str[num]);
+	cf_ptr->pp_str[num] = NULL;
+    }
+    if (cf_ptr->ex[num]) {
+	free(cf_ptr->ex[num]);
+	cf_ptr->ex[num] = NULL;
+    }
+    if (cf_ptr->sm[num]) {
+	free(cf_ptr->sm[num]);
+	cf_ptr->sm[num] = NULL;
+    }
+    if (cf_ptr->sm_delete[num]) {
+	free(cf_ptr->sm_delete[num]);
+	cf_ptr->sm_delete[num] = NULL;
+	cf_ptr->sm_delete_size[num] = 0;
+	cf_ptr->sm_delete_num[num] = 0;
+    }
+    if (cf_ptr->sm_specify[num]) {
+	free(cf_ptr->sm_specify[num]);
+	cf_ptr->sm_specify[num] = NULL;
+	cf_ptr->sm_specify_size[num] = 0;
+	cf_ptr->sm_specify_num[num] = 0;
+    }
+    if (cf_ptr->ex_list[num]) {
+	for (k = 0; k < cf_ptr->ex_num[num]; k++) {
+	    if (cf_ptr->ex_list[num][k]) {
+		free(cf_ptr->ex_list[num][k]);
+	    }
+	}
+	free(cf_ptr->ex_list[num]);
+	free(cf_ptr->ex_freq[num]);
+	cf_ptr->ex_list[num] = NULL;
+	cf_ptr->ex_size[num] = 0;
+	cf_ptr->ex_num[num] = 0;
+    }
+    if (cf_ptr->semantics[num]) {
+	free(cf_ptr->semantics[num]);
+	cf_ptr->semantics[num] = NULL;
+    }
+}
+
+/*==================================================================*/
 int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 				  char *verb, int voice, int flag)
 /*==================================================================*/
@@ -1247,6 +1297,24 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		/* CF_NOUNの場合、ここでマッチ */
 		(cf_ptr + f_num)->voice = FRAME_ACTIVE;
 		_make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
+
+		/* 用言のときは、一般的外の関係名詞を追加 */
+		if ((OptCaseFlag & OPT_CASE_ADD_SOTO_WORDS) && flag == CF_PRED) {
+		    /* 外の関係がないとき */
+		    if ((c = check_cf_case(cf_ptr + f_num, "外の関係")) < 0) {
+			if ((cf_ptr + f_num)->element_num == CF_ELEMENT_MAX) { /* 格の数が上限 */
+			    (cf_ptr + f_num)->element_num--; /* 最後の格を削除 */
+			    clear_cf_element((cf_ptr + f_num), (cf_ptr + f_num)->element_num);
+			}
+			_make_ipal_cframe_pp(cf_ptr + f_num, "外の関係", (cf_ptr + f_num)->element_num, flag);
+			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, (cf_ptr + f_num)->element_num, Thesaurus, FALSE);
+			(cf_ptr + f_num)->element_num++;
+		    }
+		    /* 外の関係がすでにあるときは用例を追加 */
+		    else {
+			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, c, Thesaurus, FALSE);
+		    }
+		}
 
 		/* 以下 flag == CF_PRED のはず */
 
@@ -1795,46 +1863,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     for (i = 0; i < end; i++) {
 	for (j = 0; j < CF_ELEMENT_MAX; j++) {
-	    if ((Case_frame_array+i)->pp_str[j]) {
-		free((Case_frame_array+i)->pp_str[j]);
-		(Case_frame_array+i)->pp_str[j] = NULL;
-	    }
-	    if ((Case_frame_array+i)->ex[j]) {
-		free((Case_frame_array+i)->ex[j]);
-		(Case_frame_array+i)->ex[j] = NULL;
-	    }
-	    if ((Case_frame_array+i)->sm[j]) {
-		free((Case_frame_array+i)->sm[j]);
-		(Case_frame_array+i)->sm[j] = NULL;
-	    }
-	    if ((Case_frame_array+i)->sm_delete[j]) {
-		free((Case_frame_array+i)->sm_delete[j]);
-		(Case_frame_array+i)->sm_delete[j] = NULL;
-		(Case_frame_array+i)->sm_delete_size[j] = 0;
-		(Case_frame_array+i)->sm_delete_num[j] = 0;
-	    }
-	    if ((Case_frame_array+i)->sm_specify[j]) {
-		free((Case_frame_array+i)->sm_specify[j]);
-		(Case_frame_array+i)->sm_specify[j] = NULL;
-		(Case_frame_array+i)->sm_specify_size[j] = 0;
-		(Case_frame_array+i)->sm_specify_num[j] = 0;
-	    }
-	    if ((Case_frame_array+i)->ex_list[j]) {
-		for (k = 0; k < (Case_frame_array+i)->ex_num[j]; k++) {
-		    if ((Case_frame_array+i)->ex_list[j][k]) {
-			free((Case_frame_array+i)->ex_list[j][k]);
-		    }
-		}
-		free((Case_frame_array+i)->ex_list[j]);
-		free((Case_frame_array+i)->ex_freq[j]);
-		(Case_frame_array+i)->ex_list[j] = NULL;
-		(Case_frame_array+i)->ex_size[j] = 0;
-		(Case_frame_array+i)->ex_num[j] = 0;
-	    }
-	    if ((Case_frame_array+i)->semantics[j]) {
-		free((Case_frame_array+i)->semantics[j]);
-		(Case_frame_array+i)->semantics[j] = NULL;
-	    }
+	    clear_cf_element(Case_frame_array + i, j);
 	}
 	if ((Case_frame_array+i)->entry) {
 	    free((Case_frame_array+i)->entry);

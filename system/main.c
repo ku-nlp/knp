@@ -639,6 +639,9 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
+	else if (str_eq(argv[0], "-add-soto-words")) {
+	    OptCaseFlag |= OPT_CASE_ADD_SOTO_WORDS;
+	}
 	else if (str_eq(argv[0], "-disc-or-cf")) {
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
