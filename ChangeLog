@@ -1,3 +1,8 @@
+2007-05-07  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/const.h, system/main.c, system/case_ipal.c:
+	Added "-add-soto-words" option to use case frames without general "³°¤Î´Ø·¸" words.
+
 2007-05-02  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/similarity.c:
@@ -16,6 +21,11 @@
 
 	* system/const.h, system/extern.h, system/cky.c, system/dpnd_analysis.c, system/base_phrase.c, system/koou.c:
 	Change the estimation of dependency probability between Chinese words. Use all the possible probabilities.
+
+2007-04-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified not to die for unexpected cases.
 
 2007-04-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
