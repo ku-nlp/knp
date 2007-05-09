@@ -1,3 +1,11 @@
+2007-05-09  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_after_dpnd_and_case.rule:
+	Modified not to use some unstable rules for <µ¿Ìä>.
+
+	* rule/mrph_basic.rule:
+	Modified -copula.
+
 2007-05-07  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/const.h, system/main.c, system/case_ipal.c:
