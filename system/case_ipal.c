@@ -788,8 +788,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
     unsigned char *point, *point2;
     int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
-    int sub_agent_flag = 0;
-    char *code, **destination, *buf;
+    int sub_agent_flag = 0, ex_agent_flag;
+    char *code, **destination, *buf, *token;
 
     c_ptr->freq[num] = 0;
 
@@ -830,52 +830,52 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    continue;
 	}
 
-	/* 「ＡのＢ」の「Ｂ」だけを処理
-	for (i = strlen(point2) - 2; i > 2; i -= 2) {
-	    if (!strncmp(point2+i-2, "の", 2)) {
-		point2 += i;
-		break;
-	    }
-	}
-	*/
-
 	if (*point2 != '\0') {
-	    code = get_str_code(point2, thesaurus);
-	    if (code) {
-		/* <主体>のチェック */
-		if (cf_match_element(code, "主体", FALSE)) {
-		    agent_count += freq;
+	    ex_agent_flag = 0;
+	    token = strtok(point2, "?");
+	    while (token) { /* "?"で結合されたものは切って格納 */
+		code = get_str_code(token, thesaurus);
+		if (code) {
+		    /* <主体>のチェック */
+		    if (ex_agent_flag == 0 && 
+			cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
+			agent_count += freq;
+			ex_agent_flag = 1;
+		    }
+
+		    if (!over_flag) {
+			if (strlen(buf) + strlen(code) >= max) {
+			    /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
+			    over_flag = 1;
+			}
+			else {
+			    strcat(buf, code);
+			}
+		    }
+		    free(code);
 		}
 
-		if (!over_flag) {
-		    if (strlen(buf) + strlen(code) >= max) {
-			/* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
-			over_flag = 1;
-		    }
-		    else {
-			strcat(buf, code);
-		    }
+		if (c_ptr->ex_size[num] == 0) {
+		    c_ptr->ex_size[num] = 10;	/* 初期確保数 */
+		    c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
+							       "_make_ipal_cframe_ex");
+		    c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
+							     "_make_ipal_cframe_ex");
 		}
-		free(code);
-	    }
+		else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
+		    c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
+								sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
+								"_make_ipal_cframe_ex");
+		    c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
+							      sizeof(int)*c_ptr->ex_size[num], 
+							      "_make_ipal_cframe_ex");
+		}
 
-	    if (c_ptr->ex_size[num] == 0) {
-		c_ptr->ex_size[num] = 10;	/* 初期確保数 */
-		c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
-							   "_make_ipal_cframe_ex");
-		c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
-							 "_make_ipal_cframe_ex");
+		c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(token);
+		c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
+
+		token = strtok(NULL, "?");
 	    }
-	    else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
-		c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
-							    sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
-							    "_make_ipal_cframe_ex");
-		c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
-							  sizeof(int)*c_ptr->ex_size[num], 
-							  "_make_ipal_cframe_ex");
-	    }
-	    c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(point2);
-	    c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
 
 	    c_ptr->freq[num] += freq;
 	    count++;

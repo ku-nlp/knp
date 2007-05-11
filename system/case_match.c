@@ -201,8 +201,10 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 
     if (Thesaurus == USE_BGH) {
 	for (i = 0; *(d+i); i += BGH_CODE_SIZE) {
-	    if (!strncmp(d+i+start, p+start, len)) {
-		return TRUE;
+	    for (j = 0; *(p+j); j += BGH_CODE_SIZE) {
+		if (!strncmp(d+i+start, p+j+start, len)) {
+		    return TRUE;
+		}
 	    }
 	}
     }
