@@ -202,7 +202,7 @@ int      dpnd_lex = 0;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY;
+    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
@@ -639,8 +639,8 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-no")) {
 	    OptCaseFlag |= OPT_CASE_NO;
 	}
-	else if (str_eq(argv[0], "-add-soto-words")) {
-	    OptCaseFlag |= OPT_CASE_ADD_SOTO_WORDS;
+	else if (str_eq(argv[0], "-use-cf-included-soto-words")) {
+	    OptCaseFlag &= ~OPT_CASE_ADD_SOTO_WORDS;
 	}
 	else if (str_eq(argv[0], "-disc-or-cf")) {
 	    OptDiscFlag |= OPT_DISC_OR_CF;
