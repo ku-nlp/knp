@@ -1,3 +1,11 @@
+2007-05-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* dict/ebcf/Makefile.am:
+	Added the installation of adverb.db.
+
+	* system/main.c:
+	Make "-add-soto-words" default.
+
 2007-05-09  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_after_dpnd_and_case.rule:
