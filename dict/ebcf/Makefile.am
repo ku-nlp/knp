@@ -14,7 +14,7 @@ endif
 
 nodist_dic_DATA +=  chidpnd.db
 
-PROBCASE_DBS = case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db
 
 HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
 
@@ -72,6 +72,14 @@ noun.dat: noun.knpdict
 noun.db: noun.dat
 	if [ -f noun.idx ]; then \
 		sort noun.idx | @MAKE_DB_COMMAND@ $@ -append /; \
+	fi
+
+adverb.prob:
+	true
+
+adverb.db: adverb.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
 case.prob:
