@@ -6,6 +6,9 @@
 	* system/main.c:
 	Make "-add-soto-words" default.
 
+	* system/case_ipal.c, system/case_match.c:
+	Modified agentive checking when reading case frames.
+
 2007-05-09  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_after_dpnd_and_case.rule:
