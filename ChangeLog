@@ -1,3 +1,8 @@
+2007-05-14  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c:
+	関数record_match_exをコメントアウト
+
 2007-05-14  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/dpnd_analysis.c:
