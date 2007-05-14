@@ -1,3 +1,8 @@
+2007-05-14  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c:
+	Modified dpnd probability calculation for a Chinese word pair, changed it to be calculating dpnd probability for all the dpnd labels.
+
 2007-05-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* dict/ebcf/Makefile.am:
