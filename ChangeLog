@@ -1,3 +1,11 @@
+2007-05-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c:
+	Modified dpnd probability calculation for a Chinese word pair, only keep the dpnd type with highest occurrence time.
+
+	* dict/ebcf/chidpnd.dict:
+	Only keep the dpnd type with highest occurrence time.
+
 2007-05-14  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c:
