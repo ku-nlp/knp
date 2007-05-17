@@ -305,7 +305,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     /* 複合名詞の前の部分 (表記のみ, 代表表記やALTは用いていない) */
     else if (strt < end) {
 	if (flag & USE_RN) {
-	    buf = get_mrph_rep_from_f(ptr->mrph_ptr + strt);
+	    buf = get_mrph_rep_from_f(ptr->mrph_ptr + strt, FALSE);
 	    if (!buf) buf = (ptr->mrph_ptr + strt)->Goi2;
 	}
 	else {

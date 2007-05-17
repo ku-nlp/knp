@@ -543,7 +543,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((strp = get_mrph_rep_from_f(tp->head_ptr)) == NULL) { /* FIX ME!: とりあえず主辞のみ */
+	if ((strp = get_mrph_rep_from_f(tp->head_ptr, FALSE)) == NULL) { /* FIX ME!: とりあえず主辞のみ */
 	    strp = make_mrph_rn(tp->head_ptr); /* なければ作る */
 	    strp_malloc_flag = 1;
 	}

@@ -77,7 +77,7 @@ int AutoDicExist;
     key[0] = '\0';
     for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
 	if (i) strcat(key, "+");
-	if (rep_str = get_mrph_rep_from_f(m_ptr + i)) {
+	if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
 	    if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
 		return FALSE;
 	    }

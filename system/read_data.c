@@ -90,26 +90,13 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-	     char *get_mrph_rep_from_f(MRPH_DATA *m_ptr)
+	char *get_mrph_rep_from_f(MRPH_DATA *m_ptr, int flag)
 /*==================================================================*/
 {
     char *cp;
 
-    if ((cp = check_feature(m_ptr->f, "代表表記"))) {
-	return cp + strlen("代表表記:");
-    }
-    return NULL;
-}
-
-/*==================================================================*/
-	  char *get_mrph_rep_from_f_before(MRPH_DATA *m_ptr)
-/*==================================================================*/
-{
-    char *cp;
-
-    /* 代表表記が変更されている場合は変更前の代表表記を返す */
-
-    if ((cp = check_feature(m_ptr->f, "代表表記変更"))) {
+    /* flagが立っていてかつ、代表表記が変更されている場合は変更前の代表表記を返す */
+    if (flag && (cp = check_feature(m_ptr->f, "代表表記変更"))) {
 	return cp + strlen("代表表記変更:");
     }
     

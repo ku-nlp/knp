@@ -1534,7 +1534,8 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 
     /* 代表表記を使う場合で代表表記があるとき */
     if (use_rep_flag) {
-	if (OptUseCPNCF && flag == CF_NOUN && (cp = check_feature(t_ptr->f, "BGH")) || m_ptr) {
+	if (OptUseCPNCF && flag == CF_NOUN && (cp = check_feature(t_ptr->f, "BGH")) &&
+	    !strstr(cp, "|") || m_ptr) {
 	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
 	    if (OptUseCPNCF && flag == CF_NOUN && cp) {
 		cpncf_flag = 1;
@@ -1567,8 +1568,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    }
 	}
 	else {
-	    if (flag == CF_PRED && (main_pred = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL ||
-		flag == CF_NOUN && (main_pred = get_mrph_rep_from_f_before(t_ptr->head_ptr)) == NULL) {
+	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, flag & CF_PRED)) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
 	    }
@@ -1591,7 +1591,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→") && !cpncf_flag) {
 	if (use_rep_flag) {
-	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1))) {
+	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
 					     "make_pred_string");
 		strcpy(buffer, main_pred);
@@ -1616,7 +1616,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     /* 「形容詞語幹+的だ」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出←") && !cpncf_flag) {
 	if (use_rep_flag &&
-	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1))) {
+	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1, FALSE))) {
 	    buffer = (char *)malloc_data(strlen(cp) + strlen(main_pred) + 9, 
 					 "make_pred_string");
 	    strcpy(buffer, cp);
@@ -1749,7 +1749,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     cf_ptr->etcflag = CF_NORMAL;
     /* 代表表記格フレームのときは、IDなどを代表表記にする */
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((rep_name = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL) {
+	if ((rep_name = get_mrph_rep_from_f(t_ptr->head_ptr, FALSE)) == NULL) {
 	    rep_name = make_mrph_rn(t_ptr->head_ptr);
 	    rep_name_malloc_flag = 1;
 	}
@@ -2284,7 +2284,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	mrph_str = get_mrph_rep_from_f(dp->head_ptr);
+	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
 	if (mrph_str == NULL) {
 	    mrph_str = make_mrph_rn(dp->head_ptr);
 	    rep_malloc_flag = 1;

@@ -357,7 +357,7 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     }
 
     if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
-	(cp = get_mrph_rep_from_f(b_ptr->head_ptr))) {
+	(cp = get_mrph_rep_from_f(b_ptr->head_ptr, FALSE))) {
 	strcpy(c_ptr->ex_list[c_ptr->element_num][0], cp);
     }
     else {
