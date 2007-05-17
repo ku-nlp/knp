@@ -1,3 +1,12 @@
+2007-05-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/extern.h, system/read_data.c:
+	格フレームを検索する際、代表表記変更というFEATUREがある場合は代表表記ではなく
+	変更前の代表表記を使って格フレームを検索する仕様を、名詞の場合のみに限定
+
+	* system/main.c:
+	名詞句の関係解析を行う際、複合名詞の格フレームを用いるのをデフォルトに変更
+	
 2007-05-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c, rule/bnst_basic.rule, rule/tag_after_dpnd_and_case.rule, rule/tag_postprocess.rule:

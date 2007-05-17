@@ -1542,6 +1542,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 		rep_length = strlen(rep_strt);
 
 		/* 後方の基本句の分類語彙表の見出しに含まれる基本句は省略解析の対象としない */
+		/* 分類語彙表の見出しが処理対象の基本句より長い場合のみ実行*/
 		cp = m_ptr ? get_mrph_rep(m_ptr) : get_mrph_rep(t_ptr->head_ptr);
 		if (cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
 		    i = 1;
@@ -1566,7 +1567,8 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    }
 	}
 	else {
-	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL) {
+	    if (flag == CF_PRED && (main_pred = get_mrph_rep_from_f(t_ptr->head_ptr)) == NULL ||
+		flag == CF_NOUN && (main_pred = get_mrph_rep_from_f_before(t_ptr->head_ptr)) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
 	    }

@@ -195,7 +195,7 @@ int      dpnd_lex = 0;
     OptCheck = FALSE;
     OptUseCF = TRUE;
     OptUseNCF = TRUE;
-    OptUseCPNCF = FALSE;
+    OptUseCPNCF = TRUE;
     OptUseRN = USE_RN;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
@@ -476,6 +476,9 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-relation-comp-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptUseCPNCF = TRUE;
+	}
+	else if (str_eq(argv[0], "-relation-no-comp-noun")) {
+	    OptUseCPNCF = FALSE;
 	}
 	else if (str_eq(argv[0], "-corefer")) { /* 係り受け判定のオプション */
 	    OptEllipsis |= OPT_COREFER;
