@@ -143,7 +143,8 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
 
-    int		i, j, count = 0, b_count = 0, t_table[TAG_MAX], b_table[BNST_MAX], t_proj_table[TAG_MAX], case_len, bp_independent_offset = 0, dpnd_head;
+    int		i, j, count = 0, b_count = 0, case_len, bp_independent_offset = 0, dpnd_head;
+    int		t_table[TAG_MAX], b_table[BNST_MAX], t_proj_table[TAG_MAX], t_copula_table[TAG_MAX];
     char	*cp;
     FEATURE	*fp;
     BNST_DATA	*pre_bp = NULL;
@@ -162,6 +163,7 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	    while (fp) { /* featureのloop: featureをチェック */
 		if (!strncmp(fp->cp, "格要素-", strlen("格要素-")) && 
 		    strstr(fp->cp, ":＃")) { /* tag_after_dpnd_and_case.ruleで使われている */
+		    t_copula_table[count] = 0;
 		    count++;
 		    b_count++;
 		}
@@ -171,7 +173,12 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	}
 	/* 判定詞(-copula)の基本句を分解するとき */
 	if (check_feature(t_ptr->f, "Ｔ基本句分解")) { 
+	    t_copula_table[count] = 0;
 	    count++;
+	    t_copula_table[count] = 1; /* 新しいテーブルにおける基本句分解の位置を記録 */
+	}
+	else {
+	    t_copula_table[count] = 0;
 	}
 
 	t_table[t_ptr->num] = count++; /* numを更新しているので使える */
@@ -286,14 +293,14 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
 	    if (OptCopula && 
 		dpnd_head != -1 && 
-		check_feature(t_ptr->f, "Ｔ受側基本句分解")) {
+		t_copula_table[dpnd_head]) { /* 係り先が判定詞分解 */
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
-		    (check_feature(t_ptr->f, "連体修飾") || 
-		     check_feature(t_ptr->f, "係:隣") || 
-		     check_feature(t_ptr->f, "係:文節内") || 
-		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]])) && /* 非交差条件 */
-		    (t_ptr->para_type == PARA_NIL || /* 並列のときは最後から2番目の要素のみ修正 */
-		     ((bp = search_nearest_para_child(t_ptr->parent)) && t_ptr->num == bp->num))) {
+		    (((check_feature(t_ptr->f, "連体修飾") || 
+		       check_feature(t_ptr->f, "係:隣") || 
+		       check_feature(t_ptr->f, "係:文節内")) && 
+		      (t_ptr->para_type == PARA_NIL || /* 並列のときは最後から2番目の要素のみ修正 */
+		       ((bp = search_nearest_para_child(t_ptr->parent)) && t_ptr->num == bp->num))) || 
+		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]]))) { /* 非交差条件 */
 		    dpnd_head--;
 		}
 	    }
