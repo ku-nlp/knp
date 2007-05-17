@@ -612,13 +612,22 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 				       int n, int *pos)
 /*==================================================================*/
 {
+    float ex_rawscore;
+
+    ex_rawscore = calc_similarity_word_cf(tp, cfp, n, pos);
+
+    /* exactマッチ */
+    if (ex_rawscore > 1.0) {
+	return ex_rawscore;
+    }
+
     /* 主体マッチ */
     if (cf_match_sm_thesaurus(tp, cfp, n)) {
 	*pos = MATCH_SUBJECT;
 	return (float)EX_match_subject / 11;
     }
 
-    return calc_similarity_word_cf(tp, cfp, n, pos);
+    return ex_rawscore;
 }
 
 /*==================================================================*/

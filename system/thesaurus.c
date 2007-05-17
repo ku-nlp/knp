@@ -437,15 +437,15 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	if (*result_code) {
 	    if (flag == USE_BGH && !strstr(result_code, "sm")) {
 		if (bgh_code_match_for_sm(result_code, "sm-sub*****"))
-		    assign_cfeature(&(ptr->f), "SM:主体", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-主体", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-act*****"))
-		    assign_cfeature(&(ptr->f), "SM:動作", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-動作", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-per*****")) 
-		    assign_cfeature(&(ptr->f), "SM:人", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-人", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-loc*****"))
-		    assign_cfeature(&(ptr->f), "SM:場所", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-場所", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-org*****"))
-		    assign_cfeature(&(ptr->f), "SM:組織", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-組織", FALSE);
 	    }
 	    break;
 	}

@@ -458,7 +458,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			    while (strncmp(cp, ":", 1)) cp++;
 			    if (!strcmp(cp + 1, word)) {
 				ne_corefer(sp, i, anaphor,
-					   check_feature(tag_ptr->f, "NE"));
+					   check_feature(tag_ptr->f, "NE"), yomi_flag);
 			    }
 			} 
 		    }

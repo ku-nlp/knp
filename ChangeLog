@@ -1,3 +1,14 @@
+2007-05-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_match.c:
+	格フレームの用例とのマッチを行う際、主体マッチよりもexactマッチを優先するように変更
+	
+	* system/corefer.c, system/proper.c:
+	「"人名"（"人名"の読み方）」を認識を追加
+
+	* system/thesaurus.c:
+	意味素マッチの結果を<SM:...>から<SM-...>に変更
+	
 2007-05-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/dpnd_analysis.c:

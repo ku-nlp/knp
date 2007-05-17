@@ -807,7 +807,7 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
+int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
 /*==================================================================*/
 {
     /* 固有表現(ORGANIZATION)と */
@@ -817,10 +817,16 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
     int start, end, ne_tag, j, k;
     char cp[WORD_LEN_MAX], word[WORD_LEN_MAX];
 
+    if (strlen(anaphor) == 2) return 0;
+
     for (ne_tag = 0; ne_tag < NE_TAG_NUMBER; ne_tag++) {
 	/* どのタグであるかを"NE:"に続く4文字で判断する */
 	if (!strncmp(ne + 3, Tag_name[ne_tag], 4)) break;
     }
+
+    /* ORGANIZATION、PERSONの場合のみ */
+    if (strcmp(Tag_name[ne_tag], "ORGANIZATION") &&
+	(strcmp(Tag_name[ne_tag], "PERSON") || !yomi_flag)) return 0;
 
     end = (sp->tag_data + i)->head_ptr - sp->mrph_data;  /* 接尾辞を含むものには未対応 */
     if (check_feature(((sp->tag_data + i)->head_ptr)->f, "記号")) end--;
@@ -833,10 +839,6 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne)
 	if (!strcmp(word, anaphor)) break;
     }    
     if (strcmp(word, anaphor)) return 0;
-
-    /* ORGANIZATION、PERSONの場合のみ */
-    if (strcmp(Tag_name[ne_tag], "ORGANIZATION") &&
-	strcmp(Tag_name[ne_tag], "PERSON")) return 0;
 
     /* 形態素に付与、NEresultに記録 */
     if ((j = start) == end) {
