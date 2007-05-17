@@ -1439,6 +1439,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	Best_mgr->dpnd.head[cky_ptr->b_ptr->num] = -1;
 	Best_mgr->score = cky_ptr->score;
+	sp->score = Best_mgr->score;
 	convert_to_dpnd(sp, Best_mgr, cky_ptr);
 
 	/* Ìµ³Ê½¾Â°: Á°¤ÎÊ¸Àá¤Î·¸¤ê¼õ¤±¤Ë½¾¤¦¾ì¹ç */
@@ -1501,7 +1502,6 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	    /* print for debug or nbest */
 	    if (OptNbest == TRUE) {
-		sp->score = Best_mgr->score;
 		print_result(sp, 0);
 
 		if (OptDisplay == OPT_DEBUG) { /* case analysis results */
