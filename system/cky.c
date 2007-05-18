@@ -27,7 +27,8 @@ typedef struct _CKY {
     CKYptr	next;		/* pointer to the next CKY data at this point */
 } CKY;
 
-#define	CKY_TABLE_MAX	800000
+#define	CKY_TABLE_MAX	800000 
+//#define	CKY_TABLE_MAX	10000000 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
@@ -95,6 +96,22 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	}
         /* check if this cky corresponds with the grammar rules for Chinese */
 
+	/* sp and main verb */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "SP") && 
+	    !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") &&
+	    !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") &&
+	    !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") &&
+	    !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") &&
+	    direction == 'L') {
+	    return 0;
+	}
+
+	/* sp and other word */
+	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "SP") && direction == 'R') || 
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "SP") && direction == 'L')) {
+	    return 0;
+	}
+
 	/* adj and verb cannot have dependency relation */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "JJ") && 
 	     (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
@@ -115,10 +132,62 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for DEG, there should not be two modifiers */
-	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && (right->j - right->i > 0)) {
+	/* for DEG , DEC and LC, there should not be two modifiers */
+	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC")) && 
+	    right->b_ptr->num - right->i > 0 && 
+	    direction == 'R') {
 	    return 0;
 	}
+
+	/* for DEC, if there exists noun between it and previous verb, the noun should depend on verb */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) &&
+	    exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1 &&
+	    direction == 'R') {
+	    return 0;
+	}
+
+/* 	/\* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb *\/ */
+/* 	if (left->i == 0 && right->j == sp->Bnst_num - 1) { */
+/* 	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") && */
+/* 		((direction == 'L' &&  */
+/* 		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") && */
+/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) || */
+/* 		 (direction == 'R' &&  */
+/* 		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") && */
+/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) { */
+/* 		return 0; */
+/* 	    } */
+/* 	} */
+
+/* 	/\* for DEG, its head should be noun afterwords *\/ */
+/* 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG") && */
+/* 	    (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M")) && */
+/* 	    direction == 'R') { */
+/* 	    return 0; */
+/* 	} */
+
+/* 	/\* for DEG, it should have noun before as modifier *\/ */
+/* 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && */
+/* 	    (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") && */
+/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") && */
+/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") && */
+/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") && */
+/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "M")) && */
+/* 	    direction == 'R') { */
+/* 	    return 0; */
+/* 	} */
 
 	/* for verb, there should be only one object afterword */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
@@ -171,14 +240,18 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for preposition, if there is noun between it and following verb, the noun should depend on this preposition */
+	/* for preposition, if there is noun between it and following verb, if preposition is head of the verb, the noun should depend on verb, if verb is head of preposition, the noun should depend on preposition */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
-	    left->j - left->i == 0 &&
-	    exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1) {
+	    ((direction == 'R' && /* verb is head */
+	      left->j - left->i == 0 &&
+	      exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1) ||
+	     (direction == 'L' && /* preposition is head */
+	      right->b_ptr->num - right->i == 0 &&
+	      exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1))) { 
 	    return 0;
 	}
 
@@ -880,13 +953,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "VV")) &&
 			  (check_feature(g_ptr->f, "DEC") ||
 			   check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 10;
+			one_score += 5;
 		    }
 		    if ((check_feature(d_ptr->f, "VA") ||
 			 check_feature(d_ptr->f, "VV")) &&
 			check_feature(g_ptr->f, "DEC") &&
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
-			one_score += 5;
+			one_score += 30;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
@@ -1963,6 +2036,7 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 		break;
 	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
+		check_feature((sp->bnst_data + k)->f, "NT") ||
 		check_feature((sp->bnst_data + k)->f, "NR")){
 		return k;
 	    }
