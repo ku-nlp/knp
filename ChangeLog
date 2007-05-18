@@ -1,3 +1,14 @@
+2007-05-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c:
+	Add grammar constraint for SP, DEC and preposition.
+
+	* system/const.h:
+	Keep the best-10 cky item for one CKY cell, not like keep the best-5 before.
+
+	* dict/ebcf/chidpnd.dict:
+	Keep dpnd probability of the best-2 dpnd label, not like keep the best-1 before.
+
 2007-05-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/extern.h, system/read_data.c:
