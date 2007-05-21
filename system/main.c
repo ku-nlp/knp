@@ -85,6 +85,7 @@ int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
 int		OptParaFix;
 int		OptNbest;
+int		OptBeam;
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -226,6 +227,7 @@ int      dpnd_lex = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
+    OptBeam = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -301,6 +303,11 @@ int      dpnd_lex = 0;
 	}
 	else if (str_eq(argv[0], "-no-cky")) {
 	    OptCKY = FALSE;
+	}
+	else if (str_eq(argv[0], "-beam")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    OptBeam = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-language")) {
 	    argv++; argc--;

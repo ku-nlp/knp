@@ -1483,6 +1483,32 @@ CKY *new_cky_data(int *cky_table_num) {
     return cky_ptr;
 }
 
+void copy_cky_data(CKY *dest, CKY *src) {
+    int l;
+
+    if (dest == src) {
+	return;
+    }
+
+    dest->index = src->index;
+    dest->i = src->i;
+    dest->j = src->j;
+    dest->next = src->next;
+    dest->left = src->left;
+    dest->right = src->right;
+    dest->direction = src->direction;
+    dest->dpnd_type = src->dpnd_type;
+    dest->cp = src->cp;
+    dest->direction = src->direction;
+    dest->b_ptr = src->b_ptr;
+    dest->un_count = src->un_count;
+    for (l = 0; l < SCASE_CODE_SIZE; l++) dest->scase_check[l] = src->scase_check[l];
+    dest->para_flag = src->para_flag;
+    dest->para_score = src->para_score;
+    dest->score = src->score;
+    dest->cpm_ptr = src->cpm_ptr;
+}
+
 int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     int i, j;
 
@@ -1597,8 +1623,41 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     return TRUE;
 }
 
+void sort_cky_ptrs(CKY **orig_cky_ptr_ptr, int beam) {
+    CKY *cky_ptr = *orig_cky_ptr_ptr, **start_cky_ptr_ptr = orig_cky_ptr_ptr, *pre_ptr, *best_ptr, *best_pre_ptr;
+    double best_score;
+    int i;
+
+    for (i = 0; i < beam && cky_ptr; i++) {
+	best_score = -INT_MAX;
+	best_pre_ptr = NULL;
+	pre_ptr = NULL;
+
+	while (cky_ptr) {
+	    if (cky_ptr->score > best_score) {
+		best_score = cky_ptr->score;
+		best_ptr = cky_ptr;
+		best_pre_ptr = pre_ptr;
+	    }
+	    pre_ptr = cky_ptr;
+	    cky_ptr = cky_ptr->next;
+	}
+
+	if (best_pre_ptr) { /* best_ptr is not at the beginning */
+	    best_pre_ptr->next = best_ptr->next;
+	    best_ptr->next = *start_cky_ptr_ptr;
+	    *start_cky_ptr_ptr = best_ptr;
+	}
+
+	start_cky_ptr_ptr = &(best_ptr->next);
+	cky_ptr = best_ptr->next;
+    }
+
+    // best_ptr->next = NULL; /* do not consider more candidates than beam */
+}
+
 int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
-    int i, j, k, l, m, sort_flag, sen_len, cky_table_num, dep_check[BNST_MAX];
+    int i, j, k, l, m, sort_flag, sen_len, cky_table_num, pre_cky_table_num, dep_check[BNST_MAX];
     double best_score, para_score;
     char dpnd_type;
     CKY *cky_ptr, *left_ptr, *right_ptr, *best_ptr, *pre_ptr, *best_pre_ptr, *start_ptr, *sort_pre_ptr;
@@ -1640,6 +1699,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    }
 	    else {
 		next_pp_for_ij = NULL;	/* その位置に一つも句ができてない印 */
+		pre_cky_table_num = cky_table_num;
 
 		/* merge (i .. i+k) and (i+k+1 .. j) */
 		for (k = 0; k < j - i; k++) {
@@ -1903,24 +1963,22 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 		    }
 		}
 
-		/* move the best one to the beginning of the list */
 		if (next_pp_for_ij) {
-		    cky_ptr = cky_matrix[i][j];
-		    best_score = -INT_MAX;
-		    pre_ptr = NULL;
-		    while (cky_ptr) {
-			if (cky_ptr->score > best_score) {
-			    best_score = cky_ptr->score;
-			    best_ptr = cky_ptr;
-			    best_pre_ptr = pre_ptr;
+		    /* leave the best candidates within the beam */
+		    if (OptBeam) {
+			sort_cky_ptrs(&(cky_matrix[i][j]), OptBeam);
+			next_pp = &(cky_matrix[i][j]);
+			for (l = 0; l < OptBeam && *next_pp; l++) {
+			    /* swap_cky_data(&(cky_table[pre_cky_table_num + l]), *next_pp); */
+			    /* *next_pp = &(cky_table[pre_cky_table_num + l]); */
+			    next_pp = &((*next_pp)->next);
 			}
-			pre_ptr = cky_ptr;
-			cky_ptr = cky_ptr->next;
+			/* cky_table_num = pre_cky_table_num + l; */
+			*next_pp = NULL;
 		    }
-		    if (best_pre_ptr) { /* bestが先頭ではない場合 */
-			best_pre_ptr->next = best_ptr->next;
-			best_ptr->next = cky_matrix[i][j];
-			cky_matrix[i][j] = best_ptr;
+		    /* move the best one to the beginning of the list for the next step */
+		    else {
+			sort_cky_ptrs(&(cky_matrix[i][j]), 1);
 		    }
 
 		    if (Language == CHINESE && cky_matrix[i][j]->next && cky_matrix[i][j]->next->next) {

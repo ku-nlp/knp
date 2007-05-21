@@ -117,6 +117,7 @@ extern int		OptNElearn;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
 extern int		OptNbest;
+extern int		OptBeam;
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
