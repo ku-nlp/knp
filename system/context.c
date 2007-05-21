@@ -4952,7 +4952,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	i = 0;
 
 	ClearEllipsisMGR(&workem);
-
+	    
 	    if (cpm_ptr->cf.type == CF_NOUN) {
 		EllipsisDetectForNounMain(sp, &workem, cpm_ptr, &cmm, i, *(cf_array+l));
 	    }
@@ -4960,7 +4960,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &cmm, i, 
 					  *(cf_array+l), order);
 	    }
-
+	    
 	    if (0 && !CheckClosestAssigned(&cmm, i)) {
 		workem.score = -1;
 	    }
@@ -4975,7 +4975,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		}
 		cmm.score = workem.score;
 	    }
-	    /* 格解析失敗のとき -- 解析をひとつだけ結果に入れるために
+	/* 格解析失敗のとき -- 解析をひとつだけ結果に入れるために
 	       最大スコアのデフォルトを -2 にしている */
 	    else {
 		workem.score = cmm.score;
@@ -4995,7 +4995,6 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		(workem.score == maxem->score && /* スコアはこれまでの最大と同じだが、↓ */
 		 (CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i) || /* 直前格のスコアが高いとき */
 		  CompareClosestExFrequency(&(maxem->ecmm[0].cmm), &cmm)))) { /* 頻度が高いとき */
-		maxem->cpm = workem.cpm;
 		for (k = 0; k < CASE_TYPE_NUM; k++) {
 		    ClearEllipsisComponent(&(maxem->cc[k]));
 		    CopyEllipsisComponent(&(maxem->cc[k]), &(workem.cc[k]));
@@ -5221,6 +5220,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 {
     int i, j, k;
 
+    /* 一番良い結果(ecmm[0])のみをマージする */
     em1->score += em2->score;
     em1->pure_score += em2->pure_score;
 
@@ -5253,14 +5253,19 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	em1->ecmm[0].cpm.elem_s_ptr[j] = em2->ecmm[0].cpm.elem_s_ptr[i];
 	em1->ecmm[0].cpm.elem_b_num[j] = em2->ecmm[0].cpm.elem_b_num[i];
 	
-	/* CF_MATCH */
-	em1->ecmm[0].cmm.result_lists_d[0].flag[j]
-	    = em2->ecmm[0].cmm.result_lists_p[0].flag[i] 
-	    + em1->ecmm[0].cmm.cf_ptr->element_num;
-	em1->ecmm[0].cmm.result_lists_d[0].score[j]
-	    = em2->ecmm[0].cmm.result_lists_p[0].score[i];
-	em1->ecmm[0].cmm.result_lists_d[0].pos[j]
-	    = em2->ecmm[0].cmm.result_lists_p[0].pos[i];
+	/* CF_MATCH (結果はベストだけなので0だけ見る) */
+	if (em2->ecmm[0].cmm.result_lists_d[0].flag[i] == NIL_ASSIGNED) {
+	    em1->ecmm[0].cmm.result_lists_d[0].flag[j] = NIL_ASSIGNED;
+	}
+	else {
+	    em1->ecmm[0].cmm.result_lists_d[0].flag[j]
+		= em2->ecmm[0].cmm.result_lists_d[0].flag[i] 
+		+ em1->ecmm[0].cmm.cf_ptr->element_num;
+	    em1->ecmm[0].cmm.result_lists_d[0].score[j]
+		= em2->ecmm[0].cmm.result_lists_d[0].score[i];
+	    em1->ecmm[0].cmm.result_lists_d[0].pos[j]
+		= em2->ecmm[0].cmm.result_lists_d[0].pos[i];
+	}
     }
 
     /* 名詞格フレーム */
@@ -5459,7 +5464,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
 		    if (maxem.score > -2 && maxem_copula.score > -2) {
-/* 			merge_em(&maxem, &maxem_copula); */
+/*  			merge_em(&maxem, &maxem_copula); */
 		    }
 		    cpm_ptr->cf.type = CF_PRED;
 		} 

@@ -866,8 +866,11 @@ typedef struct cf_def {
 
 /* 文中の格要素と格フレームのスロットとの対応付け記録 */
 typedef struct {
+    /* ある格がどの入力格要素に対応しているかの番号 */
     int  	flag[CF_ELEMENT_MAX];
+    /* そのスコア */
     double	score[CF_ELEMENT_MAX];
+    /* 用例の何番目とマッチしたか(主体マッチの場合はMATCH_SUBJECT(-1)) */
     int		pos[CF_ELEMENT_MAX];
 } LIST;
 
@@ -878,9 +881,12 @@ typedef struct {
     double	pure_score[MAX_MATCH_MAX];	/* 正規化する前のスコア */
     double	sufficiency;			/* 格フレームの埋まりぐあい */
     int 	result_num;			/* 記憶する対応関係数 */
+    /* パターン(格フレーム)から見た割り当て状況 */
     LIST	result_lists_p[MAX_MATCH_MAX]; 	/* スコア最大の対応関係
 						   (同点の場合は複数) */
+    /* データ(入力)から見た割り当て状況 */
     LIST	result_lists_d[MAX_MATCH_MAX];
+    /* result_lists_d[0].flag[10] == 4 ならば result_lists_p[0].flag[4] == 10 */
 
     struct cpm_def	*cpm;
 } CF_MATCH_MGR;
@@ -994,9 +1000,8 @@ typedef struct ellipsis_cmm_list {
 } ELLIPSIS_CMM;
 
 typedef struct ellipsis_list {
-    CF_PRED_MGR		*cpm;
-    float		score;
-    float		pure_score;
+    float		score;                  /* 正規化されたスコア */
+    float		pure_score;             /* 正規化前のスコア */
     ELLIPSIS_COMPONENT  cc[CASE_TYPE_NUM];	/* 省略格要素のリスト */
     FEATUREptr		f;
     int			result_num;

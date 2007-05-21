@@ -1,3 +1,9 @@
+2007-05-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/context.c:
+	merge_em中の間違いをとりあえず修正
+	不要な構造体の要素を削除
+
 2007-05-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c:
