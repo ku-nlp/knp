@@ -56,6 +56,7 @@ int		OptCheck;
 int             OptUseCF;
 int             OptUseNCF;
 int             OptUseCPNCF;
+int             OptMergeCFResult;
 int		OptUseRN;
 int		OptDiscPredMethod;
 int		OptDiscNounMethod;
@@ -197,6 +198,7 @@ int      dpnd_lex = 0;
     OptUseCF = TRUE;
     OptUseNCF = TRUE;
     OptUseCPNCF = TRUE;
+    OptMergeCFResult = TRUE;
     OptUseRN = USE_RN;
     OptUseScase = TRUE;
     OptUseSmfix = TRUE;
@@ -480,6 +482,10 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
+	else if (str_eq(argv[0], "-relation-noun-only")) {
+	    OptEllipsis |= OPT_REL_NOUN;
+	    OptMergeCFResult = FALSE;
+	}	
 	else if (str_eq(argv[0], "-relation-comp-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptUseCPNCF = TRUE;

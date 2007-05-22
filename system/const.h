@@ -68,7 +68,7 @@
 #else
 #define ALL_CASE_FRAME_MAX 	0
 #endif
-#define CF_ELEMENT_MAX 		20
+#define CF_ELEMENT_MAX 		24    /* 基本的には20までだがmerge_emで必要 */
 #define PP_ELEMENT_MAX		10
 #define SM_ELEMENT_MAX		256
 #define EX_ELEMENT_MAX		256

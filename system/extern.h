@@ -88,6 +88,7 @@ extern int		OptCheck;
 extern int		OptUseCF;
 extern int		OptUseNCF;
 extern int		OptUseCPNCF;
+extern int		OptMergeCFResult;
 extern int		OptUseRN;
 extern int		OptUseScase;
 extern int		OptUseSmfix;

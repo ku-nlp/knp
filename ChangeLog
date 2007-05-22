@@ -1,3 +1,13 @@
+2007-05-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/context.c:
+	merge_emが原因で起こるsegmentation faultを起こらないように修正
+	サ変および判定詞のノ格の解析を行うように変更
+
+	* system/extern.h, system/main.c:
+	名詞の関係解析を行う際に、サ変および判定詞の解析を行わないオプション
+	-relation-noun-only を追加
+	
 2007-05-22  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c, system/extern.h, system/main.c:

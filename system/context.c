@@ -5220,6 +5220,17 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 {
     int i, j, k;
 
+    /* em2->cc[41].scoreに値が入っている場合はマージしない(本来、空であるはず、要検討) */
+    if (em2->cc[41].score > 0) {
+	return;
+    }   
+    
+    /* CF_ELEMENT_MAXを上回ってしまう場合は一切マージを行わない */
+    if (em1->ecmm[0].element_num + em2->ecmm[0].element_num >= CF_ELEMENT_MAX ||
+	em1->ecmm[0].cmm.cf_ptr->element_num + em2->ecmm[0].cmm.cf_ptr->element_num >= CF_ELEMENT_MAX) {
+	return;   
+    }
+
     /* 一番良い結果(ecmm[0])のみをマージする */
     em1->score += em2->score;
     em1->pure_score += em2->pure_score;
@@ -5459,12 +5470,12 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
 		}
-		if (cpm_ptr->cf.type_flag && (OptEllipsis & OPT_REL_NOUN)) {
+		if (OptMergeCFResult && cpm_ptr->cf.type_flag && (OptEllipsis & OPT_REL_NOUN)) {
 		    cpm_ptr->cf.type = CF_NOUN;
 		    maxem_copula.score = -2;
 		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
 		    if (maxem.score > -2 && maxem_copula.score > -2) {
-/*  			merge_em(&maxem, &maxem_copula); */
+ 			merge_em(&maxem, &maxem_copula);
 		    }
 		    cpm_ptr->cf.type = CF_PRED;
 		} 
