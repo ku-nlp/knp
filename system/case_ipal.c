@@ -2639,12 +2639,20 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	d_pred = strdup(d_cf->cf_id);
 	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
 
-	key = malloc_db_buf(strlen(g_pred) + strlen(d_pred) + 2);
+	key = malloc_db_buf(strlen(g_pred) + strlen(d_pred) + 3);
 	sprintf(key, "%s|%s", d_pred, g_pred);
 	value = db_get(renyou_db, key);
 	if (value) {
 	    ret3 = atof(value);
 	    free(value);
+	}
+	else {
+	    sprintf(key, "NIL|%s", g_pred);
+	    value = db_get(renyou_db, key);
+	    if (value) {
+		ret3 = atof(value);
+		free(value);
+	    }
 	}
 
 	if (VerboseLevel >= VERBOSE2) {
@@ -2695,15 +2703,24 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	(d_id = check_feature(dp->f, "ID"))) {
 	g_id += 3;
 	d_id += 3;
-	key = malloc_db_buf(strlen(g_id) + strlen(d_id) + 2);
+	key = malloc_db_buf(strlen(g_id) + strlen(d_id) + 3);
 	sprintf(key, "%s|%s", d_id, g_id);
 	value = db_get(renyou_db, key);
 	if (value) {
 	    ret2 = atof(value);
-	    if (VerboseLevel >= VERBOSE2) {
-		fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret2);
-	    }
 	    free(value);
+	}
+	else {
+	    sprintf(key, "NIL|%s", g_id);
+	    value = db_get(renyou_db, key);
+	    if (value) {
+		ret2 = atof(value);
+		free(value);
+	    }
+	}
+
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret2);
 	}
     }
 
@@ -2855,7 +2872,7 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
     if (cfp) {
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
-	key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 2);
+	key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 3);
 	sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
 	value = db_get(adverb_db, key);
 	if (value) {
@@ -2867,10 +2884,22 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 	    ret1 = log(ret1);
 	}
 	else {
-	    if (VerboseLevel >= VERBOSE1) {
-		fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+	    sprintf(key, "NIL|%s", pred);
+	    value = db_get(adverb_db, key);
+	    if (value) {
+		ret1 = atof(value);
+		free(value);
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
+		}
+		ret1 = log(ret1);
 	    }
-	    ret1 = UNKNOWN_RENYOU_SCORE;
+	    else {
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+		}
+		ret1 = UNKNOWN_RENYOU_SCORE;
+	    }
 	}
 	free(pred);
 
@@ -2987,7 +3016,8 @@ double get_para_exist_probability(char *para_key, double score, int flag)
 
     key = malloc_db_buf(strlen(para_key) + 12);
     if (flag) {
-	sprintf(key, "1,%d|PARA:%s", binned_score, para_key);
+	/* sprintf(key, "1,%d|PARA:%s", binned_score, para_key); */
+	sprintf(key, "1|PARA:%s", para_key);
     }
     else {
 	sprintf(key, "0|PARA:%s", para_key);
@@ -2995,13 +3025,13 @@ double get_para_exist_probability(char *para_key, double score, int flag)
     value = db_get(case_db, key);
     if (value) {
 	ret1 = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PARA) : P(%s) = %lf\n", key, ret1);
 	}
 	free(value);
     }
     else {
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PARA) : P(%s) = 0\n", key);
 	}
     }
@@ -3055,8 +3085,8 @@ double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_D
     }
 
     key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 5);
-    sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi);
-    /* sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi); */
+    /* sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi); */
+    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
 
     value = db_get(para_db, key);
     if (value) {
@@ -3086,30 +3116,44 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
     char *key, *value;
-    int touten_flag, dist;
-    double ret1, ret2;
+    int touten_flag, dist, elem_num = 0;
+    double ret1 = 0, ret2, tmp_ret;
+    TAG_DATA *tmp_dp = dp, *tmp_gp;
 
     if (NounCoExist == FALSE) {
 	return 0;
     }
 
-    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(gp->head_ptr->Goi) + 2);
-    sprintf(key, "%s|%s", dp->head_ptr->Goi, gp->head_ptr->Goi);
+    while (tmp_dp) {
+	tmp_gp = gp;
+	while (tmp_gp) {
+	    key = malloc_db_buf(strlen(tmp_dp->head_ptr->Goi) + strlen(tmp_gp->head_ptr->Goi) + 2);
+	    sprintf(key, "%s|%s", tmp_dp->head_ptr->Goi, tmp_gp->head_ptr->Goi);
 
-    value = db_get(noun_co_db, key);
-    if (value) {
-	ret1 = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
-	    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = %lf\n", key, ret1);
+	    value = db_get(noun_co_db, key);
+	    if (value) {
+		tmp_ret = atof(value);
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = %lf\n", key, tmp_ret);
+		}
+		free(value);
+		ret1 += log(tmp_ret);
+	    }
+	    else {
+		if (VerboseLevel >= VERBOSE1) {
+		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = 0\n", key);
+		}
+		ret1 += FREQ0_ASSINED_SCORE;
+	    }
+
+	    elem_num++;
+	    tmp_gp = tmp_gp->next;
 	}
-	free(value);
-	ret1 = log(ret1);
+	tmp_dp = tmp_dp->next;
     }
-    else {
-	if (VerboseLevel >= VERBOSE1) {
-	    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = 0\n", key);
-	}
-	ret1 = FREQ0_ASSINED_SCORE;
+    ret1 /= (double)elem_num;
+    if (VerboseLevel >= VERBOSE1) {
+	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", elem_num, ret1);
     }
 
     /* 読点の生成 */
@@ -3130,7 +3174,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	if (value) {
 	    ret2 = atof(value);
 	    if (VerboseLevel >= VERBOSE1) {
-		fprintf(Outfp, ";; (NOUN_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
+		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
 	    }
 	    free(value);
 	    ret2 = log(ret2);
@@ -3138,7 +3182,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	else {
 	    ret2 = FREQ0_ASSINED_SCORE;
 	    if (VerboseLevel >= VERBOSE1) {
-		fprintf(Outfp, ";; (NOUN_P) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
 	    }
 	}
     }

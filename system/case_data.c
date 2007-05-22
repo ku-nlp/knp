@@ -448,7 +448,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	}
 
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL;
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL; /* ÊÂÎóÍ×ÁÇ³ÊÇ¼ÍÑ */
 
 	/* ³Ê¤¬ÌÀ¼¨¤µ¤ì¤Æ¤¤¤Ê¤¤¤³¤È¤ò¥Þ¡¼¥¯ */
 	if (check_feature(cel_b_ptr->f, "·¸:Ì¤³Ê") || 

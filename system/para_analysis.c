@@ -302,6 +302,10 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     /* スタート位置(jend_pos)からの解析を本当に行うかどうか */
     /*							    */
 
+    for (i = iend_pos; i >= 0; i--) {
+	Para_matrix[para_num][i][jend_pos] = -INT_MAX;
+    }
+
     /* 類似度が0なら中止 */
 
     if (match_matrix[iend_pos][jend_pos] == 0) return;

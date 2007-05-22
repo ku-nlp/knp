@@ -27,6 +27,7 @@ typedef struct _CKY {
     CKYptr	next;		/* pointer to the next CKY data at this point */
 } CKY;
 
+#define PARA_THRESHOLD	0
 #define	CKY_TABLE_MAX	800000 
 //#define	CKY_TABLE_MAX	10000000 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
@@ -58,19 +59,19 @@ void make_data_cframe_rentai_simple(CF_PRED_MGR *pre_cpm_ptr, TAG_DATA *d_ptr, T
 }
 
 /* add coordinated case components to CPM */
-TAG_DATA **add_coordinated_phrases(CF_PRED_MGR *cpm_ptr, CKY *cky_ptr, TAG_DATA **next) {
-    /* while (cky_ptr) { * 修飾部分のスキップ *
+TAG_DATA **add_coordinated_phrases(CKY *cky_ptr, TAG_DATA **next) {
+    while (cky_ptr) { /* 修飾部分のスキップ */
 	if (cky_ptr->para_flag || cky_ptr->dpnd_type == 'P') {
 	    break;
 	}
 	cky_ptr = cky_ptr->right;
-	} */
+    }
 
     if (!cky_ptr) {
 	return NULL;
     }
     else if (cky_ptr->para_flag) { /* parent of <PARA> + <PARA> */
-	return add_coordinated_phrases(cpm_ptr, cky_ptr->left, add_coordinated_phrases(cpm_ptr, cky_ptr->right, next));
+	return add_coordinated_phrases(cky_ptr->left, add_coordinated_phrases(cky_ptr->right, next));
     }
     else if (cky_ptr->dpnd_type == 'P') {
 	*next = cky_ptr->left->b_ptr->tag_ptr + cky_ptr->left->b_ptr->tag_num - 1;
@@ -273,7 +274,7 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
     if ((OptParaFix == 0 && 
 	 begin >= 0 && 
 	 (sp->bnst_data + dep)->para_num != -1 && 
-	 Para_matrix[(sp->bnst_data + dep)->para_num][begin][gov] >= 0) || /* para score is not minus */
+	 Para_matrix[(sp->bnst_data + dep)->para_num][begin][gov] >= PARA_THRESHOLD) || /* para score is more than threshold */
 	(OptParaFix == 1 && 
 	 Mask_matrix[dep][gov] == 2)) {   /* 並列P */
 	return 'P';
@@ -1151,7 +1152,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    /* coordination */
 	    if (OptParaFix == 0) {
 		if (d_ptr->para_num != -1 && (para_key = check_feature(d_ptr->f, "並キ"))) {
-		    if (cky_ptr->para_score >= 0) {
+		    if (cky_ptr->dpnd_type == 'P') {
 			one_score += get_para_exist_probability(para_key, cky_ptr->para_score, TRUE);
 			one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 			flag++;
@@ -1166,7 +1167,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    if (cky_ptr->dpnd_type != 'P' && pred_p) {
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		if (make_data_cframe_child(sp, cpm_ptr, d_ptr->tag_ptr + d_ptr->tag_num - 1, child_num, t_ptr->num == d_ptr->num + 1 ? TRUE : FALSE)) {
-		    add_coordinated_phrases(cpm_ptr, cky_ptr->left, &(cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num - 1]->next));
+		    add_coordinated_phrases(cky_ptr->left, &(cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num - 1]->next));
 		    child_num++;
 		    flag++;
 		}
@@ -1185,7 +1186,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		make_data_cframe_rentai_simple(pre_cpm_ptr, pre_cpm_ptr->pred_b_ptr, t_ptr);
-		add_coordinated_phrases(pre_cpm_ptr, cky_ptr->right, &(pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num - 1]->next));
+		add_coordinated_phrases(cky_ptr->right, &(pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num - 1]->next));
 
 		orig_score = pre_cpm_ptr->score;
 		one_score -= orig_score;
@@ -1195,18 +1196,14 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		flag++;
 	    }
 
-	    if (flag == 0) { /* 名詞格フレームへ */
+	    if (OptParaFix == 0 && flag == 0) { /* 名詞格フレームへ */
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
+		(d_ptr->tag_ptr + d_ptr->tag_num - 1)->next = NULL; /* 並列要素格納用(係り側) */
+		t_ptr->next = NULL; /* 並列要素格納用(受け側) */
+		add_coordinated_phrases(cky_ptr->left, &((d_ptr->tag_ptr + d_ptr->tag_num - 1)->next));
+		add_coordinated_phrases(cky_ptr->right, &(t_ptr->next));
 		one_score += get_noun_co_ex_probability(d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 		noun_modifying_num++;
-
-		/* 
-		one_score += FREQ0_ASSINED_SCORE;
-		count = count_distance(sp, cky_ptr, g_ptr, &pos);
-		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
-		    count : d_ptr->dpnd_rule->preference;
-		one_score -= abs(default_pos - 1 - pos) * 5;
-		*/
 	    }
 
 	    /* penalty of adverb etc. (tentative) */
@@ -1219,8 +1216,6 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	}
 	cky_ptr = cky_ptr->right;
     }
-
-    /* one_score += get_noun_co_num_probability(t_ptr, noun_modifying_num); */
 
     if (pred_p) {
 	t_ptr->cpm_ptr = cpm_ptr;
@@ -1274,6 +1269,11 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 
 	one_score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, renyou_modifying_num);
 	one_score += calc_adv_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, adverb_modifying_num);
+    }
+
+    /* 名詞修飾個数生成 */
+    if (OptParaFix == 0 && !pred_p || check_feature(t_ptr->f, "用言:判")) {
+	one_score += get_noun_co_num_probability(t_ptr, noun_modifying_num);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -1855,6 +1855,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 			    if (Language != CHINESE && 
 				OptNbest == FALSE && 
+				OptParaFix && 
 				!check_feature(right_ptr->b_ptr->f, "用言")) { /* consider only the best one if noun */
 				break;
 			    }
@@ -1863,6 +1864,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 			if (Language != CHINESE && 
 			    OptNbest == FALSE && 
+			    OptParaFix && /* 並列の曖昧性を許す場合、名詞が並列かどうかで、並列名詞の平均をとる箇所でスコアに変化が起こる */
 			    (!check_feature(left_ptr->b_ptr->f, "用言") || /* consider only the best one if noun or VP */
 			     check_feature(left_ptr->b_ptr->f, "係:連用"))) {
 			    break;
