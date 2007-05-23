@@ -41,7 +41,9 @@ int	koou_m_p[BNST_MAX];
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	for (j = 0, r_ptr = KoouRuleArray; j < CurKoouRuleSize; j++, r_ptr++) {
-	    if (_regexpbnst_match(r_ptr->start_pattern, b_ptr) != -1) {
+	    if (_regexpbnst_match(r_ptr->start_pattern, b_ptr) != -1 &&
+		(Language != CHINESE ||
+		 (Language == CHINESE && check_feature((sp->bnst_data+i)->f, "P")))) {
 		if (OptDisplay == OPT_DEBUG) 
 		    fprintf(stderr, "Start (%d) %d\n", j, i);
 		for (k = i, c_ptr = b_ptr; k < sp->Bnst_num; k++, c_ptr++) {
@@ -59,7 +61,7 @@ int	koou_m_p[BNST_MAX];
 		    }
 		
 		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr) != -1 && 
-			(Language == CHINESE && !pu_flag)) {
+			(Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC"))) {
 			koou_m_p[i] = TRUE;
 			flag = TRUE;
 			Koou_matrix[i][k] = 1;
@@ -69,7 +71,7 @@ int	koou_m_p[BNST_MAX];
 		    }
 		    else if (r_ptr->uke_pattern &&
 			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) != -1 && 
-			(Language == CHINESE && !pu_flag)) {
+			(Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC"))) {
 			Koou_matrix[i][k] = 2;
 			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type; /* 今のところ記述できない */
 			if (OptDisplay == OPT_DEBUG) 
