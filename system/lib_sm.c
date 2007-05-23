@@ -169,6 +169,30 @@ SMLIST smlist[TBLSIZE];
 }
 
 /*==================================================================*/
+		       void ClearSMList()
+/*==================================================================*/
+{
+    int i;
+    SMLIST *smp, *next;
+
+    for (i = 0; i < TBLSIZE; i++) {
+	if (smlist[i].key) {
+	    free(smlist[i].key);
+	    free(smlist[i].sm);
+	    smlist[i].key = NULL;
+	}
+	smp = smlist[i].next;
+	while (smp) {
+	    free(smp->key);
+	    free(smp->sm);
+	    next = smp->next;
+	    free(smp);
+	    smp = next;
+	}
+    }
+}
+
+/*==================================================================*/
 		   int ne_check_all_sm(char *code)
 /*==================================================================*/
 {

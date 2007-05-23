@@ -1,3 +1,8 @@
+2007-05-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/extern.h, system/lib_sm.c:
+	記事番号が変化した際に解放していなかったメモリ(CFLISTの一部とSMLIST)を解放するように修正
+
 2007-05-23  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_data.c, system/case_ipal.c, system/cky.c, system/const.h, system/para_analysis.c:

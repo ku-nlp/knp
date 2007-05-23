@@ -348,6 +348,11 @@ int OptUseSmfix;
 	cfp = cflist[i].next;
 	while (cfp) {
 	    free(cfp->key);
+
+	    for (j = 0; j < cfp->cfid_num; j++) {
+		free(*(cfp->cfid + j));
+	    }
+
 	    next = cfp->next;
 	    free(cfp);
 	    cfp = next;
@@ -903,6 +908,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     ClearAnaphoraList();
     ClearEntityList();
     ClearCFList();
+    ClearSMList();
     InitContextHash();
 }
 
