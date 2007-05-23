@@ -22,6 +22,8 @@
   末尾が7    (〜7) : 係り先の主辞(文節末)
   末尾が70  (〜70) : 表層格(文節末)
   末尾が80 (〜b80) : 格フレームの意味 (b:1〜4)
+  末尾が9    (〜9) : 自分自身の主辞
+  末尾が90  (〜90) : 文節主辞
 */
 
 #define SIZE               2
@@ -309,10 +311,10 @@ char *ne_code_to_tagposition(int num)
 {
     int i, j;
     char *ret, *buf;
-    char *feature_name[] = {"人名末尾", "組織名末尾", '\0'};
+    char *feature_name1[] = {"人名末尾", "組織名末尾", '\0'};
     char *feature_name2[] = {"FULLNAME:H", "FULLNAME:M", "FULLNAME:T", "FULLNAME:S", 
 			     "NATION:H", "NATION:M", "NATION:T", "NATION:S", 
-			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S", 
+			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S",
 			     '\0'};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
@@ -325,22 +327,22 @@ char *ne_code_to_tagposition(int num)
 	    check_feature((mrph_data + j)->f, "文節始") ||
 	    check_feature((mrph_data + j)->f, "記号") ||
 	    check_feature((mrph_data + j)->f, "括弧")) break;
-	for (i = 0; i < 2; i++) {
-	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
+	for (i = 0; feature_name1[i]; i++) {
+	    if (check_feature((mrph_data + j)->f, feature_name1[i])) {
 		sprintf(ret, "%d%d40:1 ", i + 3, num);
 	    }
 	}
     }
 
     /* 人名末尾、組織名末尾であるか */
-    for (i = 0; feature_name[i]; i++) {
-	if (check_feature(mrph_data->f, feature_name[i])) {
+    for (i = 0; feature_name1[i]; i++) {
+	if (check_feature(mrph_data->f, feature_name1[i])) {
 	    sprintf(buf, "%s%d%d40:1 ", ret, i + 1, num);
 	    strcpy(ret, buf);
 	}	
     }   
 
-    /* 人名、組織 */
+    /* フルネーム、国名、組織名 */
     for (i = 0; feature_name2[i]; i++) {
 	if (check_feature(mrph_data->f, feature_name2[i])) {
 	    sprintf(buf, "%s%d%d40:1 ", ret, i + 11, num);
@@ -371,7 +373,7 @@ char *ne_code_to_tagposition(int num)
 	    sprintf(buf, "%s%d60:1 ", ret, c);	
 	    strcpy(ret, buf);	    	    
 	}
-	ncp = db_get(ne_db, pcp + 3);
+	ncp = db_get(ne_db, pcp + 15);
 	sprintf(buf, "%s%s6:1 ", ret, ncp ? ncp : "");	
 	free(ncp);
 	strcpy(ret, buf);	    
@@ -389,13 +391,21 @@ char *ne_code_to_tagposition(int num)
 		sprintf(buf, "%s%d70:1 ", ret, c);	
 		strcpy(ret, buf);	    	    
 	    }
-	    ncp = db_get(ne_db, pcp + 3);
+	    ncp = db_get(ne_db, pcp + 15);
 	    sprintf(buf, "%s%s7:1 ", ret, ncp ? ncp : "");	
 	    free(ncp);
 	    strcpy(ret, buf);	    
 	    break;
 	}
     }
+
+    if ((pcp = check_feature(mrph_data->f, "Ｔ主辞"))) {
+	ncp = db_get(ne_db, pcp + 5);
+	sprintf(buf, "%s%s9:1 ", ret, ncp ? ncp : "");	
+	free(ncp);
+	strcpy(ret, buf);	    
+    }   
+
     free(buf);
     return ret;
 }
@@ -470,7 +480,7 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j, k, f[FEATURE_MAX];
-    char buf[FEATURE_MAX], *s[6], bnstb[7], *cp, tmp[16];
+    char buf[FEATURE_MAX], *s[6], bnstb[7], bnsth[7], *cp, tmp[16];
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	buf[0] = '\0';
@@ -494,10 +504,13 @@ char *ne_code_to_tagposition(int num)
 	    s[5] = get_imi(sp->mrph_data + j, k);       /* 末尾空白 */
 	    check_feature(sp->mrph_data[j].f, "文節始") ? 
 		sprintf(bnstb, "%d00:1 ", k) : (bnstb[0] = '\0');   /* 末尾空白 */
+	    check_feature(sp->mrph_data[j].f, "Ｔ文節主辞") ? 
+		sprintf(bnsth, "%d90:1 ", k) : (bnsth[0] = '\0');   /* 末尾空白 */
 	    
-	    sprintf(buf, "%s%s%d:1 %s%s%d%d20:1 %s%s%d%d50:1 %s%s",
+	    sprintf(buf, "%s%s%d:1 %s%s%s%d%d20:1 %s%s%d%d50:1 %s%s",
 		    buf, s[0] ? s[0] : "", k,
 		    bnstb[0] ? bnstb : "",
+		    bnsth[0] ? bnsth : "",
 		    s[1], 
 		    get_chara(sp->mrph_data[j].f, sp->mrph_data[j].Goi), k,
 		    OptNEcache ? "" : s[2],
@@ -757,6 +770,17 @@ char *ne_code_to_tagposition(int num)
     int i, j, k, l, num;
     char cp[WORD_LEN_MAX];
     CF_PRED_MGR *cpm_ptr;
+
+    /* 主辞の情報 */
+    for (j = 0; j < sp->Bnst_num - 1; j++) {
+	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), "Ｔ文節主辞", FALSE);
+	sprintf (cp, "Ｔ主辞:%s", (sp->bnst_data[j].head_ptr)->Goi);
+	for (i = 1; (sp->bnst_data[j].head_ptr - i)->f; i++) {
+	    if (!(sp->bnst_data[j].head_ptr - i)->f ||
+		check_feature((sp->bnst_data[j].head_ptr - i + 1)->f, "文節始")) break;
+	    assign_cfeature(&((sp->bnst_data[j].head_ptr - i)->f), cp, FALSE);
+	}
+    }
 
     /* 親の情報 */
     if (!OptNEparent) {
