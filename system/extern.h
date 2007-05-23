@@ -61,6 +61,8 @@ extern int              Chi_np_end_matrix[][BNST_MAX];
 extern int              Chi_quote_start_matrix[][BNST_MAX];
 extern int              Chi_quote_end_matrix[][BNST_MAX];
 
+extern int              Chi_root; /* store the root of this sentence */
+
 /* DB file for Chinese dpnd rule */
 extern DBM_FILE chi_dpnd_db;
 extern int     CHIDpndExist;

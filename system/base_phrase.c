@@ -24,6 +24,7 @@ int     pp_matrix[BNST_MAX];
 	    Chi_np_end_matrix[i][j] = -1;
 	}
     }
+    Chi_root = -1;
 }
 
 /*==================================================================*/
@@ -36,6 +37,12 @@ int     pp_matrix[BNST_MAX];
     flag = FALSE;
 
     for (i = 0; i < sp->Bnst_num; i++) {
+	/* assign root feature */
+	if (check_feature((sp->bnst_data+i)->f, "IS_ROOT")) {
+	    Chi_root = i;
+	}
+	
+	/* assign NP feature */
 	if (check_feature((sp->bnst_data+i)->f, "NP_B")) {
 	    j = i + 1;
 	    while (j < sp->Bnst_num && !check_feature((sp->bnst_data+j)->f, "NP_B") && !check_feature((sp->bnst_data+j)->f, "NP_O")) {
@@ -48,17 +55,40 @@ int     pp_matrix[BNST_MAX];
     }
 
     /* fix baseNP scope error */
+    start_np = -1;
+    end_np = -1;
+    flag = FALSE;
     for (i = 0; i < sp->Bnst_num; i++) {
-	/* if the last word of baseNP is not noun, then reduce baseNP scope */
 	if (np_matrix[i] != -1) {
+	    /* if the last word of baseNP is not noun, then reduce baseNP scope */
 	    for (j = np_matrix[i]; j >= i; j--) {
 		if (check_feature((sp->bnst_data+j)->f, "NN") || check_feature((sp->bnst_data+j)->f, "NR") || check_feature((sp->bnst_data+j)->f, "NT")) {
 		    np_matrix[i] = j;
 		    break;
 		}
 	    }
+/* 	    /\* if one NP containing CS follows another NP, then merge them together *\/ */
+/* 	    for (j = i; j <= np_matrix[i]; j++) { */
+/* 		if (check_feature((sp->bnst_data+j)->f, "CC")) { */
+/* 		    if (i != 0 && i == end_np + 1) { */
+/* 			np_matrix[start_np] = np_matrix[i]; */
+/* 			np_matrix[i] = -1; */
+/* 			flag = TRUE; */
+/* 		    } */
+/* 		    break; */
+/* 		} */
+/* 	    } */
+	    
+	    if (!flag) {
+		start_np = i;
+		end_np = np_matrix[i];
+	    }
+	    else {
+		end_np = np_matrix[start_np];
+	    }
+	    
 	    if (OptDisplay == OPT_DEBUG) { 
-		printf("NP (%d-%d)\n", i, np_matrix[i]);
+		printf("NP (%d-%d)\n", start_np, end_np);
 	    }
 	}
     }
