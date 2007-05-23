@@ -1,3 +1,20 @@
+2007-05-23  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* chinese_rule/koou.rule:
+	Add rules for Chinese fixed match.
+
+	* system/koou.c:
+	Add pos-tag constraint for Chinese fixed match.
+
+	* system/main.c, system/extern.h, system/base_phrase.c, system/cky.c
+	Add root feature for Chinese.
+
+	* system/para_dpnd.c
+	Correct Chinese coordination scope error.
+
+	* system/dpnd_analysis.c
+	Modify dpnd probability smoothing for Chinese.
+
 2007-05-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/extern.h, system/lib_sm.c:
