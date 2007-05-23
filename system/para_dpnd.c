@@ -417,6 +417,19 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	    }
 	}
 
+	/* if the first word in a noun coordination is verb, then reduce the scope */
+	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	    for (k = m_ptr->start[0]; k <= m_ptr->end[0]; k++) {
+		if (!check_feature((sp->bnst_data+k)->f, "VV") &&
+		    !check_feature((sp->bnst_data+k)->f, "VC") && 
+		    !check_feature((sp->bnst_data+k)->f, "VE") && 
+		    !check_feature((sp->bnst_data+k)->f, "VA")) {
+		    m_ptr->start[0] = k;
+		    break;
+		}
+	    }
+	}
+
 	for (k = 0; k < m_ptr->part_num; k++) {
 	    // check if the scope of coordination conflict with the scope of baseNP
 	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
