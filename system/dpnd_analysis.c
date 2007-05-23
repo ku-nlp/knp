@@ -86,6 +86,7 @@ static int dpndID = 0;
     char *curRule[CHI_DPND_TYPE_MAX];
     double totalProb;
     int appear_LtoR_2, appear_RtoL_2, appear_LtoR_3, appear_RtoL_3, total_2, total_3;
+    double bkoff_weight_1, bkoff_weight_2;
 
     /* initialization */
     lex_rule = NULL;
@@ -93,6 +94,8 @@ static int dpndID = 0;
     pos_rule_2 = NULL;
     pos_rule = NULL;
     rule = NULL;
+    bkoff_weight_1 = 0.8;
+    bkoff_weight_2 = 0.7;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
@@ -389,6 +392,8 @@ static int dpndID = 0;
 				}
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_2[k];
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
 			}
 		    }
 		    else if (pos_rule_2 != NULL) {
@@ -409,6 +414,8 @@ static int dpndID = 0;
 				}
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_3[k];
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
 			}
 		    }
 		}
@@ -418,6 +425,9 @@ static int dpndID = 0;
 			Chi_dpnd_matrix[i][j].prob_LtoR[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_4[k];
+			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_2;
+			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_2;
+
 			strcpy(Chi_dpnd_matrix[i][j].type[k], Chi_dpnd_matrix[i][j].type_4[k]);
 		    }
 		}
