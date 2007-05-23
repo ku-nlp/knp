@@ -1,5 +1,7 @@
 SUBDIRS = .
 
+EXTRA_DIST = auto.dat
+
 dicdir = $(pkgdatadir)/dict/auto
 
 nodist_dic_DATA = auto.db
