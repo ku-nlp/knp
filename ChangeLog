@@ -1,3 +1,11 @@
+2007-05-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule, system/corefer.c:
+	場所同士の共参照解析において「神戸市」と「神戸」などのように先行詞の方が長い場合に
+	共参照であると判断する条件に、追加された文字が「住所末尾」であるという条件を追加
+
+	「〜氏」と「同氏」の共参照認識を行うために接尾辞であっても先行詞となることができるように変更
+
 2007-05-23  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* chinese_rule/koou.rule:
