@@ -5417,6 +5417,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    /* 共参照解析結果のある語、照応詞候補でない語は解析しない */
 	    if (cpm_ptr->cf.type == CF_NOUN &&
 		(check_feature(cpm_ptr->pred_b_ptr->f, "共参照") ||
+		 check_feature(cpm_ptr->pred_b_ptr->f, "共参照内") ||
 		 !check_feature(cpm_ptr->pred_b_ptr->f, "照応詞候補")||
 		 check_feature(cpm_ptr->pred_b_ptr->f, "一人称"))) {
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "省略解析なし", FALSE);
