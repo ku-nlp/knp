@@ -1,5 +1,7 @@
 SUBDIRS = .
 
+EXTRA_DIST = chidpnd.dict chicase.prob chicase_nominal.prob
+
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
