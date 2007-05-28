@@ -1,5 +1,4 @@
 /*====================================================================
-
 				 CKY
 
     $Id$
@@ -143,6 +142,15 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
+	/* CC cannot depend on verb afterwords */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "CC") && direction == 'R' && 
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE"))) { 
+	    return 0;
+	}
+
 	/* for DEG , DEC and LC, there should not be two modifiers */
 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
@@ -160,23 +168,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    direction == 'R') {
 	    return 0;
 	}
-
-/* 	/\* if the number of verb does not equal to the number of DEC, then the root of the sentence should be verb *\/ */
-/* 	if (left->i == 0 && right->j == sp->Bnst_num - 1) { */
-/* 	    if (check_pos_num_chi(sp, "verb") > check_pos_num_chi(sp, "DEC") && */
-/* 		((direction == 'L' &&  */
-/* 		 (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") && */
-/* 		  !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA"))) || */
-/* 		 (direction == 'R' &&  */
-/* 		 (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") && */
-/* 		  !check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA"))))) { */
-/* 		return 0; */
-/* 	    } */
-/* 	} */
 
 	/* for DEG, its head should be noun afterwords */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG") &&
@@ -223,26 +214,52 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
-	    (right->right != NULL && right->left != NULL &&
+	    ((right->right != NULL && right->left != NULL &&
 	     right->right->b_ptr->num == right->b_ptr->num &&
 	     (check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") ||
 	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") ||
-	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR")))) {
+	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR"))) ||
+	     (right->right != NULL && right->left != NULL && right->right->left != NULL && right->right->right != NULL &&
+	     right->right->b_ptr->num == right->b_ptr->num && right->right->right->b_ptr->num == right->b_ptr->num &&
+	     (check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "NN") ||
+	      check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "PN") ||
+	      check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "NR"))))) {
 	    return 0;
 	}
 
-	/* for verb, if there exists noun before (without comma), it should have a subject */
-	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) &&
-	    exist_chi(sp, left->i, left->b_ptr->num - 1, "noun") != -1 &&
-	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN")) &&
-	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
-	    direction == 'R') {
+/* 	/\* for verb, if there exists noun before (without comma), it should have a subject *\/ */
+/* 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") || */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) && */
+/* 	    exist_chi(sp, left->i, left->b_ptr->num - 1, "noun") != -1 && */
+/* 	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN")) && */
+/* 	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) && */
+/* 	    direction == 'R') { */
+/* 	    return 0; */
+/* 	} */
+	
+	/* for preposition, if it depend on verb, its head must exist after it */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) &&
+	    direction == 'L') {
 	    return 0;
 	}
-	
+
+/* 	/\* for preposition, it cannot depend on the verb which has DEC after it *\/ */
+/* 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") && */
+/* 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") ||  */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||  */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||  */
+/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) && */
+/* 	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "DEC") && */
+/* 	    direction == 'R') { */
+/* 	    return 0; */
+/* 	} */
+
 	/* for preposition, if there is LC in the following (no preposibion between them), the words between P and LC should depend on LC */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC") &&
@@ -977,6 +994,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
 			one_score += 30;
 		    }
+/* 		    if ((check_feature(d_ptr->f, "P")) && */
+/* 			(check_feature(g_ptr->f, "VV") || */
+/* 			 check_feature(g_ptr->f, "VA") || */
+/* 			 check_feature(g_ptr->f, "VC") || */
+/* 			 check_feature(g_ptr->f, "VE"))) { */
+/* 			one_score += 15; */
+/* 		    } */
 		}
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
@@ -1774,10 +1798,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
 						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						    cky_ptr->score += 20;
+						    cky_ptr->score += 50;
 						}
 						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						    cky_ptr->score += 20;
+						    cky_ptr->score += 50;
 						}
 					    }
 
@@ -1819,10 +1843,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
 						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    cky_ptr->score += 20;
+						    cky_ptr->score += 50;
 						}
 						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						    cky_ptr->score += 20;
+						    cky_ptr->score += 50;
 						}
 					    }
 					}
@@ -1874,17 +1898,20 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
 					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						cky_ptr->score += 20;
+						cky_ptr->score += 50;
 					    }
 					    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						cky_ptr->score += 20;
+						cky_ptr->score += 50;
 					    }
 					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						cky_ptr->score += 20;
+						cky_ptr->score += 50;
 					    }
 					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						cky_ptr->score += 20;
+						cky_ptr->score += 50;
 					    }
+					}
+					if (OptDisplay == OPT_DEBUG) {
+					    printf("=>%.3f\n", cky_ptr->score);
 					}
 				    }
 				}
