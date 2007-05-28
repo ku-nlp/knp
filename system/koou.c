@@ -61,7 +61,8 @@ int	koou_m_p[BNST_MAX];
 		    }
 		
 		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr) != -1 && 
-			(Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC"))) {
+			(Language == CHINESE && !pu_flag && 
+			 (check_feature((sp->bnst_data+k)->f, "LC") || check_feature((sp->bnst_data+k)->f, "NN")))) {
 			koou_m_p[i] = TRUE;
 			flag = TRUE;
 			Koou_matrix[i][k] = 1;
