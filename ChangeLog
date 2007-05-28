@@ -1,3 +1,21 @@
+2007-05-28  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* chinese_rule/koou.rule:
+	Add rules for Chinese fixed match.
+
+	* system/koou.c:
+	Modify constraint for Chinese fixed match.
+
+	* system/cky.c:
+	Add grammatical constraints for Chinese preposition.
+
+	* system/para_dpnd.c, system/base_phrase.c:
+	Modify constraints for Chinese coordination key.
+	Correct Chinese coordination scope error by baseNP.
+
+	* system/dpnd_analysis.c
+	Modify dpnd probability smoothing for Chinese.
+
 2007-05-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/bnst_basic.rule, system/corefer.c:
