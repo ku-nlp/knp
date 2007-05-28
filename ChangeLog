@@ -1,3 +1,8 @@
+2007-05-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Modified a bug in probabilistic case structure analysis.
+
 2007-05-28  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* chinese_rule/koou.rule:
