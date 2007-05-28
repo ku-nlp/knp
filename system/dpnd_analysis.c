@@ -95,7 +95,7 @@ static int dpndID = 0;
     pos_rule = NULL;
     rule = NULL;
     bkoff_weight_1 = 0.8;
-    bkoff_weight_2 = 0.7;
+    bkoff_weight_2 = 0.5;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
