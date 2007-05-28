@@ -1158,20 +1158,24 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     }
 
     if (t_ptr->cf_num > 0) { /* predicate or something which has case frames */
-	pred_p = 1;
-	cpm_ptr = cky_ptr->cpm_ptr;
-	cpm_ptr->pred_b_ptr = t_ptr;
-	cpm_ptr->score = -1;
-	cpm_ptr->result_num = 0;
-	cpm_ptr->tie_num = 0;
-	cpm_ptr->cmm[0].cf_ptr = NULL;
-	cpm_ptr->decided = CF_UNDECIDED;
+	cky_ptr->cpm_ptr->pred_b_ptr = t_ptr;
+	set_data_cf_type(cky_ptr->cpm_ptr); /* set predicate type */
+	if (cky_ptr->cpm_ptr->cf.type == CF_PRED) { /* currently, restrict to predicates */
+	    pred_p = 1;
+	    cpm_ptr = cky_ptr->cpm_ptr;
+	    cpm_ptr->score = -1;
+	    cpm_ptr->result_num = 0;
+	    cpm_ptr->tie_num = 0;
+	    cpm_ptr->cmm[0].cf_ptr = NULL;
+	    cpm_ptr->decided = CF_UNDECIDED;
 
-	cpm_ptr->cf.pred_b_ptr = t_ptr;
-	t_ptr->cpm_ptr = cpm_ptr;
-	cpm_ptr->cf.element_num = 0;
-
-	set_data_cf_type(cpm_ptr); /* set predicate type */
+	    cpm_ptr->cf.pred_b_ptr = t_ptr;
+	    t_ptr->cpm_ptr = cpm_ptr;
+	    cpm_ptr->cf.element_num = 0;
+	}
+	else {
+	    cky_ptr->cpm_ptr->pred_b_ptr = NULL;
+	}
     }
     else {
 	cky_ptr->cpm_ptr->pred_b_ptr = NULL;
@@ -1510,6 +1514,7 @@ CKY *new_cky_data(int *cky_table_num) {
     if (OptAnalysis == OPT_CASE && *cky_table_num > cpm_allocated_cky_num) {
 	cky_ptr->cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "new_cky_data");
 	init_case_frame(&(cky_ptr->cpm_ptr->cf));
+	cky_ptr->cpm_ptr->cf.type = 0;
 	cpm_allocated_cky_num = *cky_table_num;
     }
 
@@ -1555,6 +1560,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     Best_mgr->pred_num = 0;
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((sp->tag_data + i)->cf_num > 0 && 
+	    (sp->tag_data + i)->cpm_ptr && (sp->tag_data + i)->cpm_ptr->cf.type == CF_PRED && 
 	    (((sp->tag_data + i)->inum == 0 && /* the last basic phrase in a bunsetsu */
 	      !check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")) || 
 	     ((sp->tag_data + i)->inum == 1 && 
