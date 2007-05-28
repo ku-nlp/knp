@@ -518,6 +518,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	    for (k = 0; k < m_ptr->part_num; k++) {
 		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'N'; // noun coordination
 		if (k > 0) {
+		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[k]; i++) {
+			Mask_matrix[m_ptr->start[k]][i] = 0;
+		    }
 		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
 		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
 		}

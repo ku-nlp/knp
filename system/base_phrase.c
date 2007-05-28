@@ -67,17 +67,17 @@ int     pp_matrix[BNST_MAX];
 		    break;
 		}
 	    }
-/* 	    /\* if one NP containing CS follows another NP, then merge them together *\/ */
-/* 	    for (j = i; j <= np_matrix[i]; j++) { */
-/* 		if (check_feature((sp->bnst_data+j)->f, "CC")) { */
-/* 		    if (i != 0 && i == end_np + 1) { */
-/* 			np_matrix[start_np] = np_matrix[i]; */
-/* 			np_matrix[i] = -1; */
-/* 			flag = TRUE; */
-/* 		    } */
-/* 		    break; */
-/* 		} */
-/* 	    } */
+	    /* if one NP containing CS follows another NP, then merge them together */
+	    for (j = i; j <= np_matrix[i]; j++) {
+		if (check_feature((sp->bnst_data+j)->f, "CC")) {
+		    if (i != 0 && i == end_np + 1) {
+			np_matrix[start_np] = np_matrix[i];
+			np_matrix[i] = -1;
+			flag = TRUE;
+		    }
+		    break;
+		}
+	    }
 	    
 	    if (!flag) {
 		start_np = i;
