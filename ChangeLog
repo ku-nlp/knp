@@ -1,3 +1,14 @@
+2007-05-29  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* chinese_rule/bnst_basic.rule:
+	Modify rules for Chinese coordination key.
+
+	* system/para_dpnd.c:
+	Enlarge Chinese coordination scope if the word before it is NR.
+
+	* system/cky.c:
+	Add grammatical constraints for Chinese preposition and pivot sentence.
+
 2007-05-28  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
