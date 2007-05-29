@@ -431,6 +431,11 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	}
 
 	for (k = 0; k < m_ptr->part_num; k++) {
+	    /* enlarge the coordination scope there is a NR before the first NN of this coordination */
+	    if (check_feature((sp->bnst_data + m_ptr->start[0])->f, "NN") && m_ptr->start[0] != 0 && check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NR")) {
+		m_ptr->start[0]--;
+	    }
+
 	    // check if the scope of coordination conflict with the scope of baseNP
 	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
 		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {

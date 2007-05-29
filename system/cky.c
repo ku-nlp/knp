@@ -180,17 +180,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* for DEG, it should have noun before as modifier *\/ */
-/* 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && */
-/* 	    (!check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") && */
-/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") && */
-/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") && */
-/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") && */
-/* 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "M")) && */
-/* 	    direction == 'R') { */
-/* 	    return 0; */
-/* 	} */
-
 	/* for verb, there should be only one object afterword */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
@@ -227,18 +216,32 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* for verb, if there exists noun before (without comma), it should have a subject *\/ */
-/* 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") || */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA")) && */
-/* 	    exist_chi(sp, left->i, left->b_ptr->num - 1, "noun") != -1 && */
-/* 	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN")) && */
-/* 	    !(check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) && */
-/* 	    direction == 'R') { */
-/* 	    return 0; */
-/* 	} */
-	
+	/* for pivot sentence, the noun between the two verbs should depend on the second verb  */
+	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
+	    direction == 'L' &&
+	    (right->i == right->b_ptr->num ||
+	     (right->left != NULL &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR") &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN"))) &&
+	    ((left->right != NULL &&
+	     (check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "NN") ||
+	      check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "NR") ||
+	      check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "PN"))) ||
+	     (left->right != NULL && left->right->right != NULL &&
+	      (check_feature((sp->bnst_data + left->right->right->b_ptr->num)->f, "NN") ||
+	       check_feature((sp->bnst_data + left->right->right->b_ptr->num)->f, "NR") ||
+	       check_feature((sp->bnst_data + left->right->right->b_ptr->num)->f, "PN")))) &&
+	    exist_chi(sp, right->i, right->b_ptr->num - 1, "CC") == -1 &&
+	    exist_chi(sp, right->i, right->b_ptr->num - 1, "pu") == -1) {
+	    return 0;
+	}
+
 	/* for preposition, if it depend on verb, its head must exist after it */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") || 
@@ -249,16 +252,25 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* for preposition, it cannot depend on the verb which has DEC after it *\/ */
-/* 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") && */
-/* 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") ||  */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||  */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") ||  */
-/* 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) && */
-/* 	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "DEC") && */
-/* 	    direction == 'R') { */
-/* 	    return 0; */
-/* 	} */
+	/* a noun cannot depend on its following preposition */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN")) && 
+	    direction == 'R') {
+	    return 0;
+	}
+
+	/* for preposition, if it depend on verb, it should have modifier between it and its head */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
+	    direction == 'R' &&
+	    left->j == left->b_ptr->num) {
+	    return 0;
+	}
 
 	/* for preposition, if there is LC in the following (no preposibion between them), the words between P and LC should depend on LC */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
@@ -829,7 +841,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 			 ((check_feature(d_ptr->f, "VA")) &&
 			  (check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 10;
+			one_score += 15;
 		    }
 		    if (d_ptr->num < g_ptr->num &&
 			(((check_feature(d_ptr->f, "AD")) &&
@@ -986,7 +998,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "VV")) &&
 			  (check_feature(g_ptr->f, "DEC") ||
 			   check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 5;
+			one_score += 10;
 		    }
 		    if ((check_feature(d_ptr->f, "VA") ||
 			 check_feature(d_ptr->f, "VV")) &&
@@ -994,13 +1006,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
 			one_score += 30;
 		    }
-/* 		    if ((check_feature(d_ptr->f, "P")) && */
-/* 			(check_feature(g_ptr->f, "VV") || */
-/* 			 check_feature(g_ptr->f, "VA") || */
-/* 			 check_feature(g_ptr->f, "VC") || */
-/* 			 check_feature(g_ptr->f, "VE"))) { */
-/* 			one_score += 15; */
-/* 		    } */
 		}
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
@@ -1020,6 +1025,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "NT")) &&
 			  (check_feature(g_ptr->f, "P"))) ||
 
+			 ((check_feature(g_ptr->f, "VV") ||
+			   check_feature(g_ptr->f, "VC") ||
+			   check_feature(g_ptr->f, "VE")) &&
+			  (check_feature(d_ptr->f, "VC") ||
+			   check_feature(d_ptr->f, "VE") ||
+			   check_feature(d_ptr->f, "VV")))||
+
 			 ((check_feature(d_ptr->f, "DEC")) &&
 			  (check_feature(g_ptr->f, "VC") ||
 			   check_feature(g_ptr->f, "VA") ||
@@ -1032,7 +1044,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "ETC")) &&
 			  (check_feature(g_ptr->f, "NN") ||
 			   check_feature(g_ptr->f, "NR"))))) {
-			one_score += 10;
+			one_score += 15;
 		    }
 		    if (g_ptr->num < d_ptr->num &&
 			(((check_feature(g_ptr->f, "AD")) &&
@@ -1083,7 +1095,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(d_ptr->f, "AS") ||
 			   check_feature(d_ptr->f, "NN") ||
 			   check_feature(d_ptr->f, "DER"))))) {
-			one_score += 5;
+			one_score += 10;
 		    }
 		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
 			one_score += 10;
@@ -1916,9 +1928,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score += 50;
 					    }
 					}
-					if (OptDisplay == OPT_DEBUG) {
-					    printf("=>%.3f\n", cky_ptr->score);
-					}
+/* 					if (OptDisplay == OPT_DEBUG) { */
+/* 					    printf("=>%.3f\n", cky_ptr->score); */
+/* 					} */
 				    }
 				}
 				else {
@@ -2204,6 +2216,25 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
     else if (!strcmp(type, "DEC")) {
 	for (k = i; k <= j; k++) {
 	    if (check_feature((sp->bnst_data + k)->f, "DEC")) {
+		return k;
+	    }
+	}
+    }
+    else if (!strcmp(type, "CC")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "CC")) {
+		return k;
+	    }
+	}
+    }
+    else if (!strcmp(type, "pu")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "PU") && 
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
 		return k;
 	    }
 	}
