@@ -1,3 +1,11 @@
+2007-05-30  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* Makefile.am, configure.ac, system/configfile.c, system/const.h, system/extern.h, system/knp.h, system/main.c, system/proper.c, system/read_data.c:
+	Add named entity recognition with CRF.
+
+	* crf/Makefile.am, crf/crf.cc, crf/crf.h:
+	Added.
+	
 2007-05-29  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* chinese_rule/bnst_basic.rule:

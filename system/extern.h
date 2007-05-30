@@ -111,6 +111,7 @@ extern int		OptCopula;
 extern int		OptPostProcess;
 extern int		OptRecoverPerson;
 extern int		OptNE;
+extern int              OptNECRF;
 extern int		OptNEcache;
 extern int		OptNEend;
 extern int		OptNEdelete;
@@ -147,6 +148,7 @@ extern char		*ETAG_name[];
 
 extern char		*SVMFile[];
 extern char		*SVMFileNE[];
+extern char		*CRFFileNE;
 extern char             *DBforNE;
 extern char		*DTFile[];
 extern char             *SynonymFile;

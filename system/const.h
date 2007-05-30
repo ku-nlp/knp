@@ -479,7 +479,8 @@ typedef struct {
 
 #define		DEF_ANTECEDENT_DECIDE_TH	"KNP省略解析探索閾値"
 
-#define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ"
+#define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ" /* SVM */
+#define         DEF_NE_MODEL_FILE       "NEモデルファイル" /* CRF */
 #define         DEF_SYNONYM_FILE        "同義表現ファイル"
 
 typedef struct _RuleVector {

@@ -77,6 +77,7 @@ int		OptCopula;
 int		OptPostProcess;
 int		OptRecoverPerson;
 int		OptNE;
+int             OptNECRF;
 int		OptNEcache;
 int		OptNEend;
 int		OptNEdelete;
@@ -220,6 +221,7 @@ int      dpnd_lex = 0;
     OptPostProcess = 0;
     OptRecoverPerson = 0;
     OptNE = 0;
+    OptNECRF = 0;
     OptNEcache = 0;
     OptNEend = 0;
     OptNEdelete = 0;
@@ -460,6 +462,12 @@ int      dpnd_lex = 0;
  	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
 	    OptNE = 1;
 	    OptNElearn = 1;
+	}
+#endif
+#ifdef USE_CRF
+	else if (str_eq(argv[0], "-ne-crf")) {
+	    OptNE = 1;
+	    OptNECRF = 1;
 	}
 #endif
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
@@ -866,7 +874,7 @@ int      dpnd_lex = 0;
     }
 
 #ifdef USE_SVM
-    if (OptNE) {
+    if (OptNE && !OptNECRF) {
 	close_db_for_NE();
     }
 #endif
@@ -920,13 +928,13 @@ int      dpnd_lex = 0;
 	init_tagposition();
     }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
-#ifdef USE_SVM
-    if (!DBforNE) OptNE = 0;
-    if (OptNE) {
+
+    if (!OptNECRF && !DBforNE) OptNE = 0;
+    if (OptNE && !OptNECRF) {
 	init_db_for_NE(); /* NE用 */
 	init_ne_cache();
     }
-#endif
+
     if (OptEllipsis & OPT_COREFER) {
 	init_Synonym_db();
 	/* init_entity_cache(); */
@@ -960,10 +968,13 @@ int      dpnd_lex = 0;
 	init_event();
     }
 #ifdef USE_SVM
-    if (OptNE && !OptNElearn)
+    if (OptNE && !OptNElearn && !OptNECRF)
 	init_svm_for_NE();
 #endif
-
+#ifdef USE_CRF
+    if (OptNE && !OptNElearn && OptNECRF)
+	init_crf_for_NE();
+#endif
     /* 形態素, 文節情報の初期化 */
     memset(mrph_data, 0, sizeof(MRPH_DATA)*MRPH_MAX);
     memset(bnst_data, 0, sizeof(BNST_DATA)*BNST_MAX);
@@ -1030,11 +1041,9 @@ int      dpnd_lex = 0;
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
     /* 固有表現認識を行う */
-#ifdef USE_SVM
     if (OptNE && !OptNEcase && OptNEparent) {
 	ne_analysis(sp);
     }
-#endif 
     
     /* 形態素を文節にまとめる */
     if (OptInput == OPT_RAW) {
@@ -1303,7 +1312,6 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
-#ifdef USE_SVM
     if (OptNE && (!OptNEparent || OptNEcase)) {
 	/* 固有表現認識に必要なfeatureを与える */
 	for_ne_analysis(sp);   
@@ -1311,7 +1319,6 @@ PARSED:
 	ne_analysis(sp);
 	assign_ne_feature_tag(sp);
     }
-#endif
 
     /* 照応解析に必要なFEATUREの付与 */
     if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
@@ -1476,11 +1483,9 @@ PARSED:
 	}
 	
 	/* 固有表現認識のためのキャッシュ作成 */
-#ifdef USE_SVM
 	if (OptNE) {
 	    make_ne_cache(sp);
 	}
-#endif
 
 	/************/
 	/* 結果表示 */

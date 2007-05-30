@@ -21,6 +21,7 @@ AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
 AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (optional)]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
+AC_ARG_WITH(crf, AC_HELP_STRING([--with-crf], [use CRFPP library (optional)]))
 AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
 AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
@@ -57,6 +58,17 @@ fi
 AM_CONDITIONAL(HAVE_TINYSVM, test "x$with_svm" = xyes)
 AM_CONDITIONAL(HAVE_SVMLIGHT, test "x$with_svm_light" = xyes)
 AM_CONDITIONAL(SVM_MODEL_EXIST, test "x$svm_model_exist" = xyes)
+
+if test "$with_crf" = yes; then
+    SUBDIRS="crf $SUBDIRS"
+    CRF_CFLAGS="-I$packagesrcdir/crf -DUSE_CRF"
+    KNP_LIBS="$KNP_LIBS $packagesrcdir/crf/libcrf.la -lcrfpp"
+    LIBCRF_VERSION_INFO="0:0:1"
+    AC_SUBST(LIBCRF_VERSION_INFO)
+    crf_model_exist=yes	
+fi
+AM_CONDITIONAL(HAVE_CRFPP, test "x$with_crf" = xyes)
+AM_CONDITIONAL(CRF_MODEL_EXIST, test "x$crf_model_exist" = xyes)
 
 if test "$with_boehm_gc" = yes; then
     KNP_LIBS="$KNP_LIBS -lgc -ldl"
@@ -212,7 +224,7 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
-KNP_CFLAGS="$SVM_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="$SVM_CFLAGS $CRF_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 
@@ -251,6 +263,7 @@ Makefile
 system/Makefile
 svm/Makefile
 svm_light/Makefile
+crf/Makefile
 rule/Makefile
 chinese_rule/Makefile
 doc/Makefile

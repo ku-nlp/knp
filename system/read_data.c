@@ -664,14 +664,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		sscanf(rev_ibuffer, "%*d-%9d", &ArticleID);
 
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
+		    /* fprintf(stderr, "New Article %s\n", input_buffer+6); */
 		    if (OptEllipsis) {
 			ClearSentences(sp);
 		    }
-#ifdef USE_SVM
 		    if (OptNE) {
 			clear_ne_cache();
 		    }
-#endif
 		    /* if (OptEllipsis & OPT_COREFER) {
 			clear_entity_cache();
 			} */
