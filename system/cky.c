@@ -100,10 +100,10 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	if ((left->b_ptr->num == Chi_root && direction == 'R') ||
-	    (right->b_ptr->num == Chi_root && direction == 'L')) {
-	    return 0;
-	}
+/* 	if ((left->b_ptr->num == Chi_root && direction == 'R') || */
+/* 	    (right->b_ptr->num == Chi_root && direction == 'L')) { */
+/* 	    return 0; */
+/* 	} */
 
         /* check if this cky corresponds with the grammar rules for Chinese */
 	/* sp and main verb */
@@ -185,10 +185,14 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	}
 
 	/* for DEG and DEC, it must have some word before modifying it */
-	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEC")) &&
-	    left->i == left->b_ptr->num &&
-	    direction == 'R') {
+	if (((check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG") ||
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEC")) &&
+	     left->i == left->b_ptr->num &&
+	     direction == 'R') ||
+	    ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC")) &&
+	     right->i == right->b_ptr->num &&
+	     direction == 'L')) {
 	    return 0;
 	}
 
@@ -262,16 +266,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* for preposition, if it depend on verb, its head must exist after it *\/ */
-/* 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") && */
-/* 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") ||  */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||  */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") ||  */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) && */
-/* 	    direction == 'L') { */
-/* 	    return 0; */
-/* 	} */
-
 	/* for preposition, it cannot depend on a preposition */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
 	    check_feature((sp->bnst_data + left->b_ptr->num)->f, "P")) {
@@ -302,14 +296,31 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for preposition, if it depend on verb, it should have modifier between it and its head */
-	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	/* for preposition, if it depend on verb, it should have modifier */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
 	    direction == 'R' &&
-	    left->j == left->b_ptr->num) {
+	    left->j == left->b_ptr->num) ||
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
+	     (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") || 
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") || 
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") || 
+	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) &&
+	     direction == 'L' &&
+	     right->j == right->b_ptr->num)) {
+	    return 0;
+	}
+
+	/* for preposition, if it depend on verb before, the verb should have object */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE") || 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) &&
+	    direction == 'L' &&
+	    right->j == sp->Bnst_num - 1) {
 	    return 0;
 	}
 
@@ -333,6 +344,18 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     (direction == 'L' && /* preposition is head */
 	      right->b_ptr->num - right->i == 0 &&
 	      exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1))) { 
+	    return 0;
+	}
+
+	/* for preposition, if it has a VV modifier after it, this VV should have object or subject */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
+	    direction == 'L' && 
+	    (right->left != NULL && 
+	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") &&
+	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR") &&
+	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") &&
+	     right->b_ptr->num == right->j)) {
 	    return 0;
 	}
 
@@ -622,11 +645,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		else if (Language != CHINESE){
 		    one_score -= abs(default_pos - 1 - pos) * 2;
 		}
-/* 		else if (Language == CHINESE) { */
-/* 		    if (abs(default_pos - 1 - pos) > 20) { */
-/* 			one_score -= 20; */
-/* 		    } */
-/* 		} */
 
 		/* 読点をもつものが隣にかかることを防ぐ */
 		if (d_ptr->num + 1 == g_ptr->num && 
@@ -831,6 +849,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 100000;
 			}
 		    }
+		}
+
+		/* decrease score if the modifier is root */
+		if (d_ptr->num == Chi_root) {
+		    one_score -= 15;
 		}
 
 		if (cky_ptr->direction == LtoR) {
@@ -1048,6 +1071,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			check_feature(g_ptr->f, "DEC") &&
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
 			one_score += 30;
+		    }
+		    if (d_ptr->num < g_ptr->num &&
+			check_feature(d_ptr->f, "DEG") &&
+			(check_feature(g_ptr->f, "NR") ||
+			 check_feature(g_ptr->f, "PN"))) {
+			one_score -= 20;
 		    }
 		}
 		else if (cky_ptr->direction == RtoL) {
