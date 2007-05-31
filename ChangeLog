@@ -1,3 +1,9 @@
+2007-05-31  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/para_dpnd.c:
+	Modify grammatical constratins for Chinese dpnd and coordiantion.
+	Modiry constraints for Chinese root feature.
+
 2007-05-30  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* Makefile.am, configure.ac, system/configfile.c, system/const.h, system/extern.h, system/knp.h, system/main.c, system/proper.c, system/read_data.c:
