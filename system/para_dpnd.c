@@ -417,15 +417,33 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	    }
 	}
 
-	/* if the first word in a noun coordination is verb, then reduce the scope */
+	/* if the first word in a noun coordination is verb or DEC, then reduce the scope */
 	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
 	    for (k = m_ptr->start[0]; k <= m_ptr->end[0]; k++) {
 		if (!check_feature((sp->bnst_data+k)->f, "VV") &&
 		    !check_feature((sp->bnst_data+k)->f, "VC") && 
 		    !check_feature((sp->bnst_data+k)->f, "VE") && 
-		    !check_feature((sp->bnst_data+k)->f, "VA")) {
+		    !check_feature((sp->bnst_data+k)->f, "VA") && 
+		    !check_feature((sp->bnst_data+k)->f, "DEC")) {
 		    m_ptr->start[0] = k;
 		    break;
+		}
+	    }
+	}
+
+	/* if the first word in a noun coordination is DEG, then enlarge the scope */
+	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	    if (check_feature((sp->bnst_data + m_ptr->start[0])->f, "DEG")) {
+		if (Chi_np_start_matrix[m_ptr->start[0] - 1][m_ptr->start[0] - 1] != -1) {
+		    m_ptr->start[0] = Chi_np_start_matrix[m_ptr->start[0] - 1][m_ptr->start[0] - 1];
+		}
+		else if (check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NN") || 
+			 check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NR") ||
+			 check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "PN")) {
+		    m_ptr->start[0]--;
+		}
+		else {
+		    m_ptr->start[0]++;
 		}
 	    }
 	}
