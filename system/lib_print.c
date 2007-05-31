@@ -1395,8 +1395,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fprintf(Outfp, " KNP:%s", time_string);
     }
 
-    /* スコアを出力 */
-    if (!ErrorComment) {
+    /* スコアを出力 (CKY時) */
+    if (!ErrorComment && OptCKY) {
 	fprintf(Outfp, " SCORE:%.5f", sp->score);
     }
 
