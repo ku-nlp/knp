@@ -452,20 +452,22 @@ char *ne_code_to_tagposition(int num)
 	strcpy(ret, buf);
     }
 
-    if (check_feature(mrph_data->f, "Ê¸Àá»Ï") && check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) {
-	strcat(ret, " SINGLE");
-    }
-    else if (check_feature(mrph_data->f, "Ê¸Àá»Ï")) {
-	strcat(ret, " HEAD");
-    }
-    else if (check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) {
-	strcat(ret, " TAIL");
-    }
-    else if (check_feature(mrph_data->f, "£Ô¼ç¼­")) {
-	strcat(ret, " MIDDLE");
-    }
-    else {
-	strcat(ret, " OTHER");
+    if (OptNECRF) {
+	if (check_feature(mrph_data->f, "Ê¸Àá»Ï") && check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) {
+	    strcat(ret, " SINGLE");
+	}
+	else if (check_feature(mrph_data->f, "Ê¸Àá»Ï")) {
+	    strcat(ret, " HEAD");
+	}
+	else if (check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) {
+	    strcat(ret, " TAIL");
+	}
+	else if (check_feature(mrph_data->f, "£Ô¼ç¼­")) {
+	    strcat(ret, " MIDDLE");
+	}
+	else {
+	    strcat(ret, " OTHER");
+	}
     }
 
     free(buf);
