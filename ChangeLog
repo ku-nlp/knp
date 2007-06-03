@@ -1,3 +1,8 @@
+2007-06-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	-ne-crfオプション使用時に起こるバグを修正
+
 2007-06-02  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/proper.c:

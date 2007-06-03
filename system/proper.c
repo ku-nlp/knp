@@ -48,7 +48,7 @@ char *Position_name[] = {
     "head", "middle", "tail", "single", "\0"};
 char *Imi_feature[] = {"組織", "人", "主体", "場所", "\0"};
 char *Chara_name[] = {
-    "漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字", "\0"};
+    "漢字", "ひらがな", "かな漢字", "カタカナ", "記号", "英記号", "数字", "その他", "\0"};
 
 struct NE_MANAGER {
     char feature[FEATURE_MAX];          /* 素性 */
@@ -236,8 +236,8 @@ char *ne_code_to_tagposition(int num)
 {
     int i;
 
-    if (mrph_data->Goi && !strcmp(mrph_data->Goi, "・")) return 5; /* 記号 */
-    for (i = 0; *Chara_name[i]; i++)
+    if (mrph_data->Goi && !strncmp(mrph_data->Goi, "・", 2)) return 5; /* 記号 */
+    for (i = 0; strcmp(Chara_name[i], "その他"); i++)
 	if (check_feature(mrph_data->f, Chara_name[i]))
 	    break;
     return i + 1;
