@@ -1,3 +1,14 @@
+2007-06-04  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c:
+	Modify verb constraints for calculating Chinese dependency score.
+
+	* system/para_analysis.c, system/para_dpnd.c
+	Modify word similarity calculation for Chinese.
+
+	* system/para_dpnd.c
+	Correct coordination scope error by pos-tag constraints.
+
 2007-06-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/proper.c:
