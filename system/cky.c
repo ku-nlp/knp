@@ -627,10 +627,10 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		}
 
-		if (Language == CHINESE) {
-		    one_score -= 8 * verb;
-		    one_score -= 15 * comma;
-		}
+/* 		if (Language == CHINESE) { */
+/* 		    one_score -= 8 * verb; */
+/* 		    one_score -= 15 * comma; */
+/* 		} */
 
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
 		    count : d_ptr->dpnd_rule->preference;
@@ -859,6 +859,15 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index] * TIME_PROB;
 
+		    /* add penalty for comma and verb */
+		    if (exist_chi(sp, d_ptr->num + 1, g_ptr->num - 1, "PU")) {
+			one_score -= 15 * comma;
+		    }
+		    else {
+			one_score -= 8 * verb;
+			one_score -= 15 * comma;
+		    }
+
 		    /* add score for stable dpnd */
 		    if (d_ptr->num + 1 == g_ptr->num &&
 			(((check_feature(d_ptr->f, "CD")) &&
@@ -1081,6 +1090,15 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		}
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
+
+		    /* add penalty for comma and verb */
+		    if (exist_chi(sp, g_ptr->num + 1, d_ptr->num - 1, "PU")) {
+			one_score -= 15 * comma;
+		    }
+		    else {
+			one_score -= 8 * verb;
+			one_score -= 15 * comma;
+		    }
 
 		    /* add score for stable dpnd */
 		    if (g_ptr->num + 1 == d_ptr->num &&
