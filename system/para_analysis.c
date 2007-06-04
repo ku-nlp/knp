@@ -241,7 +241,7 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 		    match_matrix[i][j] + maxsco_array[i+1] : 
 		    match_matrix[i][j] + maxsco_array[i+1] - calc_dynamic_level_penalty(sp, key_pos, i, j);
 		score_sideway = (Language == CHINESE) ? 
-		    score_matrix[i][j+1] :
+		    score_matrix[i][j+1] - PENALTY: 
 		    score_matrix[i][j+1] - PENALTY - penalty_table[j];
 		
 		if (Language == CHINESE &&

@@ -537,26 +537,32 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		    strcat(str2_bk, str2);
 		}
 	    }
-	if (!strcmp(str1_bk, str2_bk)) {
+	    if (!strcmp(str1_bk, str2_bk)) {
 		point += 5;
 	    }
 	}
 
-	similarity = similarity_chinese(ptr1, ptr2);
-
-	if (similarity > 0.29) {
-	    point = 10 * similarity + 7.1;
-	}
-	else {
-	    point = 10 * similarity;
-	}
 
 	if (!strcmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) {
 	    point += 5;
 	}
+	else {
+	    similarity = similarity_chinese(ptr1, ptr2);
+
+//	    if (similarity > 0.29) {
+		point = 10 * similarity;
+//	    }
+/* 	    else { */
+/* 		point = 10 * similarity; */
+/* 	    } */
+	}
+	    
 	if (!strcmp(ptr1->head_ptr->Pos, ptr2->head_ptr->Pos)) {
 	    point += 2;
 
+	}
+	if (point > 12) {
+	    point = 12;
 	}
     }
     
