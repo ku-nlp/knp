@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, 3.0, knp@kc.t.u-tokyo.ac.jp)
+AC_INIT(knp, 3.0, nl-resource@nlp.kuee.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
 AM_INIT_AUTOMAKE
 AC_REVISION($Revision$)
@@ -140,11 +140,11 @@ elif ( test "x$with_berkeley_db" = xyes ); then
 elif ( test "x$with_gdbm" = xyes ); then
     AC_CHECK_LIB(gdbm, gdbm_open, DB_LIBS="-lgdbm $DB_LIBS" ETC_CFLAGS="-DGDBM $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
-elif ( test "x$with_cdb" = xyes ); then
-    AC_CHECK_LIB(cdb, cdb_make_start, DB_LIBS="-lcdb $DB_LIBS" ETC_CFLAGS="-DCDB $ETC_CFLAGS", 
-	         AC_MSG_ERROR(not found.))
+elif ( test "x$with_intdb" = xyes ); then
+    ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS"
 else
-    ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS"    
+    AC_CHECK_LIB(cdb, cdb_make_start, DB_LIBS="-lcdb $DB_LIBS" ETC_CFLAGS="-DCDB $ETC_CFLAGS", 
+	         AC_MSG_ERROR([Constant DB library is not found. Please install TinyCDB (http://www.corpit.ru/mjt/tinycdb.html).]))
 fi
 
 AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
