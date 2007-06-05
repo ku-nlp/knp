@@ -653,18 +653,24 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		/* 様々な文章IDに対応するためコメント行を逆順にしてsscanfする */
 		/* このためArticleIDは本来のArticleIDを逆順にしたもの(ex. 135→531)になっている*/
-		i = j = strlen(input_buffer);
-		rev_ibuffer[j] = '\0';
+		i = strlen(input_buffer);
+		j = 0;
 		while (i > 0) {
 		    i--;
-		    rev_ibuffer[j - i - 1] = input_buffer[i];
+		    rev_ibuffer[j++] = input_buffer[i];
+		    /* 記事番号以降のコメントを除外するため2文字目(#とS-IDの間の空白)以外の */
+		    /* 空白以降を除外する */
+		    if (i != 1 && (input_buffer[i] == ' ' || input_buffer[i] == '\t')) {
+			j = 0;
+		    }
 		}
+		rev_ibuffer[j++] = '\0';
 
 		/* intは2147483647までしか取れないため上位9桁(元の下位9桁)のみ読んで比較 */
 		sscanf(rev_ibuffer, "%*d-%9d", &ArticleID);
 
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
-		    /* fprintf(stderr, "New Article %s\n", input_buffer+6); */
+		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, "New Article %s\n", input_buffer);
 		    if (OptEllipsis) {
 			ClearSentences(sp);
 		    }
