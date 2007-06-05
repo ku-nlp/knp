@@ -300,7 +300,7 @@ int      dpnd_lex = 0;
 	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
 	    OptCKY = FALSE;
 	}
-	else if (str_eq(argv[0], "-probpara")) {
+	else if (str_eq(argv[0], "-no-parafix")) {
 	     OptParaFix = 0;
 	}
 	else if (str_eq(argv[0], "-cky")) {
