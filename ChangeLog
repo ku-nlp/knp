@@ -3,6 +3,9 @@
 	* system/main.c:
 	Made an option (-no-parafix) that considers possible coordination candidates.
 
+	* configure.ac:
+	CDB becomes default.
+
 2007-06-04  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c:
