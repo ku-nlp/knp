@@ -1,5 +1,9 @@
 2007-06-06  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/main.c:
+	文脈解析を行う際は格解析を自動的に行うようにしていたのを、
+	共参照解析のみ行う際は格解析を自動的には行なわないように変更
+		
 	* system/proper.c:
 	-ne-crfを用いた場合にメモリを解放していなかったバグを修正
 

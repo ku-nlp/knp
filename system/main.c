@@ -786,8 +786,9 @@ int      dpnd_lex = 0;
     }
 
     /* 文脈解析のときは必ず格解析を行う (CASE2)
-       解析済みデータのときは read_mrph() で CASE2 にしている */
-    if (OptEllipsis) {
+       解析済みデータのときは read_mrph() で CASE2 にしている
+       ただし、共参照解析のみを行う場合は除く */
+    if (OptEllipsis && (OptEllipsis != OPT_COREFER)) {
 	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
 	    OptAnalysis = OPT_CASE2;
 	}
