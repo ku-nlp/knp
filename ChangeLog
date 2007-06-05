@@ -1,3 +1,8 @@
+2007-06-06  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	-ne-crfを用いた場合にメモリを解放していなかったバグを修正
+
 2007-06-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:

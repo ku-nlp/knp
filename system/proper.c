@@ -543,9 +543,15 @@ char *ne_code_to_tagposition(int num)
 	       void make_crf_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i;
+    int i, k;
+    char buf[FEATURE_MAX], *s[4];
 
     for (i = 0; i < sp->Mrph_num; i++) {
+
+	s[0] = get_pos(sp->mrph_data + i, 0);
+	s[1] = get_feature(sp->mrph_data + i, 0);
+	s[2] = get_parent(sp->mrph_data + i, SIZE + 1);
+	s[3] = get_cache(sp->mrph_data[i].Goi2, 0);
 
 	/* 見出し 品詞 品詞細分類 品詞曖昧性 文字種 文字数
 	   (表層格 係り先の主辞 主辞 文節内位置) キャッシュ */
@@ -553,13 +559,14 @@ char *ne_code_to_tagposition(int num)
 		sp->mrph_data[i].Goi2,
 		Class[sp->mrph_data[i].Hinshi][0].id,
 		Class[sp->mrph_data[i].Hinshi][sp->mrph_data[i].Bunrui].id,
-		get_pos(sp->mrph_data + i, 0),
+		s[0],
 		Chara_name[get_chara(sp->mrph_data + i) - 1],
 		strlen(sp->mrph_data[i].Goi2) / 2,
-		get_feature(sp->mrph_data + i, 0),
-		get_parent(sp->mrph_data + i, SIZE + 1),
-		get_cache(sp->mrph_data[i].Goi2, 0)
+		s[1], s[2], s[3]		
 	    );
+	for (k = 0; k < 4; k++) {
+	    free(s[k]);
+	}
     }
 }
 
