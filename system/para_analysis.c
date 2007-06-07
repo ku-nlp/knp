@@ -270,7 +270,7 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 
 	for (i=iend_pos-1; i>=0; i--) {
 
-	    current_max -= (PENALTY + penalty_table[i]);
+	    current_max -= (Language == CHINESE) ? PENALTY : (PENALTY + penalty_table[i]);
 	    if (current_max <= score_matrix[i][j]) {
 		current_max = score_matrix[i][j];
 		maxpos_array[i] = i;
@@ -370,7 +370,9 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
 	    current_score = max_score + starting_bonus_score;
 	}
 	else {
-	    current_score = 
+	    current_score = (Language == CHINESE) ?
+		(float)score_matrix[i][key_pos+2] / norm[jend_pos - i + 1]
+		+ starting_bonus_score + ending_bonus_score :
 		(float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1]
 		+ starting_bonus_score + ending_bonus_score;
 	}
@@ -378,8 +380,9 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
 	if (restrict_matrix[i][jend_pos] && 
 	    max_score < current_score) {
 	    max_score = current_score;
-	    pure_score = 
-	      (float)score_matrix[i][key_pos+1]	/ norm[jend_pos - i + 1];
+	    pure_score = (Language == CHINESE) ?
+		(float)score_matrix[i][key_pos+2] / norm[jend_pos - i + 1] : 
+		(float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1];
 	    /* pure_score は末尾表現のボーナスを除いた値 */
 	    max_pos = i;
 	}

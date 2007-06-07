@@ -1911,11 +1911,13 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						    cky_ptr->score += 50;
-						}
-						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						    cky_ptr->score += 50;
+						if (OptParaFix) {
+						    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+							cky_ptr->score += 50;
+						    }
+						    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+							cky_ptr->score += 50;
+						    }
 						}
 					    }
 
@@ -1956,11 +1958,13 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    cky_ptr->score += 50;
-						}
-						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						    cky_ptr->score += 50;
+						if (OptParaFix) {
+						    if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+							cky_ptr->score += 50;
+						    }
+						    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+							cky_ptr->score += 50;
+						    }
 						}
 					    }
 					}
@@ -2011,17 +2015,25 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						cky_ptr->score += 50;
+					    if (OptParaFix) {
+						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+						    cky_ptr->score += 50;
+						}
+						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+						    cky_ptr->score += 50;
+						}
+						else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+						    cky_ptr->score += 50;
+						}
+						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+						    cky_ptr->score += 50;
+						}
 					    }
-					    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						cky_ptr->score += 50;
-					    }
-					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						cky_ptr->score += 50;
-					    }
-					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						cky_ptr->score += 50;
+					}
+					/* add similarity of coordination */
+					if (!OptParaFix) {
+					    if (cky_ptr->para_score > 0) {
+						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
 					}
 				    }
