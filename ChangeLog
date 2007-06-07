@@ -3,6 +3,9 @@
 	* system/cky.c, system/para_analysis.c, system/para_dpnd.c, system/const.h:
 	Modify contraints for Chinese coordination to use -no-parafix option.
 
+	* system/similarity.c, system/bnst_compare.c, system/extern.h:
+	Small modification for Chinese similarity calculation by HowNet.
+
 2007-06-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/bnst_type.phrase:
