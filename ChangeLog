@@ -1,3 +1,8 @@
+2007-06-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	非常に長い形態素が入力された際にsegmentation faultするバグを修正
+
 2007-06-07  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/para_analysis.c, system/para_dpnd.c, system/const.h:

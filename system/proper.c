@@ -248,10 +248,9 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j, flag;
-    char *ret, *buf, pos[SMALL_DATA_LEN];
+    char *ret, buf[SMALL_DATA_LEN], pos[SMALL_DATA_LEN];
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
     ret[0] = '\0'; /* 再帰的に代入するため */
     flag = 0;
 
@@ -273,7 +272,6 @@ char *ne_code_to_tagposition(int num)
 	}
     }
     if (flag > 1) {
-	free(buf);
     	return ret;
     }
     
@@ -288,7 +286,6 @@ char *ne_code_to_tagposition(int num)
     else
 	sprintf(ret, "%d0%d10:1 ", mrph_data->Hinshi, num);
     
-    free(buf);
     return ret;
 }
 
@@ -298,10 +295,9 @@ char *ne_code_to_tagposition(int num)
 {
     int NEresult;
     NE_CACHE *ncp;
-    char *ret, *buf;
+    char *ret, buf[SMALL_DATA_LEN2];
 
     ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_cache");
-    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_cache");
     ret[0] = '\0'; /* 再帰的に代入するため */
 
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
@@ -311,7 +307,6 @@ char *ne_code_to_tagposition(int num)
 	    strcpy(ret, buf);
 	}
     }
-    free(buf);
     return ret;
 }
 
@@ -320,7 +315,7 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, *buf;
+    char *ret, buf[SMALL_DATA_LEN];
     char *feature_name1[] = {"人名末尾", "組織名末尾", '\0'};
     char *feature_name2[] = {"FULLNAME:H", "FULLNAME:M", "FULLNAME:T", "FULLNAME:S", 
 			     "NATION:H", "NATION:M", "NATION:T", "NATION:S", 
@@ -329,7 +324,6 @@ char *ne_code_to_tagposition(int num)
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
     ret[0] = '\0'; /* 再帰的に代入するため */
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
 
     /* 文節後方に人名末尾、組織名末尾という語があるか */
     for (j = 1;; j++) {
@@ -363,7 +357,6 @@ char *ne_code_to_tagposition(int num)
 	}	
     }   
 
-    free(buf);
     return ret;
 }
 
@@ -372,12 +365,11 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int j, c;
-    char *ret, *buf, cp[WORD_LEN_MAX], *pcp, *ccp, *ncp;
+    char *ret, buf[WORD_LEN_MAX], *pcp, *ccp, *ncp;
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_parent");
+    ret = (char *)malloc_data(WORD_LEN_MAX, "get_parent");
     ret[0] = '\0'; /* 再帰的に代入するため */
     if (num != SIZE + 1) return ret;
-    buf = (char *)malloc_data(SMALL_DATA_LEN, "get_parent");
 
     if ((pcp = check_feature(mrph_data->f, "Ｔ係り先の主辞"))) {
 	if (OptNECRF) strcpy(ret, "D");	
@@ -420,7 +412,7 @@ char *ne_code_to_tagposition(int num)
 		strcpy(ret, buf);	    	    
 	    }
 	    if (OptNECRF) {
-		sprintf(buf, "%s I:%s", ret, pcp + 15);	
+		sprintf(buf, "%s I:%s", ret, pcp + 15);
 	    }
 	    else {
 		ncp = db_get(ne_db, pcp + 15);
@@ -448,7 +440,12 @@ char *ne_code_to_tagposition(int num)
 	strcpy(ret, buf);	    
     }
     if (OptNECRF && check_feature(mrph_data->f, "Ｔ文節主辞")) {
-	sprintf(buf, "%s S:%s", ret, mrph_data->Goi2);
+	if (strlen(mrph_data->Goi2) < WORD_LEN_MAX /2) {
+	    sprintf(buf, "%s S:%s", ret, mrph_data->Goi2);
+	}
+	else {
+	    sprintf(buf, "%s S:LONG_WORD", ret);
+	}
 	strcpy(ret, buf);
     }
 
@@ -470,7 +467,6 @@ char *ne_code_to_tagposition(int num)
 	}
     }
 
-    free(buf);
     return ret;
 }
 
@@ -479,12 +475,11 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, *buf, cp[WORD_LEN_MAX];
+    char *ret, buf[SMALL_DATA_LEN2], cp[WORD_LEN_MAX];
 
     ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
     if (num != SIZE + 1) return ret;
-    buf = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
 
     /* 組織、人、主体、場所 */
     for (i = 0; i < 4; i++) {
@@ -528,7 +523,6 @@ char *ne_code_to_tagposition(int num)
 	}
     }
 
-    free(buf);
     return ret;
 }
 
@@ -556,7 +550,8 @@ char *ne_code_to_tagposition(int num)
 	/* 見出し 品詞 品詞細分類 品詞曖昧性 文字種 文字数
 	   (表層格 係り先の主辞 主辞 文節内位置) キャッシュ */
 	sprintf(NE_mgr[i].feature, "%s %s %s A%s %s L:%d F%s %s C%s",
-		sp->mrph_data[i].Goi2,
+		(strlen(sp->mrph_data[i].Goi2) < WORD_LEN_MAX /2) ? 
+		sp->mrph_data[i].Goi2 : "LONG_WORD",
 		Class[sp->mrph_data[i].Hinshi][0].id,
 		Class[sp->mrph_data[i].Hinshi][sp->mrph_data[i].Bunrui].id,
 		s[0],
@@ -905,7 +900,10 @@ char *ne_code_to_tagposition(int num)
     /* 主辞の情報 */
     for (j = 0; j < sp->Bnst_num - 1; j++) {
 	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), "Ｔ文節主辞", FALSE);
-	sprintf (cp, "Ｔ主辞:%s", (sp->bnst_data[j].head_ptr)->Goi);
+
+	(strlen((sp->bnst_data[j].head_ptr)->Goi) < WORD_LEN_MAX /2) ? 
+	    sprintf(cp, "Ｔ主辞:%s", (sp->bnst_data[j].head_ptr)->Goi) :
+	    sprintf(cp, "Ｔ主辞:LONG_WORD");
 	for (i = 1; (sp->bnst_data[j].head_ptr - i)->f; i++) {
 	    if (!(sp->bnst_data[j].head_ptr - i)->f ||
 		check_feature((sp->bnst_data[j].head_ptr - i + 1)->f, "文節始")) break;
@@ -917,8 +915,11 @@ char *ne_code_to_tagposition(int num)
     if (!OptNEparent) {
 	/* 文節を前からチェック */
 	for (j = 0; j < sp->Bnst_num - 1; j++) {	    
-	    sprintf (cp, "Ｔ係り先の主辞:%s",
-		     (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi);
+	    (strlen((sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) < WORD_LEN_MAX /2) ? 
+		sprintf(cp, "Ｔ係り先の主辞:%s",
+			 (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) :
+		sprintf(cp, "Ｔ係り先の主辞:LONG_WORD");
+			 
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), 
 			    check_feature(sp->bnst_data[j].f, "係"), FALSE);    
