@@ -548,7 +548,7 @@ extern int fragment(SENTENCE_DATA *sp);
 
 /* similarity.c */
 extern void init_hownet();
-extern float  similarity_chinese(BNST_DATA *ptr1,BNST_DATA *ptr2);
+extern float  similarity_chinese(char* str1, char* str2);
 
 /* dic.c */
 extern int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);

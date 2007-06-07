@@ -31,7 +31,7 @@ int HownetSemDefExist;
 
 /* get hownet def for word */
 /*==================================================================*/
-   char* get_hownet_def(BNST_DATA *p_ptr)
+   char* get_hownet_def(char* str)
 /*==================================================================*/
 {
     char *key;
@@ -40,15 +40,15 @@ int HownetSemDefExist;
 	return NULL;
     }
 
-    key = malloc_db_buf(strlen(p_ptr->head_ptr->Goi)+1);
+    key = malloc_db_buf(strlen(str)+1);
 
-    sprintf(key, "%s", p_ptr->head_ptr->Goi);
+    sprintf(key, "%s", str);
     return db_get(hownet_def_db, key);
 }
 
 /* get hownet translation for word */
 /*==================================================================*/
-   char* get_hownet_tran(BNST_DATA *p_ptr)
+   char* get_hownet_tran(char* str)
 /*==================================================================*/
 {
     char *key;
@@ -57,15 +57,15 @@ int HownetSemDefExist;
 	return NULL;
     }
 
-    key = malloc_db_buf(strlen(p_ptr->head_ptr->Goi)+1);
+    key = malloc_db_buf(strlen(str)+1);
 
-    sprintf(key, "%s", p_ptr->head_ptr->Goi);
+    sprintf(key, "%s", str);
     return db_get(hownet_tran_db, key);
 }
 
 /* get hownet antonym for word */
 /*==================================================================*/
-   int get_hownet_antonym(BNST_DATA *g_ptr, BNST_DATA *d_ptr)
+   int get_hownet_antonym(char* str1, char* str2)
 /*==================================================================*/
 {
     char *key1, *key2, *value1, *value2;
@@ -75,9 +75,9 @@ int HownetSemDefExist;
 	return 0;
     }
 
-    key1 = malloc_db_buf(strlen(g_ptr->head_ptr->Goi)+strlen(d_ptr->head_ptr->Goi)+2);
+    key1 = malloc_db_buf(strlen(str1)+strlen(str2)+2);
 
-    sprintf(key1, "%s:%s", g_ptr->head_ptr->Goi, d_ptr->head_ptr->Goi);
+    sprintf(key1, "%s:%s", str1, str2);
     value1 = db_get(hownet_antonym_db, key1);
 
     if (value1) {
@@ -85,8 +85,8 @@ int HownetSemDefExist;
 	free(value1);
     }
     else {
-	key2 = malloc_db_buf(strlen(g_ptr->head_ptr->Goi)+strlen(d_ptr->head_ptr->Goi)+2);
-	sprintf(key2, "%s:%s", d_ptr->head_ptr->Goi, g_ptr->head_ptr->Goi);
+	key2 = malloc_db_buf(strlen(str1)+strlen(str2)+2);
+	sprintf(key2, "%s:%s", str2, str1);
 	value2 = db_get(hownet_antonym_db, key2);
 	if (value2) {
 	    ret = atoi(value2);
@@ -139,7 +139,7 @@ int HownetSemDefExist;
 
 /* calculate word similarity */
 /*==================================================================*/
-     float similarity_chinese (BNST_DATA *g_ptr, BNST_DATA *d_ptr)
+     float similarity_chinese (char* str1, char* str2)
 /*==================================================================*/
 {    
     float sim;
@@ -184,17 +184,11 @@ int HownetSemDefExist;
     beta3 = 0.7;
     beta4 = 0.1;
 
-    /* Do not calculate similarity for PU */
-    if (check_feature(g_ptr->f, "PU") || check_feature(d_ptr->f, "PU")) {
-	sim = 0.0;
-	return sim;
-    }
-
     /* get translation and concept definition for words */
-    def_w1 = get_hownet_def(g_ptr);
-    def_w2 = get_hownet_def(d_ptr);
-    trans_w1 = get_hownet_tran(g_ptr);
-    trans_w2 = get_hownet_tran(d_ptr);
+    def_w1 = get_hownet_def(str1);
+    def_w2 = get_hownet_def(str2);
+    trans_w1 = get_hownet_tran(str1);
+    trans_w2 = get_hownet_tran(str2);
 
     if (def_w1 == NULL || def_w2 == NULL || trans_w1 == NULL || trans_w2 == NULL) {
 	return 0.0;
@@ -359,7 +353,7 @@ int HownetSemDefExist;
     }
 
     /* step 3 */
-    if (get_hownet_antonym(g_ptr, d_ptr)) {
+    if (get_hownet_antonym(str1, str2)) {
 	sim = 1.0;
 	return sim;
     }

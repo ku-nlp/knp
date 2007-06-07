@@ -547,14 +547,12 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    point += 5;
 	}
 	else {
-	    similarity = similarity_chinese(ptr1, ptr2);
+	        /* Do not calculate similarity for PU */
+	    if (!check_feature(ptr1->f, "PU") && !check_feature(ptr2->f, "PU")) {
+		similarity = similarity_chinese(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi);
+	    }
 
-//	    if (similarity > 0.29) {
-		point = 10 * similarity;
-//	    }
-/* 	    else { */
-/* 		point = 10 * similarity; */
-/* 	    } */
+	    point = 10 * similarity;
 	}
 	    
 	if (!strcmp(ptr1->head_ptr->Pos, ptr2->head_ptr->Pos)) {
