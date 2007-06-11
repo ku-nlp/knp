@@ -608,6 +608,7 @@ typedef struct tnode_b {
     int		dpnd_head;	/* 係り先の文節番号 */
     char 	dpnd_type;	/* 係りのタイプ : D, P, I, A */
     int		dpnd_dflt;	/* defaultの係り先文節番号 */
+    int         is_para;        /* tag for Chinese coordination */
     /* 表層格データ */
     char 	SCASE_code[SCASE_CODE_SIZE];	/* 表層格 */
     /* 並列構造 */

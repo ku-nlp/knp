@@ -358,6 +358,9 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	}
 	if (flag == 1) {
 	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
+	    if (Language == CHINESE && (b_ptr->is_para == 1 || b_ptr->is_para ==2)) {
+		fprintf(Outfp, "<P>");
+	    }
 	    if (b_ptr->f) {
 		fprintf(Outfp, " ");
 		print_feature(b_ptr->f, Outfp);
@@ -1625,6 +1628,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     char*       down_corner = "└─";
     char*       middle_corner = "├─";
     char*       link = "│";
+    char*       para = "<P>";
+    char*       para_head = "<PARA><P>";
 
     BNST_DATA	*b_ptr;
 
@@ -1693,6 +1698,14 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	if (len >= TREE_WIDTH_MAX) {
 	    fprintf(Outfp, ">>>tree width exceeds maximum length\n");
 	    return;
+	}
+	if ((sp->bnst_data + i)->is_para == 1) {
+	    bnst_tree[i][len] = para;
+	    len++;
+	}
+	else if ((sp->bnst_data + i)->is_para == 2) {
+	    bnst_tree[i][len] = para_head;
+	    len++;
 	}
 	bnst_tree[i][len] = bnst_word[i];
 	len++;

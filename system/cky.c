@@ -471,6 +471,23 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 		    Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = cky_ptr->dpnd_type;
 		}
 	    }
+
+	    if (Language == CHINESE && cky_ptr->dpnd_type != 'P') {
+		if (cky_ptr->para_score > PARA_THRESHOLD) {
+		    if (cky_ptr->direction == RtoL) { /* <- */
+			Best_mgr->dpnd.head[cky_ptr->right->b_ptr->num] = cky_ptr->left->b_ptr->num;
+			Best_mgr->dpnd.type[cky_ptr->right->b_ptr->num] = cky_ptr->dpnd_type;
+			(sp->bnst_data + cky_ptr->right->b_ptr->num)->is_para = 1;
+			(sp->bnst_data + cky_ptr->left->b_ptr->num)->is_para = 2;
+		    }
+		    else { /* -> */
+			Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num] = cky_ptr->right->b_ptr->num;
+			Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = cky_ptr->dpnd_type;
+			(sp->bnst_data + cky_ptr->left->b_ptr->num)->is_para = 1;
+			(sp->bnst_data + cky_ptr->right->b_ptr->num)->is_para = 2;
+		    }
+		}
+	    }		    
 	}
 
 	convert_to_dpnd(sp, Best_mgr, cky_ptr->left);
