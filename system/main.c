@@ -269,12 +269,15 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-no-use-cf")) OptUseCF   = FALSE;
-	else if (str_eq(argv[0], "-use-ncf")) OptUseNCF   = TRUE;
 	else if (str_eq(argv[0], "-no-use-ncf")) OptUseNCF   = FALSE;
 	else if (str_eq(argv[0], "-dpnd")) {
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
 	    OptUseNCF = FALSE;
+	}
+	else if (str_eq(argv[0], "-dpnd-use-ncf")) {
+	    OptAnalysis = OPT_DPND;
+	    OptUseCF = FALSE;
 	}
 	else if (str_eq(argv[0], "-bnst")) {
 	    OptAnalysis = OPT_BNST;

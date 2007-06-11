@@ -1,3 +1,10 @@
+2007-06-11  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/dpnd_analysis.c, system/main.c:
+	形容詞語幹の名詞格フレームを正しく読み込めるように修正
+	名詞格フレームを使用するオプション -use-ncf を削除して
+	構文解析のみを行う際に名詞格フレームを使用するオプション -dpnd-use-ncf を追加
+
 2007-06-11  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/lib_print.c, system/const.h:

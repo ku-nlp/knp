@@ -1536,8 +1536,14 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     if (use_rep_flag) {
 	if (OptUseCPNCF && flag == CF_NOUN && (cp = check_feature(t_ptr->f, "BGH")) &&
 	    !strstr(cp, "|") || m_ptr) {
+
+	    /* ただし形容詞語幹の場合は通常の代表表記を使用する */
+	    if (check_feature(t_ptr->f, "名詞的形容詞語幹")) {
+		rep_strt = get_mrph_rep(t_ptr->head_ptr);
+		rep_length = get_mrph_rep_length(rep_strt);
+	    }
 	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
-	    if (OptUseCPNCF && flag == CF_NOUN && cp) {
+	    else if (OptUseCPNCF && flag == CF_NOUN && cp) {
 		cpncf_flag = 1;
 		rep_strt = cp + 4;
 		rep_length = strlen(rep_strt);
