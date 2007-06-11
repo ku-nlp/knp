@@ -1,3 +1,8 @@
+2007-06-11  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/lib_print.c, system/const.h:
+	Add <P> and <PARA> label for Chinese coordination in printed output
+
 2007-06-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/proper.c:
