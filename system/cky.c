@@ -2049,7 +2049,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					}
 					/* add similarity of coordination */
 					if (!OptParaFix) {
-					    if (cky_ptr->para_score > 0) {
+					    if (cky_ptr->para_score > PARA_THRESHOLD) {
 						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
 					}

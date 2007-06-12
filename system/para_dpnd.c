@@ -513,9 +513,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		}
 	    }
 	}
-	
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
-	    if (OptParaFix) {
+
+	if (OptParaFix) {
+	    if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
 		// for verb coordination, mask the outside area for the non-first conjunction
 		for (i = 0; i < m_ptr->start[0]; i++) {
 		    for (j = m_ptr->start[1] + 1; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
@@ -527,23 +527,21 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 			Mask_matrix[i][j] = 0;
 		    }
 		}
-	    }
 
-	    for (k = 0; k < m_ptr->part_num -1; k++) {
-		if (k == 0) {
-		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k + 1]] = 'V'; // verb coordination
+		for (k = 0; k < m_ptr->part_num -1; k++) {
+		    if (k == 0) {
+			Mask_matrix[m_ptr->start[k]][m_ptr->start[k + 1]] = 'V'; // verb coordination
+		    }
+		    else {
+			Mask_matrix[m_ptr->start[k] + 1][m_ptr->start[k + 1]] = 'V'; // verb coordination
+		    }
+		    Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'E'; // key for verb coordination
+		    Mask_matrix[m_ptr->start[k + 1]][m_ptr->start[k + 1]] = 'E'; // key for verb coordination
 		}
-		else {
-		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->start[k + 1]] = 'V'; // verb coordination
-		}
-		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'E'; // key for verb coordination
-		Mask_matrix[m_ptr->start[k + 1]][m_ptr->start[k + 1]] = 'E'; // key for verb coordination
+		// for the last conjunction
+		Mask_matrix[m_ptr->start[m_ptr->part_num - 1]+1][m_ptr->end[m_ptr->part_num - 1]] = 'V'; // verb coordination
 	    }
-	    // for the last conjunction
-	    Mask_matrix[m_ptr->start[m_ptr->part_num - 1]+1][m_ptr->end[m_ptr->part_num - 1]] = 'V'; // verb coordination
-	}
-	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    if (OptParaFix) {
+	    else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
 		// for noun coordination, mask the outside area for the non-last conjunction
 		for (i = 0; i < m_ptr->start[0]; i++) {
 		    for (j = m_ptr->start[0]; j < m_ptr->start[m_ptr->part_num - 1]; j++) {
@@ -555,18 +553,16 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 			Mask_matrix[i][j] = 0;
 		    }
 		}
-	    }
 
-	    for (k = 0; k < m_ptr->part_num; k++) {
-		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'N'; // noun coordination
-		if (k > 0) {
-		    if (OptParaFix) {
+		for (k = 0; k < m_ptr->part_num; k++) {
+		    Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'N'; // noun coordination
+		    if (k > 0) {
 			for (i = m_ptr->start[k] + 1; i < m_ptr->end[k]; i++) {
 			    Mask_matrix[m_ptr->start[k]][i] = 0;
 			}
+			Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
+			Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
 		    }
-		    Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
-		    Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
 		}
 	    }
 	}
