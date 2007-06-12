@@ -357,9 +357,11 @@ int Tag_Num = 1; /* -table のときのみ使用する */
 	    continue; /* 後処理でマージされた文節 */
 	}
 	if (flag == 1) {
-	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);
 	    if (Language == CHINESE && (b_ptr->is_para == 1 || b_ptr->is_para ==2)) {
-		fprintf(Outfp, "<P>");
+		fprintf(Outfp, "* %dP", b_ptr->dpnd_head);
+	    }
+	    else {
+		fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);		
 	    }
 	    if (b_ptr->f) {
 		fprintf(Outfp, " ");
