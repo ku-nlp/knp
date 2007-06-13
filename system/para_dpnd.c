@@ -464,7 +464,7 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 	}
 
 	for (k = 0; k < m_ptr->part_num; k++) {
-	    /* enlarge the coordination scope there is a NR before the first NN of this coordination */
+	    /* enlarge the coordination scope if there is a NR before the first NN of this coordination */
 	    if (check_feature((sp->bnst_data + m_ptr->start[0])->f, "NN") && m_ptr->start[0] != 0 && check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NR")) {
 		m_ptr->start[0]--;
 	    }
@@ -476,9 +476,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == 0) {
 		    m_ptr->start[k] = Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
 		}
-		else {
-		    return FALSE;
-		}
+/* 		else { */
+/* 		    return FALSE; */
+/* 		} */
 	    }
 	    else if ((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
 		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
@@ -486,9 +486,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == m_ptr->part_num - 1) {
 		    m_ptr->end[k] = Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
 		}
-		else {
-		    return FALSE;
-		}
+/* 		else { */
+/* 		    return FALSE; */
+/* 		} */
 	    }
 
 	    // check if the scope of coordination conflict with the scope of quote
@@ -498,9 +498,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == 0) {
 		    m_ptr->start[k] = Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
 		}
-		else {
-		    return FALSE;
-		}
+/* 		else { */
+/* 		    return FALSE; */
+/* 		} */
 	    }
 	    else if ((Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
 		 (Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
@@ -508,9 +508,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == m_ptr->part_num - 1) {
 		    m_ptr->end[k] = Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
 		}
-		else {
-		    return FALSE;
-		}
+/* 		else { */
+/* 		    return FALSE; */
+/* 		} */
 	    }
 	}
 
