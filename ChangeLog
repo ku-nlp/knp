@@ -1,3 +1,17 @@
+2007-06-13  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/para_dpnd.c, system/const.h:
+	Modify coordination constraints for option no-parafix for Chinese.
+
+	* system/cky.c:
+	Modify grammatical constraints for Chinese.
+
+	* system/base_phrase.c:
+	Modify constraints for baseNP and root feature for Chinese.
+
+	* chinese_rule/koou.rule:
+	Remove ambiguous rules.
+
 2007-06-11  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/dpnd_analysis.c, system/main.c:
