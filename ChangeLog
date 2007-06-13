@@ -3,6 +3,12 @@
 	* rule/tag_postprocess.rule:
 	Modified the merging rule of "〜すること".
 
+	* rule/bnst_basic.rule:
+	Propagated morpheme feature <名詞的形容詞語幹> to phrase.
+
+	* system/const.h:
+	Fixed a bug of printing phrase trees.
+
 2007-06-13  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/para_dpnd.c, system/const.h:
