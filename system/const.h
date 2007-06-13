@@ -753,6 +753,7 @@ typedef struct tnode_t {
     int		dpnd_head;
     char 	dpnd_type;
     int		dpnd_dflt;	/* いらない? */
+    int         is_para;        /* tag for Chinese coordination */
     /* 表層格データ */
     char 	SCASE_code[SCASE_CODE_SIZE];
     /* 並列構造 */
