@@ -38,7 +38,19 @@ int     pp_matrix[BNST_MAX];
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	/* assign root feature */
-	if (check_feature((sp->bnst_data+i)->f, "IS_ROOT")) {
+	if (check_feature((sp->bnst_data+i)->f, "IS_ROOT") && 
+	    !check_feature((sp->bnst_data+i)->f, "CC") && 
+	    !check_feature((sp->bnst_data+i)->f, "DEG") && 
+	    !check_feature((sp->bnst_data+i)->f, "DEC") && 
+	    !check_feature((sp->bnst_data+i)->f, "DER") && 
+	    !check_feature((sp->bnst_data+i)->f, "DEV") && 
+	    !check_feature((sp->bnst_data+i)->f, "DT") && 
+	    !check_feature((sp->bnst_data+i)->f, "ETC") && 
+	    !check_feature((sp->bnst_data+i)->f, "FW") && 
+	    !check_feature((sp->bnst_data+i)->f, "IJ") && 
+	    !check_feature((sp->bnst_data+i)->f, "LC") && 
+	    !check_feature((sp->bnst_data+i)->f, "MSP") && 
+	    !check_feature((sp->bnst_data+i)->f, "PU")) {
 	    Chi_root = i;
 	}
 	
@@ -67,17 +79,25 @@ int     pp_matrix[BNST_MAX];
 		    break;
 		}
 	    }
-	    /* if one NP containing CS follows another NP, then merge them together */
-	    for (j = i; j <= np_matrix[i]; j++) {
-		if (check_feature((sp->bnst_data+j)->f, "CC")) {
-		    if (i != 0 && i == end_np + 1) {
-			np_matrix[start_np] = np_matrix[i];
-			np_matrix[i] = -1;
-			flag = TRUE;
-		    }
-		    break;
-		}
+
+	    /* if the first/last word of baseNP is PU, but the last/first word of baseNP is not PU, then delete this NP */
+	    if ((check_feature((sp->bnst_data+i)->f, "PU") && !check_feature((sp->bnst_data+np_matrix[i])->f, "PU")) ||
+		(!check_feature((sp->bnst_data+i)->f, "PU") && check_feature((sp->bnst_data+np_matrix[i])->f, "PU"))) {
+		np_matrix[i] = -1;
+		break;
 	    }
+
+/* 	    /\* if one NP containing CS follows another NP, then merge them together *\/ */
+/* 	    for (j = i; j <= np_matrix[i]; j++) { */
+/* 		if (check_feature((sp->bnst_data+j)->f, "CC")) { */
+/* 		    if (i != 0 && i == end_np + 1) { */
+/* 			np_matrix[start_np] = np_matrix[i]; */
+/* 			np_matrix[i] = -1; */
+/* 			flag = TRUE; */
+/* 		    } */
+/* 		    break; */
+/* 		} */
+/* 	    } */
 	    
 	    if (!flag) {
 		start_np = i;
