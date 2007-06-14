@@ -5,6 +5,10 @@
 
 	* system/cky.c:
 	Modify grammatical constraints for Chinese.
+	Modify constraints for possible Chinese dpnd.
+
+	* system/para_dpnd.c:
+	Add constraints of coor key for no-parafix option.
 
 	* chinese_rule/bnst_basic.rule:
 	Modify rules for Chinese coordination key.
