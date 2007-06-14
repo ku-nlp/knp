@@ -1423,6 +1423,9 @@ PARSED:
 	    }
 	    for (i = 0; i < sp->Bnst_num; i++) {
 		clear_feature(&(sp->bnst_data[i].f));
+		if (Language == CHINESE) {
+		    sp->bnst_data[i].is_para = -1;
+		}
 	    }
 	    for (i = 0; i < sp->Tag_num; i++) {
 		clear_feature(&(sp->tag_data[i].f));
