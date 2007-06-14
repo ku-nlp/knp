@@ -28,7 +28,7 @@ typedef struct _CKY {
 
 #define PARA_THRESHOLD	0
 #define	CKY_TABLE_MAX	800000 
-//#define	CKY_TABLE_MAX	10000000 
+//#define	CKY_TABLE_MAX	19000000 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
@@ -127,6 +127,16 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") ||
 	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")))) {
+	    return 0;
+	}
+
+	/* only the quote PU can be head */
+	if ((direction == 'R' && 
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PU") &&
+	     Chi_quote_end_matrix[right->b_ptr->num][right->b_ptr->num] != right->b_ptr->num) ||
+	    (direction == 'L' && 
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PU") &&
+	     Chi_quote_start_matrix[left->b_ptr->num][left->b_ptr->num] != left->b_ptr->num)) {
 	    return 0;
 	}
 
