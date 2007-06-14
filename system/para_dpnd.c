@@ -476,9 +476,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == 0) {
 		    m_ptr->start[k] = Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
 		}
-/* 		else { */
-/* 		    return FALSE; */
-/* 		} */
+		else {
+		    return FALSE;
+		}
 	    }
 	    else if ((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
 		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
@@ -486,9 +486,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == m_ptr->part_num - 1) {
 		    m_ptr->end[k] = Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
 		}
-/* 		else { */
-/* 		    return FALSE; */
-/* 		} */
+		else {
+		    return FALSE;
+		}
 	    }
 
 	    // check if the scope of coordination conflict with the scope of quote
@@ -498,9 +498,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == 0) {
 		    m_ptr->start[k] = Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
 		}
-/* 		else { */
-/* 		    return FALSE; */
-/* 		} */
+		else {
+		    return FALSE;
+		}
 	    }
 	    else if ((Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
 		 (Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
@@ -508,14 +508,14 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		if (k == m_ptr->part_num - 1) {
 		    m_ptr->end[k] = Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
 		}
-/* 		else { */
-/* 		    return FALSE; */
-/* 		} */
+		else {
+		    return FALSE;
+		}
 	    }
 	}
 
-	if (OptParaFix) {
-	    if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
+	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
+	    if (OptParaFix) {
 		// for verb coordination, mask the outside area for the non-first conjunction
 		for (i = 0; i < m_ptr->start[0]; i++) {
 		    for (j = m_ptr->start[1] + 1; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
@@ -541,7 +541,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 		// for the last conjunction
 		Mask_matrix[m_ptr->start[m_ptr->part_num - 1]+1][m_ptr->end[m_ptr->part_num - 1]] = 'V'; // verb coordination
 	    }
-	    else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	}
+	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
+	    if (OptParaFix) {
 		// for noun coordination, mask the outside area for the non-last conjunction
 		for (i = 0; i < m_ptr->start[0]; i++) {
 		    for (j = m_ptr->start[0]; j < m_ptr->start[m_ptr->part_num - 1]; j++) {
@@ -562,6 +564,13 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 			}
 			Mask_matrix[m_ptr->start[k]][m_ptr->start[k]] = 'G'; // key for noun coordination
 			Mask_matrix[m_ptr->start[k] + 1][m_ptr->end[k]] = 'G'; // key for noun coordination
+		    }
+		}
+	    }
+	    else {
+		for (k = 1; k < m_ptr->part_num; k++) {
+		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[k]; i++) {
+			Mask_matrix[m_ptr->start[k]][i] = 0;
 		    }
 		}
 	    }

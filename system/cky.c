@@ -215,10 +215,18 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN")) &&
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG")) &&
 	    left->j - left->i > 0 &&
 	    direction == 'L' &&
-	    exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1) {
+	    ((left->right != NULL &&
+	      (check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "NN") ||
+	       check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "NR") ||
+	       check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "PN") ||
+	       check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "M") ||
+	       check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "DEG"))) ||
+	     exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1)) {
 	    return 0;
 	}
 
@@ -390,14 +398,12 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
 	return 'I';
     }
     else if (Dpnd_matrix[dep][gov] && Quote_matrix[dep][gov] && 
-	     (OptParaFix == 0 || Mask_matrix[dep][gov] == 1)) {
+	     ((Language != CHINESE && (OptParaFix == 0 || Mask_matrix[dep][gov] == 1)) ||
+	      (Language == CHINESE && Mask_matrix[dep][gov] != 0))) {
 	return Dpnd_matrix[dep][gov];
     }
     else if ((Dpnd_matrix[dep][gov] == 'R' || relax_flag) && Language != CHINESE) { /* relax */
 	return 'R';
-    }
-    else if (Language == CHINESE && (Mask_matrix[dep][gov] == 'N' || Mask_matrix[dep][gov] == 'G' || Mask_matrix[dep][gov] == 'V' || Mask_matrix[dep][gov] == 'E')) {
-	return Dpnd_matrix[dep][gov];
     }
 
     return '\0';
@@ -965,6 +971,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			 ((check_feature(d_ptr->f, "DEG")) &&
 			  (check_feature(g_ptr->f, "DEG") ||
 			   check_feature(g_ptr->f, "LC") ||
+			   check_feature(g_ptr->f, "M") ||
 			   check_feature(g_ptr->f, "NN") ||
 			   check_feature(g_ptr->f, "NR") ||
 			   check_feature(g_ptr->f, "PN") ||
@@ -2059,12 +2066,16 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score += 50;
 					    }
 					}
-					/* add similarity of coordination */
+
 					if (!OptParaFix) {
+					    /* add similarity of coordination */
 					    if (cky_ptr->para_score > PARA_THRESHOLD) {
 						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
 					}
+					if (OptDisplay == OPT_DEBUG) {
+					    printf("=>%.3f\n", cky_ptr->score);
+					} 
 				    }
 				}
 				else {
