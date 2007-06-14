@@ -67,14 +67,6 @@ extern int              Chi_root; /* store the root of this sentence */
 extern DBM_FILE chi_dpnd_db;
 extern int     CHIDpndExist;
 
-/* HowNet variables */
-extern char *tran_w1[];
-extern char *tran_w2[];
-extern char *concept_w1[];
-extern char *concept_w2[];
-extern char *concept_sem_w1[];
-extern char *concept_sem_w2[];
-
 extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;
@@ -184,11 +176,6 @@ extern void *matched_ptr;
 
 extern int Language;
 
-extern int bnst_dpnd[];
-extern int bnst_level[];
-extern char* bnst_word[];
-extern char* bnst_tree[][TREE_WIDTH_MAX];
-extern char* bnst_inverse_tree[][BNST_MAX];
 extern int sen_num;
 
 /* 関数プロトタイプ */

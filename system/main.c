@@ -98,24 +98,9 @@ int             sen_num;
 /* Chinese fragment tag */
 int             is_frag;
 
-/* for printing Chinese parse tree */
-int         bnst_dpnd[BNST_MAX];
-int         bnst_level[BNST_MAX];
-char*       bnst_word[BNST_MAX];
-char*       bnst_tree[BNST_MAX][TREE_WIDTH_MAX];
-char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
-
 /* DB file for Chinese dpnd rule */
 DBM_FILE chi_dpnd_db;
 int     CHIDpndExist;
-
-/* HowNet variables */
-char *tran_w1[HOWNET_TRAN_MAX];
-char *tran_w2[HOWNET_TRAN_MAX];
-char *concept_w1[HOWNET_CONCEPT_MAX];
-char *concept_w2[HOWNET_CONCEPT_MAX];
-char *concept_sem_w1[HOWNET_CONCEPT_MAX];
-char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 
 /* Server Client Extention */
 static int	sfd, fd;

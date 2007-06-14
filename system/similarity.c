@@ -17,6 +17,13 @@ int HownetTranExist;
 int HownetAntonymExist;
 int HownetCategoryExist;
 int HownetSemDefExist;
+/* HowNet variables */
+char *tran_w1[HOWNET_TRAN_MAX];
+char *tran_w2[HOWNET_TRAN_MAX];
+char *concept_w1[HOWNET_CONCEPT_MAX];
+char *concept_w2[HOWNET_CONCEPT_MAX];
+char *concept_sem_w1[HOWNET_CONCEPT_MAX];
+char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 
 /*==================================================================*/
                        void init_hownet()

@@ -13,6 +13,14 @@ char mrph_buffer[SMALL_DATA_LEN];
 int Sen_Num = 1; /* -table のときのみ使用する */
 int Tag_Num = 1; /* -table のときのみ使用する */
 
+/* for printing Chinese parse tree */
+int         bnst_dpnd[BNST_MAX];
+int         bnst_level[BNST_MAX];
+char*       bnst_word[BNST_MAX];
+char*       bnst_pos[BNST_MAX];
+char*       bnst_tree[BNST_MAX][TREE_WIDTH_MAX];
+char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
+
 /*==================================================================*/
 		 char *pp2mrph(char *pp, int pp_len)
 /*==================================================================*/
@@ -1645,6 +1653,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* read data */
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	bnst_word[i] = b_ptr->head_ptr->Goi;
+	bnst_pos[i] = b_ptr->head_ptr->Pos;
 	bnst_dpnd[i] = b_ptr->dpnd_head;
 	bnst_level[i] = -1;
     }
@@ -1711,6 +1720,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
 	bnst_tree[i][len] = bnst_word[i];
 	len++;
+	bnst_tree[i][len] = "/";
+	len++;
+	bnst_tree[i][len] = bnst_pos[i];
+	len++;
 	if (len > max_len) {
 	    max_len = len;
 	}
@@ -1771,6 +1784,15 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* inverse tree again and print */
     for (i = max_inverse_len - 1; i > -1; i--) {
+	if (max_inverse_len - 1 - i < 10) {
+	    fprintf(Outfp, "%d   ", max_inverse_len - 1 - i);
+	}
+	else if (max_inverse_len - 1 - i < 100) {
+	    fprintf(Outfp, "%d  ", max_inverse_len - 1 - i);
+	}
+	else {
+	    fprintf(Outfp, "%d ", max_inverse_len - 1 - i);
+	}
 	for (j = 0; j < max_len; j++) {
 	    if (bnst_inverse_tree[j][i] != "***") {
 		fprintf(Outfp, "%s", bnst_inverse_tree[j][i]);
