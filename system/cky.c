@@ -130,12 +130,19 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* CC cannot depend on verb afterwords */
-	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "CC") && direction == 'R' && 
-	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") || 
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE"))) { 
+	/* CC cannot depend on AD */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "CC") && 
+	    direction == 'R' && 
+	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "AD")) {
+	    return 0;
+	}
+
+	/* the structure N + CC + V, where N and CC depend on V is incorrect */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
+	    direction == 'R' && 
+	    exist_chi(sp, right->i, right->b_ptr->num - 1, "CC") != -1) {
 	    return 0;
 	}
 
@@ -318,7 +325,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for preposition, if there is noun between it and following verb, if preposition is head of the verb, the noun should depend on verb, if verb is head of preposition, the noun should depend on preposition */
+	/* for preposition, if there is noun between it and following verb, if preposition is head of the verb, all the noun should depend on verb, if verb is head of preposition, all the noun should depend on preposition */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
@@ -630,11 +637,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		}
 
-/* 		if (Language == CHINESE) { */
-/* 		    one_score -= 8 * verb; */
-/* 		    one_score -= 15 * comma; */
-/* 		} */
-
 		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
 		    count : d_ptr->dpnd_rule->preference;
 		
@@ -863,7 +865,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index] * TIME_PROB;
 
 		    /* add penalty for comma and verb */
-		    if (exist_chi(sp, d_ptr->num + 1, g_ptr->num - 1, "PU")) {
+		    if (exist_chi(sp, d_ptr->num + 1, g_ptr->num - 1, "PU") || 
+			(check_feature(d_ptr->f, "DEC") && check_feature(g_ptr->f, "NN")) ||
+			(check_feature(d_ptr->f, "VV") && check_feature(g_ptr->f, "NN"))) {
 			one_score -= 15 * comma;
 		    }
 		    else {
@@ -921,10 +925,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(g_ptr->f, "DEG") ||
 			   check_feature(g_ptr->f, "DT") ||
 			   check_feature(g_ptr->f, "JJ") ||
-			   check_feature(g_ptr->f, "LB") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VE"))) ||
+			   check_feature(g_ptr->f, "LB"))) ||
 
 			 ((check_feature(d_ptr->f, "P")) &&
 			  (check_feature(g_ptr->f, "VV") ||
@@ -950,12 +951,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(g_ptr->f, "LC") ||
 			   check_feature(g_ptr->f, "M") ||
 			   check_feature(g_ptr->f, "NN"))) ||
-
-			 ((check_feature(d_ptr->f, "DEC")) &&
-			  (check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "NT") ||
-			   check_feature(g_ptr->f, "PN"))) ||
 
 			 ((check_feature(d_ptr->f, "DEG")) &&
 			  (check_feature(g_ptr->f, "DEG") ||
@@ -1086,10 +1081,32 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
 			one_score += 30;
 		    }
+		    if ((check_feature(d_ptr->f, "AD")) &&
+			(check_feature(g_ptr->f, "VV") ||
+			 check_feature(g_ptr->f, "VA") ||
+			 check_feature(g_ptr->f, "VC") ||
+			 check_feature(g_ptr->f, "VE"))) {
+			one_score += 30;
+		    }
+
+		    if ((check_feature(d_ptr->f, "DEC")) &&
+			(check_feature(g_ptr->f, "NN") ||
+			 check_feature(g_ptr->f, "NR") ||
+			 check_feature(g_ptr->f, "NT") ||
+			 check_feature(g_ptr->f, "PN"))) {
+			one_score += 30;
+		    }
+
 		    if (d_ptr->num < g_ptr->num &&
 			check_feature(d_ptr->f, "DEG") &&
 			(check_feature(g_ptr->f, "NR") ||
 			 check_feature(g_ptr->f, "PN"))) {
+			one_score -= 20;
+		    }
+
+		    if (d_ptr->num < g_ptr->num &&
+			check_feature(d_ptr->f, "P") &&
+			check_feature(g_ptr->f, "NN")) {
 			one_score -= 20;
 		    }
 		}
@@ -1200,6 +1217,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
 			one_score += 10;
+		    }
+		    if (check_feature(g_ptr->f, "AD") && check_feature(d_ptr->f, "DEC")) {
+			one_score -= 30;
 		    }
 		}
 	    }
