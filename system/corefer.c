@@ -356,7 +356,6 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     char *cp, CO[WORD_LEN_MAX];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
-    FEATURE *fp;
  
     yomi_flag = (check_feature((sp->tag_data + i)->f, "ÆÉ¤ßÊý")) ? 1 : 0;
 
@@ -697,7 +696,6 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 {
     int i, j, tag, sent;
     char *cp, buf[WORD_LEN_MAX];
-    MRPH_DATA *mrph_ptr;
     TAG_DATA *tag_ptr;
 
     for (i = 0; i < sp->Tag_num; i++) {

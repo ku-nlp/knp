@@ -1,3 +1,9 @@
+2007-06-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/corefer.c:
+	共参照解析のみ行う際に照応解析用のメモリを確保しないように変更
+	不要な変数を削除
+
 2007-06-14  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/lib_print.c, system/extern.h, system/main.c, system/similarity.c:

@@ -5368,7 +5368,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     /* 共参照解析 */
     if (OptEllipsis & OPT_COREFER) corefer_analysis(sp);
 
-    if (sp->available) {
+    if (sp->available && (OptEllipsis != OPT_COREFER)) {
 	Bcheck = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "DiscourseAnalysis");
 	for (i = 0; i < sp->Sen_num; i++) {
 	    Bcheck[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "DiscourseAnalysis");
