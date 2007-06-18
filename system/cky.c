@@ -147,15 +147,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* the structure N + CC + V, where N and CC depend on V is incorrect */
-	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
-	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
-	    direction == 'R' && 
-	    exist_chi(sp, right->i, right->b_ptr->num - 1, "CC") != -1) {
-	    return 0;
-	}
-
 	/* for DEG , DEC and LC, there should not be two modifiers */
 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
@@ -361,12 +352,18 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	/* for preposition, if it has a VV modifier after it, this VV should have object or subject */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
-	    direction == 'L' && 
-	    (right->left != NULL && 
-	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") &&
-	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR") &&
-	     !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") &&
-	     right->b_ptr->num == right->j)) {
+	    direction == 'L' &&
+	    ((right->left == NULL && right->right == NULL) ||
+	     (right->left != NULL && 
+	      right->right == NULL &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR") &&
+	      !check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN")) ||
+	     (right->right != NULL && 
+	      right->left == NULL &&
+	      !check_feature((sp->bnst_data + right->right->b_ptr->num)->f, "NN") &&
+	      !check_feature((sp->bnst_data + right->right->b_ptr->num)->f, "NR") &&
+	      !check_feature((sp->bnst_data + right->right->b_ptr->num)->f, "PN")))) {
 	    return 0;
 	}
 
@@ -1881,6 +1878,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	    if (OptDisplay == OPT_DEBUG) {
 		printf("(%d,%d)\n", i, j);
 	    }
+
 	    cky_matrix[i][j] = NULL;
 	    if (i == j) {
 		if ((cky_ptr = new_cky_data(&cky_table_num)) == NULL) {
