@@ -229,16 +229,14 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR")) &&
-	    ((right->right != NULL && right->left != NULL &&
-	     right->right->b_ptr->num == right->b_ptr->num &&
+	    ((right->left != NULL &&
 	     (check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NN") ||
 	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PN") ||
 	      check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "NR"))) ||
-	     (right->right != NULL && right->left != NULL && right->right->left != NULL && right->right->right != NULL &&
-	     right->right->b_ptr->num == right->b_ptr->num && right->right->right->b_ptr->num == right->b_ptr->num &&
-	     (check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "NN") ||
-	      check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "PN") ||
-	      check_feature((sp->bnst_data + right->right->left->b_ptr->num)->f, "NR"))))) {
+	     (right->left != NULL && right->left->left != NULL &&
+	     (check_feature((sp->bnst_data + right->left->left->b_ptr->num)->f, "NN") ||
+	      check_feature((sp->bnst_data + right->left->left->b_ptr->num)->f, "PN") ||
+	      check_feature((sp->bnst_data + right->left->left->b_ptr->num)->f, "NR"))))) {
 	    return 0;
 	}
 
