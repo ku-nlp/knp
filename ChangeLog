@@ -1,3 +1,20 @@
+2007-06-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/case_analysis.rule:
+	Added rules of "³°¤Î´Ø·¸".
+
+	* system/case_data.c:
+	Deleted a constraint of "³°¤Î´Ø·¸".
+
+	* system/case_ipal.c:
+	Expanded general "³°¤Î´Ø·¸" words.
+
+	* rule/bnst_basic.rule, rule/context.rule:
+	Cleaned rules for <Ì¾»ìÅª·ÁÍÆ»ì¸ì´´>.
+
+	* rule/bnst_type.phrase:
+	Modified a similarity threshold of the coordination key "¡Á¤Ë".
+
 2007-06-20  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/dpnd_analysis.c:
