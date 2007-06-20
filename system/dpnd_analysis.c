@@ -352,6 +352,11 @@ static int dpndID = 0;
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]);
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]);
 			}
+
+			/* to handle the case that prob1, prob2, prob3 are 1 */
+			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda1[k];
+			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda1[k];
+
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_1[k];
 			strcpy(Chi_dpnd_matrix[i][j].type[k],Chi_dpnd_matrix[i][j].type_1[k]);
 		    }
@@ -392,6 +397,11 @@ static int dpndID = 0;
 				}
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_2[k];
+
+			    /* to handle the case that prob2, prob3, prob4 are 1 */
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
 			}
@@ -414,6 +424,11 @@ static int dpndID = 0;
 				}
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_3[k];
+
+			    /* to handle the case that prob2, prob3, prob4 are 1 */
+			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
 			}
@@ -425,6 +440,12 @@ static int dpndID = 0;
 			Chi_dpnd_matrix[i][j].prob_LtoR[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_4[k];
+
+			/* to handle the case that prob4 is 1 */
+			Chi_dpnd_matrix[i][j].lamda2[k] = (1.0 * Chi_dpnd_matrix[i][j].occur_4[k]) / (Chi_dpnd_matrix[i][j].occur_4[k] + 1);
+			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+
 			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_2;
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_2;
 
@@ -610,7 +631,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     BNST_DATA	*b_ptr;
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	if (dp->type[i] == 'd' || dp->type[i] == 'R') {
+	if (Language != CHINESE && (dp->type[i] == 'd' || dp->type[i] == 'R')) {
 	    b_ptr->dpnd_head = dp->head[i];
 	    b_ptr->dpnd_type = 'D';	/* relaxした場合もDに */
 	} else {
@@ -730,7 +751,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 				    (sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset)->num;
 	    }
 
-	    if (dp->type[last_b] == 'd' || dp->type[last_b] == 'R') {
+	    if (Language != CHINESE && (dp->type[last_b] == 'd' || dp->type[last_b] == 'R')) {
 		t_ptr->dpnd_type = 'D';
 	    }
 	    else {
