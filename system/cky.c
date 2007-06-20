@@ -197,6 +197,30 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    direction == 'R') {
 	    return 0;
 	}
+	
+	/* VC and VE must have modifier behind */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
+	    (direction == 'R' &&
+	     left->j == left->b_ptr->num) ||
+	    (direction == 'L' &&
+	     left->j == left->b_ptr->num &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN"))) {
+	    return 0;
+	}
+
+	/* VC and VE must have modifier before */
+	if (((check_feature((sp->bnst_data + left->j)->f, "VC") ||
+	     check_feature((sp->bnst_data + left->j)->f, "VE")) &&
+	     left->j != left->b_ptr->num) ||
+	    ((check_feature((sp->bnst_data + right->i)->f, "VC") ||
+	     check_feature((sp->bnst_data + right->i)->f, "VE")) &&
+	     right->i != right->b_ptr->num)) {
+	    return 0;
+	}
 
 	/* for verb, there should be only one object afterword */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
@@ -263,6 +287,16 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	       check_feature((sp->bnst_data + left->right->right->b_ptr->num)->f, "PN")))) &&
 	    exist_chi(sp, right->i, right->b_ptr->num - 1, "CC") == -1 &&
 	    exist_chi(sp, right->i, right->b_ptr->num - 1, "pu") == -1) {
+	    return 0;
+	}
+
+	/* for preposition, it must have modifier */
+	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
+	     direction == 'R' &&
+	     left->j - left->i == 0) ||
+	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
+	     direction == 'L' &&
+	     right->j - right->i == 0)) {
 	    return 0;
 	}
 
@@ -1951,9 +1985,15 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
 						}
 						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
 						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
 						}
 					    }
 
@@ -1996,9 +2036,15 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
 						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
 						}
 						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
 						}
 					    }
 					}
@@ -2051,15 +2097,27 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 						cky_ptr->score += 50;
+						if (OptDisplay == OPT_DEBUG) {
+						    printf("=>%.3f\n", cky_ptr->score);
+						} 
 					    }
 					    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
 						cky_ptr->score += 50;
+						if (OptDisplay == OPT_DEBUG) {
+						    printf("=>%.3f\n", cky_ptr->score);
+						} 
 					    }
 					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
 						cky_ptr->score += 50;
+						if (OptDisplay == OPT_DEBUG) {
+						    printf("=>%.3f\n", cky_ptr->score);
+						} 
 					    }
 					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 						cky_ptr->score += 50;
+						if (OptDisplay == OPT_DEBUG) {
+						    printf("=>%.3f\n", cky_ptr->score);
+						} 
 					    }
 					}
 
@@ -2068,10 +2126,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    if (cky_ptr->para_score > PARA_THRESHOLD) {
 						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
+					    if (OptDisplay == OPT_DEBUG) {
+						printf("=>%.3f\n", cky_ptr->score);
+					    } 
 					}
-					if (OptDisplay == OPT_DEBUG) {
-					    printf("=>%.3f\n", cky_ptr->score);
-					} 
 				    }
 				}
 				else {
