@@ -14,6 +14,10 @@
 
 	* rule/bnst_type.phrase:
 	Modified a similarity threshold of the coordination key "〜に".
+	Modified "〜を最後に、".
+
+	* system/bnst_compare.c:
+	Modified similarity calculation for "名詞的形容詞語幹" (e.g., "迅速かつ的確に").
 
 2007-06-20  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
