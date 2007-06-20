@@ -1,3 +1,11 @@
+2007-06-20  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c:
+	Add count parameter to each dpnd probability for Chinese.
+
+	* system/cky.c:
+	Modify grammatical constraints for Chinese.
+
 2007-06-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/corefer.c:
