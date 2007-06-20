@@ -512,18 +512,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		}
 		else {
 		    cel_b_ptr = b_ptr->parent;
-
-		    /* 外の関係以外のときは格要素に (外の関係でも形容詞のときは格要素にする) */
-		    if (!check_feature(cel_b_ptr->f, "外の関係") || 
-			check_feature(b_ptr->f, "用言:形")) {
-			_make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
-		    }
-		    /* 一意に外の関係にする */
-		    else {
-			cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("外の関係");
-			cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
-			cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
-		    }
+		    _make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
 		}
 
 		if (cel_b_ptr) {
@@ -546,16 +535,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 
 	    if (cel_b_ptr->parent && 
 		cel_b_ptr->parent->parent) {
-		if (!check_feature(cel_b_ptr->parent->parent->f, "外の関係") || 
-		    check_feature(b_ptr->f, "用言:形")) {
-		    _make_data_cframe_pp(cpm_ptr, cel_b_ptr->parent, FALSE);
-		}
-		/* 一意に外の関係にする */
-		else {
-		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("外の関係");
-		    cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
-		    cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
-		}
+		_make_data_cframe_pp(cpm_ptr, cel_b_ptr->parent, FALSE);
 		_make_data_cframe_sm(cpm_ptr, cel_b_ptr->parent->parent);
 		_make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
 		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
