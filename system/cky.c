@@ -201,14 +201,8 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	/* VC and VE must have modifier behind */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
-	    (direction == 'R' &&
-	     left->j == left->b_ptr->num) ||
-	    (direction == 'L' &&
-	     left->j == left->b_ptr->num &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN"))) {
+	    ((direction == 'R' &&
+	      left->j == left->b_ptr->num))) {
 	    return 0;
 	}
 
@@ -373,10 +367,8 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
 	    ((direction == 'R' && /* verb is head */
-	      left->j - left->i == 0 &&
 	      exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1) ||
 	     (direction == 'L' && /* preposition is head */
-	      right->b_ptr->num - right->i == 0 &&
 	      exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1))) { 
 	    return 0;
 	}
@@ -1176,6 +1168,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 			 ((check_feature(d_ptr->f, "CD")) &&
 			  (check_feature(g_ptr->f, "DT"))) ||
+
+			 ((check_feature(d_ptr->f, "CC")) &&
+			  (check_feature(g_ptr->f, "VV"))) ||
 
 			 ((check_feature(d_ptr->f, "PN")) &&
 			  (check_feature(g_ptr->f, "P"))) ||
