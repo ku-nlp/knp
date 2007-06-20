@@ -233,6 +233,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     char	*counter1, *counter2;
     char        str1[4], str2[4];
     char        str1_bk[WORD_LEN_MAX], str2_bk[WORD_LEN_MAX];
+    char	*cp1, *cp2;
     BNST_DATA 	*ptr1, *ptr2;
     float       similarity;
 
@@ -242,8 +243,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     /* 用言，体言 */
 
     if (Language != CHINESE) {
-	if ((check_feature(ptr1->f, "用言") &&
-	     check_feature(ptr2->f, "用言")) ||
+	if (((cp1 = check_feature(ptr1->f, "用言")) &&
+	     (cp2 = check_feature(ptr2->f, "用言")) && 
+	     (!strcmp(cp1, "用言:判") || 
+	      strcmp(cp2, "用言:判") || 
+	      !check_feature(ptr2->f, "形副名詞"))) || /* 前側が動詞、形容詞なら、後側は判定詞の形副名詞ではない */
+
+	    (check_feature(ptr1->f, "名詞的形容詞語幹") && /* 「公正jかつ自由なj競争」 */
+	     check_feature(ptr2->f, "用言:形")) || 
 
 	    (check_feature(ptr1->f, "体言") &&
 	     check_feature(ptr2->f, "体言")) || 
