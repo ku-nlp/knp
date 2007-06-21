@@ -367,8 +367,10 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
 	    ((direction == 'R' && /* verb is head */
+	      left->j == left->b_ptr->num &&
 	      exist_chi(sp, right->i, right->b_ptr->num - 1, "noun") != -1) ||
 	     (direction == 'L' && /* preposition is head */
+	      right->i == right->b_ptr->num &&
 	      exist_chi(sp, left->b_ptr->num + 1, left->j, "noun") != -1))) { 
 	    return 0;
 	}
@@ -1170,7 +1172,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  (check_feature(g_ptr->f, "DT"))) ||
 
 			 ((check_feature(d_ptr->f, "CC")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
+			  (check_feature(g_ptr->f, "VV") ||
+			   check_feature(g_ptr->f, "VA"))) ||
 
 			 ((check_feature(d_ptr->f, "PN")) &&
 			  (check_feature(g_ptr->f, "P"))) ||
