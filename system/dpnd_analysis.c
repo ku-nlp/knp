@@ -353,9 +353,9 @@ static int dpndID = 0;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].lamda1[k] * (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_1[k]/Chi_dpnd_matrix[i][j].occur_1[k]);
 			}
 
-			/* to handle the case that prob1, prob2, prob3 are 1 */
-			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda1[k];
-			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda1[k];
+/* 			/\* to handle the case that prob1, prob2, prob3 are 1 *\/ */
+/* 			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda1[k]; */
+/* 			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda1[k]; */
 
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_1[k];
 			strcpy(Chi_dpnd_matrix[i][j].type[k],Chi_dpnd_matrix[i][j].type_1[k]);
@@ -398,9 +398,9 @@ static int dpndID = 0;
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_2[k];
 
-			    /* to handle the case that prob2, prob3, prob4 are 1 */
-			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
-			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+/* 			    /\* to handle the case that prob2, prob3, prob4 are 1 *\/ */
+/* 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
+/* 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
 
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
@@ -425,9 +425,9 @@ static int dpndID = 0;
 			    }
 			    Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_3[k];
 
-			    /* to handle the case that prob2, prob3, prob4 are 1 */
-			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
-			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+/* 			    /\* to handle the case that prob2, prob3, prob4 are 1 *\/ */
+/* 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
+/* 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
 
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
@@ -441,10 +441,10 @@ static int dpndID = 0;
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_4[k];
 
-			/* to handle the case that prob4 is 1 */
-			Chi_dpnd_matrix[i][j].lamda2[k] = (1.0 * Chi_dpnd_matrix[i][j].occur_4[k]) / (Chi_dpnd_matrix[i][j].occur_4[k] + 1);
-			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
-			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k];
+/* 			/\* to handle the case that prob4 is 1 *\/ */
+/* 			Chi_dpnd_matrix[i][j].lamda2[k] = (1.0 * Chi_dpnd_matrix[i][j].occur_4[k]) / (Chi_dpnd_matrix[i][j].occur_4[k] + 1); */
+/* 			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
+/* 			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= Chi_dpnd_matrix[i][j].lamda2[k]; */
 
 			Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_2;
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_2;
@@ -591,7 +591,7 @@ int check_uncertain_d_condition(SENTENCE_DATA *sp, DPND *dp, int gvnr)
 	 check_feature(sp->bnst_data[gvnr+1].f, "体言") &&
 	 ((dpnd_cp && next_cp && !strcmp(dpnd_cp, next_cp)) ||
 	  (gvnr_cp && next_cp && !strcmp(gvnr_cp, next_cp))))) {
-	/* fprintf(stderr, "%d -> %d\n", i, j); */
+	/* fprintf(stderr, "%d -> %d OK\n", i, j); */
 	return 1;
     } else {
 	return 0;
@@ -706,7 +706,6 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		else {
 		    score = -1;
 		}
-		/* fprintf(stderr, "%s %s %d\n", strp, (ht_ptr->head_ptr)->Goi2, score); */
 
 		/* Ｂが複数タグから成る場合のためのループ */
 		for (j = 0, ht_ptr = (sp->bnst_data + dp->head[last_b])->tag_ptr; 
@@ -721,12 +720,6 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 			strp = t_ptr->head_ptr->Goi2;
 			rep_length = strlen(strp);
 		    }
-
-		    /* fprintf(stderr, "%s %s %d\n", strp, (ht_ptr->head_ptr)->Goi2, 
-			    ht_ptr->cf_ptr ? check_examples(strp, rep_length,
-							    ht_ptr->cf_ptr->ex_list[0],
-							    ht_ptr->cf_ptr->ex_num[0]) : -2); */
-
 
 		    /* 「ＡのＢ」のスコア */
 		    if (score == -1 && ht_ptr->cf_ptr &&
