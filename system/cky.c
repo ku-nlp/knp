@@ -2302,31 +2302,31 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* the word before dunhao cannot have left dependency */
-	if (direction == 'L' &&
-	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "PU") && 
-	    !strcmp((sp->bnst_data + right->b_ptr->num + 1)->head_ptr->Goi, "、")) {
-	    return 0;
-	}
+/* 	/\* the word before dunhao cannot have left dependency *\/ */
+/* 	if (direction == 'L' && */
+/* 	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "PU") &&  */
+/* 	    !strcmp((sp->bnst_data + right->b_ptr->num + 1)->head_ptr->Goi, "、")) { */
+/* 	    return 0; */
+/* 	} */
 
-	/* the noun before dunhao should depend on noun after it */
-	if (direction == 'R' &&
-	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "M") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG")) &&
-	    (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") &&
-	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M")) &&
-	    check_feature((sp->bnst_data + left->b_ptr->num + 1)->f, "PU") && 
-	    !strcmp((sp->bnst_data + left->b_ptr->num + 1)->head_ptr->Goi, "、")) {
-	    return 0;
-	}
+/* 	/\* the noun before dunhao should depend on noun after it *\/ */
+/* 	if (direction == 'R' && */
+/* 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") || */
+/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") || */
+/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") || */
+/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") || */
+/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "M") || */
+/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG")) && */
+/* 	    (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && */
+/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M")) && */
+/* 	    check_feature((sp->bnst_data + left->b_ptr->num + 1)->f, "PU") &&  */
+/* 	    !strcmp((sp->bnst_data + left->b_ptr->num + 1)->head_ptr->Goi, "、")) { */
+/* 	    return 0; */
+/* 	} */
 
 	/* only the quote PU can be head */
 	if ((direction == 'R' && 
