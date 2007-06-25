@@ -819,11 +819,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			one_score -= 20;
 		    }
 
-		    if (d_ptr->num < g_ptr->num &&
-			check_feature(d_ptr->f, "P") &&
-			check_feature(g_ptr->f, "NN")) {
-			one_score -= 20;
-		    }
+/* 		    if (d_ptr->num < g_ptr->num && */
+/* 			check_feature(d_ptr->f, "P") && */
+/* 			check_feature(g_ptr->f, "NN")) { */
+/* 			one_score -= 20; */
+/* 		    } */
 
 		    if (d_ptr->num < g_ptr->num &&
 			(check_feature(d_ptr->f, "NN") ||
@@ -2302,31 +2302,47 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* the word before dunhao cannot have left dependency *\/ */
-/* 	if (direction == 'L' && */
-/* 	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "PU") &&  */
-/* 	    !strcmp((sp->bnst_data + right->b_ptr->num + 1)->head_ptr->Goi, "、")) { */
-/* 	    return 0; */
-/* 	} */
+	/* the word before dunhao (noun coor) cannot have left dependency */
+	if (direction == 'L' &&
+	    check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "PU") &&
+	    (check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "NN") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "NR") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "PN") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "NT") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "M") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "JJ") ||
+	     check_feature((sp->bnst_data + right->b_ptr->num + 2)->f, "DEG")) &&
+	    !strcmp((sp->bnst_data + right->b_ptr->num + 1)->head_ptr->Goi, "、")) {
+	    return 0;
+	}
 
-/* 	/\* the noun before dunhao should depend on noun after it *\/ */
-/* 	if (direction == 'R' && */
-/* 	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") || */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") || */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") || */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") || */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "M") || */
-/* 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG")) && */
-/* 	    (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") && */
-/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") && */
-/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") && */
-/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") && */
-/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") && */
-/* 	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M")) && */
-/* 	    check_feature((sp->bnst_data + left->b_ptr->num + 1)->f, "PU") &&  */
-/* 	    !strcmp((sp->bnst_data + left->b_ptr->num + 1)->head_ptr->Goi, "、")) { */
-/* 	    return 0; */
-/* 	} */
+	/* the noun before dunhao (noun coor) should depend on noun after it */
+	if (direction == 'R' &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "NN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NR") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "PN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "NT") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "M") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "JJ") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "DEG")) &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "NN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "NR") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "PN") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "NT") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "M") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "JJ") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num + 2)->f, "DEG")) &&
+	    (!check_feature((sp->bnst_data + right->b_ptr->num)->f, "NN") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NT") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "NR") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "PN") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "JJ") &&
+	     !check_feature((sp->bnst_data + right->b_ptr->num)->f, "M")) &&
+	    check_feature((sp->bnst_data + left->b_ptr->num + 1)->f, "PU") &&
+	    !strcmp((sp->bnst_data + left->b_ptr->num + 1)->head_ptr->Goi, "、")) {
+	    return 0;
+	}
 
 	/* only the quote PU can be head */
 	if ((direction == 'R' && 
@@ -2467,12 +2483,8 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	}
 
 	/* for pivot sentence, the noun between the two verbs should depend on the second verb  */
-	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
-	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
-	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
+	    check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") &&
 	    direction == 'L' && left->j != left->i &&
 	    (has_child_chi(sp, left, "NN", 1)||
 	     has_child_chi(sp, left, "NR", 1)||
