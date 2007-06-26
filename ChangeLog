@@ -1,3 +1,9 @@
+2007-06-26  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c:
+	Modify grammatical constraints for Chinese.
+	Remove bonus for ambiguous dpnd.
+
 2007-06-22  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/dpnd_analysis.c:
