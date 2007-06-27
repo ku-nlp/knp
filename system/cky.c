@@ -1669,17 +1669,19 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
-						}
-						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
+						if (OptParaFix) {
+						    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+							cky_ptr->score += 50;
+							if (OptDisplay == OPT_DEBUG) {
+							    printf("=>%.3f\n", cky_ptr->score);
+							} 
+						    }
+						    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+							cky_ptr->score += 50;
+							if (OptDisplay == OPT_DEBUG) {
+							    printf("=>%.3f\n", cky_ptr->score);
+							} 
+						    }
 						}
 					    }
 
@@ -1720,17 +1722,19 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						    calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
-						}
-						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
+						if (OptParaFix) {
+						    if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+							cky_ptr->score += 50;
+							if (OptDisplay == OPT_DEBUG) {
+							    printf("=>%.3f\n", cky_ptr->score);
+							} 
+						    }
+						    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+							cky_ptr->score += 50;
+							if (OptDisplay == OPT_DEBUG) {
+							    printf("=>%.3f\n", cky_ptr->score);
+							} 
+						    }
 						}
 					    }
 					}
@@ -1781,35 +1785,39 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    cky_ptr->score = OptAnalysis == OPT_CASE ? 
 						calc_case_probability(sp, cky_ptr, Best_mgr) : calc_score(sp, cky_ptr);
 
-					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						cky_ptr->score += 50;
-						if (OptDisplay == OPT_DEBUG) {
-						    printf("=>%.3f\n", cky_ptr->score);
-						} 
-					    }
-					    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						cky_ptr->score += 50;
-						if (OptDisplay == OPT_DEBUG) {
-						    printf("=>%.3f\n", cky_ptr->score);
-						} 
-					    }
-					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						cky_ptr->score += 50;
-						if (OptDisplay == OPT_DEBUG) {
-						    printf("=>%.3f\n", cky_ptr->score);
-						} 
-					    }
-					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-						cky_ptr->score += 50;
-						if (OptDisplay == OPT_DEBUG) {
-						    printf("=>%.3f\n", cky_ptr->score);
-						} 
+					    if (OptParaFix) {
+						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
+						}
+						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
+						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
+						}
+						else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
+						}
+						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
+						    cky_ptr->score += 50;
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("=>%.3f\n", cky_ptr->score);
+						    } 
+						}
 					    }
 					}
 
 					if (!OptParaFix) {
 					    /* add similarity of coordination */
-					    if (cky_ptr->para_score > PARA_THRESHOLD) {
+					    if (cky_ptr->para_score > PARA_THRESHOLD &&
+						((Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') ||
+						 (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V'))) {
 						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
 					    if (OptDisplay == OPT_DEBUG) {
