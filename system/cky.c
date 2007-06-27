@@ -2084,11 +2084,11 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
     if (!strcmp(type, "noun")) {
 	for (k = i; k <= j; k++) {
 	    if (check_feature((sp->bnst_data + k)->f, "PU") && 
-		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
+		(!strcmp((sp->bnst_data+k)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡¤"))) {
 		break;
 	    }
 	    if (check_feature((sp->bnst_data + k)->f, "NN") ||
@@ -2115,11 +2115,11 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
     else if (!strcmp(type, "pu")) {
 	for (k = i; k <= j; k++) {
 	    if (check_feature((sp->bnst_data + k)->f, "PU") && 
-		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
-		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
+		(!strcmp((sp->bnst_data+k)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+k)->head_ptr->Goi, "¡¤"))) {
 		return k;
 	    }
 	}
