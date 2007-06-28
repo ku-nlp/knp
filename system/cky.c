@@ -587,16 +587,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			printf("(dpnd:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
 		    }
 
-		    /* add penalty for comma and verb */
-		    if (comma != 0 || 
-			(check_feature(d_ptr->f, "DEC") && check_feature(g_ptr->f, "NN")) ||
-			(check_feature(d_ptr->f, "VV") && check_feature(g_ptr->f, "NN"))) {
-			one_score -= 15 * comma;
-		    }
-		    else {
-			one_score -= 8 * verb;
-			one_score -= 15 * comma;
-		    }
+		    /* add penalty for comma */
+		    one_score -= 15 * comma;
 
 		    /* add score for stable dpnd */
 		    if (d_ptr->num + 1 == g_ptr->num &&
@@ -845,14 +837,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			printf("(dpnd:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
 		    }
 
-		    /* add penalty for comma and verb */
-		    if (comma != 0) {
-			one_score -= 15 * comma;
-		    }
-		    else {
-			one_score -= 8 * verb;
-			one_score -= 15 * comma;
-		    }
+		    /* add penalty for comma */
+		    one_score -= 15 * comma;
 
 		    /* add score for stable dpnd */
 		    if (g_ptr->num + 1 == d_ptr->num &&
@@ -2605,23 +2591,22 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-	/* for preposition, if there is noun between it and following verb, if preposition is head of the verb, all the noun should depend on verb, if verb is head of preposition (verb is followed by DEC), all the noun should depend on preposition */
+	/* for preposition, if there is noun between it and following verb, if preposition is head of the verb, all the noun should depend on verb, if verb is head of preposition, all the noun should depend on preposition */
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
-	    ((direction == 'R' && /* verb is head */
-	      check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "DEC") &&
-	      right->j != right->i &&
-	      (has_child_chi(sp, right, "NN", 0)||
-	       has_child_chi(sp, right, "NR", 0)||
-	       has_child_chi(sp, right, "PN", 0))) ||
+/* 	    ((direction == 'R' && /\* verb is head *\/ */
+/* 	      right->j != right->i && */
+/* 	      (has_child_chi(sp, right, "NN", 0)|| */
+/* 	       has_child_chi(sp, right, "NR", 0)|| */
+/* 	       has_child_chi(sp, right, "PN", 0))) || */
 	     (direction == 'L' && /* preposition is head */
 	      left->j != left->i &&
 	      (has_child_chi(sp, left, "NN", 1)||
 	       has_child_chi(sp, left, "NR", 1)||
-	       has_child_chi(sp, left, "PN", 1))))) {
+	       has_child_chi(sp, left, "PN", 1)))) {
 	    return 0;
 	}
 
