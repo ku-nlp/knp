@@ -570,6 +570,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		}
 
+		if (OptDisplay == OPT_DEBUG) {
+		    printf("(case)%.3f=>", one_score);
+		}
+
+
 		/* decrease score if the modifier is root */
 		if (d_ptr->num == Chi_root) {
 		    one_score -= 15;
@@ -577,6 +582,10 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		if (cky_ptr->direction == LtoR) {
 		    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index] * TIME_PROB;
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(dpnd:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
+		    }
 
 		    /* add penalty for comma and verb */
 		    if (exist_chi(sp, d_ptr->num + 1, g_ptr->num - 1, "PU") || 
@@ -806,9 +815,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		    if ((check_feature(d_ptr->f, "DEC")) &&
 			(check_feature(g_ptr->f, "NN") ||
-			 check_feature(g_ptr->f, "NR") ||
-			 check_feature(g_ptr->f, "NT") ||
-			 check_feature(g_ptr->f, "PN"))) {
+			 check_feature(g_ptr->f, "NR"))) {
 			one_score += 30;
 		    }
 
@@ -819,21 +826,24 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			one_score -= 20;
 		    }
 
-/* 		    if (d_ptr->num < g_ptr->num && */
-/* 			check_feature(d_ptr->f, "P") && */
-/* 			check_feature(g_ptr->f, "NN")) { */
-/* 			one_score -= 20; */
-/* 		    } */
-
 		    if (d_ptr->num < g_ptr->num &&
 			(check_feature(d_ptr->f, "NN") ||
 			 check_feature(d_ptr->f, "NR")) &&
 			check_feature(g_ptr->f, "AD")) {
 			one_score -= 20;
 		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(stable:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
+		    }
+
 		}
 		else if (cky_ptr->direction == RtoL) {
 		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(dpnd:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
+		    }
 
 		    /* add penalty for comma and verb */
 		    if (exist_chi(sp, g_ptr->num + 1, d_ptr->num - 1, "PU")) {
@@ -919,7 +929,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(d_ptr->f, "DT") ||
 			   check_feature(d_ptr->f, "JJ") ||
 			   check_feature(d_ptr->f, "NR") ||
-//			   check_feature(d_ptr->f, "NN") ||
 			   check_feature(d_ptr->f, "NT") ||
 			   check_feature(d_ptr->f, "PN")))||
 
@@ -953,6 +962,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    if (check_feature(g_ptr->f, "DEG") && check_feature(d_ptr->f, "NN")) {
 			one_score -= 20;
 		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(stable:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
+		    }
+
 		}
 	    }
 	}
@@ -2417,7 +2431,13 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    direction == 'R') {
 	    return 0;
 	}
-	
+
+	/* LC must have modifier before */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "LC") &&
+	    left->i == left->b_ptr->num) {
+	    return 0;
+	}
+
 	/* VC and VE must have modifier behind */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
