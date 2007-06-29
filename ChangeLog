@@ -1,3 +1,8 @@
+2007-06-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c
+	文節の主辞となっている形態素に"<文節主辞>"というfeatureを付与
+
 2007-06-28  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c:
