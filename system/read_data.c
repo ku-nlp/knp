@@ -1467,6 +1467,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    if (!check_feature((ptr->mrph_ptr + i)->f, "独立タグ非見出語") && /* 「の」 */
 		check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
+		assign_cfeature(&(ptr->head_ptr->f), "文節主辞", FALSE);
 		return;
 	    }
 	}
