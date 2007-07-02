@@ -16,7 +16,7 @@ endif
 
 nodist_dic_DATA +=  chidpnd.db
 
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db gigaword_pa.db
 
 HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
 
@@ -112,6 +112,14 @@ chicase_nominal.prob:
 	true
 
 chicase_nominal.db: chicase_nominal.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+gigaword_pa.dict:
+	true
+
+gigaword_pa.db: gigaword_pa.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
