@@ -1765,6 +1765,33 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 }
 
+/* get gigaword pa count for Chinese, for cell (i,j), i is the position of argument, j is the position of predicate */
+/*==================================================================*/
+	       void calc_gigaword_pa_matrix(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j;
+    
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    Chi_gigaword_pa_matrix[i][j] = 0;
+	}
+    }
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	for (j = i + 1; j < sp->Bnst_num; j++) {
+	    if (check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
+		Chi_gigaword_pa_matrix[i][j] = 0;
+		Chi_gigaword_pa_matrix[j][i] = 0;
+	    }
+	    else {
+		Chi_gigaword_pa_matrix[i][j] = get_gigaword_pa(sp->bnst_data+i, sp->bnst_data+j, 'R');
+		Chi_gigaword_pa_matrix[j][i] = get_gigaword_pa(sp->bnst_data+i, sp->bnst_data+j, 'L');
+	    }
+	}
+    }
+}
+
 /*====================================================================
                                END
 ====================================================================*/

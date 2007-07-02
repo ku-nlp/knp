@@ -512,7 +512,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	34
+#define DICT_MAX	35
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -547,6 +547,7 @@ typedef struct _RuleVector {
 #define HOWNET_ANTONYM_DB       31
 #define HOWNET_CATEGORY_DB      32
 #define HOWNET_SEM_DEF_DB       33
+#define GIGAWORD_PA_DB       34
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

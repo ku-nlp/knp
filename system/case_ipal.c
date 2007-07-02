@@ -23,6 +23,7 @@ DBM_FILE para_db;
 DBM_FILE noun_co_db;
 DBM_FILE chi_case_db;
 DBM_FILE chi_case_nominal_db;
+DBM_FILE gigaword_pa_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -51,6 +52,7 @@ int	ParaExist;
 int	NounCoExist;
 int     CHICaseExist;
 int     CHICaseNominalExist;
+int     GigaWordPAExist;
 
 int	PrintDeletedSM = 0;
 
@@ -158,6 +160,9 @@ int	PrintDeletedSM = 0;
 	
 	/* Chinese nominal case-frame DB (chicase_nominal.db) */
 	chi_case_nominal_db = open_dict(CHI_CASE_NOMINAL_DB, CHI_CASE_NOMINAL_DB_NAME, &CHICaseNominalExist);
+
+	/* Chinese GigaWord_PA DB (gigaword_pa.db) */
+	gigaword_pa_db = open_dict(GIGAWORD_PA_DB, GIGAWORD_PA_DB_NAME, &GigaWordPAExist);
     }
 }
 
@@ -3285,6 +3290,43 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     }
     else {
 	ret = 0.0;
+    }
+
+    return ret;
+}
+
+/* get gigaword_pa count for Chinese */
+/*==================================================================*/
+   int get_gigaword_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int direction)
+/*==================================================================*/
+{
+    char *key, *value;
+    int ret;
+
+    if (GigaWordPAExist == FALSE) {
+	return 0;
+    }
+
+    key = malloc_db_buf(strlen(ptr1->head_ptr->Goi) + 
+			strlen(ptr2->head_ptr->Goi) + 
+			strlen(ptr1->head_ptr->Pos) + 
+			strlen(ptr2->head_ptr->Pos) + 9);
+
+    /* 用言表記でやった方がよいみたい */
+    if (direction == 'R') {
+	sprintf(key, "%s_%s_%s_%s_R", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi);
+    }
+    else if (direction == 'L') {
+	sprintf(key, "%s_%s_%s_%s_L", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi);
+    }
+    value = db_get(gigaword_pa_db, key);
+
+    if (value) {
+	ret = atoi(value);
+	free(value);
+    }
+    else {
+	ret = 0;
     }
 
     return ret;

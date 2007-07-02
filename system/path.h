@@ -39,4 +39,4 @@
 #define HOWNET_ANTONYM_DB_NAME  "ebcf/hownet_antonym.db"
 #define HOWNET_CATEGORY_DB_NAME "ebcf/hownet_category.db"
 #define HOWNET_SEM_DEF_DB_NAME  "ebcf/hownet_sem_def.db"
-
+#define GIGAWORD_PA_DB_NAME     "ebcf/gigaword_pa.db"

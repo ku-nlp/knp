@@ -253,6 +253,24 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double one_score = 0;
     char *cp, *cp2;
 
+    int thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_p_n_l;
+    int max_n_v_r, max_v_n_l, max_n_n_r, max_n_n_l, max_p_n_l;
+    int giga_pa_weight_n = 50;
+    int giga_pa_weight_v = 20;
+    int giga_pa_weight_p = 50;
+
+    thre_n_v_r = 15;
+    thre_v_n_l = 15;
+    thre_n_n_r = 15;
+    thre_n_n_l = 15;
+    thre_p_n_l = 15;
+
+    max_n_v_r = 21641;
+    max_v_n_l = 19174;
+    max_n_n_r = 146364;
+    max_n_n_l = 4271;
+    max_p_n_l = 41939;
+
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
     while (tmp_cky_ptr) {
 	if (tmp_cky_ptr->direction == LtoR ? tmp_cky_ptr->left : tmp_cky_ptr->right) {
@@ -505,74 +523,74 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-		/* add score from verb case frame */
-		if ((check_feature(g_ptr->f, "VV") ||
-		     check_feature(g_ptr->f, "VA") ||
-		     check_feature(g_ptr->f, "VC") ||
-		     check_feature(g_ptr->f, "VE") ||
-		     (check_feature(g_ptr->f, "P") && g_ptr->num < d_ptr->num)) &&
-		    (check_feature(d_ptr->f, "NN") ||
-		     check_feature(d_ptr->f, "M") ||
-		     check_feature(d_ptr->f, "NT") ||
-		     check_feature(d_ptr->f, "PN"))) {
-		    /* calc case frame score for Chinese */
-		    if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20;
-		    }
-		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 1500;
-		    }
-		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 10000;
-		    }
-		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 50000;
-		    }
-		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
-			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 200000;
-		    }
-		}
+/* 		/\* add score from verb case frame *\/ */
+/* 		if ((check_feature(g_ptr->f, "VV") || */
+/* 		     check_feature(g_ptr->f, "VA") || */
+/* 		     check_feature(g_ptr->f, "VC") || */
+/* 		     check_feature(g_ptr->f, "VE") || */
+/* 		     (check_feature(g_ptr->f, "P") && g_ptr->num < d_ptr->num)) && */
+/* 		    (check_feature(d_ptr->f, "NN") || */
+/* 		     check_feature(d_ptr->f, "M") || */
+/* 		     check_feature(d_ptr->f, "NT") || */
+/* 		     check_feature(d_ptr->f, "PN"))) { */
+/* 		    /\* calc case frame score for Chinese *\/ */
+/* 		    if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) { */
+/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20; */
+/* 		    } */
+/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) { */
+/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 1500; */
+/* 		    } */
+/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) { */
+/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 10000; */
+/* 		    } */
+/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) { */
+/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 50000; */
+/* 		    } */
+/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) { */
+/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 200000; */
+/* 		    } */
+/* 		} */
 
-		/* add score from nominal case frame */
-		if ((check_feature(g_ptr->f, "NN") ||
-		     check_feature(g_ptr->f, "NT") ||
-		     check_feature(g_ptr->f, "PN") ||
-		     check_feature(g_ptr->f, "M")) &&
-		    (check_feature(d_ptr->f, "NN") ||
-		     check_feature(d_ptr->f, "NR") ||
-		     check_feature(d_ptr->f, "M") ||
-		     check_feature(d_ptr->f, "NT") ||
-		     check_feature(d_ptr->f, "PN"))) {
-		    if (check_feature((sp->bnst_data+d_ptr->num+1)->f, "DEG") ||
-			(check_feature(g_ptr->f, "NN") &&
-			 (check_feature(d_ptr->f, "NT") ||
-			  check_feature(d_ptr->f, "M"))) ||
-			(check_feature(g_ptr->f, "NN") &&
-			 check_feature(d_ptr->f, "NN") &&
-			 d_ptr->num - g_ptr->num == 1)) {}
-		    else {
-			/* calc case frame score for Chinese */
-			if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20;
-			}
-			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 1500;
-			}
-			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 10000;
-			}
-			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000;
-			}
-			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) {
-			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 100000;
-			}
-		    }
-		}
+/* 		/\* add score from nominal case frame *\/ */
+/* 		if ((check_feature(g_ptr->f, "NN") || */
+/* 		     check_feature(g_ptr->f, "NT") || */
+/* 		     check_feature(g_ptr->f, "PN") || */
+/* 		     check_feature(g_ptr->f, "M")) && */
+/* 		    (check_feature(d_ptr->f, "NN") || */
+/* 		     check_feature(d_ptr->f, "NR") || */
+/* 		     check_feature(d_ptr->f, "M") || */
+/* 		     check_feature(d_ptr->f, "NT") || */
+/* 		     check_feature(d_ptr->f, "PN"))) { */
+/* 		    if (check_feature((sp->bnst_data+d_ptr->num+1)->f, "DEG") || */
+/* 			(check_feature(g_ptr->f, "NN") && */
+/* 			 (check_feature(d_ptr->f, "NT") || */
+/* 			  check_feature(d_ptr->f, "M"))) || */
+/* 			(check_feature(g_ptr->f, "NN") && */
+/* 			 check_feature(d_ptr->f, "NN") && */
+/* 			 d_ptr->num - g_ptr->num == 1)) {} */
+/* 		    else { */
+/* 			/\* calc case frame score for Chinese *\/ */
+/* 			if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) { */
+/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20; */
+/* 			} */
+/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) { */
+/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 1500; */
+/* 			} */
+/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) { */
+/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 10000; */
+/* 			} */
+/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) { */
+/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000; */
+/* 			} */
+/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) { */
+/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 100000; */
+/* 			} */
+/* 		    } */
+/* 		} */
 
-		if (OptDisplay == OPT_DEBUG) {
-		    printf("(case)%.3f=>", one_score);
-		}
+/* 		if (OptDisplay == OPT_DEBUG) { */
+/* 		    printf("(case)%.3f=>", one_score); */
+/* 		} */
 
 
 		/* decrease score if the modifier is root */
@@ -585,6 +603,39 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		    if (OptDisplay == OPT_DEBUG) {
 			printf("(dpnd:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
+		    }
+
+		    /* add bonus from gigaword pa */
+		    if (check_feature(d_ptr->f, "NN") ||
+			check_feature(d_ptr->f, "NR") ||
+			check_feature(d_ptr->f, "PN") ||
+			check_feature(d_ptr->f, "NT")) {
+			if (check_feature(g_ptr->f, "NN") ||
+			    check_feature(g_ptr->f, "NR") ||
+			    check_feature(g_ptr->f, "PN") ||
+			    check_feature(g_ptr->f, "NT")) {
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_r) {
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > max_n_n_r) {
+				    Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] = max_n_n_r;
+				}
+				one_score += 1.0 * giga_pa_weight_n * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] / max_n_n_r;
+			    }
+			}
+			if (check_feature(g_ptr->f, "VV") ||
+			    check_feature(g_ptr->f, "VC") ||
+			    check_feature(g_ptr->f, "VE") ||
+			    check_feature(g_ptr->f, "VA")) {
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_v_r) {
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > max_n_v_r) {
+				    Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] = max_n_v_r;
+				}
+				one_score += 1.0 * giga_pa_weight_v * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] / max_n_v_r;
+			    }
+			}
+		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(giga:%d)%.3f=>", Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num], one_score);
 		    }
 
 		    /* add penalty for comma */
@@ -837,6 +888,46 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			printf("(dpnd:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
 		    }
 
+		    /* add bonus from gigaword pa */
+		    if (check_feature(d_ptr->f, "NN") ||
+			check_feature(d_ptr->f, "NR") ||
+			check_feature(d_ptr->f, "PN") ||
+			check_feature(d_ptr->f, "NT")) {
+			if (check_feature(g_ptr->f, "NN") ||
+			    check_feature(g_ptr->f, "NR") ||
+			    check_feature(g_ptr->f, "PN") ||
+			    check_feature(g_ptr->f, "NT")) {
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_l) {
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > max_n_n_l) {
+				    Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] = max_n_n_l;
+				}
+				one_score += 1.0 * giga_pa_weight_n * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] / max_n_n_l;
+			    }
+			}
+			if (check_feature(g_ptr->f, "VV") ||
+			    check_feature(g_ptr->f, "VC") ||
+			    check_feature(g_ptr->f, "VE") ||
+			    check_feature(g_ptr->f, "VA")) {
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_n_l) {
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > max_v_n_l) {
+				    Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] = max_v_n_l;
+				}
+				one_score += 1.0 * giga_pa_weight_v * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] / max_v_n_l;
+			    }
+			}
+			if (check_feature(g_ptr->f, "P") && Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_n_l) {
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > max_p_n_l) {
+				Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] = max_p_n_l;
+			    }
+			    one_score += 1.0 * giga_pa_weight_p * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] / max_p_n_l;
+			}
+		    }
+
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(giga:%d)%.3f=>", Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num], one_score);
+		    }
+
 		    /* add penalty for comma */
 		    one_score -= 15 * comma;
 
@@ -939,7 +1030,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
 			one_score += 10;
 		    }
-		    if (check_feature(g_ptr->f, "AD") && check_feature(d_ptr->f, "DEC")) {
+		    if (check_feature(g_ptr->f, "AD") && 
+			(check_feature(d_ptr->f, "DEC") || check_feature(d_ptr->f, "P"))) {
 			one_score -= 20;
 		    }
 		    if (check_feature(g_ptr->f, "NN") && check_feature(d_ptr->f, "VV")) {
