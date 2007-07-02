@@ -1,3 +1,12 @@
+2007-07-02  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/Makefile.am, dict/ebcf/gigaword_pa.dict:
+	Add predicate-argument pairs extract from Chinese GigaWord.
+
+	* system/case_ipal.c, system/cky.c, system/dpnd_analysis.c, system/main.c, system/const.h, system/extern.h, system/path.h
+	Replace translated case-frame with predicate-argument pairs extracted from Chinese GigaWord.
+	Reduce dpnd score for AD<-P.
+
 2007-06-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c
