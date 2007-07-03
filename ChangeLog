@@ -1,3 +1,8 @@
+2007-07-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase:
+	Added rules for 「〜を最後に」「ごく(一部|少数|...)」.
+
 2007-07-03  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/ebcf/gigaword_pa.dict:
