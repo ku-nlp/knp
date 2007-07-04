@@ -837,15 +837,27 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    }
 
 	    if (mrph_item == 12) {
+		char *imip, *cp, *rep_buf;
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
-		    char *imip, *cp;
 
 		    /* 通常 "" で括られている */
 		    if (rest_buffer[0] == '\"') {
 			imip = &rest_buffer[1];
 			if (cp = strchr(imip, '\"')) {
 			    *cp = '\0';
+			}
+			/* 疑似代表表記を追加する */
+			if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
+			    strcmp(Hinshi_str, "助動詞") && strcmp(Hinshi_str, "助詞") && 
+			    !strstr(imip, "代表表記")) {
+			    rep_buf = make_mrph_rn(m_ptr);
+			    if (strlen(imip) + strlen(" 疑似代表表記 代表表記:") +
+				strlen(rep_buf) + 2 < DATA_LEN) {
+				strcat(imip, " 疑似代表表記 代表表記:");
+				strcat(imip, rep_buf);
+			    }
+			    free(rep_buf);
 			}
 			sprintf(m_ptr->Imi, "\"%s\"", imip);
 		    }
@@ -860,7 +872,22 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    imi2feature(imip, m_ptr);
 		}
 		else {
-		    strcpy(m_ptr->Imi, "NIL");
+		    /* 疑似代表表記を追加する */
+		    rep_buf = make_mrph_rn(m_ptr);			
+		    if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
+			strcmp(Hinshi_str, "助動詞") &&	strcmp(Hinshi_str, "助詞") && 
+			strlen(" 疑似代表表記 代表表記:") + strlen(rep_buf) + 1 < DATA_LEN) {
+			imip = rest_buffer;		    
+			*imip = '\0';
+			strcat(imip, "疑似代表表記 代表表記:");
+			strcat(imip, rep_buf);
+			sprintf(m_ptr->Imi, "\"%s\"", imip);
+			imi2feature(imip, m_ptr);		    
+		    }
+		    else {
+			strcpy(m_ptr->Imi, "NIL");
+		    }
+		    free(rep_buf);
 		}
 	    }
 	    else if (mrph_item == 11) {
