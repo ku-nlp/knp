@@ -1,3 +1,8 @@
+2007-07-04  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/read_data.c:
+	疑似代表表記の付与方法を変更
+
 2007-07-03  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_type.phrase:
