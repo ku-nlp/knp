@@ -3297,11 +3297,11 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 
 /* get gigaword_pa count for Chinese */
 /*==================================================================*/
-   int get_gigaword_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int direction)
+   double get_gigaword_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int direction)
 /*==================================================================*/
 {
     char *key, *value;
-    int ret;
+    double ret;
 
     if (GigaWordPAExist == FALSE) {
 	return 0;
@@ -3322,11 +3322,11 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     value = db_get(gigaword_pa_db, key);
 
     if (value) {
-	ret = atoi(value);
+	ret = atof(value);
 	free(value);
     }
     else {
-	ret = 0;
+	ret = 0.0;
     }
 
     return ret;
