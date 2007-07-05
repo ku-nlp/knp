@@ -29,6 +29,7 @@ typedef struct _CKY {
 #define PARA_THRESHOLD	0
 #define	CKY_TABLE_MAX	800000 
 //#define	CKY_TABLE_MAX	19000000 
+#define CHI_CKY_BONUS 15 /* bonus weight for cky para_score for Chinese */
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
@@ -257,63 +258,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
     int giga_pa_weight_n_n_r = 10000;
     int giga_pa_weight_n_n_l = 0;
-    int giga_pa_weight_v_n_l = 10000;
+    int giga_pa_weight_v_n_l = 100000;
     int giga_pa_weight_n_v_r = 100000;
     int giga_pa_weight_p_n_l = 5000;
-    int giga_pa_weight_v_v_r = 500;
+    int giga_pa_weight_v_v_r = 5000;
     int giga_pa_weight_v_v_l = 5000;
     int giga_pa_weight_p_v_r = 5000;
     int giga_pa_weight_p_v_l = 5000;
-
-/*     int giga_pa_weight_n_n_r_1 = 5; */
-/*     int giga_pa_weight_n_n_l_1 = 0; */
-/*     int giga_pa_weight_v_n_l_1 = 5; */
-/*     int giga_pa_weight_n_v_r_1 = 10; */
-/*     int giga_pa_weight_p_n_l_1 = 5; */
-/*     int giga_pa_weight_v_v_r_1 = 5; */
-/*     int giga_pa_weight_v_v_l_1 = 5; */
-/*     int giga_pa_weight_p_v_r_1 = 5; */
-/*     int giga_pa_weight_p_v_l_1 = 5; */
-
-/*     int giga_pa_weight_n_n_r_2 = 5000; */
-/*     int giga_pa_weight_n_n_l_2 = 0; */
-/*     int giga_pa_weight_v_n_l_2 = 500; */
-/*     int giga_pa_weight_n_v_r_2 = 1000; */
-/*     int giga_pa_weight_p_n_l_2 = 50; */
-/*     int giga_pa_weight_v_v_r_2 = 50; */
-/*     int giga_pa_weight_v_v_l_2 = 50; */
-/*     int giga_pa_weight_p_v_r_2 = 50; */
-/*     int giga_pa_weight_p_v_l_2 = 50; */
-
-/*     int giga_pa_weight_n_n_r_3 = 50000; */
-/*     int giga_pa_weight_n_n_l_3 = 0; */
-/*     int giga_pa_weight_v_n_l_3 = 50000; */
-/*     int giga_pa_weight_n_v_r_3 = 100000; */
-/*     int giga_pa_weight_p_n_l_3 = 5000; */
-/*     int giga_pa_weight_v_v_r_3 = 500; */
-/*     int giga_pa_weight_v_v_l_3 = 50000; */
-/*     int giga_pa_weight_p_v_r_3 = 50000; */
-/*     int giga_pa_weight_p_v_l_3 = 5000; */
-
-/*     double edge_n_n_r_1 = 0.001; */
-/*     double edge_n_n_l_1 = 0; */
-/*     double edge_v_n_l_1 = 0.1; */
-/*     double edge_n_v_r_1 = 0.1; */
-/*     double edge_p_n_l_1 = 0.1; */
-/*     double edge_v_v_r_1 = 0.1; */
-/*     double edge_v_v_l_1 = 0.1; */
-/*     double edge_p_v_r_1 = 0.1; */
-/*     double edge_p_v_l_1 = 0.1; */
-
-/*     double edge_n_n_r_2 = 0.0001; */
-/*     double edge_n_n_l_2 = 0; */
-/*     double edge_v_n_l_2 = 0.0001; */
-/*     double edge_n_v_r_2 = 0.0001; */
-/*     double edge_p_n_l_2 = 0.001; */
-/*     double edge_v_v_r_2 = 0.01; */
-/*     double edge_v_v_l_2 = 0.0001; */
-/*     double edge_p_v_r_2 = 0.0001; */
-/*     double edge_p_v_l_2 = 0.001; */
 
     thre_n_v_r = 0.000001;
     thre_v_n_l = 0.000001;
@@ -1864,9 +1815,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
 						}
-						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
-						}
 						else {
 						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
 						}
@@ -1893,12 +1841,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							    printf("=>%.3f\n", cky_ptr->score);
 							} 
 						    }
-						    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-							cky_ptr->score += 50;
-							if (OptDisplay == OPT_DEBUG) {
-							    printf("=>%.3f\n", cky_ptr->score);
-							} 
-						    }
 						}
 					    }
 
@@ -1915,9 +1857,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						}
 
 						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
-						}
-						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
 						}
 						else {
@@ -1946,12 +1885,6 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							    printf("=>%.3f\n", cky_ptr->score);
 							} 
 						    }
-						    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
-							cky_ptr->score += 50;
-							if (OptDisplay == OPT_DEBUG) {
-							    printf("=>%.3f\n", cky_ptr->score);
-							} 
-						    }
 						}
 					    }
 					}
@@ -1972,13 +1905,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
 					    }
-					    else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
-					    }
 					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
-					    }
-					    else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
 					    }
 					    else {
@@ -2009,19 +1936,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							printf("=>%.3f\n", cky_ptr->score);
 						    } 
 						}
-						else if (Mask_matrix[i][i + k] == 'G' && Mask_matrix[i + k + 1][j] == 'G') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
-						}
 						else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    cky_ptr->score += 50;
-						    if (OptDisplay == OPT_DEBUG) {
-							printf("=>%.3f\n", cky_ptr->score);
-						    } 
-						}
-						else if (Mask_matrix[i][i + k] == 'E' && Mask_matrix[i + k + 1][j] == 'E') {
 						    cky_ptr->score += 50;
 						    if (OptDisplay == OPT_DEBUG) {
 							printf("=>%.3f\n", cky_ptr->score);
@@ -2032,10 +1947,15 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 					if (!OptParaFix) {
 					    /* add similarity of coordination */
-					    if (cky_ptr->para_score > PARA_THRESHOLD &&
-						((Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') ||
-						 (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V'))) {
-						cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
+					    if (cky_ptr->para_score > PARA_THRESHOLD && 
+						(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
+						    cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
+					    }
+					    else if ((sp->bnst_data + i + k)->para_num != -1 &&
+						     Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
+						     exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
+						     (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
+						cky_ptr->score += Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] * CHI_CKY_BONUS;
 					    }
 					    if (OptDisplay == OPT_DEBUG) {
 						printf("=>%.3f\n", cky_ptr->score);
@@ -2831,6 +2751,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") &&
 	    direction == 'L' &&
+	    !check_feature((sp->bnst_data + right->b_ptr->num + 1)->f, "CC") &&
 	    (!has_child_chi(sp, right, "NN", 0) &&
 	     !has_child_chi(sp, right, "NR", 0) &&
 	     !has_child_chi(sp, right, "PN", 0)) &&
