@@ -1,3 +1,11 @@
+2007-07-05  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/gigaword_pa.dict:
+	Modify probability of predicate-argument pairs from gigaword.
+
+	* system/cky.c, system/main.c, system/case_ipal.c, system/extern.h:
+	Modify bonus for predicate-argument pairs from gigaword.
+
 2007-07-04  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c:
