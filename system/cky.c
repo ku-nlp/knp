@@ -1951,7 +1951,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
 						    cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
 					    }
-					    else if ((sp->bnst_data + i + k)->para_num != -1 &&
+					    else if ((sp->bnst_data + i + k)->para_num != -1 && cky_ptr->right && 
 						     Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
 						     exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
 						     (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
