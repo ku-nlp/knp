@@ -539,11 +539,11 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 
 	    for (k = 0; k < m_ptr->part_num; k++) {
 		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'V'; // verb coordination
-		if (k < m_ptr->part_num - 1) {
-		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[k]; i++) {
-			Mask_matrix[i][m_ptr->end[k]] = 0;
-		    }
-		}
+/* 		if (k < m_ptr->part_num - 1) { */
+/* 		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[k]; i++) { */
+/* 			Mask_matrix[i][m_ptr->end[k]] = 0; */
+/* 		    } */
+/* 		} */
 	    }
 	}
 	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
@@ -554,11 +554,11 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
 			Mask_matrix[i][j] = 0;
 		    }
 		}
-		for (i = m_ptr->start[0]; i < m_ptr->start[m_ptr->part_num - 1]; i++) {
-		    for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
-			Mask_matrix[i][j] = 0;
-		    }
-		}
+/* 		for (i = m_ptr->start[0]; i < m_ptr->start[m_ptr->part_num - 1]; i++) { */
+/* 		    for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) { */
+/* 			Mask_matrix[i][j] = 0; */
+/* 		    } */
+/* 		} */
 	    }
 
 	    for (k = 0; k < m_ptr->part_num; k++) {

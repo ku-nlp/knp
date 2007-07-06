@@ -1163,7 +1163,7 @@ int      dpnd_lex = 0;
 
     /* ¸°³ç¸Ì¤Î½èÍý */
 
-    if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG && Language != CHINESE)
+    if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_QUOTE, 0);
 
     if (flag == CONTINUE) return FALSE;
