@@ -256,25 +256,25 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
     int thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_p_n_l, thre_v_v_r, thre_v_v_l, thre_p_v_r, thre_p_v_l;
 
-    int giga_pa_weight_n_n_r = 50;
+    int giga_pa_weight_n_n_r = 10000;
     int giga_pa_weight_n_n_l = 0;
-    int giga_pa_weight_v_n_l = 50;
-    int giga_pa_weight_n_v_r = 50;
-    int giga_pa_weight_p_n_l = 50;
-    int giga_pa_weight_v_v_r = 50;
-    int giga_pa_weight_v_v_l = 50;
-    int giga_pa_weight_p_v_r = 50;
-    int giga_pa_weight_p_v_l = 50;
+    int giga_pa_weight_v_n_l = 10000;
+    int giga_pa_weight_n_v_r = 10000;
+    int giga_pa_weight_p_n_l = 5000;
+    int giga_pa_weight_v_v_r = 5000;
+    int giga_pa_weight_v_v_l = 5000;
+    int giga_pa_weight_p_v_r = 5000;
+    int giga_pa_weight_p_v_l = 5000;
 
-    thre_n_v_r = 0;
-    thre_v_n_l = 0;
-    thre_n_n_r = 0;
+    thre_n_v_r = 0.00001;
+    thre_v_n_l = 0.00001;
+    thre_n_n_r = 0.00001;
     thre_n_n_l = 1;
-    thre_p_n_l = 0;
-    thre_v_v_r = 0;
-    thre_v_v_l = 0;
-    thre_p_v_r = 0;
-    thre_p_v_l = 0;
+    thre_p_n_l = 0.00001;
+    thre_v_v_r = 0.00001;
+    thre_v_v_l = 0.00001;
+    thre_p_v_r = 0.00001;
+    thre_p_v_l = 0.00001;
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
     while (tmp_cky_ptr) {
@@ -620,8 +620,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_r > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_r > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_n_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -633,8 +633,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_v_r > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_v_r > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -652,8 +652,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(d_ptr->f, "VE") ||
 			    check_feature(d_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_r > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_r > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -662,8 +662,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 			if (check_feature(d_ptr->f, "P")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_r > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_r > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_p_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -698,9 +698,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(g_ptr->f, "VV")) ||
 			 
 			 ((check_feature(d_ptr->f, "NR-SHORT")) &&
-			  (check_feature(g_ptr->f, "NR"))) ||
-
-			 ((check_feature(d_ptr->f, "NN")) &&
 			  (check_feature(g_ptr->f, "NR"))) ||
 
 			 ((check_feature(d_ptr->f, "NT-SHORT")) &&
@@ -901,13 +898,9 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			one_score += 30;
 		    }
 
-		    if (check_feature(d_ptr->f, "DEC") &&
-			check_feature(g_ptr->f, "NN")) {
-			one_score += 20;
-		    }
-
-		    if (check_feature(d_ptr->f, "DEC") &&
-			check_feature(g_ptr->f, "NR")) {
+		    if ((check_feature(d_ptr->f, "DEC")) &&
+			(check_feature(g_ptr->f, "NN") ||
+			 check_feature(g_ptr->f, "NR"))) {
 			one_score += 30;
 		    }
 
@@ -947,8 +940,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_l > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_l > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -960,8 +953,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_n_l > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_n_l > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -969,8 +962,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    }
 			}
 			if (check_feature(g_ptr->f, "P") && Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_n_l) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_n_l > 20) {
-				one_score += 20;
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_n_l > 10) {
+				one_score += 10;
 			    }
 			    else {
 				one_score += 1.0 * giga_pa_weight_p_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -987,8 +980,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_l > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_l > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -997,8 +990,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 			if (check_feature(g_ptr->f, "P")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_l > 20) {
-				    one_score += 20;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_l > 10) {
+				    one_score += 10;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_p_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -1047,7 +1040,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			   check_feature(g_ptr->f, "VV"))) ||
 
 			 ((check_feature(d_ptr->f, "DER")) &&
-			  (check_feature(g_ptr->f, "VV"))))) {
+			  (check_feature(g_ptr->f, "VV"))) ||
+
+			 ((check_feature(d_ptr->f, "ETC")) &&
+			  (check_feature(g_ptr->f, "NN") ||
+			   check_feature(g_ptr->f, "NR"))))) {
 			one_score += 15;
 		    }
 		    if (g_ptr->num < d_ptr->num &&
@@ -1109,12 +1106,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
 			one_score += 10;
 		    }
-		    if (check_feature(d_ptr->f, "ETC") &&
-			(check_feature(g_ptr->f, "NN") ||
-			 check_feature(g_ptr->f, "NR"))) {
-			one_score += 20;
-		    }
-
 		    if (check_feature(g_ptr->f, "AD") && 
 			(check_feature(d_ptr->f, "DEC") || check_feature(d_ptr->f, "P"))) {
 			one_score -= 20;
