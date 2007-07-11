@@ -913,7 +913,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 		    if (d_ptr->num < g_ptr->num &&
 			(check_feature(d_ptr->f, "NN") ||
-			 check_feature(d_ptr->f, "NR")) &&
+			 check_feature(d_ptr->f, "NR") ||
+			 check_feature(d_ptr->f, "VV")) &&
 			check_feature(g_ptr->f, "AD")) {
 			one_score -= 20;
 		    }

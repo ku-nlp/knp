@@ -56,7 +56,7 @@ static int dpndID = 0;
  
 /* get dpnd rule for Chinese */
 /*==================================================================*/
-   char* get_chi_dpnd_rule(char *word1, char *pos1, char *word2, char *pos2)
+   char* get_chi_dpnd_rule(char *word1, char *pos1, char *word2, char *pos2, int distance)
 /*==================================================================*/
 {
     char *key;
@@ -66,10 +66,10 @@ static int dpndID = 0;
 	return NULL;
     }
 
-    key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 4);
+    key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 5);
 
     /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s_%s_%s_%s", pos1, word1, pos2, word2);
+    sprintf(key, "%s_%s_%s_%s_%d", pos1, word1, pos2, word2, distance);
     return db_get(chi_dpnd_db, key);
 }
 
@@ -87,6 +87,7 @@ static int dpndID = 0;
     double totalProb;
     int appear_LtoR_2, appear_RtoL_2, appear_LtoR_3, appear_RtoL_3, total_2, total_3;
     double bkoff_weight_1, bkoff_weight_2;
+    int distance;
 
     /* initialization */
     lex_rule = NULL;
@@ -122,12 +123,18 @@ static int dpndID = 0;
 		    }
 		}
 	    }
-	    else { 
+	    else {
+		if (j == i + 1) {
+		    distance = 1;
+		}
+		else {
+		    distance = 2;
+		}
                 /* read dpnd rule from DB for Chinese */
-		lex_rule = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
-		pos_rule_1 = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
-		pos_rule_2 = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos);
-		pos_rule = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos);
+		lex_rule = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos, distance);
+		pos_rule_1 = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos, distance);
+		pos_rule_2 = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, u_ptr->head_ptr->Goi, u_ptr->head_ptr->Pos, distance);
+		pos_rule = get_chi_dpnd_rule("X", k_ptr->head_ptr->Pos, "X", u_ptr->head_ptr->Pos,distance);
 
 		if (lex_rule != NULL) {
 		    count = 0;
