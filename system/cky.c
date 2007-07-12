@@ -29,7 +29,7 @@ typedef struct _CKY {
 #define PARA_THRESHOLD	0
 #define	CKY_TABLE_MAX	800000 
 //#define	CKY_TABLE_MAX	19000000 
-#define CHI_CKY_BONUS 15 /* bonus weight for cky para_score for Chinese */
+#define CHI_CKY_BONUS 30 /* bonus weight for cky para_score for Chinese */
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
@@ -256,7 +256,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
     int thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_p_n_l, thre_v_v_r, thre_v_v_l, thre_p_v_r, thre_p_v_l;
 
-    int giga_pa_weight_n_n_r = 10000;
+    int giga_pa_weight_n_n_r = 100000;
     int giga_pa_weight_n_n_l = 0;
     int giga_pa_weight_v_n_l = 10000;
     int giga_pa_weight_n_v_r = 10000;
@@ -620,8 +620,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_r > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_r > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_n_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -633,8 +633,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_v_r > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_v_r > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -652,8 +652,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(d_ptr->f, "VE") ||
 			    check_feature(d_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_r > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_r > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -662,8 +662,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 			if (check_feature(d_ptr->f, "P")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_r > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_r > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_p_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -941,8 +941,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_l > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_l > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_n_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -954,8 +954,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_n_l > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_n_l > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -963,8 +963,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    }
 			}
 			if (check_feature(g_ptr->f, "P") && Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_n_l) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_n_l > 10) {
-				one_score += 10;
+			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_n_l > 20) {
+				one_score += 20;
 			    }
 			    else {
 				one_score += 1.0 * giga_pa_weight_p_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -981,8 +981,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_l > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_l > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_v_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -991,8 +991,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 			if (check_feature(g_ptr->f, "P")) {
 			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_l > 10) {
-				    one_score += 10;
+				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_l > 20) {
+				    one_score += 20;
 				}
 				else {
 				    one_score += 1.0 * giga_pa_weight_p_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
@@ -2417,9 +2417,9 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	}
 
 	/* check if the dependency follows root constraint (the dependency cannot go across root) */
-	if (left->b_ptr->num < Chi_root && right->b_ptr->num > Chi_root) {
-	    return 0;
-	}
+/* 	if (left->b_ptr->num < Chi_root && right->b_ptr->num > Chi_root) { */
+/* 	    return 0; */
+/* 	} */
 
 /* 	if ((left->b_ptr->num == Chi_root && direction == 'R') || */
 /* 	    (right->b_ptr->num == Chi_root && direction == 'L')) { */
@@ -2506,7 +2506,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 
 	/* for DEG , DEV, DEC and LC, there should not be two modifiers */
 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
+//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEV") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC")) && 
 	    right->b_ptr->num - right->i > 0 && 
@@ -2552,6 +2552,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") &&
 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") &&
+	    right->i == right->b_ptr->num &&
 	    direction == 'R') {
 	    return 0;
 	}

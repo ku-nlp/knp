@@ -522,8 +522,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
-	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ÊÂ¥­")) != NULL) {
-
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ÊÂ¥­")) != NULL &&
+	    (Language != CHINESE ||
+	     (Language == CHINESE && (check_feature(sp->bnst_data[i + 1].f, "CC") || check_feature(sp->bnst_data[i + 1].f, "PU"))))) {
 	    sp->bnst_data[i].para_num = sp->Para_num;
 	    sp->para_data[sp->Para_num].para_char = 'a'+ sp->Para_num;
 	    sp->para_data[sp->Para_num].key_pos = i;
