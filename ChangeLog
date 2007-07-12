@@ -1,3 +1,8 @@
+2007-07-12  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/extern.h, system/read_data.c, system/case_analysis.c:
+	Deleted existing morpheme features when morpheme disambiguation succeeded.
+
 2007-07-11  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/ebcf/chidpnd.dict:
