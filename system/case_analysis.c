@@ -1775,6 +1775,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    /* 現在の形態素をALTに保存 */
 		    assign_feature_alt_mrph(&(m_ptr->f), m_ptr);
 		    /* このALTを最終結果の形態素にする */
+		    delete_existing_features(m_ptr); /* 現在の形態素featureを削除 */
 		    copy_mrph(m_ptr, &m);
 		    delete_cfeature(&(m_ptr->f), fp->cp);
 		    assign_cfeature(&(m_ptr->f), f_str, FALSE);
@@ -1991,6 +1992,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 		    assign_feature_alt_mrph(&(cpm_ptr->pred_b_ptr->head_ptr->f), 
 					    cpm_ptr->pred_b_ptr->head_ptr);
 		    /* このALTを最終結果の形態素にする */
+		    delete_existing_features(cpm_ptr->pred_b_ptr->head_ptr); /* 現在の形態素featureを削除 */
 		    copy_mrph(cpm_ptr->pred_b_ptr->head_ptr, &m);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
 		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "用言曖昧性解消", FALSE);

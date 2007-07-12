@@ -464,6 +464,7 @@ extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
 extern void make_tag_units(SENTENCE_DATA *sp);
 extern void assign_feature_for_tag(SENTENCE_DATA *sp);
 extern void assign_feature_alt_mrph(FEATURE **fpp, MRPH_DATA *m_ptr);
+extern void delete_existing_features(MRPH_DATA *m_ptr);
 extern void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src);
 extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 extern char *get_mrph_rep_from_f(MRPH_DATA *m_ptr, int flag);

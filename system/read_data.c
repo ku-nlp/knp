@@ -426,6 +426,22 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
+	   void delete_existing_features(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    delete_cfeature(&(m_ptr->f), "•´•∆•¥•Í");
+    delete_cfeature(&(m_ptr->f), "•…•·•§•Û");
+    delete_cfeature(&(m_ptr->f), "≤ƒ«Ω∆∞ªÏ");
+    delete_cfeature(&(m_ptr->f), "¥¡ª˙∆…§ﬂ");
+    delete_cfeature(&(m_ptr->f), "√Ìº·");
+    delete_cfeature(&(m_ptr->f), "∏¨æ˘∆∞ªÏ");
+    delete_cfeature(&(m_ptr->f), "¬∫∑…∆∞ªÏ");
+    delete_cfeature(&(m_ptr->f), "√˙«´∆∞ªÏ");
+    delete_cfeature(&(m_ptr->f), "…∏Ω‡");
+    delete_cfeature(&(m_ptr->f), "æ Œ¨");
+}
+
+/*==================================================================*/
 	    void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src)
 /*==================================================================*/
 {
