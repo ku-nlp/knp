@@ -1,10 +1,16 @@
-2007-07-16  Daisuke Kawahara  <dk@nict.go.jp>
+2007-07-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/case_analysis.rule, rule/bnst_basic.rule, rule/bnst_etc.rule:
 	Modification for improving case structure analysis.
 
 	* rule/bnst_type.phrase:
 	Modified "(¡Á¤ò)¡Á¤Ë".
+
+	* rule/kakari_uke.rule:
+	Modified a dependency rule for numerals.
+
+	* rule/bnst_type.phrase:
+	Added a feature for probabilistic coordination disambiguation.
 
 2007-07-15  Daisuke Kawahara  <dk@nict.go.jp>
 
