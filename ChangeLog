@@ -1,3 +1,16 @@
+2007-07-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase:
+	Modified "(〜を)〜に".
+
+2007-07-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	A fix for consistency.
+
+	* rule/modality.rule:
+	Added a modality rule for "〜するつもり".
+
 2007-07-12  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/extern.h, system/read_data.c, system/case_analysis.c:
