@@ -1,5 +1,8 @@
 2007-07-16  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/case_analysis.rule, rule/bnst_basic.rule, rule/bnst_etc.rule:
+	Modification for improving case structure analysis.
+
 	* rule/bnst_type.phrase:
 	Modified "(¡Á¤ò)¡Á¤Ë".
 
