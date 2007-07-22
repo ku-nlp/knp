@@ -1,3 +1,8 @@
+2007-07-23  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added a rule for "¾¯¡¹" "¿ïÊ¬" not to be a compound noun.
+
 2007-07-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/case_analysis.rule, rule/bnst_basic.rule, rule/bnst_etc.rule:
