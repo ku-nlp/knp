@@ -1,3 +1,11 @@
+2007-07-25  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Modified a rule of compound noun "…˚ªÏ°‹£ÿ".
+
+	* rule/bnst_basic.rule:
+	Added some rules to handle "∞Ï¿∏§À∞Ï≈Ÿ§Œ" and "≥∆°¡§À<øÙŒÃ>".
+
 2007-07-23  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
