@@ -1,3 +1,11 @@
+2007-07-30  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/chi_pa.dict, dict/ebcf/chi_spec_pa.dict, dict/ebcf/Makefile.am:
+	Add Chinese pre-arg pair dictionary from gigaword.
+
+	* system/base_phrase.c, system/case_ipal.c, system/cky.c, system/dpna_analysis.c, system/main.c, system/para_dpnd.c, system/quote.c, system/const.h, system/extern.h, system/path.h
+	Use pre-arg pairs from gigaword.
+
 2007-07-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
