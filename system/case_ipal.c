@@ -21,9 +21,8 @@ DBM_FILE renyou_db;
 DBM_FILE adverb_db;
 DBM_FILE para_db;
 DBM_FILE noun_co_db;
-DBM_FILE chi_case_db;
-DBM_FILE chi_case_nominal_db;
-DBM_FILE gigaword_pa_db;
+DBM_FILE chi_spec_pa_db;
+DBM_FILE chi_pa_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -50,9 +49,8 @@ int	RenyouExist;
 int	AdverbExist;
 int	ParaExist;
 int	NounCoExist;
-int     CHICaseExist;
-int     CHICaseNominalExist;
-int     GigaWordPAExist;
+int     CHISpecPAExist;
+int     CHIPAExist;
 
 int	PrintDeletedSM = 0;
 
@@ -155,14 +153,10 @@ int	PrintDeletedSM = 0;
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
     if (Language == CHINESE) {
-	/* Chinese verb case-frame DB (chicase.db) */
-	chi_case_db = open_dict(CHI_CASE_DB, CHI_CASE_DB_NAME, &CHICaseExist);
-	
-	/* Chinese nominal case-frame DB (chicase_nominal.db) */
-	chi_case_nominal_db = open_dict(CHI_CASE_NOMINAL_DB, CHI_CASE_NOMINAL_DB_NAME, &CHICaseNominalExist);
-
-	/* Chinese GigaWord_PA DB (gigaword_pa.db) */
-	gigaword_pa_db = open_dict(GIGAWORD_PA_DB, GIGAWORD_PA_DB_NAME, &GigaWordPAExist);
+	/* Chinese CHI_SPEC_PA DB (chi_spec_pa.db) */
+	chi_spec_pa_db = open_dict(CHI_SPEC_PA_DB, CHI_SPEC_PA_DB_NAME, &CHISpecPAExist);
+	/* Chinese CHI_PA DB (chi_pa.db) */
+	chi_pa_db = open_dict(CHI_PA_DB, CHI_PA_DB_NAME, &CHIPAExist);
     }
 }
 
@@ -3235,24 +3229,32 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     return ret;
 }
 
-/* get verb case-frame probability for Chinese */
+/* get pa count for Chinese from gigaword */
 /*==================================================================*/
-   double get_chi_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr)
+   double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist)
 /*==================================================================*/
 {
     char *key, *value;
     double ret;
 
-    if (CHICaseExist == FALSE) {
+    if (CHIPAExist == FALSE) {
 	return 0;
     }
 
-    key = malloc_db_buf(strlen(g_ptr->head_ptr->Goi) + 
-			strlen(d_ptr->head_ptr->Goi) + 2);
+    key = malloc_db_buf(strlen(ptr1->head_ptr->Goi) + 
+			strlen(ptr2->head_ptr->Goi) + 
+			strlen(ptr1->head_ptr->Pos) + 
+			strlen(ptr2->head_ptr->Pos) + 11);
 
     /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s:%s", g_ptr->head_ptr->Goi, d_ptr->head_ptr->Goi);
-    value = db_get(chi_case_db, key);
+    if (ptr1->num < ptr2->num) {
+	sprintf(key, "%s_%s_%s_%s_R_%d", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, dist);
+    }
+    else {
+	sprintf(key, "%s_%s_%s_%s_L_%d", ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, dist);
+    }
+
+    value = db_get(chi_pa_db, key);
 
     if (value) {
 	ret = atof(value);
@@ -3265,45 +3267,15 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     return ret;
 }
 
-/* get nominal case-frame probability for Chinese */
+/* get spec_pa count for Chinese */
 /*==================================================================*/
-   double get_chi_case_nominal_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr)
-/*==================================================================*/
-{
-    char *key, *value;
-    double ret;
-
-    if (CHICaseNominalExist == FALSE) {
-	return 0;
-    }
-
-    key = malloc_db_buf(strlen(g_ptr->head_ptr->Goi) + 
-			strlen(d_ptr->head_ptr->Goi) + 2);
-
-    /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s:%s", g_ptr->head_ptr->Goi, d_ptr->head_ptr->Goi);
-    value = db_get(chi_case_nominal_db, key);
-
-    if (value) {
-	ret = atof(value);
-	free(value);
-    }
-    else {
-	ret = 0.0;
-    }
-
-    return ret;
-}
-
-/* get gigaword_pa count for Chinese */
-/*==================================================================*/
-   double get_gigaword_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int direction)
+   double get_chi_spec_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist)
 /*==================================================================*/
 {
     char *key, *value;
     double ret;
 
-    if (GigaWordPAExist == FALSE) {
+    if (CHISpecPAExist == FALSE) {
 	return 0;
     }
 
@@ -3313,13 +3285,9 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 			strlen(ptr2->head_ptr->Pos) + 9);
 
     /* 用言表記でやった方がよいみたい */
-    if (direction == 'R') {
-	sprintf(key, "%s_%s_%s_%s_R", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi);
-    }
-    else if (direction == 'L') {
-	sprintf(key, "%s_%s_%s_%s_L", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi);
-    }
-    value = db_get(gigaword_pa_db, key);
+    sprintf(key, "%s_%s_%s_%s_%d", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, dist);
+
+    value = db_get(chi_spec_pa_db, key);
 
     if (value) {
 	ret = atof(value);

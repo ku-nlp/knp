@@ -53,7 +53,8 @@ extern double           Chi_case_nominal_prob_matrix[][BNST_MAX];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
-extern double           Chi_gigaword_pa_matrix[][BNST_MAX];  
+extern double           Chi_spec_pa_matrix[][BNST_MAX];  
+extern double           Chi_pa_matrix[][BNST_MAX];  
  
 extern int              Chi_np_start_matrix[][BNST_MAX];
 extern int              Chi_np_end_matrix[][BNST_MAX];
@@ -247,9 +248,8 @@ extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
-extern double get_chi_case_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
-extern double get_chi_case_nominal_probability(BNST_DATA *g_ptr, BNST_DATA *d_ptr);
-extern double get_gigaword_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int direction);
+extern double get_chi_spec_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
+extern double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
@@ -325,8 +325,6 @@ extern int detect_dpnd_case_struct(SENTENCE_DATA *sp);
 extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
-extern void calc_chi_case_prob_matrix(SENTENCE_DATA *sp);
-extern void calc_chi_case_nominal_prob_matrix(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 
 /* feature.c */

@@ -86,19 +86,7 @@ int     pp_matrix[BNST_MAX];
 		np_matrix[i] = -1;
 		break;
 	    }
-
-/* 	    /\* if one NP containing CS follows another NP, then merge them together *\/ */
-/* 	    for (j = i; j <= np_matrix[i]; j++) { */
-/* 		if (check_feature((sp->bnst_data+j)->f, "CC")) { */
-/* 		    if (i != 0 && i == end_np + 1) { */
-/* 			np_matrix[start_np] = np_matrix[i]; */
-/* 			np_matrix[i] = -1; */
-/* 			flag = TRUE; */
-/* 		    } */
-/* 		    break; */
-/* 		} */
-/* 	    } */
-	    
+    
 	    if (!flag) {
 		start_np = i;
 		end_np = np_matrix[i];
@@ -151,48 +139,48 @@ int     pp_matrix[BNST_MAX];
 		break;
 	      }
 	    }
-		/* mask upper dpnd */
-		for (j = 0; j < i; j++) {
-		    for (k = i; k <= np_matrix[i]; k++) {
-		      if (k != head) {
+	    /* mask upper dpnd */
+	    for (j = 0; j < i; j++) {
+		for (k = i; k <= np_matrix[i]; k++) {
+		    if (k != head) {
 			Dpnd_matrix[j][k] = 0;
-		      }
 		    }
 		}
-		/* mask right dpnd */
-		for (j = i; j <= np_matrix[i]; j++) {
-		    for (k = np_matrix[i] + 1; k < sp->Bnst_num; k++) {
-		      if (j != head) {
+	    }
+	    /* mask right dpnd */
+	    for (j = i; j <= np_matrix[i]; j++) {
+		for (k = np_matrix[i] + 1; k < sp->Bnst_num; k++) {
+		    if (j != head) {
 			Dpnd_matrix[j][k] = 0;
-		      }
 		    }
 		}
-		/* mask inside dpnd */
-		for (j = i; j <= np_matrix[i]; j++) {
-		  if (j != head && !check_feature((sp->bnst_data+j)->f, "JJ")) {
+	    }
+	    /* mask inside dpnd */
+	    for (j = i; j <= np_matrix[i]; j++) {
+		if (j != head && !check_feature((sp->bnst_data+j)->f, "JJ")) {
 		    for (k = j + 1; k <= np_matrix[i]; k++) {
-		      if (k != head) {
-			Dpnd_matrix[j][k] = 0;
-		      }
+			if (k != head) {
+			    Dpnd_matrix[j][k] = 0;
+			}
 		    }
+		}
+	    }
+	  }
+	  /* the head of pp must be the first word */
+	  if (pp_matrix[i] != -1) {
+	      /* mask upper dpnd */
+	      for (j = 0; j < i; j++) {
+		  for (k = i + 1; k <= pp_matrix[i]; k++) {
+		      Dpnd_matrix[j][k] = 0;
 		  }
-		}
-	    }
-	    /* the head of pp must be the first word */
-	    if (pp_matrix[i] != -1) {
-		/* mask upper dpnd */
-		for (j = 0; j < i; j++) {
-		    for (k = i + 1; k <= pp_matrix[i]; k++) {
+	      }
+	      /* mask right dpnd */
+	      for (j = i + 1; j <= pp_matrix[i]; j++) {
+		  for (k = pp_matrix[i]; k < sp->Bnst_num; k++) {
 			Dpnd_matrix[j][k] = 0;
-		    }
-		}
-		/* mask right dpnd */
-		for (j = i + 1; j <= pp_matrix[i]; j++) {
-		    for (k = pp_matrix[i]; k < sp->Bnst_num; k++) {
-			Dpnd_matrix[j][k] = 0;
-		    }
-		}
-	    }
+		  }
+	      }
+	  }
 	}
     }
 }

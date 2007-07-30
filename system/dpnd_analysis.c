@@ -96,12 +96,12 @@ static int dpndID = 0;
     pos_rule = NULL;
     rule = NULL;
     bkoff_weight_1 = 0.8;
-    bkoff_weight_2 = 0.5;
+    bkoff_weight_2 = 0.3;
 
     for (i = 0; i < sp->Bnst_num; i++) {
+	totalProb = 0.0;
 	k_ptr = sp->bnst_data + i;
 	first_uke_flag = 1;
-	totalProb = 0.0;
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 	    lex_rule = NULL;
@@ -316,6 +316,19 @@ static int dpndID = 0;
 		    }
 		}
 
+		Chi_dpnd_matrix[i][j].prob_pos_LtoR = 0;
+		Chi_dpnd_matrix[i][j].prob_pos_RtoL = 0;
+		/* calculate pos probability */
+		if (pos_rule != NULL) {
+		    for (k = 0; k < Chi_dpnd_matrix[i][j].count_4; k++) {
+			Chi_dpnd_matrix[i][j].prob_pos_LtoR += Chi_dpnd_matrix[i][j].prob_LtoR_4[k];
+			Chi_dpnd_matrix[i][j].prob_pos_RtoL += Chi_dpnd_matrix[i][j].prob_RtoL_4[k];
+			Chi_dpnd_matrix[i][j].occur_pos = Chi_dpnd_matrix[i][j].occur_4[k];
+		    }
+		}
+		Chi_dpnd_matrix[i][j].prob_pos_LtoR = 1.0 * Chi_dpnd_matrix[i][j].prob_pos_LtoR / Chi_dpnd_matrix[i][j].occur_pos;
+		Chi_dpnd_matrix[i][j].prob_pos_RtoL = 1.0 * Chi_dpnd_matrix[i][j].prob_pos_RtoL / Chi_dpnd_matrix[i][j].occur_pos;
+
 		/* calculate probability */
 		if (lex_rule != NULL) {
 		    Chi_dpnd_matrix[i][j].count = Chi_dpnd_matrix[i][j].count_1;
@@ -366,6 +379,16 @@ static int dpndID = 0;
 
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_1[k];
 			strcpy(Chi_dpnd_matrix[i][j].type[k],Chi_dpnd_matrix[i][j].type_1[k]);
+
+/* 			/\* get pos probability *\/ */
+/* 			for (l = 0; l < Chi_dpnd_matrix[i][j].count_4; l++) { */
+/* 			    if (!strcmp(Chi_dpnd_matrix[i][j].type_1[k], Chi_dpnd_matrix[i][j].type_4[l])) { */
+/* 				Chi_dpnd_matrix[i][j].prob_pos_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				Chi_dpnd_matrix[i][j].prob_pos_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				Chi_dpnd_matrix[i][j].occur_pos[k] = Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				break; */
+/* 			    } */
+/* 			} */
 		    }
 		}
 		else if (pos_rule_1 != NULL || pos_rule_2 != NULL) {
@@ -411,6 +434,16 @@ static int dpndID = 0;
 
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
+
+/* 			    /\* get pos probability *\/ */
+/* 			    for (l = 0; l < Chi_dpnd_matrix[i][j].count_4; l++) { */
+/* 				if (!strcmp(Chi_dpnd_matrix[i][j].type_2[k], Chi_dpnd_matrix[i][j].type_4[l])) { */
+/* 				    Chi_dpnd_matrix[i][j].prob_pos_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    Chi_dpnd_matrix[i][j].prob_pos_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    Chi_dpnd_matrix[i][j].occur_pos[k] = Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    break; */
+/* 				} */
+/* 			    } */
 			}
 		    }
 		    else if (pos_rule_2 != NULL) {
@@ -438,6 +471,16 @@ static int dpndID = 0;
 
 			    Chi_dpnd_matrix[i][j].prob_LtoR[k] *= bkoff_weight_1;
 			    Chi_dpnd_matrix[i][j].prob_RtoL[k] *= bkoff_weight_1;
+
+/* 			    /\* get pos probability *\/ */
+/* 			    for (l = 0; l < Chi_dpnd_matrix[i][j].count_4; l++) { */
+/* 				if (!strcmp(Chi_dpnd_matrix[i][j].type_3[k], Chi_dpnd_matrix[i][j].type_4[l])) { */
+/* 				    Chi_dpnd_matrix[i][j].prob_pos_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    Chi_dpnd_matrix[i][j].prob_pos_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[l] / Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    Chi_dpnd_matrix[i][j].occur_pos[k] = Chi_dpnd_matrix[i][j].occur_4[l]; */
+/* 				    break; */
+/* 				} */
+/* 			    } */
 			}
 		    }
 		}
@@ -446,6 +489,9 @@ static int dpndID = 0;
 		    for (k = 0; k < Chi_dpnd_matrix[i][j].count; k++) {
 			Chi_dpnd_matrix[i][j].prob_LtoR[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
 			Chi_dpnd_matrix[i][j].prob_RtoL[k] = (1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k]) / Chi_dpnd_matrix[i][j].occur_4[k];
+/* 			Chi_dpnd_matrix[i][j].prob_pos_LtoR[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_LtoR_4[k] / Chi_dpnd_matrix[i][j].occur_4[k]; */
+/* 			Chi_dpnd_matrix[i][j].prob_pos_RtoL[k] = 1.0 * Chi_dpnd_matrix[i][j].prob_RtoL_4[k] / Chi_dpnd_matrix[i][j].occur_4[k]; */
+/* 			Chi_dpnd_matrix[i][j].occur_pos[k] = Chi_dpnd_matrix[i][j].occur_4[k]; */
 			Chi_dpnd_matrix[i][j].direction[k] = Chi_dpnd_matrix[i][j].direction_4[k];
 
 /* 			/\* to handle the case that prob4 is 1 *\/ */
@@ -477,14 +523,12 @@ static int dpndID = 0;
 		}
 	    }
 	}
-	if (Language == CHINESE) {
-	    for (j = i + 1; j < sp->Bnst_num; j++) {
-		for (l = 0; l < Chi_dpnd_matrix[i][j].count; l++) {
-		    Chi_dpnd_matrix[i][j].prob_LtoR[l] = Chi_dpnd_matrix[i][j].prob_LtoR[l]/totalProb;
-		    Chi_dpnd_matrix[i][j].prob_RtoL[l] = Chi_dpnd_matrix[i][j].prob_RtoL[l]/totalProb;
-		}
-	    }
-	}
+/* 	for (j = i + 1; j < sp->Bnst_num; j++) { */
+/* 	    for (l = 0; l < Chi_dpnd_matrix[i][j].count; l++) { */
+/* 		Chi_dpnd_matrix[i][j].prob_LtoR[l] = Chi_dpnd_matrix[i][j].prob_LtoR[l]/totalProb; */
+/* 		Chi_dpnd_matrix[i][j].prob_RtoL[l] = Chi_dpnd_matrix[i][j].prob_RtoL[l]/totalProb; */
+/* 	    } */
+/* 	} */
     }
 
     if (Language == CHINESE) {
@@ -1734,66 +1778,63 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     */
 }
 
-/* get verb case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
-/*==================================================================*/
-	       void calc_chi_case_prob_matrix(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j;
-    
-    for (i = 0; i < sp->Bnst_num; i++) {
-	for (j = 0; j < sp->Bnst_num; j++) {
-	    if (i == j || check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
-		Chi_case_prob_matrix[i][j] = 0.0;
-	    }
-	    else {
-		Chi_case_prob_matrix[i][j] = get_chi_case_probability(sp->bnst_data+i, sp->bnst_data+j);
-	    }
-	}
-    }
-}
-
-/* get nominal case-frame probability for Chinese, for cell (i,j), i is the position of predicate, j is the position of argument */
-/*==================================================================*/
-	       void calc_chi_case_nominal_prob_matrix(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j;
-    
-    for (i = 0; i < sp->Bnst_num; i++) {
-	for (j = 0; j < sp->Bnst_num; j++) {
-	    if (i == j || check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
-		Chi_case_nominal_prob_matrix[i][j] = 0.0;
-	    }
-	    else {
-		Chi_case_nominal_prob_matrix[i][j] = get_chi_case_nominal_probability(sp->bnst_data+i, sp->bnst_data+j);
-	    }
-	}
-    }
-}
-
 /* get gigaword pa count for Chinese, for cell (i,j), i is the position of argument, j is the position of predicate */
 /*==================================================================*/
 	       void calc_gigaword_pa_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, dis;
     
     for (i = 0; i < sp->Bnst_num; i++) {
 	for (j = 0; j < sp->Bnst_num; j++) {
-	    Chi_gigaword_pa_matrix[i][j] = 0;
+	    Chi_spec_pa_matrix[i][j] = 0;
+	    Chi_pa_matrix[i][j] = 0;
 	}
     }
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    if (check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
-		Chi_gigaword_pa_matrix[i][j] = 0;
-		Chi_gigaword_pa_matrix[j][i] = 0;
+		Chi_spec_pa_matrix[i][j] = 0;
+		Chi_spec_pa_matrix[j][i] = 0;
+		Chi_pa_matrix[i][j] = 0;
+		Chi_pa_matrix[j][i] = 0;
 	    }
 	    else {
-		Chi_gigaword_pa_matrix[i][j] = get_gigaword_pa(sp->bnst_data+i, sp->bnst_data+j, 'R');
-		Chi_gigaword_pa_matrix[j][i] = get_gigaword_pa(sp->bnst_data+i, sp->bnst_data+j, 'L');
+		if (j == i + 1) {
+		    dis = 1;
+		}
+		else {
+		    dis = 2;
+		}
+
+		Chi_pa_matrix[i][j] = get_chi_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
+		Chi_pa_matrix[j][i] = get_chi_pa(sp->bnst_data+j, sp->bnst_data+i, dis);
+
+		if ((check_feature(sp->bnst_data[i].f, "NN") || 
+		     check_feature(sp->bnst_data[i].f, "NR") || 
+		     check_feature(sp->bnst_data[i].f, "NT") ||
+		     check_feature(sp->bnst_data[i].f, "PN")) &&
+		    (check_feature(sp->bnst_data[j].f, "VV") || 
+		     check_feature(sp->bnst_data[j].f, "VC") || 
+		     check_feature(sp->bnst_data[j].f, "VE") ||
+		     check_feature(sp->bnst_data[j].f, "VA"))) {
+		    Chi_spec_pa_matrix[i][j] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
+		}
+		else if ((check_feature(sp->bnst_data[j].f, "NN") || 
+			  check_feature(sp->bnst_data[j].f, "NR") || 
+			  check_feature(sp->bnst_data[j].f, "NT") ||
+			  check_feature(sp->bnst_data[j].f, "PN")) &&
+			 (check_feature(sp->bnst_data[i].f, "VV") || 
+			  check_feature(sp->bnst_data[i].f, "VC") || 
+			  check_feature(sp->bnst_data[i].f, "VE") ||
+			  check_feature(sp->bnst_data[i].f, "VA"))) {
+		    Chi_spec_pa_matrix[j][i] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
+		}
+		else {
+		    Chi_spec_pa_matrix[i][j] = get_chi_spec_pa(sp->bnst_data+j, sp->bnst_data+i, dis);
+		    Chi_spec_pa_matrix[j][i] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
+		}
 	    }
 	}
     }

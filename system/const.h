@@ -95,7 +95,6 @@
 #define	BYTES4CHAR	2	/* euc-jp */
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
-#define TIME_PROB       20    /* time to enlarge dpnd prob for Chinese */
 #define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
 #define CHI_POS_LEN_MAX  3    /* maximum Chinese pos length */
 #define CHI_DPND_TYPE_MAX 10 /* maximum dpnd type of Chinese word pair */
@@ -511,7 +510,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	35
+#define DICT_MAX	34
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -537,16 +536,15 @@ typedef struct _RuleVector {
 #define ADVERB_DB	22
 #define PARA_DB		23
 #define NOUN_CO_DB	24
-#define CHI_CASE_DB	25
-#define CHI_CASE_NOMINAL_DB	26
-#define CHI_DPND_DB     27
-#define AUTO_DIC_DB	28
-#define HOWNET_DEF_DB   29
-#define HOWNET_TRAN_DB  30
-#define HOWNET_ANTONYM_DB       31
-#define HOWNET_CATEGORY_DB      32
-#define HOWNET_SEM_DEF_DB       33
-#define GIGAWORD_PA_DB       34
+#define CHI_DPND_DB     25
+#define AUTO_DIC_DB	26
+#define HOWNET_DEF_DB   27
+#define HOWNET_TRAN_DB  28
+#define HOWNET_ANTONYM_DB       29
+#define HOWNET_CATEGORY_DB      30
+#define HOWNET_SEM_DEF_DB       31
+#define CHI_SPEC_PA_DB       32
+#define CHI_PA_DB       33
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -699,6 +697,8 @@ typedef struct {
     int         prob_RtoL_4[CHI_DPND_TYPE_MAX];
     double      prob_LtoR[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
     double      prob_RtoL[CHI_DPND_TYPE_MAX];
+    double      prob_pos_LtoR; /* store different probability of pos pairs for each type */
+    double      prob_pos_RtoL;
     char        type_1[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     char        type_2[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     char        type_3[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
@@ -708,6 +708,7 @@ typedef struct {
     int         occur_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
     int         occur_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
     int         occur_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    int         occur_pos; /* store occur time of different dpnd type */
     int         count_1; /* number of dpnd type */
     int         count_2; /* number of dpnd type */
     int         count_3; /* number of dpnd type */

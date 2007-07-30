@@ -27,9 +27,9 @@ typedef struct _CKY {
 } CKY;
 
 #define PARA_THRESHOLD	0
-#define	CKY_TABLE_MAX	800000 
-//#define	CKY_TABLE_MAX	19000000 
-#define CHI_CKY_BONUS 30 /* bonus weight for cky para_score for Chinese */
+#define	CKY_TABLE_MAX	1000000 
+//#define	CKY_TABLE_MAX	15000000 
+
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
 int cpm_allocated_cky_num = -1;
@@ -254,27 +254,35 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double one_score = 0;
     char *cp, *cp2;
 
-    int thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_p_n_l, thre_v_v_r, thre_v_v_l, thre_p_v_r, thre_p_v_l;
+    double thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_v_v_r, thre_v_v_l, thre_p_v_r, thre_p_v_l;
+    double chi_pa_thre;
+    double weight_dpnd, weight_pos, weight_spec_pa, weight_comma, weight_root, weight_pa;
+    double pos_prob_thre_high, pos_prob_thre_low;
+    int pos_occur_thre_high, pos_occur_thre_low;
 
-    int giga_pa_weight_n_n_r = 100000;
-    int giga_pa_weight_n_n_l = 0;
-    int giga_pa_weight_v_n_l = 10000;
-    int giga_pa_weight_n_v_r = 10000;
-    int giga_pa_weight_p_n_l = 5000;
-    int giga_pa_weight_v_v_r = 5000;
-    int giga_pa_weight_v_v_l = 5000;
-    int giga_pa_weight_p_v_r = 5000;
-    int giga_pa_weight_p_v_l = 5000;
+    thre_n_v_r = 0.2;
+    thre_v_n_l = 0.2;
+    thre_n_n_r = 0.2;
+    thre_n_n_l = 0.2;
+    thre_v_v_r = 2.0;
+    thre_v_v_l = 2.0;
+    thre_p_v_r = 0.2;
+    thre_p_v_l = 0.2;
 
-    thre_n_v_r = 0.00001;
-    thre_v_n_l = 0.00001;
-    thre_n_n_r = 0.00001;
-    thre_n_n_l = 1;
-    thre_p_n_l = 0.00001;
-    thre_v_v_r = 0.00001;
-    thre_v_v_l = 0.00001;
-    thre_p_v_r = 0.00001;
-    thre_p_v_l = 0.00001;
+    chi_pa_thre = 0.00005;
+
+    weight_dpnd = 1.0;
+    weight_pos = 0.5;
+    weight_spec_pa = 1.0;
+    weight_comma = 1.0;
+    weight_root = 0.5;
+    weight_pa = 1.0;
+
+    pos_prob_thre_high = 0.95;
+    pos_prob_thre_low = 0.05;
+
+    pos_occur_thre_high = 100;
+    pos_occur_thre_low = 50;
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
     while (tmp_cky_ptr) {
@@ -528,86 +536,42 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-/* 		/\* add score from verb case frame *\/ */
-/* 		if ((check_feature(g_ptr->f, "VV") || */
-/* 		     check_feature(g_ptr->f, "VA") || */
-/* 		     check_feature(g_ptr->f, "VC") || */
-/* 		     check_feature(g_ptr->f, "VE") || */
-/* 		     (check_feature(g_ptr->f, "P") && g_ptr->num < d_ptr->num)) && */
-/* 		    (check_feature(d_ptr->f, "NN") || */
-/* 		     check_feature(d_ptr->f, "M") || */
-/* 		     check_feature(d_ptr->f, "NT") || */
-/* 		     check_feature(d_ptr->f, "PN"))) { */
-/* 		    /\* calc case frame score for Chinese *\/ */
-/* 		    if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) { */
-/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 20; */
-/* 		    } */
-/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) { */
-/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 1500; */
-/* 		    } */
-/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) { */
-/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 10000; */
-/* 		    } */
-/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) { */
-/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 50000; */
-/* 		    } */
-/* 		    else if (Chi_case_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) { */
-/* 			one_score += Chi_case_prob_matrix[g_ptr->num][d_ptr->num] * 200000; */
-/* 		    } */
-/* 		} */
-
-/* 		/\* add score from nominal case frame *\/ */
-/* 		if ((check_feature(g_ptr->f, "NN") || */
-/* 		     check_feature(g_ptr->f, "NT") || */
-/* 		     check_feature(g_ptr->f, "PN") || */
-/* 		     check_feature(g_ptr->f, "M")) && */
-/* 		    (check_feature(d_ptr->f, "NN") || */
-/* 		     check_feature(d_ptr->f, "NR") || */
-/* 		     check_feature(d_ptr->f, "M") || */
-/* 		     check_feature(d_ptr->f, "NT") || */
-/* 		     check_feature(d_ptr->f, "PN"))) { */
-/* 		    if (check_feature((sp->bnst_data+d_ptr->num+1)->f, "DEG") || */
-/* 			(check_feature(g_ptr->f, "NN") && */
-/* 			 (check_feature(d_ptr->f, "NT") || */
-/* 			  check_feature(d_ptr->f, "M"))) || */
-/* 			(check_feature(g_ptr->f, "NN") && */
-/* 			 check_feature(d_ptr->f, "NN") && */
-/* 			 d_ptr->num - g_ptr->num == 1)) {} */
-/* 		    else { */
-/* 			/\* calc case frame score for Chinese *\/ */
-/* 			if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.01) { */
-/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20; */
-/* 			} */
-/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.001) { */
-/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 1500; */
-/* 			} */
-/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.0001) { */
-/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 10000; */
-/* 			} */
-/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.00001) { */
-/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 20000; */
-/* 			} */
-/* 			else if (Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] >= 0.000001) { */
-/* 			    one_score += Chi_case_nominal_prob_matrix[g_ptr->num][d_ptr->num] * 100000; */
-/* 			} */
-/* 		    } */
-/* 		} */
-
-/* 		if (OptDisplay == OPT_DEBUG) { */
-/* 		    printf("(case)%.3f=>", one_score); */
-/* 		} */
-
-
-		/* decrease score if the modifier is root */
-		if (d_ptr->num == Chi_root) {
-		    one_score -= 15;
-		}
-
 		if (cky_ptr->direction == LtoR) {
-		    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index] * TIME_PROB;
+		    one_score += weight_dpnd * Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index];
 
 		    if (OptDisplay == OPT_DEBUG) {
-			printf("(dpnd:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
+			printf("(dpnd:%d,%d %f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index], one_score);
+		    }
+
+		    if (Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR >= pos_prob_thre_high && 
+			Chi_dpnd_matrix[d_ptr->num][g_ptr->num].occur_pos >= pos_occur_thre_high) {
+			one_score += weight_pos * Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR;
+		    }
+		    else if (Chi_dpnd_matrix[d_ptr->num][g_ptr->num].occur_pos <= pos_occur_thre_low) {
+			one_score -= weight_pos * Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR;
+		    }
+		    else if (Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR <= pos_prob_thre_low) {
+			one_score -= weight_pos * (1 - Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR);
+		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(pos:%f)%.6f=>", Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_pos_LtoR, one_score);
+		    }
+
+		    /* punish from comma */
+		    one_score -= weight_comma * (1.0 * comma) / (comma + 1);
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(comma:%d)%.6f=>", comma, one_score);
+		    }
+
+		    /* punish from root */
+		    if (d_ptr->num == Chi_root) {
+			one_score -= weight_root;
+		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(root)%.6f=>", one_score);
 		    }
 
 		    /* add bonus from gigaword pa */
@@ -619,30 +583,19 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "NR") ||
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_r > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_n_n_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_n_r) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 			if (check_feature(g_ptr->f, "VV") ||
 			    check_feature(g_ptr->f, "VC") ||
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_v_r > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_n_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_v_r) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 		    }
-
 		    if (check_feature(g_ptr->f, "VV") ||
 			check_feature(g_ptr->f, "VC") ||
 			check_feature(g_ptr->f, "VE") ||
@@ -651,284 +604,61 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(d_ptr->f, "VC") ||
 			    check_feature(d_ptr->f, "VE") ||
 			    check_feature(d_ptr->f, "VA")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_r > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_v_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_v_v_r) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 			if (check_feature(d_ptr->f, "P")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_r) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_r > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_p_v_r * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_r) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 		    }
-		    
 
-		    if (OptDisplay == OPT_DEBUG) {
-			printf("(giga:%f)%.3f=>", Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num], one_score);
-		    }
-
-		    /* add penalty for comma */
-		    one_score -= 15 * comma;
-
-		    /* add score for stable dpnd */
-		    if (d_ptr->num + 1 == g_ptr->num &&
-			(((check_feature(d_ptr->f, "CD")) &&
-			  (check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "M"))) ||
-			 
-			 ((check_feature(d_ptr->f, "DEG")) &&
-			  (check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "NN"))) ||
-
-			 ((check_feature(d_ptr->f, "JJ")) &&
-			  (check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "DEG"))) ||
-			 
-			 ((check_feature(d_ptr->f, "DEV")) &&
-			   check_feature(g_ptr->f, "VV")) ||
-			 
-			 ((check_feature(d_ptr->f, "NR-SHORT")) &&
-			  (check_feature(g_ptr->f, "NR"))) ||
-
-			 ((check_feature(d_ptr->f, "NT-SHORT")) &&
-			  (check_feature(g_ptr->f, "NT"))) ||
-			 
-			 ((check_feature(d_ptr->f, "NR")) &&
-			  (check_feature(g_ptr->f, "DEG"))) ||
-//			   check_feature(g_ptr->f, "NN"))) ||
-
-			 ((check_feature(d_ptr->f, "NT")) &&
-			  (check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "NT"))) ||
-
-			 ((check_feature(d_ptr->f, "OD")) &&
-			  (check_feature(g_ptr->f, "M"))) ||
-
-			 ((check_feature(d_ptr->f, "PN")) &&
-			  (check_feature(g_ptr->f, "DEG"))) ||
-
-			 ((check_feature(d_ptr->f, "SB")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "VA")) &&
-			  (check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 15;
-		    }
-		    if (d_ptr->num < g_ptr->num &&
-			(((check_feature(d_ptr->f, "AD")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DT") ||
-			   check_feature(g_ptr->f, "JJ") ||
-			   check_feature(g_ptr->f, "LB"))) ||
-
-			 ((check_feature(d_ptr->f, "P")) &&
-			  (check_feature(g_ptr->f, "VV") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VE"))) ||
-			 
-			 ((check_feature(d_ptr->f, "CC")) &&
-			  (check_feature(g_ptr->f, "AD") ||
-			   check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "NT") ||
-			   check_feature(g_ptr->f, "PN") ||
-			   check_feature(g_ptr->f, "BA"))) ||
-			      
-			 ((check_feature(d_ptr->f, "AS")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "CD")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DEV") ||
-			   check_feature(g_ptr->f, "LC") ||
-			   check_feature(g_ptr->f, "M") ||
-			   check_feature(g_ptr->f, "NN"))) ||
-
-			 ((check_feature(d_ptr->f, "DEG")) &&
-			  (check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "LC") ||
-			   check_feature(g_ptr->f, "M") ||
-			   check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "PN") ||
-			   check_feature(g_ptr->f, "VE"))) ||
-
-			 ((check_feature(d_ptr->f, "DER")) &&
-			  (check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "NR")) &&
-			   check_feature(g_ptr->f, "VV")) ||
-
-			 ((check_feature(d_ptr->f, "DEV")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "LB") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "DT")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "PN") ||
-			   check_feature(g_ptr->f, "NT"))) ||
-
-			 ((check_feature(d_ptr->f, "ETC")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "FW")) &&
-			  (check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "FW") ||
-			   check_feature(g_ptr->f, "M"))) ||
-
-			 ((check_feature(d_ptr->f, "IJ")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "JJ")) &&
-			  (check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DEV") ||
-			   check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "PN"))) ||
-
-			 ((check_feature(d_ptr->f, "LC")) &&
-			  (check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "NT"))) ||
-
-			 ((check_feature(d_ptr->f, "MSP")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VE"))) ||
-
-			 ((check_feature(d_ptr->f, "M")) &&
-			  (check_feature(g_ptr->f, "DEC") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DEV") ||
-			   check_feature(g_ptr->f, "DT") ||
-			   check_feature(g_ptr->f, "LC") ||
-			   check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "PN"))) ||
-
-			 ((check_feature(d_ptr->f, "NN")) &&
-			  (check_feature(g_ptr->f, "CS") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DEV") ||
-			   check_feature(g_ptr->f, "NP") ||
-			   check_feature(g_ptr->f, "SB"))) ||
-
-			 ((check_feature(d_ptr->f, "NR")) &&
-			  (check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DT") ||
-			   check_feature(g_ptr->f, "NP") ||
-			   check_feature(g_ptr->f, "PN"))) ||
-
-			 ((check_feature(d_ptr->f, "NP")) &&
-			  (check_feature(g_ptr->f, "NN"))) ||
-
-			 ((check_feature(d_ptr->f, "NT")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "JJ") ||
-			   check_feature(g_ptr->f, "VV") ||
-			   check_feature(g_ptr->f, "VE"))) ||
-
-			 ((check_feature(d_ptr->f, "OD")) &&
-			  (check_feature(g_ptr->f, "DEC") ||
-			   check_feature(g_ptr->f, "JJ") ||
-			   check_feature(g_ptr->f, "M") ||
-			   check_feature(g_ptr->f, "VA"))) ||
-
-			 ((check_feature(d_ptr->f, "PN")) &&
-			  (check_feature(g_ptr->f, "BA") ||
-			   check_feature(g_ptr->f, "CD") ||
-			   check_feature(g_ptr->f, "DEG") ||
-			   check_feature(g_ptr->f, "DT") ||
-			   check_feature(g_ptr->f, "ETC") ||
-			   check_feature(g_ptr->f, "LB") ||
-			   check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR") ||
-			   check_feature(g_ptr->f, "NT") ||
-			   check_feature(g_ptr->f, "P") ||
-			   check_feature(g_ptr->f, "PN"))) ||
-
-			 ((check_feature(d_ptr->f, "SP")) &&
-			  (check_feature(g_ptr->f, "DEC"))) ||
-
-			 ((check_feature(d_ptr->f, "VA")) &&
-			  (check_feature(g_ptr->f, "DEC") ||
-			   check_feature(g_ptr->f, "DEV"))) ||
-
-			 ((check_feature(d_ptr->f, "VE")) &&
-			  (check_feature(g_ptr->f, "DEV"))) ||
-
-			 ((check_feature(d_ptr->f, "VV")) &&
-			  (check_feature(g_ptr->f, "DEC") ||
-			   check_feature(g_ptr->f, "DEV"))))) {
-			one_score += 10;
-		    }
- 		    if ((check_feature(d_ptr->f, "VA") ||
-			 check_feature(d_ptr->f, "VC") ||
-			 check_feature(d_ptr->f, "VE") ||
-			 check_feature(d_ptr->f, "VV")) &&
-			check_feature(g_ptr->f, "DEC") &&
-			exist_chi(sp, d_ptr->num+ 1, g_ptr->num - 1, "verb") == -1) {
-			one_score += 30;
-		    }
-		    if ((check_feature(d_ptr->f, "AD")) &&
-			(check_feature(g_ptr->f, "VV") ||
-			 check_feature(g_ptr->f, "VA") ||
-			 check_feature(g_ptr->f, "VC") ||
-			 check_feature(g_ptr->f, "VE"))) {
-			one_score += 30;
-		    }
-
-		    if ((check_feature(d_ptr->f, "DEC")) &&
-			(check_feature(g_ptr->f, "NN") ||
-			 check_feature(g_ptr->f, "NR"))) {
-			one_score += 30;
-		    }
-
-		    if (d_ptr->num < g_ptr->num &&
-			check_feature(d_ptr->f, "DEG") &&
-			(check_feature(g_ptr->f, "NR") ||
-			 check_feature(g_ptr->f, "PN"))) {
-			one_score -= 20;
-		    }
-
-		    if (d_ptr->num < g_ptr->num &&
-			(check_feature(d_ptr->f, "NN") ||
-			 check_feature(d_ptr->f, "NR") ||
-			 check_feature(d_ptr->f, "VV")) &&
-			check_feature(g_ptr->f, "AD")) {
-			one_score -= 20;
+		    if (Chi_pa_matrix[d_ptr->num][g_ptr->num] >= chi_pa_thre) {
+			one_score += weight_pa * Chi_pa_matrix[d_ptr->num][g_ptr->num];
 		    }
 
 		    if (OptDisplay == OPT_DEBUG) {
-			printf("(stable:%d,%d)%.3f=>", d_ptr->num, g_ptr->num, one_score);
+			printf("(spec_pa:%f, pa:%f)%.6f=>", Chi_spec_pa_matrix[d_ptr->num][g_ptr->num], Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
 		    }
-
 		}
 		else if (cky_ptr->direction == RtoL) {
-		    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index] * TIME_PROB;
+		    one_score += weight_dpnd * Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index];
 
 		    if (OptDisplay == OPT_DEBUG) {
-			printf("(dpnd:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
+			printf("(dpnd:%d,%d %f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index], one_score);
+		    }
+
+		    if (Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL >= pos_prob_thre_high &&
+			Chi_dpnd_matrix[g_ptr->num][d_ptr->num].occur_pos >= pos_occur_thre_high) {
+			one_score += weight_pos * Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL;
+		    }
+		    else if (Chi_dpnd_matrix[g_ptr->num][d_ptr->num].occur_pos <= pos_occur_thre_low) {
+			one_score -= weight_pos * Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL;
+		    }
+		    else if (Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL <= pos_prob_thre_low) {
+			one_score -= weight_pos * (1 - Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL);
+		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(pos: %f)%.6f=>", Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_pos_RtoL, one_score);
+		    }
+
+		    /* punish from comma */
+		    one_score -= weight_comma * (1.0 * comma) / (comma + 1);
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(comma: %d)%.6f=>", comma, one_score);
+		    }
+
+		    /* punish from root */
+		    if (d_ptr->num == Chi_root) {
+			one_score -= weight_root;
+		    }
+
+		    if (OptDisplay == OPT_DEBUG) {
+			printf("(root)%.6f=>", one_score);
 		    }
 
 		    /* add bonus from gigaword pa */
@@ -940,34 +670,19 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "NR") ||
 			    check_feature(g_ptr->f, "PN") ||
 			    check_feature(g_ptr->f, "NT")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_n_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_n_n_l > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_n_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_n_l) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 			if (check_feature(g_ptr->f, "VV") ||
 			    check_feature(g_ptr->f, "VC") ||
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_n_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_n_l > 20) {
-				    one_score += 20;
+			    if (Chi_spec_pa_matrix[g_ptr->num][d_ptr->num] >= thre_v_n_l) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[g_ptr->num][d_ptr->num];
+				if (OptDisplay == OPT_DEBUG) {
+				    printf("(verb-obj spec_pa:%f)%.6f=>", Chi_spec_pa_matrix[g_ptr->num][d_ptr->num], one_score);
 				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_v_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			}
-			if (check_feature(g_ptr->f, "P") && Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_n_l) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_n_l > 20) {
-				one_score += 20;
-			    }
-			    else {
-				one_score += 1.0 * giga_pa_weight_p_n_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 		    }
@@ -980,148 +695,24 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(g_ptr->f, "VC") ||
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_v_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_v_v_l > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_v_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_v_v_l) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 			if (check_feature(g_ptr->f, "P")) {
-			    if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] > thre_p_v_l) {
-				if (Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num] * giga_pa_weight_p_v_l > 20) {
-				    one_score += 20;
-				}
-				else {
-				    one_score += 1.0 * giga_pa_weight_p_v_l * Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num];
-				}
+			    if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_l) {
+				one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
 			    }
 			}
 		    }
 
-		    if (OptDisplay == OPT_DEBUG) {
-			printf("(giga:%f)%.3f=>", Chi_gigaword_pa_matrix[d_ptr->num][g_ptr->num], one_score);
-		    }
-
-		    /* add penalty for comma */
-		    one_score -= 15 * comma;
-
-		    /* add score for stable dpnd */
-		    if (g_ptr->num + 1 == d_ptr->num &&
-			(((check_feature(d_ptr->f, "AS")) &&
-			  (check_feature(g_ptr->f, "VE") ||
-			   check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "CD")) &&
-			  (check_feature(g_ptr->f, "DT"))) ||
-
-			 ((check_feature(d_ptr->f, "CC")) &&
-			  (check_feature(g_ptr->f, "VV") ||
-			   check_feature(g_ptr->f, "VA"))) ||
-
-			 ((check_feature(d_ptr->f, "PN")) &&
-			  (check_feature(g_ptr->f, "P"))) ||
-
-			 ((check_feature(d_ptr->f, "NT")) &&
-			  (check_feature(g_ptr->f, "P"))) ||
-
-			 ((check_feature(g_ptr->f, "VV") ||
-			   check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VE")) &&
-			  (check_feature(d_ptr->f, "VC") ||
-			   check_feature(d_ptr->f, "VE") ||
-			   check_feature(d_ptr->f, "VV")))||
-
-			 ((check_feature(d_ptr->f, "DEC")) &&
-			  (check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VA") ||
-			   check_feature(g_ptr->f, "VE") ||
-			   check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "DER")) &&
-			  (check_feature(g_ptr->f, "VV"))) ||
-
-			 ((check_feature(d_ptr->f, "ETC")) &&
-			  (check_feature(g_ptr->f, "NN") ||
-			   check_feature(g_ptr->f, "NR"))))) {
-			one_score += 15;
-		    }
-		    if (g_ptr->num < d_ptr->num &&
-			(((check_feature(g_ptr->f, "AD")) &&
-			  (check_feature(d_ptr->f, "CC")))||
-
-			 ((check_feature(g_ptr->f, "CD")) &&
-			  (check_feature(d_ptr->f, "CC")))||
-
-			 ((check_feature(g_ptr->f, "VV") ||
-			   check_feature(g_ptr->f, "VC") ||
-			   check_feature(g_ptr->f, "VE")) &&
-			  (check_feature(d_ptr->f, "VC") ||
-			   check_feature(d_ptr->f, "VE") ||
-			   check_feature(d_ptr->f, "VV")))||
-
-			 ((check_feature(g_ptr->f, "DT")) &&
-			  (check_feature(d_ptr->f, "CD")||
-			   check_feature(d_ptr->f, "M")))||
-
-			 ((check_feature(g_ptr->f, "LB")) &&
-			  (check_feature(d_ptr->f, "CC")))||
-
-			 ((check_feature(g_ptr->f, "P")) &&
-			  (check_feature(d_ptr->f, "VV") ||
-			   check_feature(d_ptr->f, "VA") ||
-			   check_feature(d_ptr->f, "VC") ||
-			   check_feature(d_ptr->f, "VE"))) ||
-
-			 ((check_feature(g_ptr->f, "NN")) &&
-			  (check_feature(d_ptr->f, "X")))||
-
-			 ((check_feature(g_ptr->f, "P")) &&
-			  (check_feature(d_ptr->f, "CS") ||
-			   check_feature(d_ptr->f, "DT") ||
-			   check_feature(d_ptr->f, "JJ") ||
-//			   check_feature(d_ptr->f, "NR") ||
-			   check_feature(d_ptr->f, "NT") ||
-			   check_feature(d_ptr->f, "PN")))||
-
-			 ((check_feature(g_ptr->f, "VA")) &&
-			  (check_feature(d_ptr->f, "NR"))) ||
-
-			 ((check_feature(g_ptr->f, "VC")) &&
-			  (check_feature(d_ptr->f, "DT"))) ||
-
-			 ((check_feature(g_ptr->f, "VE")) &&
-			  (check_feature(d_ptr->f, "AS") ||
-			   check_feature(d_ptr->f, "CC") ||
-			   check_feature(d_ptr->f, "NT") ||
-			   check_feature(d_ptr->f, "PN")))||
-
-			 ((check_feature(g_ptr->f, "VV")) &&
-			  (check_feature(d_ptr->f, "AS") ||
-			   check_feature(d_ptr->f, "NN") ||
-			   check_feature(d_ptr->f, "DER"))))) {
-			one_score += 10;
-		    }
-		    if (check_feature(g_ptr->f, "P") && check_feature(d_ptr->f, "CS")) {
-			one_score += 10;
-		    }
-		    if (check_feature(g_ptr->f, "AD") && 
-			(check_feature(d_ptr->f, "DEC") || check_feature(d_ptr->f, "P"))) {
-			one_score -= 20;
-		    }
-		    if (check_feature(g_ptr->f, "NN") && check_feature(d_ptr->f, "VV")) {
-			one_score -= 20;
-		    }
-		    if (check_feature(g_ptr->f, "DEG") && check_feature(d_ptr->f, "NN")) {
-			one_score -= 20;
+		    if (Chi_pa_matrix[d_ptr->num][g_ptr->num] >= chi_pa_thre) {
+			one_score += weight_pa * Chi_pa_matrix[d_ptr->num][g_ptr->num];
 		    }
 
 		    if (OptDisplay == OPT_DEBUG) {
-			printf("(stable:%d,%d)%.3f=>", g_ptr->num, d_ptr->num, one_score);
+			printf("(spec_pa:%f, pa:%f)%.6f=>", Chi_spec_pa_matrix[d_ptr->num][g_ptr->num], Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
 		    }
-
 		}
 	    }
 	}
@@ -1843,6 +1434,22 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							} 
 						    }
 						}
+						if (!OptParaFix) {
+						    /* add similarity of coordination */
+						    if (cky_ptr->para_score > PARA_THRESHOLD && 
+							(Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
+							cky_ptr->score += cky_ptr->para_score;
+						    }
+						    else if ((sp->bnst_data + i + k)->para_num != -1 && cky_ptr->right && 
+							     Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
+							     exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
+							     (Mask_matrix[i][i + k] == 'V' || Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
+							cky_ptr->score += Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num];
+						    }
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("(para)=>%.3f\n", cky_ptr->score);
+						    } 
+						}
 					    }
 
 					    /* then check L */
@@ -1886,6 +1493,22 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							    printf("=>%.3f\n", cky_ptr->score);
 							} 
 						    }
+						}
+						if (!OptParaFix) {
+						    /* add similarity of coordination */
+						    if (cky_ptr->para_score > PARA_THRESHOLD && 
+							(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
+							cky_ptr->score += cky_ptr->para_score;
+						    }
+						    else if ((sp->bnst_data + i + k)->para_num != -1 && cky_ptr->right && 
+							     Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
+							     exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
+							     (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
+							cky_ptr->score += Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num];
+						    }
+						    if (OptDisplay == OPT_DEBUG) {
+							printf("(para)=>%.3f\n", cky_ptr->score);
+						    } 
 						}
 					    }
 					}
@@ -1944,23 +1567,22 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    } 
 						}
 					    }
-					}
-
-					if (!OptParaFix) {
-					    /* add similarity of coordination */
-					    if (cky_ptr->para_score > PARA_THRESHOLD && 
-						(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
-						    cky_ptr->score += cky_ptr->para_score * CHI_CKY_BONUS;
+					    if (!OptParaFix) {
+						/* add similarity of coordination */
+						if (cky_ptr->para_score > PARA_THRESHOLD && 
+						    (Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
+						    cky_ptr->score += cky_ptr->para_score;
+						}
+						else if ((sp->bnst_data + i + k)->para_num != -1 && cky_ptr->right && 
+							 Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
+							 exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
+							 (Mask_matrix[i][i + k] == 'V' || Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
+						    cky_ptr->score += Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num];
+						}
+						if (OptDisplay == OPT_DEBUG) {
+						    printf("(para)=>%.3f\n", cky_ptr->score);
+						} 
 					    }
-					    else if ((sp->bnst_data + i + k)->para_num != -1 && cky_ptr->right && 
-						     Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] > PARA_THRESHOLD &&
-						     exist_chi(sp, cky_ptr->right->b_ptr->num + 1, j, "pu") == -1 &&
-						     (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][cky_ptr->right->b_ptr->num] == 'V')) {
-						cky_ptr->score += Para_matrix[(sp->bnst_data + i + k)->para_num][i][cky_ptr->right->b_ptr->num] * CHI_CKY_BONUS;
-					    }
-					    if (OptDisplay == OPT_DEBUG) {
-						printf("=>%.3f\n", cky_ptr->score);
-					    } 
 					}
 				    }
 				}
@@ -2270,6 +1892,14 @@ int exist_chi(SENTENCE_DATA *sp, int i, int j, char *type) {
 	    }
 	}
     }
+    else if (!strcmp(type, "dunhao")) {
+	for (k = i; k <= j; k++) {
+	    if (check_feature((sp->bnst_data + k)->f, "PU") && 
+		!strcmp((sp->bnst_data+k)->head_ptr->Goi, "、")) {
+		return k;
+	    }
+	}
+    }
     else if (!strcmp(type, "verb")) {
 	for (k = i; k <= j; k++) {
 	    if (check_feature((sp->bnst_data + k)->f, "VV") ||
@@ -2504,13 +2134,29 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
+	/* DEC cannot depend on VV before */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && 
+	    direction == 'L' && 
+	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC")) {
+	    return 0;
+	}
+
 	/* for DEG , DEV, DEC and LC, there should not be two modifiers */
 	if ((check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEG") ||
-//	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEV") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "LC")) && 
 	    right->b_ptr->num - right->i > 0 && 
 	    direction == 'R') {
+	    return 0;
+	}
+
+	/* DEC cannot have two verb modifiers */
+	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") &&
+	    direction == 'R' &&
+	    (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") ||
+	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA")) &&
+	    (has_child_chi(sp, right, "VV", 0) ||
+	     has_child_chi(sp, right, "VA", 0))) {
 	    return 0;
 	}
 
@@ -2650,6 +2296,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     has_child_chi(sp, left, "LC", 1)||
 	     has_child_chi(sp, left, "PN", 1)) &&
 	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "CC") == -1 &&
+	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "dunhao") == -1 &&
 	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "pu") == -1) {
 	    return 0;
 	}
@@ -2709,6 +2356,14 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) &&
 	     direction == 'L' &&
 	     right->j == right->b_ptr->num)) {
+	    return 0;
+	}
+
+	/* for preposition, it cannot have two modifiers after it */
+	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") && 
+	    left->right &&
+	    !check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "PU") &&
+	    direction == 'L') {
 	    return 0;
 	}
 

@@ -219,7 +219,7 @@ QUOTE_DATA quote_data;
 	    for (i = end + 1; i < sp->Bnst_num; i++) {
 		Quote_matrix[start][i] = 0;
 		Quote_matrix[end][i] = 0;
-	    }	
+	    }
 	}
 
 	for (j = start; j <= end; j++) {
@@ -244,7 +244,7 @@ QUOTE_DATA quote_data;
     if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
 	if (quote_p == CONTINUE) return quote_p;
 
-	if (OptDisplay == OPT_DEBUG) print_quote();
+	if (OptDisplay == OPT_DEBUG && Language != CHINESE) print_quote();
 
 	if (Language != CHINESE) {
 	    mask_quote(sp);			/* 墊昫及踏五晶尹 */

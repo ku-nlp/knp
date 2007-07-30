@@ -35,7 +35,8 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* ÊÂÎó¥Þ¥¹¥¯
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
 double          Chi_case_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_case_nominal_prob_matrix[BNST_MAX][BNST_MAX];
-double          Chi_gigaword_pa_matrix[BNST_MAX][BNST_MAX];  
+double          Chi_spec_pa_matrix[BNST_MAX][BNST_MAX];  
+double          Chi_pa_matrix[BNST_MAX][BNST_MAX];  
 int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
@@ -1141,8 +1142,6 @@ int      dpnd_lex = 0;
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
     if (Language == CHINESE) {
-/* 	calc_chi_case_prob_matrix(sp);			/\* get probability of verb case-frame for Chinese *\/ */
-/* 	calc_chi_case_nominal_prob_matrix(sp);			/\* get probability of nominal case-frame for Chinese *\/ */
 	calc_gigaword_pa_matrix(sp);			/* get count of gigaword pa for Chinese */
     }
 
