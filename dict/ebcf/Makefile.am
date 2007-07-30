@@ -16,7 +16,7 @@ endif
 
 nodist_dic_DATA +=  chidpnd.db
 
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chicase.db chicase_nominal.db gigaword_pa.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_spec_pa.db chi_pa.db
 
 HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
 
@@ -100,26 +100,18 @@ cfcase.db: cfcase.prob
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-chicase.prob:
+chi_spec_pa.dict:
 	true
 
-chicase.db: chicase.prob
+chi_spec_pa.db: chi_spec_pa.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-chicase_nominal.prob:
+chi_pa.dict:
 	true
 
-chicase_nominal.db: chicase_nominal.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-gigaword_pa.dict:
-	true
-
-gigaword_pa.db: gigaword_pa.dict
+chi_pa.db: chi_pa.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
