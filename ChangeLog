@@ -1,3 +1,8 @@
+2007-08-02  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/const.h:
+	汎化情報を含む格フレームの読み込みに対応
+
 2007-07-30  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/ebcf/chi_pa.dict, dict/ebcf/chi_spec_pa.dict, dict/ebcf/Makefile.am:

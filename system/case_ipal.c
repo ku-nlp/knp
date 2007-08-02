@@ -777,6 +777,28 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
+	     double split_freq_for_gex(unsigned char *cp)
+/*==================================================================*/
+{   
+    double freq;
+
+    cp += 4; /* gex用 (先頭の"<NE:"、"<TH:", "<CT:"は読み飛ばす */
+
+    while (1) {
+	if (*cp == ':') {
+	    sscanf(cp + 1, "%lf", &freq);
+	    *(cp - 1) = '\0'; /* ">"を除く */
+	    return freq;
+	}
+	else if (*cp == '\0') {
+	    return 1;
+	}
+	cp++;
+    }
+    return 0;
+}
+
+/*==================================================================*/
 void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, 
 			  int flag, int fflag)
 /*==================================================================*/
@@ -789,6 +811,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     unsigned char *point, *point2;
     int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
     int sub_agent_flag = 0, ex_agent_flag;
+    double freq_gex;
     char *code, **destination, *buf, *token;
 
     c_ptr->freq[num] = 0;
@@ -815,6 +838,38 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     *buf = '\0';
     while ((point = extract_ipal_str(point, cf_str_buf, TRUE))) {
 	point2 = cf_str_buf;
+
+	/* 用例中に記された汎化素性の読み込み */
+	if (!strncmp(point2, "<NE:", 4) || 
+	    !strncmp(point2, "<TH:", 4) || 
+	    !strncmp(point2, "<CT:", 4)) {
+
+	    /* 頻度の抽出 */
+	    freq_gex = split_freq_for_gex(point2);
+	    
+	    if (c_ptr->gex_size[num] == 0) {
+		c_ptr->gex_size[num] = 10;	/* 初期確保数 */
+		c_ptr->gex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->gex_size[num], 
+							   "_make_ipal_cframe_ex");
+		c_ptr->gex_freq[num] = (double *)malloc_data(sizeof(double)*c_ptr->gex_size[num], 
+							 "_make_ipal_cframe_ex");
+	    }
+	    else if (c_ptr->gex_num[num] >= c_ptr->gex_size[num]) {
+		c_ptr->gex_list[num] = (char **)realloc_data(c_ptr->gex_list[num], 
+							    sizeof(char *)*(c_ptr->gex_size[num] <<= 1), 
+							    "_make_ipal_cframe_ex");
+		c_ptr->gex_freq[num] = (double *)realloc_data(c_ptr->gex_freq[num], 
+							  sizeof(double)*c_ptr->gex_size[num], 
+							  "_make_ipal_cframe_ex");
+	    }
+	    
+	    c_ptr->gex_list[num][c_ptr->gex_num[num]] = strdup(point2 + 1);
+	    c_ptr->gex_freq[num][c_ptr->gex_num[num]++] = freq_gex;
+
+	    /* fprintf(stderr, "%s:%.3f freq_gex\n", point2 + 1, freq_gex); */
+
+	    continue;
+	}
 
 	/* 頻度の抽出 */
 	freq = split_freq(point2);
@@ -1195,6 +1250,18 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 	cf_ptr->ex_list[num] = NULL;
 	cf_ptr->ex_size[num] = 0;
 	cf_ptr->ex_num[num] = 0;
+    }
+    if (cf_ptr->gex_list[num]) {
+	for (k = 0; k < cf_ptr->gex_num[num]; k++) {
+	    if (cf_ptr->gex_list[num][k]) {
+		free(cf_ptr->gex_list[num][k]);
+	    }
+	}
+	free(cf_ptr->gex_list[num]);
+	free(cf_ptr->gex_freq[num]);
+	cf_ptr->gex_list[num] = NULL;
+	cf_ptr->gex_size[num] = 0;
+	cf_ptr->gex_num[num] = 0;
     }
     if (cf_ptr->semantics[num]) {
 	free(cf_ptr->semantics[num]);

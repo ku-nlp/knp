@@ -854,6 +854,10 @@ typedef struct cf_def {
     int		ex_num[CF_ELEMENT_MAX];
     int		freq[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
+    char	**gex_list[CF_ELEMENT_MAX];              /* 用例中に記された汎化素性を格納 */
+    double	*gex_freq[CF_ELEMENT_MAX];
+    int		gex_size[CF_ELEMENT_MAX];
+    int		gex_num[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
     int 	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
