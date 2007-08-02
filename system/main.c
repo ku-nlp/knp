@@ -642,10 +642,14 @@ int      dpnd_lex = 0;
 	    if (argc < 1) usage();
 	    Opt_knprc = argv[0];
 	}
-	else if (str_eq(argv[0], "-v")) {
+	else if (str_eq(argv[0], "-verbose")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    VerboseLevel = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-v")) {
+	    fprintf(stderr, "%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    exit(0);
 	}
 	/* 格解析用オプション */
 	else if (str_eq(argv[0], "-assign-ga-subj")) {
