@@ -1,3 +1,9 @@
+2007-08-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	Changed option "-v" to print the version.
+	To specify the verbosity level, use "-verbose".
+
 2007-08-02  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/const.h:
