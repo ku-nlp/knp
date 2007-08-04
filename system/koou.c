@@ -61,8 +61,9 @@ int	koou_m_p[BNST_MAX];
 		    }
 		
 		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr) != -1 && 
-			(Language == CHINESE && !pu_flag && 
-			 (check_feature((sp->bnst_data+k)->f, "LC") || check_feature((sp->bnst_data+k)->f, "NN")))) {
+			(Language != CHINESE || 
+			 (Language == CHINESE && !pu_flag && 
+			  (check_feature((sp->bnst_data+k)->f, "LC") || check_feature((sp->bnst_data+k)->f, "NN"))))) {
 			koou_m_p[i] = TRUE;
 			flag = TRUE;
 			Koou_matrix[i][k] = 1;
@@ -72,7 +73,8 @@ int	koou_m_p[BNST_MAX];
 		    }
 		    else if (r_ptr->uke_pattern &&
 			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) != -1 && 
-			(Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC"))) {
+			     (Language != CHINESE || 
+			      (Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC")))) {
 			Koou_matrix[i][k] = 2;
 			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type; /* 今のところ記述できない */
 			if (OptDisplay == OPT_DEBUG) 
