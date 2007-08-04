@@ -1,3 +1,8 @@
+2007-08-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/koou.c:
+	Modified to enable koou processing for Japanese.
+
 2007-08-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:
