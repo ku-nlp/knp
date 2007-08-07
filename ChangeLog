@@ -1,5 +1,8 @@
 2007-08-07  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/para_dpnd.c, system/para_analysis.c, system/lib_print.c:
+	Changed error stream to stderr.
+
 	* rule/koou.rule:
 	Modified "いくら-何でも".
 
