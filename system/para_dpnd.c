@@ -99,9 +99,9 @@ int D_found_array[BNST_MAX];
 		D_found_array[i] = FALSE;
 		/* revise_para_kakariからの呼出(s_p == NULL)は表示なし */
 		if (OptDisplay == OPT_DEBUG && s_p) {
-		    fprintf(Outfp, ";; Cannot find a head for bunsetsu <");
+		    fprintf(stderr, ";; Cannot find a head for bunsetsu <");
 		    print_bnst(sp->bnst_data + i, NULL);
-		    fprintf(Outfp, ">.\n");
+		    fprintf(stderr, ">.\n");
 		}
 		success_p = FALSE;
 		for (k = i + 1; k <= end; k++) hikousa_array[k] = 0;
@@ -171,7 +171,7 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     else if (error[0] == TRUE) {
 	for (i = 1; i < m_ptr->part_num; i++)
 	    if (error[i] == TRUE) {
-		fprintf(Outfp, 
+		fprintf(stderr, 
 			";; Cannot revise invalid kakari struct in para!!\n");
 		return -1;
 	    }
@@ -180,7 +180,7 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     else if (error[m_ptr->part_num - 1] == TRUE) {
 	for (i = 0; i < m_ptr->part_num - 1; i++)
 	    if (error[i] == TRUE) {
-		fprintf(Outfp, 
+		fprintf(stderr, 
 			";; Cannot revise invalid kakari struct in para!!\n");
 		return -1;
 	    }

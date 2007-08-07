@@ -491,9 +491,9 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     if (para_ptr->status == 'x') {
 	;
 	/*
-	fprintf(Outfp, ";; Cannot find proper CS for the key <");
+	fprintf(stderr, ";; Cannot find proper CS for the key <");
 	print_bnst(sp->bnst_data + ptr->key_pos, NULL);
-	fprintf(Outfp, ">.\n");
+	fprintf(stderr, ">.\n");
 	*/
     } else if (para_ptr->status == 'n' &&
 	       para_ptr->pure_score >= STRONG_PARA_TH) {

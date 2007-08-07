@@ -80,7 +80,8 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 
     if (Language == JAPANESE) {
 	if (m_ptr->Hinshi >= CLASS_num) {
-	    fprintf(Outfp, "\n;; Hinshi number is invalid. (%d)\n", m_ptr->Hinshi);
+	    fputc('\n', Outfp);
+	    fprintf(stderr, ";; Hinshi number is invalid. (%d)\n", m_ptr->Hinshi);
 	    exit(1);
 	}
 	fprintf(Outfp, "%s ", Class[m_ptr->Hinshi][0].id);
