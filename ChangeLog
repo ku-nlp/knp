@@ -1,3 +1,10 @@
+2007-08-08  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule, system/case_ipal.c:
+	Modified the process of looking up predicative case frames: for a
+	nominalized adjective, original adjective case frames are
+	retrieved; otherwise obey determined rep names.
+
 2007-08-07  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/para_dpnd.c, system/para_analysis.c, system/lib_print.c:
