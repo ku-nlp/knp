@@ -800,6 +800,22 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 }
 
 /*==================================================================*/
+  int count_assigned_adjacent_element(CASE_FRAME *cfp, LIST *list2)
+/*==================================================================*/
+{
+    int i, count = 0;
+
+    /* 割り当てがある直前格の数を数える (格フレーム側) */
+
+    for (i = 0; i < cfp->element_num; i++) {
+	if (cfp->adjacent[i] == TRUE && list2->flag[i] != UNASSIGNED) {
+	    count++;
+	}
+    }
+    return count;
+}
+
+/*==================================================================*/
 	 int check_same_case(int dp, int pp, CASE_FRAME *cf)
 /*==================================================================*/
 {
