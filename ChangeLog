@@ -1,3 +1,8 @@
+2007-08-10  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_match.c, system/extern.h:
+	Modified lexical_disambiguation_by_case_analysis to work in probabilistic case analysis.
+
 2007-08-08  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule, system/case_ipal.c:
