@@ -1,3 +1,8 @@
+2007-08-10  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/chi_pa.dict, dict/ebcf/chi_spec_pa.dict:
+	Change definition of PA pair's probability from gigaword.
+	
 2007-08-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h:
