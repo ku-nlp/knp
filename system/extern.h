@@ -199,6 +199,7 @@ extern char *pp_code_to_hstr(int num);
 extern char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num);
 extern int MatchPP(int n, char *pp);
 extern int MatchPPn(int n, int *list);
+extern int CF_MatchPP(int c, CASE_FRAME *cf);
 extern int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void assign_case_component_feature(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int temp_assign_flag);
 extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int temp_assign_flag);
@@ -244,6 +245,7 @@ extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
 extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
 					     int as2, CASE_FRAME *cfp);
+extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,

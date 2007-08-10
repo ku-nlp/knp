@@ -1054,17 +1054,24 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	score += get_np_modifying_probability(i, cfd);
 
 	score += list1->score[i];
-	/*
+
 	if (MatchPP(cfd->pp[i][0], "φ") || 
 	    MatchPP(cfd->pp[i][0], "修飾")) {
 	    ;
 	}
-	* 割り当てなしの場合 *
+	/* 割り当てなし */
 	else if (list1->flag[i] == NIL_ASSIGNED) {
-	    score += NIL_ASSINED_SCORE;
-	    score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp);
+	    if (CF_MatchPP(cfd->pp[i][0], cfp)) {
+		score += NIL_ASSINED_SCORE;
+	    }
+	    /* 対応する格スロットがない場合 => 仮想的に格スロットを作成して割り当て */
+	    else {
+		score += get_case_probability_for_pred(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE);
+	    }
+	    /* score += NIL_ASSINED_SCORE;
+	       score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp); */
 	}
-	* 格解釈確率 P(表層格|格スロット) *
+	/* 格解釈確率 P(表層格|格スロット) *
 	else {
 	    score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp);
 	}
@@ -1274,7 +1281,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	       => 後ろに同じ格助詞があれば対応付けをしない可能性も試す? */
 
 	    /* 割り当てなしのスコア */
-	    elmnt_score = NIL_ASSINED_SCORE + get_case_interpret_probability(target, cfd, NIL_ASSIGNED, cfp);
+	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_interpret_probability(target, cfd, NIL_ASSIGNED, cfp);
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
 	    }

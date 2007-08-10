@@ -2087,6 +2087,61 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
+/*==================================================================*/
+{
+    /* 格確率 P(ガ格○|食べる) */
+
+    char *key, *value, *verb;
+    double ret;
+
+    if (CFCaseExist == FALSE) {
+	return 0;
+    }
+
+    /* 用言表記 */
+    verb = strdup(cfp->cf_id);
+    sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
+
+    key = malloc_db_buf(strlen(case_str) + strlen(cfp->cf_id) + 2);
+
+    /* 用言表記でやった方がよいみたい */
+    sprintf(key, "%s|%s", case_str, verb); /* cfp->cf_id); */
+    value = db_get(cf_case_db, key);
+    free(verb);
+
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+	if (aflag == FALSE) {
+	    ret = 1 - ret;
+	}
+	if (ret == 0) {
+	    ret = UNKNOWN_CASE_SCORE;
+	}
+	else {
+	    ret = log(ret);
+	}
+    }
+    else {
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
+	}
+	if (aflag == FALSE) {
+	    ret = 0;
+	}
+	else {
+	    ret = UNKNOWN_CASE_SCORE;
+	}
+    }
+
+    return ret;
+}
+
+/*==================================================================*/
    double get_case_probability(int as2, CASE_FRAME *cfp, int aflag)
 /*==================================================================*/
 {
@@ -2633,8 +2688,16 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfp->pp[as2][0]));
     }
     else {
-	key = malloc_db_buf(strlen(scase) + 24);
-	sprintf(key, "%s|C:--", scase);
+	/* 格スロットがあるのにNIL_ASSIGNED */
+	if (CF_MatchPP(cfd->pp[as1][0], cfp)) {
+	    key = malloc_db_buf(strlen(scase) + 24);
+	    sprintf(key, "%s|C:--", scase);
+	}
+	/* 格フレームがないとき、仮想的に格スロットを作ると考える */
+	else {
+	    key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfd->pp[as1][0])) + 20);
+	    sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfd->pp[as1][0]));
+	}
     }
     value = db_get(case_db, key);
 
