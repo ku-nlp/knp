@@ -1024,6 +1024,25 @@ void fix_predicate_coordination(SENTENCE_DATA* sp) {
 }
 
 
+void restrict_parenthetic_coordination(SENTENCE_DATA* sp) {
+    int i, j, count;
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data + i)->f, "∑∏:≥Á∏Ã ¬ŒÛ")) {
+	    count = 0;
+	    for (j = i + 1; j < sp->Bnst_num; j++) {
+		if (Dpnd_matrix[i][j]) {
+		    if (count > 0) {
+			/* only permit the first head */
+			Dpnd_matrix[i][j] = 0;
+		    }
+		    count++;
+		}
+	    }
+	}
+    }
+}
+
 void discard_bad_coordination(SENTENCE_DATA* sp) {
     int i, j, k;
 
@@ -1341,6 +1360,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	Best_mgr->dpnd.head[i] = -1;
 	Best_mgr->dpnd.type[i] = 'D';
     }
+
+    /* set barrier for parenthetic coordinations */
+    restrict_parenthetic_coordination(sp);
 
     if (OptParaFix == 0) {
 	discard_bad_coordination(sp);
