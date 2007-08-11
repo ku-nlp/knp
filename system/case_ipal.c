@@ -2756,10 +2756,6 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     char *g_pred, *d_pred, *g_id, *d_id, *key, *value, *g_level;
     double ret1 = 0, ret2 = 0, ret3 = 0;
 
-    if (RenyouExist == FALSE) {
-	return 0;
-    }
-
     /* EOS -> 文末 */
     if (gp == NULL) {
 	g_pred = strdup("EOS");
@@ -2772,8 +2768,8 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	g_pred = NULL;
     }
 
-    /* 用言 -> 用言 */
-    if (g_pred && d_cf) {
+    /* 用言 -> 用言 (未使用) */
+    if (0 && RenyouExist && g_pred && d_cf) {
 	d_pred = strdup(d_cf->cf_id);
 	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
 
@@ -2836,8 +2832,17 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	free(value);
     }
 
-    /* ID -> ID */
-    if ((g_id = check_feature(gp->f, "ID")) && 
+    if (RenyouExist == FALSE) {
+	if (ret1) {
+	    return log(ret1);
+	}
+	else {
+	    return UNKNOWN_RENYOU_SCORE;
+	}
+    }
+
+    /* ID -> ID (未使用) */
+    if (0 && (g_id = check_feature(gp->f, "ID")) && 
 	(d_id = check_feature(dp->f, "ID"))) {
 	g_id += 3;
 	d_id += 3;
@@ -2860,6 +2865,9 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp->head_ptr->Goi, d_id, g_id, ret2);
 	}
+    }
+    else {
+	ret2 = 1;
     }
 
     /* 格フレームID => 格フレームID *
@@ -2928,12 +2936,13 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
     char *pred, *id, *key, *value;
     double ret1 = 0, ret2 = 0;
 
-    if (RenyouExist == FALSE) {
+    /* 個数は未使用 */
+    if (1 || RenyouExist == FALSE) {
 	return 0;
     }
 
     /* ID */
-    if (id = check_feature(t_ptr->f, "ID")) {
+    if (0 && (id = check_feature(t_ptr->f, "ID"))) {
 	id += 3;
 	key = malloc_db_buf(strlen(id) + 6);
 	sprintf(key, "%d|N:%s", num, id);
@@ -2946,7 +2955,11 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
 	    free(value);
 	}
     }
+    else {
+	ret1 = 1;
+    }
 
+    /* 用言 (未使用) */
     if (cfp) {
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
@@ -3002,27 +3015,13 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
     int touten_flag, dist;
     double ret1, ret2;
 
-    if (AdverbExist == FALSE) {
-	return 0;
-    }
-
     /* 副詞 -> 用言 */
     if (cfp) {
-	pred = strdup(cfp->cf_id);
-	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
-	key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 3);
-	sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
-	value = db_get(adverb_db, key);
-	if (value) {
-	    ret1 = atof(value);
-	    free(value);
-	    if (VerboseLevel >= VERBOSE1) {
-		fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
-	    }
-	    ret1 = log(ret1);
-	}
-	else {
-	    sprintf(key, "NIL|%s", pred);
+	if (AdverbExist == TRUE) {
+	    pred = strdup(cfp->cf_id);
+	    sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
+	    key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 3);
+	    sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
 	    value = db_get(adverb_db, key);
 	    if (value) {
 		ret1 = atof(value);
@@ -3033,14 +3032,28 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 		ret1 = log(ret1);
 	    }
 	    else {
-		if (VerboseLevel >= VERBOSE1) {
-		    fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+		sprintf(key, "NIL|%s", pred);
+		value = db_get(adverb_db, key);
+		if (value) {
+		    ret1 = atof(value);
+		    free(value);
+		    if (VerboseLevel >= VERBOSE1) {
+			fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
+		    }
+		    ret1 = log(ret1);
 		}
-		ret1 = UNKNOWN_RENYOU_SCORE;
+		else {
+		    if (VerboseLevel >= VERBOSE1) {
+			fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+		    }
+		    ret1 = UNKNOWN_RENYOU_SCORE;
+		}
 	    }
+	    free(pred);
 	}
-	free(pred);
-
+	else {
+	    ret1 = 0;
+	}
 
 	/* 読点の生成 */
 	touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
