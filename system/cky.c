@@ -757,7 +757,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     BNST_DATA *g_ptr = cky_ptr->b_ptr, *d_ptr;
     TAG_DATA *t_ptr;
     CF_PRED_MGR *cpm_ptr, *pre_cpm_ptr;
-    int i, pred_p = 0, count, pos, default_pos, child_num = 0;
+    int i, pred_p = 0, child_num = 0;
     int renyou_modifying_num = 0, adverb_modifying_num = 0, noun_modifying_num = 0, flag;
     double one_score = 0, orig_score;
     char *para_key;
@@ -872,14 +872,6 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		add_coordinated_phrases(cky_ptr->right, &(t_ptr->next));
 		one_score += get_noun_co_ex_probability(d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 		noun_modifying_num++;
-	    }
-
-	    /* penalty of adverb etc. (tentative) */
-	    if (check_feature(d_ptr->f, "∑∏:œ¢Õ—") && !check_feature(d_ptr->f, "Õ—∏¿")) {
-		count = count_distance(sp, cky_ptr, g_ptr, &pos);
-		default_pos = (d_ptr->dpnd_rule->preference == -1) ?
-		    count : d_ptr->dpnd_rule->preference;
-		one_score -= abs(default_pos - 1 - pos) * 5;
 	    }
 	}
 	cky_ptr = cky_ptr->right;
@@ -1027,13 +1019,32 @@ void fix_predicate_coordination(SENTENCE_DATA* sp) {
 void restrict_parenthetic_coordination(SENTENCE_DATA* sp) {
     int i, j, count;
 
-    for (i = 0; i < sp->Bnst_num; i++) {
+    for (i = 0; i < sp->Bnst_num - 1; i++) {
 	if (check_feature((sp->bnst_data + i)->f, "∑∏:≥Á∏Ã ¬ŒÛ")) {
 	    count = 0;
 	    for (j = i + 1; j < sp->Bnst_num; j++) {
 		if (Dpnd_matrix[i][j]) {
 		    if (count > 0) {
 			/* only permit the first head */
+			Dpnd_matrix[i][j] = 0;
+		    }
+		    count++;
+		}
+	    }
+	}
+    }
+}
+
+void restrict_end_prefer_dependency(SENTENCE_DATA* sp) {
+    int i, j, count;
+
+    for (i = 0; i < sp->Bnst_num - 1; i++) {
+	if ((sp->bnst_data + i)->dpnd_rule->preference == -1) {
+	    count = 0;
+	    for (j = sp->Bnst_num - 1; j > i; j--) {
+		if (Dpnd_matrix[i][j]) {
+		    if (count > 0) {
+			/* only permit the last head */
 			Dpnd_matrix[i][j] = 0;
 		    }
 		    count++;
@@ -1363,6 +1374,9 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
     /* set barrier for parenthetic coordinations */
     restrict_parenthetic_coordination(sp);
+
+    /* restrict the possible heads of end-prefer dependents */
+    restrict_end_prefer_dependency(sp);
 
     if (OptParaFix == 0) {
 	discard_bad_coordination(sp);
