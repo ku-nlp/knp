@@ -1,6 +1,12 @@
 2007-08-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
+	Added handling of dependents whose heads tend to be sentence-end.
+
+	* system/case_ipal.c:
+	Modified the probability calculation of dependencies of predicates and adverbs.
+
+	* system/cky.c:
 	Added handling of dependencies of "·¸:³ç¸ÌÊÂÎó" in probabilistic case analysis.
 
 2007-08-10  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
