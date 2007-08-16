@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = chidpnd.dict chicase.prob chicase_nominal.prob
+EXTRA_DIST = chidpnd.dict chidpnd_prob.dict chi_pa.dict chi_spec_pa.dict
 
 dicdir = $(pkgdatadir)/dict/ebcf
 
@@ -14,7 +14,7 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-nodist_dic_DATA +=  chidpnd.db
+nodist_dic_DATA +=  chidpnd.db chidpnd_prob.db
 
 PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_spec_pa.db chi_pa.db
 
@@ -120,6 +120,14 @@ chidpnd.dict:
 	true
 
 chidpnd.db: chidpnd.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chidpnd_prob.dict:
+	true
+
+chidpnd_prob.db: chidpnd_prob.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
