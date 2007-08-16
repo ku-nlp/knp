@@ -1625,10 +1625,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 			}
 			fix_sm_place(sp, &(sp->Best_mgr->cpm[i]));
 
-			if (OptUseSmfix == TRUE) {
-			    specify_sm_from_cf(sp, &(sp->Best_mgr->cpm[i]));
-			}
-
 			/* マッチした用例をfeatureに出力 *
 			   record_match_ex(sp, &(sp->Best_mgr->cpm[i])); */
 

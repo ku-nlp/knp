@@ -190,7 +190,6 @@ int      dpnd_lex = 0;
     OptMergeCFResult = TRUE;
     OptUseRN = USE_RN;
     OptUseScase = TRUE;
-    OptUseSmfix = TRUE;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
@@ -537,11 +536,6 @@ int      dpnd_lex = 0;
 	    OptDiscFlag |= OPT_DISC_RANKING;
 	    OptAnaphoraBaseline = OPT_BASELINE_COOK;
 	}
-	else if (str_eq(argv[0], "-learn")) {
-	    OptLearn = TRUE;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    PrintFeatures = 1;
-	}
 	else if (str_eq(argv[0], "-no-wo-to")) {
 	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
 	}
@@ -564,9 +558,6 @@ int      dpnd_lex = 0;
 	}
 	else if (str_eq(argv[0], "-print-frequency")) {
 	    PrintFrequency = 1;
-	}
-	else if (str_eq(argv[0], "-print-ex")) {
-	    PrintEx = 1;
 	}
 	else if (str_eq(argv[0], "-print-num")) {
 	    PrintNum = 1;
@@ -634,9 +625,6 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
 	}
-	else if (str_eq(argv[0], "-no-smfix")) {
-	    OptUseSmfix = FALSE;
-	}
 	else if (str_eq(argv[0], "-r")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -667,17 +655,6 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-ellipsis-or-cf")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
-	}
-	/* 以下コスト調整用 */
-	else if (str_eq(argv[0], "-noun-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AntecedentDecideThresholdForNoun = atof(argv[0]);
-	}
-	else if (str_eq(argv[0], "-cffix-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    CFSimThreshold = atof(argv[0]);
 	}
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
@@ -991,10 +968,6 @@ int      dpnd_lex = 0;
 
     for (i = 0; i < BNST_MAX; i++) {
 	 current_sentence_data.bnst_data[i].f = NULL;
-    }
-
-    if (OptEllipsis) {
-	InitContextHash();
     }
 
     set_timeout_signal();
@@ -1378,8 +1351,6 @@ PARSED:
 	    }
 	    if (!OptEllipsis)
 		print_result(sp, 1);
-	    else
-		PreserveCPM(PreserveSentence(sp), sp);
 	    fflush(Outfp);
 
 	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */
@@ -1454,15 +1425,6 @@ PARSED:
 	if (flag == FALSE) { /* 解析失敗時には文の数を増やさない */
 	    sp->Sen_num--;	    
 	    continue;
-	}
-
-	/************/
-	/* 文脈解析 */
-	/************/
-	
-	if (OptEllipsis) {
-	    make_dpnd_tree(sp);
-	    DiscourseAnalysis(sp);
 	}
 
 	/* entity 情報の feature の作成 */

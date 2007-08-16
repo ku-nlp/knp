@@ -1702,8 +1702,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
-					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
+	ccp = NULL;
 
 	if (i != 0) {
 	    strcat(feature_buffer, ";");
@@ -1720,9 +1719,8 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	else {
 	    /* 例外タグ */
 	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
-		sprintf(buffer, "%s/E/%s/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[2]); /* 不特定-人 */
+		sprintf(buffer, "%s/E/不特定:人/-/-/-", 
+			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0])); /* 不特定-人 */
 		strcat(feature_buffer, buffer);
 	    }
 	    else {
@@ -1750,16 +1748,6 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
 		strcat(feature_buffer, cp);
 		free(cp);
-
-		/* 格・省略関係の保存 (文脈解析用) */
-		if (OptEllipsis) {
-		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				      cpm_ptr->pred_b_ptr->voice, 
-				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
-				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
-				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
-				      word, sent_n, tag_n, CREL);
-		}
 		if (word) free(word);
 	    }
 	}

@@ -89,16 +89,8 @@ int	PrintFrequency = 0;
 
     fprintf(Outfp, " %s ", cpm_ptr->cf.pred_type);
 
-    if (OptUseSmfix == TRUE && CFSimExist == TRUE && 
-	cpm_ptr->pred_b_ptr->cf_num != cpm_ptr->pred_b_ptr->e_cf_num) {
-	fprintf(Outfp, "[%d/%d]", 
-		cpm_ptr->pred_b_ptr->e_cf_num, 
-		cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
-    }
-    else {
-	fprintf(Outfp, "[%d]", 
-		cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
-    }
+    fprintf(Outfp, "[%d]", 
+	    cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
 
     /* 格フレームを決定した方法 */
     if (cpm_ptr->decided == CF_DECIDED) {
@@ -191,11 +183,6 @@ struct _sort_kv {
 						&(cmm_ptr->result_lists_p[0])))));
     }
     fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->cf_id);
-
-    /* 格フレーム類似度 */
-    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
-	fprintf(Outfp, "(%.2f) ", cmm_ptr->cf_ptr->cf_similarity);
-    }
 
     if (cmm_ptr->cf_ptr->feature) {
 	fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->feature);

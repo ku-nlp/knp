@@ -294,20 +294,6 @@ extern DBM_FILE open_dict(int dic_num, char *dic_name, int *exist);
 extern void init_configfile(char *opfile);
 extern void server_read_rc(FILE *fp);
 
-/* context.c */
-extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int voice, int cf_addr, 
-			      int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag);
-extern ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str);
-extern void ClearSentences(SENTENCE_DATA *sp);
-extern void ClearSMList();
-extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
-extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
-extern void DiscourseAnalysis(SENTENCE_DATA *sp);
-extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
-extern char *loc_code_to_str(int loc);
-extern int loc_name_to_code(char *loc);
-
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
 extern DBM_FILE db_read_open(char *filename);
