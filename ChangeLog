@@ -1,3 +1,14 @@
+2007-08-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/context.c, system/context.h:
+	Removed on knp-30-RC branch.
+
+	* system/Makefile.am:
+	updated.
+
+	* system/case_analysis.c, system/case_print.c, system/configfile.c, system/dpnd_analysis.c, system/extern.h, system/main.c, system/read_data.c:
+	Removed context-related processes.
+
 2007-08-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
