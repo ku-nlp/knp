@@ -70,10 +70,6 @@ int		OptCFMode;
 int		OptServerFlag;
 char		OptIgnoreChar;
 int		OptReadFeature;
-int		OptAddSvmFeatureUtype;
-int		OptAddSvmFeatureDiscourseDepth;
-int		OptAddSvmFeatureObjectRecognition;
-int		OptAddSvmFeatureReferedNum;
 int		OptNoCandidateBehind;
 int		OptCopula;
 int		OptPostProcess;
@@ -86,7 +82,6 @@ int		OptNEdelete;
 int		OptNEcase;
 int		OptNEparent;
 int		OptNElearn;
-int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
 int		OptParaFix;
 int		OptNbest;
@@ -198,10 +193,6 @@ int      dpnd_lex = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
     OptReadFeature = 0;
-    OptAddSvmFeatureUtype = 0;
-    OptAddSvmFeatureDiscourseDepth = 0;
-    OptAddSvmFeatureObjectRecognition = 0;
-    OptAddSvmFeatureReferedNum = 0;
     OptNoCandidateBehind = 0;
     OptCopula = 0;
     OptPostProcess = 0;
@@ -214,7 +205,6 @@ int      dpnd_lex = 0;
     OptNEcase = 0;
     OptNElearn = 0;
     OptNEparent = 0;
-    OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
@@ -318,112 +308,7 @@ int      dpnd_lex = 0;
 		usage();
 	    }
 	}
-	else if (str_eq(argv[0], "-ellipsis")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	}
-	else if (str_eq(argv[0], "-demonstrative")) {
-	    OptEllipsis |= OPT_DEMO;
-	}
-	else if (str_eq(argv[0], "-anaphora")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	}
 #ifdef USE_SVM
-	else if (str_eq(argv[0], "-ellipsis-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-demonstrative-svm")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-twin")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-ranking")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm-best")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm-ranking")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-print-svm-features")) {
-	    PrintFeatures = 1;
-	}
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
@@ -459,24 +344,6 @@ int      dpnd_lex = 0;
 	    OptNECRF = 1;
 	}
 #endif
-	else if (str_eq(argv[0], "-ellipsis-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-ellipsis-dt-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-demonstrative-dt")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-anaphora-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
 	else if (str_eq(argv[0], "-relation-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	}
@@ -523,18 +390,6 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-relation-noun-dt")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptDiscNounMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-anaphora-baseline")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptAnaphoraBaseline = OPT_BASELINE_NORMAL;
-	}
-	else if (str_eq(argv[0], "-anaphora-baseline-cook")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptAnaphoraBaseline = OPT_BASELINE_COOK;
 	}
 	else if (str_eq(argv[0], "-no-wo-to")) {
 	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
@@ -652,89 +507,8 @@ int      dpnd_lex = 0;
 	else if (str_eq(argv[0], "-disc-or-cf")) {
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
-	else if (str_eq(argv[0], "-ellipsis-or-cf")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_OR_CF;
-	}
-	else if (str_eq(argv[0], "-sototh")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_THRESHOLD = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-dcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    DISTANCE_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-rcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    RENKAKU_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-svcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    STRONG_V_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-atcost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    ADJACENT_TOUTEN_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-lacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    LEVELA_COST = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-tscost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    TEIDAI_STEP = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-quacost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_qua = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-unknowncost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_unknown = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sentencecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_sentence = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-timecost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_tim = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sotocost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_SCORE = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-score-agent")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    EX_match_subject = atoi(argv[0]);
-	}
 	else if (str_eq(argv[0], "-read-feature")) {
 	    OptReadFeature = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
-	    OptAddSvmFeatureUtype = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-discourse-depth")) {
-	    OptAddSvmFeatureDiscourseDepth = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-object-recognition")) {
-	    OptAddSvmFeatureObjectRecognition = 1;
-	}
-	else if (str_eq(argv[0], "-add-svmfeature-referred-num")) {
-	    OptAddSvmFeatureReferedNum = 1;
 	}
 	else if (str_eq(argv[0], "-copula")) {
 	    OptCopula = 1;
