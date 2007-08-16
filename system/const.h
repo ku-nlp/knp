@@ -714,6 +714,8 @@ typedef struct {
     double         occur_RtoL_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
     double         occur_RtoL_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
     double         occur_pos; /* store occur time of different dpnd type */
+    double      dpnd_LtoR;
+    double      dpnd_RtoL;
     int         count_1; /* number of dpnd type */
     int         count_2; /* number of dpnd type */
     int         count_3; /* number of dpnd type */

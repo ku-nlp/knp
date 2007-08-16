@@ -543,14 +543,43 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    if (Language == CHINESE) {
 		if (OptChiProb) {
 		    if (cky_ptr->direction == LtoR) {
-			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0] * 100;
+			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0];
+			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR;
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(dpnd:%d,%d prob:%f LtoR:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, one_score);
+			}
+			if (comma > 0) {
+			    one_score += (1.0 * comma) / (comma + 1);
+			}
+			else {
+			    one_score += 1;
+			}
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(comma:%d)%.6f=>", comma, one_score);
+			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0] * 100;
+			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
+			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
+			}
+			if (comma > 0) {
+			    one_score += (1.0 * comma) / (comma + 1);
+			}
+			else {
+			    one_score += 1;
+			}
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(comma:%d)%.6f=>", comma, one_score);
+			}
 		    }
 
 		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
-			one_score += Chi_root_prob_matrix[g_ptr->num] * 100;
+			one_score += Chi_root_prob_matrix[g_ptr->num];
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
+			}
 		    }
 		}
 		else {
@@ -1499,7 +1528,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							} 
 						    }
 						}
-						if (!OptParaFix && !OptChiProb) {
+						if (!OptParaFix) {// && !OptChiProb) {
 						    /* add similarity of coordination */
 						    if (cky_ptr->para_score > PARA_THRESHOLD && 
 							(Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
@@ -1559,7 +1588,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							} 
 						    }
 						}
-						if (!OptParaFix && !OptChiProb) {
+						if (!OptParaFix) {// && !OptChiProb) {
 						    /* add similarity of coordination */
 						    if (cky_ptr->para_score > PARA_THRESHOLD && 
 							(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
@@ -1632,7 +1661,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    } 
 						}
 					    }
-					    if (!OptParaFix && !OptChiProb) {
+					    if (!OptParaFix) {// && !OptChiProb) {
 						/* add similarity of coordination */
 						if (cky_ptr->para_score > PARA_THRESHOLD && 
 						    (Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
@@ -2421,6 +2450,13 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    direction == 'L') {
 	    return 0;
 	}
+
+/* 	/\* for preposition, it cannot depend on DEC *\/ */
+/* 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&  */
+/* 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") && */
+/* 	    direction == 'R') { */
+/* 	    return 0; */
+/* 	} */
 
 	/* for preposition, if it depend on verb before, the verb should have object */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
