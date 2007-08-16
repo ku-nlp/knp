@@ -1,9 +1,14 @@
+2007-08-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/const.h, system/dpnd_analysis.c
+	Modify dpnd probability definition for Chinese generative model.
+
 2007-08-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
 	Added comments.
 
-007-08-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+2007-08-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/ebcf/chidpnd_prob.dict, dict/ebcf/Makefile.am
 	Add Chinese dpnd learned from both CTB and gigaword.
