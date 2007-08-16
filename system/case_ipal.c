@@ -1601,23 +1601,36 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 
     /* 代表表記を使う場合で代表表記があるとき */
     if (use_rep_flag) {
-	if (OptUseCPNCF && flag == CF_NOUN && (cp = check_feature(t_ptr->f, "BGH")) &&
-	    !strstr(cp, "|") || m_ptr) {
 
-	    /* ただし形容詞語幹の場合は通常の代表表記を使用する */
+	if (m_ptr) {
+            rep_strt = get_mrph_rep(m_ptr);
+            rep_length = get_mrph_rep_length(rep_strt);
+            if (rep_length) {
+                main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string");
+                strncpy(main_pred, rep_strt, rep_length);
+                *(main_pred + rep_length) = '\0';
+                main_pred_malloc_flag = 1;
+            }
+        }
+	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
+	/* ただし、BGH中に"|"が含まれている場合は除く */
+	else if (OptUseCPNCF && flag == CF_NOUN && 
+		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
+
+	    /* 形容詞語幹の場合は通常の代表表記を使用する */
 	    if (check_feature(t_ptr->f, "名詞的形容詞語幹")) {
 		rep_strt = get_mrph_rep(t_ptr->head_ptr);
 		rep_length = get_mrph_rep_length(rep_strt);
 	    }
 	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
-	    else if (OptUseCPNCF && flag == CF_NOUN && cp) {
+	    else {
 		cpncf_flag = 1;
 		rep_strt = cp + 4;
 		rep_length = strlen(rep_strt);
 
 		/* 後方の基本句の分類語彙表の見出しに含まれる基本句は省略解析の対象としない */
 		/* 分類語彙表の見出しが処理対象の基本句より長い場合のみ実行*/
-		cp = m_ptr ? get_mrph_rep(m_ptr) : get_mrph_rep(t_ptr->head_ptr);
+		cp = get_mrph_rep(t_ptr->head_ptr);
 		if (cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
 		    i = 1;
 		    while ((t_ptr - i) && (t_ptr - i)->head_ptr) {
@@ -1628,10 +1641,6 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 			i++;
 		    }
 		}
-	    }
-	    else {
-		rep_strt = get_mrph_rep(m_ptr);
-		rep_length = get_mrph_rep_length(rep_strt);
 	    }
 	    if (rep_length) {
 		main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string");
