@@ -1,3 +1,11 @@
+2007-08-16  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/chidpnd_prob.dict, dict/ebcf/Makefile.am
+	Add Chinese dpnd learned from both CTB and gigaword.
+
+	* system/base_phrase.c, system/case_ipal.c, system/cky.c, system/dpnd_analysis.c, system/koou.c, system/lib_print.c, system/main.c, system/para_dpnd.c, system/quote.c, system/read_data.c, system/read_rule.c, system/tree_conv.c, system/const.h, system/extern.h, system/path.h
+	Add a generative probabilistic model for Chinese, use option -chiprob
+
 2007-08-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
