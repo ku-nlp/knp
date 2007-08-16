@@ -1725,6 +1725,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	len++;
 	bnst_tree[i][len] = bnst_pos[i];
 	len++;
+
 	if (len > max_len) {
 	    max_len = len;
 	}

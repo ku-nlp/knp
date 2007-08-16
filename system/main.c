@@ -33,8 +33,6 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
-double          Chi_case_prob_matrix[BNST_MAX][BNST_MAX];
-double          Chi_case_nominal_prob_matrix[BNST_MAX][BNST_MAX];
 double          Chi_spec_pa_matrix[BNST_MAX][BNST_MAX];  
 double          Chi_pa_matrix[BNST_MAX][BNST_MAX];  
 int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
@@ -42,6 +40,7 @@ int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_end_matrix[BNST_MAX][BNST_MAX];
 CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
+double          Chi_root_prob_matrix[BNST_MAX];
 int             Chi_root;
 
 char		**Options;
@@ -91,6 +90,7 @@ int		OptTimeoutExit;
 int		OptParaFix;
 int		OptNbest;
 int		OptBeam;
+int             OptChiProb; //option for Chinese, 1 means use probabilistic model, 0 means use deterministic model
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -143,9 +143,6 @@ extern int	EX_match_unknown;
 extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
-
-int      dpnd_total = 0;
-int      dpnd_lex = 0;
 
 /*==================================================================*/
 			     void usage()
@@ -220,6 +217,7 @@ int      dpnd_lex = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
     OptBeam = 0;
+    OptChiProb = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -292,6 +290,9 @@ int      dpnd_lex = 0;
 	}
 	else if (str_eq(argv[0], "-no-parafix")) {
 	     OptParaFix = 0;
+	}
+	else if (str_eq(argv[0], "-chiprob")) {
+	     OptChiProb = 1;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
@@ -1142,10 +1143,18 @@ int      dpnd_lex = 0;
     /* 本格的解析 */
     /**************/
 
-    calc_dpnd_matrix(sp);			/* 依存可能性計算 */
+    if ((Language == CHINESE && !OptChiProb) ||
+	Language != CHINESE) {
+	calc_dpnd_matrix(sp);
+    }
+    else if (Language == CHINESE && OptChiProb) {
+	calc_chi_dpnd_matrix_forProbModel(sp);
+    }
+
+    /* 依存可能性計算 */
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
-    if (Language == CHINESE) {
+    if (Language == CHINESE && !OptChiProb) {
 	calc_gigaword_pa_matrix(sp);			/* get count of gigaword pa for Chinese */
     }
 
@@ -1860,7 +1869,6 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 	init_all();
 	knp_main();
 	close_all();
-//	fprintf(stderr,"total:%d, lex:%d\n", dpnd_total, dpnd_lex);
     }
 #ifndef _WIN32
     else if (OptMode == SERVER_MODE) {

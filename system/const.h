@@ -510,7 +510,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	34
+#define DICT_MAX	35
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -545,6 +545,7 @@ typedef struct _RuleVector {
 #define HOWNET_SEM_DEF_DB       31
 #define CHI_SPEC_PA_DB       32
 #define CHI_PA_DB       33
+#define CHI_DPND_PROB_DB        34
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -687,14 +688,14 @@ typedef struct {
     char  	direction_3[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
     char  	direction_4[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
     char  	direction[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
-    int         prob_LtoR_1[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    int         prob_RtoL_1[CHI_DPND_TYPE_MAX];
-    int         prob_LtoR_2[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    int         prob_RtoL_2[CHI_DPND_TYPE_MAX];
-    int         prob_LtoR_3[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    int         prob_RtoL_3[CHI_DPND_TYPE_MAX];
-    int         prob_LtoR_4[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    int         prob_RtoL_4[CHI_DPND_TYPE_MAX];
+    double         prob_LtoR_1[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    double         prob_RtoL_1[CHI_DPND_TYPE_MAX];
+    double         prob_LtoR_2[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    double         prob_RtoL_2[CHI_DPND_TYPE_MAX];
+    double         prob_LtoR_3[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    double         prob_RtoL_3[CHI_DPND_TYPE_MAX];
+    double         prob_LtoR_4[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
+    double         prob_RtoL_4[CHI_DPND_TYPE_MAX];
     double      prob_LtoR[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
     double      prob_RtoL[CHI_DPND_TYPE_MAX];
     double      prob_pos_LtoR; /* store different probability of pos pairs for each type */
@@ -704,11 +705,15 @@ typedef struct {
     char        type_3[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     char        type_4[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    int         occur_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    int         occur_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    int         occur_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    int         occur_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    int         occur_pos; /* store occur time of different dpnd type */
+    double         occur_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_RtoL_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_RtoL_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_RtoL_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_RtoL_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
+    double         occur_pos; /* store occur time of different dpnd type */
     int         count_1; /* number of dpnd type */
     int         count_2; /* number of dpnd type */
     int         count_3; /* number of dpnd type */

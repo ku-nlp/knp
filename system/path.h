@@ -31,6 +31,7 @@
 #define SM_DEL_DB_NAME		"scode/ntt/word2code_del.db"
 #define EVENT_DB_NAME		"event/event.db"
 #define CHI_DPND_DB_NAME	"ebcf/chidpnd.db"
+#define CHI_DPND_PROB_DB_NAME	"ebcf/chidpnd_prob.db"
 #define AUTO_DIC_DB_NAME	"auto/auto.db"
 #define HOWNET_DEF_DB_NAME      "ebcf/hownet_def.db"
 #define HOWNET_TRAN_DB_NAME      "ebcf/hownet_tran.db"

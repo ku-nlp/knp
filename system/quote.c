@@ -6,6 +6,7 @@
                                                S.Ozaki     1994.12. 1
 
     $Id$
+
 ====================================================================*/
 #include "knp.h"
 
@@ -220,16 +221,18 @@ QUOTE_DATA quote_data;
 		Quote_matrix[start][i] = 0;
 		Quote_matrix[end][i] = 0;
 	    }
-	}
 
-	for (j = start; j <= end; j++) {
-	    for (i = j; i <= end; i++) {
-		Chi_quote_start_matrix[j][i] = start;
-		Chi_quote_end_matrix[j][i] = end;
+	    Quote_matrix[start][end] = 0;
+
+	    for (j = start; j <= end; j++) {
+		for (i = j; i <= end; i++) {
+		    Chi_quote_start_matrix[j][i] = start;
+		    Chi_quote_end_matrix[j][i] = end;
+		}
 	    }
+	    Chi_quote_start_matrix[start][end] = -1;
+	    Chi_quote_end_matrix[start][end] = -1;
 	}
-	Chi_quote_start_matrix[start][end] = -1;
-	Chi_quote_end_matrix[start][end] = -1;
     }
 }
 
@@ -241,16 +244,19 @@ QUOTE_DATA quote_data;
 
     init_quote(sp);
 
-    if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
-	if (quote_p == CONTINUE) return quote_p;
+   if (Language != CHINESE ||
+	(Language == CHINESE && !OptChiProb)) {
+	if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
+	    if (quote_p == CONTINUE) return quote_p;
 
-	if (OptDisplay == OPT_DEBUG && Language != CHINESE) print_quote();
+	    if (OptDisplay == OPT_DEBUG && Language != CHINESE) print_quote();
 
-	if (Language != CHINESE) {
-	    mask_quote(sp);			/* 墊昫及踏五晶尹 */
-	}
-	else {
-	    mask_quote_for_chi(sp); // mask quote for Chinese
+	    if (Language != CHINESE) {
+		mask_quote(sp);			/* 墊昫及踏五晶尹 */
+	    }
+	    else {
+		mask_quote_for_chi(sp); // mask quote for Chinese
+	    }
 	}
     }
 

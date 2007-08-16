@@ -7,9 +7,6 @@
     $Id$
 ====================================================================*/
 
-extern int              dpnd_total;
-extern int              dpnd_lex;
-
 extern int		Thesaurus;
 extern int		ParaThesaurus;
 extern THESAURUS_FILE	THESAURUS[];
@@ -42,14 +39,7 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 
 /* store Chinese dpnd between words */
 extern CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
-
-/* store probability for each verb pre-arg pair from case-frame for Chinese */
-/* for cell (i,j), i is the position of predicate, j is the position of argument */
-extern double           Chi_case_prob_matrix[][BNST_MAX];
-
-/* store probability for each nominal pre-arg pair from case-frame for Chinese */
-/* for cell (i,j), i is the position of predicate, j is the position of argument */
-extern double           Chi_case_nominal_prob_matrix[][BNST_MAX];  
+extern double          Chi_root_prob_matrix[];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
@@ -63,10 +53,6 @@ extern int              Chi_quote_start_matrix[][BNST_MAX];
 extern int              Chi_quote_end_matrix[][BNST_MAX];
 
 extern int              Chi_root; /* store the root of this sentence */
-
-/* DB file for Chinese dpnd rule */
-extern DBM_FILE chi_dpnd_db;
-extern int     CHIDpndExist;
 
 extern char		**Options;
 extern int 		OptAnalysis;
@@ -115,6 +101,7 @@ extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
 extern int		OptNbest;
 extern int		OptBeam;
+extern int              OptChiProb; //option for Chinese, 1 means use probabilistic model, 0 means use deterministic model
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
@@ -320,6 +307,7 @@ extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);
 extern int after_decide_dpnd(SENTENCE_DATA *sp);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
+extern void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp);
 extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
 extern void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag);
 extern void undo_tag_bnst_postprocess(SENTENCE_DATA *sp);
