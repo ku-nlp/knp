@@ -637,10 +637,7 @@ static int dpndID = 0;
 
 	/* calculate root prob */
 	if (lex_root_occur[0] != 0) {
-	    lamda_root = lex_root_occur[0] / (lex_root_occur[0] + 1);
-	}
-	else if (pos_root_occur[0] != 0) {
-	    lamda_root = pos_root_occur[0] / (pos_root_occur[0] + 1);
+	    lamda_root = 0.7;
 	}
 
 	if (lex_root_occur[0] != 0 && pos_root_occur[0] != 0) {

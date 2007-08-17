@@ -559,8 +559,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
+			one_score *= Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
+			one_score *= Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
 			}
@@ -575,12 +575,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 
-		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
+//		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
 			one_score += Chi_root_prob_matrix[g_ptr->num];
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
 			}
-		    }
+//		    }
 		}
 		else {
 		    if (cky_ptr->direction == LtoR) {
