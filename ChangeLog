@@ -1,3 +1,8 @@
+2007-08-19  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Deleted <否定> from the adjective "ない" of <意味有>.
+
 2007-08-17  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c
