@@ -1,7 +1,5 @@
 SUBDIRS = .
 
-EXTRA_DIST = chidpnd.dict chicase.prob chicase_nominal.prob
-
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
@@ -14,18 +12,10 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-nodist_dic_DATA +=  chidpnd.db
-
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_spec_pa.db chi_pa.db
-
-HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
-endif
-
-if HOWNET_EXIST
-nodist_dic_DATA += $(HOWNET_DBS)
 endif
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
@@ -96,78 +86,6 @@ cfcase.prob:
 	true
 
 cfcase.db: cfcase.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chi_spec_pa.dict:
-	true
-
-chi_spec_pa.db: chi_spec_pa.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chi_pa.dict:
-	true
-
-chi_pa.db: chi_pa.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chidpnd.dict:
-	true
-
-chidpnd.db: chidpnd.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.def:
-	true
-
-hownet_def.db: HowNet.def
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.tran:
-	true
-
-hownet_tran.db: HowNet.tran
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.antonym:
-	true
-
-hownet_antonym.db: HowNet.antonym
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.category:
-	true
-
-hownet_category.db: HowNet.category
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.SemDef:
-	true
-
-hownet_sem_def.db: HowNet.SemDef
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-cfex.logprob:
-	true
-
-cfex.db: cfex.logprob
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
