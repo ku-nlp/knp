@@ -156,7 +156,7 @@ KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $JUMAN_LIBS $DB_LIBS"
 
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
-CF_COMMAND="$packagesrcdir/system/ipal"
+CF_COMMAND="$packagesrcdir/system/make_cf_index"
 
 AC_MSG_CHECKING([Bunrui Goi Hyou (BGH)])
 if test x"$BGH_FILE" != x; then

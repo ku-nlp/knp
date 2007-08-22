@@ -5,7 +5,7 @@ INCLUDES = @KNP_CFLAGS@
 bin_PROGRAMS = knp
 
 pkglibexecdir= $(libexecdir)/knp
-pkglibexec_PROGRAMS = ipal make_db
+pkglibexec_PROGRAMS = make_cf_index make_db
 
 knp_SOURCES = \
 	case_analysis.c \
