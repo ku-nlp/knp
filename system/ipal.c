@@ -32,11 +32,6 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
     unsigned char *point;
     int length = 0;
 
-    /* 読みをキーするとき */
-    if (flag == 1) {
-	fprintf(fp, "%s %lu:%d\n", entry, address, size);
-    }
-
     if (pp) {
 	for (point = hyouki; *point; point++) {
 	    /* 用例の区切り */
@@ -63,10 +58,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
     }
     else {
-	/* 読みと異なる場合に出力 */
-	if (flag != 1 || strcmp(hyouki, entry)) {
-	    fprintf(fp, "%s %lu:%d\n", hyouki, address, size);
-	}
+	fprintf(fp, "%s %lu:%d\n", hyouki, address, size);
     }
 }
 
