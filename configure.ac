@@ -265,7 +265,6 @@ svm/Makefile
 svm_light/Makefile
 crf/Makefile
 rule/Makefile
-chinese_rule/Makefile
 doc/Makefile
 dict/Makefile
 dict/src/Makefile
