@@ -12,12 +12,12 @@
 \def\fr{$\rangle$}
 
 \title{\bf 日本語構文解析システム \\
-        KNP version 2.0 \\
+        KNP version 3.0 \\
         使用説明書}
 \author{黒橋 禎夫 \and 河原 大輔}
-\date{平成17年9月\\
-\rule{0mm}{110mm}Copyright \copyright\ 2005\begin{tabular}[t]{l}
-                                東京大学大学院情報理工学系研究科 \\
+\date{平成19年9月\\
+\rule{0mm}{110mm}Copyright \copyright\ 2007\begin{tabular}[t]{l}
+                                京都大学大学院情報学研究科 \\
                                 \end{tabular}
 }
 
@@ -31,10 +31,10 @@
 
 \begin{small}
 \noindent
-KN parser (Kurohashi-Nagao parser) 2.0 Users Manual
+KN parser (Kurohashi-Nagao parser) 3.0 Users Manual
 
 \noindent
-Copyright (c) 2005 University of Tokyo \\
+Copyright (c) 2007 Kyoto University \\
 All rights reserved.
 
 \noindent
@@ -48,16 +48,16 @@ are met:
  \item Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
    documentation and/or other materials provided with the distribution.
- \item The name University of Tokyo may not be used to endorse or promote
+ \item The name Kyoto University may not be used to endorse or promote
    products derived from this software without specific prior written
    permission.
 \end{enumerate}
 
 \noindent
-THIS SOFTWARE IS PROVIDED BY University of Tokyo ``AS IS'' AND ANY
+THIS SOFTWARE IS PROVIDED BY KYOTO UNIVERSITY ``AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE University of Tokyo BE
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL KYOTO UNIVERSITY BE
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -78,6 +78,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  Version 2.0b5 & 29 October 1997 \\
  Version 2.0b6 & 9 June 1998 \\
  Version 2.0 & 7 September 2005 \\
+ Version 3.0 & 30 September 2007 \\
 \end{tabular}
 \end{small}
 
@@ -133,9 +134,9 @@ KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解析結果
   想定していない．しかし，ユーザによるある程度の文法修正は可能である．
 \end{itemize}
 
-東京大学黒橋研究室では現在もシステムの改良を継続的に行っており，ユーザの
+京都大学黒橋研究室では現在もシステムの改良を継続的に行っており，ユーザの
 皆様からの問題点の指摘を歓迎致します(連絡先 : {\sf
-nl-resource@kc.t.u-tokyo.ac.jp})．
+nl-resource@nlp.kuee.kyoto-u.ac.jp})．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,7 +146,7 @@ nl-resource@kc.t.u-tokyo.ac.jp})．
 KNPは以下のツール・辞書を用いますので，あらかじめご用意ください．
 
 \begin{enumerate}
- \item JUMAN 5.1以上 \\ (http://www.kc.t.u-tokyo.ac.jp/nl-resource/juman.html)
+ \item JUMAN 6.0以上 \\ (http://nlp.kuee.kyoto-u.ac.jp/nl-resource/juman.html)
  \item 分類語彙表 増補改訂版 \\
 (http://www.kokken.go.jp/katsudo/kanko/data/index.html) \\
  \item Perl \\ (http://www.perl.com/)
@@ -163,7 +164,7 @@ KNPは以下のツール・辞書を用いますので，あらかじめご用意ください．
 KNPのインストールは以下の手順で行います．
 
 \begin{enumerate}
- \item \texttt{knp-2.0.tar.gz}を展開し，\texttt{knp-2.0}ディレクトリに移
+ \item \texttt{knp-3.0.tar.gz}を展開し，\texttt{knp-3.0}ディレクトリに移
        動する．
  \item `\texttt{./configure}'を実行する．\\
        `\texttt{./configure}'にオプションを与えることにより，インストー
@@ -201,7 +202,7 @@ KNPのインストールは以下の手順で行います．
 \subsection{Windowsにおけるインストール方法}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\texttt{knp-2.0.exe}を実行し，表示される指示に従ってインストールを行いま
+\texttt{knp-3.0.exe}を実行し，表示される指示に従ってインストールを行いま
 す．以下のファイルがインストールされます．\texttt{\$PREFIX}は，デフォル
 トでは\texttt{C:\yen Program Files\yen knp}ですが，インストール途中で設
 定できます．
