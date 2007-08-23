@@ -1,3 +1,10 @@
+2007-08-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/corefer.c:
+	先頭の形態素を代表表記で比較することにより
+	「立てこもる事件」と「立てこもり事件」、「拉致の被害者」と「拉致被害者」などの
+	共参照関係を認識できるように変更
+
 2007-08-22  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/ipal.c:

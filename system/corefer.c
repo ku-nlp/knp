@@ -103,9 +103,11 @@ char *SynonymFile;
     /* 複合名詞 */
     /* 固有表現は基本的にそのまま(LOCATION、DATEは分解) */
     /* それ以外は対象の語から文節先頭までを登録 */
+    /* この際、先頭の形態素のみ代表表記を保存して、別に保存した照応詞候補も作成する */
+    /* ex. 「立てこもり事件」 → 「立てこもり事件」、「立て籠る/たてこもる+事件」 */
 
-    int i, j, k, l, tag_num, mrph_num;
-    char word[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
+    int i, j, k, l, tag_num, mrph_num, rep_flag;
+    char word[WORD_LEN_MAX * 2], word_rep[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
     TAG_DATA *tag_ptr;      
 
     /* 文節単位で文の前から処理 */
@@ -173,7 +175,7 @@ char *SynonymFile;
 		    continue;
 		}
 
-		word[0] = '\0';
+		word[0] = word_rep[0] = '\0';
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
 		     k >= 0; k--) {
 		    
@@ -186,16 +188,31 @@ char *SynonymFile;
 		    /* 「・」などより前は含めない */
 		    if (!strcmp(((tag_ptr + j)->head_ptr - k)->Goi2, "・") ||
 			check_feature(((tag_ptr + j)->head_ptr - k)->f, "括弧終")) {
-			if (k > 0) word[0] = '\0';
+			if (k > 0) word[0] = word_rep[0] = '\0';
 		    }
 		    else {
 			if (OptCorefer == 5) word[0] = '\0';
 			strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
+			if (word_rep[0] == '\0') {
+			    if (k > 0 &&
+				((cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記変更")) ||
+				 (cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記")))) {
+				strcat(word_rep, strchr(cp, ':') + 1);
+				strcat(word_rep, "+");
+			    }
+			}
+			else {
+			    strcat(word_rep, ((tag_ptr + j)->head_ptr - k)->Goi2);
+			}
 		    }
 		}
 
 		if (strncmp(word, "\0", 1)) {
 		    sprintf(buf, "照応詞候補:%s", word);
+		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		}
+		if (strncmp(word_rep, "\0", 1)) {
+		    sprintf(buf, "Ｔ照応詞候補:%s", word_rep);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
 	    }
@@ -234,12 +251,14 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-int compare_strings(char *antecedent, char *anaphor, char *ana_ne, int yomi_flag, TAG_DATA *tag_ptr)
+int compare_strings(char *antecedent, char *anaphor, char *ana_ne, 
+		    int yomi_flag, TAG_DATA *tag_ptr, char *rep)
 /*==================================================================*/
 {
     /* 照応詞候補と先行詞候補を比較 */
-    /* 先行詞候補を絞り込んでいないためやや効率が悪い */
-    
+    /* yomi_flagが立っている場合は漢字と読みの照応 */
+    /* repがある場合は先頭形態素を代表表記化して比較する場合(ex.「立てこもる事件 = 立てこもり事件」) */
+
     int i, j, left, right;
     char *ant_ne, word[WORD_LEN_MAX * 4];
 
@@ -278,6 +297,13 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne, int yomi_flag
 
     /* 異なる種類の固有表現の場合は不可 */ 
     if (ana_ne && ant_ne && strncmp(ana_ne, ant_ne, 7)) return 0;
+
+    /* repがある場合は先頭形態素を代表表記化して比較する場合 */
+    if (rep) {
+	if (!strncmp(anaphor, rep, strlen(rep)) &&
+	    !strncmp(anaphor + strlen(rep), "+", 1) &&
+	    !strcmp(anaphor + strlen(rep) + 1, antecedent)) return 1;
+    }
 
     /* 同表記の場合 */
     if (!strcmp(antecedent, anaphor)) return 1;
@@ -351,12 +377,20 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     int j, k, l, m, yomi_flag, word2_flag, setubi_flag;
     /* word1:「・」などより前を含めない先行詞候補(先行詞候補1)
        word2:「・」などより前を含める先行詞候補(先行詞候補2)
-       yomi2:先行詞候補2の読み方 */
-    char word1[WORD_LEN_MAX], word2[WORD_LEN_MAX], yomi2[WORD_LEN_MAX], buf[WORD_LEN_MAX];
+       yomi2:先行詞候補2の読み方 
+       anaphor_rep:照応詞候補の先頭形態素を代表表記化したもの */
+    char word1[WORD_LEN_MAX], word2[WORD_LEN_MAX], yomi2[WORD_LEN_MAX], buf[WORD_LEN_MAX], 
+	*anaphor_rep;
     char *cp, CO[WORD_LEN_MAX];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
  
+    if ((cp = check_feature((sp->tag_data + i)->f, "Ｔ照応詞候補"))) {
+	anaphor_rep = strchr(cp, ':') + 1;
+    }
+    else {
+	anaphor_rep = NULL;
+    }
     yomi_flag = (check_feature((sp->tag_data + i)->f, "読み方")) ? 1 : 0;
 
     sdp = sentence_data + sp->Sen_num - 1;
@@ -418,14 +452,23 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		
 		word2_flag = 0;
 		if (setubi_flag ||
-		    compare_strings(word1, anaphor, ne, 0, tag_ptr) ||
-		    compare_strings(word2, anaphor, ne, 0, tag_ptr) && (word2_flag = 1) ||
+		    compare_strings(word1, anaphor, ne, 0, tag_ptr, NULL) ||
+		    compare_strings(word2, anaphor, ne, 0, tag_ptr, NULL) && (word2_flag = 1) ||
+		    /* 文節の先頭まで含む場合は直前の基本句も考慮に入れる */
+		    /* (ex.「立てこもる事件 = 立てこもり事件」) */
+		    l == tag_ptr->head_ptr - (tag_ptr->b_ptr)->mrph_ptr && anaphor_rep && 
+		    !check_feature(tag_ptr->f, "文節内") && /* 文節の主辞の場合のみ */
+		    tag_ptr->b_ptr->child[0] && /* 直前の基本句と係り受け関係にある */
+		    check_feature((tag_ptr->b_ptr - 1)->f, "連体修飾") &&
+		    ((cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "代表表記変更")) ||
+		     (cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "代表表記"))) &&
+		    compare_strings(word1, anaphor_rep, ne, 0, tag_ptr, strchr(cp, ':') + 1) ||
 		    /* 読み方の場合(同一文かつ10基本句未満) */
 		    yomi_flag && j == 0 && (i - k < 10) &&
-		    compare_strings(yomi2, anaphor, ne, 1, tag_ptr) ||
+		    compare_strings(yomi2, anaphor, ne, 1, tag_ptr, NULL) ||
 		    yomi_flag && j == 0 && (i - k < 10) &&
 		    check_feature((tag_ptr + 1)->f, "括弧始") &&
-		    compare_strings(yomi2, anaphor, ne, 2, tag_ptr) ||
+		    compare_strings(yomi2, anaphor, ne, 2, tag_ptr, NULL) ||
 		    /* 人称名詞の場合の特例 */
 		    (check_feature((sp->tag_data + i)->f, "人称代名詞") &&
 		     check_feature(tag_ptr->f, "NE:PERSON")) ||
@@ -597,7 +640,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		while (i > 0) {
 		    if ((cp = check_feature((sp->tag_data + i - 1)->f, "照応詞候補")) &&
 			!strncmp(cp, anaphor, strlen(cp))) {
-			assign_cfeature(&((sp->tag_data + i - 1)->f), "共参照内", FALSE);			
+			assign_cfeature(&((sp->tag_data + i - 1)->f), "共参照内", FALSE);
 			i--;
 		    }
 		    else break;
