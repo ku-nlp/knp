@@ -18,9 +18,12 @@ char *SynonymFile;
 {
     char *db_filename;
 
-    if (!SynonymFile) return;
-
-    db_filename = check_dict_filename(SynonymFile, TRUE);
+    if (SynonymFile) {
+	db_filename = check_dict_filename(SynonymFile, TRUE);
+    }
+    else {
+	db_filename = check_dict_filename(SYONONYM_DIC_DB_NAME, FALSE);
+    }
 
     if ((synonym_db = DB_open(db_filename, O_RDONLY, 0)) == NULL) {
 	if (OptDisplay == OPT_DEBUG) {

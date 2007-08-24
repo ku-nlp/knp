@@ -275,5 +275,6 @@ dict/scode/ntt/Makefile
 dict/ebcf/Makefile
 dict/gcf/Makefile
 dict/auto/Makefile
+dict/synonym/Makefile
 ])
 AC_OUTPUT

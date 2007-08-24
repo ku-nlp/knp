@@ -1489,9 +1489,9 @@ PARSED:
 	}
 	
 	/* 固有表現認識のためのキャッシュ作成 */
-/* 	if (OptNE) { */
-/* 	    make_ne_cache(sp); */
-/* 	} */
+	if (OptNE) {
+	    make_ne_cache(sp);
+	}
 
 	/************/
 	/* 結果表示 */

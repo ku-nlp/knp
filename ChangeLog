@@ -1,3 +1,11 @@
+2007-08-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/synonym/Makefile.am, dict/synonym/synonym.idx:
+	added.
+
+	* configure.ac, dict/Makefile.am, system/corefer.c, system/path.h:
+	同義表現ファイルをCVSに追加しmake時にdatabaseに変換するように変更.
+	
 2007-08-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c:
