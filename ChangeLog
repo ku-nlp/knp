@@ -1,3 +1,14 @@
+2007-08-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/synonym/Makefile.am, dict/synonym/synonym.idx:
+	added.
+	
+	* configure.ac, dict/Makefile.am, system/corefer.c, system/path.h:
+	同義表現ファイルをCVSに追加しmake時にdatabaseに変換するように変更.
+	先頭の形態素を代表表記で比較することにより
+	「立てこもる事件」と「立てこもり事件」、「拉致の被害者」と「拉致被害者」などの
+	共参照関係を認識できるように変更
+
 2007-08-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/context.c, system/context.h:
