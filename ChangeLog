@@ -1,3 +1,12 @@
+2007-08-27  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/const.h, system/dpnd_analysis.c, system/path.h
+	Modify generative model for Chinese.
+
+	* dict/ebcf/chidpnd_prob.dict, dict/ebcf/chi_dis_comma_lex.dict, dict/ebcf/chi_dis_comma_bk1.dict, dict/ebcf/chi_dis_comma_bk2.dict, dict/ebcf/chi_dis_comma_bk.dict, dict/ebcf/Makefile.am
+	Add dictionaries for Chinese generative model.
+
+
 2007-08-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/synonym/Makefile.am, dict/synonym/synonym.idx:
