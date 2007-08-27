@@ -5346,13 +5346,12 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
-	      void DiscourseAnalysis(SENTENCE_DATA *sp)
+   void DiscourseAnalysis(SENTENCE_DATA *sp, SENTENCE_DATA *sp_new)
 /*==================================================================*/
 {
     int i, j, k, l;
     float score;
     ELLIPSIS_MGR workem, maxem, maxem_copula;
-    SENTENCE_DATA *sp_new;
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
     CASE_FRAME *cf_ptr;
@@ -5363,12 +5362,8 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
     AssignFeaturesByProgram(sp);
     RegisterAllSurfaceEntity(sp); /* 表層に出現している要素を参照回数DBに登録 */
-    sp_new = PreserveSentence(sp);
 
-    /* 共参照解析 */
-    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp);
-
-    if (sp->available && (OptEllipsis != OPT_COREFER)) {
+    if (sp->available) {
 	Bcheck = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "DiscourseAnalysis");
 	for (i = 0; i < sp->Sen_num; i++) {
 	    Bcheck[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "DiscourseAnalysis");

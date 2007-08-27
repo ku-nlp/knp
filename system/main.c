@@ -1343,6 +1343,7 @@ PARSED:
 {
     int i, success = 1, flag;
     FILE *Jumanfp;
+    SENTENCE_DATA *sp_new;
 
     SENTENCE_DATA *sp = &current_sentence_data;
 
@@ -1471,7 +1472,9 @@ PARSED:
 	
 	if (OptEllipsis) {
 	    make_dpnd_tree(sp);
-	    DiscourseAnalysis(sp);
+	    sp_new = PreserveSentence(sp);
+	    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
+	    if (OptEllipsis != OPT_COREFER) DiscourseAnalysis(sp, sp_new);
 	}
 
 	/* entity 情報の feature の作成 */

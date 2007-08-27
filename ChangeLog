@@ -1,3 +1,8 @@
+2007-08-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/extern.h, system/main.c:
+	共参照解析のみを行う際はDiscourseAnalysisを呼び出さないように変更
+
 2007-08-27  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/const.h, system/dpnd_analysis.c, system/path.h

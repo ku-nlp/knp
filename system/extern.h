@@ -290,7 +290,7 @@ extern void ClearSentences(SENTENCE_DATA *sp);
 extern void ClearSMList();
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
-extern void DiscourseAnalysis(SENTENCE_DATA *sp);
+extern void DiscourseAnalysis(SENTENCE_DATA *sp, SENTENCE_DATA *sp_new);
 extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
 extern char *loc_code_to_str(int loc);
 extern int loc_name_to_code(char *loc);
