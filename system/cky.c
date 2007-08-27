@@ -548,11 +548,17 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f LtoR:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, one_score);
 			}
+
+			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis;
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
+			}
+
 			if (comma > 0) {
-			    one_score += (1.0 * comma) / (comma + 1);
+			    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_comma1;
 			}
 			else {
-			    one_score += 1;
+			    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_comma0;
 			}
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(comma:%d)%.6f=>", comma, one_score);
@@ -564,11 +570,17 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
 			}
+
+			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_dis;
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
+			}
+
 			if (comma > 0) {
-			    one_score += (1.0 * comma) / (comma + 1);
+			    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_comma1;
 			}
 			else {
-			    one_score += 1;
+			    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_comma0;
 			}
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(comma:%d)%.6f=>", comma, one_score);

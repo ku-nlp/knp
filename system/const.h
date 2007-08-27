@@ -510,7 +510,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	35
+#define DICT_MAX	39
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -546,6 +546,10 @@ typedef struct _RuleVector {
 #define CHI_SPEC_PA_DB       32
 #define CHI_PA_DB       33
 #define CHI_DPND_PROB_DB        34
+#define CHI_DIS_COMMA_LEX_DB        35
+#define CHI_DIS_COMMA_BK1_DB        36
+#define CHI_DIS_COMMA_BK2_DB        37
+#define CHI_DIS_COMMA_BK_DB        38
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -716,6 +720,50 @@ typedef struct {
     double         occur_pos; /* store occur time of different dpnd type */
     double      dpnd_LtoR;
     double      dpnd_RtoL;
+
+    double      prob_dis_1[2];
+    double      occur_dis_1[2];
+    double      prob_neg_dis_1[2];
+    double      occur_neg_dis_1[2];
+    double      prob_comma0_1[2];
+    double      prob_neg_comma0_1[2];
+    double      prob_comma1_1[2];
+    double      prob_neg_comma1_1[2];
+
+    double      prob_dis_2[2];
+    double      occur_dis_2[2];
+    double      prob_neg_dis_2[2];
+    double      occur_neg_dis_2[2];
+    double      prob_comma0_2[2];
+    double      prob_neg_comma0_2[2];
+    double      prob_comma1_2[2];
+    double      prob_neg_comma1_2[2];
+
+    double      prob_dis_3[2];
+    double      occur_dis_3[2];
+    double      prob_neg_dis_3[2];
+    double      occur_neg_dis_3[2];
+    double      prob_comma0_3[2];
+    double      prob_neg_comma0_3[2];
+    double      prob_comma1_3[2];
+    double      prob_neg_comma1_3[2];
+
+    double      prob_dis_4[2];
+    double      occur_dis_4[2];
+    double      prob_neg_dis_4[2];
+    double      occur_neg_dis_4[2];
+    double      prob_comma0_4[2];
+    double      prob_neg_comma0_4[2];
+    double      prob_comma1_4[2];
+    double      prob_neg_comma1_4[2];
+
+    double      prob_dis;
+    double      prob_neg_dis;
+    double      prob_comma0;
+    double      prob_neg_comma0;
+    double      prob_comma1;
+    double      prob_neg_comma1;
+
     int         count_1; /* number of dpnd type */
     int         count_2; /* number of dpnd type */
     int         count_3; /* number of dpnd type */
