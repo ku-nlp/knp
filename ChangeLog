@@ -1,3 +1,8 @@
+2007-08-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/corefer.c, system/main.c:
+	-coreferオプションを使用できるように変更
+
 2007-08-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* dict/synonym/Makefile.am, dict/synonym/synonym.idx:

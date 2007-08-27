@@ -359,29 +359,7 @@ int      dpnd_lex = 0;
 	    OptUseCPNCF = FALSE;
 	}
 	else if (str_eq(argv[0], "-corefer")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
-	}
-	else if (str_eq(argv[0], "-corefer1")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptUseNCF = TRUE;
-	    OptCorefer = 1; /* 名詞格フレームを用いる */
-	}
-	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 2; /* 主辞と同様に扱う */
-	}
-	else if (str_eq(argv[0], "-corefer3")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 3; /* 主辞以外は修飾されないと考える */
-	}
-	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
-	}
-	else if (str_eq(argv[0], "-corefer5")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 5; /* 修飾を考慮しない */
+	    OptCorefer = 1;
 	}
 	else if (str_eq(argv[0], "-relation-noun-best")) {
 	    OptEllipsis |= OPT_REL_NOUN;
@@ -624,7 +602,7 @@ int      dpnd_lex = 0;
 	close_db_for_NE();
     }
 #endif
-    if (OptEllipsis & OPT_COREFER)
+    if (OptCorefer)
 	close_Synonym_db();
 
 #ifdef DB3DEBUG
@@ -681,7 +659,7 @@ int      dpnd_lex = 0;
 	init_ne_cache();
     }
 
-    if (OptEllipsis & OPT_COREFER) {
+    if (OptCorefer) {
 	init_Synonym_db();
 	/* init_entity_cache(); */
     }
@@ -1062,7 +1040,7 @@ PARSED:
     }
 
     /* 照応解析に必要なFEATUREの付与 */
-    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
+    if (OptCorefer) 
 	assign_anaphor_feature(sp);
 
     /* 文節情報の表示 */
@@ -1155,7 +1133,7 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptEllipsis) {
+	if (OptEllipsis || OptCorefer) {
 	    /* 中身は保存しておくので */
 	    for (i = 0; i < sp->Mrph_num; i++) {
 		(sp->mrph_data+i)->f = NULL;
@@ -1200,6 +1178,14 @@ PARSED:
 	    sp->Sen_num--;	    
 	    continue;
 	}
+
+	/* 共参照解析 */
+	
+	if (OptCorefer) {
+	    PreserveSentence(sp);
+	    corefer_analysis(sp);
+	}
+
 
 	/* entity 情報の feature の作成 */
 	if (OptDisplay  == OPT_ENTITY) {

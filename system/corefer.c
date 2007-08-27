@@ -48,56 +48,6 @@ char *SynonymFile;
 }
 
 /*==================================================================*/
-		int get_modify_num(TAG_DATA *tag_ptr)
-/*==================================================================*/
-{
-    /* 並列を除いていくつの文節に修飾されているかを返す */
-    /* ＡのＢＣとなっている場合はＡがＢに係っているかの判断も行う */
-
-    int i, ret;
-    BNST_DATA *b_ptr;
-
-    b_ptr = tag_ptr->b_ptr;
-
-    /* OptCorefer >= 4の場合は修飾されているかどうかを用いない */
-    if (OptCorefer >= 4) return 0;
-
-    /* 所属する文節が修飾されていない場合 */
-    if (!b_ptr->child[0]) {
-	return 0;
-    }
-
-    if (OptCorefer == 1) {
-	/* "直前タグ受"である場合は主辞以外でも修飾されていると考える */
-	if (tag_ptr->head_ptr != b_ptr->head_ptr) {
-	    if (check_feature(tag_ptr->f, "直前タグ受")) 
-		return 1;
-	    else 
-		return 0;
-	}
-    }
-    else if (OptCorefer == 3) {
-	/* 文節の主辞でないなら修飾されていないと判断する */
-    	if (tag_ptr->head_ptr != b_ptr->head_ptr) {
-	    return 0;   
-	}
-    }
-
-    /* 所属する文節が修飾されていたらその数を返す */
-    if ((b_ptr->child[0])->para_type) {
-	b_ptr = b_ptr->child[0];
-    }
-    for (i = ret = 0; b_ptr->child[i]; i++) {
-	if (!check_feature((b_ptr->child[i])->f, "係:カラ格") &&
-	    !check_feature((b_ptr->child[i])->f, "係:同格未格") &&
-	    !check_feature((b_ptr->child[i])->f, "係:同格連体") &&
-	    !check_feature((b_ptr->child[i])->f, "係:同格連用"))
-	    ret++; 
-    }
-    return ret;
-}
-
-/*==================================================================*/
 	    void assign_anaphor_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -387,7 +337,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     char *cp, CO[WORD_LEN_MAX];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
- 
+
     if ((cp = check_feature((sp->tag_data + i)->f, "Ｔ照応詞候補"))) {
 	anaphor_rep = strchr(cp, ':') + 1;
     }
@@ -398,14 +348,14 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
     sdp = sentence_data + sp->Sen_num - 1;
     for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
-	
+
 	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */
-	    
+
 	    tag_ptr = (sdp - j)->tag_data + k;	    		
-	    
+
 	    /* 照応詞候補である場合以外は先行詞候補としない */
 	    if (!check_feature(tag_ptr->f, "照応詞候補")) continue;
-			
+		
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
 	    if (setubi && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
 
@@ -616,15 +566,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	/* 共参照解析を行う条件 */
 	/* 照応詞候補であり、固有表現中の語、または */
 	/* 連体詞形態指示詞以外に修飾されていない語 */
-	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
-	    (check_feature((sp->tag_data + i)->f, "NE") ||  
-	     check_feature((sp->tag_data + i)->f, "NE内") || /* DATA、LOCATIONなど一部 */
-	     check_feature((sp->tag_data + i)->f, "読み方") ||
-	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
-	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
-	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が読点である */
-	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "連体詞形態指示詞") ||
-	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "照応接頭辞"))) {
+	if (anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) {
 	    
 	    /* 指示詞の場合 */
 	    if (check_feature((sp->tag_data + i)->f, "指示詞")) {
@@ -659,116 +601,157 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 }
 
 /*==================================================================*/
-int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
+	  SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int j, k, l, tag, sent;
-    char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
-    SENTENCE_DATA *sdp;
-    TAG_DATA *tag_ptr, *tag_ptr2;
- 
-    sdp = sentence_data + sp->Sen_num - 1;
-    for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
+    /* 文解析結果の保持 */
+
+    int i, j;
+    SENTENCE_DATA *sp_new;
+
+    /* 一時的措置 */
+    if (sp->Sen_num > SENTENCE_MAX) {
+	fprintf(stderr, "Sentence buffer overflowed!\n");
+	sp->Sen_num = 1;
+    }
+
+    sp_new = sentence_data + sp->Sen_num - 1;
+
+    sp_new->available = sp->available;
+    sp_new->Sen_num = sp->Sen_num;
+    if (sp->Comment) {
+	sp_new->Comment = strdup(sp->Comment);
+    }
+
+    sp_new->Mrph_num = sp->Mrph_num;
+    sp_new->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA)*sp->Mrph_num, 
+						 "MRPH DATA");
+    for (i = 0; i < sp->Mrph_num; i++) {
+	sp_new->mrph_data[i] = sp->mrph_data[i];
+    }
+
+    sp_new->Bnst_num = sp->Bnst_num;
+    sp_new->New_Bnst_num = sp->New_Bnst_num;
+    sp_new->bnst_data = 
+	(BNST_DATA *)malloc_data(sizeof(BNST_DATA)*(sp->Bnst_num + sp->New_Bnst_num), 
+				 "BNST DATA");
+    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 	
-	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */
-   
-	    tag_ptr = (sdp - j)->tag_data + k;	    		
-		
-	    /* 照応詞候補である場合以外は先行詞候補としない */
-	    if (!check_feature(tag_ptr->f, "照応詞候補")) continue;
+	sp_new->bnst_data[i] = sp->bnst_data[i]; /* ここでbnst_dataをコピー */
 
-	    /* 照応詞候補と同じ表記のものしか先行詞候補としない */
-	    if (strcmp((sp->tag_data + i)->head_ptr->Goi2, tag_ptr->head_ptr->Goi2))
-		continue;
-	    
-	    /* 格解析結果がある */
-	    sprintf(buf, "格解析結果:%s:名1", tag_ptr->head_ptr->Goi2);
-	    cp = check_feature(tag_ptr->f, buf);
-	    if (!cp) continue;
-	    
-	    /* <格解析結果:結果:名1:ノ/O/アンケート/0/1/?> */
-	    for (l = 0; l < 3; l++) {
-		while (strncmp(cp, "/", 1)) cp++;
-		    cp++;
-	    }
-	    if (!sscanf(cp, "%d/%d/", &tag, &sent)) continue;
-  
-	    /* 指示先のタグへのポインタ */
-	    tag_ptr2 = (sdp - j - sent)->tag_data + tag;
+	/* SENTENCE_DATA 型 の sp は, MRPH_DATA をメンバとして持っている    */
+	/* 同じく sp のメンバである BNST_DATA は MRPH_DATA をメンバとして   */
+        /* 持っている。                                                     */
+	/* で、単に BNST_DATA をコピーしただけだと、BNST_DATA 内の MRPH_DATA */
+        /* は, sp のほうの MRPH_DATA を差したままコピーされる */
+	/* よって、以下でポインタアドレスのずれを補正        */
 
-	    /* 指示先のタグが共参照関係にあるかを判定 */
-	    if (check_feature(tag_ptr1->f, "COREFER_ID") &&
-		check_feature(tag_ptr2->f, "COREFER_ID") &&
-		!strcmp(check_feature(tag_ptr1->f, "COREFER_ID"),
-			check_feature(tag_ptr2->f, "COREFER_ID"))) {
 
-		cp = check_feature(tag_ptr->f, "照応詞候補");
-		cp += 11;
-		
-		if (j == 0) {
-		    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
-			    cp, k, sp->KNPSID ? sp->KNPSID + 5 : "?", k);
-		}
-		else {
-		    sprintf(buf, "C用;【%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
-			    cp, j, k, 
-			    (sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
-		}
-		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
-		assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
-		
-		/* COREFER_IDを付与 */   
-		if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
-		    assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
-		}
-		else if ((cp = check_feature((sp->tag_data + i)->f, "COREFER_ID"))) {
-		    assign_cfeature(&(tag_ptr->f), cp, FALSE);
-		}
-		else {
-		    COREFER_ID++;
-		    sprintf(CO, "COREFER_ID:%d", COREFER_ID);
-		    assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
-		    assign_cfeature(&(tag_ptr->f), CO, FALSE);
-		}
-		return 1;
-	    }    
+        /*
+             sp -> SENTENCE_DATA                                              sp_new -> SENTENCE_DATA 
+                  +-------------+				                   +-------------+
+                  |             |				                   |             |
+                  +-------------+				                   +-------------+
+                  |             |				                   |             |
+       BNST_DATA  +=============+		   ┌─────────────    +=============+ BNST_DATA
+                0 |             |────────┐│                            0 |             |
+                  +-------------+                ↓↓		                   +-------------+
+                1 |             |              BNST_DATA	                 1 |             |
+                  +-------------+                  +-------------+                 +-------------+
+                  |   ・・・    |	           |             |                 |   ・・・    |
+                  +-------------+	           +-------------+                 +-------------+
+                n |             |  ┌─ MRPH_DATA  |* mrph_ptr   |- ┐           n |             |
+                  +=============+  │	           +-------------+  │             +=============+
+                  |             |  │	MRPH_DATA  |* settou_ptr |  │             |             |
+       MRPH_DATA  +=============+  │	           +-------------+  │             +=============+ MRPH_DATA
+                0 | * mrph_data |  │	MRPH_DATA  |* jiritu_ptr |  └ - - - - - 0 | * mrph_data |
+                  +-------------+  │              +-------------+    ↑           +-------------+
+                  |   ・・・    |←┘	 			      │           |   ・・・    |
+                  +-------------+      		                      │           +-------------+
+                n | * mrph_data |	 			      │         n | * mrph_data |
+                  +=============+	 			      │           +=============+
+                                                                      │
+		                                            単にコピーしたままだと,
+		                                            sp_new->bnst_data[i] の
+		                                      	    mrph_data は, sp のデータを
+		                                            指してしまう。
+		                                            元のデータ構造を保つためには、
+		                                            自分自身(sp_new)のデータ(メンバ)
+		                              		    を指すように,修正する必要がある。
+	*/
+
+
+	sp_new->bnst_data[i].mrph_ptr = sp_new->mrph_data + (sp->bnst_data[i].mrph_ptr - sp->mrph_data);
+	sp_new->bnst_data[i].head_ptr = sp_new->mrph_data + (sp->bnst_data[i].head_ptr - sp->mrph_data);
+
+	if (sp->bnst_data[i].parent)
+	    sp_new->bnst_data[i].parent = sp_new->bnst_data + (sp->bnst_data[i].parent - sp->bnst_data);
+	for (j = 0; sp_new->bnst_data[i].child[j]; j++) {
+	    sp_new->bnst_data[i].child[j] = sp_new->bnst_data + (sp->bnst_data[i].child[j] - sp->bnst_data);
+	}
+	if (sp->bnst_data[i].pred_b_ptr) {
+	    sp_new->bnst_data[i].pred_b_ptr = sp_new->bnst_data + (sp->bnst_data[i].pred_b_ptr - sp->bnst_data);
 	}
     }
+
+    sp_new->Tag_num = sp->Tag_num;
+    sp_new->New_Tag_num = sp->New_Tag_num;
+    sp_new->tag_data = 
+	(TAG_DATA *)malloc_data(sizeof(TAG_DATA)*(sp->Tag_num + sp->New_Tag_num), 
+				 "TAG DATA");
+    for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
+
+	sp_new->tag_data[i] = sp->tag_data[i]; /* ここでtag_dataをコピー */
+
+	sp_new->tag_data[i].mrph_ptr = sp_new->mrph_data + (sp->tag_data[i].mrph_ptr - sp->mrph_data);
+	if (sp->tag_data[i].settou_ptr)
+	    sp_new->tag_data[i].settou_ptr = sp_new->mrph_data + (sp->tag_data[i].settou_ptr - sp->mrph_data);
+	sp_new->tag_data[i].jiritu_ptr = sp_new->mrph_data + (sp->tag_data[i].jiritu_ptr - sp->mrph_data);
+	if (sp->tag_data[i].fuzoku_ptr)
+	sp_new->tag_data[i].fuzoku_ptr = sp_new->mrph_data + (sp->tag_data[i].fuzoku_ptr - sp->mrph_data);
+	sp_new->tag_data[i].head_ptr = sp_new->mrph_data + (sp->tag_data[i].head_ptr - sp->mrph_data);
+	if (sp->tag_data[i].parent)
+	    sp_new->tag_data[i].parent = sp_new->tag_data + (sp->tag_data[i].parent - sp->tag_data);
+	for (j = 0; sp_new->tag_data[i].child[j]; j++) {
+	    sp_new->tag_data[i].child[j] = sp_new->tag_data + (sp->tag_data[i].child[j] - sp->tag_data);
+	}
+	if (sp->tag_data[i].pred_b_ptr) {
+	    sp_new->tag_data[i].pred_b_ptr = sp_new->tag_data + (sp->tag_data[i].pred_b_ptr - sp->tag_data);
+	}
+
+	sp_new->tag_data[i].b_ptr = sp_new->bnst_data + (sp->tag_data[i].b_ptr - sp->bnst_data);
+    }
+
+    if (sp->KNPSID)
+	sp_new->KNPSID = strdup(sp->KNPSID);
+    else
+	sp_new->KNPSID = NULL;
+
+    sp_new->para_data = (PARA_DATA *)malloc_data(sizeof(PARA_DATA)*sp->Para_num, 
+				 "PARA DATA");
+    for (i = 0; i < sp->Para_num; i++) {
+	sp_new->para_data[i] = sp->para_data[i];
+	sp_new->para_data[i].manager_ptr += sp_new->para_manager - sp->para_manager;
+    }
+
+    sp_new->para_manager = 
+	(PARA_MANAGER *)malloc_data(sizeof(PARA_MANAGER)*sp->Para_M_num, 
+				    "PARA MANAGER");
+    for (i = 0; i < sp->Para_M_num; i++) {
+	sp_new->para_manager[i] = sp->para_manager[i];
+	sp_new->para_manager[i].parent += sp_new->para_manager - sp->para_manager;
+	for (j = 0; j < sp_new->para_manager[i].child_num; j++) {
+	    sp_new->para_manager[i].child[j] += sp_new->para_manager - sp->para_manager;
+	}
+	sp_new->para_manager[i].bnst_ptr += sp_new->bnst_data - sp->bnst_data;
+    }
+
+    sp_new->cpm = NULL;
+    sp_new->cf = NULL;
+
+    return sp_new;
 }
 
-/*==================================================================*/
-	  void corefer_analysis_after_br(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j, tag, sent;
-    char *cp, buf[WORD_LEN_MAX];
-    TAG_DATA *tag_ptr;
-
-    for (i = 0; i < sp->Tag_num; i++) {
-
-	/* 照応詞候補である場合以外は先行詞候補としない */
-	if (!check_feature((sp->tag_data + i)->f, "照応詞候補")) continue;
-	/* 名詞に限定(接尾辞は対象外) */
-	if ((sp->tag_data + i)->head_ptr->Hinshi != 6) continue;
-
-	/* 共参照タグがなく、格解析結果がある */
-	sprintf(buf, "格解析結果:%s:名1", (sp->tag_data + i)->head_ptr->Goi2);
-	if (!check_feature((sp->tag_data + i)->f, "COREFER_ID") &&
-	    (cp = check_feature((sp->tag_data + i)->f, buf))) {
-
-	    /* <格解析結果:結果:名1:ノ/O/アンケート/0/1/?> */
-	    for (j = 0; j < 3; j++) {
-		while (strncmp(cp, "/", 1)) cp++;
-		cp++;
-	    }
-	    if (sscanf(cp, "%d/%d/", &tag, &sent)) {
-		/* 指示先のタグへのポインタ */
-		tag_ptr = ((sentence_data + sp->Sen_num - 1 - sent)->tag_data + tag);
-		search_antecedent_after_br(sp, tag_ptr, i);
-	    }
-	}	
-    }	   
-}
 /*====================================================================
                                END
 ====================================================================*/
