@@ -687,6 +687,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, "New Article %s\n", input_buffer);
+		    if (OptCorefer) {
+			ClearSentences(sp);
+		    }
 		    if (OptNE) {
 			clear_ne_cache();
 		    }

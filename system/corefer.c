@@ -601,6 +601,34 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 }
 
 /*==================================================================*/
+		void ClearSentence(SENTENCE_DATA *s)
+/*==================================================================*/
+{
+    free(s->mrph_data);
+    free(s->bnst_data);
+    free(s->tag_data);
+    free(s->para_data);
+    free(s->para_manager);
+    free(s->Comment);
+    if (s->KNPSID)
+	free(s->KNPSID);
+}
+
+/*==================================================================*/
+		void ClearSentences(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < sp->Sen_num - 1; i++) {
+        if (OptArticle)
+            print_result(sentence_data+i, 1);       
+        ClearSentence(sentence_data+i);
+    }
+    sp->Sen_num = 1;
+}
+
+/*==================================================================*/
 	  SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -612,7 +640,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     /* 一時的措置 */
     if (sp->Sen_num > SENTENCE_MAX) {
 	fprintf(stderr, "Sentence buffer overflowed!\n");
-	sp->Sen_num = 1;
+	ClearSentences(sp);
     }
 
     sp_new = sentence_data + sp->Sen_num - 1;

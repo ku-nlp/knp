@@ -518,30 +518,6 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	else if (!strcmp(DEF_NE_MODEL_DIR, _Atom(car(cell1)))) {
-	    int i;
-
-	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .knprc\n");
-		exit(0);
-	    }
-	    else {
-		KnpNE_Dirname = check_tilde(_Atom(cell2));
-		for (i = 0; i < NE_MODEL_NUMBER; i++) {
-		    SVMFileNE[i] = (char *)malloc_data(strlen(KnpNE_Dirname)+strlen(ne_code_to_tagposition(i))+8, "NE_model");
-		    sprintf(SVMFileNE[i], "%s/%s.model", 
-			    KnpNE_Dirname, ne_code_to_tagposition(i));
-		    if (OptNE && !OptNECRF && OptDisplay == OPT_DEBUG) {
-			fprintf(Outfp, "NE model file ... %s\n", SVMFileNE[i]);
-		    }
-		}
-		DBforNE = (char *)malloc_data(strlen(KnpNE_Dirname)+10, "NE_db");
-		sprintf(DBforNE, "%s/table.db",	KnpNE_Dirname);
-		if (OptNE && !OptNECRF && OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "NE db file ... %s\n", DBforNE);
-		}
-	    }
-	}
 #endif
 #ifdef USE_CRF
 	else if (!strcmp(DEF_NE_MODEL_FILE, _Atom(car(cell1)))) {
@@ -553,7 +529,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    }
 	    else {
 		CRFFileNE = check_tilde(_Atom(cell2));
-		if (OptNE && OptNECRF && OptDisplay == OPT_DEBUG) {
+		if (OptNE && OptDisplay == OPT_DEBUG) {
 		    fprintf(Outfp, "NE model file ... %s\n", CRFFileNE);
 		}
 	    }

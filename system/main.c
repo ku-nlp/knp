@@ -75,12 +75,6 @@ int		OptCopula;
 int		OptPostProcess;
 int		OptRecoverPerson;
 int		OptNE;
-int             OptNECRF;
-int		OptNEcache;
-int		OptNEend;
-int		OptNEdelete;
-int		OptNEcase;
-int		OptNEparent;
 int		OptNElearn;
 int		OptTimeoutExit;
 int		OptParaFix;
@@ -198,13 +192,7 @@ int      dpnd_lex = 0;
     OptPostProcess = 0;
     OptRecoverPerson = 0;
     OptNE = 0;
-    OptNECRF = 0;
-    OptNEcache = 0;
-    OptNEend = 0;
-    OptNEdelete = 0;
-    OptNEcase = 0;
     OptNElearn = 0;
-    OptNEparent = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
@@ -308,7 +296,7 @@ int      dpnd_lex = 0;
 		usage();
 	    }
 	}
-#ifdef USE_SVM
+#ifdef USE_CRF
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
@@ -316,32 +304,9 @@ int      dpnd_lex = 0;
 	    OptDisplayNE  = OPT_DEBUG;
 	    OptNE = 1;
 	}
-	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
-	    OptNE = 1;
-	    OptNEcache = 1;
-	}
-	else if (str_eq(argv[0], "-ne-end")) { /* 末尾文字を使用しない */
-	    OptNE = 1;
-	    OptNEend = 1;
-	}
-	else if (str_eq(argv[0], "-ne-parent")) { /* 親の情報を用いない */
-	    OptNE = 1;
-	    OptNEparent = 1;
-	}
-	else if (str_eq(argv[0], "-ne-case")) { /* 格解析結果も使用する */
-	    OptNE = 1;
-	    OptNEcase = 1;
-	    OptAnalysis = OPT_CASE;
-	}
  	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
 	    OptNE = 1;
 	    OptNElearn = 1;
-	}
-#endif
-#ifdef USE_CRF
-	else if (str_eq(argv[0], "-ne-crf")) {
-	    OptNE = 1;
-	    OptNECRF = 1;
 	}
 #endif
 	else if (str_eq(argv[0], "-relation-noun")) {
@@ -597,11 +562,6 @@ int      dpnd_lex = 0;
 	close_event();
     }
 
-#ifdef USE_SVM
-    if (OptNE && !OptNECRF) {
-	close_db_for_NE();
-    }
-#endif
     if (OptCorefer)
 	close_Synonym_db();
 
@@ -653,11 +613,7 @@ int      dpnd_lex = 0;
     }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
 
-    if (!OptNECRF && !DBforNE) OptNE = 0;
-    if (OptNE && !OptNECRF) {
-	init_db_for_NE(); /* NE用 */
-	init_ne_cache();
-    }
+    init_ne_cache();
 
     if (OptCorefer) {
 	init_Synonym_db();
@@ -691,12 +647,8 @@ int      dpnd_lex = 0;
 	}
 	init_event();
     }
-#ifdef USE_SVM
-    if (OptNE && !OptNElearn && !OptNECRF)
-	init_svm_for_NE();
-#endif
 #ifdef USE_CRF
-    if (OptNE && !OptNElearn && OptNECRF)
+    if (OptNE && !OptNElearn)
 	init_crf_for_NE();
 #endif
     /* 形態素, 文節情報の初期化 */
@@ -760,11 +712,6 @@ int      dpnd_lex = 0;
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
-    /* 固有表現認識を行う */
-    if (OptNE && !OptNEcase && OptNEparent) {
-	ne_analysis(sp);
-    }
-    
     /* 形態素を文節にまとめる */
     if (OptInput == OPT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) {
@@ -830,11 +777,6 @@ int      dpnd_lex = 0;
 	make_tag_units_pm(sp);
     }
     supplement_bp_rn(sp); /* <意味有>形態素が代表表記をもっていない場合に付与 */
-
-    /* 固有表現認識結果をタグに付与 */
-    if (OptNE && !OptNEcase && !OptNElearn && OptNEparent) {
-	assign_ne_feature_tag(sp);
-    }
 
     /* 入力した正解情報をチェック */
     if (OptReadFeature) {
@@ -1031,12 +973,9 @@ PARSED:
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
     }
 
-    if (OptNE && (!OptNEparent || OptNEcase)) {
-	/* 固有表現認識に必要なfeatureを与える */
-	for_ne_analysis(sp);   
-	/* 格解析後に固有表現認識を行う */
+    /* 固有表現解析 */
+    if (OptNE) {
 	ne_analysis(sp);
-	assign_ne_feature_tag(sp);
     }
 
     /* 照応解析に必要なFEATUREの付与 */
@@ -1179,8 +1118,7 @@ PARSED:
 	    continue;
 	}
 
-	/* 共参照解析 */
-	
+	/* 共参照解析 */	
 	if (OptCorefer) {
 	    PreserveSentence(sp);
 	    corefer_analysis(sp);
@@ -1213,7 +1151,7 @@ PARSED:
 	if (OptAnalysis == OPT_BNST) {
 	    print_mrphs(sp, 0);
 	}
-	else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
+	else if (OptNbest == FALSE && !(OptArticle && OptCorefer)) {
 	    print_result(sp, 1);
 	}
 	if (Language == CHINESE) {
@@ -1223,11 +1161,10 @@ PARSED:
 
 	success = 1;	/* OK 成功 */
     }
-
-    if (OptArticle && OptEllipsis) {
+    if (OptArticle && OptCorefer) {
 	for (i = 0; i < sp->Sen_num - 1; i++) {
 	    print_result(sentence_data+i, 1);	    
-	}
+       }
     }
 }
 
