@@ -1318,7 +1318,7 @@ PARSED:
 	for_ne_analysis(sp);   
 	/* 格解析後に固有表現認識を行う */
 	ne_analysis(sp);
-	assign_ne_feature_tag(sp);
+	if (!OptNElearn) assign_ne_feature_tag(sp);
     }
 
     /* 照応解析に必要なFEATUREの付与 */
