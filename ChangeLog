@@ -4,7 +4,8 @@
 	SVMを用いた固有表現解析を削除し、CRFを用いた固有表現解析のオプションを-neに変更
 
 	* system/corefer.c, system/read_data.c:
-
+	-coreferオプションを使用した際に、ClearSentencesを実行するように修正
+	
 2007-08-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c, system/main.c:
