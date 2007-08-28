@@ -898,11 +898,10 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 {
     int i;
 
-    if (OptArticle) {
-	for (i = 0; i < sp->Sen_num - 1; i++) {
+    for (i = 0; i < sp->Sen_num - 1; i++) {
+	if (OptArticle)
 	    print_result(sentence_data+i, 1);	    
-	    ClearSentence(sentence_data+i);
-	}
+	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
     ClearAnaphoraList();

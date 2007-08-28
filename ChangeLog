@@ -1,3 +1,9 @@
+2007-08-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/main.c:
+	-articleが指定された場合以外、ClearSentenceが実行されなくなっていたのを修正
+	-ne-crfを指定した場合に、init_ne_cacheが実行されていなかったのを修正
+
 2007-08-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/extern.h, system/main.c:

@@ -920,15 +920,13 @@ extern int	EX_match_subject;
     db_setup();
 #endif
     init_hash();
-    if (OptNE) {
-	init_tagposition();
-    }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
 
     if (!OptNECRF && !DBforNE) OptNE = 0;
-    if (OptNE && !OptNECRF) {
-	init_db_for_NE(); /* NE用 */
+    if (OptNE) {
+	init_tagposition();
 	init_ne_cache();
+	if (!OptNECRF) init_db_for_NE(); /* NE用 */
     }
 
     if (OptEllipsis & OPT_COREFER) {
