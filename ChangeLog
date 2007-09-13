@@ -1,3 +1,8 @@
+2007-09-13  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* dict/ebcf/chidpnd_prob.dict, dict/ebcf/chi_dis_comma_lex.dict, dict/ebcf/chi_dis_comma_bk1.dict, dict/ebcf/chi_dis_comma_bk2.dict, dict/ebcf/chi_dis_comma_bk.dict, dict/ebcf/Makefile.am
+	Remove Chinese dpnd dictionaries from cvs repository.
+ 
 2007-08-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c, system/main.c:
