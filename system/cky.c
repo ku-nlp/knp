@@ -587,10 +587,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 
-		    one_score += Chi_root_prob_matrix[g_ptr->num];
-		    if (OptDisplay == OPT_DEBUG) {
-			printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
-		    }
+//		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
+			one_score += Chi_root_prob_matrix[g_ptr->num];
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
+			}
+//		    }
 		}
 		else {
 		    if (cky_ptr->direction == LtoR) {
@@ -1222,12 +1224,7 @@ void set_cky(SENTENCE_DATA *sp, CKY *cky_ptr, CKY *left_ptr, CKY *right_ptr, int
     for (l = 0; l < SCASE_CODE_SIZE; l++) cky_ptr->scase_check[l] = 0;
     cky_ptr->para_flag = 0;
     cky_ptr->para_score = -1;
-    if (Language == CHINESE && OptChiProb) {
-	cky_ptr->score = 1;
-    }
-    else {
-	cky_ptr->score = 0;
-    }
+    cky_ptr->score = 0;
 }
 
 CKY *new_cky_data(int *cky_table_num) {

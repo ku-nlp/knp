@@ -671,6 +671,40 @@ static int dpndID = 0;
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
 
+/* 	    if ((check_feature((sp->bnst_data + i)->f, "VV") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "VA") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "VC") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "VE")) && */
+/* 		(check_feature((sp->bnst_data + j)->f, "VV") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "VA") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "VC") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "VE"))) { */
+/* 		giga_weight = 0.3; */
+/* 	    } */
+/* 	    else if ((check_feature((sp->bnst_data + i)->f, "NN") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "NR") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "NT") || */
+/* 		 check_feature((sp->bnst_data + i)->f, "PN")) && */
+/* 		(check_feature((sp->bnst_data + j)->f, "NN") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "NR") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "NT") || */
+/* 		 check_feature((sp->bnst_data + j)->f, "PN"))) { */
+/* 		giga_weight = 0.3; */
+/* 	    } */
+/* 	    else if (((check_feature((sp->bnst_data + i)->f, "VV") || */
+/* 		       check_feature((sp->bnst_data + i)->f, "VA") || */
+/* 		       check_feature((sp->bnst_data + i)->f, "VC") || */
+/* 		       check_feature((sp->bnst_data + i)->f, "VE")) &&  */
+/* 		      check_feature((sp->bnst_data + j)->f, "P")) || */
+/* 		     ((check_feature((sp->bnst_data + j)->f, "VV") || */
+/* 		       check_feature((sp->bnst_data + j)->f, "VA") || */
+/* 		       check_feature((sp->bnst_data + j)->f, "VC") || */
+/* 		       check_feature((sp->bnst_data + j)->f, "VE")) && */
+/* 		      check_feature((sp->bnst_data + i)->f, "P"))) { */
+/* 		giga_weight = 0.5; */
+/* 	    } */
+
+
 	    /* get dis and comma rule */
 	    lex_rule = NULL;
 	    pos_rule_1 = NULL;
@@ -1135,7 +1169,6 @@ static int dpndID = 0;
 		Chi_dpnd_matrix[i][j].prob_neg_dis_4[0] = Chi_dpnd_matrix[i][j].occur_neg_dis_4[0] - Chi_dpnd_matrix[i][j].prob_neg_dis_4[0];
 		Chi_dpnd_matrix[i][j].prob_neg_dis_4[1] = Chi_dpnd_matrix[i][j].occur_neg_dis_4[1] - Chi_dpnd_matrix[i][j].prob_neg_dis_4[1];
 	    }
-
 
 	    Chi_dpnd_matrix[i][j].prob_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_dis_1[1];
 	    Chi_dpnd_matrix[i][j].occur_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_dis_1[1];
@@ -1770,18 +1803,23 @@ static int dpndID = 0;
     /* free memory */
     if (lex_rule) {
 	free(lex_rule);
+	lex_rule = NULL;
     }
     if (pos_rule_1) {
 	free(pos_rule_1);
+	pos_rule_1 = NULL;
     }
     if (pos_rule_2) {
 	free(pos_rule_2);
+	pos_rule_2 = NULL;
     }
     if (pos_rule) {
 	free(pos_rule);
+	pos_rule = NULL;
     }
     if (rule) {
 	free(rule);
+	rule = NULL;
     }
 }
 
