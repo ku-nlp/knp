@@ -206,6 +206,12 @@ int     pp_matrix[BNST_MAX];
 		if (i != head_pos && j != head_pos) {
 		    Dpnd_matrix[i][j] = 0;
 		}
+		else if (i != head_pos && j == head_pos) {
+		    Dpnd_matrix[i][j] = 'R';
+		}
+		else if (i == head_pos && j != head_pos) {
+		    Dpnd_matrix[i][j] = 'L';
+		}
 	    }
 	}
     }
