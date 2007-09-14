@@ -108,11 +108,11 @@ static int dpndID = 0;
 	sprintf(key, "%s_%s_%s_%s_XX", pos1, word1, pos2, word2);
     }
     else {
-	if (distance > 37) {
-	    distance = 38;
+	if (distance > 11) {
+	    distance = 12;
 	}
-	else if (distance < -37) {
-	    distance = -38;
+	else if (distance < -11) {
+	    distance = -12;
 	}
 	key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 8);
 	sprintf(key, "%s_%s_%s_%s_%d", pos1, word1, pos2, word2, distance);
