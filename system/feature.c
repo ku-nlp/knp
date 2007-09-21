@@ -596,7 +596,9 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     if ((cp = check_feature(fp, "¥«¥Æ¥´¥ê"))) {
 	while ((cp = strchr(cp, ':'))) {
 	    cp++;
-	    if (!strncmp(cp, fname, strlen(fname))) {
+	    if (!strcmp(cp, fname) ||
+		!strncmp(cp, fname, strlen(fname)) && 
+		*(cp + strlen(fname)) == ':') {
 		return TRUE;
 	    }
 	}

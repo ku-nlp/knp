@@ -638,8 +638,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	(check_category(head_ptr->f, "場所-施設") ||
 	 check_category(head_ptr->f, "場所-自然") ||
 	 check_category(head_ptr->f, "場所-その他")) &&
-	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
-	 check_feature(mrph_ptr->f, "NE:PERSON:single"))) {
+	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
+	 check_feature(mrph_ptr->f, "NE:LOCATION:single"))) {
 	
 	/* 固有表現の終了する基本句に解析結果を付与 */
 	j = i;
