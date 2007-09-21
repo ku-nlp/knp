@@ -613,7 +613,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
     MRPH_DATA *head_ptr, *mrph_ptr;
 
-    /* この段階でi-1番目の基本句は読点を伴っている */
+    /* この段階でi-1番目の基本句は読点、または"・"を伴っている */
 
     /* 同格と認識する条件 */
     /* i-1番目の基本句の主辞形態素のカテゴリ i番目の基本句の先頭形態素     */
@@ -723,7 +723,9 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	}
 
 	/* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
-	if (i > 0 && check_feature((sp->tag_data + i - 1)->f, "読点")) {
+	if (i > 0 && 
+	    (check_feature((sp->tag_data + i - 1)->f, "読点") ||
+	     !strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・"))) {
 	    recognize_apposition(sp, i);
 	}
     }
