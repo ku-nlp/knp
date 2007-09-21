@@ -588,6 +588,23 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 }
 
 /*==================================================================*/
+	     int check_category(FEATURE *fp, char *fname)
+/*==================================================================*/
+{
+    char *cp;
+
+    if ((cp = check_feature(fp, "¥«¥Æ¥´¥ê"))) {
+	while ((cp = strchr(cp, ':'))) {
+	    cp++;
+	    if (!strncmp(cp, fname, strlen(fname))) {
+		return TRUE;
+	    }
+	}
+    }
+    return FALSE;
+}
+
+/*==================================================================*/
 	int compare_threshold(int value, int threshold, char *eq)
 /*==================================================================*/
 {

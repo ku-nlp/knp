@@ -320,6 +320,7 @@ extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
+extern int check_category(FEATURE *fp, char *fname);
 extern void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag);
 extern int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd, void *p1, void *p2);
 extern void print_one_feature(char *cp, FILE *filep);

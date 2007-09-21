@@ -581,12 +581,12 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     }
     
     sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
-	    cp, j, sp->KNPSID ? sp->KNPSID + 5 : "?", 
+	    cp, tag_ptr - sp->tag_data, sp->KNPSID ? sp->KNPSID + 5 : "?", 
 	    tag_ptr - sp->tag_data);
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
     assign_cfeature(&(tag_ptr->f), "共参照(役職)", FALSE);
     
-    /* COREFER_IDを付与 */   
+    /* COREFER_IDを付与 */
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
 	assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
     }
@@ -601,6 +601,71 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     }
     
     return 1;
+}
+
+/*==================================================================*/
+	 int recognize_apposition(SENTENCE_DATA *sp, int i)
+/*==================================================================*/
+{
+    /* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
+
+    int j;
+    char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
+    MRPH_DATA *head_ptr, *mrph_ptr;
+
+    /* この段階でi-1番目の基本句は読点を伴っている */
+
+    /* 同格と認識する条件 */
+    /* i-1番目の基本句の主辞形態素のカテゴリ i番目の基本句の先頭形態素     */
+    /* 人                                    PERSON (single or head)       */
+    /* 組織・団体                            ORGANIZATION (single or head) */
+    /* 場所-施設、場所-自然、場所-その他     LOCATION (single or head)     */
+
+    head_ptr = (sp->tag_data + i - 1)->head_ptr; /* i-1番目の主辞形態素 */
+    mrph_ptr = (sp->tag_data + i)->mrph_ptr;     /* i番目の先頭形態素 */
+
+    if (/* NE:PERSON */
+	check_category(head_ptr->f, "人") &&
+	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
+	 check_feature(mrph_ptr->f, "NE:PERSON:single")) ||
+	
+	/* NE:ORGANIZATION */
+	check_category(head_ptr->f, "組織・団体") &&	
+	(check_feature(mrph_ptr->f, "NE:ORGANIZATION:head") || 
+	 check_feature(mrph_ptr->f, "NE:ORGANIZATION:single")) ||
+	
+	/* NE:LOCATION */
+	(check_category(head_ptr->f, "場所-施設") ||
+	 check_category(head_ptr->f, "場所-自然") ||
+	 check_category(head_ptr->f, "場所-その他")) &&
+	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
+	 check_feature(mrph_ptr->f, "NE:PERSON:single"))) {
+	
+	/* 固有表現の終了する基本句に解析結果を付与 */
+	j = i;
+	while (!check_feature((sp->tag_data + j)->f, "NE")) j++;
+	
+	sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
+		head_ptr->Goi2, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1);
+	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
+	assign_cfeature(&((sp->tag_data + j)->f), "同格", FALSE);
+
+	/* COREFER_IDを付与 */
+	if (cp = check_feature((sp->tag_data + j)->f, "COREFER_ID")) {
+	    assign_cfeature(&((sp->tag_data + i - 1)->f), cp, FALSE);
+	}
+	else if (cp = check_feature((sp->tag_data + i - 1)->f, "COREFER_ID")) {
+	    assign_cfeature(&((sp->tag_data + j)->f), cp, FALSE);
+	}
+	else {
+	    COREFER_ID++;
+	    sprintf(CO, "COREFER_ID:%d", COREFER_ID);
+	    assign_cfeature(&((sp->tag_data + j)->f), CO, FALSE);
+	    assign_cfeature(&((sp->tag_data + i - 1)->f), CO, FALSE);
+	}
+	return 1;
+    }
+    return 0;
 }
 
 /*==================================================================*/
@@ -651,9 +716,15 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		continue;
 	    }		
 	}
-	/* PERSON + 人名末尾 の処理 */
+
+	/* PERSON + 人名末尾 の処理(共参照(役職)) */
 	if (i > 0 && (cp = check_feature((sp->tag_data + i - 1)->f, "NE:PERSON"))) {
 	    person_post(sp, cp + 10, i - 1);
+	}
+
+	/* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
+	if (i > 0 && check_feature((sp->tag_data + i - 1)->f, "読点")) {
+	    recognize_apposition(sp, i);
 	}
     }
 }
