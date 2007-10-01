@@ -1,3 +1,15 @@
+2007-10-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* dict/scode/bgh/Makefile.am:
+	Modified the way of generating "bgh.orig".
+
+	* dict/scode/bgh/bgh.diff: added.
+
+	* dict/scode/bgh/bgh.orig: removed.
+
+	* dict/src/bgh.pl:
+	Modified to generate candidates of representative names.
+
 2007-08-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/configfile.c, system/const.h, system/main.c, system/proper.c:
