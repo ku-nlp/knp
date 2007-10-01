@@ -11,17 +11,16 @@ usr_bgh.dat:
 	touch $@
 
 bgh.orig:
-	if [ ! -f bgh.dat -a -f "@BGH_FILE@" ]; then \
+	if [ -f bgh.diff -a -f "@BGH_FILE@" ]; then \
 		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
+		patch bgh.orig bgh.diff; \
 	fi
 
-bgh.dat: usr_bgh.dat ../../src/add_usr_bgh.pl
-	if [ -f bgh.orig ]; then \
-		if [ -s usr_bgh.dat ]; then \
-			../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
-		else \
-			cp -f bgh.orig $@; \
-		fi \
+bgh.dat: bgh.orig usr_bgh.dat ../../src/add_usr_bgh.pl
+	if [ -s usr_bgh.dat ]; then \
+		../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
+	else \
+		cp -f bgh.orig $@; \
 	fi
 
 bgh.db: bgh.dat
