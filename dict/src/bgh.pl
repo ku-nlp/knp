@@ -127,11 +127,8 @@ sub zoho_format {
     $code = $code1.$code2.$code3.$code4.$code5;
 
     foreach $item (split(/¡¦/,$hyouki)) {
-	print "$item $code\n";
-    }	
-    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
-	foreach $item (split(/¡¦/,$yomi)) {
-	    print "$item $code\n";
+	foreach $yomi_item (split(/¡¦/,$yomi)) {
+	    print "$item/$yomi_item $code\n";
 	}
     }
 }
