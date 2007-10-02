@@ -499,8 +499,8 @@ char *ne_code_to_tagposition(int num)
 	for (j = 0; j < NE_MODEL_NUMBER; j++) {
 #ifdef USE_CRF
 	    get_crf_prob(i, j, &(NE_mgr[i].prob[j]));
+#endif
 	}
-#endif	       
     }
 }
 
@@ -804,10 +804,12 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
     int i, ne_tag;
     char *cp;
 
+#ifdef USE_CRF
     /* 各形態素の情報を記憶 */
     for (i = 0; i < sp->Mrph_num; i++) {
 	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult, 1);
     }
+#endif
 }
 	  
 /*====================================================================
