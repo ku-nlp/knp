@@ -97,7 +97,7 @@ int ne_tagposition_to_code(char *cp)
 }
 
 char *ne_code_to_tagposition(int num)
-{
+{    
     return TagPosition[num];
 }
 
@@ -891,6 +891,26 @@ char *ne_code_to_tagposition(int num)
 	/* 人名をひとつのタグにするためのルールを読む */
 	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
     }
+}
+
+/*==================================================================*/
+		 void read_ne(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, code;
+    char *cp;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	if ((cp = check_feature(sp->mrph_data[i].f, "NE"))) {
+	    code = ne_tagposition_to_code(cp + 3);
+	}
+	else {
+	    code = 32;
+	}  
+	NE_mgr[i].NEresult = code;
+    }
+    /* 人名をひとつのタグにするためのルールを読む */
+    assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
 }
 
 /*==================================================================*/

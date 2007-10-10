@@ -91,6 +91,7 @@ extern int		OptPostProcess;
 extern int		OptRecoverPerson;
 extern int		OptNE;
 extern int              OptNECRF;
+extern int              OptReadNE;
 extern int		OptNEcache;
 extern int		OptNEend;
 extern int		OptNEdelete;

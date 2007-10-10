@@ -1,5 +1,8 @@
 2007-10-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/extern.h, system/main.c, system/proper.c:
+	固有表現の正解データを読み込むオプション"-read-ne"を追加
+
 	* system/corefer.c:
 	<同格>の誤認識を防止するため、いくつかの制限を追加
 

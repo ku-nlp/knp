@@ -79,6 +79,7 @@ int		OptPostProcess;
 int		OptRecoverPerson;
 int		OptNE;
 int             OptNECRF;
+int             OptReadNE;
 int		OptNEcache;
 int		OptNEend;
 int		OptNEdelete;
@@ -428,6 +429,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
+	}
+	else if (str_eq(argv[0], "-read-ne")) {
+	    OptReadNE = 1;    
 	}
 	else if (str_eq(argv[0], "-ne-debug")) {
 	    OptDisplayNE  = OPT_DEBUG;
@@ -920,10 +924,13 @@ extern int	EX_match_subject;
     db_setup();
 #endif
     init_hash();
+    if (OptReadNE || OptNE) {
+	init_tagposition();
+    }
     init_configfile(Opt_knprc);	/* 各種ファイル設定初期化 */
 
     if (!OptNECRF && !DBforNE) OptNE = 0;
-    if (OptNE) {
+    if (!OptReadNE && OptNE) {
 	init_tagposition();
 	init_ne_cache();
 	if (!OptNECRF) init_db_for_NE(); /* NE用 */
@@ -1035,7 +1042,10 @@ extern int	EX_match_subject;
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
     /* 固有表現認識を行う */
-    if (OptNE && !OptNEcase && OptNEparent) {
+    if (OptReadNE) {
+	read_ne(sp);
+    }
+    else if (OptNE && !OptNEcase && OptNEparent) {
 	ne_analysis(sp);
     }
     
@@ -1106,7 +1116,7 @@ extern int	EX_match_subject;
     supplement_bp_rn(sp); /* <意味有>形態素が代表表記をもっていない場合に付与 */
 
     /* 固有表現認識結果をタグに付与 */
-    if (OptNE && !OptNEcase && !OptNElearn && OptNEparent) {
+    if (OptReadNE || OptNE && !OptNEcase && !OptNElearn && OptNEparent) {
 	assign_ne_feature_tag(sp);
     }
 
