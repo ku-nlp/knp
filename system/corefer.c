@@ -609,9 +609,9 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 {
     /* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 
-    int j;
+    int j, k;
     char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
-    MRPH_DATA *head_ptr, *mrph_ptr;
+    MRPH_DATA *head_ptr, *mrph_ptr, *tail_ptr;
 
     /* この段階でi-1番目の基本句は読点、または"・"を伴っている */
 
@@ -623,14 +623,19 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
     head_ptr = (sp->tag_data + i - 1)->head_ptr; /* i-1番目の主辞形態素 */
     mrph_ptr = (sp->tag_data + i)->mrph_ptr;     /* i番目の先頭形態素 */
+    
+    /* head_ptrとmrph_ptrの間には、読点、または"・"しかない */
+    if (mrph_ptr - head_ptr != 2) return 0;
 
     if (/* NE:PERSON */
 	check_category(head_ptr->f, "人") &&
+	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:PERSON") &&
 	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
 	 check_feature(mrph_ptr->f, "NE:PERSON:single")) ||
 	
 	/* NE:ORGANIZATION */
-	check_category(head_ptr->f, "組織・団体") &&	
+	check_category(head_ptr->f, "組織・団体") &&
+	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:ORGANIZATION") &&
 	(check_feature(mrph_ptr->f, "NE:ORGANIZATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:ORGANIZATION:single")) ||
 	
@@ -638,6 +643,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	(check_category(head_ptr->f, "場所-施設") ||
 	 check_category(head_ptr->f, "場所-自然") ||
 	 check_category(head_ptr->f, "場所-その他")) &&
+	strcmp(head_ptr->Goi2, "あと") &&
+	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:LOCATION") &&
 	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:LOCATION:single"))) {
 	
@@ -645,6 +652,40 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	j = i;
 	while (!check_feature((sp->tag_data + j)->f, "NE")) j++;
 	
+	/* A, B, Cなどのような並列構造からの誤検出を防止 */
+	/* (以下で、i番目の基本句の直前の形態素は読点、または"・") */
+	/* i-1番目の基本句を含む文節直前の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
+	if ((sp->tag_data + i - 1)->b_ptr != sp->bnst_data &&
+	    !strcmp(((sp->tag_data + i - 1)->b_ptr->mrph_ptr - 1)->Goi2,
+		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) return 0;
+	/* 固有表現末を含む文節の最後の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
+	/* ただし、助詞を含む場合は除く */
+	if (!check_feature((sp->tag_data + j)->b_ptr->f, "助詞") &&
+	    !strcmp(((sp->tag_data + j)->b_ptr->mrph_ptr + 
+		     (sp->tag_data + j)->b_ptr->mrph_num - 1)->Goi2,
+		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) {
+	    return 0;
+	}
+	/* 固有表現直後の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
+	tail_ptr = (sp->tag_data + i)->mrph_ptr;
+	k = 0;
+	while (check_feature(((sp->tag_data + j)->mrph_ptr + k)->f, "NE") &&
+	       k < (sp->tag_data + j)->mrph_num) k++;	       
+	if ((k != (sp->tag_data + j)->mrph_num) &&
+	    !strcmp(((sp->tag_data + j)->mrph_ptr + k)->Goi2,
+		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) {
+	    return 0;
+	}
+	
+	/* 固有表現を含む基本句が助詞を伴う、または、文末である
+	   または、直後に「PERSON + 人名末尾」である場合以外は不可 */
+	if (!check_feature((sp->tag_data + j)->f, "助詞") &&
+	    !check_feature((sp->tag_data + j)->f, "文末") &&
+	    !(check_feature((sp->tag_data + j)->f, "NE:PERSON") &&
+	      check_feature((sp->tag_data + j + 1)->mrph_ptr->f, "人名末尾"))) return 0;
+	      
+	    
+
 	sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 		head_ptr->Goi2, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1);
 	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
@@ -663,6 +704,12 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    assign_cfeature(&((sp->tag_data + j)->f), CO, FALSE);
 	    assign_cfeature(&((sp->tag_data + i - 1)->f), CO, FALSE);
 	}
+
+	/* 普通名詞側に「省略解析なし」が付与されている場合は除去する */
+	if (check_feature((sp->tag_data + i - 1)->f, "省略解析なし")) {
+	    delete_cfeature(&((sp->tag_data + i - 1)->f), "省略解析なし");
+	}
+
 	return 1;
     }
     return 0;
@@ -724,6 +771,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
 	/* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 	if (i > 0 && 
+	    !check_feature((sp->tag_data + i - 1)->f, "NE") &&
 	    (check_feature((sp->tag_data + i - 1)->f, "読点") ||
 	     !strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・"))) {
 	    recognize_apposition(sp, i);

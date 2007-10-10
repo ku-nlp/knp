@@ -1,3 +1,8 @@
+2007-10-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/corefer.c:
+	<同格>の誤認識を防止するため、いくつかの制限を追加
+
 2007-09-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c, system/extern.h, system/feature.c:
