@@ -112,7 +112,7 @@ static int dpndID = 0;
 	    distance = 12;
 	}
 	else if (distance < -11) {
-	    distance = -12;
+	    distance = 12;
 	}
 	key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 8);
 	sprintf(key, "%s_%s_%s_%s_%d", pos1, word1, pos2, word2, distance);
@@ -545,7 +545,7 @@ static int dpndID = 0;
     char *lex_rule, *pos_rule_1, *pos_rule_2, *pos_rule;
     char *probLtoR, *probRtoL, *occurLtoR, *occurRtoL, *dpnd, *direction, *rule;
     char *curRule[CHI_DPND_TYPE_MAX];
-    double bkoff_weight_1, bkoff_weight_2, giga_weight, dis_bkoff_weight_1, dis_bkoff_weight_2;
+    double bkoff_weight_1, bkoff_weight_2, dpnd_giga_weight, comma_giga_weight, dis_giga_weight, dis_bkoff_weight_1, dis_bkoff_weight_2;
     int count;
     double lex_root_prob[2], pos_root_prob[2], lex_root_occur[2], pos_root_occur[2], lamda_root, lamda_dpnd, lamda_dis, lamda_comma;
     double commaTotal_1, commaTotal_2, commaTotal_3, commaTotal_4;
@@ -560,7 +560,9 @@ static int dpndID = 0;
     rule = NULL;
     bkoff_weight_1 = 0.8;
     bkoff_weight_2 = 0.5;
-    giga_weight = 0.8;
+    dpnd_giga_weight = 0.8;
+    comma_giga_weight = 0.8;
+    dis_giga_weight = 0;
     dis_bkoff_weight_1 = 0.8;
     dis_bkoff_weight_2 = 0.5;
 
@@ -670,40 +672,6 @@ static int dpndID = 0;
 	/* get dpnd rule for word pair */
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    u_ptr = sp->bnst_data + j;
-
-/* 	    if ((check_feature((sp->bnst_data + i)->f, "VV") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "VA") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "VC") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "VE")) && */
-/* 		(check_feature((sp->bnst_data + j)->f, "VV") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "VA") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "VC") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "VE"))) { */
-/* 		giga_weight = 0.3; */
-/* 	    } */
-/* 	    else if ((check_feature((sp->bnst_data + i)->f, "NN") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "NR") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "NT") || */
-/* 		 check_feature((sp->bnst_data + i)->f, "PN")) && */
-/* 		(check_feature((sp->bnst_data + j)->f, "NN") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "NR") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "NT") || */
-/* 		 check_feature((sp->bnst_data + j)->f, "PN"))) { */
-/* 		giga_weight = 0.3; */
-/* 	    } */
-/* 	    else if (((check_feature((sp->bnst_data + i)->f, "VV") || */
-/* 		       check_feature((sp->bnst_data + i)->f, "VA") || */
-/* 		       check_feature((sp->bnst_data + i)->f, "VC") || */
-/* 		       check_feature((sp->bnst_data + i)->f, "VE")) &&  */
-/* 		      check_feature((sp->bnst_data + j)->f, "P")) || */
-/* 		     ((check_feature((sp->bnst_data + j)->f, "VV") || */
-/* 		       check_feature((sp->bnst_data + j)->f, "VA") || */
-/* 		       check_feature((sp->bnst_data + j)->f, "VC") || */
-/* 		       check_feature((sp->bnst_data + j)->f, "VE")) && */
-/* 		      check_feature((sp->bnst_data + i)->f, "P"))) { */
-/* 		giga_weight = 0.5; */
-/* 	    } */
-
 
 	    /* get dis and comma rule */
 	    lex_rule = NULL;
@@ -1149,62 +1117,41 @@ static int dpndID = 0;
 		}
 	    }
 
-	    /* only deal with dis = 1 or dis > 1 */
-	    if (j != i + 1) {
-		Chi_dpnd_matrix[i][j].prob_dis_1[0] = Chi_dpnd_matrix[i][j].occur_dis_1[0] - Chi_dpnd_matrix[i][j].prob_dis_1[0];
-		Chi_dpnd_matrix[i][j].prob_dis_1[1] = Chi_dpnd_matrix[i][j].occur_dis_1[1] - Chi_dpnd_matrix[i][j].prob_dis_1[1];
-		Chi_dpnd_matrix[i][j].prob_dis_2[0] = Chi_dpnd_matrix[i][j].occur_dis_2[0] - Chi_dpnd_matrix[i][j].prob_dis_2[0];
-		Chi_dpnd_matrix[i][j].prob_dis_2[1] = Chi_dpnd_matrix[i][j].occur_dis_2[1] - Chi_dpnd_matrix[i][j].prob_dis_2[1];
-		Chi_dpnd_matrix[i][j].prob_dis_3[0] = Chi_dpnd_matrix[i][j].occur_dis_3[0] - Chi_dpnd_matrix[i][j].prob_dis_3[0];
-		Chi_dpnd_matrix[i][j].prob_dis_3[1] = Chi_dpnd_matrix[i][j].occur_dis_3[1] - Chi_dpnd_matrix[i][j].prob_dis_3[1];
-		Chi_dpnd_matrix[i][j].prob_dis_4[0] = Chi_dpnd_matrix[i][j].occur_dis_4[0] - Chi_dpnd_matrix[i][j].prob_dis_4[0];
-		Chi_dpnd_matrix[i][j].prob_dis_4[1] = Chi_dpnd_matrix[i][j].occur_dis_4[1] - Chi_dpnd_matrix[i][j].prob_dis_4[1];
+	    Chi_dpnd_matrix[i][j].prob_dis_1[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_dis_1[1];
+	    Chi_dpnd_matrix[i][j].occur_dis_1[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_dis_1[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_dis_1[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_1[1];
+	    Chi_dpnd_matrix[i][j].occur_neg_dis_1[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_1[1];
+	    Chi_dpnd_matrix[i][j].prob_comma0_1[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_1[1];
+	    Chi_dpnd_matrix[i][j].prob_comma1_1[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_1[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma0_1[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_1[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma1_1[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_1[1];
 
-		Chi_dpnd_matrix[i][j].prob_neg_dis_1[0] = Chi_dpnd_matrix[i][j].occur_neg_dis_1[0] - Chi_dpnd_matrix[i][j].prob_neg_dis_1[0];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_1[1] = Chi_dpnd_matrix[i][j].occur_neg_dis_1[1] - Chi_dpnd_matrix[i][j].prob_neg_dis_1[1];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_2[0] = Chi_dpnd_matrix[i][j].occur_neg_dis_2[0] - Chi_dpnd_matrix[i][j].prob_neg_dis_2[0];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_2[1] = Chi_dpnd_matrix[i][j].occur_neg_dis_2[1] - Chi_dpnd_matrix[i][j].prob_neg_dis_2[1];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_3[0] = Chi_dpnd_matrix[i][j].occur_neg_dis_3[0] - Chi_dpnd_matrix[i][j].prob_neg_dis_3[0];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_3[1] = Chi_dpnd_matrix[i][j].occur_neg_dis_3[1] - Chi_dpnd_matrix[i][j].prob_neg_dis_3[1];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_4[0] = Chi_dpnd_matrix[i][j].occur_neg_dis_4[0] - Chi_dpnd_matrix[i][j].prob_neg_dis_4[0];
-		Chi_dpnd_matrix[i][j].prob_neg_dis_4[1] = Chi_dpnd_matrix[i][j].occur_neg_dis_4[1] - Chi_dpnd_matrix[i][j].prob_neg_dis_4[1];
-	    }
+	    Chi_dpnd_matrix[i][j].prob_dis_2[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_dis_2[1];
+	    Chi_dpnd_matrix[i][j].occur_dis_2[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_dis_2[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_dis_2[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_2[1];
+	    Chi_dpnd_matrix[i][j].occur_neg_dis_2[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_2[1];
+	    Chi_dpnd_matrix[i][j].prob_comma0_2[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_2[1];
+	    Chi_dpnd_matrix[i][j].prob_comma1_2[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_2[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma0_2[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_2[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma1_2[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_2[1];
 
-	    Chi_dpnd_matrix[i][j].prob_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_dis_1[1];
-	    Chi_dpnd_matrix[i][j].occur_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_dis_1[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_1[1];
-	    Chi_dpnd_matrix[i][j].occur_neg_dis_1[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_1[1];
-	    Chi_dpnd_matrix[i][j].prob_comma0_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_1[1];
-	    Chi_dpnd_matrix[i][j].prob_comma1_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_1[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma0_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_1[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma1_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_1[1];
+	    Chi_dpnd_matrix[i][j].prob_dis_3[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_dis_3[1];
+	    Chi_dpnd_matrix[i][j].occur_dis_3[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_dis_3[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_dis_3[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_3[1];
+	    Chi_dpnd_matrix[i][j].occur_neg_dis_3[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_3[1];
+	    Chi_dpnd_matrix[i][j].prob_comma0_3[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_3[1];
+	    Chi_dpnd_matrix[i][j].prob_comma1_3[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_3[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma0_3[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_3[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma1_3[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_3[1];
 
-	    Chi_dpnd_matrix[i][j].prob_dis_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_dis_2[1];
-	    Chi_dpnd_matrix[i][j].occur_dis_2[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_dis_2[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_dis_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_2[1];
-	    Chi_dpnd_matrix[i][j].occur_neg_dis_2[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_2[1];
-	    Chi_dpnd_matrix[i][j].prob_comma0_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_2[1];
-	    Chi_dpnd_matrix[i][j].prob_comma1_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_2[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma0_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_2[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma1_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_2[1];
-
-	    Chi_dpnd_matrix[i][j].prob_dis_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_dis_3[1];
-	    Chi_dpnd_matrix[i][j].occur_dis_3[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_dis_3[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_dis_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_3[1];
-	    Chi_dpnd_matrix[i][j].occur_neg_dis_3[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_3[1];
-	    Chi_dpnd_matrix[i][j].prob_comma0_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_3[1];
-	    Chi_dpnd_matrix[i][j].prob_comma1_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_3[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma0_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_3[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma1_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_3[1];
-
-	    Chi_dpnd_matrix[i][j].prob_dis_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_dis_4[1];
-	    Chi_dpnd_matrix[i][j].occur_dis_4[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_dis_4[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_dis_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_4[1];
-	    Chi_dpnd_matrix[i][j].occur_neg_dis_4[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_4[1];
-	    Chi_dpnd_matrix[i][j].prob_comma0_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_4[1];
-	    Chi_dpnd_matrix[i][j].prob_comma1_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_4[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma0_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_4[1];
-	    Chi_dpnd_matrix[i][j].prob_neg_comma1_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_4[1];
+	    Chi_dpnd_matrix[i][j].prob_dis_4[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_dis_4[1];
+	    Chi_dpnd_matrix[i][j].occur_dis_4[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_dis_4[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_dis_4[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_dis_4[1];
+	    Chi_dpnd_matrix[i][j].occur_neg_dis_4[0] += dis_giga_weight * Chi_dpnd_matrix[i][j].occur_neg_dis_4[1];
+	    Chi_dpnd_matrix[i][j].prob_comma0_4[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma0_4[1];
+	    Chi_dpnd_matrix[i][j].prob_comma1_4[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_comma1_4[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma0_4[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma0_4[1];
+	    Chi_dpnd_matrix[i][j].prob_neg_comma1_4[0] += comma_giga_weight * Chi_dpnd_matrix[i][j].prob_neg_comma1_4[1];
 
 	    /* calculate probability for dis */
 	    if (Chi_dpnd_matrix[i][j].prob_dis_1[0] != 0) {
@@ -1640,25 +1587,25 @@ static int dpndID = 0;
 	    }
 
 	    /* calculate probability */
-	    Chi_dpnd_matrix[i][j].occur_1[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_1[1];
-	    Chi_dpnd_matrix[i][j].occur_RtoL_1[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_1[1];
-	    Chi_dpnd_matrix[i][j].prob_LtoR_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_1[1];
-	    Chi_dpnd_matrix[i][j].prob_RtoL_1[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_1[1];
+	    Chi_dpnd_matrix[i][j].occur_1[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_1[1];
+	    Chi_dpnd_matrix[i][j].occur_RtoL_1[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_1[1];
+	    Chi_dpnd_matrix[i][j].prob_LtoR_1[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_1[1];
+	    Chi_dpnd_matrix[i][j].prob_RtoL_1[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_1[1];
 
-	    Chi_dpnd_matrix[i][j].occur_2[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_2[1];
-	    Chi_dpnd_matrix[i][j].occur_RtoL_2[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_2[1];
-	    Chi_dpnd_matrix[i][j].prob_LtoR_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_2[1];
-	    Chi_dpnd_matrix[i][j].prob_RtoL_2[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_2[1];
+	    Chi_dpnd_matrix[i][j].occur_2[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_2[1];
+	    Chi_dpnd_matrix[i][j].occur_RtoL_2[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_2[1];
+	    Chi_dpnd_matrix[i][j].prob_LtoR_2[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_2[1];
+	    Chi_dpnd_matrix[i][j].prob_RtoL_2[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_2[1];
 
-	    Chi_dpnd_matrix[i][j].occur_3[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_3[1];
-	    Chi_dpnd_matrix[i][j].occur_RtoL_3[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_3[1];
-	    Chi_dpnd_matrix[i][j].prob_LtoR_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_3[1];
-	    Chi_dpnd_matrix[i][j].prob_RtoL_3[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_3[1];
+	    Chi_dpnd_matrix[i][j].occur_3[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_3[1];
+	    Chi_dpnd_matrix[i][j].occur_RtoL_3[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_3[1];
+	    Chi_dpnd_matrix[i][j].prob_LtoR_3[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_3[1];
+	    Chi_dpnd_matrix[i][j].prob_RtoL_3[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_3[1];
 
-	    Chi_dpnd_matrix[i][j].occur_4[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_4[1];
-	    Chi_dpnd_matrix[i][j].occur_RtoL_4[0] += giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_4[1];
-	    Chi_dpnd_matrix[i][j].prob_LtoR_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_4[1];
-	    Chi_dpnd_matrix[i][j].prob_RtoL_4[0] += giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_4[1];
+	    Chi_dpnd_matrix[i][j].occur_4[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_4[1];
+	    Chi_dpnd_matrix[i][j].occur_RtoL_4[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].occur_RtoL_4[1];
+	    Chi_dpnd_matrix[i][j].prob_LtoR_4[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_LtoR_4[1];
+	    Chi_dpnd_matrix[i][j].prob_RtoL_4[0] += dpnd_giga_weight * Chi_dpnd_matrix[i][j].prob_RtoL_4[1];
 
 	    Chi_dpnd_matrix[i][j].prob_pos_LtoR = Chi_dpnd_matrix[i][j].prob_LtoR_4[0] / Chi_dpnd_matrix[i][j].occur_4[0];
 	    Chi_dpnd_matrix[i][j].prob_pos_RtoL = Chi_dpnd_matrix[i][j].prob_RtoL_4[0] / Chi_dpnd_matrix[i][j].occur_RtoL_4[0];
@@ -1803,23 +1750,18 @@ static int dpndID = 0;
     /* free memory */
     if (lex_rule) {
 	free(lex_rule);
-	lex_rule = NULL;
     }
     if (pos_rule_1) {
 	free(pos_rule_1);
-	pos_rule_1 = NULL;
     }
     if (pos_rule_2) {
 	free(pos_rule_2);
-	pos_rule_2 = NULL;
     }
     if (pos_rule) {
 	free(pos_rule);
-	pos_rule = NULL;
     }
     if (rule) {
 	free(rule);
-	rule = NULL;
     }
 }
 

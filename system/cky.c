@@ -27,8 +27,8 @@ typedef struct _CKY {
 } CKY;
 
 #define PARA_THRESHOLD	0
-#define	CKY_TABLE_MAX	1000000 
-//#define	CKY_TABLE_MAX	15000000 
+//#define	CKY_TABLE_MAX	1000000 
+#define	CKY_TABLE_MAX	15000000 
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
@@ -549,7 +549,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    printf("(dpnd:%d,%d prob:%f LtoR:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, one_score);
 			}
 
-			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis;
+			//			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis;
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
 			}
@@ -571,7 +571,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
 			}
 
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_dis;
+			//			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_dis;
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
 			}
