@@ -27,8 +27,8 @@ typedef struct _CKY {
 } CKY;
 
 #define PARA_THRESHOLD	0
-//#define	CKY_TABLE_MAX	1000000 
-#define	CKY_TABLE_MAX	15000000 
+#define	CKY_TABLE_MAX	1000000 
+//#define	CKY_TABLE_MAX	15000000 
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
