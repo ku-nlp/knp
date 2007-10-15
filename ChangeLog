@@ -1,3 +1,8 @@
+2007-10-15  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h, system/path.h, system/const.h
+	Add probability of structure V-P-N into Chinese generative model.
+
 2007-10-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/extern.h, system/main.c, system/proper.c:
