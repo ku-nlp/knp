@@ -22,6 +22,8 @@ DBM_FILE chi_dis_comma_bk2_db;
 int     CHIDisCommaBK2Exist;
 DBM_FILE chi_dis_comma_bk_db;
 int     CHIDisCommaBKExist;
+DBM_FILE chi_dpnd_stru_db;
+int     CHIDpndStruExist;
 
 int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
@@ -67,6 +69,7 @@ static int dpndID = 0;
 	DB_close(chi_dis_comma_bk1_db);
 	DB_close(chi_dis_comma_bk2_db);
 	DB_close(chi_dis_comma_bk_db);
+	DB_close(chi_dpnd_stru_db);
     }
 }
 
@@ -84,6 +87,7 @@ static int dpndID = 0;
 	chi_dis_comma_bk1_db = open_dict(CHI_DIS_COMMA_BK1_DB, CHI_DIS_COMMA_BK1_DB_NAME, &CHIDisCommaBK1Exist);
 	chi_dis_comma_bk2_db = open_dict(CHI_DIS_COMMA_BK2_DB, CHI_DIS_COMMA_BK2_DB_NAME, &CHIDisCommaBK2Exist);
 	chi_dis_comma_bk_db = open_dict(CHI_DIS_COMMA_BK_DB, CHI_DIS_COMMA_BK_DB_NAME, &CHIDisCommaBKExist);
+	chi_dpnd_stru_db = open_dict(CHI_DPND_STRU_DB, CHI_DPND_STRU_DB_NAME, &CHIDpndStruExist);
     }
 }
  
@@ -567,6 +571,13 @@ static int dpndID = 0;
     dis_bkoff_weight_2 = 0.5;
 
     for (i = 0; i < sp->Bnst_num; i++) {
+	// initialization
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    for (k = 0; k < sp->Bnst_num + 1; k++) {
+		Chi_dpnd_stru_matrix[i][j][k] = -1;
+	    }
+	}
+
 	k_ptr = sp->bnst_data + i;
 
 	/* get rule for root */
@@ -3052,6 +3063,562 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	    }
 	}
     }
+}
+
+/*==================================================================*/
+   char* get_chi_dpnd_stru_rule(char *verb, char *verb_pos, char *prep, char *noun, char *noun_pos, int disVP, int disVN, int disNP, int commaVP, int commaVN, int commaNP)
+/*==================================================================*/
+{
+    char *key;
+
+    if (OptChiProb && CHIDpndStruExist == FALSE) {
+	return NULL;
+    }
+
+    key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 23);
+    sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d_%d_%d_%d_%d", verb_pos, verb, prep, noun_pos, noun, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    return db_get(chi_dpnd_stru_db, key);
+}
+
+/*==================================================================*/
+   double calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int verb, int prep, int noun)
+/*==================================================================*/
+{
+    int disVP, disVN, disNP, commaVP = 0, commaVN = 0, commaNP = 0;
+    int i, count;
+    char *rule, *cat_rule, *occur, *total, *type;
+    char *cur_rule[2];
+    double lex_occur[2], lex_total[2], bk100_occur[2], bk100_total[2], bk010_occur[2], bk010_total[2], bk001_occur[2], bk001_total[2], bk110_occur[2], bk110_total[2], bk101_occur[2], bk101_total[2], bk011_occur[2], bk011_total[2], bk000_occur[2], bk000_total[2];
+    double giga_weight = 0.8;
+    double lamda, prob;
+    double bk1_weight = 0.8;
+    double bk2_weight = 0.6;
+    double bk3_weight = 0.5;
+
+    // initialization
+    for (i = 0; i < 2; i++) {
+	lex_occur[i] = 0.0;
+	lex_total[i] = 0.0;
+	bk100_occur[i] = 0.0;
+	bk100_total[i] = 0.0;
+	bk010_occur[i] = 0.0;
+	bk010_total[i] = 0.0;
+	bk001_occur[i] = 0.0;
+	bk001_total[i] = 0.0;
+	bk110_occur[i] = 0.0;
+	bk110_total[i] = 0.0;
+	bk101_occur[i] = 0.0;
+	bk101_total[i] = 0.0;
+	bk011_occur[i] = 0.0;
+	bk011_total[i] = 0.0;
+	bk000_occur[i] = 0.0;
+	bk000_total[i] = 0.0;
+    }
+
+    // get distance and comma
+    if (verb < prep) {
+	disVP = -1;
+	for (i = verb + 1; i < prep; i++) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		commaVP = 1;
+		break;
+	    }
+	}
+    }
+    else {
+	disVP = 1;
+	for (i = prep + 1; i < verb; i++) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		commaVP = 1;
+		break;
+	    }
+	}
+    }
+
+    if (noun == -1) {
+	disVN = 0;
+	commaVN = -1;
+	disNP = 0;
+	commaNP = -1;
+    }
+    else {
+	if (verb < noun) {
+	    disVN = -1;
+	    for (i = verb + 1; i < noun; i++) {
+		if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		    commaVN = 1;
+		    break;
+		}
+	    }
+	}
+	else {
+	    disVN = 1;
+	    for (i = prep + 1; i < noun; i++) {
+		if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		    commaVN = 1;
+		    break;
+		}
+	    }
+	}
+
+	if (noun < prep) {
+	    disNP = -1;
+	    for (i = noun + 1; i < prep; i++) {
+		if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		    commaNP = 1;
+		    break;
+		}
+	    }
+	}
+	else {
+	    disNP = 1;
+	    for (i = prep + 1; i < noun; i++) {
+		if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "：") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "；") ||
+		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "，"))) {
+		    commaNP = 1;
+		    break;
+		}
+	    }
+	}
+    }
+    
+    // read lex rule
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		lex_occur[0] = atof(occur);
+		lex_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		lex_occur[1] = atof(occur);
+		lex_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    // read backoff rule
+    rule = NULL;
+    if (noun == -1) {
+	    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk100_occur[0] = atof(occur);
+		bk100_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk100_occur[1] = atof(occur);
+		bk100_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk010_occur[0] = atof(occur);
+		bk010_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk010_occur[1] = atof(occur);
+		bk010_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk001_occur[0] = atof(occur);
+		bk001_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk001_occur[1] = atof(occur);
+		bk001_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk110_occur[0] = atof(occur);
+		bk110_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk110_occur[1] = atof(occur);
+		bk110_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk101_occur[0] = atof(occur);
+		bk101_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk101_occur[1] = atof(occur);
+		bk101_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk011_occur[0] = atof(occur);
+		bk011_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk011_occur[1] = atof(occur);
+		bk011_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    rule = NULL;
+    if (noun == -1) {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+    else {
+	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disVN, disNP, commaVP, commaVN, commaNP);
+    }
+
+    if (rule != NULL) {
+	count = 0;
+	cat_rule = NULL;
+	cat_rule = strtok(rule, ":");
+	while (cat_rule) {
+	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
+	    strcpy(cur_rule[count], cat_rule);
+	    count++;
+	    cat_rule = NULL;
+	    cat_rule = strtok(NULL, ":");
+	}
+
+	for (i = 0; i < count; i++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(cur_rule[i], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk000_occur[0] = atof(occur);
+		bk000_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk000_occur[1] = atof(occur);
+		bk000_total[1] = atof(total);
+	    }
+	    if (cur_rule[i]) {
+		free(cur_rule[i]);
+	    }
+	}
+    }
+
+    // calculate probability
+    lex_occur[0] += giga_weight * lex_occur[1];
+    lex_total[0] += giga_weight * lex_total[1];
+    bk100_occur[0] += giga_weight * bk100_occur[1];
+    bk100_total[0] += giga_weight * bk100_total[1];
+    bk010_occur[0] += giga_weight * bk010_occur[1];
+    bk010_total[0] += giga_weight * bk010_total[1];
+    bk001_occur[0] += giga_weight * bk001_occur[1];
+    bk001_total[0] += giga_weight * bk001_total[1];
+    bk110_occur[0] += giga_weight * bk110_occur[1];
+    bk110_total[0] += giga_weight * bk110_total[1];
+    bk101_occur[0] += giga_weight * bk101_occur[1];
+    bk101_total[0] += giga_weight * bk101_total[1];
+    bk011_occur[0] += giga_weight * bk011_occur[1];
+    bk011_total[0] += giga_weight * bk011_total[1];
+    bk000_occur[0] += giga_weight * bk000_occur[1];
+    bk000_total[0] += giga_weight * bk000_total[1];
+
+    prob = 0.0;
+    lamda = 0.0;
+    
+    if (lex_total[0] > 0) {
+	lamda = lex_total[0] / (lex_total[0] + 1);
+	prob = lamda * (lex_occur[0] / lex_total[0]);
+	if (bk110_total[0] > 0 || bk011_total[0] > 0 || bk101_total[0] > 0) {
+	    prob += (1 - lamda) * (bk101_occur[0] + bk110_occur[0] + bk011_occur[0]) / (bk101_total[0] + bk110_total[0] +  bk011_total[0]);
+	}
+	if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
+	    prob += (1 - lamda) * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
+	}
+	if (bk000_total[0] > 0) {
+	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
+	}
+    }
+    else if (bk110_total[0] > 0 || bk011_total[0] > 0 || bk101_total[0] > 0) {
+	lamda = (bk110_total[0] + bk011_total[0] + bk101_total[0]) / (bk110_total[0] + bk011_total[0] + bk101_total[0] + 1);
+	prob = lamda * (bk101_occur[0] + bk110_occur[0] + bk011_occur[0]) / (bk101_total[0] + bk110_total[0] +  bk011_total[0]);
+	if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
+	    prob += (1 - lamda) * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
+	}
+	if (bk000_total[0] > 0) {
+	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
+	}
+	prob *= bk1_weight;
+    }
+    else if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
+	lamda = (bk100_total[0] + bk010_total[0] + bk001_total[0]) / (bk100_total[0] + bk010_total[0] + bk001_total[0] + 1);
+	prob = lamda * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
+	if (bk000_total[0] > 0) {
+	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
+	}
+	prob *= bk2_weight;
+    }
+    else if (bk000_total[0] > 0) {
+	prob = bk3_weight * (bk000_occur[0] / bk000_total[0]);
+    }
+
+    if (rule) {
+	free(rule);
+    }
+
+//    fprintf(stderr, "%d %d %d %f\n", verb, prep, noun, prob);
+    return prob;
 }
 
 /*====================================================================

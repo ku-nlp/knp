@@ -38,8 +38,9 @@ extern int 		Mask_matrix[][BNST_MAX];
 extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 
 /* store Chinese dpnd between words */
-extern CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
+extern CHI_DPND        Chi_dpnd_matrix[][BNST_MAX];
 extern double          Chi_root_prob_matrix[];
+extern double          Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX + 1];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
@@ -318,6 +319,7 @@ extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
+extern double calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int verb, int prep, int noun);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
