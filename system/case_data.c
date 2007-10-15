@@ -381,9 +381,6 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     if ((vtype = check_feature(b_ptr->f, "用言"))) {
 	vtype += strlen("用言:");
 	strcpy(cpm_ptr->cf.pred_type, vtype);
-	if (check_feature(b_ptr->f, "用言:判") && !OptCopula) {
-	    cpm_ptr->cf.type_flag = 1;
-	}
     }
     else if ((vtype = check_feature(b_ptr->f, "非用言格解析"))) {
 	vtype += strlen("非用言格解析:");
@@ -400,14 +397,9 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	cpm_ptr->cf.pred_type[0] = '\0';
     }
 
-    if (!(OptEllipsis & OPT_ELLIPSIS) && 
-       (OptEllipsis & OPT_REL_NOUN || OptEllipsis & OPT_COREFER) &&
-       check_feature(b_ptr->f, "体言")) {
-	strcpy(cpm_ptr->cf.pred_type, "名");
-	cpm_ptr->cf.type = CF_NOUN;
-    }  
-    else if (cpm_ptr->cf.type == CF_PRED &&
-	     check_feature(b_ptr->f, "サ変")) {
+    if (cpm_ptr->cf.type == CF_PRED &&
+	(check_feature(b_ptr->f, "サ変") || 
+	 check_feature(b_ptr->f, "用言:判"))) {
 	cpm_ptr->cf.type_flag = 1;
     }
 }

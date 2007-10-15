@@ -918,8 +918,8 @@ typedef struct {
 		(「〜れる」などの場合は受身,尊敬などにそれぞれ一つ)
  */
 typedef struct cf_def {
-    int		type;
-    int         type_flag;                              /* 判定詞であるかどうか */
+    int		type;                                   /* 格フレームの種類 */
+    int         type_flag;                              /* 用言・名詞両方の格フレームを調べる場合 */
     int 	element_num;				/* 格要素数 */
     int 	oblig[CF_ELEMENT_MAX]; 			/* 必須格かどうか */
     int 	adjacent[CF_ELEMENT_MAX];		/* 直前格かどうか */

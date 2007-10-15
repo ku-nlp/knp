@@ -5350,14 +5350,14 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 {
     int i, j, k, l;
     float score;
-    ELLIPSIS_MGR workem, maxem, maxem_copula;
+    ELLIPSIS_MGR workem, maxem, maxem_noun;
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
     CASE_FRAME *cf_ptr;
 
     InitEllipsisMGR(&workem);
     InitEllipsisMGR(&maxem);
-    InitEllipsisMGR(&maxem_copula);
+    InitEllipsisMGR(&maxem_noun);
 
     AssignFeaturesByProgram(sp);
     RegisterAllSurfaceEntity(sp); /* 表層に出現している要素を参照回数DBに登録 */
@@ -5473,10 +5473,10 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		}
 		if (OptMergeCFResult && cpm_ptr->cf.type_flag && (OptEllipsis & OPT_REL_NOUN)) {
 		    cpm_ptr->cf.type = CF_NOUN;
-		    maxem_copula.score = -2;
-		    FindBestCFforContext(sp, &maxem_copula, cpm_ptr, NULL);
-		    if (maxem.score > -2 && maxem_copula.score > -2) {
- 			merge_em(&maxem, &maxem_copula);
+		    maxem_noun.score = -2;
+		    FindBestCFforContext(sp, &maxem_noun, cpm_ptr, NULL);
+		    if (maxem_noun.score > -2) {
+ 			merge_em(&maxem, &maxem_noun);
 		    }
 		    cpm_ptr->cf.type = CF_PRED;
 		} 
@@ -5542,7 +5542,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		noun_lexical_disambiguation_by_case_analysis(cpm_ptr);
 	    }
 	    ClearEllipsisMGR(&maxem);
-	    ClearEllipsisMGR(&maxem_copula);
+	    ClearEllipsisMGR(&maxem_noun);
 
 	    /* 格フレームの保存 */
 	    if (cpm_ptr->cmm[0].score > 0) {
