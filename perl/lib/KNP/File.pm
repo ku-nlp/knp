@@ -53,7 +53,11 @@ sub new {
     }
 
     if( my $fh = new IO::File( $opt{file}, "r" ) ){
-	&set_encoding( $fh );
+	if( $opt{encoding} ){
+	    $fh->binmode( ":encoding($opt{encoding})" );
+	} else {
+	    &set_encoding( $fh );
+	}
 	my $new = { name    => $opt{file},
 		    dbname  => $opt{dbfile}  || $opt{file}.'.db',
 		    pattern => $opt{pattern} || $KNP::Result::DEFAULT{pattern},
