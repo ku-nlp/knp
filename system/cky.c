@@ -566,7 +566,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			// add the prob between structure V-P-N
 			tmp_cky_ptr = cky_ptr->right;
 			tmp_child_ptr = cky_ptr->left;
-			while (tmp_cky_ptr && tmp_child_ptr) {
+/* 			while (tmp_cky_ptr && tmp_child_ptr) { */
 			    if (check_feature(tmp_cky_ptr->b_ptr->f, "VV") ||
 				check_feature(tmp_cky_ptr->b_ptr->f, "VA") ||
 				check_feature(tmp_cky_ptr->b_ptr->f, "VC") ||
@@ -588,19 +588,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num]);
 					}
 				    }
-				    else if (tmp_cky_ptr->left == NULL) {
-					if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-					}
-					else {
-					    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-					}
-
-					if (OptDisplay == OPT_DEBUG) {
-					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
-					}
-				    }
 				    if (tmp_cky_ptr->right != NULL &&
 					(check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") ||
 					 check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") ||
@@ -617,6 +604,35 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num]);
 					}
 				    }
+				    if ((tmp_cky_ptr->left == NULL && tmp_cky_ptr->right == NULL) ||
+					(tmp_cky_ptr->right != NULL && tmp_cky_ptr->left == NULL &&
+					 (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN"))) ||
+					(tmp_cky_ptr->left != NULL && tmp_cky_ptr->right == NULL &&
+					 (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN"))) ||
+					(tmp_cky_ptr->right != NULL && tmp_cky_ptr->left != NULL &&
+					 (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN")) &&
+					 (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN")))) {
+					if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
+					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
+					}
+					else {
+					    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
+					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
+					}
+
+					if (OptDisplay == OPT_DEBUG) {
+					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
+					}
+				    }
+
 				    else if (tmp_cky_ptr->right == NULL) {
 					if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
 					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
@@ -663,18 +679,18 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				}
 			    }
 
-			    if (tmp_cky_ptr->direction == LtoR && tmp_cky_ptr->left && tmp_cky_ptr->right) {
-				tmp_cky_ptr = tmp_cky_ptr->right;
-				tmp_child_ptr = tmp_cky_ptr->left;
-			    }
-			    else if (tmp_cky_ptr->direction == RtoL && tmp_cky_ptr->left && tmp_cky_ptr->right) {
-				tmp_cky_ptr = tmp_cky_ptr->left;
-				tmp_child_ptr = tmp_cky_ptr->right;
-			    }
-			    else {
-				break;
-			    }
-			}
+/* 			    if (tmp_cky_ptr->direction == LtoR && tmp_cky_ptr->left && tmp_cky_ptr->right) { */
+/* 				tmp_cky_ptr = tmp_cky_ptr->right; */
+/* 				tmp_child_ptr = tmp_cky_ptr->left; */
+/* 			    } */
+/* 			    else if (tmp_cky_ptr->direction == RtoL && tmp_cky_ptr->left && tmp_cky_ptr->right) { */
+/* 				tmp_cky_ptr = tmp_cky_ptr->left; */
+/* 				tmp_child_ptr = tmp_cky_ptr->right; */
+/* 			    } */
+/* 			    else { */
+/* 				break; */
+/* 			    } */
+/* 			} */
 		    }
 		    else if (cky_ptr->direction == RtoL) {
 			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
@@ -700,7 +716,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			// add the prob between structure V-P-N
 			tmp_cky_ptr = cky_ptr->left;
 			tmp_child_ptr = cky_ptr->right;
-			while (tmp_cky_ptr && tmp_child_ptr) {
+/* 			while (tmp_cky_ptr && tmp_child_ptr) { */
 			    if (check_feature(tmp_cky_ptr->b_ptr->f, "VV") ||
 				check_feature(tmp_cky_ptr->b_ptr->f, "VA") ||
 				check_feature(tmp_cky_ptr->b_ptr->f, "VC") ||
@@ -722,19 +738,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num]);
 					}
 				    }
-				    else if (tmp_cky_ptr->left == NULL) {
-					if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-					}
-					else {
-					    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-					}
-					    
-					if (OptDisplay == OPT_DEBUG) {
-					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
-					}
-				    }
 				    if (tmp_cky_ptr->right != NULL &&
 					(check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") ||
 					 check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") ||
@@ -751,7 +754,22 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 					    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num]);
 					}
 				    }
-				    else if (tmp_cky_ptr->right == NULL) {
+				    if ((tmp_cky_ptr->left == NULL && tmp_cky_ptr->right == NULL) ||
+					(tmp_cky_ptr->right != NULL && tmp_cky_ptr->left == NULL &&
+					 (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN"))) ||
+					(tmp_cky_ptr->left != NULL && tmp_cky_ptr->right == NULL &&
+					 (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN"))) ||
+					(tmp_cky_ptr->right != NULL && tmp_cky_ptr->left != NULL &&
+					 (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN")) &&
+					 (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
+					  !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN")))) {
 					if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
 					    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
 					}
@@ -797,18 +815,18 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				}
 			    }
 
-			    if (tmp_cky_ptr->direction == LtoR && tmp_cky_ptr->left && tmp_cky_ptr->right) {
-				tmp_cky_ptr = tmp_cky_ptr->right;
-				tmp_child_ptr = tmp_cky_ptr->left;
-			    }
-			    else if (tmp_cky_ptr->direction == RtoL && tmp_cky_ptr->left && tmp_cky_ptr->right) {
-				tmp_cky_ptr = tmp_cky_ptr->left;
-				tmp_child_ptr = tmp_cky_ptr->right;
-			    }
-			    else {
-				break;
-			    }
-			}
+/* 			    if (tmp_cky_ptr->direction == LtoR && tmp_cky_ptr->left && tmp_cky_ptr->right) { */
+/* 				tmp_cky_ptr = tmp_cky_ptr->right; */
+/* 				tmp_child_ptr = tmp_cky_ptr->left; */
+/* 			    } */
+/* 			    else if (tmp_cky_ptr->direction == RtoL && tmp_cky_ptr->left && tmp_cky_ptr->right) { */
+/* 				tmp_cky_ptr = tmp_cky_ptr->left; */
+/* 				tmp_child_ptr = tmp_cky_ptr->right; */
+/* 			    } */
+/* 			    else { */
+/* 				break; */
+/* 			    } */
+/* 			} */
 		    }
 
 		    one_score += Chi_root_prob_matrix[g_ptr->num];
