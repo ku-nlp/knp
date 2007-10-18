@@ -1,3 +1,8 @@
+2007-10-18  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/Result.pm:
+	StandardStructureとそのxmlを返す関数を追加
+
 2007-04-17  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* t/52-knp-old.t: deleted.
