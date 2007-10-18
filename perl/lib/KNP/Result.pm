@@ -249,6 +249,78 @@ sub spec {
 	     $this->{_eos} );
 }
 
+=item make_ss
+
+標準構造(Standard Structure)を返す．
+
+=cut
+sub make_ss {
+    my ( $this ) = @_;
+
+    my %ss;
+
+    $ss{sentence}{id} = $this->id;
+    $ss{sentence}{comment} = $this->comment;
+    chomp $ss{sentence}{comment};
+
+    $ss{sentence}{phrase} = [];
+
+    my $phrase = $ss{sentence}{phrase};
+
+    # 基本句を順番に
+    foreach my $tag ( $this->tag ) {
+	# 子供
+	my @child_ids;
+	if (defined $tag->child) {
+	    foreach my $ctag ($tag->child) {
+		push @child_ids, $ctag->id;
+	    }
+	}
+
+	push @{$phrase}, { id => $tag->id,
+			   f => $tag->fstring,
+			   dpndtype => $tag->dpndtype,
+			   parent => defined $tag->parent ? $tag->parent->id : -1,
+			   child => join('/', @child_ids)
+		       };
+
+	push @{$phrase->[-1]{node}}, { type => 'base' };
+
+	# 形態素を順番に
+	foreach my $mrph ( $tag->mrph ) {
+	    push @{$phrase->[-1]{node}[0]{word}}, { f => $mrph->fstring,
+						    content => $mrph->midasi,
+						    katuyou => $mrph->katuyou2,
+						    lem => $mrph->repname, # 代表表記
+						    yomi => $mrph->yomi,
+						    hinsi => $mrph->hinsi,
+						    bunrui => $mrph->bunrui
+						    };
+	}
+    }
+
+    return \%ss;
+}
+
+=item all_xml
+
+XMLを返す．
+
+=cut
+sub all_xml {
+    my ( $this ) = @_;
+
+    require XML::Simple;
+
+    my $xs = new XML::Simple;
+
+    my $ss = $this->make_ss;
+
+    my $xml = $xs->XMLout($ss, KeepRoot => 1);
+
+    return $xml;
+}
+
 =back
 
 =head1 SEE ALSO
