@@ -78,6 +78,10 @@
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
+#define MENTION_MAX     32   /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
+#define ENTITY_MAX      1024 /* ENTITYの数 */
+#define MENTIONED_MAX   1024 /* 1つのENTITYが言及される回数 */
+
 #ifndef IMI_MAX
 	#define IMI_MAX	129	/* defined in "juman.h" */	
 #endif
@@ -805,6 +809,41 @@ typedef struct {
 } CHI_DPND;
 
 /*====================================================================
+			       照応解析
+====================================================================*/
+
+/* ENTITYへの言及(ゼロを含む) */
+typedef struct mention {
+    int 		sent_num;
+    int                 tag_num;
+    int                 pp_code;
+    char                flag; /* 'S', '=', 'N', 'C', 'O', 'D', */
+    struct entity       *entity;
+} MENTION;
+
+/* 基本句ごとにMENTIONを管理する構造体 */
+typedef struct mention_manager {
+    /* 0番目には必ず自分自身を入れる */
+    /* 1番目以降は関係するゼロ代名詞を入れていく */
+    int                 num;
+    MENTION             mention[MENTION_MAX];        
+} MENTION_MGR;
+
+/* ENTITY */
+typedef struct entity {
+    int                 num;
+    int                 mentioned_num; /* 言及されている回数 */
+    int                 antecedent_num; /* 先行詞となっている回数 */
+    MENTION             *mention[MENTIONED_MAX];
+} ENTITY;
+
+/* 文章全体に出現したENTITYを管理する構造体 */
+typedef struct entity_manager {
+    int                 num;
+    ENTITY              entity[ENTITY_MAX];        
+} ENTITY_MGR;
+
+/*====================================================================
 				格解析
 ====================================================================*/
 
@@ -861,6 +900,8 @@ typedef struct tnode_t {
     CPM_ptr	c_cpm_ptr;
     /* 格解析における並列格要素 */
     struct tnode_t	*next;
+    /* MENTIONの管理 */
+    MENTION_MGR mention_mgr;
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20

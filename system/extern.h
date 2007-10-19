@@ -29,6 +29,8 @@ DBM_FILE		smp2smg_db;
 extern SENTENCE_DATA	sentence_data[];
 extern SENTENCE_DATA	current_sentence_data;
 
+extern ENTITY_MGR       entity_manager;
+
 extern int 		match_matrix[][BNST_MAX];
 extern int 		path_matrix[][BNST_MAX];
 extern int		restrict_matrix[][BNST_MAX];
@@ -99,6 +101,7 @@ extern int		OptNEdelete;
 extern int		OptNEcase;
 extern int		OptNEparent;
 extern int		OptNElearn;
+extern int		OptAnaphora;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
 extern int		OptNbest;
@@ -169,6 +172,9 @@ extern int Language;
 extern int sen_num;
 
 /* 関数プロトタイプ */
+
+/* anaphora.c */
+extern void anaphora_analysis(SENTENCE_DATA *sp);
 
 /* bnst_compare.c */
 extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);
@@ -292,7 +298,7 @@ extern void ClearSentences(SENTENCE_DATA *sp);
 extern void ClearSMList();
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
-extern void DiscourseAnalysis(SENTENCE_DATA *sp, SENTENCE_DATA *sp_new);
+extern void DiscourseAnalysis(SENTENCE_DATA *sp);
 extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
 extern char *loc_code_to_str(int loc);
 extern int loc_name_to_code(char *loc);

@@ -495,7 +495,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][1] = END_M;
 
     if (tp->c_cpm_ptr->cf.pp[tp->c_cpm_ptr->cf.element_num][0] == END_M) {
-	fprintf(stderr, ";; Unknown case <%s>\n", rel);
+	if (OptDisplay == OPT_DEBUG) fprintf(stderr, ";; Unknown case <%s>\n", rel);
 	return TRUE;
     }
 
@@ -554,6 +554,11 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	cp += strlen("≥ ≤Ú¿œ∑Î≤Ã:");
 	cp = strchr(cp, ':') + 1;
+
+	if (OptAnaphora) {
+	    cp = strchr(cp, ':') + 1;	  	  
+	}
+
 	start_cp = cp;
 	for (; *cp; cp++) {
 	    if (*cp == ';') {

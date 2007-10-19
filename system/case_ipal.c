@@ -1615,6 +1615,8 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
 	/* ただし、BGH中に"|"が含まれている場合は除く */
 	else if (OptUseCPNCF && flag == CF_NOUN && 
+		 !check_feature(t_ptr->head_ptr->f, "独立タグ非見出語") &&
+		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
 	    /* 形容詞語幹の場合は通常の代表表記を使用する */
@@ -1631,7 +1633,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 		/* 後方の基本句の分類語彙表の見出しに含まれる基本句は省略解析の対象としない */
 		/* 分類語彙表の見出しが処理対象の基本句より長い場合のみ実行*/
 		cp = get_mrph_rep(t_ptr->head_ptr);
-		if (cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
+		if (0 && cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
 		    i = 1;
 		    while ((t_ptr - i) && (t_ptr - i)->head_ptr) {
 			assign_cfeature(&((t_ptr - i)->f), "省略解析なし", FALSE);
@@ -1893,7 +1895,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    if (OptUseCF &&
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
-		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
+		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ||
+		   (OptEllipsis & OPT_ELLIPSIS) ||
 		   (t_ptr->inum == 1 && /* 確率的の場合は、「公開予定だ」のようなときのみ */
 		    check_feature(t_ptr->b_ptr->f, "タグ単位受:-1")))))) { 
 		

@@ -16,6 +16,7 @@ PARA_DATA 	para_data[PARA_MAX]; 		/* 並列データ */
 PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
 TOTAL_MGR	Op_Best_mgr;
+ENTITY_MGR      entity_manager;                 /* ENTITY管理データ */
 
 int 		Revised_para_num;			
 
@@ -87,6 +88,7 @@ int		OptNEdelete;
 int		OptNEcase;
 int		OptNEparent;
 int		OptNElearn;
+int		OptAnaphora;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
 int		OptParaFix;
@@ -208,12 +210,14 @@ extern int	EX_match_subject;
     OptRecoverPerson = 0;
     OptNE = 0;
     OptNECRF = 0;
+    OptReadNE = 0;
     OptNEcache = 0;
     OptNEend = 0;
     OptNEdelete = 0;
     OptNEcase = 0;
     OptNElearn = 0;
     OptNEparent = 0;
+    OptAnaphora = 0;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
@@ -328,10 +332,14 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-demonstrative")) {
 	    OptEllipsis |= OPT_DEMO;
 	}
+/* 	else if (str_eq(argv[0], "-anaphora")) { */
+/* 	    OptEllipsis |= OPT_ELLIPSIS; */
+/* 	    OptEllipsis |= OPT_DEMO; */
+/* 	} */
 	else if (str_eq(argv[0], "-anaphora")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	}
+	    OptAnaphora = 1;
+	    OptEllipsis |= OPT_COREFER;
+	}	
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-ellipsis-svm")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -1002,6 +1010,7 @@ extern int	EX_match_subject;
 
     if (OptEllipsis) {
 	InitContextHash();
+	entity_manager.num = 0;
     }
 
     set_timeout_signal();
@@ -1481,9 +1490,10 @@ PARSED:
 	
 	if (OptEllipsis) {
 	    make_dpnd_tree(sp);
-	    sp_new = PreserveSentence(sp);
+	    PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	    if (OptEllipsis != OPT_COREFER) DiscourseAnalysis(sp, sp_new);
+	    if (OptAnaphora) anaphora_analysis(sp);
+	    if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
 	}
 
 	/* entity 情報の feature の作成 */
