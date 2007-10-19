@@ -288,10 +288,13 @@ sub make_ss {
 
 	# 形態素を順番に
 	foreach my $mrph ( $tag->mrph ) {
+	    my $repname = $mrph->repname ? $mrph->repname : $mrph->genkei . '/' .  $mrph->yomi;
+
 	    push @{$phrase->[-1]{node}[0]{word}}, { f => $mrph->fstring,
-						    content => $mrph->midasi,
-						    katuyou => $mrph->katuyou2,
-						    lem => $mrph->repname, # 代表表記
+						    content => $mrph->midasi, # <word ...>(ここに入る)</word> 
+						    katuyou1 => $mrph->katuyou1 eq '*' ? '' : $mrph->katuyou1,
+						    katuyou2 => $mrph->katuyou2 eq '*' ? '' : $mrph->katuyou2,
+						    repname => $repname,
 						    yomi => $mrph->yomi,
 						    hinsi => $mrph->hinsi,
 						    bunrui => $mrph->bunrui
