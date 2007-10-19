@@ -278,7 +278,7 @@ sub make_ss {
 	}
 
 	push @{$phrase}, { id => $tag->id,
-			   f => $tag->fstring,
+			   fstring => $tag->fstring,
 			   dpndtype => $tag->dpndtype,
 			   parent => defined $tag->parent ? $tag->parent->id : -1,
 			   child => join('/', @child_ids)
@@ -290,7 +290,7 @@ sub make_ss {
 	foreach my $mrph ( $tag->mrph ) {
 	    my $repname = $mrph->repname ? $mrph->repname : $mrph->genkei . '/' .  $mrph->yomi;
 
-	    push @{$phrase->[-1]{node}[0]{word}}, { f => $mrph->fstring,
+	    push @{$phrase->[-1]{node}[0]{word}}, { fstring => $mrph->fstring,
 						    content => $mrph->midasi, # <word ...>(ここに入る)</word> 
 						    katuyou1 => $mrph->katuyou1 eq '*' ? '' : $mrph->katuyou1,
 						    katuyou2 => $mrph->katuyou2 eq '*' ? '' : $mrph->katuyou2,
