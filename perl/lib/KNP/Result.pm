@@ -295,9 +295,10 @@ sub make_ss {
 						    katuyou1 => $mrph->katuyou1 eq '*' ? '' : $mrph->katuyou1,
 						    katuyou2 => $mrph->katuyou2 eq '*' ? '' : $mrph->katuyou2,
 						    repname => $repname,
+						    imis => $mrph->imis eq 'NIL' ? '' : $mrph->imis,
 						    yomi => $mrph->yomi,
 						    hinsi => $mrph->hinsi,
-						    bunrui => $mrph->bunrui
+						    bunrui => $mrph->bunrui eq '*' ? '' : $mrph->bunrui
 						    };
 	}
     }
