@@ -50,7 +50,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	/* 以下のもの以外を付与 */
 	if (strncmp(token, "代表表記", strlen("代表表記")) && 
 	    strncmp(token, "可能動詞", strlen("可能動詞")) && 
-	    strncmp(token, "漢字読み", strlen("漢字読み"))) {
+	    strncmp(token, "漢字読み", strlen("漢字読み")) &&
+	    strncmp(token, "カテゴリ", strlen("カテゴリ"))) {
 	    assign_cfeature(&(m_ptr->f), token, FALSE);
 	}
 	token = strtok(NULL, " ");
