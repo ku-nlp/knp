@@ -1,7 +1,8 @@
 2007-10-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c:
-	曖昧性がある形態素のカテゴリが、曖昧性解消で選ばれなかった形態素のカテゴリとなるバグを修正
+	曖昧性がある形態素のカテゴリ・ドメインが、
+	曖昧性解消で選ばれなかった形態素のカテゴリ・ドメインとなるバグを修正
 
 2007-10-15  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
