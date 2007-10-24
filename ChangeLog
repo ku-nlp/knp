@@ -1,3 +1,8 @@
+2007-10-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/para_dpnd.c:
+	修正可能な依存構造解析の失敗を修正不可能とみなす場合があるバグを修正
+
 2007-10-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c:
