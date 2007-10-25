@@ -2096,7 +2096,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 /* 				// if the score of two ptrs are the same, only keep one */
 /* 				tmp_ptr = cky_matrix[i][j]; */
 /* 				while (tmp_ptr && tmp_ptr != sort_pre_ptr->next) { */
-/* 				    if (//tmp_ptr->score == best_ptr->score &&  */
+/* 				    if (//tmp_ptr->score == best_ptr->score && */
 /* 					tmp_ptr->direction == best_ptr->direction && */
 /* 					tmp_ptr->b_ptr == best_ptr->b_ptr && */
 /* 					tmp_ptr->left->b_ptr == best_ptr->left->b_ptr && */
@@ -2620,14 +2620,10 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	/* for preposition, it must have non-pu modifier */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	     direction == 'R' &&
-	     (left->j - left->i == 0 || 
-	      (left->left && check_feature((sp->bnst_data + left->left->b_ptr->num)->f, "PU")) ||
-	      (left->right && check_feature((sp->bnst_data + left->right->b_ptr->num)->f, "PU")))) ||
+	     left->j - left->i == 0) || 
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
 	     direction == 'L' &&
-	     right->j - right->i == 0 ||
-	     (right->left && check_feature((sp->bnst_data + right->left->b_ptr->num)->f, "PU")) ||
-	     (right->right && check_feature((sp->bnst_data + right->right->b_ptr->num)->f, "PU")))) {
+	     right->j - right->i == 0)) {
 	    return 0;
 	}
 
@@ -2701,13 +2697,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV")) &&
 	    direction == 'L' &&
 	    right->j == sp->Bnst_num - 1) {
-	    return 0;
-	}
-
-	/* for preposition, it cannot have AD modifier after it */
-	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "AD") &&
-	     direction == 'L')) {
 	    return 0;
 	}
 
