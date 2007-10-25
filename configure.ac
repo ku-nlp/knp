@@ -275,5 +275,6 @@ dict/ebcf/Makefile
 dict/gcf/Makefile
 dict/auto/Makefile
 dict/synonym/Makefile
+model/Makefile
 ])
 AC_OUTPUT
