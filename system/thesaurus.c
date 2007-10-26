@@ -175,7 +175,8 @@ int	ParaThesaurus = USE_BGH;
 /*==================================================================*/
 {
     str[max-1] = '\0';
-    fprintf(stderr, ";; Too long key <%s> in %s.\n", str, function);
+    if (OptDisplay == OPT_DEBUG) 
+	fprintf(stderr, ";; Too long key <%s> in %s.\n", str, function);
     str[max-1] = GUARD;
 }
 

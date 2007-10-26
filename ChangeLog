@@ -3,6 +3,10 @@
 	* system/read_data.c:
 	意味有でない活用語にも疑似代表表記を付与するように変更
 
+	* system/thesaurus.c:
+	長すぎるkeyで分類語彙表を引こうとした際に"Too long key ..."と警告するのを
+	-debugオプションが指定された場合に限定
+	
 2007-10-26  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/para_dpnd.c, system/const.h
