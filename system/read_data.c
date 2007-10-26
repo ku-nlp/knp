@@ -156,7 +156,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     for (i = 0; i < sp->Tag_num; i++) {
 	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
-	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") && 
+	    if ((check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") ||
+		 check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "活用語")) &&
 		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "代表表記")) {
 		rep_buf = make_mrph_rn((sp->tag_data + i)->mrph_ptr + j);
 		buf = (char *)malloc_data(strlen(rep_buf) + strlen("疑似代表表記:") + 1, "supplement_bp_rn");
