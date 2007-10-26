@@ -2093,21 +2093,21 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				    best_ptr->next = sort_pre_ptr->next;
 				    sort_pre_ptr->next = best_ptr;
 				}
-/* 				// if the score of two ptrs are the same, only keep one */
-/* 				tmp_ptr = cky_matrix[i][j]; */
-/* 				while (tmp_ptr && tmp_ptr != sort_pre_ptr->next) { */
-/* 				    if (//tmp_ptr->score == best_ptr->score && */
-/* 					tmp_ptr->direction == best_ptr->direction && */
-/* 					tmp_ptr->b_ptr == best_ptr->b_ptr && */
-/* 					tmp_ptr->left->b_ptr == best_ptr->left->b_ptr && */
-/* 					tmp_ptr->right->b_ptr == best_ptr->right->b_ptr) { */
-/* 					sort_pre_ptr->next = best_ptr->next; */
-/* 					best_ptr = NULL; */
-/* 					m--; */
-/* 					break; */
-/* 				    } */
-/* 				    tmp_ptr = tmp_ptr->next; */
-/* 				} */
+				// if the score of two ptrs are the same, only keep one
+				tmp_ptr = cky_matrix[i][j];
+				while (tmp_ptr && tmp_ptr != sort_pre_ptr->next) {
+				    if ((tmp_ptr->score - best_ptr->score) < DOUBLE_MIN && (tmp_ptr->score - best_ptr->score) > -DOUBLE_MIN &&
+					tmp_ptr->direction == best_ptr->direction &&
+					tmp_ptr->b_ptr == best_ptr->b_ptr &&
+					tmp_ptr->left->b_ptr == best_ptr->left->b_ptr &&
+					tmp_ptr->right->b_ptr == best_ptr->right->b_ptr) {
+					sort_pre_ptr->next = best_ptr->next;
+					best_ptr = NULL;
+					m--;
+					break;
+				    }
+				    tmp_ptr = tmp_ptr->next;
+				}
 			    }
 			    else {
 				sort_flag = 0;

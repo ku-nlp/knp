@@ -562,7 +562,7 @@ int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 	    }
 	}
 
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
+	if (sp->bnst_data[m_ptr->end[0] - 1].para_key_type == PARA_KEY_P) {
 	    if (OptParaFix) {
 		// for verb coordination, mask the outside area for the non-first conjunction
 		for (i = 0; i < m_ptr->start[0]; i++) {
