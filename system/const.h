@@ -853,7 +853,7 @@ typedef struct cf_def {
     int		ex_num[CF_ELEMENT_MAX];
     int		freq[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
-    char	**gex_list[CF_ELEMENT_MAX];              /* 用例中に記された汎化素性を格納 */
+    char	**gex_list[CF_ELEMENT_MAX];		/* 用例中に記された汎化素性を格納 */
     double	*gex_freq[CF_ELEMENT_MAX];
     int		gex_size[CF_ELEMENT_MAX];
     int		gex_num[CF_ELEMENT_MAX];
@@ -979,9 +979,10 @@ typedef struct predicate_anaphora_list {
 /* 用言と格フレームIDの構造体 */
 typedef struct cf_list {
     char	*key;		/* 用言 */
-    char	**cfid;		/* 格フレームID */
-    int		cfid_num;
-    int		cfid_max;
+    char	*vtype;
+    int		voice;
+    int		cf_start_num;		/* 格フレームID */
+    int		cf_num;
     struct cf_list *next;
 } CFLIST;
 

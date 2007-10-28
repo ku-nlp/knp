@@ -80,6 +80,7 @@ int		OptTimeoutExit;
 int		OptParaFix;
 int		OptNbest;
 int		OptBeam;
+int		OptCfOnMemory;
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -197,6 +198,7 @@ int      dpnd_lex = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
     OptBeam = 0;
+    OptCfOnMemory = FALSE;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -280,6 +282,12 @@ int      dpnd_lex = 0;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    OptBeam = atoi(argv[0]);
+	}
+	else if (str_eq(argv[0], "-cf-on-memory")) {
+	    OptCfOnMemory = TRUE;
+	}
+	else if (str_eq(argv[0], "-cf-on-disk")) {
+	    OptCfOnMemory = FALSE;
 	}
 	else if (str_eq(argv[0], "-language")) {
 	    argv++; argc--;
@@ -1055,9 +1063,10 @@ PARSED:
 	}
 
 	/* 格フレームの初期化 */
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2 ||
-	    OptUseNCF) {
+	if (OptCfOnMemory == FALSE && 
+	    (OptAnalysis == OPT_CASE || 
+	     OptAnalysis == OPT_CASE2 ||
+	     OptUseNCF)) {
 	    clear_cf(0);
 	}
 
