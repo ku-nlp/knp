@@ -197,7 +197,7 @@ int      dpnd_lex = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
     OptNbest = 0;
-    OptBeam = 0;
+    OptBeam = 2;
     OptCfOnMemory = FALSE;
 
     /* オプションの保存 */
