@@ -651,35 +651,6 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-		 void ne_analysis(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    init_NE_mgr();
-
-    /* 固有表現認識に必要なfeatureを与える */
-    for_ne_analysis(sp);   
-
-    /* 素性を作成 */
-    make_crf_feature(sp);
-
-    if (OptNElearn) {
-	output_feature(sp);
-    }
-    else {
-	/* モデルを適用 */
-	apply_model(sp);
-	/* 文全体で最適化 */
-	viterbi(sp);
-	/* 結果を形態素に付与 */
-	assign_ne_feature_mrph(sp);
-	/* 人名をひとつのタグにするためのルールを読む */
-	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
-	/* 結果を基本句に付与 */
-	assign_ne_feature_tag(sp);
-    }
-}
-
-/*==================================================================*/
 	    void for_ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -714,6 +685,35 @@ char *ne_code_to_tagposition(int num)
 	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
 	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), 
 			check_feature(sp->bnst_data[j].f, "係"), FALSE);    
+    }
+}
+
+/*==================================================================*/
+		 void ne_analysis(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    init_NE_mgr();
+
+    /* 固有表現認識に必要なfeatureを与える */
+    for_ne_analysis(sp);   
+
+    /* 素性を作成 */
+    make_crf_feature(sp);
+
+    if (OptNElearn) {
+	output_feature(sp);
+    }
+    else {
+	/* モデルを適用 */
+	apply_model(sp);
+	/* 文全体で最適化 */
+	viterbi(sp);
+	/* 結果を形態素に付与 */
+	assign_ne_feature_mrph(sp);
+	/* 人名をひとつのタグにするためのルールを読む */
+	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
+	/* 結果を基本句に付与 */
+	assign_ne_feature_tag(sp);
     }
 }
 
