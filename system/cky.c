@@ -575,6 +575,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    (check_feature(tmp_child_ptr->left->b_ptr->f, "NN") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "NR") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn != -1 &&
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn != -1) {
@@ -596,6 +597,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    (check_feature(tmp_child_ptr->right->b_ptr->f, "NN") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "NR") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn != -1 &&
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn != -1) {
@@ -649,6 +651,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    (check_feature(tmp_child_ptr->left->b_ptr->f, "NN") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "NR") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn != -1 &&
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn != -1) {
@@ -670,6 +673,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    (check_feature(tmp_child_ptr->right->b_ptr->f, "NN") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "NR") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn != -1 &&
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn != -1) {
