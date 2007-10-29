@@ -83,7 +83,7 @@ int check_cc_relation(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, char *pp_str)
 {
     int i;
 
-    if (!cpm_ptr) {
+    if (!cpm_ptr || !cpm_ptr->cmm[0].cf_ptr) {
 	return 0;
     }
 

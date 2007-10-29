@@ -389,6 +389,7 @@ int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     /* 依存構造解析可能性のチェック */
 
     start_pos = m_ptr->start[0];
+    error_check[0] = FALSE; /* 初期化 */
     for (k = 0; k < m_ptr->part_num; k++)
       if (_check_para_d_struct(sp, m_ptr->start[k], m_ptr->end[k],
 			       (k == 0) ? para_extend_p(sp, m_ptr): FALSE, 
