@@ -571,101 +571,47 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(tmp_cky_ptr->b_ptr->f, "VC") ||
 			    check_feature(tmp_cky_ptr->b_ptr->f, "VE")) {
 			    if (check_feature(tmp_child_ptr->b_ptr->f, "P")) {
-				if (tmp_cky_ptr->left != NULL &&
-				    (check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") ||
-				     check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") ||
-				     check_feature(tmp_cky_ptr->left->b_ptr->f, "PN"))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num];
+				if (tmp_child_ptr->left != NULL &&
+				    (check_feature(tmp_child_ptr->left->b_ptr->f, "NN") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "NR") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
+				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn != -1 &&
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn != -1) {
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn;
 				    }
 				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_cky_ptr->left->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num];
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn = calc_chi_dpnd_stru_word_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn = calc_chi_dpnd_stru_comma_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num]);
+					printf("vpn_stru:%.6f, %.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn);
 				    }
 				}
-				else if (tmp_cky_ptr->left == NULL ||
-					 (tmp_cky_ptr->left != NULL &&
-					  (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
-					   !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
-					   !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN")))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
+				if (tmp_child_ptr->right != NULL &&
+				    (check_feature(tmp_child_ptr->right->b_ptr->f, "NN") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "NR") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
+				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn != -1 &&
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn != -1) {
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn;
 				    }
 				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn = calc_chi_dpnd_stru_word_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn = calc_chi_dpnd_stru_comma_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
+					printf("vpn_stru:%.6f, %.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn);
 				    }
-				}
-				if (tmp_cky_ptr->right != NULL &&
-				    (check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") ||
-				     check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") ||
-				     check_feature(tmp_cky_ptr->right->b_ptr->f, "PN"))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num];
-				    }
-				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_cky_ptr->right->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num];
-				    }
-
-				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num]);
-				    }
-				}
-				else if (tmp_cky_ptr->right == NULL ||
-					 (tmp_cky_ptr->right != NULL &&
-					  (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
-					   !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
-					   !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN")))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-				    }
-				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-				    }
-
-				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
-				    }
-				}
-			    }
-			}
-			else if (check_feature(tmp_child_ptr->b_ptr->f, "NN") ||
-				 check_feature(tmp_child_ptr->b_ptr->f, "NR") ||
-				 check_feature(tmp_child_ptr->b_ptr->f, "PN")) {
-			    if (tmp_cky_ptr->left != NULL && check_feature(tmp_cky_ptr->left->b_ptr->f, "P")) {
-				if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num] != -1) {
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-				else {
-				    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num,  tmp_cky_ptr->left->b_ptr->num, tmp_child_ptr->b_ptr->num);
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-					
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num]);
-				}
-			    }
-			    if (tmp_cky_ptr->right != NULL && check_feature(tmp_cky_ptr->right->b_ptr->f, "P")) {
-				if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num] != -1) {
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-				else {
-				    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num,  tmp_cky_ptr->right->b_ptr->num, tmp_child_ptr->b_ptr->num);
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num]);
 				}
 			    }
 			}
@@ -699,101 +645,47 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    check_feature(tmp_cky_ptr->b_ptr->f, "VC") ||
 			    check_feature(tmp_cky_ptr->b_ptr->f, "VE")) {
 			    if (check_feature(tmp_child_ptr->b_ptr->f, "P")) {
-				if (tmp_cky_ptr->left != NULL &&
-				    (check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") ||
-				     check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") ||
-				     check_feature(tmp_cky_ptr->left->b_ptr->f, "PN"))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num];
+				if (tmp_child_ptr->left != NULL &&
+				    (check_feature(tmp_child_ptr->left->b_ptr->f, "NN") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "NR") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
+				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn != -1 &&
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn != -1) {
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn;
 				    }
 				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_cky_ptr->left->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num];
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn = calc_chi_dpnd_stru_word_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn = calc_chi_dpnd_stru_comma_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num]);
+					printf("vpn_stru:%.6f, %.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_word_vpn, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_comma_vpn);
 				    }
 				}
-				else if (tmp_cky_ptr->left == NULL ||
-					 (tmp_cky_ptr->left != NULL &&
-					  (!check_feature(tmp_cky_ptr->left->b_ptr->f, "NN") &&
-					   !check_feature(tmp_cky_ptr->left->b_ptr->f, "NR") &&
-					   !check_feature(tmp_cky_ptr->left->b_ptr->f, "PN")))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
+				if (tmp_child_ptr->right != NULL &&
+				    (check_feature(tmp_child_ptr->right->b_ptr->f, "NN") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "NR") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "LC") ||
+				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
+				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn != -1 &&
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn != -1) {
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn;
 				    }
 				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-				    }
-
-				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
-				    }
-				}
-				if (tmp_cky_ptr->right != NULL &&
-				    (check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") ||
-				     check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") ||
-				     check_feature(tmp_cky_ptr->right->b_ptr->f, "PN"))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num];
-				    }
-				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_cky_ptr->right->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num];
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn = calc_chi_dpnd_stru_word_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
+					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn = calc_chi_dpnd_stru_comma_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn;
+					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn;
 				    }
 					    
 				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num]);
+					printf("vpn_stru:%.6f, %.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_word_vpn, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_comma_vpn);
 				    }
-				}
-				else if (tmp_cky_ptr->right == NULL ||
-					 (tmp_cky_ptr->right != NULL &&
-					  (!check_feature(tmp_cky_ptr->right->b_ptr->f, "NN") &&
-					   !check_feature(tmp_cky_ptr->right->b_ptr->f, "NR") &&
-					   !check_feature(tmp_cky_ptr->right->b_ptr->f, "PN")))) {
-				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-				    }
-				    else {
-					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, -1);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num];
-				    }
-
-				    if (OptDisplay == OPT_DEBUG) {
-					printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][sp->Bnst_num]);
-				    }
-				}
-			    }
-			}
-			else if (check_feature(tmp_child_ptr->b_ptr->f, "NN") ||
-				 check_feature(tmp_child_ptr->b_ptr->f, "NR") ||
-				 check_feature(tmp_child_ptr->b_ptr->f, "PN")) {
-			    if (tmp_cky_ptr->left != NULL && check_feature(tmp_cky_ptr->left->b_ptr->f, "P")) {
-				if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num] != -1) {
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-				else {
-				    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num,  tmp_cky_ptr->left->b_ptr->num, tmp_child_ptr->b_ptr->num);
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-				    
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->left->b_ptr->num][tmp_child_ptr->b_ptr->num]);
-				}
-			    }
-			    if (tmp_cky_ptr->right != NULL && check_feature(tmp_cky_ptr->right->b_ptr->f, "P")) {
-				if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num] != -1) {
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-				else {
-				    Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num] = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num,  tmp_cky_ptr->right->b_ptr->num, tmp_child_ptr->b_ptr->num);
-				    one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num];
-				}
-
-				if (OptDisplay == OPT_DEBUG) {
-				    printf("vpn_stru:%.6f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num]);
 				}
 			    }
 			}

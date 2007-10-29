@@ -42,7 +42,7 @@ int             Chi_quote_end_matrix[BNST_MAX][BNST_MAX];
 CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
 double          Chi_root_prob_matrix[BNST_MAX];
 int             Chi_root;
-double          Chi_dpnd_stru_matrix[BNST_MAX][BNST_MAX][BNST_MAX + 1];
+CHI_DPND_STRU   Chi_dpnd_stru_matrix[BNST_MAX][BNST_MAX][BNST_MAX + 1];
 
 char		**Options;
 int 		OptAnalysis;

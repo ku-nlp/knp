@@ -805,6 +805,12 @@ typedef struct {
     double      lamda2[CHI_DPND_TYPE_MAX]; /* parameter of each dpnd type */
 } CHI_DPND;
 
+/* Chinese dpnd structure */
+typedef struct {
+    double      prob_word_vpn;
+    double      prob_comma_vpn;
+} CHI_DPND_STRU;
+
 /*====================================================================
 				≥ ≤Ú¿œ
 ====================================================================*/
