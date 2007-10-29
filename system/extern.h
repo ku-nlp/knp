@@ -40,7 +40,7 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 /* store Chinese dpnd between words */
 extern CHI_DPND        Chi_dpnd_matrix[][BNST_MAX];
 extern double          Chi_root_prob_matrix[];
-extern CHI_DPND_STRU   Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX + 1];
+extern CHI_DPND_STRU   Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
