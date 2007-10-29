@@ -3077,11 +3077,11 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     if (disVP == 0 && disNP == 0 && commaVP == 0 && commaNP == 0) {
-	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 7);
+	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 11);
 	sprintf(key, "%s_%s_P_%s_%s_%s", verb_pos, verb, prep, noun_pos, noun);
     }
     else {
-	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 19);
+	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 23);
 	sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d_%d_%d", verb_pos, verb, prep, noun_pos, noun, disVP, disNP, commaVP, commaNP);
     }
     return db_get(chi_dpnd_stru_db, key);
