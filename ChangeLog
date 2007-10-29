@@ -1,3 +1,8 @@
+2007-10-29  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h, system/const.h
+	Change the usage of dpnd structure for Chinese generative model.
+
 2007-10-26  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c:
