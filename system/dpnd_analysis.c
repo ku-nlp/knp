@@ -573,7 +573,7 @@ static int dpndID = 0;
     for (i = 0; i < sp->Bnst_num; i++) {
 	// initialization
 	for (j = 0; j < sp->Bnst_num; j++) {
-	    for (k = 0; k < sp->Bnst_num + 1; k++) {
+	    for (k = 0; k < sp->Bnst_num; k++) {
 		Chi_dpnd_stru_matrix[i][j][k].prob_word_vpn = -1;
 		Chi_dpnd_stru_matrix[i][j][k].prob_comma_vpn = -1;
 	    }
