@@ -807,8 +807,7 @@ typedef struct {
 
 /* Chinese dpnd structure */
 typedef struct {
-    double      prob_word_vpn;
-    double      prob_comma_vpn;
+    double      prob_vpn;
 } CHI_DPND_STRU;
 
 /*====================================================================

@@ -319,8 +319,7 @@ extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
-extern double calc_chi_dpnd_stru_word_prob(SENTENCE_DATA *sp, int verb, int prep, int noun);
-extern double calc_chi_dpnd_stru_comma_prob(SENTENCE_DATA *sp, int verb, int prep, int noun);
+extern double calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int verb, int prep, int noun);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);

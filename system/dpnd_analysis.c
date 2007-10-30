@@ -574,8 +574,7 @@ static int dpndID = 0;
 	// initialization
 	for (j = 0; j < sp->Bnst_num; j++) {
 	    for (k = 0; k < sp->Bnst_num; k++) {
-		Chi_dpnd_stru_matrix[i][j][k].prob_word_vpn = -1;
-		Chi_dpnd_stru_matrix[i][j][k].prob_comma_vpn = -1;
+		Chi_dpnd_stru_matrix[i][j][k].prob_vpn = -1;
 	    }
 	}
 
@@ -3067,7 +3066,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 }
 
 /*==================================================================*/
-   char* get_chi_dpnd_stru_rule(char *verb, char *verb_pos, char *prep, char *noun, char *noun_pos, int disVP, int disNP, int commaVP, int commaNP)
+   char* get_chi_dpnd_stru_rule(char *verb, char *verb_pos, char *prep, char *noun, char *noun_pos, int commaVP, int commaNP)
 /*==================================================================*/
 {
     char *key;
@@ -3076,426 +3075,16 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	return NULL;
     }
 
-    if (disVP == 0 && disNP == 0 && commaVP == 0 && commaNP == 0) {
-	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 11);
-	sprintf(key, "%s_%s_P_%s_%s_%s", verb_pos, verb, prep, noun_pos, noun);
-    }
-    else {
-	key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 23);
-	sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d_%d_%d", verb_pos, verb, prep, noun_pos, noun, disVP, disNP, commaVP, commaNP);
-    }
+    key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 15);
+    sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d", verb_pos, verb, prep, noun_pos, noun, commaVP, commaNP);
     return db_get(chi_dpnd_stru_db, key);
 }
 
 /*==================================================================*/
-   double calc_chi_dpnd_stru_word_prob(SENTENCE_DATA *sp, int verb, int prep, int noun)
+   double calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int verb, int prep, int noun)
 /*==================================================================*/
 {
-    int i, count;
-    char *rule, *cat_rule, *occur, *total, *type;
-    char *cur_rule[2];
-    double lex_occur[2], lex_total[2], bk100_occur[2], bk100_total[2], bk010_occur[2], bk010_total[2], bk001_occur[2], bk001_total[2], bk110_occur[2], bk110_total[2], bk101_occur[2], bk101_total[2], bk011_occur[2], bk011_total[2], bk000_occur[2], bk000_total[2];
-    double giga_weight = 0.8;
-    double lamda, prob;
-    double bk1_weight = 0.8;
-    double bk2_weight = 0.6;
-    double bk3_weight = 0.5;
-
-    // initialization
-    for (i = 0; i < 2; i++) {
-	lex_occur[i] = 0.0;
-	lex_total[i] = 0.0;
-	bk100_occur[i] = 0.0;
-	bk100_total[i] = 0.0;
-	bk010_occur[i] = 0.0;
-	bk010_total[i] = 0.0;
-	bk001_occur[i] = 0.0;
-	bk001_total[i] = 0.0;
-	bk110_occur[i] = 0.0;
-	bk110_total[i] = 0.0;
-	bk101_occur[i] = 0.0;
-	bk101_total[i] = 0.0;
-	bk011_occur[i] = 0.0;
-	bk011_total[i] = 0.0;
-	bk000_occur[i] = 0.0;
-	bk000_total[i] = 0.0;
-    }
-
-    // read lex rule
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		lex_occur[0] = atof(occur);
-		lex_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		lex_occur[1] = atof(occur);
-		lex_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    // read backoff rule
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk100_occur[0] = atof(occur);
-		bk100_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk100_occur[1] = atof(occur);
-		bk100_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk010_occur[0] = atof(occur);
-		bk010_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk010_occur[1] = atof(occur);
-		bk010_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk001_occur[0] = atof(occur);
-		bk001_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk001_occur[1] = atof(occur);
-		bk001_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk110_occur[0] = atof(occur);
-		bk110_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk110_occur[1] = atof(occur);
-		bk110_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-    
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk101_occur[0] = atof(occur);
-		bk101_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk101_occur[1] = atof(occur);
-		bk101_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk011_occur[0] = atof(occur);
-		bk011_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk011_occur[1] = atof(occur);
-		bk011_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, 0, 0, 0, 0);
-
-    if (rule != NULL) {
-	count = 0;
-	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
-	while (cat_rule) {
-	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
-	    strcpy(cur_rule[count], cat_rule);
-	    count++;
-	    cat_rule = NULL;
-	    cat_rule = strtok(NULL, ":");
-	}
-
-	for (i = 0; i < count; i++) {
-	    occur = NULL;
-	    total = NULL;
-	    type = NULL;
-			    
-	    occur = strtok(cur_rule[i], "_");
-	    total = strtok(NULL, "_");
-	    type = strtok(NULL, "_");
-
-	    if (!strcmp(type, "TRAIN")) {
-		bk000_occur[0] = atof(occur);
-		bk000_total[0] = atof(total);
-	    }
-	    else if (!strcmp(type, "GIGA")) {
-		bk000_occur[1] = atof(occur);
-		bk000_total[1] = atof(total);
-	    }
-	    if (cur_rule[i]) {
-		free(cur_rule[i]);
-	    }
-	}
-    }
-
-    // calculate probability
-    lex_occur[0] += giga_weight * lex_occur[1];
-    lex_total[0] += giga_weight * lex_total[1];
-    bk100_occur[0] += giga_weight * bk100_occur[1];
-    bk100_total[0] += giga_weight * bk100_total[1];
-    bk010_occur[0] += giga_weight * bk010_occur[1];
-    bk010_total[0] += giga_weight * bk010_total[1];
-    bk001_occur[0] += giga_weight * bk001_occur[1];
-    bk001_total[0] += giga_weight * bk001_total[1];
-    bk110_occur[0] += giga_weight * bk110_occur[1];
-    bk110_total[0] += giga_weight * bk110_total[1];
-    bk101_occur[0] += giga_weight * bk101_occur[1];
-    bk101_total[0] += giga_weight * bk101_total[1];
-    bk011_occur[0] += giga_weight * bk011_occur[1];
-    bk011_total[0] += giga_weight * bk011_total[1];
-    bk000_occur[0] += giga_weight * bk000_occur[1];
-    bk000_total[0] += giga_weight * bk000_total[1];
-
-    prob = 0.0;
-    lamda = 0.0;
-    
-    if (lex_total[0] > 0) {
-	lamda = lex_total[0] / (lex_total[0] + 1);
-	prob = lamda * (lex_occur[0] / lex_total[0]);
-	if (bk110_total[0] > 0 || bk011_total[0] > 0 || bk101_total[0] > 0) {
-	    prob += (1 - lamda) * (bk101_occur[0] + bk110_occur[0] + bk011_occur[0]) / (bk101_total[0] + bk110_total[0] +  bk011_total[0]);
-	}
-	if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
-	    prob += (1 - lamda) * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
-	}
-	if (bk000_total[0] > 0) {
-	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
-	}
-    }
-    else if (bk110_total[0] > 0 || bk011_total[0] > 0 || bk101_total[0] > 0) {
-	lamda = (bk110_total[0] + bk011_total[0] + bk101_total[0]) / (bk110_total[0] + bk011_total[0] + bk101_total[0] + 1);
-	prob = lamda * (bk101_occur[0] + bk110_occur[0] + bk011_occur[0]) / (bk101_total[0] + bk110_total[0] +  bk011_total[0]);
-	if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
-	    prob += (1 - lamda) * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
-	}
-	if (bk000_total[0] > 0) {
-	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
-	}
-	prob *= bk1_weight;
-    }
-    else if (bk100_total[0] > 0 || bk010_total[0] > 0 || bk001_total[0] > 0) {
-	lamda = (bk100_total[0] + bk010_total[0] + bk001_total[0]) / (bk100_total[0] + bk010_total[0] + bk001_total[0] + 1);
-	prob = lamda * (bk100_occur[0] + bk010_occur[0] + bk001_occur[0]) / (bk100_total[0] + bk010_total[0] +  bk001_total[0]);
-	if (bk000_total[0] > 0) {
-	    prob += (1 - lamda) * (bk000_occur[0] / bk000_total[0]);
-	}
-	prob *= bk2_weight;
-    }
-    else if (bk000_total[0] > 0) {
-	prob = bk3_weight * (bk000_occur[0] / bk000_total[0]);
-    }
-
-    if (rule) {
-	free(rule);
-    }
-
-    return prob;
-}
-
-/*==================================================================*/
-   double calc_chi_dpnd_stru_comma_prob(SENTENCE_DATA *sp, int verb, int prep, int noun)
-/*==================================================================*/
-{
-    int disVP, disNP, commaVP = 0, commaNP = 0;
+    int commaVP = 0, commaNP = 0;
     int i, count;
     char *rule, *cat_rule, *occur, *total, *type;
     char *cur_rule[2];
@@ -3528,7 +3117,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     // get distance and comma
     if (verb < prep) {
-	disVP = -1;
 	for (i = verb + 1; i < prep; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3542,7 +3130,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
     else {
-	disVP = 1;
 	for (i = prep + 1; i < verb; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3556,49 +3143,36 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
 
-    if (noun == -1) {
-	disNP = 0;
-	commaNP = -1;
-    }
-    else {
-	if (noun < prep) {
-	    disNP = -1;
-	    for (i = noun + 1; i < prep; i++) {
-		if (check_feature((sp->bnst_data+i)->f, "PU") &&
-		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
-		    commaNP = 1;
-		    break;
-		}
+    if (noun < prep) {
+	for (i = noun + 1; i < prep; i++) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
+		commaNP = 1;
+		break;
 	    }
 	}
-	else {
-	    disNP = 1;
-	    for (i = prep + 1; i < noun; i++) {
-		if (check_feature((sp->bnst_data+i)->f, "PU") &&
-		    (!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
-		     !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
-		    commaNP = 1;
-		    break;
-		}
+    }
+    else {
+	for (i = prep + 1; i < noun; i++) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
+		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡§") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, ":") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨") ||
+		 !strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¤"))) {
+		commaNP = 1;
+		break;
 	    }
 	}
     }
     
     // read lex rule
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3637,12 +3211,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     // read backoff rule
     rule = NULL;
-    if (noun == -1) {
-	    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3680,12 +3249,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3723,12 +3287,8 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+
     if (rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
@@ -3765,12 +3325,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3808,12 +3363,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3851,12 +3401,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3894,12 +3439,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    if (noun == -1) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", "XX", disVP, disNP, commaVP, commaNP);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
-    }
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
