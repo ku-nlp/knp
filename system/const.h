@@ -835,6 +835,7 @@ typedef struct entity {
     int                 mentioned_num; /* 言及されている回数 */
     int                 antecedent_num; /* 先行詞となっている回数 */
     MENTION             *mention[MENTIONED_MAX];
+    char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
 } ENTITY;
 
 /* 文章全体に出現したENTITYを管理する構造体 */
@@ -1307,12 +1308,19 @@ typedef struct entity_list {
     struct entity_list *next;
 } ENTITY_LIST;
 
-/* 文と(用言に対する複数の可能な)格フレームの対応付け結果の記録 */
+/* 文と用言の対応付け結果の記録 */
+typedef struct ecm_def {
+    CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
+    
+} ENTITY_CASE_MGR;
+
+/* 文と用言の対応付け結果の記録 */
 typedef struct epm_def {
     CASE_FRAME 	cf;				/* 入力文の格構造 */
     TAG_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
     TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
     SENTENCE_DATA *elem_s_ptr[CF_ELEMENT_MAX];	/* どの文の要素であるか (省略用) */
+    
 } ENTITY_PRED_MGR;
 
 /*====================================================================

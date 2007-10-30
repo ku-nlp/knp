@@ -557,6 +557,10 @@ extern FILE *Infp;
 extern FILE *Outfp;
 extern int   OptMode;
 
+/* context.c for anaphra.c */
+extern char *get_pred_id(char *cfid);
+extern CFLIST *CheckCF(char *key);
+
 /*====================================================================
 				 END
 ====================================================================*/

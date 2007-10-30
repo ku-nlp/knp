@@ -1,3 +1,14 @@
+2007-10-30  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, const.h, extern.h:
+	照応解析関係のプログラムを更新
+
+2007-10-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, case_data.c, const.h, para_dpnd.c, read_data.c, thesaurus.c:
+	照応解析関係のプログラムを更新
+	トランク側の更新を反映
+
 2007-10-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/read_data.c:
