@@ -245,7 +245,7 @@ QUOTE_DATA quote_data;
     init_quote(sp);
 
    if (Language != CHINESE ||
-	(Language == CHINESE && !OptChiProb)) {
+	(Language == CHINESE && !OptChiGenerative)) {
 	if ((quote_p = check_quote(sp))) {	/* ³Ã³ç¸Ì¤Î¸¡½Ð */
 	    if (quote_p == CONTINUE) return quote_p;
 

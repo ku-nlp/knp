@@ -103,7 +103,12 @@ extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
 extern int		OptNbest;
 extern int		OptBeam;
-extern int              OptChiProb; //option for Chinese, 1 means use probabilistic model, 0 means use deterministic model
+
+// option for Chinese
+// 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
+// 0 means use collins model, use chidpnd.db chi_pa.db chi_spec_pa.db
+extern int              OptChiGenerative;
+
 extern VerboseType	VerboseLevel;
 
 extern CLASS    	Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];

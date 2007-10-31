@@ -92,7 +92,12 @@ int		OptTimeoutExit;
 int		OptParaFix;
 int		OptNbest;
 int		OptBeam;
-int             OptChiProb; //option for Chinese, 1 means use probabilistic model, 0 means use deterministic model
+
+// option for Chinese
+// 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
+// 0 means use collins model, use chidpnd.db chi_pa.db chi_spec_pa.db
+int             OptChiGenerative; 
+
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
 
@@ -219,7 +224,7 @@ extern int	EX_match_subject;
     OptParaFix = TRUE;
     OptNbest = 0;
     OptBeam = 0;
-    OptChiProb = 0;
+    OptChiGenerative = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -293,8 +298,8 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-parafix")) {
 	     OptParaFix = 0;
 	}
-	else if (str_eq(argv[0], "-chiprob")) {
-	     OptChiProb = 1;
+	else if (str_eq(argv[0], "-chi-generative")) {
+	     OptChiGenerative = 1;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
@@ -1152,18 +1157,18 @@ extern int	EX_match_subject;
     /* 本格的解析 */
     /**************/
 
-    if ((Language == CHINESE && !OptChiProb) ||
+    if ((Language == CHINESE && !OptChiGenerative) ||
 	Language != CHINESE) {
 	calc_dpnd_matrix(sp);
     }
-    else if (Language == CHINESE && OptChiProb) {
+    else if (Language == CHINESE && OptChiGenerative) {
 	calc_chi_dpnd_matrix_forProbModel(sp);
     }
 
     /* 依存可能性計算 */
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
-    if (Language == CHINESE && !OptChiProb) {
+    if (Language == CHINESE && !OptChiGenerative) {
 	calc_gigaword_pa_matrix(sp);			/* get count of gigaword pa for Chinese */
     }
 

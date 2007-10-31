@@ -206,14 +206,10 @@ int	koou_m_p[BNST_MAX];
 
     init_koou(sp);
 
-//    if (Language != CHINESE ||
-//	(Language == CHINESE && !OptChiProb)) {
-	/* 呼応のチェック */
-	flag = (check_koou(sp) == TRUE) ? TRUE: FALSE;
+    flag = (check_koou(sp) == TRUE) ? TRUE: FALSE;
 
-	/* 行列の書き換え */
-	change_matrix(sp); 
-//    }
+    /* 行列の書き換え */
+    change_matrix(sp); 
 
     return flag;
 }

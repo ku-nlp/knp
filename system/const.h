@@ -689,99 +689,15 @@ typedef struct thesaurus {
 
 /* Chinese dpnd rule */
 typedef struct {
-    char  	direction_1[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
-    char  	direction_2[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
-    char  	direction_3[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
-    char  	direction_4[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
     char  	direction[CHI_DPND_TYPE_MAX]; /* store different directions for each type */
-    double         prob_LtoR_1[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    double         prob_RtoL_1[CHI_DPND_TYPE_MAX];
-    double         prob_LtoR_2[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    double         prob_RtoL_2[CHI_DPND_TYPE_MAX];
-    double         prob_LtoR_3[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    double         prob_RtoL_3[CHI_DPND_TYPE_MAX];
-    double         prob_LtoR_4[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
-    double         prob_RtoL_4[CHI_DPND_TYPE_MAX];
     double      prob_LtoR[CHI_DPND_TYPE_MAX]; /* store different probability for each type */
     double      prob_RtoL[CHI_DPND_TYPE_MAX];
     double      prob_pos_LtoR; /* store different probability of pos pairs for each type */
     double      prob_pos_RtoL;
-    char        type_1[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    char        type_2[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    char        type_3[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    char        type_4[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    double         occur_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_RtoL_1[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_RtoL_2[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_RtoL_3[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
-    double         occur_RtoL_4[CHI_DPND_TYPE_MAX]; /* store occur time of different dpnd type */
     double         occur_pos; /* store occur time of different dpnd type */
     double      dpnd_LtoR;
     double      dpnd_RtoL;
-
-    double      prob_dis_1[2];
-    double      occur_dis_1[2];
-    double      prob_neg_dis_1[2];
-    double      occur_neg_dis_1[2];
-    double      prob_comma0_1[2];
-    double      prob_neg_comma0_1[2];
-    double      prob_comma1_1[2];
-    double      prob_neg_comma1_1[2];
-    double      prob_comma2_1[2];
-    double      prob_neg_comma2_1[2];
-    double      prob_comma3_1[2];
-    double      prob_neg_comma3_1[2];
-    double      prob_comma4_1[2];
-    double      prob_neg_comma4_1[2];
-
-    double      prob_dis_2[2];
-    double      occur_dis_2[2];
-    double      prob_neg_dis_2[2];
-    double      occur_neg_dis_2[2];
-    double      prob_comma0_2[2];
-    double      prob_neg_comma0_2[2];
-    double      prob_comma1_2[2];
-    double      prob_neg_comma1_2[2];
-    double      prob_comma2_2[2];
-    double      prob_neg_comma2_2[2];
-    double      prob_comma3_2[2];
-    double      prob_neg_comma3_2[2];
-    double      prob_comma4_2[2];
-    double      prob_neg_comma4_2[2];
-
-    double      prob_dis_3[2];
-    double      occur_dis_3[2];
-    double      prob_neg_dis_3[2];
-    double      occur_neg_dis_3[2];
-    double      prob_comma0_3[2];
-    double      prob_neg_comma0_3[2];
-    double      prob_comma1_3[2];
-    double      prob_neg_comma1_3[2];
-    double      prob_comma2_3[2];
-    double      prob_neg_comma2_3[2];
-    double      prob_comma3_3[2];
-    double      prob_neg_comma3_3[2];
-    double      prob_comma4_3[2];
-    double      prob_neg_comma4_3[2];
-
-    double      prob_dis_4[2];
-    double      occur_dis_4[2];
-    double      prob_neg_dis_4[2];
-    double      occur_neg_dis_4[2];
-    double      prob_comma0_4[2];
-    double      prob_neg_comma0_4[2];
-    double      prob_comma1_4[2];
-    double      prob_neg_comma1_4[2];
-    double      prob_comma2_4[2];
-    double      prob_neg_comma2_4[2];
-    double      prob_comma3_4[2];
-    double      prob_neg_comma3_4[2];
-    double      prob_comma4_4[2];
-    double      prob_neg_comma4_4[2];
 
     double      prob_dis;
     double      prob_neg_dis;
@@ -796,13 +712,7 @@ typedef struct {
     double      prob_comma4;
     double      prob_neg_comma4;
 
-    int         count_1; /* number of dpnd type */
-    int         count_2; /* number of dpnd type */
-    int         count_3; /* number of dpnd type */
-    int         count_4; /* number of dpnd type */
     int         count; /* number of dpnd type */
-    double      lamda1[CHI_DPND_TYPE_MAX]; /* parameter of each dpnd type */
-    double      lamda2[CHI_DPND_TYPE_MAX]; /* parameter of each dpnd type */
 } CHI_DPND;
 
 /* Chinese dpnd structure */

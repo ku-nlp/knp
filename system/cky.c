@@ -254,18 +254,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double one_score = 0;
     char *cp, *cp2;
 
-    double thre_n_v_r, thre_v_n_l, thre_n_n_r, thre_n_n_l, thre_v_v_r, thre_v_v_l, thre_p_v_r, thre_p_v_l;
+    double thre_p_v_r, thre_p_v_l;
     double chi_pa_thre;
     double weight_dpnd, weight_pos, weight_spec_pa, weight_comma, weight_root, weight_pa;
     double pos_prob_thre_high, pos_prob_thre_low;
     int pos_occur_thre_high, pos_occur_thre_low;
 
-    thre_n_v_r = 0.2;
-    thre_v_n_l = 0.2;
-    thre_n_n_r = 0.2;
-    thre_n_n_l = 0.2;
-    thre_v_v_r = 2.0;
-    thre_v_v_l = 2.0;
     thre_p_v_r = 0.2;
     thre_p_v_l = 0.2;
 
@@ -541,7 +535,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
-		if (OptChiProb) {
+		if (OptChiGenerative) {
 		    if (cky_ptr->direction == LtoR) {
 			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0];
 			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR;
@@ -724,39 +718,10 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 
 			/* add bonus from gigaword pa */
-			if (check_feature(d_ptr->f, "NN") ||
-			    check_feature(d_ptr->f, "NR") ||
-			    check_feature(d_ptr->f, "PN") ||
-			    check_feature(d_ptr->f, "NT")) {
-			    if (check_feature(g_ptr->f, "NN") ||
-				check_feature(g_ptr->f, "NR") ||
-				check_feature(g_ptr->f, "PN") ||
-				check_feature(g_ptr->f, "NT")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_n_r) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			    if (check_feature(g_ptr->f, "VV") ||
-				check_feature(g_ptr->f, "VC") ||
-				check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "VA")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_v_r) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			}
 			if (check_feature(g_ptr->f, "VV") ||
 			    check_feature(g_ptr->f, "VC") ||
 			    check_feature(g_ptr->f, "VE") ||
 			    check_feature(g_ptr->f, "VA")) {
-			    if (check_feature(d_ptr->f, "VV") ||
-				check_feature(d_ptr->f, "VC") ||
-				check_feature(d_ptr->f, "VE") ||
-				check_feature(d_ptr->f, "VA")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_v_v_r) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
 			    if (check_feature(d_ptr->f, "P")) {
 				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_r) {
 				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
@@ -811,43 +776,10 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 
 			/* add bonus from gigaword pa */
-			if (check_feature(d_ptr->f, "NN") ||
-			    check_feature(d_ptr->f, "NR") ||
-			    check_feature(d_ptr->f, "PN") ||
-			    check_feature(d_ptr->f, "NT")) {
-			    if (check_feature(g_ptr->f, "NN") ||
-				check_feature(g_ptr->f, "NR") ||
-				check_feature(g_ptr->f, "PN") ||
-				check_feature(g_ptr->f, "NT")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_n_n_l) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			    if (check_feature(g_ptr->f, "VV") ||
-				check_feature(g_ptr->f, "VC") ||
-				check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "VA")) {
-				if (Chi_spec_pa_matrix[g_ptr->num][d_ptr->num] >= thre_v_n_l) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[g_ptr->num][d_ptr->num];
-				    if (OptDisplay == OPT_DEBUG) {
-					printf("(verb-obj spec_pa:%f)%.6f=>", Chi_spec_pa_matrix[g_ptr->num][d_ptr->num], one_score);
-				    }
-				}
-			    }
-			}
-
 			if (check_feature(d_ptr->f, "VV") ||
 			    check_feature(d_ptr->f, "VC") ||
 			    check_feature(d_ptr->f, "VE") ||
 			    check_feature(d_ptr->f, "VA")) {
-			    if (check_feature(g_ptr->f, "VV") ||
-				check_feature(g_ptr->f, "VC") ||
-				check_feature(g_ptr->f, "VE") ||
-				check_feature(g_ptr->f, "VA")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_v_v_l) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
 			    if (check_feature(g_ptr->f, "P")) {
 				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_l) {
 				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
@@ -1625,7 +1557,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							} 
 						    }
 						}
-						if (!OptParaFix) {// && !OptChiProb) {
+						if (!OptParaFix) {// && !OptChiGenerative) {
 						    /* add similarity of coordination */
 						    if (cky_ptr->para_score > PARA_THRESHOLD && 
 							(Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
@@ -1685,7 +1617,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 							} 
 						    }
 						}
-						if (!OptParaFix) {// && !OptChiProb) {
+						if (!OptParaFix) {// && !OptChiGenerative) {
 						    /* add similarity of coordination */
 						    if (cky_ptr->para_score > PARA_THRESHOLD && 
 							(Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N')) {
@@ -1758,7 +1690,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    } 
 						}
 					    }
-					    if (!OptParaFix) {// && !OptChiProb) {
+					    if (!OptParaFix) {// && !OptChiGenerative) {
 						/* add similarity of coordination */
 						if (cky_ptr->para_score > PARA_THRESHOLD && 
 						    (Mask_matrix[i][i + k] == 'N' || Mask_matrix[i + k + 1][j] == 'N')) {
@@ -2483,20 +2415,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    return 0;
 	}
 
-/* 	/\* for pivot sentence, the noun between the two verbs should depend on the second verb  *\/ */
-/* 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV") && */
-/* 	    check_feature((sp->bnst_data + left->b_ptr->num)->f, "VV") && */
-/* 	    direction == 'L' && left->j != left->i && */
-/* 	    (has_child_chi(sp, left, "NN", 1)|| */
-/* 	     has_child_chi(sp, left, "NR", 1)|| */
-/* 	     has_child_chi(sp, left, "LC", 1)|| */
-/* 	     has_child_chi(sp, left, "PN", 1)) && */
-/* 	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "CC") == -1 && */
-/* 	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "dunhao") == -1 && */
-/* 	    exist_chi(sp, left->b_ptr->num + 1, right->b_ptr->num - 1, "pu") == -1) { */
-/* 	    return 0; */
-/* 	} */
-
 	/* for preposition, it must have non-pu modifier */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
 	     direction == 'R' &&
@@ -2562,13 +2480,6 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	    direction == 'L') {
 	    return 0;
 	}
-
-/* 	/\* for preposition, it cannot depend on DEC *\/ */
-/* 	if (check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&  */
-/* 	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") && */
-/* 	    direction == 'R') { */
-/* 	    return 0; */
-/* 	} */
 
 	/* for preposition, if it depend on verb before, the verb should have object */
 	if (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
