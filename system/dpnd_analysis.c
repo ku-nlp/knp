@@ -3066,7 +3066,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 }
 
 /*==================================================================*/
-   char* get_chi_dpnd_stru_rule(char *verb, char *verb_pos, char *prep, char *noun, char *noun_pos, int commaVP, int commaNP)
+   char* get_chi_dpnd_stru_rule(char *verb, char *verb_pos, char *prep, char *noun, char *noun_pos, int disVP, int disNP, int commaVP, int commaNP)
 /*==================================================================*/
 {
     char *key;
@@ -3075,8 +3075,8 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	return NULL;
     }
 
-    key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 15);
-    sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d", verb_pos, verb, prep, noun_pos, noun, commaVP, commaNP);
+    key = malloc_db_buf(strlen(verb) + strlen(prep) + strlen(noun) + 21);
+    sprintf(key, "%s_%s_P_%s_%s_%s_%d_%d_%d_%d", verb_pos, verb, prep, noun_pos, noun, disVP, disNP, commaVP, commaNP);
     return db_get(chi_dpnd_stru_db, key);
 }
 
@@ -3084,7 +3084,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
    double calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int verb, int prep, int noun)
 /*==================================================================*/
 {
-    int commaVP = 0, commaNP = 0;
+    int commaVP = 0, commaNP = 0, disVP, disNP;
     int i, count;
     char *rule, *cat_rule, *occur, *total, *type;
     char *cur_rule[2];
@@ -3117,6 +3117,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     // get distance and comma
     if (verb < prep) {
+	disVP = -1;
 	for (i = verb + 1; i < prep; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3130,6 +3131,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
     else {
+	disVP = 1;
 	for (i = prep + 1; i < verb; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3144,6 +3146,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     if (noun < prep) {
+	disNP = -1;
 	for (i = noun + 1; i < prep; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3157,6 +3160,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	}
     }
     else {
+	disNP = 1;
 	for (i = prep + 1; i < noun; i++) {
 	    if (check_feature((sp->bnst_data+i)->f, "PU") &&
 		(!strcmp((sp->bnst_data+i)->head_ptr->Goi, ",") ||
@@ -3172,7 +3176,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     
     // read lex rule
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3211,7 +3215,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
     // read backoff rule
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3249,7 +3253,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3287,7 +3291,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3325,7 +3329,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3363,7 +3367,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule((sp->bnst_data+verb)->head_ptr->Goi, (sp->bnst_data+verb)->head_ptr->Pos, "XX", (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3401,7 +3405,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, (sp->bnst_data+prep)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Goi, (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
@@ -3439,7 +3443,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     rule = NULL;
-    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, commaVP, commaNP);
+    rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+verb)->head_ptr->Pos, "XX", "XX", (sp->bnst_data+noun)->head_ptr->Pos, disVP, disNP, commaVP, commaNP);
 
     if (rule != NULL) {
 	count = 0;
