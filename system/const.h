@@ -904,7 +904,8 @@ typedef struct tnode_t {
     /* MENTIONの管理 */
     MENTION_MGR mention_mgr;
     /* 照応解析 */
-    struct epm_def *epm_ptr;
+    struct tcf_def *tcf_ptr; /* 入力基本句の表層的な格構造 */
+    struct ctm_def *ctm_ptr; /* 基本句の格・省略解析結果の記録 */
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -1308,20 +1309,26 @@ typedef struct entity_list {
     struct entity_list *next;
 } ENTITY_LIST;
 
-/* 文と用言の対応付け結果の記録 */
-typedef struct ecm_def {
-    CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
-    
-} ENTITY_CASE_MGR;
+/*====================================================================
+			 ENTITY BASE 文脈処理
+====================================================================*/
 
-/* 文と用言の対応付け結果の記録 */
-typedef struct epm_def {
-    CASE_FRAME 	cf;				/* 入力文の格構造 */
-    TAG_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
-    TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
-    SENTENCE_DATA *elem_s_ptr[CF_ELEMENT_MAX];	/* どの文の要素であるか (省略用) */
-    
-} ENTITY_PRED_MGR;
+/* 入力基本句の表層的な格構造 */
+typedef struct tcf_def {
+    CASE_FRAME 	    cf;				 /* 入力文の格構造 */
+    TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
+    TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
+    SENTENCE_DATA   *elem_s_ptr[CF_ELEMENT_MAX]; /* 格要素文節の属す文 */
+} TAG_CASE_FRAME;
+
+/* 基本句の格・省略解析結果の記録 */
+typedef struct ctm_def {
+    double      score;                          /* 対応付けのスコア */
+    CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
+    int         element_num;                    /* 対応付けられた要素数 */
+    int         cf_element_num[CF_ELEMENT_MAX]; /* 格フレームの格要素への対応 */
+    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];    /* 関連付けられた基本句 */       
+} CF_TAG_MGR;
 
 /*====================================================================
                                END
