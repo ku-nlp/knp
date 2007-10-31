@@ -1313,19 +1313,20 @@ typedef struct entity_list {
 			 ENTITY BASE 文脈処理
 ====================================================================*/
 
-/* 入力基本句の表層的な格構造 */
+/* 入力基本句の格構造 */
 typedef struct tcf_def {
     CASE_FRAME 	    cf;				 /* 入力文の格構造 */
     TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
     TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
-    SENTENCE_DATA   *elem_s_ptr[CF_ELEMENT_MAX]; /* 格要素文節の属す文 */
 } TAG_CASE_FRAME;
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                          /* 対応付けのスコア */
     CASE_FRAME 	*cf_ptr;			/* 格フレームへのポインタ */
-    int         element_num;                    /* 対応付けられた要素数 */
+    int         filled_element[CF_ELEMENT_MAX]; /* 対応付けられた格フレームの要素 */
+    /* 以下は基本句の格構造の情報 */
+    int         result_num;                     /* 対応付けられた要素数 */
     int         cf_element_num[CF_ELEMENT_MAX]; /* 格フレームの格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];    /* 関連付けられた基本句 */       
 } CF_TAG_MGR;

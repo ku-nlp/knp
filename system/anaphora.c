@@ -37,7 +37,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
 	mention_ptr->pp_code = 0;
 	mention_ptr->flag = '=';
-	/* entityのnameがNEでなく、tag_ptrがNEならば上書き*/
+
+	/* entityのnameがNEでなく、tag_ptrがNEならばnameを上書き */
 	if (!strchr(mention_ptr->entity->name, ':') &&
 	    (cp = check_feature(tag_ptr->f, "NE"))) {
 	    strcpy(mention_ptr->entity->name, cp + strlen("NE:"));
@@ -91,7 +92,6 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     tcf_ptr->pred_b_ptr = tag_ptr;
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	tcf_ptr->elem_b_ptr[i] = cpm_ptr->elem_b_ptr[i];
-	tcf_ptr->elem_s_ptr[i] = cpm_ptr->elem_s_ptr[i];
     }
 
     free(cpm_ptr);
@@ -102,7 +102,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     int set_cf_candidate(TAG_DATA *tag_ptr, CASE_FRAME **cf_array)
 /*==================================================================*/
 {
-    int i, l, frame_num, hiragana_prefer_flag = 0;
+    int i, l, frame_num = 0, hiragana_prefer_flag = 0;
     CFLIST *cfp;
     char *key;
     
@@ -160,10 +160,66 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 }
 
 /*==================================================================*/
-       int case_analysis_for_anaphora(TAG_DATA *tag_ptr)
+int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 /*==================================================================*/
 {
-    int i;
+    /* 候補の格フレームについて照応解析用格解析を実行する関数
+       再帰的に呼び出す
+       iにはtag_ptr->tcf_ptr->cf.element_numのうちチェックした数 
+       r_numにはそのうち格フレームと関連付けられた要素の数が入る */
+    
+    int j, e_num;
+
+    /* すでに埋まっている格フレームの格をチェック */
+    memset(ctm_ptr->filled_element, 0, sizeof(int) * CF_ELEMENT_MAX);
+    for (j = 0; j < r_num; j++) ctm_ptr->filled_element[ctm_ptr->cf_element_num[j]] = TRUE;
+
+    /* まだチェックしていない要素がある場合 */
+    if (i < tag_ptr->tcf_ptr->cf.element_num) {
+
+	for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
+	    
+	    /* 入力文のi番目の格要素を格フレームのcf.pp[i][j]格に割り当てる */
+	    for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
+
+		if (tag_ptr->tcf_ptr->cf.pp[i][j] == ctm_ptr->cf_ptr->pp[e_num][0]) {
+		    /* 対象の格が既に埋まっている場合は不可 */
+		    if (ctm_ptr->filled_element[e_num] == TRUE) return FALSE;
+
+		    /* 直前格である場合は制限を加える(未実装) */
+		    if (0) return FALSE;
+		    
+		    /* 対応付け結果を記録 */
+		    ctm_ptr->elem_b_ptr[r_num] = tag_ptr->tcf_ptr->elem_b_ptr[i];
+		    ctm_ptr->cf_element_num[r_num] = e_num;
+
+		    /* i+1番目の要素のチェックへ */
+		    case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num + 1);
+		}
+	    }    
+	    /* ガ、ヲ、ニ以外の場合は割り当てない場合も考える(未実装) */
+	    if (!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ガ") &&
+		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ヲ") &&
+		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ニ")) {
+		case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num);
+	    }
+	}
+    }
+
+    /* すべてのチェックが終了した場合 */
+    /* この段階でr_num個が対応付けられている */
+    else {
+	printf(";;    ");
+	for (j = 0; j < r_num; j++) {
+	    e_num = ctm_ptr->cf_element_num[j];
+	    
+	    printf("%s-%s ", 
+		   ctm_ptr->elem_b_ptr[j]->head_ptr->Goi2,
+		   pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]) 		   
+		);
+	}	  	
+	printf(" ok?\n");
+    }
 }
 
 /*==================================================================*/
@@ -176,6 +232,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     int l, frame_num = 0;
     CASE_FRAME **cf_array;
     CF_TAG_MGR *ctm_ptr = work_ctm + CASE_CANDIDATE_MAX + 1;
+    int i, j; /* デバグ用 */
     
     /* 使用する格フレームの設定 */
     cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*tag_ptr->cf_num, 
@@ -190,11 +247,29 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	    continue;
 	}
 	
+	/* 用言のみ対象(暫定的)*/
+	if (tag_ptr->tcf_ptr->cf.type != CF_PRED) continue;
+
+	/* ctm_ptrの初期化 */
+	ctm_ptr->result_num = -1;
+	ctm_ptr->score = -1;
+
 	/* 格フレームを指定 */
  	ctm_ptr->cf_ptr = *(cf_array + l);
-	
+
+	/* デバグ用 */
+	printf(";;%s\n", tag_ptr->head_ptr->Goi2); 
+	for (i = 0; i < tag_ptr->tcf_ptr->cf.element_num; i++) {
+	    printf("\n;; %s", (tag_ptr->tcf_ptr->elem_b_ptr[i])->head_ptr->Goi2);	
+	    for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
+		printf(" %d:%s", tag_ptr->tcf_ptr->cf.pp[i][j], 
+		       pp_code_to_kstr(tag_ptr->tcf_ptr->cf.pp[i][j])); 
+	    }
+	}
+	printf("\n", tag_ptr->head_ptr->Goi2); 
+
 	/* 照応解析用格解析 (上位CASE_CANDIDATE_MAX個の結果を保持する) */
-	case_analysis_for_anaphora(tag_ptr);
+	case_analysis_for_anaphora(tag_ptr, ctm_ptr, 0, 0);
     }
     free(cf_array);
 }
