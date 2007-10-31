@@ -1,3 +1,8 @@
+2007-10-31  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/koou.c, system/quote.c, system/extern.h, system/const.h
+	Merge Collins model and generative model into one program by using the option -chi-generative for Chinese parsing.
+
 2007-10-30  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/extern.h, system/const.h
@@ -5,8 +10,9 @@
 
 2007-10-29  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
-	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h, system/const.h
-	Change the usage of dpnd structure for Chinese generative model.
+	* system/cky.c, system/dpnd_analysis.c, system/main.c,
+	system/extern.h, system/const.h Change the usage of dpnd structure
+	for Chinese generative model.
 
 2007-10-26  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
