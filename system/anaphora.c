@@ -9,7 +9,7 @@
 
 #include "knp.h"
 
-#define CASE_CANDIDATE_MAX 5 /* 照応解析用格解析結果を保持する数 */
+#define CASE_CANDIDATE_MAX 10 /* 照応解析用格解析結果を保持する数 */
 
 /* 解析結果を保持するためのENTITY_CASE_MGR
    先頭のCASE_CANDIDATE_MAX個に照応解析用格解析の結果の上位の保持、
@@ -169,6 +169,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
        r_numにはそのうち格フレームと関連付けられた要素の数が入る */
     
     int j, e_num;
+    double score = 0, s1, s2;
 
     /* すでに埋まっている格フレームの格をチェック */
     memset(ctm_ptr->filled_element, 0, sizeof(int) * CF_ELEMENT_MAX);
@@ -192,16 +193,23 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		    /* 対応付け結果を記録 */
 		    ctm_ptr->elem_b_ptr[r_num] = tag_ptr->tcf_ptr->elem_b_ptr[i];
 		    ctm_ptr->cf_element_num[r_num] = e_num;
+		    ctm_ptr->tcf_element_num[r_num] = i;
 
 		    /* i+1番目の要素のチェックへ */
 		    case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num + 1);
 		}
 	    }    
-	    /* ガ、ヲ、ニ以外の場合は割り当てない場合も考える(未実装) */
+	}
+
+	for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
+	    /* ガ、ヲ、ニ以外の格がある場合は割り当てない場合も考える */
 	    if (!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ガ") &&
 		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ヲ") &&
-		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ニ")) {
+		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ニ")) {		
+		/* 入力文のi番目の要素が対応付けられなかったことを記録 */
+		ctm_ptr->non_match_element[i - r_num] = i; 
 		case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num);
+		break;
 	    }
 	}
     }
@@ -209,16 +217,45 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
     /* すべてのチェックが終了した場合 */
     /* この段階でr_num個が対応付けられている */
     else {
+	/* スコアを計算 */
 	printf(";;    ");
 	for (j = 0; j < r_num; j++) {
 	    e_num = ctm_ptr->cf_element_num[j];
 	    
-	    printf("%s-%s ", 
+	    s1 = get_ex_probability_with_para(ctm_ptr->tcf_element_num[j], 
+						  &(tag_ptr->tcf_ptr->cf), 
+						  e_num, ctm_ptr->cf_ptr);
+
+	    s2 = get_case_interpret_probability(ctm_ptr->tcf_element_num[j], 
+						&(tag_ptr->tcf_ptr->cf), 
+						e_num, ctm_ptr->cf_ptr);
+
+	    printf("%s-%s:%f:%f ", 
 		   ctm_ptr->elem_b_ptr[j]->head_ptr->Goi2,
-		   pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]) 		   
-		);
-	}	  	
-	printf(" ok?\n");
+		   pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]), s1, s2);
+	    
+	    score += s1 + s2;
+	}
+
+	for (j = 0; j < tag_ptr->tcf_ptr->cf.element_num - r_num; j++) {
+	    s1 = get_case_interpret_probability(ctm_ptr->non_match_element[j],
+						&(tag_ptr->tcf_ptr->cf), 
+						NIL_ASSIGNED, ctm_ptr->cf_ptr);
+	    printf("%s:%f ", 
+		   (tag_ptr->tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[j]])->head_ptr->Goi2, s1);
+	    score += s1;
+	}
+			    
+	printf("\n;;    ");
+	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
+	    s1 = get_case_probability(e_num, ctm_ptr->cf_ptr, ctm_ptr->filled_element[e_num]);
+	    printf("%s-%s:%f ", pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]),
+		   ctm_ptr->filled_element[e_num] ? "○" : "×", s1);
+	    score += s1;
+	}
+
+	printf("\n;;%f\n", score);
+
     }
 }
 
@@ -252,21 +289,22 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 
 	/* ctm_ptrの初期化 */
 	ctm_ptr->result_num = -1;
-	ctm_ptr->score = -1;
+	ctm_ptr->score = -10000;
 
 	/* 格フレームを指定 */
  	ctm_ptr->cf_ptr = *(cf_array + l);
 
 	/* デバグ用 */
-	printf(";;%s\n", tag_ptr->head_ptr->Goi2); 
-	for (i = 0; i < tag_ptr->tcf_ptr->cf.element_num; i++) {
-	    printf("\n;; %s", (tag_ptr->tcf_ptr->elem_b_ptr[i])->head_ptr->Goi2);	
-	    for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
-		printf(" %d:%s", tag_ptr->tcf_ptr->cf.pp[i][j], 
-		       pp_code_to_kstr(tag_ptr->tcf_ptr->cf.pp[i][j])); 
-	    }
-	}
-	printf("\n", tag_ptr->head_ptr->Goi2); 
+	printf(";;%s:%d\n", tag_ptr->head_ptr->Goi2, l); 
+/* 	for (i = 0; i < tag_ptr->tcf_ptr->cf.element_num; i++) { */
+/* 	    printf("\n;; %s", (tag_ptr->tcf_ptr->elem_b_ptr[i])->head_ptr->Goi2);	 */
+
+/* 	    for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) { */
+/* 		printf(" %d:%s", tag_ptr->tcf_ptr->cf.pp[i][j],  */
+/* 		       pp_code_to_kstr(tag_ptr->tcf_ptr->cf.pp[i][j]));  */
+/* 	    } */
+/* 	} */
+/* 	printf("\n");  */
 
 	/* 照応解析用格解析 (上位CASE_CANDIDATE_MAX個の結果を保持する) */
 	case_analysis_for_anaphora(tag_ptr, ctm_ptr, 0, 0);
@@ -407,7 +445,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
     MENTION *mention_ptr;
     ENTITY *entity_ptr;
 
-    printf(";;SENTENCE %d\n", sen_num); 
+    printf(";;\n;;SENTENCE %d\n", sen_num); 
     for (i = 0; i < entity_manager.num; i++) {
 	entity_ptr = entity_manager.entity + i;
 

@@ -243,6 +243,8 @@ extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
 extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
+extern  double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
+				  int as2, CASE_FRAME *cfp);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
 extern double get_chi_spec_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
