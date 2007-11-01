@@ -660,9 +660,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 
-		    one_score += Chi_root_prob_matrix[g_ptr->num];
-		    if (OptDisplay == OPT_DEBUG) {
-			printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
+		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
+			one_score += Chi_root_prob_matrix[g_ptr->num];
+			if (OptDisplay == OPT_DEBUG) {
+			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
+			}
 		    }
 		}
 		else {

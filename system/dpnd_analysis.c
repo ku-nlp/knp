@@ -116,7 +116,7 @@ static int dpndID = 0;
 	    distance = 12;
 	}
 	else if (distance < -11) {
-	    distance = 12;
+	    distance = -12;
 	}
 	key = malloc_db_buf(strlen(word1) + strlen(word2) + strlen(pos1) + strlen(pos2) + 8);
 	sprintf(key, "%s_%s_%s_%s_%d", pos1, word1, pos2, word2, distance);
@@ -195,8 +195,8 @@ static int dpndID = 0;
     pos_rule_2 = NULL;
     pos_rule = NULL;
     rule = NULL;
-    bkoff_weight_1 = 0.8;
-    bkoff_weight_2 = 0.3;
+    bkoff_weight_1 = 1.0;
+    bkoff_weight_2 = 1.0;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	k_ptr = sp->bnst_data + i;
@@ -618,12 +618,6 @@ static int dpndID = 0;
     double      prob_neg_comma0_1[2];
     double      prob_comma1_1[2];
     double      prob_neg_comma1_1[2];
-    double      prob_comma2_1[2];
-    double      prob_neg_comma2_1[2];
-    double      prob_comma3_1[2];
-    double      prob_neg_comma3_1[2];
-    double      prob_comma4_1[2];
-    double      prob_neg_comma4_1[2];
     double      prob_dis_2[2];
     double      occur_dis_2[2];
     double      prob_neg_dis_2[2];
@@ -632,12 +626,6 @@ static int dpndID = 0;
     double      prob_neg_comma0_2[2];
     double      prob_comma1_2[2];
     double      prob_neg_comma1_2[2];
-    double      prob_comma2_2[2];
-    double      prob_neg_comma2_2[2];
-    double      prob_comma3_2[2];
-    double      prob_neg_comma3_2[2];
-    double      prob_comma4_2[2];
-    double      prob_neg_comma4_2[2];
     double      prob_dis_3[2];
     double      occur_dis_3[2];
     double      prob_neg_dis_3[2];
@@ -646,12 +634,6 @@ static int dpndID = 0;
     double      prob_neg_comma0_3[2];
     double      prob_comma1_3[2];
     double      prob_neg_comma1_3[2];
-    double      prob_comma2_3[2];
-    double      prob_neg_comma2_3[2];
-    double      prob_comma3_3[2];
-    double      prob_neg_comma3_3[2];
-    double      prob_comma4_3[2];
-    double      prob_neg_comma4_3[2];
     double      prob_dis_4[2];
     double      occur_dis_4[2];
     double      prob_neg_dis_4[2];
@@ -660,12 +642,6 @@ static int dpndID = 0;
     double      prob_neg_comma0_4[2];
     double      prob_comma1_4[2];
     double      prob_neg_comma1_4[2];
-    double      prob_comma2_4[2];
-    double      prob_neg_comma2_4[2];
-    double      prob_comma3_4[2];
-    double      prob_neg_comma3_4[2];
-    double      prob_comma4_4[2];
-    double      prob_neg_comma4_4[2];
     int         count_1; /* number of dpnd type */
     int         count_2; /* number of dpnd type */
     int         count_3; /* number of dpnd type */

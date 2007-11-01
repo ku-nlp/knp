@@ -695,6 +695,7 @@ typedef struct {
     double      prob_pos_RtoL;
     char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     double         occur_pos; /* store occur time of different dpnd type */
+
     double      dpnd_LtoR;
     double      dpnd_RtoL;
 
@@ -704,12 +705,6 @@ typedef struct {
     double      prob_neg_comma0;
     double      prob_comma1;
     double      prob_neg_comma1;
-    double      prob_comma2;
-    double      prob_neg_comma2;
-    double      prob_comma3;
-    double      prob_neg_comma3;
-    double      prob_comma4;
-    double      prob_neg_comma4;
 
     int         count; /* number of dpnd type */
 } CHI_DPND;
