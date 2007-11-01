@@ -44,7 +44,6 @@ extern CHI_DPND_STRU   Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
-extern double           Chi_spec_pa_matrix[][BNST_MAX];  
 extern double           Chi_pa_matrix[][BNST_MAX];  
  
 extern int              Chi_np_start_matrix[][BNST_MAX];
@@ -106,7 +105,7 @@ extern int		OptBeam;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
-// 0 means use collins model, use chidpnd.db chi_pa.db chi_spec_pa.db
+// 0 means use collins model, use chidpnd.db chi_pa.db
 extern int              OptChiGenerative;
 
 extern VerboseType	VerboseLevel;
@@ -244,7 +243,6 @@ extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
-extern double get_chi_spec_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
 extern double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);

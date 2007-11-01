@@ -3132,7 +3132,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     
     for (i = 0; i < sp->Bnst_num; i++) {
 	for (j = 0; j < sp->Bnst_num; j++) {
-	    Chi_spec_pa_matrix[i][j] = 0;
 	    Chi_pa_matrix[i][j] = 0;
 	}
     }
@@ -3140,8 +3139,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     for (i = 0; i < sp->Bnst_num; i++) {
 	for (j = i + 1; j < sp->Bnst_num; j++) {
 	    if (check_feature(sp->bnst_data[i].f, "PU") || check_feature(sp->bnst_data[j].f, "PU")) {
-		Chi_spec_pa_matrix[i][j] = 0;
-		Chi_spec_pa_matrix[j][i] = 0;
 		Chi_pa_matrix[i][j] = 0;
 		Chi_pa_matrix[j][i] = 0;
 	    }
@@ -3155,31 +3152,6 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 
 		Chi_pa_matrix[i][j] = get_chi_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
 		Chi_pa_matrix[j][i] = get_chi_pa(sp->bnst_data+j, sp->bnst_data+i, dis);
-
-		if ((check_feature(sp->bnst_data[i].f, "NN") || 
-		     check_feature(sp->bnst_data[i].f, "NR") || 
-		     check_feature(sp->bnst_data[i].f, "NT") ||
-		     check_feature(sp->bnst_data[i].f, "PN")) &&
-		    (check_feature(sp->bnst_data[j].f, "VV") || 
-		     check_feature(sp->bnst_data[j].f, "VC") || 
-		     check_feature(sp->bnst_data[j].f, "VE") ||
-		     check_feature(sp->bnst_data[j].f, "VA"))) {
-		    Chi_spec_pa_matrix[i][j] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
-		}
-		else if ((check_feature(sp->bnst_data[j].f, "NN") || 
-			  check_feature(sp->bnst_data[j].f, "NR") || 
-			  check_feature(sp->bnst_data[j].f, "NT") ||
-			  check_feature(sp->bnst_data[j].f, "PN")) &&
-			 (check_feature(sp->bnst_data[i].f, "VV") || 
-			  check_feature(sp->bnst_data[i].f, "VC") || 
-			  check_feature(sp->bnst_data[i].f, "VE") ||
-			  check_feature(sp->bnst_data[i].f, "VA"))) {
-		    Chi_spec_pa_matrix[j][i] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
-		}
-		else {
-		    Chi_spec_pa_matrix[i][j] = get_chi_spec_pa(sp->bnst_data+j, sp->bnst_data+i, dis);
-		    Chi_spec_pa_matrix[j][i] = get_chi_spec_pa(sp->bnst_data+i, sp->bnst_data+j, dis);
-		}
 	    }
 	}
     }

@@ -254,20 +254,15 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double one_score = 0;
     char *cp, *cp2;
 
-    double thre_p_v_r, thre_p_v_l;
     double chi_pa_thre;
-    double weight_dpnd, weight_pos, weight_spec_pa, weight_comma, weight_root, weight_pa;
+    double weight_dpnd, weight_pos, weight_comma, weight_root, weight_pa;
     double pos_prob_thre_high, pos_prob_thre_low;
     int pos_occur_thre_high, pos_occur_thre_low;
-
-    thre_p_v_r = 0.2;
-    thre_p_v_l = 0.2;
 
     chi_pa_thre = 0.00005;
 
     weight_dpnd = 1.0;
     weight_pos = 0.5;
-    weight_spec_pa = 1.0;
     weight_comma = 1.0;
     weight_root = 0.5;
     weight_pa = 1.0;
@@ -543,10 +538,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    printf("(dpnd:%d,%d prob:%f LtoR:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, one_score);
 			}
 
-			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
-			}
-
 			if (comma > 0) {
 			    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_comma1;
 			}
@@ -609,10 +600,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
-			}
-
-			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dis:%d)%.6f=>", g_ptr->num - d_ptr->num, one_score);
 			}
 
 			if (comma > 0) {
@@ -718,23 +705,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 
 			/* add bonus from gigaword pa */
-			if (check_feature(g_ptr->f, "VV") ||
-			    check_feature(g_ptr->f, "VC") ||
-			    check_feature(g_ptr->f, "VE") ||
-			    check_feature(g_ptr->f, "VA")) {
-			    if (check_feature(d_ptr->f, "P")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_r) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			}
-
 			if (Chi_pa_matrix[d_ptr->num][g_ptr->num] >= chi_pa_thre) {
 			    one_score += weight_pa * Chi_pa_matrix[d_ptr->num][g_ptr->num];
 			}
 
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(spec_pa:%f, pa:%f)%.6f=>", Chi_spec_pa_matrix[d_ptr->num][g_ptr->num], Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
+			    printf("(pa:%f)%.6f=>", Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
 			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
@@ -776,23 +752,12 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 
 			/* add bonus from gigaword pa */
-			if (check_feature(d_ptr->f, "VV") ||
-			    check_feature(d_ptr->f, "VC") ||
-			    check_feature(d_ptr->f, "VE") ||
-			    check_feature(d_ptr->f, "VA")) {
-			    if (check_feature(g_ptr->f, "P")) {
-				if (Chi_spec_pa_matrix[d_ptr->num][g_ptr->num] >= thre_p_v_l) {
-				    one_score += weight_spec_pa * Chi_spec_pa_matrix[d_ptr->num][g_ptr->num];
-				}
-			    }
-			}
-
 			if (Chi_pa_matrix[d_ptr->num][g_ptr->num] >= chi_pa_thre) {
 			    one_score += weight_pa * Chi_pa_matrix[d_ptr->num][g_ptr->num];
 			}
 
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(spec_pa:%f, pa:%f)%.6f=>", Chi_spec_pa_matrix[d_ptr->num][g_ptr->num], Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
+			    printf("(pa:%f)%.6f=>", Chi_pa_matrix[d_ptr->num][g_ptr->num], one_score);
 			}
 		    }
 		}

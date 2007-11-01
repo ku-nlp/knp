@@ -33,7 +33,6 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* ÊÂÎó¥Þ¥¹¥¯
 						    2:ÊÂÎó¤Îhead´Ö,
 						    3:ÊÂÎó¤Îgap¤Èhead´Ö */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
-double          Chi_spec_pa_matrix[BNST_MAX][BNST_MAX];  
 double          Chi_pa_matrix[BNST_MAX][BNST_MAX];  
 int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
@@ -95,7 +94,7 @@ int		OptBeam;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
-// 0 means use collins model, use chidpnd.db chi_pa.db chi_spec_pa.db
+// 0 means use collins model, use chidpnd.db chi_pa.db
 int             OptChiGenerative; 
 
 int             PrintNum;

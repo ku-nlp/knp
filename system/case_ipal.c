@@ -21,7 +21,6 @@ DBM_FILE renyou_db;
 DBM_FILE adverb_db;
 DBM_FILE para_db;
 DBM_FILE noun_co_db;
-DBM_FILE chi_spec_pa_db;
 DBM_FILE chi_pa_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
@@ -153,8 +152,6 @@ int	PrintDeletedSM = 0;
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
     if (Language == CHINESE) {
-	/* Chinese CHI_SPEC_PA DB (chi_spec_pa.db) */
-	chi_spec_pa_db = open_dict(CHI_SPEC_PA_DB, CHI_SPEC_PA_DB_NAME, &CHISpecPAExist);
 	/* Chinese CHI_PA DB (chi_pa.db) */
 	chi_pa_db = open_dict(CHI_PA_DB, CHI_PA_DB_NAME, &CHIPAExist);
     }
@@ -3421,38 +3418,6 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     return ret;
 }
 
-/* get spec_pa count for Chinese */
-/*==================================================================*/
-   double get_chi_spec_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist)
-/*==================================================================*/
-{
-    char *key, *value;
-    double ret;
-
-    if (CHISpecPAExist == FALSE) {
-	return 0;
-    }
-
-    key = malloc_db_buf(strlen(ptr1->head_ptr->Goi) + 
-			strlen(ptr2->head_ptr->Goi) + 
-			strlen(ptr1->head_ptr->Pos) + 
-			strlen(ptr2->head_ptr->Pos) + 9);
-
-    /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s_%s_%s_%s_%d", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, dist);
-
-    value = db_get(chi_spec_pa_db, key);
-
-    if (value) {
-	ret = atof(value);
-	free(value);
-    }
-    else {
-	ret = 0.0;
-    }
-
-    return ret;
-}
 /*====================================================================
                                END
 ====================================================================*/
