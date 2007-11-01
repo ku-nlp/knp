@@ -1,3 +1,8 @@
+2007-11-01  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/case_ipal.c, system/path.h, system/extern.h, system/const.h
+	Remove spec-pa from Chinese collins model.
+	
 2007-10-31  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/koou.c, system/quote.c, system/extern.h, system/const.h
