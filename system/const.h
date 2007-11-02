@@ -1330,15 +1330,15 @@ typedef struct ctm_def {
     int         filled_element[CF_ELEMENT_MAX];  
 
     /* 対応付けられなかった入力文格要素 */
-    /* 入力文格要素のうち対応が付いていないものを保存 */
+    /* 入力文格要素のうち対応が付いていないものの番号を保存 */
     int         non_match_element[CF_ELEMENT_MAX]; 
-    int         non_match_element_pp[CF_ELEMENT_MAX]; 
 
     /* 以下は基本句の格構造の情報 */
     int         result_num;                      /* 対応付けられた要素数 */
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
+    char        flag; /* 'S', 'N', 'C', 'O', 'D', */
 } CF_TAG_MGR;
 
 /*====================================================================
