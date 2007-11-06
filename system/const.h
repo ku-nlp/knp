@@ -42,6 +42,9 @@
 #define TEIDAI_TYPES	5
 #define HOMO_MAX	30
 #define HOMO_MRPH_MAX	10
+#define PP_STRING_MAX   11 /* 最大となるのは"をふくめる"、"にたいする"など */
+#define FUKUGOJI_START  9  /* PP_STR_TO_CODEで複合辞が始まる番号 */
+#define FUKUGOJI_END    37 /* PP_STR_TO_CODEで複合辞が終わる番号 */
 
 #define BGH_CODE_SIZE	11
 #define SM_CODE_SIZE	12
@@ -816,8 +819,9 @@ typedef struct {
 typedef struct mention {
     int 		sent_num;
     int                 tag_num;
-    int                 pp_code;
-    char                flag; /* 'S', '=', 'N', 'C', 'O', 'D', */
+    char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
+    char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
+    char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D', */
     struct entity       *entity;
 } MENTION;
 
@@ -1345,9 +1349,6 @@ typedef struct ctm_def {
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
     char        flag;                            /* 'S', 'N', 'C', 'O', 'D', */
-
-
-    /* */
 } CF_TAG_MGR;
 
 /*====================================================================

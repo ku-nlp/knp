@@ -42,7 +42,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr = mention_mgr->mention;
 	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
 	mention_ptr->entity->activity_score += 1;
-	mention_ptr->pp_code = 0;
+	strcpy(mention_ptr->cpp_string, "＊");
+	strcpy(mention_ptr->spp_string, "＊");
 	mention_ptr->flag = '=';
 
 	/* entityのnameがNEでなく、tag_ptrがNEならばnameを上書き */
@@ -61,7 +62,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->tag_num = mention_mgr->mention->tag_num;
 	mention_ptr->sent_num = mention_mgr->mention->sent_num;
 	mention_ptr->flag = flag;
-	mention_ptr->pp_code = pp_kstr_to_code(rel);
+	strcpy(mention_ptr->cpp_string, rel);
+	strcpy(mention_ptr->spp_string, "＊");
 	mention_mgr->num++;
     }
 
@@ -80,6 +82,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     /* 照応解析結果ENTITYに関連付ける */
 
     int i;
+    char *cp;
     MENTION_MGR *mention_mgr = &(tag_ptr->mention_mgr);
     MENTION *mention_ptr = NULL;
     CF_TAG_MGR *ctm_ptr = tag_ptr->ctm_ptr; 
@@ -94,7 +97,21 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->sent_num = mention_mgr->mention->sent_num;
 	//mention_ptr->flag = ctm_ptr->flag[i]; /* 暫定的 */
 	mention_ptr->flag = 'O'; /* 暫定的 */
-	mention_ptr->pp_code = 2; /* 暫定的 */
+	strcpy(mention_ptr->cpp_string, "＊"); /* 暫定的 */
+	/* 入力側の表層格 */
+	if (tag_ptr->tcf_ptr->cf.pp[ctm_ptr->tcf_element_num[i]][0] >= FUKUGOJI_START &&
+	    tag_ptr->tcf_ptr->cf.pp[ctm_ptr->tcf_element_num[i]][0] <= FUKUGOJI_END) {
+	    strcpy(mention_ptr->spp_string, 
+		   pp_code_to_kstr(tag_ptr->tcf_ptr->cf.pp[ctm_ptr->tcf_element_num[i]][0]));
+	}
+	else { 
+	    if ((cp = check_feature(ctm_ptr->elem_b_ptr[i]->f, "係"))) {
+		strcpy(mention_ptr->spp_string, cp + strlen("係:"));
+	    } 
+	    else {
+		strcpy(mention_ptr->spp_string, "＊");
+	    }
+	}
 	mention_mgr->num++;
 
 	mention_ptr->entity->mention[mention_ptr->entity->mentioned_num] = mention_ptr;
@@ -382,40 +399,40 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     }
 
     /* まだチェックしていない省略解析対象格がある場合 */
-/*     if (ELLIPSIS_CASE_LIST[i]) { */
-/* 	/\* 対象の格について *\/ */
-/* 	for (e_num = 0; ctm_ptr->cf_ptr->element_num; e_num++) { */
-/* 	    if (ctm_ptr->cf_ptr->pp[e_num][0] != ELLIPSIS_CASE_LIST[i]) continue; */
-
-/* 	    /\* すでに埋まっていた場合は次の格をチェックする *\/ */
-/* 	    if (ctm_ptr->filled_element[e_num] == TRUE) { */
-/* 		ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num); */
-/* 	    } */
-/* 	    else { */
-/* 		for (k = 0; k < entity_manager.num; k++) { */
-/* 		    /\* activity_scoreが1以下なら候補としない(暫定的) *\/ */
-/* 		    if (entity_manager.entity[k].activity_score < 1) continue; */
-/* 		    /\* 対象のENTITYがすでに対応付けられている場合は不可 *\/ */
-/* 		    if (ctm_ptr->filled_entity[k]) return FALSE; */
+    if (ELLIPSIS_CASE_LIST[i]) {
+	/* 対象の格について */
+	for (e_num = 0; ctm_ptr->cf_ptr->element_num; e_num++) {
+	    if (ctm_ptr->cf_ptr->pp[e_num][0] != ELLIPSIS_CASE_LIST[i]) continue;
+	    
+	    /* すでに埋まっていた場合は次の格をチェックする */
+	    if (ctm_ptr->filled_element[e_num] == TRUE) {
+		ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
+	    }
+	    else {
+		for (k = 0; k < entity_manager.num; k++) {
+		    /* activity_scoreが1以下なら候補としない(暫定的) */
+		    if (entity_manager.entity[k].activity_score < 1) continue;
+		    /* 対象のENTITYがすでに対応付けられている場合は不可 */
+		    if (ctm_ptr->filled_entity[k]) return FALSE;
 		    
-/* 		    /\* 対応付け結果を記録 */
-/* 		       (基本句との対応付けは取っていないためelem_b_ptrは使用しない) *\/ */
-/* 		    ctm_ptr->cf_element_num[r_num] = e_num; */
-/* 		    ctm_ptr->entity_num[r_num] =  */
-/* 			ctm_ptr->elem_b_ptr[r_num]->mention_mgr.mention->entity->num; */
+		    /* 対応付け結果を記録
+		       (基本句との対応付けは取っていないためelem_b_ptrは使用しない) */
+		    ctm_ptr->cf_element_num[r_num] = e_num;
+		    ctm_ptr->entity_num[r_num] =
+			ctm_ptr->elem_b_ptr[r_num]->mention_mgr.mention->entity->num;
 		    
-/* 		    /\* 次の格のチェックへ *\/ */
-/* 		    ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num + 1); */
-/* 		} */
-/* 	    } */
-/* 	    break; */
-/* 	} */
-/*     } */
+		    /* 次の格のチェックへ */
+		    ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num + 1);
+		}
+	    }
+	    break;
+	}
+    }
     
-/*     /\* すべてのチェックが終了した場合 *\/ */
-/*     else { */
-/* 	1; */
-/*     } */
+    /* すべてのチェックが終了した場合 */
+    else {
+	1;
+    }
     
     /* スコア上位を保存 */
     return preserve_ctm(ctm_ptr, CASE_CANDIDATE_MAX, ELLIPSIS_RESULT_MAX);
@@ -468,17 +485,18 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    printf(";;%2d %f %s", i, work_ctm[i].score, work_ctm[i].cf_ptr->cf_id);
 
 	    for (j = 0; j < work_ctm[i].result_num; j++) {
-		printf(" %s:%s:%d",
+		/* printf(" %s:%d:%s", */
+		printf(" %s:%s",
 		       pp_code_to_kstr(work_ctm[i].cf_ptr->pp[work_ctm[i].cf_element_num[j]][0]),
-		       work_ctm[i].elem_b_ptr[j]->head_ptr->Goi2,
-		       work_ctm[i].entity_num[j]);
+		       /* work_ctm[i].entity_num[j], */
+		       work_ctm[i].elem_b_ptr[j]->head_ptr->Goi2);
 	    }
 	    for (j = 0; j < work_ctm[i].cf_ptr->element_num; j++) {
 		if (!work_ctm[i].filled_element[j] && 
 		    (MatchPP(work_ctm[i].cf_ptr->pp[j][0], "ガ") || 
 		     MatchPP(work_ctm[i].cf_ptr->pp[j][0], "ヲ") || 
 		     MatchPP(work_ctm[i].cf_ptr->pp[j][0], "ニ")))	    
-		    printf(" %s", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]));
+		    printf(" %s:×", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]));
 			   
 	    }
 	    printf("\n", work_ctm[i].cf_ptr->cf_id);
@@ -571,7 +589,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		strcpy(entity_ptr->name, tag_ptr->head_ptr->Goi2);
 	    }
 	    mention_mgr->mention->entity = entity_ptr;
-	    mention_mgr->mention->pp_code = 0;
+	    //pp_kstr_to_code("＊");
+	    strcpy(mention_mgr->mention->cpp_string, "＊"); /* "＊"を入れたことに相当 */
+	    strcpy(mention_mgr->mention->spp_string, "＊");
 	    mention_mgr->mention->flag = 'S'; /* 自分自身 */
 	}
     }
@@ -660,7 +680,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    printf(";;\tMENTION%3d {", j);
 	    printf(" SEN:%3d", mention_ptr->sent_num);
 	    printf(" TAG:%3d", mention_ptr->tag_num);
-	    printf(" PP: %s", pp_code_to_kstr(mention_ptr->pp_code));
+	    printf(" CPP: %s", mention_ptr->cpp_string);
+	    printf(" SPP: %s", mention_ptr->spp_string);
 	    printf(" FLAG: %c", mention_ptr->flag);
 	    printf(" WORD: %s", ((sentence_data + mention_ptr->sent_num - 1)->tag_data + mention_ptr->tag_num)->head_ptr->Goi2);
 	    printf(" }\n");

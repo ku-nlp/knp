@@ -2651,7 +2651,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     }
 
     /* 複合辞 */
-    if (cfd->pp[as1][0] > 8 && cfd->pp[as1][0] < 38) {
+    if (cfd->pp[as1][0] >= FUKUGOJI_START && cfd->pp[as1][0] <= FUKUGOJI_END) {
 	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* 入力側の表層格 */
 	tp2 = &(current_sentence_data.tag_data[tp->num + 1]); /* 読点や「は」などをチェックするタグ単位 */
     }
