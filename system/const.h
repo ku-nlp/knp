@@ -832,7 +832,8 @@ typedef struct mention_manager {
 /* ENTITY */
 typedef struct entity {
     int                 num;
-    int                 mentioned_num; /* 言及されている回数 */
+    int                 mentioned_num;  /* 言及されている回数 */
+    double              activity_score; /* どのくらい先行詞になりやすいか */
     int                 antecedent_num; /* 先行詞となっている回数 */
     MENTION             *mention[MENTIONED_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
@@ -1325,12 +1326,16 @@ typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
     CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
 
-    /* 対応付けられた格フレーム要素 */
-    /* 格フレームの要素のうち対応付けがついたもののみTRUEとなる */
+    /* 格フレームの要素のうち対応付けがついたもの
+       (=cf_element_numに含まれる)のみTRUEとなる */
     int         filled_element[CF_ELEMENT_MAX];  
 
-    /* 対応付けられなかった入力文格要素 */
-    /* 入力文格要素のうち対応が付いていないものの番号を保存 */
+    /* ENTITYのうち対応付けがついたもの
+       (=entity_numに含まれる)のみTRUEとなる */
+    int         filled_entity[ENTITY_MAX];
+
+    /* 対応付けられなかった入力文格要素
+       入力文格要素のうち対応が付いていないものの番号を保存 */
     int         non_match_element[CF_ELEMENT_MAX]; 
 
     /* 以下は基本句の格構造の情報 */
@@ -1338,7 +1343,11 @@ typedef struct ctm_def {
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
-    char        flag; /* 'S', 'N', 'C', 'O', 'D', */
+    int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
+    char        flag;                            /* 'S', 'N', 'C', 'O', 'D', */
+
+
+    /* */
 } CF_TAG_MGR;
 
 /*====================================================================

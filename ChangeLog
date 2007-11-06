@@ -1,3 +1,24 @@
+2007-11-06  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, const.h:
+	照応解析関係のプログラムを更新
+
+2007-11-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, const.h:
+	格解析結果のENTITYへの関連付けを追加
+	
+2007-11-01  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, const.h, extern.h:
+	照応解析関係のプログラムを更新
+	照応解析の前処理としての格解析を追加
+	
+2007-10-31  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, const.h:
+	照応解析関係のプログラムを更新
+
 2007-10-30  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c, const.h, extern.h:
