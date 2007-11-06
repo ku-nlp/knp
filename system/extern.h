@@ -236,8 +236,8 @@ extern char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form
 extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
-extern double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
-					     int as2, CASE_FRAME *cfp);
+extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
+					    int as2, CASE_FRAME *cfp);
 extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);

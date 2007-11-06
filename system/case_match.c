@@ -694,7 +694,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	    cf_match_sm(as1, cfd, as2, cfp, pos);
 	    */
 
-	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_interpret_probability(as1, cfd, as2, cfp);
+	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_function_probability(as1, cfd, as2, cfp);
 	    return TRUE;
 	}
 
@@ -1281,7 +1281,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	       => 後ろに同じ格助詞があれば対応付けをしない可能性も試す? */
 
 	    /* 割り当てなしのスコア */
-	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_interpret_probability(target, cfd, NIL_ASSIGNED, cfp);
+	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_function_probability(target, cfd, NIL_ASSIGNED, cfp);
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
 	    }
