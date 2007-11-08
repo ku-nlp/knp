@@ -1,3 +1,8 @@
+2007-11-08  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/case_ipal.c, system/path.h, system/extern.h, system/const.h
+	Modify Chinese generative model.
+
 2007-11-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/case_match.c, system/extern.h:
