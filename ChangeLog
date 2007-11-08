@@ -1,3 +1,8 @@
+2007-11-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, case_ipal.c, case_match.c, const.h, extern.h:
+	省略解析の機構を追加
+
 2007-11-06  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c, const.h:

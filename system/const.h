@@ -1344,11 +1344,12 @@ typedef struct ctm_def {
 
     /* 以下は基本句の格構造の情報 */
     int         result_num;                      /* 対応付けられた要素数 */
+    int         case_result_num;                 /* 格解析で対応付けられた要素数 */
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
-    char        flag;                            /* 'S', 'N', 'C', 'O', 'D', */
+    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D', */
 } CF_TAG_MGR;
 
 /*====================================================================

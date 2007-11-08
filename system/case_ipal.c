@@ -2621,13 +2621,136 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 }
 
 /*==================================================================*/
-     double get_case_interpret_probability(int as1, CASE_FRAME *cfd,
-					   int as2, CASE_FRAME *cfp)
+   double get_case_interpret_probability(char *scase, char *cfcase)
+/*==================================================================*/
+{
+    char *value, *key;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+    
+    key = malloc_db_buf(strlen(scase) + strlen(cfcase) + 20);
+    sprintf(key, "%s|C:%s", scase, cfcase);
+    value = db_get(case_db, key);
+
+    if (value) {
+	ret = atof(value);
+	ret = log(ret);
+	free(value);
+	return ret;
+    }
+    else {
+	return UNKNOWN_CASE_SCORE;
+    }
+}
+
+/*==================================================================*/
+double get_punctuation_generating_probability(int np_modifying_flag, int touten_flag, int dist, 
+					      int closest_pred_flag, int topic_score, int wa_flag)
+/*==================================================================*/
+{
+    /* 読点の生成 */
+
+    char *value, *key;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+
+    key = malloc_db_buf(20);
+    if (np_modifying_flag) {
+	sprintf(key, "%d|P連格:%d", touten_flag, dist);
+    }
+    else {
+	sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
+    }
+    value = db_get(case_db, key);
+
+    if (value) {
+	ret = atof(value);
+	ret = log(ret);
+	free(value);
+	return ret;
+    }
+    else {
+	return UNKNOWN_CASE_SCORE;
+    }
+}
+
+/*==================================================================*/
+double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int dist, 
+				     int closest_pred_flag, int topic_score, int wa_flag, 
+				     int negation_flag, char *vtype)
+/*==================================================================*/
+{
+    /* 「は」の生成 */
+
+    char *value, *key;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+
+    if (np_modifying_flag || !vtype) {
+	value = "1.0";
+    }
+    else {
+	key = malloc_db_buf(20);
+
+	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag); */
+	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "判") == 0 ? 1 : 0);
+	value = db_get(case_db, key);
+    }
+
+    if (value) {
+	ret = atof(value);
+	ret = log(ret);
+
+	if (!np_modifying_flag && vtype) {
+	    free(value);
+	}
+
+	return ret;
+    }
+    else {
+	return UNKNOWN_CASE_SCORE;
+    }
+}
+
+/*==================================================================*/
+	 char *make_cf_case_string(int as1, CASE_FRAME *cfd,
+				   int as2, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    /* 格フレームの格スロット表記をかえす */
+
+    if (as2 != NIL_ASSIGNED) {
+	return pp_code_to_kstr(cfp->pp[as2][0]);
+    }
+    else {
+	/* 格スロットがあるのにNIL_ASSIGNED */
+	if (CF_MatchPP(cfd->pp[as1][0], cfp)) {
+	    return "--";
+	}
+	/* 格フレームがないとき、仮想的に格スロットを作ると考える */
+	else {
+	    return pp_code_to_kstr(cfd->pp[as1][0]);
+	}
+    }
+}
+
+/*==================================================================*/
+     double get_case_function_probability(int as1, CASE_FRAME *cfd,
+					  int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     int wa_flag, topic_score = 0, touten_flag, i, dist, negation_flag, 	np_modifying_flag, closest_pred_flag = 0;
-    char *scase, *cp, *key, *value, *value2, *value3, *vtype;
-    double ret;
+    char *scase, *cfcase, *cp, *vtype;
+    double ret, score1, score2, score3;
     TAG_DATA *tp, *tp2, *hp;
 
     if (CaseExist == FALSE) {
@@ -2695,69 +2818,25 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     }
 
     /* 格の解釈 */
-    if (as2 != NIL_ASSIGNED) {
-	key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 20);
-	sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfp->pp[as2][0]));
-    }
-    else {
-	/* 格スロットがあるのにNIL_ASSIGNED */
-	if (CF_MatchPP(cfd->pp[as1][0], cfp)) {
-	    key = malloc_db_buf(strlen(scase) + 24);
-	    sprintf(key, "%s|C:--", scase);
-	}
-	/* 格フレームがないとき、仮想的に格スロットを作ると考える */
-	else {
-	    key = malloc_db_buf(strlen(scase) + strlen(pp_code_to_kstr(cfd->pp[as1][0])) + 20);
-	    sprintf(key, "%s|C:%s", scase, pp_code_to_kstr(cfd->pp[as1][0]));
-	}
-    }
-    value = db_get(case_db, key);
+    cfcase = make_cf_case_string(as1, cfd, as2, cfp);
+    score1 = get_case_interpret_probability(scase, cfcase);
 
     /* 読点の生成 */
-    if (np_modifying_flag) {
-	sprintf(key, "%d|P連格:%d", touten_flag, dist);
-    }
-    else {
-	sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
-    }
-    value2 = db_get(case_db, key);
+    score2 = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
+						    closest_pred_flag, topic_score, wa_flag);
 
     /* 「は」の生成 */
-    if (np_modifying_flag || !vtype) {
-	value3 = "1.0";
-    }
-    else {
-	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag); */
-	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "判") == 0 ? 1 : 0);
-	value3 = db_get(case_db, key);
+    score3 = get_wa_generating_probability(np_modifying_flag, touten_flag, dist, 
+					   closest_pred_flag, topic_score, wa_flag, negation_flag, vtype);
+
+    if (VerboseLevel >= VERBOSE3) {
+	fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
+		tp->head_ptr->Goi, hp->head_ptr->Goi, 
+		scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
+		dist, closest_pred_flag, topic_score, negation_flag, ret, score1, score2, score3);
     }
 
-    if (value && value2 && value3) {
-	ret = atof(value) * atof(value2) * atof(value3);
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
-		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
-		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
-		    dist, closest_pred_flag, topic_score, negation_flag, ret, value, value2, value3);
-	}
-	free(value);
-	free(value2);
-	if (!np_modifying_flag && vtype) {
-	    free(value3);
-	}
-	ret = log(ret);
-    }
-    else {
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = 0 (C:%s * P:%s * T:%s)\n", 
-		    tp->head_ptr->Goi, hp->head_ptr->Goi, 
-		    scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
-		    dist, closest_pred_flag, topic_score, negation_flag, value ? value : "", value2 ? value2 : "", value3 ? value3 : "");
-	}
-	ret = UNKNOWN_CASE_SCORE;
-    }
-
-    return ret;
+    return score1 + score2 + score3;
 }
 
 /*==================================================================*/
