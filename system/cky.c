@@ -1,8 +1,8 @@
 /*====================================================================
-				 CKY
+  CKY
 
-    $Id$
-====================================================================*/
+  $Id$
+  ====================================================================*/
 
 #include "knp.h"
 
@@ -252,6 +252,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     int count, pos, default_pos;
     int verb, comma;
     double one_score = 0;
+    double prob = 1;
     char *cp, *cp2;
 
     double chi_pa_thre;
@@ -531,21 +532,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
 		if (OptChiGenerative) {
+		    prob = 0;
 		    if (cky_ptr->direction == LtoR) {
-			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0];
-			one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR;
+			prob = Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0];
+			prob += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR;
+			prob += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR;
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dpnd:%d,%d prob:%f LtoR:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, one_score);
-			}
-
-			if (comma > 0) {
-			    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_comma1;
-			}
-			else {
-			    one_score += Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_comma0;
-			}
-			if (OptDisplay == OPT_DEBUG) {
-			    printf("(comma:%d)%.6f=>", comma, one_score);
+			    printf("(dpnd:%d,%d prob:%f LtoR:%f dis_comma:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].dpnd_LtoR, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, one_score);
 			}
 
 			// add the prob between structure V-P-N
@@ -563,11 +556,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
 				    }
 				    else {
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
@@ -581,11 +574,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
 				    }
 				    else {
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
@@ -596,20 +589,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
-			one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
+			prob = Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0];
+			prob += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL;
+			prob += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL;
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dpnd:%d,%d prob:%f RtoL:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, one_score);
-			}
-
-			if (comma > 0) {
-			    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_comma1;
-			}
-			else {
-			    one_score += Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_neg_comma0;
-			}
-			if (OptDisplay == OPT_DEBUG) {
-			    printf("(comma:%d)%.6f=>", comma, one_score);
+			    printf("(dpnd:%d,%d prob:%f RtoL:%f dis_comma:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].dpnd_RtoL, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL, one_score);
 			}
 
 			// add the prob between structure V-P-N
@@ -627,11 +611,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->left->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
 				    }
 				    else {
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->left->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->left->b_ptr->num].prob_vpn;
 				    }
 
 				    if (OptDisplay == OPT_DEBUG) {
@@ -645,11 +629,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "NT") ||
 				     check_feature(tmp_child_ptr->right->b_ptr->f, "PN"))) {
 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn != -1) {
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
 				    }
 				    else {
 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn = calc_chi_dpnd_stru_prob(sp, tmp_cky_ptr->b_ptr->num, tmp_child_ptr->b_ptr->num, tmp_child_ptr->right->b_ptr->num);
-					one_score += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
+					prob += Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn;
 				    }
 					    
 				    if (OptDisplay == OPT_DEBUG) {
@@ -661,11 +645,13 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 
 		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
-			one_score += Chi_root_prob_matrix[g_ptr->num];
+			prob += Chi_root_prob_matrix[g_ptr->num];
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], one_score);
 			}
 		    }
+
+		    one_score += prob;
 		}
 		else {
 		    if (cky_ptr->direction == LtoR) {
@@ -2292,7 +2278,7 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") &&
 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") &&
 	     !check_feature((sp->bnst_data + left->b_ptr->num)->f, "VE")) &&
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") &&
+	    check_feature((sp->bnst_data + right->b_ptr->num)->f, "DEC") &&
 	    right->i == right->b_ptr->num &&
 	    direction == 'R') {
 	    return 0;
@@ -2424,12 +2410,12 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 
 	/* for preposition, if it depend on verb, it should have modifier */
 	if ((check_feature((sp->bnst_data + left->b_ptr->num)->f, "P") &&
-	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || 
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || 
-	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
-	    direction == 'R' &&
-	    left->j == left->b_ptr->num) ||
+	     (check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") || 
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE") || 
+	      check_feature((sp->bnst_data + right->b_ptr->num)->f, "VV")) &&
+	     direction == 'R' &&
+	     left->j == left->b_ptr->num) ||
 	    (check_feature((sp->bnst_data + right->b_ptr->num)->f, "P") &&
 	     (check_feature((sp->bnst_data + left->b_ptr->num)->f, "VA") || 
 	      check_feature((sp->bnst_data + left->b_ptr->num)->f, "VC") || 
@@ -2472,11 +2458,11 @@ int check_chi_dpnd_possibility (int i, int j, int k, CKY *left, CKY *right, SENT
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VA") || 
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VC") ||
 	     check_feature((sp->bnst_data + right->b_ptr->num)->f, "VE")) &&
-	     (direction == 'L' && /* preposition is head */
-	      left->j != left->i &&
-	      (has_child_chi(sp, left, "NN", 1)||
-	       has_child_chi(sp, left, "NR", 1)||
-	       has_child_chi(sp, left, "PN", 1)))) {
+	    (direction == 'L' && /* preposition is head */
+	     left->j != left->i &&
+	     (has_child_chi(sp, left, "NN", 1)||
+	      has_child_chi(sp, left, "NR", 1)||
+	      has_child_chi(sp, left, "PN", 1)))) {
 	    return 0;
 	}
 

@@ -511,7 +511,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	39
+#define DICT_MAX	36
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -546,11 +546,8 @@ typedef struct _RuleVector {
 #define HOWNET_SEM_DEF_DB       31
 #define CHI_PA_DB       32
 #define CHI_DPND_PROB_DB        33
-#define CHI_DIS_COMMA_LEX_DB        34
-#define CHI_DIS_COMMA_BK1_DB        35
-#define CHI_DIS_COMMA_BK2_DB        36
-#define CHI_DIS_COMMA_BK_DB        37
-#define CHI_DPND_STRU_DB        38
+#define CHI_DIS_COMMA_DB        34
+#define CHI_DPND_STRU_DB        35
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -694,18 +691,11 @@ typedef struct {
     double      prob_pos_LtoR; /* store different probability of pos pairs for each type */
     double      prob_pos_RtoL;
     char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
-    double         occur_pos; /* store occur time of different dpnd type */
-
+    double      occur_pos; /* store occur time of different dpnd type */
+    double      prob_dis_comma_LtoR;
+    double      prob_dis_comma_RtoL;
     double      dpnd_LtoR;
     double      dpnd_RtoL;
-
-    double      prob_dis;
-    double      prob_neg_dis;
-    double      prob_comma0;
-    double      prob_neg_comma0;
-    double      prob_comma1;
-    double      prob_neg_comma1;
-
     int         count; /* number of dpnd type */
 } CHI_DPND;
 
