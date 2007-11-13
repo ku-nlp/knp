@@ -726,7 +726,7 @@ static int dpndID = 0;
 	    Chi_root_prob_matrix[i] = (lamda_root * lex_root_prob[0] / lex_root_occur[0]) + ((1 - lamda_root) * (pos_root_prob[0] / pos_root_occur[0]));
 	}
 	else if (pos_rule != NULL) {
-	    Chi_root_prob_matrix[i] = (1 - lamda_root) * (pos_root_prob[0] / pos_root_occur[0]);
+	  Chi_root_prob_matrix[i] = (1 - lamda_root) * (pos_root_prob[0] / pos_root_occur[0]);
 	}
 	else {
 	    Chi_root_prob_matrix[i] = 0;
@@ -1404,68 +1404,6 @@ static int dpndID = 0;
 	    prob_LtoR_4[0] += dpnd_giga_weight * prob_LtoR_4[1];
 	    prob_RtoL_4[0] += dpnd_giga_weight * prob_RtoL_4[1];
 
-	    /* calc dpnd_LtoR */
-	    if (prob_LtoR_1[0] > DOUBLE_MIN || prob_RtoL_1[0] > DOUBLE_MIN) {
-		lamda_dpnd = (prob_LtoR_1[0] + prob_RtoL_1[0]) / (prob_LtoR_1[0] + prob_RtoL_1[0] +1);
-		if (prob_LtoR_2[0] > DOUBLE_MIN || prob_RtoL_2[0] > DOUBLE_MIN || prob_LtoR_3[0] > DOUBLE_MIN || prob_RtoL_3[0] > DOUBLE_MIN) {
-		    Chi_dpnd_matrix[i][j].dpnd_LtoR = lamda_dpnd * prob_LtoR_1[0] / (prob_LtoR_1[0] + prob_RtoL_1[0]) +
-			(1- lamda_dpnd) * ((prob_LtoR_2[0] + prob_LtoR_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]));
-		}
-		else {
-		    Chi_dpnd_matrix[i][j].dpnd_LtoR = prob_LtoR_1[0] / (prob_LtoR_1[0] + prob_RtoL_1[0]);
-		}
-	    }
-
-	    else if (prob_LtoR_2[0] > DOUBLE_MIN || prob_RtoL_2[0] > DOUBLE_MIN || prob_LtoR_3[0] > DOUBLE_MIN || prob_RtoL_3[0] > DOUBLE_MIN) {
-		lamda_dpnd = (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0] + 1);
-		if (prob_LtoR_4[0] > DOUBLE_MIN || prob_RtoL_4[0] > DOUBLE_MIN) {
-		    Chi_dpnd_matrix[i][j].dpnd_LtoR = bkoff_weight_1 * lamda_dpnd * ((prob_LtoR_2[0] + prob_LtoR_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0])) +
-			(1- lamda_dpnd) * ((prob_LtoR_4[0]) / (prob_LtoR_4[0] + prob_RtoL_4[0]));
-		}
-		else {
-		    Chi_dpnd_matrix[i][j].dpnd_LtoR = bkoff_weight_1 * (prob_LtoR_2[0] + prob_LtoR_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]);
-		}
-	    }
-
-	    else if (prob_LtoR_4[0] > DOUBLE_MIN || prob_RtoL_4[0] > DOUBLE_MIN) {
-		Chi_dpnd_matrix[i][j].dpnd_LtoR = bkoff_weight_2 * ((prob_LtoR_4[0]) / (prob_LtoR_4[0] + prob_RtoL_4[0]));
-	    }
-
-	    else {
-		Chi_dpnd_matrix[i][j].dpnd_LtoR = 0;
-	    }
-
-	    /* calc dpnd_RtoL */
-	    if (prob_LtoR_1[0] > DOUBLE_MIN || prob_RtoL_1[0] > DOUBLE_MIN) {
-		lamda_dpnd = (prob_LtoR_1[0] + prob_RtoL_1[0]) / (prob_LtoR_1[0] + prob_RtoL_1[0] +1);
-		if (prob_LtoR_2[0] > DOUBLE_MIN || prob_RtoL_2[0] > DOUBLE_MIN || prob_LtoR_3[0] > DOUBLE_MIN || prob_RtoL_3[0] > DOUBLE_MIN) {
-		    Chi_dpnd_matrix[i][j].dpnd_RtoL = lamda_dpnd * prob_RtoL_1[0] / (prob_LtoR_1[0] + prob_RtoL_1[0]) +
-			(1- lamda_dpnd) * ((prob_RtoL_2[0] + prob_RtoL_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]));
-		}
-		else {
-		    Chi_dpnd_matrix[i][j].dpnd_RtoL = prob_RtoL_1[0] / (prob_LtoR_1[0] + prob_RtoL_1[0]);
-		}
-	    }
-
-	    else if (prob_LtoR_2[0] > DOUBLE_MIN || prob_RtoL_2[0] > DOUBLE_MIN || prob_LtoR_3[0] > DOUBLE_MIN || prob_RtoL_3[0] > DOUBLE_MIN) {
-		lamda_dpnd = (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0] + 1);
-		if (prob_LtoR_4[0] > DOUBLE_MIN || prob_RtoL_4[0] > DOUBLE_MIN) {
-		    Chi_dpnd_matrix[i][j].dpnd_RtoL = bkoff_weight_1 * lamda_dpnd * ((prob_RtoL_2[0] + prob_RtoL_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0])) +
-			(1- lamda_dpnd) * ((prob_RtoL_4[0]) / (prob_LtoR_4[0] + prob_RtoL_4[0]));
-		}
-		else {
-		    Chi_dpnd_matrix[i][j].dpnd_RtoL = bkoff_weight_1 * (prob_RtoL_2[0] + prob_RtoL_3[0]) / (prob_LtoR_2[0] + prob_LtoR_3[0] + prob_RtoL_2[0] + prob_RtoL_3[0]);
-		}
-	    }
-
-	    else if (prob_LtoR_4[0] > DOUBLE_MIN || prob_RtoL_4[0] > DOUBLE_MIN) {
-		Chi_dpnd_matrix[i][j].dpnd_RtoL = bkoff_weight_2 * ((prob_RtoL_4[0]) / (prob_LtoR_4[0] + prob_RtoL_4[0]));
-	    }
-
-	    else {
-		Chi_dpnd_matrix[i][j].dpnd_RtoL = 0;
-	    }
-
 	    /* prob_LtoR */
 	    if (occur_1[0] > DOUBLE_MIN) {
 		lamda[0] = occur_1[0] / (occur_1[0] + 1);
@@ -1522,15 +1460,18 @@ static int dpndID = 0;
 	    }
 
 	    /* direction */
-	    if (Chi_dpnd_matrix[i][j].prob_LtoR[0] > DOUBLE_MIN && Chi_dpnd_matrix[i][j].prob_RtoL[0] > DOUBLE_MIN) {
+	    if (Chi_dpnd_matrix[i][j].prob_LtoR[0] > DOUBLE_MIN && Chi_dpnd_matrix[i][j].prob_RtoL[0] > DOUBLE_MIN &&
+		Chi_dpnd_matrix[i][j].prob_dis_comma_LtoR > DOUBLE_MIN && Chi_dpnd_matrix[i][j].prob_dis_comma_RtoL > DOUBLE_MIN) {
 		Chi_dpnd_matrix[i][j].direction[0] = 'B';
 		Chi_dpnd_matrix[i][j].count = 1;
 	    }
-	    else if (Chi_dpnd_matrix[i][j].prob_LtoR[0] > DOUBLE_MIN) {
+	    else if (Chi_dpnd_matrix[i][j].prob_LtoR[0] > DOUBLE_MIN &&
+		Chi_dpnd_matrix[i][j].prob_dis_comma_LtoR > DOUBLE_MIN) {
 		Chi_dpnd_matrix[i][j].direction[0] = 'R';
 		Chi_dpnd_matrix[i][j].count = 1;
 	    }
-	    else if (Chi_dpnd_matrix[i][j].prob_RtoL[0] > DOUBLE_MIN) {
+	    else if (Chi_dpnd_matrix[i][j].prob_RtoL[0] > DOUBLE_MIN &&
+		Chi_dpnd_matrix[i][j].prob_dis_comma_RtoL > DOUBLE_MIN) {
 		Chi_dpnd_matrix[i][j].direction[0] = 'L';
 		Chi_dpnd_matrix[i][j].count = 1;
 	    }

@@ -101,7 +101,7 @@
 #define CHI_DPND_TYPE_LEN_MAX 10 /* maximum length of dpnd type */
 #define CHI_DPND_RULE_LEN_MAX 50 /* maximum length of dpnd rule */
 #define CHI_CKY_MAX 10 /* number of cky reserved for Chinese for each word pair */
-#define DOUBLE_MIN  0.000000000000001
+#define DOUBLE_MIN  0.0000000000000001
 
 /*====================================================================
 			    SIMILARITY
@@ -694,8 +694,6 @@ typedef struct {
     double      occur_pos; /* store occur time of different dpnd type */
     double      prob_dis_comma_LtoR;
     double      prob_dis_comma_RtoL;
-    double      dpnd_LtoR;
-    double      dpnd_RtoL;
     int         count; /* number of dpnd type */
 } CHI_DPND;
 
