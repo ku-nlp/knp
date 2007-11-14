@@ -395,6 +395,10 @@ struct _sort_kv {
        ちゃんと扱ってない */
 
     for (i = tm->pred_num - 1; i >= 0; i--) {
+	if (tm->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
+	    continue;
+	}
+
 	if (i != tm->pred_num - 1 && OptExpress != OPT_TABLE) {
 	    fputc('\n', Outfp);
 	}

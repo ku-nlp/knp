@@ -700,9 +700,9 @@ int count_distance(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *g_ptr, int *pos) 
 double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mgr) {
     CKY *right_ptr = cky_ptr->right, *orig_cky_ptr = cky_ptr;
     BNST_DATA *g_ptr = cky_ptr->b_ptr, *d_ptr;
-    TAG_DATA *t_ptr;
+    TAG_DATA *t_ptr, *dt_ptr;
     CF_PRED_MGR *cpm_ptr, *pre_cpm_ptr;
-    int i, pred_p = 0, child_num = 0;
+    int i, pred_p = 0, child_num = 0, wo_ni_overwritten_flag = 0;
     int renyou_modifying_num = 0, adverb_modifying_num = 0, noun_modifying_num = 0, flag;
     double one_score = 0, orig_score;
     char *para_key;
@@ -730,7 +730,8 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     if (t_ptr->cf_num > 0) { /* predicate or something which has case frames */
 	cky_ptr->cpm_ptr->pred_b_ptr = t_ptr;
 	set_data_cf_type(cky_ptr->cpm_ptr); /* set predicate type */
-	if (cky_ptr->cpm_ptr->cf.type == CF_PRED) { /* currently, restrict to predicates */
+	if (cky_ptr->cpm_ptr->cf.type == CF_PRED && /* currently, restrict to predicates */
+	    !(cky_ptr->i == cky_ptr->j && check_feature(g_ptr->f, "ID:（〜を）〜に"))) {
 	    pred_p = 1;
 	    cpm_ptr = cky_ptr->cpm_ptr;
 	    cpm_ptr->score = -1;
@@ -755,7 +756,21 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     while (cky_ptr) {
 	if (cky_ptr->left && cky_ptr->para_flag == 0) {
 	    d_ptr = cky_ptr->left->b_ptr;
+	    dt_ptr = d_ptr->tag_ptr + d_ptr->tag_num - 1;
 	    flag = 0;
+
+	    /* left_ptrが「（〜を）〜に」で、1つの句からなるときは、係:ニ格 に変更 */
+	    if (cky_ptr->left->i == cky_ptr->left->j && 
+		check_feature(d_ptr->f, "ID:（〜を）〜に")) {
+		assign_cfeature(&(d_ptr->f), "係:ニ格", FALSE);
+		assign_cfeature(&(dt_ptr->f), "係:ニ格", FALSE);
+		assign_cfeature(&(dt_ptr->f), "Ｔ解析格-ニ", FALSE);
+		delete_cfeature(&(dt_ptr->f), "Ｔ用言同文節");
+		wo_ni_overwritten_flag = 1;
+	    }
+	    else {
+		wo_ni_overwritten_flag = 0;
+	    }
 
 	    /* relax penalty */
 	    if (cky_ptr->dpnd_type == 'R') {
@@ -817,6 +832,14 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		add_coordinated_phrases(cky_ptr->right, &(t_ptr->next));
 		one_score += get_noun_co_ex_probability(d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 		noun_modifying_num++;
+	    }
+
+	    /* 係:ニ格に変更したものを元にもどす */
+	    if (wo_ni_overwritten_flag) {
+		assign_cfeature(&(d_ptr->f), "係:連用", FALSE);
+		assign_cfeature(&(dt_ptr->f), "係:連用", FALSE);
+		assign_cfeature(&(dt_ptr->f), "Ｔ用言同文節", FALSE);
+		delete_cfeature(&(dt_ptr->f), "Ｔ解析格-ニ");
 	    }
 	}
 	cky_ptr = cky_ptr->right;
@@ -1205,6 +1228,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	if (OptAnalysis == OPT_CASE) {
 	    /* 格解析結果を用言基本句featureへ */
 	    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+		if (Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
+		    continue;
+		}
 		assign_nil_assigned_components(sp, &(sp->Best_mgr->cpm[i])); /* 未対応格要素の処理 */
 
 		assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
@@ -1232,6 +1258,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    /* record case analysis results */
 	    if (OptAnalysis == OPT_CASE) {
 		for (i = 0; i < Best_mgr->pred_num; i++) {
+		    if (Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
+			continue;
+		    }
 		    if (Best_mgr->cpm[i].result_num != 0 && 
 			Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
 			Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
@@ -1250,6 +1279,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 		if (OptDisplay == OPT_DEBUG) { /* case analysis results */
 		    for (i = 0; i < Best_mgr->pred_num; i++) {
+			if (Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
+			    continue;
+			}
 			print_data_cframe(&(Best_mgr->cpm[i]), &(Best_mgr->cpm[i].cmm[0]));
 			for (j = 0; j < Best_mgr->cpm[i].result_num; j++) {
 			    print_crrspnd(&(Best_mgr->cpm[i]), &(Best_mgr->cpm[i].cmm[j]));
