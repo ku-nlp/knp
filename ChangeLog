@@ -1,3 +1,8 @@
+2007-11-14  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c, system/case_print.c:
+	Handled the ambiguity of "¡Ê¡Á¤ò¡Ë¡Á¤Ë".
+
 2007-11-13  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/path.h, system/const.h
