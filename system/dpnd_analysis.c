@@ -564,6 +564,7 @@ static int dpndID = 0;
     int count;
     double lex_root_prob[2], pos_root_prob[2], lex_root_occur[2], pos_root_occur[2], lamda_root, lamda_dpnd;
     int comma, distance;
+    double total_word_prob;
 
     char  	direction_1[2]; /* store different directions for each type */
     char  	direction_2[2]; /* store different directions for each type */
@@ -1481,6 +1482,37 @@ static int dpndID = 0;
 	    }
 	}
     }
+
+    /* normalize */
+    for (i = 0; i < sp->Bnst_num; i++) {
+	total_word_prob = 0.0;
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    if (j == i) {
+		continue;
+	    }
+	    else if (j < i) {
+		total_word_prob += Chi_dpnd_matrix[j][i].prob_LtoR[0];
+	    }
+	    else if (j > i) {
+		total_word_prob += Chi_dpnd_matrix[i][j].prob_RtoL[0];
+	    }
+	}
+	if (total_word_prob < DOUBLE_MIN) {
+	  continue;
+	}
+	for (j = 0; j < sp->Bnst_num; j++) {
+	    if (j == i) {
+		continue;
+	    }
+	    else if (j < i) {
+		Chi_dpnd_matrix[j][i].prob_LtoR[0] /= total_word_prob;
+	    }
+	    else if (j > i) {
+		Chi_dpnd_matrix[i][j].prob_RtoL[0] /= total_word_prob;
+	    }
+	}
+    }
+	
 
     /* free memory */
     if (lex_rule) {
