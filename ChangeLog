@@ -1,5 +1,8 @@
 2007-11-15  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/extern.h, system/case_ipal.c, system/cky.c:
+	Modified handling of punctuations in probabilistic coordination analysis.
+
 	* system/case_ipal.c:
 	Modified to use "<TH:¼çÂÎ>" in case frames as the agent ratio.
 
