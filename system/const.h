@@ -164,6 +164,8 @@
 #define	OPT_BASELINE_NORMAL	1
 #define	OPT_BASELINE_COOK	2
 
+#define OPT_PARA_MULTIPLY_ALL_EX	1
+
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
 

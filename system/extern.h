@@ -101,6 +101,7 @@ extern int		OptNEparent;
 extern int		OptNElearn;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
+extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
 

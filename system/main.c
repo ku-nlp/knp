@@ -89,6 +89,7 @@ int		OptNElearn;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
 int		OptParaFix;
+int		OptParaNoFixFlag;
 int		OptNbest;
 int		OptBeam;
 
@@ -221,6 +222,7 @@ extern int	EX_match_subject;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
     OptParaFix = TRUE;
+    OptParaNoFixFlag = 0;
     OptNbest = 0;
     OptBeam = 0;
     OptChiGenerative = 0;
@@ -295,7 +297,11 @@ extern int	EX_match_subject;
 	    OptCKY = FALSE;
 	}
 	else if (str_eq(argv[0], "-no-parafix")) {
-	     OptParaFix = 0;
+	     OptParaFix = FALSE;
+	}
+	else if (str_eq(argv[0], "-no-parafix-generate-all")) {
+	     OptParaFix = FALSE;
+	     OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
 	}
 	else if (str_eq(argv[0], "-chi-generative")) {
 	     OptChiGenerative = 1;

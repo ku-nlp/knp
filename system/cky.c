@@ -796,7 +796,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		    make_work_mgr_dpnd_check_for_noun(sp, d_ptr);
 		    if (cky_ptr->dpnd_type == 'P') {
 			one_score += get_para_exist_probability(para_key, cky_ptr->para_score, TRUE, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
-			if (check_feature(d_ptr->f, "ทธ:ฯขอั")) {
+			if ((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || check_feature(d_ptr->f, "ทธ:ฯขอั")) {
 			    one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 			}
 			flag++;
