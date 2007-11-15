@@ -809,7 +809,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     unsigned char *point, *point2;
     int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
     int sub_agent_flag = 0, ex_agent_flag;
-    double freq_gex;
+    double freq_gex, agent_ratio = -1;
     char *code, **destination, *buf, *token;
 
     c_ptr->freq[num] = 0;
@@ -844,7 +844,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
 	    /* 頻度の抽出 */
 	    freq_gex = split_freq_for_gex(point2);
-	    
+
+	    if (!strcmp(point2, "<TH:主体")) { /* <主体>の割合を下で利用 */
+		agent_ratio = freq_gex;
+	    }
+
 	    if (c_ptr->gex_size[num] == 0) {
 		c_ptr->gex_size[num] = 10;	/* 初期確保数 */
 		c_ptr->gex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->gex_size[num], 
@@ -884,12 +888,17 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 
 	if (*point2 != '\0') {
-	    ex_agent_flag = 0;
+	    if (agent_ratio > 0) { /* <TH:主体>があるならば、動的<主体>チェックはしない */
+		ex_agent_flag = 1;
+	    }
+	    else {
+		ex_agent_flag = 0;
+	    }
 	    token = strtok(point2, "?");
 	    while (token) { /* "?"で結合されたものは切って格納 */
 		code = get_str_code(token, thesaurus);
 		if (code) {
-		    /* <主体>のチェック */
+		    /* <主体>のチェック (for backward compatibility -> will be deleted) */
 		    if (ex_agent_flag == 0 && 
 			cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
 			agent_count += freq;
@@ -933,6 +942,14 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    c_ptr->freq[num] += freq;
 	    count++;
 	}
+    }
+
+    /* <主体>の割合を格フレームの<TH:主体>から取得する
+       格フレーム旧バージョン(200706版以前): <TH:主体>がないので、上で動的に計算
+       格フレーム新バージョン: <TH:主体>から取得するが、ない場合(0.01未満)は上で計算したagent_countになる
+                               (上の動的計算は撲滅予定) */
+    if (agent_ratio > 0) {
+	agent_count = agent_ratio * c_ptr->freq[num];
     }
 
     /* <主体>の追加 */
