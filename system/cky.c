@@ -871,7 +871,9 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	while (cky_ptr) {
 	    if (cky_ptr->left) {
 		d_ptr = cky_ptr->left->b_ptr;
-		if (cky_ptr->dpnd_type != 'P') {
+		if (cky_ptr->dpnd_type != 'P' && 
+		    !(cky_ptr->left->i == cky_ptr->left->j && /* 「〜に」が格要素なので除外 */
+		      check_feature(d_ptr->f, "ID:（〜を）〜に"))) {
 		    /* modifying predicate */
 		    if (check_feature(d_ptr->f, "係:連用") && check_feature(d_ptr->f, "用言") && 
 			!check_feature(d_ptr->f, "複合辞")) {
