@@ -297,11 +297,16 @@ extern int	EX_match_subject;
 	    OptCKY = FALSE;
 	}
 	else if (str_eq(argv[0], "-no-parafix")) {
-	     OptParaFix = FALSE;
+	    OptParaFix = FALSE;
 	}
 	else if (str_eq(argv[0], "-no-parafix-generate-all")) {
-	     OptParaFix = FALSE;
-	     OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
+	}
+	else if (str_eq(argv[0], "-no-parafix-generate-sim")) {
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_GENERATE_SIMILARITY;
+	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
 	}
 	else if (str_eq(argv[0], "-chi-generative")) {
 	     OptChiGenerative = 1;

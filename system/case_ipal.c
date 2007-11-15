@@ -3274,8 +3274,12 @@ double get_para_exist_probability(char *para_key, double score, int flag, TAG_DA
 
     key = malloc_db_buf(strlen(para_key) + 12);
     if (flag) {
-	/* sprintf(key, "1,%d|PARA:%s", binned_score, para_key); */
-	sprintf(key, "1|PARA:%s", para_key);
+	if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
+	    sprintf(key, "1,%d|PARA:%s", binned_score, para_key);
+	}
+	else {
+	    sprintf(key, "1|PARA:%s", para_key);
+	}
     }
     else {
 	sprintf(key, "0|PARA:%s", para_key);
@@ -3377,8 +3381,13 @@ double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_D
     }
 
     key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 5);
-    /* sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi); */
-    sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
+
+    if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
+	sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi);
+    }
+    else {
+	sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
+    }
 
     value = db_get(para_db, key);
     if (value) {
