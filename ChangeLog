@@ -1,5 +1,8 @@
 2007-11-15  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/case_ipal.c, system/const.h, system/main.c:
+	Added an option for a baseline method of probabilistic coordination analysis.
+
 	* system/cky.c, system/const.h, system/extern.h, system/main.c:
 	Added an option for another method of probabilistic coordination analysis.
 
