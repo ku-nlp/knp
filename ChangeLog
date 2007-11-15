@@ -1,5 +1,8 @@
 2007-11-15  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/cky.c, system/const.h, system/extern.h, system/main.c:
+	Added an option for another method of probabilistic coordination analysis.
+
 	* system/extern.h, system/case_ipal.c, system/cky.c:
 	Modified handling of punctuations in probabilistic coordination analysis.
 
