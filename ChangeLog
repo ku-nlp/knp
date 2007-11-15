@@ -1,3 +1,11 @@
+2007-11-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified to use "<TH:主体>" in case frames as the agent ratio.
+
+	* system/cky.c:
+	Modified "（〜を）〜に" handling.
+
 2007-11-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c, system/case_print.c:
