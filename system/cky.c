@@ -129,6 +129,19 @@ void make_work_mgr_dpnd_check(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *d_ptr)
     Work_mgr.dpnd.check[d_ptr->num].num = count;
 }
 
+void make_work_mgr_dpnd_check_for_noun(SENTENCE_DATA *sp, BNST_DATA *d_ptr) {
+    int i, count = 0;
+
+    for (i = d_ptr->num + 1; i < sp->Bnst_num; i++) {
+	if (check_feature((sp->bnst_data + i)->f, "体言")) {
+	    Work_mgr.dpnd.check[d_ptr->num].pos[count] = i;
+	    count++;
+	}
+    }
+
+    Work_mgr.dpnd.check[d_ptr->num].num = count;
+}
+
 int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     int i;
     char *cp;
@@ -780,13 +793,16 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    /* coordination */
 	    if (OptParaFix == 0) {
 		if (d_ptr->para_num != -1 && (para_key = check_feature(d_ptr->f, "並キ"))) {
+		    make_work_mgr_dpnd_check_for_noun(sp, d_ptr);
 		    if (cky_ptr->dpnd_type == 'P') {
-			one_score += get_para_exist_probability(para_key, cky_ptr->para_score, TRUE);
-			one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
+			one_score += get_para_exist_probability(para_key, cky_ptr->para_score, TRUE, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
+			if (check_feature(d_ptr->f, "係:連用")) {
+			    one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
+			}
 			flag++;
 		    }
 		    else {
-			one_score += get_para_exist_probability(para_key, sp->para_data[d_ptr->para_num].max_score, FALSE);
+			one_score += get_para_exist_probability(para_key, sp->para_data[d_ptr->para_num].max_score, FALSE, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 		    }
 		}
 	    }
@@ -1279,7 +1295,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    if (OptNbest == TRUE) {
 		print_result(sp, 0);
 
-		if (OptDisplay == OPT_DEBUG) { /* case analysis results */
+		if (OptAnalysis == OPT_CASE && OptDisplay == OPT_DEBUG) { /* case analysis results */
 		    for (i = 0; i < Best_mgr->pred_num; i++) {
 			if (Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
 			    continue;

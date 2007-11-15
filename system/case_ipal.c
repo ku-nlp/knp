@@ -2136,7 +2136,7 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
 
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
 	}
 	free(value);
@@ -2285,14 +2285,14 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
 	if (!strcmp(key, cfp->ex_list[as2][i])) {
 	    ret = (double)cfp->ex_freq[as2][i] / cfp->freq[as2];
 	    if (VerboseLevel >= VERBOSE3) {
-		fprintf(Outfp, ";; P(%s) = %lf\n", key, ret);
+		fprintf(Outfp, ";; (EX) P(%s) = %lf\n", key, ret);
 	    }
 	    return ret;
 	}
     }
 
     if (VerboseLevel >= VERBOSE3) {
-	fprintf(Outfp, ";; P(%s) = 0\n", key);
+	fprintf(Outfp, ";; (EX) P(%s) = 0\n", key);
     }
     return 0;
 }
@@ -2540,6 +2540,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	    }
 	}
     } */
+
+    if (VerboseLevel >= VERBOSE3) {
+	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, score / count);
+    }
 
     return score / count;
 }
@@ -2930,7 +2934,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     if (value) {
 	ret1 = atof(value);
 	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (R1) %s: P(%d|P連用:%d,%d) = %lf\n", gp->head_ptr->Goi, touten_flag, dist, closest_pred_flag, ret1);
+	    fprintf(Outfp, ";; (R_P) %s: P(%d|P連用:%d,%d) = %lf\n", gp->head_ptr->Goi, touten_flag, dist, closest_pred_flag, ret1);
 	}
 	free(value);
     }
@@ -3257,12 +3261,12 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
 }
 
 /*==================================================================*/
-double get_para_exist_probability(char *para_key, double score, int flag)
+double get_para_exist_probability(char *para_key, double score, int flag, TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
     char *key, *value;
     double ret1 = 0, ret2 = 0;
-    int binned_score = bin_sim_score(score);
+    int binned_score = bin_sim_score(score), touten_flag, dist;
 
     if (CaseExist == FALSE) {
 	return 0;
@@ -3295,17 +3299,51 @@ double get_para_exist_probability(char *para_key, double score, int flag)
     value = db_get(case_db, key);
     if (value) {
 	ret2 = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PTYPE) : P(%s) = %lf\n", key, ret2);
 	}
 	free(value);
     }
     else {
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PTYPE) : P(%s) = 0\n", key);
 	}
     }
     */
+
+    /* 名詞並列のときは読点を生成 */
+    if (flag && !check_feature(dp->f, "用言")) {
+	if (check_feature(dp->b_ptr->f, "読点") && 
+	    !check_feature(dp->b_ptr->f, "読点並キ")) {
+	    touten_flag = 1;
+	}
+	else {
+	    touten_flag = 0;
+	}
+
+	if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
+	    ret2 = UNKNOWN_RENYOU_SCORE;
+	}
+	else {
+	    key = malloc_db_buf(strlen("並列") + 6);
+	    sprintf(key, "%d|P並列:%d", touten_flag, dist);
+	    value = db_get(case_db, key);
+	    if (value) {
+		ret2 = atof(value);
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (PARA_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
+		}
+		free(value);
+		ret2 = log(ret2);
+	    }
+	    else {
+		ret2 = UNKNOWN_RENYOU_SCORE;
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (PARA_P) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+		}
+	    }
+	}
+    }
 
     if (ret1) {
 	ret1 = log(ret1);
@@ -3345,13 +3383,13 @@ double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_D
     value = db_get(para_db, key);
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PARA_EX) : P(%s) = %lf\n", key, ret);
 	}
 	free(value);
     }
     else {
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (PARA_EX) : P(%s) = 0\n", key);
 	}
 	return FREQ0_ASSINED_SCORE;
@@ -3387,14 +3425,14 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    value = db_get(noun_co_db, key);
 	    if (value) {
 		tmp_ret = atof(value);
-		if (VerboseLevel >= VERBOSE1) {
+		if (VerboseLevel >= VERBOSE2) {
 		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = %lf\n", key, tmp_ret);
 		}
 		free(value);
 		ret1 += log(tmp_ret);
 	    }
 	    else {
-		if (VerboseLevel >= VERBOSE1) {
+		if (VerboseLevel >= VERBOSE2) {
 		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = 0\n", key);
 		}
 		ret1 += FREQ0_ASSINED_SCORE;
@@ -3406,7 +3444,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	tmp_dp = tmp_dp->next;
     }
     ret1 /= (double)elem_num;
-    if (VerboseLevel >= VERBOSE1) {
+    if (VerboseLevel >= VERBOSE2) {
 	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", elem_num, ret1);
     }
 
@@ -3427,7 +3465,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	value = db_get(case_db, key);
 	if (value) {
 	    ret2 = atof(value);
-	    if (VerboseLevel >= VERBOSE1) {
+	    if (VerboseLevel >= VERBOSE2) {
 		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
 	    }
 	    free(value);
@@ -3435,7 +3473,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	}
 	else {
 	    ret2 = FREQ0_ASSINED_SCORE;
-	    if (VerboseLevel >= VERBOSE1) {
+	    if (VerboseLevel >= VERBOSE2) {
 		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
 	    }
 	}
@@ -3461,14 +3499,14 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     value = db_get(noun_co_db, key);
     if (value) {
 	ret = atof(value);
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = %lf\n", key, ret);
 	}
 	free(value);
 	ret = log(ret);
     }
     else {
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = 0\n", key);
 	}
 	ret = FREQ0_ASSINED_SCORE;
