@@ -904,6 +904,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
+    entity_manager.num = 0;
     ClearAnaphoraList();
     ClearEntityList();
     ClearCFList();
@@ -1097,8 +1098,6 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 
     sp_new->cpm = NULL;
     sp_new->cf = NULL;
-
-    return sp_new;
 }
 
 /*==================================================================*/
@@ -5345,7 +5344,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 }
 
 /*==================================================================*/
-   void DiscourseAnalysis(SENTENCE_DATA *sp, SENTENCE_DATA *sp_new)
+	      void DiscourseAnalysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, l;
@@ -5354,6 +5353,9 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     CF_PRED_MGR *cpm_ptr;
     CF_MATCH_MGR *cmm_ptr;
     CASE_FRAME *cf_ptr;
+    SENTENCE_DATA *sp_new;
+
+    sp_new = sentence_data + sp->Sen_num - 1;
 
     InitEllipsisMGR(&workem);
     InitEllipsisMGR(&maxem);

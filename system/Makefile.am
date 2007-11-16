@@ -8,6 +8,7 @@ pkglibexecdir= $(libexecdir)/knp
 pkglibexec_PROGRAMS = ipal make_db
 
 knp_SOURCES = \
+	anaphora.c \
 	case_analysis.c \
 	case_data.c \
 	case_ipal.c \

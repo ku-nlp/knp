@@ -1,3 +1,13 @@
+2007-11-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/Makefile.am, system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/const.h, system/context.c, system/corefer.c, system/extern.h, system/main.c, system/proper.c, system/read_data.c:
+	Merge the branch knp-40-TEST to the trunk.
+	ENTITYベースの照応解析のプログラムを追加(-anaphora)
+	固有表現の正解が付与された入力を読み込むオプション"-read-ne"を追加
+		
+	* system/anaphora.c:
+	Added.
+
 2007-11-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/const.h, system/main.c:

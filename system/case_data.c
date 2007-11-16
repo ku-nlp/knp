@@ -83,7 +83,7 @@ int check_cc_relation(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, char *pp_str)
 {
     int i;
 
-    if (!cpm_ptr) {
+    if (!cpm_ptr || !cpm_ptr->cmm[0].cf_ptr) {
 	return 0;
     }
 
@@ -346,8 +346,11 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
    void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr)
 /*==================================================================*/
 {
+    int i = 1;
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     char *cp;
+
+    i = 2;
 
     if (Thesaurus == USE_BGH) {
 	strcpy(c_ptr->ex[c_ptr->element_num], b_ptr->BGH_code);

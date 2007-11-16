@@ -30,6 +30,8 @@ DBM_FILE		smp2smg_db;
 extern SENTENCE_DATA	sentence_data[];
 extern SENTENCE_DATA	current_sentence_data;
 
+extern ENTITY_MGR       entity_manager;
+
 extern int 		match_matrix[][BNST_MAX];
 extern int 		path_matrix[][BNST_MAX];
 extern int		restrict_matrix[][BNST_MAX];
@@ -99,6 +101,7 @@ extern int		OptNEdelete;
 extern int		OptNEcase;
 extern int		OptNEparent;
 extern int		OptNElearn;
+extern int		OptAnaphora;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
 extern int		OptParaNoFixFlag;
@@ -176,6 +179,9 @@ extern int sen_num;
 
 /* 関数プロトタイプ */
 
+/* anaphora.c */
+extern void anaphora_analysis(SENTENCE_DATA *sp);
+
 /* bnst_compare.c */
 extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);
 extern int subordinate_level_check(char *cp, FEATURE *f);
@@ -240,9 +246,12 @@ extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
 extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
 					    int as2, CASE_FRAME *cfp);
+extern double get_case_interpret_probability(char *scase, char *cfcase);
 extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
+extern  double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
+				  int as2, CASE_FRAME *cfp);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
 extern double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
@@ -297,7 +306,7 @@ extern void ClearSentences(SENTENCE_DATA *sp);
 extern void ClearSMList();
 extern void PreserveCPM(SENTENCE_DATA *sp_new, SENTENCE_DATA *sp);
 extern SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp);
-extern void DiscourseAnalysis(SENTENCE_DATA *sp, SENTENCE_DATA *sp_new);
+extern void DiscourseAnalysis(SENTENCE_DATA *sp);
 extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
 extern char *loc_code_to_str(int loc);
 extern int loc_name_to_code(char *loc);
@@ -555,6 +564,10 @@ extern int GeneralRuleMax;
 extern FILE *Infp;
 extern FILE *Outfp;
 extern int   OptMode;
+
+/* context.c for anaphra.c */
+extern char *get_pred_id(char *cfid);
+extern CFLIST *CheckCF(char *key);
 
 /*====================================================================
 				 END

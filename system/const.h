@@ -42,6 +42,9 @@
 #define TEIDAI_TYPES	5
 #define HOMO_MAX	30
 #define HOMO_MRPH_MAX	10
+#define PP_STRING_MAX   11 /* 最大となるのは"をふくめる"、"にたいする"など */
+#define FUKUGOJI_START  9  /* PP_STR_TO_CODEで複合辞が始まる番号 */
+#define FUKUGOJI_END    37 /* PP_STR_TO_CODEで複合辞が終わる番号 */
 
 #define BGH_CODE_SIZE	11
 #define SM_CODE_SIZE	12
@@ -77,6 +80,10 @@
 #define CMM_MAX 	5				/* 最適格フレーム数 */
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
+
+#define MENTION_MAX     32   /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
+#define ENTITY_MAX      1024 /* ENTITYの数 */
+#define MENTIONED_MAX   1024 /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
 	#define IMI_MAX	129	/* defined in "juman.h" */	
@@ -706,6 +713,44 @@ typedef struct {
 } CHI_DPND_STRU;
 
 /*====================================================================
+			       照応解析
+====================================================================*/
+
+/* ENTITYへの言及(ゼロを含む) */
+typedef struct mention {
+    int 		sent_num;
+    int                 tag_num;
+    char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
+    char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
+    char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D', */
+    struct entity       *entity;
+} MENTION;
+
+/* 基本句ごとにMENTIONを管理する構造体 */
+typedef struct mention_manager {
+    /* 0番目には必ず自分自身を入れる */
+    /* 1番目以降は関係するゼロ代名詞を入れていく */
+    int                 num;
+    MENTION             mention[MENTION_MAX];        
+} MENTION_MGR;
+
+/* ENTITY */
+typedef struct entity {
+    int                 num;
+    int                 mentioned_num;  /* 言及されている回数 */
+    double              activity_score; /* どのくらい先行詞になりやすいか */
+    int                 antecedent_num; /* 先行詞となっている回数 */
+    MENTION             *mention[MENTIONED_MAX];
+    char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
+} ENTITY;
+
+/* 文章全体に出現したENTITYを管理する構造体 */
+typedef struct entity_manager {
+    int                 num;
+    ENTITY              entity[ENTITY_MAX];        
+} ENTITY_MGR;
+
+/*====================================================================
 				格解析
 ====================================================================*/
 
@@ -762,6 +807,11 @@ typedef struct tnode_t {
     CPM_ptr	c_cpm_ptr;
     /* 格解析における並列格要素 */
     struct tnode_t	*next;
+    /* MENTIONの管理 */
+    MENTION_MGR mention_mgr;
+    /* 照応解析 */
+    struct tcf_def *tcf_ptr; /* 入力基本句の表層的な格構造 */
+    struct ctm_def *ctm_ptr; /* 基本句の格・省略解析結果の記録 */
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -1164,6 +1214,44 @@ typedef struct entity_list {
     double	ellipsis_num;
     struct entity_list *next;
 } ENTITY_LIST;
+
+/*====================================================================
+			 ENTITY BASE 文脈処理
+====================================================================*/
+
+/* 入力基本句の格構造 */
+typedef struct tcf_def {
+    CASE_FRAME 	    cf;				 /* 入力文の格構造 */
+    TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
+    TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
+} TAG_CASE_FRAME;
+
+/* 基本句の格・省略解析結果の記録 */
+typedef struct ctm_def {
+    double      score;                           /* 対応付けのスコア */
+    CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
+
+    /* 格フレームの要素のうち対応付けがついたもの
+       (=cf_element_numに含まれる)のみTRUEとなる */
+    int         filled_element[CF_ELEMENT_MAX];  
+
+    /* ENTITYのうち対応付けがついたもの
+       (=entity_numに含まれる)のみTRUEとなる */
+    int         filled_entity[ENTITY_MAX];
+
+    /* 対応付けられなかった入力文格要素
+       入力文格要素のうち対応が付いていないものの番号を保存 */
+    int         non_match_element[CF_ELEMENT_MAX]; 
+
+    /* 以下は基本句の格構造の情報 */
+    int         result_num;                      /* 対応付けられた要素数 */
+    int         case_result_num;                 /* 格解析で対応付けられた要素数 */
+    int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
+    int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
+    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
+    int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
+    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D', */
+} CF_TAG_MGR;
 
 /*====================================================================
                                END

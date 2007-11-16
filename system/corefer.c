@@ -168,11 +168,10 @@ char *SynonymFile;
 	    else {
 		/* 固有表現内の語を主辞としない場合
 		   
-		/* 数詞、形式名詞、副詞的名詞 */
-		/* および隣に係る形容詞は除外 */
+		/* 数詞、形式名詞、および隣に係る形容詞は除外 */
 		if ((tag_ptr + j)->head_ptr->Hinshi == 6 &&
 		    (tag_ptr + j)->head_ptr->Bunrui > 7 &&
-		    (tag_ptr + j)->head_ptr->Bunrui != 10 ||
+		    (tag_ptr + j)->head_ptr->Bunrui < 9 ||
 		    (tag_ptr + j)->head_ptr->Hinshi == 3 &&
 		    check_feature((tag_ptr + j)->f, "係:隣")) {
 		    continue;
@@ -496,6 +495,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    }
 		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
 		    assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
+		    sprintf(buf, "Ｔ共参照:=/O/%s%s/%d/%d/-", word1, setubi ? setubi : "", k, j);
+		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 		    
 		    /* COREFER_IDを付与 */   
 		    if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
@@ -585,6 +586,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    tag_ptr - sp->tag_data);
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
     assign_cfeature(&(tag_ptr->f), "共参照(役職)", FALSE);
+    sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, tag_ptr - sp->tag_data, 0);
+    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
     
     /* COREFER_IDを付与 */
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
@@ -683,13 +686,13 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    !check_feature((sp->tag_data + j)->f, "文末") &&
 	    !(check_feature((sp->tag_data + j)->f, "NE:PERSON") &&
 	      check_feature((sp->tag_data + j + 1)->mrph_ptr->f, "人名末尾"))) return 0;
-	      
-	    
-
+	      	
 	sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 		head_ptr->Goi2, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1);
 	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
 	assign_cfeature(&((sp->tag_data + j)->f), "同格", FALSE);
+	sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, i - 1, 0);
+	assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 
 	/* COREFER_IDを付与 */
 	if (cp = check_feature((sp->tag_data + j)->f, "COREFER_ID")) {
@@ -837,6 +840,8 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 		}
 		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
 		assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
+		sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, k, j);
+		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 		
 		/* COREFER_IDを付与 */   
 		if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
