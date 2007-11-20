@@ -355,6 +355,9 @@ extern int	EX_match_subject;
 	    OptAnaphora = 1;
 	    OptEllipsis |= OPT_COREFER;
 	}	
+	else if (str_eq(argv[0], "-read-ne")) {
+	    OptReadNE = 1;    
+	}
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-ellipsis-svm")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
@@ -453,9 +456,6 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
-	}
-	else if (str_eq(argv[0], "-read-ne")) {
-	    OptReadNE = 1;    
 	}
 	else if (str_eq(argv[0], "-ne-debug")) {
 	    OptDisplayNE  = OPT_DEBUG;
