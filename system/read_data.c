@@ -949,7 +949,7 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 /*==================================================================*/
 {
     int i;
-    char pre[WORD_LEN_MAX + 1], str1[WORD_LEN_MAX + 1], str2[WORD_LEN_MAX + 1], post[WORD_LEN_MAX + 1], *cp;
+    char pre[IMI_MAX], str1[IMI_MAX], str2[IMI_MAX], post[IMI_MAX], *cp;
 
     /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 

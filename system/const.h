@@ -86,7 +86,7 @@
 #define MENTIONED_MAX   1024 /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
-	#define IMI_MAX	129	/* defined in "juman.h" */	
+	#define IMI_MAX	1024	/* defined in "juman.h" */	
 #endif
 
 #define DATA_LEN	5120
