@@ -53,7 +53,7 @@ int	TEIDAI_STEP	= 2;
 				"init_case_frame");
 	cf->ex_list[j] = (char **)malloc_data(sizeof(char *), 
 					      "init_case_frame");
-	cf->ex_list[j][0] = (char *)malloc_data(sizeof(char)*WORD_LEN_MAX, 
+	cf->ex_list[j][0] = (char *)malloc_data(sizeof(char)*REPNAME_LEN_MAX, 
 						"init_case_frame");
 	cf->ex_freq[j] = (int *)malloc_data(sizeof(int), 
 					    "init_case_frame");
