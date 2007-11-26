@@ -43,6 +43,8 @@
 	かどうかを調べる場合は(3)のなかの check_feature を用いる．
 */
 
+char feature_buffer[DATA_LEN];
+
 /*==================================================================*/
 	    void print_one_feature(char *cp, FILE *filep)
 /*==================================================================*/
@@ -243,15 +245,15 @@
        ORだけでANDはサポートしていない */
 
     int nth = 0;
-    char buffer[256], *scp, *ecp;
+    char *scp, *ecp;
 
     if (cp == NULL || cp[0] == '\0') {
 	f->fp[nth] = NULL;
 	return;
     }
 
-    strcpy(buffer, cp);
-    scp = ecp = buffer;
+    strcpy(feature_buffer, cp);
+    scp = ecp = feature_buffer;
     while (*ecp) {
 	if (*ecp == '|') {
 	    *ecp = '\0';
@@ -279,7 +281,7 @@
        ORだけでANDはサポートしていない */
 
     int nth;
-    char buffer[256], *start_cp, *loop_cp;
+    char *start_cp, *loop_cp;
     FEATURE **fpp;
     
     if (!*cp) {
@@ -287,11 +289,11 @@
 	return;
     }
 
-    strcpy(buffer, cp);
+    strcpy(feature_buffer, cp);
     nth = 0;
     clear_feature(f->fp+nth);
     fpp = f->fp+nth;
-    loop_cp = buffer;
+    loop_cp = feature_buffer;
     start_cp = loop_cp;
     while (*loop_cp) {
 	if (*loop_cp == '&' && *(loop_cp+1) == '&') {
@@ -342,29 +344,27 @@ void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 {
     /* temp_assign_flag: TRUEのとき「仮付与」を頭につける */
 
-    char type[256];
-
     /* 上書きの可能性をチェック */
 
-    sscanf(fname, "%[^:]", type);	/* ※ fnameに":"がない場合は
-					   typeはfname全体になる */
+    sscanf(fname, "%[^:]", feature_buffer);	/* ※ fnameに":"がない場合は
+						   feature_bufferはfname全体になる */
 
     /* quote('"')中の":"で切っていれば、もとに戻す */
-    if (strcmp(type, fname)) {
+    if (strcmp(feature_buffer, fname)) {
 	int i, count = 0;
 
-	for (i = 0; i < strlen(type); i++) {
-	    if (type[i] == '"') {
+	for (i = 0; i < strlen(feature_buffer); i++) {
+	    if (feature_buffer[i] == '"') {
 		count++;
 	    }
 	}
 	if (count % 2 == 1) { /* '"'が奇数 */
-	    strcpy(type, fname);
+	    strcpy(feature_buffer, fname);
 	}
     }
 
     while (*fpp) {
-	if (comp_feature((*fpp)->cp, type) == TRUE) {
+	if (comp_feature((*fpp)->cp, feature_buffer) == TRUE) {
 	    free((*fpp)->cp);
 	    if (!((*fpp)->cp = (char *)(malloc(strlen(fname) + 1)))) {
 		fprintf(stderr, "Can't allocate memory for FEATURE\n");
@@ -404,7 +404,6 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 
     int i;
     char *cp, *pat;
-    char buffer[256];
     FEATURE **fpp, *next;
 
     while (*fpp2) {
@@ -463,10 +462,10 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		}
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&記憶語彙付与:", strlen("&記憶語彙付与:"))) {
-		sprintf(buffer, "%s:%s", 
+		sprintf(feature_buffer, "%s:%s", 
 			(*fpp2)->cp + strlen("&記憶語彙付与:"), 
 			((MRPH_DATA *)matched_ptr)->Goi);
-		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), buffer, temp_assign_flag);
+		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), feature_buffer, temp_assign_flag);
 	    }
 	    /* &伝搬:n:FEATURE : FEATUREの伝搬  */
 	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
