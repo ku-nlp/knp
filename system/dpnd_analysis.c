@@ -3369,45 +3369,44 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
     }
 
     // calculate probability
-
-    for (k = 0; k < 2; k++) {
-	prob[k] = 0.0;
+    for (l = 0; l < 2; l++) {
+	prob[l] = 0.0;
 	lamda = 0.0;
    
-	if (lex_total_LtoR[k] > DOUBLE_MIN) {
-	    lamda = lex_total_LtoR[k] / (lex_total_LtoR[k] + 1);
-	    prob[k] = lamda * (lex_occur_LtoR[k] / lex_total_LtoR[k]);
-	    if (bk110_total_LtoR[k] > DOUBLE_MIN || bk011_total_LtoR[k] > DOUBLE_MIN || bk101_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk101_occur_LtoR[k] + bk110_occur_LtoR[k] + bk011_occur_LtoR[k]) / (bk101_total_LtoR[k] + bk110_total_LtoR[k] +  bk011_total_LtoR[k]);
+	if (lex_total_LtoR[l] > DOUBLE_MIN) {
+	    lamda = lex_total_LtoR[l] / (lex_total_LtoR[l] + 1);
+	    prob[l] = lamda * (lex_occur_LtoR[l] / lex_total_LtoR[l]);
+	    if (bk110_total_LtoR[l] > DOUBLE_MIN || bk011_total_LtoR[l] > DOUBLE_MIN || bk101_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk101_occur_LtoR[l] + bk110_occur_LtoR[l] + bk011_occur_LtoR[l]) / (bk101_total_LtoR[l] + bk110_total_LtoR[l] +  bk011_total_LtoR[l]);
 	    }
-	    if (bk100_total_LtoR[k] > DOUBLE_MIN || bk010_total_LtoR[k] > DOUBLE_MIN || bk001_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk100_occur_LtoR[k] + bk010_occur_LtoR[k] + bk001_occur_LtoR[k]) / (bk100_total_LtoR[k] + bk010_total_LtoR[k] +  bk001_total_LtoR[k]);
+	    if (bk100_total_LtoR[l] > DOUBLE_MIN || bk010_total_LtoR[l] > DOUBLE_MIN || bk001_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk100_occur_LtoR[l] + bk010_occur_LtoR[l] + bk001_occur_LtoR[l]) / (bk100_total_LtoR[l] + bk010_total_LtoR[l] +  bk001_total_LtoR[l]);
 	    }
-	    if (bk000_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_LtoR[k] / bk000_total_LtoR[k]);
+	    if (bk000_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_LtoR[l] / bk000_total_LtoR[l]);
 	    }
 	}
-	else if (bk110_total_LtoR[k] > DOUBLE_MIN || bk011_total_LtoR[k] > DOUBLE_MIN || bk101_total_LtoR[k] > DOUBLE_MIN) {
-	    lamda = (bk110_total_LtoR[k] + bk011_total_LtoR[k] + bk101_total_LtoR[k]) / (bk110_total_LtoR[k] + bk011_total_LtoR[k] + bk101_total_LtoR[k] + 1);
-	    prob[k] = lamda * (bk101_occur_LtoR[k] + bk110_occur_LtoR[k] + bk011_occur_LtoR[k]) / (bk101_total_LtoR[k] + bk110_total_LtoR[k] +  bk011_total_LtoR[k]);
-	    if (bk100_total_LtoR[k] > DOUBLE_MIN || bk010_total_LtoR[k] > DOUBLE_MIN || bk001_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk100_occur_LtoR[k] + bk010_occur_LtoR[k] + bk001_occur_LtoR[k]) / (bk100_total_LtoR[k] + bk010_total_LtoR[k] +  bk001_total_LtoR[k]);
+	else if (bk110_total_LtoR[l] > DOUBLE_MIN || bk011_total_LtoR[l] > DOUBLE_MIN || bk101_total_LtoR[l] > DOUBLE_MIN) {
+	    lamda = (bk110_total_LtoR[l] + bk011_total_LtoR[l] + bk101_total_LtoR[l]) / (bk110_total_LtoR[l] + bk011_total_LtoR[l] + bk101_total_LtoR[l] + 1);
+	    prob[l] = lamda * (bk101_occur_LtoR[l] + bk110_occur_LtoR[l] + bk011_occur_LtoR[l]) / (bk101_total_LtoR[l] + bk110_total_LtoR[l] +  bk011_total_LtoR[l]);
+	    if (bk100_total_LtoR[l] > DOUBLE_MIN || bk010_total_LtoR[l] > DOUBLE_MIN || bk001_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk100_occur_LtoR[l] + bk010_occur_LtoR[l] + bk001_occur_LtoR[l]) / (bk100_total_LtoR[l] + bk010_total_LtoR[l] +  bk001_total_LtoR[l]);
 	    }
-	    if (bk000_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_LtoR[k] / bk000_total_LtoR[k]);
+	    if (bk000_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_LtoR[l] / bk000_total_LtoR[l]);
 	    }
-	    prob[k] *= prob_bk_weight_1;
+	    prob[l] *= prob_bk_weight_1;
 	}
-	else if (bk100_total_LtoR[k] > DOUBLE_MIN || bk010_total_LtoR[k] > DOUBLE_MIN || bk001_total_LtoR[k] > DOUBLE_MIN) {
-	    lamda = (bk100_total_LtoR[k] + bk010_total_LtoR[k] + bk001_total_LtoR[k]) / (bk100_total_LtoR[k] + bk010_total_LtoR[k] + bk001_total_LtoR[k] + 1);
-	    prob[k] = lamda * (bk100_occur_LtoR[k] + bk010_occur_LtoR[k] + bk001_occur_LtoR[k]) / (bk100_total_LtoR[k] + bk010_total_LtoR[k] +  bk001_total_LtoR[k]);
-	    if (bk000_total_LtoR[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_LtoR[k] / bk000_total_LtoR[k]);
+	else if (bk100_total_LtoR[l] > DOUBLE_MIN || bk010_total_LtoR[l] > DOUBLE_MIN || bk001_total_LtoR[l] > DOUBLE_MIN) {
+	    lamda = (bk100_total_LtoR[l] + bk010_total_LtoR[l] + bk001_total_LtoR[l]) / (bk100_total_LtoR[l] + bk010_total_LtoR[l] + bk001_total_LtoR[l] + 1);
+	    prob[l] = lamda * (bk100_occur_LtoR[l] + bk010_occur_LtoR[l] + bk001_occur_LtoR[l]) / (bk100_total_LtoR[l] + bk010_total_LtoR[l] +  bk001_total_LtoR[l]);
+	    if (bk000_total_LtoR[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_LtoR[l] / bk000_total_LtoR[l]);
 	    }
-	    prob[k] *= prob_bk_weight_2;
+	    prob[l] *= prob_bk_weight_2;
 	}
-	else if (bk000_total_LtoR[k] > DOUBLE_MIN) {
-	    prob[k] = prob_bk_weight_2 * (bk000_occur_LtoR[k] / bk000_total_LtoR[k]);
+	else if (bk000_total_LtoR[l] > DOUBLE_MIN) {
+	    prob[l] = prob_bk_weight_2 * (bk000_occur_LtoR[l] / bk000_total_LtoR[l]);
 	}
     }
 
@@ -3418,44 +3417,44 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 	prob_LtoR = prob[1] * giga_bk_weight;
     }
 
-    for (k = 0; k < 2; k++) {
-	prob[k] = 0.0;
+    for (l = 0; l < 2; l++) {
+	prob[l] = 0.0;
 	lamda = 0.0;
     
-	if (lex_total_RtoL[k] > DOUBLE_MIN) {
-	    lamda = lex_total_RtoL[k] / (lex_total_RtoL[k] + 1);
-	    prob[k] = lamda * (lex_occur_RtoL[k] / lex_total_RtoL[k]);
-	    if (bk110_total_RtoL[k] > DOUBLE_MIN || bk011_total_RtoL[k] > DOUBLE_MIN || bk101_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk101_occur_RtoL[k] + bk110_occur_RtoL[k] + bk011_occur_RtoL[k]) / (bk101_total_RtoL[k] + bk110_total_RtoL[k] +  bk011_total_RtoL[k]);
+	if (lex_total_RtoL[l] > DOUBLE_MIN) {
+	    lamda = lex_total_RtoL[l] / (lex_total_RtoL[l] + 1);
+	    prob[l] = lamda * (lex_occur_RtoL[l] / lex_total_RtoL[l]);
+	    if (bk110_total_RtoL[l] > DOUBLE_MIN || bk011_total_RtoL[l] > DOUBLE_MIN || bk101_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk101_occur_RtoL[l] + bk110_occur_RtoL[l] + bk011_occur_RtoL[l]) / (bk101_total_RtoL[l] + bk110_total_RtoL[l] +  bk011_total_RtoL[l]);
 	    }
-	    if (bk100_total_RtoL[k] > DOUBLE_MIN || bk010_total_RtoL[k] > DOUBLE_MIN || bk001_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk100_occur_RtoL[k] + bk010_occur_RtoL[k] + bk001_occur_RtoL[k]) / (bk100_total_RtoL[k] + bk010_total_RtoL[k] +  bk001_total_RtoL[k]);
+	    if (bk100_total_RtoL[l] > DOUBLE_MIN || bk010_total_RtoL[l] > DOUBLE_MIN || bk001_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk100_occur_RtoL[l] + bk010_occur_RtoL[l] + bk001_occur_RtoL[l]) / (bk100_total_RtoL[l] + bk010_total_RtoL[l] +  bk001_total_RtoL[l]);
 	    }
-	    if (bk000_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_RtoL[k] / bk000_total_RtoL[k]);
+	    if (bk000_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_RtoL[l] / bk000_total_RtoL[l]);
 	    }
 	}
-	else if (bk110_total_RtoL[k] > DOUBLE_MIN || bk011_total_RtoL[k] > DOUBLE_MIN || bk101_total_RtoL[k] > DOUBLE_MIN) {
-	    lamda = (bk110_total_RtoL[k] + bk011_total_RtoL[k] + bk101_total_RtoL[k]) / (bk110_total_RtoL[k] + bk011_total_RtoL[k] + bk101_total_RtoL[k] + 1);
-	    prob[k] = lamda * (bk101_occur_RtoL[k] + bk110_occur_RtoL[k] + bk011_occur_RtoL[k]) / (bk101_total_RtoL[k] + bk110_total_RtoL[k] +  bk011_total_RtoL[k]);
-	    if (bk100_total_RtoL[k] > DOUBLE_MIN || bk010_total_RtoL[k] > DOUBLE_MIN || bk001_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk100_occur_RtoL[k] + bk010_occur_RtoL[k] + bk001_occur_RtoL[k]) / (bk100_total_RtoL[k] + bk010_total_RtoL[k] +  bk001_total_RtoL[k]);
+	else if (bk110_total_RtoL[l] > DOUBLE_MIN || bk011_total_RtoL[l] > DOUBLE_MIN || bk101_total_RtoL[l] > DOUBLE_MIN) {
+	    lamda = (bk110_total_RtoL[l] + bk011_total_RtoL[l] + bk101_total_RtoL[l]) / (bk110_total_RtoL[l] + bk011_total_RtoL[l] + bk101_total_RtoL[l] + 1);
+	    prob[l] = lamda * (bk101_occur_RtoL[l] + bk110_occur_RtoL[l] + bk011_occur_RtoL[l]) / (bk101_total_RtoL[l] + bk110_total_RtoL[l] +  bk011_total_RtoL[l]);
+	    if (bk100_total_RtoL[l] > DOUBLE_MIN || bk010_total_RtoL[l] > DOUBLE_MIN || bk001_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk100_occur_RtoL[l] + bk010_occur_RtoL[l] + bk001_occur_RtoL[l]) / (bk100_total_RtoL[l] + bk010_total_RtoL[l] +  bk001_total_RtoL[l]);
 	    }
-	    if (bk000_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_RtoL[k] / bk000_total_RtoL[k]);
+	    if (bk000_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_RtoL[l] / bk000_total_RtoL[l]);
 	    }
-	    prob[k] *= prob_bk_weight_1;
+	    prob[l] *= prob_bk_weight_1;
 	}
-	else if (bk100_total_RtoL[k] > DOUBLE_MIN || bk010_total_RtoL[k] > DOUBLE_MIN || bk001_total_RtoL[k] > DOUBLE_MIN) {
-	    lamda = (bk100_total_RtoL[k] + bk010_total_RtoL[k] + bk001_total_RtoL[k]) / (bk100_total_RtoL[k] + bk010_total_RtoL[k] + bk001_total_RtoL[k] + 1);
-	    prob[k] = lamda * (bk100_occur_RtoL[k] + bk010_occur_RtoL[k] + bk001_occur_RtoL[k]) / (bk100_total_RtoL[k] + bk010_total_RtoL[k] +  bk001_total_RtoL[k]);
-	    if (bk000_total_RtoL[k] > DOUBLE_MIN) {
-		prob[k] += (1 - lamda) * (bk000_occur_RtoL[k] / bk000_total_RtoL[k]);
+	else if (bk100_total_RtoL[l] > DOUBLE_MIN || bk010_total_RtoL[l] > DOUBLE_MIN || bk001_total_RtoL[l] > DOUBLE_MIN) {
+	    lamda = (bk100_total_RtoL[l] + bk010_total_RtoL[l] + bk001_total_RtoL[l]) / (bk100_total_RtoL[l] + bk010_total_RtoL[l] + bk001_total_RtoL[l] + 1);
+	    prob[l] = lamda * (bk100_occur_RtoL[l] + bk010_occur_RtoL[l] + bk001_occur_RtoL[l]) / (bk100_total_RtoL[l] + bk010_total_RtoL[l] +  bk001_total_RtoL[l]);
+	    if (bk000_total_RtoL[l] > DOUBLE_MIN) {
+		prob[l] += (1 - lamda) * (bk000_occur_RtoL[l] / bk000_total_RtoL[l]);
 	    }
-	    prob[k] *= prob_bk_weight_2;
+	    prob[l] *= prob_bk_weight_2;
 	}
-	else if (bk000_total_RtoL[k] > DOUBLE_MIN) {
-	    prob[k] = prob_bk_weight_2 * (bk000_occur_RtoL[k] / bk000_total_RtoL[k]);
+	else if (bk000_total_RtoL[l] > DOUBLE_MIN) {
+	    prob[l] = prob_bk_weight_2 * (bk000_occur_RtoL[l] / bk000_total_RtoL[l]);
 	}
     }
 
