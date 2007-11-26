@@ -43,6 +43,7 @@ CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
 double          Chi_root_prob_matrix[BNST_MAX];
 int             Chi_root;
 CHI_DPND_STRU   Chi_dpnd_stru_matrix[BNST_MAX][BNST_MAX][BNST_MAX];
+CHI_ARG         Chi_arg_matrix[BNST_MAX][BNST_MAX];
 
 char		**Options;
 int 		OptAnalysis;
@@ -1182,6 +1183,9 @@ extern int	EX_match_subject;
     }
     else if (Language == CHINESE && OptChiGenerative) {
 	calc_chi_dpnd_matrix_forProbModel(sp);
+//	calc_chi_dpnd_stru_prob(sp);
+	calc_chi_arg_prob(sp);
+//	normalize_all_prob(sp);
     }
 
     /* 依存可能性計算 */

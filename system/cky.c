@@ -27,6 +27,7 @@ typedef struct _CKY {
     CKYptr	next;		/* pointer to the next CKY data at this point */
 } CKY;
 
+#define DOUBLE_MINUS    -999.0
 #define PARA_THRESHOLD	0
 #define	CKY_TABLE_MAX	1000000 
 //#define	CKY_TABLE_MAX	15000000 
@@ -273,6 +274,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double weight_dpnd, weight_pos, weight_comma, weight_root, weight_pa;
     double pos_prob_thre_high, pos_prob_thre_low;
     int pos_occur_thre_high, pos_occur_thre_low;
+    int arg_num;
 
     chi_pa_thre = 0.00005;
 
@@ -547,11 +549,31 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    if (Language == CHINESE) {
 		if (OptChiGenerative) {
 		    prob = 0;
+		    arg_num = 1;
+		   
 		    if (cky_ptr->direction == LtoR) {
 			prob = log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]);
 			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR);
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob);
+			}
+
+			/* get argument number */
+			tmp_cky_ptr = cky_ptr->right;
+			while (tmp_cky_ptr && tmp_cky_ptr->direction == LtoR) {
+			    if (tmp_cky_ptr->left && !strcmp(tmp_cky_ptr->left->b_ptr->head_ptr->Pos, cky_ptr->left->b_ptr->head_ptr->Pos)) {
+				arg_num++;
+			    }
+			    tmp_cky_ptr = tmp_cky_ptr->right;
+			}
+			if (Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_L[arg_num - 1] > DOUBLE_MIN) {
+			  prob += log(Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_L[arg_num - 1]);
+			}
+			else {
+			  prob += DOUBLE_MINUS;
+			}
+			if (OptDisplay == OPT_DEBUG) {
+			  printf("(dpnd:%d,%d arg:%d)%.6f=>", g_ptr->num, d_ptr->num, arg_num, Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_L[arg_num - 1]);
 			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
@@ -560,12 +582,189 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			if (OptDisplay == OPT_DEBUG) {
 			    printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL, prob);
 			}
+
+			/* get argument number */
+			tmp_cky_ptr = cky_ptr->left;
+			while (tmp_cky_ptr && tmp_cky_ptr->direction == RtoL) {
+			    if (tmp_cky_ptr->right && !strcmp(tmp_cky_ptr->right->b_ptr->head_ptr->Pos, cky_ptr->right->b_ptr->head_ptr->Pos)) {
+				arg_num++;
+			    }
+			    tmp_cky_ptr = tmp_cky_ptr->left;
+			}
+			if (Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_R[arg_num - 1] > DOUBLE_MIN) {
+			  prob += log(Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_R[arg_num - 1]);
+			}
+			else {
+			  prob += DOUBLE_MINUS;
+			}
+			if (OptDisplay == OPT_DEBUG) {
+			  printf("(dpnd:%d,%d arg:%d)%.6f=>", g_ptr->num, d_ptr->num, arg_num, Chi_arg_matrix[g_ptr->num][d_ptr->num].prob_arg_R[arg_num - 1]);
+			}
 		    }
+
+/* 		    if (cky_ptr->direction == LtoR) { */
+/* 			if ((!check_feature(d_ptr->f, "P") || */
+/* 			     (!check_feature(g_ptr->f, "VV") && */
+/* 			      !check_feature(g_ptr->f, "VA") && */
+/* 			      !check_feature(g_ptr->f, "VC") && */
+/* 			      !check_feature(g_ptr->f, "VE"))) && */
+/* 			    (!check_feature(g_ptr->f, "P") || */
+/* 			     (!check_feature(d_ptr->f, "VV") && */
+/* 			      !check_feature(d_ptr->f, "VA") && */
+/* 			      !check_feature(d_ptr->f, "VC") && */
+/* 			      !check_feature(d_ptr->f, "VE")))) { */
+/* 			    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]); */
+/* 			    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR); */
+/* 			    if (OptDisplay == OPT_DEBUG) { */
+/* 				printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob); */
+/* 			    } */
+/* 			} */
+/* 			else { */
+/* 			    // add the prob between structure V-P-N */
+/* 			    tmp_cky_ptr = cky_ptr->right; */
+/* 			    tmp_child_ptr = cky_ptr->left; */
+/* 			    if (check_feature(tmp_child_ptr->b_ptr->f, "P") && */
+/* 				(check_feature(tmp_cky_ptr->b_ptr->f, "VV") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VA") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VC") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VE"))) { */
+/* 				if (tmp_child_ptr->right != NULL) { */
+/* 				    /\* right *\/ */
+/* 				    if (Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_vpn_LtoR > DOUBLE_MIN && */
+/* 					Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_vpn_LtoR); */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_dis_comma_vpn_LtoR); */
+/* 				    } */
+/* 				    else { */
+/* 					prob += DOUBLE_MINUS; */
+/* 				    } */
+
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("vpn_stru:%.16f, %.16f=>%.16f=>", Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_vpn_LtoR, Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num][tmp_cky_ptr->b_ptr->num].prob_dis_comma_vpn_LtoR, prob); */
+/* 				    } */
+/* 				} */
+/* 				else { */
+/* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]); */
+/* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR); */
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob); */
+/* 				    }		 */
+/* 				} */
+/* 			    } */
+/* 			    else if (check_feature(tmp_cky_ptr->b_ptr->f, "P") && */
+/* 				     (check_feature(tmp_child_ptr->b_ptr->f, "VV") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VA") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VC") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VE"))) { */
+/* 				if (tmp_cky_ptr->right != NULL) { */
+/* 				    /\* right *\/ */
+/* 				    if (Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_vpn_LtoR > DOUBLE_MIN && */
+/* 					Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_vpn_LtoR); */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_dis_comma_vpn_LtoR); */
+/* 				    } */
+/* 				    else { */
+/* 					prob += DOUBLE_MINUS; */
+/* 				    } */
+
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("vpn_stru:%.16f, %.16f=>%.16f=>", Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_vpn_LtoR, Chi_dpnd_stru_matrix[tmp_child_ptr->b_ptr->num][tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num].prob_dis_comma_vpn_LtoR, prob); */
+/* 				    } */
+/* 				} */
+/* 				else { */
+/* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]); */
+/* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR); */
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob); */
+/* 				    }		 */
+/* 				} */
+/* 			    } */
+/* 			} */
+/* 		    } */
+/* 		    else if (cky_ptr->direction == RtoL) { */
+/* 			if ((!check_feature(d_ptr->f, "P") || */
+/* 			     (!check_feature(g_ptr->f, "VV") && */
+/* 			      !check_feature(g_ptr->f, "VA") && */
+/* 			      !check_feature(g_ptr->f, "VC") && */
+/* 			      !check_feature(g_ptr->f, "VE"))) && */
+/* 			    (!check_feature(g_ptr->f, "P") || */
+/* 			     (!check_feature(d_ptr->f, "VV") && */
+/* 			      !check_feature(d_ptr->f, "VA") && */
+/* 			      !check_feature(d_ptr->f, "VC") && */
+/* 			      !check_feature(d_ptr->f, "VE")))) { */
+/* 			    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0]); */
+/* 			    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL); */
+/* 			    if (OptDisplay == OPT_DEBUG) { */
+/* 				printf("(dpnd:%d,%d prob:%.16f dis_comma:%.16f)%.16f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL, prob); */
+/* 			    } */
+/* 			} */
+/* 			else { */
+/* 			    // add the prob between structure V-P-N */
+/* 			    tmp_cky_ptr = cky_ptr->left; */
+/* 			    tmp_child_ptr = cky_ptr->right; */
+/* 			    if (check_feature(tmp_child_ptr->b_ptr->f, "P") && */
+/* 				(check_feature(tmp_cky_ptr->b_ptr->f, "VV") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VA") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VC") || */
+/* 				 check_feature(tmp_cky_ptr->b_ptr->f, "VE"))) { */
+/* 				if (tmp_child_ptr->right != NULL) { */
+/* 				    /\* right *\/ */
+/* 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn_RtoL > DOUBLE_MIN && */
+/* 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn_RtoL); */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_dis_comma_vpn_RtoL); */
+/* 				    } */
+/* 				    else { */
+/* 					prob += DOUBLE_MINUS; */
+/* 				    } */
+
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("vpn_stru:%.16f, %.16f=>%.16f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_vpn_RtoL, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_child_ptr->b_ptr->num][tmp_child_ptr->right->b_ptr->num].prob_dis_comma_vpn_RtoL, prob); */
+/* 				    } */
+/* 				} */
+/* 				else { */
+/* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0]); */
+/* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR); */
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR, prob); */
+/* 				    }		 */
+/* 				} */
+/* 			    } */
+/* 			    else if (check_feature(tmp_cky_ptr->b_ptr->f, "P") && */
+/* 				     (check_feature(tmp_child_ptr->b_ptr->f, "VV") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VA") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VC") || */
+/* 				      check_feature(tmp_child_ptr->b_ptr->f, "VE"))) { */
+/* 				if (tmp_cky_ptr->right != NULL) { */
+/* 				    /\* right *\/ */
+/* 				    if (Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_vpn_RtoL > DOUBLE_MIN && */
+/* 					Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_vpn_RtoL); */
+/* 					prob += log(Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_dis_comma_vpn_RtoL); */
+/* 				    } */
+/* 				    else { */
+/* 					prob += DOUBLE_MINUS; */
+/* 				    } */
+
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("vpn_stru:%.16f, %.16f=>%.16f=>", Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_vpn_RtoL, Chi_dpnd_stru_matrix[tmp_cky_ptr->b_ptr->num][tmp_cky_ptr->right->b_ptr->num][tmp_child_ptr->b_ptr->num].prob_dis_comma_vpn_RtoL, prob); */
+/* 				    } */
+/* 				} */
+/* 				else { */
+/* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0]); */
+/* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR); */
+/* 				    if (OptDisplay == OPT_DEBUG) { */
+/* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR, prob); */
+/* 				    }		 */
+/* 				} */
+/* 			    } */
+/* 			} */
+/* 		    } */
 
 		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num - 1) {
 			prob += log(Chi_root_prob_matrix[g_ptr->num]);
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(root:%.6f)%.6f=>", Chi_root_prob_matrix[g_ptr->num], prob);
+			    printf("(root:%.16f)%.16f=>", Chi_root_prob_matrix[g_ptr->num], prob);
 			}
 		    }
 
