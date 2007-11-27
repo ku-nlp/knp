@@ -335,7 +335,6 @@ extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp);
-extern void normalize_all_prob(SENTENCE_DATA *sp);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);

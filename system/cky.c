@@ -602,6 +602,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		    }
 
+/* 		    /\* use stru *\/ */
 /* 		    if (cky_ptr->direction == LtoR) { */
 /* 			if ((!check_feature(d_ptr->f, "P") || */
 /* 			     (!check_feature(g_ptr->f, "VV") && */
@@ -648,7 +649,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR); */
 /* 				    if (OptDisplay == OPT_DEBUG) { */
 /* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob); */
-/* 				    }		 */
+/* 				    } */
 /* 				} */
 /* 			    } */
 /* 			    else if (check_feature(tmp_cky_ptr->b_ptr->f, "P") && */
@@ -676,7 +677,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 				    prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR); */
 /* 				    if (OptDisplay == OPT_DEBUG) { */
 /* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob); */
-/* 				    }		 */
+/* 				    } */
 /* 				} */
 /* 			    } */
 /* 			} */
@@ -727,7 +728,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR); */
 /* 				    if (OptDisplay == OPT_DEBUG) { */
 /* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR, prob); */
-/* 				    }		 */
+/* 				    } */
 /* 				} */
 /* 			    } */
 /* 			    else if (check_feature(tmp_cky_ptr->b_ptr->f, "P") && */
@@ -755,7 +756,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 /* 				    prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR); */
 /* 				    if (OptDisplay == OPT_DEBUG) { */
 /* 					printf("(dpnd(%d,%d) prob:%.16f dis_comma:%.16f)%.16f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_LtoR, prob); */
-/* 				    }		 */
+/* 				    } */
 /* 				} */
 /* 			    } */
 /* 			} */

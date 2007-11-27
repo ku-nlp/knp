@@ -1185,7 +1185,6 @@ extern int	EX_match_subject;
 	calc_chi_dpnd_matrix_forProbModel(sp);
 //	calc_chi_dpnd_stru_prob(sp);
 	calc_chi_arg_prob(sp);
-//	normalize_all_prob(sp);
     }
 
     /* 依存可能性計算 */
