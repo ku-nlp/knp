@@ -62,6 +62,7 @@ extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;
 extern int		OptEllipsis;
+extern int		OptGeneralCF;
 extern int		OptCorefer;
 extern int 		OptInput;
 extern int 		OptExpress;

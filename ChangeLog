@@ -1,3 +1,8 @@
+2007-11-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	固有表現(-cf-ne)、カテゴリ(-cf-category)を用いた格解析に対応	
+
 2007-11-26  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:

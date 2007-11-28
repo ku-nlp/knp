@@ -49,6 +49,7 @@ char		**Options;
 int 		OptAnalysis;
 int		OptCKY;
 int		OptEllipsis;
+int             OptGeneralCF;
 int		OptCorefer;
 int 		OptInput;
 int 		OptExpress;
@@ -182,6 +183,7 @@ extern int	EX_match_subject;
     OptAnalysis = OPT_CASE;
     OptCKY = TRUE;
     OptEllipsis = 0;
+    OptGeneralCF = 0;
     OptCorefer = 0;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
@@ -300,6 +302,12 @@ extern int	EX_match_subject;
 	    OptCaseFlag &= ~OPT_CASE_USE_PROBABILITY;
 	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
 	    OptCKY = FALSE;
+	}
+	else if (str_eq(argv[0], "-cf-ne")) {
+	    OptGeneralCF |= OPT_CF_NE;
+	}
+	else if (str_eq(argv[0], "-cf-category")) {
+	    OptGeneralCF |= OPT_CF_CATEGORY;
 	}
 	else if (str_eq(argv[0], "-no-parafix")) {
 	    OptParaFix = FALSE;

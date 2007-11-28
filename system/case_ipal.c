@@ -1911,7 +1911,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
 		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ||
-		   (OptEllipsis & OPT_ELLIPSIS) ||
+		   (OptEllipsis & OPT_ELLIPSIS) || OptAnaphora ||
 		   (t_ptr->inum == 1 && /* 確率的の場合は、「公開予定だ」のようなときのみ */
 		    check_feature(t_ptr->b_ptr->f, "タグ単位受:-1")))))) { 
 		
@@ -2278,6 +2278,71 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
 }
 
 /*==================================================================*/
+double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE *fp)
+/*==================================================================*/
+{
+    /* カテゴリ-用例確率 
+       P(リンゴ/りんご|人工物-食べ物)*P(人工物-食べ物|食べる:動2:ガ格) */
+
+    int i;
+    double ret = 0, prob;
+    char category[SMALL_DATA_LEN], *ex_category, *value, *cp;
+    
+    for (i = 0; i < cfp->gex_num[as2]; i++) {
+	
+	/* 格フレームに含まれているカテゴリ情報を抽出 */
+	if (!strncmp(cfp->gex_list[as2][i], "CT", 2)) {
+	    cp = cfp->gex_list[as2][i] + 3;
+	    strcpy(category, cp);
+	    cp = category;
+	    if (cp = strchr(cp, '>')) *cp = '\0';
+
+	    /* 該当するカテゴリが対象の語のfeatureに含まれていた場合 */
+	    if (check_category(fp, category)) {
+		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 2), 
+						  "get_ex_category_probability");
+		sprintf(ex_category, "%s|%s", key, category);
+		
+		if (value = db_get(case_db, ex_category)) {
+		    if (VerboseLevel >= VERBOSE3) {
+			fprintf(Outfp, ";; (EX-CATEGORY)%s %f %f\n", 
+				ex_category, atof(value), cfp->gex_freq[as2][i]);
+		    }
+		    prob = atof(value) * cfp->gex_freq[as2][i];
+		    if (ret < prob) ret = prob;
+		    free(value);
+		}
+    		free(ex_category);		
+	    }
+	}	    
+    }
+    return ret;
+}
+
+/*==================================================================*/
+double _get_gex_probability(char *key, int as2, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    int i;
+    double ret = 0;
+
+    for (i = 0; i < cfp->gex_num[as2]; i++) {
+	if (!strcmp(key, cfp->gex_list[as2][i])) {
+	    ret = (double)cfp->gex_freq[as2][i];
+	    if (VerboseLevel >= VERBOSE3) {
+		fprintf(Outfp, ";; (GEX) P(%s) = %lf\n", key, ret);
+	    }
+	    return ret/sqrt(cfp->ex_num[as2]);
+	}
+    }
+
+    if (VerboseLevel >= VERBOSE3) {
+	fprintf(Outfp, ";; (GEX) P(%s) = 0\n", key);
+    }
+    return 0;
+}
+
+/*==================================================================*/
 double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
@@ -2406,13 +2471,23 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* 用例確率 P(弁当|食べる:動2,ヲ格)
        格フレームから計算 (cfex.prob) */
 
-    char *key = NULL, *mrph_str;
-    double ret;
+    char *key = NULL, *mrph_str, *cp;
+    double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
 
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    }
+
+    /* 固有表現の場合 */       
+    if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
+	key = malloc_db_buf(strlen(cp) + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
+ 	strcpy(key, cp);
+	*strchr(key + 3, ':') = '\0';
+	if (prob = _get_gex_probability(key, as2, cfp)) {
+	    if (ret < log(prob)) ret = log(prob);
+	}
     }
 
     key = malloc_db_buf(strlen("<補文>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
@@ -2424,7 +2499,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	   cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
     }
     else if (dat_match_sm(as1, cfd, dp, "主体")) {
-	sprintf(key, "<主体>");
+ 	sprintf(key, "<主体>");
     }
     else if (check_feature(dp->f, "時間")) {
 	sprintf(key, "<時間>");
@@ -2435,8 +2510,8 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     if (*key) {
 	/* if (ret = _get_ex_probability(key)) { */
-	if (ret = _get_ex_probability_internal(key, as2, cfp)) {
-	    return log(ret);
+	if (prob = _get_ex_probability_internal(key, as2, cfp)) {
+	    if (ret < log(prob)) ret = log(prob);
 	}
     }
 
@@ -2461,8 +2536,8 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
 
     /* if (ret = _get_ex_probability(key)) { */
-    if (ret = _get_ex_probability_internal(key, as2, cfp)) {
-	ret = log(ret);
+    if (prob = _get_ex_probability_internal(key, as2, cfp)) {
+	if (ret < log(prob)) ret = log(prob);
     }
     /* 代表表記の場合はALTも調べる */
     else if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
@@ -2492,15 +2567,36 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 		    rep_malloc_flag = 0;
 		}
 
-		if (ret = _get_ex_probability_internal(key, as2, cfp)) {
-		    ret = log(ret);
-		    return ret;
+		if (prob = _get_ex_probability_internal(key, as2, cfp)) {
+		    if (ret < log(prob)) ret = log(prob);
 		}
 	    }
 	    fp = fp->next;
 	}
-	ret = FREQ0_ASSINED_SCORE;
     }
+
+    /* 代表表記を用いる場合はカテゴリを参照する */
+    if ((OptGeneralCF & OPT_CF_CATEGORY) && OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
+	if (mrph_str == NULL) {
+	    mrph_str = make_mrph_rn(dp->head_ptr);
+	    rep_malloc_flag = 1;
+	}
+	key = malloc_db_buf(strlen(mrph_str) + 
+			    strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
+	sprintf(key, "%s", mrph_str);
+
+	if (prob = _get_ex_category_probability(key, as2, cfp, dp->head_ptr->f)) {
+	    /* if (ret < log(prob)) printf("%s %f %f ok?\n", key, ret, log(prob)); */
+	    if (ret < log(prob)) ret = log(prob);
+	}
+
+	if (rep_malloc_flag) {
+	    free(mrph_str);
+	    rep_malloc_flag = 0;
+	}
+    }
+
     /* else if (ret = _get_sm_probability(dp, as2, cfp)) { * 意味素にback-off *
 	ret = log(ret);
     } */
@@ -2508,10 +2604,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	     (ret = _get_soto_default_probability(dp, as2, cfp))) {
 	ret = log(ret);
     } */
-    else {
-	ret = FREQ0_ASSINED_SCORE; /* 頻度0用 */
-    }
-
     return ret;
 }
 
