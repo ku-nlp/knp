@@ -403,7 +403,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
      */
 
     int i;
-    char *cp, *pat;
+    char *cp, *pat, buffer[DATA_LEN];
     FEATURE **fpp, *next;
 
     while (*fpp2) {
@@ -462,10 +462,10 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		}
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&µ­²±¸ì×ÃÉÕÍ¿:", strlen("&µ­²±¸ì×ÃÉÕÍ¿:"))) {
-		sprintf(feature_buffer, "%s:%s", 
+		sprintf(buffer, "%s:%s", 
 			(*fpp2)->cp + strlen("&µ­²±¸ì×ÃÉÕÍ¿:"), 
 			((MRPH_DATA *)matched_ptr)->Goi);
-		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), feature_buffer, temp_assign_flag);
+		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), buffer, temp_assign_flag);
 	    }
 	    /* &ÅÁÈÂ:n:FEATURE : FEATURE¤ÎÅÁÈÂ  */
 	    else if (!strncmp((*fpp2)->cp, "&ÅÁÈÂ:", strlen("&ÅÁÈÂ:"))) {
