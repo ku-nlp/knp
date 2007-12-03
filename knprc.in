@@ -18,6 +18,7 @@
 	(kakari_uke 係り受け)
 	(koou 呼応)
 	(bnst_basic 基本句 逆方向 ルールループ先行)
+	(modality 基本句 逆方向 ルールループ先行)
 	(context 基本句 逆方向 ルールループ先行)
 	(case_analysis 基本句 逆方向)
 	(tag_after_dpnd_and_case 基本句-構造決定後 逆方向 ルールループ先行)
