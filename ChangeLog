@@ -1,5 +1,8 @@
 2007-12-03  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* knprc.in:
+	Apply modality.rule to basic phrases.
+
 	* rule/bnst_basic.rule, rule/modality.rule:
 	Improved negative flags (<ÈÝÄêÉ½¸½>) and modalities.
 
