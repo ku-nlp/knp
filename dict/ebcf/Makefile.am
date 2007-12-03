@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = chidpnd.dict
+EXTRA_DIST = chidpnd.dict chidpnd_prob.dict chi_pa.dict chi_dis_comma.dict chidpnd_stru.dict chi_arg.dict
 
 dicdir = $(pkgdatadir)/dict/ebcf
 
@@ -14,9 +14,9 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-nodist_dic_DATA +=  chidpnd.db
+nodist_dic_DATA +=  chidpnd.db chidpnd_prob.db chidpnd_stru.db chi_dis_comma.db chi_arg.db
 
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_spec_pa.db chi_pa.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_pa.db
 
 HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
 
@@ -100,14 +100,6 @@ cfcase.db: cfcase.prob
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-chi_spec_pa.dict:
-	true
-
-chi_spec_pa.db: chi_spec_pa.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
 chi_pa.dict:
 	true
 
@@ -120,6 +112,38 @@ chidpnd.dict:
 	true
 
 chidpnd.db: chidpnd.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chidpnd_prob.dict:
+	true
+
+chidpnd_prob.db: chidpnd_prob.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chi_arg.dict:
+	true
+
+chi_arg.db: chi_arg.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chidpnd_stru.dict:
+	true
+
+chidpnd_stru.db: chidpnd_stru.dict
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+chi_dis_comma.dict:
+	true
+
+chi_dis_comma.db: chi_dis_comma.dict
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
