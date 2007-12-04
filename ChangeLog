@@ -1,4 +1,12 @@
+2007-12-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule:
+	Deleted <否定表現> from 「〜しか〜ない」.
+
 2007-12-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule:
+	Added a rule for <回数> (e.g., 「何度も」).
 
 	* knprc.in:
 	Apply modality.rule to basic phrases.
