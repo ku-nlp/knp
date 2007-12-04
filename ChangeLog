@@ -1,5 +1,8 @@
 2007-12-04  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/bnst_basic.rule, rule/context.rule:
+	Consolidation of adjuncts (<½¤¾þ>).
+
 	* rule/bnst_basic.rule:
 	Deleted <ÈÝÄêÉ½¸½> from ¡Ö¡Á¤·¤«¡Á¤Ê¤¤¡×.
 
