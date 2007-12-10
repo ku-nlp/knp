@@ -72,7 +72,7 @@ int	koou_m_p[BNST_MAX];
 			if (OptDisplay == OPT_DEBUG) 
 			    fprintf(Outfp, "  End %d\n", k);
 		    }
-		    else if (r_ptr->uke_pattern &&
+		    else if (r_ptr->uke_pattern && /* 受け側のパターン: ルールにおける3つ目の項 (startとendの間) */
 			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) != -1 && 
 			     (Language != CHINESE || 
 			      (Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC")))) {
@@ -176,15 +176,16 @@ int	koou_m_p[BNST_MAX];
     else {
 	for (i = 0; i < sp->Bnst_num; i++){
 	    if (koou_m_p[i] == TRUE) {
+		/* i -> f_start .. f_end という呼応 */
 		f_start = -1;
 		f_end = -1;
 		for (j = i; j < sp->Bnst_num; j++){
 		    if (Koou_matrix[i][j] > 0) {
 			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
-			if (Koou_matrix[i][j] == 1) {
-			    f_end = j;
+			if (Koou_matrix[i][j] == 1) { /* end_pattern */
+			    f_end = j; /* (複数ある)呼応内で係りうる最後の文節 */
 			    if (f_start < 0)
-				f_start = j;
+				f_start = j; /* (複数ある)呼応内で係りうる最初の文節 */
 			}
 		    }
 		    else {
@@ -192,8 +193,8 @@ int	koou_m_p[BNST_MAX];
 		    }
 		}
 
-		mask_for(sp, i, f_start, f_end);
-		mask_back(i, f_start);
+		mask_for(sp, i, f_start, f_end); /* 内部(i,f_start)がf_end以降に係るのをマスク */
+		mask_back(i, f_start);  /* 前部[0,i)が(i,f_start)に係るのをマスク */
 	    }
 	}
     }
