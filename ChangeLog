@@ -1,3 +1,8 @@
+2007-12-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c, system/const.h, system/main.c:
+	Added an option that does not generalize agentive words (-no-generalize-agent).
+
 2007-12-04  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_basic.rule, rule/context.rule:
