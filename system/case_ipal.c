@@ -2495,10 +2495,9 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     if (check_feature(dp->f, "補文")) {
 	sprintf(key, "<補文>");
-	/* sprintf(key, "<補文>|%s,%s", 
-	   cfp->cf_id, pp_code_to_kstr(cfp->pp[as2][0])); */
     }
-    else if (dat_match_sm(as1, cfd, dp, "主体")) {
+    else if ((OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* 主体を汎化する場合(default) */
+	     dat_match_sm(as1, cfd, dp, "主体")) {
  	sprintf(key, "<主体>");
     }
     else if (check_feature(dp->f, "時間")) {
