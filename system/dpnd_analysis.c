@@ -1590,11 +1590,8 @@ void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag)
 		(sp->tag_data + merge_to)->length += strlen((t_ptr->mrph_ptr + j)->Goi2);
 	    }
 
-	    /* featureの書き換えは暫定的に停止
-	       assign_cfeature(&((sp->tag_data + i - 1)->f), "タグ吸収");
-	       delete_cfeature(&(t_ptr->mrph_ptr->f), "文節始");
-	       delete_cfeature(&(t_ptr->mrph_ptr->f), "タグ単位始");
-	    */
+	    assign_cfeature(&((sp->tag_data + merge_to)->f), "後処理-基本句マージ", FALSE);
+	    /* <文節始>や<タグ単位始>のfeature消去はしない */
 
 	    if (t_ptr->bnum >= 0) { /* 文節区切りでもあるとき */
 		for (merge_to = -1; t_ptr->b_ptr->num + merge_to >= 0; merge_to--) {
