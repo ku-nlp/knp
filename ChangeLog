@@ -3,6 +3,9 @@
 	* rule/bnst_basic.rule, rule/bnst_type.phrase:
 	Handled adverbial usages of "結果" and "最低限".
 
+	* system/dpnd_analysis.c:
+	Assigned a feature <後処理-基本句マージ> to merged phrases by postprocessing.
+
 2007-12-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/const.h, system/main.c:
