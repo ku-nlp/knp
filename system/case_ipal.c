@@ -2970,7 +2970,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     }
 
     /* 用言 -> 用言 (未使用) */
-    if (0 && RenyouExist && g_pred && d_cf) {
+    if (RenyouExist && g_pred && d_cf) {
 	d_pred = strdup(d_cf->cf_id);
 	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
 
