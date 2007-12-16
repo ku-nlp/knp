@@ -324,6 +324,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-generalize-agent")) {
 	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
 	}
+	else if (str_eq(argv[0], "-generate-from-eos")) {
+	    OptCaseFlag |= OPT_CASE_GENERATE_EOS;
+	}
 	else if (str_eq(argv[0], "-chi-generative")) {
 	     OptChiGenerative = 1;
 	}

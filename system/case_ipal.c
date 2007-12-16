@@ -2969,8 +2969,9 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	g_pred = NULL;
     }
 
-    /* 用言 -> 用言 (未使用) */
-    if (RenyouExist && g_pred && d_cf) {
+    /* 用言 -> 用言 */
+    if (RenyouExist && g_pred && d_cf && 
+	(gp != NULL || OptCaseFlag & OPT_CASE_GENERATE_EOS)) { /* 文末からの生成は-generate-eos(言語モデル用)時のみ */
 	d_pred = strdup(d_cf->cf_id);
 	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
 
