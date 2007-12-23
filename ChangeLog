@@ -1,3 +1,8 @@
+2007-12-23  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/read_data.c, system/extern.h, system/path.h, system/const.h
+	Modify Chinese parsing model: add case structure probability.
+
 2007-12-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/const.h, system/main.c:
