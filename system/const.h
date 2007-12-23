@@ -111,6 +111,9 @@
 #define CHI_CKY_MAX 10 /* number of cky reserved for Chinese for each word pair */
 #define DOUBLE_MIN  0.0000000000000001
 #define MAX_CHI_ARG 6
+#define CHI_TYPE_LEN_MAX 8
+#define CHI_POS_MAX  33
+#define CHI_ARG_NUM_MAX  30
 
 /*====================================================================
 			    SIMILARITY
@@ -527,7 +530,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	37
+#define DICT_MAX	38
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -565,6 +568,7 @@ typedef struct _RuleVector {
 #define CHI_DIS_COMMA_DB        34
 #define CHI_DPND_STRU_DB        35
 #define CHI_ARG_NO_DB           36
+#define CHI_CASE_DB           37
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -587,6 +591,7 @@ typedef struct {
     FEATUREptr	f;
     char 	*SM;				/* 追加 */
     char        Pos[CHI_POS_LEN_MAX+1];    /* pos-tag for Chinese word */
+    char        Type[CHI_TYPE_LEN_MAX+1];    /* type for Chinese word */
 } MRPH_DATA;
 
 typedef struct cf_def *CF_ptr;

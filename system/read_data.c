@@ -858,7 +858,29 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			       rest_buffer);
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
-		strcpy(m_ptr->Pos, Hinshi_str);  
+		strcpy(m_ptr->Pos, Hinshi_str);
+
+		// treat different punc as different type
+		if (!strcmp(Chi_word_type[m_ptr->Hinshi], "punc")) {
+		  if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "¡¤")) {
+		    strcpy(m_ptr->Type, "punc");
+		  }
+		  else if (!strcmp(m_ptr->Goi, "¡§") || !strcmp(m_ptr->Goi, ":")) {
+		    strcpy(m_ptr->Type, "punc");
+		  }
+		  else if (!strcmp(m_ptr->Goi, "¡¢")) {
+		    strcpy(m_ptr->Type, "dunhao");
+		  }
+		  else if (!strcmp(m_ptr->Goi, "¡¨")) {
+		    strcpy(m_ptr->Type, "punc");
+		  }
+		  else {
+		    strcpy(m_ptr->Type, "");
+		  }
+		}
+		else {
+		  strcpy(m_ptr->Type, Chi_word_type[m_ptr->Hinshi]);
+		}
 	    }
 
 	    if (mrph_item == 12) {

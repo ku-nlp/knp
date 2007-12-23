@@ -44,6 +44,7 @@ double          Chi_root_prob_matrix[BNST_MAX];
 int             Chi_root;
 CHI_DPND_STRU   Chi_dpnd_stru_matrix[BNST_MAX][BNST_MAX][BNST_MAX];
 CHI_ARG         Chi_arg_matrix[BNST_MAX][BNST_MAX];
+char            *Chi_word_type[CHI_POS_MAX];
 
 char		**Options;
 int 		OptAnalysis;
@@ -906,6 +907,7 @@ extern int	EX_match_subject;
 
     if (Language == CHINESE) {
 	close_chi_dpnd_db();
+	free_chi_type();
     }
 
     if (OptEllipsis) {
@@ -983,6 +985,7 @@ extern int	EX_match_subject;
     if (Language == CHINESE) {
 	init_hownet();
 	init_chi_dpnd_db();
+	init_chi_type();
     }
 
     init_juman();	/* JUMAN´Ø·¸ */
@@ -1197,8 +1200,8 @@ extern int	EX_match_subject;
     }
     else if (Language == CHINESE && OptChiGenerative) {
 	calc_chi_dpnd_matrix_forProbModel(sp);
-//	calc_chi_dpnd_stru_prob(sp);
-	calc_chi_arg_prob(sp);
+	//	calc_chi_dpnd_stru_prob(sp);
+//	calc_chi_arg_prob(sp);
     }
 
     /* °ÍÂ¸²ÄÇ½À­·×»» */

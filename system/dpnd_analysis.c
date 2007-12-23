@@ -1,8 +1,8 @@
 /*====================================================================
 
-                             依存構造解析
-
-                                            S.Kurohashi 93. 5.31
+                                 依存構造解析
+ 
+                                                S.Kurohashi 93. 5.31
 
        $Id$
 
@@ -20,6 +20,8 @@ DBM_FILE chi_dpnd_stru_db;
 int     CHIDpndStruExist;
 DBM_FILE chi_arg_no_db;
 int     CHIArgNoExist;
+DBM_FILE chi_case_db;
+int     CHICaseExist;
 
 int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
@@ -28,11 +30,12 @@ double giga_weight = 0.3;
 double giga_bk_weight = 0.8;
 double prob_bk_weight_1 = 0.8;
 double prob_bk_weight_2 = 0.5;
+double case_bk_weight = 0.8;
 
 double fprob_LtoR, fprob_RtoL;
 
 /*==================================================================*/
-void assign_dpnd_rule(SENTENCE_DATA *sp)
+             void assign_dpnd_rule(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int 	i, j;
@@ -60,7 +63,7 @@ void assign_dpnd_rule(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void close_chi_dpnd_db()
+                      void close_chi_dpnd_db()
 /*==================================================================*/
 {
     if (!OptChiGenerative) {
@@ -71,11 +74,12 @@ void close_chi_dpnd_db()
 	DB_close(chi_dis_comma_db);
 	DB_close(chi_dpnd_stru_db);
 	DB_close(chi_arg_no_db);
+	DB_close(chi_case_db);
     }
 }
 
 /*==================================================================*/
-void init_chi_dpnd_db()
+                     void init_chi_dpnd_db()
 /*==================================================================*/
 {
     if (!OptChiGenerative) {
@@ -86,7 +90,65 @@ void init_chi_dpnd_db()
 	chi_dis_comma_db = open_dict(CHI_DIS_COMMA_DB, CHI_DIS_COMMA_DB_NAME, &CHIDisCommaExist);
 	chi_dpnd_stru_db = open_dict(CHI_DPND_STRU_DB, CHI_DPND_STRU_DB_NAME, &CHIDpndStruExist);
 	chi_arg_no_db = open_dict(CHI_ARG_NO_DB, CHI_ARG_NO_DB_NAME, &CHIArgNoExist);
+	chi_case_db = open_dict(CHI_CASE_DB, CHI_CASE_DB_NAME, &CHICaseExist);
     }
+}
+
+/*==================================================================*/
+                     void free_chi_type()
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < CHI_POS_MAX; i++) {
+	if (Chi_word_type[i]) {
+	    free(Chi_word_type[i]);
+	    Chi_word_type[i] = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+                     void init_chi_type()
+/*==================================================================*/
+{
+    int i;
+    for (i = 0; i < CHI_POS_MAX; i++) {
+	Chi_word_type[i] = (char *)malloc(sizeof(char)*(CHI_TYPE_LEN_MAX + 1));
+    }
+
+    strcpy(Chi_word_type[0], "adv");
+    strcpy(Chi_word_type[1], "verbMarker");
+    strcpy(Chi_word_type[2], "ba");
+    strcpy(Chi_word_type[3], "coor");
+    strcpy(Chi_word_type[4], "num");
+    strcpy(Chi_word_type[5], "subord");
+    strcpy(Chi_word_type[6], "relDe");
+    strcpy(Chi_word_type[7], "assoDe");
+    strcpy(Chi_word_type[8], "vDe");
+    strcpy(Chi_word_type[9], "vDe");
+    strcpy(Chi_word_type[10], "det");
+    strcpy(Chi_word_type[11], "nounMarker");
+    strcpy(Chi_word_type[12], "foreign");
+    strcpy(Chi_word_type[13], "other");
+    strcpy(Chi_word_type[14], "adj");
+    strcpy(Chi_word_type[15], "lBei");
+    strcpy(Chi_word_type[16], "post");
+    strcpy(Chi_word_type[17], "measure");
+    strcpy(Chi_word_type[18], "particle");
+    strcpy(Chi_word_type[19], "noun");
+    strcpy(Chi_word_type[20], "noun");
+    strcpy(Chi_word_type[21], "tempNoun");
+    strcpy(Chi_word_type[22], "num");
+    strcpy(Chi_word_type[23], "sound");
+    strcpy(Chi_word_type[24], "prep");
+    strcpy(Chi_word_type[25], "noun");
+    strcpy(Chi_word_type[26], "punc");
+    strcpy(Chi_word_type[27], "sBei");
+    strcpy(Chi_word_type[28], "sentMarker");
+    strcpy(Chi_word_type[29], "verb");
+    strcpy(Chi_word_type[30], "isVerb");
+    strcpy(Chi_word_type[31], "haveVerb");
+    strcpy(Chi_word_type[32], "verb");
 }
 
 /* get arg rule for Chinese */
@@ -152,7 +214,7 @@ char* get_chi_dpnd_rule(char *word1, char *pos1, char *word2, char *pos2, int di
 }
 
 /*==================================================================*/
-void calc_dpnd_matrix(SENTENCE_DATA *sp)
+              void calc_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, l, s, value, first_uke_flag;
@@ -877,7 +939,7 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 	fprob_LtoR = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
     }
     else {
-	fprob_LtoR = prob[1] * giga_bk_weight;
+      fprob_LtoR = prob[1];// * giga_bk_weight;
     }
 
     for (k = 0; k < 2; k++) {
@@ -915,7 +977,7 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 	fprob_RtoL = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
     }
     else {
-	fprob_RtoL = prob[1] * giga_bk_weight;
+      fprob_RtoL = prob[1];// * giga_bk_weight;
     }
 
     /* free memory */
@@ -939,7 +1001,7 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 
 /* calculate root probability */
 /*==================================================================*/
-double get_root_prob(SENTENCE_DATA *sp, int root)
+         double get_root_prob(SENTENCE_DATA *sp, int root)
 /*==================================================================*/
 {
     int i, j, k;
@@ -947,7 +1009,7 @@ double get_root_prob(SENTENCE_DATA *sp, int root)
     char *probLtoR, *probRtoL, *occurLtoR, *occurRtoL, *dpnd, *direction, *rule;
     char *curRule[CHI_DPND_TYPE_MAX];
     int count;
-    double root_prob = 0.0;
+    double prob[2], root_prob;
     double lex_root_prob[2], pos_root_prob[2], lex_root_occur[2], pos_root_occur[2], lamda_root;
     BNST_DATA *k_ptr = sp->bnst_data + root;
 
@@ -963,6 +1025,8 @@ double get_root_prob(SENTENCE_DATA *sp, int root)
     pos_root_prob[1] = 0;
     pos_root_occur[0] = 0;
     pos_root_occur[1] = 0;
+    prob[0] = 0.0;
+    prob[1] = 0.0;
 	
     /* get root rule */
     lex_rule = get_chi_dpnd_rule(k_ptr->head_ptr->Goi, k_ptr->head_ptr->Pos, "ROOT", "", 0, 0);
@@ -1041,17 +1105,20 @@ double get_root_prob(SENTENCE_DATA *sp, int root)
     }
 
     /* calculate root prob */
-    lamda_root = 0.7;
+    lamda_root = 0.5;
+    for (k = 0; k < 1; k++) {
+	if (lex_root_prob[k] > DOUBLE_MIN && pos_root_prob[k] > DOUBLE_MIN) {
+	    prob[k] = (lamda_root * lex_root_prob[k] / lex_root_occur[k]) + ((1 - lamda_root) * (pos_root_prob[k] / pos_root_occur[k]));
+	}
+	else if (pos_root_prob[k] > DOUBLE_MIN) {
+	    prob[k] = (1 - lamda_root) * (pos_root_prob[k] / pos_root_occur[k]);
+	}
+	else {
+	    prob[k] = 0;
+	}
+    }
 
-    if (lex_rule != NULL && pos_rule != NULL) {
-	root_prob = (lamda_root * lex_root_prob[0] / lex_root_occur[0]) + ((1 - lamda_root) * (pos_root_prob[0] / pos_root_occur[0]));
-    }
-    else if (pos_rule != NULL) {
-	root_prob = (1 - lamda_root) * (pos_root_prob[0] / pos_root_occur[0]);
-    }
-    else {
-	root_prob = 0;
-    }
+    root_prob = prob[0];
 
     /* free memory */
     if (lex_rule) {
@@ -1068,7 +1135,7 @@ double get_root_prob(SENTENCE_DATA *sp, int root)
 
 /* calculate dpnd probability & root probability for Chinese probabilistic model */
 /*==================================================================*/
-void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp)
+    void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k;
@@ -1274,7 +1341,7 @@ void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-int relax_dpnd_matrix(SENTENCE_DATA *sp)
+           int relax_dpnd_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /* 係り先がない場合の緩和
@@ -1395,7 +1462,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
-void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp)
+       void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
     /* 係り受けに関する種々の情報を DPND から BNST_DATA にコピー */
@@ -1416,7 +1483,7 @@ void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp)
 }
 
 /*==================================================================*/
-void dpnd_info_to_tag_raw(SENTENCE_DATA *sp, DPND *dp)
+       void dpnd_info_to_tag_raw(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
     /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
@@ -1528,7 +1595,7 @@ void dpnd_info_to_tag_raw(SENTENCE_DATA *sp, DPND *dp)
 }
 
 /*==================================================================*/
-void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
+         void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
     if (OptInput == OPT_RAW || 
@@ -1553,7 +1620,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 }
 
 /*==================================================================*/
-void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag)
+       void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
     /* タグ単位・文節を後処理して、機能的なタグ単位をマージ
@@ -1652,7 +1719,7 @@ void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag)
 }
 
 /*==================================================================*/
-void undo_tag_bnst_postprocess(SENTENCE_DATA *sp)
+           void undo_tag_bnst_postprocess(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, b_count = 0;
@@ -1676,7 +1743,7 @@ void undo_tag_bnst_postprocess(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void para_postprocess(SENTENCE_DATA *sp)
+              void para_postprocess(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -1695,7 +1762,7 @@ void para_postprocess(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd)
+        void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, j, k, one_score, score, rentai, vacant_slot_num;
@@ -1979,7 +2046,7 @@ void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd)
 }
 
 /*==================================================================*/
-void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
+  void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 /*==================================================================*/
 {
     int i, count = 0, d_possibility = 1;
@@ -2033,7 +2100,7 @@ void count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd, int pos)
 }
 
 /*==================================================================*/
-void call_count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd)
+    void call_count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd)
 /*==================================================================*/
 {
     int i;
@@ -2048,7 +2115,7 @@ void call_count_dpnd_candidates(SENTENCE_DATA *sp, DPND *dpnd)
 }
 
 /*==================================================================*/
-void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
+            void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
 /*==================================================================*/
 {
     int i, count, possibilities[BNST_MAX], default_pos, d_possibility;
@@ -2237,7 +2304,7 @@ void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
 }
 
 /*==================================================================*/
-void when_no_dpnd_struct(SENTENCE_DATA *sp)
+           void when_no_dpnd_struct(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -2256,7 +2323,7 @@ void when_no_dpnd_struct(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-int after_decide_dpnd(SENTENCE_DATA *sp)
+              int after_decide_dpnd(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -2387,7 +2454,7 @@ int after_decide_dpnd(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-int detect_dpnd_case_struct(SENTENCE_DATA *sp)
+            int detect_dpnd_case_struct(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i;
@@ -2431,7 +2498,7 @@ int detect_dpnd_case_struct(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void check_candidates(SENTENCE_DATA *sp)
+            void check_candidates(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
@@ -2458,7 +2525,7 @@ void check_candidates(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void memo_by_program(SENTENCE_DATA *sp)
+              void memo_by_program(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     /*
@@ -2499,7 +2566,7 @@ void memo_by_program(SENTENCE_DATA *sp)
 
 /* get gigaword pa count for Chinese, for cell (i,j), i is the position of argument, j is the position of predicate */
 /*==================================================================*/
-void calc_gigaword_pa_matrix(SENTENCE_DATA *sp)
+            void calc_gigaword_pa_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, dis;
@@ -2558,7 +2625,8 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 {
     int verb, prep, noun;
     int l, count;
-    char *rule, *cat_rule, *occurLtoR, *occurRtoL, *totalLtoR, *totalRtoL, *type, *direction;
+    char *lex_rule, *bk100_rule, *bk010_rule, *bk001_rule, *bk110_rule, *bk101_rule, *bk011_rule, *bk000_rule; 
+    char *cat_rule, *occurLtoR, *occurRtoL, *totalLtoR, *totalRtoL, *type, *direction;
     char *cur_rule[2];
     double lex_occur_LtoR[2], lex_total_LtoR[2], bk100_occur_LtoR[2], bk100_total_LtoR[2], bk010_occur_LtoR[2], bk010_total_LtoR[2], bk001_occur_LtoR[2], bk001_total_LtoR[2], bk110_occur_LtoR[2], bk110_total_LtoR[2], bk101_occur_LtoR[2], bk101_total_LtoR[2], bk011_occur_LtoR[2], bk011_total_LtoR[2], bk000_occur_LtoR[2], bk000_total_LtoR[2];
     double lex_occur_RtoL[2], lex_total_RtoL[2], bk100_occur_RtoL[2], bk100_total_RtoL[2], bk010_occur_RtoL[2], bk010_total_RtoL[2], bk001_occur_RtoL[2], bk001_total_RtoL[2], bk110_occur_RtoL[2], bk110_total_RtoL[2], bk101_occur_RtoL[2], bk101_total_RtoL[2], bk011_occur_RtoL[2], bk011_total_RtoL[2], bk000_occur_RtoL[2], bk000_total_RtoL[2];
@@ -2607,18 +2675,76 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
     }
     
     // read lex rule
-    rule = NULL;
+    lex_rule = NULL;
     if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+	lex_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
     }
     else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+	lex_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
     }
 
-    if (rule != NULL) {
+    // read backoff rule
+    bk100_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk100_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk100_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk010_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk010_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk010_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk001_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk001_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk001_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk110_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk110_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk110_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk101_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk101_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk101_rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk011_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk011_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk011_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    bk000_rule = NULL;
+    if (!strcmp(label, "word")) {
+	bk000_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
+    }
+    else {
+	bk000_rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
+    }
+
+    /* get count */
+    if (lex_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(lex_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2661,19 +2787,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    // read backoff rule
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk100_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk100_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2716,18 +2833,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk010_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk010_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2770,18 +2879,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk001_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk001_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2824,18 +2925,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk110_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk110_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2878,18 +2971,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk101_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk101_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2932,18 +3017,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Goi, (sp->bnst_data+j)->head_ptr->Pos, (sp->bnst_data+k)->head_ptr->Goi, (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk011_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk011_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -2986,18 +3063,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	}
     }
 
-    rule = NULL;
-    if (!strcmp(label, "word")) {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, 0, 0);
-    }
-    else {
-	rule = get_chi_dpnd_stru_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, "XX", (sp->bnst_data+j)->head_ptr->Pos, "XX", (sp->bnst_data+k)->head_ptr->Pos, disVP, commaVP);
-    }
-
-    if (rule != NULL) {
+    if (bk000_rule != NULL) {
 	count = 0;
 	cat_rule = NULL;
-	cat_rule = strtok(rule, ":");
+	cat_rule = strtok(bk000_rule, ":");
 	while (cat_rule) {
 	    cur_rule[count] = malloc(strlen(cat_rule) + 1);
 	    strcpy(cur_rule[count], cat_rule);
@@ -3137,14 +3206,42 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 	fprob_RtoL = prob[1] * giga_bk_weight;
     }
 
-    if (rule) {
-	free(rule);
-	rule = NULL;
+    if (lex_rule) {
+	free(lex_rule);
+	lex_rule = NULL;
+    }
+    if (bk100_rule) {
+	free(bk100_rule);
+	bk100_rule = NULL;
+    }
+    if (bk010_rule) {
+	free(bk010_rule);
+	bk010_rule = NULL;
+    }
+    if (bk001_rule) {
+	free(bk001_rule);
+	bk001_rule = NULL;
+    }
+    if (bk101_rule) {
+	free(bk101_rule);
+	bk101_rule = NULL;
+    }
+    if (bk110_rule) {
+	free(bk110_rule);
+	bk110_rule = NULL;
+    }
+    if (bk011_rule) {
+	free(bk011_rule);
+	bk011_rule = NULL;
+    }
+    if (bk000_rule) {
+	free(bk000_rule);
+	bk000_rule = NULL;
     }
 }
 
 /*==================================================================*/
-void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
+            void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, l;
@@ -3499,15 +3596,17 @@ void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 	     check_feature((sp->bnst_data + i)->f, "VE"))) {
 	    total_word_prob = 0.0;
 	    for (j = 0; j < sp->Bnst_num; j++) {
-		for (k = j + 1; k < sp->Bnst_num; k++) {
-		    if (i < j) {
-			if (Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL > DOUBLE_MIN) {
-			    total_word_prob += Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL;
+		if (check_feature((sp->bnst_data + j)->f, "P")) {
+		    for (k = j + 1; k < sp->Bnst_num; k++) {
+			if (i < j) {
+			    if (Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL > DOUBLE_MIN) {
+				total_word_prob += Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL;
+			    }
 			}
-		    }
-		    else if (i > k) {
-			if (Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR > DOUBLE_MIN) {
-			    total_word_prob += Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR;
+			else if (i > k) {
+			    if (Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR > DOUBLE_MIN) {
+				total_word_prob += Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR;
+			    }
 			}
 		    }
 		}
@@ -3522,12 +3621,14 @@ void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 		 check_feature((sp->bnst_data + i)->f, "VC") ||
 		 check_feature((sp->bnst_data + i)->f, "VE"))) {
 		for (j = 0; j < sp->Bnst_num; j++) {
-		    for (k = j + 1; k < sp->Bnst_num; k++) {
-			if (i < j) {
-			    Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL /= total_word_prob;
-			}
-			else if (i > k) {
-			    Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR /= total_word_prob;
+		    if (check_feature((sp->bnst_data + j)->f, "P")) {
+			for (k = j + 1; k < sp->Bnst_num; k++) {
+			    if (i < j) {
+				Chi_dpnd_stru_matrix[i][j][k].prob_vpn_RtoL /= total_word_prob;
+			    }
+			    else if (i > k) {
+				Chi_dpnd_stru_matrix[j][k][i].prob_vpn_LtoR /= total_word_prob;
+			    }
 			}
 		    }
 		}
@@ -3537,14 +3638,19 @@ void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 	    for (k = i + 1; k < sp->Bnst_num; k++) {
 		total_word_prob = 0.0;
 		for (j = 0; j < sp->Bnst_num; j++) {
-		    if (j > k) {
-			if (Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL > DOUBLE_MIN) {
-			    total_word_prob += Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL;
+		    if ((check_feature((sp->bnst_data + j)->f, "VV") ||
+			 check_feature((sp->bnst_data + j)->f, "VA") ||
+			 check_feature((sp->bnst_data + j)->f, "VC") ||
+			 check_feature((sp->bnst_data + j)->f, "VE"))) {	    
+			if (j > k) {
+			    if (Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL > DOUBLE_MIN) {
+				total_word_prob += Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL;
+			    }
 			}
-		    }
-		    else if (j < i) {
-			if (Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR > DOUBLE_MIN) {
-			    total_word_prob += Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR;
+			else if (j < i) {
+			    if (Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR > DOUBLE_MIN) {
+				total_word_prob += Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR;
+			    }
 			}
 		    }
 		}
@@ -3555,11 +3661,16 @@ void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 	    }
 
 	    for (j = 0; j < sp->Bnst_num; j++) {
-		if (j > k) {
-		    Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL /= total_word_prob;
-		}
-		else if (j < i) {
-		    Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR /= total_word_prob;
+		if ((check_feature((sp->bnst_data + j)->f, "VV") ||
+		     check_feature((sp->bnst_data + j)->f, "VA") ||
+		     check_feature((sp->bnst_data + j)->f, "VC") ||
+		     check_feature((sp->bnst_data + j)->f, "VE"))) {	    
+		    if (j > k) {
+			Chi_dpnd_stru_matrix[i][k][j].prob_vpn_RtoL /= total_word_prob;
+		    }
+		    else if (j < i) {
+			Chi_dpnd_stru_matrix[j][i][k].prob_vpn_LtoR /= total_word_prob;
+		    }
 		}
 	    }
 	}
@@ -3567,7 +3678,7 @@ void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp)
 }
 
 /*==================================================================*/
-void calc_chi_arg_prob(SENTENCE_DATA *sp)
+             void calc_chi_arg_prob(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, k, m;
@@ -3583,9 +3694,9 @@ void calc_chi_arg_prob(SENTENCE_DATA *sp)
     for (i = 0; i < sp->Bnst_num; i++) {
 	/* calc probability */
 	for (j = 0; j < sp->Bnst_num; j++) {
-	    for (m = 0; m < MAX_CHI_ARG; m++) {
+	    for (m = 0; m <= MAX_CHI_ARG; m++) {
 		Chi_arg_matrix[i][j].prob_arg_L[m] = 0.0;
-		Chi_arg_matrix[i][j].prob_arg_R [m]= 0.0;
+		Chi_arg_matrix[i][j].prob_arg_R[m]= 0.0;
 	    }
 
 	    if (j > i) {
@@ -3622,7 +3733,7 @@ void calc_chi_arg_prob(SENTENCE_DATA *sp)
 		continue;
 	    }
 
-	    for (m = 0; m < MAX_CHI_ARG; m++) {
+	    for (m = 0; m <= MAX_CHI_ARG; m++) {
 		lex_rule = NULL;
 		bk_rule = NULL;
 		lex_occur[0] = 0.0;
@@ -3636,8 +3747,16 @@ void calc_chi_arg_prob(SENTENCE_DATA *sp)
 		prob[0] = 0.0;
 		prob[1] = 0.0;
 
-		lex_rule = get_chi_arg_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Pos, distance, comma, m+1);
-		bk_rule = get_chi_arg_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Pos, distance, comma, m+1);
+		if (!check_feature((sp->bnst_data+i)->f, "VV") &&
+		    !check_feature((sp->bnst_data+i)->f, "VA") &&
+		    !check_feature((sp->bnst_data+i)->f, "VC") &&
+		    !check_feature((sp->bnst_data+i)->f, "VE") &&
+		    m == 0) {
+		    continue;
+		}
+
+		lex_rule = get_chi_arg_rule((sp->bnst_data+i)->head_ptr->Goi, (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Pos, distance, comma, m);
+		bk_rule = get_chi_arg_rule("XX", (sp->bnst_data+i)->head_ptr->Pos, (sp->bnst_data+j)->head_ptr->Pos, distance, comma, m);
 
 		if (lex_rule != NULL) {
 		    count = 0;
@@ -3711,6 +3830,16 @@ void calc_chi_arg_prob(SENTENCE_DATA *sp)
 		    }
 		}
 
+/* 		/\* remove the pair that only appears once in gigaword *\/ */
+/* 		if (lex_occur[1] == 0) { */
+/* 		    lex_occur[1] = 0; */
+/* 		    lex_total[1] = 0; */
+/* 		} */
+/* 		if (bk_occur[1] == 0) { */
+/* 		    bk_occur[1] = 0; */
+/* 		    bk_total[1] = 0; */
+/* 		} */
+
 		for (k = 0; k < 2; k++) {
 		    prob[k] = 0.0;
 		    if (lex_occur[k] > DOUBLE_MIN) {
@@ -3750,6 +3879,245 @@ void calc_chi_arg_prob(SENTENCE_DATA *sp)
     }
 }
 
+/*==================================================================*/
+double get_case_prob(SENTENCE_DATA *sp, int head, int *left_arg, int left_arg_num, int *right_arg, int right_arg_num)
+/*==================================================================*/
+{
+    int i, j, k;
+    double case_prob = 0.0;
+    char *lex_key, *bk_key; 
+    char *left_arg_key, *right_arg_key;
+    char *tmp_key;
+    int left_arg_len = 0, right_arg_len = 0;
+    char *lex_rule, *bk_rule; 
+    double lex_occur[2], lex_total[2], bk_occur[2], bk_total[2];
+    double lamda;
+    double prob[2];
+    char *rule, *occur, *total, *type;
+    char *curRule[2];
+    int count;
+
+    //fprintf(stderr, "head:%d\nleft_arg: ", head);
+
+    if (OptChiGenerative && CHICaseExist == FALSE) {
+	return case_prob;
+    }
+
+    if (left_arg_num >= CHI_ARG_NUM_MAX || right_arg_num >= CHI_ARG_NUM_MAX) {
+     	fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+	return case_prob;
+    }
+
+    if (left_arg_num > 0) {
+	for (i = 0; i < left_arg_num; i++) {
+	    left_arg_len += (strlen((sp->bnst_data+left_arg[i])->head_ptr->Type) + 1);
+	}
+    }
+    else {
+	left_arg_len = 4;
+    }
+
+    left_arg_key = (char *)malloc(sizeof(char) * left_arg_len + 1);
+
+    if (left_arg_num > 0) {
+      for (i = 0; i < left_arg_num; i++) {
+	  //fprintf(stderr, "%d, ", left_arg[i]);
+	    if (i == left_arg_num - 1) {
+		tmp_key = (char *)malloc(sizeof(char) * strlen((sp->bnst_data+left_arg[i])->head_ptr->Type) + 2);
+		sprintf(tmp_key, "%s", (sp->bnst_data+left_arg[i])->head_ptr->Type);
+	    }
+	    else {
+		tmp_key = (char *)malloc(sizeof(char) * strlen((sp->bnst_data+left_arg[i])->head_ptr->Type) + 1);
+		sprintf(tmp_key, "%s_", (sp->bnst_data+left_arg[i])->head_ptr->Type);
+	    }
+	    if (i == 0) {
+	      strcpy(left_arg_key, tmp_key);
+	    }
+	    else {
+	      strcat(left_arg_key, tmp_key);
+	    }
+	    if (tmp_key) {
+		free(tmp_key);
+		tmp_key = NULL;
+	    }
+	}
+    }
+    else {
+	strcpy(left_arg_key, "NULL");
+    }
+    
+    //fprintf(stderr, "\nright_arg: ");
+    if (right_arg_num > 0) {
+      for (i = right_arg_num - 1; i >= 0; i--) {
+	    right_arg_len += (strlen((sp->bnst_data+right_arg[i])->head_ptr->Type) + 1);
+	}
+    }
+    else {
+	right_arg_len = 4;
+    }
+
+    right_arg_key = (char *)malloc(sizeof(char) * right_arg_len + 1);
+
+    if (right_arg_num > 0) {
+      for (i = right_arg_num - 1; i >= 0; i--) {
+	  //fprintf(stderr, "%d, ", right_arg[i]);
+	    if (i == 0) {
+		tmp_key = (char *)malloc(sizeof(char) * strlen((sp->bnst_data+right_arg[i])->head_ptr->Type) + 2);
+		sprintf(tmp_key, "%s", (sp->bnst_data+right_arg[i])->head_ptr->Type);
+	    }
+	    else {
+		tmp_key = (char *)malloc(sizeof(char) * strlen((sp->bnst_data+right_arg[i])->head_ptr->Type) + 1);
+		sprintf(tmp_key, "%s_", (sp->bnst_data+right_arg[i])->head_ptr->Type);
+	    }
+	    if (i == right_arg_num - 1) {
+	      strcpy(right_arg_key, tmp_key);
+	    }
+	    else {
+	      strcat(right_arg_key, tmp_key);
+	    }
+	    if (tmp_key) {
+		free(tmp_key);
+		tmp_key = NULL;
+	    }
+	}
+    }
+    else {
+	strcpy(right_arg_key, "NULL");
+    }
+
+    /* get lex rule */
+    lex_key = malloc_db_buf(left_arg_len + right_arg_len + strlen((sp->bnst_data+head)->head_ptr->Goi) + strlen((sp->bnst_data+head)->head_ptr->Type) + 9);
+    sprintf(lex_key, "(%s_%s)_(%s)_(%s)", (sp->bnst_data+head)->head_ptr->Type, (sp->bnst_data+head)->head_ptr->Goi, left_arg_key, right_arg_key);
+    lex_rule = db_get(chi_case_db, lex_key);
+
+    //fprintf(stderr, "\nlex_key: %s", lex_key);
+    //fprintf(stderr, "\nlex_rule: %s", lex_rule);
+
+    /* get bk rule */
+    bk_key = malloc_db_buf(left_arg_len + right_arg_len + strlen((sp->bnst_data+head)->head_ptr->Type) + 11);
+    sprintf(bk_key, "(%s_XX)_(%s)_(%s)", (sp->bnst_data+head)->head_ptr->Type, left_arg_key, right_arg_key);
+    bk_rule = db_get(chi_case_db, bk_key);
+
+    //fprintf(stderr, "\nbk_key: %s", bk_key);
+    //fprintf(stderr, "\nbk_rule: %s\n", bk_rule);
+
+    if (lex_rule != NULL) {
+	count = 0;
+	rule = NULL;
+	rule = strtok(lex_rule, ":");
+	while (rule) {
+	    curRule[count] = malloc(strlen(rule) + 1);
+	    strcpy(curRule[count], rule);
+	    count++;
+	    rule = NULL;
+	    rule = strtok(NULL, ":");
+	}
+
+	for (k = 0; k < count; k++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(curRule[k], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		lex_occur[0] = atof(occur);
+		lex_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		lex_occur[1] = atof(occur);
+		lex_total[1] = atof(total);
+	    }
+	    if (curRule[k]) {
+		free(curRule[k]);
+		curRule[k] = NULL;
+	    }
+	}
+    }
+
+    if (bk_rule != NULL) {
+	count = 0;
+	rule = NULL;
+	rule = strtok(bk_rule, ":");
+	while (rule) {
+	    curRule[count] = malloc(strlen(rule) + 1);
+	    strcpy(curRule[count], rule);
+	    count++;
+	    rule = NULL;
+	    rule = strtok(NULL, ":");
+	}
+
+	for (k = 0; k < count; k++) {
+	    occur = NULL;
+	    total = NULL;
+	    type = NULL;
+			    
+	    occur = strtok(curRule[k], "_");
+	    total = strtok(NULL, "_");
+	    type = strtok(NULL, "_");
+
+	    if (!strcmp(type, "TRAIN")) {
+		bk_occur[0] = atof(occur);
+		bk_total[0] = atof(total);
+	    }
+	    else if (!strcmp(type, "GIGA")) {
+		bk_occur[1] = atof(occur);
+		bk_total[1] = atof(total);
+	    }
+	    if (curRule[k]) {
+		free(curRule[k]);
+		curRule[k] = NULL;
+	    }
+	}
+    }
+
+    for (k = 0; k < 2; k++) {
+	prob[k] = 0.0;
+	if (lex_occur[k] > DOUBLE_MIN) {
+	    lamda = lex_total[k] / (lex_total[k] + 1);
+	    prob[k] = lamda * (lex_occur[k] / lex_total[k]);
+	    if (bk_total[k] > DOUBLE_MIN) {
+		prob[k] += (1 - lamda) * (bk_occur[k] / bk_total[k]);
+	    }
+	}
+	else if (bk_occur[k] > DOUBLE_MIN) {
+	  prob[k] = case_bk_weight * bk_occur[k] / bk_total[k];
+	}
+    }
+
+    if (prob[0] > DOUBLE_MIN) {
+      case_prob = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+    }
+    else {
+      case_prob = prob[1]; //giga_bk_weight * prob[1];
+    }
+
+    //fprintf(stderr, "prob_ctb: %f, prob_giga: %f ", prob[0], prob[1]);
+    //fprintf(stderr, "prob: %f\n\n", case_prob);
+
+    if (left_arg_key) {
+	free(left_arg_key);
+	left_arg_key = NULL;
+    }
+    if (right_arg_key) {
+	free(right_arg_key);
+	right_arg_key = NULL;
+    }
+    if (lex_rule) {
+	free(lex_rule);
+	lex_rule = NULL;
+    }
+    if (bk_rule) {
+	free(bk_rule);
+	bk_rule = NULL;
+    }
+
+    return case_prob;
+}
+
+
 /*====================================================================
-  END
+                                  END
   ====================================================================*/

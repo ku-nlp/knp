@@ -45,6 +45,7 @@ extern CHI_DPND        Chi_dpnd_matrix[][BNST_MAX];
 extern double          Chi_root_prob_matrix[];
 extern CHI_DPND_STRU   Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX];
 extern CHI_ARG         Chi_arg_matrix[][BNST_MAX];
+extern char            *Chi_word_type[];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
@@ -320,6 +321,8 @@ extern DBM_FILE db_read_open(char *filename);
 /* dpnd_analysis.c */
 extern void init_chi_dpnd_db();
 extern void close_chi_dpnd_db();
+extern void init_chi_type();
+extern void free_chi_type();
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);
@@ -336,6 +339,7 @@ extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp);
+extern double get_case_prob(SENTENCE_DATA *sp, int head, int *left_arg, int left_arg_num, int *right_arg, int right_arg_num);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
