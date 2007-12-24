@@ -163,24 +163,89 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-	       void make_cc_feature(SENTENCE_DATA *sp)
+	   void assign_cc_feature_to_bp(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
-    char *cp;
+    int i, j, merged_rep_size = DATA_LEN;
+    char *cp, *merged_rep;
 
-    /* 最後の<意味有>形態素から正規化代表表記を作成 */
+    /* <意味有>形態素から正規化代表表記、主辞代表表記を作成 */
+
+    merged_rep = (char *)malloc_data(merged_rep_size, "assign_cc_feature_to_bp");
 
     for (i = 0; i < sp->Tag_num; i++) {
-	for (j = (sp->tag_data + i)->mrph_num - 1; j >= 0; j--) {
-	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有")) {
-		if ((cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "正規化代表表記"))) {
-		    assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
+	*merged_rep = '\0';
+	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
+	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") && 
+		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "独立タグ非見出語") && /* 「〜の〜」以外 */
+		(cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "正規化代表表記"))) {
+		if (*merged_rep) {
+		    if (strlen(merged_rep) + strlen(cp + strlen("正規化代表表記:")) + 2 > merged_rep_size) {
+			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_cc_feature_to_bp");
+		    }
+		    strcat(merged_rep, "+");
+		    strcat(merged_rep, cp + strlen("正規化代表表記:"));
 		}
-		break;
+		else {
+		    strcpy(merged_rep, cp);
+		}
 	    }
 	}
+
+	if (*merged_rep) {
+	    assign_cfeature(&((sp->tag_data + i)->f), merged_rep, FALSE); /* 連結代表表記 */
+	}
+
+	if ((cp = check_feature((sp->tag_data + i)->head_ptr->f, "正規化代表表記"))) {
+	    strncpy(cp + strlen("正"), "主辞", strlen("主辞"));
+	    assign_cfeature(&((sp->tag_data + i)->f), cp + strlen("正"), FALSE); /* 主辞代表表記 */
+	    strncpy(cp + strlen("正"), "規化", strlen("規化"));
+	}
     }
+
+    free(merged_rep);
+}
+
+/*==================================================================*/
+	  void assign_cc_feature_to_bnst(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, merged_rep_size = DATA_LEN;
+    char *cp, *merged_rep;
+
+    /* 文節の正規化代表表記を作成 */
+
+    merged_rep = (char *)malloc_data(merged_rep_size, "assign_cc_feature_to_bnst");
+
+    for (i = 0; i < sp->Bnst_num; i++) {
+	*merged_rep = '\0';
+	for (j = 0; j < (sp->bnst_data + i)->tag_num; j++) {
+	    if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "正規化代表表記"))) {
+		if (*merged_rep) {
+		    if (strlen(merged_rep) + strlen(cp + strlen("正規化代表表記:")) + 2 > merged_rep_size) {
+			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "make_cc_feature");
+		    }
+		    strcat(merged_rep, "+");
+		    strcat(merged_rep, cp + strlen("正規化代表表記:"));
+		}
+		else {
+		    strcpy(merged_rep, cp);
+		}
+	    }
+	}
+
+	if (*merged_rep) {
+	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 連結代表表記 */
+	}
+
+	if ((cp = check_feature((sp->bnst_data + i)->head_ptr->f, "正規化代表表記"))) {
+	    strncpy(cp + strlen("正"), "主辞", strlen("主辞"));
+	    assign_cfeature(&((sp->bnst_data + i)->f), cp + strlen("正"), FALSE); /* 主辞代表表記 */
+	    strncpy(cp + strlen("正"), "規化", strlen("規化"));
+	}
+    }
+
+    free(merged_rep);
 }
 
 /*==================================================================*/

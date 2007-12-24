@@ -1156,8 +1156,9 @@ extern int	EX_match_subject;
     else {
 	make_tag_units_pm(sp);
     }
-    make_cc_feature(sp); /* 正規化代表表記を基本句に付与 */
-    make_pred_feature(sp); /* 用言代表表記を基本句に付与 */
+
+    assign_cc_feature_to_bp(sp);   /* 正規化代表表記を基本句に付与 */
+    assign_cc_feature_to_bnst(sp); /* 正規化代表表記を文節に付与 */
 
     /* 固有表現認識結果をタグに付与 */
     if (OptReadNE || OptNE && !OptNEcase && !OptNElearn && OptNEparent) {
@@ -1185,6 +1186,7 @@ extern int	EX_match_subject;
 	OptAnalysis == OPT_CASE2 ||
 	OptUseNCF) {
 	set_caseframes(sp);
+	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
     }
 
     /*この時点の文節情報を表示 */

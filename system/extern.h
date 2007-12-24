@@ -244,7 +244,7 @@ extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, i
 extern int check_examples(char *cp, int cp_len, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, int flag);
-extern void make_pred_feature(SENTENCE_DATA *sp);
+extern void assign_pred_feature_to_bp(SENTENCE_DATA *sp);
 extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
@@ -484,7 +484,8 @@ extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 extern char *get_mrph_rep_from_f(MRPH_DATA *m_ptr, int flag);
 extern int get_mrph_rep_length(char *rep_strt);
 extern char *make_mrph_rn(MRPH_DATA *m_ptr);
-extern void make_cc_rn(SENTENCE_DATA *sp);
+extern void assign_cc_feature_to_bp(SENTENCE_DATA *sp);
+extern void assign_cc_feature_to_bnst(SENTENCE_DATA *sp);
 
 /* read_rule.c */
 extern int case2num(char *cp);

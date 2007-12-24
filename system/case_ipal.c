@@ -1826,7 +1826,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-	      void make_pred_feature(SENTENCE_DATA *sp)
+	  void assign_pred_feature_to_bp(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, pred_merged_rep_size = DATA_LEN;
@@ -1835,7 +1835,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     /* 自立語末尾語を用いて用言代表表記を作成 */
 
-    pred_merged_rep = (char *)malloc_data(pred_merged_rep_size, "make_pred_feature");
+    pred_merged_rep = (char *)malloc_data(pred_merged_rep_size, "assign_pred_feature_to_bp");
 
     for (i = 0; i < sp->Tag_num; i++) {
 	t_ptr = sp->tag_data + i;
@@ -1870,7 +1870,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
 			if (strlen(pred_merged_rep) + strlen(new_pred_string) + 2 > pred_merged_rep_size) {
 			    pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
-								   pred_merged_rep_size *= 2, "make_canonical_pred_string");
+								   pred_merged_rep_size *= 2, "assign_pred_feature_to_bp");
 			}
 			strcat(pred_merged_rep, "?");
 			strcat(pred_merged_rep, new_pred_string);
