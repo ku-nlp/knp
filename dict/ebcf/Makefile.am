@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = chidpnd.dict chidpnd_prob.dict chi_pa.dict chi_dis_comma.dict chidpnd_stru.dict chi_arg.dict
+EXTRA_DIST = chidpnd.dict chi_pa.dict
 
 dicdir = $(pkgdatadir)/dict/ebcf
 
