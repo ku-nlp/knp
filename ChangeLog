@@ -3,6 +3,9 @@
 	* system/case_ipal.c, system/extern.h, system/main.c, system/read_data.c:
 	Output representative names of predicates and case components.
 
+	* system/case_ipal.c, system/extern.h, system/main.c, system/read_data.c:
+	Output representative names of compound nouns.
+
 2007-12-23  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/read_data.c, system/extern.h, system/path.h, system/const.h
