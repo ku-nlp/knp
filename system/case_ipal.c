@@ -1601,6 +1601,29 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 }
 
 /*==================================================================*/
+		char *make_pred_type(TAG_DATA *t_ptr)
+/*==================================================================*/
+{
+    /* 用言タイプをかえす */
+
+    if (t_ptr->voice == VOICE_UNKNOWN) { /* 文末のサ変名詞など */
+	return ":?";
+    }
+    else if (t_ptr->voice & VOICE_SHIEKI) {
+	return ":C";
+    }
+    else if (t_ptr->voice & VOICE_UKEMI) {
+	return ":P";
+    }
+    else if (t_ptr->voice & VOICE_SHIEKI_UKEMI) {
+	return ":PC";
+    }
+    else {
+	return "";
+    }
+}
+
+/*==================================================================*/
 char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, int flag)
 /*==================================================================*/
 {
@@ -1800,6 +1823,69 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     Case_frame_num += f_num;
     return f_num;
+}
+
+/*==================================================================*/
+	      void make_pred_feature(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, pred_merged_rep_size = DATA_LEN;
+    char *pred_string, *new_pred_string, *pred_merged_rep = NULL;
+    TAG_DATA *t_ptr;
+
+    /* 自立語末尾語を用いて用言代表表記を作成 */
+
+    pred_merged_rep = (char *)malloc_data(pred_merged_rep_size, "make_pred_feature");
+
+    for (i = 0; i < sp->Tag_num; i++) {
+	t_ptr = sp->tag_data + i;
+	if (!check_feature(t_ptr->f, "用言") || 
+	    check_feature(t_ptr->f, "格解析なし")) {
+	    continue;
+	}
+
+	pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED);
+	strcat(pred_string, make_pred_type(t_ptr));
+
+	strcpy(pred_merged_rep, "用言代表表記:");
+	strcat(pred_merged_rep, pred_string);
+
+	/* 代表表記が曖昧な用言の場合 */
+	if (check_feature(t_ptr->head_ptr->f, "原形曖昧")) {
+	    FEATURE *fp;
+	    MRPH_DATA m;
+	    char *str;
+
+	    fp = t_ptr->head_ptr->f;
+	    while (fp) {
+		if (!strncmp(fp->cp, "ALT-", 4)) {
+		    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+			   m.Goi2, m.Yomi, m.Goi, 
+			   &m.Hinshi, &m.Bunrui, 
+			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+		    new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED);
+		    /* 代表と異なるもの */
+		    if (strcmp(pred_string, new_pred_string)) {
+			strcat(new_pred_string, make_pred_type(t_ptr));
+
+			if (strlen(pred_merged_rep) + strlen(new_pred_string) + 2 > pred_merged_rep_size) {
+			    pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
+								   pred_merged_rep_size *= 2, "make_canonical_pred_string");
+			}
+			strcat(pred_merged_rep, "?");
+			strcat(pred_merged_rep, new_pred_string);
+		    }
+		    free(new_pred_string);
+		}
+		fp = fp->next;
+	    }
+	}
+
+	free(pred_string);
+	assign_cfeature(&(t_ptr->f), pred_merged_rep, FALSE);
+    }
+
+    free(pred_merged_rep);
 }
 
 /*==================================================================*/

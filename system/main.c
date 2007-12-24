@@ -1156,7 +1156,8 @@ extern int	EX_match_subject;
     else {
 	make_tag_units_pm(sp);
     }
-    supplement_bp_rn(sp); /* <意味有>形態素が代表表記をもっていない場合に付与 */
+    make_cc_feature(sp); /* 正規化代表表記を基本句に付与 */
+    make_pred_feature(sp); /* 用言代表表記を基本句に付与 */
 
     /* 固有表現認識結果をタグに付与 */
     if (OptReadNE || OptNE && !OptNEcase && !OptNElearn && OptNEparent) {

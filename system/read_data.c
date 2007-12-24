@@ -146,25 +146,38 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
-	       void supplement_bp_rn(SENTENCE_DATA *sp)
+		void rn2canonical_rn(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *rn, *buf;
+
+    /* 代表表記をそのまま正規化代表表記に */
+
+    if (rn = get_mrph_rep_from_f(m_ptr, FALSE)) {
+	buf = (char *)malloc_data(strlen("正規化代表表記:") + strlen(rn) + 1, "rn2canonical_rn");
+	strcpy(buf, "正規化代表表記:");
+	strcat(buf, rn);
+	assign_cfeature(&(m_ptr->f), buf, FALSE);
+	free(buf);
+    }
+}
+
+/*==================================================================*/
+	       void make_cc_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j;
-    char *buf, *rep_buf;
+    char *cp;
 
-    /* 「意味有」列に対して疑似代表表記をfeatureとして付与 */
+    /* 最後の<意味有>形態素から正規化代表表記を作成 */
 
     for (i = 0; i < sp->Tag_num; i++) {
-	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
-	    if ((check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") ||
-		 check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "活用語")) &&
-		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "代表表記")) {
-		rep_buf = make_mrph_rn((sp->tag_data + i)->mrph_ptr + j);
-		buf = (char *)malloc_data(strlen(rep_buf) + strlen("疑似代表表記:") + 1, "supplement_bp_rn");
-		sprintf(buf, "疑似代表表記:%s", rep_buf);
-		assign_cfeature(&(((sp->tag_data + i)->mrph_ptr + j)->f), buf, FALSE);
-		free(rep_buf);
-		free(buf);
+	for (j = (sp->tag_data + i)->mrph_num - 1; j >= 0; j--) {
+	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有")) {
+		if ((cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "正規化代表表記"))) {
+		    assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
+		}
+		break;
 	    }
 	}
     }
@@ -180,10 +193,10 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int uniq_flag[HOMO_MAX];		/* 実質的同形異義語なら 1 */
     int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
 					   ルール内形態素パターンに 1 */
-    int rep_length, rep_length2;
+    int rep_length, rep_length2, merged_rep_size = DATA_LEN;
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
-    char fname[SMALL_DATA_LEN2], *cp, *cp2, *rep_strt, *rep_end, *rep_strt2, *rep_end2;
+    char fname[SMALL_DATA_LEN2], *cp, *cp2, *rep_strt, *rep_end, *rep_strt2, *rep_end2, *merged_rep;
 
     /* 処理する最大数を越えていれば、最大数個だけチェックする */
     if (homo_num > HOMO_MAX) {
@@ -299,14 +312,46 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
     }
 
-    rep_strt = get_mrph_rep(m_ptr+pref_mrph);
+    /* 0個目の代表表記 */
+    rep_strt = get_mrph_rep(m_ptr);
     rep_length = get_mrph_rep_length(rep_strt);
 
+    /* 正規化代表表記を作成 */
+    if (rep_length > 0) {
+	merged_rep = (char *)malloc_data(merged_rep_size, "lexical_disambiguation");
+	strcpy(merged_rep, "正規化代表表記:");
+	strncat(merged_rep, rep_strt, rep_length);
+
+	for (i = 1; i < homo_num; i++) {
+	    rep_strt2 = get_mrph_rep(m_ptr + i);
+	    rep_length2 = get_mrph_rep_length(rep_strt2);
+	    if (rep_length > 0 && 
+		(rep_length != rep_length2 || strncmp(rep_strt, rep_strt2, rep_length))) {
+		/* 正規化代表表記に"?"で連結 */
+		if (strlen(merged_rep) + rep_length2 + 2 > merged_rep_size) {
+		    merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "lexical_disambiguation");
+		}
+		strcat(merged_rep, "?");
+		strncat(merged_rep, rep_strt2, rep_length2);
+	    }
+	}
+
+	/* 正規化代表表記を付与 */
+	assign_cfeature(&((m_ptr + pref_mrph)->f), merged_rep, FALSE);
+	free(merged_rep);
+    }
+
+    /* pref_mrph以外の形態素情報をALTで保存する
+       また、それらの意味情報の一部をpref_mrphのfeatureに付与 */
     orig_amb_flag = 0;
     if (check_feature((m_ptr+pref_mrph)->f, "品曖")) {
+	/* pref_mrphの代表表記 */
+	rep_strt = get_mrph_rep(m_ptr + pref_mrph);
+	rep_length = get_mrph_rep_length(rep_strt);
+
 	for (i = 0; i < homo_num; i++) {
 	    if (i != pref_mrph) {
-		/* 代表表記がpref_mrphと異なる場合 */
+		/* 代表表記がpref_mrphと異なる場合、orig_amb_flagを1にする */
 		rep_strt2 = get_mrph_rep(m_ptr+i);
 		rep_length2 = get_mrph_rep_length(rep_strt2);
 		if (rep_length > 0 && 
@@ -314,7 +359,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		    orig_amb_flag = 1;
 		}
 
-		/* もとの形態素情報をfeatureとして保存 */
+		/* 形態素情報をfeature(<ALT-...>)として保存 */
 		assign_feature_alt_mrph(&((m_ptr+pref_mrph)->f), m_ptr + i);
 
 		/* pref_mrph以外の形態素がもつ意味情報をすべて付与しておく */
@@ -805,6 +850,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 		homo_num = 0;
 	    }
+	    else if (sp->Mrph_num > 0) { /* 同形異義語がないときに正規化代表表記を付与 */
+		rn2canonical_rn(m_ptr - 1);
+	    }
 	    return TRUE;
 	}
 
@@ -832,6 +880,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    clear_feature(&((m_ptr+i)->f));
 		}
 		homo_num = 0;
+	    }
+	    else if (sp->Mrph_num > 0) { /* 同形異義語がないときに正規化代表表記を付与 */
+		rn2canonical_rn(m_ptr - 1);
 	    }
 
 	    /* 最大数を越えないようにチェック */
@@ -918,7 +969,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		    imi2feature(imip, m_ptr);
 		}
-		else {
+		else { /* 意味情報がNILのとき */
 		    /* 疑似代表表記を追加する */
 		    rep_buf = make_mrph_rn(m_ptr);			
 		    if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
