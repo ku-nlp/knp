@@ -1,3 +1,8 @@
+2007-12-25  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h
+	Modify Chinese parsing model.
+
 2007-12-24  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/extern.h, system/main.c, system/read_data.c:
