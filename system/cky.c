@@ -583,16 +583,23 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			  if (cky_ptr->left) {
 			    ptr_num = cky_ptr->left->b_ptr->num;
 			    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-			      left_arg[left_arg_num] = ptr_num;
-			      left_arg_num++;
-			      if (left_arg_num > CHI_ARG_NUM_MAX) {
-				fprintf(stderr, ";;; number of arguments exceeded maximum\n");
-				return DOUBLE_MINUS;
-			      }
+			      // merge consequent adv before verb
+			      if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+				  left_arg_num <= 0 ||
+				  strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+				  strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				left_arg[left_arg_num] = ptr_num;
+				left_arg_num++;
+				if (left_arg_num > CHI_ARG_NUM_MAX) {
+				  fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				  return DOUBLE_MINUS;
+				}
 
-			      // check if there is non-noun argument
-			      if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-				noun_arg = 0;
+				// check if there is non-noun argument
+				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+				    strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+				  noun_arg = 0;
+				}
 			      }
 			    }
 			  }
@@ -606,15 +613,25 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			      if (tmp_cky_ptr->left) {
 				ptr_num = tmp_cky_ptr->left->b_ptr->num;
 				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-				  left_arg[left_arg_num] = ptr_num;
-				  left_arg_num++;
-				  if (left_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
-				    return DOUBLE_MINUS;
-				  }
-				  // check if there is non-noun argument
-				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-				    noun_arg = 0;
+				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				    // merge consequent adv before verb
+				    if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+					left_arg_num <= 0 ||
+					strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+					strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				      left_arg[left_arg_num] = ptr_num;
+				      left_arg_num++;
+				      if (left_arg_num > CHI_ARG_NUM_MAX) {
+					fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+					return DOUBLE_MINUS;
+				      }
+				      
+				      // check if there is non-noun argument
+				      if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+					  strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+					noun_arg = 0;
+				      }
+				    }
 				  }
 				}
 			      }
@@ -635,7 +652,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    return DOUBLE_MINUS;
 				  }
 				  // check if there is non-noun argument
-				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+				      strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
 				    noun_arg = 0;
 				  }
 				}
@@ -688,7 +706,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				return DOUBLE_MINUS;
 			      }
 			      // check if there is non-noun argument
-			      if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+			      if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+				  strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
 				noun_arg = 0;
 			      }
 			    }
@@ -710,7 +729,8 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    return DOUBLE_MINUS;
 				  }
 				  // check if there is non-noun argument
-				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+				      strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
 				    noun_arg = 0;
 				  }
 				}
@@ -726,15 +746,22 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			      if (tmp_cky_ptr->left) {
 				ptr_num = tmp_cky_ptr->left->b_ptr->num;
 				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-				  left_arg[left_arg_num] = ptr_num;
-				  left_arg_num++;
-				  if (left_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
-				    return DOUBLE_MINUS;
-				  }
-				  // check if there is non-noun argument
-				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-				    noun_arg = 0;
+				  // merge consequent adv before verb
+				  if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+				      left_arg_num <= 0 ||
+				      strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+				      strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				    left_arg[left_arg_num] = ptr_num;
+				    left_arg_num++;
+				    if (left_arg_num > CHI_ARG_NUM_MAX) {
+				      fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				      return DOUBLE_MINUS;
+				    }
+				    // check if there is non-noun argument
+				    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && 
+					strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
+				      noun_arg = 0;
+				    }
 				  }
 				}
 			      }
@@ -1645,17 +1672,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    *next_pp = cky_ptr;
 						}
 
-						if (OptParaFix) {
-						  if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
-						  }
-						  else {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
-						  }
-						}
-						else {
-						  set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
-						}
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
 
 						next_pp = &(cky_ptr->next);
 					
@@ -1714,17 +1731,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    *next_pp = cky_ptr;
 						}
 
-						if (OptParaFix) {
-						  if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
-						  }
-						  else {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l);
-						  }
-						}
-						else {
-						  set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l);
-						}
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l);
 
 						next_pp = &(cky_ptr->next);
 					
