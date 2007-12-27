@@ -145,8 +145,10 @@ double fprob_LtoR, fprob_RtoL;
     strcpy(Chi_word_type[27], "sBei");
     strcpy(Chi_word_type[28], "sentMarker");
     strcpy(Chi_word_type[29], "verb");
-    strcpy(Chi_word_type[30], "isVerb");
-    strcpy(Chi_word_type[31], "haveVerb");
+    strcpy(Chi_word_type[30], "verb");
+    strcpy(Chi_word_type[31], "verb");
+/*     strcpy(Chi_word_type[30], "isVerb"); */
+/*     strcpy(Chi_word_type[31], "haveVerb"); */
     strcpy(Chi_word_type[32], "verb");
 }
 
@@ -973,10 +975,10 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
     }
 
     if (prob[0] > DOUBLE_MIN) {
-	fprob_LtoR = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+      fprob_LtoR = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
     }
     else {
-      fprob_LtoR = prob[1];// * giga_bk_weight;
+      fprob_LtoR = prob[1];
     }
 
     for (k = 0; k < 2; k++) {
@@ -1010,11 +1012,11 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 	}
     }
 
-    if (prob[0] > DOUBLE_MIN) {
-	fprob_RtoL = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+    if (prob[0] > DOUBLE_MIN) { 
+      fprob_RtoL = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
     }
     else {
-      fprob_RtoL = prob[1];// * giga_bk_weight;
+      fprob_RtoL = prob[1];
     }
 
     /* free memory */
@@ -3837,18 +3839,13 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 	    }
 	}
     }
-
+    
     for (k = 0; k < 2; k++) {
 	prob[k] = 0.0;
 	if (lex_total[k] > DOUBLE_MIN) {
-	  if (bk_total[k] > DOUBLE_MIN) {
-	    lamda = lex_occur[k] / (lex_occur[k] + 1);
-	    prob[k] = lamda * (lex_occur[k] / lex_total[k]);
-	    prob[k] += (1 - lamda) * (bk_occur[k] / bk_total[k]);
-	  }
-	  else {
-	    prob[k] = lex_occur[k] / lex_total[k];
-	  }
+	  lamda = lex_occur[k] / (lex_occur[k] + 1);
+	  prob[k] = lamda * (lex_occur[k] / lex_total[k]);
+	  prob[k] += (1 - lamda) * (bk_occur[k] / bk_total[k]);
 	}
 	else if (bk_total[k] > DOUBLE_MIN) {
 	  lamda = bk_occur[k] / (bk_occur[k] + 1);
@@ -3858,6 +3855,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 
     if (prob[0] > DOUBLE_MIN) {
       if (prob[1] > DOUBLE_MIN) {
+	//	lamda = log(lex_occur[0] + bk_occur[0]) / (log(lex_occur[0] + bk_occur[0]) + 1);
 	lamda_ctb = (lex_occur[0] + bk_occur[0]) / (lex_occur[0] + bk_occur[0] + 1);
 	lamda_giga = (lex_occur[1] + bk_occur[1]) / (lex_occur[1] + bk_occur[1] + 1);
 	lamda = lamda_ctb < lamda_giga ? lamda_ctb/lamda_giga : lamda_giga/lamda_ctb;
@@ -3869,7 +3867,8 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
     }
     else {
       if (prob[1] > DOUBLE_MIN) {
-	lamda = (lex_occur[1] + bk_occur[1]) / (lex_occur[1] + bk_occur[1] + 1);
+	//	lamda = (lex_occur[1] + bk_occur[1]) / (lex_occur[1] + bk_occur[1] + 1);
+	lamda = log(lex_occur[1] + bk_occur[1]) / (log(lex_occur[1] + bk_occur[1]) + 1);
 	case_prob = prob[1] * lamda;
       }
       else {
@@ -3877,7 +3876,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
       }
     }
 
-    //printf("prob_ctb: %f, prob_giga: %f ", prob[0], prob[1]);
+    //printf("prob_ctb: %f, prob_giga: %f, lamda: %f", prob[0], prob[1], lamda);
     //printf("prob: %f\n\n", case_prob);
 
     if (left_arg_key) {
