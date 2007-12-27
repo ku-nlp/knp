@@ -3272,101 +3272,6 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 		    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR = fprob_LtoR;
 		    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL = fprob_RtoL;
 
-/* 		    /\* normalize prob_dis_comma *\/ */
-/* 		    total_LtoR = 0.0; */
-/* 		    total_RtoL = 0.0; */
-/* 		    if (disVP == 1) { */
-/* 			if (commaVP == 0) { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 			else { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 		    } */
-/* 		    else { */
-/* 			if (commaVP == 0) { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 			else { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 		    } */
 		}
 		else if ((check_feature((sp->bnst_data + k)->f, "VV") ||
 			  check_feature((sp->bnst_data + k)->f, "VA") ||
@@ -3433,101 +3338,6 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 		    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR = fprob_LtoR;
 		    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL = fprob_RtoL;
 
-/* 		    /\* normalize prob_dis_comma *\/ */
-/* 		    total_LtoR = 0.0; */
-/* 		    total_RtoL = 0.0; */
-/* 		    if (disVP == 1) { */
-/* 			if (commaVP == 0) { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 			else { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 		    } */
-/* 		    else { */
-/* 			if (commaVP == 0) { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 			else { */
-/* 			    if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN || Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 2, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 0, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				get_chi_dpnd_stru_prob(sp, i, j, k, 1, 1, "dis_comma"); */
-/* 				total_LtoR += fprob_LtoR; */
-/* 				total_RtoL += fprob_RtoL; */
-
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_LtoR + total_LtoR); */
-/* 				} */
-/* 				if (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL > DOUBLE_MIN) { */
-/* 				    Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL /= (Chi_dpnd_stru_matrix[i][j][k].prob_dis_comma_vpn_RtoL + total_RtoL); */
-/* 				} */
-/* 			    } */
-/* 			} */
-/* 		    } */
 		}
 	    }
 	}
@@ -3776,16 +3586,6 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 		    }
 		}
 
-/* 		/\* remove the pair that only appears once in gigaword *\/ */
-/* 		if (lex_occur[1] == 0) { */
-/* 		    lex_occur[1] = 0; */
-/* 		    lex_total[1] = 0; */
-/* 		} */
-/* 		if (bk_occur[1] == 0) { */
-/* 		    bk_occur[1] = 0; */
-/* 		    bk_total[1] = 0; */
-/* 		} */
-
 		for (k = 0; k < 2; k++) {
 		    prob[k] = 0.0;
 		    if (lex_occur[k] > DOUBLE_MIN) {
@@ -3844,8 +3644,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
     int count;
     double lamda_ctb, lamda_giga;
     
-    //printf("\nhead:%d left_arg:", head);
-
+    //printf("\nhead:%d left:", head);
     if (OptChiGenerative && CHICaseExist == FALSE) {
 	return case_prob;
     }
@@ -3899,7 +3698,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 	strcpy(left_arg_key, "NULL");
     }
     
-    //printf(" right_arg:");
+    //printf(" right:");
     if (right_arg_num > 0) {
       for (i = right_arg_num - 1; i >= 0; i--) {
 	if (right_arg[i] == -1) {
@@ -4041,7 +3840,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 
     for (k = 0; k < 2; k++) {
 	prob[k] = 0.0;
-	if (lex_occur[k] > DOUBLE_MIN) {
+	if (lex_total[k] > DOUBLE_MIN) {
 	  if (bk_total[k] > DOUBLE_MIN) {
 	    lamda = lex_occur[k] / (lex_occur[k] + 1);
 	    prob[k] = lamda * (lex_occur[k] / lex_total[k]);
@@ -4051,7 +3850,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 	    prob[k] = lex_occur[k] / lex_total[k];
 	  }
 	}
-	else if (bk_occur[k] > DOUBLE_MIN) {
+	else if (bk_total[k] > DOUBLE_MIN) {
 	  lamda = bk_occur[k] / (bk_occur[k] + 1);
 	  prob[k] = lamda * bk_occur[k] / bk_total[k];
 	}
@@ -4074,7 +3873,7 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 	case_prob = prob[1] * lamda;
       }
       else {
-	case_prob = prob[1];
+	  case_prob = 0;
       }
     }
 

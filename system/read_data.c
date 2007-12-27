@@ -985,7 +985,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    strcpy(m_ptr->Type, "punc");
 		  }
 		  else if (!strcmp(m_ptr->Goi, "¡¢")) {
-		    strcpy(m_ptr->Type, "dunhao");
+		    strcpy(m_ptr->Type, "punc");
 		  }
 		  else if (!strcmp(m_ptr->Goi, "¡¨")) {
 		    strcpy(m_ptr->Type, "punc");
