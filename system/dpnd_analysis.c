@@ -26,8 +26,7 @@ int     CHICaseExist;
 int Possibility;	/* 依存構造の可能性の何番目か */
 static int dpndID = 0;
 
-double giga_weight = 0.3;
-double giga_bk_weight = 0.8;
+double giga_weight = 0.65;
 double prob_bk_weight_1 = 0.8;
 double prob_bk_weight_2 = 0.5;
 
@@ -975,7 +974,7 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
     }
 
     if (prob[0] > DOUBLE_MIN) {
-      fprob_LtoR = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+      fprob_LtoR = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
     }
     else {
       fprob_LtoR = prob[1];
@@ -1013,7 +1012,7 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
     }
 
     if (prob[0] > DOUBLE_MIN) { 
-      fprob_RtoL = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+      fprob_RtoL = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
     }
     else {
       fprob_RtoL = prob[1];
@@ -3100,10 +3099,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
     }
 
     if (prob[0] > DOUBLE_MIN) {
-	fprob_LtoR = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+	fprob_LtoR = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
     }
     else {
-	fprob_LtoR = prob[1] * giga_bk_weight;
+	fprob_LtoR = prob[1];
     }
 
     for (l = 0; l < 2; l++) {
@@ -3148,10 +3147,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
     }
 
     if (prob[0] > DOUBLE_MIN) {
-	fprob_RtoL = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+	fprob_RtoL = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
     }
     else {
-	fprob_RtoL = prob[1] * giga_bk_weight;
+	fprob_RtoL = prob[1];
     }
 
     if (lex_rule) {
@@ -3603,10 +3602,10 @@ void get_chi_dpnd_stru_prob(SENTENCE_DATA *sp, int i, int j, int k, int disVP, i
 		}
 
 		if (prob[0] > DOUBLE_MIN) {
-		    arg_prob = prob[0] * (1 - giga_weight) + prob[1] * giga_weight;
+		    arg_prob = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
 		}
 		else {
-		    arg_prob = giga_bk_weight * prob[1];
+		    arg_prob = prob[1];
 		}
 		if (j > i) {
 		    Chi_arg_matrix[i][j].prob_arg_R[m] = arg_prob;
