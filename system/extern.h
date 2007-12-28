@@ -46,8 +46,6 @@ extern double          Chi_root_prob_matrix[];
 extern CHI_DPND_STRU   Chi_dpnd_stru_matrix[][BNST_MAX][BNST_MAX];
 extern CHI_ARG         Chi_arg_matrix[][BNST_MAX];
 extern char            *Chi_word_type[];
-extern int left_arg[];
-extern int right_arg[];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
@@ -65,6 +63,7 @@ extern char		**Options;
 extern int 		OptAnalysis;
 extern int		OptCKY;
 extern int		OptEllipsis;
+extern int		OptGeneralCF;
 extern int		OptCorefer;
 extern int 		OptInput;
 extern int 		OptExpress;
@@ -341,7 +340,7 @@ extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_stru_prob(SENTENCE_DATA *sp);
-extern double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_arg_num);
+extern double get_case_prob(SENTENCE_DATA *sp, int head, int *left_arg, int left_arg_num, int *right_arg, int right_arg_num);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);

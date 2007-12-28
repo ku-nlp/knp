@@ -3,7 +3,6 @@
 		     KNP (Kurohashi-Nagao Parser)
 
     $Id$
-
 ====================================================================*/
 #include "knp.h"
 
@@ -46,13 +45,12 @@ int             Chi_root;
 CHI_DPND_STRU   Chi_dpnd_stru_matrix[BNST_MAX][BNST_MAX][BNST_MAX];
 CHI_ARG         Chi_arg_matrix[BNST_MAX][BNST_MAX];
 char            *Chi_word_type[CHI_POS_MAX];
-int left_arg[CHI_ARG_NUM_MAX + 1];
-int right_arg[CHI_ARG_NUM_MAX + 1];
 
 char		**Options;
 int 		OptAnalysis;
 int		OptCKY;
 int		OptEllipsis;
+int             OptGeneralCF;
 int		OptCorefer;
 int 		OptInput;
 int 		OptExpress;
@@ -186,6 +184,7 @@ extern int	EX_match_subject;
     OptAnalysis = OPT_CASE;
     OptCKY = TRUE;
     OptEllipsis = 0;
+    OptGeneralCF = 0;
     OptCorefer = 0;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
@@ -205,7 +204,7 @@ extern int	EX_match_subject;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS;
+    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS | OPT_CASE_GENERALIZE_AGENT;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
@@ -305,6 +304,12 @@ extern int	EX_match_subject;
 	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
 	    OptCKY = FALSE;
 	}
+	else if (str_eq(argv[0], "-cf-ne")) {
+	    OptGeneralCF |= OPT_CF_NE;
+	}
+	else if (str_eq(argv[0], "-cf-category")) {
+	    OptGeneralCF |= OPT_CF_CATEGORY;
+	}
 	else if (str_eq(argv[0], "-no-parafix")) {
 	    OptParaFix = FALSE;
 	}
@@ -316,6 +321,12 @@ extern int	EX_match_subject;
 	    OptParaFix = FALSE;
 	    OptParaNoFixFlag |= OPT_PARA_GENERATE_SIMILARITY;
 	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
+	}
+	else if (str_eq(argv[0], "-no-generalize-agent")) {
+	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
+	}
+	else if (str_eq(argv[0], "-generate-from-eos")) {
+	    OptCaseFlag |= OPT_CASE_GENERATE_EOS;
 	}
 	else if (str_eq(argv[0], "-chi-generative")) {
 	     OptChiGenerative = 1;

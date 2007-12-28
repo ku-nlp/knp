@@ -1,3 +1,8 @@
+2007-12-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h
+	Restore some files to "2007-12-25 12:00"'s revision due to compile error.
+	
 2007-12-25  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h
