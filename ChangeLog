@@ -1,3 +1,8 @@
+2008-01-11  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h, system/const.h, system/path.h
+	Modify Chinese parsing model by using case structures.
+
 2007-12-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h
