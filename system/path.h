@@ -41,6 +41,4 @@
 #define HOWNET_CATEGORY_DB_NAME "ebcf/hownet_category.db"
 #define HOWNET_SEM_DEF_DB_NAME  "ebcf/hownet_sem_def.db"
 #define CHI_PA_DB_NAME          "ebcf/chi_pa.db"
-#define CHI_DPND_STRU_DB_NAME          "ebcf/chidpnd_stru.db"
-#define CHI_ARG_NO_DB_NAME          "ebcf/chi_arg.db"
 #define CHI_CASE_DB_NAME          "ebcf/chi_case.db"

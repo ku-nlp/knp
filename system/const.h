@@ -110,7 +110,6 @@
 #define CHI_DPND_RULE_LEN_MAX 50 /* maximum length of dpnd rule */
 #define CHI_CKY_MAX 10 /* number of cky reserved for Chinese for each word pair */
 #define DOUBLE_MIN  0.0000000000000001
-#define MAX_CHI_ARG 6
 #define CHI_TYPE_LEN_MAX 8
 #define CHI_POS_MAX  33
 #define CHI_ARG_NUM_MAX  30
@@ -530,7 +529,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	38
+#define DICT_MAX	36
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -566,9 +565,7 @@ typedef struct _RuleVector {
 #define CHI_PA_DB       32
 #define CHI_DPND_PROB_DB        33
 #define CHI_DIS_COMMA_DB        34
-#define CHI_DPND_STRU_DB        35
-#define CHI_ARG_NO_DB           36
-#define CHI_CASE_DB           37
+#define CHI_CASE_DB           35
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -719,19 +716,6 @@ typedef struct {
     int         count; /* number of dpnd type */
 } CHI_DPND;
 
-/* Chinese dpnd structure */
-typedef struct {
-    double      prob_vpn_LtoR;
-    double      prob_vpn_RtoL;
-    double      prob_dis_comma_vpn_LtoR;
-    double      prob_dis_comma_vpn_RtoL;
-} CHI_DPND_STRU;
-
-/* Chinese arg rule */
-typedef struct {
-    double     prob_arg_L[MAX_CHI_ARG];
-    double     prob_arg_R[MAX_CHI_ARG];
-} CHI_ARG;
 /*====================================================================
 			       照応解析
 ====================================================================*/

@@ -275,14 +275,11 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
     double weight_dpnd, weight_pos, weight_comma, weight_root, weight_pa;
     double pos_prob_thre_high, pos_prob_thre_low;
     int pos_occur_thre_high, pos_occur_thre_low;
-    int arg_num;
-    int noun_arg;
 
-    int left_arg[CHI_ARG_NUM_MAX + 1];
-    int right_arg[CHI_ARG_NUM_MAX + 1];
     int left_arg_num;
     int right_arg_num;
     int ptr_num;
+    double chicase_prob;
 
     chi_pa_thre = 0.00005;
 
@@ -557,96 +554,110 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    if (Language == CHINESE) {
 		if (OptChiGenerative) {
 		    prob = 0;
-		    arg_num = 1;
-		    noun_arg = 1;
+		    chicase_prob = 0;
 		   
+		    /* initialization */
+		    for (i = 0; i < CHI_ARG_NUM_MAX + 1; i++) {
+		      left_arg[i] = -1;
+		      right_arg[i] = -1;
+		    }
+		    ptr_num = -1;
+		    left_arg_num = 0;
+		    right_arg_num = 0;
+
 		    if (cky_ptr->direction == LtoR) {
 			prob = log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]);
 			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR);
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob);
+			  printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR, prob);
 			}
 
-			if (cky_ptr->chicase_score == -1) {
-			    /* get probability of case frame */
-			    /* get left arguments */
-			    left_arg_num = 0;
-			    if (cky_ptr->left) {
-				ptr_num = cky_ptr->left->b_ptr->num;
-				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-				    left_arg[left_arg_num] = ptr_num;
-				    left_arg_num++;
-				    // check if there is non-noun argument
-				    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-				      noun_arg = 0;
-				    }
+			if ((cky_ptr->chicase_score + 1) > -DOUBLE_MIN && (cky_ptr->chicase_score + 1) < DOUBLE_MIN) {
+			  /* get probability of case frame */
+			  /* get left arguments */
+			  if (cky_ptr->left) {
+			    ptr_num = cky_ptr->left->b_ptr->num;
+			    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+			      // merge consequent adv before verb
+			      if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+				  left_arg_num <= 0 ||
+				  strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+				  strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				left_arg[left_arg_num] = ptr_num;
+				left_arg_num++;
+				if (left_arg_num > CHI_ARG_NUM_MAX) {
+				  fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				  return DOUBLE_MINUS;
 				}
+			      }
 			    }
+			  }
 
-			    tmp_cky_ptr = cky_ptr->right;
-			    while (tmp_cky_ptr) {
-				if (tmp_cky_ptr->direction == RtoL) {
-				    tmp_cky_ptr = tmp_cky_ptr->left;
-				}
-				else {
-				    if (tmp_cky_ptr->left) {
-					ptr_num = tmp_cky_ptr->left->b_ptr->num;
-					if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-					    left_arg[left_arg_num] = ptr_num;
-					    left_arg_num++;
-					    // check if there is non-noun argument
-					    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-					      noun_arg = 0;
-					    }
-					}
-				    }
-				    tmp_cky_ptr = tmp_cky_ptr->right;
-				}
-			    }
-			    /* get right arguments */
-			    right_arg_num = 0;
-			    tmp_cky_ptr = cky_ptr;
-			    while (tmp_cky_ptr) {
-				if (tmp_cky_ptr->direction == RtoL) {
-				    if (tmp_cky_ptr->right) {
-					ptr_num = tmp_cky_ptr->right->b_ptr->num;
-					if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-					    right_arg[right_arg_num] = ptr_num;
-					    right_arg_num++;
-					    // check if there is non-noun argument
-					    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-					      noun_arg = 0;
-					    }
-					}
-				    }
-				    tmp_cky_ptr = tmp_cky_ptr->left;
-				}
-				else {
-				    tmp_cky_ptr = tmp_cky_ptr->right;
-				}
-			    }
-			    // do not calculate case score for null arguments
-			    // do not calculate case score for noun with only noun arguments
-			    if ((!strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "noun") ||
-				 !strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "tempNoun")) &&
-				 noun_arg == 1) {
-			      cky_ptr->chicase_score = 1;
-			    }
-			    else if (left_arg_num > 0 || right_arg_num > 0) {
-			      cky_ptr->chicase_score = get_case_prob(sp, g_ptr->num, left_arg, left_arg_num, right_arg, right_arg_num);
+			  tmp_cky_ptr = cky_ptr->right;
+			  while (tmp_cky_ptr) {
+			    if (tmp_cky_ptr->direction == RtoL) {
+			      tmp_cky_ptr = tmp_cky_ptr->left;
 			    }
 			    else {
-			      cky_ptr->chicase_score = 1;
+			      if (tmp_cky_ptr->left) {
+				ptr_num = tmp_cky_ptr->left->b_ptr->num;
+				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				    // merge consequent adv before verb
+				    if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+					left_arg_num <= 0 ||
+					strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+					strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				      left_arg[left_arg_num] = ptr_num;
+				      left_arg_num++;
+				      if (left_arg_num > CHI_ARG_NUM_MAX) {
+					fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+					return DOUBLE_MINUS;
+				      }
+				    }
+				  }
+				}
+			      }
+			      tmp_cky_ptr = tmp_cky_ptr->right;
 			    }
+			  }
+			  /* get right arguments */
+			  tmp_cky_ptr = cky_ptr;
+			  while (tmp_cky_ptr) {
+			    if (tmp_cky_ptr->direction == RtoL) {
+			      if (tmp_cky_ptr->right) {
+				ptr_num = tmp_cky_ptr->right->b_ptr->num;
+				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				  right_arg[right_arg_num] = ptr_num;
+				  right_arg_num++;
+				  if (right_arg_num > CHI_ARG_NUM_MAX) {
+				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    return DOUBLE_MINUS;
+				  }
+				}
+			      }
+			      tmp_cky_ptr = tmp_cky_ptr->left;
+			    }
+			    else {
+			      tmp_cky_ptr = tmp_cky_ptr->right;
+			    }
+			  }
+			  // do not calculate case score for null arguments
+			  if ((left_arg_num > 0 || right_arg_num > 0)) {
+			    cky_ptr->chicase_score = get_case_prob(sp, g_ptr->num, left_arg_num, right_arg_num);
+			  }
+			  else {
+			    cky_ptr->chicase_score = 1.0;
+			  }
 			}
 			if (cky_ptr->chicase_score > DOUBLE_MIN) {
-			    prob += log(cky_ptr->chicase_score);
+			  prob += log(cky_ptr->chicase_score);
 			}
 			else {
 			    prob += DOUBLE_MINUS;
 			}
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dpnd:%d,%d case:%.10f)%.6f=>", g_ptr->num, d_ptr->num, cky_ptr->chicase_score, prob);
+			  printf("(dpnd:%d,%d chicase:%.6f)%.6f=>", g_ptr->num, d_ptr->num, cky_ptr->chicase_score, prob);
 			}
 		    }
 		    else if (cky_ptr->direction == RtoL) {
@@ -656,87 +667,85 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			    printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL, prob);
 			}
 
-			if (cky_ptr->chicase_score == -1) {
-			    /* get probability of case frame */
-			    /* get right arguments */
-			    right_arg_num = 0;
-			    if (cky_ptr->right) {
-				ptr_num = cky_ptr->right->b_ptr->num;
-				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-				    right_arg[right_arg_num] = ptr_num;
-				    right_arg_num++;
-				    // check if there is non-noun argument
-				    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-				      noun_arg = 0;
-				    }
-				}
+			if ((cky_ptr->chicase_score + 1) > -DOUBLE_MIN && (cky_ptr->chicase_score + 1) < DOUBLE_MIN) {
+			  /* get probability of case frame */
+			  /* get right arguments */
+			  if (cky_ptr->right) {
+			    ptr_num = cky_ptr->right->b_ptr->num;
+			    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+			      right_arg[right_arg_num] = ptr_num;
+			      right_arg_num++;
+			      if (right_arg_num > CHI_ARG_NUM_MAX) {
+				fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				return DOUBLE_MINUS;
+			      }
 			    }
+			  }
 
-			    tmp_cky_ptr = cky_ptr->left;
-			    while (tmp_cky_ptr) {
-				if (tmp_cky_ptr->direction == LtoR) {
-				    tmp_cky_ptr = tmp_cky_ptr->right;
-				}
-				else {
-				    if (tmp_cky_ptr->right) {
-					ptr_num = tmp_cky_ptr->right->b_ptr->num;
-					if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-					  right_arg[right_arg_num] = ptr_num;
-					  right_arg_num++;
-					  // check if there is non-noun argument
-					  if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-					    noun_arg = 0;
-					  }
-					}
-				    }
-				    tmp_cky_ptr = tmp_cky_ptr->left;
-				}
-			    }
-
-			    /* get left arguments */
-			    left_arg_num = 0;
-			    tmp_cky_ptr = cky_ptr->left;
-			    while (tmp_cky_ptr) {
-				if (tmp_cky_ptr->direction == LtoR) {
-				    if (tmp_cky_ptr->left) {
-					ptr_num = tmp_cky_ptr->left->b_ptr->num;
-					if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
-					    left_arg[left_arg_num] = ptr_num;
-					    left_arg_num++;
-					    // check if there is non-noun argument
-					    if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "noun") != 0 && strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "tempNoun") != 0) {
-					      noun_arg = 0;
-					    }
-					}
-				    }
-				    tmp_cky_ptr = tmp_cky_ptr->right;
-				}
-				else {
-				    tmp_cky_ptr = tmp_cky_ptr->left;
-				}
-			    }
-			    // do not calculate case score for null arguments
-			    // do not calculate case score for noun with only noun arguments
-			    if ((!strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "noun") ||
-				 !strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "tempNoun")) &&
-				 noun_arg == 1) {
-			      cky_ptr->chicase_score = 1;
-			    }
-			    else if (left_arg_num > 0 || right_arg_num > 0) {
-			      cky_ptr->chicase_score = get_case_prob(sp, g_ptr->num, left_arg, left_arg_num, right_arg, right_arg_num);
+			  tmp_cky_ptr = cky_ptr->left;
+			  while (tmp_cky_ptr) {
+			    if (tmp_cky_ptr->direction == LtoR) {
+			      tmp_cky_ptr = tmp_cky_ptr->right;
 			    }
 			    else {
-			      cky_ptr->chicase_score = 1;
+			      if (tmp_cky_ptr->right) {
+				ptr_num = tmp_cky_ptr->right->b_ptr->num;
+				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				  right_arg[right_arg_num] = ptr_num;
+				  right_arg_num++;
+				  if (right_arg_num > CHI_ARG_NUM_MAX) {
+				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    return DOUBLE_MINUS;
+				  }
+				}
+			      }
+			      tmp_cky_ptr = tmp_cky_ptr->left;
 			    }
+			  }
+
+			  /* get left arguments */
+			  tmp_cky_ptr = cky_ptr->left;
+			  while (tmp_cky_ptr) {
+			    if (tmp_cky_ptr->direction == LtoR) {
+			      if (tmp_cky_ptr->left) {
+				ptr_num = tmp_cky_ptr->left->b_ptr->num;
+				if (strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "") != 0) {
+				  // merge consequent adv before verb
+				  if (strcmp((sp->bnst_data+g_ptr->num)->head_ptr->Type, "verb") != 0 ||
+				      left_arg_num <= 0 ||
+				      strcmp((sp->bnst_data+left_arg[left_arg_num - 1])->head_ptr->Type, "adv") != 0 ||
+				      strcmp((sp->bnst_data+ptr_num)->head_ptr->Type, "adv") != 0) {
+				    left_arg[left_arg_num] = ptr_num;
+				    left_arg_num++;
+				    if (left_arg_num > CHI_ARG_NUM_MAX) {
+				      fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				      return DOUBLE_MINUS;
+				    }
+				  }
+				}
+			      }
+			      tmp_cky_ptr = tmp_cky_ptr->right;
+			    }
+			    else {
+			      tmp_cky_ptr = tmp_cky_ptr->left;
+			    }
+			  }
+			  // do not calculate case score for null arguments
+			  if ((left_arg_num > 0 || right_arg_num > 0)) {
+			    cky_ptr->chicase_score = get_case_prob(sp, g_ptr->num, left_arg_num, right_arg_num);
+			  }
+			  else {
+			    cky_ptr->chicase_score = 1.0;
+			  }
 			}
 			if (cky_ptr->chicase_score > DOUBLE_MIN) {
-			    prob += log(cky_ptr->chicase_score);
+			  prob += log(cky_ptr->chicase_score);
 			}
 			else {
 			    prob += DOUBLE_MINUS;
 			}
 			if (OptDisplay == OPT_DEBUG) {
-			    printf("(dpnd:%d,%d case:%.10f)%.6f=>", g_ptr->num, d_ptr->num, cky_ptr->chicase_score, prob);
+			  printf("(dpnd:%d,%d chicase:%.6f)%.6f=>", g_ptr->num, d_ptr->num, cky_ptr->chicase_score, prob);
 			}
 		    }
 
@@ -1618,12 +1627,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    *next_pp = cky_ptr;
 						}
 
-						if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
-						}
-						else {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
-						}
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l);
 
 						next_pp = &(cky_ptr->next);
 					
@@ -1682,12 +1686,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						    *next_pp = cky_ptr;
 						}
 
-						if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
-						}
-						else {
-						    set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l);
-						}
+						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l);
 
 						next_pp = &(cky_ptr->next);
 					
@@ -1749,16 +1748,23 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 						*next_pp = cky_ptr;
 					    }
 
-					    if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
+					    if (OptParaFix) {
+					      if (Mask_matrix[i][i + k] == 'N' && Mask_matrix[i + k + 1][j] == 'N') {
 						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'R', LtoR, l); 
-					    }
-					    else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
+					      }
+					      else if (Mask_matrix[i][i + k] == 'V' && Mask_matrix[i + k + 1][j] == 'V') {
 						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 'L', RtoL, l); 
-					    }
-					    else {
+					      }
+					      else {
 						set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 
 							Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l], 
 							Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l] == 'L' ? RtoL : LtoR, l);
+					      }
+					    }
+					    else {
+					      set_cky(sp, cky_ptr, left_ptr, right_ptr, i, j, k, 
+						      Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l], 
+						      Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].direction[l] == 'L' ? RtoL : LtoR, l);
 					    }
 
 					    next_pp = &(cky_ptr->next);
