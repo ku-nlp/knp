@@ -1084,6 +1084,10 @@ extern int	EX_match_subject;
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
+    /* 正規化代表表記を形態素に付与 
+       ※代表表記変更後に行う */
+    assign_canonical_rep_to_mrph(sp);
+
     /* 固有表現認識を行う */
     if (OptReadNE) {
 	read_ne(sp);
