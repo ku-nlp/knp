@@ -1,3 +1,11 @@
+2008-01-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c, system/read_data.c:
+	Handled the words given "代表表記変更" to output representative names of compound nouns.
+
+	* rule/mrph_homo.rule:
+	Disabled 音訓解消 to output representative names of compound nouns.
+
 2008-01-11  Kun Yu  <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c, system/extern.h, system/const.h, system/path.h
