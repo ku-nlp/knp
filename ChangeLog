@@ -1,3 +1,8 @@
+2007-10-29  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c, system/const.h, system/extern.h, system/main.c:
+	格フレームをメモリ上で保持するオプション(-cf-on-memory)を追加.
+
 2007-10-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* dict/scode/bgh/Makefile.am:
