@@ -1,3 +1,11 @@
+2008-01-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Modified representative names of bunsetsu heads.
+
+	* README, INSTALL, configure.ac:
+	Merged from knp-30-RC.
+
 2008-01-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c, system/read_data.c:
