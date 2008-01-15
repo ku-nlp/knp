@@ -19,7 +19,7 @@ AC_SYS_LARGEFILE
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
-AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (optional)]))
+AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (default)]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
 AC_ARG_WITH(crf, AC_HELP_STRING([--with-crf], [use CRFPP library (optional)]))
 AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
