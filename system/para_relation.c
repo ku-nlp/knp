@@ -260,7 +260,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     int i, j, k, flag;
     PARA_MANAGER *m_ptr, *m_ptr1, *m_ptr2;
-    char buffer1[64], buffer2[64];
+    char buffer1[SMALL_DATA_LEN], buffer2[SMALL_DATA_LEN];
 
     /* 位置関係の決定，誤りの修正 */
 
