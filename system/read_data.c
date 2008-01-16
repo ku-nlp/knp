@@ -994,7 +994,6 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    if (sp->Mrph_num >= MRPH_MAX) {
 		fprintf(stderr, ";; Too many mrph (%s %s%s...)!\n", 
 			sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
-		sp->Mrph_num = 0;
 		return readtoeos(fp);
 	    }
 

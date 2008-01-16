@@ -1050,6 +1050,83 @@ extern int	EX_match_subject;
 }
 
 /*==================================================================*/
+	     void clear_mrph_features(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    if (OptEllipsis) {
+	/* 中身は保存しておくので */
+	for (i = 0; i < sp->Mrph_num; i++) {
+	    (sp->mrph_data+i)->f = NULL;
+	}
+    }
+    else {
+	for (i = 0; i < sp->Mrph_num; i++) {
+	    clear_feature(&(sp->mrph_data[i].f));
+	}
+    }
+}
+
+/*==================================================================*/
+	     void clear_bnst_features(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    if (OptEllipsis) {
+	/* 中身は保存しておくので */
+	for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
+	    (sp->bnst_data+i)->f = NULL;
+	}
+    }
+    else {
+	for (i = 0; i < sp->Bnst_num; i++) {
+	    clear_feature(&(sp->bnst_data[i].f));
+	    if (Language == CHINESE) {
+		sp->bnst_data[i].is_para = -1;
+	    }
+	}
+	/* New_Bnstはもともとpointer */
+	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
+	    (sp->bnst_data+i)->f = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+	      void clear_bp_features(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    if (OptEllipsis) {
+	/* 中身は保存しておくので */
+	for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
+	    (sp->tag_data+i)->f = NULL;
+	}
+    }
+    else {
+	for (i = 0; i < sp->Tag_num; i++) {
+	    clear_feature(&(sp->tag_data[i].f));
+	}
+	/* New_Tagはもともとpointer */
+	for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
+	    (sp->tag_data+i)->f = NULL;
+	}
+    }
+}
+
+/*==================================================================*/
+	      void clear_all_features(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    clear_mrph_features(sp);
+    clear_bnst_features(sp);
+    clear_bp_features(sp);
+}
+
+/*==================================================================*/
       int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input)
 /*==================================================================*/
 {
@@ -1070,6 +1147,7 @@ extern int	EX_match_subject;
 
     if ((flag = read_mrph(sp, input)) == EOF) return EOF;
     if (flag == FALSE) { /* EOSしかない空の文 */
+	clear_all_features(sp);
 	sp->available = 0;
 	sp->Mrph_num = 0;
 	sp->Bnst_num = 0;
@@ -1099,6 +1177,8 @@ extern int	EX_match_subject;
     /* 形態素を文節にまとめる */
     if (OptInput == OPT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) {
+	    clear_bnst_features(sp);
+	    clear_bp_features(sp);
 	    sp->available = 0;
 	    sp->Bnst_num = 0;
 	    sp->Tag_num = 0;
@@ -1108,6 +1188,8 @@ extern int	EX_match_subject;
     }
     else {
 	if (make_bunsetsu_pm(sp) == FALSE) {
+	    clear_bnst_features(sp);
+	    clear_bp_features(sp);
 	    sp->available = 0;
 	    sp->Bnst_num = 0;
 	    sp->Tag_num = 0;
@@ -1478,39 +1560,7 @@ PARSED:
 	}
 
 	/* FEATURE の初期化 */
-	if (OptEllipsis) {
-	    /* 中身は保存しておくので */
-	    for (i = 0; i < sp->Mrph_num; i++) {
-		(sp->mrph_data+i)->f = NULL;
-	    }
-	    for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-		(sp->bnst_data+i)->f = NULL;
-	    }
-	    for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
-		(sp->tag_data+i)->f = NULL;
-	    }
-	}
-	else {
-	    for (i = 0; i < sp->Mrph_num; i++) {
-		clear_feature(&(sp->mrph_data[i].f));
-	    }
-	    for (i = 0; i < sp->Bnst_num; i++) {
-		clear_feature(&(sp->bnst_data[i].f));
-		if (Language == CHINESE) {
-		    sp->bnst_data[i].is_para = -1;
-		}
-	    }
-	    for (i = 0; i < sp->Tag_num; i++) {
-		clear_feature(&(sp->tag_data[i].f));
-	    }
-	    /* New_Bnstはもともとpointer */
-	    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-		(sp->bnst_data+i)->f = NULL;
-	    }
-	    for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
-		(sp->tag_data+i)->f = NULL;
-	    }
-	}
+	clear_all_features(sp);
 
 	/**************/
 	/* メイン解析 */
