@@ -239,6 +239,27 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    assign_cfeature(&((sp->bnst_data + i)->f), last_rep + strlen("正"), FALSE); /* 主辞代表表記 */
 	    strncpy(last_rep + strlen("正"), "規化", strlen("規化"));
 	}
+
+	/* 末尾が一文字漢字のときは、主辞’代表表記を出力 */
+	if ((sp->bnst_data + i)->tag_num > 1 && 
+	    check_feature(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f, "一文字漢字")) {
+	    *merged_rep = '\0';
+	    for (j = (sp->bnst_data + i)->tag_num - 2; j < (sp->bnst_data + i)->tag_num; j++) {
+		if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "正規化代表表記"))) {
+		    if (*merged_rep) {
+			strcat(merged_rep, "+");
+			strcat(merged_rep, cp + strlen("正規化代表表記:"));
+		    }
+		    else {
+			strcpy(merged_rep, cp);
+		    }
+		}
+	    }
+
+	    strncpy(merged_rep, "主辞’", strlen("主辞’"));
+	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 主辞＋代表表記 */
+	    strncpy(merged_rep, "正規化", strlen("正規化"));
+	}
     }
 
     free(merged_rep);
