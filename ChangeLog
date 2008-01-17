@@ -1,5 +1,8 @@
 2008-01-17  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/feature.c, system/read_data.c:
+	Deleted unnecessary feature (品曖-その他).
+
 	* rule/bnst_basic.rule:
 	Added "一文字漢字" feature.
 
