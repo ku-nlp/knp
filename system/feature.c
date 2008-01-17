@@ -637,22 +637,6 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 }
 
 /*==================================================================*/
-      int check_Bunrui_others(MRPH_DATA *mp, int flag)
-/*==================================================================*/
-{
-    if (mp->Bunrui != 3 && /* 固有名詞 */
-	mp->Bunrui != 4 && /* 地名 */
-	mp->Bunrui != 5 && /* 人名 */
-	mp->Bunrui != 6) /* 組織名 */
-	return flag;
-
-    if (check_feature(mp->f, "品曖-その他"))
-	return flag;
-
-    return 1-flag;
-}
-
-/*==================================================================*/
       int check_Bunrui(MRPH_DATA *mp, char *class, int flag)
 /*==================================================================*/
 {

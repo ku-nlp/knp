@@ -477,13 +477,6 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    sprintf(fname, "品曖-%s", 
 		    Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
 	    assign_cfeature(&((m_ptr+pref_mrph)->f), fname, FALSE);
-	    
-	    /* 固有名詞以外には"その他"をふっておく */
-	    if (m_ptr->Bunrui != 3 && /* 固有名詞 */
-		m_ptr->Bunrui != 4 && /* 地名 */
-		m_ptr->Bunrui != 5 && /* 人名 */
-		m_ptr->Bunrui != 6) /* 組織名 */
-		assign_cfeature(&((m_ptr+pref_mrph)->f), "品曖-その他", FALSE);
 	}
     }
 
