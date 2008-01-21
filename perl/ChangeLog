@@ -1,3 +1,8 @@
+2008-01-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/Result.pm:
+	構文解析結果の全文字列を動的に作って返す関数all_dynamicを追加
+
 2007-10-18  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* lib/KNP/Result.pm:
