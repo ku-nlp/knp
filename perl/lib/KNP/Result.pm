@@ -183,6 +183,40 @@ sub all {
     $this->{all} || undef;
 }
 
+=item all_dynamic
+
+構文解析結果の全文字列を動的に作って返す．
+関数push_featureなどを使って内部情報を書き換えた時に，allでは変更が反映されないため，この関数を使う．
+
+=cut
+sub all_dynamic {
+    my( $this ) = @_;
+
+    my $ret;
+    $ret .= $this->{comment};
+    # 文節を順番に
+    foreach my $bnst ($this->bnst) {
+	$ret .= '* ';
+	$ret .= defined $bnst->parent ? $bnst->parent->id : -1;
+	$ret .=  $bnst->dpndtype . ' ' . $bnst->fstring . "\n";
+
+	# 基本句を順番に
+	foreach my $tag ($bnst->tag) {
+	    $ret .=  '+ ';
+	    $ret .= defined $tag->parent ? $tag->parent->id : -1;
+	    $ret .= $tag->dpndtype . ' ' . $tag->fstring . "\n";
+
+	    # 形態素を順番に
+	    for my $mrph ($tag->mrph) {
+		$ret .= $mrph->midasi . ' ' . $mrph->yomi . ' ' . $mrph->genkei . ' ' . $mrph->hinsi . ' ' . $mrph->hinsi_id . ' ' . $mrph->bunrui . ' ' . $mrph->bunrui_id. ' ' . $mrph->katuyou1 . ' ' . $mrph->katuyou1_id . ' ' . $mrph->katuyou2 . ' ' . $mrph->katuyou2_id . ' ' . $mrph->imis . ' ' . $mrph->fstring . "\n";
+	    }
+	}
+    }
+    $ret .= "EOS\n";
+
+    return $ret;
+}
+
 =item comment
 
 構文解析結果中のコメントを返す．
