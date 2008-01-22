@@ -1,3 +1,11 @@
+2008-01-22  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule, rule/mrph_ne.rule:
+	One basic phrase contains one content word under -use-smallest-phrase.
+
+	* system/main.c:
+	Added -use-smallest-phrase option.
+
 2008-01-21  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
