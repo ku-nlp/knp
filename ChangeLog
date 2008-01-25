@@ -1,3 +1,8 @@
+2008-01-25  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_postprocess.rule:
+	Merge Éû»ìÅªÀÜÈø¼­ that has °ÕÌ£Í­ by postprocessing.
+
 2008-01-24  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule, rule/mrph_auto_dic.rule:
