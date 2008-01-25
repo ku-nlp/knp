@@ -10,12 +10,7 @@ endif
 usr_bgh.dat:
 	touch $@
 
-bgh.orig:
-	if [ ! -f bgh.dat -a -f "@BGH_FILE@" ]; then \
-		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
-	fi
-
-bgh.dat: usr_bgh.dat ../../src/add_usr_bgh.pl
+bgh.dat: bgh.orig usr_bgh.dat ../../src/add_usr_bgh.pl
 	if [ -f bgh.orig ]; then \
 		if [ -s usr_bgh.dat ]; then \
 			../../src/add_usr_bgh.pl bgh.orig < usr_bgh.dat > $@; \
