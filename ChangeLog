@@ -1,3 +1,14 @@
+2008-01-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/dic.c:
+	Modified the look-up of an automatically acquired dictionary.
+
+	* rule/mrph_basic.rule, rule/mrph_auto_dic.rule:
+	Modified the handling of a compound noun that starts with a temporal noun.
+
+	* dict/auto/auto.dat:
+	Added compound nouns.
+
 2008-01-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_postprocess.rule:
