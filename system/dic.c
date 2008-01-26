@@ -83,11 +83,8 @@ int AutoDicExist;
 	    }
 	    strcat(key, rep_str);
 	}
-	else {
-	    if (strlen(key) + strlen((m_ptr + i)->Goi) + 2 > DATA_LEN) {
-		return FALSE;
-	    }
-	    strcat(key, (m_ptr + i)->Goi); /* 代表表記がなければとりあえず表記 */
+	else { /* 助詞、助動詞などは代表表記がない */
+	    return FALSE;
 	}
     }
 
