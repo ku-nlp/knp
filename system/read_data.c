@@ -1118,8 +1118,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_char)
 /*==================================================================*/
 {
-    int i;
-    char pre[IMI_MAX], str1[IMI_MAX], str2[IMI_MAX], post[IMI_MAX], *cp;
+    int i, offset;
+    char pre[IMI_MAX], str1[IMI_MAX], str2[IMI_MAX], post[IMI_MAX], orig_rep[IMI_MAX], *cp;
 
     /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
@@ -1135,10 +1135,14 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	pre[0] = '\0';
 	strncat(pre, m_ptr->Imi, cp - m_ptr->Imi);
 
-	cp += strlen(str1) + 1;
-	sscanf(cp, "%[^ \"]", str2);
+	offset = strlen(str1) + 1;
+	sscanf(cp + offset, "%[^ \"]", str2);
 	post[0] = '\0';
-	strcat(post, cp + strlen(str2));
+	offset += strlen(str2);
+	strcat(post, cp + offset);
+
+	strcpy(orig_rep, "代表表記変更:");
+	strncat(orig_rep, cp, offset); /* もとの代表表記を保持 */
     }
     else {
 	return;
@@ -1152,17 +1156,19 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
     strcat(str1, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
     strcat(str2, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
 
-    /* 意味情報の修正 */
-    sprintf(m_ptr->Imi, "%s%s/%s%c%s", pre, str1, str2, suffix_char, post);
+    /* 意味情報の修正: 修正した代表表記ともとの代表表記 */
+    if (strlen(pre) + strlen(str1) + strlen(str2) + strlen(orig_rep) + strlen(post) + 4 <= IMI_MAX) {
+	sprintf(m_ptr->Imi, "%s%s/%s%c %s%s", pre, str1, str2, suffix_char, orig_rep, post);
+    }
 
     /* featureの修正 */
     if (modify_feature_flag) {
-	if (cp = check_feature(m_ptr->f, "代表表記")) { /* 古い代表表記の保存 */
+	if (cp = check_feature(m_ptr->f, "代表表記")) { /* もとの代表表記をfeatureに保存 */
 	    cp += strlen("代表表記:");
 	    sprintf(pre, "代表表記変更:%s", cp);
 	    assign_cfeature(&(m_ptr->f), pre, FALSE);
 	}
-	sprintf(pre, "代表表記:%s/%s%c", str1, str2, suffix_char);
+	sprintf(pre, "代表表記:%s/%s%c", str1, str2, suffix_char); /* 新しい代表表記をfeatureへ */
 	assign_cfeature(&(m_ptr->f), pre, FALSE);
     }
 }
