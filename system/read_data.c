@@ -169,15 +169,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int i, j, merged_rep_size = DATA_LEN;
     char *cp, *merged_rep;
 
-    /* <意味有>形態素の正規化代表表記から、基本句の正規化代表表記を作成 */
+    /* <内容語>形態素の正規化代表表記から、基本句の正規化代表表記を作成 */
 
     merged_rep = (char *)malloc_data(merged_rep_size, "assign_cc_feature_to_bp");
 
     for (i = 0; i < sp->Tag_num; i++) { /* すべての基本句に付与 */
 	*merged_rep = '\0';
 	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
-	    if (check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "意味有") && /* <意味有>形態素を対象に */
-		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "独立タグ非見出語") && /* 「〜の〜」以外 */
+	    if ((check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "内容語") || 
+		 check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "準内容語")) && /* <内容語>形態素を対象に */
+		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "特殊非見出語") && /* 「〜の〜」以外 */
 		(cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "正規化代表表記"))) {
 		if (*merged_rep) {
 		    if (strlen(merged_rep) + strlen(cp + strlen("正規化代表表記:")) + 2 > merged_rep_size) {
@@ -204,7 +205,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	  void assign_cc_feature_to_bnst(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j, merged_rep_size = DATA_LEN;
+    int i, j, merged_rep_size = DATA_LEN, error_flag;
     char *cp, *merged_rep, *last_rep;
 
     /* 基本句の正規化代表表記から文節の正規化代表表記を作成 */
@@ -244,6 +245,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if ((sp->bnst_data + i)->tag_num > 1 && 
 	    check_feature(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f, "一文字漢字")) {
 	    *merged_rep = '\0';
+	    error_flag = 0;
 	    for (j = (sp->bnst_data + i)->tag_num - 2; j < (sp->bnst_data + i)->tag_num; j++) {
 		if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "正規化代表表記"))) {
 		    if (*merged_rep) {
@@ -254,11 +256,17 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 			strcpy(merged_rep, cp);
 		    }
 		}
+		else {
+		    error_flag = 1;
+		    break;
+		}
 	    }
 
-	    strncpy(merged_rep, "主辞’", strlen("主辞’"));
-	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 主辞＋代表表記 */
-	    strncpy(merged_rep, "正規化", strlen("正規化"));
+	    if (!error_flag) {
+		strncpy(merged_rep, "主辞’", strlen("主辞’"));
+		assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 主辞＋代表表記 */
+		strncpy(merged_rep, "正規化", strlen("正規化"));
+	    }
 	}
     }
 
@@ -1683,7 +1691,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     if (ptr->type == IS_TAG_DATA) {
 	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	    if (check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
+	    if (check_feature((ptr->mrph_ptr + i)->f, "内容語") || 
+		check_feature((ptr->mrph_ptr + i)->f, "準内容語")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
@@ -1692,8 +1701,9 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     /* 文節のときは形式名詞「の」をheadとしない */
     else {
 	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	    if (!check_feature((ptr->mrph_ptr + i)->f, "独立タグ非見出語") && /* 「の」 */
-		check_feature((ptr->mrph_ptr + i)->f, "意味有")) {
+	    if (!check_feature((ptr->mrph_ptr + i)->f, "特殊非見出語") && /* 「の」 */
+		(check_feature((ptr->mrph_ptr + i)->f, "内容語") || 
+		 check_feature((ptr->mrph_ptr + i)->f, "準内容語"))) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		assign_cfeature(&(ptr->head_ptr->f), "文節主辞", FALSE);
 		return;
@@ -1801,16 +1811,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	   void push_tag_units(TAG_DATA *tp, MRPH_DATA *mp)
 /*==================================================================*/
 {
-    if (check_feature(mp->f, "非独立タグ接頭辞")) {
+    if (check_feature(mp->f, "非独立接頭辞")) {
 	if (tp->settou_num == 0) {
 	    tp->settou_ptr = mp;
 	}
 	tp->settou_num++;
     }
     else if (check_feature(mp->f, "自立") || 
-	     check_feature(mp->f, "独立タグ接頭辞") || 
-	     check_feature(mp->f, "独立タグ接尾辞") || 
-	     check_feature(mp->f, "独立タグ非見出語")) {
+	     check_feature(mp->f, "内容語")) {
 	if (tp->jiritu_num == 0) {
 	    tp->jiritu_ptr = mp;
 	}
@@ -1862,7 +1870,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    delete_cfeature(&(tp->f), "サ変"); /* <サ変>は文節とタグ単位では異なる */
 
 	    /* 形式名詞「の」に用言がコピーされるので削除 */
-	    if (check_feature(tp->head_ptr->f, "独立タグ非見出語")) {
+	    if (check_feature(tp->head_ptr->f, "特殊非見出語")) {
 		delete_cfeature(&(tp->f), "用言");
 	    }
 	}

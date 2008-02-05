@@ -1653,7 +1653,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
 	/* ただし、BGH中に"|"が含まれている場合は除く */
 	else if (OptUseCPNCF && flag == CF_NOUN && 
-		 !check_feature(t_ptr->head_ptr->f, "独立タグ非見出語") &&
+		 !check_feature(t_ptr->head_ptr->f, "特殊非見出語") &&
 		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
