@@ -415,7 +415,9 @@ int	PrintDeletedSM = 0;
 		free(buf);
 
 		if (c1 == END_M || c2 == END_M) {
-		    fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
+		    }
 		}
 		/* 溢れチェック */
 		else if (count >= CF_ELEMENT_MAX - 1) {
