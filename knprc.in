@@ -8,6 +8,7 @@
 
 (KNPルールファイル
 	(mrph_homo 同形異義語)
+	(mrph_filter 形態素-前処理 ルールループ先行)
 	(mrph_auto_dic 形態素 ルールループ先行)
 	(mrph_basic 形態素 ルールループ先行)
 	(mrph_ne 固有表現形態素 ルールループ先行)
