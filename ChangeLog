@@ -1,3 +1,16 @@
+2008-02-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* dict/auto/auto.dat:
+	bug fix and update.
+
+	* rule/mrph_filter.rule: added.
+
+	* system/configfile.c, system/const.h, system/extern.h, system/feature.c, system/main.c, system/read_data.c, system/read_rule.c:
+	Implemented a pre-processing framework of the result of JUMAN.
+
+	* knprc.in:
+	Added "mrph_filter".
+
 2008-02-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/context.rule, rule/tag_postprocess.rule, system/case_ipal.c, system/read_data.c:
