@@ -869,7 +869,8 @@ extern int	EX_match_subject;
 	    read_homo_rule((RULE+i)->file);
 	}
 	/* 形態素ルール or 文節ルール */
-	else if ((RULE+i)->type == MorphRuleType ||
+	else if ((RULE+i)->type == MorphRuleType || 
+		 (RULE+i)->type == PreProcessMorphRuleType || 
 		 (RULE+i)->type == NeMorphRuleType || 
 		 (RULE+i)->type == TagRuleType || 
 		 (RULE+i)->type == BnstRuleType || 
@@ -1158,6 +1159,9 @@ extern int	EX_match_subject;
 	ErrorComment = strdup("Cannot make mrph");
 	return TRUE;
     }
+
+    /* 形態素列の前処理 */
+    preprocess_mrph(sp);
 
     /* 形態素へのFEATURE付与 */
 

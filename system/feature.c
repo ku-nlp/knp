@@ -711,7 +711,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
        p2 : データの構造体(MRPH_DATA,BNST_DATAなど)
     */
 
-    int i, code, type, pretype, flag;
+    int i, code, type, pretype, flag, length;
     char *cp;
     unsigned char *ucp; 
 
@@ -979,11 +979,17 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     
     else if (!strncmp(rule, "&形態素長:", strlen("&形態素長:"))) {
 	cp = rule + strlen("&形態素長:");
-	if (cp)
-	    code = atoi(cp);
-	else
-	    code = 0;
-	if (strlen(((MRPH_DATA *)ptr2)->Goi2) >= code * BYTES4CHAR) {
+	if (*(cp + strlen(cp) - 1) == '-') { /* 数字の後に"-"がついていれば */
+	    flag = 1; /* 指定長さ以上でOK */
+	    *(cp + strlen(cp) - 1) = '\0';
+	}
+	else {
+	    flag = 0;
+	}
+	code = atoi(cp);
+
+	length = strlen(((MRPH_DATA *)ptr2)->Goi2);
+	if (length == code * BYTES4CHAR || (flag && length > code * BYTES4CHAR)) {
 	    return TRUE;
 	}
 	return FALSE;

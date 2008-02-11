@@ -127,6 +127,24 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+	     int assign_rep_f_from_imi(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char *cp, buf[IMI_MAX];
+    int length;
+
+    if ((cp = strstr(m_ptr->Imi, "代表表記:"))) {
+	length = get_mrph_rep_length(cp);
+	strncpy(buf, cp, length);
+	buf[length] = '\0';
+	assign_cfeature(&(m_ptr->f), buf, FALSE);
+	return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*==================================================================*/
 		 char *make_mrph_rn(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
@@ -604,6 +622,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 
     strcpy(dst->Goi, src->Goi);
     strcpy(dst->Yomi, src->Yomi);
+    strcpy(dst->Goi2, src->Goi2);
     dst->Hinshi = src->Hinshi;
     dst->Bunrui = src->Bunrui;
     dst->Katuyou_Kata = src->Katuyou_Kata;
@@ -1085,7 +1104,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			strcat(imip, "疑似代表表記 代表表記:");
 			strcat(imip, rep_buf);
 			sprintf(m_ptr->Imi, "\"%s\"", imip);
-			imi2feature(imip, m_ptr);		    
+			imi2feature(imip, m_ptr);
 		    }
 		    else {
 			strcpy(m_ptr->Imi, "NIL");
@@ -1594,7 +1613,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     void (*assign_function)();
 
     /* 形態素, タグ単位, 文節の場合分け */
-    if (flag == MorphRuleType || flag == NeMorphRuleType) {
+    if (flag == MorphRuleType || flag == PreProcessMorphRuleType || flag == NeMorphRuleType) {
 	assign_function = assign_mrph_feature;
     }
     else if (flag == TagRuleType || flag == AfterDpndTagRuleType || flag == PostProcessTagRuleType) {
@@ -2044,6 +2063,163 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	(sp->tag_data + i)->dpnd_head = Tag_dpnd[i];
 	(sp->tag_data + i)->dpnd_type = Tag_type[i];
     }
+}
+
+/*==================================================================*/
+		  void reset_mrph(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, delete_count = 0, move_table[MRPH_MAX];
+
+    for (i = 1; i < sp->Mrph_num; i++) {
+	if ((sp->mrph_data + i)->Goi[0] == '\0') { /* マージされてなくなった形態素 */
+	    move_table[i] = 0;
+	    delete_count++;
+	}
+	else {
+	    move_table[i] = delete_count; /* 何個前に移動させるか */
+	}
+
+	if (delete_count) { /* 上書きされるところのfeatureを削除しておく */
+	    clear_feature(&((sp->mrph_data + i)->f));
+	}
+    }
+
+    for (i = 1; i < sp->Mrph_num; i++) {
+	if (move_table[i] > 0) { /* 移動させるべき形態素 */
+	    copy_mrph(sp->mrph_data + i - move_table[i], sp->mrph_data + i);
+	}
+    }
+
+    sp->Mrph_num -= delete_count;
+}
+
+/*==================================================================*/
+	 void merge_mrph_rep(MRPH_DATA *dst, MRPH_DATA *src)
+/*==================================================================*/
+{
+    int offset;
+    char src_str1[IMI_MAX], src_str2[IMI_MAX];
+    char dst_pre[IMI_MAX], dst_str1[IMI_MAX], dst_str2[IMI_MAX], dst_post[IMI_MAX];
+    char *cp;
+
+    if (cp = strstr(src->Imi, "代表表記:")) { /* マージするもの */
+	cp += strlen("代表表記:");
+	sscanf(cp, "%[^/]", src_str1);
+	sscanf(cp + strlen(src_str1) + 1, "%[^ \"]", src_str2);
+    }
+    else {
+	return;
+    }
+
+    if (cp = strstr(dst->Imi, "代表表記:")) { /* マージ先 */
+	cp += strlen("代表表記:");
+	sscanf(cp, "%[^/]", dst_str1);
+
+	dst_pre[0] = '\0';
+	strncat(dst_pre, dst->Imi, cp - dst->Imi);
+
+	offset = strlen(dst_str1) + 1;
+	sscanf(cp + offset, "%[^ \"]", dst_str2);
+	dst_post[0] = '\0';
+	offset += strlen(dst_str2);
+	strcat(dst_post, cp + offset);
+    }
+    else {
+	return;
+    }
+
+    if (strlen(dst_str1) + strlen(src_str1) < IMI_MAX && 
+	strlen(dst_str2) + strlen(src_str2) < IMI_MAX) {
+	strcat(dst_str1, src_str1); /* 漢字部分のマージ */
+	strcat(dst_str2, src_str2); /* 読み部分のマージ */
+    }
+    else {
+	return;
+    }
+
+    /* 意味情報の修正 */
+    if (strlen(dst_pre) + strlen(dst_str1) + strlen(dst_str2) + strlen(dst_post) + 2 <= IMI_MAX) {
+	sprintf(dst->Imi, "%s%s/%s%s", dst_pre, dst_str1, dst_str2, dst_post);
+    }
+}
+
+/*==================================================================*/
+    void merge_mrph(SENTENCE_DATA *sp, int start_num, int length)
+/*==================================================================*/
+{
+    int i;
+
+    /* 先頭の形態素にマージ */
+
+    for (i = 1; i < length; i++) {
+	if (strlen((sp->mrph_data + start_num)->Goi) + strlen((sp->mrph_data + start_num + i)->Goi) <= WORD_LEN_MAX) {
+	    strcat((sp->mrph_data + start_num)->Goi,  (sp->mrph_data + start_num + i)->Goi);
+	}
+	if (strlen((sp->mrph_data + start_num)->Yomi) + strlen((sp->mrph_data + start_num + i)->Yomi) <= WORD_LEN_MAX) {
+	    strcat((sp->mrph_data + start_num)->Yomi, (sp->mrph_data + start_num + i)->Yomi);
+	}
+	if (strlen((sp->mrph_data + start_num)->Goi2) + strlen((sp->mrph_data + start_num + i)->Goi2) <= WORD_LEN_MAX) {
+	    strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
+	}
+	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
+
+	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
+    }
+
+    assign_rep_f_from_imi(sp->mrph_data + start_num); /* Imi領域の代表表記をfeatureへ */
+}
+
+/*==================================================================*/
+	       void preprocess_mrph(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, start_num;
+    char *cp, merge_type[SMALL_DATA_LEN];
+    FEATURE *fp;
+
+    assign_general_feature(sp->mrph_data, sp->Mrph_num, PreProcessMorphRuleType, FALSE, FALSE);
+
+    merge_type[0] = '\0';
+    for (i = 0; i < sp->Mrph_num; i++) {
+	cp = NULL;
+	fp = (sp->mrph_data + i)->f;
+	while (fp) {
+	    if (!strncmp(fp->cp, "形態素連結-", strlen("形態素連結-"))) {
+		if (cp) {
+		    fprintf(stderr, ";; Both %s and %s are assigned to %s\n", cp, fp->cp, (sp->mrph_data + i)->Goi);
+		}
+		else {
+		    cp = fp->cp;
+		}
+	    }
+	    fp = fp->next;
+	}
+
+	if (cp) { /* 形態素連結があった場合 */
+	    if (!merge_type[0]) { /* 開始 */
+		start_num = i;
+		strcpy(merge_type, cp + strlen("形態素連結-"));
+	    }
+	    else if (strcmp(merge_type, cp + strlen("形態素連結-"))) { /* 直前までとタイプが異なる場合 */
+		merge_mrph(sp, start_num, i - start_num);
+		start_num = i;
+		strcpy(merge_type, cp + strlen("形態素連結-"));
+	    }
+	}
+	else {
+	    if (merge_type[0]) {
+		merge_mrph(sp, start_num, i - start_num);
+		merge_type[0] = '\0';
+	    }
+	}
+    }
+
+    if (merge_type[0]) {
+	merge_mrph(sp, start_num, i - start_num);
+    }
+
+    reset_mrph(sp);
 }
 
 /*====================================================================
