@@ -693,7 +693,7 @@ extern int	EX_match_subject;
 	    VerboseLevel = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-v")) {
-	    fprintf(stderr, "%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    fprintf(stderr, "%s %s\n", PACKAGE_NAME, VERSION);
 	    exit(0);
 	}
 	/* 格解析用オプション */

@@ -1,9 +1,10 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT(knp, 3.0, nl-resource@nlp.kuee.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
-AM_INIT_AUTOMAKE
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
+DATE=`LANG=C date +%Y%m%d`
+AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION}-${DATE})
 AM_CONFIG_HEADER([config.h])
 
 
