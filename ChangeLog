@@ -1,5 +1,8 @@
 2008-02-13  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/mrph_auto_dic.rule:
+	Added rules for recognizing compound nouns.
+
 	* configure.ac, system/main.c:
 	Added a date to the version string.
 
