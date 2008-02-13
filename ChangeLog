@@ -1,4 +1,12 @@
+2008-02-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/extern.h, system/feature.c, system/read_data.c:
+	Banned inappropriate long merging.
+
 2008-02-12  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_filter.rule:
+	Modified a rule of numerals.
 
 	* rule/mrph_filter.rule:
 	Improved the detection of person names.
