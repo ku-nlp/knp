@@ -1,5 +1,8 @@
 2008-02-13  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* configure.ac, system/main.c:
+	Added a date to the version string.
+
 	* system/extern.h, system/feature.c, system/read_data.c:
 	Banned inappropriate long merging.
 
