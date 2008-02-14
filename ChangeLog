@@ -1,3 +1,9 @@
+2008-02-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified the handling of agentive entities for '-no-probcase'.
+	Modified not to output illegal results of case analysis.
+
 2008-02-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
