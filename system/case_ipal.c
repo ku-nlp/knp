@@ -2406,26 +2406,36 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
     }
     return ret;
 }
-
+	
 /*==================================================================*/
-double _get_gex_probability(char *key, int as2, CASE_FRAME *cfp)
+double _get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
+    /* 固有表現-用例確率 
+       P(京大|LOCATION)*P(LOCATION|行く:動2:ニ格) */
+    /* 入力key=NE:LOCATION:京大 */
+
     int i;
-    double ret = 0;
+    char *value, ne[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
+    
+    strcpy(ne, cp);
+    strcpy(key, strchr(ne + 3, ':') + 1); /* key = 京大 */
+    *strchr(ne + 3, ':') = '\0'; /* ne = NE:LOCATION */
 
     for (i = 0; i < cfp->gex_num[as2]; i++) {
-	if (!strcmp(key, cfp->gex_list[as2][i])) {
-	    ret = (double)cfp->gex_freq[as2][i];
-	    if (VerboseLevel >= VERBOSE3) {
-		fprintf(Outfp, ";; (GEX) P(%s) = %lf\n", key, ret);
-	    }
-	    return ret/sqrt(cfp->ex_num[as2]);
-	}
-    }
+	if (!strcmp(ne, cfp->gex_list[as2][i])) {
 
-    if (VerboseLevel >= VERBOSE3) {
-	fprintf(Outfp, ";; (GEX) P(%s) = 0\n", key);
+	    strcat(key, "|");
+	    strcat(key, ne + 3);
+		
+	    if ((value = db_get(case_db, key))) {
+		if (VerboseLevel >= VERBOSE3) {
+		    fprintf(Outfp, ";; (EX-NE)%s %f %f\n", 
+			    key, atof(value), cfp->gex_freq[as2][i]);
+		}
+		return atof(value) * cfp->gex_freq[as2][i];
+	    }
+	}
     }
     return 0;
 }
@@ -2568,16 +2578,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     }
 
-    /* 固有表現の場合 */       
-    if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
-	key = malloc_db_buf(strlen(cp) + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
- 	strcpy(key, cp);
-	*strchr(key + 3, ':') = '\0';
-	if (prob = _get_gex_probability(key, as2, cfp)) {
-	    if (ret < log(prob)) ret = log(prob);
-	}
-    }
-
     key = malloc_db_buf(strlen("<補文>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
     *key = '\0';
 
@@ -2662,6 +2662,13 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	}
     }
 
+    /* 固有表現の場合 */       
+    if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
+	if (prob = _get_ex_ne_probability(cp, as2, cfp)) {
+	    if (ret < log(prob)) ret = log(prob);
+	}
+    } 
+
     /* 代表表記を用いる場合はカテゴリを参照する */
     if ((OptGeneralCF & OPT_CF_CATEGORY) && OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
@@ -2674,7 +2681,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	sprintf(key, "%s", mrph_str);
 
 	if (prob = _get_ex_category_probability(key, as2, cfp, dp->head_ptr->f)) {
-	    /* if (ret < log(prob)) printf("%s %f %f ok?\n", key, ret, log(prob)); */
 	    if (ret < log(prob)) ret = log(prob);
 	}
 

@@ -1,3 +1,8 @@
+2008-02-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	汎化された固有表現情報を用いた格解析(-cf-ne)の確率計算方法を変更
+
 2008-02-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_auto_dic.rule:
