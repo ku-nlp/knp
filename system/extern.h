@@ -183,6 +183,7 @@ extern int sen_num;
 /* 関数プロトタイプ */
 
 /* anaphora.c */
+extern void assign_mrph_num(SENTENCE_DATA *sp);
 extern void anaphora_analysis(SENTENCE_DATA *sp);
 
 /* bnst_compare.c */
@@ -250,7 +251,9 @@ extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
 extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
 					    int as2, CASE_FRAME *cfp);
-extern double get_case_interpret_probability(char *scase, char *cfcase);
+extern double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag);
+extern double get_general_probability(char *key1, char *key2);
+extern double get_key_probability(TAG_DATA *tag_ptr);
 extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
@@ -314,6 +317,7 @@ extern void DiscourseAnalysis(SENTENCE_DATA *sp);
 extern void RegisterLastClause(int Snum, char *key, int pp, char *word, int flag);
 extern char *loc_code_to_str(int loc);
 extern int loc_name_to_code(char *loc);
+extern int mark_location_classes(SENTENCE_DATA *sp, TAG_DATA *tp);
 
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);

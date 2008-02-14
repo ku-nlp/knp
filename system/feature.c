@@ -603,7 +603,15 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 {
     char *cp;
 
-    if ((cp = check_feature(fp, "カテゴリ"))) {
+    if (0 && strlen(fname) == 1) {
+	/* fnameが'a'または'v'の場合 */
+	/* <代表表記:...[av]>もカテゴリの一種として扱う */
+	if (!check_feature(fp, "疑似代表表記") && (cp = check_feature(fp, "代表表記")) &&
+	    *(cp + strlen(cp) - 1) == *fname) {
+	    return TRUE;
+	}
+    }
+    else if ((cp = check_feature(fp, "カテゴリ"))) {
 	while ((cp = strchr(cp, ':'))) {
 	    cp++;
 	    if (!strcmp(cp, fname) ||
@@ -613,6 +621,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    }
 	}
     }
+
     return FALSE;
 }
 

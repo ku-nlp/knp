@@ -1586,6 +1586,7 @@ PARSED:
 	/************/
 	
 	if (OptEllipsis) {
+	    assign_mrph_num(sp);
 	    make_dpnd_tree(sp);
 	    PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */

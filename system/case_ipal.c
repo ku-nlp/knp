@@ -870,7 +870,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    c_ptr->gex_list[num][c_ptr->gex_num[num]] = strdup(point2 + 1);
 	    c_ptr->gex_freq[num][c_ptr->gex_num[num]++] = freq_gex;
 
-	    /* fprintf(stderr, "%s:%.3f freq_gex\n", point2 + 1, freq_gex); */
+	    /* fprintf(stderr, "%s:%.10f freq_gex\n", point2 + 1, freq_gex); */
 
 	    continue;
 	}
@@ -2390,8 +2390,12 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
 		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 2), 
 						  "get_ex_category_probability");
 		sprintf(ex_category, "%s|%s", key, category);
-		
-		if (value = db_get(case_db, ex_category)) {
+		if ((value = db_get(case_db, ex_category))) {
+/* 		if (!(value = db_get(case_db, ex_category))) { */
+/* 		    sprintf(ex_category, "OTHERS|%s", category); */
+/* 		    value = db_get(case_db, ex_category); */
+/* 		} */
+/* 		if (value) { */
 		    if (VerboseLevel >= VERBOSE3) {
 			fprintf(Outfp, ";; (EX-CATEGORY)%s %f %f\n", 
 				ex_category, atof(value), cfp->gex_freq[as2][i]);
@@ -2569,7 +2573,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* 用例確率 P(弁当|食べる:動2,ヲ格)
        格フレームから計算 (cfex.prob) */
 
-    char *key = NULL, *mrph_str, *cp;
+    char *key = NULL, *mrph_str, *cp, ne_prob[WORD_LEN_MAX*2], *value;
     double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
 
@@ -2683,7 +2687,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	if (prob = _get_ex_category_probability(key, as2, cfp, dp->head_ptr->f)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
-
 	if (rep_malloc_flag) {
 	    free(mrph_str);
 	    rep_malloc_flag = 0;
@@ -2825,9 +2828,76 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 }
 
 /*==================================================================*/
-   double get_case_interpret_probability(char *scase, char *cfcase)
+	double get_key_probability(TAG_DATA *tag_ptr)
 /*==================================================================*/
 {
+    char *key = NULL, *mrph_str, *cp;
+    int rep_malloc_flag = 0;
+
+    key = malloc_db_buf(strlen("<補文>") + 3);
+    *key = '\0';
+    
+    if (check_feature(tag_ptr->f, "補文")) {
+	sprintf(key, "<補文>");
+    }
+    else if (check_feature(tag_ptr->f, "時間")) {
+	sprintf(key, "<時間>");
+    }
+    else if (check_feature(tag_ptr->f, "数量")) {
+	sprintf(key, "<数量>");
+    }
+
+    if (*key) {
+	return get_general_probability(key, "KEY");
+    }
+
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	mrph_str = get_mrph_rep_from_f(tag_ptr->head_ptr, FALSE);
+	if (mrph_str == NULL) {
+	    mrph_str = make_mrph_rn(tag_ptr->head_ptr);
+	    rep_malloc_flag = 1;
+	}
+    }
+    else {
+	mrph_str = tag_ptr->head_ptr->Goi;
+    }
+    key = malloc_db_buf(strlen(mrph_str) + 3);
+    sprintf(key, "%s", mrph_str);
+    if (rep_malloc_flag) {
+	free(mrph_str);
+	rep_malloc_flag = 0;
+    }
+    return get_general_probability(key, "KEY");
+}
+
+/*==================================================================*/
+	double get_general_probability(char *key1, char *key2)
+/*==================================================================*/
+{
+    char *value, *key;
+    double ret;
+
+    key = malloc_db_buf(strlen(key1) + strlen(key2) + 2);
+    sprintf(key, "%s|%s", key1, key2);
+    value = db_get(case_db, key);
+    
+    if (value) {
+	ret = atof(value);
+	ret = log(ret);
+	free(value);
+	return ret;
+    }
+    else {
+	return 0;
+    }
+}
+
+/*==================================================================*/
+double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag)
+/*==================================================================*/
+{
+    /* ellipsis_flag = 1 の場合は省略用 */
+
     char *value, *key;
     double ret;
 
@@ -2836,7 +2906,41 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     }
     
     key = malloc_db_buf(strlen(scase) + strlen(cfcase) + 20);
-    sprintf(key, "%s|C:%s", scase, cfcase);
+    if (ellipsis_flag) 
+	sprintf(key, "%s|O:%s", scase, cfcase);
+    else
+	sprintf(key, "%s|C:%s", scase, cfcase);
+    value = db_get(case_db, key);
+
+    if (value) {
+	ret = atof(value);
+	ret = log(ret);
+	free(value);
+	return ret;
+    }
+    else {
+	return UNKNOWN_CASE_SCORE;
+    }
+}
+
+/*==================================================================*/
+double get_case_surface_probability(char *scase, char *cfcase, int ellipsis_flag)
+/*==================================================================*/
+{
+    /* ellipsis_flag = 1 の場合は省略用 */
+
+    char *value, *key;
+    double ret;
+
+    if (CaseExist == FALSE) {
+	return 0;
+    }
+    
+    key = malloc_db_buf(strlen(scase) + strlen(cfcase) + 20);
+    if (ellipsis_flag) 
+	sprintf(key, "%s|O:%s", scase, cfcase);
+    else
+	sprintf(key, "%s|C:%s", scase, cfcase);
     value = db_get(case_db, key);
 
     if (value) {
@@ -3023,7 +3127,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 
     /* 格の解釈 */
     cfcase = make_cf_case_string(as1, cfd, as2, cfp);
-    score1 = get_case_interpret_probability(scase, cfcase);
+    score1 = get_case_interpret_probability(scase, cfcase, FALSE);
 
     /* 読点の生成 */
     score2 = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 

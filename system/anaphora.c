@@ -10,9 +10,9 @@
 #include "knp.h"
 
 #define CASE_CANDIDATE_MAX 15  /* 照応解析用格解析結果を保持する数 */
-#define ELLIPSIS_RESULT_MAX 3  /* 省略解析結果を保持する数 */
+#define ELLIPSIS_RESULT_MAX 5  /* 省略解析結果を保持する数 */
 #define INITIAL_SCORE -10000
-#define ENTITY_DECAY_RATE 0.8
+#define ENTITY_DECAY_RATE 0.7
 #define ELLIPSIS_CASE_NUM 3
 
 /* 解析結果を保持するためのENTITY_CASE_MGR
@@ -23,6 +23,20 @@ CF_TAG_MGR work_ctm[CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX + 1];
 
 /* 省略解析の対象とする格のリスト */
 char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM] = {"ガ", "ヲ", "ニ"};
+
+/*==================================================================*/
+	       void assign_mrph_num(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, count = 0;
+
+    /* mrphに文先頭からその形態素の終りまでの文字数 */
+    for (i = 0; i < sp->Mrph_num; i++) {
+	printf("%d %d ok?\n", i, count);
+	count += strlen((sp->mrph_data + i)->Goi2) / 2;
+	(sp->mrph_data + i)->Num = count;
+    }
+}
 
 /*==================================================================*/
 int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int co_flag)
@@ -44,7 +58,12 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
 	mention_ptr->entity->activity_score += 1;
 	strcpy(mention_ptr->cpp_string, "＊");
-	strcpy(mention_ptr->spp_string, "＊");
+	if ((cp = check_feature(tag_ptr->f, "係"))) {
+	    strcpy(mention_ptr->spp_string, cp + strlen("係:"));
+	} 
+	else {
+	    strcpy(mention_ptr->spp_string, "＊");
+	}
 	mention_ptr->flag = '=';
 
 	/* entityのnameがNEでなく、tag_ptrがNEならばnameを上書き */
@@ -58,13 +77,19 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	     (flag == 'N' || flag == 'C' || flag == 'O' || flag == 'D') &&    
 	     (!strcmp(rel, "ガ") || !strcmp(rel, "ヲ") || !strcmp(rel, "ニ") || !strcmp(rel, "ノ"))) {
 	mention_ptr = mention_mgr->mention + mention_mgr->num;
-	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
-	
+ 	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
+	mention_ptr->entity->activity_score += 0.5;
+
 	mention_ptr->tag_num = mention_mgr->mention->tag_num;
 	mention_ptr->sent_num = mention_mgr->mention->sent_num;
 	mention_ptr->flag = flag;
 	strcpy(mention_ptr->cpp_string, rel);
-	strcpy(mention_ptr->spp_string, "＊");
+	if (flag == 'C' && (cp = check_feature(((sp - sent_num)->tag_data + tag_num)->f, "係"))) {
+	    strcpy(mention_ptr->spp_string, cp + strlen("係:"));
+	} 
+	else {
+	    strcpy(mention_ptr->spp_string, "＊");
+	}
 	mention_mgr->num++;
     }
 
@@ -156,7 +181,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	tcf_ptr->elem_b_ptr[i] = cpm_ptr->elem_b_ptr[i];
     }
 
-    free(cpm_ptr);
+    /* free(cpm_ptr); freeする必要あり(ただし、tcf_ptr->cf.pred_b_ptr->cpm_ptrで使うのでまだできない */
     return TRUE;
 }
 
@@ -238,16 +263,16 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	e_num = ctm_ptr->cf_element_num[i];
 	
 	/* 直前格がある場合は用例に含まれている必要あり */
-	if (tcf_ptr->cf.adjacent[ctm_ptr->tcf_element_num[i]] == TRUE &&
-	    get_ex_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
-			       NULL, e_num, ctm_ptr->cf_ptr) == FREQ0_ASSINED_SCORE)
-	    score += INITIAL_SCORE;
-	
+/* 	if (tcf_ptr->cf.adjacent[ctm_ptr->tcf_element_num[i]] == TRUE && */
+/* 	    get_ex_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), */
+/* 			       NULL, e_num, ctm_ptr->cf_ptr) == FREQ0_ASSINED_SCORE)  */
+/* 	    score += INITIAL_SCORE; */
+	    
 	score += 
 	    get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
 					 e_num, ctm_ptr->cf_ptr) +
 	    get_case_function_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf),
-					   e_num, ctm_ptr->cf_ptr);
+					  e_num, ctm_ptr->cf_ptr);
 
 	if (OptDisplay == OPT_DEBUG && debug) 
 	    printf(";; %s-%s:%f:%f ", 
@@ -257,14 +282,6 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 						e_num, ctm_ptr->cf_ptr),
 		   get_case_function_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
 						 e_num, ctm_ptr->cf_ptr));      
-    }
-    /* 対応付けられた要素に関するスコア(省略解析結果) */
-    for (i = ctm_ptr->case_result_num; i < ctm_ptr->result_num; i++) {
-	e_num = ctm_ptr->cf_element_num[i];
-	
-	score += get_case_interpret_probability(
-	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->cpp_string,
-	    pp_code_to_kstr(ctm_ptr->cf_ptr->pp[ctm_ptr->tcf_element_num[i]][0])) + UNKNOWN_CF_SCORE;
     }
     /* 入力文の格要素のうち対応付けられなかった要素に関するスコア */
     for (i = 0; i < tcf_ptr->cf.element_num - ctm_ptr->case_result_num; i++) {
@@ -288,12 +305,70 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 }
 
 /*==================================================================*/
+double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
+/*==================================================================*/
+{
+    /* 格フレームとの対応付けのスコアを計算する関数(省略解析の評価) */
+    int i, e_num, debug = 0;
+    double score = 0;
+    TAG_DATA *tag_ptr;
+
+    /* 格解析結果 */
+    for (i = 0; i < ctm_ptr->case_result_num; i++) {
+	/* /P(未格) */
+	score -= get_general_probability(
+	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->spp_string, "表層格");
+    }	
+
+    /* 対応付けられた要素に関するスコア(省略解析結果) */
+    for (i = ctm_ptr->case_result_num; i < ctm_ptr->result_num; i++) {
+	e_num = ctm_ptr->cf_element_num[i];
+
+	/* P(O:ガ|未格) = P(未格|O:ガ)/P(未格) */
+	/* P(未格|O:ガ) */
+	score += get_case_interpret_probability(
+	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->spp_string,
+	    pp_code_to_kstr(ctm_ptr->cf_ptr->pp[ctm_ptr->tcf_element_num[i]][0]), TRUE);
+	
+	/* /P(未格) */
+	score -= get_general_probability(
+	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->spp_string, "表層格");
+
+	/* P(食べる:動2,ヲ格|弁当) = P(弁当|食べる:動2,ヲ格)/P(弁当) */
+	/* P(弁当|食べる:動2,ヲ格) */
+	score += get_ex_probability(
+	    ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
+	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->tag_ptr,
+	    e_num, ctm_ptr->cf_ptr);
+	/* /P(弁当) */
+	score -= get_key_probability(
+	    (entity_manager.entity + ctm_ptr->entity_num[i])->mention[0]->tag_ptr);
+	
+    }
+    if (OptDisplay == OPT_DEBUG && debug) printf(";;%f ", score);	   
+
+    /* 対応付けられなかった格スロットに関するスコア*/
+    for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
+	if (!ctm_ptr->filled_element[e_num] &&
+	    (MatchPP(ctm_ptr->cf_ptr->pp[e_num][0], "ガ") ||
+	     MatchPP(ctm_ptr->cf_ptr->pp[e_num][0], "ヲ") ||
+	     MatchPP(ctm_ptr->cf_ptr->pp[e_num][0], "ニ")))
+	    score += get_case_interpret_probability(
+		"不特定",
+		pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]), TRUE);
+    }
+    
+    return score;
+}
+
+/*==================================================================*/
      int copy_ctm(CF_TAG_MGR *source_ctm, CF_TAG_MGR *target_ctm)
 /*==================================================================*/
 {
     int i;
 
     target_ctm->score = source_ctm->score;
+    target_ctm->case_score = source_ctm->case_score;
     target_ctm->cf_ptr = source_ctm->cf_ptr;
     target_ctm->result_num = source_ctm->result_num;
     target_ctm->case_result_num = source_ctm->case_result_num;
@@ -322,7 +397,7 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	
 	/* work_ctmに結果を保存 */
 	if (ctm_ptr->score > work_ctm[i].score) {	    
-	    for (j = CASE_CANDIDATE_MAX - 1; j > i; j--) {
+	    for (j = start + num - 1; j > i; j--) {
 		if (work_ctm[j - 1].score > INITIAL_SCORE) {
 		    copy_ctm(&work_ctm[j - 1], &work_ctm[j]);
 		}
@@ -362,9 +437,8 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		    if (ctm_ptr->filled_element[e_num] == TRUE) return FALSE;
 
 		    /* 直前格である場合は制限を加える(暫定的) */
-		    if (tag_ptr->tcf_ptr->cf.adjacent[i] && !(ctm_ptr->cf_ptr->adjacent[e_num]) ||
-			!(tag_ptr->tcf_ptr->cf.adjacent[i]) && ctm_ptr->cf_ptr->adjacent[e_num]) {
-			return FALSE;
+		    if (tag_ptr->tcf_ptr->cf.adjacent[i] && !(ctm_ptr->cf_ptr->adjacent[e_num])) {
+			//continue;
 		    }
 		    
 		    /* 対応付け結果を記録 */
@@ -382,14 +456,13 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 
 	for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
 	    /* 直前格、ガ、ヲ、ニ以外の格がある場合は割り当てない場合も考える */
-	    if (!(tag_ptr->tcf_ptr->cf.adjacent[i]) &&
+	    if (//!(tag_ptr->tcf_ptr->cf.adjacent[i]) &&
 		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ガ") &&
 		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ヲ") &&
 		!MatchPP(tag_ptr->tcf_ptr->cf.pp[i][j], "ニ")) {		
 		/* 入力文のi番目の要素が対応付けられなかったことを記録 */
 		ctm_ptr->non_match_element[i - r_num] = i; 
 		case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num);
-		break;
 	    }
 	}
     }
@@ -400,7 +473,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 	ctm_ptr->result_num = ctm_ptr->case_result_num = r_num;
 	for (j = 0; j < r_num; j++) ctm_ptr->flag[j] = 'C';
 	/* スコアを計算 */
-	ctm_ptr->score = calc_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr);
+	ctm_ptr->score = ctm_ptr->case_score = calc_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr);
 	/* スコア上位を保存 */
 	preserve_ctm(ctm_ptr, 0, CASE_CANDIDATE_MAX);
 	return TRUE;
@@ -426,9 +499,10 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	ctm_ptr->filled_element[ctm_ptr->cf_element_num[j]] = TRUE;
 	ctm_ptr->filled_entity[ctm_ptr->entity_num[j]] = TRUE;
     }
-
+    /* 自分自身も不可 */
+    ctm_ptr->filled_entity[tag_ptr->mention_mgr.mention->entity->num] = TRUE;
+    
     /* まだチェックしていない省略解析対象格がある場合 */
-
     if (i < ELLIPSIS_CASE_NUM) {
 	/* 対象の格について */
 	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
@@ -453,8 +527,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    /* 次の格のチェックへ */
 		    ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num + 1);
 		}
+		/* 埋めないで次の格へ(不特定) */
+		ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
 	    }
-	    break;
 	}
     }
     
@@ -464,7 +539,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	ctm_ptr->result_num = r_num;
 	for (j = ctm_ptr->case_result_num; j < r_num; j++) ctm_ptr->flag[j] = 'O';
 	/* スコアを計算 */
-	ctm_ptr->score = calc_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr);
+	ctm_ptr->score = calc_ellipsis_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr) + ctm_ptr->case_score;
+	//ctm_ptr->score = ctm_ptr->case_score;
+	//ctm_ptr->score = calc_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr);
 	/* スコア上位を保存 */
 	preserve_ctm(ctm_ptr, CASE_CANDIDATE_MAX, ELLIPSIS_RESULT_MAX);
 	ctm_ptr->score -= score;
@@ -511,15 +588,16 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	case_analysis_for_anaphora(tag_ptr, ctm_ptr, 0, 0);	
     }
     if (work_ctm[0].score == INITIAL_SCORE) return FALSE;
-    
+        
     if (OptDisplay == OPT_DEBUG) {
 	for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
-	    if (work_ctm[i].score == INITIAL_SCORE) break;
+	    if (work_ctm[i].score == INITIAL_SCORE ||
+		work_ctm[i].score < work_ctm[0].score - 1) break;
 	    printf(";;格解析候補  :%2d %f %s", i + 1, work_ctm[i].score, work_ctm[i].cf_ptr->cf_id);
 
 	    for (j = 0; j < work_ctm[i].result_num; j++) {
 		printf(" %s%s:%s",
-		       work_ctm[i].cf_ptr->adjacent[work_ctm[i].cf_element_num[j]] ? "*" : "",
+		       work_ctm[i].cf_ptr->adjacent[work_ctm[i].cf_element_num[j]] ? "*" : "-",
 		       pp_code_to_kstr(work_ctm[i].cf_ptr->pp[work_ctm[i].cf_element_num[j]][0]),
 		       work_ctm[i].elem_b_ptr[j]->head_ptr->Goi2);
 	    }
@@ -531,7 +609,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    printf(" %s:×", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]));
 			   
 	    }
-	    printf("\n", work_ctm[i].cf_ptr->cf_id);
+	    printf("\n");
 	}
     }
 
@@ -544,12 +622,14 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
     if (OptDisplay == OPT_DEBUG) {
 	for (i = CASE_CANDIDATE_MAX; i < CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX; i++) {
-	    if (work_ctm[i].score == INITIAL_SCORE) break;
+	    if (work_ctm[i].score == INITIAL_SCORE ||
+		work_ctm[i].score < work_ctm[CASE_CANDIDATE_MAX].score - 50) break;
 	    printf(";;省略解析候補:%2d %f %s", i - CASE_CANDIDATE_MAX + 1, 
 		   work_ctm[i].score, work_ctm[i].cf_ptr->cf_id);
 
 	    for (j = 0; j < work_ctm[i].result_num; j++) {
-		printf(" %s:%s",
+		printf(" %s%s:%s",
+		       work_ctm[i].cf_ptr->adjacent[work_ctm[i].cf_element_num[j]] ? "*" : "-",
 		       pp_code_to_kstr(work_ctm[i].cf_ptr->pp[work_ctm[i].cf_element_num[j]][0]),
 		       (entity_manager.entity + work_ctm[i].entity_num[j])->name);
 	    }
@@ -594,6 +674,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	mention_mgr = &(tag_ptr->mention_mgr);
 	mention_mgr->mention->tag_num = i;
 	mention_mgr->mention->sent_num = sp->Sen_num;
+	mention_mgr->mention->tag_ptr = tag_ptr;
 	mention_mgr->mention->entity = NULL;
 	mention_mgr->num = 1;
 
@@ -631,9 +712,14 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    /* 先行詞になりやすさ(基本的に文節主辞なら1) */
 	    entity_ptr->activity_score = 
 		(tag_ptr->inum == 0 && 
-		 check_feature(tag_ptr->f, "先行詞候補") &&
-		 !check_feature(tag_ptr->f, "NE内") &&
-		 !check_feature(tag_ptr->f, "Ｔ非先行詞")) ? 1 : 0;
+		 !check_feature(tag_ptr->f, "形副名詞") &&
+		 check_feature(tag_ptr->f, "照応詞候補") &&
+		 !check_feature(tag_ptr->f, "NE内")) ? 1 : 0;
+/* 	    entity_ptr->activity_score =  */
+/* 		(tag_ptr->inum == 0 &&  */
+/* 		 check_feature(tag_ptr->f, "先行詞候補") && */
+/* 		 !check_feature(tag_ptr->f, "NE内") && */
+/* 		 !check_feature(tag_ptr->f, "Ｔ非先行詞")) ? 1 : 0; */
 	    /* nameの設定(NE > 照応詞候補 > 主辞形態素の原型) */
 	    if (cp = check_feature(tag_ptr->f, "NE")) {
 		strcpy(entity_ptr->name, cp + strlen("NE:"));
@@ -646,7 +732,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    }
 	    mention_mgr->mention->entity = entity_ptr;	    
 	    strcpy(mention_mgr->mention->cpp_string, "＊");
-	    strcpy(mention_mgr->mention->spp_string, "＊");
+	    if ((cp = check_feature(tag_ptr->f, "係"))) {
+		strcpy(mention_mgr->mention->spp_string, cp + strlen("係:"));
+	    }
+	    else {
+		strcpy(mention_mgr->mention->spp_string, "＊");
+	    }
 	    mention_mgr->mention->flag = 'S'; /* 自分自身 */
 	}
     }
@@ -685,11 +776,14 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    !check_feature(tag_ptr->f, "共参照") &&
 	    !check_feature(tag_ptr->f, "共参照内")) {
 
+	    /* 位置カテゴリの生成 */	    
+	    //mark_location_classes(sp, tag_ptr->b_ptr);
+
 	    /* tag_ptr->tcf_ptrを作成 */
 	    tag_ptr->tcf_ptr = 
 		(TAG_CASE_FRAME *)malloc_data(sizeof(TAG_CASE_FRAME), "make_context_structure");
 	    set_tag_case_frame(sp, tag_ptr);
-
+	    
 	    /* 省略解析メイン */
 	    ellipsis_analysis_main(tag_ptr);
 
@@ -727,7 +821,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	/* if (!entity_ptr->antecedent_num) continue; */
 	/* if (entity_ptr->mentioned_num == 1) continue; */
-	if (entity_ptr->activity_score == 0) continue;
+	if (entity_ptr->activity_score <= 0.5) continue;
 
 	printf(";; ENTITY %d [ %s ] %f {\n", i, entity_ptr->name, entity_ptr->activity_score);
 	for (j = 0; j < entity_ptr->mentioned_num; j++) {
@@ -735,6 +829,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    printf(";;\tMENTION%3d {", j);
 	    printf(" SEN:%3d", mention_ptr->sent_num);
 	    printf(" TAG:%3d", mention_ptr->tag_num);
+	    printf(" (%3d)", ((sentence_data + mention_ptr->sent_num - 1)->tag_data + mention_ptr->tag_num)->head_ptr->Num);
 	    printf(" CPP: %s", mention_ptr->cpp_string);
 	    printf(" SPP: %s", mention_ptr->spp_string);
 	    printf(" FLAG: %c", mention_ptr->flag);

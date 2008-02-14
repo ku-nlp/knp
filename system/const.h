@@ -587,6 +587,7 @@ typedef struct {
     int  	Katuyou_Kei;
     char	Imi[IMI_MAX];
     FEATUREptr	f;
+    int         Num;         /* 文先頭からこの形態素の終りまでの文字数 */
     char 	*SM;				/* 追加 */
     char        Pos[CHI_POS_LEN_MAX+1];    /* pos-tag for Chinese word */
     char        Type[CHI_TYPE_LEN_MAX+1];    /* type for Chinese word */
@@ -728,6 +729,7 @@ typedef struct mention {
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
     char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D', */
+    struct tnode_t      *tag_ptr;
     struct entity       *entity;
 } MENTION;
 
@@ -1234,6 +1236,7 @@ typedef struct tcf_def {
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
+    double      case_score;                      /* 格解析の対応付けのスコア */
     CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
 
     /* 格フレームの要素のうち対応付けがついたもの
