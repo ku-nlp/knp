@@ -53,6 +53,7 @@ int     CHISpecPAExist;
 int     CHIPAExist;
 
 int	PrintDeletedSM = 0;
+int	SM_AGENT_THRESHOLD = 0.40;
 
 /*==================================================================*/
 	   void init_cf_structure(CASE_FRAME *p, int size)
@@ -952,6 +953,11 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
                                (上の動的計算は撲滅予定) */
     if (agent_ratio > 0) {
 	agent_count = agent_ratio * c_ptr->freq[num];
+
+	/* <主体>を意味素に追加 (-no-probcase用) */
+	if (!sub_agent_flag && agent_ratio > SM_AGENT_THRESHOLD) {
+	    _make_ipal_cframe_sm(c_ptr, "主体", num, flag);
+	}
     }
 
     /* <主体>の追加 */
@@ -1932,6 +1938,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	else {
 	    return FALSE;
 	}
+    }
+    else {
+	return FALSE;
     }
 
     cf_ptr->element_num = num;
