@@ -1,3 +1,8 @@
+2008-02-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/main.c, system/read_data.c:
+	省略解析時に共参照解析の正解を読み込めるように変更
+	
 2008-02-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c:
@@ -9,7 +14,7 @@
 	* system/case_ipal.c:
 	汎化された固有表現情報を用いた格解析(-cf-ne)の確率計算方法を変更
 
-	* system/anaphora.c, system/main.c, system/case_ipal.c, system/extern.h, system/const.h
+	* system/anaphora.c, system/main.c, system/case_ipal.c, system/extern.h, system/const.h:
 	格フレームとの対応付けのスコアを計算する関数(省略解析の評価)を追加
 	照応解析時にMRPH_DATAに文先頭からその形態素の終りまでの文字数を記憶するように変更
 	

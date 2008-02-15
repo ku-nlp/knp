@@ -792,6 +792,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-read-feature")) {
 	    OptReadFeature = 1;
 	}
+	else if (str_eq(argv[0], "-read-feature-corefer")) {
+	    OptReadFeature = 2;
+	}
 	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
 	    OptAddSvmFeatureUtype = 1;
 	}

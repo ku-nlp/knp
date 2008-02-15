@@ -32,7 +32,6 @@ char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM] = {"ガ", "ヲ", "ニ"};
 
     /* mrphに文先頭からその形態素の終りまでの文字数 */
     for (i = 0; i < sp->Mrph_num; i++) {
-	printf("%d %d ok?\n", i, count);
 	count += strlen((sp->mrph_data + i)->Goi2) / 2;
 	(sp->mrph_data + i)->Num = count;
     }
@@ -680,9 +679,13 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	/* 入力から正解を読み込む場合 */
 	if (OptReadFeature) {
-
-	    /* featureから格解析結果を取得 */
-	    if (cp = check_feature(tag_ptr->f, "格解析結果")) {		
+	    /* 同格は正解コーパスに付与されないので自動解析 */
+	    if (check_feature(tag_ptr->f, "同格") && 
+		(cp = check_feature(tag_ptr->f, "Ｔ共参照"))) {
+		read_one_annotation(sp, tag_ptr, cp + strlen("Ｔ共参照:"), TRUE);		
+	    }
+	    /* featureから格解析結果を取得 */    
+	    else if (cp = check_feature(tag_ptr->f, "格解析結果")) {		
 		cp += strlen("格解析結果:");
 		cp = strchr(cp, ':') + 1;	
 		for (; *cp; cp++) {
@@ -743,7 +746,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     }
 
     /* 入力から正解を読み込む場合 */
-    if (OptReadFeature) {
+    if (OptReadFeature == 1) {
 	for (i = 0; i < sp->Tag_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
 
 	    tag_ptr = sp->tag_data + i; 

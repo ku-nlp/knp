@@ -672,10 +672,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	return TRUE;
     }
 
-    if (flag == 'E') { /* 不特定 */
+    if (flag == 'E' || flag == 'U') { /* 不特定、または、割り当てなし(OptReadFeature用) */
 	tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;
-	tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;
-	
+	tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;	
     }
     else {
 	if (sent_n > 0) {
