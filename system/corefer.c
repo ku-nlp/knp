@@ -691,7 +691,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		head_ptr->Goi2, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1);
 	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
 	assign_cfeature(&((sp->tag_data + j)->f), "同格", FALSE);
-	sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, i - 1, 0);
+	sprintf(buf, "Ｔ共参照:=/O/null/%d/%d/-", i - 1, 0);
 	assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 
 	/* COREFER_IDを付与 */

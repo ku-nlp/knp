@@ -1,3 +1,8 @@
+2008-02-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/corefer.c:
+	同格認識に関するsmall bug fix.
+
 2008-02-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/main.c, system/read_data.c:
