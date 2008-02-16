@@ -1,3 +1,8 @@
+2008-02-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added a rule for concatenating person words into a basic phrase (e.g., ジョン・Ｆ・ケネディ).
+
 2008-02-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c:
