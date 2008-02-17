@@ -676,6 +676,15 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-use-rn")) {
 	    OptUseRN = 0;
 	}
+	else if (str_eq(argv[0], "-use-crn-cf")) {
+	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
+	    OptCaseFlag |= OPT_CASE_USE_CREP_CF;
+	}
+	else if (str_eq(argv[0], "-use-cn-cf")) {
+	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
+	    OptCaseFlag |= OPT_CASE_USE_CREP_CF;
+	    OptCaseFlag |= OPT_CASE_USE_CN_CF;
+	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
 	}

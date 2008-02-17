@@ -502,6 +502,24 @@ int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *
 }
 
 /*==================================================================*/
+int cf_match_exactly_for_canonical_rep(char *word, int word_len, char **ex_list, int ex_num, int *pos)
+/*==================================================================*/
+{
+    char *token;
+
+    /* 正規化代表表記の場合は?で切ってチェック */
+    token = strtok(word, "?");
+    while (token) {
+	if (cf_match_exactly(token, strlen(token), ex_list, ex_num, pos)) {
+	    return 1;
+	}
+	token = strtok(NULL, "?");
+    }
+
+    return 0;
+}
+
+/*==================================================================*/
 float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word, 
 			     CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
@@ -522,7 +540,7 @@ float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word,
 float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
-    char *exd, *strp;
+    char *exd, *strp, *cp;
     int expand, strp_malloc_flag = 0, rep_length, exact_matched_flag = 0;
     float ex_score = 0;
     FEATURE *fp;
@@ -543,7 +561,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((strp = get_mrph_rep_from_f(tp->head_ptr, FALSE)) == NULL) { /* FIX ME!: とりあえず主辞のみ */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(tp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    strp = strdup(cp);
+	    strp_malloc_flag = 1;
+	}
+	else if ((strp = get_mrph_rep_from_f(tp->head_ptr, FALSE)) == NULL) { /* feature中の代表表記 */
 	    strp = make_mrph_rn(tp->head_ptr); /* なければ作る */
 	    strp_malloc_flag = 1;
 	}
@@ -554,12 +577,13 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 
     /* exact match */
     if (!check_feature(tp->f, "形副名詞")) {
-	if (cf_match_exactly(strp, strlen(strp), 
-			     cfp->ex_list[n], cfp->ex_num[n], pos)) {
+	if (cf_match_exactly_for_canonical_rep(strp, strlen(strp), 
+					       cfp->ex_list[n], cfp->ex_num[n], pos)) {
 	    exact_matched_flag = 1;
 	}
-	/* 代表表記の場合はALTも調べる */
-	else if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+	/* 正規化代表表記を使わない代表表記の場合はALTも調べる */
+	else if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
+		 !(OptCaseFlag & OPT_CASE_USE_CREP_CF)) {
 	    fp = tp->head_ptr->f;
 	    while (fp) {
 		if (!strncmp(fp->cp, "ALT-", 4)) {

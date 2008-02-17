@@ -127,6 +127,26 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 }
 
 /*==================================================================*/
+ char *get_bnst_head_canonical_rep(BNST_DATA *ptr, int compound_flag)
+/*==================================================================*/
+{
+    char *cp;
+
+    if (compound_flag) { /* 主辞+α */
+	if ((cp = check_feature(ptr->f, "主辞’代表表記"))) {
+	    return cp + strlen("主辞’代表表記:");
+	}
+    }
+
+    if ((cp = check_feature(ptr->f, "主辞代表表記"))) {
+	return cp + strlen("主辞代表表記:");
+    }
+    else {
+	return NULL;
+    }
+}
+
+/*==================================================================*/
 	     int assign_rep_f_from_imi(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {

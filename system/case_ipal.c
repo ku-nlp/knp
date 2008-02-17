@@ -1319,16 +1319,33 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	else {
 	    cbp = get_quasi_closest_case_component(t_ptr, t_ptr->num < 1 ? NULL : t_ptr - 1);
 	    if (cbp) {
-		char *buffer, *pp;
+		char *buffer, *pp, *cbp_str;
+		int cbp_str_malloc_flag = 0;
 
 		pp = feature2case(cbp);
 		if (pp) {
-		    buffer = (char *)malloc_data(strlen(cbp->head_ptr->Goi) + strlen(pp) + strlen(verb) + 3, 
+		    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+			if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+			    (cbp_str = get_bnst_head_canonical_rep(cbp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+			    ;
+			}
+			else if ((cbp_str = get_mrph_rep_from_f(cbp->head_ptr, FALSE)) == NULL) { /* feature中の代表表記 */
+			    cbp_str = make_mrph_rn(cbp->head_ptr); /* なければ作る */
+			    cbp_str_malloc_flag = 1;
+			}
+		    }
+		    else {
+			cbp_str = cbp->head_ptr->Goi;
+		    }
+		    buffer = (char *)malloc_data(strlen(cbp_str) + strlen(pp) + strlen(verb) + 3, 
 						 "_make_ipal_cframe_subcontract");
-		    sprintf(buffer, "%s-%s-%s", cbp->head_ptr->Goi, pp, verb);
+		    sprintf(buffer, "%s-%s-%s", cbp_str, pp, verb);
 		    address_str = get_ipal_address(buffer, flag);
 		    free(buffer);
 		    free(pp);
+		    if (cbp_str_malloc_flag) {
+			free(cbp_str);
+		    }
 		}
 		if (!pp || !address_str) {
 		    address_str = get_ipal_address(verb, flag);

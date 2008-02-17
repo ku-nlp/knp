@@ -488,6 +488,7 @@ extern char *get_mrph_rep(MRPH_DATA *m_ptr);
 extern char *get_mrph_rep_from_f(MRPH_DATA *m_ptr, int flag);
 extern int get_mrph_rep_length(char *rep_strt);
 extern char *make_mrph_rn(MRPH_DATA *m_ptr);
+extern char *get_bnst_head_canonical_rep(BNST_DATA *ptr, int compound_flag);
 extern void assign_cc_feature_to_bp(SENTENCE_DATA *sp);
 extern void assign_cc_feature_to_bnst(SENTENCE_DATA *sp);
 extern void preprocess_mrph(SENTENCE_DATA *sp);
