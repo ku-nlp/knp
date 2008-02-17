@@ -16,6 +16,7 @@
 #define SCASE_DB_NAME		"gcf/scase.db"
 #define CF_DB_NAME		"ebcf/cf.db"
 #define CF_DAT_NAME		"ebcf/cf.dat"
+#define CF_INDEX_NAME		"ebcf/cf.idx"
 #define CF_SIM_DB_NAME		"ebcf/cfsim.db"
 #define CF_CASE_DB_NAME		"ebcf/cfcase.db"
 #define CF_EX_DB_NAME		"ebcf/cfex.db"

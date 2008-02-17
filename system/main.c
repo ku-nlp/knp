@@ -283,8 +283,11 @@ int      dpnd_lex = 0;
 	    if (argc < 1) usage();
 	    OptBeam = atoi(argv[0]);
 	}
+	else if (str_eq(argv[0], "-cf-on-memory-all")) {
+	    OptCfOnMemory = OPT_CF_ON_MEMORY_ALL;
+	}
 	else if (str_eq(argv[0], "-cf-on-memory")) {
-	    OptCfOnMemory = TRUE;
+	    OptCfOnMemory = OPT_CF_ON_MEMORY;
 	}
 	else if (str_eq(argv[0], "-cf-on-disk")) {
 	    OptCfOnMemory = FALSE;

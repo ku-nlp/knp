@@ -9,6 +9,7 @@
 #include "knp.h"
 
 FILE *cf_fp;
+FILE *cf_idx_fp;
 DBM_FILE cf_db;
 FILE *cf_noun_fp;
 DBM_FILE cf_noun_db;
@@ -78,13 +79,20 @@ int	PrintDeletedSM = 0;
 			    void init_cf()
 /*==================================================================*/
 {
-    char *index_db_filename, *data_filename;
+    char *index_db_filename, *data_filename, *index_filename;
 
     if (DICT[CF_DATA]) {
 	data_filename = check_dict_filename(DICT[CF_DATA], TRUE);
     }
     else {
 	data_filename = check_dict_filename(CF_DAT_NAME, FALSE);
+    }
+
+    if (DICT[CF_INDEX]) {
+	index_filename = check_dict_filename(DICT[CF_INDEX], TRUE);
+    }
+    else {
+	index_filename = check_dict_filename(CF_INDEX_NAME, FALSE);
     }
 
     if (DICT[CF_INDEX_DB]) {
@@ -122,7 +130,26 @@ int	PrintDeletedSM = 0;
 	CFExist = TRUE;
     }
 
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", index_filename);
+    }
+
+    if ((cf_idx_fp = fopen(index_filename, "r")) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+#ifdef DEBUG
+	fprintf(stderr, ";; Cannot open CF INDEX <%s>.\n", index_filename);
+#endif
+    }
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "done.\n");
+	}
+    }
+
     free(data_filename);
+    free(index_filename);
     free(index_db_filename);
 
     /* 格フレーム類似度DB (cfsim.db) */
@@ -268,6 +295,11 @@ int	PrintDeletedSM = 0;
 
 	/* 用言-格フレーム場所HASHの初期化 */
 	memset(cf_table, 0, sizeof(CFLIST) * TBLSIZE);
+
+	/* 格フレームをすべて読みこみ */
+	if (OptCfOnMemory == OPT_CF_ON_MEMORY_ALL) {
+	    read_all_cf();
+	}
     }
 }
 
@@ -1338,6 +1370,40 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 }
 
 /*==================================================================*/
+void register_cf_static(char *pred_str, int cf_start_num, int cf_num)
+/*==================================================================*/
+{
+    CFLIST *cfp;
+
+    cfp = &(cf_table[hash(pred_str, strlen(pred_str))]);
+
+    if (cfp->key) {
+	CFLIST **cfpp;
+	cfpp = &cfp;
+	do {
+	    if (!strcmp((*cfpp)->key, pred_str)) {
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(stderr, ";; duplicated entry! (%s <-> %s)\n", (*cfpp)->key, pred_str);
+		}
+		return;
+	    }
+	    cfpp = &((*cfpp)->next);
+	} while (*cfpp);
+	*cfpp = (CFLIST *)malloc_data(sizeof(CFLIST), "register_cf_static");
+	cfp = *cfpp;
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(stderr, ";; registered %s\n", pred_str);
+    }
+
+    cfp->key = pred_str;
+    cfp->cf_start_num = cf_start_num;
+    cfp->cf_num = cf_num;
+    cfp->next = NULL;
+}
+
+/*==================================================================*/
 	 void register_cf(TAG_DATA *t_ptr, int cf_start_num)
 /*==================================================================*/
 {
@@ -1352,26 +1418,88 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 	return;
     }
 
-    cfp = &(cf_table[hash(pred_str, strlen(pred_str))]);
+    register_cf_static(pred_str, cf_start_num, t_ptr->cf_num);
+}
 
-    if (cfp->key) {
-	CFLIST **cfpp;
-	cfpp = &cfp;
-	do {
-	    if (!strcmp((*cfpp)->key, pred_str)) {
-		fprintf(stderr, ";; duplicated entry!\n");
-		return;
-	    }
-	    cfpp = &((*cfpp)->next);
-	} while (*cfpp);
-	*cfpp = (CFLIST *)malloc_data(sizeof(CFLIST), "RegisterCF");
-	cfp = *cfpp;
+/*==================================================================*/
+			  int read_all_cf()
+/*==================================================================*/
+{
+    char input_buffer[LONG_DATA_LEN], predicate[DATA_LEN], address_str[DATA_LEN], pred_str[DATA_LEN], *pre_pred_str;
+    char *cp, *pre_pos;
+    int address, size, start_num = 0, f_num, break_flag, match;
+    CF_FRAME *i_ptr;
+    CASE_FRAME *cf_ptr = Case_frame_array;
+
+    if (cf_idx_fp == NULL) {
+	return FALSE;
     }
 
-    cfp->key = pred_str;
-    cfp->cf_start_num = cf_start_num;
-    cfp->cf_num = t_ptr->cf_num;
-    cfp->next = NULL;
+    input_buffer[LONG_DATA_LEN - 1] = '\n';
+    while (fgets(input_buffer, LONG_DATA_LEN, cf_idx_fp) != NULL) {
+	if (input_buffer[LONG_DATA_LEN - 1] != '\n') {
+	    input_buffer[LONG_DATA_LEN - 1] = '\0';
+	    fprintf(stderr, ";; Too long line <%s> !\n", input_buffer);
+	    readtonl(cf_idx_fp);
+	    input_buffer[LONG_DATA_LEN - 1] = '\n';
+	}
+
+	sscanf(input_buffer, "%s %s", predicate, address_str);
+	f_num = 0;
+	break_flag = 0;
+	pre_pred_str = NULL;
+	for (cp = pre_pos = address_str; ; cp++) {
+	    if (*cp == '/' || *cp == '\0') {
+		if (*cp == '\0')
+		    break_flag = 1;
+		else 
+		    *cp = '\0';
+	    
+		/* 格フレームの読みだし */
+		match = sscanf(pre_pos, "%d:%d", &address, &size);
+		if (match != 2) {
+		    fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
+		    exit(1);
+		}
+
+		i_ptr = get_ipal_frame(address, size, CF_PRED);
+		pre_pos = cp + 1;
+
+		(cf_ptr + start_num + f_num)->voice = FRAME_ACTIVE;
+		_make_ipal_cframe(i_ptr, cf_ptr + start_num + f_num, address, size, CF_PRED);
+		sscanf((cf_ptr + start_num + f_num)->cf_id, "%[^0-9]%*d", pred_str);
+
+		/* 一般的外の関係名詞を追加 */
+		add_general_soto_words(cf_ptr + start_num + f_num, CF_PRED);
+
+		f_num_inc(start_num, &f_num);
+		cf_ptr = Case_frame_array;
+
+		if (pre_pred_str) {
+		    if (strcmp(pre_pred_str, pred_str)) { /* 異なるときに登録 */
+			register_cf_static(pre_pred_str, start_num, f_num);
+			start_num += f_num;
+			f_num = 0;
+			pre_pred_str = strdup(pred_str);
+		    }
+		}
+		else {
+		    pre_pred_str = strdup(pred_str);
+		}
+
+		if (break_flag)
+		    break;
+	    }
+	}
+
+	if (f_num) {
+	    register_cf_static(pre_pred_str, start_num, f_num);
+	    start_num += f_num;
+	}
+    }
+
+    Case_frame_num = start_num;
+    return TRUE;
 }
 
 /*==================================================================*/

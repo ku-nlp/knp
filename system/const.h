@@ -82,6 +82,7 @@
 	#define IMI_MAX	129	/* defined in "juman.h" */	
 #endif
 
+#define LONG_DATA_LEN	70000
 #define DATA_LEN	5120
 #define SMALL_DATA_LEN	128
 #define SMALL_DATA_LEN2	256
@@ -144,6 +145,9 @@
 #define OPT_SVM		2
 #define OPT_DT		3
 #define	OPT_SERV_FORE	1
+
+#define OPT_CF_ON_MEMORY	1
+#define OPT_CF_ON_MEMORY_ALL	2
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
@@ -509,7 +513,7 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 
 /* 辞書の最大数 */
-#define DICT_MAX	34
+#define DICT_MAX	35
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -544,6 +548,7 @@ typedef struct _RuleVector {
 #define HOWNET_SEM_DEF_DB       31
 #define CHI_SPEC_PA_DB       32
 #define CHI_PA_DB       33
+#define CF_INDEX	34
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
