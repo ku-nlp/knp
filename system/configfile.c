@@ -336,6 +336,21 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		else if (!strcmp(dicttype, "格フレームSIMDB")) {
 		    DICT[CF_SIM_DB] = strdup(_Atom(car(car(cell1))));
 		}
+		else if (!strcmp(dicttype, "格フレームCFPDB")) {
+		    DICT[CFP_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "格フレームCFCASEDB")) {
+		    DICT[CF_CASE_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "格フレームCASEDB")) {
+		    DICT[CASE_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "格フレームRENYOUDB")) {
+		    DICT[RENYOU_DB] = strdup(_Atom(car(car(cell1))));
+		}
+		else if (!strcmp(dicttype, "格フレームADVERBDB")) {
+		    DICT[ADVERB_DB] = strdup(_Atom(car(car(cell1))));
+		}
 		else if (!strcmp(dicttype, "名詞格フレームINDEXDB")) {
 		    DICT[CF_NOUN_INDEX_DB] = strdup(_Atom(car(car(cell1))));
 		}
