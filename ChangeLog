@@ -1,5 +1,9 @@
 2008-02-17  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h, system/main.c, system/read_data.c:
+	Support canonical representative names for '-no-probcase'.
+	Speed up the lookup of case frames by coupling a predicate and its closest case component.
+
 	* system/configfile.c:
 	The paths of probability DBs can be specified in knprc.
 
