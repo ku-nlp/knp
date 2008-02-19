@@ -798,7 +798,7 @@ typedef struct tnode_t {
     int         is_para;        /* tag for Chinese coordination */
     /* 表層格データ */
     char 	SCASE_code[SCASE_CODE_SIZE];
-    /* 並列構造 */
+    /* 並列構造 (詳細はBNST_DATAを参照のこと) */
     int 	para_num;
     char   	para_key_type;
     char	para_top_p;
