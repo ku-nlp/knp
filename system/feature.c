@@ -499,11 +499,14 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		    }
 		}
 	    }
-	    /* 形態素付属化 : 属する形態素列をすべて<付属>にする */
+	    /* 形態素付属化 : 属する形態素列をすべて<付属>にする
+	       本来は、&形態素feature:^自立 のように引き数をとるべき */
 	    else if (!strncmp((*fpp2)->cp, "&形態素付属化", strlen("&形態素付属化"))) {
 		for (i = 0; i < ((TAG_DATA *)ptr + offset)->mrph_num; i++) {
 		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "自立");
 		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "意味有");
+		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "内容語");
+		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "準内容語");
 		    assign_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "付属", temp_assign_flag);
 		}
 	    }
