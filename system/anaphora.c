@@ -645,6 +645,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     }
     
     /* BEST解を保存 */
+    if (work_ctm[CASE_CANDIDATE_MAX].score == INITIAL_SCORE) return FALSE;
     tag_ptr->ctm_ptr = 
 	(CF_TAG_MGR *)malloc_data(sizeof(CF_TAG_MGR), "ellipsis_analysis_main");
     copy_ctm(&work_ctm[CASE_CANDIDATE_MAX], tag_ptr->ctm_ptr);
@@ -745,6 +746,15 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	}
     }
 
+    /* 並列構造への対処 */
+    for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) { 
+	tag_ptr = sp->tag_data + i; 
+	if (tag_ptr->parent) {
+	    tag_ptr->mention_mgr.mention->entity =
+		tag_ptr->parent->mention_mgr.mention->entity;
+	}
+    }
+
     /* 入力から正解を読み込む場合 */
     if (OptReadFeature == 1) {
 	for (i = 0; i < sp->Tag_num; i++) { /* 解析文のタグ単位:i番目のタグについて */
@@ -789,6 +799,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    
 	    /* 省略解析メイン */
 	    ellipsis_analysis_main(tag_ptr);
+
+	    /* 将来的にはellipsis_analysis_mainでcpmを使わなくする */
+	    free(tag_ptr->cpm_ptr);
 
 	    /* tcfを解放 (暫定的) */
 	    for (j = 0; j < CF_ELEMENT_MAX; j++) {

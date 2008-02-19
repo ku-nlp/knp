@@ -1,3 +1,8 @@
+2008-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	並列構造がある場合に起こるバグを修正
+
 2008-02-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/case_match.c, system/const.h, system/extern.h, system/main.c, system/read_data.c:
