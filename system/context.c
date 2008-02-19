@@ -1068,8 +1068,15 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	if (sp->tag_data[i].pred_b_ptr) {
 	    sp_new->tag_data[i].pred_b_ptr = sp_new->tag_data + (sp->tag_data[i].pred_b_ptr - sp->tag_data);
 	}
-
+	if (sp->tag_data[i].next) {
+	    sp_new->tag_data[i].next = sp_new->tag_data + (sp->tag_data[i].next - sp->tag_data);
+	}
 	sp_new->tag_data[i].b_ptr = sp_new->bnst_data + (sp->tag_data[i].b_ptr - sp->bnst_data);
+    }
+
+    for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
+	if (sp->bnst_data[i].tag_ptr) 
+	    sp_new->bnst_data[i].tag_ptr = sp_new->tag_data + (sp->bnst_data[i].tag_ptr - sp->tag_data);
     }
 
     if (sp->KNPSID)

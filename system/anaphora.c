@@ -52,7 +52,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     if (!sscanf(token, "%[^/]/%c/%*[^/]/%d/%d/", rel, &flag, &tag_num, &sent_num)) 
 	return FALSE;
 
-    if (co_flag && !strcmp(rel, "=")) {
+    if (co_flag && !strcmp(rel, "=") && flag == 'O') {
 	mention_ptr = mention_mgr->mention;
 	mention_ptr->entity = ((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
 	mention_ptr->entity->activity_score += 1;

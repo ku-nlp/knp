@@ -1,5 +1,9 @@
 2008-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/context.c:
+	PreserveSentenceにおいて、tag_data[i].nextとbnst_data[i].tag_ptrの
+	ポインタのずれも補正するように変更
+
 	* system/anaphora.c:
 	並列構造がある場合に起こるバグを修正
 
