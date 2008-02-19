@@ -1,3 +1,9 @@
+2008-02-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	位置カテゴリをマークする関数を追加
+	並列構造がある場合に、tag_ptrの実体を返す関数を追加
+
 2008-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/context.c:
