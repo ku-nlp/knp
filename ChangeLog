@@ -1,8 +1,21 @@
+2008-02-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Modified a rule for Katakana person names.
+
+	* rule/mrph_filter.rule:
+	Fixed rules for recognizing emoticons.
+
 2008-02-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
 	位置カテゴリをマークする関数を追加
 	並列構造がある場合に、tag_ptrの実体を返す関数を追加
+
+2008-02-19  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/feature.c:
+	Modification for <内容語> under -postprocess.
 
 2008-02-19  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
