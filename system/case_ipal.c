@@ -2465,7 +2465,7 @@ double _get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp)
 		}
 		return atof(value) * cfp->gex_freq[as2][i];
 	    }
-	}
+	}	
     }
     return 0;
 }
@@ -2914,7 +2914,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	return ret;
     }
     else {
-	return 0;
+	return FREQ0_ASSINED_SCORE;
     }
 }
 
