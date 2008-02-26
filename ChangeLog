@@ -1,3 +1,8 @@
+2008-02-26  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.rule:
+	Fixed a rule for Katakana person names.
+
 2008-02-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/case_ipal:
