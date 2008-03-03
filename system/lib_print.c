@@ -353,7 +353,24 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 }
 
 /*==================================================================*/
-	    void print_mrphs(SENTENCE_DATA *sp, int flag)
+		 void print_mrphs(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < sp->Mrph_num; i++) {
+	print_mrph(sp->mrph_data + i);
+	if ((sp->mrph_data + i)->f) {
+	    fprintf(Outfp, " ");
+	    print_feature((sp->mrph_data + i)->f, Outfp);
+	}
+	fprintf(Outfp, "\n");
+    }
+    fprintf(Outfp, "EOS\n");
+}
+
+/*==================================================================*/
+       void print_bnst_with_mrphs(SENTENCE_DATA *sp, int flag)
 /*==================================================================*/
 {
     int		i, j;
@@ -1451,7 +1468,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {
-	print_mrphs(sp, 1);
+	print_bnst_with_mrphs(sp, 1);
     }
     else if (OptExpress == OPT_PA) {
 	/* FIXME: 格解析結果の整合性をとる必要がある */

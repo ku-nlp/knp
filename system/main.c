@@ -280,6 +280,11 @@ extern int	EX_match_subject;
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
 	}
+	else if (str_eq(argv[0], "-filter")) {
+	    OptAnalysis = OPT_FILTER;
+	    OptUseCF = FALSE;
+	    OptUseNCF = FALSE;
+	}
 	else if (str_eq(argv[0], "-bnst")) {
 	    OptAnalysis = OPT_BNST;
 	    OptUseCF = FALSE;
@@ -1175,6 +1180,9 @@ extern int	EX_match_subject;
     /* 形態素列の前処理 */
     preprocess_mrph(sp);
 
+    /* 形態素列の前処理だけの場合 */
+    if (OptAnalysis == OPT_FILTER) return TRUE;
+
     /* 形態素へのFEATURE付与 */
 
     assign_cfeature(&(sp->mrph_data[0].f), "文頭", FALSE);
@@ -1276,7 +1284,7 @@ extern int	EX_match_subject;
     }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	print_mrphs(sp, 0);
+	print_bnst_with_mrphs(sp, 0);
 
     fix_sm_person(sp);
 
@@ -1629,8 +1637,11 @@ PARSED:
 	/* 結果表示 */
 	/************/
 
-	if (OptAnalysis == OPT_BNST) {
-	    print_mrphs(sp, 0);
+	if (OptAnalysis == OPT_FILTER) {
+	    print_mrphs(sp);
+	}
+	else if (OptAnalysis == OPT_BNST) {
+	    print_bnst_with_mrphs(sp, 0);
 	}
 	else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
 	    print_result(sp, 1);

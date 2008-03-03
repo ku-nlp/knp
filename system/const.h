@@ -133,6 +133,7 @@
 #define OPT_DPND	2
 #define OPT_BNST	3
 #define OPT_AssignF	4
+#define OPT_FILTER	5
 #define OPT_ELLIPSIS	1
 #define OPT_DEMO	2
 #define OPT_REL_NOUN	4
