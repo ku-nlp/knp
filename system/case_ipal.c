@@ -1318,7 +1318,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	}
 	else {
 	    cbp = get_quasi_closest_case_component(t_ptr, t_ptr->num < 1 ? NULL : t_ptr - 1);
-	    if (cbp) {
+	    if ((OptCaseFlag & OPT_CASE_FIX_CF_SEARCH) && cbp) {
 		char *buffer, *pp, *cbp_str;
 		int cbp_str_malloc_flag = 0;
 
