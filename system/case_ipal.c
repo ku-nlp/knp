@@ -2633,10 +2633,17 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
-	if (mrph_str == NULL) {
-	    mrph_str = make_mrph_rn(dp->head_ptr);
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    mrph_str = strdup(cp);
 	    rep_malloc_flag = 1;
+	}
+	else {
+	    mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
+	    if (mrph_str == NULL) {
+		mrph_str = make_mrph_rn(dp->head_ptr);
+		rep_malloc_flag = 1;
+	    }
 	}
     }
     else {
