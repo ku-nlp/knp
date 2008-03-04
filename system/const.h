@@ -907,7 +907,7 @@ typedef struct cf_def {
     int		gex_size[CF_ELEMENT_MAX];
     int		gex_num[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
-    int 	cf_address;				/* 格フレームのアドレス */
+    unsigned int	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
     char 	cf_id[SMALL_DATA_LEN];			/* 格フレームのID */
     char	pred_type[3];				/* 用言タイプ (動, 形, 判) */

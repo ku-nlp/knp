@@ -306,7 +306,7 @@ int	SM_AGENT_THRESHOLD = 0.40;
 }
 
 /*==================================================================*/
-      CF_FRAME *get_ipal_frame(int address, int size, int flag)
+  CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag)
 /*==================================================================*/
 {
     int i, c1, c2, count = 0;
@@ -332,7 +332,7 @@ int	SM_AGENT_THRESHOLD = 0.40;
 					  "get_ipal_frame");
     }
 
-    fseek(fp, (long)address, 0);
+    fseek(fp, (unsigned long)address, 0);
     if (fread(CF_frame.DATA, size, 1, fp) < 1) {
 	fprintf(stderr, ";; Error in fread.\n");
 	exit(1);
@@ -1021,7 +1021,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
 /*==================================================================*/
      void _make_ipal_cframe(CF_FRAME *i_ptr, CASE_FRAME *cf_ptr,
-			    int address, int size, char *verb, int flag)
+			    unsigned int address, int size, char *verb, int flag)
 /*==================================================================*/
 {
     int i, j = 0, ga_p = FALSE, c1, c2, count = 0;
@@ -1300,7 +1300,8 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     CF_FRAME *i_ptr;
     CASE_FRAME *cf_ptr;
     TAG_DATA *cbp;
-    int f_num = 0, address, break_flag = 0, size, match, c;
+    int f_num = 0, break_flag = 0, size, match, c;
+    unsigned int address;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
 
     if (!verb)
