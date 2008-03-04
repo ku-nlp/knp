@@ -946,11 +946,16 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 	}
     }
 
-    if (prob[0] > DOUBLE_MIN) {
-      fprob_LtoR = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
+    if (!strcmp(k_ptr->head_ptr->Pos, "PU") || !strcmp(u_ptr->head_ptr->Pos, "PU")) {
+      fprob_LtoR = prob[0];
     }
     else {
-      fprob_LtoR = prob[1];
+      if (prob[0] > DOUBLE_MIN) {
+	fprob_LtoR = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
+      }
+      else {
+	fprob_LtoR = prob[1];
+      }
     }
 
     for (k = 0; k < 2; k++) {
@@ -984,11 +989,16 @@ void get_prob(SENTENCE_DATA *sp, int left, int right, int distance, int comma)
 	}
     }
 
-    if (prob[0] > DOUBLE_MIN) { 
-      fprob_RtoL = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
+    if (!strcmp(k_ptr->head_ptr->Pos, "PU") || !strcmp(u_ptr->head_ptr->Pos, "PU")) {
+      fprob_RtoL = prob[0];
     }
     else {
-      fprob_RtoL = prob[1];
+      if (prob[0] > DOUBLE_MIN) { 
+	fprob_RtoL = prob[0] * giga_weight + prob[1] * (1 - giga_weight);
+      }
+      else {
+	fprob_RtoL = prob[1];
+      }
     }
 
     /* free memory */
@@ -2740,7 +2750,6 @@ double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_ar
 	  prob[k] = lamda * bk_occur[k] / bk_total[k];
 	}
     }
-
 
     if (prob[0] > DOUBLE_MIN) {
       if (prob[1] > DOUBLE_MIN) {
