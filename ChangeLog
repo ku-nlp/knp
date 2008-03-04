@@ -1,5 +1,17 @@
 2008-03-04  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/const.h, system/case_ipal.c:
+	Adapted to a case frame file which is larger than 2GB.
+
+	* rule/mrph_basic.rule:
+	Fixed a rule for Katakana person names.
+
+	* system/case_ipal.c:
+	Support canonical representative names for probabilistic case structure analysis.
+
+	* system/const.h, system/case_ipal.c, system/main.c:
+	Optionalized the lookup of case frames based on a couple of a predicate and its closest case component.
+
 	* system/const.h, system/extern.h, system/lib_print.c, system/main.c:
 	Added an option that does only morpheme filtering (-filter).
 
