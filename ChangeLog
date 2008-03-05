@@ -1,3 +1,11 @@
+2008-03-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Give <連用形名詞化疑> to morphemes that might be nominalized verbs.
+
+	* system/case_ipal.c:
+	Modified a baseline model of coordination disambiguation.
+
 2008-03-04  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/const.h, system/case_ipal.c:
