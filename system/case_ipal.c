@@ -2749,6 +2749,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     /* 自分自身 */
     score = get_ex_probability(as1, cfd, NULL, as2, cfp);
 
+    if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) { /* 類似度生成モデルのときは、並列要素を述語から生成しない */
+	return score;
+    }
+
     /* 並列の要素 */
     while (tp->next) {
 	score += get_ex_probability(-1, cfd, tp->next, as2, cfp);
