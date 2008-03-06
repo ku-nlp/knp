@@ -204,7 +204,7 @@ extern int	EX_match_subject;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS | OPT_CASE_GENERALIZE_AGENT | OPT_CASE_FIX_CF_SEARCH;
+    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_CREP_CF | OPT_CASE_USE_CN_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS | OPT_CASE_GENERALIZE_AGENT | OPT_CASE_FIX_CF_SEARCH;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
@@ -681,14 +681,12 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-use-rn")) {
 	    OptUseRN = 0;
 	}
-	else if (str_eq(argv[0], "-use-crn-cf")) {
-	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
-	    OptCaseFlag |= OPT_CASE_USE_CREP_CF;
+	else if (str_eq(argv[0], "-no-use-crn-cf")) { /* KNPが生成する主辞代表表記を使わない格フレーム */
+	    OptCaseFlag &= ~OPT_CASE_USE_CREP_CF;
 	}
-	else if (str_eq(argv[0], "-use-cn-cf")) {
-	    OptCaseFlag |= OPT_CASE_USE_REP_CF;
-	    OptCaseFlag |= OPT_CASE_USE_CREP_CF;
-	    OptCaseFlag |= OPT_CASE_USE_CN_CF;
+	else if (str_eq(argv[0], "-no-use-cn-cf")) {  /* KNPが生成する複合名詞(主辞’)代表表記を使わない格フレーム */
+	    OptCaseFlag &= ~OPT_CASE_USE_CREP_CF;
+	    OptCaseFlag &= ~OPT_CASE_USE_CN_CF;
 	}
 	else if (str_eq(argv[0], "-no-fix-cf-search")) {
 	    OptCaseFlag &= ~OPT_CASE_FIX_CF_SEARCH;
