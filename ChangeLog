@@ -1,3 +1,8 @@
+2008-03-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	The use of the compound-noun version of case frames -> default.
+
 2008-03-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
