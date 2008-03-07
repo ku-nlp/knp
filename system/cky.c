@@ -77,9 +77,18 @@ TAG_DATA **add_coordinated_phrases(CKY *cky_ptr, TAG_DATA **next) {
 	return add_coordinated_phrases(cky_ptr->left, add_coordinated_phrases(cky_ptr->right, next));
     }
     else if (cky_ptr->dpnd_type == 'P') {
+	TAG_DATA **next_pp;
+
 	*next = cky_ptr->left->b_ptr->tag_ptr + cky_ptr->left->b_ptr->tag_num - 1;
 	(*next)->next = NULL;
-	return &((*next)->next);
+	next_pp = add_coordinated_phrases(cky_ptr->right, &((*next)->next));
+
+	if (next_pp) {
+	    return next_pp;
+	}
+	else {
+	    return &((*next)->next);
+	}
     }
     else {
 	return NULL;
@@ -114,21 +123,27 @@ char check_dpnd_possibility (SENTENCE_DATA *sp, int dep, int gov, int begin, int
 /* make an array of dependency possibilities */
 void make_work_mgr_dpnd_check(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *d_ptr) {
     int i, count = 0, start;
+    BNST_DATA *tmp_d_ptr;
+    TAG_DATA *tmp_t_ptr = d_ptr->tag_ptr + d_ptr->tag_num - 1;
 
-    /* ÎÙ¤Ë¤¢¤ëÊÂÎó¹½Â¤(1+1)¤Ë·¸¤ë¾ì¹ç¤Ïµ÷Î¥1¤È¤¹¤ë */
-    if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P' && cky_ptr->right->j < d_ptr->num + 3)
-	start = cky_ptr->right->j;
-    else
-	start = d_ptr->num + 1;
+    while (tmp_t_ptr) {
+	tmp_d_ptr = tmp_t_ptr->b_ptr;
+	/* ÎÙ¤Ë¤¢¤ëÊÂÎó¹½Â¤(1+1)¤Ë·¸¤ë¾ì¹ç¤Ïµ÷Î¥1¤È¤¹¤ë */
+	if (cky_ptr->right && cky_ptr->right->dpnd_type == 'P' && cky_ptr->right->j < tmp_d_ptr->num + 3)
+	    start = cky_ptr->right->j;
+	else
+	    start = tmp_d_ptr->num + 1;
 
-    for (i = start; i < sp->Bnst_num; i++) {
-	if (check_dpnd_possibility(sp, d_ptr->num, i, -1, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
-	    Work_mgr.dpnd.check[d_ptr->num].pos[count] = i;
-	    count++;
+	for (i = start; i < sp->Bnst_num; i++) {
+	    if (check_dpnd_possibility(sp, tmp_d_ptr->num, i, -1, ((i == sp->Bnst_num - 1) && count == 0) ? TRUE : FALSE)) {
+		Work_mgr.dpnd.check[tmp_d_ptr->num].pos[count] = i;
+		count++;
+	    }
 	}
-    }
 
-    Work_mgr.dpnd.check[d_ptr->num].num = count;
+	Work_mgr.dpnd.check[tmp_d_ptr->num].num = count;
+	tmp_t_ptr = tmp_t_ptr->next;
+    }
 }
 
 void make_work_mgr_dpnd_check_for_noun(SENTENCE_DATA *sp, BNST_DATA *d_ptr) {
@@ -1027,12 +1042,14 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		flag++;
 	    }
 
-	    if (OptParaFix == 0 && flag == 0) { /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à¤Ø */
-		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
+	    if (OptParaFix == 0 && flag == 0 && /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à¤Ø */
+		check_feature(g_ptr->f, "ÂÎ¸À") && /* Ê£¹ç¼­¤Ê¤É¤òÈô¤Ð¤¹ */
+		check_feature(d_ptr->f, "ÂÎ¸À")) {
 		(d_ptr->tag_ptr + d_ptr->tag_num - 1)->next = NULL; /* ÊÂÎóÍ×ÁÇ³ÊÇ¼ÍÑ(·¸¤êÂ¦) */
 		t_ptr->next = NULL; /* ÊÂÎóÍ×ÁÇ³ÊÇ¼ÍÑ(¼õ¤±Â¦) */
 		add_coordinated_phrases(cky_ptr->left, &((d_ptr->tag_ptr + d_ptr->tag_num - 1)->next));
 		add_coordinated_phrases(cky_ptr->right, &(t_ptr->next));
+		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		one_score += get_noun_co_ex_probability(d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 		noun_modifying_num++;
 	    }
