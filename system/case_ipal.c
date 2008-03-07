@@ -2269,7 +2269,7 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
 	}
     }
     else {
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	}
 	if (aflag == FALSE) {
@@ -2742,9 +2742,16 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 					int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    int j, count = 1;
+    int j, count = 1, np_modifying_flag;
     TAG_DATA *tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     double score;
+
+    if (cfd->pred_b_ptr->num < tp->num) { /* 連体修飾 */
+	np_modifying_flag = 1;
+    }
+    else {
+	np_modifying_flag = 0;
+    }
 
     /* 自分自身 */
     score = get_ex_probability(as1, cfd, NULL, as2, cfp);
@@ -2774,7 +2781,13 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, score / count);
     }
 
-    return score / count;
+    /* 並列要素間生成する場合と被連体修飾名詞は正規化 */
+    if ((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag) {
+	return score / count;
+    }
+    else {
+	return score;
+    }
 }
 
 /*==================================================================*/
@@ -3096,7 +3109,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 {
     int wa_flag, topic_score = 0, touten_flag, i, dist, negation_flag, 	np_modifying_flag, closest_pred_flag = 0;
     char *scase, *cfcase, *cp, *vtype;
-    double ret, score1, score2, score3;
+    double score1, score2, score3;
     TAG_DATA *tp, *tp2, *hp;
 
     if (CaseExist == FALSE) {
@@ -3176,10 +3189,10 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 					   closest_pred_flag, topic_score, wa_flag, negation_flag, vtype);
 
     if (VerboseLevel >= VERBOSE3) {
-	fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%s * P:%s * T:%s)\n", 
+	fprintf(Outfp, ";; (CC) %s -> %s: P(%s,%d,%d|%s,%d,%d,%d,%d) = %lf (C:%lf * P:%lf * T:%lf)\n", 
 		tp->head_ptr->Goi, hp->head_ptr->Goi, 
 		scase, touten_flag, wa_flag, as2 == NIL_ASSIGNED ? "--" : pp_code_to_kstr(cfp->pp[as2][0]), 
-		dist, closest_pred_flag, topic_score, negation_flag, ret, score1, score2, score3);
+		dist, closest_pred_flag, topic_score, negation_flag, score1 + score2 + score3, exp(score1), exp(score2), exp(score3));
     }
 
     return score1 + score2 + score3;
@@ -3748,17 +3761,21 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
     char *key, *value;
-    int touten_flag, dist, elem_num = 0;
-    double ret1 = 0, ret2, tmp_ret;
-    TAG_DATA *tmp_dp = dp, *tmp_gp;
+    int touten_flag, dist, elem_num = 0, g_elem_num = 0;
+    double ret1 = 0, ret2 = 0, tmp_ret;
+    TAG_DATA *tmp_dp, *tmp_gp = gp;
 
     if (NounCoExist == FALSE) {
 	return 0;
     }
 
-    while (tmp_dp) {
-	tmp_gp = gp;
-	while (tmp_gp) {
+    while (tmp_gp) {
+	tmp_dp = dp;
+	while (tmp_dp) {
+	    if (tmp_dp->num > tmp_gp->num) {
+		continue;
+	    }
+
 	    key = malloc_db_buf(strlen(tmp_dp->head_ptr->Goi) + strlen(tmp_gp->head_ptr->Goi) + 2);
 	    sprintf(key, "%s|%s", tmp_dp->head_ptr->Goi, tmp_gp->head_ptr->Goi);
 
@@ -3779,43 +3796,59 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    }
 
 	    elem_num++;
-	    tmp_gp = tmp_gp->next;
+	    tmp_dp = tmp_dp->next;
 	}
-	tmp_dp = tmp_dp->next;
+	g_elem_num++;
+	tmp_gp = tmp_gp->next;
     }
-    ret1 /= (double)elem_num;
+    ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* 非連体修飾名詞の方は常に正規化 */
     if (VerboseLevel >= VERBOSE2) {
-	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", elem_num, ret1);
+	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? elem_num : g_elem_num, ret1);
     }
 
-    /* 読点の生成 */
-    touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
+    /* 読点の生成
+       係側が並列の場合は複数個 */
 
-    if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
-	ret2 = FREQ0_ASSINED_SCORE;
-    }
-    else {
-	int closest_ok_flag = 0;
+    elem_num = 0;
+    tmp_dp = dp;
+    while (tmp_dp) {
+	touten_flag = check_feature(tmp_dp->b_ptr->f, "読点") ? 1 : 0;
 
-	if (get_dist_from_work_mgr(dp->b_ptr, dp->b_ptr + 1) > 0) {
-	    closest_ok_flag = 1;
-	}
-	key = malloc_db_buf(strlen("連体") + 8);
-	sprintf(key, "%d|P連体:%d,%d", touten_flag, dist, closest_ok_flag);
-	value = db_get(case_db, key);
-	if (value) {
-	    ret2 = atof(value);
-	    if (VerboseLevel >= VERBOSE2) {
-		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
-	    }
-	    free(value);
-	    ret2 = log(ret2);
+	if ((dist = get_dist_from_work_mgr(tmp_dp->b_ptr, gp->b_ptr)) < 0) {
+	    ret2 += FREQ0_ASSINED_SCORE;
 	}
 	else {
-	    ret2 = FREQ0_ASSINED_SCORE;
-	    if (VerboseLevel >= VERBOSE2) {
-		fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+	    int closest_ok_flag = 0;
+
+	    if (get_dist_from_work_mgr(tmp_dp->b_ptr, tmp_dp->b_ptr + 1) > 0) {
+		closest_ok_flag = 1;
 	    }
+	    key = malloc_db_buf(strlen("連体") + 8);
+	    sprintf(key, "%d|P連体:%d,%d", touten_flag, dist, closest_ok_flag);
+	    value = db_get(case_db, key);
+	    if (value) {
+		tmp_ret += atof(value);
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", tmp_dp->head_ptr->Goi, gp->head_ptr->Goi, key, tmp_ret);
+		}
+		free(value);
+		ret2 += log(tmp_ret);
+	    }
+	    else {
+		ret2 += FREQ0_ASSINED_SCORE;
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = 0\n", tmp_dp->head_ptr->Goi, gp->head_ptr->Goi, key);
+		}
+	    }
+	}
+
+	elem_num++;
+	tmp_dp = tmp_dp->next;
+    }
+    if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) {
+	ret2 /= (double)elem_num;
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_N) is divided by %d => %.5f\n", elem_num, ret2);
 	}
     }
 
