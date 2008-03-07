@@ -2781,8 +2781,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, score / count);
     }
 
-    /* 並列要素間生成する場合と被連体修飾名詞は正規化 */
-    if ((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag) {
+    /* 並列確率的解析時: 並列要素間生成する場合と被連体修飾名詞は正規化
+       並列決定的解析時: 常に正規化 */
+    if (OptParaFix == TRUE || 
+	((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag)) {
 	return score / count;
     }
     else {
