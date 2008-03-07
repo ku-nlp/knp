@@ -491,7 +491,9 @@ void db_close(DBM_FILE db)
 {
     if (db->mode & O_CREAT) {
 	cdb_make_finish(&(db->cdbm));
+#ifndef _WIN32
 	fchmod(db->fd, S_IREAD | S_IWRITE | S_IRGRP | S_IROTH);
+#endif
     }
     close(db->fd);
     free(db);
