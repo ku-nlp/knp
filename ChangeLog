@@ -1,3 +1,12 @@
+2008-03-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/case_ipal.c, system/extern.h:
+	並列が関連する場合の解析に対応
+	（ex. 「誰を味方に、誰を敵にし、」の「し」のヲ格を「誰」にする）
+	省略解析のスコア計算方法を修正
+	省略解析のスコア計算時に固有表現を汎化するように変更
+	debug用のコードを追加
+		
 2008-03-08  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/cky.c:

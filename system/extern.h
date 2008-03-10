@@ -257,10 +257,11 @@ extern double get_key_probability(TAG_DATA *tag_ptr);
 extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
-extern  double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
-				  int as2, CASE_FRAME *cfp);
+extern double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
+				 int as2, CASE_FRAME *cfp, int sm_flag);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
+extern double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag);
 extern double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);

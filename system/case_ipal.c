@@ -8,6 +8,7 @@
 
 ====================================================================*/
 #include "knp.h"
+#define INITIAL_SCORE -10000
 
 FILE *cf_fp;
 DBM_FILE cf_db;
@@ -1314,6 +1315,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	/* ひらがなで曖昧性のあるときは、格解析で曖昧性解消するために
 	   ここではすべての格フレームを検索しておく */
 	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
+
 	    check_feature(t_ptr->head_ptr->f, "品曖")) {
 	    address_str = get_ipal_address(verb, flag);
 	}
@@ -2439,12 +2441,13 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
 }
 	
 /*==================================================================*/
-double _get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp)
+double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 /*==================================================================*/
 {
     /* 固有表現-用例確率 
        P(京大|LOCATION)*P(LOCATION|行く:動2:ニ格) */
     /* 入力key=NE:LOCATION:京大 */
+    /* flagがたっている場合P(LOCATION|行く:動2:ニ格)を返す */
 
     int i;
     char *value, ne[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
@@ -2456,6 +2459,9 @@ double _get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp)
     for (i = 0; i < cfp->gex_num[as2]; i++) {
 	if (!strcmp(ne, cfp->gex_list[as2][i])) {
 
+	    if (flag) {
+		return cfp->gex_freq[as2][i];
+	    }	
 	    strcat(key, "|");
 	    strcat(key, ne + 3);
 		
@@ -2594,7 +2600,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
 /*==================================================================*/
   double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
-			    int as2, CASE_FRAME *cfp)
+			    int as2, CASE_FRAME *cfp, int sm_flag)
 /*==================================================================*/
 {
     /* 用例確率 P(弁当|食べる:動2,ヲ格)
@@ -2603,6 +2609,8 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     char *key = NULL, *mrph_str, *cp, ne_prob[WORD_LEN_MAX*2], *value;
     double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
+    
+    if (!sm_flag) ret = INITIAL_SCORE;
 
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
@@ -2611,13 +2619,14 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     key = malloc_db_buf(strlen("<補文>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
     *key = '\0';
-
+    
     if (check_feature(dp->f, "補文")) {
 	sprintf(key, "<補文>");
     }
-    else if ((OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* 主体を汎化する場合(default) */
+    else if (sm_flag && /* FALSEの場合は主体を使わない */
+	     (OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* 主体を汎化する場合(default) */
 	     dat_match_sm(as1, cfd, dp, "主体")) {
- 	sprintf(key, "<主体>");
+	sprintf(key, "<主体>");
     }
     else if (check_feature(dp->f, "時間")) {
 	sprintf(key, "<時間>");
@@ -2625,14 +2634,14 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     else if (check_feature(dp->f, "数量")) {
 	sprintf(key, "<数量>");
     }
-
+    
     if (*key) {
 	/* if (ret = _get_ex_probability(key)) { */
 	if (prob = _get_ex_probability_internal(key, as2, cfp)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
     }
-
+    	
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
 	    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
@@ -2647,9 +2656,11 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	    }
 	}
     }
+    
     else {
 	mrph_str = dp->head_ptr->Goi;
     }
+    
     key = malloc_db_buf(strlen(mrph_str) + 
 			strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
     sprintf(key, "%s", mrph_str);
@@ -2702,7 +2713,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 固有表現の場合 */       
     if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
-	if (prob = _get_ex_ne_probability(cp, as2, cfp)) {
+	if (prob = get_ex_ne_probability(cp, as2, cfp, FALSE)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
     } 
@@ -2754,7 +2765,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
 
     /* 自分自身 */
-    score = get_ex_probability(as1, cfd, NULL, as2, cfp);
+    score = get_ex_probability(as1, cfd, NULL, as2, cfp, TRUE);
 
     if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) { /* 類似度生成モデルのときは、並列要素を述語から生成しない */
 	return score;
@@ -2762,7 +2773,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 並列の要素 */
     while (tp->next) {
-	score += get_ex_probability(-1, cfd, tp->next, as2, cfp);
+	score += get_ex_probability(-1, cfd, tp->next, as2, cfp, TRUE);
 	count++;
 	tp = tp->next;
     }
