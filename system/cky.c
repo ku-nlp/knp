@@ -237,6 +237,8 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    printf("(%d, %d)\n", cky_ptr->i, cky_ptr->j);
 	}
     }
+
+    call_count_dpnd_candidates(sp, &(Best_mgr->dpnd));
 }
 
 int check_scase (BNST_DATA *g_ptr, int *scase_check, int rentai, int un_count) {

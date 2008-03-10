@@ -297,7 +297,6 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-check")) {
 	    OptCheck = TRUE;
-	    OptCKY = FALSE;
 	}
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
@@ -1452,6 +1451,9 @@ extern int	EX_match_subject;
 		ErrorComment = strdup("Cannot detect dependency structure");
 		when_no_dpnd_struct(sp);
 	    }
+	}
+	else if (OptCheck == TRUE) {
+	    check_candidates(sp);
 	}
     }
     else {

@@ -2428,26 +2428,34 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
             void check_candidates(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, b2t_table[BNST_MAX];
     TOTAL_MGR *tm = sp->Best_mgr;
-    char buffer[DATA_LEN], buffer2[SMALL_DATA_LEN], *cp;
+    char b_buffer[DATA_LEN], t_buffer[DATA_LEN], tmp_b_buffer[SMALL_DATA_LEN], tmp_t_buffer[SMALL_DATA_LEN], *cp;
+
+    for (i = 0; i < sp->Bnst_num; i++) { /* 文節番号->基本句番号のテーブル */
+	b2t_table[(sp->bnst_data + i)->num] = ((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->num;
+    }
 
     /* 各文節ごとにチェック用の feature を与える */
     for (i = 0; i < sp->Bnst_num; i++)
 	if (tm->dpnd.check[i].num != -1) {
 	    /* 係り側 -> 係り先 */
-	    sprintf(buffer, "候補");
+	    sprintf(b_buffer, "候補");
+	    sprintf(t_buffer, "候補");
 	    for (j = 0; j < tm->dpnd.check[i].num; j++) {
 		/* 候補たち */
-		sprintf(buffer2, ":%d", tm->dpnd.check[i].pos[j]);
-		if (strlen(buffer)+strlen(buffer2) >= DATA_LEN) {
+		sprintf(tmp_b_buffer, ":%d", tm->dpnd.check[i].pos[j]);
+		sprintf(tmp_t_buffer, ":%d", b2t_table[tm->dpnd.check[i].pos[j]]);
+		if (strlen(t_buffer)+strlen(tmp_t_buffer) >= DATA_LEN) {
 		    fprintf(stderr, ";; Too long string <%s> (%d) in check_candidates. (%s)\n", 
-			    buffer, tm->dpnd.check[i].num, sp->KNPSID ? sp->KNPSID+5 : "?");
+			    t_buffer, tm->dpnd.check[i].num, sp->KNPSID ? sp->KNPSID+5 : "?");
 		    return;
 		}
-		strcat(buffer, buffer2);
+		strcat(b_buffer, tmp_b_buffer);
+		strcat(t_buffer, tmp_t_buffer);
 	    }
-	    assign_cfeature(&(sp->bnst_data[i].f), buffer, FALSE);
+	    assign_cfeature(&((sp->bnst_data + i)->f), b_buffer, FALSE);
+	    assign_cfeature(&(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f), t_buffer, FALSE);
 	}
 }
 
