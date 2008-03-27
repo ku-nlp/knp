@@ -3071,10 +3071,10 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 	value = "1.0";
     }
     else {
-	key = malloc_db_buf(20);
+	key = malloc_db_buf(22);
 
-	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag); */
-	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "Ƚ") == 0 ? 1 : 0);
+	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "Ƚ") == 0 ? 1 : 0); */
+	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%s", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, vtype);
 	value = db_get(case_db, key);
     }
 
