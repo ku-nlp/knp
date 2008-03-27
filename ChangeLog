@@ -1,3 +1,14 @@
+2008-03-27  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified the probabilistic model of topic-marked phrases.
+	This modification requires the case.prob file of 20080327 or later.
+
+2008-03-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Modified a bunsetsu chunking rule.
+
 2008-03-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c:
