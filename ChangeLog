@@ -1,5 +1,8 @@
 2008-04-08  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/lib_print.c:
+	Modified to output version to the S-ID line.
+
 	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/tag_postprocess.rule, system/feature.c:
 	Abolished the assignment of <°ÕÌ£Í­>.
 
