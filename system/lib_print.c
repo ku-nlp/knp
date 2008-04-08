@@ -1420,10 +1420,12 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
     
     if (OptInput == OPT_RAW) {
+	fprintf(Outfp, " KNP:%s", VERSION);
+
 	if ((date_p = (char *)getenv("DATE")))
-	    fprintf(Outfp, " KNP:%s", date_p);
+	    fprintf(Outfp, " DATE:%s", date_p);
 	else if (time_string[0])
-	    fprintf(Outfp, " KNP:%s", time_string);
+	    fprintf(Outfp, " DATE:%s", time_string);
     }
 
     /* スコアを出力 (CKY時、通常入力時) */
