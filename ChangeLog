@@ -1,10 +1,13 @@
+2008-04-08  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule, rule/tag_postprocess.rule, system/feature.c:
+	Abolished the assignment of <意味有>.
+
 2008-04-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
 	位置カテゴリを扱う関数を追加
 	JUMANのカテゴリを考慮するように変更
-	
-	
 
 2008-03-27  Daisuke Kawahara  <dk@nict.go.jp>
 
