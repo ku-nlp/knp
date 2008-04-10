@@ -306,6 +306,16 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		strncpy(merged_rep, "正規化", strlen("正規化"));
 	    }
 	}
+
+	if (*merged_rep) {
+	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 連結代表表記 */
+	}
+
+	if ((cp = check_feature((sp->bnst_data + i)->head_ptr->f, "正規化代表表記"))) {
+	    strncpy(cp + strlen("正"), "主辞", strlen("主辞"));
+	    assign_cfeature(&((sp->bnst_data + i)->f), cp + strlen("正"), FALSE); /* 主辞代表表記 */
+	    strncpy(cp + strlen("正"), "規化", strlen("規化"));
+	}
     }
 
     free(merged_rep);
@@ -373,7 +383,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int uniq_flag[HOMO_MAX];		/* 実質的同形異義語なら 1 */
     int matched_flag[HOMO_MRPH_MAX];	/* いずれかの形態素とマッチした
 					   ルール内形態素パターンに 1 */
-    int rep_length, rep_length2;
+    int rep_length, rep_length2, merged_rep_size = DATA_LEN;
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
     char fname[SMALL_DATA_LEN2], *cp, *cp2, *rep_strt, *rep_strt2;
@@ -1052,28 +1062,30 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			       rest_buffer);
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
-		strcpy(m_ptr->Pos, Hinshi_str);
+		if (!OptChiPos) {
+		  strcpy(m_ptr->Pos, Hinshi_str);
 
-		// treat different punc as different type
-		if (!strcmp(Chi_word_type[m_ptr->Hinshi], "punc")) {
-		  if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "，")) {
-		    strcpy(m_ptr->Type, "punc");
-		  }
-		  else if (!strcmp(m_ptr->Goi, "：") || !strcmp(m_ptr->Goi, ":")) {
-		    strcpy(m_ptr->Type, "punc");
-		  }
-		  else if (!strcmp(m_ptr->Goi, "、")) {
-		    strcpy(m_ptr->Type, "punc");
-		  }
-		  else if (!strcmp(m_ptr->Goi, "；")) {
-		    strcpy(m_ptr->Type, "punc");
+		  // treat different punc as different type
+		  if (!strcmp(Chi_word_type[m_ptr->Hinshi], "punc")) {
+		    if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "，")) {
+		      strcpy(m_ptr->Type, "punc");
+		    }
+		    else if (!strcmp(m_ptr->Goi, "：") || !strcmp(m_ptr->Goi, ":")) {
+		      strcpy(m_ptr->Type, "punc");
+		    }
+		    else if (!strcmp(m_ptr->Goi, "、")) {
+		      strcpy(m_ptr->Type, "punc");
+		    }
+		    else if (!strcmp(m_ptr->Goi, "；")) {
+		      strcpy(m_ptr->Type, "punc");
+		    }
+		    else {
+		      strcpy(m_ptr->Type, "");
+		    }
 		  }
 		  else {
-		    strcpy(m_ptr->Type, "");
+		    strcpy(m_ptr->Type, Chi_word_type[m_ptr->Hinshi]);
 		  }
-		}
-		else {
-		  strcpy(m_ptr->Type, Chi_word_type[m_ptr->Hinshi]);
 		}
 	    }
 

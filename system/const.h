@@ -113,6 +113,7 @@
 #define CHI_TYPE_LEN_MAX 8
 #define CHI_POS_MAX  33
 #define CHI_ARG_NUM_MAX  30
+#define CHI_POS_NBEST 2
 
 /*====================================================================
 			    SIMILARITY
@@ -571,6 +572,7 @@ typedef struct _RuleVector {
 #define CHI_DPND_PROB_DB        33
 #define CHI_DIS_COMMA_DB        34
 #define CHI_CASE_DB           35
+#define CHI_POS_DB           36
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -717,10 +719,35 @@ typedef struct {
     double      prob_pos_RtoL;
     char        type[CHI_DPND_TYPE_MAX][CHI_DPND_TYPE_LEN_MAX]; /* store different dpnd type */
     double      occur_pos; /* store occur time of different dpnd type */
-    double      prob_dis_comma_LtoR;
-    double      prob_dis_comma_RtoL;
+    double      prob_dis_comma_LtoR[CHI_DPND_TYPE_MAX];
+    double      prob_dis_comma_RtoL[CHI_DPND_TYPE_MAX];
+
+  // variables storing probability for model with pos-tagging
+    double      lex_prob_LtoR[CHI_DPND_TYPE_MAX];
+    double      lex_prob_RtoL[CHI_DPND_TYPE_MAX];
+    double      lex_prob_dis_comma_LtoR[CHI_DPND_TYPE_MAX];
+    double      lex_prob_dis_comma_RtoL[CHI_DPND_TYPE_MAX];
+
+  int       left_pos_index[CHI_DPND_TYPE_MAX];
+  int       right_pos_index[CHI_DPND_TYPE_MAX];
+
     int         count; /* number of dpnd type */
 } CHI_DPND;
+
+/* Chinese pos rule */
+typedef struct {
+  char        *pos[CHI_POS_MAX];
+  double       prob[CHI_POS_MAX];
+  double       prob_pos_index[CHI_POS_MAX];
+  int          pos_index[CHI_POS_MAX];
+  int          pos_max;
+} CHI_POS;
+
+/* Chinese root rule */
+typedef struct {
+  double       prob[CHI_POS_MAX];
+  int          pos_index[CHI_POS_MAX];
+} CHI_ROOT;
 
 /*====================================================================
 			       照応解析

@@ -207,7 +207,7 @@ QUOTE_DATA quote_data;
 
 	if (start == end) continue;	/* ㄠ妐濡分仃及喟裡反拑骰 */
 
-	if (check_feature((sp->bnst_data+start)->f, "PU") && check_feature((sp->bnst_data+end)->f, "PU")) {
+	if ((!OptChiPos && check_feature((sp->bnst_data+start)->f, "PU") && check_feature((sp->bnst_data+end)->f, "PU")) || OptChiPos) {
 	    /* 喟裡及曉及穴旦弁 */
 
 	    for (i = 0; i < start; i++) {

@@ -42,8 +42,10 @@ extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
 
 /* store Chinese dpnd between words */
 extern CHI_DPND        Chi_dpnd_matrix[][BNST_MAX];
-extern double          Chi_root_prob_matrix[];
+extern CHI_POS        Chi_pos_matrix[];
+extern CHI_ROOT          Chi_root_prob_matrix[];
 extern char            *Chi_word_type[];
+extern char            *Chi_word_pos[];
 extern int left_arg[];
 extern int right_arg[];
 
@@ -115,6 +117,11 @@ extern int		OptBeam;
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
 // 0 means use collins model, use chidpnd.db chi_pa.db
 extern int              OptChiGenerative;
+
+// option for Chinese
+// 1 means do pos-tagging with parsing together
+// 0 means only do parsing
+extern int             OptChiPos; 
 
 extern VerboseType	VerboseLevel;
 
@@ -329,12 +336,16 @@ extern void init_chi_dpnd_db();
 extern void close_chi_dpnd_db();
 extern void init_chi_type();
 extern void free_chi_type();
+extern void init_chi_pos();
+extern void free_chi_pos();
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);
 extern int after_decide_dpnd(SENTENCE_DATA *sp);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp);
+extern void calc_chi_dpnd_matrix_wpos(SENTENCE_DATA *sp);
+extern void calc_chi_pos_matrix(SENTENCE_DATA *sp);
 extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
 extern void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag);
 extern void undo_tag_bnst_postprocess(SENTENCE_DATA *sp);
@@ -345,6 +356,8 @@ extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
 extern void calc_gigaword_pa_matrix(SENTENCE_DATA *sp);
 extern double get_case_prob(SENTENCE_DATA *sp, int head, int left_arg_num, int right_arg_num);
+extern double get_case_prob_wpos(SENTENCE_DATA *sp, int head, int left_arg_num, int right_arg_num, int pos_index_pre);
+extern double get_lex_case_prob_wpos(SENTENCE_DATA *sp, int head, int left_arg_num, int right_arg_num, int pos_index_pre);
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);

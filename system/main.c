@@ -40,9 +40,11 @@ int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_end_matrix[BNST_MAX][BNST_MAX];
 CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
-double          Chi_root_prob_matrix[BNST_MAX];
+CHI_POS        Chi_pos_matrix[BNST_MAX];
+CHI_ROOT          Chi_root_prob_matrix[BNST_MAX];
 int             Chi_root;
 char            *Chi_word_type[CHI_POS_MAX];
+char            *Chi_word_pos[CHI_POS_MAX];
 int left_arg[CHI_ARG_NUM_MAX + 1];
 int right_arg[CHI_ARG_NUM_MAX + 1];
 
@@ -102,6 +104,11 @@ int		OptBeam;
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
 // 0 means use collins model, use chidpnd.db chi_pa.db
 int             OptChiGenerative; 
+
+// option for Chinese
+// 1 means do pos-tagging with parsing together
+// 0 means only do parsing
+int             OptChiPos; 
 
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
@@ -234,6 +241,7 @@ extern int	EX_match_subject;
     OptNbest = 0;
     OptBeam = 0;
     OptChiGenerative = 0;
+    OptChiPos = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -334,6 +342,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-chi-generative")) {
 	     OptChiGenerative = 1;
+	}
+	else if (str_eq(argv[0], "-chi-pos")) {
+	     OptChiPos = 1;
 	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
@@ -929,6 +940,7 @@ extern int	EX_match_subject;
     if (Language == CHINESE) {
 	close_chi_dpnd_db();
 	free_chi_type();
+	free_chi_pos();
     }
 
     if (OptEllipsis) {
@@ -1007,6 +1019,7 @@ extern int	EX_match_subject;
 	init_hownet();
 	init_chi_dpnd_db();
 	init_chi_type();
+	init_chi_pos();
     }
 
     init_juman();	/* JUMAN関係 */
@@ -1315,7 +1328,13 @@ extern int	EX_match_subject;
 	calc_dpnd_matrix(sp);
     }
     else if (Language == CHINESE && OptChiGenerative) {
+      if (OptChiPos == 0) {
 	calc_chi_dpnd_matrix_forProbModel(sp);
+      }
+      else {
+	calc_chi_pos_matrix(sp);
+	calc_chi_dpnd_matrix_wpos(sp);
+      }
     }
 
     /* 依存可能性計算 */
@@ -1332,7 +1351,7 @@ extern int	EX_match_subject;
 
     /* fragment for Chinese */
     if (Language == CHINESE) {
-	if (fragment(sp) == TRUE) {
+	if (!OptChiPos && fragment(sp) == TRUE) {
 	    if (OptDisplay == OPT_DEBUG) {
 		print_matrix(sp, PRINT_DPND, 0);
 	    }
@@ -1348,7 +1367,7 @@ extern int	EX_match_subject;
     if (flag == CONTINUE) return FALSE;
 
     /* base phrase for Chinese */
-    if (Language == CHINESE) {
+    if (Language == CHINESE && !OptChiPos) {
 	base_phrase(sp, is_frag);
 	print_matrix(sp, PRINT_DPND, 0);
     }

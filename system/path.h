@@ -42,3 +42,4 @@
 #define HOWNET_SEM_DEF_DB_NAME  "ebcf/hownet_sem_def.db"
 #define CHI_PA_DB_NAME          "ebcf/chi_pa.db"
 #define CHI_CASE_DB_NAME          "ebcf/chi_case.db"
+#define CHI_POS_DB_NAME          "ebcf/chi_pos.db"
