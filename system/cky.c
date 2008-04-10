@@ -2304,7 +2304,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 				}
 				// if the score of two ptrs are the same, only keep one
 				tmp_ptr = cky_matrix[i][j];
-				while (tmp_ptr && tmp_ptr != sort_pre_ptr->next) {
+				while (tmp_ptr && tmp_ptr != sort_pre_ptr->next && sort_pre_ptr && best_ptr) {
 				    if ((tmp_ptr->score - best_ptr->score) < DOUBLE_MIN && (tmp_ptr->score - best_ptr->score) > -DOUBLE_MIN &&
 					tmp_ptr->direction == best_ptr->direction &&
 					tmp_ptr->b_ptr == best_ptr->b_ptr &&
