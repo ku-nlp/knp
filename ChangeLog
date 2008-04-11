@@ -1,5 +1,10 @@
 2008-04-10  Kun Yu <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/cky.c
+	Apply grammatical constraints in new Chinese parsing model.
+
+2008-04-10  Kun Yu <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
 	* system/case_ipal.c, system/cky.c, system/dpnd_analysis.c, system/main.c, system/read_data.c, system/quote.c, system/const.h, system/extern.h, system/path.h
 	Modify Chinese parsing model to do parsing on un-tagged sentence, ust -chi-pos option.
 
