@@ -35,7 +35,7 @@ typedef struct _CKY {
 #define DOUBLE_MINUS    -999.0
 #define PARA_THRESHOLD	0
 //#define	CKY_TABLE_MAX	1000000 
-#define	CKY_TABLE_MAX	12000000 
+#define	CKY_TABLE_MAX	12900000 
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
@@ -589,20 +589,23 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    right_arg_num = 0;
 
 		    /* add penalty from deterministic parsing */
-		    char det_head[11];
+		    char *det_head = malloc(12);
 		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num) {
 		      sprintf(det_head, "DETHEAD_-1");
 		    }
 		    else {
 		      sprintf(det_head, "DETHEAD_%i", g_ptr->num);
 		    }
-		    if (!check_feature((sp->bnst_data + d_ptr->num)->f, det_head)) {
-		      prob -= log(CHI_DET_PENALTY);
+		    if (!check_feature(d_ptr->f, det_head)) {
+		      prob += log(CHI_DET_PENALTY);
+		    }
+		    if (det_head) {
+		      free(det_head);
 		    }
 
 		    if (!OptChiPos) { // only parsing
 		      if (cky_ptr->direction == LtoR) {
-			prob = log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]);
+			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]);
 			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR[0]);
 			if (OptDisplay == OPT_DEBUG) {
 			  printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", d_ptr->num, g_ptr->num, Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0], Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR[0], prob);
@@ -697,7 +700,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		      }
 		      else if (cky_ptr->direction == RtoL) {
-			prob = log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0]);
+			prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0]);
 			prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL[0]);
 			if (OptDisplay == OPT_DEBUG) {
 			  printf("(dpnd:%d,%d prob:%f dis_comma:%f)%.6f=>", g_ptr->num, d_ptr->num, Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[0], Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL[0], prob);
@@ -796,7 +799,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    }
 		    else { // parsing with pos-tagging
 		      if (cky_ptr->direction == LtoR) {
-			prob = log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index]);
+			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[cky_ptr->index]);
 			prob += log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_dis_comma_LtoR[cky_ptr->index]);
 			prob += log(Chi_pos_matrix[d_ptr->num].prob_pos_index[cky_ptr->left_pos_index]);
 			prob += log(Chi_pos_matrix[g_ptr->num].prob_pos_index[cky_ptr->right_pos_index]);
@@ -906,7 +909,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			}
 		      }
 		      else if (cky_ptr->direction == RtoL) {
-			prob = log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index]);
+			prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_RtoL[cky_ptr->index]);
 			prob += log(Chi_dpnd_matrix[g_ptr->num][d_ptr->num].prob_dis_comma_RtoL[cky_ptr->index]);
 			prob += log(Chi_pos_matrix[d_ptr->num].prob_pos_index[cky_ptr->right_pos_index]);
 			prob += log(Chi_pos_matrix[g_ptr->num].prob_pos_index[cky_ptr->left_pos_index]);
