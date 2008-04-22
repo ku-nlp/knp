@@ -588,6 +588,18 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    left_arg_num = 0;
 		    right_arg_num = 0;
 
+		    /* add penalty from deterministic parsing */
+		    char det_head[11];
+		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num) {
+		      sprintf(det_head, "DETHEAD_-1");
+		    }
+		    else {
+		      sprintf(det_head, "DETHEAD_%i", g_ptr->num);
+		    }
+		    if (!check_feature((sp->bnst_data + d_ptr->num)->f, det_head)) {
+		      prob -= log(CHI_DET_PENALTY);
+		    }
+
 		    if (!OptChiPos) { // only parsing
 		      if (cky_ptr->direction == LtoR) {
 			prob = log(Chi_dpnd_matrix[d_ptr->num][g_ptr->num].prob_LtoR[0]);
