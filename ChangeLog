@@ -1,3 +1,9 @@
+2008-04-10  Kun Yu <kunyu@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/cky.c, system/const.h
+	Apply deterministic parsing output into C-KNP as constraints.
+
+
 2008-04-20  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
