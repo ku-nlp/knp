@@ -1,3 +1,12 @@
+2008-04-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/case_ipal.c, system/const.h:
+	変数名を変更(activity_score -> salience_score)
+	salience_socreを出力するように変更
+	
+	* system/main.c:
+	正解の照応解析結果を読み込む際は格フレームを読み込まないように変更
+
 2008-04-10  Kun Yu <kunyu@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/cky.c, system/const.h

@@ -761,6 +761,7 @@ typedef struct mention {
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
     char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D', */
+    double              salience_score; /* どのくらい先行詞になりやすいか */
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
 } MENTION;
@@ -777,7 +778,7 @@ typedef struct mention_manager {
 typedef struct entity {
     int                 num;
     int                 mentioned_num;  /* 言及されている回数 */
-    double              activity_score; /* どのくらい先行詞になりやすいか */
+    double              salience_score; /* どのくらい先行詞になりやすいか */
     int                 antecedent_num; /* 先行詞となっている回数 */
     MENTION             *mention[MENTIONED_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */

@@ -1308,9 +1308,10 @@ extern int	EX_match_subject;
     assign_dpnd_rule(sp);			/* 係り受け規則 */
 
     /* 格フレーム取得 */
-    if (OptAnalysis == OPT_CASE ||
+    if ((OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 ||
-	OptUseNCF) {
+	OptUseNCF) &&
+	!(OptReadFeature == 1 && OptAnaphora == 1)) {
 	set_caseframes(sp);
 	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
     }
@@ -1626,7 +1627,7 @@ PARSED:
 	/************/
 	/* 文脈解析 */
 	/************/
-	
+	       
 	if (OptEllipsis) {
 	    assign_mrph_num(sp);
 	    make_dpnd_tree(sp);

@@ -2448,6 +2448,7 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
        P(京大|LOCATION)*P(LOCATION|行く:動2:ニ格) */
     /* 入力key=NE:LOCATION:京大 */
     /* flagがたっている場合P(LOCATION|行く:動2:ニ格)を返す */
+    /* またflagがたっている場合は、固有表現以外でも使用可 */
 
     int i;
     char *value, ne[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
@@ -2897,7 +2898,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 {
     char *key = NULL, *mrph_str, *cp;
     int rep_malloc_flag = 0;
-
+    
     key = malloc_db_buf(strlen("<補文>") + 3);
     *key = '\0';
     
@@ -2944,7 +2945,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     key = malloc_db_buf(strlen(key1) + strlen(key2) + 2);
     sprintf(key, "%s|%s", key1, key2);
     value = db_get(case_db, key);
-    
+
     if (value) {
 	ret = atof(value);
 	ret = log(ret);
