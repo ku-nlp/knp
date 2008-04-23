@@ -114,7 +114,7 @@
 #define CHI_POS_MAX  33
 #define CHI_ARG_NUM_MAX  30
 #define CHI_POS_NBEST 2
-#define CHI_DET_PENALTY 0.5
+#define CHI_DET_PENALTY 0.3
 
 /*====================================================================
 			    SIMILARITY
