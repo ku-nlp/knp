@@ -1851,11 +1851,8 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	    if (cf_match_exactly(rep_strt, rep_length, 
 				 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 				 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
-		decide_alt_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, 0, "名詞曖昧性解消");
-		if (rep_malloc_flag) {
-		    free(rep_strt);
-		}
-		return TRUE;
+		score = cpm_ptr->cmm[0].cf_ptr->ex_freq[num][pos];
+		alt_num = alt_count; /* 0 */
 	    }
 	}
 	else { /* 意味素によるチェック */
@@ -1903,8 +1900,11 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		    if (cf_match_exactly(rep_strt, rep_length, 
 					 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 					 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
-			alt_num = alt_count;
-			break;
+			tmp_score = cpm_ptr->cmm[0].cf_ptr->ex_freq[num][pos];
+			if (score < tmp_score) {
+			    score = tmp_score;
+			    alt_num = alt_count;
+			}
 		    }
 		}
 		else { /* 意味素によるチェック */
