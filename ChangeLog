@@ -1,3 +1,8 @@
+2008-04-30  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Fixed a bug of uninitialized value.
+
 2008-04-27  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c:
