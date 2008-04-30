@@ -1203,10 +1203,12 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	}
 	else {
 	    cky_ptr->cpm_ptr->pred_b_ptr = NULL;
+	    cky_ptr->cpm_ptr->cmm[0].cf_ptr = NULL;
 	}
     }
     else {
 	cky_ptr->cpm_ptr->pred_b_ptr = NULL;
+	cky_ptr->cpm_ptr->cmm[0].cf_ptr = NULL;
     }
 
     /* check each child */
