@@ -52,7 +52,9 @@ sub new {
 	}
     }
 
-    if( my $fh = new IO::File( $opt{file}, "r" ) ){
+    my $fh = new IO::File;
+    if( ($opt{file} and $fh->open( $opt{file}, "r" )) or 
+        (!$opt{file} and $fh->fdopen(fileno(STDIN), "r"))){ # read from STDIN
 	if( $opt{encoding} ){
 	    $fh->binmode( ":encoding($opt{encoding})" );
 	} else {
