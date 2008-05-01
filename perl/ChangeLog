@@ -1,3 +1,8 @@
+2008-05-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/KNP/File.pm:
+	Modified to accept STDIN.
+
 2008-01-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* lib/KNP/Result.pm:
