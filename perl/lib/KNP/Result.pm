@@ -248,7 +248,7 @@ sub id {
 	$this->set_id( @_ );
     } else {
 	unless( defined $this->{_id} ){
-	    $this->{_id} = $this->{comment} =~ m/# S-ID:([-A-z0-9]+)/ ? $1 : -1;
+	    $this->{_id} = $this->{comment} =~ m/# S-ID:(\S+)/ ? $1 : -1;
 	}
 	$this->{_id};
     }
@@ -262,7 +262,7 @@ sub id {
 sub set_id {
     my( $this, $id ) = @_;
     if( defined $this->{comment} ){
-	( $this->{comment} =~ s/# S-ID:[-A-z0-9]+/# S-ID:$id/ )
+	( $this->{comment} =~ s/# S-ID:\S+/# S-ID:$id/ )
 	    or ( $this->{comment} = "S-ID:$id\n" . $this->{comment} );
     } else {
 	$this->{comment} = "S-ID:$id\n";
