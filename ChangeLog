@@ -1,3 +1,13 @@
+2008-05-09  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase, rule/kakari_uke.rule:
+	Modified features of compound case markers (e.g., <ID:（複合辞連用）> -> <ID:〜について>, <ID:〜に対して>, ..).
+
+	* system/Makefile.am, system/case_data.c, system/extern.h, system/feature.c:
+	Added a function of producing ids of compound case markers.
+
+	* system/case_data.h: added.
+
 2008-04-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
