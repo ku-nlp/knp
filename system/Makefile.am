@@ -11,6 +11,7 @@ knp_SOURCES = \
 	anaphora.c \
 	case_analysis.c \
 	case_data.c \
+	case_data.h \
 	case_ipal.c \
 	case_match.c \
 	case_print.c \

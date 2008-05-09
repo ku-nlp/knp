@@ -231,7 +231,8 @@ extern int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
 
 /* case_data.c */
-extern char *make_fukugoji_string(TAG_DATA *b_ptr);
+extern char *make_fukugoji_id(BNST_DATA *b_ptr);
+extern char *make_fukugoji_case_string(TAG_DATA *b_ptr);
 extern int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *child_ptr, int child_num, int closest_flag);
 extern int make_data_cframe_rentai(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern int make_data_cframe(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);

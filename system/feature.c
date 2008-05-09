@@ -467,9 +467,15 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		assign_sm((BNST_DATA *)ptr + offset, (*fpp2)->cp + strlen("&意味素付与:"));
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&複合辞格解析", strlen("&複合辞格解析"))) {
-		cp = make_fukugoji_string((TAG_DATA *)ptr + offset + 1);
+		cp = make_fukugoji_case_string((TAG_DATA *)ptr + offset + 1);
 		if (cp) {
 		    assign_cfeature(&(((TAG_DATA *)ptr + offset)->f), cp, temp_assign_flag);
+		}
+	    }
+	    else if (!strncmp((*fpp2)->cp, "&複合辞ID付与", strlen("&複合辞ID付与"))) {
+		cp = make_fukugoji_id((BNST_DATA *)ptr + offset);
+		if (cp) {
+		    assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), cp, temp_assign_flag);
 		}
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&記憶語彙付与:", strlen("&記憶語彙付与:"))) {

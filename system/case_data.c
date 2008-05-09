@@ -7,74 +7,101 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
+#include "case_data.h"
 
 int SOTO_SCORE = 7;
 
 char fukugoji_string[SMALL_DATA_LEN];
 
-char *FukugojiTable[] = {"を除く", "をのぞく", 
-			 "を通じる", "をつうじる", 
-			 "を通ずる", "をつうじる", 
-			 "を通す", "をつうじる", 
-			 "を含める", "をふくめる", 
-			 "を始める", "をはじめる", 
-			 "に絡む", "にからむ", 
-			 "に沿う", "にそう", 
-			 "に向ける", "にむける", 
-			 "に伴う", "にともなう", 
-			 "に基づく", "にもとづく", 
-			 "に対する", "にたいする", 
-			 "に関する", "にかんする", 
-			 "に代わる", "にかわる", 
-			 "に加える", "にくわえる", 
-			 "に限る", "にかぎる", 
-			 "に続く", "につづく", 
-			 "に合わせる", "にあわせる", 
-			 "に比べる", "にくらべる", 
-			 "に並ぶ", "にならぶ", 
-			 "に限るぬ", "にかぎるぬ", 
-			 ""};
-
 /*==================================================================*/
-	     char *make_fukugoji_string(TAG_DATA *b_ptr)
+	   char *extract_fukugoji_string(BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int i, fc;
-    char buf[SMALL_DATA_LEN];
-    TAG_DATA *pre_b_ptr = b_ptr - 1;
+    int i;
+    BNST_DATA *pre_b_ptr = b_ptr - 1;
 
     /* 付属語がないとき */
-    if (b_ptr->num < 1 || pre_b_ptr->fuzoku_num == 0) {
+    if (b_ptr->num < 1 || pre_b_ptr->mrph_num == 0) {
 	return NULL;
     }
 
-    buf[0] = '\0';
+    fukugoji_string[0] = '\0';
 
     /* 前の文節の助詞 */
-    strcat(buf, (pre_b_ptr->fuzoku_ptr + pre_b_ptr->fuzoku_num - 1)->Goi);
+    strcat(fukugoji_string, (pre_b_ptr->mrph_ptr + pre_b_ptr->mrph_num - 1)->Goi);
 
     /* この文節 */
-    for (i = 0; i < b_ptr->jiritu_num; i++) {
-	if (!strcmp(Class[(b_ptr->jiritu_ptr + i)->Hinshi][0].id, "特殊")) /* 特殊以外 */
-	    continue;
-	strcat(buf, 
-	       (b_ptr->jiritu_ptr + i)->Goi);
-    }
-
-    /* 原形の読みに統一 */
-    for (i = 0; *(FukugojiTable[i]); i += 2) {
-	if (str_eq(buf, FukugojiTable[i])) {
-	    strcpy(buf, FukugojiTable[i + 1]);
+    for (i = 0; i < b_ptr->mrph_num; i++) {
+	if (check_feature((b_ptr->mrph_ptr + i)->f, "自立") && /* 特殊以外の自立語 */
+	    strcmp(Class[(b_ptr->mrph_ptr + i)->Hinshi][0].id, "特殊")) {
+	    strcat(fukugoji_string, (b_ptr->mrph_ptr + i)->Goi);
+	    if (i + 1 < b_ptr->mrph_num && !strcmp((b_ptr->mrph_ptr + i + 1)->Goi, "ぬ") && /* 次の形態素が助動詞「ぬ」 */
+		!strcmp(Class[(b_ptr->mrph_ptr + i + 1)->Hinshi][0].id, "助動詞")) {
+		strcat(fukugoji_string, (b_ptr->mrph_ptr + i + 1)->Goi);
+	    }
 	    break;
 	}
     }
 
-    fc = pp_hstr_to_code(buf);
-    if (fc != END_M) {
+    /* 原形の読みに統一 */
+    for (i = 0; *(FukugojiYomiTable[i]); i += 2) {
+	if (str_eq(fukugoji_string, FukugojiYomiTable[i])) {
+	    strcpy(fukugoji_string, FukugojiYomiTable[i + 1]);
+	    break;
+	}
+    }
+
+    return fukugoji_string;
+}
+
+/*==================================================================*/
+		char *canonicalize_fukugoji(char *str)
+/*==================================================================*/
+{
+    int i;
+
+    /* 複合辞のいわば代表表記を返す */
+    for (i = 0; *(FukugojiCanonicalTable[i]); i += 2) {
+	if (str_eq(str, FukugojiCanonicalTable[i])) {
+	    return FukugojiCanonicalTable[i + 1];
+	}
+    }
+
+    return NULL;
+}
+
+/*==================================================================*/
+	       char *make_fukugoji_id(BNST_DATA *b_ptr)
+/*==================================================================*/
+{
+    int fc;
+    char *fukugoji_str, *canonical_str;
+
+    fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr);
+    if (fukugoji_str && (canonical_str = canonicalize_fukugoji(fukugoji_str)) != NULL) {
+	sprintf(fukugoji_string, "ID:〜%s", canonical_str);
+	return fukugoji_string;
+    }
+    else {
+	return NULL;
+    }
+}
+
+/*==================================================================*/
+	   char *make_fukugoji_case_string(TAG_DATA *b_ptr)
+/*==================================================================*/
+{
+    int fc;
+    char *fukugoji_str;
+
+    fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr);
+    if (fukugoji_str && (fc = pp_hstr_to_code(fukugoji_str)) != END_M) {
 	sprintf(fukugoji_string, "Ｔ解析格-%s", pp_code_to_kstr(fc));
 	return fukugoji_string;
     }
-    return NULL;
+    else {
+	return NULL;
+    }
 }
 
 /*==================================================================*/
