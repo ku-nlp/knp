@@ -1,3 +1,8 @@
+2008-05-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/cky.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
+	Applied postprocessing to case analyses.
+
 2008-05-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* knprc.in:
