@@ -2079,7 +2079,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     else {
       if ((!check_feature((sp->bnst_data + last_b)->f, "タグ単位受無視")) &&
 	  (cp = check_feature((sp->bnst_data + dp->head[last_b])->f, "タグ単位受"))) {
-	offset = atoi(cp + 11);
+	  offset = atoi(cp + strlen("タグ単位受:"));
 	if (offset > 0 || (sp->bnst_data + dp->head[last_b])->tag_num <= -1 * offset) {
 	  offset = 0;
 	}
@@ -2988,9 +2988,6 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 	    /* 直前格のマッチスコアをfeatureに出力 *
 	       record_closest_cc_match(sp, &(sp->Best_mgr->cpm[i])); */
 
-	    /* 格解析の結果を featureへ */
-	    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, FALSE);
-
 	    /* 格解析の結果を用いて形態素曖昧性を解消 */
 	    verb_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
 	    noun_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
@@ -3004,12 +3001,6 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 	  if (sp->Best_mgr->cpm[i].decided == CF_DECIDED) {
 	    assign_cfeature(&(sp->Best_mgr->cpm[i].pred_b_ptr->f), "格フレーム決定", FALSE);
 	  }
-	}
-	/* 格フレームない場合も格解析結果を書く */
-	else if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-		 (sp->Best_mgr->cpm[i].result_num == 0 || 
-		  sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1)) {
-	  record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, FALSE);
 	}
       }
     }

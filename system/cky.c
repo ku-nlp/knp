@@ -1769,7 +1769,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    /* 構造決定後のルール適用 */
 	    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
 
-	    /* record case analysis results */
+	    /* disambiguation by case analysis */
 	    if (OptAnalysis == OPT_CASE) {
 		for (i = 0; i < Best_mgr->pred_num; i++) {
 		    if (Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
@@ -1778,8 +1778,6 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 		    if (Best_mgr->cpm[i].result_num != 0 && 
 			Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
 			Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
-			record_case_analysis(sp, &(Best_mgr->cpm[i]), NULL, FALSE);
-
 			/* 格解析の結果を用いて形態素曖昧性を解消 */
 			verb_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
 			noun_lexical_disambiguation_by_case_analysis(&(sp->Best_mgr->cpm[i]));
@@ -1789,6 +1787,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	    /* print for debug or nbest */
 	    if (OptNbest == TRUE) {
+		if (OptAnalysis == OPT_CASE) { /* preserve case analysis result for n-best */
+		    record_all_case_analisys(sp, TRUE);
+		}
 		print_result(sp, 0);
 
 		if (OptAnalysis == OPT_CASE && OptDisplay == OPT_DEBUG) { /* case analysis results */

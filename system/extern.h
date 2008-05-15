@@ -215,6 +215,7 @@ extern int CF_MatchPP(int c, CASE_FRAME *cf);
 extern int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
 extern void assign_case_component_feature(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int temp_assign_flag);
 extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int temp_assign_flag);
+extern void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag);
 extern void decide_voice(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
 extern void copy_cpm(CF_PRED_MGR *dst, CF_PRED_MGR *src, int flag);
 extern void copy_cf_with_alloc(CASE_FRAME *dst, CASE_FRAME *src);
@@ -416,6 +417,7 @@ extern void print_para_relation(SENTENCE_DATA *sp);
 extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
 extern void print_tree_for_chinese(SENTENCE_DATA *sp);
+extern void do_postprocess(SENTENCE_DATA *sp);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);

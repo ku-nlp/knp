@@ -1524,6 +1524,16 @@ PARSED:
 
     memo_by_program(sp);	/* メモへの書き込み */
 
+    /* 後処理 */
+    if (OptPostProcess) {
+	do_postprocess(sp);
+    }
+
+    /* 格解析結果をfeatureへ */
+    if (OptAnalysis == OPT_CASE) {
+	record_all_case_analisys(sp, FALSE);
+    }
+
     return TRUE;
 }
 
@@ -1576,10 +1586,15 @@ PARSED:
 	    if (!(OptExpress & OPT_NOTAG)) {
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
 	    }
-	    if (!OptEllipsis)
+	    if (!OptEllipsis) {
+		if (OptPostProcess) { /* 後処理 */
+		    do_postprocess(sp);
+		}
 		print_result(sp, 1);
-	    else
+	    }
+	    else {
 		PreserveCPM(PreserveSentence(sp), sp);
+	    }
 	    fflush(Outfp);
 
 	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */

@@ -1505,15 +1505,21 @@ void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     buf = (char *)malloc_data(strlen(pp_str) + strlen(word) + strlen(sid) + (dist ? log(dist) : 0) + 11, 
 			      "make_cc_string");
 
-    sprintf(buf, "%s/%c/%s/%d/%d/%s", 
-	    pp_str, 
-	    cc_type == -2 ? 'O' : 	/* 省略 */
-	    cc_type == -3 ? 'D' : 	/* 照応 */
-	    cc_type == -1 ? 'N' : 'C', 
-	    word, 
-	    tag_n, 
-	    dist, 
-	    sid);
+    if (tag_n < 0) { /* 後処理により併合された基本句 */
+	sprintf(buf, "%s/U/-/-/-/-", pp_str);
+    }
+    else {
+	sprintf(buf, "%s/%c/%s/%d/%d/%s", 
+		pp_str, 
+		cc_type == -2 ? 'O' : 	/* 省略 */
+		cc_type == -3 ? 'D' : 	/* 照応 */
+		cc_type == -1 ? 'N' : 'C', 
+		word, 
+		tag_n, 
+		dist, 
+		sid);
+    }
+
     return buf;
 }
 
@@ -1766,6 +1772,24 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+}
+
+/*==================================================================*/
+void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; i < sp->Best_mgr->pred_num; i++) {
+	if (sp->Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
+	    continue;
+	}
+	if (sp->Best_mgr->cpm[i].result_num != 0 && 
+	    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
+	    sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+	    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, temp_assign_flag);
+	}
+    }
 }
 
 /*==================================================================*/

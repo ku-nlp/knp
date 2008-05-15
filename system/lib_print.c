@@ -1450,20 +1450,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     fprintf(Outfp, "\n");
 
-    /* 後処理 */
-    if (OptPostProcess) {
-	if (make_dpnd_tree(sp)) {
-	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	    if (OptExpress == OPT_TAB || 
-		OptExpress == OPT_NOTAG) {
-		tag_bnst_postprocess(sp, 1);
-	    }
-	    else {
-		tag_bnst_postprocess(sp, 0); /* 木構造出力のため、num, dpnd_head の番号の付け替えはしない */
-	    }
-	}
-    }
-
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_TAB) {
@@ -1526,6 +1512,23 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	/* 次の解析のために初期化しておく */
 	tm->pred_num = 0;
+    }
+}
+
+/*==================================================================*/
+		void do_postprocess(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 後処理 */
+    if (make_dpnd_tree(sp)) {
+	bnst_to_tag_tree(sp); /* タグ単位の木へ */
+	if (OptExpress == OPT_TAB || 
+	    OptExpress == OPT_NOTAG) {
+	    tag_bnst_postprocess(sp, 1);
+	}
+	else {
+	    tag_bnst_postprocess(sp, 0); /* 木構造出力のため、num, dpnd_head の番号の付け替えはしない */
+	}
     }
 }
 
