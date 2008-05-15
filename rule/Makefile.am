@@ -5,9 +5,21 @@ RULE2DATA = ./rule2data.pl
 
 ruledir = $(pkgdatadir)/rule
 
-orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule modality.rule tag_after_dpnd_and_case.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule mrph_filter.rule case_analysis.rule tag_postprocess.rule mrph_auto_dic.rule
-generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data modality.data tag_after_dpnd_and_case.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data mrph_filter.data case_analysis.data tag_postprocess.data mrph_auto_dic.data
+orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule modality.rule tag_after_dpnd_and_case.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule mrph_filter.rule case_analysis.rule tag_postprocess.rule mrph_auto_dic.rule clause_function.phrase
+generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data modality.data tag_after_dpnd_and_case.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data mrph_filter.data case_analysis.data tag_postprocess.data mrph_auto_dic.data clause_function.rule clause_function.data
 dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRASE2RULE)
+
+bnst_type.rule: bnst_type.phrase
+	if [ -f $@ ]; then \
+	    cp -pf $@ $@.old; \
+	fi; \
+	$(PHRASE2RULE) --rid < $< > $@
+	if [ -r $@.old ]; then \
+	    perl -pe 's/RID:\d+//' $@ > $@-tmp; \
+	    perl -pe 's/RID:\d+//' $@.old > $@.old-tmp; \
+	    diff $(DIFF_ENV) $@.old-tmp $@-tmp; \
+	    rm -f $@.old-tmp $@-tmp; \
+	fi
 
 .phrase.rule:
 	if [ -f $@ ]; then \
@@ -15,11 +27,9 @@ dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRAS
 	fi; \
 	$(PHRASE2RULE) < $< > $@
 	if [ -r $@.old ]; then \
-	    perl -pe 's/RID:\d+//' $@ > $@-tmp; \
-	    perl -pe 's/RID:\d+//' $@.old > $@.old-tmp; \
-	    diff $(DIFF_ENV) $@.old-tmp $@-tmp; \
-	    rm -f $@.old-tmp $@-tmp; \
-	fi
+	    diff $(DIFF_ENV) $@.old $@; \
+	fi; \
+	:
 
 .rule.data:
 	$(RULE2DATA) $<
