@@ -1,3 +1,21 @@
+2008-05-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* knprc.in:
+	Added clause_function.rule.
+
+	* rule/Makefile.am:
+	Modification for the addition of clause_function.phrase.
+
+	* rule/phrase2rule.pl:
+	Made an option that assigns rule ids.
+
+	* rule/clause_function.phrase: added.
+
+2008-05-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.rule:
+	Added some rules for recognizing modalities.
+
 2008-05-09  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_type.phrase, rule/kakari_uke.rule:
