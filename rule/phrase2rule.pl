@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use Getopt::Long;
 use encoding 'euc-jp';
 binmode STDERR, ':encoding(euc-jp)';
 
@@ -8,7 +9,6 @@ binmode STDERR, ':encoding(euc-jp)';
 #		 KNPの形態素，文節ルールのtranslator
 #
 #					99/09/10 by kuro@i.kyoto-u.ac.jp
-#					00/02/15 last modified
 ######################################################################
 #
 # 各行のnotation
@@ -103,6 +103,10 @@ $pos_repr{"\\指示詞:連体詞形態指示詞"} = "この";
 $pos_repr{"\\接続詞"} = "そして";
 $pos_repr{"\\感動詞"} = "あっ";
 $pos_repr{"\\特殊:句点"} = "．";
+
+my (%opt);
+&GetOptions(\%opt, 'rid');
+# --rid: RIDを付与
 
 ######################################################################
 use KNP;
@@ -220,7 +224,9 @@ while ( <STDIN> ) {
 	    print " ?*";
 	}
     }
-    print " )\n\t$feature RID:$num\n)\n";
+    print " )\n\t$feature";
+    print " RID:$num" if $opt{rid};
+    print "\n)\n";
     print "$comment\n" if $comment;
     print "\n";
 }
