@@ -1660,8 +1660,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* 入力側の各格要素の記述 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	/* 省略解析の結果は除く
-	   指示詞の解析をする場合は、指示詞を除く */
-	if (cpm_ptr->elem_b_num[i] <= -2) {
+	   指示詞の解析をする場合は、指示詞を除く
+	   後処理により併合された基本句を除く
+	*/
+	if (cpm_ptr->elem_b_num[i] <= -2 || 
+	    cpm_ptr->elem_b_ptr[i]->num < 0) {
 	    continue;
 	}
 
