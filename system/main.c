@@ -384,6 +384,12 @@ extern int	EX_match_subject;
 /* 	} */
 	else if (str_eq(argv[0], "-anaphora")) {
 	    OptAnaphora = 1;
+	    OptCorefer = 4;
+	    OptEllipsis |= OPT_COREFER;
+	}
+	else if (str_eq(argv[0], "-anaphora-normal")) {
+	    OptAnaphora = 2;
+	    OptCorefer = 4;
 	    OptEllipsis |= OPT_COREFER;
 	}	
 	else if (str_eq(argv[0], "-read-ne")) {
@@ -1329,7 +1335,7 @@ extern int	EX_match_subject;
     if ((OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 ||
 	OptUseNCF) &&
-	!(OptReadFeature == 1 && OptAnaphora == 1)) {
+	!(OptReadFeature == 1 && OptAnaphora)) {
 	set_caseframes(sp);
 	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
     }

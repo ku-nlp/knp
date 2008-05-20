@@ -760,7 +760,7 @@ typedef struct mention {
     int                 tag_num;
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
-    char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D', */
+    char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D' */
     double              salience_score; /* どのくらい先行詞になりやすいか */
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
@@ -1291,7 +1291,7 @@ typedef struct ctm_def {
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
-    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D', */
+    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
 } CF_TAG_MGR;
 
 /*====================================================================

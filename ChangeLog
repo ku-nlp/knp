@@ -1,5 +1,11 @@
 2008-05-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/anaphora.c, system/main.c:
+	照応解析結果をfeatureとして基本句に付与(<EID:...>、<談話構造:...>)
+	照応解析時に通常のknp解析結果のみを出力するオプション(-anahphora-normal)を追加
+
+2008-05-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
 	* system/main.c, system/proper.c:
 	CRF版の固有表現抽出でもキャッシュを使用しないオプション(-ne-cache)を使用できるように変更
 	

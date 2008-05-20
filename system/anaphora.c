@@ -71,24 +71,16 @@ int get_location(char *loc_name, int sent_num, char *kstr, MENTION *mention)
 /*==================================================================*/
 {
     if (mention->sent_num == sent_num) {
-/*	sprintf(loc_name, "%s-%c-C%d-%d", */
 	sprintf(loc_name, "%s-%c-C%d", 
 		kstr, (mention->flag == '=') ? 'S' : mention->flag,
 		loc_category[mention->tag_ptr->b_ptr->num]);
-/*		loc_category[mention->tag_ptr->b_ptr->num],
-		(mention->entity->salience_score >= 3) ? 3 :
-		(mention->entity->salience_score >= 2) ? 2 : 1); */
 	return TRUE;
     }
     else if (sent_num - mention->sent_num > 0) {
-/*	sprintf(loc_name, "%s-%c-B%d-%d", */
 	sprintf(loc_name, "%s-%c-B%d", 
 		kstr, (mention->flag == '=') ? 'S' : mention->flag,
 		(sent_num - mention->sent_num <= 3 ) ? 
 		sent_num - mention->sent_num : 0);
-/*		sent_num - mention->sent_num : 0,
-		(mention->entity->salience_score >= 3) ? 3 :
-		(mention->entity->salience_score >= 2) ? 2 : 1); */
 	return TRUE;
     }
     else {
@@ -650,7 +642,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		/* 誰を──┐　　　│　　　　　　             */
 		/*        敵に<P>─PARA──┐　　             */
 		/*                        する。              */
-	    if (tcf_ptr->pred_b_ptr->child[k]->para_top_p) {
+		if (tcf_ptr->pred_b_ptr->child[k]->para_top_p) {
 		    child_ptr = tcf_ptr->pred_b_ptr->child[k]->child[0]; /* 「敵」へのポインタ */
 		    for (l = 0; child_ptr->child[l]; l++) {
 			/* mentionが「誰」を指していて、かつ、格が一致した場合 */
@@ -1226,7 +1218,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    printf(":%.3f", (entity_manager.entity + j)->salience_score);
 		}
 		printf("\n");
-	    }    
+	    } 
 	    
 	    /* 省略解析メイン */
 	    ellipsis_analysis_main(tag_ptr);
@@ -1285,6 +1277,48 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 }
 
 /*==================================================================*/
+	    void assign_anaphora_result(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 照応解析結果を基本句のfeatureに付与 */
+    int i, j;
+    char buf[DATA_LEN], tmp[IMI_MAX];
+    MENTION *mention_ptr;
+    TAG_DATA *tag_ptr;
+	     
+    for (i = 0; i < sp->Tag_num; i++) {
+	tag_ptr = sp->tag_data + i; 
+
+	sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num);
+	assign_cfeature(&(tag_ptr->f), buf, FALSE);
+
+	buf[0] = '\0';
+	for (j = 1; j < tag_ptr->mention_mgr.num; j++) {
+	    mention_ptr = tag_ptr->mention_mgr.mention + j;
+	    
+	    if (mention_ptr->flag == 'N' || mention_ptr->flag == 'C' ||
+		mention_ptr->flag == 'O' || mention_ptr->flag == 'D') {
+
+		if (!buf[0]) {
+		    sprintf(buf, "談話構造:");
+		}
+		else {
+		    strcat(buf, ";");
+		}
+
+		sprintf(tmp, "%s/%c/%s/%d",
+			mention_ptr->cpp_string,
+			mention_ptr->flag,
+			mention_ptr->entity->name,
+			mention_ptr->entity->num);
+		strcat(buf, tmp);
+	    }
+	}
+	if (buf[0]) assign_cfeature(&(tag_ptr->f), buf, FALSE);
+    }
+}
+
+/*==================================================================*/
 		  void assign_sc(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -1330,5 +1364,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     decay_entity();
     assign_sc(sentence_data + sp->Sen_num - 1);
     make_context_structure(sentence_data + sp->Sen_num - 1);
-    print_entities(sp->Sen_num);
+    assign_anaphora_result(sentence_data + sp->Sen_num - 1);
+    if (OptAnaphora == 1) print_entities(sp->Sen_num);
 }
