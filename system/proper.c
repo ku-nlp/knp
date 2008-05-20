@@ -563,7 +563,7 @@ char *ne_code_to_tagposition(int num)
 		strlen(sp->mrph_data[i].Goi2) / 2, /* MAX 3+2文字 */
 		s[1], /* MAX 128文字 */ 
 		s[2], /* MAX 256字 */
-		s[3]  /* MAX 256文字 */
+		OptNEcache ? "" : s[3]  /* MAX 256文字 */
 	    );
 	for (k = 0; k < 4; k++) {
 	    free(s[k]);

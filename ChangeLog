@@ -1,5 +1,8 @@
 2008-05-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/main.c, system/proper.c:
+	CRF版の固有表現抽出でもキャッシュを使用しないオプション(-ne-cache)を使用できるように変更
+	
 	* system/anaphora.c:
 	照応解析結果の出力フォーマットを少し変更
 
