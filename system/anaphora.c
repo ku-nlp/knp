@@ -10,7 +10,7 @@
 #include "knp.h"
 
 #define CASE_CANDIDATE_MAX 20  /* 照応解析用格解析結果を保持する数 */
-#define ELLIPSIS_RESULT_MAX 5  /* 省略解析結果を保持する数 */
+#define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する数 */
 #define INITIAL_SCORE -10000
 #define ENTITY_DECAY_RATE 0.7
 #define ELLIPSIS_CASE_NUM 3
@@ -990,11 +990,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	ellipsis_analysis(tag_ptr, ctm_ptr, 0, ctm_ptr->result_num);
     }
 
-    if (OptDisplay == OPT_DEBUG) {
+    if (OptDisplay == OPT_DEBUG || OptExpress == OPT_TABLE) {
 	for (i = CASE_CANDIDATE_MAX; i < CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX; i++) {
  	    if (work_ctm[i].score == INITIAL_SCORE ||
  		work_ctm[i].score < work_ctm[CASE_CANDIDATE_MAX].score - 50) break;
-	    printf(";;省略解析候補:%2d %f %s", i - CASE_CANDIDATE_MAX + 1, 
+	    printf(";;省略解析候補%d-%d:%2d %f %s", tag_ptr->mention_mgr.mention->sent_num,
+		   tag_ptr->num, i - CASE_CANDIDATE_MAX + 1, 
 		   work_ctm[i].score, work_ctm[i].cf_ptr->cf_id);
 
 	    for (j = 0; j < work_ctm[i].result_num; j++) {
@@ -1162,7 +1163,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		check_feature(tag_ptr->f, "用言:判")) continue;
 
 	    /* この時点での各EntityのSALIENCE出力 */
-	    printf(";; SALIENCE-%d-%d", sp->Sen_num, i);
+	    printf(";;SALIENCE-%d-%d", sp->Sen_num, i);
 	    for (j = 0; j < entity_manager.num; j++) {
 		printf(":%.3f", (entity_manager.entity + j)->salience_score);
 	    }
@@ -1220,7 +1221,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	    /* この時点での各EntityのSALIENCE出力(とりあえずOPT_TABLEの場合のみ) */
 	    if (OptExpress == OPT_TABLE) {
-		printf(";; SALIENCE-%d-%d", sp->Sen_num, i);
+		printf(";;SALIENCE-%d-%d", sp->Sen_num, i);
 		for (j = 0; j < entity_manager.num; j++) {
 		    printf(":%.3f", (entity_manager.entity + j)->salience_score);
 		}

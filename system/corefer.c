@@ -582,12 +582,12 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     }
     
     sprintf(buf, "CÍÑ;¡Ú%s¡Û;=;0;%d;9.99:%s(Æ±°ìÊ¸):%dÊ¸Àá",
-	    cp, tag_ptr - sp->tag_data, sp->KNPSID ? sp->KNPSID + 5 : "?", 
+	    cp, i, sp->KNPSID ? sp->KNPSID + 5 : "?", 
 	    tag_ptr - sp->tag_data);
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
     assign_cfeature(&(tag_ptr->f), "¶¦»²¾È(Ìò¿¦)", FALSE);
-    sprintf(buf, "£Ô¶¦»²¾È:=/O/%s/%d/%d/-", cp, tag_ptr - sp->tag_data, 0);
-    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
+    sprintf(buf, "£Ô¶¦»²¾È:=/O/%s/%d/%d/-", cp, i, 0);
+    assign_cfeature(&(tag_ptr->f), buf, FALSE);
     
     /* COREFER_ID¤òÉÕÍ¿ */
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
