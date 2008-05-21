@@ -1287,7 +1287,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     TAG_DATA *tag_ptr;
 	     
     for (i = 0; i < sp->Tag_num; i++) {
-	tag_ptr = sp->tag_data + i; 
+	tag_ptr = substance_tag_ptr(sp->tag_data + i);
 
 	sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num);
 	assign_cfeature(&(tag_ptr->f), buf, FALSE);

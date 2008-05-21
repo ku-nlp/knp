@@ -1,3 +1,11 @@
+2008-05-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	照応解析結果を基本句に付与する際、並列構造があるとsegmentation faultするバグを修正
+
+	* rule/context.rule:
+	(ID:〜ものの)の"もの"を格要素にしないように変更
+	
 2008-05-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/main.c:
