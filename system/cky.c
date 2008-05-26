@@ -34,8 +34,12 @@ typedef struct _CKY {
 
 #define DOUBLE_MINUS    -999.0
 #define PARA_THRESHOLD	0
-//#define	CKY_TABLE_MAX	1000000 
+
+#ifdef LANGUAGE_CHINESE
 #define	CKY_TABLE_MAX	12900000 
+#else
+#define	CKY_TABLE_MAX	1000000 
+#endif
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
