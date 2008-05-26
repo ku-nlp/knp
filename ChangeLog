@@ -1,3 +1,8 @@
+2008-05-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Changed the default value of the maximum number of cky cells.
+
 2008-05-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
