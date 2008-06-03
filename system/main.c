@@ -1554,7 +1554,7 @@ PARSED:
     }
 
     /* 格解析結果をfeatureへ */
-    if (OptAnalysis == OPT_CASE) {
+    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
 	record_all_case_analisys(sp, FALSE);
     }
 
