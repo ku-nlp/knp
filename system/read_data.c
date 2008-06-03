@@ -306,16 +306,6 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		strncpy(merged_rep, "正規化", strlen("正規化"));
 	    }
 	}
-
-	if (*merged_rep) {
-	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 連結代表表記 */
-	}
-
-	if ((cp = check_feature((sp->bnst_data + i)->head_ptr->f, "正規化代表表記"))) {
-	    strncpy(cp + strlen("正"), "主辞", strlen("主辞"));
-	    assign_cfeature(&((sp->bnst_data + i)->f), cp + strlen("正"), FALSE); /* 主辞代表表記 */
-	    strncpy(cp + strlen("正"), "規化", strlen("規化"));
-	}
     }
 
     free(merged_rep);
