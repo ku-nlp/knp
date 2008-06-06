@@ -1,3 +1,9 @@
+2008-06-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	省略解析対象格にガ２を追加
+	プログラムの整理
+
 2008-05-26  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
