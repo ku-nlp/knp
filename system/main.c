@@ -383,12 +383,19 @@ extern int	EX_match_subject;
 /* 	    OptEllipsis |= OPT_DEMO; */
 /* 	} */
 	else if (str_eq(argv[0], "-anaphora")) {
-	    OptAnaphora = 1;
+	    OptAnaphora |= OPT_ANAPHORA;
+	    OptAnaphora |= OPT_PRINT_ENTITY;
 	    OptCorefer = 4;
 	    OptEllipsis |= OPT_COREFER;
 	}
 	else if (str_eq(argv[0], "-anaphora-normal")) {
-	    OptAnaphora = 2;
+	    OptAnaphora |= OPT_ANAPHORA;
+	    OptCorefer = 4;
+	    OptEllipsis |= OPT_COREFER;
+	}	
+	else if (str_eq(argv[0], "-anaphora-copula")) {
+	    OptAnaphora |= OPT_ANAPHORA;
+	    OptAnaphora |= OPT_ANAPHORA_COPULA;
 	    OptCorefer = 4;
 	    OptEllipsis |= OPT_COREFER;
 	}	

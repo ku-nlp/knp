@@ -1123,7 +1123,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    
 	    /* todo::用言のみ対象(暫定的) */
 	    if (!check_feature(tag_ptr->f, "用言") ||
-		check_feature(tag_ptr->f, "用言:判")) continue;
+		(!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
+		check_feature(tag_ptr->f, "用言:判"))) continue;
 
 	    /* この時点での各EntityのSALIENCE出力 */
 	    printf(";;SALIENCE-%d-%d", sp->Sen_num, i);
@@ -1176,7 +1177,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    	    	
 	    /* todo::用言のみ対象(暫定的) */
 	    if (!check_feature(tag_ptr->f, "用言") ||
-		check_feature(tag_ptr->f, "用言:判") ||
+		(!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
+		check_feature(tag_ptr->f, "用言:判")) ||
 		tag_ptr->tcf_ptr->cf.type != CF_PRED) continue;
     
 	    /* 位置カテゴリの生成 */	    
@@ -1335,5 +1337,5 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     assign_sc(sentence_data + sp->Sen_num - 1);
     make_context_structure(sentence_data + sp->Sen_num - 1);
     assign_anaphora_result(sentence_data + sp->Sen_num - 1);
-    if (OptAnaphora == 1) print_entities(sp->Sen_num);
+    if (OptAnaphora & OPT_PRINT_ENTITY) print_entities(sp->Sen_num);
 }

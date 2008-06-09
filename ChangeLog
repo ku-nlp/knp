@@ -1,3 +1,8 @@
+2008-06-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h, system/main.c:
+	省略解析時に判定詞を解析するオプション"-anaphora-copula"を追加
+
 2008-06-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
