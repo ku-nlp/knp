@@ -1,3 +1,11 @@
+2008-06-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/tag_postprocess.rule:
+	Added a rule of postprocessing "〜の方".
+
+	* system/case_analysis.c:
+	Modified record_case_analysis() for postprocessed phrase.
+
 2008-06-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/const.h, system/main.c:
@@ -8,6 +16,14 @@
 	* system/anaphora.c:
 	省略解析対象格にガ２を追加
 	プログラムの整理
+
+2008-06-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/main.c:
+	Modification for -case2.
+
+	* system/read_data.c:
+	Deleted unnecessary codes.
 
 2008-05-26  Daisuke Kawahara  <dk@nict.go.jp>
 
