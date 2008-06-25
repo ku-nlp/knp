@@ -1,3 +1,8 @@
+2008-06-25  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_etc.rule:
+	Added rules of recognizing candidates of information senders.
+
 2008-06-18  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_postprocess.rule:
