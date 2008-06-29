@@ -1770,9 +1770,6 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	if (make_dpnd_tree(sp)) {
 	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
 
-	    /* 構造決定後のルール適用 */
-	    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
-
 	    /* disambiguation by case analysis */
 	    if (OptAnalysis == OPT_CASE) {
 		for (i = 0; i < Best_mgr->pred_num; i++) {
@@ -1791,6 +1788,10 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	    /* print for debug or nbest */
 	    if (OptNbest == TRUE) {
+		/* 構造決定後のルール適用 */
+		assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, TRUE);
+		assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);
+
 		if (OptAnalysis == OPT_CASE) { /* preserve case analysis result for n-best */
 		    record_all_case_analisys(sp, TRUE);
 		}

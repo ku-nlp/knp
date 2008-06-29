@@ -1549,6 +1549,10 @@ PARSED:
 	if (!OptNElearn) assign_ne_feature_tag(sp);
     }
 
+    /* 構造決定後のルール適用 */
+    assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, FALSE);
+    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
+
     /* 照応解析に必要なFEATUREの付与 */
     if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
 	assign_anaphor_feature(sp);

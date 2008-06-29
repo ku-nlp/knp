@@ -2928,15 +2928,12 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
       }
     }
 
-    /* 構造決定後のルール適用準備 */
+    /* 木を作成 */
     dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
     if (make_dpnd_tree(sp) == FALSE) {
       return FALSE;
     }
     bnst_to_tag_tree(sp); /* タグ単位の木へ */
-
-    /* 構造決定後のルール適用 */
-    assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
 
     if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
       /* 格解析の結果を用言文節へ */
