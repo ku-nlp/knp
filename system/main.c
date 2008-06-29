@@ -533,6 +533,11 @@ extern int	EX_match_subject;
 	    OptNECRF = 1;
 	    OptNE = 1;
 	}
+	else if (str_eq(argv[0], "-ne-parent")) { /* 親の情報を用いない */
+	    OptNE = 1;
+	    OptNECRF = 1;
+	    OptNEparent = 1;
+	}
 	else if (str_eq(argv[0], "-ne-cache")) { /* キャッシュを使用しない */
 	    OptNE = 1;
 	    OptNECRF = 1;

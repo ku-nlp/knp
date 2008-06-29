@@ -1,3 +1,9 @@
+2008-06-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/main.c, system/proper.c:
+	CRF版の固有表現抽出でも係り先の情報を使用しないオプション(-ne-parent)を使用できるように変更
+
+
 2008-06-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_etc.rule:
