@@ -1,8 +1,18 @@
+2008-06-30  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c, system/dpnd_analysis.c, system/main.c:
+	Changed the application order of "*_after_dpnd_and_case.rule".
+
+	* rule/bnst_after_dpnd_and_case.rule:
+	added.
+
+	* rule/bnst_etc.rule:
+	Moved the rules of recognizing candidates of information senders to "bnst_after_dpnd_and_case.rule".
+
 2008-06-29  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c, system/proper.c:
 	CRF版の固有表現抽出でも係り先の情報を使用しないオプション(-ne-parent)を使用できるように変更
-
 
 2008-06-25  Daisuke Kawahara  <dk@nict.go.jp>
 
