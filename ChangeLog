@@ -1,3 +1,8 @@
+2008-07-04  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	a small fix.
+
 2008-06-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c, system/dpnd_analysis.c, system/main.c:
@@ -791,7 +796,7 @@
 	Modified a rule of compound noun "副詞＋Ｘ".
 
 	* rule/bnst_basic.rule:
-	Added some rules to handle "一生に一度の" and "各〜に<数量>".
+vvv	Added some rules to handle "一生に一度の" and "各〜に<数量>".
 
 2007-07-23  Daisuke Kawahara  <dk@nict.go.jp>
 

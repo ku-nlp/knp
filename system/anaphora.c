@@ -12,7 +12,7 @@
 #define CASE_CANDIDATE_MAX 20  /* 照応解析用格解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する数 */
 #define INITIAL_SCORE -10000
-#define ELLIPSIS_CASE_NUM 4 /* 省略解析の対象とする格の数 */
+#define ELLIPSIS_CASE_NUM_MAX 6 /* 省略解析の対象とする格の最大数+1 */
 #define EX_MATCH_COMPENSATE 0.5 /* マッチしすぎることを防ぐための補正項 */
 #define SALIENCE_DECAY_RATE 0.7 /* salience_scoreの減衰率 */
 #define SALIENCE_THREHOLD 1.0 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
@@ -44,7 +44,7 @@ int loc_category[BNST_MAX];
 CF_TAG_MGR work_ctm[CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX + 1];
 
 /* 省略解析の対象とする格のリスト */
-char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM] = {"ガ", "ヲ", "ニ", "ガ２"};
+char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM_MAX] = {"ガ", "ヲ", "ニ", "ガ２", "ノ", ""};
 
 /*==================================================================*/
 		  int match_ellipsis_case(char *key)
@@ -53,7 +53,7 @@ char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM] = {"ガ", "ヲ", "ニ", "ガ２"};
     /* keyが省略対象格のいずれかとマッチするかどうかをチェック */
     int i;
 
-    for (i = 0; i < ELLIPSIS_CASE_NUM; i++) {
+    for (i = 0; ELLIPSIS_CASE_LIST[i]; i++) {
 	if (!strcmp(key, ELLIPSIS_CASE_LIST[i])) return TRUE;
     }
     return FALSE;
@@ -337,7 +337,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	    (sentence_data + mention_ptr->sent_num - 1)->tag_data + mention_ptr->tag_num;
 	strcpy(mention_ptr->cpp_string, 
 	       pp_code_to_kstr(ctm_ptr->cf_ptr->pp[ctm_ptr->cf_element_num[i]][0]));
-	mention_ptr->entity->salience_score = mention_ptr->entity->salience_score;
+	mention_ptr->salience_score = mention_ptr->entity->salience_score;
 	/* 入力側の表層格(格解析結果のみ) */
 	if (i < ctm_ptr->case_result_num) {
 	    if (tag_ptr->tcf_ptr->cf.pp[ctm_ptr->tcf_element_num[i]][0] >= FUKUGOJI_START &&
@@ -856,7 +856,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     ctm_ptr->filled_entity[tag_ptr->mention_mgr.mention->entity->num] = TRUE;
    
     /* まだチェックしていない省略解析対象格がある場合 */
-    if (i < ELLIPSIS_CASE_NUM) {
+    if (ELLIPSIS_CASE_LIST[i]) {
 	/* 対象の格について */
 	exist_flag = 0;
 	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
