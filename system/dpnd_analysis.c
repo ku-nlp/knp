@@ -2055,7 +2055,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 {
   /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
 
-  int		i, j, last_b, offset, score, rep_length;
+  int		i, j, last_b, offset, check_ac, rep_length;
   char	*cp, *strp, buf[16];
   TAG_DATA	*t_ptr, *ht_ptr;
 
@@ -2102,16 +2102,16 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	  rep_length = strlen(strp);
 	}
 
-	/* 「ＡのＣ」のスコア */
+	/* 「ＡのＣ」をチェック */
 	ht_ptr = (sp->bnst_data + dp->head[last_b])->tag_ptr + 
 	  (sp->bnst_data + dp->head[last_b])->tag_num - 1 + offset;	
 	if (ht_ptr->cf_ptr) {
-	  score = check_examples(strp, rep_length,
+	  check_ac = check_examples(strp, rep_length,
 				 ht_ptr->cf_ptr->ex_list[0],
 				 ht_ptr->cf_ptr->ex_num[0]);
 	}
 	else {
-	  score = -1;
+	  check_ac = -1;
 	}
 
 	/* Ｂが複数タグから成る場合のためのループ */
@@ -2128,11 +2128,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    rep_length = strlen(strp);
 	  }
 
-	  /* 「ＡのＢ」のスコア */
-	  if (score == -1 && ht_ptr->cf_ptr &&
+	  /* 「ＡのＢ」をチェック */
+	  if (check_ac == -1 && ht_ptr->cf_ptr &&
 	      check_examples(strp, rep_length,
 			     ht_ptr->cf_ptr->ex_list[0],
-			     ht_ptr->cf_ptr->ex_num[0]) > score) {
+			     ht_ptr->cf_ptr->ex_num[0]) != -1) {
 
 	    offset = j - ((sp->bnst_data + dp->head[last_b])->tag_num - 1);
 	    sprintf(buf, "直前タグ受:%d", offset);

@@ -2024,6 +2024,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
 	if (t_ptr->jiritu_ptr != NULL && 
 	    !check_feature(t_ptr->f, "格解析なし")) {
+	    if (OptUseNCF && /* 名詞格フレーム */
+		/* 「ＡのＢＣ」の係り受けをチェックする際、
+		 先頭の格フレームが名詞格フレームであることを仮定しているため
+		用言格フレームより先に読み込む必要あり(判定詞対策) */
+		check_feature(t_ptr->f, "体言")) {
+		make_caseframes(sp, t_ptr, CF_NOUN);
+	    }
 	    if (OptUseCF &&
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
 		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
@@ -2036,11 +2043,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
 		make_caseframes(sp, t_ptr, CF_PRED);
 		t_ptr->e_cf_num = t_ptr->cf_num;
-	    }
-	    /* 名詞格フレーム */
-	    if (OptUseNCF && 
-		check_feature(t_ptr->f, "体言")) {
-		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }
 	}
 	else {

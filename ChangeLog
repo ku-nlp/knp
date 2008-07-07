@@ -1,3 +1,8 @@
+2008-07-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/dpnd_analysis.c:
+	Ｃが判定詞である場合でも「ＡのＢＣ」の係り受けをチェックするように変更
+
 2008-07-04  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
