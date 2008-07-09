@@ -1570,7 +1570,8 @@ PARSED:
     }
 
     /* 格解析結果をfeatureへ */
-    if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) {
+    if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) &&
+	!OptReadFeature) {
 	record_all_case_analisys(sp, FALSE);
     }
 

@@ -1,3 +1,13 @@
+2008-07-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/case_ipal.c:
+	省略解析の対象を必須格に限定
+	数量を先行詞の候補から除外
+	省略解析用の確率ファイルのフォーマット変更に対応
+	
+	* system/main.c:
+	正解の格解析結果を読み込む場合、自動解析結果が正解を上書きしないように修正	
+
 2008-07-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/dpnd_analysis.c:

@@ -12,7 +12,6 @@
 #define CASE_CANDIDATE_MAX 20  /* 照応解析用格解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する数 */
 #define INITIAL_SCORE -10000
-#define ELLIPSIS_CASE_NUM_MAX 6 /* 省略解析の対象とする格の最大数+1 */
 #define EX_MATCH_COMPENSATE 0.5 /* マッチしすぎることを防ぐための補正項 */
 #define SALIENCE_DECAY_RATE 0.7 /* salience_scoreの減衰率 */
 #define SALIENCE_THREHOLD 1.0 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
@@ -44,7 +43,7 @@ int loc_category[BNST_MAX];
 CF_TAG_MGR work_ctm[CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX + 1];
 
 /* 省略解析の対象とする格のリスト */
-char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM_MAX] = {"ガ", "ヲ", "ニ", "ガ２", "ノ", ""};
+char *ELLIPSIS_CASE_LIST[] = {"ガ", "ヲ", "ニ", "ガ２", "\0"};
 
 /*==================================================================*/
 		  int match_ellipsis_case(char *key)
@@ -53,7 +52,7 @@ char *ELLIPSIS_CASE_LIST[ELLIPSIS_CASE_NUM_MAX] = {"ガ", "ヲ", "ニ", "ガ２", "ノ
     /* keyが省略対象格のいずれかとマッチするかどうかをチェック */
     int i;
 
-    for (i = 0; ELLIPSIS_CASE_LIST[i]; i++) {
+    for (i = 0; *ELLIPSIS_CASE_LIST[i]; i++) {
 	if (!strcmp(key, ELLIPSIS_CASE_LIST[i])) return TRUE;
     }
     return FALSE;
@@ -148,7 +147,7 @@ void mark_loc_category(SENTENCE_DATA *sp, TAG_DATA *tag_ptr)
 	parent_ptr = bnst_ptr->parent;
 	while (parent_ptr->para_top_p && parent_ptr->parent) parent_ptr = parent_ptr->parent;
 	if (parent_ptr->para_top_p) parent_ptr = NULL;	
-	}
+    }
     /* 自分が並列でない場合 */
     else if (bnst_ptr->parent) {
 	parent_ptr = bnst_ptr->parent;
@@ -233,6 +232,10 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 
     /* 共参照関係の読み込み */
     if (co_flag && !strcmp(rel, "=") && flag == 'O') {
+	if (tag_ptr->inum > 0 && /* 文節内最後の基本句でない */
+	    (cp = check_feature((tag_ptr + 1)->f, "格解析結果")) &&
+	    strstr(cp, "=/O/")) return FALSE;	    
+
 	mention_ptr = mention_mgr->mention;
 	mention_ptr->entity = 
 	    substance_tag_ptr((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity;
@@ -288,26 +291,25 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     if (flag == 'O' || !strcmp(rel, "=")) mention_ptr->entity->antecedent_num++;
 
     /* 学習用位置カテゴリの出力 */
-    if (flag == 'O' && strcmp(rel, "=")) {
+    if (OptDisplay == OPT_DEBUG && 
+	flag == 'O' && strcmp(rel, "=")) {
 	mark_loc_category(sp, tag_ptr);    
-
+	
 	for (j = 0; j < entity_manager.num; j++) {
 	    entity_ptr = entity_manager.entity + j;
-	    
+
 	    for (i = 0; i < entity_ptr->mentioned_num; i++) {
 		
 		if ( /* 自分自身はのぞく */
 		    entity_ptr->mention[i]->sent_num == mention_ptr->sent_num &&
 		    !loc_category[(entity_ptr->mention[i]->tag_ptr)->b_ptr->num]) continue;
 		
-		if (OptDisplay == OPT_DEBUG &&
-		    get_location(loc_name, mention_ptr->sent_num, rel, entity_ptr->mention[i])) {
+		if (get_location(loc_name, mention_ptr->sent_num, rel, entity_ptr->mention[i])) {
 		    printf(";; LOCATION-LEARN: %s:%c\n", loc_name,
 			   entity_ptr == mention_ptr->entity ? 'T' : 'F');
 		}
 	    }
-	}
-
+	}	
     }
     return TRUE;
 }
@@ -856,12 +858,13 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     ctm_ptr->filled_entity[tag_ptr->mention_mgr.mention->entity->num] = TRUE;
    
     /* まだチェックしていない省略解析対象格がある場合 */
-    if (ELLIPSIS_CASE_LIST[i]) {
+    if (*ELLIPSIS_CASE_LIST[i]) {
 	/* 対象の格について */
 	exist_flag = 0;
 	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
 	    if (ctm_ptr->cf_ptr->pp[e_num][0] != pp_kstr_to_code(ELLIPSIS_CASE_LIST[i])) continue;
-	    exist_flag = 1;
+	    if (!ctm_ptr->cf_ptr->oblig[e_num]) continue;
+	    exist_flag = 1;	    
 
 	    /* すでに埋まっていた場合は次の格をチェックする */
 	    if (ctm_ptr->filled_element[e_num] == TRUE) {
@@ -985,7 +988,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    for (j = 0; j < work_ctm[i].cf_ptr->element_num; j++) {
 		if (!work_ctm[i].filled_element[j] && 
 		    match_ellipsis_case(pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]))) 
-		    printf(" %s:×", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]));
+		    printf(" %s:%s", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]),
+			   (work_ctm[i].cf_ptr->oblig[j]) ? "×" : "△");
+
 	    }
 	    printf("\n", work_ctm[i].cf_ptr->cf_id);
 	}
@@ -1025,7 +1030,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	(tag_ptr->inum > 0 || /* 文節内最後の基本句でない */
 	 check_feature(tag_ptr->f, "形副名詞") ||
 	 !check_feature(tag_ptr->f, "照応詞候補") ||
-	 check_feature(tag_ptr->f, "NE内")) ? 0 : 
+	 check_feature(tag_ptr->f, "NE内") ||
+	 check_feature(tag_ptr->f, "数量"))? 0 : 
 	(check_feature(tag_ptr->f, "係:未格") ||
 	 check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA :
 	(check_feature(tag_ptr->f, "係:ガ格") ||
@@ -1195,7 +1201,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    
 	    /* 省略解析メイン */
 	    ellipsis_analysis_main(tag_ptr);
-
+	    
 	    /* todo::将来的にはellipsis_analysis_mainでcpmを使わなくする */
 	    free(tag_ptr->cpm_ptr);
 
@@ -1291,33 +1297,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 }
 
 /*==================================================================*/
-		  void assign_sc(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    /* 主節に係る従属節用言に<Ｔ従属節>を付与 */
-    int i, j, start;
-    TAG_DATA *tag_ptr, *child_ptr;
-	     
-    for (i = sp->Tag_num - 1; i >= 0; i--) {
-	tag_ptr = sp->tag_data + i; 
-
-	if (check_feature(tag_ptr->f, "主節")) {
-	    start = (tag_ptr->para_top_p) ? 1 : 0; /* 主節をチェックしないように */
-	    for (j = start; tag_ptr->child[j]; j++) {
-		child_ptr = substance_tag_ptr(tag_ptr->child[j]);
-
-		/* レベルがBより強い従属節に付与 */
-		if (check_feature(child_ptr->f, "係:連用") && 
-		    subordinate_level_check("B", ((BNST_DATA *)child_ptr)->f)) {
-		    assign_cfeature(&(child_ptr->f), "Ｔ従属節", FALSE);
-		}
-	    }
-	    break;
-	}
-    }
-}
-
-/*==================================================================*/
 			 void decay_entity()
 /*==================================================================*/
 {
@@ -1334,7 +1313,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 /*==================================================================*/
 {
     decay_entity();
-    assign_sc(sentence_data + sp->Sen_num - 1);
     make_context_structure(sentence_data + sp->Sen_num - 1);
     assign_anaphora_result(sentence_data + sp->Sen_num - 1);
     if (OptAnaphora & OPT_PRINT_ENTITY) print_entities(sp->Sen_num);

@@ -2405,28 +2405,21 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
 
     int i;
     double ret = 0, prob;
-    char category[SMALL_DATA_LEN], *ex_category, *value, *cp;
+    char category[SMALL_DATA_LEN], *ex_category, *value;
     
     for (i = 0; i < cfp->gex_num[as2]; i++) {
 	
 	/* 格フレームに含まれているカテゴリ情報を抽出 */
 	if (!strncmp(cfp->gex_list[as2][i], "CT", 2)) {
-	    cp = cfp->gex_list[as2][i] + 3;
-	    strcpy(category, cp);
-	    cp = category;
-	    if (cp = strchr(cp, '>')) *cp = '\0';
-
+	    strcpy(category, cfp->gex_list[as2][i] + 3);
+	    if (strchr(category, '>')) *strchr(category, '>') = '\0';
+	    
 	    /* 該当するカテゴリが対象の語のfeatureに含まれていた場合 */
 	    if (check_category(fp, category)) {
-		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 2), 
+		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 5), 
 						  "get_ex_category_probability");
-		sprintf(ex_category, "%s|%s", key, category);
+		sprintf(ex_category, "%s|CT:%s", key, category);
 		if ((value = db_get(case_db, ex_category))) {
-/* 		if (!(value = db_get(case_db, ex_category))) { */
-/* 		    sprintf(ex_category, "OTHERS|%s", category); */
-/* 		    value = db_get(case_db, ex_category); */
-/* 		} */
-/* 		if (value) { */
 		    if (VerboseLevel >= VERBOSE3) {
 			fprintf(Outfp, ";; (EX-CATEGORY)%s %f %f\n", 
 				ex_category, atof(value), cfp->gex_freq[as2][i]);
@@ -2466,7 +2459,7 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 		return cfp->gex_freq[as2][i];
 	    }	
 	    strcat(key, "|");
-	    strcat(key, ne + 3);
+	    strcat(key, ne);
 		
 	    if ((value = db_get(case_db, key))) {
 		if (VerboseLevel >= VERBOSE3) {
