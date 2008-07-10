@@ -1,3 +1,13 @@
+2008-07-10  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	added some words to <µ¿Ìä»ì>.
+
+	* rule/search_query.rule: added.
+
+	* knprc.in:
+	added search_query.rule to knprc.
+
 2008-07-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/case_ipal.c:
