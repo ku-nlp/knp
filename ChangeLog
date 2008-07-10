@@ -1,3 +1,8 @@
+2008-07-10  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.rule, rule/search_query.data:
+	<クエリ削除語>が付く文末表現のバリエーションを増やした.
+
 2008-07-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
