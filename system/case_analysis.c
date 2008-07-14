@@ -1217,7 +1217,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     /* -nbestのため出力 */
     if (OptNbest == TRUE) {
 	/* featureを仮付与 */
-	/* assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, TRUE, TRUE); */
+	assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, TRUE);
 	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);
 
 	/* 格解析の結果をfeatureとして仮付与 */
@@ -1814,9 +1814,15 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 	if (sp->Best_mgr->cpm[i].pred_b_ptr == NULL) { /* 述語ではないと判断したものはスキップ */
 	    continue;
 	}
-	if (sp->Best_mgr->cpm[i].result_num != 0 && 
-	    sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
-	    sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+	if ((sp->Best_mgr->cpm[i].result_num != 0 && 
+	     sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address != -1 && 
+	     (((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
+	      (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
+	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_SCORE))) || 
+	    (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && /* 格フレームない場合も格解析結果を書く */
+	     (sp->Best_mgr->cpm[i].result_num == 0 || 
+	      sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1))) {
 	    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, temp_assign_flag);
 	}
     }
