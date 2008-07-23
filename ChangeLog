@@ -1,3 +1,8 @@
+2008-07-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	
+
 2008-07-10  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.rule, rule/search_query.data:

@@ -421,11 +421,7 @@ int	SM_AGENT_THRESHOLD = 0.40;
 			fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
 		    }
 		}
-		/* 溢れチェック */
-		else if (count >= CF_ELEMENT_MAX - 1) {
-		    break;
-		}
-		else {
+		else if (count < CF_ELEMENT_MAX - 1) { /* 溢れチェック */
 		    /* 数が小さい格を前に入れる */
 		    if (c1 > c2) {
 			CF_frame.samecase[count][0] = c2;
@@ -531,24 +527,11 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
 	c_ptr->oblig[num] = FALSE;
     }
     else {
-	/* 未決定 (ひとつめの格を見て決める) */
-	c_ptr->oblig[num] = END_M;
+	c_ptr->oblig[num] = TRUE;
     }
 
     point = cp; 
     while ((point = extract_ipal_str(point, cf_str_buf, FALSE))) {
-	if (pp_num == 0 && c_ptr->oblig[num] == END_M) {
-	    if (str_eq(cf_str_buf, "ガ") || 
-		str_eq(cf_str_buf, "ヲ") || 
-		str_eq(cf_str_buf, "ニ") || 
-		str_eq(cf_str_buf, "ヘ") || 
-		str_eq(cf_str_buf, "ヨリ")) {
-		c_ptr->oblig[num] = TRUE;
-	    }
-	    else {
-		c_ptr->oblig[num] = FALSE;
-	    }
-	}
 
 	if (flag == CF_PRED) {
 	    c_ptr->pp[num][pp_num] = pp_kstr_to_code(cf_str_buf);
