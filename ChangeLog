@@ -1,3 +1,9 @@
+2008-07-23  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.rule, rule/search_query.data:
+	クエリ中の「ある」「なる」を削除するようにした．
+	「教えてください」を文末表現に追加．
+
 2008-07-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
