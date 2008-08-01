@@ -1,3 +1,15 @@
+2008-08-01  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	get_key_probabilityを正規化(主辞)代表表記に対応させた
+	get_ex_probabilityにおいてsm_flagが立っている場合に
+	固有表現、カテゴリを考慮しないように変更
+
+	* system/anaphora.c:
+	位置カテゴリ学習時に最も近い文に出現したmentionのみを考慮するように変更
+	省略解析時に対応付けられたなかった格スロットの評価を格確率を用いて行うように変更
+	類似している格フレームはすでに埋まっているものとして扱うように変更
+
 2008-07-23  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.rule, rule/search_query.data:
@@ -7,7 +19,8 @@
 2008-07-23  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
-	
+	類似している格が多い場合に格フレームの他の素性が読み込めなくなる問題を修正
+	格フレームで必須格となっている格をそのまま必須格として読み込むように変更
 
 2008-07-10  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 

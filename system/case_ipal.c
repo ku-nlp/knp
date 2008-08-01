@@ -2589,7 +2589,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
     
-    if (!sm_flag) ret = INITIAL_SCORE;
+    if (!sm_flag) ret = FREQ0_ASSINED_SCORE;
 
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
@@ -2689,6 +2689,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	    fp = fp->next;
 	}
     }
+    if (!sm_flag) return ret;
 
     /* 固有表現の場合 */       
     if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
@@ -2895,15 +2896,24 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	mrph_str = get_mrph_rep_from_f(tag_ptr->head_ptr, FALSE);
-	if (mrph_str == NULL) {
-	    mrph_str = make_mrph_rn(tag_ptr->head_ptr);
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    mrph_str = strdup(cp);
 	    rep_malloc_flag = 1;
 	}
+	else {
+	    mrph_str = get_mrph_rep_from_f(tag_ptr->head_ptr, FALSE);
+	    if (mrph_str == NULL) {
+		mrph_str = make_mrph_rn(tag_ptr->head_ptr);
+		rep_malloc_flag = 1;
+	    }
+	}
     }
+
     else {
 	mrph_str = tag_ptr->head_ptr->Goi;
     }
+
     key = malloc_db_buf(strlen(mrph_str) + 3);
     sprintf(key, "%s", mrph_str);
     if (rep_malloc_flag) {
