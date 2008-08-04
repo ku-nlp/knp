@@ -1,3 +1,13 @@
+2008-08-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/bnst_etc.rule:
+	Modified to recognize sentence-end features.
+
+2008-08-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added "¤Ê¤ó" to <µ¿Ìä»ì>
+
 2008-08-01  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/case_ipal.c:
