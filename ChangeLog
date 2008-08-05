@@ -1,3 +1,11 @@
+2008-08-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Abolished combining person names.
+
+	* rule/modality.rule:
+	Modified the rules for deontic modality.
+
 2008-08-04  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_basic.rule, rule/bnst_type.phrase, rule/bnst_etc.rule:
