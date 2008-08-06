@@ -1376,7 +1376,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		mention_ptr->flag == 'O' || mention_ptr->flag == 'D') {
 
 		if (!buf[0]) {
-		    sprintf(buf, "談話構造:");
+		    sprintf(buf, "格構造:%s:", 
+			    OptReadFeature == 1 ? "?" : tag_ptr->ctm_ptr->cf_ptr->cf_id);
 		}
 		else {
 		    strcat(buf, ";");
