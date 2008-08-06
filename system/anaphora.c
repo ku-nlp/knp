@@ -858,7 +858,6 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 	}
     }
 
-
     /* まだチェックしていない要素がある場合 */
     if (i < tag_ptr->tcf_ptr->cf.element_num) {
 

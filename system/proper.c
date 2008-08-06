@@ -901,7 +901,8 @@ char *ne_code_to_tagposition(int num)
     char *cp;
 
     for (i = 0; i < sp->Mrph_num; i++) {
-	if ((cp = check_feature(sp->mrph_data[i].f, "NE"))) {
+	if (!check_feature(sp->mrph_data[i].f, "NE:OPTIONAL") &&
+	    (cp = check_feature(sp->mrph_data[i].f, "NE"))) {
 	    code = ne_tagposition_to_code(cp + 3);
 	}
 	else {

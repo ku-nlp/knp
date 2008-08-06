@@ -1041,7 +1041,6 @@ extern int	EX_match_subject;
 
     if (!OptNECRF && !DBforNE) OptNE = 0;
     if (!OptReadNE && OptNE) {
-	init_tagposition();
 	init_ne_cache();
 	if (!OptNECRF) init_db_for_NE(); /* NEÍÑ */
     }
