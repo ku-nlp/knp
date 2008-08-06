@@ -1,3 +1,8 @@
+2008-08-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* configure.ac:
+	Execute 'cvs history' to set VERSION.
+
 2008-08-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
