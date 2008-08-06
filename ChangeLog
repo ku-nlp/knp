@@ -3,6 +3,9 @@
 	* system/anaphora.c:
 	照応解析結果の出力フォーマットを<談話構造:...>から<格構造:...>に変更
 
+	* system/proper.c:
+	固有表現解析結果を読み込む場合にNE:OPTIONALを無視するように変更
+	
 2008-08-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* configure.ac:
