@@ -1,3 +1,8 @@
+2008-08-13  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.rule, rule/search_query.data:
+	クエリの末尾にある「〜見たい」、「〜読みたい」を削除するようにした.
+
 2008-08-06  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
