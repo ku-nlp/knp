@@ -4,6 +4,7 @@ require 5.004_04; # For base pragma.
 use KNP::Bunsetsu;
 use KNP::Morpheme;
 use KNP::Tag;
+use KNP::SynGraph;
 use strict;
 use base qw/ KNP::BList /;
 use vars qw/ %DEFAULT /;
@@ -116,6 +117,11 @@ sub new {
 	    $this->push_bnst( $bclass->new( $str, scalar($this->bnst) ) );
 	} elsif( $str =~ m!^\+! ){
 	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
+	} elsif( $str =~ m/^!!/ ){
+	    my $syngraph = KNP::SynGraph->new($str);
+	    ( $this->tag ) [-1]->{syngraph} = $syngraph;
+	} elsif( $str =~ m/^!/ ){
+	    ( $this->tag ) [-1]->{syngraph}->push_synnode( $str );
 	} else {
 	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph) ) );
 	    my $fstring = ( $this->mrph )[-1]->fstring;
@@ -190,7 +196,7 @@ sub all {
 
 =cut
 sub all_dynamic {
-    my( $this ) = @_;
+    my( $this, $option ) = @_;
 
     my $ret;
     $ret .= $this->{comment};
@@ -209,6 +215,18 @@ sub all_dynamic {
 	    # 形態素を順番に
 	    for my $mrph ($tag->mrph) {
 		$ret .= $mrph->midasi . ' ' . $mrph->yomi . ' ' . $mrph->genkei . ' ' . $mrph->hinsi . ' ' . $mrph->hinsi_id . ' ' . $mrph->bunrui . ' ' . $mrph->bunrui_id. ' ' . $mrph->katuyou1 . ' ' . $mrph->katuyou1_id . ' ' . $mrph->katuyou2 . ' ' . $mrph->katuyou2_id . ' ' . $mrph->imis . ' ' . $mrph->fstring . "\n";
+	    }
+
+	    # SynGraph
+	    my $syngraph = $tag->syngraph;
+	    if (defined $syngraph) {
+		$ret .= '!! ';
+		$ret .= $syngraph->tagid . ' ' . $syngraph->parent . $syngraph->dpndtype . ' <見出し:' . $syngraph->midasi . '>' . $syngraph->feature . "\n";
+
+		for my $node ($syngraph->synnode) {
+		    $ret .= '! ';
+		    $ret .= $node->tagid . ' <SYNID:' . $node->synid . '><スコア:' . $node->score . '>' . $node->feature . "\n";
+		}
 	    }
 	}
     }
