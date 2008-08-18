@@ -1,3 +1,9 @@
+2008-08-18  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/Tag.pm: SynGraph解析結果を呼べるように
+
+	* lib/KNP/Result.pm: SynGraph解析結果を含んだものに対応
+
 2008-05-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* lib/KNP/Result.pm:
