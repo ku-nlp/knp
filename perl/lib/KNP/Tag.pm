@@ -4,6 +4,7 @@ require 5.004_04; # For base pragma.
 use KNP::Morpheme;
 use strict;
 use base qw/ KNP::Depend KNP::Fstring Juman::MList /;
+use Encode;
 
 =head1 NAME
 
@@ -109,6 +110,17 @@ sub spec {
 	     $this->dpndtype(),
 	     $this->fstring(),
 	     $this->SUPER::spec() );
+}
+
+=item syngraph
+
+SynGraphの情報を返す．
+
+=cut
+sub syngraph {
+    my ( $this ) = @_;
+
+    $this->{syngraph} || undef;
 }
 
 =back
