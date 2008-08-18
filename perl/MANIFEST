@@ -19,6 +19,8 @@ lib/KNP/Result.pm
 lib/KNP/Simple.pm
 lib/KNP/Tag.pm
 lib/KNP/TList.pm
+lib/KNP/SynGraph.pm
+lib/KNP/SynNode.pm
 t/10-morpheme.t
 t/12-kulm-morpheme.t
 t/20-tag.t
