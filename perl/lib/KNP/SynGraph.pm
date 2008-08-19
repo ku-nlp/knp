@@ -27,13 +27,19 @@ sub new {
     my ($tagid, $dpnd, $string) = (split(' ', $str))[1,2,3];
     my @tagids = split(',', $tagid);
 
-    my ($parent, $dpndtype);
-    if ($dpnd =~ /^([\-\d]+)([DPIA])$/) {
+    my ($parent, $dpndtype, @parentids);
+    if ($dpnd =~ /^([\-\,\/\d]+)([DPIA])$/) {
 	$parent = $1;
 	$dpndtype = $2;
+
+	# 係り先が複数ある場合がある
+	for (split('/', $parent)) {
+	    # 対応する基本句IDが複数ある場合がある
+	    push @parentids, [split(',', $_)];
+	}
     }
     else {
-	die "KNP::Tag: Illegal dpnd = $dpnd\n";
+	die "KNP::SynGraph: Illegal dpnd = $dpnd\n";
     }
 
     my ($midasi, @features);
@@ -52,6 +58,7 @@ sub new {
     $this->{tagid} = $tagid;
     $this->{tagids} = \@tagids;
     $this->{parent} = $parent;
+    $this->{parentids} = \@parentids;
     $this->{dpndtype} = $dpndtype;
     $this->{midasi} = $midasi;
     $this->{feature} = join('', @features);
@@ -121,6 +128,16 @@ sub tagids {
 sub parent {
     my ($this) = @_;
     $this->{parent};
+}
+
+=item parent
+
+係り先の基本句ID(配列の配列)を返す。
+
+=cut
+sub parentids {
+    my ($this) = @_;
+    @{$this->{parentids}};
 }
 
 =item dpndtype
