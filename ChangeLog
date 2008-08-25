@@ -1,3 +1,8 @@
+2008-08-25  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added a feature to "¤Ê¤¼", etc.
+
 2008-08-13  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.rule, rule/search_query.data:
