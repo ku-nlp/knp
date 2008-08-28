@@ -1,3 +1,8 @@
+2008-08-28  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.data, rule/search_query.rule:
+	クエリ中の「する」「どうなる」を削除. <一文字漢字>の連続に<クエリ必須係り受け>素性を追加するようにした.
+
 2008-08-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
