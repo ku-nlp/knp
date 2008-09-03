@@ -271,7 +271,7 @@ char *ne_code_to_tagposition(int num)
 	    }
 	}
     }
-    if (flag > 1) {
+    if (flag > 1 || flag && OptNECRF) {
     	return ret;
     }
     
@@ -315,12 +315,8 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, buf[SMALL_DATA_LEN];
-    char *feature_name1[] = {"人名末尾", "組織名末尾", '\0'};
-    char *feature_name2[] = {"FULLNAME:H", "FULLNAME:M", "FULLNAME:T", "FULLNAME:S", 
-			     "NATION:H", "NATION:M", "NATION:T", "NATION:S", 
-			     "ORGNAME:H", "ORGNAME:M", "ORGNAME:T", "ORGNAME:S",
-			     '\0'};
+    char *ret, buf[SMALL_DATA_LEN], *cp;
+    char *feature_name[] = {"人名末尾", "組織名末尾", '\0'};
 
     ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
     ret[0] = '\0'; /* 再帰的に代入するため */
@@ -331,32 +327,34 @@ char *ne_code_to_tagposition(int num)
 	    check_feature((mrph_data + j)->f, "文節始") ||
 	    check_feature((mrph_data + j)->f, "記号") ||
 	    check_feature((mrph_data + j)->f, "括弧")) break;
-	for (i = 0; feature_name1[i]; i++) {
-	    if (check_feature((mrph_data + j)->f, feature_name1[i])) {
-		if (OptNECRF) sprintf(ret, ":%d", i + 3);
+	for (i = 0; feature_name[i]; i++) {
+	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
+		if (OptNECRF) sprintf(ret, "H:%s ", feature_name[i]);
 		else sprintf(ret, "%d%d40:1 ", i + 3, num);
 	    }
 	}
     }
 
     /* 人名末尾、組織名末尾であるか */
-    for (i = 0; feature_name1[i]; i++) {
-	if (check_feature(mrph_data->f, feature_name1[i])) {
-	    if (OptNECRF) sprintf(buf, "%s:%d", ret, i + 1);
+    for (i = 0; feature_name[i]; i++) {
+	if (check_feature(mrph_data->f, feature_name[i])) {
+	    if (OptNECRF) sprintf(buf, "S:%s ", feature_name[i]);
 	    else sprintf(buf, "%s%d%d40:1 ", ret, i + 1, num);
 	    strcpy(ret, buf);
 	}	
     }   
 
-    /* フルネーム、国名、組織名 */
-    for (i = 0; feature_name2[i]; i++) {
-	if (check_feature(mrph_data->f, feature_name2[i])) {
-	    if (OptNECRF) sprintf(ret, "%s:%d", ret, i + 11);
-	    else sprintf(buf, "%s%d%d40:1 ", ret, i + 11, num);
-	    strcpy(ret, buf);
-	}	
-    }   
+    if (!OptNECRF) return ret;
 
+    /* 以下はOptNECRFの場合のみ実行 */
+    if (!ret[0]) sprintf(ret, "NIL ");
+
+    /* カテゴリの情報 */
+    strcat(ret, "CT");
+    if ((cp = check_feature(mrph_data->f, "カテゴリ"))) {
+	strcat(ret, cp + strlen("カテゴリ"));
+    }
+    
     return ret;
 }
 
@@ -372,7 +370,7 @@ char *ne_code_to_tagposition(int num)
     if (num != SIZE + 1) return ret;
 
     if ((pcp = check_feature(mrph_data->f, "Ｔ係り先の主辞"))) {
-	if (OptNECRF) strcpy(ret, "D");	
+	if (OptNECRF) strcpy(ret, "CS");	
 	if ((ccp = check_feature(mrph_data->f, "係"))) {
 	    if (OptNECRF) {
 		sprintf(buf, "%s:%s", ret, ccp + 3);	
@@ -384,7 +382,7 @@ char *ne_code_to_tagposition(int num)
 	    }
 	    strcpy(ret, buf);	    	    
 	}
-	if (OptNECRF) sprintf(buf, "%s D:%s", ret, pcp + 15);	
+	if (OptNECRF) sprintf(buf, "%s P:%s", ret, pcp + 15);	
 	else {
 	    ncp = db_get(ne_db, pcp + 15);
 	    sprintf(buf, "%s%s6:1 ", ret, ncp ? ncp : "");	
@@ -394,13 +392,13 @@ char *ne_code_to_tagposition(int num)
     }
     
     /* 文節後方にあるか */
-    if (!OptNECRF || !strstr(ret, "D")) {
+    if (!OptNECRF || !strstr(ret, "CS")) {
 	for (j = 1;; j++) {
 	    if (!(mrph_data + j)->f ||
 		check_feature((mrph_data + j)->f, "文節始") ||
 		check_feature((mrph_data + j)->f, "括弧")) break;
 	    if ((pcp = check_feature((mrph_data + j)->f, "Ｔ係り先の主辞"))) {
-		if (OptNECRF) strcpy(ret, "I");	
+		if (OptNECRF) strcpy(ret, "CS");	
 		if ((ccp = check_feature((mrph_data + j)->f, "係"))) {
 		    if (OptNECRF) {
 			sprintf(buf, "%s:%s", ret, ccp + 3);
@@ -413,7 +411,7 @@ char *ne_code_to_tagposition(int num)
 		    strcpy(ret, buf);	    	    
 		}
 		if (OptNECRF) {
-		    sprintf(buf, "%s I:%s", ret, pcp + 15);
+		    sprintf(buf, "%s P:%s", ret, pcp + 15);
 		}
 		else {
 		    ncp = db_get(ne_db, pcp + 15);
@@ -426,13 +424,17 @@ char *ne_code_to_tagposition(int num)
 	}
     }
 
-    if (OptNECRF && !strstr(ret, "I") && !strstr(ret, "D"))
-	strcat(ret, "NONE NONE");
+    if (OptNECRF && !strstr(ret, "P"))
+	strcat(ret, "NIL NIL");
 
-    if (OptNECRF && !check_feature(mrph_data->f, "Ｔ文節主辞")) strcat(ret, " H");
+    if (OptNECRF && !(check_feature(mrph_data->f, "文節主辞") ||
+		      check_feature(mrph_data->f, "Ｔ文節主辞")) &&
+	!check_feature(mrph_data->f, "Ｔ主辞")) 
+	strcat(ret, " NIL");
+
     if ((pcp = check_feature(mrph_data->f, "Ｔ主辞"))) {
 	if (OptNECRF) {
-	    sprintf(buf, "%s:%s", ret, pcp + 7);
+	    sprintf(buf, "%s H:%s", ret, pcp + 7);
 	}
 	else {
 	    ncp = db_get(ne_db, pcp + 7);
@@ -441,7 +443,8 @@ char *ne_code_to_tagposition(int num)
 	}
 	strcpy(ret, buf);	    
     }
-    if (OptNECRF && check_feature(mrph_data->f, "Ｔ文節主辞")) {
+    if (OptNECRF && (check_feature(mrph_data->f, "文節主辞") ||
+		     check_feature(mrph_data->f, "Ｔ文節主辞"))) {
 	if (strlen(mrph_data->Goi2) < WORD_LEN_MAX /2) {
 	    sprintf(buf, "%s S:%s", ret, mrph_data->Goi2);
 	}
@@ -452,17 +455,20 @@ char *ne_code_to_tagposition(int num)
     }
 
     if (OptNECRF) {
-	if (check_feature(mrph_data->f, "文節始") && check_feature(mrph_data->f, "Ｔ文節主辞")) {
+	if (check_feature(mrph_data->f, "文節始") && 
+	    (check_feature(mrph_data->f, "文節主辞") ||
+	     check_feature(mrph_data->f, "Ｔ文節主辞"))) {
 	    strcat(ret, " SINGLE");
 	}
 	else if (check_feature(mrph_data->f, "文節始")) {
-	    strcat(ret, " HEAD");
+	    strcat(ret, " START");
 	}
-	else if (check_feature(mrph_data->f, "Ｔ文節主辞")) {
-	    strcat(ret, " TAIL");
+	else if (check_feature(mrph_data->f, "文節主辞") ||
+		 check_feature(mrph_data->f, "Ｔ文節主辞")) {
+	    strcat(ret, " END");
 	}
 	else if (check_feature(mrph_data->f, "Ｔ主辞")) {
-	    strcat(ret, " MIDDLE");
+	    strcat(ret, " INTER");
 	}
 	else {
 	    strcat(ret, " OTHER");
@@ -552,7 +558,7 @@ char *ne_code_to_tagposition(int num)
 	/* 見出し 品詞 品詞細分類 品詞曖昧性 文字種 文字数
 	   (表層格 係り先の主辞 主辞 文節内位置) キャッシュ */
 	/* featureは1024字まで */
-	sprintf(NE_mgr[i].feature, "%s %s %s A%s %s L:%d F%s %s C%s",
+	sprintf(NE_mgr[i].feature, "%s %s %s A%s %s L:%d %s %s C%s",
 		(strlen(sp->mrph_data[i].Goi2) < WORD_LEN_MAX /2) ? 
 		sp->mrph_data[i].Goi2 : "LONG_WORD", /* MAX 64文字 */
 		Class[sp->mrph_data[i].Hinshi][0].id, /* MAX 8+1文字(未定義語) */
