@@ -1,3 +1,8 @@
+2008-09-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	CRFを用いた固有表現抽出を修正
+
 2008-08-28  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.data, rule/search_query.rule:
