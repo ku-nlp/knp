@@ -767,6 +767,7 @@ typedef struct mention {
     double              salience_score; /* どのくらい先行詞になりやすいか */
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
+    struct mention      *explicit_mention; /* 直接の格要素へのポインタ(flag=Cの場合のみ) */
 } MENTION;
 
 /* 基本句ごとにMENTIONを管理する構造体 */
