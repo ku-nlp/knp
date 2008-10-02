@@ -1,3 +1,19 @@
+2008-10-02  MURAWAKI Yugo  <murawaki@nlp.kuee.kyoto-u.ac.jp>
+
+	* Result.pm: spec が元のコメントを吐くようにする
+
+2008-08-19  Tomohide Shibata  <shibata@reed.kuee.kyoto-u.ac.jp>
+
+	* SynGraph.pm: 係り先が複数ある場合に対処
+
+2008-08-18  Tomohide Shibata  <shibata@reed.kuee.kyoto-u.ac.jp>
+
+	* Tag.pm: SynGraph解析結果を呼べるように
+
+	* Result.pm: SynGraph解析結果を含んだものに対応
+
+	* SynGraph.pm, SynNode.pm: added.
+
 2008-08-18  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* lib/KNP/Tag.pm: SynGraph解析結果を呼べるように
