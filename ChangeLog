@@ -1,5 +1,8 @@
 2008-10-02  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/clause_function.phrase:
+	Added rules for recognizing reasons and temporal relations.
+
 	* rule/mrph_homo.rule, rule/mrph_homo.data, rule/mrph_basic.rule, rule/mrph_basic.data:
 	Correctly assigned an alphabetical feature to an alphabetical character.
 
