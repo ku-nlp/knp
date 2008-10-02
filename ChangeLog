@@ -1,3 +1,8 @@
+2008-10-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_homo.rule, rule/mrph_homo.data, rule/mrph_basic.rule, rule/mrph_basic.data:
+	Correctly assigned an alphabetical feature to an alphabetical character.
+
 2008-10-01  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/const.h
