@@ -291,12 +291,13 @@ sub set_id {
 =item spec
 
 構文解析結果を表現する文字列を生成する．
+SynGraph部分は除かれる．
 
 =cut
 sub spec {
     my( $this ) = @_;
-    sprintf( "# S-ID:%s\n%s%s",
-	     $this->id,
+    sprintf( "%s%s%s",
+	     $this->{comment},
 	     $this->KNP::BList::spec(),
 	     $this->{_eos} );
 }
