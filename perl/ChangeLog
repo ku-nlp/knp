@@ -1,3 +1,8 @@
+2008-10-07  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* MANIFEST, lib/KNP/Result.pm, lib/KNP/Tag.pm:
+	KNP::SynGraphからKNP::SynNodesへの変更に対応
+
 2008-10-02  MURAWAKI Yugo  <murawaki@nlp.kuee.kyoto-u.ac.jp>
 
 	* Result.pm: spec が元のコメントを吐くようにする
