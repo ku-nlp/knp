@@ -4,7 +4,8 @@ require 5.004_04; # For base pragma.
 use KNP::Bunsetsu;
 use KNP::Morpheme;
 use KNP::Tag;
-use KNP::SynGraph;
+use KNP::SynNodes;
+use KNP::SynNode;
 use strict;
 use base qw/ KNP::BList /;
 use vars qw/ %DEFAULT /;
@@ -118,10 +119,11 @@ sub new {
 	} elsif( $str =~ m!^\+! ){
 	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
 	} elsif( $str =~ m/^!!/ ){
-	    my $syngraph = KNP::SynGraph->new($str);
-	    ( $this->tag ) [-1]->{syngraph} = $syngraph;
+	    my $synnodes = KNP::SynNodes->new($str);
+	    push @{ ( $this->tag ) [-1]->{synnodes} }, $synnodes;
 	} elsif( $str =~ m/^!/ ){
-	    ( $this->tag ) [-1]->{syngraph}->push_synnode( $str );
+	    my $synnode = KNP::SynNode->new($str);
+	    ( $this->tag ) [-1]->{synnodes}[-1]->push_synnode( $synnode );
 	} else {
 	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph) ) );
 	    my $fstring = ( $this->mrph )[-1]->fstring;
@@ -218,14 +220,13 @@ sub all_dynamic {
 	    }
 
 	    # SynGraph
-	    my $syngraph = $tag->syngraph;
-	    if (defined $syngraph) {
+	    for my $synnodes ($tag->synnodes) {
 		$ret .= '!! ';
-		$ret .= $syngraph->tagid . ' ' . $syngraph->parent . $syngraph->dpndtype . ' <見出し:' . $syngraph->midasi . '>' . $syngraph->feature . "\n";
+		$ret .= $synnodes->tagid . ' ' . $synnodes->parent . $synnodes->dpndtype . ' <見出し:' . $synnodes->midasi . '>' . $synnodes->feature . "\n";
 
-		for my $node ($syngraph->synnode) {
+		for my $synnode ($synnodes->synnode) {
 		    $ret .= '! ';
-		    $ret .= $node->tagid . ' <SYNID:' . $node->synid . '><スコア:' . $node->score . '>' . $node->feature . "\n";
+		    $ret .= $synnode->tagid . ' <SYNID:' . $synnode->synid . '><スコア:' . $synnode->score . '>' . $synnode->feature . "\n";
 		}
 	    }
 	}

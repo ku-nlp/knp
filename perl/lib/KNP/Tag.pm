@@ -112,15 +112,19 @@ sub spec {
 	     $this->SUPER::spec() );
 }
 
-=item syngraph
+=item synnodes
 
-SynGraphの情報を返す．
+SynNodesの情報を返す．
 
 =cut
-sub syngraph {
+sub synnodes {
     my ( $this ) = @_;
 
-    $this->{syngraph} || undef;
+    if( defined $this->{synnodes} ){
+	@{$this->{synnodes}};
+    } else {
+	wantarray ? () : 0;
+    }
 }
 
 =back
