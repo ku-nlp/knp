@@ -160,8 +160,6 @@ sub spec {
     sprintf( "%s\n", join( ' ', map( $this->{$_}, ( @Juman::Morpheme::ATTRS, @ATTRS ) ) ) );
 }
 
-=back
-
 =head1 SEE ALSO
 
 =over 4
