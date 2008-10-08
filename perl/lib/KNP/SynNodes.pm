@@ -129,7 +129,7 @@ sub parent {
     $this->{parent};
 }
 
-=item parent
+=item parentids
 
 係り先の基本句ID(配列の配列)を返す。
 

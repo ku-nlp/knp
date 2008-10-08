@@ -89,7 +89,7 @@ sub synid {
     $this->{synid};
 }
 
-=item synid
+=item score
 
 スコアを返す。
 
