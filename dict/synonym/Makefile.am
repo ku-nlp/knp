@@ -13,7 +13,7 @@ synonym.idx:
 
 synonym.db: synonym.idx
 	if [ -f $< ]; then \
-	        sort synonym.idx | @MAKE_DB_COMMAND@ $@ -append /; \
+	        LANG=C sort synonym.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 CLEANFILES = synonym.db

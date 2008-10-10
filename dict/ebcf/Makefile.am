@@ -60,7 +60,7 @@ cf.dat: cf.knpdict
 
 cf.db: cf.dat
 	if [ -f cf.idx ]; then \
-		sort cf.idx | @MAKE_DB_COMMAND@ $@ -append /; \
+		LANG=C sort cf.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 noun.knpdict:
@@ -73,7 +73,7 @@ noun.dat: noun.knpdict
 
 noun.db: noun.dat
 	if [ -f noun.idx ]; then \
-		sort noun.idx | @MAKE_DB_COMMAND@ $@ -append /; \
+		LANG=C sort noun.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 adverb.prob:

@@ -21,7 +21,7 @@ bgh.dat: bgh.orig usr_bgh.dat ../../src/add_usr_bgh.pl
 
 bgh.db: bgh.dat
 	if [ -f bgh.dat ]; then \
-		sort $< | @MAKE_DB_COMMAND@ $@; \
+		LANG=C sort $< | @MAKE_DB_COMMAND@ $@; \
 	fi
 
 sm2code.db: sm2code.dat
