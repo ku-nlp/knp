@@ -1163,6 +1163,30 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 }
 
 /*==================================================================*/
+	      void change_one_mrph_imi(MRPH_DATA *m_ptr)
+/*==================================================================*/
+{
+    char org_buffer[DATA_LEN], *cp;
+
+    /* もとの形態素情報を意味情報およびfeatureとして保存 */
+
+    sprintf(org_buffer, "品詞変更:%s-%s-%s-%d-%d-%d-%d-%s", 
+	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+	    m_ptr->Hinshi, m_ptr->Bunrui, 
+	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
+    assign_cfeature(&(m_ptr->f), org_buffer, FALSE); /* featureへ */
+
+    if ((cp = strrchr(m_ptr->Imi, '\"'))) {
+	*cp = '\0';
+	sprintf(org_buffer, " 品詞変更:%s-%s-%s-%d-%d-%d-%d\"", /* 元の品詞の意味情報は付与しない */
+		m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
+		m_ptr->Hinshi, m_ptr->Bunrui, 
+		m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
+	strcat(m_ptr->Imi, org_buffer); /* Imiへ */
+    }
+}
+
+/*==================================================================*/
 void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_char)
 /*==================================================================*/
 {
@@ -1265,12 +1289,14 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 
     /* ALT中の「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
+    m.f = NULL;
     while (*fpp) {
 	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
 	    sscanf((*fpp)->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+	    change_one_mrph_imi(&m);
 	    change_one_mrph_rep(&m, 0, 'v');
 	    change_one_mrph(&m, f);
 	    assign_feature_alt_mrph(&ret_fp, &m);
@@ -1292,16 +1318,7 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
-    char org_buffer[DATA_LEN];
-    int num;
-
-    /* もとの形態素情報をfeatureとして保存 */
-    sprintf(org_buffer, "品詞変更:%s-%s-%s-%d-%d-%d-%d-%s", 
-	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
-	    m_ptr->Hinshi, m_ptr->Bunrui, 
-	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
-    assign_cfeature(&(m_ptr->f), org_buffer, FALSE);
-
+    change_one_mrph_imi(m_ptr); /* 意味情報、featureを修正 */
     change_one_mrph_rep(m_ptr, 1, 'v'); /* 代表表記を修正 */
     change_one_mrph(m_ptr, f); /* 品詞などを修正 */
 
