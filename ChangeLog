@@ -1,3 +1,8 @@
+2008-10-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Preserve the original morpheme of a transformed morpheme.
+
 2008-10-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* dict/ebcf/Makefile.am, dict/scode/bgh/Makefile.am, dict/synonym/Makefile.am:
