@@ -200,6 +200,15 @@ sub all {
 sub all_dynamic {
     my( $this, $option ) = @_;
 
+    my $MIDASI = '見出し';
+    my $SCORE = 'スコア';
+
+    if (utf8::is_utf8($this->{all})) {
+	require Encode;
+	$MIDASI = Encode::decode('euc-jp', $MIDASI);
+	$SCORE = Encode::decode('euc-jp', $SCORE);
+    }
+
     my $ret;
     $ret .= $this->{comment};
     # 文節を順番に
@@ -222,11 +231,11 @@ sub all_dynamic {
 	    # SynGraph
 	    for my $synnodes ($tag->synnodes) {
 		$ret .= '!! ';
-		$ret .= $synnodes->tagid . ' ' . $synnodes->parent . $synnodes->dpndtype . ' <見出し:' . $synnodes->midasi . '>' . $synnodes->feature . "\n";
+		$ret .= $synnodes->tagid . ' ' . $synnodes->parent . $synnodes->dpndtype . " <$MIDASI:" . $synnodes->midasi . '>' . $synnodes->feature . "\n";
 
 		for my $synnode ($synnodes->synnode) {
 		    $ret .= '! ';
-		    $ret .= $synnode->tagid . ' <SYNID:' . $synnode->synid . '><スコア:' . $synnode->score . '>' . $synnode->feature . "\n";
+		    $ret .= $synnode->tagid . ' <SYNID:' . $synnode->synid . "><$SCORE:" . $synnode->score . '>' . $synnode->feature . "\n";
 		}
 	    }
 	}
