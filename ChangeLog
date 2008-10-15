@@ -6,6 +6,12 @@
 	* rule/bnst_etc.rule:
 	Added rules of <連用節> and <連体節>.
 
+	* rule/clause_function.phrase, rule/tag_after_dpnd_and_case.rule:
+	Modified rules of <節機能-時間経過:同時>.
+
+	* rule/tag_postprocess.rule:
+	Handle <連用節> and <連体節> in postprocess.
+
 2008-10-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_basic.rule:
