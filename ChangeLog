@@ -1,3 +1,8 @@
+2008-10-17  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.data, rule/search_query.rule:
+	<一文字漢字>同士の係り受け処理を外した.
+
 2008-10-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/clause_function.phrase, rule/tag_after_dpnd_and_case.rule:
