@@ -1200,6 +1200,14 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	return TRUE;
     }
 
+    /* &名動相互情報量 : 名詞動詞間の相互情報量のチェック (基本句ルール) */
+    
+    else if (!strncmp(rule, "&名動相互情報量:", strlen("&名動相互情報量:"))) {
+	cp = rule + strlen("&名動相互情報量:");
+	code = atoi(cp);
+	return check_nv_mi_parent_and_children((TAG_DATA *)ptr2, code);
+    }
+
     else {
 #ifdef DEBUG
 	fprintf(stderr, "Invalid Feature-Function (%s)\n", rule);

@@ -43,3 +43,4 @@
 #define CHI_PA_DB_NAME          "ebcf/chi_pa.db"
 #define CHI_CASE_DB_NAME          "ebcf/chi_case.db"
 #define CHI_POS_DB_NAME          "ebcf/chi_pos.db"
+#define NV_MI_DB_NAME		"auto/nv_mi.db"

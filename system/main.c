@@ -972,6 +972,7 @@ extern int	EX_match_subject;
     close_thesaurus();
     close_scase();
     close_auto_dic();
+    close_nv_mi();
 
     if (Language == CHINESE) {
 	close_chi_dpnd_db();
@@ -1067,6 +1068,7 @@ extern int	EX_match_subject;
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
     init_auto_dic();	/* 自動獲得辞書オープン */
+    init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
 
     if (OptEllipsis) {
 #ifdef USE_SVM
