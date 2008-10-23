@@ -20,7 +20,7 @@
 #define DBM_KEY_MAX 	1024
 #endif
 #ifndef DBM_CON_MAX
-#define DBM_CON_MAX 	8192
+#define DBM_CON_MAX	1638400
 #endif
 
 extern DBM_FILE db_write_open(char *filename);
@@ -122,8 +122,10 @@ int main(int argc, char *argv[])
 	    }
 	}
 	else {
-	    fprintf(stderr, "Line %s is strange.\n", buffer);
-	    exit(1);
+	    /* スペースがないとき (スペースの前に\0を含む場合もひっかかる) */
+	    fprintf(stderr, "Line %d is strange.\n", num);
+	    if ((num++ % 1000) == 0) fputc('*', stderr);
+	    continue;
 	}
 
 	/* keyとcontentに分離 */

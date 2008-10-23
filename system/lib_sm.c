@@ -18,7 +18,7 @@ int		SM2CODEExist;
 int		CODE2SMExist;
 int		SMP2SMGExist;
 
-char  		cont_str[DBM_CON_MAX];
+char  		cont_str[DATA_LEN];
 
 SMLIST smlist[TBLSIZE];
 

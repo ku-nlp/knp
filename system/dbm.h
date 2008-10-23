@@ -6,8 +6,6 @@
 */
 /* $Id$ */
 
-#define DBM_CON_MAX 8192
-
 #define DBM_APPEND	1
 #define DBM_OVERRIDE	2
 #define DBM_AND		3
