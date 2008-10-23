@@ -54,7 +54,8 @@ knp_SOURCES = \
 	bnst_compare.c \
 	lib_event.c \
 	cky.c \
-	dic.c
+	dic.c \
+	nv_mi.c
 
 knp_LDADD = @KNP_LIBS@
 
