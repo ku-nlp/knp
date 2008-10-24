@@ -21,10 +21,10 @@
 	(bnst_basic 基本句 逆方向 ルールループ先行)
 	(modality 基本句 逆方向 ルールループ先行)
 	(clause_function 基本句 逆方向 ルールループ先行)
-	(search_query 基本句 逆方向 ルールループ先行)
 	(context 基本句 逆方向 ルールループ先行)
 	(case_analysis 基本句 逆方向)
 	(tag_after_dpnd_and_case 基本句-構造決定後 逆方向 ルールループ先行)
+	(search_query 基本句-構造決定後 逆方向 ルールループ先行)
 	(tag_postprocess 基本句-後処理 逆方向)
 )
 
