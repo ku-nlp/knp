@@ -1269,6 +1269,7 @@ typedef struct tcf_def {
     CASE_FRAME 	    cf;				 /* 入力文の格構造 */
     TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
     TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
+    int 	    elem_b_num[CF_ELEMENT_MAX];	 /* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
 } TAG_CASE_FRAME;
 
 /* 基本句の格・省略解析結果の記録 */

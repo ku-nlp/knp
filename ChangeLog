@@ -1,3 +1,11 @@
+2008-10-30  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h:
+	格が明示されていない場合に格構造のフラグとして'C'ではなく'N'を出力するように変更
+
+	* system/case_ipal.c:
+	デフォルトの格フレームのtypeとしてCF_PREDを与えるように変更
+
 2008-10-22  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:

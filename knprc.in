@@ -43,3 +43,7 @@
         (ヲ 12)
         (ニ 9)
 )
+
+(NEモデルファイル
+	@pkgdatadir@/dict/crf.model
+)

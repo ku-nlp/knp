@@ -1908,6 +1908,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     char *cp, *rep_name;
 
     cf_ptr = Case_frame_array + start;
+    cf_ptr->type = CF_PRED;
 
     if (MAX_cf_frame_length == 0) {
 	cf_str_buf = 

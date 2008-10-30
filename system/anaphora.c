@@ -449,6 +449,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     tcf_ptr->pred_b_ptr = tag_ptr;
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	tcf_ptr->elem_b_ptr[i] = substance_tag_ptr(cpm_ptr->elem_b_ptr[i]);
+	tcf_ptr->elem_b_num[i] = cpm_ptr->elem_b_num[i];
     }
 
     /* todo::free(cpm_ptr); freeする必要あり
@@ -882,6 +883,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		    ctm_ptr->elem_b_ptr[r_num] = tag_ptr->tcf_ptr->elem_b_ptr[i];
 		    ctm_ptr->cf_element_num[r_num] = e_num;
 		    ctm_ptr->tcf_element_num[r_num] = i;
+    		    ctm_ptr->flag[r_num] = tag_ptr->tcf_ptr->elem_b_num[i] == -1 ? 'N' : 'C';
 		    ctm_ptr->entity_num[r_num] = 
 			ctm_ptr->elem_b_ptr[r_num]->mention_mgr.mention->entity->num;
 
@@ -901,7 +903,6 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
     else {
 	/* この段階でr_num個が対応付けられている */
 	ctm_ptr->result_num = ctm_ptr->case_result_num = r_num;
-	for (j = 0; j < r_num; j++) ctm_ptr->flag[j] = 'C';
 	/* スコアを計算 */
 	ctm_ptr->score = ctm_ptr->case_score = calc_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr);
 	/* スコア上位を保存 */
