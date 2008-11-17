@@ -2113,6 +2113,10 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	else {
 	  check_ac = -1;
 	}
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(Outfp, "☆直前タグ受判定AC: %6s の %6s: %d\n",
+		    t_ptr->head_ptr->Goi2, ht_ptr->head_ptr->Goi2, check_ac);	    
+	}
 
 	/* Ｂが複数タグから成る場合のためのループ */
 	for (j = 0, ht_ptr = (sp->bnst_data + dp->head[last_b])->tag_ptr; 
@@ -2129,16 +2133,24 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	  }
 
 	  /* 「ＡのＢ」をチェック */
+	  if (OptDisplay == OPT_DEBUG && ht_ptr->cf_ptr) {
+	      fprintf(Outfp, "☆直前タグ受判定AB: %6s の %6s: %d\n",
+		      t_ptr->head_ptr->Goi2, ht_ptr->head_ptr->Goi2,
+		      check_examples(strp, rep_length,
+				     ht_ptr->cf_ptr->ex_list[0],
+				     ht_ptr->cf_ptr->ex_num[0]));
+	  }
+
 	  if (check_ac == -1 && ht_ptr->cf_ptr &&
 	      check_examples(strp, rep_length,
 			     ht_ptr->cf_ptr->ex_list[0],
 			     ht_ptr->cf_ptr->ex_num[0]) != -1) {
-
-	    offset = j - ((sp->bnst_data + dp->head[last_b])->tag_num - 1);
-	    sprintf(buf, "直前タグ受:%d", offset);
-	    assign_cfeature(&((sp->bnst_data + dp->head[last_b])->f), buf, FALSE);
-	    assign_cfeature(&(ht_ptr->f), buf, FALSE);
-	    break;
+	      
+	      offset = j - ((sp->bnst_data + dp->head[last_b])->tag_num - 1);
+	      sprintf(buf, "直前タグ受:%d", offset);
+	      assign_cfeature(&((sp->bnst_data + dp->head[last_b])->f), buf, FALSE);
+	      assign_cfeature(&(ht_ptr->f), buf, FALSE);
+	      break;
 	  }
 	}		 
       }

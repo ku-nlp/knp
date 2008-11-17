@@ -1,3 +1,8 @@
+2008-11-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c:
+	-debugオプション指定時に、名詞格フレームを用いた"直前タグ受判定"に関する情報を出力するように変更
+
 2008-11-14  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.data, rule/search_query.rule:
