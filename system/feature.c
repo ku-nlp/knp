@@ -696,8 +696,8 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     else if (0xb0a0 < code || code == 0xa1b9) {
 	return TYPE_KANJI;
     }
-    /* 数字と "・", "．" */
-    else if ((0xa3af < code && code < 0xa3ba) || code == 0xa1a5 || code == 0xa1a6) {
+    /* 数字(０-９)のみ ("・"(0xa1a6)と"．"(0xa1a5)は対象外) */
+    else if (0xa3af < code && code < 0xa3ba) {
 	return TYPE_SUUJI;
     }
     /* アルファベット */
