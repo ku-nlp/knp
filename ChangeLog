@@ -1,8 +1,8 @@
 2008-12-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c:
-	<役職>
-
+	共参照(役職)の解析結果の出力に関するバグを修正
+	
 2008-11-19  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_filter.rule:

@@ -582,8 +582,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     }
     
     sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
-	    cp, i, sp->KNPSID ? sp->KNPSID + 5 : "?", 
-	    tag_ptr - sp->tag_data);
+	    cp, i, sp->KNPSID ? sp->KNPSID + 5 : "?", i); 
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
     assign_cfeature(&(tag_ptr->f), "共参照(役職)", FALSE);
     sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, i, 0);
