@@ -1,3 +1,8 @@
+2008-12-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/corefer.c:
+	<Ìò¿¦>
+
 2008-11-19  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_filter.rule:
