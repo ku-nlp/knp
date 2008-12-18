@@ -1820,8 +1820,7 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
 	      (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_SCORE))) || 
-	    (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && /* 格フレームない場合も格解析結果を書く */
-	     (sp->Best_mgr->cpm[i].result_num == 0 || 
+	    ((sp->Best_mgr->cpm[i].result_num == 0 || /* 格フレームない場合も格解析結果を書く */
 	      sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1))) {
 	    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, temp_assign_flag);
 	}
