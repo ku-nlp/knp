@@ -1633,6 +1633,24 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
 }
 
 /*==================================================================*/
+void assign_feature_samecase(CF_PRED_MGR *cpm_ptr, int temp_assign_flag)
+/*==================================================================*/
+{
+    int i;
+    char feature_buffer[DATA_LEN], *case_str1, *case_str2;
+
+    for (i = 0; cpm_ptr->cmm[0].cf_ptr->samecase[i][0] != END_M; i++) {
+	/* 格が存在し、「修飾」ではない */
+	if ((case_str1 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][0])) && strcmp(case_str1, "修飾")) {
+	    if ((case_str2 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][1])) && strcmp(case_str2, "修飾")) {
+		sprintf(feature_buffer, "類似格;%s＝%s", case_str1, case_str2);
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int temp_assign_flag)
 /*==================================================================*/
@@ -1657,6 +1675,9 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化", temp_assign_flag);
     }
+
+    /* 類似格をfeatureに */
+    assign_feature_samecase(cpm_ptr, temp_assign_flag);
 
     /* 入力側の各格要素の記述 */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
