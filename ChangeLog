@@ -1,3 +1,21 @@
+2008-12-23  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_basic.rule:
+	Added rules of future phrases.
+
+	* rule/bnst_basic.rule, rule/tag_after_dpnd_and_case.rule:
+	Added tense rules.
+
+2008-12-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c:
+	Added the information of same cases to features.
+
+2008-12-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c:
+	Modified to output case analysis result to the verbs without case frames.
+
 2008-12-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c:
