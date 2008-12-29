@@ -544,6 +544,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	clear_feature(&(m_ptr->f));
 	m_ptr->f = (m_ptr+pref_mrph)->f;
 	(m_ptr+pref_mrph)->f = NULL;
+	m_ptr->length = (m_ptr+pref_mrph)->length;
     }
 }
 
@@ -1050,6 +1051,10 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			       Katuyou_Kata_str, &(m_ptr->Katuyou_Kata), 
 			       Katuyou_Kei_str, &(m_ptr->Katuyou_Kei), 
 			       rest_buffer);
+	    m_ptr->type = IS_MRPH_DATA;
+	    m_ptr->num = sp->Mrph_num;
+	    m_ptr->length = strlen(m_ptr->Goi2);
+
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
 		if (!OptChiPos) {
@@ -1950,6 +1955,20 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
+	 void make_mrph_set_inum(SENTENCE_DATA *sp, int num)
+/*==================================================================*/
+{
+    int j, count = 0;
+
+    for (j = num - 1; j >= 0; j--) {
+	(sp->mrph_data + j)->inum = count++;
+	if ((sp->mrph_data + j)->tnum >= 0) {
+	    break;
+	}
+    }
+}
+
+/*==================================================================*/
        void make_tag_unit_set_inum(SENTENCE_DATA *sp, int num)
 /*==================================================================*/
 {
@@ -1992,6 +2011,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    memset(tp, 0, sizeof(TAG_DATA));
 	    tp->num = sp->Tag_num;
 	    tp->mrph_ptr = mp;
+	    mp->tnum = tp->num;
+	    make_mrph_set_inum(sp, i);
 
 	    /* 文節区切りと一致するとき */
 	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
@@ -2019,12 +2040,16 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    }
 	    sp->Tag_num++;
 	}
+	else {
+	    mp->tnum = -1;
+	}
 	push_tag_units(tp, mp);
     }
 
     if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
 	make_tag_unit_set_inum(sp, sp->Tag_num);
     }
+    make_mrph_set_inum(sp, sp->Mrph_num);
 
     after_make_tag_units(sp);
 }

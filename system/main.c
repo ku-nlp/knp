@@ -257,16 +257,19 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-case2"))   OptAnalysis = OPT_CASE2;
 	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
 	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
+	else if (str_eq(argv[0], "-bptree"))  OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
+	else if (str_eq(argv[0], "-bptab"))   OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-notag"))   OptExpress  = OPT_NOTAG;
-	else if (str_eq(argv[0], "-notagtab"))  OptExpress = OPT_NOTAG;
+	else if (str_eq(argv[0], "-notagtab")) OptExpress = OPT_NOTAG;
 	else if (str_eq(argv[0], "-bnsttab")) OptExpress  = OPT_NOTAG;
-	else if (str_eq(argv[0], "-notagtree")) OptExpress = OPT_NOTAGTREE;
-	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_NOTAGTREE;
+	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_BNSTTREE;
+	else if (str_eq(argv[0], "-mrphtab")) OptExpress  = OPT_MRPH;
+	else if (str_eq(argv[0], "-mrphtree")) OptExpress = OPT_MRPHTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
@@ -1128,13 +1131,17 @@ extern int	EX_match_subject;
 
     if (OptEllipsis) {
 	/* 中身は保存しておくので */
-	for (i = 0; i < sp->Mrph_num; i++) {
+	for (i = 0; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
 	    (sp->mrph_data+i)->f = NULL;
 	}
     }
     else {
 	for (i = 0; i < sp->Mrph_num; i++) {
 	    clear_feature(&(sp->mrph_data[i].f));
+	}
+	/* New_Mrphはもともとpointer */
+	for (i = sp->Mrph_num; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
+	    (sp->mrph_data+i)->f = NULL;
 	}
     }
 }
@@ -1540,6 +1547,9 @@ PARSED:
 
     if (!(OptExpress & OPT_NOTAG)) {
 	dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
+	if (OptExpress & OPT_MRPH) {
+	    dpnd_info_to_mrph(sp);
+	}
     }
 
     if (OptNE && (!OptNEparent || OptNEcase)) {
@@ -1627,6 +1637,9 @@ PARSED:
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
 	    if (!(OptExpress & OPT_NOTAG)) {
 		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+		if (OptExpress & OPT_MRPH) {
+		    dpnd_info_to_mrph(sp);
+		}
 	    }
 	    if (!OptEllipsis) {
 		if (OptPostProcess) { /* 後処理 */
@@ -1718,7 +1731,7 @@ PARSED:
 	/************/
 
 	if (OptAnalysis == OPT_FILTER) {
-	    print_mrphs(sp);
+	    print_mrphs_only(sp);
 	}
 	else if (OptAnalysis == OPT_BNST) {
 	    print_bnst_with_mrphs(sp, 0);

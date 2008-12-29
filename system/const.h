@@ -146,11 +146,13 @@
 #define OPT_TREE	1
 #define OPT_TREEF	5
 #define OPT_SEXP	8
-#define OPT_TAB		0
-#define OPT_NOTAG	2
+#define OPT_TAB		0 /* TAG */
+#define OPT_NOTAG	2 /* BNST */
+#define OPT_MRPH	4
 #define OPT_TABLE      16
 #define OPT_PA	       32
-#define OPT_NOTAGTREE	3
+#define OPT_BNSTTREE	3 /* NOTAGTREE */
+#define OPT_MRPHTREE	5
 #define OPT_NORMAL	1
 #define OPT_DETAIL	2
 #define OPT_DEBUG	3
@@ -193,6 +195,7 @@
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
+#define	IS_MRPH_DATA	4
 
 #define	PP_NUMBER	44
 #define LOC_NUMBER	21
@@ -587,8 +590,34 @@ typedef struct _RuleVector {
 			      基本データ
 ====================================================================*/
 
+typedef struct tnode_b *Treeptr_B;
+
 /* 形態素データ */
 typedef struct {
+    int		type;	/* タイプ (形態素, 基本句, 文節) */
+    int		num;	/* 番号 (0〜) */
+    /* 木構造ポインタ */
+    Treeptr_B 	parent;
+    Treeptr_B 	child[PARA_PART_MAX];
+    /* tree表示用 */
+    int  	length;
+    int 	space;
+    /* 係り受け情報 */
+    int		dpnd_head;
+    char 	dpnd_type;
+    int		dpnd_dflt;	/* いらない? */
+    /* 並列構造 (詳細はBNST_DATAを参照のこと) */
+    int 	para_num;
+    char   	para_key_type;
+    char	para_top_p;
+    char	para_type;
+    char	to_para_p;
+    /* MRPH_DATA, BNST_DATA, TAG_DATAとの共通部分はここまで */
+
+    /* 基本句との関係 */
+    int 	tnum;	/* 基本句区切りと一致するときの番号 */
+    int		inum;
+    /* 形態素情報 */
     char 	Goi[WORD_LEN_MAX+1];	/* 原型 */
     char 	Yomi[WORD_LEN_MAX+1];
     char 	Goi2[WORD_LEN_MAX+1];
@@ -607,11 +636,30 @@ typedef struct {
 typedef struct cf_def *CF_ptr;
 typedef struct cpm_def *CPM_ptr;
 /* 文節データ */
-typedef struct tnode_b *Treeptr_B;
 typedef struct tnode_b {
-    int		type;
-    /* 番号 */
-    int 	num;
+    int		type;	/* タイプ (形態素, 基本句, 文節) */
+    int 	num;	/* 番号 (0〜) */
+    /* 木構造ポインタ */
+    Treeptr_B 	parent;
+    Treeptr_B 	child[PARA_PART_MAX];
+    /* tree表示用 */
+    int  	length;
+    int 	space;
+    /* 係り受け情報 (処理が確定後コピー) */
+    int		dpnd_head;	/* 係り先の文節番号 */
+    char 	dpnd_type;	/* 係りのタイプ : D, P, I, A */
+    int		dpnd_dflt;	/* defaultの係り先文節番号 */
+    /* 並列構造 */
+    int 	para_num;	/* 対応する並列構造データ番号 */
+    char   	para_key_type;  /* 名|述|？ featureからコピー */
+    char	para_top_p;	/* TRUE -> PARA */
+    char	para_type;	/* 0, 1:<P>, 2:<I> */
+    				/* この2つはPARAノードを導入するためのもの
+				   dpnd_typeなどとは微妙に異なる */
+    char	to_para_p;	/* コピー */
+    /* MRPH_DATA, BNST_DATA, TAG_DATAとの共通部分はここまで */
+
+    int 	sp_level;	/* 並列構造に対するバリア */
     /* 形態素データ */
     int		mrph_num;
     int		preserve_mrph_num;
@@ -630,29 +678,13 @@ typedef struct tnode_b {
     int		pred_num;
     /* feature */
     FEATUREptr	f;
-    /* 木構造ポインタ */
-    Treeptr_B 	parent;
-    Treeptr_B 	child[PARA_PART_MAX];
+    /* 用言文節へのポインタ */
     struct tnode_b *pred_b_ptr;
-    /* tree表示用 */
-    int  	length;
-    int 	space;
-    /* 係り受け情報 (処理が確定後コピー) */
-    int		dpnd_head;	/* 係り先の文節番号 */
-    char 	dpnd_type;	/* 係りのタイプ : D, P, I, A */
-    int		dpnd_dflt;	/* defaultの係り先文節番号 */
-    int         is_para;        /* tag for Chinese coordination */
+    /* tag for Chinese coordination */
+    int         is_para;
     /* 表層格データ */
     char 	SCASE_code[SCASE_CODE_SIZE];	/* 表層格 */
-    /* 並列構造 */
-    int 	para_num;	/* 対応する並列構造データ番号 */
-    char   	para_key_type;  /* 名|述|？ featureからコピー */
-    char	para_top_p;	/* TRUE -> PARA */
-    char	para_type;	/* 0, 1:<P>, 2:<I> */
-    				/* この2つはPARAノードを導入するためのもの
-				   dpnd_typeなどとは微妙に異なる */
-    char	to_para_p;	/* コピー */
-    int 	sp_level;	/* 並列構造に対するバリア */
+    /* BNST_DATA, TAG_DATAとの共通部分はここまで */
 
     char 	Jiritu_Go[BNST_LENGTH_MAX];
     DpndRule	*dpnd_rule;
@@ -800,9 +832,27 @@ typedef struct entity_manager {
 ====================================================================*/
 
 typedef struct tnode_t {
-    int		type;
-    /* 番号 */
-    int 	num;
+    int		type;	/* タイプ (形態素, 基本句, 文節) */
+    int 	num;	/* 番号 (0〜) */
+    /* 木構造ポインタ */
+    struct tnode_t	*parent;
+    struct tnode_t	*child[PARA_PART_MAX];
+    /* tree表示用 */
+    int  	length;
+    int 	space;
+    /* 係り受け情報 */
+    int		dpnd_head;
+    char 	dpnd_type;
+    int		dpnd_dflt;	/* いらない? */
+    /* 並列構造 (詳細はBNST_DATAを参照のこと) */
+    int 	para_num;
+    char   	para_key_type;
+    char	para_top_p;
+    char	para_type;
+    char	to_para_p;
+    /* MRPH_DATA, BNST_DATA, TAG_DATAとの共通部分はここまで */
+
+    int 	sp_level;	/* 並列構造に対するバリア */
     /* 形態素データ */
     int		mrph_num;
     int		preserve_mrph_num;
@@ -820,26 +870,14 @@ typedef struct tnode_t {
     int		pred_num;
     /* feature */
     FEATUREptr	f;
-    /* 木構造ポインタ */
-    struct tnode_t	*parent;
-    struct tnode_t	*child[PARA_PART_MAX];
+    /* 用言文節へのポインタ */
     struct tnode_t	*pred_b_ptr;
-    /* tree表示用 */
-    int  	length;
-    int 	space;
-    /* 係り受け情報 */
-    int		dpnd_head;
-    char 	dpnd_type;
-    int		dpnd_dflt;	/* いらない? */
-    int         is_para;        /* tag for Chinese coordination */
+    /* tag for Chinese coordination */
+    int         is_para;
     /* 表層格データ */
     char 	SCASE_code[SCASE_CODE_SIZE];
-    /* 並列構造 (詳細はBNST_DATAを参照のこと) */
-    int 	para_num;
-    char   	para_key_type;
-    char	para_top_p;
-    char	para_type;
-    char	to_para_p;
+    /* BNST_DATA, TAG_DATAとの共通部分はここまで */
+
     /* 文節との関係 */
     int 	bnum;	/* 文節区切りと一致するときの番号 */
     int		inum;
@@ -1017,6 +1055,7 @@ typedef struct sentence {
     int 		Sen_num;	/* 文番号 1〜 */
     int			available;
     int			Mrph_num;
+    int			New_Mrph_num;
     int			Bnst_num;
     int			New_Bnst_num;
     int			Max_New_Bnst_num;

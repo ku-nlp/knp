@@ -2188,8 +2188,64 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
+	    void dpnd_info_to_mrph_raw(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, last_t, offset, head;
+    MRPH_DATA *m_ptr, *head_ptr;
+
+    for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
+	/* もっとも近い基本句行を記憶 */
+	if (m_ptr->tnum >= 0) {
+	    last_t = m_ptr->tnum;
+	}
+
+	/* 文末 */
+	if (i == sp->Mrph_num - 1) {
+	    m_ptr->dpnd_head = -1;
+	    m_ptr->dpnd_type = 'D';
+	}
+	/* 隣にかける */
+	else if (m_ptr->inum != 0) {
+	    m_ptr->dpnd_head = m_ptr->num + 1;
+	    m_ptr->dpnd_type = 'D';
+	}
+	/* 基本句内最後の形態素 (inum == 0) */
+	else {
+	    offset = 0;
+	    head = (sp->tag_data + last_t)->dpnd_head;
+	    m_ptr->dpnd_type = (sp->tag_data + last_t)->dpnd_type;
+
+	    if (head == -1) {
+		m_ptr->dpnd_head = -1;
+	    }
+	    else {
+		/* m_ptr->dpnd_head = (sp->tag_data + head)->head_ptr->num; */
+		head_ptr = find_head_mrph_from_dpnd_bnst((BNST_DATA *)(sp->tag_data + last_t), 
+							 (BNST_DATA *)(sp->tag_data + head));
+		m_ptr->dpnd_head = head_ptr->num;
+	    }
+	}
+    }
+}
+
+/*==================================================================*/
+	      void dpnd_info_to_mrph(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    if (OptInput == OPT_RAW || 
+	(OptInput & OPT_INPUT_BNST) ||
+	OptUseNCF) {
+	dpnd_info_to_mrph_raw(sp);
+    }
+    else {
+	/* dpnd_info_to_mrph_pm(sp); */
+    }
+}
+
+/*==================================================================*/
 void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
-     /*==================================================================*/
+/*==================================================================*/
 {
   dst->para_num = src->para_num;
   dst->para_key_type = src->para_key_type;
@@ -2609,7 +2665,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 	print_result(sp, 0);
       }
       else {
-	print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+	print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE);
       }
     }
   }

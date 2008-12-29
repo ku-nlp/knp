@@ -1766,6 +1766,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	para_recovery(sp);
 	if (!(OptExpress & OPT_NOTAG)) {
 	    dpnd_info_to_tag(sp, &(Best_mgr->dpnd));
+	    if (OptExpress & OPT_MRPH) {
+		dpnd_info_to_mrph(sp);
+	    }
 	}
 	if (make_dpnd_tree(sp)) {
 	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
@@ -1810,7 +1813,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 		}
 	    }
 	    else if (OptDisplay == OPT_DEBUG) {
-		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_NOTAGTREE : OPT_TREE);
+		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE);
 	    }
 	}
 

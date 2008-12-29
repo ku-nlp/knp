@@ -356,6 +356,54 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		 void print_mrphs(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
+    int		i;
+    MRPH_DATA	*m_ptr;
+    TAG_DATA	*t_ptr;
+
+    for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
+	/* 基本句行 */
+	if (m_ptr->tnum >= 0) {
+	    t_ptr = sp->tag_data + m_ptr->tnum;
+	    if (PrintNum) {
+		fprintf(Outfp, "+ %d %d%c", 
+			m_ptr->tnum, t_ptr->dpnd_head, t_ptr->dpnd_type);
+	    }
+	    else {
+		fprintf(Outfp, "+ %d%c", 
+			t_ptr->dpnd_head, t_ptr->dpnd_type);
+	    }
+		    
+	    if (t_ptr->f) {
+		fputc(' ', Outfp);
+		print_feature(t_ptr->f, Outfp);
+	    }
+	    fputc('\n', Outfp);
+	}
+
+	/* 形態素係り受け行 */
+	if (PrintNum) {
+	    fprintf(Outfp, "- %d %d%c", m_ptr->num, m_ptr->dpnd_head, m_ptr->dpnd_type);
+	} 
+	else {
+	    fprintf(Outfp, "- %d%c", m_ptr->dpnd_head, m_ptr->dpnd_type);
+	}
+	/* featureは以下の形態素行に */
+	fputc('\n', Outfp);
+
+	print_mrph(m_ptr);
+	if (m_ptr->f) {
+	    fputc(' ', Outfp);
+	    print_feature(m_ptr->f, Outfp);
+	}
+	fputc('\n', Outfp);
+    }
+    fputs("EOS\n", Outfp);
+}
+
+/*==================================================================*/
+	       void print_mrphs_only(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
     int i;
 
     for (i = 0; i < sp->Mrph_num; i++) {
@@ -424,6 +472,55 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     }
     else {
 	fprintf(Outfp, "不特定:人");
+    }
+}
+
+/*==================================================================*/
+	 void print_mrph_with_para(MRPH_DATA *ptr, char *cp)
+/*==================================================================*/
+{
+    int i;
+
+    if (cp && ptr) {
+	if (OptExpress == OPT_TABLE) {
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "＜P＞");
+	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "&lt;I&gt;");
+	    else			     cp[0] = '\0';
+	}
+	else {
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "<P>");
+	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "<I>");
+	    else			     cp[0] = '\0';
+	}
+	if ( ptr->para_top_p == TRUE )
+	    strcat(cp, "PARA");
+	else {
+	    strcpy(cp, ptr->Goi2);
+	}
+    } else if (cp == NULL && ptr) {
+	if ( ptr->para_top_p == TRUE ) {
+	    fprintf(Outfp, "PARA");
+	} else {
+	    if (OptExpress == OPT_TABLE)
+		fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
+			Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
+	    fprintf(Outfp, "%s", ptr->Goi2);
+	    if (Language == JAPANESE && OptDisplay != OPT_NORMAL) {
+		fprintf(Outfp, "%c", 
+			pos2symbol(Class[ptr->Hinshi][0].id,
+				   Class[ptr->Hinshi][ptr->Bunrui].id));
+	    }
+	}
+
+	if (OptExpress == OPT_TABLE) {
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "＜P＞");
+	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "&lt;I&gt;");
+	}
+	else {
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "<P>");
+	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "<I>");
+	}
+	if ( ptr->to_para_p == TRUE ) fprintf(Outfp, "(D)");   
     }
 }
 
@@ -947,6 +1044,8 @@ static int max_width;			/* 木の最大幅 */
 	ptr->space = 4;
     else if (OptDisplay == OPT_NORMAL)
 	ptr->space = ptr->length;
+    else if (ptr->type == IS_MRPH_DATA)
+	ptr->space = ptr->length + 1;
     else
 	ptr->space = ptr->length + ptr->mrph_num; /* *4 */
 
@@ -1082,7 +1181,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		fputc(' ', Outfp);
 	}
     }
-    print_bnst(ptr, NULL);
+
+    if (OptExpress & OPT_MRPH) {
+	print_mrph_with_para((MRPH_DATA *)ptr, NULL);
+    }
+    else {
+	print_bnst(ptr, NULL);
+    }
     
     if (flag == 0) {
 	show_link(depth, ans_flag, ptr->para_type, ptr->to_para_p);
@@ -1196,6 +1301,13 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	calc_tree_width((sp->bnst_data + sp->Bnst_num - last_b_offset), 1);
 	show_self((sp->bnst_data + sp->Bnst_num - last_b_offset), 1, NULL, 0);
+    }
+    /* 形態素のtreeを描くとき */
+    else if (type & OPT_MRPH) {
+	max_width = 0;
+
+	calc_tree_width((BNST_DATA *)(sp->mrph_data + sp->Mrph_num - 1), 1);
+	show_self((BNST_DATA *)(sp->mrph_data + sp->Mrph_num - 1), 1, NULL, 0);
     }
     /* tag単位のtreeを描くとき */
     else {
@@ -1452,7 +1564,10 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     /* 解析結果のメインの出力 */
 
-    if (OptExpress == OPT_TAB) {
+    if (OptExpress == OPT_MRPH) {
+	print_mrphs(sp);
+    }
+    else if (OptExpress == OPT_TAB) {
 	print_tags(sp, 1);
     }
     else if (OptExpress == OPT_NOTAG) {
@@ -1462,9 +1577,19 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	/* FIXME: 格解析結果の整合性をとる必要がある */
 	print_pa_structure(sp);
     }
-    else if (OptExpress == OPT_NOTAGTREE) {
+    else if (OptExpress == OPT_BNSTTREE) {
 	/* 文節のtree出力 */
 	if (make_dpnd_tree(sp)) {
+	    print_kakari(sp, OptExpress);
+	}
+	else {
+	    fprintf(Outfp, "EOS\n");
+	}
+    }
+    else if (OptExpress == OPT_MRPHTREE) {
+	/* 形態素のtree出力 */
+	if (make_dpnd_tree(sp)) {
+	    bnst_to_mrph_tree(sp); /* 形態素の木へ */
 	    print_kakari(sp, OptExpress);
 	}
 	else {
