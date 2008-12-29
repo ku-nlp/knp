@@ -1,3 +1,8 @@
+2008-12-29  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c, system/const.h, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c, system/read_data.c, system/tree_conv.c:
+	Added options to output morpheme-based results (-mrphtree and -mrphtab).
+
 2008-12-23  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_basic.rule:
