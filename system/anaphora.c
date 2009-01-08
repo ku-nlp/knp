@@ -223,11 +223,12 @@ int get_location(char *loc_name, int sent_num, char *kstr, MENTION *mention)
 	}
     }
 
-/*     if (OptDisplay == OPT_DEBUG) { */
-/* 	for (i = 0; i < sp->Bnst_num; i++)  */
-/* 	    printf(";; %d %s %d ok?\n", bnst_ptr->num, bnst_ptr->Jiritu_Go, loc_category[i]); */
-/* 	printf(";;\n"); */
-/*     } */
+    if (OptDisplay == OPT_DEBUG) {
+	for (i = 0; i < sp->Bnst_num; i++)
+	    printf(";; %d %s %d ok?\n", bnst_ptr->num,
+		   bnst_ptr->Jiritu_Go, loc_category[i]);
+	printf(";;\n");
+    }
 }
 
 /*==================================================================*/
@@ -241,15 +242,13 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     MENTION_MGR *mention_mgr = &(tag_ptr->mention_mgr);
     MENTION *mention_ptr = NULL;
     ENTITY *entity_ptr;
-
-    if (!sscanf(token, "%[^/]/%c/%*[^/]/%d/%d/", rel, &flag, &tag_num, &sent_num)) 
+    
+    if (!sscanf(token, "%[^/]/%c/%*[^/]/%d/%d/", rel, &flag, &tag_num, &sent_num))
 	return FALSE;
 
     /* 共参照関係の読み込み */
-    if (co_flag && !strcmp(rel, "=") && flag == 'O') {
-	if (tag_ptr->inum > 0 && /* 文節内最後の基本句でない */
-	    (cp = check_feature((tag_ptr + 1)->f, "格解析結果")) &&
-	    strstr(cp, "=/O/")) return FALSE;	    
+    if (co_flag && 
+	(!strcmp(rel, "=") || !strcmp(rel, "=構") || !strcmp(rel, "=役"))) {
 
 	mention_ptr = mention_mgr->mention;
 	mention_ptr->entity = 
@@ -504,7 +503,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 		hiragana_prefer_flag = -1;
 	    }
 	}
-	
+
 	for (l = 0; l < tag_ptr->cf_num; l++) {
 	    if ((tag_ptr->cf_ptr + l)->type == tag_ptr->tcf_ptr->cf.type && 
 		(hiragana_prefer_flag == 0 || 
@@ -878,7 +877,6 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 			tag_ptr->tcf_ptr->cf.adjacent[i] && !(ctm_ptr->cf_ptr->adjacent[e_num])) {
 			continue;
 		    }
-		    
 		    /* 対応付け結果を記録 */
 		    ctm_ptr->elem_b_ptr[r_num] = tag_ptr->tcf_ptr->elem_b_ptr[i];
 		    ctm_ptr->cf_element_num[r_num] = e_num;
@@ -1149,7 +1147,43 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	strcpy(mention_mgr->mention->spp_string, "＊");
     }
     mention_mgr->mention->flag = 'S'; /* 自分自身 */   
-} 
+}
+
+/*==================================================================*/
+      TAG_DATA *get_analysis_tag_ptr(SENTENCE_DATA *sp, int i)
+/*==================================================================*/
+{
+    TAG_DATA *tag_ptr;
+
+    tag_ptr = substance_tag_ptr(sp->tag_data + i);
+
+    /* 「砂糖を加えて混ぜて」などがある場合は解析順序を入れ替える */
+    if (i > 2 && 
+	check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
+	check_feature((sp->tag_data + i - 1)->f, "用言:動") &&	    
+	check_feature((sp->tag_data + i - 2)->f, "助詞")) 
+	tag_ptr = substance_tag_ptr(sp->tag_data + i - 1);
+    if (i > 1 && i < sp->Tag_num - 1 &&
+	check_feature((sp->tag_data + i + 1)->f, "用言:動") &&	    
+	check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
+	check_feature((sp->tag_data + i - 1)->f, "助詞")) 
+	tag_ptr = substance_tag_ptr(sp->tag_data + i + 1);
+
+    return tag_ptr;
+}
+
+/*==================================================================*/
+	       int check_analyze_tag(TAG_DATA *tag_ptr)
+/*==================================================================*/
+{
+    /* 与えたられたtag_ptrが解析対象かどうかをチェック */
+    if (check_feature(tag_ptr->mrph_ptr->f, "付属")) return 0;
+    if (!check_feature(tag_ptr->f, "用言")) return 0;   
+    if (!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
+	check_feature(tag_ptr->f, "用言:判")) return 0;
+
+    return 1;
+}
 
 /*==================================================================*/
 	    int make_context_structure(SENTENCE_DATA *sp)
@@ -1178,8 +1212,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	/* 入力から正解を読み込む場合 */
 	if (OptReadFeature) {
 	    /* 同格は正解コーパスに付与されないので自動解析 */
-	    if (check_feature(tag_ptr->f, "同格") && (cp = check_feature(tag_ptr->f, "Ｔ共参照"))) {
-		read_one_annotation(sp, tag_ptr, cp + strlen("Ｔ共参照:"), TRUE);		
+	    if (check_feature(tag_ptr->f, "同格") && 
+		(cp = check_feature(tag_ptr->f, "Ｔ共参照"))) {
+		read_one_annotation(sp, tag_ptr, cp + strlen("Ｔ共参照:"), TRUE);
 	    }
 	    /* featureから格解析結果を取得 */    
 	    else if (cp = check_feature(tag_ptr->f, "格解析結果")) {		
@@ -1205,26 +1240,10 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     /* 入力から正解を読み込む場合 */
     if (OptReadFeature == 1) {
 
-	for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-	    tag_ptr = substance_tag_ptr(sp->tag_data + i);
-
-	    /* 「砂糖を加えて混ぜて」などがある場合は解析順序を入れ替える */
-	    if (i > 2 && 
-		check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
-		check_feature((sp->tag_data + i - 1)->f, "用言:動") &&	    
-		check_feature((sp->tag_data + i - 2)->f, "助詞")) 
-		tag_ptr = substance_tag_ptr(sp->tag_data + i - 1);
-	    if (i > 1 && i < sp->Tag_num - 1 &&
-		check_feature((sp->tag_data + i + 1)->f, "用言:動") &&	    
-		check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
-		check_feature((sp->tag_data + i - 1)->f, "助詞")) 
-		tag_ptr = substance_tag_ptr(sp->tag_data + i + 1);
-	    
-	    /* todo::用言のみ対象(暫定的) */
-	    if (check_feature(tag_ptr->mrph_ptr->f, "付属") ||
-		!check_feature(tag_ptr->f, "用言") ||
-		(!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
-		 check_feature(tag_ptr->f, "用言:判"))) continue;
+	/* 解析文のタグ単位:i番目のタグについて */
+	for (i = sp->Tag_num - 1; i >= 0; i--) {
+	    tag_ptr = get_analysis_tag_ptr(sp, i);
+	    if (!check_analyze_tag(tag_ptr)) continue;	    
 
 	    /* この時点での各EntityのSALIENCE出力 */
 	    if (OptDisplay == OPT_DEBUG || OptExpress == OPT_TABLE) {
@@ -1237,6 +1256,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	
 	    /* featureから格解析結果を取得 */
 	    if (cp = check_feature(tag_ptr->f, "格解析結果")) {		
+
+		/* 共参照関係にある表現は格解析結果を取得しない */
+		if (check_feature(tag_ptr->f, "体言") &&
+		    (strstr(cp, "=/") || strstr(cp, "=構/") || strstr(cp, "=役/")))
+		    continue;
+		
 		for (cp = strchr(cp + strlen("格解析結果:"), ':') + 1; *cp; cp++) {
 		    if (*cp == ':' || *cp == ';') {
 			read_one_annotation(sp, tag_ptr, cp + 1, FALSE);
@@ -1249,20 +1274,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
     /* 省略解析を行う場合 */
     for (i = sp->Tag_num - 1; i >= 0; i--) { /* 解析文のタグ単位:i番目のタグについて */
-	tag_ptr = substance_tag_ptr(sp->tag_data + i);
-
-	/* 「砂糖を加えて混ぜて」などがある場合は解析順序を入れ替える */
-	if (i > 2 && 
-	    check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
-	    check_feature((sp->tag_data + i - 1)->f, "用言:動") &&	    
-	    check_feature((sp->tag_data + i - 2)->f, "助詞")) 
-	    tag_ptr = substance_tag_ptr(sp->tag_data + i - 1);
-	if (i > 1 && i < sp->Tag_num - 1 &&
-	    check_feature((sp->tag_data + i + 1)->f, "用言:動") &&	    
-	    check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
-	    check_feature((sp->tag_data + i - 1)->f, "助詞")) 
-	    tag_ptr = substance_tag_ptr(sp->tag_data + i + 1);
-
+	tag_ptr = get_analysis_tag_ptr(sp, i);
+	if (!check_analyze_tag(tag_ptr)) continue;
 	tag_ptr->tcf_ptr = NULL;
 	tag_ptr->ctm_ptr = NULL;
 
@@ -1274,16 +1287,10 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	    /* tag_ptr->tcf_ptrを作成 */
 	    tag_ptr->tcf_ptr = 
-		(TAG_CASE_FRAME *)malloc_data(sizeof(TAG_CASE_FRAME), "make_context_structure");
+		(TAG_CASE_FRAME *)malloc_data(sizeof(TAG_CASE_FRAME), 
+					      "make_context_structure");
 	    set_tag_case_frame(sp, tag_ptr);
-	    	    	
-	    /* todo::用言のみ対象(暫定的) */
-	    if (check_feature(tag_ptr->mrph_ptr->f, "付属") ||
-		!check_feature(tag_ptr->f, "用言") ||
-		(!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
-		  check_feature(tag_ptr->f, "用言:判")) ||
-		tag_ptr->tcf_ptr->cf.type != CF_PRED) continue;
-    
+	    	    	    
 	    /* 位置カテゴリの生成 */	    
 	    mark_loc_category(sp, tag_ptr);
 
@@ -1318,7 +1325,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    anaphora_result_to_entity(tag_ptr);
 	}
     }
-
 }
 
 /*==================================================================*/

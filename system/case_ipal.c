@@ -1701,8 +1701,17 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    }
 	}
 	else {
+	    /* 用言のとき、末尾の名詞性名詞接尾辞は無視する */
+	    if ((flag & CF_PRED) &&
+		!strcmp(Class[t_ptr->head_ptr->Hinshi][t_ptr->head_ptr->Bunrui].id, "名詞性名詞接尾辞")) {
+		if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr - 1, (flag & CF_PRED) && 
+						     check_feature((t_ptr->head_ptr - 1)->f, "Ｔ代表表記変更前用言見出"))) == NULL) {
+		    main_pred = make_mrph_rn(t_ptr->head_ptr - 1);
+		    main_pred_malloc_flag = 1;
+		}
+	    }
 	    /* 用言のとき、a化している形容詞語幹は、元の代表表記で引く(e.g., 「平和/条約」の「平和」) */
-	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (flag & CF_PRED) && 
+	    else if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (flag & CF_PRED) && 
 						 check_feature(t_ptr->head_ptr->f, "Ｔ代表表記変更前用言見出"))) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
@@ -1724,7 +1733,9 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	}
     }
     /* 「形容詞+なる」など */
-    else if (check_feature(t_ptr->f, "Ｔ用言見出→") && !cpncf_flag) {
+    else if (check_feature(t_ptr->f, "Ｔ用言見出→") && !cpncf_flag &&
+	     (!check_feature(t_ptr->head_ptr->f, "サ変") ||
+	      strcmp(get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag), "する/する"))) {
 	if (use_rep_flag) {
 	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
@@ -1749,7 +1760,8 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	}
     }
     /* 「形容詞語幹+的だ」など */
-    else if (check_feature(t_ptr->f, "Ｔ用言見出←") && !cpncf_flag) {
+    else if (check_feature(t_ptr->f, "Ｔ用言見出←") && !cpncf_flag && 
+	     !check_feature((t_ptr->head_ptr - 1)->f, "付属")) {
 	if (use_rep_flag &&
 	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1, FALSE))) {
 	    buffer = (char *)malloc_data(strlen(cp) + strlen(main_pred) + 9, 
