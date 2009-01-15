@@ -1661,11 +1661,23 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
                 main_pred_malloc_flag = 1;
             }
         }
+	/* 省略解析をする場合は正規化代表表記を使用する */
+	else if (flag == CF_NOUN && OptAnaphora &&
+		 check_analyze_tag(t_ptr) == CF_NOUN && 
+		 (cp = check_feature(t_ptr->b_ptr->f, "正規化代表表記"))) {
+	    cpncf_flag = 1;
+	    rep_strt = cp + strlen("正規化代表表記:");
+	    rep_length = strlen(rep_strt);		
+
+	    main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string");
+	    strncpy(main_pred, rep_strt, rep_length);
+	    *(main_pred + rep_length) = '\0';
+	    main_pred_malloc_flag = 1;
+	}
 	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
 	/* ただし、BGH中に"|"が含まれている場合は除く */
-	else if (OptUseCPNCF && flag == CF_NOUN && 
-		 !check_feature(t_ptr->head_ptr->f, "特殊非見出語") &&
-		 
+	else if (flag == CF_NOUN && OptUseCPNCF &&  
+		 !check_feature(t_ptr->head_ptr->f, "特殊非見出語") &&		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
 	    /* 形容詞語幹の場合は通常の代表表記を使用する */
@@ -1676,7 +1688,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
 	    else {
 		cpncf_flag = 1;
-		rep_strt = cp + 4;
+		rep_strt = cp + strlen("BGH:");
 		rep_length = strlen(rep_strt);
 
 		/* 後方の基本句の分類語彙表の見出しに含まれる基本句は省略解析の対象としない */
@@ -1806,7 +1818,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     if (!t_ptr->jiritu_ptr) {
 	return f_num;
     }
-
+    
     pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag);
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
 
@@ -2942,6 +2954,8 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 {
     char *value, *key;
     double ret;
+
+    //return FREQ0_ASSINED_SCORE / 2;
 
     key = malloc_db_buf(strlen(key1) + strlen(key2) + 2);
     sprintf(key, "%s|%s", key1, key2);

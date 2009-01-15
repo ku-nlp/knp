@@ -255,18 +255,9 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define NIL_ASSIGNED	-2
 
 #define	NIL_ASSINED_SCORE	-20
-//#define FREQ0_ASSINED_SCORE   -16.118096 /* log(0.0000001) */
-#define FREQ0_ASSINED_SCORE   -13.815511 /* log(0.0000010) */
-//#define FREQ0_ASSINED_SCORE   -11.512925 /* log(0.0000100) */
-//#define FREQ0_ASSINED_SCORE      -9.210340 /* log(0.0001000) */
-//#define FREQ0_ASSINED_SCORE    -6.907755 /* log(0.0010000) */
-//#define	UNKNOWN_CASE_SCORE	-6.907755 /* log(0.0010000) */
-//#define	UNKNOWN_CF_SCORE	-6.907755 /* log(0.0010000) */
-//#define	UNKNOWN_CASE_SCORE	-9.210340 /* log(0.0001000) */
-//#define	UNKNOWN_CF_SCORE	-9.210340 /* log(0.0001000) */
+#define FREQ0_ASSINED_SCORE     -13.815511 /* log(0.0000010) */
 #define	UNKNOWN_CASE_SCORE	-11.512925 /* log(0.0000100) */
 #define	UNKNOWN_CF_SCORE	-11.512925 /* log(0.0000100) */
-//#define	UNKNOWN_RENYOU_SCORE	-11.512925 /* log(0.0000100) */
 #define	UNKNOWN_RENYOU_SCORE	-16.118096 /* log(0.0000001) */
 
 #define	CASE_MATCH_FAILURE_SCORE	-2
@@ -805,7 +796,7 @@ typedef struct mention {
     int                 tag_num;
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
-    char                flag;     /* 'S', '=', 'N', 'C', 'O', 'D' */
+    char                flag; /* 'S', '=', 'N', 'C', 'O', 'D' */
     double              salience_score; /* どのくらい先行詞になりやすいか */
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
