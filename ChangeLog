@@ -1,7 +1,12 @@
+2009-01-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c:
+	格要素を並列表現に拡張する際、関係flagを引き継ぐように変更
+	
 2009-01-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c, case_ipal.c:
-	確率的な橋渡し指示を実装
+	確率的評価を用いた橋渡し指示解析機能を追加
 	同一文中の主題表現の位置カテゴリを追加
 	格要素と並列関係にある表現も格要素として出力する機能を追加
 

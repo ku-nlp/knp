@@ -492,9 +492,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 		    epnd_entity_ptr = para_ptr->mention_mgr.mention->entity;
 		    ctm_ptr->filled_entity[epnd_entity_ptr->num] = TRUE;
 		    ctm_ptr->entity_num[ctm_ptr->result_num] = epnd_entity_ptr->num;
-		    ctm_ptr->flag[ctm_ptr->result_num] = 'O';
-		    ctm_ptr->cf_element_num[ctm_ptr->result_num] = 
-			ctm_ptr->cf_element_num[i];
+		    ctm_ptr->flag[ctm_ptr->result_num] = ctm_ptr->flag[i];
+		    ctm_ptr->cf_element_num[ctm_ptr->result_num] = ctm_ptr->cf_element_num[i];
 		    ctm_ptr->result_num++;
 
 		    if (OptDisplay == OPT_DEBUG)
@@ -693,12 +692,6 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
     for (i = 0; i < ctm_ptr->case_result_num; i++) {
 	e_num = ctm_ptr->cf_element_num[i];
 	
-	/* とりあえず不要::直前格がある場合は用例に含まれているものを優先 */
-	/*if (tcf_ptr->cf.adjacent[ctm_ptr->tcf_element_num[i]] == TRUE &&
-	    get_ex_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf),
-			       NULL, e_num, ctm_ptr->cf_ptr, FALSE) > FREQ0_ASSINED_SCORE)
-			       score -= FREQ0_ASSINED_SCORE; */
-
 	/* 名詞の場合はP(A|B)/P(A)で評価 */
 	/* todo::カテゴリ、NEによる汎化 */
 	if (tcf_ptr->cf.type == CF_NOUN) {
