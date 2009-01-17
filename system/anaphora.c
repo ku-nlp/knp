@@ -10,7 +10,7 @@
 #include "knp.h"
 
 /* 省略解析に関するパラメータ */
-#define CASE_CANDIDATE_MAX 20  /* 照応解析用格解析結果を保持する数 */
+#define CASE_CANDIDATE_MAX 40  /* 照応解析用格解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 20  /* 省略解析結果を保持する数 */
 #define EX_MATCH_COMPENSATE 1.0 /* マッチしすぎることを防ぐための補正項 */
 #define SALIENCE_DECAY_RATE 0.8 /* salience_scoreの減衰率 */
@@ -712,8 +712,9 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 /*==================================================================*/
 {
     /* 格フレームとの対応付けのスコアを計算する関数  */
-    int i, e_num, debug = 0;
+    int i, j, e_num, debug = 0;
     double score;
+    char key[SMALL_DATA_LEN];
 
     /* 対象の格フレームが選択されることのスコア */
     score = get_cf_probability(&(tcf_ptr->cf), ctm_ptr->cf_ptr);
@@ -727,42 +728,27 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	if (tcf_ptr->cf.type == CF_NOUN) {
 	    /* 修飾されている句は解析対象外(暫定的) */
 	    score += INITIAL_SCORE;
-/* 	    /\* P(弁当|価格:名1,ノ格) *\/ */
-/* 	    score += */
-/* 		get_ex_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf),  */
-/* 				   tcf_ptr->elem_b_ptr[i], */
-/* 				   e_num, ctm_ptr->cf_ptr, FALSE); */
-
-/* 	    /\* /P(弁当) *\/ */
-/* 	    score -=  */
-/* 		get_key_probability(tcf_ptr->elem_b_ptr[i]); */
-	    
-/* 	    if (OptDisplay == OPT_DEBUG && debug)  */
-/* 		printf(";;対応あり:%s-%s:%f:%f ",  */
-/* 		       ctm_ptr->elem_b_ptr[i]->head_ptr->Goi2,  */
-/* 		       pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]), */
-/* 		       get_ex_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf),  */
-/* 					  tcf_ptr->elem_b_ptr[i], */
-/* 					  e_num, ctm_ptr->cf_ptr, FALSE), */
-/* 		       get_key_probability(tcf_ptr->elem_b_ptr[i])); */
 	}
 	
 	else {
-	    /* 用言の場合 */
 	    score += 
-		get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
+		get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], 
+					     &(tcf_ptr->cf), 
 					     e_num, ctm_ptr->cf_ptr) +
-		get_case_function_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf),
-					      e_num, ctm_ptr->cf_ptr);
+		get_case_function_probability(ctm_ptr->tcf_element_num[i], 
+					      &(tcf_ptr->cf), 
+					      e_num, ctm_ptr->cf_ptr, TRUE);
 	    
-	    if (OptDisplay == OPT_DEBUG && debug) 
+	    if (OptDisplay == OPT_DEBUG && debug)
 		printf(";;対応あり:%s-%s:%f:%f ", 
 		       ctm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
 		       pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]),
-		       get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
+		       get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], 
+						    &(tcf_ptr->cf), 
 						    e_num, ctm_ptr->cf_ptr),
-		       get_case_function_probability(ctm_ptr->tcf_element_num[i], &(tcf_ptr->cf), 
-						     e_num, ctm_ptr->cf_ptr));      
+		       get_case_function_probability(ctm_ptr->tcf_element_num[i], 
+						     &(tcf_ptr->cf), 
+						     e_num, ctm_ptr->cf_ptr, TRUE));
 	}
     }
     /* 入力文の格要素のうち対応付けられなかった要素に関するスコア */
@@ -773,14 +759,22 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		   (tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->head_ptr->Goi2,
 		   score);
 
-	/* 橋渡し指示解析の場合は無視 */
-	if (tcf_ptr->cf.type == CF_NOUN) continue;
-	
-	score += FREQ0_ASSINED_SCORE * 3 +
-	    get_case_function_probability(ctm_ptr->non_match_element[i], &(tcf_ptr->cf), 
-					  NIL_ASSIGNED, ctm_ptr->cf_ptr);
+	/* 省略解析対象格が明示されている場合は
+	   対応付けがないものは出力されないようにする */
+	for (j = 0; *ELLIPSIS_CASE_LIST[j]; j++) {
+	    sprintf(key, "係:%s格", ELLIPSIS_CASE_LIST[j]);
+	    if ((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->num < tcf_ptr->pred_b_ptr->num &&
+		check_feature((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->f, key))
+		score += FREQ0_ASSINED_SCORE * 2;
+	}
+
+	/* 連体修飾の場合は用例に含まれていれば対応付くようにする */
+	if ((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->num > tcf_ptr->pred_b_ptr->num) {
+	    score += FREQ0_ASSINED_SCORE;
+	}
     }
     if (OptDisplay == OPT_DEBUG && debug) printf(";; %f ", score);	   
+
     /* 格フレームの格が埋まっているかどうかに関するスコア */
     for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
 	if (tcf_ptr->cf.type == CF_NOUN) continue;
@@ -1224,7 +1218,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*tag_ptr->cf_num, 
 					  "ellipsis_analysis_main");
     frame_num = set_cf_candidate(tag_ptr, cf_array);
-    printf(";;CASE FRAME NUM: %d\n", frame_num);
+    
+    if (OptDisplay == OPT_DEBUG) printf(";;CASE FRAME NUM: %d\n", frame_num);
 
     /* work_ctmのスコアを初期化 */
     for (i = 0; i < CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX; i++) 

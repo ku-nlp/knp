@@ -2613,8 +2613,6 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
     
-    if (!sm_flag) ret = FREQ0_ASSINED_SCORE;
-
     /* dpの指定がなければ、as1とcfdから作る */
     if (dp == NULL) {
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
@@ -2717,7 +2715,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 固有表現の場合 */       
     if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
-	if (prob = get_ex_ne_probability(cp, as2, cfp, FALSE)) {
+	if (prob = get_ex_ne_probability(cp, as2, cfp, TRUE)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
     } 
@@ -3132,7 +3130,8 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 
 /*==================================================================*/
      double get_case_function_probability(int as1, CASE_FRAME *cfd,
-					  int as2, CASE_FRAME *cfp)
+					  int as2, CASE_FRAME *cfp, 
+					  int ellipsis_flag)
 /*==================================================================*/
 {
     int wa_flag, topic_score = 0, touten_flag, i, dist, negation_flag, 	np_modifying_flag, closest_pred_flag = 0;
@@ -3197,7 +3196,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 
     /* 候補チェック */
     dist = get_dist_from_work_mgr(tp2->b_ptr, hp->b_ptr);
-    if (dist <= 0) {
+    if (dist <= 0 && !ellipsis_flag) {
 	return UNKNOWN_CASE_SCORE;
     }
     else if (dist > 1) {
@@ -3207,6 +3206,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
     /* 格の解釈 */
     cfcase = make_cf_case_string(as1, cfd, as2, cfp);
     score1 = get_case_interpret_probability(scase, cfcase, FALSE);
+    if (ellipsis_flag) return score1;
 
     /* 読点の生成 */
     score2 = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 

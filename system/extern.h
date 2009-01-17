@@ -259,7 +259,7 @@ extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
 extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
-					    int as2, CASE_FRAME *cfp);
+					    int as2, CASE_FRAME *cfp, int flag);
 extern double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag);
 extern double get_general_probability(char *key1, char *key2);
 extern double get_key_probability(TAG_DATA *tag_ptr);

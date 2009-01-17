@@ -1,3 +1,10 @@
+2009-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, case_ipal.c:
+	照応解析前に行う格解析の際の対応付けのない格要素の評価方法を変更
+	get_case_function_probabilityにおいてellipsis_flagが立っている場合は
+	格の解釈のみを返すように変更	
+
 2009-01-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c:
