@@ -191,7 +191,6 @@ extern int sen_num;
 
 /* anaphora.c */
 extern void assign_mrph_num(SENTENCE_DATA *sp);
-extern int check_analyze_tag(TAG_DATA *tag_ptr);
 extern void anaphora_analysis(SENTENCE_DATA *sp);
 
 /* bnst_compare.c */

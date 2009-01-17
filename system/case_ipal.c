@@ -1663,7 +1663,6 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
         }
 	/* 省略解析をする場合は正規化代表表記を使用する */
 	else if (flag == CF_NOUN && OptAnaphora &&
-		 check_analyze_tag(t_ptr) == CF_NOUN && 
 		 (cp = check_feature(t_ptr->b_ptr->f, "正規化代表表記"))) {
 	    cpncf_flag = 1;
 	    rep_strt = cp + strlen("正規化代表表記:");
