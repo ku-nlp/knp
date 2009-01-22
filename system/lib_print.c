@@ -364,6 +364,27 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	/* 基本句行 */
 	if (m_ptr->tnum >= 0) {
 	    t_ptr = sp->tag_data + m_ptr->tnum;
+	    /* 文節行 */
+	    if (t_ptr->bnum >= 0) {
+		if (PrintNum) {
+		    fprintf(Outfp, "* %d %d%c", 
+			    t_ptr->bnum,
+			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : t_ptr->b_ptr->dpnd_head, 
+			    t_ptr->b_ptr->dpnd_type);
+		}
+		else {
+		    fprintf(Outfp, "* %d%c", 
+			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : t_ptr->b_ptr->dpnd_head, 
+			    t_ptr->b_ptr->dpnd_type);
+		}
+		    
+		if (t_ptr->b_ptr->f) {
+		    fputc(' ', Outfp);
+		    print_feature(t_ptr->b_ptr->f, Outfp);
+		}
+		fputc('\n', Outfp);
+	    }
+
 	    if (PrintNum) {
 		fprintf(Outfp, "+ %d %d%c", 
 			m_ptr->tnum, t_ptr->dpnd_head, t_ptr->dpnd_type);
