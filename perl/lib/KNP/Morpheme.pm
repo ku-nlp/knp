@@ -2,7 +2,7 @@
 package KNP::Morpheme;
 require 5.004_04; # For base pragma.
 use strict;
-use base qw/ KNP::Fstring KNP::KULM::Morpheme Juman::Morpheme /;
+use base qw/ KNP::Fstring KNP::KULM::Morpheme Juman::Morpheme KNP::Depend /;
 use vars qw/ @ATTRS /;
 use Juman::Hinsi qw/ get_hinsi get_bunrui get_type get_form /;
 use Encode;
@@ -51,7 +51,7 @@ sub _alt2spec {
 }
 
 sub new {
-    my( $class, $spec, $id ) = @_;
+    my( $class, $spec, $id, $parent, $type ) = @_;
     my $this = { id => $id };
 
     # ALTは標準のJUMAN形式に変換する
@@ -91,6 +91,13 @@ sub new {
 
     &KNP::Fstring::fstring( $this, $this->{fstring} );
     bless $this, $class;
+
+    # for mrphtab
+     if (defined $parent && defined $type) {
+ 	$this->dpndtype( $type );
+ 	$this->parent_id( $parent );
+     }
+    $this;
 }
 
 =back

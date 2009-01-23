@@ -108,6 +108,9 @@ sub new {
 	}
     }
 
+    # for mrphtab
+    my $input_mrphtab = 0;
+    my ($mrph_parent_id, $mrph_dpndtype);
     while( defined( $str = shift @$result ) ){
 	if( $str =~ m!$pattern! and @$result == 0 ){
 	    $this->{_eos} = $str;
@@ -118,6 +121,10 @@ sub new {
 	    $this->push_bnst( $bclass->new( $str, scalar($this->bnst) ) );
 	} elsif( $str =~ m!^\+! ){
 	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
+	} elsif( $str =~ m!^\- (-?\d+)(.+)$! ){
+	    $input_mrphtab = 1;
+	    $mrph_parent_id = $1;
+	    $mrph_dpndtype = $2;
 	} elsif( $str =~ m/^!!/ ){
 	    my $synnodes = KNP::SynNodes->new($str);
 	    push @{ ( $this->tag ) [-1]->{synnodes} }, $synnodes;
@@ -125,7 +132,7 @@ sub new {
 	    my $synnode = KNP::SynNode->new($str);
 	    ( $this->tag ) [-1]->{synnodes}[-1]->push_synnode( $synnode );
 	} else {
-	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph) ) );
+	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph), $mrph_parent_id, $mrph_dpndtype ) );
 	    my $fstring = ( $this->mrph )[-1]->fstring;
 	    while ( $fstring =~ /<(ALT-[^>]+)>/g ){ # ALT
 		( $this->mrph )[-1]->push_doukei( $mclass->new( $1, scalar($this->mrph) ) );
@@ -141,6 +148,12 @@ sub new {
     my( @tag ) = $this->tag;
     for my $tag ( @tag ){
 	$tag->make_reference( \@tag );
+    }
+    if ($input_mrphtab) {
+	my( @mrph ) = $this->mrph;
+	for my $mrph ( @mrph ){
+	    $mrph->make_reference( \@mrph );
+	}
     }
 
     # 書き込みを禁止する
