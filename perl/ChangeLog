@@ -1,3 +1,8 @@
+2009-01-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/Morpheme.pm, lib/KNP/Result.pm:
+	形態素に依存構造が付与されている場合(mrphtabオプション)に対応
+
 2008-10-07  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* MANIFEST, lib/KNP/Result.pm, lib/KNP/Tag.pm:
