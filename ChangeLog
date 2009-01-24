@@ -1,3 +1,8 @@
+2009-01-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_print.c, system/const.h:
+	Added bp features to bp-end morphemes.
+
 2009-01-23  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c:
