@@ -1,3 +1,9 @@
+2009-01-25  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	省略解析対象格が各要素として明示されている場合は必ず対象の格に対応付けるように変更
+	橋渡し指示の先行詞にはSALIENCE_SCOREを与えないように変更
+	
 2009-01-24  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_print.c, system/const.h:
@@ -10,25 +16,25 @@
 
 2009-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c, case_ipal.c:
+	* system/anaphora.c, system/case_ipal.c:
 	照応解析前に行う格解析の際の対応付けのない格要素の評価方法を変更
 	get_case_function_probabilityにおいてellipsis_flagが立っている場合は
 	格の解釈のみを返すように変更	
 
 2009-01-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c:
+	* system/anaphora.c:
 	橋渡し指示解析の際に、並列要素を先行詞候補からはずすように変更
 	橋渡し指示解析の際、"その"を考慮するように変更
 
 2009-01-16  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c:
+	* system/anaphora.c:
 	格要素を並列表現に拡張する際、関係flagを引き継ぐように変更
 	
 2009-01-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c, case_ipal.c:
+	* system/anaphora.c, system/case_ipal.c:
 	確率的評価を用いた橋渡し指示解析機能を追加
 	同一文中の主題表現の位置カテゴリを追加
 	格要素と並列関係にある表現も格要素として出力する機能を追加

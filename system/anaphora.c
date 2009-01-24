@@ -585,7 +585,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	    }
 	    else {
 		strcpy(mention_ptr->spp_string, "Ｏ");
-		mention_ptr->entity->salience_score += SALIENCE_ZERO;
+		if (check_analyze_tag(tag_ptr, FALSE) == CF_PRED)
+		    mention_ptr->entity->salience_score += SALIENCE_ZERO;
 	    }
 	}
 	mention_mgr->num++;
@@ -764,8 +765,9 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	for (j = 0; *ELLIPSIS_CASE_LIST[j]; j++) {
 	    sprintf(key, "係:%s格", ELLIPSIS_CASE_LIST[j]);
 	    if ((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->num < tcf_ptr->pred_b_ptr->num &&
-		check_feature((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->f, key))
-		score += FREQ0_ASSINED_SCORE * 2;
+		check_feature((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->f, 
+			      ELLIPSIS_CASE_LIST[j]))
+		score += FREQ0_ASSINED_SCORE * 2 + UNKNOWN_CASE_SCORE;
 	}
 
 	/* 連体修飾の場合は用例に含まれていれば対応付くようにする */
