@@ -616,7 +616,7 @@ typedef struct {
 
     /* 基本句との関係 */
     int 	tnum;	/* 基本句区切りと一致するときの番号 */
-    int		inum;
+    int		inum;	/* 基本句末の形態素:0, その1つ前の形態素: 1, ... */
     /* 形態素情報 */
     char 	Goi[WORD_LEN_MAX+1];	/* 原型 */
     char 	Yomi[WORD_LEN_MAX+1];
@@ -880,7 +880,7 @@ typedef struct tnode_t {
 
     /* 文節との関係 */
     int 	bnum;	/* 文節区切りと一致するときの番号 */
-    int		inum;
+    int		inum;	/* 文節末の基本句:0, その1つ前の基本句: 1, ... */
     BNST_DATA	*b_ptr;	/* 所属する文節 */
     /* 形態素データ */
     int		settou_num, jiritu_num, fuzoku_num;

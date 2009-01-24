@@ -356,9 +356,10 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		 void print_mrphs(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int		i;
-    MRPH_DATA	*m_ptr;
-    TAG_DATA	*t_ptr;
+    int i;
+    MRPH_DATA *m_ptr;
+    TAG_DATA *t_ptr;
+    FEATURE *bp_f = NULL;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	/* 基本句行 */
@@ -397,6 +398,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    if (t_ptr->f) {
 		fputc(' ', Outfp);
 		print_feature(t_ptr->f, Outfp);
+		bp_f = t_ptr->f;
 	    }
 	    fputc('\n', Outfp);
 	}
@@ -408,9 +410,21 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	else {
 	    fprintf(Outfp, "- %d%c", m_ptr->dpnd_head, m_ptr->dpnd_type);
 	}
-	/* featureは以下の形態素行に */
+	/* 基本句末の形態素に基本句のfeatureを付与 */
+	if (m_ptr->inum == 0) {
+	    if (bp_f) {
+		fputc(' ', Outfp);
+		print_feature(bp_f, Outfp);
+		bp_f = NULL;
+	    }
+	}
+	else {
+	    fputs(" <係:基本句内>", Outfp);
+	}
+	/* 形態素featureは以下の形態素行に出力するので省略 */
 	fputc('\n', Outfp);
 
+	/* 形態素情報 */
 	print_mrph(m_ptr);
 	if (m_ptr->f) {
 	    fputc(' ', Outfp);
