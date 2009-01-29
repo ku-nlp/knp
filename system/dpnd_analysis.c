@@ -2191,8 +2191,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	    void dpnd_info_to_mrph_raw(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, last_t, offset, head;
+    int i, j, last_t, offset, head, proj_table[MRPH_MAX];
     MRPH_DATA *m_ptr, *head_ptr;
+
+    /* initialize proj_table */
+    memset(proj_table, 0, sizeof(int) * MRPH_MAX);
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	/* もっとも近い基本句行を記憶 */
@@ -2223,7 +2226,24 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		/* m_ptr->dpnd_head = (sp->tag_data + head)->head_ptr->num; */
 		head_ptr = find_head_mrph_from_dpnd_bnst((BNST_DATA *)(sp->tag_data + last_t), 
 							 (BNST_DATA *)(sp->tag_data + head));
-		m_ptr->dpnd_head = head_ptr->num;
+		/* check projectivity */
+		if (proj_table[i] && proj_table[i] < head_ptr->num) {
+		    if (OptDisplay == OPT_DEBUG) {
+			fprintf(stderr, ";; violation of projectivity in mrph tree (%s: modified %dth mrph: %d -> %d)\n", 
+				sp->KNPSID ? sp->KNPSID + 5: "?", i, head_ptr->num, proj_table[i]);
+		    }
+		    m_ptr->dpnd_head = proj_table[i];
+		}
+		else {
+		    m_ptr->dpnd_head = head_ptr->num;
+
+		    /* update proj_table */
+		    for (j = i + 1; j < m_ptr->dpnd_head; j++) {
+			if (!proj_table[j] || proj_table[j] > m_ptr->dpnd_head) {
+			    proj_table[j] = m_ptr->dpnd_head;
+			}
+		    }
+		}
 	    }
 	}
     }

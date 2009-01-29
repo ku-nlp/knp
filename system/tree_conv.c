@@ -570,7 +570,7 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 	!(check_feature(dep_ptr->f, "Ï¢ÂÎ½¤¾ş") || 
 	  check_feature(dep_ptr->f, "·¸:ÎÙ") || 
 	  check_feature(dep_ptr->f, "·¸:Ê¸ÀáÆâ") || 
-	  check_feature(dep_ptr->f, "ÊÂ¥­:Ì¾"))) {
+	  (dep_ptr->dpnd_type == 'P' && check_feature(dep_ptr->f, "ÊÂ¥­:Ì¾")))) {
 //	!(dep_ptr->para_type == PARA_NIL || /* ÊÂÎó¤Î¤È¤­¤ÏºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤Î¤ß½¤Àµ */
 //	  ((bp = (BNST_DATA *)search_nearest_para_child((TAG_DATA *)dep_ptr->parent)) && dep_ptr->num == bp->num))) {
 	return gov_ptr->head_ptr + 1;
