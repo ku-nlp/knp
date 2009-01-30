@@ -172,8 +172,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     else if (error[0] == TRUE) {
 	for (i = 1; i < m_ptr->part_num; i++)
 	    if (error[i] == TRUE) {
-		fprintf(stderr, 
-			";; Cannot revise invalid kakari struct in para!!\n");
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(stderr, ";; Cannot revise invalid kakari struct in para!!\n");
+		}
 		return -1;
 	    }
 	return m_ptr->para_data_num[0];
@@ -181,8 +182,9 @@ int check_error_state(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int error[])
     else if (error[m_ptr->part_num - 1] == TRUE) {
 	for (i = 0; i < m_ptr->part_num - 1; i++)
 	    if (error[i] == TRUE) {
-		fprintf(stderr, 
-			";; Cannot revise invalid kakari struct in para!!\n");
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(stderr, ";; Cannot revise invalid kakari struct in para!!\n");
+		}
 		return -1;
 	    }
 	return m_ptr->para_data_num[m_ptr->para_num-1];
