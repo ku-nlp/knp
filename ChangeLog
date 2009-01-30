@@ -1,3 +1,11 @@
+2009-01-30  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/para_dpnd.c:
+	Suppressed a debug message.
+
+	* rule/mrph_basic.rule:
+	Modified nominalization of parenthesis-end bunsetsus.
+
 2009-01-29  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/tree_conv.c, system/dpnd_analysis.c:
