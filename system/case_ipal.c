@@ -2715,7 +2715,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 固有表現の場合 */       
     if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
-	if (prob = get_ex_ne_probability(cp, as2, cfp, TRUE)) {
+	if (prob = get_ex_ne_probability(cp, as2, cfp, FALSE)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
     } 

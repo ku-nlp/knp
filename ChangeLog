@@ -1,3 +1,10 @@
+2009-02-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/case_ipal.c:
+	省略解析の際、直接係り受け関係にある格要素が
+	基本的に格フレームと対応付けられるように対応付けの評価法を変更
+	省略解析の解析順序に関するバグを修正
+
 2009-01-30  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/para_dpnd.c:

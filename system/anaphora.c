@@ -10,17 +10,17 @@
 #include "knp.h"
 
 /* 省略解析に関するパラメータ */
-#define CASE_CANDIDATE_MAX 40  /* 照応解析用格解析結果を保持する数 */
+#define CASE_CANDIDATE_MAX  40  /* 照応解析用格解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 20  /* 省略解析結果を保持する数 */
 #define EX_MATCH_COMPENSATE 1.0 /* マッチしすぎることを防ぐための補正項 */
-#define SALIENCE_DECAY_RATE 0.8 /* salience_scoreの減衰率 */
-#define SALIENCE_THREHOLD 1.0 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
+#define SALIENCE_DECAY_RATE 0.5 /* salience_scoreの減衰率 */
+#define SALIENCE_THREHOLD 0.999 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
 #define INITIAL_SCORE -10000
 
 /* 文の出現要素に与えるsalience_score */
 #define SALIENCE_THEMA 2.0 /* 重要な要素(未格,文末)に与える */
-#define SALIENCE_NORMAL 1.0 /* 通常の要素に与える、基本的にSALIENCE_THREHOLDと同じ値 */
-#define SALIENCE_CANDIDATE 1.1 /* 単独で先行詞候補としたい要素(ガ格,ヲ格)に与える */
+#define SALIENCE_CANDIDATE 1.0 /* 先行詞候補とする要素(ガ格,ヲ格など)に与える */
+#define SALIENCE_NORMAL 0 /* 上記以外の要素に与える */
 #define SALIENCE_ZERO 1.0 /* ゼロ代名詞に与える */
 
 /* 位置カテゴリ(主節や用言であるか等は無視)    */
@@ -309,13 +309,9 @@ int get_location(char *loc_name, int sent_num, char *kstr, MENTION *mention)
 	if (check_feature(tag_ptr->f, "文節内") && 
 	    check_feature(tag_ptr->f, "サ変")) return 0;
 
-	/* 判定詞以外の体言は用言としては解析しない */
-	if (check_feature(tag_ptr->f, "体言") &&
-	    !check_feature(tag_ptr->f, "用言:判")) return 0;
-	
-	/* 判定詞の解析を行わない場合は判定詞の対象外 */
+	/* 判定詞の解析を行わない場合は体言は対象外 */
 	if (!(OptAnaphora & OPT_ANAPHORA_COPULA) &&
-	    check_feature(tag_ptr->f, "用言:判")) return 0;
+	    check_feature(tag_ptr->f, "体言")) return 0;
 
 	return CF_PRED;
     }
@@ -349,9 +345,12 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->explicit_mention = NULL;
 	mention_ptr->salience_score = mention_ptr->entity->salience_score;
 	mention_ptr->entity->salience_score += 
-	    (check_feature(tag_ptr->f, "係:未格") && 
+	    (check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") && 
 	     (check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) ||
-	     check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA : SALIENCE_CANDIDATE;
+	     check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA : 
+	    (check_feature(tag_ptr->f, "読点") ||
+	     check_feature(tag_ptr->f, "係:ガ格") ||
+	     check_feature(tag_ptr->f, "係:ヲ格")) ? SALIENCE_CANDIDATE : SALIENCE_NORMAL;
 	strcpy(mention_ptr->cpp_string, "＊");
 	if ((cp = check_feature(tag_ptr->f, "係"))) {
 	    strcpy(mention_ptr->spp_string, cp + strlen("係:"));
@@ -509,7 +508,9 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 		para_ptr = substance_tag_ptr(t_ptr->parent->child[j]);
 
 		if (para_ptr != t_ptr && check_feature(para_ptr->f, "体言") &&
-		    para_ptr->para_type == PARA_NORMAL) {    
+		    para_ptr->para_type == PARA_NORMAL &&
+		    /* 省略の場合は拡張先が解析対象の係り先である場合、拡張しない*/
+		    !(ctm_ptr->flag[i] == 'O' && tag_ptr->parent == para_ptr)) {    
 
 		    epnd_entity_ptr = para_ptr->mention_mgr.mention->entity;
 		    ctm_ptr->filled_entity[epnd_entity_ptr->num] = TRUE;
@@ -759,21 +760,8 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    printf(";;対応なし:%s:%f ", 
 		   (tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->head_ptr->Goi2,
 		   score);
-
-	/* 省略解析対象格が明示されている場合は
-	   対応付けがないものは出力されないようにする */
-	for (j = 0; *ELLIPSIS_CASE_LIST[j]; j++) {
-	    sprintf(key, "係:%s格", ELLIPSIS_CASE_LIST[j]);
-	    if ((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->num < tcf_ptr->pred_b_ptr->num &&
-		check_feature((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->f, 
-			      ELLIPSIS_CASE_LIST[j]))
-		score += FREQ0_ASSINED_SCORE * 2 + UNKNOWN_CASE_SCORE;
-	}
-
-	/* 連体修飾の場合は用例に含まれていれば対応付くようにする */
-	if ((tcf_ptr->elem_b_ptr[ctm_ptr->non_match_element[i]])->num > tcf_ptr->pred_b_ptr->num) {
-	    score += FREQ0_ASSINED_SCORE;
-	}
+	
+	score += FREQ0_ASSINED_SCORE + UNKNOWN_CASE_SCORE;
     }
     if (OptDisplay == OPT_DEBUG && debug) printf(";; %f ", score);	   
 
@@ -888,6 +876,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	}
 	if (OptDisplay == OPT_DEBUG && debug) printf(";; %s:%f\n", entity_ptr->name, max_score);
 	score += max_score + log(EX_MATCH_COMPENSATE);
+	/* - get_case_probability(e_num, ctm_ptr->cf_ptr, FALSE) */
 
 	/* mentionごとにスコアを計算 */	
 	max_score = FREQ0_ASSINED_SCORE;
@@ -1122,6 +1111,30 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
     /* 自分自身も不可 */
     ctm_ptr->filled_entity[tag_ptr->mention_mgr.mention->entity->num] = TRUE;
+
+    /* 自分と係り受け関係にある要素は不可 */
+    /* 自分の係り先 */
+    if (check_analyze_tag(tag_ptr, FALSE) == CF_PRED &&
+	tag_ptr->parent) {
+	ctm_ptr->filled_entity[substance_tag_ptr(tag_ptr->parent)->mention_mgr.mention->entity->num] = TRUE;
+    }
+    /* 係り先の並列要素 */
+    if (tag_ptr->parent && check_feature(tag_ptr->parent->f, "体言") &&
+	tag_ptr->parent->para_top_p) {
+	
+	for (j = 0; tag_ptr->parent->child[j]; j++) {
+	    para_ptr = substance_tag_ptr(tag_ptr->parent->child[j]);
+	    
+	    if (para_ptr->num > tag_ptr->num &&
+		para_ptr != tag_ptr && check_feature(para_ptr->f, "体言") &&
+		para_ptr->para_type == PARA_NORMAL)
+		ctm_ptr->filled_entity[para_ptr->mention_mgr.mention->entity->num] = TRUE;
+	}
+    }
+    /* 係り元 */
+    for (j = 0; tag_ptr->child[j]; j++) {
+	ctm_ptr->filled_entity[substance_tag_ptr(tag_ptr->child[j])->mention_mgr.mention->entity->num] = TRUE;
+    }  
    
     /* 自分と並列な要素も不可(橋渡し指示の場合) */
     if (check_analyze_tag(tag_ptr, FALSE) == CF_NOUN &&
@@ -1338,12 +1351,14 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	 !check_feature(tag_ptr->f, "照応詞候補") ||
 	 check_feature(tag_ptr->f, "NE内") ||
 	 check_feature(tag_ptr->f, "数量"))? 0 : 
-	(check_feature(tag_ptr->f, "係:未格") && 
+	(check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") && 
 	 (check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) ||
 	 check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA :
 	(check_feature(tag_ptr->f, "読点") ||
 	 check_feature(tag_ptr->f, "係:ガ格") ||
 	 check_feature(tag_ptr->f, "係:ヲ格")) ? SALIENCE_CANDIDATE : SALIENCE_NORMAL;
+    if (!strcmp((tag_ptr->mrph_ptr + tag_ptr->mrph_num - 1)->Goi2 , "・")) 
+	entity_ptr->salience_score += SALIENCE_CANDIDATE;
 
     /* ENTITYの名前 */
     if (cp = check_feature(tag_ptr->f, "NE")) {
@@ -1377,14 +1392,16 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     tag_ptr = substance_tag_ptr(sp->tag_data + i);
 
     /* 「砂糖を加えて混ぜて」などがある場合は解析順序を入れ替える */
-    if (i > 2 && 
+    if (2 < i && i < sp->Tag_num &&
 	check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
 	check_feature((sp->tag_data + i - 1)->f, "用言:動") &&	    
+	!check_feature((sp->tag_data + i - 2)->f, "用言") &&
 	check_feature((sp->tag_data + i - 2)->f, "助詞")) 
 	tag_ptr = substance_tag_ptr(sp->tag_data + i - 1);
-    if (i > 1 && i < sp->Tag_num - 1 &&
+    if (1 < i && i < sp->Tag_num - 1 &&
 	check_feature((sp->tag_data + i + 1)->f, "用言:動") &&	    
 	check_feature((sp->tag_data + i    )->f, "用言:動") &&	    
+	!check_feature((sp->tag_data + i - 1)->f, "用言") &&
 	check_feature((sp->tag_data + i - 1)->f, "助詞")) 
 	tag_ptr = substance_tag_ptr(sp->tag_data + i + 1);
 
