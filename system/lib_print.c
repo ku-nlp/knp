@@ -410,25 +410,27 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	else {
 	    fprintf(Outfp, "- %d%c", m_ptr->dpnd_head, m_ptr->dpnd_type);
 	}
+	/* 形態素featureは以下の形態素行に出力するので省略 */
+	fputc('\n', Outfp);
+
+	/* 形態素情報 */
+	print_mrph(m_ptr);
 	/* 基本句末の形態素に基本句のfeatureを付与 */
 	if (m_ptr->inum == 0) {
 	    if (bp_f) {
 		fputc(' ', Outfp);
+		if (m_ptr->f) { /* 形態素自身のfeature */
+		    copy_feature(&bp_f, m_ptr->f); /* bp_f中の正規化代表表記などを上書き */
+		}
 		print_feature(bp_f, Outfp);
 		bp_f = NULL;
 	    }
 	}
 	else {
 	    fputs(" <係:基本句内>", Outfp);
-	}
-	/* 形態素featureは以下の形態素行に出力するので省略 */
-	fputc('\n', Outfp);
-
-	/* 形態素情報 */
-	print_mrph(m_ptr);
-	if (m_ptr->f) {
-	    fputc(' ', Outfp);
-	    print_feature(m_ptr->f, Outfp);
+	    if (m_ptr->f) { /* 形態素自身のfeature */
+		print_feature(m_ptr->f, Outfp);
+	    }
 	}
 	fputc('\n', Outfp);
     }
