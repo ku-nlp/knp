@@ -181,7 +181,8 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 
 	if (cky_ptr->left && cky_ptr->right && 
 	    cky_ptr->left->cpm_ptr->pred_b_ptr && 
-	    check_feature(cky_ptr->left->cpm_ptr->pred_b_ptr->f, "係:連格")) { /* clausal modifiee */
+	    (check_feature(cky_ptr->left->cpm_ptr->pred_b_ptr->f, "係:連格") || /* clausal modifiee */
+	     check_feature(cky_ptr->left->cpm_ptr->pred_b_ptr->f, "強調構文"))) {
 	    CF_PRED_MGR *cpm_ptr = &(Best_mgr->cpm[cky_ptr->left->cpm_ptr->pred_b_ptr->pred_num]);
 
 	    if (cpm_ptr->pred_b_ptr == NULL) { /* まだBest_mgrにコピーしていないとき */
@@ -1274,7 +1275,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	    }
 
 	    /* clausal modifiee */
-	    if (check_feature(d_ptr->f, "係:連格") && 
+	    if ((check_feature(d_ptr->f, "係:連格") || check_feature(d_ptr->f, "強調構文")) && 
 		cky_ptr->left->cpm_ptr->pred_b_ptr) { /* 格フレームをもっているべき */
 		pre_cpm_ptr = cky_ptr->left->cpm_ptr;
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
