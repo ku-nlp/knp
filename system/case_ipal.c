@@ -307,10 +307,45 @@ int	SM_AGENT_THRESHOLD = 0.40;
 }
 
 /*==================================================================*/
+	 void get_cf_alignment(char *str, int cf_aligned_num)
+/*==================================================================*/
+{
+    char *buf, *token, *cp, *strtok_context;
+    int count = 0, c1, c2;
+
+    buf = strdup(str);
+    token = strtok_r(buf, ";", &strtok_context);
+    CF_frame.cf_align[cf_aligned_num].cf_id = strdup(token);
+    token = strtok_r(NULL, ";", &strtok_context);
+    while (token) {
+	if ((cp = strstr(token, "＝")) != NULL) {
+	    *cp = '\0';
+	    c1 = pp_kstr_to_code(token);
+	    c2 = pp_kstr_to_code(cp + strlen("＝"));
+	    if (c1 == END_M || c2 == END_M) {
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
+		}
+	    }
+	    else if (count < CF_ELEMENT_MAX - 1) { /* 溢れチェック */
+		CF_frame.cf_align[cf_aligned_num].aligned_case[count][0] = c1;
+		CF_frame.cf_align[cf_aligned_num].aligned_case[count][1] = c2;
+		count++;
+	    }
+	}
+	token = strtok_r(NULL, ";", &strtok_context);
+    }
+    free(buf);
+
+    CF_frame.cf_align[cf_aligned_num].aligned_case[count][0] = END_M;
+    CF_frame.cf_align[cf_aligned_num].aligned_case[count][1] = END_M;
+}
+
+/*==================================================================*/
   CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag)
 /*==================================================================*/
 {
-    int i, c1, c2, count = 0;
+    int i, c1, c2, count = 0, cf_aligned_num = 0;
     char *cp;
     FILE *fp;
 
@@ -405,6 +440,11 @@ int	SM_AGENT_THRESHOLD = 0.40;
 		CF_frame.voice |= CF_SPONTANE;
 		;
 	    }
+	    else if ((!strncmp(token, "格フレーム対応:", strlen("格フレーム対応:")))) {
+		if (cf_aligned_num < CF_ALIGNMENT_MAX - 1) {
+		    get_cf_alignment(token + strlen("格フレーム対応:"), cf_aligned_num++);
+		}
+	    }
 	    /* merged cases */
 	    else if ((cp = strstr(token, "＝")) != NULL && flag == CF_PRED) {
 		buf = strdup(token);
@@ -413,7 +453,7 @@ int	SM_AGENT_THRESHOLD = 0.40;
 		/* if (!strncmp(buf+strlen(buf)-2, "格", 2)) *(buf+strlen(buf)-2) = '\0';
 		if (!strncmp(cp+strlen(cp+2), "格", 2)) *(cp+strlen(cp+2)) = '\0'; */
 		c1 = pp_kstr_to_code(buf);
-		c2 = pp_kstr_to_code(cp+2);
+		c2 = pp_kstr_to_code(cp + strlen("＝"));
 		free(buf);
 
 		if (c1 == END_M || c2 == END_M) {
@@ -439,6 +479,9 @@ int	SM_AGENT_THRESHOLD = 0.40;
 	free(string);
     }
 
+    CF_frame.cf_align[cf_aligned_num].cf_id = NULL;
+    CF_frame.cf_align[cf_aligned_num].aligned_case[0][0] = END_M;
+    CF_frame.cf_align[cf_aligned_num].aligned_case[0][1] = END_M;
     CF_frame.samecase[count][0] = END_M;
     CF_frame.samecase[count][1] = END_M;
 
@@ -1008,7 +1051,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 			    unsigned int address, int size, char *verb, int flag)
 /*==================================================================*/
 {
-    int i, j = 0, ga_p = FALSE, c1, c2, count = 0;
+    int i, j, ga_p = FALSE, c1, c2, count = 0;
     char ast_cap[32], *token, *cp, *buf;
 
     cf_ptr->type = flag;
@@ -1019,6 +1062,18 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     cf_ptr->entry = strdup(cf_ptr->cf_id);
     sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 (代表表記) */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
+    for (i = 0; i_ptr->cf_align[i].cf_id != NULL; i++) {
+	cf_ptr->cf_align[i].cf_id = strdup(i_ptr->cf_align[i].cf_id);
+	for (j = 0; i_ptr->cf_align[i].aligned_case[j][0] != END_M; j++) {
+	    cf_ptr->cf_align[i].aligned_case[j][0] = i_ptr->cf_align[i].aligned_case[j][0];
+	    cf_ptr->cf_align[i].aligned_case[j][1] = i_ptr->cf_align[i].aligned_case[j][1];
+	}
+	cf_ptr->cf_align[i].aligned_case[j][0] = END_M;
+	cf_ptr->cf_align[i].aligned_case[j][1] = END_M;
+    }
+    cf_ptr->cf_align[i].cf_id = NULL;
+    cf_ptr->cf_align[i].aligned_case[0][0] = END_M;
+    cf_ptr->cf_align[i].aligned_case[0][1] = END_M;
     for (i = 0; i_ptr->samecase[i][0] != END_M; i++) {
 	cf_ptr->samecase[i][0] = i_ptr->samecase[i][0];
 	cf_ptr->samecase[i][1] = i_ptr->samecase[i][1];
@@ -1037,6 +1092,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
     /* 格要素の追加 */
 
+    j = 0;
     if (cf_ptr->voice == FRAME_PASSIVE_I ||
 	cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	cf_ptr->voice == FRAME_CAUSATIVE_WO ||
@@ -3519,7 +3575,12 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 		    if (VerboseLevel >= VERBOSE1) {
 			fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
 		    }
-		    ret1 = log(ret1);
+		    if (ret1 > 0) {
+			ret1 = log(ret1);
+		    }
+		    else {
+			ret1 = UNKNOWN_RENYOU_SCORE;
+		    }
 		}
 		else {
 		    if (VerboseLevel >= VERBOSE1) {

@@ -1651,15 +1651,124 @@ void assign_feature_samecase(CF_PRED_MGR *cpm_ptr, int temp_assign_flag)
 }
 
 /*==================================================================*/
+     int find_aligned_case(CF_ALIGNMENT *cf_align, int src_case)
+/*==================================================================*/
+{
+    int i;
+
+    for (i = 0; cf_align->aligned_case[i][0] != END_M; i++) {
+	if (cf_align->aligned_case[i][0] == src_case) {
+	    return cf_align->aligned_case[i][1];
+	}
+    }
+
+    return src_case;
+}
+
+/*==================================================================*/
+void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
+				 ELLIPSIS_MGR *em_ptr, int temp_assign_flag, 
+				 char *feature_head, CF_ALIGNMENT *cf_align)
+/*==================================================================*/
+{
+    int i, num, dist_n, sent_n, tag_n;
+    char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
+    ELLIPSIS_COMPONENT *ccp;
+    TAG_DATA *elem_b_ptr;
+
+    /* 格フレーム側からの記述
+       => ★「格要素-ガ」などを集めるように修正する */
+    sprintf(feature_buffer, "%s%s:", feature_head, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
+    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
+					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
+
+	if (i != 0) {
+	    strcat(feature_buffer, ";");
+	}
+
+	case_str = pp_code_to_kstr_in_context(cpm_ptr, cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0]);
+
+	/* 割り当てなし */
+	if (num == UNASSIGNED) {
+	    /* 割り当てなし */
+	    sprintf(buffer, "%s/U/-/-/-/-", case_str);
+	    strcat(feature_buffer, buffer);
+	}
+	/* 割り当てあり */
+	else {
+	    /* 例外タグ */
+	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
+		sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* 不特定-人 */
+		strcat(feature_buffer, buffer);
+	    }
+	    else {
+		/* 省略の場合 (特殊タグ以外) */
+		if (cpm_ptr->elem_b_num[num] <= -2) {
+		    sid = cpm_ptr->elem_s_ptr[num]->KNPSID ? 
+			cpm_ptr->elem_s_ptr[num]->KNPSID + 5 : NULL;
+		    dist_n = sp->Sen_num - cpm_ptr->elem_s_ptr[num]->Sen_num;
+		    sent_n = cpm_ptr->elem_s_ptr[num]->Sen_num;
+		}
+		/* 同文内 */
+		else {
+		    sid = sp->KNPSID ? sp->KNPSID + 5 : NULL;
+		    dist_n = 0;
+		    sent_n = sp->Sen_num;
+		}
+
+		/* 並列の子供 */
+		cat_case_analysis_result_parallel_child(feature_buffer, cpm_ptr, i, dist_n, sid);
+
+		if (cpm_ptr->elem_b_ptr[num]->num < 0) { /* 後処理により併合された基本句 */
+		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
+		    while (elem_b_ptr->num < 0) {
+			elem_b_ptr--;
+		    }
+		    if (elem_b_ptr->num >= cpm_ptr->pred_b_ptr->num) { /* 併合された連体修飾は用言自身になってしまうので非表示 */
+			tag_n = -1;
+		    }
+		    else {
+			tag_n = elem_b_ptr->num;
+		    }
+		}
+		else {
+		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
+		    tag_n = elem_b_ptr->num;
+		}
+		word = make_print_string(elem_b_ptr, 0);
+		cp = make_cc_string(word ? word : "(null)", tag_n, case_str, 
+				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
+		strcat(feature_buffer, cp);
+		free(cp);
+
+		/* 格・省略関係の保存 (文脈解析用) */
+		if (OptEllipsis) {
+		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
+				      cpm_ptr->pred_b_ptr->voice, 
+				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
+				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
+				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
+				      word, sent_n, tag_n, CREL);
+		}
+		if (word) free(word);
+	    }
+	}
+    }
+
+    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+}
+
+/*==================================================================*/
 void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 			  ELLIPSIS_MGR *em_ptr, int temp_assign_flag)
 /*==================================================================*/
 {
     /* temp_assign_flag: TRUEのときfeatureを「仮付与」する */
 
-    int i, j, num, sent_n, tag_n, dist_n;
-    char feature_buffer[DATA_LEN], relation[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp;
-    ELLIPSIS_COMPONENT *ccp;
+    int i, num;
+    char feature_buffer[DATA_LEN], relation[DATA_LEN], *word, *sid, *cp;
     TAG_DATA *elem_b_ptr;
 
     /* voice 決定 */
@@ -1739,90 +1848,14 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    /* 格フレーム側からの記述
-       => ★「格要素-ガ」などを集めるように修正する */
-    sprintf(feature_buffer, "格解析結果:%s:", cpm_ptr->cmm[0].cf_ptr->cf_id);
-    for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
-					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
+    /* 格フレーム側からの格解析結果の記述 */
+    record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "格解析結果:", NULL);
 
-	if (i != 0) {
-	    strcat(feature_buffer, ";");
-	}
-
-	/* 割り当てなし */
-	if (num == UNASSIGNED) {
-	    /* 割り当てなし */
-	    sprintf(buffer, "%s/U/-/-/-/-", 
-		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
-	    strcat(feature_buffer, buffer);
-	}
-	/* 割り当てあり */
-	else {
-	    /* 例外タグ */
-	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
-		sprintf(buffer, "%s/E/%s/-/-/-", 
-			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-			ETAG_name[2]); /* 不特定-人 */
-		strcat(feature_buffer, buffer);
-	    }
-	    else {
-		/* 省略の場合 (特殊タグ以外) */
-		if (cpm_ptr->elem_b_num[num] <= -2) {
-		    sid = cpm_ptr->elem_s_ptr[num]->KNPSID ? 
-			cpm_ptr->elem_s_ptr[num]->KNPSID + 5 : NULL;
-		    dist_n = sp->Sen_num - cpm_ptr->elem_s_ptr[num]->Sen_num;
-		    sent_n = cpm_ptr->elem_s_ptr[num]->Sen_num;
-		}
-		/* 同文内 */
-		else {
-		    sid = sp->KNPSID ? sp->KNPSID + 5 : NULL;
-		    dist_n = 0;
-		    sent_n = sp->Sen_num;
-		}
-
-		/* 並列の子供 */
-		cat_case_analysis_result_parallel_child(feature_buffer, cpm_ptr, i, dist_n, sid);
-
-		if (cpm_ptr->elem_b_ptr[num]->num < 0) { /* 後処理により併合された基本句 */
-		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
-		    while (elem_b_ptr->num < 0) {
-			elem_b_ptr--;
-		    }
-		    if (elem_b_ptr->num >= cpm_ptr->pred_b_ptr->num) { /* 併合された連体修飾は用言自身になってしまうので非表示 */
-			tag_n = -1;
-		    }
-		    else {
-			tag_n = elem_b_ptr->num;
-		    }
-		}
-		else {
-		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
-		    tag_n = elem_b_ptr->num;
-		}
-		word = make_print_string(elem_b_ptr, 0);
-		cp = make_cc_string(word ? word : "(null)", tag_n, 
-				    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), 
-				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
-		strcat(feature_buffer, cp);
-		free(cp);
-
-		/* 格・省略関係の保存 (文脈解析用) */
-		if (OptEllipsis) {
-		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				      cpm_ptr->pred_b_ptr->voice, 
-				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
-				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
-				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
-				      word, sent_n, tag_n, CREL);
-		}
-		if (word) free(word);
-	    }
-	}
+    /* 正規化格解析結果 */
+    for (i = 0; cpm_ptr->cmm[0].cf_ptr->cf_align[i].cf_id != NULL; i++) {
+	sprintf(feature_buffer, "正規化格解析結果-%d:", i);
+	record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, feature_buffer, &(cpm_ptr->cmm[0].cf_ptr->cf_align[i]));
     }
-
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
 }
 
 /*==================================================================*/

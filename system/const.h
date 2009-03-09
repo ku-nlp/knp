@@ -78,6 +78,8 @@
 #define EX_ELEMENT_MAX		256
 #define MAX_MATCH_MAX 		10
 
+#define CF_ALIGNMENT_MAX	5
+
 #define CMM_MAX 	5				/* 最適格フレーム数 */
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
@@ -934,6 +936,11 @@ typedef struct {
 } CF_CASE_SLOT;
 
 typedef struct {
+    char *cf_id;
+    int aligned_case[CF_ELEMENT_MAX][2];
+} CF_ALIGNMENT;
+
+typedef struct {
     char *yomi;
     char *hyoki;
     char *feature;
@@ -943,6 +950,7 @@ typedef struct {
     int casenum;
     CF_CASE_SLOT cs[CASE_MAX_NUM];
     int	samecase[CF_ELEMENT_MAX][2];
+    CF_ALIGNMENT cf_align[CF_ALIGNMENT_MAX];
     unsigned char *DATA;
 } CF_FRAME;
 
@@ -989,6 +997,7 @@ typedef struct cf_def {
     char	*feature;
     int		weight[CF_ELEMENT_MAX];
     int		samecase[CF_ELEMENT_MAX][2];
+    CF_ALIGNMENT cf_align[CF_ALIGNMENT_MAX];
     TAG_DATA	*pred_b_ptr;
     float	cf_similarity;
 } CASE_FRAME;
