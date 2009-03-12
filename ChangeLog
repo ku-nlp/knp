@@ -1,3 +1,10 @@
+2009-03-12  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h, system/main.c:
+	照応解析においてタグ付きコーパスから正解データを読み込む際、同格に関する情報も正解データを使用するように変更
+	読み込む正解データの種類を細かく設定できるようにオプションを追加
+	橋渡し指示解析を修正
+
 2009-03-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/tag_postprocess.rule:

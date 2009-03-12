@@ -389,6 +389,7 @@ extern int	EX_match_subject;
 	    OptAnaphora |= OPT_ANAPHORA;
 	    OptAnaphora |= OPT_PRINT_ENTITY;
 	    OptCorefer = 4;
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_COREFER;
 	}
 	else if (str_eq(argv[0], "-anaphora-normal")) {
@@ -582,7 +583,7 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-relation-noun-only")) {
 	    OptEllipsis |= OPT_REL_NOUN;
-	    OptMergeCFResult = FALSE;
+	    OptEllipsis &= ~OPT_ELLIPSIS; 
 	}	
 	else if (str_eq(argv[0], "-relation-comp-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
@@ -854,10 +855,18 @@ extern int	EX_match_subject;
 	    EX_match_subject = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-read-feature")) {
-	    OptReadFeature = 1;
+	    OptReadFeature |= OPT_ELLIPSIS;
+	    OptReadFeature |= OPT_REL_NOUN;
+	    OptReadFeature |= OPT_COREFER;
+	    OptEllipsis &= ~OPT_COREFER;
 	}
 	else if (str_eq(argv[0], "-read-feature-corefer")) {
-	    OptReadFeature = 2;
+	    OptReadFeature |= OPT_COREFER;
+	    OptEllipsis &= ~OPT_COREFER;
+	}
+	else if (str_eq(argv[0], "-read-feature-ellipsis")) {
+	    OptReadFeature |= OPT_ELLIPSIS;
+	    OptEllipsis &= ~OPT_COREFER;
 	}
 	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
 	    OptAddSvmFeatureUtype = 1;
@@ -1353,9 +1362,9 @@ extern int	EX_match_subject;
 
     /* 格フレーム取得 */
     if ((OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2 ||
-	OptUseNCF) &&
-	!(OptReadFeature == 1 && OptAnaphora)) {
+	OptAnalysis == OPT_CASE2 || OptUseNCF) &&
+	!((OptReadFeature & OPT_ELLIPSIS) &&
+	  (OptReadFeature & OPT_REL_NOUN) && OptAnaphora)) {
 	set_caseframes(sp);
 	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
     }
@@ -1581,8 +1590,7 @@ PARSED:
     }
 
     /* 格解析結果をfeatureへ */
-    if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) &&
-	!OptReadFeature) {
+    if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) && !OptReadFeature) {
 	record_all_case_analisys(sp, FALSE);
     }
 

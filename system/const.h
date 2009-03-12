@@ -818,6 +818,7 @@ typedef struct entity {
     int                 num;
     int                 mentioned_num;  /* 言及されている回数 */
     double              salience_score; /* どのくらい先行詞になりやすいか */
+    int                 tmp_salience_flag; /* 同一文中に出現したノ格 */
     int                 antecedent_num; /* 先行詞となっている回数 */
     MENTION             *mention[MENTIONED_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
