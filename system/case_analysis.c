@@ -1671,33 +1671,41 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 				 char *feature_head, CF_ALIGNMENT *cf_align)
 /*==================================================================*/
 {
-    int i, num, dist_n, sent_n, tag_n;
+    int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1;
     char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
     ELLIPSIS_COMPONENT *ccp;
     TAG_DATA *elem_b_ptr;
 
     /* 格フレーム側からの記述
        => ★「格要素-ガ」などを集めるように修正する */
+
+    /* 格フレームID */
     sprintf(feature_buffer, "%s%s:", feature_head, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
+
+    /* それぞれの格要素 */
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
 					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
-
-	if (i != 0) {
-	    strcat(feature_buffer, ";");
-	}
-
 	case_str = pp_code_to_kstr_in_context(cpm_ptr, cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0]);
 
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {
-	    /* 割り当てなし */
-	    sprintf(buffer, "%s/U/-/-/-/-", case_str);
-	    strcat(feature_buffer, buffer);
+	    if (!cf_align) { /* 正規化時は割り当てなしを表示しない */
+		if (first_arg_flag == 0) { /* 2つ目以降の格要素なら区切りを出力 */
+		    strcat(feature_buffer, ";");
+		}
+		first_arg_flag = 0;
+		sprintf(buffer, "%s/U/-/-/-/-", case_str);
+		strcat(feature_buffer, buffer);
+	    }
 	}
 	/* 割り当てあり */
 	else {
+	    if (first_arg_flag == 0) { /* 2つ目以降の格要素なら区切りを出力 */
+		strcat(feature_buffer, ";");
+	    }
+	    first_arg_flag = 0;
 	    /* 例外タグ */
 	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
 		sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* 不特定-人 */
