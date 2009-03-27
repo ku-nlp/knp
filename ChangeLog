@@ -1,3 +1,13 @@
+2009-03-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_ipal.c:
+	Modified to handle nil case assignment in case frame alignment.
+
+2009-03-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c:
+	Not to output unaligned cases to normalized case structure.
+
 2009-03-12  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/const.h, system/main.c:
