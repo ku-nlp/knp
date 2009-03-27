@@ -163,6 +163,10 @@ struct PP_STR_TO_CODE {
 int pp_kstr_to_code(char *cp)
 {
     int i;
+
+    if (str_eq(cp, "NIL"))
+	return END_M;
+
     for (i = 0; PP_str_to_code[i].kstr; i++)
 	if (str_eq(PP_str_to_code[i].kstr, cp))
 	    return PP_str_to_code[i].code;
@@ -1671,7 +1675,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 				 char *feature_head, CF_ALIGNMENT *cf_align)
 /*==================================================================*/
 {
-    int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1;
+    int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1, case_num;
     char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
     ELLIPSIS_COMPONENT *ccp;
     TAG_DATA *elem_b_ptr;
@@ -1687,7 +1691,11 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
 					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
-	case_str = pp_code_to_kstr_in_context(cpm_ptr, cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0]);
+	case_num = cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0];
+	if (case_num == END_M) { /* 正規化時に、対応先の格がない(NIL)場合 */
+	    continue;
+	}
+	case_str = pp_code_to_kstr_in_context(cpm_ptr, case_num);
 
 	/* 割り当てなし */
 	if (num == UNASSIGNED) {

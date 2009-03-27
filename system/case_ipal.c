@@ -322,9 +322,9 @@ int	SM_AGENT_THRESHOLD = 0.40;
 	    *cp = '\0';
 	    c1 = pp_kstr_to_code(token);
 	    c2 = pp_kstr_to_code(cp + strlen("＝"));
-	    if (c1 == END_M || c2 == END_M) {
+	    if (c1 == END_M) { /* c2はNILのときEND_Mになる */
 		if (OptDisplay == OPT_DEBUG) {
-		    fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
+		    fprintf(stderr, ";; Can't understand <%s> as cf alignment\n", token);
 		}
 	    }
 	    else if (count < CF_ELEMENT_MAX - 1) { /* 溢れチェック */
