@@ -1,3 +1,8 @@
+2009-04-01  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP.pm:
+	KNPが「;; Too many para ()!」などのエラーメッセージを出力した時は、Timeoutの時間を待たずにすぐにぬけるようにした
+
 2009-01-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* lib/KNP/Morpheme.pm, lib/KNP/Result.pm:
