@@ -368,6 +368,8 @@ sub _real_parse {
 	    $str = Encode::decode('euc-jp', $str);
 	}
 	push( @buf, $str );
+	# 「;; Too many para ()!」などのエラーメッセージ
+	last if $str =~ /^;; Too /;
 	last if $str =~ /$pattern/ and ! $skip--;
     }
 #    die "Mysterious error: KNP server or process gives no response" unless @buf;
@@ -375,6 +377,13 @@ sub _real_parse {
     # 構文解析結果の最後に EOS のみの行が無い場合は，読み出し中にタイ
     # ムアウトが発生している．
     unless( @buf and $buf[$#buf] =~ /$pattern/ ){
+	# 「;; Too many para ()!」などのエラーメッセージ
+	if( grep( /^;; Too /, @buf ) ){
+	    push( @error, @buf);
+	    print STDERR join("\n", @error);
+	    return &_set_error( $this, join( '', @error ) );
+	}
+
  	if( $counter == 1 ){
  	    push( @error, ";; TIMEOUT is occured.\n" );
 	    my $i = $[;
