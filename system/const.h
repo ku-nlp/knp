@@ -36,6 +36,7 @@
 #define PARA_PART_MAX	32
 #define WORD_LEN_MAX	128
 #define REPNAME_LEN_MAX	256
+#define CF_ID_LEN_MAX	280
 #define SENTENCE_MAX	512
 #define PRINT_WIDTH	100
 #define PARENT_MAX	20
@@ -990,7 +991,7 @@ typedef struct cf_def {
     int 	voice;					/* ヴォイス */
     unsigned int	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
-    char 	cf_id[SMALL_DATA_LEN];			/* 格フレームのID */
+    char 	cf_id[CF_ID_LEN_MAX];			/* 格フレームのID (代表表記+タイプ+番号) */
     char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];

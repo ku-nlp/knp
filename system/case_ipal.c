@@ -2034,6 +2034,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    rep_name = make_mrph_rn(t_ptr->head_ptr);
 	    rep_name_malloc_flag = 1;
 	}
+	if (strlen(rep_name) >= REPNAME_LEN_MAX) { /* 長すぎるとき */
+	    *(rep_name + REPNAME_LEN_MAX - 1) = '\0';
+	}
 	sprintf(cf_ptr->cf_id, "%s:%s0", rep_name, cf_ptr->pred_type);
 	if (rep_name_malloc_flag) {
 	    cf_ptr->entry = rep_name;
