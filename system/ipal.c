@@ -37,7 +37,9 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    /* 用例の区切り */
 	    if (*point == ' ') {
 		output_buf[length] = '\0';
-		fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+		if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT など以外 */
+		    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+		}
 		length = 0;
 	    } else {
 		if (*point == ':') {
@@ -55,7 +57,9 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    }
 	}
 	output_buf[length] = '\0';
-	fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+	if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT など以外 */
+	    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+	}
     }
     else {
 	fprintf(fp, "%s %lu:%d\n", hyouki, address, size);
