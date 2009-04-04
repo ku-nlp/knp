@@ -1,3 +1,16 @@
+2009-04-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/configfile.c:
+	Modified the default rule set.
+
+	* system/ipal.c:
+	Deleted useless indices of case frames.
+
+2009-04-03  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/const.h, system/case_ipal.c:
+	Fixed a bug of processing a very long unknown word.
+
 2009-03-28  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/case_ipal.c:
