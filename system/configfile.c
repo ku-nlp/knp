@@ -755,7 +755,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    fprintf(Outfp, "Setting default rules ... ");
 	}
 
-	RuleNumMax = 10;
+	RuleNumMax = 12;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
 	/* mrph_homo 同形異義語 */
@@ -763,6 +763,22 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = HomoRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* mrph_filter 形態素-前処理 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("mrph_filter");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = PreProcessMorphRuleType;
+	(RULE+CurrentRuleNum)->direction = LtoR;
+	CurrentRuleNum++;
+
+	/* mrph_auto_dic 形態素 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("mrph_auto_dic");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = MorphRuleType;
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
