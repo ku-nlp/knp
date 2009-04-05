@@ -1,3 +1,8 @@
+2009-04-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase:
+	Added modifier features.
+
 2009-04-05  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/configfile.c:
