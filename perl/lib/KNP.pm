@@ -464,7 +464,7 @@ sub analysis {
 sub _internal_analysis {
     my( $this, $result ) = @_;
 
-    my $pattern = $this->{OPTION}->{option} =~ /\-(?:tab|bnst)\b/ ? $this->pattern() : '';
+    my $pattern = $this->{OPTION}->{option} =~ /\-(?:(mrph)?tab|bnst)\b/ ? $this->pattern() : '';
     $result = new KNP::Result( result  => $result,
 			       pattern => $pattern,
 			       bclass  => $this->{OPTION}->{bclass},
