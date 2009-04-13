@@ -359,7 +359,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     int i;
     MRPH_DATA *m_ptr;
     TAG_DATA *t_ptr;
-    FEATURE *bp_f = NULL;
+    FEATURE *bp_f = NULL, *bp_copied_f;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
 	/* 基本句行 */
@@ -419,10 +419,16 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	if (m_ptr->inum == 0) {
 	    if (bp_f) {
 		fputc(' ', Outfp);
-		if (m_ptr->f) { /* 形態素自身のfeature */
-		    copy_feature(&bp_f, m_ptr->f); /* bp_f中の正規化代表表記などを上書き */
+		if (m_ptr->f) { /* 形態素自身のfeature -> bp_fとマージ */
+		    bp_copied_f = NULL;
+		    copy_feature(&bp_copied_f, bp_f);
+		    copy_feature(&bp_copied_f, m_ptr->f); /* bp_f中の正規化代表表記などを上書き */
+		    print_feature(bp_copied_f, Outfp);
+		    clear_feature(&bp_copied_f);
 		}
-		print_feature(bp_f, Outfp);
+		else {
+		    print_feature(bp_f, Outfp);
+		}
 		bp_f = NULL;
 	    }
 	}

@@ -1812,6 +1812,11 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 			}
 		    }
 		}
+
+		/* 仮付与したfeatureを削除 */
+		for (i = 0; i < sp->Tag_num; i++) {
+		    delete_temp_feature(&(sp->tag_data[i].f));
+		}
 	    }
 	    else if (OptDisplay == OPT_DEBUG) {
 		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE);
