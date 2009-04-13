@@ -1,3 +1,8 @@
+2009-04-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c, system/lib_print.c:
+	Modified the output when both -nbest and -mrphtab options are specified.
+
 2009-04-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_type.phrase:
