@@ -55,7 +55,7 @@ cf.knpdict:
 
 cf.dat: cf.knpdict
 	if [ -f cf.knpdict ]; then \
-		@CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
+		ulimit -Ss unlimited && @CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
 	fi
 
 cf.db: cf.dat
@@ -68,7 +68,7 @@ noun.knpdict:
 
 noun.dat: noun.knpdict
 	if [ -f noun.knpdict ]; then \
-		@CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
+		ulimit -Ss unlimited && @CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
 	fi
 
 noun.db: noun.dat
