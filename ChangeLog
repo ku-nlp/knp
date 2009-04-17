@@ -1,3 +1,8 @@
+2009-04-17  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/case_analysis.rule, system/case_ipal.c:
+	Modified case structure analysis of highlighting construction.
+
 2009-04-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* dict/ebcf/Makefile.am:
