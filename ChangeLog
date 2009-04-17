@@ -1,5 +1,8 @@
 2009-04-17  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/extern.h, system/feature.c, system/read_data.c:
+	Fixed a bug of recognizing person names.
+
 	* rule/case_analysis.rule, system/case_ipal.c:
 	Modified case structure analysis of highlighting construction.
 
