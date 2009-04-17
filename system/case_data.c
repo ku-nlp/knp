@@ -14,11 +14,10 @@ int SOTO_SCORE = 7;
 char fukugoji_string[SMALL_DATA_LEN];
 
 /*==================================================================*/
-	   char *extract_fukugoji_string(BNST_DATA *b_ptr)
+char *extract_fukugoji_string(BNST_DATA *b_ptr, BNST_DATA *pre_b_ptr)
 /*==================================================================*/
 {
     int i;
-    BNST_DATA *pre_b_ptr = b_ptr - 1;
 
     /* …’¬∞∏Ï§¨§ §§§»§≠ */
     if (b_ptr->num < 1 || pre_b_ptr->mrph_num == 0) {
@@ -77,7 +76,7 @@ char fukugoji_string[SMALL_DATA_LEN];
     int fc;
     char *fukugoji_str, *canonical_str;
 
-    fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr);
+    fukugoji_str = extract_fukugoji_string(b_ptr, b_ptr - 1);
     if (fukugoji_str && (canonical_str = canonicalize_fukugoji(fukugoji_str)) != NULL) {
 	sprintf(fukugoji_string, "ID:°¡%s", canonical_str);
 	return fukugoji_string;
@@ -94,7 +93,7 @@ char fukugoji_string[SMALL_DATA_LEN];
     int fc;
     char *fukugoji_str;
 
-    fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr);
+    fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr, (BNST_DATA *)(b_ptr - 1));
     if (fukugoji_str && (fc = pp_hstr_to_code(fukugoji_str)) != END_M) {
 	sprintf(fukugoji_string, "£‘≤Ú¿œ≥ -%s", pp_code_to_kstr(fc));
 	return fukugoji_string;
