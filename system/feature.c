@@ -173,13 +173,12 @@ char feature_buffer[DATA_LEN];
 		next = (*fpp)->next;
 		free(*fpp);
 		*fpp = next; /* prepはNULLのまま */
-		fpp = &next;
 	    }
 	    else { /* prepがあるとき */
 		next = (*fpp)->next;
 		free(*fpp);
 		prep->next = next; /* prepは現状維持 */
-		fpp = &next;
+		fpp = &(prep->next);
 	    }
 	}
 	else {
