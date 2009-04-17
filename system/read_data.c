@@ -2236,6 +2236,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
     }
 
+    delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* 旧ALT情報を削除 */
     assign_rep_f_from_imi(sp->mrph_data + start_num); /* Imi領域の代表表記をfeatureへ */
     return TRUE;
 }

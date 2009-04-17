@@ -158,6 +158,38 @@ char feature_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
+		void delete_alt_feature(FEATURE **fpp)
+/*==================================================================*/
+{
+    /* <ALT-...>を削除 */
+
+    FEATURE *prep = NULL;
+
+    while (*fpp) {
+	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
+	    FEATURE *next;
+	    free((*fpp)->cp);
+	    if (prep == NULL) {
+		next = (*fpp)->next;
+		free(*fpp);
+		*fpp = next; /* prepはNULLのまま */
+		fpp = &next;
+	    }
+	    else { /* prepがあるとき */
+		next = (*fpp)->next;
+		free(*fpp);
+		prep->next = next; /* prepは現状維持 */
+		fpp = &next;
+	    }
+	}
+	else {
+	    prep = *fpp;
+	    fpp = &(prep->next);
+	}
+    }
+}
+
+/*==================================================================*/
 void delete_cfeature_from_mrphs(MRPH_DATA *m_ptr, int length, char *type)
 /*==================================================================*/
 {
