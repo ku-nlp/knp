@@ -1,5 +1,8 @@
 2009-04-17  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/case_data.c, rule/case_analysis.rule:
+	Modified case structure analysis of compound case markers.
+
 	* system/extern.h, system/feature.c, system/read_data.c:
 	Fixed a bug of recognizing person names.
 
