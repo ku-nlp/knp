@@ -3223,11 +3223,16 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* 入力側の表層格 */
 	tp2 = &(current_sentence_data.tag_data[tp->num + 1]); /* 読点や「は」などをチェックするタグ単位 */
     }
-    else { 
-	if ((scase = check_feature(tp->f, "係")) == NULL) {
+    else {
+	if (np_modifying_flag) {
+	    scase = "連格";
+	}
+	else if ((scase = check_feature(tp->f, "係")) == NULL) {
 	    return UNKNOWN_CASE_SCORE;
 	}
-	scase += strlen("係:"); /* 入力側の表層格 */
+	else {
+	    scase += strlen("係:"); /* 入力側の表層格 */
+	}
 	tp2 = tp;
     }
 
