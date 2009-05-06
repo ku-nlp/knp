@@ -1352,10 +1352,9 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 								   cky_ptr->left->cpm_ptr->cmm[0].cf_ptr);
 			renyou_modifying_num++;
 		    }
-
 		    /* modifying adverb */
-		    if ((check_feature(d_ptr->f, "·¸:Ï¢ÍÑ") && !check_feature(d_ptr->f, "ÍÑ¸À")) || 
-			check_feature(d_ptr->f, "½¤¾þ")) {
+		    else if ((check_feature(d_ptr->f, "·¸:Ï¢ÍÑ") && !check_feature(d_ptr->f, "ÍÑ¸À")) || 
+			     check_feature(d_ptr->f, "½¤¾þ")) {
 			make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 			one_score += calc_adv_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
 								    d_ptr->tag_ptr + d_ptr->tag_num - 1);
@@ -2373,9 +2372,20 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     }
 
     /* choose the best one */
-    cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
-    if (!cky_ptr) {
+    if (!cky_matrix[0][sp->Bnst_num - 1]) {
 	return FALSE;
+    }
+    cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
+
+    /* the generative probability of the last predicate from EOS */
+    if (OptCaseFlag & OPT_CASE_GENERATE_EOS) {
+	while (cky_ptr) {
+	    cky_ptr->score += calc_vp_modifying_probability(NULL, NULL, 
+							    cky_ptr->b_ptr->tag_ptr + cky_ptr->b_ptr->tag_num - 1, 
+							    cky_ptr->cpm_ptr->cmm[0].cf_ptr);
+	    cky_ptr = cky_ptr->next;
+	}
+	cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
     }
 
     if (cky_ptr->next) { /* if there are more than one possibility */
