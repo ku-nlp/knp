@@ -1,3 +1,31 @@
+2009-05-07  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.data, rule/search_query.rule:
+	欲求述語が単体の場合は素性をつけないようにした.
+
+2009-05-06  kawahara  <kawahara@nlpcf3.ixnlp.nii.ac.jp>
+
+	* system/cky.c: Modified -generate-from-eos to work correctly.
+
+2009-04-17  kawahara  <kawahara@nlpcf3.ixnlp.nii.ac.jp>
+
+	* ChangeLog: updated.
+
+	* rule/case_analysis.data, rule/case_analysis.rule, system/case_data.c:
+	Modified case structure analysis of compound case markers.
+
+	* system/feature.c: bug fix.
+
+	* ChangeLog: updated.
+
+	* system/extern.h, system/feature.c, system/read_data.c:
+	Fixed a bug of recognizing person names.
+
+	* ChangeLog: updated.
+
+	* rule/case_analysis.data, rule/case_analysis.rule, system/case_ipal.c:
+	Modified case structure analysis of highlighting construction.
+
 2009-04-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_data.c, rule/case_analysis.rule:
