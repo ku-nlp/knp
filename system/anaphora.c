@@ -282,14 +282,22 @@ int get_location(char *loc_name, int sent_num, char *kstr, MENTION *mention)
 	/* 形副名詞は対象外 */
 	if (check_feature(tag_ptr->f, "形副名詞")) return 0;
 
-	/* 暫定的 */
+	bnst_ptr = (BNST_DATA *)substance_tag_ptr((TAG_DATA *)tag_ptr->b_ptr);
+
+	/* 文末の連用修飾されている体言は除外 */
+	if (check_feature(bnst_ptr->f, "文末") && !check_feature(bnst_ptr->f, "文頭") &&
+	    bnst_ptr->child[0] && check_feature(bnst_ptr->child[0]->f, "係:連用")) return 0;
+
+	/* "その"に修飾されているかどうかを判定する場合以外 */
+	/* 修飾されている句も対象(暫定的) */
 	if (!demo_flag) return CF_NOUN; 
 
-	/* 修飾されている句は対象外(暫定的) */
-	bnst_ptr = (BNST_DATA *)substance_tag_ptr((TAG_DATA *)tag_ptr->b_ptr);
+	/* "その"に修飾されているかどうかを判定する場合 */
+	/* "その"以外に修飾されている場合 */
 	if (bnst_ptr->child[0] && 
-	    /* ただし"その"は例外 */
-	    strcmp(bnst_ptr->child[0]->head_ptr->Goi2, "その")) return 0;
+	    strcmp(bnst_ptr->child[0]->head_ptr->Goi2, "その") &&
+	    (!bnst_ptr->child[1] || strcmp(bnst_ptr->child[1]->head_ptr->Goi2, "その"))) return 0;
+	/* "その"に修飾されている場合 */
 	if (demo_flag && bnst_ptr->child[0]) return 1;
 
 	if (/* 並列句の場合は並列の並列句に係る表現も確認 */
@@ -355,6 +363,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->entity->salience_score += 
 	    (check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") && 
 	     (check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) ||
+	     check_feature(tag_ptr->f, "同格") ||
 	     check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA : 
 	    (check_feature(tag_ptr->f, "読点") ||
 	     check_feature(tag_ptr->f, "係:ガ格") ||
@@ -377,10 +386,33 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	}
 	mention_ptr->flag = '=';
 
+	/* entityのnameが"の"ならばnameを上書き */
+	if (!strcmp(mention_ptr->entity->name, "の")) {
+	    if (cp = check_feature(tag_ptr->f, "NE")) {
+		strcpy(mention_ptr->entity->name, cp + strlen("NE:"));
+	    }
+	    else if (cp = check_feature(tag_ptr->f, "照応詞候補")) {
+		strcpy(mention_ptr->entity->name, cp + strlen("照応詞候補:"));
+	    }
+	    else {
+		strcpy(mention_ptr->entity->name, tag_ptr->head_ptr->Goi2);
+	    }
+	}
+
 	/* entityのnameがNEでなく、tag_ptrがNEならばnameを上書き */
 	if (!strchr(mention_ptr->entity->name, ':') &&
 	    (cp = check_feature(tag_ptr->f, "NE"))) {
 	    strcpy(mention_ptr->entity->name, cp + strlen("NE:"));
+	}
+	/* entityのnameがNEでなく、tag_ptrが同格ならばnameを上書き */
+	else if (!strchr(mention_ptr->entity->name, ':') &&
+		 check_feature(tag_ptr->f, "同格")) {
+	    if (cp = check_feature(tag_ptr->f, "照応詞候補")) {
+		strcpy(mention_ptr->entity->name, cp + strlen("照応詞候補:"));
+	    }
+	    else {
+		strcpy(mention_ptr->entity->name, tag_ptr->head_ptr->Goi2);
+	    }
 	}
     }
 
@@ -1127,8 +1159,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     /* 自分自身も不可 */
     ctm_ptr->filled_entity[tag_ptr->mention_mgr.mention->entity->num] = TRUE;
 
-    /* 自分と係り受け関係にある要素は不可 */
-    /* 自分の係り先 */
+    /* 自分の係り先は不可 */
     if (tag_ptr->parent &&
 	(check_analyze_tag(tag_ptr, FALSE) == CF_PRED ||
 	 check_feature(tag_ptr->f, "係:ノ格"))) {
@@ -1147,10 +1178,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		ctm_ptr->filled_entity[para_ptr->mention_mgr.mention->entity->num] = TRUE;
 	}
     }
-    /* 係り元 */
-    for (j = 0; tag_ptr->child[j]; j++) {
-	ctm_ptr->filled_entity[substance_tag_ptr(tag_ptr->child[j])->mention_mgr.mention->entity->num] = TRUE;
-    }  
    
     /* 自分と並列な要素も不可(橋渡し指示の場合) */
     if (check_analyze_tag(tag_ptr, FALSE) == CF_NOUN &&
@@ -1546,6 +1573,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	if (tag_ptr->cf_ptr &&
 	    !check_feature(tag_ptr->f, "NE") &&
 	    !check_feature(tag_ptr->f, "NE内") &&
+	    !check_feature(tag_ptr->f, "同格") &&
 	    !check_feature(tag_ptr->f, "共参照") &&
 	    !check_feature(tag_ptr->f, "共参照内")) {
 

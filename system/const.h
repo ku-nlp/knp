@@ -44,7 +44,7 @@
 #define TEIDAI_TYPES	5
 #define HOMO_MAX	30
 #define HOMO_MRPH_MAX	10
-#define PP_STRING_MAX   11 /* 最大となるのは"をふくめる"、"にたいする"など */
+#define PP_STRING_MAX   16 /* 最大となるのは"無格従属:-1"など */
 #define FUKUGOJI_START  9  /* PP_STR_TO_CODEで複合辞が始まる番号 */
 #define FUKUGOJI_END    37 /* PP_STR_TO_CODEで複合辞が終わる番号 */
 

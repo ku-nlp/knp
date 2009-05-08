@@ -622,12 +622,16 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     /* 人                                    PERSON (single or head)       */
     /* 組織・団体                            ORGANIZATION (single or head) */
     /* 場所-施設、場所-自然、場所-その他     LOCATION (single or head)     */
+    /* 人工物-乗り物                         ARTIFACT or 未知語            */
 
     head_ptr = (sp->tag_data + i - 1)->head_ptr; /* i-1番目の主辞形態素 */
     mrph_ptr = (sp->tag_data + i)->mrph_ptr;     /* i番目の先頭形態素 */
     
-    /* head_ptrとmrph_ptrの間には、読点、または"・"しかない */
-    if (mrph_ptr - head_ptr != 2) return 0;
+    /* head_ptrとmrph_ptrの間は、読点、または"・"のみ可 */
+    if (mrph_ptr - head_ptr > 2 ||
+	mrph_ptr - head_ptr == 2 && 
+	!check_feature((sp->tag_data + i - 1)->f, "読点") &&
+	strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・")) return 0;
 
     if (/* NE:PERSON */
 	check_category(head_ptr->f, "人") &&
@@ -648,11 +652,18 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	strcmp(head_ptr->Goi2, "あと") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:LOCATION") &&
 	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
-	 check_feature(mrph_ptr->f, "NE:LOCATION:single"))) {
-	
+	 check_feature(mrph_ptr->f, "NE:LOCATION:single")) ||
+
+	/* NE:ARTIFACT */
+	check_category(head_ptr->f, "人工物-乗り物") &&
+	(check_feature(mrph_ptr->f, "NE:ARTIFACT:head") || 
+	 check_feature(mrph_ptr->f, "NE:ARTIFACT:single") ||
+	 !check_feature(mrph_ptr->f, "NE") && check_feature(mrph_ptr->f, "未知語"))) {	
+
 	/* 固有表現の終了する基本句に解析結果を付与 */
 	j = i;
-	while (!check_feature((sp->tag_data + j)->f, "NE")) j++;
+	if (check_feature(mrph_ptr->f, "NE")) 
+	    while (!check_feature((sp->tag_data + j)->f, "NE")) j++;
 	
 	/* A, B, Cなどのような並列構造からの誤検出を防止 */
 	/* (以下で、i番目の基本句の直前の形態素は読点、または"・") */
@@ -773,9 +784,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
 	/* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 	if (i > 0 && 
-	    !check_feature((sp->tag_data + i - 1)->f, "NE") &&
-	    (check_feature((sp->tag_data + i - 1)->f, "読点") ||
-	     !strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・"))) {
+	    !check_feature((sp->tag_data + i - 1)->f, "NE")) {
 	    recognize_apposition(sp, i);
 	}
     }
