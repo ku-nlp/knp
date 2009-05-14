@@ -1584,7 +1584,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
 
     /* スコアを出力 (CKY時、通常入力時) */
-    if (!ErrorComment && OptCKY && !(OptInput & OPT_PARSED)) {
+    if (OptCKY && !(OptInput & OPT_PARSED)) {
 	fprintf(Outfp, " SCORE:%.5f", sp->score);
     }
 
