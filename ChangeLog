@@ -1,5 +1,8 @@
 2009-05-25  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/bnst_type.phrase:
+	Added dubious expressions for case frame construction.
+
 	* system/const.h, system/extern.h, system/lib_print.c, system/main.c, system/quote.c, system/read_data.c:
 	Added a framework of parenthesis processing.
 
