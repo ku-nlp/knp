@@ -12,6 +12,10 @@
 
 QUOTE_DATA quote_data;
 
+#define PAREN_B "（"
+#define PAREN_E "）"
+#define PAREN_COMMENT_TEMPLATE "括弧始:（ 括弧終:） 括弧位置:"
+
 /*==================================================================*/
 		  void init_quote(SENTENCE_DATA *sp)
 /*==================================================================*/
@@ -261,6 +265,107 @@ QUOTE_DATA quote_data;
     }
 
     return quote_p;
+}
+
+/*==================================================================*/
+ int process_input_paren(SENTENCE_DATA *sp, SENTENCE_DATA **paren_spp)
+/*==================================================================*/
+{
+    int i, j, paren_mrph_num = 0, paren_level = 0, paren_start, *paren_table, paren_num = 0;
+    MRPH_DATA  *m_ptr = sp->mrph_data;
+    SENTENCE_DATA next_sentence_data;
+
+    paren_table = (int *)malloc_data(sizeof(int) * sp->Mrph_num, "process_input_paren");
+    memset(paren_table, 0, sizeof(int) * sp->Mrph_num); /* initialization */
+
+    /* 括弧チェック */
+    for (i = 0; i < sp->Mrph_num; i++) {
+	if (!strcmp((m_ptr + i)->Goi, PAREN_B)) { /* beginning of parenthesis */
+	    if (paren_level == 0) {
+		paren_start = i;
+	    }
+	    paren_level++;
+	}
+	else if (!strcmp((m_ptr + i)->Goi, PAREN_E)) { /* end of parenthesis */
+	    paren_level--;
+	    if (paren_level == 0) {
+		/* 数詞は対象外にする? */
+		*(paren_table + paren_start) = 'B'; /* beginning */
+		*(paren_table + i) = 'E'; /* end */
+		paren_mrph_num += 2;
+		for (j = paren_start + 1; j < i; j++) {
+		    *(paren_table + j) = 'I'; /* intermediate */
+		    paren_mrph_num++; /* 括弧部分の形態素数 */
+		}
+		paren_num++; /* 括弧数 */
+	    }
+	}
+    }
+
+    if (paren_num == 0 || paren_num >= PAREN_MAX || 
+	(paren_start == 0 && *(paren_table + sp->Mrph_num - 1) == 'E')) { /* 全体が括弧の時は対象外 */
+	return 0;
+    }
+    else {
+	int paren_count = -1, pre_mrph_is_paren = FALSE, char_pos = 0;
+
+	*paren_spp = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA) * paren_num, "process_input_paren");
+
+	/* 各括弧文 */
+	for (i = 0; i < paren_num; i++) {
+	    (*paren_spp + i)->Mrph_num = 0;
+	    (*paren_spp + i)->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA) * paren_mrph_num, "process_input_paren");
+	    (*paren_spp + i)->KNPSID = (char *)malloc_data(strlen(sp->KNPSID) + 4, "process_input_paren");
+	    sprintf((*paren_spp + i)->KNPSID, "%s-%02d", sp->KNPSID, i + 2); /* 括弧文のIDは-02から */
+	    (*paren_spp + i)->Comment = (char *)malloc_data(strlen(PAREN_COMMENT_TEMPLATE) + 4, "process_input_paren");
+	    sprintf((*paren_spp + i)->Comment, "%s", PAREN_COMMENT_TEMPLATE);
+	}
+	strcat(sp->KNPSID, "-01"); /* 本文のIDに-01をつける */
+
+	/* 本文と括弧文を分離 */
+	for (i = j = 0; i < sp->Mrph_num; i++) {
+	    if (*(paren_table + i) == 0) { /* 括弧ではない部分 */
+		if (i != j) {
+		    *(m_ptr + j) = *(m_ptr + i);
+		    (m_ptr + i)->f = NULL;
+		}
+		j++;
+		pre_mrph_is_paren = FALSE;
+	    }
+	    else { /* 括弧部分 */
+		if (pre_mrph_is_paren == FALSE) { /* 括弧部分に突入 */
+		    paren_count++;
+		}
+		if (*(paren_table + i) == 'B') { /* 括弧始 */
+		    sprintf((*paren_spp + paren_count)->Comment, "%s%d", (*paren_spp + paren_count)->Comment, char_pos);
+		}
+		if (*(paren_table + i) == 'I') { /* 括弧内部 */
+		    *((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num++) = *(m_ptr + i);
+		    (m_ptr + i)->f = NULL;
+		}
+		pre_mrph_is_paren = TRUE;
+	    }
+	    char_pos += strlen((m_ptr + i)->Goi2) / BYTES4CHAR;
+	}
+	sp->Mrph_num -= paren_mrph_num;
+	free(paren_table);
+
+	return paren_num;
+    }
+}
+
+/*==================================================================*/
+void prepare_paren_sentence(SENTENCE_DATA *sp, SENTENCE_DATA *paren_sp)
+/*==================================================================*/
+{
+    int i;
+
+    sp->KNPSID = paren_sp->KNPSID;
+    sp->Comment = paren_sp->Comment;
+    sp->Mrph_num = paren_sp->Mrph_num;
+    for (i = 0; i < paren_sp->Mrph_num; i++) {
+	*(sp->mrph_data + i) = *(paren_sp->mrph_data + i);
+    }
 }
 
 /*====================================================================

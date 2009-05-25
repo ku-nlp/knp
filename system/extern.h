@@ -73,6 +73,7 @@ extern int 		OptDisplay;
 extern int 		OptArticle;
 extern int 		OptDisplayNE;
 extern int 		OptExpandP;
+extern int		OptProcessParen;
 extern int		OptCheck;
 extern int		OptUseCF;
 extern int		OptUseNCF;
@@ -420,6 +421,7 @@ extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
 extern void print_tree_for_chinese(SENTENCE_DATA *sp);
 extern void do_postprocess(SENTENCE_DATA *sp);
+extern void print_all_result(SENTENCE_DATA *sp);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);
@@ -456,7 +458,6 @@ extern void sm2feature(SENTENCE_DATA *sp);
 extern char *check_noun_sm(char *key);
 
 /* main.c */
-extern int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input);
 extern void usage();
 
 /* para_dpnd.c */
@@ -486,6 +487,8 @@ extern char *ne_code_to_tagposition(int num);
 
 /* quote.c */
 extern int quote(SENTENCE_DATA *sp);
+extern int process_input_paren(SENTENCE_DATA *sp, SENTENCE_DATA **paren_spp);
+extern void prepare_paren_sentence(SENTENCE_DATA *sp, SENTENCE_DATA *paren_sp);
 
 /* read_data.c */
 extern int imi2feature(char *str, MRPH_DATA *m_ptr);

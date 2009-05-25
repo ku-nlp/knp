@@ -444,6 +444,25 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 }
 
 /*==================================================================*/
+	       void print_all_result(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    if (OptAnalysis == OPT_FILTER) {
+	print_mrphs_only(sp);
+    }
+    else if (OptAnalysis == OPT_BNST) {
+	print_bnst_with_mrphs(sp, 0);
+    }
+    else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
+	print_result(sp, 1);
+    }
+    if (Language == CHINESE) {
+	print_tree_for_chinese(sp);
+    }
+    fflush(Outfp);
+}
+
+/*==================================================================*/
 	       void print_mrphs_only(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -1568,10 +1587,17 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	fprintf(Outfp, "%%%% %d %d 1 style=white-space:nowrap\n", Sen_Num, Tag_Num++);
     }
 
-    if (sp->Comment) {
-	fprintf(Outfp, "%s", sp->Comment);
-    } else {
+    /* S-ID */
+    if (sp->KNPSID) {
+	fprintf(Outfp, "# %s", sp->KNPSID);
+    }
+    else {
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
+    }
+
+    /* コメント */
+    if (sp->Comment) {
+	fprintf(Outfp, " %s", sp->Comment);
     }
     
     if (OptInput == OPT_RAW) {

@@ -8,6 +8,7 @@
 
 SENTENCE_DATA	current_sentence_data;
 SENTENCE_DATA	sentence_data[SENTENCE_MAX];
+SENTENCE_DATA	*paren_sentence_data;
 
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
 BNST_DATA 	bnst_data[BNST_MAX];		/* 文節データ */
@@ -60,6 +61,7 @@ int 		OptDisplay;
 int 		OptDisplayNE;
 int             OptArticle;
 int		OptExpandP;
+int		OptProcessParen;
 int		OptCheck;
 int             OptUseCF;
 int             OptUseNCF;
@@ -200,6 +202,7 @@ extern int	EX_match_subject;
     OptArticle = FALSE;
     OptExpandP = FALSE;
     OptCFMode = EXAMPLE;
+    OptProcessParen = FALSE;
     OptCheck = FALSE;
     OptUseCF = TRUE;
     OptUseNCF = TRUE;
@@ -282,6 +285,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-S"))       OptMode     = SERVER_MODE;
 	else if (str_eq(argv[0], "-no-use-cf")) OptUseCF   = FALSE;
 	else if (str_eq(argv[0], "-no-use-ncf")) OptUseNCF   = FALSE;
+	else if (str_eq(argv[0], "-process-paren")) OptProcessParen = TRUE;
 	else if (str_eq(argv[0], "-dpnd")) {
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
@@ -1214,34 +1218,11 @@ extern int	EX_match_subject;
 }
 
 /*==================================================================*/
-      int one_sentence_analysis(SENTENCE_DATA *sp, FILE *input)
+	     int one_sentence_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int flag, i;
     int relation_error, d_struct_error;
-
-    /* get sentence id for Chinese */
-
-    if (Language == CHINESE) {
-	sen_num++;
-	is_frag = 0;
-    }
-
-    sp->Sen_num++;
-    sp->available = 1;
-
-    /* 形態素の読み込み */
-
-    if ((flag = read_mrph(sp, input)) == EOF) return EOF;
-    if (flag == FALSE) { /* EOSしかない空の文 */
-	clear_all_features(sp);
-	sp->available = 0;
-	sp->Mrph_num = 0;
-	sp->Bnst_num = 0;
-	sp->Tag_num = 0;
-	ErrorComment = strdup("Cannot make mrph");
-	return TRUE;
-    }
 
     /* 形態素列の前処理 */
     preprocess_mrph(sp);
@@ -1598,6 +1579,130 @@ PARSED:
 }
 
 /*==================================================================*/
+	void init_for_one_sentence_analysis(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    /* 格フレームの初期化 */
+    if (OptAnalysis == OPT_CASE || 
+	OptAnalysis == OPT_CASE2 ||
+	OptUseNCF) {
+	clear_cf(0);
+    }
+
+    /* 初期化 */
+    if (sp->KNPSID) {
+	free(sp->KNPSID);
+	sp->KNPSID = NULL;
+    }
+    if (sp->Comment) {
+	free(sp->Comment);
+	sp->Comment = NULL;
+    }
+
+    /* FEATURE の初期化 */
+    clear_all_features(sp);
+
+    sp->available = 1;
+}
+
+/*==================================================================*/
+	int one_line_analysis(SENTENCE_DATA *sp, FILE *input)
+/*==================================================================*/
+{
+    int i, flag, paren_num = 0;
+
+    /* initialization */
+    init_for_one_sentence_analysis(sp);
+
+    /* get sentence id for Chinese */
+    if (Language == CHINESE) {
+	sen_num++;
+	is_frag = 0;
+    }
+
+    sp->Sen_num++;
+
+    /* 形態素の読み込み */
+    if ((flag = read_mrph(sp, input)) == EOF) return EOF;
+    if (flag == FALSE) { /* EOSしかない空の文 */
+	clear_all_features(sp);
+	sp->available = 0;
+	sp->Mrph_num = 0;
+	sp->Bnst_num = 0;
+	sp->Tag_num = 0;
+	ErrorComment = strdup("Cannot make mrph");
+    }
+    else { /* 形態素読み込み成功 */
+	/* 括弧を処理して文として分割する場合 */
+	if (OptProcessParen) {
+	    paren_num = process_input_paren(sp, &paren_sentence_data);
+	}
+
+	/* 一文構文・格解析 */
+	if ((flag = one_sentence_analysis(sp)) == FALSE) {
+	    sp->Sen_num--; /* 解析失敗時には文の数を増やさない */
+	    return FALSE;
+	}
+    }
+
+    /************/
+    /* 文脈解析 */
+    /************/
+	       
+    if (OptEllipsis) {
+	assign_mrph_num(sp);
+	make_dpnd_tree(sp);
+	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
+	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
+	if (OptAnaphora) anaphora_analysis(sp);
+	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
+    }
+
+    /* entity 情報の feature の作成 */
+    if (OptDisplay  == OPT_ENTITY) {
+	prepare_all_entity(sp);
+    }
+
+    /* 入力した正解情報をクリア */
+    if (OptReadFeature) {
+	for (i = 0; i < sp->Tag_num; i++) {
+	    if ((sp->tag_data + i)->c_cpm_ptr) {
+		free((sp->tag_data + i)->c_cpm_ptr);
+	    }
+	}
+    }
+	
+    /* 固有表現認識のためのキャッシュ作成 */
+    if (OptNE) {
+	make_ne_cache(sp);
+    }
+
+    /************/
+    /* 結果表示 */
+    /************/
+    print_all_result(sp);
+
+    /* 括弧文の解析 */
+    if (paren_num) {
+	for (i = 0; i < paren_num; i++) {
+	    /* initialization */
+	    init_for_one_sentence_analysis(sp);
+	    prepare_paren_sentence(sp, paren_sentence_data + i); /* spに設定 */
+	    free((paren_sentence_data + i)->mrph_data);
+
+	    if ((flag = one_sentence_analysis(sp)) == FALSE) {
+		continue; /* 解析失敗 */
+	    }
+	    print_all_result(sp);
+	}
+
+	free(paren_sentence_data);
+    }
+
+    return flag;
+}
+
+/*==================================================================*/
 			   void knp_main()
 /*==================================================================*/
 {
@@ -1670,87 +1775,16 @@ PARSED:
 	    continue;
 	}
 
-	/* 格フレームの初期化 */
-	if (OptAnalysis == OPT_CASE || 
-	    OptAnalysis == OPT_CASE2 ||
-	    OptUseNCF) {
-	    clear_cf(0);
-	}
-
-	/* 初期化 */
-	if (sp->KNPSID) {
-	    free(sp->KNPSID);
-	    sp->KNPSID = NULL;
-	}
-	if (sp->Comment) {
-	    free(sp->Comment);
-	    sp->Comment = NULL;
-	}
-
-	/* FEATURE の初期化 */
-	clear_all_features(sp);
-
 	/**************/
 	/* メイン解析 */
 	/**************/
 
 	success = 0;
 
-	if ((flag = one_sentence_analysis(sp, Infp)) == EOF) break;
-	if (flag == FALSE) { /* 解析失敗時には文の数を増やさない */
-	    sp->Sen_num--;	    
+	if ((flag = one_line_analysis(sp, Infp)) == EOF) break;
+	if (flag == FALSE) {
 	    continue;
 	}
-
-	/************/
-	/* 文脈解析 */
-	/************/
-	       
-	if (OptEllipsis) {
-	    assign_mrph_num(sp);
-	    make_dpnd_tree(sp);
-	    PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
-	    if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	    if (OptAnaphora) anaphora_analysis(sp);
-	    if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
-	}
-
-	/* entity 情報の feature の作成 */
-	if (OptDisplay  == OPT_ENTITY) {
-	    prepare_all_entity(sp);
-	}
-
-	/* 入力した正解情報をクリア */
-	if (OptReadFeature) {
-	    for (i = 0; i < sp->Tag_num; i++) {
-		if ((sp->tag_data + i)->c_cpm_ptr) {
-		    free((sp->tag_data + i)->c_cpm_ptr);
-		}
-	    }
-	}
-	
-	/* 固有表現認識のためのキャッシュ作成 */
-	if (OptNE) {
-	    make_ne_cache(sp);
-	}
-
-	/************/
-	/* 結果表示 */
-	/************/
-
-	if (OptAnalysis == OPT_FILTER) {
-	    print_mrphs_only(sp);
-	}
-	else if (OptAnalysis == OPT_BNST) {
-	    print_bnst_with_mrphs(sp, 0);
-	}
-	else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
-	    print_result(sp, 1);
-	}
-	if (Language == CHINESE) {
-	    print_tree_for_chinese(sp);
-	}
-	fflush(Outfp);
 
 	success = 1;	/* OK 成功 */
     }

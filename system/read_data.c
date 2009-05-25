@@ -858,9 +858,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
-	    sp->Comment = strdup(input_buffer);
-	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer), "read_mrph");
-	    sscanf(input_buffer, "# %s", sp->KNPSID);
+	    sp->Comment = (char *)malloc_data(strlen(input_buffer), "read_mrph");
+	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer) + 3, "read_mrph");
+	    sscanf(input_buffer, "# %s %[^\n]", sp->KNPSID, sp->Comment);
 
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(input_buffer, "# S-ID", 6) && 
@@ -998,6 +998,14 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    else if (sp->Mrph_num > 0) { /* 同形異義語がないときに正規化代表表記を付与 */
 		rn2canonical_rn(m_ptr - 1);
 	    }
+
+	    /* KNPSIDがないとき(# S-ID行がないとき)は付与 */
+	    if (!sp->KNPSID) {
+		/* "S-ID:"(5バイト), log(文数)/log(10) + 1バイト, 括弧ID(3バイト), +1バイト */
+		sp->KNPSID = (char *)malloc_data(log(sp->Sen_num) / log(10) + 10, "read_mrph");
+		sprintf(sp->KNPSID, "S-ID:%d", sp->Sen_num);
+	    }
+
 	    return TRUE;
 	}
 

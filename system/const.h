@@ -32,6 +32,7 @@
 #define	BNST_MAX	200 /* 日本語の場合は64ぐらいで十分 */
 #define	BNST_LENGTH_MAX	256
 #define	TAG_MAX		200
+#define	PAREN_MAX	100
 #define	PARA_MAX	32
 #define PARA_PART_MAX	32
 #define WORD_LEN_MAX	128
