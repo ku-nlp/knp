@@ -268,6 +268,21 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
+	void add_comment(SENTENCE_DATA *sp, char *add_string)
+/*==================================================================*/
+{
+    if (sp->Comment) { /* 既存のコメントと結合 */
+	char *orig_comment = sp->Comment;
+	sp->Comment = (char *)malloc_data(strlen(sp->Comment) + strlen(add_string) + 2, "add_comment");
+	sprintf(sp->Comment, "%s %s", orig_comment, add_string);
+	free(sp->Comment);
+    }
+    else { /* 新たなコメント */
+	sp->Comment = strdup(add_string);
+    }
+}
+
+/*==================================================================*/
  int process_input_paren(SENTENCE_DATA *sp, SENTENCE_DATA **paren_spp)
 /*==================================================================*/
 {
@@ -321,12 +336,14 @@ QUOTE_DATA quote_data;
 	    sprintf((*paren_spp + i)->Comment, "%s", PAREN_COMMENT_TEMPLATE);
 	}
 	strcat(sp->KNPSID, "-01"); /* 本文のIDに-01をつける */
+	add_comment(sp, "括弧削除"); /* 本文のコメント行に */
 
 	/* 本文と括弧文を分離 */
 	for (i = j = 0; i < sp->Mrph_num; i++) {
 	    if (*(paren_table + i) == 0) { /* 括弧ではない部分 */
 		if (i != j) {
 		    *(m_ptr + j) = *(m_ptr + i);
+		    (m_ptr + j)->num = j;
 		    (m_ptr + i)->f = NULL;
 		}
 		j++;
@@ -340,7 +357,9 @@ QUOTE_DATA quote_data;
 		    sprintf((*paren_spp + paren_count)->Comment, "%s%d", (*paren_spp + paren_count)->Comment, char_pos);
 		}
 		if (*(paren_table + i) == 'I') { /* 括弧内部 */
-		    *((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num++) = *(m_ptr + i);
+		    *((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num) = *(m_ptr + i);
+		    ((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num)->num = (*paren_spp + paren_count)->Mrph_num;
+		    (*paren_spp + paren_count)->Mrph_num++;
 		    (m_ptr + i)->f = NULL;
 		}
 		pre_mrph_is_paren = TRUE;
