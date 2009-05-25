@@ -1,5 +1,9 @@
 2009-05-25  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* system/quote.c:
+	Output a message of parenthesis manipulation.
+	Not to process a parenthesis without contents.
+
 	* rule/bnst_type.phrase:
 	Added dubious expressions for case frame construction.
 
