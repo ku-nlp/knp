@@ -1,3 +1,18 @@
+2009-05-25  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/const.h, system/extern.h, system/lib_print.c, system/main.c, system/quote.c, system/read_data.c:
+	Added a framework of parenthesis processing.
+
+2009-05-20  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.rule:
+	Fixed an inconsistency.
+
+2009-05-14  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_print.c:
+	Modified to output a score in any case.
+
 2009-05-09  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/mrph_basic.rule:
