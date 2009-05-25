@@ -303,7 +303,7 @@ QUOTE_DATA quote_data;
 	}
 	else if (!strcmp((m_ptr + i)->Goi, PAREN_E)) { /* end of parenthesis */
 	    paren_level--;
-	    if (paren_level == 0) {
+	    if (paren_level == 0 && i != paren_start + 1) { /* （）のような中身がない場合は除く */
 		/* 数詞は対象外にする? */
 		*(paren_table + paren_start) = 'B'; /* beginning */
 		*(paren_table + i) = 'E'; /* end */
