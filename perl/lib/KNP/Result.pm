@@ -238,6 +238,12 @@ sub all_dynamic {
 
 	    # 形態素を順番に
 	    for my $mrph ($tag->mrph) {
+		if (defined $mrph->dpndtype) {
+		    $ret .=  '- ';
+		    $ret .= defined $mrph->parent ? $mrph->parent->id : -1;
+		    $ret .= $mrph->dpndtype . "\n";
+		}
+
 		$ret .= $mrph->midasi . ' ' . $mrph->yomi . ' ' . $mrph->genkei . ' ' . $mrph->hinsi . ' ' . $mrph->hinsi_id . ' ' . $mrph->bunrui . ' ' . $mrph->bunrui_id. ' ' . $mrph->katuyou1 . ' ' . $mrph->katuyou1_id . ' ' . $mrph->katuyou2 . ' ' . $mrph->katuyou2_id . ' ' . $mrph->imis . ' ' . $mrph->fstring . "\n";
 	    }
 
