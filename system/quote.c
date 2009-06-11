@@ -275,7 +275,7 @@ QUOTE_DATA quote_data;
 	char *orig_comment = sp->Comment;
 	sp->Comment = (char *)malloc_data(strlen(sp->Comment) + strlen(add_string) + 2, "add_comment");
 	sprintf(sp->Comment, "%s %s", orig_comment, add_string);
-	free(sp->Comment);
+	free(orig_comment);
     }
     else { /* 新たなコメント */
 	sp->Comment = strdup(add_string);
