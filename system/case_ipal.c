@@ -1802,7 +1802,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→") && !cpncf_flag &&
 	     (!check_feature(t_ptr->head_ptr->f, "サ変") ||
-	      strcmp(get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag), "する/する"))) {
+	      ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag)) && strcmp(cp, "する/する")))) {
 	if (use_rep_flag) {
 	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
