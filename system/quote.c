@@ -322,7 +322,7 @@ QUOTE_DATA quote_data;
 	return 0;
     }
     else {
-	int paren_count = -1, pre_mrph_is_paren = FALSE, char_pos = 0;
+	int paren_count = -1, char_pos = 0;
 
 	*paren_spp = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA) * paren_num, "process_input_paren");
 
@@ -347,13 +347,10 @@ QUOTE_DATA quote_data;
 		    (m_ptr + i)->f = NULL;
 		}
 		j++;
-		pre_mrph_is_paren = FALSE;
 	    }
 	    else { /* ³ç¸ÌÉôÊ¬ */
-		if (pre_mrph_is_paren == FALSE) { /* ³ç¸ÌÉôÊ¬¤ËÆÍÆþ */
-		    paren_count++;
-		}
 		if (*(paren_table + i) == 'B') { /* ³ç¸Ì»Ï */
+		    paren_count++;
 		    sprintf((*paren_spp + paren_count)->Comment, "%s%d", (*paren_spp + paren_count)->Comment, char_pos);
 		}
 		if (*(paren_table + i) == 'I') { /* ³ç¸ÌÆâÉô */
@@ -362,7 +359,6 @@ QUOTE_DATA quote_data;
 		    (*paren_spp + paren_count)->Mrph_num++;
 		    (m_ptr + i)->f = NULL;
 		}
-		pre_mrph_is_paren = TRUE;
 	    }
 	    char_pos += strlen((m_ptr + i)->Goi2) / BYTES4CHAR;
 	}
