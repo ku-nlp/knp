@@ -1,3 +1,8 @@
+2009-06-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/quote.c:
+	Modified processing of continuous parentheses.
+
 2009-05-25  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/quote.c:
