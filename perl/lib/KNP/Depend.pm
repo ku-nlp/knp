@@ -176,7 +176,8 @@ sub parent_id {
 =cut
 sub make_reference {
     my( $this, $list ) = @_;
-    if( my $parent_id = $this->parent_id() ){
+    my $parent_id = $this->parent_id();
+    if( defined $parent_id ){
 	$this->parent_id( undef );
 	if( $parent_id >= 0 ){
 	    my $parent = $list->[ $parent_id + $[ ];
