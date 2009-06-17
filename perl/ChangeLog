@@ -1,3 +1,8 @@
+2009-06-17  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/KNP/Depend.pm:
+	Modified to permit right-to-left dependencies.
+
 2009-06-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* lib/KNP/Result.pm:
