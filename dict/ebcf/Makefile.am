@@ -14,18 +14,23 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-nodist_dic_DATA +=  chidpnd.db chidpnd_prob.db chidpnd_stru.db chi_dis_comma.db chi_arg.db
-
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db chi_pa.db
-
-HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
+PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
 endif
 
+HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
+
 if HOWNET_EXIST
 nodist_dic_DATA += $(HOWNET_DBS)
+endif
+
+#CHIDIC = chidpnd.db chidpnd_prob.db chidpnd_stru.db chi_dis_comma.db chi_arg.db chi_pa.db
+CHIDIC = chidpnd.db chi_pa.db
+
+if CHIDIC_EXIST
+nodist_dic_DATA += $(CHIDIC)
 endif
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
