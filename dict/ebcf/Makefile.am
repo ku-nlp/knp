@@ -14,7 +14,7 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db renyou.db
+PROBCASE_DBS = case.db cfcase.db cfp.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
