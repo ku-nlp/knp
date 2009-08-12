@@ -1,3 +1,11 @@
+2009-08-12  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_data.c, system/feature.c, system/thesaurus.c, system/tools.c:
+	Replaced raw descriptions of figures.
+
+	* dict/ebcf/Makefile.am:
+	Modified not to install optional databases.
+
 2009-07-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* configure.ac, dict/ebcf/Makefile.am:
