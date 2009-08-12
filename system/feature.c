@@ -754,7 +754,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    return 0;
 	}
 	precode = code;
-	ucp += 2;
+	ucp += BYTES4CHAR;
     }
 
     return code;
@@ -783,7 +783,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    if (!(0xa1a5 < code && code < 0xa4a0) && /* µ­¹æ¤ÎÈÏ°Ï */
 		!(0xa5a0 < code && code < 0xb0a0))
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -802,7 +802,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	      ;
 	    else 
 	      return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -816,7 +816,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    code = check_char_type(code);
 	    if (!(code == TYPE_KANJI || code == TYPE_HIRAGANA))
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -829,7 +829,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_HIRAGANA)
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -869,7 +869,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_KATAKANA)
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -882,7 +882,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    code = (*ucp)*0x100+*(ucp+1);
 	    if (check_char_type(code) != TYPE_SUUJI)
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -896,7 +896,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    type = check_char_type(code);
 	    if (type != TYPE_EIGO && type != TYPE_KIGOU)
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -910,7 +910,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    type = check_char_type(code);
 	    if (type != TYPE_KIGOU)
 		return FALSE;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}	    
 	return TRUE;
     }
@@ -926,7 +926,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    if (pretype && pretype != type)
 		return TRUE;
 	    pretype = type;
-	    ucp += 2;
+	    ucp += BYTES4CHAR;
 	}
 	return FALSE;
     }

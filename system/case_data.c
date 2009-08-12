@@ -137,7 +137,7 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 	if (!strncmp(fcp, "£‘≤Ú¿œ≥ -", strlen("£‘≤Ú¿œ≥ -"))) {
 	    cc = pp_kstr_to_code(fcp+strlen("£‘≤Ú¿œ≥ -"));
 	    if (cc == END_M) {
-		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp+9);
+		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp + strlen("£‘≤Ú¿œ≥ -"));
 		exit(1);
 	    }
 	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;

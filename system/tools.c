@@ -91,7 +91,7 @@ unsigned int seed[NSEED][256];
 
     hira = strdup(cp);
 
-    for (i = 0; i < strlen(hira); i += 2) { /* euc-jp */
+    for (i = 0; i < strlen(hira); i += BYTES4CHAR) { /* euc-jp */
 	if (*(hira+i) == 0xa5) {
 	    *(hira+i) = 0xa4;
 	}
@@ -108,7 +108,7 @@ unsigned int seed[NSEED][256];
 
     hira = strdup(cp);
 
-    for (i = 0; i < strlen(hira); i += 2) { /* euc-jp */
+    for (i = 0; i < strlen(hira); i += BYTES4CHAR) { /* euc-jp */
 	if (*(hira+i) == 0xa4) {
 	    *(hira+i) = 0xa5;
 	}
