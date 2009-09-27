@@ -15,8 +15,8 @@
         KNP version 3.0 \\
         使用説明書}
 \author{黒橋 禎夫 \and 河原 大輔}
-\date{平成20年9月\\
-\rule{0mm}{110mm}Copyright \copyright\ 2008\begin{tabular}[t]{l}
+\date{平成21年9月\\
+\rule{0mm}{110mm}Copyright \copyright\ 2009\begin{tabular}[t]{l}
                                 京都大学大学院情報学研究科 \\
                                 \end{tabular}
 }
@@ -34,7 +34,7 @@
 KN parser (Kurohashi-Nagao parser) 3.0 Users Manual
 
 \noindent
-Copyright (c) 2008 Kyoto University \\
+Copyright (c) 2009 Kyoto University \\
 All rights reserved.
 
 \noindent
@@ -78,7 +78,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  Version 2.0b5 & 29 October 1997 \\
  Version 2.0b6 & 9 June 1998 \\
  Version 2.0 & 7 September 2005 \\
- Version 3.0 & 30 September 2008 \\
+ Version 3.0 & 30 September 2009 \\
 \end{tabular}
 \end{small}
 
@@ -95,9 +95,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%
 
 KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解析結果
-(形態素列)を入力とし，それらを文節単位にまとめ，文節間の係り受け関係を決
-定します．
-% また，格フレーム辞書が利用できる場合には格構造解析を行うこともできます．
+(形態素列)を入力とし，それらを基本句(後述)および文節単位にまとめ，それら
+の間の係り受け関係を決定します．また，自動獲得した格フレームに基づき、格
+関係の解析も行います．
 
 以下に典型的な使用例を示します．
 
@@ -239,8 +239,8 @@ Windows版はUNIX版と以下の点が異なります．
 
 \subsection{コマンドラインからの利用方法}
 
-KNPの入力は，形態素解析システムJUMANの{\tt -e2 -B}オプションによる解析
-結果です．以下に典型的な利用方法を示します．
+KNPの入力は，形態素解析システムJUMANの解析結果です．以下に典型的な利用方
+法を示します．
 
 \begin{quote}
 \texttt{\% cat test} \\
@@ -262,22 +262,29 @@ KNPの入力は，形態素解析システムJUMANの{\tt -e2 -B}オプションによる解析
 \end{tabular}
 \end{quote}
 
+KNPでは，「基本句」を単位にして解析しています。基本句とは，京都大学テキス
+トコーパスに含まれる格関係，照応・省略関係，共参照タグ付きコーパスにおい
+て各種関係を付与している単位です．基本句は，基本的に自立語一語を核として，
+その前後に存在する接頭辞，接尾辞，助詞，助動詞などの付属語をまとめたもの
+で，文節と同じかその一部です．現在のKNPでは，文節内の基本句間の係り受け
+は扱っておらず隣に係るように解析されます．
+
 KNPには以下のオプションがあります．
 \begin{itemize}
 \item 解析のレベルの指定
 
 \begin{tabular}{ll}
 -bnst           & 形態素列を文節列に変換する \\
--dpnd (default) & さらに，文節間の係り受け解析を行う \\
-% -case           & さらに，格関係の解析(IPA辞書に含まれる用言のみ)を行う \\
+-dpnd           & さらに，文節間の係り受け解析を行う \\
+-case (default) & さらに，格関係の解析を行う \\
 \end{tabular}
 \item 解析結果の表示の指定
 
 \begin{tabular}{ll}
 -tab            & 表形式による表示 \\
 -tree (default) & 木構造による表示 \\
--tagtab         & タグ単位\footnotemark の表形式による表示 \\
--tagtree        & タグ単位の木構造による表示 \\
+-bnsttab        & 文節の表形式による表示 \\
+-bnsttree       & 文節の木構造による表示 \\
 -sexp           & リスト形式による表示 \\
 \end{tabular}
 \item 解析結果の出力情報の指定
@@ -288,13 +295,6 @@ KNPには以下のオプションがあります．
 -debug            & さらに詳しい解析途中段階の情報の表示 \\
 \end{tabular}
 \end{itemize}
-\footnotetext{タグ単位とは，京都テキストコーパスに含まれる格関係，照応・
-省略関係，共参照タグ付きコーパスにおいて各種関係を付与している単位です．
-タグ単位は，基本的に自立語1語を核として，その前後に存在する接頭辞，接尾
-辞，助詞，助動詞などの付属語をまとめたもので，文節と同じかその一部です．
-現在のKNPでは，-tagtab, -tagtreeオプションによってタグ単位の出力を行いま
-すが，文節内のタグ単位間の係り受けは扱っておらず隣に係るように解析されま
-す．}
 
 
 \subsection{Perlからの利用方法}
@@ -332,8 +332,8 @@ Perlモジュール``KNP''を用いることにより，PerlからKNPを利用することが
 \section{解析過程の概要}
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-KNPは，JUMAN({\tt -e2 -B}オプション)の出力形態素列(同形異義語を含む)
-を入力とし，以下のような処理を行います．
+KNPは，JUMANの出力形態素列(同形異義語を含む)を入力とし，以下のような処理
+を行います．
 
 \begin{enumerate}
 \item 同形異義語を処理し，一意の形態素列に変換します
@@ -351,8 +351,8 @@ KNPは，JUMAN({\tt -e2 -B}オプション)の出力形態素列(同形異義語を含む)
 \item (並列構造がある場合は，その検出された範囲と矛盾しないように) 文
   全体の係り受け構造の候補をつくり出します(kakari\_uke.rule)．
 \item つくり出された各候補を評価し，もっとも
-  優先的なものを解として出力します．基本的な評価基準は各係り受けの距離
-  と，各用言の表層格の充足度の総和です．
+  優先的なものを解として出力します．評価は，自動獲得された格フレームに基
+  づき，述語項構造を評価することによって行います．
 \end{enumerate}
 
 
@@ -372,17 +372,21 @@ rule形式はrule2data.plプログラムを用いてdata形式に変換します
 phrase形式とrule形式の違いはルールの書きやすさで，phrase形式の方が人にとっ
 て書きやすい書式となっています．rule形式のファイルはリスト形式で記述しま
 すが，そのルールの使用目的によって書式が異なり，同形異義語，形態素，文節，
-係り受けの4種類があります．KNPが用いているルールファイルは以下のとおりで
-す．
+係り受けの4種類があります．文節ルールは，基本句に対しても適用されます．
+KNPが用いているルールファイルは以下のとおりです．
 
 \begin{center}
  \begin{tabular}{l|l|l} \hline
   & ファイル形式 & ルール書式 \\ \hline
   mrph\_homo.rule   & rule & 同形異義語 \\
+  mrph\_filter.rule & rule & 形態素 \\
+  mrph\_auto\_dic.rule & rule & 形態素 \\
   mrph\_basic.rule  & rule & 形態素 \\
+  mrph\_ne.rule     & rule & 形態素 \\
   bnst\_basic.rule  & rule & 文節 \\
   bnst\_type.phrase & phrase & (文節) \\
   bnst\_etc.rule    & rule & 文節 \\
+  case\_analysis.rule & rule & 文節 \\
   kakari\_uke.rule  & rule & 係り受け \\ \hline
  \end{tabular}
 \end{center}
@@ -706,6 +710,11 @@ phrase2rule.plを実行するためには，juman，knp，KNP.pmをあらかじめインストー
 黒橋禎夫.
 \newblock 結構やるな，KNP.
 \newblock 情報処理, Vol.41, No.11, pages 1215-1220 (2000.11).
+
+\bibitem{kawahara2007}
+河原大輔, 黒橋禎夫.
+\newblock 自動構築した大規模格フレームに基づく構文・格解析の統合的確率モデル.
+\newblock 自然言語処理, Vol.14, No.4, pages 67-81 (2007.7).
 
 \end{thebibliography}
 
