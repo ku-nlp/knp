@@ -320,6 +320,10 @@ int get_location(char *loc_name, int sent_num, char *kstr, MENTION *mention)
 	/* 付属語は解析しない */
 	if (check_feature(tag_ptr->mrph_ptr->f, "付属")) return 0;
 
+	/* 単独の用言が『』で囲まれている場合は省略解析しない(暫定的) */
+	if (check_feature(tag_ptr->f, "括弧始") &&
+	    check_feature(tag_ptr->f, "括弧終")) return 0;
+
 	/* サ変は文節主辞のみ対象 */
 	if (check_feature(tag_ptr->f, "文節内") && 
 	    check_feature(tag_ptr->f, "サ変")) return 0;
@@ -361,8 +365,8 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 	mention_ptr->explicit_mention = NULL;
 	mention_ptr->salience_score = mention_ptr->entity->salience_score;
 	mention_ptr->entity->salience_score += 
-	    (check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") && 
-	     (check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) ||
+	    ((check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) &&
+	     check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") ||
 	     check_feature(tag_ptr->f, "同格") ||
 	     check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA : 
 	    (check_feature(tag_ptr->f, "読点") ||
@@ -913,6 +917,8 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    }
 	}
 	if (OptDisplay == OPT_DEBUG && debug) printf(";; %s:%f\n", entity_ptr->name, max_score);
+	/* if (tcf_ptr->cf.type == CF_NOUN && max_score > 0)
+	    max_score = entity_ptr->salience_score; /* salience_score最大を優先(ssm) */
 	score += max_score + log(EX_MATCH_COMPENSATE);
 	/* - get_case_probability(e_num, ctm_ptr->cf_ptr, FALSE) */
 
@@ -973,6 +979,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		ctm_ptr->elem_b_ptr[i] = entity_ptr->mention[j]->tag_ptr;
 	    }		
 	}
+	/* if (tcf_ptr->cf.type != CF_NOUN) /* ssm */
 	score += max_score;
 	if (OptDisplay == OPT_DEBUG && debug) 
 	    printf(";; %s:%f\n;; score = %f\n", entity_ptr->name, max_score, score);
@@ -1068,6 +1075,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
     /* まだチェックしていない要素がある場合 */
     if (i < tag_ptr->tcf_ptr->cf.element_num) {
 
+	/* 入力文のi番目の格要素の取りうる格(cf.pp[i][j])を順番にチェック */
 	for (j = 0; tag_ptr->tcf_ptr->cf.pp[i][j] != END_M; j++) {
 
 	    /* 入力文のi番目の格要素を格フレームのcf.pp[i][j]格に割り当てる */
@@ -1078,7 +1086,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		     check_feature(tag_ptr->tcf_ptr->elem_b_ptr[i]->f, "係:ノ格"))) {
 		    
 		    /* 対象の格が既に埋まっている場合は不可 */
-		    if (ctm_ptr->filled_element[e_num] == TRUE) return FALSE;
+		    if (ctm_ptr->filled_element[e_num] == TRUE) continue;
 
 		    /* 非格要素は除外 */
 		    if (check_feature(tag_ptr->tcf_ptr->elem_b_ptr[i]->f, "非格要素")) {
@@ -1086,12 +1094,14 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		    }	
 	    		    
 		    /* 直前格である場合は制限を加える(暫定的) */
+		    /* 入力文側で直前格である場合は格フレームの直前格のみに対応させる */
 		    if (tag_ptr->tcf_ptr->cf.type != CF_NOUN &&
 			check_feature(tag_ptr->tcf_ptr->elem_b_ptr[i]->f, "助詞") &&
 			tag_ptr->tcf_ptr->cf.adjacent[i] && !(ctm_ptr->cf_ptr->adjacent[e_num])) {
 			continue;
 		    }
 
+		    /* 名詞格フレームの格は"φ"となっているので表示用"ノ"に変更 */
 		    if (tag_ptr->tcf_ptr->cf.type == CF_NOUN) {
 			ctm_ptr->cf_ptr->pp[e_num][0] = pp_kstr_to_code("ノ");
 		    }
@@ -1255,6 +1265,11 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	for (j = ctm_ptr->case_result_num; j < r_num; j++) ctm_ptr->flag[j] = 'O';
 	/* スコアを計算 */
 	ctm_ptr->score = calc_ellipsis_score_of_ctm(ctm_ptr, tag_ptr->tcf_ptr) + ctm_ptr->case_score;
+
+	/* ランダムに選択する場合(比較用) */
+	/* if (tag_ptr->tcf_ptr->cf.type == CF_NOUN && ctm_ptr->score > -100) 
+	   ctm_ptr->score = ctm_ptr->case_score + rand()*10; */
+
 	/* 橋渡し指示の場合で"その"に修飾されている場合は
 	   対応付けが取れなかった場合はlog(4)くらいペナルティ:todo */
 	if (tag_ptr->tcf_ptr->cf.type == CF_NOUN && 
@@ -1397,10 +1412,10 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	 check_feature(tag_ptr->f, "形副名詞") ||
 	 !check_feature(tag_ptr->f, "照応詞候補") ||
 	 check_feature(tag_ptr->f, "NE内") ||
-	 check_feature(tag_ptr->f, "数量"))? 0 : 
-	(check_feature(tag_ptr->f, "係:未格") && !check_feature(tag_ptr->f, "括弧終") && 
-	 (check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) ||
-	 check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA :
+	 check_feature(tag_ptr->f, "数量")) ? 0 : 
+	((check_feature(tag_ptr->f, "ハ") || check_feature(tag_ptr->f, "モ")) &&
+	 !check_feature(tag_ptr->f, "括弧終") ||
+	 check_feature(tag_ptr->f, "文末")) ? SALIENCE_THEMA : /* 文末 */
 	(check_feature(tag_ptr->f, "読点") ||
 	 check_feature(tag_ptr->f, "係:ガ格") ||
 	 check_feature(tag_ptr->f, "係:ヲ格")) ? SALIENCE_CANDIDATE : SALIENCE_NORMAL;
