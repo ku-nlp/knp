@@ -1665,11 +1665,19 @@ void copy_cky_data(CKY *dest, CKY *src) {
     dest->cpm_ptr = src->cpm_ptr;
 }
 
-int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
+int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_flag) {
     int i, j;
     CKY *tmp_cky_ptr;
     CKY *node_stack[BNST_MAX];
     int tail_index;
+
+    if (return_flag == FALSE) { /* parse failed */
+	if (OptNbest == TRUE) { /* print for nbest */
+	    when_no_dpnd_struct(sp);
+	    print_result(sp, 0);
+	}
+	return return_flag;
+    }
 
     /* count the number of predicates */
     Best_mgr->pred_num = 0;
@@ -1825,7 +1833,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	cky_ptr = cky_ptr->next;
     }
 
-    return TRUE;
+    return return_flag;
 }
 
 void sort_cky_ptrs(CKY **orig_cky_ptr_ptr, int beam) {
@@ -2372,8 +2380,8 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
     }
 
     /* choose the best one */
-    if (!cky_matrix[0][sp->Bnst_num - 1]) {
-	return FALSE;
+    if (!cky_matrix[0][sp->Bnst_num - 1]) { /* parse failed */
+	return after_cky(sp, Best_mgr, NULL, FALSE);
     }
     cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
 
@@ -2419,7 +2427,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	}
     }
 
-    return after_cky(sp, Best_mgr, cky_ptr);
+    return after_cky(sp, Best_mgr, cky_ptr, TRUE);
 }
 
 /* check if there exists special word in one region */
