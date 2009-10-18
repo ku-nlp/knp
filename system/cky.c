@@ -1673,7 +1673,16 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 
     if (return_flag == FALSE) { /* parse failed */
 	if (OptNbest == TRUE) { /* print for nbest */
+	    sp->available = 0;
+	    ErrorComment = strdup("Cannot detect dependency structure");
 	    when_no_dpnd_struct(sp);
+	    dpnd_info_to_bnst(sp, &(Best_mgr->dpnd));
+	    if (!(OptExpress & OPT_NOTAG)) {
+		dpnd_info_to_tag(sp, &(Best_mgr->dpnd)); 
+		if (OptExpress & OPT_MRPH) {
+		    dpnd_info_to_mrph(sp);
+		}
+	    }
 	    print_result(sp, 0);
 	}
 	return return_flag;
