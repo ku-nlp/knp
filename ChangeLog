@@ -1,3 +1,8 @@
+2009-10-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Modified to output default dependency structure for parse-failed nbest output.
+
 2009-10-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/case_ipal.c:
