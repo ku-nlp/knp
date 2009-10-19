@@ -8,6 +8,7 @@
 
 ====================================================================*/
 #include "knp.h"
+#include "case_ipal.h"
 #define INITIAL_SCORE -10000
 
 FILE *cf_fp;
@@ -28,9 +29,6 @@ DBM_FILE chi_pa_db;
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
 int 	   	MAX_Case_frame_num = 0;		/* 最大格フレーム数 */
-
-char *GENERAL_SOTO_WORDS ="展開/てんかい:1／要因/よういん:1／構え/かまえv:1／状況/じょうきょう:1／段階/だんかい:1／傾向/けいこう:1／制度/せいど:1／ケース/けーす:1／声/こえ:1／可能/かのうa+性/せい:1／見込み/みこみv:1／材料/ざいりょう:1／環境/かんきょう:1／必要だ/ひつようだ:1／考え/かんがえv:1／狙い/ねらいv:1／公算/こうさん:1／事実/じじつ:1／予定/よてい:1／効果/こうか:1／意向/いこう:1／政権/せいけん:1／体制/たいせい:1／問題/もんだい:1／懸念/けねん:1／地域/ちいき:1／方法/ほうほう:1／対策/たいさく:1／例/れい:1／事業/じぎょう:1／仕組み/しくみv:1／点/てん:1／作品/さくひん:1／理由/りゆう:1／疑い/うたがいv:1／恰好/かっこう:1／方針/ほうしん:1／様子/ようす:1／姿勢/しせい:1／恐れ/おそれv:1／模様/もよう:1／事件/じけん:1／作業/さぎょう:1／機会/きかい:1／見通し/みとおしv:1／政策/せいさく:1／内容/ないよう:1／措置/そち:1／背景/はいけい:1／面/おもて:1／方向/ほうこう:1／結果/けっか:1／状態/じょうたい:1／方式/ほうしき:1／商品/しょうひん:1／目的/もくてき:1／場面/ばめん:1／事態/じたい:1／動き/うごきv:1／計画/けいかく:1／案/あん:1／の/の:1／ん/ん:1／こと/こと:1／はず/はず:1／わけ/わけ:1／つもり/つもり:1／ところ/ところ:1／為/ため:1／お陰/おかげ:1／せい/せい:1／あまり/あまり:1／通り/とおり:1／様/よう:1／代わり/かわり:1／他/ほか:1／ついで/ついで:1／まま/まま:1／時/とき:1／折り/おり:1／間/あいだ:1／うち/うち:1／後/あと:1／後/あと:1／前/まえ:1／最中/さいちゅう:1／際/さい:1／場合/ばあい:1／途中/とちゅう:1／一方/いっぽう:1／結果/けっか:1／反面/はんめん:1／半面/はんめん:1／限り/かぎり:1／方/ほう:1／くせ/くせ:1／程度/ていど:1／以外/いがい:1／頃/ころ:1／程/ほど:1／上/うえ:1／毎/ごと:1／故/ゆえ:1／くらい/くらい:1／旨/むね:1／途端/とたん:1／矢先/やさき:1／以上/いじょう:1／たび/たび:1";
-/* 副詞的名詞「中/なか:1」は保留 */
 
 char *db_buf = NULL;
 int db_buf_size = 0;
@@ -125,8 +123,9 @@ int	SM_AGENT_THRESHOLD = 0.40;
     free(data_filename);
     free(index_db_filename);
 
-    /* 格フレーム類似度DB (cfsim.db) */
+    /* 格フレーム類似度DB (cfsim.db) *
     cf_sim_db = open_dict(CF_SIM_DB, CF_SIM_DB_NAME, &CFSimExist);
+    */
 
     /* 格確率DB (cfcase.db) */
     cf_case_db = open_dict(CF_CASE_DB, CF_CASE_DB_NAME, &CFCaseExist);
@@ -142,22 +141,21 @@ int	SM_AGENT_THRESHOLD = 0.40;
     /* 格解釈確率DB (case.db) */
     case_db = open_dict(CASE_DB, CASE_DB_NAME, &CaseExist);
 
-    /* 連用確率DB (renyou.db) */
+    /* 連用確率DB (renyou.db) *
     renyou_db = open_dict(RENYOU_DB, RENYOU_DB_NAME, &RenyouExist);
+    */
 
-    /* 副詞確率DB (adverb.db) */
+    /* 副詞確率DB (adverb.db) *
     adverb_db = open_dict(ADVERB_DB, ADVERB_DB_NAME, &AdverbExist);
+    */
 
-    /* 並列確率DB (para.db) */
+    /* 並列確率DB (para.db) *
     para_db = open_dict(PARA_DB, PARA_DB_NAME, &ParaExist);
+    */
 
-    /* 名詞共起確率DB (noun-co.db) */
+    /* 名詞共起確率DB (noun-co.db) *
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
-
-    if (Language == CHINESE) {
-	/* Chinese CHI_PA DB (chi_pa.db) */
-	chi_pa_db = open_dict(CHI_PA_DB, CHI_PA_DB_NAME, &CHIPAExist);
-    }
+    */
 }
 
 /*==================================================================*/
@@ -3980,44 +3978,6 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    fprintf(Outfp, ";; (NOUN_NUM) : P(%s) = 0\n", key);
 	}
 	ret = FREQ0_ASSINED_SCORE;
-    }
-
-    return ret;
-}
-
-/* get pa count for Chinese from gigaword */
-/*==================================================================*/
-   double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist)
-/*==================================================================*/
-{
-    char *key, *value;
-    double ret;
-
-    if (CHIPAExist == FALSE) {
-	return 0;
-    }
-
-    key = malloc_db_buf(strlen(ptr1->head_ptr->Goi) + 
-			strlen(ptr2->head_ptr->Goi) + 
-			strlen(ptr1->head_ptr->Pos) + 
-			strlen(ptr2->head_ptr->Pos) + 11);
-
-    /* 用言表記でやった方がよいみたい */
-    if (ptr1->num < ptr2->num) {
-	sprintf(key, "%s_%s_%s_%s_R_%d", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, dist);
-    }
-    else {
-	sprintf(key, "%s_%s_%s_%s_L_%d", ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, dist);
-    }
-
-    value = db_get(chi_pa_db, key);
-
-    if (value) {
-	ret = atof(value);
-	free(value);
-    }
-    else {
-	ret = 0.0;
     }
 
     return ret;

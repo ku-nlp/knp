@@ -456,9 +456,6 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
 	print_result(sp, 1);
     }
-    if (Language == CHINESE) {
-	print_tree_for_chinese(sp);
-    }
     fflush(Outfp);
 }
 
@@ -493,12 +490,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    continue; /* 後処理でマージされた文節 */
 	}
 	if (flag == 1) {
-	    if (Language == CHINESE && (b_ptr->is_para == 1 || b_ptr->is_para ==2)) {
-		fprintf(Outfp, "* %dP", b_ptr->dpnd_head);
-	    }
-	    else {
-		fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);		
-	    }
+	    fprintf(Outfp, "* %d%c", b_ptr->dpnd_head, b_ptr->dpnd_type);		
 	    if (b_ptr->f) {
 		fprintf(Outfp, " ");
 		print_feature(b_ptr->f, Outfp);
@@ -909,23 +901,9 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	    /* statusがxでもスコアがあれば参考のため表示 */
 
 	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ ) {
-		if (Language != CHINESE) {
-		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
-			path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
-			-1 : 'a' + i;
-		}
-		else {
-		    if (check_feature((sp->bnst_data + j)->f, "CC") || check_feature((sp->bnst_data + j)->f, "PU")) {
-			path_matrix[ptr->max_path[j-ptr->key_pos]][j] =
-			    path_matrix[ptr->max_path[j-ptr->key_pos]][j] ?
-			    -1 : 'a' + i;
-		    }
-		    else {
-			path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
-			    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
-			    -1 : 'a' + i;
-		    }
-		}
+		path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] =
+		    path_matrix[ptr->max_path[j-ptr->key_pos-1]][j] ?
+		    -1 : 'a' + i;
 	    }
 	}
     }
@@ -1843,183 +1821,6 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 	prepare_entity(sp->bnst_data+i);
-    }
-}
-
-/*==================================================================*/
-	    void print_tree_for_chinese(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int		i, j, k, max_len, len, max_inverse_len;
-    char*       up_corner = "┌─";
-    char*       down_corner = "└─";
-    char*       middle_corner = "├─";
-    char*       link = "│";
-    char*       para = "<P>";
-    char*       para_head = "<PARA><P>";
-
-    BNST_DATA	*b_ptr;
-
-    /* initialization */
-    for (i = 0; i < sp->Bnst_num; i++) {
-	for (j = 0; j < TREE_WIDTH_MAX; j++) {
-	    bnst_tree[i][j] = "";
-	}
-    }
-
-    /* read data */
-    for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
-	bnst_word[i] = b_ptr->head_ptr->Goi;
-	bnst_pos[i] = b_ptr->head_ptr->Pos;
-	bnst_dpnd[i] = b_ptr->dpnd_head;
-	bnst_level[i] = -1;
-    }
-
-    /* get root level */
-    for (i = 0; i < sp->Bnst_num; i++) {
-	while (bnst_level[i] == -1) {
-	    j = i;
-	    while (bnst_dpnd[j] != -1 && bnst_level[bnst_dpnd[j]] == -1) {
-		j = bnst_dpnd[j];
-	    }
-	    if (bnst_dpnd[j] == -1) {
-		bnst_level[j] = 0;
-	    }
-	    else {
-		bnst_level[j] = bnst_level[bnst_dpnd[j]] + 1;
-	    }
-	}
-    }
-
-    /* get print tree */
-    max_len = -1;
-    for (i = 0; i < sp->Bnst_num; i++) {
-	len = 0;
-	for (j = 0; j < (bnst_level[i] * 4); j++) {
-	    if (bnst_dpnd[i] != -1 && j < (bnst_level[bnst_dpnd[i]] * 4)) {
-		if (len >= TREE_WIDTH_MAX) {
-		    fprintf(Outfp, ">>>tree width exceeds maximum length\n");
-		    return;
-		}
-		bnst_tree[i][len] = " ";
-		len++;
-	    }
-	    else if (bnst_dpnd[i] != -1 && j == (bnst_level[bnst_dpnd[i]] * 4)) {
-		if (bnst_dpnd[i] != -1 && bnst_dpnd[i] < i) {
-		    if (len >= TREE_WIDTH_MAX) {
-			fprintf(Outfp, ">>>tree width exceeds maximum length\n");
-			return;
-		    }
-		    bnst_tree[i][len] = down_corner;
-		    len++;
-		}
-		else if (bnst_dpnd[i] > i) {
-		    if (len >= TREE_WIDTH_MAX) {
-			fprintf(Outfp, ">>>tree width exceeds maximum length\n");
-			return;
-		    }
-		    bnst_tree[i][len] = up_corner;
-		    len++;
-		}
-	    }
-	}
-	if (len >= TREE_WIDTH_MAX) {
-	    fprintf(Outfp, ">>>tree width exceeds maximum length\n");
-	    return;
-	}
-	if ((sp->bnst_data + i)->is_para == 1) {
-	    bnst_tree[i][len] = para;
-	    len++;
-	}
-	else if ((sp->bnst_data + i)->is_para == 2) {
-	    bnst_tree[i][len] = para_head;
-	    len++;
-	}
-	bnst_tree[i][len] = bnst_word[i];
-	len++;
-	bnst_tree[i][len] = "/";
-	len++;
-	bnst_tree[i][len] = bnst_pos[i];
-	len++;
-
-	if (len > max_len) {
-	    max_len = len;
-	}
-    }
-    
-    for (i = 0; i < sp->Bnst_num; i++) {
-	for (j = 0; j < max_len; j++) {
-	    if (bnst_tree[i][j] == "") {
-		bnst_tree[i][j] = "***";
-	    }
-	}
-    }
-
-    /* inverse the tree */
-    max_inverse_len = -1;
-    for (i = 0; i < max_len; i++) {
-	len = 0;
-	for (j = sp->Bnst_num - 1; j > -1; j--) {
-	    bnst_inverse_tree[i][len] = bnst_tree[j][i];
-	    len++;
-	}
-	if (len > max_inverse_len) {
-	    max_inverse_len = len;
-	}
-    }
-
-    /* change bnst_inverse_tree */
-    for (i = 0; i < max_len; i++) {
-	for (j = 0; j < sp->Bnst_num; j++) {
-	    if (bnst_inverse_tree[i][j] == down_corner) {
-		for (k = j + 1; k < sp->Bnst_num; k++) {
-		    if (bnst_inverse_tree[i][k] == down_corner) {
-			bnst_inverse_tree[i][k] = middle_corner;
-		    }
-		    else if (bnst_inverse_tree[i][k] == " ") {
-			bnst_inverse_tree[i][k] = link;
-		    }
-		    else {
-			break;
-		    }
-		}
-	    }
-	    else if (bnst_inverse_tree[i][j] == up_corner) {
-		for (k = j - 1; k > -1; k--) {
-		    if (bnst_inverse_tree[i][k] == up_corner) {
-			bnst_inverse_tree[i][k] = middle_corner;
-		    }
-		    else if (bnst_inverse_tree[i][k] == " ") {
-			bnst_inverse_tree[i][k] = link;
-		    }
-		    else {
-			break;
-		    }
-		}
-	    }
-	}
-    }
-
-    /* inverse tree again and print */
-    for (i = max_inverse_len - 1; i > -1; i--) {
-	if (max_inverse_len - 1 - i < 10) {
-	    fprintf(Outfp, "%d   ", max_inverse_len - 1 - i);
-	}
-	else if (max_inverse_len - 1 - i < 100) {
-	    fprintf(Outfp, "%d  ", max_inverse_len - 1 - i);
-	}
-	else {
-	    fprintf(Outfp, "%d ", max_inverse_len - 1 - i);
-	}
-	for (j = 0; j < max_len; j++) {
-	    if (bnst_inverse_tree[j][i] != "***") {
-		fprintf(Outfp, "%s", bnst_inverse_tree[j][i]);
-	    }
-	    else {
-		fprintf(Outfp, " ");
-	    }
-	}
-	fprintf(Outfp, "\n");
     }
 }
 

@@ -30,8 +30,6 @@ QUOTE_DATA quote_data;
     for (i = 0; i < sp->Bnst_num; i++) {
 	for (j = 0; j < sp->Bnst_num; j++) {
 	    Quote_matrix[i][j] = 1;
-	    Chi_quote_start_matrix[i][j] = -1;
-	    Chi_quote_end_matrix[i][j] = -1;
 	}
     }
 }
@@ -199,48 +197,6 @@ QUOTE_DATA quote_data;
 }
 
 /*==================================================================*/
-		  void mask_quote_for_chi(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    int i, j, k, start, end;
-
-    for (k = 0; quote_data.in_num[k] >= 0; k++) {
-
-	start = quote_data.in_num[k];
-	end = quote_data.out_num[k];
-
-	if (start == end) continue;	/* ㄠ妐濡分仃及喟裡反拑骰 */
-
-	if ((!OptChiPos && check_feature((sp->bnst_data+start)->f, "PU") && check_feature((sp->bnst_data+end)->f, "PU")) || OptChiPos) {
-	    /* 喟裡及曉及穴旦弁 */
-
-	    for (i = 0; i < start; i++) {
-		Quote_matrix[i][start] = 0;
-		Quote_matrix[i][end] = 0;
-	    }
-
-	    /* 喟裡及惘及穴旦弁 */
-
-	    for (i = end + 1; i < sp->Bnst_num; i++) {
-		Quote_matrix[start][i] = 0;
-		Quote_matrix[end][i] = 0;
-	    }
-
-	    Quote_matrix[start][end] = 0;
-
-	    for (j = start; j <= end; j++) {
-		for (i = j; i <= end; i++) {
-		    Chi_quote_start_matrix[j][i] = start;
-		    Chi_quote_end_matrix[j][i] = end;
-		}
-	    }
-	    Chi_quote_start_matrix[start][end] = -1;
-	    Chi_quote_end_matrix[start][end] = -1;
-	}
-    }
-}
-
-/*==================================================================*/
 		     int quote(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
@@ -248,20 +204,13 @@ QUOTE_DATA quote_data;
 
     init_quote(sp);
 
-   if (Language != CHINESE ||
-	(Language == CHINESE && !OptChiGenerative)) {
-	if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
-	    if (quote_p == CONTINUE) return quote_p;
 
-	    if (OptDisplay == OPT_DEBUG && Language != CHINESE) print_quote();
+    if ((quote_p = check_quote(sp))) {	/* 傢喟裡及腹請 */
+	if (quote_p == CONTINUE) return quote_p;
 
-	    if (Language != CHINESE) {
-		mask_quote(sp);			/* 墊昫及踏五晶尹 */
-	    }
-	    else {
-		mask_quote_for_chi(sp); // mask quote for Chinese
-	    }
-	}
+	if (OptDisplay == OPT_DEBUG) print_quote();
+
+	mask_quote(sp);			/* 墊昫及踏五晶尹 */
     }
 
     return quote_p;

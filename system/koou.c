@@ -48,18 +48,7 @@ int	koou_m_p[BNST_MAX];
 		if (OptDisplay == OPT_DEBUG) 
 		    fprintf(stderr, "Start (%d) %d\n", j, i);
 		for (k = i, c_ptr = b_ptr; k < sp->Bnst_num; k++, c_ptr++) {
-		    if (Language == CHINESE) {
-			pu_flag = 0;
-			for (l = i; l < k; l++) {
-			    if (check_feature((sp->bnst_data+l)->f, "PU")) {
-				pu_flag = 1;
-				break;
-			    }
-			}
-		    }
-		    else {
-			pu_flag = 0;
-		    }
+		    pu_flag = 0;
 		
 		    if (_regexpbnst_match(r_ptr->end_pattern, c_ptr) != -1 && 
 			(Language != CHINESE || 
@@ -121,81 +110,27 @@ int	koou_m_p[BNST_MAX];
 {
     int i, j, k, l, f_start, f_end;
 
-    if (Language == CHINESE) {
-	for (i = 0; i < sp->Bnst_num; i++){
-	    if (koou_m_p[i] == TRUE) {
-		f_start = -1;
-		f_end = -1;
-		for (j = i; j < sp->Bnst_num; j++){
-		    if (Koou_matrix[i][j] > 0) {
-			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
-			if (Koou_matrix[i][j] == 1) {
-			    f_end = j;
-			    if (f_start < 0)
-				f_start = j;
-			}
-			if (Koou_dpnd_matrix[i][j] == 'L') {
-			    for (k = j + 1; k < sp->Bnst_num; k++) {
-				Dpnd_matrix[j][k] = 0;
-			    }
-			    for (k = 0; k < i; k ++) {
-				Dpnd_matrix[k][j] = 0;
-			    }
-			    for (k = i + 1; k < j; k ++) {
-				for (l = 0; l < i; l++) {
-				    Dpnd_matrix[l][k] = 0;
-				}
-				for (l = j + 1; l < sp->Bnst_num; l++) {
-				    Dpnd_matrix[k][l] = 0;
-				}
-			    }
-			}
-			if (Koou_dpnd_matrix[i][j] == 'R') {
-			    for (k = i + 1; k < sp->Bnst_num; k++) {
-				if (k != j) {
-				    Dpnd_matrix[i][k] = 0;
-				}
-			    }
-			    for (k = 0; k < i; k ++) {
-				Dpnd_matrix[i][k] = 0;
-			    }
-			    for (k = i + 1; k < j; k ++) {
-				for (l = 0; l < i; l++) {
-				    Dpnd_matrix[l][k] = 0;
-				}
-				for (l = j + 1; l < sp->Bnst_num; l++) {
-				    Dpnd_matrix[k][l] = 0;
-				}
-			    }
-			}
+    for (i = 0; i < sp->Bnst_num; i++){
+	if (koou_m_p[i] == TRUE) {
+	    /* i -> f_start .. f_end という呼応 */
+	    f_start = -1;
+	    f_end = -1;
+	    for (j = i; j < sp->Bnst_num; j++){
+		if (Koou_matrix[i][j] > 0) {
+		    Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
+		    if (Koou_matrix[i][j] == 1) { /* end_pattern */
+			f_end = j; /* (複数ある)呼応内で係りうる最後の文節 */
+			if (f_start < 0)
+			    f_start = j; /* (複数ある)呼応内で係りうる最初の文節 */
 		    }
+		}
+		else {
+		    Dpnd_matrix[i][j] = 0;
 		}
 	    }
-	}
-    }
-    else {
-	for (i = 0; i < sp->Bnst_num; i++){
-	    if (koou_m_p[i] == TRUE) {
-		/* i -> f_start .. f_end という呼応 */
-		f_start = -1;
-		f_end = -1;
-		for (j = i; j < sp->Bnst_num; j++){
-		    if (Koou_matrix[i][j] > 0) {
-			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
-			if (Koou_matrix[i][j] == 1) { /* end_pattern */
-			    f_end = j; /* (複数ある)呼応内で係りうる最後の文節 */
-			    if (f_start < 0)
-				f_start = j; /* (複数ある)呼応内で係りうる最初の文節 */
-			}
-		    }
-		    else {
-			Dpnd_matrix[i][j] = 0;
-		    }
-		}
 
-		mask_for(sp, i, f_start, f_end); /* 内部(i,f_start)がf_end以降に係るのをマスク */
-		mask_back(i, f_start);  /* 前部[0,i)が(i,f_start)に係るのをマスク */
-	    }
+	    mask_for(sp, i, f_start, f_end); /* 内部(i,f_start)がf_end以降に係るのをマスク */
+	    mask_back(i, f_start);  /* 前部[0,i)が(i,f_start)に係るのをマスク */
 	}
     }
 }

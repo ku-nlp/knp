@@ -1312,45 +1312,5 @@ typedef struct entity_list {
 } ENTITY_LIST;
 
 /*====================================================================
-			 ENTITY BASE 文脈処理
-====================================================================*/
-
-/* 入力基本句の格構造 */
-typedef struct tcf_def {
-    CASE_FRAME 	    cf;				 /* 入力文の格構造 */
-    TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
-    TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
-    int 	    elem_b_num[CF_ELEMENT_MAX];	 /* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
-} TAG_CASE_FRAME;
-
-/* 基本句の格・省略解析結果の記録 */
-typedef struct ctm_def {
-    double      score;                           /* 対応付けのスコア */
-    double      case_score;                      /* 格解析の対応付けのスコア */
-    CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
-
-    /* 格フレームの要素のうち対応付けがついたもの
-       (=cf_element_numに含まれる)のみTRUEとなる */
-    int         filled_element[CF_ELEMENT_MAX];  
-
-    /* ENTITYのうち対応付けがついたもの
-       (=entity_numに含まれる)のみTRUEとなる */
-    int         filled_entity[ENTITY_MAX];
-
-    /* 対応付けられなかった入力文格要素
-       入力文格要素のうち対応が付いていないものの番号を保存 */
-    int         non_match_element[CF_ELEMENT_MAX]; 
-
-    /* 以下は基本句の格構造の情報 */
-    int         result_num;                      /* 対応付けられた要素数 */
-    int         case_result_num;                 /* 格解析で対応付けられた要素数 */
-    int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
-    int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
-    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
-    int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
-    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
-} CF_TAG_MGR;
-
-/*====================================================================
                                END
 ====================================================================*/

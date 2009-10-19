@@ -700,6 +700,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     else {
 	if (sent_n > 0) {
 	    /* 異常なタグ単位が指定されているかチェック */
+	    /*
 	    if (sp->Sen_num - sent_n < 1 || 
 		tag_n >= (sentence_data + sp->Sen_num - 1 - sent_n)->Tag_num) {
 		fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
@@ -707,6 +708,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    }
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
 	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sentence_data + sp->Sen_num - 1 - sent_n;
+	    */
 	}
 	/* 現在の対象文 (この文はまだsentence_dataに入っていないため、上のようには扱えない)
    	   異常なタグ単位が指定されているかのチェックはcheck_annotation()で行う */
@@ -886,15 +888,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		if (ArticleID && preArticleID && ArticleID != preArticleID) {
 		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, "New Article %s\n", input_buffer);
-		    if (OptEllipsis) {
-			ClearSentences(sp);
-		    }
 		    if (OptNE) {
 			clear_ne_cache();
 		    }
-		    /* if (OptEllipsis & OPT_COREFER) {
-			clear_entity_cache();
-			} */
 		}
 		preArticleID = ArticleID;
 	    }
@@ -1062,35 +1058,6 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    m_ptr->type = IS_MRPH_DATA;
 	    m_ptr->num = sp->Mrph_num;
 	    m_ptr->length = strlen(m_ptr->Goi2);
-
-	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
-		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
-		if (!OptChiPos) {
-		  strcpy(m_ptr->Pos, Hinshi_str);
-
-		  // treat different punc as different type
-		  if (!strcmp(Chi_word_type[m_ptr->Hinshi], "punc")) {
-		    if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "，")) {
-		      strcpy(m_ptr->Type, "punc");
-		    }
-		    else if (!strcmp(m_ptr->Goi, "：") || !strcmp(m_ptr->Goi, ":")) {
-		      strcpy(m_ptr->Type, "punc");
-		    }
-		    else if (!strcmp(m_ptr->Goi, "、")) {
-		      strcpy(m_ptr->Type, "punc");
-		    }
-		    else if (!strcmp(m_ptr->Goi, "；")) {
-		      strcpy(m_ptr->Type, "punc");
-		    }
-		    else {
-		      strcpy(m_ptr->Type, "");
-		    }
-		  }
-		  else {
-		    strcpy(m_ptr->Type, Chi_word_type[m_ptr->Hinshi]);
-		  }
-		}
-	    }
 
 	    if (mrph_item == 12) {
 		char *imip, *cp, *rep_buf;
@@ -1794,12 +1761,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
-	if (Language == CHINESE) {
-	    b_ptr->length += strlen(m_ptr->Goi2) * 2 / 3;
-	}
-	else {
-	    b_ptr->length += strlen(m_ptr->Goi2);
-	}
+	b_ptr->length += strlen(m_ptr->Goi2);
 
 	if (b_ptr->length > BNST_LENGTH_MAX) {
 	    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 

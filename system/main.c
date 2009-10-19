@@ -7,7 +7,6 @@
 #include "knp.h"
 
 SENTENCE_DATA	current_sentence_data;
-SENTENCE_DATA	sentence_data[SENTENCE_MAX];
 SENTENCE_DATA	*paren_sentence_data;
 
 MRPH_DATA 	mrph_data[MRPH_MAX];		/* 形態素データ */
@@ -17,7 +16,6 @@ PARA_DATA 	para_data[PARA_MAX]; 		/* 並列データ */
 PARA_MANAGER	para_manager[PARA_MAX];		/* 並列管理データ */
 TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
 TOTAL_MGR	Op_Best_mgr;
-ENTITY_MGR      entity_manager;                 /* ENTITY管理データ */
 
 int 		Revised_para_num;			
 
@@ -35,19 +33,6 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
-double          Chi_pa_matrix[BNST_MAX][BNST_MAX];  
-int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
-int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
-int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
-int             Chi_quote_end_matrix[BNST_MAX][BNST_MAX];
-CHI_DPND        Chi_dpnd_matrix[BNST_MAX][BNST_MAX];
-CHI_POS        Chi_pos_matrix[BNST_MAX];
-CHI_ROOT          Chi_root_prob_matrix[BNST_MAX];
-int             Chi_root;
-char            *Chi_word_type[CHI_POS_MAX];
-char            *Chi_word_pos[CHI_POS_MAX];
-int left_arg[CHI_ARG_NUM_MAX + 1];
-int right_arg[CHI_ARG_NUM_MAX + 1];
 
 char		**Options;
 int 		OptAnalysis;
@@ -101,29 +86,10 @@ int		OptParaFix;
 int		OptParaNoFixFlag;
 int		OptNbest;
 int		OptBeam;
-
-// option for Chinese
-// 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
-// 0 means use collins model, use chidpnd.db chi_pa.db
-int             OptChiGenerative; 
-
-// option for Chinese
-// 1 means do pos-tagging with parsing together
-// 0 means only do parsing
-int             OptChiPos; 
+int		OptUseSmfix;
 
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
-
-/* sentence id, only for Chinese */
-int             sen_num;
-
-/* Chinese fragment tag */
-int             is_frag;
-
-/* DB file for Chinese dpnd rule */
-DBM_FILE chi_dpnd_db;
-int     CHIDpndExist;
 
 /* Server Client Extention */
 static int	sfd, fd;
@@ -169,7 +135,7 @@ extern int	EX_match_subject;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|ellipsis|demonstrative|anaphora]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst]\n" 
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
@@ -243,8 +209,6 @@ extern int	EX_match_subject;
     OptParaNoFixFlag = 0;
     OptNbest = 0;
     OptBeam = 0;
-    OptChiGenerative = 0;
-    OptChiPos = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -347,12 +311,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-generate-from-eos")) {
 	    OptCaseFlag |= OPT_CASE_GENERATE_EOS;
 	}
-	else if (str_eq(argv[0], "-chi-generative")) {
-	     OptChiGenerative = 1;
-	}
-	else if (str_eq(argv[0], "-chi-pos")) {
-	     OptChiPos = 1;
-	}
 	else if (str_eq(argv[0], "-cky")) {
 	    OptCKY = TRUE;
 	}
@@ -367,145 +325,17 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-language")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
-	    if (!strcasecmp(argv[0], "chinese")) {
-		Language = CHINESE;
-		OptAnalysis = OPT_DPND;
-		OptCKY = TRUE;
-	    }
-	    else if (!strcasecmp(argv[0], "japaense")) {
+	    if (!strcasecmp(argv[0], "japaense")) {
 		Language = JAPANESE;
 	    }
 	    else {
 		usage();
 	    }
 	}
-	else if (str_eq(argv[0], "-ellipsis")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	}
-	else if (str_eq(argv[0], "-demonstrative")) {
-	    OptEllipsis |= OPT_DEMO;
-	}
-/* 	else if (str_eq(argv[0], "-anaphora")) { */
-/* 	    OptEllipsis |= OPT_ELLIPSIS; */
-/* 	    OptEllipsis |= OPT_DEMO; */
-/* 	} */
-	else if (str_eq(argv[0], "-anaphora")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_PRINT_ENTITY;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_COREFER;
-	}
-	else if (str_eq(argv[0], "-anaphora-normal")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_COREFER;
-	}	
-	else if (str_eq(argv[0], "-anaphora-copula")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_ANAPHORA_COPULA;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_COREFER;
-	}	
 	else if (str_eq(argv[0], "-read-ne")) {
 	    OptReadNE = 1;    
 	}
 #ifdef USE_SVM
-	else if (str_eq(argv[0], "-ellipsis-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_SVM;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-ellipsis-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-demonstrative-svm")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-best-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-flat-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_FLAT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-twin")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_TWIN_CAND;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-anaphora-svm-ranking")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscPredMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm-best")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-relation-noun-svm-ranking")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptDiscNounMethod = OPT_SVM;
-	}
-	else if (str_eq(argv[0], "-print-svm-features")) {
-	    PrintFeatures = 1;
-	}
 	else if (str_eq(argv[0], "-ne")) {
 	    OptNE = 1;
 	}
@@ -564,87 +394,9 @@ extern int	EX_match_subject;
 	    OptNECRF = 1;
 	}
 #endif
-	else if (str_eq(argv[0], "-ellipsis-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-ellipsis-dt-only")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptDiscPredMethod = OPT_DT;
-	    OptDiscFlag |= OPT_DISC_CLASS_ONLY;
-	}
-	else if (str_eq(argv[0], "-demonstrative-dt")) {
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-anaphora-dt")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscPredMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-relation-noun")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	}
-	else if (str_eq(argv[0], "-relation-noun-only")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptEllipsis &= ~OPT_ELLIPSIS; 
-	}	
-	else if (str_eq(argv[0], "-relation-comp-noun")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptUseCPNCF = TRUE;
-	}
-	else if (str_eq(argv[0], "-relation-no-comp-noun")) {
-	    OptUseCPNCF = FALSE;
-	}
-	else if (str_eq(argv[0], "-corefer")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
-	}
-	else if (str_eq(argv[0], "-corefer1")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptUseNCF = TRUE;
-	    OptCorefer = 1; /* 名詞格フレームを用いる */
-	}
-	else if (str_eq(argv[0], "-corefer2")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 2; /* 主辞と同様に扱う */
-	}
-	else if (str_eq(argv[0], "-corefer3")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 3; /* 主辞以外は修飾されないと考える */
-	}
-	else if (str_eq(argv[0], "-corefer4")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 4; /* 文節間の修飾を考慮しない */
-	}
-	else if (str_eq(argv[0], "-corefer5")) { /* 係り受け判定のオプション */
-	    OptEllipsis |= OPT_COREFER;
-	    OptCorefer = 5; /* 修飾を考慮しない */
-	}
-	else if (str_eq(argv[0], "-relation-noun-best")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscFlag |= OPT_DISC_BEST;
-	}
-	else if (str_eq(argv[0], "-relation-noun-dt")) {
-	    OptEllipsis |= OPT_REL_NOUN;
-	    OptDiscNounMethod = OPT_DT;
-	}
-	else if (str_eq(argv[0], "-anaphora-baseline")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptAnaphoraBaseline = OPT_BASELINE_NORMAL;
-	}
-	else if (str_eq(argv[0], "-anaphora-baseline-cook")) {
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_DEMO;
-	    OptDiscFlag |= OPT_DISC_RANKING;
-	    OptAnaphoraBaseline = OPT_BASELINE_COOK;
-	}
 	else if (str_eq(argv[0], "-learn")) {
 	    OptLearn = TRUE;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
-	    PrintFeatures = 1;
 	}
 	else if (str_eq(argv[0], "-no-wo-to")) {
 	    OptDiscFlag |= OPT_DISC_NO_WO_TO;
@@ -668,9 +420,6 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-print-frequency")) {
 	    PrintFrequency = 1;
-	}
-	else if (str_eq(argv[0], "-print-ex")) {
-	    PrintEx = 1;
 	}
 	else if (str_eq(argv[0], "-print-num")) {
 	    PrintNum = 1;
@@ -783,16 +532,6 @@ extern int	EX_match_subject;
 	    OptDiscFlag |= OPT_DISC_OR_CF;
 	}
 	/* 以下コスト調整用 */
-	else if (str_eq(argv[0], "-noun-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    AntecedentDecideThresholdForNoun = atof(argv[0]);
-	}
-	else if (str_eq(argv[0], "-cffix-th")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    CFSimThreshold = atof(argv[0]);
-	}
 	else if (str_eq(argv[0], "-sototh")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -906,15 +645,6 @@ extern int	EX_match_subject;
     if (argc != 0) {
 	usage();
     }
-
-    /* 文脈解析のときは必ず格解析を行う (CASE2)
-       解析済みデータのときは read_mrph() で CASE2 にしている
-       ただし、共参照解析のみを行う場合は除く */
-    if (OptEllipsis && (OptEllipsis != OPT_COREFER)) {
-	if (OptAnalysis != OPT_CASE && OptAnalysis != OPT_CASE2) {
-	    OptAnalysis = OPT_CASE2;
-	}
-    }
 }
 
 /*==================================================================*/
@@ -961,12 +691,7 @@ extern int	EX_match_subject;
 	}
 	/* 係り受けルール */
 	else if ((RULE+i)->type == DpndRuleType) {
-	    if (Language == CHINESE) {
-		read_dpnd_rule_for_chinese((RULE+i)->file);
-	    }
-	    else {
-		read_dpnd_rule((RULE+i)->file);
-	    }
+	    read_dpnd_rule((RULE+i)->file);
 	}
 	/* 呼応表現ルール */
 	else if ((RULE+i)->type == KoouRuleType) {
@@ -988,25 +713,12 @@ extern int	EX_match_subject;
     close_thesaurus();
     close_scase();
     close_auto_dic();
-    close_nv_mi();
-
-    if (Language == CHINESE) {
-	close_chi_dpnd_db();
-	free_chi_type();
-	free_chi_pos();
-    }
-
-    if (OptEllipsis) {
-	close_event();
-    }
 
 #ifdef USE_SVM
     if (OptNE && !OptNECRF) {
 	close_db_for_NE();
     }
 #endif
-    if (OptEllipsis & OPT_COREFER)
-	close_Synonym_db();
 
 #ifdef DB3DEBUG
     db_teardown();
@@ -1062,18 +774,6 @@ extern int	EX_match_subject;
 	if (!OptNECRF) init_db_for_NE(); /* NE用 */
     }
 
-    if (OptEllipsis & OPT_COREFER) {
-	init_Synonym_db();
-	/* init_entity_cache(); */
-    }
-
-    if (Language == CHINESE) {
-	init_hownet();
-	init_chi_dpnd_db();
-	init_chi_type();
-	init_chi_pos();
-    }
-
     init_juman();	/* JUMAN関係 */
     if (OptUseCF) {
 	init_cf();	/* 格フレームオープン */
@@ -1084,19 +784,7 @@ extern int	EX_match_subject;
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
     init_auto_dic();	/* 自動獲得辞書オープン */
-    init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
 
-    if (OptEllipsis) {
-#ifdef USE_SVM
-	if (OptDiscPredMethod == OPT_SVM || OptDiscNounMethod == OPT_SVM) {
-	    init_svm_for_anaphora();
-	}
-#endif
-	if (OptDiscPredMethod == OPT_DT || OptDiscNounMethod == OPT_DT) {
-	    init_dt();
-	}
-	init_event();
-    }
 #ifdef USE_SVM
     if (OptNE && !OptNElearn && !OptNECRF)
 	init_svm_for_NE();
@@ -1128,11 +816,6 @@ extern int	EX_match_subject;
 	 current_sentence_data.bnst_data[i].f = NULL;
     }
 
-    if (OptEllipsis) {
-	InitContextHash();
-	entity_manager.num = 0;
-    }
-
     set_timeout_signal();
 }
 
@@ -1142,20 +825,12 @@ extern int	EX_match_subject;
 {
     int i;
 
-    if (OptEllipsis) {
-	/* 中身は保存しておくので */
-	for (i = 0; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
-	    (sp->mrph_data+i)->f = NULL;
-	}
+    for (i = 0; i < sp->Mrph_num; i++) {
+	clear_feature(&(sp->mrph_data[i].f));
     }
-    else {
-	for (i = 0; i < sp->Mrph_num; i++) {
-	    clear_feature(&(sp->mrph_data[i].f));
-	}
-	/* New_Mrphはもともとpointer */
-	for (i = sp->Mrph_num; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
-	    (sp->mrph_data+i)->f = NULL;
-	}
+    /* New_Mrphはもともとpointer */
+    for (i = sp->Mrph_num; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
+	(sp->mrph_data+i)->f = NULL;
     }
 }
 
@@ -1165,23 +840,12 @@ extern int	EX_match_subject;
 {
     int i;
 
-    if (OptEllipsis) {
-	/* 中身は保存しておくので */
-	for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-	    (sp->bnst_data+i)->f = NULL;
-	}
+    for (i = 0; i < sp->Bnst_num; i++) {
+	clear_feature(&(sp->bnst_data[i].f));
     }
-    else {
-	for (i = 0; i < sp->Bnst_num; i++) {
-	    clear_feature(&(sp->bnst_data[i].f));
-	    if (Language == CHINESE) {
-		sp->bnst_data[i].is_para = -1;
-	    }
-	}
-	/* New_Bnstはもともとpointer */
-	for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-	    (sp->bnst_data+i)->f = NULL;
-	}
+    /* New_Bnstはもともとpointer */
+    for (i = sp->Bnst_num; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
+	(sp->bnst_data+i)->f = NULL;
     }
 }
 
@@ -1191,20 +855,12 @@ extern int	EX_match_subject;
 {
     int i;
 
-    if (OptEllipsis) {
-	/* 中身は保存しておくので */
-	for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
-	    (sp->tag_data+i)->f = NULL;
-	}
+    for (i = 0; i < sp->Tag_num; i++) {
+	clear_feature(&(sp->tag_data[i].f));
     }
-    else {
-	for (i = 0; i < sp->Tag_num; i++) {
-	    clear_feature(&(sp->tag_data[i].f));
-	}
-	/* New_Tagはもともとpointer */
-	for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
-	    (sp->tag_data+i)->f = NULL;
-	}
+    /* New_Tagはもともとpointer */
+    for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
+	(sp->tag_data+i)->f = NULL;
     }
 }
 
@@ -1303,9 +959,6 @@ extern int	EX_match_subject;
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
 	    delete_cfeature(&((sp->bnst_data+i)->f), "SM");
 	}
-	if (Language == CHINESE) {
-	    copy_feature(&(sp->bnst_data[i].f), sp->bnst_data[i].mrph_ptr->f);
-	}
     }
 
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
@@ -1358,41 +1011,14 @@ extern int	EX_match_subject;
     /* 本格的解析 */
     /**************/
 
-    if ((Language == CHINESE && !OptChiGenerative) ||
-	Language != CHINESE) {
-	calc_dpnd_matrix(sp);
-    }
-    else if (Language == CHINESE && OptChiGenerative) {
-      if (OptChiPos == 0) {
-	calc_chi_dpnd_matrix_forProbModel(sp);
-      }
-      else {
-	calc_chi_pos_matrix(sp);
-	calc_chi_dpnd_matrix_wpos(sp);
-      }
-    }
-
     /* 依存可能性計算 */
-    if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
-    if (Language == CHINESE && !OptChiGenerative) {
-	calc_gigaword_pa_matrix(sp);			/* get count of gigaword pa for Chinese */
-    }
+    if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
     /* 呼応表現の処理 */
 
     if (koou(sp) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_DPND, 0);
-
-    /* fragment for Chinese */
-    if (Language == CHINESE) {
-	if (!OptChiPos && fragment(sp) == TRUE) {
-	    if (OptDisplay == OPT_DEBUG) {
-		print_matrix(sp, PRINT_DPND, 0);
-	    }
-	    is_frag = 1;
-	}
-    }
 
     /* 鍵括弧の処理 */
 
@@ -1400,12 +1026,6 @@ extern int	EX_match_subject;
 	print_matrix(sp, PRINT_QUOTE, 0);
 
     if (flag == CONTINUE) return FALSE;
-
-    /* base phrase for Chinese */
-    if (Language == CHINESE && !OptChiPos) {
-	base_phrase(sp, is_frag);
-	print_matrix(sp, PRINT_DPND, 0);
-    }
 
     /* 係り受け関係がない場合の弛緩 */
 	
@@ -1496,15 +1116,9 @@ extern int	EX_match_subject;
     if (OptCKY) {
 	/* CKY */
 	if (cky(sp, sp->Best_mgr) == FALSE) {
-	    if (Language == CHINESE) {
-		printf("sentence %d cannot be parsed\n",sen_num);
-		return FALSE;
-	    }
-	    else {
-		sp->available = 0;
-		ErrorComment = strdup("Cannot detect dependency structure");
-		when_no_dpnd_struct(sp);
-	    }
+	    sp->available = 0;
+	    ErrorComment = strdup("Cannot detect dependency structure");
+	    when_no_dpnd_struct(sp);
 	}
 	else if (OptCheck == TRUE) {
 	    check_candidates(sp);
@@ -1553,10 +1167,6 @@ PARSED:
     /* 構造決定後のルール適用 */
     assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, FALSE);
     assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
-
-    /* 照応解析に必要なFEATUREの付与 */
-    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
-	assign_anaphor_feature(sp);
 
     /* 文節情報の表示 */
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
@@ -1614,12 +1224,6 @@ PARSED:
     /* initialization */
     init_for_one_sentence_analysis(sp);
 
-    /* get sentence id for Chinese */
-    if (Language == CHINESE) {
-	sen_num++;
-	is_frag = 0;
-    }
-
     sp->Sen_num++;
 
     /* 形態素の読み込み */
@@ -1649,15 +1253,6 @@ PARSED:
     /* 文脈解析 */
     /************/
 	       
-    if (OptEllipsis) {
-	assign_mrph_num(sp);
-	make_dpnd_tree(sp);
-	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
-	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	if (OptAnaphora) anaphora_analysis(sp);
-	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
-    }
-
     /* entity 情報の feature の作成 */
     if (OptDisplay  == OPT_ENTITY) {
 	prepare_all_entity(sp);
@@ -1760,9 +1355,6 @@ PARSED:
 		}
 		print_result(sp, 1);
 	    }
-	    else {
-		PreserveCPM(PreserveSentence(sp), sp);
-	    }
 	    fflush(Outfp);
 
 	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */
@@ -1787,12 +1379,6 @@ PARSED:
 	}
 
 	success = 1;	/* OK 成功 */
-    }
-
-    if (OptArticle && OptEllipsis) {
-	for (i = 0; i < sp->Sen_num - 1; i++) {
-	    print_result(sentence_data+i, 1);	    
-	}
     }
 }
 
@@ -1951,7 +1537,6 @@ static void sig_term()
 		    if (strstr(buf, "-case2"))  OptAnalysis = OPT_CASE2;
 		    if (strstr(buf, "-dpnd"))   OptAnalysis = OPT_DPND;
 		    if (strstr(buf, "-bnst"))   OptAnalysis = OPT_BNST;
-		    if (strstr(buf, "-ellipsis")) OptEllipsis |= OPT_ELLIPSIS;
 		    if (strstr(buf, "-tree"))   OptExpress = OPT_TREE;
 		    if (strstr(buf, "-sexp"))   OptExpress = OPT_SEXP;
 		    if (strstr(buf, "-tab"))    OptExpress = OPT_TAB;

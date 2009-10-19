@@ -22,6 +22,10 @@ int	ADJACENT_TOUTEN_COST	= 5;
 int	LEVELA_COST	= 4;
 int	TEIDAI_STEP	= 2;
 
+char *ETAG_name[] = {
+    "", "", "不特定:人", "一人称", "不特定:状況", 
+    "前文", "後文"};
+
 /*==================================================================*/
 			  void realloc_cmm()
 /*==================================================================*/
@@ -1677,7 +1681,6 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 {
     int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1, case_num;
     char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
-    ELLIPSIS_COMPONENT *ccp;
     TAG_DATA *elem_b_ptr;
 
     /* 格フレーム側からの記述
@@ -1689,8 +1692,6 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* それぞれの格要素 */
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
-					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
 	case_num = cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0];
 	if (case_num == END_M) { /* 正規化時に、対応先の格がない(NIL)場合 */
 	    continue;
@@ -1758,16 +1759,6 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
 		strcat(feature_buffer, cp);
 		free(cp);
-
-		/* 格・省略関係の保存 (文脈解析用) */
-		if (OptEllipsis) {
-		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				      cpm_ptr->pred_b_ptr->voice, 
-				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
-				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
-				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
-				      word, sent_n, tag_n, CREL);
-		}
 		if (word) free(word);
 	    }
 	}

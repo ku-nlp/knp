@@ -208,142 +208,11 @@ int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
 
     for (i = 0; i < m_ptr->child_num; i++) { 	/* 子供の再帰処理 */
 	if (check_para_d_struct(sp, m_ptr->child[i]) == FALSE) {
-	    if (Language == CHINESE) {
-		if (i == m_ptr->child_num - 1) {
-		    return FALSE;
-		}
-	    }
-	    else {
-		return FALSE;
-	    }
+	    return FALSE;
 	}
     }
-
-    if (Language == CHINESE) {
-	/* if the first word in a noun coordination is verb, then change it to be verb coordination */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    for (k = 0; k < m_ptr->para_num; k++) {
-		if (!check_feature((sp->bnst_data+m_ptr->start[k])->f, "VV") &&
-		    !check_feature((sp->bnst_data+m_ptr->start[k])->f, "VA") &&
-		    !check_feature((sp->bnst_data+m_ptr->start[k])->f, "VC") &&
-		    !check_feature((sp->bnst_data+m_ptr->start[k])->f, "VE")) {
-		    sp->bnst_data[m_ptr->end[0]].para_key_type = PARA_KEY_N;
-		    break;
-		}
-		else {
-		    sp->bnst_data[m_ptr->end[0]].para_key_type = PARA_KEY_P;
-		}
-	    }
-	}
-
-	/* if the last word in a noun coordination is not noun, then reduce the scope */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    for (k = m_ptr->end[m_ptr->part_num - 1]; k >= m_ptr->start[m_ptr->part_num - 1]; k--) {
-		if (check_feature((sp->bnst_data+k)->f, "NN") || 
-		    check_feature((sp->bnst_data+k)->f, "NR") || 
-		    check_feature((sp->bnst_data+k)->f, "NT") || 
-		    check_feature((sp->bnst_data+k)->f, "M") || 
-		    check_feature((sp->bnst_data+k)->f, "PN")) {
-		    m_ptr->end[m_ptr->part_num - 1] = k;
-		    break;
-		}
-	    }
-	}
-
-	/* if the first word in a noun coordination is verb or DEC, then reduce the scope */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    for (k = m_ptr->start[0]; k <= m_ptr->end[0]; k++) {
-		if (!check_feature((sp->bnst_data+k)->f, "VV") && 
-		    !check_feature((sp->bnst_data+k)->f, "VC") && 
-		    !check_feature((sp->bnst_data+k)->f, "VE") && 
-		    !check_feature((sp->bnst_data+k)->f, "VA") && 
-		    !check_feature((sp->bnst_data+k)->f, "P") && 
-		    !check_feature((sp->bnst_data+k)->f, "DEC")) {
-		    m_ptr->start[0] = k;
-		    break;
-		}
-	    }
-	}
-
-	/* if there is a verb in noun coordination, and there is no DEC, then reduce the coordination scope */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    for (k = 0; k < m_ptr->part_num; k++) {
-		if (exist_chi(sp, m_ptr->start[k], m_ptr->end[k], "verb") != -1 && exist_chi(sp, m_ptr->start[k], m_ptr->end[k], "DEC") == -1) {
-		    if (k == 0) {
-			m_ptr->start[k] = exist_chi(sp, m_ptr->start[k], m_ptr->end[k], "verb") + 1;
-		    }
-		}
-	    }
-	}
-
-	/* if the first word in a noun coordination is DEG, then enlarge the scope */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    if (check_feature((sp->bnst_data + m_ptr->start[0])->f, "DEG")) {
-		if (Chi_np_start_matrix[m_ptr->start[0] - 1][m_ptr->start[0] - 1] != -1) {
-		    m_ptr->start[0] = Chi_np_start_matrix[m_ptr->start[0] - 1][m_ptr->start[0] - 1];
-		}
-		else if (check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NN") || 
-			 check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NR") ||
-			 check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "PN")) {
-		    m_ptr->start[0]--;
-		}
-		else {
-		    m_ptr->start[0]++;
-		}
-	    }
-	}
-
-	for (k = 0; k < m_ptr->part_num; k++) {
-	    /* enlarge the coordination scope if there is a NR before the first NN of this coordination */
-	    if (check_feature((sp->bnst_data + m_ptr->start[0])->f, "NN") && m_ptr->start[0] != 0 && check_feature((sp->bnst_data + m_ptr->start[0] - 1)->f, "NR")) {
-		m_ptr->start[0]--;
-	    }
-
-	    // check if the scope of coordination conflict with the scope of baseNP
-	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
-		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
-		/* enlarge the coordination scope if it is the first conjunctive structure */
-		if (k == 0) {
-		    m_ptr->start[k] = Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
-		}
-	    }
-	    else if ((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
-		     (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
-		/* enlarge the coordination scope if it is the last conjunctive structure */
-		if (k == m_ptr->part_num - 1) {
-		    m_ptr->end[k] = Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
-		}
-	    }
-
-	    // check if the scope of coordination conflict with the scope of quote
-	    if (((Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) && 
-		 (Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
-		/* enlarge the coordination scope if it is the first conjunctive structure */
-		if (k == 0) {
-		    m_ptr->start[k] = Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]];
-		}
-	    }
-	    else if ((Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
-		     (Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
-		/* enlarge the coordination scope if it is the last conjunctive structure */
-		if (k == m_ptr->part_num - 1) {
-		    m_ptr->end[k] = Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]];
-		}
-	    }
-	}
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_P) {
-	    /* change the scope of verb coordination for Chinese, i.e. change [V][CC V] to be [V CC][V] */
-	    for (k = 0; k < m_ptr->part_num - 1; k++) {
-		(sp->bnst_data + m_ptr->start[k + 1])->para_num = (sp->bnst_data + m_ptr->end[k])->para_num;
-		(sp->bnst_data + m_ptr->end[k])->para_num = -1;
-		m_ptr->end[k] = m_ptr->start[k + 1];
-		m_ptr->start[k + 1]++;
-	    }
-	}
-    }
-
     
-	/* 体言文節の働きが曖昧なものが，並列構造解析で明確になる場合の処理
+    /* 体言文節の働きが曖昧なものが，並列構造解析で明確になる場合の処理
        ----------------------------------------------------------------
        例) 「風間さんは雑誌の編集者、恵美子さんは車メーカーのコンパニオン。」
        		「編集者」が判定詞省略であることがわかる
@@ -470,150 +339,64 @@ int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     for (k = start_pos; k < m_ptr->end[m_ptr->part_num-1]; k++)
 	D_check_array[k] = TRUE;
 
-    if (Language != CHINESE) { 
-	/* 先頭のconjunctのマスク */
-	k = 0;
-	for (i = 0; i < start_pos; i++) 	       /* < start_pos */
+    /* 先頭のconjunctのマスク */
+    k = 0;
+    for (i = 0; i < start_pos; i++) 	       /* < start_pos */
+	for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
+	    Mask_matrix[i][j] = 0;
+
+    /* ★★ 実験 endの上のカバーしない
+       for (i = start_pos; i < m_ptr->start[k]; i++)       end の上
+       Mask_matrix[i][m_ptr->end[k]] = 0;
+    */
+    for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
+	for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+	    Mask_matrix[i][j] = 0;
+
+    if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
+	for (i = 0; i < m_ptr->start[0]; i++)
+	    Mask_matrix[i][m_ptr->end[0]] = 0;
+    
+    /* 内部のconjunctのマスク */
+    for (k = 1; k < m_ptr->part_num - 1; k++) {
+	for (i = 0; i < m_ptr->start[k]; i++)
 	    for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
 		Mask_matrix[i][j] = 0;
 
-	/* ★★ 実験 endの上のカバーしない
-	   for (i = start_pos; i < m_ptr->start[k]; i++)       end の上
-	   Mask_matrix[i][m_ptr->end[k]] = 0;
-	*/
 	for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
 	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
 		Mask_matrix[i][j] = 0;
-
-	if (sp->para_data[m_ptr->para_data_num[0]].status == 's') /* 強並列 ??? */
-	    for (i = 0; i < m_ptr->start[0]; i++)
-		Mask_matrix[i][m_ptr->end[0]] = 0;
-    
-	/* 内部のconjunctのマスク */
-	for (k = 1; k < m_ptr->part_num - 1; k++) {
-	    for (i = 0; i < m_ptr->start[k]; i++)
-		for (j = m_ptr->start[k]; j <= m_ptr->end[k]; j++)
-		    Mask_matrix[i][j] = 0;
-
-	    for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-		for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		    Mask_matrix[i][j] = 0;
-	}
-    
-	/* 末尾のconjunctのマスク */
-	k = m_ptr->part_num - 1;
-	for (i = 0; i < m_ptr->start[k]; i++)
-	    for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
-		Mask_matrix[i][j] = 0;
-
-	for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
-	    for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
-		Mask_matrix[i][j] = 0;
-
-
-	/* 並列の係り先 */
-	for (k = 0; k < m_ptr->part_num - 1; k++) {
-	    Mask_matrix[m_ptr->end[k]][m_ptr->end[k+1]] = 2;
-	    /*
-	      Mask_matrix[m_ptr->end[k]][m_ptr->end[m_ptr->part_num - 1]] = 2;
-	    */
-	}
-
-	if (invalid_flag == TRUE)
-	    for (k = 0; k < m_ptr->part_num; k++)
-		for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
-		    if (D_found_array[i] == FALSE) {
-			Mask_matrix[i][m_ptr->end[k]] = 3;
-			Mask_matrix[i][m_ptr->end[m_ptr->part_num - 1]] = 3;
-		    }
     }
+    
+    /* 末尾のconjunctのマスク */
+    k = m_ptr->part_num - 1;
+    for (i = 0; i < m_ptr->start[k]; i++)
+	for (j = m_ptr->start[k]; j < m_ptr->end[k]; j++) /* < end */
+	    Mask_matrix[i][j] = 0;
+
+    for (i = m_ptr->start[k]; i < m_ptr->end[k]; i++)   /* < end */
+	for (j = m_ptr->end[k] + 1; j < sp->Bnst_num; j++)
+	    Mask_matrix[i][j] = 0;
+
+
+    /* 並列の係り先 */
+    for (k = 0; k < m_ptr->part_num - 1; k++) {
+	Mask_matrix[m_ptr->end[k]][m_ptr->end[k+1]] = 2;
+	/*
+	  Mask_matrix[m_ptr->end[k]][m_ptr->end[m_ptr->part_num - 1]] = 2;
+	*/
+    }
+
+    if (invalid_flag == TRUE)
+	for (k = 0; k < m_ptr->part_num; k++)
+	    for (i = m_ptr->start[k]; i <= m_ptr->end[k]; i++)
+		if (D_found_array[i] == FALSE) {
+		    Mask_matrix[i][m_ptr->end[k]] = 3;
+		    Mask_matrix[i][m_ptr->end[m_ptr->part_num - 1]] = 3;
+		}
 
     /* 部分並列の場合,Mask_matrixは最初のheadと最後のheadを3にしておく．
        最初のheadはdpnd.headをつくるとき，最後のheadはtreeを作る時に使う */
-
-    if (Language == CHINESE) {
-	/* if the first word in a noun coordination is P, and the following word is not noun, then remove this coordination */
-	if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    if (check_feature((sp->bnst_data+m_ptr->start[0])->f, "P") &&
-		!check_feature((sp->bnst_data+m_ptr->start[0]+1)->f, "NN") &&
-		!check_feature((sp->bnst_data+m_ptr->start[0]+1)->f, "NR") &&
-		!check_feature((sp->bnst_data+m_ptr->start[0]+1)->f, "NT") &&
-		!check_feature((sp->bnst_data+m_ptr->start[0]+1)->f, "PN")) {
-		return FALSE;
-	    }
-	}
-
-	for (k = 0; k < m_ptr->part_num; k++) {
-	    // check if the scope of coordination conflict with the scope of baseNP
-	    if (((Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) &&
-		 (Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_np_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
-		return FALSE;
-	    }
-	    else if ((Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
-		 (Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_np_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
-		return FALSE;
-	    }
-
-	    // check if the scope of coordination conflict with the scope of quote
-	    if (((Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_start_matrix[m_ptr->start[k]][m_ptr->start[k]] < m_ptr->start[k]) &&
-		 (Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] != -1 && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] >= m_ptr->start[k] && Chi_quote_end_matrix[m_ptr->start[k]][m_ptr->start[k]] <= m_ptr->end[k]))) {
-		return FALSE;
-	    }
-	    else if ((Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_start_matrix[m_ptr->end[k]][m_ptr->end[k]] >= m_ptr->start[k]) &&
-		 (Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] != -1 && Chi_quote_end_matrix[m_ptr->end[k]][m_ptr->end[k]] > m_ptr->end[k])) {
-		return FALSE;
-	    }
-	}
-
-	if (sp->bnst_data[m_ptr->end[0] - 1].para_key_type == PARA_KEY_P) {
-	    if (OptParaFix) {
-		// for verb coordination, mask the outside area for the non-first conjunction
-		for (i = 0; i < m_ptr->start[0]; i++) {
-		    for (j = m_ptr->start[1] + 1; j <= m_ptr->end[m_ptr->part_num - 1]; j++) {
-			Mask_matrix[i][j] = 0;
-		    }
-		}
-		for (i = m_ptr->start[1] + 1; i <= m_ptr->end[m_ptr->part_num - 1]; i++) {
-		    for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
-			Mask_matrix[i][j] = 0;
-		    }
-		}
-	    }
-
-	    for (k = 0; k < m_ptr->part_num; k++) {
-		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'V'; // verb coordination
-		if (k < m_ptr->part_num - 1) {
-		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[m_ptr->part_num - 2]; i++) {
-			Mask_matrix[i][m_ptr->end[k]] = 0;
-		    }
-		}
-	    }
-	}
-	else if (sp->bnst_data[m_ptr->end[0]].para_key_type == PARA_KEY_N) {
-	    if (OptParaFix) {
-		// for noun coordination, mask the outside area for the non-last conjunction
-		for (i = 0; i < m_ptr->start[0]; i++) {
-		    for (j = m_ptr->start[0]; j < m_ptr->start[m_ptr->part_num - 1]; j++) {
-			Mask_matrix[i][j] = 0;
-		    }
-		}
-		for (i = m_ptr->start[0]; i < m_ptr->start[m_ptr->part_num - 1]; i++) {
-		    for (j = m_ptr->end[m_ptr->part_num - 1] + 1; j < sp->Bnst_num; j++) {
-			Mask_matrix[i][j] = 0;
-		    }
-		}
-	    }
-
-	    for (k = 0; k < m_ptr->part_num; k++) {
-		Mask_matrix[m_ptr->start[k]][m_ptr->end[k]] = 'N'; // noun coordination
-		if (k > 0) {
-		    for (i = m_ptr->start[k] + 1; i < m_ptr->end[m_ptr->part_num - 1]; i++) {
-			Mask_matrix[m_ptr->start[k]][i] = 0;
-		    }
-		}
-	    }
-	}
-    }
 
     return TRUE;
 }
@@ -661,14 +444,7 @@ int check_para_d_struct(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr)
     for (i = 0; i < sp->Para_M_num; i++) {
 	if (sp->para_manager[i].parent == NULL) {
 	    if (check_para_d_struct(sp, &sp->para_manager[i]) == FALSE) {
-		if (Language == CHINESE) {
-		    if (i == sp->Para_M_num - 1) {
-			return FALSE;
-		    }
-		}
-		else {
-		    return FALSE;
-		}
+		return FALSE;
 	    }
 	}
     }

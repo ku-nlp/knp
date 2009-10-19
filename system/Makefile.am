@@ -5,27 +5,23 @@ INCLUDES = @KNP_CFLAGS@
 bin_PROGRAMS = knp
 
 pkglibexecdir= $(libexecdir)/knp
-pkglibexec_PROGRAMS = ipal make_db
+pkglibexec_PROGRAMS = make_cf_index make_db
 
 knp_SOURCES = \
-	anaphora.c \
 	case_analysis.c \
 	case_data.c \
 	case_data.h \
 	case_ipal.c \
+	case_ipal.h \
 	case_match.c \
 	case_print.c \
 	const.h \
-	context.c \
-	context.h \
-	corefer.c \
 	dbm.h \
 	dpnd_analysis.c \
 	extern.h \
 	feature.c \
 	knp.h \
 	koou.c \
-	base_phrase.c \
 	lib_bgh.c \
 	lib_dt.c \
 	lib_print.c \
@@ -43,7 +39,6 @@ knp_SOURCES = \
 	read_data.c \
 	read_rule.c \
 	regexp.c \
-	similarity.c \
 	tools.c \
 	tree_conv.c \
 	db.c \
@@ -52,10 +47,8 @@ knp_SOURCES = \
 	hash.c \
 	hash.h \
 	bnst_compare.c \
-	lib_event.c \
 	cky.c \
-	dic.c \
-	nv_mi.c
+	dic.c
 
 knp_LDADD = @KNP_LIBS@
 
