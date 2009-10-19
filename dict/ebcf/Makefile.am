@@ -1,7 +1,5 @@
 SUBDIRS = .
 
-EXTRA_DIST = chidpnd.dict chi_pa.dict
-
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
@@ -18,19 +16,6 @@ PROBCASE_DBS = case.db cfcase.db cfp.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
-endif
-
-HOWNET_DBS = hownet_def.db hownet_sem_def.db hownet_antonym.db hownet_category.db hownet_tran.db
-
-if HOWNET_EXIST
-nodist_dic_DATA += $(HOWNET_DBS)
-endif
-
-#CHIDIC = chidpnd.db chidpnd_prob.db chidpnd_stru.db chi_dis_comma.db chi_arg.db chi_pa.db
-CHIDIC = chidpnd.db chi_pa.db
-
-if CHIDIC_EXIST
-nodist_dic_DATA += $(CHIDIC)
 endif
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
@@ -101,94 +86,6 @@ cfcase.prob:
 	true
 
 cfcase.db: cfcase.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chi_pa.dict:
-	true
-
-chi_pa.db: chi_pa.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chidpnd.dict:
-	true
-
-chidpnd.db: chidpnd.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chidpnd_prob.dict:
-	true
-
-chidpnd_prob.db: chidpnd_prob.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chi_arg.dict:
-	true
-
-chi_arg.db: chi_arg.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chidpnd_stru.dict:
-	true
-
-chidpnd_stru.db: chidpnd_stru.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-chi_dis_comma.dict:
-	true
-
-chi_dis_comma.db: chi_dis_comma.dict
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.def:
-	true
-
-hownet_def.db: HowNet.def
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.tran:
-	true
-
-hownet_tran.db: HowNet.tran
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.antonym:
-	true
-
-hownet_antonym.db: HowNet.antonym
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.category:
-	true
-
-hownet_category.db: HowNet.category
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
-
-HowNet.SemDef:
-	true
-
-hownet_sem_def.db: HowNet.SemDef
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi

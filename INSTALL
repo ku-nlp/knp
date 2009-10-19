@@ -30,7 +30,7 @@ configure オプション
 デフォルトでは、ハッシュデータベースとして、TinyCDBを使用しますが、
 `./configure'にオプションを与えることにより他のハッシュデータベースを
 用いることもできます。GDBMの場合は "--with-gdbm"、Berkeley DB(Version
-3.X以上)の場合は、"--with-berkeley-db" を指定してください。
+3.X〜4.3)の場合は、"--with-berkeley-db" を指定してください。
 
 
 コンパイルオプション
