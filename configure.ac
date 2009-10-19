@@ -3,9 +3,7 @@ AC_INIT(knp, 3.0, nl-resource@nlp.kuee.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
-DATE=`echo "executing 'cvs history' to set VERSION" 1>&2; LANG=C cvs history -x MAR -p ${PACKAGE_NAME} -a | sort -k 2,2 | tail -n 1 | cut -f2 -d' ' | sed 's/-//g'`
-# DATE=`LANG=C date +%Y%m%d`
-AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION}-${DATE})
+AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION})
 AM_CONFIG_HEADER([config.h])
 
 
