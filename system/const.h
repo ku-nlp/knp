@@ -29,7 +29,7 @@
 				LENGTH
 ====================================================================*/
 #define	MRPH_MAX	200
-#define	BNST_MAX	200 /* 日本語の場合は64ぐらいで十分 */
+#define	BNST_MAX	100 /* 日本語の場合は64ぐらいで十分 */
 #define	BNST_LENGTH_MAX	256
 #define	TAG_MAX		200
 #define	PAREN_MAX	100
@@ -56,8 +56,8 @@
 #define	HomoRule_MAX	128
 #define BonusRule_MAX	16
 #define KoouRule_MAX	124
-#define DpndRule_MAX	128
-#define DpndRule_G_MAX	35
+#define DpndRule_MAX	124
+#define DpndRule_G_MAX	16
 #define ContRule_MAX	256
 #define DicForRule_MAX	1024
 #define NERule_MAX	512
