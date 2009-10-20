@@ -5,7 +5,7 @@ AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
 AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION})
 AM_CONFIG_HEADER([config.h])
-
+CF_VERSION="CF1.0"
 
 # Checks for programs.
 AC_PROG_CC
@@ -102,6 +102,7 @@ fi
 eval KNP_DICT=`eval echo "$KNP_DICT"`
 eval KNP_RULE=`eval echo "$KNP_RULE"`
 eval RC_DEFAULT=`eval echo "$RC_DEFAULT"`
+eval CF_VERSION=`eval echo "$CF_VERSION"`
 
 if test x"$juman_prefix" = x; then
     eval juman_prefix=`eval echo "$prefix"`
@@ -206,7 +207,7 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
-KNP_CFLAGS="$SVM_CFLAGS $CRF_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
+KNP_CFLAGS="$SVM_CFLAGS $CRF_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" -DCF_VERSION=\"\\\"$CF_VERSION\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
 

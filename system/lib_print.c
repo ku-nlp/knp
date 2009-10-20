@@ -1579,7 +1579,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     }
     
     if (OptInput == OPT_RAW) {
-	fprintf(Outfp, " KNP:%s", VERSION);
+	fprintf(Outfp, " KNP:%s-%s", VERSION, CF_VERSION);
 
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " DATE:%s", date_p);
