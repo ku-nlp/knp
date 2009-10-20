@@ -354,7 +354,16 @@ int	SM_AGENT_THRESHOLD = 0.40;
 	fp = cf_noun_fp;
     }
 
-    if (size > MAX_cf_frame_length) {
+    if (MAX_cf_frame_length == 0) {
+	MAX_cf_frame_length += ALLOCATION_STEP*(size/ALLOCATION_STEP+1);
+	CF_frame.DATA = 
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*MAX_cf_frame_length, 
+					 "get_ipal_frame");	
+	cf_str_buf = 
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*MAX_cf_frame_length, 
+					 "get_ipal_frame");
+    }
+    else if (size > MAX_cf_frame_length) {
 	MAX_cf_frame_length += ALLOCATION_STEP*((size-MAX_cf_frame_length)/ALLOCATION_STEP+1);
 	CF_frame.DATA = 
 	    (unsigned char *)realloc_data(CF_frame.DATA, 
@@ -1988,10 +1997,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     cf_ptr->type = CF_PRED;
 
     if (MAX_cf_frame_length == 0) {
+	MAX_cf_frame_length += ALLOCATION_STEP;
 	cf_str_buf = 
-	    (unsigned char *)realloc_data(cf_str_buf, 
-					  sizeof(unsigned char)*ALLOCATION_STEP, 
-					  "make_default_cframe");
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*ALLOCATION_STEP, 
+					 "make_default_cframe");
     }
 
     cf_ptr->pred_type[0] = '\0';

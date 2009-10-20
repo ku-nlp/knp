@@ -27,7 +27,6 @@ DBM_FILE		sm_db;
 DBM_FILE		sm2code_db;
 DBM_FILE		smp2smg_db;
 
-extern SENTENCE_DATA	sentence_data[];
 extern SENTENCE_DATA	current_sentence_data;
 
 extern ENTITY_MGR       entity_manager;
@@ -39,27 +38,6 @@ extern int 		Dpnd_matrix[][BNST_MAX];
 extern int 		Quote_matrix[][BNST_MAX];
 extern int 		Mask_matrix[][BNST_MAX];
 extern double 		Para_matrix[][BNST_MAX][BNST_MAX];
-
-/* store Chinese dpnd between words */
-extern CHI_DPND        Chi_dpnd_matrix[][BNST_MAX];
-extern CHI_POS        Chi_pos_matrix[];
-extern CHI_ROOT          Chi_root_prob_matrix[];
-extern char            *Chi_word_type[];
-extern char            *Chi_word_pos[];
-extern int left_arg[];
-extern int right_arg[];
-
-/* store count for gigaword pa pair */
-/* for cell (i,j), i is the position of argument, j is the position of predicate */
-extern double           Chi_pa_matrix[][BNST_MAX];  
- 
-extern int              Chi_np_start_matrix[][BNST_MAX];
-extern int              Chi_np_end_matrix[][BNST_MAX];
-
-extern int              Chi_quote_start_matrix[][BNST_MAX];
-extern int              Chi_quote_end_matrix[][BNST_MAX];
-
-extern int              Chi_root; /* store the root of this sentence */
 
 extern char		**Options;
 extern int 		OptAnalysis;
@@ -113,16 +91,6 @@ extern int		OptParaFix;
 extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
-
-// option for Chinese
-// 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
-// 0 means use collins model, use chidpnd.db chi_pa.db
-extern int              OptChiGenerative;
-
-// option for Chinese
-// 1 means do pos-tagging with parsing together
-// 0 means only do parsing
-extern int             OptChiPos; 
 
 extern VerboseType	VerboseLevel;
 
@@ -272,7 +240,6 @@ extern double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
 					   int as2, CASE_FRAME *cfp);
 extern double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag);
-extern double get_chi_pa(BNST_DATA *ptr1, BNST_DATA *ptr2, int dist);
 extern double get_np_modifying_probability(int as1, CASE_FRAME *cfd);
 extern double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *dp, CASE_FRAME *d_cf);
 extern double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num);
@@ -335,21 +302,12 @@ extern char *db_get(DBM_FILE db, char *buf);
 extern DBM_FILE db_read_open(char *filename);
 
 /* dpnd_analysis.c */
-extern void init_chi_dpnd_db();
-extern void close_chi_dpnd_db();
-extern void init_chi_type();
-extern void free_chi_type();
-extern void init_chi_pos();
-extern void free_chi_pos();
 extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_mrph(SENTENCE_DATA *sp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);
 extern int after_decide_dpnd(SENTENCE_DATA *sp);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
-extern void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp);
-extern void calc_chi_dpnd_matrix_wpos(SENTENCE_DATA *sp);
-extern void calc_chi_pos_matrix(SENTENCE_DATA *sp);
 extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
 extern void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag);
 extern void undo_tag_bnst_postprocess(SENTENCE_DATA *sp);
@@ -385,7 +343,6 @@ extern void delete_alt_feature(FEATURE **fpp);
 extern void delete_cfeature_from_mrphs(MRPH_DATA *m_ptr, int length, char *type);
 extern void copy_feature(FEATURE **dst_fpp, FEATURE *src_fp);
 extern int check_str_type(unsigned char *ucp);
-extern char* get_feature_for_chi (BNST_DATA *p_ptr);
 
 /* koou.c */
 int koou(SENTENCE_DATA *sp);
@@ -419,7 +376,6 @@ extern void check_bnst(SENTENCE_DATA *sp);
 extern void print_para_relation(SENTENCE_DATA *sp);
 extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
-extern void print_tree_for_chinese(SENTENCE_DATA *sp);
 extern void do_postprocess(SENTENCE_DATA *sp);
 extern void print_all_result(SENTENCE_DATA *sp);
 
@@ -522,7 +478,6 @@ extern char *get_rulev(char *cp);
 extern void read_homo_rule(char *file_name);
 extern void read_general_rule(RuleVector *rule);
 extern void read_dpnd_rule(char *file_name);
-extern void read_dpnd_rule_for_chinese(char *file_name);
 extern void read_koou_rule(char *file_name);
 extern void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max);
 extern void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max);
@@ -575,14 +530,6 @@ extern int ParseSentence(SENTENCE_DATA *s, char *input);
 /* cky.c */
 extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
 
-/* base_phrase.c */
-extern int base_phrase(SENTENCE_DATA *sp, int is_frag);
-extern int fragment(SENTENCE_DATA *sp);
-
-/* similarity.c */
-extern void init_hownet();
-extern float  similarity_chinese(char* str1, char* str2);
-
 /* dic.c */
 extern int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);
 
@@ -605,10 +552,6 @@ extern int GeneralRuleMax;
 extern FILE *Infp;
 extern FILE *Outfp;
 extern int   OptMode;
-
-/* context.c for anaphra.c */
-extern char *get_pred_id(char *cfid);
-extern CFLIST *CheckCF(char *key);
 
 /*====================================================================
 				 END

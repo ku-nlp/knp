@@ -1013,6 +1013,8 @@ extern int	EX_match_subject;
 
     /* 依存可能性計算 */
 
+    calc_dpnd_matrix(sp);
+
     if (OptDisplay == OPT_DEBUG) print_matrix(sp, PRINT_DPND, 0);
 
     /* 呼応表現の処理 */
