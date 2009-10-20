@@ -4,6 +4,7 @@ dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
 nodist_dic_DATA = cf.db cf.dat
+EXTRA_DIST = cf.knpdict case.prob cfcase.prob cfp.prob
 else
 nodist_dic_DATA = 
 endif
