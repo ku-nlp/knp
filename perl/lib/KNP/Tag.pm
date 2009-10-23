@@ -3,7 +3,7 @@ package KNP::Tag;
 require 5.004_04; # For base pragma.
 use KNP::Morpheme;
 use strict;
-use base qw/ KNP::Depend KNP::Fstring Juman::MList /;
+use base qw/ KNP::Depend KNP::Fstring KNP::MList /;
 use Encode;
 
 =head1 NAME
@@ -51,7 +51,7 @@ sub new {
 =head1 METHODS
 
 1つのタグは，複数の形態素からなる．したがって，タグオブジェクトは，形
-態素列オブジェクト C<Juman::MList> を継承するように実装され，形態素列
+態素列オブジェクト C<KNP::MList> を継承するように実装され，形態素列
 を取り出すための C<mrph> メソッドが利用可能である．
 
 タグ間の依存関係に関する情報を保持・操作するために，C<KNP::Depend> ク
@@ -143,7 +143,7 @@ L<KNP::Fstring>
 
 =item *
 
-L<Juman::MList>
+L<KNP::MList>
 
 =item *
 

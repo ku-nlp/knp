@@ -4,7 +4,7 @@ require 5.004_04; # For base pragma.
 use Carp;
 use KNP::Morpheme;
 use strict;
-use base qw/ KNP::Depend KNP::Fstring KNP::TList KNP::KULM::Bunsetsu Juman::MList /;
+use base qw/ KNP::Depend KNP::Fstring KNP::TList KNP::KULM::Bunsetsu KNP::MList /;
 
 =head1 NAME
 
@@ -51,7 +51,7 @@ sub new {
 =head1 METHODS
 
 1つの文節は複数の形態素からなるため，文節オブジェクトは形態素列オブジェ
-クト C<Juman::MList> を継承している．したがって，形態素列を取り出すた
+クト C<KNP::MList> を継承している．したがって，形態素列を取り出すた
 めの C<mrph> メソッドが利用可能である．
 
 また，格解析を行った場合は，1つの文節が複数のタグからなる場合もある．
@@ -70,7 +70,7 @@ sub mrph_list {
     if( $this->tag ){
 	$this->KNP::TList::mrph_list( @_ );
     } else {
-	$this->Juman::MList::mrph_list( @_ );
+	$this->KNP::MList::mrph_list( @_ );
     }
 }
 
@@ -84,7 +84,7 @@ sub push_mrph {
     if( $this->tag ){
 	$this->KNP::TList::push_mrph( @_ );
     } else {
-	$this->Juman::MList::push_mrph( @_ );
+	$this->KNP::MList::push_mrph( @_ );
     }
 }
 
@@ -95,7 +95,7 @@ sub push_mrph {
 =cut
 sub push_tag {
     my $this = shift;
-    if( $this->Juman::MList::mrph_list ){
+    if( $this->KNP::MList::mrph_list ){
 	# この文節には，タグに含まれていない形態素が既に存在しているの
 	# で，データの矛盾を引き起こす可能性がある．
 	carp "Unsafe addition of tags";
@@ -164,7 +164,7 @@ sub spec {
 	     $this->parent() ? $this->parent->id() : -1,
 	     $this->dpndtype(),
 	     $this->fstring(),
-	     ( $this->tag ? $this->KNP::TList::spec() : $this->Juman::MList::spec() ) );
+	     ( $this->tag ? $this->KNP::TList::spec() : $this->KNP::MList::spec() ) );
 }
 
 =back
@@ -200,7 +200,7 @@ L<KNP::TList>
 
 =item *
 
-L<Juman::MList>
+L<KNP::MList>
 
 =back
 

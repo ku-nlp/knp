@@ -13,6 +13,7 @@ lib/KNP/KULM/BList.pm
 lib/KNP/KULM/Bunsetsu.pm
 lib/KNP/KULM/Morpheme.pm
 lib/KNP/KULM/TList.pm
+lib/KNP/MList.pm
 lib/KNP/Morpheme.pm
 lib/KNP/Obsolete.pm
 lib/KNP/Result.pm
