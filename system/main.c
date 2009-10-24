@@ -329,6 +329,12 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-cf-category")) {
 	    OptGeneralCF |= OPT_CF_CATEGORY;
 	}
+	else if (str_eq(argv[0], "-no-cf-ne")) {
+	    OptGeneralCF &= ~OPT_CF_NE;
+	}
+	else if (str_eq(argv[0], "-no-cf-category")) {
+	    OptGeneralCF &= ~OPT_CF_CATEGORY;
+	}
 	else if (str_eq(argv[0], "-no-parafix")) {
 	    OptParaFix = FALSE;
 	}
@@ -395,6 +401,9 @@ extern int	EX_match_subject;
 	    OptCorefer = 4;
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_COREFER;
+	    OptCaseFlag &= ~OPT_CASE_FIX_CF_SEARCH;
+	    OptGeneralCF |= OPT_CF_NE;
+	    OptGeneralCF |= OPT_CF_CATEGORY;
 	}
 	else if (str_eq(argv[0], "-anaphora-normal")) {
 	    OptAnaphora |= OPT_ANAPHORA;

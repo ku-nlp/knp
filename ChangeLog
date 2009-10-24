@@ -1,3 +1,8 @@
+2009-10-25  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/main.c:
+	照応解析の際のデフォルトオプションを変更
+
 2009-10-18  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
