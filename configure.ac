@@ -197,22 +197,6 @@ else
 fi
 AC_MSG_RESULT([$prob_exist])
 
-AC_MSG_CHECKING([HowNet for Chinese])
-if test -f "$packagesrcdir/dict/ebcf/HowNet.def"; then
-    hownet_exist=yes
-else
-    hownet_exist=no
-fi
-AC_MSG_RESULT([$hownet_exist])
-
-AC_MSG_CHECKING([Dictionary for Chinese])
-if test -f "$packagesrcdir/dict/ebcf/chidpnd.db"; then
-    chidic_exist=yes
-else
-    chidic_exist=no
-fi
-AC_MSG_RESULT([$hownet_exist])
-
 AC_MSG_CHECKING([noun-verb MI DB])
 if test -f "$packagesrcdir/dict/auto/nv_mi.dat"; then
     nv_mi_exist=yes
@@ -225,8 +209,6 @@ AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
 AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 AM_CONDITIONAL(PROB_EXIST, test "$prob_exist" = yes)
-AM_CONDITIONAL(HOWNET_EXIST, test "$hownet_exist" = yes)
-AM_CONDITIONAL(CHIDIC_EXIST, test "$chidic_exist" = yes)
 AM_CONDITIONAL(NV_MI_EXIST, test "$nv_mi_exist" = yes)
 
 AC_SUBST(KNP_LIBS)
