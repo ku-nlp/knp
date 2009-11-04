@@ -127,11 +127,8 @@ sub zoho_format {
     $code = $code1.$code2.$code3.$code4.$code5;
 
     foreach $item (split(/・/,$hyouki)) {
-	print "$item $code\n";
-    }	
-    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
-	foreach $item (split(/・/,$yomi)) {
-	    print "$item $code\n";
+	foreach $yomi_item (split(/・/,$yomi)) {
+	    print "$item/$yomi_item $code\n";
 	}
     }
 }
@@ -156,11 +153,7 @@ sub fd_format {
     }
     $code = sprintf("%d%d%02d%03d", $code1, $code2, $code3, $code4);
 
-    print "$hyouki $code\n";
-
-    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
-	print "$yomi $code\n";
-    }
+    print "$hyouki/$yomi $code\n";
 }
 
 #
@@ -182,13 +175,10 @@ sub monitor_format {
     $code = sprintf("%d%d%02d%02d%02d", $code1, $code2, $code3, $code4, $code5);
 
     foreach $item (split(/・/,$hyouki)) {
-	print "$item $code\n";
+	foreach $yomi_item (split(/・/,$yomi)) {
+	    print "$item/$yomi_item $code\n";
+	}
 	# 「反作用・反動が生ずる」，「なすりあう・とりあう・愛し合う」など
 	# では不適当だがあきらめる．
     }	
-    if ($yomi !~ /$hyouki/ && length($yomi) > 1) {
-	foreach $item (split(/・/,$yomi)) {
-	    print "$item $code\n";
-	}
-    }
 }
