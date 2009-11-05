@@ -7,6 +7,11 @@ dicdir = $(pkgdatadir)/dict/scode/bgh
 nodist_dic_DATA = bgh.db sm2code.db
 endif
 
+bgh.orig:
+	if [ ! -f bgh.orig -a -f "@BGH_FILE@" ]; then \
+		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
+	fi
+
 usr_bgh.dat:
 	touch $@
 
