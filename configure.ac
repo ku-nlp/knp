@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, 3.0, nl-resource@nlp.kuee.kyoto-u.ac.jp)
+AC_INIT(knp, 3.01, nl-resource@nlp.kuee.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
