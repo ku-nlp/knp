@@ -1,3 +1,8 @@
+2009-11-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	用言の格要素と判断された要素と並列関係にある要素を省略解析の候補としないように変更
+
 2009-10-28  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* dict/ebcf/Makefile.am:

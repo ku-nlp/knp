@@ -1155,6 +1155,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     memset(ctm_ptr->filled_element, 0, sizeof(int) * CF_ELEMENT_MAX);
     memset(ctm_ptr->filled_entity, 0, sizeof(int) * ENTITY_MAX);
     for (j = 0; j < r_num; j++) {
+	/* 埋まっている格をチェック */
 	ctm_ptr->filled_element[ctm_ptr->cf_element_num[j]] = TRUE;
 	/* 類似している格も埋まっているものとして扱う */
 	for (k = 0; ctm_ptr->cf_ptr->samecase[k][0] != END_M; k++) {
@@ -1163,7 +1164,18 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    else if (ctm_ptr->cf_ptr->samecase[k][1] == ctm_ptr->cf_element_num[j])
 		ctm_ptr->filled_element[ctm_ptr->cf_ptr->samecase[k][0]] = TRUE;
 	}
+	/* 格を埋めた要素をチェック */
 	ctm_ptr->filled_entity[ctm_ptr->entity_num[j]] = TRUE;
+	/* 並列要素もチェック */
+	if (ctm_ptr->elem_b_ptr[j] && /* 格解析結果の場合のみ */
+	    check_feature(ctm_ptr->elem_b_ptr[j]->f, "体言") &&
+	    substance_tag_ptr(ctm_ptr->elem_b_ptr[j])->para_type == PARA_NORMAL) {
+    
+	    for (k = 0; substance_tag_ptr(ctm_ptr->elem_b_ptr[j])->parent->child[k]; k++) {
+		para_ptr = substance_tag_ptr(substance_tag_ptr(ctm_ptr->elem_b_ptr[j])->parent->child[k]);
+		ctm_ptr->filled_entity[para_ptr->mention_mgr.mention->entity->num] = TRUE;
+	    }
+	}		
     }
 
     /* 自分自身も不可 */
