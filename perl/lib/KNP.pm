@@ -367,6 +367,13 @@ sub _real_parse {
 	if ($this->{input_is_utf8}) {
 	    $str = Encode::decode('euc-jp', $str);
 	}
+	# 「;; Too many para ()!」などのエラーメッセージ
+	if( $str =~ /^;; Too /) {
+	    push( @error, $str);
+	    $this->close();
+	    return &_set_error( $this, join( '', @error ) );
+	}
+
 	push( @buf, $str );
 	last if $str =~ /$pattern/ and ! $skip--;
     }
