@@ -1,3 +1,17 @@
+2009-11-07  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP.pm:
+	KNPが「;; Too many para ()!」などのエラーメッセージを出力した時は、Timeoutの時間を待たずにすぐにぬけるようにした
+
+2009-10-23  murawaki  <murawaki@reed.kuee.kyoto-u.ac.jp>
+
+	* MANIFEST, lib/KNP/MList.pm, lib/KNP/Tag.pm, lib/KNP/Bunsetsu.pm:
+	KNP 固有の処理を Juman::MList から KNP::MList に移管
+
+2009-06-17  Daisuke Kawahara  <kawahara@reed.kuee.kyoto-u.ac.jp>
+
+	* lib/KNP/Depend.pm: Modified to permit right-to-left dependencies.
+
 2009-06-17  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* lib/KNP/Depend.pm:
@@ -7,11 +21,6 @@
 
 	* lib/KNP/Result.pm:
 	Added morpheme dependencies to all_dynamic().
-
-2009-04-01  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
-
-	* lib/KNP.pm:
-	KNPが「;; Too many para ()!」などのエラーメッセージを出力した時は、Timeoutの時間を待たずにすぐにぬけるようにした
 
 2009-01-23  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
