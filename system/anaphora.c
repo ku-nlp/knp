@@ -1167,7 +1167,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	/* 格を埋めた要素をチェック */
 	ctm_ptr->filled_entity[ctm_ptr->entity_num[j]] = TRUE;
 	/* 並列要素もチェック */
-	if (ctm_ptr->elem_b_ptr[j] && /* 格解析結果の場合のみ */
+	if (j < ctm_ptr->case_result_num && /* 格解析結果の場合のみ */
 	    check_feature(ctm_ptr->elem_b_ptr[j]->f, "体言") &&
 	    substance_tag_ptr(ctm_ptr->elem_b_ptr[j])->para_type == PARA_NORMAL) {
     
@@ -1245,8 +1245,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 			!(tag_ptr->tcf_ptr->cf.type == CF_NOUN &&
 			  entity_manager.entity[k].tmp_salience_flag) &&
 			!(tag_ptr->parent &&
-			  substance_tag_ptr(tag_ptr->parent)->mention_mgr.mention->entity->num
-			  == entity_manager.entity[k].num)) continue;
+			  substance_tag_ptr(tag_ptr->parent)->mention_mgr.mention->entity->num == 
+			  entity_manager.entity[k].num)) continue;
 
 		    /* 対象のENTITYがすでに対応付けられている場合は不可 */
 		    if (ctm_ptr->filled_entity[k]) continue;
