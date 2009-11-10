@@ -12,10 +12,15 @@ if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
 endif
 
-PROBCASE_DBS = adverb.db case.db cfcase.db cfp.db noun_co.db renyou.db
+PROBCASE_DBS = case.db cfcase.db cfp.db
+ADDITIONAL_PROBCASE_DBS = adverb.db noun_co.db renyou.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
+endif
+
+if ADDITIONAL_PROB_EXIST
+nodist_dic_DATA += $(ADDITIONAL_PROBCASE_DBS)
 endif
 
 IPALV1_FILE = /share/dict/ipal/orig/dousi1/dousi1.txt
@@ -116,4 +121,4 @@ noun_co.db: noun_co.prob
 
 prob: $(PROBCASE_DBS)
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx $(PROBCASE_DBS)
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
