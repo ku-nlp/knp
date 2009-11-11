@@ -1,3 +1,8 @@
+2009-11-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* configure.ac, system/dbm.h, system/db.c:
+	Added a support of Tokyo Cabinet.
+
 2009-11-10  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* configure.ac, dict/ebcf/Makefile.am:
