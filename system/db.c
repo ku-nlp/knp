@@ -524,6 +524,129 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 }
 
 #else
+
+#ifdef TOKYO_CABINET
+
+/* DB open for writing */
+DBM_FILE db_write_open(char *filename)
+{
+    DBM_FILE db;
+
+    db = tchdbnew(); /* make a hash object */
+
+    /* open a database */
+    if (!tchdbopen(db, filename, HDBOWRITER | HDBOCREAT)) {
+	int ecode = tchdbecode(db);
+        fprintf(stderr, "db_write_open: %s: %s\n", filename, tchdberrmsg(ecode));
+	return NULL;
+    }
+
+    return db;
+}
+
+/* DB open for reading */
+DBM_FILE db_read_open(char *filename)
+{
+    DBM_FILE db;
+
+    db = tchdbnew(); /* make a hash object */
+
+    /* open a database */
+    if (!tchdbopen(db, filename, HDBOREADER)) {
+	int ecode = tchdbecode(db);
+#ifdef DEBUG
+        fprintf(stderr, "db_read_open: %s: %s\n", filename, tchdberrmsg(ecode));
+#endif
+	return NULL;
+    }
+
+    return db;
+}
+
+/* DB put */
+int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
+{
+    if (mode == DBM_APPEND || mode == DBM_AND || mode == DBM_OR) {
+	if (!tchdbputkeep2(db, buf, value)) {
+	    /* key existence */
+	    int valuesize, contentsize, i;
+	    char *buffer, *content;
+
+	    valuesize = strlen(value);
+
+	    /* get the content which already exists */
+	    if (!(content = tchdbget2(db, buf))) {
+		int ecode = tchdbecode(db);
+		fprintf(stderr, "db_put : get error (%s)\n", tchdberrmsg(ecode));
+	    }
+	    else {
+		contentsize = strlen(content);
+
+		if (mode == DBM_APPEND) {
+		    if (Separator)
+			buffer = (char *)malloc_data(contentsize+valuesize+strlen(Separator)+1, "db_put");
+		    else
+			buffer = (char *)malloc_data(contentsize+valuesize+1, "db_put");
+		    strncpy(buffer, content, contentsize);
+		    buffer[contentsize] = '\0';
+		    if (Separator)
+			strcat(buffer, Separator);
+		    strcat(buffer, value);
+		}
+		else if (mode == DBM_AND) {
+		    for (i = 0; i < contentsize; i++)
+			if (*((char *)(content)+i) == '0')
+			    value[i] = '0';
+		    buffer = strdup(value);
+		}
+		else if (mode == DBM_OR) {
+		    for (i = 0; i < contentsize; i++)
+			if (*((char *)(content)+i) == '1')
+			    value[i] = '1';
+		    buffer = strdup(value);
+		}
+		free(content);
+		if (!tchdbput2(db, buf, buffer)) {
+		    int ecode = tchdbecode(db);
+		    fprintf(stderr, "db_put : put error (%s)\n", tchdberrmsg(ecode));
+		}
+		free(buffer);
+	    }
+	}
+    }
+    else if (mode == DBM_OVERRIDE) {
+	if (!tchdbput2(db, buf, value)) {
+	    int ecode = tchdbecode(db);
+	    fprintf(stderr, "db_put : put error (%s)\n", tchdberrmsg(ecode));
+	}
+    }
+    else {
+	fprintf(stderr, "db_put : Invalid mode (%d)\n", mode);
+	exit(1);
+    }
+    return 0;
+}
+
+/* DB get */
+char *db_get(DBM_FILE db, char *buf)
+{
+    return tchdbget2(db, buf);
+}
+
+/* DB close */
+void db_close(DBM_FILE db)
+{
+    if(!tchdbclose(db)){
+	int ecode = tchdbecode(db);
+	fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
+    }
+
+    /* Delete DB object */
+    tchdbdel(db);
+}
+
+#else
+
 /* BerkeleyDB 2 */
 
 /* DB open for reading */
@@ -700,6 +823,7 @@ int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
     return 0;
 }
 
+#endif
 #endif
 #endif
 #endif

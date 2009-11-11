@@ -13,8 +13,6 @@
 
 #ifdef GDBM
 
-/*  for GDBM  */
-
 #include <gdbm.h>
 
 typedef GDBM_FILE DBM_FILE;
@@ -72,10 +70,25 @@ typedef CDB_FILE *DBM_FILE;
 
 #else
 
+#ifdef TOKYO_CABINET
+
+#include <tcutil.h>
+#include <tchdb.h>
+
+typedef	TCHDB	*DBM_FILE;
+
+/* #define	db_get(dbf, buf) \
+   tchdbget2(dbf, buf) */
+
+#else
+
+/* for BerkeleyDB */
+
 #include <db.h>
 typedef DB *DBM_FILE;
 
-#endif
+#endif /* TOKYO_CABINET */
+#endif /* CDB */
 
 /*  functions  */
 
@@ -84,5 +97,5 @@ typedef DB *DBM_FILE;
 #define DB_close(dbf) \
     db_close(dbf)
 
-#endif
-#endif
+#endif /* INTERNAL_HASH */
+#endif /* GDBM */

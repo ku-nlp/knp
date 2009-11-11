@@ -22,6 +22,7 @@ AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
 AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (default)]))
+AC_ARG_WITH(tokyo-cabinet, AC_HELP_STRING([--with-tokyo-cabinet], [use Tokyo Cabinet library]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
 AC_ARG_WITH(crf, AC_HELP_STRING([--with-crf], [use CRFPP library (optional)]))
 AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
@@ -144,6 +145,9 @@ elif ( test "x$with_gdbm" = xyes ); then
 	         AC_MSG_ERROR(not found.))
 elif ( test "x$with_intdb" = xyes ); then
     ETC_CFLAGS="-DINTERNAL_HASH $ETC_CFLAGS"
+elif ( test "x$with_tokyo_cabinet" = xyes ); then
+    AC_CHECK_LIB(tokyocabinet, tchdbnew, DB_LIBS="-ltokyocabinet $DB_LIBS" ETC_CFLAGS="-DTOKYO_CABINET $ETC_CFLAGS", 
+	         AC_MSG_ERROR(not found.))
 else
     AC_CHECK_LIB(cdb, cdb_make_start, DB_LIBS="-lcdb $DB_LIBS" ETC_CFLAGS="-DCDB $ETC_CFLAGS", 
 	         AC_MSG_ERROR([Constant DB library is not found. Please install TinyCDB (http://www.corpit.ru/mjt/tinycdb.html).]))
