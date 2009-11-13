@@ -1,3 +1,8 @@
+2009-11-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/case_analysis.rule:
+	Fixed an inconsistency of clausal modifiee rules.
+
 2009-11-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* configure.ac, system/dbm.h, system/db.c:
