@@ -38,12 +38,11 @@
 #define SIGX               10 /* SVMの結果を確率に近似するシグモイド関数の係数 */
 
 DBM_FILE ne_db;
-
 char *DBforNE;
 char TagPosition[NE_MODEL_NUMBER][TAG_POSITION_NAME];
 char *Tag_name[] = {
     "ORGANIZATION", "PERSON", "LOCATION", "ARTIFACT",
-    "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "\0"};
+    "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "OPTIONAL", "\0"};
 char *Position_name[] = {
     "head", "middle", "tail", "single", "\0"};
 char *Imi_feature[] = {"組織", "人", "主体", "場所", "\0"};
@@ -227,7 +226,13 @@ char *ne_code_to_tagposition(int num)
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(i));
 	if (check_feature(fp, cp)) return i;
     }
-    return i;
+    for (i = 0; i < NE_POSITION_NUMBER; i++) {
+	sprintf(cp, "NE:OPTIONAL:%s", Position_name[i]);
+	if (check_feature(fp, cp)) {
+	    return NE_MODEL_NUMBER + 3 + i;
+	}
+    }
+    return NE_MODEL_NUMBER - 1;
 }
 
 /*==================================================================*/
@@ -652,7 +657,7 @@ char *ne_code_to_tagposition(int num)
 	    code = ne_tagposition_to_code(cp + 3);
 	}
 	else {
-	    code = 32;
+	    code = NE_MODEL_NUMBER - 1;
 	}  
 	NE_mgr[i].NEresult = code;
 	if (OptDisplay == OPT_DEBUG) {
@@ -828,12 +833,10 @@ char *ne_code_to_tagposition(int num)
 	if (i == sp->tag_data[j].mrph_num) continue;
 
 	/* ORGANIZATION、PERSONの場合は意味素として与える */
-	if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4],
-		    "ORGANIZATION")) {
+	if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4], "ORGANIZATION")) {
 	    assign_sm((BNST_DATA *)(sp->tag_data +j), "組織");
 	}
-	else if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4],
-			 "PERSON")) {
+	else if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4], "PERSON")) {
 	    assign_sm((BNST_DATA *)(sp->tag_data + j), "人");
 	}
  
@@ -842,8 +845,14 @@ char *ne_code_to_tagposition(int num)
 	while(1) {
 	    if (get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) == NE_MODEL_NUMBER - 1) {
 		OptNElearn ?
-		    fprintf(stdout, "Illegal NE ending!!\n") :
-		    fprintf(stderr, "Illegal NE ending!!\n");
+		    fprintf(stdout, "Illegal NE ending %s \"%s %s\"!!\n", 
+			    sp->KNPSID, 
+			    (sp->tag_data[j].mrph_ptr + i - 1)->Goi2,
+			    (sp->tag_data[j].mrph_ptr + i)->Goi2) :
+		    fprintf(stderr, "Illegal NE ending %s \"%s %s\"!!\n", 
+			    sp->KNPSID, 
+			    (sp->tag_data[j].mrph_ptr + i - 1)->Goi2,
+			    (sp->tag_data[j].mrph_ptr + i)->Goi2);		   
 		break;
 	    }    
 	    
@@ -863,7 +872,7 @@ char *ne_code_to_tagposition(int num)
 	    if (i == sp->tag_data[j].mrph_num) {
 		i = 0;
 		sprintf(cp_nai, "NE内:%s",
-		    Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
+			Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 		assign_cfeature(&(sp->tag_data[j].f), cp_nai, FALSE);
 		j++;
 	    }
@@ -907,12 +916,17 @@ char *ne_code_to_tagposition(int num)
     char *cp;
 
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (!check_feature(sp->mrph_data[i].f, "NE:OPTIONAL") &&
-	    (cp = check_feature(sp->mrph_data[i].f, "NE"))) {
+	if (cp = check_feature(sp->mrph_data[i].f, "NE:OPTIONAL")) {
+	    for (j = 0; j < NE_POSITION_NUMBER; j++) {
+		!strcmp(Position_name[j], cp + strlen("NE:OPTIONAL"));
+		code = NE_MODEL_NUMBER - 1 + j;
+	    }
+	}
+	else if (cp = check_feature(sp->mrph_data[i].f, "NE")) {
 	    code = ne_tagposition_to_code(cp + 3);
 	}
 	else {
-	    code = 32;
+	    code = NE_MODEL_NUMBER - 1;
 	}  
 	NE_mgr[i].NEresult = code;
     }

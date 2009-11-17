@@ -1,3 +1,8 @@
+2009-11-17  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/proper.c:
+	固有表現タグとしてOPTIONALが付与されたコーパスの読み込みに対応
+
 2009-11-13  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/case_analysis.rule:
