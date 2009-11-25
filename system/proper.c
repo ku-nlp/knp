@@ -916,13 +916,13 @@ char *ne_code_to_tagposition(int num)
     char *cp;
 
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (cp = check_feature(sp->mrph_data[i].f, "NE:OPTIONAL")) {
+	if ((cp = check_feature(sp->mrph_data[i].f, "NE:OPTIONAL"))) {
 	    for (j = 0; j < NE_POSITION_NUMBER; j++) {
 		!strcmp(Position_name[j], cp + strlen("NE:OPTIONAL"));
 		code = NE_MODEL_NUMBER - 1 + j;
 	    }
 	}
-	else if (cp = check_feature(sp->mrph_data[i].f, "NE")) {
+	else if ((cp = check_feature(sp->mrph_data[i].f, "NE"))) {
 	    code = ne_tagposition_to_code(cp + 3);
 	}
 	else {

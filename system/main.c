@@ -275,6 +275,7 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-mrphtree")) OptExpress = OPT_MRPHTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
+	else if (str_eq(argv[0], "-test"))   OptExpress  = OPT_TEST;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
@@ -401,7 +402,6 @@ extern int	EX_match_subject;
 	    OptCorefer = 4;
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_COREFER;
-	    OptCaseFlag &= ~OPT_CASE_FIX_CF_SEARCH;
 	    OptGeneralCF |= OPT_CF_NE;
 	    OptGeneralCF |= OPT_CF_CATEGORY;
 	}

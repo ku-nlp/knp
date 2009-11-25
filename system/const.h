@@ -155,6 +155,7 @@
 #define OPT_MRPH	4
 #define OPT_TABLE      16
 #define OPT_PA	       32
+#define OPT_TEST       64
 #define OPT_BNSTTREE	3 /* NOTAGTREE */
 #define OPT_MRPHTREE	5
 #define OPT_NORMAL	1
@@ -1323,6 +1324,20 @@ typedef struct tcf_def {
     int 	    elem_b_num[CF_ELEMENT_MAX];	 /* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
 } TAG_CASE_FRAME;
 
+/* CF_TAG_MGR中のomit_feature用の定数 */
+#define ELLIPSIS_CASE_NUM 3
+#define EX_PROB_CS        0 /* ある格スロットが与えられたときの語の出現確率 */	       
+#define EX_PROB           1 /* 語の出現確率 */					       
+#define CEX_PROB_CS       2 /* ある格スロットが与えられたときのカテゴリの出現確率 */  
+#define CEX_PROB          3 /* カテゴリの出現確率 */				       
+#define NEX_PROB_CS       4 /* ある格スロットが与えられたときの固有表現の出現確率 */  
+#define NEX_PROB          5 /* 固有表現の出現確率 */				       
+#define SCASE_PROB_CS     6 /* ある格スロットが与えられたときの表層格の出現確率 */    
+#define SCASE_PROB        7 /* 表層格の出現確率 */    
+#define LOCATION_PROB     8 /* 位置カテゴリの確率 */                                  
+#define NO_ASSIGNMENT     9 /* ある格スロットが対応付けられない確率 */
+#define O_FEATURE_NUM    10
+
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
@@ -1349,6 +1364,11 @@ typedef struct ctm_def {
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
     char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
+
+    /* 機械学習用のfeature */
+    double cf_select_score;                                /* 格フレーム選択確率(以下いずれも対数) */
+    double overt_arguments_score;                          /* 非省略格要素との対応付けスコア */    
+    double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* 省略対応付け評価のための素性 */
 } CF_TAG_MGR;
 
 /*====================================================================

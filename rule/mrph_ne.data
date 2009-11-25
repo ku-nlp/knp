@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; 人名の連続はひとつのタグ単位とする
-( ( ?* ) ( (* * * * * ((^&OptCheck:use-smallest-phrase NE:PERSON:middle)(^&OptCheck:use-smallest-phrase NE:PERSON:tail))) ) ( ?* ) ^文節始 ^タグ単位始 )
+;; ( ( ?* ) ( (* * * * * ((^&OptCheck:use-smallest-phrase NE:PERSON:middle)(^&OptCheck:use-smallest-phrase NE:PERSON:tail))) ) ( ?* ) ^文節始 ^タグ単位始 )
 
 ;;; 普通名詞＋組織、人名、場所、人工物の場合別の文節、タグにする
 ;;; ただし「訪米」「対ロシア」「駐日」「在日」などがあるので一文字限定
