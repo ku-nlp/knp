@@ -535,7 +535,7 @@ DBM_FILE db_write_open(char *filename)
     db = tchdbnew(); /* make a hash object */
 
     /* open a database */
-    if (!tchdbopen(db, filename, HDBOWRITER | HDBOCREAT)) {
+    if (!tchdbopen(db, filename, HDBOWRITER | HDBOCREAT | HDBOTRUNC)) {
 	int ecode = tchdbecode(db);
         fprintf(stderr, "db_write_open: %s: %s\n", filename, tchdberrmsg(ecode));
 	return NULL;
