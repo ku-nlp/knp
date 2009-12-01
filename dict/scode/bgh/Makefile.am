@@ -8,7 +8,7 @@ nodist_dic_DATA = bgh.db sm2code.db
 endif
 
 bgh.orig:
-	if [ ! -f bgh.orig -a -f "@BGH_FILE@" ]; then \
+	if [ -f "@BGH_FILE@" ]; then \
 		../../src/bgh.pl < "@BGH_FILE@" > bgh.orig; \
 	fi
 
@@ -32,4 +32,4 @@ bgh.db: bgh.dat
 sm2code.db: sm2code.dat
 	@MAKE_DB_COMMAND@ $@ < $<
 
-CLEANFILES = bgh.db bgh.dat sm2code.db
+CLEANFILES = bgh.db bgh.dat bgh.orig sm2code.db
