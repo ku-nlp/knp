@@ -1,5 +1,8 @@
 2009-12-02  Daisuke Kawahara  <dk@nict.go.jp>
 
+	* rule/modality.rule:
+	Fixed some modality rules.
+
 	* system/case_ipal.c:
 	Modified to interpolate case and adverb probabilities between a predicate and a case frame.
 
