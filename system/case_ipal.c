@@ -2302,55 +2302,82 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
 /*==================================================================*/
 {
-    /* 格確率 P(ガ格○|食べる) */
+    /* 格確率 P(ガ格○|食べる:動2)
+       KNP格解析結果から計算 (cfcases.prob) */
 
-    char *key, *value, *verb;
-    double ret;
+    char *key, *value, *verb, *cp;
+    double pred_ret = 0, cf_ret = 0;
+    int denominator = 0;
 
     if (CFCaseExist == FALSE) {
 	return 0;
     }
 
+    /* 格フレーム */
+    key = malloc_db_buf(strlen(case_str) + strlen(cfp->cf_id) + 2);
+    sprintf(key, "%s|%s", case_str, cfp->cf_id);
+    value = db_get(cf_case_db, key);
+    if (value) {
+	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+	    cf_ret = atof(value);
+	    /* denominator = 0; -> 用言のみで */
+	}
+	free(value);
+    }
+    else {
+	/* obtain the denominator */
+	sprintf(key, "NIL|%s", cfp->cf_id);
+	value = db_get(cf_case_db, key);
+	if (value) { /* cf_ret should be 0 */
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+		cf_ret = atof(value); /* 0 */
+		/* denominator = 0; -> 用言のみで */
+	    }
+	}
+    }
+
     /* 用言表記 */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
-
-    key = malloc_db_buf(strlen(case_str) + strlen(cfp->cf_id) + 2);
-
-    /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s|%s", case_str, verb); /* cfp->cf_id); */
+    sprintf(key, "%s|%s", case_str, verb);
     value = db_get(cf_case_db, key);
-    free(verb);
-
     if (value) {
-	ret = atof(value);
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
+	if ((cp = strchr(value, '/'))) {
+	    cp = '\0';
 	}
+	pred_ret = atof(value);
 	free(value);
-	if (aflag == FALSE) {
-	    ret = 1 - ret;
-	}
-	if (ret == 0) {
-	    ret = UNKNOWN_CASE_SCORE;
-	}
-	else {
-	    ret = log(ret);
-	}
+    }
+
+    /* interpolation between cf and pred */
+    if (denominator > 0) {
+        double lambda = (double)denominator / (denominator + 1);
+        if (VerboseLevel >= VERBOSE2) {
+            fprintf(Outfp, ";; (C) lambda * P(%s|%s) + (1 - lambda) * P\(%s|%s) = %lf * %lf + %lf * %lf\n", 
+		    case_str, cfp->cf_id, case_str, verb, 
+		    lambda, cf_ret, (1 - lambda), pred_ret);
+        }
+        pred_ret *= 1 - lambda;
+        pred_ret += lambda * cf_ret;
     }
     else {
 	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
-	}
-	if (aflag == FALSE) {
-	    ret = 0;
-	}
-	else {
-	    ret = UNKNOWN_CASE_SCORE;
+	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
 	}
     }
 
-    return ret;
+    free(verb);
+    if (aflag == FALSE) {
+	pred_ret = 1 - pred_ret;
+    }
+    if (pred_ret == 0) {
+	pred_ret = UNKNOWN_CASE_SCORE;
+    }
+    else {
+	pred_ret = log(pred_ret);
+    }
+
+    return pred_ret;
 }
 
 /*==================================================================*/
@@ -2360,59 +2387,7 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
     /* 格確率 P(ガ格○|食べる:動2)
        KNP格解析結果から計算 (cfcases.prob) */
 
-    char *key, *value, *verb;
-    double ret;
-
-    if (CFCaseExist == FALSE) {
-	return 0;
-    }
-
-    /* 用言表記 */
-    verb = strdup(cfp->cf_id);
-    sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
-
-    key = malloc_db_buf(strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 
-			strlen(cfp->cf_id) + 2);
-
-    /* 用言表記でやった方がよいみたい */
-    sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), verb); /* cfp->cf_id); */
-    value = db_get(cf_case_db, key);
-
-    /* if (!value) { * back-off *
-	sprintf(key, "%s|%s", pp_code_to_kstr(cfp->pp[as2][0]), verb);
-	value = db_get(cf_case_db, key);
-	} */
-    free(verb);
-
-    if (value) {
-	ret = atof(value);
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
-	}
-	free(value);
-	if (aflag == FALSE) {
-	    ret = 1 - ret;
-	}
-	if (ret == 0) {
-	    ret = UNKNOWN_CASE_SCORE;
-	}
-	else {
-	    ret = log(ret);
-	}
-    }
-    else {
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
-	}
-	if (aflag == FALSE) {
-	    ret = 0;
-	}
-	else {
-	    ret = UNKNOWN_CASE_SCORE;
-	}
-    }
-
-    return ret;
+    return get_case_probability_for_pred(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag);
 }
 
 /*==================================================================*/
@@ -2422,44 +2397,76 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
     /* 格の個数確率 P(2|食べる:動2)
        KNP格解析結果から計算 (cfcases.prob) */
 
-    char *key, *value, *verb;
-    double ret;
+    char *key, *value, *verb, *cp;
+    double cf_ret = 0, pred_ret = 0;
+    int denominator = 0;
 
     if (CFCaseExist == FALSE) {
 	return 0;
     }
 
+    /* 格フレーム */
+    key = malloc_db_buf(strlen(cfp->cf_id) + 6);
+    sprintf(key, "%d|N:%s", num, cfp->cf_id);
+    value = db_get(cf_case_db, key);
+    if (value) {
+	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+	    cf_ret = atof(value);
+	    /* denominator = 0; -> 用言のみで */
+	}
+	free(value);
+    }
+    else {
+	/* obtain the denominator */
+	sprintf(key, "NIL|N:%s", cfp->cf_id);
+	value = db_get(cf_case_db, key);
+	if (value) { /* cf_ret should be 0 */
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+		cf_ret = atof(value); /* 0 */
+		/* denominator = 0; -> 用言のみで */
+	    }
+	}
+    }
+
     /* 用言表記 */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
-
-    key = malloc_db_buf(strlen(cfp->cf_id) + 6);
-
-    sprintf(key, "%d|N:%s", num, verb); /* cfp->cf_id */
+    sprintf(key, "%d|N:%s", num, verb);
     value = db_get(cf_case_db, key);
-
-    /* if (!value) {
-	sprintf(key, "%d|N:%s", num, verb);
-	value = db_get(cf_case_db, key);
-	} */
-    free(verb);
-
     if (value) {
-	ret = atof(value);
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, ret);
+	if ((cp = strchr(value, '/'))) {
+	    cp = '\0';
 	}
+	pred_ret = atof(value);
 	free(value);
-	ret = log(ret);
+    }
+
+    /* interpolation between cf and pred */
+    if (denominator > 0) {
+        double lambda = (double)denominator / (denominator + 1);
+        if (VerboseLevel >= VERBOSE2) {
+            fprintf(Outfp, ";; (CN) lambda * P(%d|N:%s) + (1 - lambda) * P\(%d|N:%s) = %lf * %lf + %lf * %lf\n", 
+		    num, cfp->cf_id, num, verb, 
+		    lambda, cf_ret, (1 - lambda), pred_ret);
+        }
+        pred_ret *= 1 - lambda;
+        pred_ret += lambda * cf_ret;
     }
     else {
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
+	if (VerboseLevel >= VERBOSE2) {
+	    fprintf(Outfp, ";; (CN) P(%s) = %lf\n", key, pred_ret);
 	}
-	ret = UNKNOWN_CASE_SCORE;
     }
 
-    return ret;
+    free(verb);
+    if (pred_ret == 0) {
+	pred_ret = UNKNOWN_CASE_SCORE;
+    }
+    else {
+	pred_ret = log(pred_ret);
+    }
+
+    return pred_ret;
 }
 
 /*==================================================================*/
@@ -3554,60 +3561,103 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
 double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *dp)
 /*==================================================================*/
 {
-    char *pred, *key, *value;
+    char *pred, *key, *value, *cp, *mrph_str;
     int touten_flag, dist;
-    double ret1, ret2;
+    double pred_ret = 0, cf_ret = 0, punc_ret = 0;
+    int denominator = 0, rep_malloc_flag = 0;
 
-    /* 副詞 -> 用言 */
+    /* 副詞 -> 格フレーム or 用言 */
     if (cfp) {
 	if (AdverbExist == TRUE) {
-	    pred = strdup(cfp->cf_id);
-	    sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
-	    key = malloc_db_buf(strlen(pred) + strlen(dp->head_ptr->Goi) + 3);
-	    sprintf(key, "%s|%s", dp->head_ptr->Goi, pred);
-	    value = db_get(adverb_db, key);
-	    if (value) {
-		ret1 = atof(value);
-		free(value);
-		if (VerboseLevel >= VERBOSE1) {
-		    fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
-		}
-		ret1 = log(ret1);
-	    }
-	    else {
-		sprintf(key, "NIL|%s", pred);
-		value = db_get(adverb_db, key);
-		if (value) {
-		    ret1 = atof(value);
-		    free(value);
-		    if (VerboseLevel >= VERBOSE1) {
-			fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, ret1);
-		    }
-		    if (ret1 > 0) {
-			ret1 = log(ret1);
-		    }
-		    else {
-			ret1 = UNKNOWN_RENYOU_SCORE;
-		    }
+	    /* 副詞表記の取得 */
+	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
+		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+		    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+		    mrph_str = strdup(cp);
+		    rep_malloc_flag = 1;
 		}
 		else {
-		    if (VerboseLevel >= VERBOSE1) {
-			fprintf(Outfp, ";; (A) P(%s) = 0\n", key);
+		    mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
+		    if (mrph_str == NULL) {
+			mrph_str = make_mrph_rn(dp->head_ptr);
+			rep_malloc_flag = 1;
 		    }
-		    ret1 = UNKNOWN_RENYOU_SCORE;
 		}
 	    }
+	    else {
+		mrph_str = dp->head_ptr->Goi;
+	    }
+
+	    /* 格フレーム */
+	    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(mrph_str) + 3);
+	    sprintf(key, "%s|%s", mrph_str, cfp->cf_id);
+	    value = db_get(adverb_db, key);
+	    if (value) {
+		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+		    cf_ret = atof(value);
+		    /* denominator = 0; -> 用言のみで */
+		}
+		free(value);
+	    }
+	    else {
+		/* obtain the denominator */
+		sprintf(key, "NIL|%s", cfp->cf_id);
+		value = db_get(adverb_db, key);
+		if (value) { /* cf_ret should be 0 */
+		    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+			cf_ret = atof(value); /* 0 */
+			/* denominator = 0; -> 用言のみで */
+		    }
+		}
+	    }
+
+	    /* 用言表記 */
+	    pred = strdup(cfp->cf_id);
+	    sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
+	    sprintf(key, "%s|%s", mrph_str, pred);
+	    value = db_get(adverb_db, key);
+	    if (value) {
+		if ((cp = strchr(value, '/'))) {
+		    cp = '\0';
+		}
+		pred_ret = atof(value);
+		free(value);
+	    }
+
+	    /* interpolation between cf and pred */
+	    if (denominator > 0) {
+		double lambda = (double)denominator / (denominator + 1);
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (A) lambda * P(%s|%s) + (1 - lambda) * P\(%s|%s) = %lf * %lf + %lf * %lf\n", 
+			    mrph_str, cfp->cf_id, mrph_str, pred, 
+			    lambda, cf_ret, (1 - lambda), pred_ret);
+		}
+		pred_ret *= 1 - lambda;
+		pred_ret += lambda * cf_ret;
+	    }
+	    else {
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (A) P(%s) = %lf\n", key, pred_ret);
+		}
+	    }
+
+	    if (rep_malloc_flag) {
+		free(mrph_str);
+	    }
 	    free(pred);
-	}
-	else {
-	    ret1 = 0;
+	    if (pred_ret == 0) {
+		pred_ret = UNKNOWN_RENYOU_SCORE;
+	    }
+	    else {
+		pred_ret = log(pred_ret);
+	    }
 	}
 
 	/* 読点の生成 */
 	touten_flag = check_feature(dp->b_ptr->f, "読点") ? 1 : 0;
 
 	if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
-	    ret2 = UNKNOWN_RENYOU_SCORE;
+	    punc_ret = UNKNOWN_RENYOU_SCORE;
 	}
 	else {
 	    int closest_pred_flag = 0;
@@ -3619,21 +3669,21 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 	    sprintf(key, "%d|P副詞:%d,%d", touten_flag, dist, closest_pred_flag);
 	    value = db_get(case_db, key);
 	    if (value) {
-		ret2 = atof(value);
-		if (VerboseLevel >= VERBOSE1) {
-		    fprintf(Outfp, ";; (A_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, ret2);
+		punc_ret = atof(value);
+		if (VerboseLevel >= VERBOSE2) {
+		    fprintf(Outfp, ";; (A_P) [%s -> %s] : P(%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key, punc_ret);
 		}
 		free(value);
-		ret2 = log(ret2);
+		punc_ret = log(punc_ret);
 	    }
 	    else {
-		ret2 = UNKNOWN_RENYOU_SCORE;
-		if (VerboseLevel >= VERBOSE1) {
+		punc_ret = UNKNOWN_RENYOU_SCORE;
+		if (VerboseLevel >= VERBOSE2) {
 		    fprintf(Outfp, ";; (A_P) [%s -> %s] : P(%s) = 0\n", dp->head_ptr->Goi, gp->head_ptr->Goi, key);
 		}
 	    }
 	}
-	return ret1 + ret2;
+	return pred_ret + punc_ret;
     }
     else {
 	return 0;
@@ -3644,35 +3694,74 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int num)
 /*==================================================================*/
 {
-    char *pred, *key, *value;
-    double ret = 0;
+    char *pred, *key, *value, *cp;
+    double cf_ret = 0, pred_ret = 0;
+    int denominator = 0;
 
     if (AdverbExist == FALSE) {
 	return 0;
     }
 
     if (cfp) {
+	/* 格フレーム */
+	key = malloc_db_buf(strlen(cfp->cf_id) + 6);
+	sprintf(key, "%d|N:%s", num, cfp->cf_id);
+	value = db_get(adverb_db, key);
+	if (value) {
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+		cf_ret = atof(value);
+		/* denominator = 0; -> 用言のみで */
+	    }
+	    free(value);
+	}
+	else {
+	    /* obtain the denominator */
+	    sprintf(key, "NIL|N:%s", cfp->cf_id);
+	    value = db_get(adverb_db, key);
+	    if (value) { /* cf_ret should be 0 */
+		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
+		    cf_ret = atof(value); /* 0 */
+		    /* denominator = 0; -> 用言のみで */
+		}
+	    }
+	}
+
+	/* 用言表記 */
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
-	key = malloc_db_buf(strlen(pred) + 6);
 	sprintf(key, "%d|N:%s", num, pred);
 	value = db_get(adverb_db, key);
 	if (value) {
-	    ret = atof(value);
+	    if ((cp = strchr(value, '/'))) {
+		cp = '\0';
+	    }
+	    pred_ret = atof(value);
 	    free(value);
 	}
 
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (AN) %s: P(%d|%s) = %lf\n", t_ptr->head_ptr->Goi, num, pred, ret);
+	/* interpolation between cf and pred */
+	if (denominator > 0) {
+	    double lambda = (double)denominator / (denominator + 1);
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (AN) lambda * P(%d|N:%s) + (1 - lambda) * P\(%d|N:%s) = %lf * %lf + %lf * %lf\n", 
+			num, cfp->cf_id, num, pred, 
+			lambda, cf_ret, (1 - lambda), pred_ret);
+	    }
+	    pred_ret *= 1 - lambda;
+	    pred_ret += lambda * cf_ret;
+	}
+	else {
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (AN) P(%s) = %lf\n", key, pred_ret);
+	    }
 	}
 
 	free(pred);
-
-	if (ret) {
-	    return log(ret);
+	if (pred_ret == 0) {
+	    return UNKNOWN_RENYOU_SCORE;
 	}
 	else {
-	    return UNKNOWN_RENYOU_SCORE;
+	    return log(pred_ret);
 	}
     }
     else {
@@ -3944,7 +4033,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     }
     if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) {
 	ret2 /= (double)elem_num;
-	if (VerboseLevel >= VERBOSE1) {
+	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (NOUN_N) is divided by %d => %.5f\n", elem_num, ret2);
 	}
     }
