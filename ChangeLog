@@ -1,3 +1,13 @@
+2009-12-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified to interpolate case and adverb probabilities between a predicate and a case frame.
+
+2009-11-29  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/db.c:
+	Modified an opening option of Tokyo Cabinet.
+
 2009-11-25  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/mrph_ne.rule:
