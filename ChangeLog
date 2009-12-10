@@ -1,3 +1,8 @@
+2009-12-10  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added KANJI morphemes of coordination keys.
+
 2009-12-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule:
