@@ -3,6 +3,9 @@
 	* rule/mrph_basic.rule:
 	Added KANJI morphemes of coordination keys.
 
+	* rule/bnst_basic.rule:
+	Fixed handling of some suffixes related to voice.
+
 2009-12-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule:
