@@ -2001,6 +2001,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	cf_str_buf = 
 	    (unsigned char *)malloc_data(sizeof(unsigned char)*ALLOCATION_STEP, 
 					 "make_default_cframe");
+	CF_frame.DATA = 
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*ALLOCATION_STEP, 
+					 "make_default_cframe");	
     }
 
     cf_ptr->pred_type[0] = '\0';
