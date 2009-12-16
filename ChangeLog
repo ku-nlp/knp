@@ -1,3 +1,16 @@
+2009-12-16  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/search_query.data, rule/search_query.rule:
+	ルールの整理（ストップワードの追加，コメントの追加など）
+
+2009-12-15  kawahara  <kawahara@nlpc01.kuro.nii-chiba.ac.jp>
+
+	* system/case_ipal.c: Fixed a bug of memory initialization.
+
+2009-12-14  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/modality.data, rule/modality.rule: Fixed a modality rule.
+
 2009-12-14  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/modality.rule:
