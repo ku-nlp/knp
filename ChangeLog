@@ -1,3 +1,9 @@
+2009-12-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.data, rule/mrph_basic.rule:
+	全角スペースを付属語として扱うように変更
+	移動動詞とするルールに「出る」を追加
+
 2009-12-16  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.data, rule/search_query.rule:
