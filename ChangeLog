@@ -1,17 +1,29 @@
+2009-12-29  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_etc.rule:
+	Fixed a rule of complementizer.
+
+	* rule/bnst_type.phrase:
+	Fixed rules of complementizer.
+
+	* rule/bnst_basic.rule:
+	Modified rules of figures and frequencies.
+
 2009-12-20  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/mrph_basic.data, rule/mrph_basic.rule:
 	全角スペースを付属語として扱うように変更
 	移動動詞とするルールに「出る」を追加
 
+2009-12-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_basic.rule:
+	Added a missing feature for the counter "tsu."
+
 2009-12-16  Keiji Shinzato  <shinzato@nlp.kuee.kyoto-u.ac.jp>
 
 	* rule/search_query.data, rule/search_query.rule:
 	ルールの整理（ストップワードの追加，コメントの追加など）
-
-2009-12-15  kawahara  <kawahara@nlpc01.kuro.nii-chiba.ac.jp>
-
-	* system/case_ipal.c: Fixed a bug of memory initialization.
 
 2009-12-14  Daisuke Kawahara  <dk@nict.go.jp>
 
