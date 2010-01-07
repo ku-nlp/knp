@@ -2,7 +2,7 @@ echo off
 
 if not exist bunruidb.txt goto error
 
-perl bgh.pl < bunruidb.txt > bgh.dat
+perl bgh.pl < bunruidb.txt | perl post_process_bgh.pl > bgh.dat
 del /F bgh.db
 make_db bgh.db < bgh.dat
 del /F sm2code.db
