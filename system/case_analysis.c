@@ -1622,7 +1622,9 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
     /* 直接の係り受けの場合: elem_b_ptrがpara_top_p */
     if (cpm_ptr->elem_b_ptr[num]->para_top_p) {
 	for (j = 1; cpm_ptr->elem_b_ptr[num]->child[j]; j++) { /* 0は自分と同じでチェックされている */
-	    if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL) {
+	    if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL && 
+		(cpm_ptr->pred_b_ptr->num > cpm_ptr->elem_b_ptr[num]->num || 
+		 cpm_ptr->elem_b_ptr[num]->child[j]->num > cpm_ptr->pred_b_ptr->num)) { /* 連体修飾の場合は用言より後のみ */
 		word = make_print_string(cpm_ptr->elem_b_ptr[num]->child[j], 0);
 		cp = make_cc_string(word ? word : "(null)", cpm_ptr->elem_b_ptr[num]->child[j]->num, 
 				    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[cf_i][0]), 
