@@ -1,3 +1,13 @@
+2010-01-08  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c:
+	Fixed postprocess of case structure analysis for coordination.
+
+2010-01-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/bnst_type.phrase:
+	Narrowed the range of sentential complement.
+
 2009-12-29  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* rule/bnst_etc.rule:
