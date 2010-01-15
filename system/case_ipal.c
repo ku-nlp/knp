@@ -148,10 +148,12 @@ int	SM_AGENT_THRESHOLD = 0.40;
     /* Éû»ì³ÎÎ¨DB (adverb.db) */
     adverb_db = open_dict(ADVERB_DB, ADVERB_DB_NAME, &AdverbExist);
 
-    /* ÊÂÎó³ÎÎ¨DB (para.db) */
-    para_db = open_dict(PARA_DB, PARA_DB_NAME, &ParaExist);
+    if (OptParaFix == FALSE) {
+	/* ÊÂÎó³ÎÎ¨DB (para.db) */
+	para_db = open_dict(PARA_DB, PARA_DB_NAME, &ParaExist);
+    }
 
-    /* Ì¾»ì¶¦µ¯³ÎÎ¨DB (noun-co.db) */
+    /* Ì¾»ì¶¦µ¯³ÎÎ¨DB (noun_co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
     if (Language == CHINESE) {
@@ -1990,10 +1992,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     cf_ptr->type = CF_PRED;
 
     if (MAX_cf_frame_length == 0) {
+	MAX_cf_frame_length += ALLOCATION_STEP;
 	cf_str_buf = 
-	    (unsigned char *)realloc_data(cf_str_buf, 
-					  sizeof(unsigned char)*ALLOCATION_STEP, 
-					  "make_default_cframe");
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*ALLOCATION_STEP, 
+					 "make_default_cframe");
+	CF_frame.DATA = 
+	    (unsigned char *)malloc_data(sizeof(unsigned char)*ALLOCATION_STEP, 
+					 "make_default_cframe");
     }
 
     cf_ptr->pred_type[0] = '\0';
