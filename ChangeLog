@@ -1,3 +1,8 @@
+2010-01-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/db.c:
+	Fixed a compilation problem (thanks to Kaname Kasahara <kaname@cslab.kecl.ntt.co.jp>).
+
 2010-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
@@ -5,6 +10,12 @@
 	解析対象とするsalience_scoreの閾値を変更(基本的に2文前までの候補は対象とする)
 	省略解析結果に用言レベルの出力を追加
 	文頭文節の主辞を省略解析の先行詞候補に追加
+
+2010-01-15  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipal.c:
+	Modified not to open a needless db.
+	Fixed a memory leak problem.
 
 2010-01-08  Daisuke Kawahara  <dk@nict.go.jp>
 
