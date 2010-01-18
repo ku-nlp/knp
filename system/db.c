@@ -477,7 +477,11 @@ DBM_FILE db_write_open(char *filename)
     db = (DBM_FILE)malloc_data(sizeof(CDB_FILE), "db_write_open");
     db->mode = O_CREAT | O_RDWR | O_TRUNC;
 
+#ifndef _WIN32
+    if ((db->fd = open(filename, db->mode, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) < 0) {
+#else
     if ((db->fd = open(filename, db->mode)) < 0) {
+#endif
         fprintf(stderr, "db_write_open: %s: %s\n", filename, (char *)strerror(errno));
 	return NULL;
     }
@@ -491,9 +495,6 @@ void db_close(DBM_FILE db)
 {
     if (db->mode & O_CREAT) {
 	cdb_make_finish(&(db->cdbm));
-#ifndef _WIN32
-	fchmod(db->fd, S_IREAD | S_IWRITE | S_IRGRP | S_IROTH);
-#endif
     }
     close(db->fd);
     free(db);
