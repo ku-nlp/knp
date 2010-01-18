@@ -1,3 +1,11 @@
+2010-01-18  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	log-linearモデルに基づく省略解析に関するコードを追加
+	解析対象とするsalience_scoreの閾値を変更(基本的に2文前までの候補は対象とする)
+	省略解析結果に用言レベルの出力を追加
+	文頭文節の主辞を省略解析の先行詞候補に追加
+
 2010-01-08  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c:

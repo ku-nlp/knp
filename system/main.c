@@ -405,6 +405,16 @@ extern int	EX_match_subject;
 	    OptGeneralCF |= OPT_CF_NE;
 	    OptGeneralCF |= OPT_CF_CATEGORY;
 	}
+	else if (str_eq(argv[0], "-anaphora-prob")) {
+	    OptAnaphora |= OPT_ANAPHORA;
+	    OptAnaphora |= OPT_ANAPHORA_PROB;
+	    OptAnaphora |= OPT_PRINT_ENTITY;
+	    OptCorefer = 4;
+	    OptEllipsis |= OPT_ELLIPSIS;
+	    OptEllipsis |= OPT_COREFER;
+	    OptGeneralCF |= OPT_CF_NE;
+	    OptGeneralCF |= OPT_CF_CATEGORY;
+	}
 	else if (str_eq(argv[0], "-anaphora-normal")) {
 	    OptAnaphora |= OPT_ANAPHORA;
 	    OptCorefer = 4;
@@ -881,6 +891,10 @@ extern int	EX_match_subject;
 	    OptReadFeature |= OPT_ELLIPSIS;
 	    OptEllipsis &= ~OPT_COREFER;
 	}
+	else if (str_eq(argv[0], "-read-feature-noun")) {
+	    OptReadFeature |= OPT_REL_NOUN;
+	    OptEllipsis &= ~OPT_COREFER;
+	}
 	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
 	    OptAddSvmFeatureUtype = 1;
 	}
@@ -1353,7 +1367,7 @@ extern int	EX_match_subject;
     /* 格フレーム取得 */
     if ((OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 || OptUseNCF) &&
-	!((OptReadFeature & OPT_ELLIPSIS) &&
+	!((OptReadFeature & OPT_ELLIPSIS) && (OptExpress != OPT_TEST) &&
 	  (OptReadFeature & OPT_REL_NOUN) && OptAnaphora)) {
 	set_caseframes(sp);
 	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */

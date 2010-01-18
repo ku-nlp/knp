@@ -171,6 +171,7 @@
 #define OPT_ANAPHORA        1
 #define OPT_PRINT_ENTITY    2
 #define OPT_ANAPHORA_COPULA 4
+#define OPT_ANAPHORA_PROB   8
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
@@ -801,8 +802,9 @@ typedef struct mention {
     int                 tag_num;
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
+    int                 level; /* 用言のレベル(C, B+, B, B-, A, A-の順で1〜6) */
     char                flag; /* 'S', '=', 'N', 'C', 'O', 'D' */
-    double              salience_score; /* どのくらい先行詞になりやすいか */
+    double              salience_score; /* どのくらい先行詞になりやすいか */    
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
     struct mention      *explicit_mention; /* 直接の格要素へのポインタ(flag=Cの場合のみ) */
@@ -811,7 +813,7 @@ typedef struct mention {
 /* 基本句ごとにMENTIONを管理する構造体 */
 typedef struct mention_manager {
     /* 0番目には必ず自分自身を入れる */
-    /* 1番目以降は関係するゼロ代名詞を入れていく */
+    /* 1番目以降は関係する格要素を入れていく */
     int                 num;
     MENTION             mention[MENTION_MAX];        
 } MENTION_MGR;
@@ -1326,17 +1328,15 @@ typedef struct tcf_def {
 
 /* CF_TAG_MGR中のomit_feature用の定数 */
 #define ELLIPSIS_CASE_NUM 3
-#define EX_PROB_CS        0 /* ある格スロットが与えられたときの語の出現確率 */	       
-#define EX_PROB           1 /* 語の出現確率 */					       
-#define CEX_PROB_CS       2 /* ある格スロットが与えられたときのカテゴリの出現確率 */  
-#define CEX_PROB          3 /* カテゴリの出現確率 */				       
-#define NEX_PROB_CS       4 /* ある格スロットが与えられたときの固有表現の出現確率 */  
-#define NEX_PROB          5 /* 固有表現の出現確率 */				       
-#define SCASE_PROB_CS     6 /* ある格スロットが与えられたときの表層格の出現確率 */    
-#define SCASE_PROB        7 /* 表層格の出現確率 */    
-#define LOCATION_PROB     8 /* 位置カテゴリの確率 */                                  
-#define NO_ASSIGNMENT     9 /* ある格スロットが対応付けられない確率 */
-#define O_FEATURE_NUM    10
+#define O_FEATURE_NUM     8
+#define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
+#define EX_PMI            1 /* 語PMI */	       
+#define CEX_PMI           2 /* カテゴリPMI */	       
+#define NEX_PMI           3 /* 固有表現PMI */	       
+#define SCASE_PMI         4 /* 格PMI */
+#define LOCATION_PROB     5 /* 位置カテゴリの確率 */
+#define VERB_PMI          6 /* 共起用言PMI */
+#define SALIENCE_SCORE    7 /* salience score */
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
@@ -1367,7 +1367,8 @@ typedef struct ctm_def {
 
     /* 機械学習用のfeature */
     double cf_select_score;                                /* 格フレーム選択確率(以下いずれも対数) */
-    double overt_arguments_score;                          /* 非省略格要素との対応付けスコア */    
+    double overt_arguments_score;                          /* 非省略格要素との対応付けスコア */
+    int    noassign_arguments_num;                         /* 対応付けられなかった入力格要素のスコア */    
     double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* 省略対応付け評価のための素性 */
 } CF_TAG_MGR;
 
