@@ -3951,8 +3951,8 @@ double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_D
 double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
-    char *key, *value;
-    int touten_flag, dist, elem_num = 0, g_elem_num = 0;
+    char *key, *value, *cp, *gp_mrph_str, *dp_mrph_str;
+    int touten_flag, dist, elem_num = 0, g_elem_num = 0, gp_rep_malloc_flag = 0, dp_rep_malloc_flag = 0;
     double ret1 = 0, ret2 = 0, tmp_ret;
     TAG_DATA *tmp_dp, *tmp_gp = gp;
 
@@ -3961,14 +3961,53 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     }
 
     while (tmp_gp) {
+	if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
+	    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+		(cp = get_bnst_head_canonical_rep(tmp_gp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+		gp_mrph_str = strdup(cp);
+		gp_rep_malloc_flag = 1;
+	    }
+	    else {
+		gp_mrph_str = get_mrph_rep_from_f(tmp_gp->head_ptr, FALSE);
+		if (gp_mrph_str == NULL) {
+		    gp_mrph_str = make_mrph_rn(tmp_gp->head_ptr);
+		    gp_rep_malloc_flag = 1;
+		}
+	    }
+	}
+	else {
+	    gp_mrph_str = tmp_gp->head_ptr->Goi;
+	}
+
 	tmp_dp = dp;
 	while (tmp_dp) {
 	    if (tmp_dp->num > tmp_gp->num) {
 		continue;
 	    }
 
-	    key = malloc_db_buf(strlen(tmp_dp->head_ptr->Goi) + strlen(tmp_gp->head_ptr->Goi) + 2);
-	    sprintf(key, "%s|%s", tmp_dp->head_ptr->Goi, tmp_gp->head_ptr->Goi);
+	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
+		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+		    (cp = get_bnst_head_canonical_rep(tmp_dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+		    dp_mrph_str = strdup(cp);
+		    dp_rep_malloc_flag = 1;
+		}
+		else {
+		    dp_mrph_str = get_mrph_rep_from_f(tmp_dp->head_ptr, FALSE);
+		    if (dp_mrph_str == NULL) {
+			dp_mrph_str = make_mrph_rn(tmp_dp->head_ptr);
+			dp_rep_malloc_flag = 1;
+		    }
+		}
+	    }
+	    else {
+		dp_mrph_str = tmp_dp->head_ptr->Goi;
+	    }
+
+	    key = malloc_db_buf(strlen(dp_mrph_str) + strlen(gp_mrph_str) + 2);
+	    sprintf(key, "%s|%s", dp_mrph_str, gp_mrph_str);
+	    if (dp_rep_malloc_flag) {
+		free(dp_mrph_str);
+	    }
 
 	    value = db_get(noun_co_db, key);
 	    if (value) {
@@ -3987,9 +4026,18 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    }
 
 	    elem_num++;
+	    if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
+		break;
+	    }
 	    tmp_dp = tmp_dp->next;
 	}
+	if (gp_rep_malloc_flag) {
+	    free(gp_mrph_str);
+	}
 	g_elem_num++;
+	if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
+	    break;
+	}
 	tmp_gp = tmp_gp->next;
     }
     ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* 非連体修飾名詞の方は常に正規化 */
@@ -4034,6 +4082,9 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	}
 
 	elem_num++;
+	if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
+	    break;
+	}
 	tmp_dp = tmp_dp->next;
     }
     if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) {
@@ -4050,15 +4101,37 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
       double get_noun_co_num_probability(TAG_DATA *gp, int num)
 /*==================================================================*/
 {
-    char *key, *value;
+    char *key, *value, *cp, *mrph_str;
+    int rep_malloc_flag = 0;
     double ret;
 
     if (NounCoExist == FALSE) {
 	return 0;
     }
 
-    key = malloc_db_buf(strlen(gp->head_ptr->Goi) + 6);
-    sprintf(key, "%d|N:%s", num, gp->head_ptr->Goi);
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(gp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    mrph_str = strdup(cp);
+	    rep_malloc_flag = 1;
+	}
+	else {
+	    mrph_str = get_mrph_rep_from_f(gp->head_ptr, FALSE);
+	    if (mrph_str == NULL) {
+		mrph_str = make_mrph_rn(gp->head_ptr);
+		rep_malloc_flag = 1;
+	    }
+	}
+    }
+    else {
+	mrph_str = gp->head_ptr->Goi;
+    }
+
+    key = malloc_db_buf(strlen(mrph_str) + 6);
+    sprintf(key, "%d|N:%s", num, mrph_str);
+    if (rep_malloc_flag) {
+	free(mrph_str);
+    }
 
     value = db_get(noun_co_db, key);
     if (value) {
