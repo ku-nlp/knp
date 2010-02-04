@@ -1,3 +1,14 @@
+2010-02-04  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/anaphora.c, system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/cky.c, system/const.h, system/extern.h, system/main.c:
+	Implemented probabilistic case structure analysis of nouns.
+
+	* system/bnst_compare.c:
+	Added a constraint for probabilistic coordination disambiguation.
+
+	* system/case_ipal.c:
+	Modified to use repname for noun_co db.
+
 2010-01-18  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/db.c:
