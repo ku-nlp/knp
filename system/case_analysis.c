@@ -325,8 +325,9 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
     CF_MATCH_MGR tempcmm;
 
     /* 格要素なしの時の実験 */
-    if (cf_ptr->element_num == 0 || 
-	have_real_component(cf_ptr) == FALSE) {
+    if (cf_ptr->type == CF_PRED && 
+	(cf_ptr->element_num == 0 || 
+	 have_real_component(cf_ptr) == FALSE)) {
 	/* この用言のすべての格フレームの OR、または
 	   格フレームが 1 つのときはそれそのもの にする予定 */
 	if (b_ptr->cf_num > 1) {

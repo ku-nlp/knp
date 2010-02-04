@@ -259,12 +259,15 @@ extern void assign_pred_feature_to_bp(SENTENCE_DATA *sp);
 extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);
 extern double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp);
+extern double get_cf_probability_for_pred(CASE_FRAME *cfd, CASE_FRAME *cfp);
+extern double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
+						     int as2, CASE_FRAME *cfp, int flag);
 extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
 					    int as2, CASE_FRAME *cfp, int flag);
 extern double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag);
 extern double get_general_probability(char *key1, char *key2);
 extern double get_key_probability(TAG_DATA *tag_ptr);
-extern double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag);
+extern double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag);
 extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
 extern double get_case_num_probability(CASE_FRAME *cfp, int num);
 extern double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,

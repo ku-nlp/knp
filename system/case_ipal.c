@@ -2248,14 +2248,40 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-     double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp)
+	    double get_cf_probability_internal(char *key)
 /*==================================================================*/
 {
-    /* 格フレーム選択確率 P(食べる:動2|食べる:動)
+    char *value;
+    double ret;
+
+    value = db_get(cfp_db, key);
+
+    if (value) {
+	ret = atof(value);
+	if (VerboseLevel >= VERBOSE3) {
+	    fprintf(Outfp, ";; (CF) P(%s) = %lf\n", key, ret);
+	}
+	free(value);
+	ret = log(ret);
+    }
+    else {
+	if (VerboseLevel >= VERBOSE3) {
+	    fprintf(Outfp, ";; (CF) P(%s) = 0\n", key);
+	}
+	ret = UNKNOWN_CF_SCORE;
+    }
+
+    return ret;
+}
+
+/*==================================================================*/
+ double get_cf_probability_for_pred(CASE_FRAME *cfd, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    /* 格フレーム選択確率 P(食べる/たべる:動2|食べる/たべる:動)
        KNP格解析結果 (cfp.prob) */
 
-    char *vtype, *key, *value, voice[3];
-    double ret;
+    char *vtype, *key, voice[3];
     int num;
     TAG_DATA *tp = cfd->pred_b_ptr;
 
@@ -2283,28 +2309,50 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	sprintf(key, "%s|%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype);
     }
 
-    value = db_get(cfp_db, key);
-
-    if (value) {
-	ret = atof(value);
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (CF) %s: P(%s) = %lf\n", tp->head_ptr->Goi, key, ret);
-	}
-	free(value);
-	ret = log(ret);
-    }
-    else {
-	if (VerboseLevel >= VERBOSE3) {
-	    fprintf(Outfp, ";; (CF) %s: P(%s) = 0\n", tp->head_ptr->Goi, key);
-	}
-	ret = UNKNOWN_CF_SCORE;
-    }
-
-    return ret;
+    return get_cf_probability_internal(key);
 }
 
 /*==================================================================*/
-double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
+ double get_cf_probability_for_noun(CASE_FRAME *cfd, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    /* 格フレーム選択確率 P(レバー/ればー:名1|レバー/ればー:名)
+       KNP格解析結果 (cfp.prob) */
+
+    int num;
+    char *pred_id, *key;
+
+    if (CfpExist == FALSE) {
+	return 0;
+    }
+
+    pred_id = strdup(cfp->cf_id);
+    if ((num = sscanf(cfp->cf_id, "%[^0-9]%*d", pred_id)) == 1) {
+	key = malloc_db_buf(strlen(cfp->cf_id) + strlen(pred_id) + 2);
+	sprintf(key, "%s|%s", cfp->cf_id, pred_id);
+	free(pred_id);
+	return get_cf_probability_internal(key);
+    }
+    else {
+	free(pred_id);
+	return UNKNOWN_CF_SCORE;
+    }
+}
+
+/*==================================================================*/
+     double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    if (cfp->type == CF_PRED) { /* 用言格フレーム */
+	return get_cf_probability_for_pred(cfd, cfp);
+    }
+    else { /* 名詞格フレーム */
+	return get_cf_probability_for_noun(cfd, cfp);
+    }
+}
+
+/*==================================================================*/
+double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
 /*==================================================================*/
 {
     /* 格確率 P(ガ格○|食べる:動2)
@@ -2325,7 +2373,7 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
     if (value) {
 	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
 	    cf_ret = atof(value);
-	    /* denominator = 0; -> 用言のみで */
+	    denominator = -1; /* 格フレームのみで */
 	}
 	free(value);
     }
@@ -2365,7 +2413,14 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
         pred_ret *= 1 - lambda;
         pred_ret += lambda * cf_ret;
     }
-    else {
+    else if (denominator < 0) { /* 格フレームのみ */
+	pred_ret = cf_ret;
+	if (VerboseLevel >= VERBOSE2) {
+            fprintf(Outfp, ";; (C) P(%s|%s) = %lf\n", 
+		    case_str, cfp->cf_id, pred_ret);
+        }
+    }
+    else { /* 用言のみ */
 	if (VerboseLevel >= VERBOSE2) {
 	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
 	}
@@ -2389,24 +2444,33 @@ double get_case_probability_for_pred(char *case_str, CASE_FRAME *cfp, int aflag)
    double get_case_probability(int as2, CASE_FRAME *cfp, int aflag)
 /*==================================================================*/
 {
-    /* 格確率 P(ガ格○|食べる:動2)
-       KNP格解析結果から計算 (cfcases.prob) */
+    /* 格確率 P(ガ格○|食べる/たべる:動2)
+       KNP格解析結果から計算 (cfcase.prob) */
 
-    return get_case_probability_for_pred(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag);
+    if (cfp->type == CF_PRED) { /* 用言格フレーム */
+	return get_case_probability_from_str(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag);
+    }
+    else { /* 名詞格フレーム */
+	return get_case_probability_from_str(cfp->pp_str[as2], cfp, aflag);
+    }
 }
 
 /*==================================================================*/
       double get_case_num_probability(CASE_FRAME *cfp, int num)
 /*==================================================================*/
 {
-    /* 格の個数確率 P(2|食べる:動2)
-       KNP格解析結果から計算 (cfcases.prob) */
+    /* 格の個数確率 P(2|食べる/たべる:動2)
+       KNP格解析結果から計算 (cfcase.prob) */
 
     char *key, *value, *verb, *cp;
     double cf_ret = 0, pred_ret = 0;
     int denominator = 0;
 
     if (CFCaseExist == FALSE) {
+	return 0;
+    }
+
+    if (cfp->type == CF_NOUN) { /* 名詞格フレームはとりあえずスキップ */
 	return 0;
     }
 
@@ -3104,7 +3168,8 @@ double get_case_surface_probability(char *scase, char *cfcase, int ellipsis_flag
 
 /*==================================================================*/
 double get_punctuation_generating_probability(int np_modifying_flag, int touten_flag, int dist, 
-					      int closest_pred_flag, int topic_score, int wa_flag)
+					      int closest_pred_flag, int topic_score, int wa_flag, 
+					      int genitive_flag)
 /*==================================================================*/
 {
     /* 読点の生成 */
@@ -3117,7 +3182,10 @@ double get_punctuation_generating_probability(int np_modifying_flag, int touten_
     }
 
     key = malloc_db_buf(20);
-    if (np_modifying_flag) {
+    if (genitive_flag) { /* ノ格など */
+	sprintf(key, "%d|P連体:%d,%d", touten_flag, dist, closest_pred_flag);
+    }
+    else if (np_modifying_flag) {
 	sprintf(key, "%d|P連格:%d", touten_flag, dist);
     }
     else {
@@ -3134,6 +3202,50 @@ double get_punctuation_generating_probability(int np_modifying_flag, int touten_
     else {
 	return UNKNOWN_CASE_SCORE;
     }
+}
+
+/*==================================================================*/
+double get_case_function_probability_for_noun(int as1, CASE_FRAME *cfd,
+					      int as2, CASE_FRAME *cfp, 
+					      int ellipsis_flag)
+/*==================================================================*/
+{
+    int dist, np_modifying_flag, touten_flag;
+    double ret = 0;
+    TAG_DATA *tp, *hp;
+
+    /* tp -> hp */
+    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* 連体修飾 */
+	tp = cfd->pred_b_ptr;
+	hp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+	np_modifying_flag = 1;
+    }
+    else {
+	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+	hp = cfd->pred_b_ptr;
+	np_modifying_flag = 0;
+    }
+
+    touten_flag = check_feature(tp->b_ptr->f, "読点") ? 1 : 0;
+
+    if ((dist = get_dist_from_work_mgr(tp->b_ptr, hp->b_ptr)) < 0) {
+	ret += UNKNOWN_CASE_SCORE;
+    }
+    else {
+	int closest_ok_flag = 0;
+	if (get_dist_from_work_mgr(tp->b_ptr, tp->b_ptr + 1) > 0) {
+	    closest_ok_flag = 1;
+	}
+
+	ret += get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
+						      closest_ok_flag, 0, 0, 1);
+	/* 
+	if (VerboseLevel >= VERBOSE1) {
+	    fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", tp->head_ptr->Goi, hp->head_ptr->Goi, key, tmp_ret);
+	    } */
+    }
+
+    return ret;
 }
 
 /*==================================================================*/
@@ -3200,9 +3312,9 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 }
 
 /*==================================================================*/
-     double get_case_function_probability(int as1, CASE_FRAME *cfd,
-					  int as2, CASE_FRAME *cfp, 
-					  int ellipsis_flag)
+double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
+					      int as2, CASE_FRAME *cfp, 
+					      int ellipsis_flag)
 /*==================================================================*/
 {
     int wa_flag, topic_score = 0, touten_flag, i, dist, negation_flag, 	np_modifying_flag, closest_pred_flag = 0;
@@ -3286,7 +3398,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 
     /* 読点の生成 */
     score2 = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
-						    closest_pred_flag, topic_score, wa_flag);
+						    closest_pred_flag, topic_score, wa_flag, 0);
 
     /* 「は」の生成 */
     score3 = get_wa_generating_probability(np_modifying_flag, touten_flag, dist, 
@@ -3300,6 +3412,20 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
     }
 
     return score1 + score2 + score3;
+}
+
+/*==================================================================*/
+    double get_case_function_probability(int as1, CASE_FRAME *cfd,
+					 int as2, CASE_FRAME *cfp, 
+					 int ellipsis_flag)
+/*==================================================================*/
+{
+    if (cfp->type == CF_PRED) { /* 用言格フレーム */
+	return get_case_function_probability_for_pred(as1, cfd, as2, cfp, FALSE);
+    }
+    else { /* 名詞格フレーム */
+	return get_case_function_probability_for_noun(as1, cfd, as2, cfp, FALSE);
+    }
 }
 
 /*==================================================================*/

@@ -709,13 +709,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	float ex_rawscore;
 
 	/* 確率的格解析のとき */
-	if (cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED && /* とりあえず用言のみ */
-	    OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
+	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
 	    /* マッチを調べるとき *
-            cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
-			     strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi), 
-			     cfp->ex_list[as2], cfp->ex_num[as2], pos);
-	    cf_match_sm(as1, cfd, as2, cfp, pos);
+	       cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
+	       strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi), 
+	       cfp->ex_list[as2], cfp->ex_num[as2], pos);
+	       cf_match_sm(as1, cfd, as2, cfp, pos);
 	    */
 
 	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_function_probability(as1, cfd, as2, cfp, FALSE);
@@ -1090,7 +1089,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    }
 	    /* 対応する格スロットがない場合 => 仮想的に格スロットを作成して割り当て */
 	    else {
-		score += get_case_probability_for_pred(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE);
+		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE);
 	    }
 	    /* score += NIL_ASSINED_SCORE;
 	       score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp); */
@@ -1134,6 +1133,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	Current_max_num = 1;
     }
     else if (local_score == Current_max_score &&
+	     cfp->type == CF_PRED && /* 名詞の解析時は同点を保存しない */
 	     Current_max_num < MAX_MATCH_MAX) {
 	Current_max_list1[Current_max_num] = *list1;
 	Current_max_list2[Current_max_num] = *list2;
@@ -1251,8 +1251,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			    match_result = 
 				elmnt_match_score(target, cfd, i, cfp, flag, &pos, &elmnt_score);
 
-			    if (((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-				 cfd->pred_b_ptr->cpm_ptr->cf.type != CF_NOUN) || 
+			    if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
 				(cfp->pp[i][j] != pp_kstr_to_code("外の関係") && 
 				 cfp->pp[i][j] != pp_kstr_to_code("ノ") && 
 				 cfd->pred_b_ptr->cpm_ptr->cf.type != CF_NOUN) || 
@@ -1305,7 +1304,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	       => 後ろに同じ格助詞があれば対応付けをしない可能性も試す? */
 
 	    /* 割り当てなしのスコア */
-	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_function_probability(target, cfd, NIL_ASSIGNED, cfp, FALSE);
+	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_function_probability_for_pred(target, cfd, NIL_ASSIGNED, cfp, FALSE);
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
 	    }

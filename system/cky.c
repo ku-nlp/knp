@@ -1192,7 +1192,8 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     if (t_ptr->cf_num > 0) { /* predicate or something which has case frames */
 	cky_ptr->cpm_ptr->pred_b_ptr = t_ptr;
 	set_data_cf_type(cky_ptr->cpm_ptr); /* set predicate type */
-	if (cky_ptr->cpm_ptr->cf.type == CF_PRED && /* currently, restrict to predicates */
+	if ((cky_ptr->cpm_ptr->cf.type == CF_PRED || /* 用言格フレーム */
+	     (OptCaseFlag & OPT_CASE_USE_NCF)) && /* または-probcase-use-ncf時は名詞格フレームも */
 	    !(cky_ptr->i == cky_ptr->j && check_feature(g_ptr->f, "ID:（〜を）〜に"))) {
 	    pred_p = 1;
 	    cpm_ptr = cky_ptr->cpm_ptr;
@@ -1692,7 +1693,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
     Best_mgr->pred_num = 0;
     for (i = 0; i < sp->Tag_num; i++) {
 	if ((sp->tag_data + i)->cf_num > 0 && 
-	    (sp->tag_data + i)->cpm_ptr && (sp->tag_data + i)->cpm_ptr->cf.type == CF_PRED && 
+	    (sp->tag_data + i)->cpm_ptr && (sp->tag_data + i)->cpm_ptr->pred_b_ptr && 
 	    (((sp->tag_data + i)->inum == 0 && /* the last basic phrase in a bunsetsu */
 	      !check_feature((sp->tag_data + i)->b_ptr->f, "タグ単位受:-1")) || 
 	     ((sp->tag_data + i)->inum == 1 && 

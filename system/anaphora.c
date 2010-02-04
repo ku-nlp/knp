@@ -820,7 +820,7 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
     char key[SMALL_DATA_LEN];
 
     /* 対象の格フレームが選択されることのスコア */
-    score = get_cf_probability(&(tcf_ptr->cf), ctm_ptr->cf_ptr);
+    score = get_cf_probability_for_pred(&(tcf_ptr->cf), ctm_ptr->cf_ptr);
     ctm_ptr->cf_select_score = score;
 
     /* 対応付けられた要素に関するスコア(格解析結果) */
@@ -831,9 +831,9 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], 
 					 &(tcf_ptr->cf), 
 					 e_num, ctm_ptr->cf_ptr) +
-	    get_case_function_probability(ctm_ptr->tcf_element_num[i], 
-					  &(tcf_ptr->cf), 
-					  e_num, ctm_ptr->cf_ptr, TRUE);
+	    get_case_function_probability_for_pred(ctm_ptr->tcf_element_num[i], 
+						   &(tcf_ptr->cf), 
+						   e_num, ctm_ptr->cf_ptr, TRUE);
 	
 	if (OptDisplay == OPT_DEBUG && debug)
 	    printf(";;対応あり:%s-%s:%f:%f ", 
@@ -842,9 +842,9 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		   get_ex_probability_with_para(ctm_ptr->tcf_element_num[i], 
 						&(tcf_ptr->cf), 
 						e_num, ctm_ptr->cf_ptr),
-		   get_case_function_probability(ctm_ptr->tcf_element_num[i], 
-						 &(tcf_ptr->cf), 
-						 e_num, ctm_ptr->cf_ptr, TRUE));
+		   get_case_function_probability_for_pred(ctm_ptr->tcf_element_num[i], 
+							  &(tcf_ptr->cf), 
+							  e_num, ctm_ptr->cf_ptr, TRUE));
     }
 
     /* 入力文の格要素のうち対応付けられなかった要素に関するスコア */

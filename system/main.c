@@ -324,6 +324,9 @@ extern int	EX_match_subject;
 	    SOTO_THRESHOLD = DEFAULT_SOTO_THRESHOLD;
 	    OptCKY = FALSE;
 	}
+	else if (str_eq(argv[0], "-probcase-use-ncf")) {
+	    OptCaseFlag |= OPT_CASE_USE_NCF;
+	}
 	else if (str_eq(argv[0], "-cf-ne")) {
 	    OptGeneralCF |= OPT_CF_NE;
 	}
