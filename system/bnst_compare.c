@@ -578,11 +578,25 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	      void calc_match_matrix(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, j;
+    int i, j, calc_flag;
     
-    for (i = 0; i < sp->Bnst_num; i++) 
-	for (j = i+1; j < sp->Bnst_num; j++)
-	    match_matrix[i][j] = calc_match(sp, i, j);
+    for (i = 0; i < sp->Bnst_num; i++) {
+	calc_flag = 1;
+	for (j = i+1; j < sp->Bnst_num; j++) {
+	    if (calc_flag) {
+		match_matrix[i][j] = calc_match(sp, i, j);
+
+		if (OptParaFix == FALSE && /* 確率的並列構造解析のとき */
+		    !check_feature(sp->bnst_data[i].f, "用言") && /* サ変動詞は止めないようにするため「用言」の否定 */
+		    check_feature(sp->bnst_data[j].f, "名並終点")) { /* 名並終点以降は並列にしない */
+		    calc_flag = 0;
+		}
+	    }
+	    else {
+		match_matrix[i][j] = 0;
+	    }
+	}
+    }
 }
 
 /*==================================================================*/
