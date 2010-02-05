@@ -2373,7 +2373,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     if (value) {
 	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
 	    cf_ret = atof(value);
-	    denominator = -1; /* 格フレームのみで */
+	    denominator = -1; /* 格フレームに値が存在した印 */
 	}
 	free(value);
     }
@@ -2413,16 +2413,22 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
         pred_ret *= 1 - lambda;
         pred_ret += lambda * cf_ret;
     }
-    else if (denominator < 0) { /* 格フレームのみ */
-	pred_ret = cf_ret;
-	if (VerboseLevel >= VERBOSE2) {
-            fprintf(Outfp, ";; (C) P(%s|%s) = %lf\n", 
-		    case_str, cfp->cf_id, pred_ret);
-        }
-    }
     else { /* 用言のみ */
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
+	if (pred_ret > 0) {
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
+	    }
+	}
+	else if (denominator < 0) { /* 格フレームのみ値が存在 */
+	    pred_ret = cf_ret;
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (C) P(%s|%s) = %lf\n", case_str, cfp->cf_id, pred_ret);
+	    }
+	}
+	else {
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
+	    }
 	}
     }
 
@@ -2470,10 +2476,6 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
 	return 0;
     }
 
-    if (cfp->type == CF_NOUN) { /* 名詞格フレームはとりあえずスキップ */
-	return 0;
-    }
-
     /* 格フレーム */
     key = malloc_db_buf(strlen(cfp->cf_id) + 6);
     sprintf(key, "%d|N:%s", num, cfp->cf_id);
@@ -2481,7 +2483,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     if (value) {
 	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
 	    cf_ret = atof(value);
-	    /* denominator = 0; -> 用言のみで */
+	    denominator = -1; /* 格フレームに値が存在した印 */
 	}
 	free(value);
     }
@@ -2521,9 +2523,22 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
         pred_ret *= 1 - lambda;
         pred_ret += lambda * cf_ret;
     }
-    else {
-	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (CN) P(%s) = %lf\n", key, pred_ret);
+    else { /* 用言のみ */
+	if (pred_ret > 0) {
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (CN) P(%s) = %lf\n", key, pred_ret);
+	    }
+	}
+	else if (denominator < 0) { /* 格フレームのみ値が存在 */
+	    pred_ret = cf_ret;
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (CN) P(%d|N:%s) = %lf\n", num, cfp->cf_id, pred_ret);
+	    }
+	}
+	else {
+	    if (VerboseLevel >= VERBOSE2) {
+		fprintf(Outfp, ";; (CN) P(%s) = 0\n", key);
+	    }
 	}
     }
 
