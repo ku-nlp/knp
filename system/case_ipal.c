@@ -2405,7 +2405,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* interpolation between cf and pred */
     if (denominator > 0) {
         double lambda = (double)denominator / (denominator + 1);
-        if (VerboseLevel >= VERBOSE2) {
+        if (VerboseLevel >= VERBOSE3) {
             fprintf(Outfp, ";; (C) lambda * P(%s|%s) + (1 - lambda) * P\(%s|%s) = %lf * %lf + %lf * %lf\n", 
 		    case_str, cfp->cf_id, case_str, verb, 
 		    lambda, cf_ret, (1 - lambda), pred_ret);
@@ -2415,18 +2415,18 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     }
     else { /* 用言のみ */
 	if (pred_ret > 0) {
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
 	    }
 	}
 	else if (denominator < 0) { /* 格フレームのみ値が存在 */
 	    pred_ret = cf_ret;
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (C) P(%s|%s) = %lf\n", case_str, cfp->cf_id, pred_ret);
 	    }
 	}
 	else {
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (C) P(%s) = 0\n", key);
 	    }
 	}
@@ -2472,7 +2472,8 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     double cf_ret = 0, pred_ret = 0;
     int denominator = 0;
 
-    if (CFCaseExist == FALSE) {
+    /* 名詞の場合は個数を生成しない */
+    if (CFCaseExist == FALSE || cfp->type == CF_NOUN) {
 	return 0;
     }
 
@@ -2515,7 +2516,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* interpolation between cf and pred */
     if (denominator > 0) {
         double lambda = (double)denominator / (denominator + 1);
-        if (VerboseLevel >= VERBOSE2) {
+        if (VerboseLevel >= VERBOSE3) {
             fprintf(Outfp, ";; (CN) lambda * P(%d|N:%s) + (1 - lambda) * P\(%d|N:%s) = %lf * %lf + %lf * %lf\n", 
 		    num, cfp->cf_id, num, verb, 
 		    lambda, cf_ret, (1 - lambda), pred_ret);
@@ -2525,18 +2526,18 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     }
     else { /* 用言のみ */
 	if (pred_ret > 0) {
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (CN) P(%s) = %lf\n", key, pred_ret);
 	    }
 	}
 	else if (denominator < 0) { /* 格フレームのみ値が存在 */
 	    pred_ret = cf_ret;
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (CN) P(%d|N:%s) = %lf\n", num, cfp->cf_id, pred_ret);
 	    }
 	}
 	else {
-	    if (VerboseLevel >= VERBOSE2) {
+	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (CN) P(%s) = 0\n", key);
 	    }
 	}
@@ -3207,6 +3208,9 @@ double get_punctuation_generating_probability(int np_modifying_flag, int touten_
 	sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
     }
     value = db_get(case_db, key);
+    if (VerboseLevel >= VERBOSE3) {
+	fprintf(Outfp, ";; (T) P(%s) = %s\n", key, value);
+    }
 
     if (value) {
 	ret = atof(value);
@@ -3244,7 +3248,7 @@ double get_case_function_probability_for_noun(int as1, CASE_FRAME *cfd,
     touten_flag = check_feature(tp->b_ptr->f, "読点") ? 1 : 0;
 
     if ((dist = get_dist_from_work_mgr(tp->b_ptr, hp->b_ptr)) < 0) {
-	ret += UNKNOWN_CASE_SCORE;
+	ret = UNKNOWN_CASE_SCORE;
     }
     else {
 	int closest_ok_flag = 0;
@@ -3252,8 +3256,8 @@ double get_case_function_probability_for_noun(int as1, CASE_FRAME *cfd,
 	    closest_ok_flag = 1;
 	}
 
-	ret += get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
-						      closest_ok_flag, 0, 0, 1);
+	ret = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
+						     closest_ok_flag, 0, 0, 1);
 	/* 
 	if (VerboseLevel >= VERBOSE1) {
 	    fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", tp->head_ptr->Goi, hp->head_ptr->Goi, key, tmp_ret);

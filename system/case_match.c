@@ -1061,7 +1061,12 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
     double local_score;
 
     /* 格フレーム確率 */
-    score = get_cf_probability(cfd, cfp);
+    if (cfp->type == CF_PRED) { /* とりあえず、用言のみ */
+	score = get_cf_probability(cfd, cfp);
+    }
+    else {
+	score = 0;
+    }
 
     /* 入力側チェック */
     for (i = 0; i < cfd->element_num; i++) {
