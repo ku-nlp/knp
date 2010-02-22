@@ -421,8 +421,11 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-anaphora-normal")) {
 	    OptAnaphora |= OPT_ANAPHORA;
 	    OptCorefer = 4;
+	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_COREFER;
-	}	
+	    OptGeneralCF |= OPT_CF_NE;
+	    OptGeneralCF |= OPT_CF_CATEGORY;
+	}
 	else if (str_eq(argv[0], "-anaphora-copula")) {
 	    OptAnaphora |= OPT_ANAPHORA;
 	    OptAnaphora |= OPT_ANAPHORA_COPULA;

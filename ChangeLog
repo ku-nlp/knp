@@ -1,3 +1,8 @@
+2010-02-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/main.c:
+	通常出力用照応解析オプション-anaphora-normalの動作を変更	
+
 2010-02-15  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipal.c, system/case_match.c:
