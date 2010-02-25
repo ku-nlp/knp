@@ -420,6 +420,7 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-anaphora-normal")) {
 	    OptAnaphora |= OPT_ANAPHORA;
+	    OptAnaphora |= OPT_ANAPHORA_PROB;
 	    OptCorefer = 4;
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptEllipsis |= OPT_COREFER;
