@@ -1684,6 +1684,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		    dpnd_info_to_mrph(sp);
 		}
 	    }
+	    if (OptPostProcess) {
+		do_postprocess(sp);
+	    }
 	    print_result(sp, 0);
 	}
 	return return_flag;
@@ -1813,6 +1816,9 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, TRUE);
 		assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);
 
+		if (OptPostProcess) {
+		    do_postprocess(sp);
+		}
 		if (OptAnalysis == OPT_CASE) { /* preserve case analysis result for n-best */
 		    record_all_case_analisys(sp, TRUE);
 		}
