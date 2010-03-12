@@ -1596,13 +1596,15 @@ PARSED:
     memo_by_program(sp);	/* メモへの書き込み */
 
     /* 後処理 */
-    if (OptPostProcess) {
-	do_postprocess(sp);
-    }
+    if (!OptEllipsis) { /* 省略解析のときは、省略解析後に行う */
+	if (OptPostProcess) {
+	    do_postprocess(sp);
+	}
 
-    /* 格解析結果をfeatureへ */
-    if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) && !OptReadFeature) {
-	record_all_case_analisys(sp, FALSE);
+	/* 格解析結果をfeatureへ */
+	if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) && !OptReadFeature) {
+	    record_all_case_analisys(sp, FALSE);
+	}
     }
 
     return TRUE;
@@ -1686,6 +1688,10 @@ PARSED:
 	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
 	if (OptAnaphora) anaphora_analysis(sp);
 	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
+
+	if (!OptArticle && OptPostProcess) { /* 後処理 (構文解析のときは、one_sentence_analysis()で行う) */
+	    do_postprocess(sp);
+	}
     }
 
     /* entity 情報の feature の作成 */
@@ -1821,6 +1827,9 @@ PARSED:
 
     if (OptArticle && OptEllipsis) {
 	for (i = 0; i < sp->Sen_num - 1; i++) {
+	    if (OptPostProcess) { /* 後処理 */
+		do_postprocess(sentence_data+i);
+	    }
 	    print_result(sentence_data+i, 1);	    
 	}
     }
