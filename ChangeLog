@@ -1,3 +1,11 @@
+2010-04-09  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	ひとつの基本句に複数の共参照タグが付与されている場合に異なるEIDが付与される問題を修正
+
+	* rule/bnst_basic.c:
+	「〜いただく」などの格構造は使役と同じなので便宜的に使役を与えるように変更
+	
 2010-04-09  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/main.c:

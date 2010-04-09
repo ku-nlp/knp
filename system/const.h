@@ -822,6 +822,7 @@ typedef struct mention_manager {
 /* ENTITY */
 typedef struct entity {
     int                 num;
+    int                 output_num; /* {A,B}=CとなっているときにAとBの出力numを統一する */
     int                 mentioned_num;  /* 言及されている回数 */
     double              salience_score; /* どのくらい先行詞になりやすいか */
     int                 tmp_salience_flag; /* 同一文中に出現したノ格 */

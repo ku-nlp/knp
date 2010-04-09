@@ -10,10 +10,8 @@
 #include "knp.h"
 
 /* 省略解析に関するパラメータ */
-//#define CASE_CANDIDATE_MAX  10000/* 照応解析用格解析結果を保持する数 */
 #define CASE_CANDIDATE_MAX  40  /* 照応解析用格解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 20  /* 省略解析結果を保持する数 */
-//#define ELLIPSIS_RESULT_MAX 10000/* 省略解析結果を保持する数 */
 #define EX_MATCH_COMPENSATE 1.0 /* マッチしすぎることを防ぐための補正項 */
 #define SALIENCE_DECAY_RATE 0.5 /* salience_scoreの減衰率 */
 #define SALIENCE_THREHOLD 0.249 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
@@ -393,6 +391,19 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     /* 共参照関係の読み込み */
     if (co_flag && 
 	(!strcmp(rel, "=") || !strcmp(rel, "=構") || !strcmp(rel, "=役"))) {
+
+	/* 複数の共参照情報が付与されている場合 */
+	if (mention_mgr->mention->entity) {
+	    if (mention_mgr->mention->entity->output_num >
+		substance_tag_ptr((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity->output_num) {
+		mention_mgr->mention->entity->output_num = 
+		    substance_tag_ptr((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity->output_num;
+	    }
+	    else {
+		substance_tag_ptr((sp - sent_num)->tag_data + tag_num)->mention_mgr.mention->entity->output_num =
+		    mention_mgr->mention->entity->output_num;
+	    }	
+	}
 
 	mention_ptr = mention_mgr->mention;
 	mention_ptr->entity = 
@@ -821,7 +832,8 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 
     /* 対象の格フレームが選択されることのスコア */
     score = get_cf_probability_for_pred(&(tcf_ptr->cf), ctm_ptr->cf_ptr);
-    ctm_ptr->cf_select_score = score;
+
+    ctm_ptr->cf_select_score = 0;
 
     /* 対応付けられた要素に関するスコア(格解析結果) */
     for (i = 0; i < ctm_ptr->case_result_num; i++) {
@@ -1015,14 +1027,20 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		
 		if (entity_ptr->mention[j]->sent_num == sent_num &&
 		    tcf_ptr->pred_b_ptr->num < entity_ptr->mention[j]->tag_ptr->num) {
-		    sprintf(key, "%s-%s", 
+		    sprintf(key, "%s-%s:%s-%s:%s",
+			    entity_ptr->mention[j]->cpp_string,
 			    check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") + strlen("用言代表表記:"),
-			    check_feature(entity_ptr->mention[j]->tag_ptr->f, "用言代表表記") + strlen("用言代表表記:"));
+			    check_feature(entity_ptr->mention[j]->tag_ptr->f, "用言") + strlen("用言:"),
+			    check_feature(entity_ptr->mention[j]->tag_ptr->f, "用言代表表記") + strlen("用言代表表記:"),
+			    check_feature(tcf_ptr->pred_b_ptr->f, "用言") + strlen("用言:"));
 		}
 		else {
-		    sprintf(key, "%s-%s", 
+		    sprintf(key, "%s-%s:%s-%s:%s", 
+			    entity_ptr->mention[j]->cpp_string,
 			    check_feature(entity_ptr->mention[j]->tag_ptr->f, "用言代表表記") + strlen("用言代表表記:"),
-			    check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") + strlen("用言代表表記:"));
+			    check_feature(entity_ptr->mention[j]->tag_ptr->f, "用言") + strlen("用言:"),
+			    check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") + strlen("用言代表表記:"),
+			    check_feature(tcf_ptr->pred_b_ptr->f, "用言") + strlen("用言:"));
 		}
 		tmp_score = get_general_probability(key, "PMI");
 		if (tmp_score > FREQ0_ASSINED_SCORE && 
@@ -1431,8 +1449,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		ctm_ptr->noassign_arguments_num * noassign_arguments_weight;
 	    for (j = 0; j < ELLIPSIS_CASE_NUM; j++) {
 		for (k = 0; k < O_FEATURE_NUM; k++) {
-		    ctm_ptr->score += (ctm_ptr->omit_feature[j][k] == INITIAL_SCORE) ?
-			0 : ctm_ptr->omit_feature[j][k] * case_feature_weight[j][k];
+		    if (/*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI)
+			ctm_ptr->score += (ctm_ptr->omit_feature[j][k] == INITIAL_SCORE) ?
+			    0 : tanh(ctm_ptr->omit_feature[j][k]/2) * case_feature_weight[j][k];
+		    else
+			ctm_ptr->score += (ctm_ptr->omit_feature[j][k] == INITIAL_SCORE) ?
+			    0 : ctm_ptr->omit_feature[j][k] * case_feature_weight[j][k];
 		}
 	    }   
 	}
@@ -1547,6 +1569,16 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	}
     }
 
+    /* 対応付けられなかった入力格要素の数が最小の場合のみを考慮 */
+    j = work_ctm[0].noassign_arguments_num;
+    for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
+	if (work_ctm[i].score == INITIAL_SCORE || 
+	    work_ctm[i].noassign_arguments_num > j) {
+	    work_ctm[i].score = INITIAL_SCORE;
+	    break;
+	}
+    }
+    
     /* 上記の対応付けに対して省略解析を実行する */
     for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
 	if (work_ctm[i].score == INITIAL_SCORE && i > 0) break;
@@ -1609,10 +1641,13 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    
 		    /* 素性出力 */
 		    if (1 || !hash[hash_key]) {
-			printf(";;<%s>%d FEATURE: %d, %f, %f, %d,", aresult, i, strcmp(cp, "×") ? 1 : 0, 
-			       work_ctm[i].cf_select_score, work_ctm[i].overt_arguments_score, work_ctm[i].noassign_arguments_num);
+			printf(";;<%s>%d FEATURE: %d, 0, %f, 0,", aresult, i, strcmp(cp, "×") ? 1 : 0, 
+			       work_ctm[i].overt_arguments_score); 
 			for (j = 0; j < ELLIPSIS_CASE_NUM; j++) {
 			    for (k = 0; k < O_FEATURE_NUM; k++) {
+				if ((/*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI) &&
+				    work_ctm[i].omit_feature[j][k] != INITIAL_SCORE)
+				    work_ctm[i].omit_feature[j][k] = tanh(work_ctm[i].omit_feature[j][k]/2);
 				(work_ctm[i].omit_feature[j][k] == INITIAL_SCORE) ?
 				    printf(" 0,") : 
 				    (work_ctm[i].omit_feature[j][k] == 0.0) ?
@@ -1694,7 +1729,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	exit(1);
     }
     entity_ptr = entity_manager.entity + entity_manager.num;
-    entity_ptr->num = entity_manager.num;
+    entity_ptr->num = entity_ptr->output_num = entity_manager.num;
     entity_manager.num++;				
     entity_ptr->mention[0] = mention_mgr->mention;
     entity_ptr->mentioned_num = 1;
@@ -1934,7 +1969,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     for (i = 0; i < entity_manager.num; i++) {
 	entity_ptr = entity_manager.entity + i;
 
-	printf(";; ENTITY %d [ %s ] %f {\n", i, entity_ptr->name, entity_ptr->salience_score);
+	printf(";; ENTITY %d [ %s ] %f {\n", entity_ptr->output_num, entity_ptr->name, entity_ptr->salience_score);
 	for (j = 0; j < entity_ptr->mentioned_num; j++) {
 	    mention_ptr = entity_ptr->mention[j];
 	    printf(";;\tMENTION%3d {", j);
