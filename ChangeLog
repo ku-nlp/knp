@@ -11,6 +11,9 @@
 	* system/main.c:
 	Modified to apply the preprocess of morphemes before the parenthesis process.
 
+	* system/main.c, rule/mrph_filter.rule:
+	Added an option of disabling emoticon recognition (-disable-emoticon-recognition).
+
 2010-02-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c:
