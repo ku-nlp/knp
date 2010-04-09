@@ -1254,9 +1254,6 @@ extern int	EX_match_subject;
     int flag, i;
     int relation_error, d_struct_error;
 
-    /* 形態素列の前処理 */
-    preprocess_mrph(sp);
-
     /* 形態素列の前処理だけの場合 */
     if (OptAnalysis == OPT_FILTER) return TRUE;
 
@@ -1665,6 +1662,9 @@ PARSED:
 	ErrorComment = strdup("Cannot make mrph");
     }
     else { /* 形態素読み込み成功 */
+	/* 形態素列の前処理 */
+	preprocess_mrph(sp);
+
 	/* 括弧を処理して文として分割する場合 */
 	if (OptProcessParen) {
 	    paren_num = process_input_paren(sp, &paren_sentence_data);
