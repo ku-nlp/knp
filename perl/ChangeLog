@@ -1,3 +1,8 @@
+2010-05-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/KNP.pm:
+	Modified to check the existence of $ENV{HOME}.
+
 2009-11-07  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 	* lib/KNP.pm:
