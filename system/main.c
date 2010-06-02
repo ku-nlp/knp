@@ -407,6 +407,7 @@ extern int	EX_match_subject;
 	    OptEllipsis |= OPT_COREFER;
 	    OptGeneralCF |= OPT_CF_NE;
 	    OptGeneralCF |= OPT_CF_CATEGORY;
+	    OptGeneralCF |= OPT_CF_CLASS;
 	}
 	else if (str_eq(argv[0], "-anaphora-prob")) {
 	    OptAnaphora |= OPT_ANAPHORA;

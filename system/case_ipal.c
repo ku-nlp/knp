@@ -812,7 +812,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 {   
     double freq;
 
-    cp += 4; /* gex用 (先頭の"<NE:"、"<TH:", "<CT:"は読み飛ばす */
+    cp += 4; /* gex用 (先頭の"<NE:"、"<TH:", "<CT:", "<CL:"は読み飛ばす */
 
     while (1) {
 	if (*cp == ':') {
@@ -870,9 +870,10 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	point2 = cf_str_buf;
 
 	/* 用例中に記された汎化素性の読み込み */
-	if (!strncmp(point2, "<NE:", 4) || 
-	    !strncmp(point2, "<TH:", 4) || 
-	    !strncmp(point2, "<CT:", 4)) {
+	if (!strncmp(point2, "<TH:", 4) || 
+	    !strncmp(point2, "<NE:", 4) || 
+	    !strncmp(point2, "<CT:", 4) ||
+	    !strncmp(point2, "<CL:", 4)) {
 
 	    /* 頻度の抽出 */
 	    freq_gex = split_freq_for_gex(point2);
@@ -3094,6 +3095,45 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	rep_malloc_flag = 0;
     }
     return get_general_probability(key, "KEY");
+}
+
+/*==================================================================*/
+  double get_class_probability(char *key, int as, CASE_FRAME *cfp)
+/*==================================================================*/
+{
+    int i;
+    double class[CLASS_NUM], prob, ret;
+    char *cp, *cp2, *key2;
+
+    /* keyのclass情報を読み込み */
+    if ((cp = db_get(case_db, key))) {  
+	for (i = 0; i < CLASS_NUM; i++) {
+	    class[i] = 0;
+	}
+	while (cp && sscanf(cp, "%d:%lf", &i, &prob)) {
+	    class[i] = prob;
+	    cp = strstr(cp, ",");
+	    if (cp) cp++;
+	}
+    }
+    else {
+	return 0;
+    }
+
+    ret = 0;
+    for (i = 0; i < cfp->gex_num[as]; i++) {
+	cp = cfp->gex_list[as][i];
+	if (!strncmp(cp, "CL:", 3)) {    
+	    prob = get_general_probability(cp, "KEY");
+
+	    if (prob != FREQ0_ASSINED_SCORE && class[atoi(cp + 3)] > 0) {
+		ret += cfp->gex_freq[as][i] / exp(prob) * class[atoi(cp + 3)];
+		/* printf("%d %f %f %f %f ok?\n", 
+		   atoi(cp + 3), class[atoi(cp + 3)], exp(prob), cfp->gex_freq[as][i], ret); */
+	    }
+	}
+    }
+    return ret;
 }
 
 /*==================================================================*/

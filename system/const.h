@@ -86,6 +86,7 @@
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
+#define CLASS_NUM       2000 /* 単語クラスの数 */
 #define MENTION_MAX     32   /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
 #define ENTITY_MAX      1024 /* ENTITYの数 */
 #define MENTIONED_MAX   1024 /* 1つのENTITYが言及される回数 */
@@ -168,6 +169,7 @@
 #define	OPT_SERV_FORE	1
 #define	OPT_CF_NE	1
 #define	OPT_CF_CATEGORY	2
+#define	OPT_CF_CLASS	4
 #define OPT_ANAPHORA        1
 #define OPT_PRINT_ENTITY    2
 #define OPT_ANAPHORA_COPULA 4
@@ -1330,15 +1332,16 @@ typedef struct tcf_def {
 
 /* CF_TAG_MGR中のomit_feature用の定数 */
 #define ELLIPSIS_CASE_NUM 3
-#define O_FEATURE_NUM     8
+#define O_FEATURE_NUM     9
 #define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
 #define EX_PMI            1 /* 語PMI */	       
 #define CEX_PMI           2 /* カテゴリPMI */	       
 #define NEX_PMI           3 /* 固有表現PMI */	       
-#define SCASE_PMI         4 /* 格PMI */
-#define LOCATION_PROB     5 /* 位置カテゴリの確率 */
-#define VERB_PMI          6 /* 共起用言PMI */
-#define SALIENCE_SCORE    7 /* salience score */
+#define CLS_PMI           4 /* クラスPMI */
+#define SCASE_PMI         5 /* 格PMI */
+#define LOCATION_PROB     6 /* 位置カテゴリの確率 */
+#define VERB_PMI          7 /* 共起用言PMI */
+#define SALIENCE_SCORE    8 /* salience score */
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {

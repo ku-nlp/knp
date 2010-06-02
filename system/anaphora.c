@@ -57,9 +57,9 @@ double cf_select_weight = 1.0;
 double overt_arguments_weight = 1.0;
 double noassign_arguments_weight = FREQ0_ASSINED_SCORE + UNKNOWN_CASE_SCORE;
 double case_feature_weight[ELLIPSIS_CASE_NUM][O_FEATURE_NUM] =
-{{1.0, 0.5, 0.5, 0.5, 1.0, 1.0, 0.0, 0.0},
- {1.0, 0.5, 0.5, 0.5, 1.0, 1.0, 0.0, 0.0},
- {1.0, 0.5, 0.5, 0.5, 1.0, 1.0, 0.0, 0.0}};
+{{1.0, 0.5, 0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0},
+ {1.0, 0.5, 0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0},
+ {1.0, 0.5, 0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0}};
 
 /*==================================================================*/
 	    int match_ellipsis_case(char *key, char **list)
@@ -924,6 +924,16 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		entity_ptr->mention[j]->flag != '=') continue;
 	    tmp_ne_ct_score = FREQ0_ASSINED_SCORE;
 
+	    /* クラスのスコアを計算 */
+	    if (OptGeneralCF & OPT_CF_CLASS) { //
+		sprintf(key, "%s:CL", get_bnst_head_canonical_rep(entity_ptr->mention[j]->tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF));
+		if ((prob = get_class_probability(key, e_num, ctm_ptr->cf_ptr))) {
+		    if (log(prob) > of_ptr[CLS_PMI]) {
+			of_ptr[CLS_PMI] = log(prob);
+		    }
+		}
+	    }
+
  	    /* カテゴリがある場合はP(食べる:動2,ヲ格|カテゴリ:人)もチェック */
 	    if ((OptGeneralCF & OPT_CF_CATEGORY) && 
 		(cp = check_feature(entity_ptr->mention[j]->tag_ptr->head_ptr->f, "カテゴリ"))) {
@@ -944,7 +954,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 			    printf(";; %s:%f(%f/%f)\n", key, tmp_score, prob, exp(get_general_probability(key, "KEY")));
 			
 			if (tmp_score > of_ptr[CEX_PMI]) {
-			    of_ptr[CEX_PMI] = tmp_score;
+			    of_ptr[CEX_PMI] = tmp_score; //
 			}
 
 			if (tmp_score > tmp_ne_ct_score) tmp_ne_ct_score = tmp_score;
@@ -968,7 +978,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		    printf(";; %s:%f(%f/%f)\n", key, tmp_score, prob, exp(get_general_probability(key, "KEY")));
 		
 		if (tmp_score > of_ptr[NEX_PMI]) {
-		    of_ptr[NEX_PMI] = tmp_score;
+		    of_ptr[NEX_PMI] = tmp_score; //
 		}
 
 		if (tmp_score > tmp_ne_ct_score) tmp_ne_ct_score = tmp_score;
@@ -1013,7 +1023,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	/* - get_case_probability(e_num, ctm_ptr->cf_ptr, FALSE) */
 
 	/* SALIENCE_SCORE */
-	of_ptr[SALIENCE_SCORE] = log(entity_ptr->salience_score);
+	//of_ptr[SALIENCE_SCORE] = log(entity_ptr->salience_score); //
 
 	/* 共起用言情報を確認 */
 	for (j = 0; j < entity_ptr->mentioned_num; j++) {
@@ -1022,7 +1032,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 		entity_ptr->mention[j]->flag != 'N' ||
 		pp != pp_kstr_to_code(entity_ptr->mention[j]->cpp_string)) continue;
 	    
-	    if (check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") &&
+	    if (0 && check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") && //
 		check_feature(entity_ptr->mention[j]->tag_ptr->f , "用言代表表記")) {
 		
 		if (entity_ptr->mention[j]->sent_num == sent_num &&
@@ -1449,7 +1459,10 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		ctm_ptr->noassign_arguments_num * noassign_arguments_weight;
 	    for (j = 0; j < ELLIPSIS_CASE_NUM; j++) {
 		for (k = 0; k < O_FEATURE_NUM; k++) {
-		    if (/*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI)
+		    if (0 && (k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == CLS_PMI || k == SCASE_PMI) &&
+			work_ctm[i].omit_feature[j][k] != INITIAL_SCORE && work_ctm[i].omit_feature[j][k] < -1)
+			work_ctm[i].omit_feature[j][k] = -1;
+		    if (0 && /*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI)
 			ctm_ptr->score += (ctm_ptr->omit_feature[j][k] == INITIAL_SCORE) ?
 			    0 : tanh(ctm_ptr->omit_feature[j][k]/2) * case_feature_weight[j][k];
 		    else
@@ -1645,9 +1658,14 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 			       work_ctm[i].overt_arguments_score); 
 			for (j = 0; j < ELLIPSIS_CASE_NUM; j++) {
 			    for (k = 0; k < O_FEATURE_NUM; k++) {
-				if ((/*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI) &&
-				    work_ctm[i].omit_feature[j][k] != INITIAL_SCORE)
-				    work_ctm[i].omit_feature[j][k] = tanh(work_ctm[i].omit_feature[j][k]/2);
+				//if (0 && (/*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI) &&
+				//work_ctm[i].omit_feature[j][k] != INITIAL_SCORE)
+				//work_ctm[i].omit_feature[j][k] = tanh(work_ctm[i].omit_feature[j][k]/2);
+				if (0 && (k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == CLS_PMI || k == SCASE_PMI) &&
+				    work_ctm[i].omit_feature[j][k] != INITIAL_SCORE && work_ctm[i].omit_feature[j][k] < -1)
+				    work_ctm[i].omit_feature[j][k] = -1;
+				//if (k == LOCATION_PROB) work_ctm[i].omit_feature[j][k] = 0; //
+
 				(work_ctm[i].omit_feature[j][k] == INITIAL_SCORE) ?
 				    printf(" 0,") : 
 				    (work_ctm[i].omit_feature[j][k] == 0.0) ?
