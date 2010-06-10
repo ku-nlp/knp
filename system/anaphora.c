@@ -11,6 +11,8 @@
 
 /* 省略解析に関するパラメータ */
 #define CASE_CANDIDATE_MAX  40  /* 照応解析用格解析結果を保持する数 */
+//#define CASE_CANDIDATE_MAX  1000  /* 照応解析用格解析結果を保持する数 */
+//#define ELLIPSIS_RESULT_MAX 10000 /* 省略解析結果を保持する数 */
 #define ELLIPSIS_RESULT_MAX 20  /* 省略解析結果を保持する数 */
 #define EX_MATCH_COMPENSATE 1.0 /* マッチしすぎることを防ぐための補正項 */
 #define SALIENCE_DECAY_RATE 0.5 /* salience_scoreの減衰率 */
@@ -832,8 +834,7 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 
     /* 対象の格フレームが選択されることのスコア */
     score = get_cf_probability_for_pred(&(tcf_ptr->cf), ctm_ptr->cf_ptr);
-
-    ctm_ptr->cf_select_score = 0;
+    ctm_ptr->cf_select_score = 0; //score
 
     /* 対応付けられた要素に関するスコア(格解析結果) */
     for (i = 0; i < ctm_ptr->case_result_num; i++) {
@@ -892,7 +893,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 /*==================================================================*/
 {
     /* 格フレームとの対応付けのスコアを計算する関数(省略解析の評価) */
-    int i, j, k, l, e_num, debug = 1, sent_num, pp;
+    int i, j, e_num, debug = 1, sent_num, pp;
     double score = 0, max_score, tmp_ne_ct_score, tmp_score, ex_prob, prob, penalty;
     double *of_ptr, scase_prob_cs, scase_prob, location_prob;
     char *cp, key[SMALL_DATA_LEN], loc_name[SMALL_DATA_LEN];
@@ -1034,9 +1035,11 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    
 	    if (0 && check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") && //
 		check_feature(entity_ptr->mention[j]->tag_ptr->f , "用言代表表記")) {
-		
+
 		if (entity_ptr->mention[j]->sent_num == sent_num &&
-		    tcf_ptr->pred_b_ptr->num < entity_ptr->mention[j]->tag_ptr->num) {
+		    tcf_ptr->pred_b_ptr->num >= entity_ptr->mention[j]->tag_ptr->num) continue;
+		
+		if (entity_ptr->mention[j]->sent_num == sent_num) {
 		    sprintf(key, "%s-%s:%s-%s:%s",
 			    entity_ptr->mention[j]->cpp_string,
 			    check_feature(tcf_ptr->pred_b_ptr->f, "用言代表表記") + strlen("用言代表表記:"),
@@ -1462,6 +1465,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    if (0 && (k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == CLS_PMI || k == SCASE_PMI) &&
 			work_ctm[i].omit_feature[j][k] != INITIAL_SCORE && work_ctm[i].omit_feature[j][k] < -1)
 			work_ctm[i].omit_feature[j][k] = -1;
+		    if (k == CLS_PMI) work_ctm[i].omit_feature[j][k] = 0; //
+
 		    if (0 && /*k == EX_PMI || k == CEX_PMI || k == NEX_PMI || k == SCASE_PMI || */k == VERB_PMI)
 			ctm_ptr->score += (ctm_ptr->omit_feature[j][k] == INITIAL_SCORE) ?
 			    0 : tanh(ctm_ptr->omit_feature[j][k]/2) * case_feature_weight[j][k];
@@ -1524,6 +1529,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	/* OR の格フレーム(和フレーム)を除く */
 	if (((*(cf_array + i))->etcflag & CF_SUM) && frame_num != 1) {
+	//if (!((*(cf_array + i))->etcflag & CF_SUM) || frame_num == 1) {
 	    continue;
 	}
   
@@ -1538,29 +1544,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     }
     if (work_ctm[0].score == INITIAL_SCORE) return FALSE;
 
-    if (OptExpress == OPT_TEST) {
-	for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
-	    if (work_ctm[i].score == INITIAL_SCORE) break;
-	    printf(";;格解析候補%d-%d:%2d %.3f %s",
-		   tag_ptr->mention_mgr.mention->sent_num, tag_ptr->num,
-		   i + 1, work_ctm[i].score, work_ctm[i].cf_ptr->cf_id);
-
-	    for (j = 0; j < work_ctm[i].result_num; j++) {
-		printf(" %s%s:%s",
-		       work_ctm[i].cf_ptr->adjacent[work_ctm[i].cf_element_num[j]] ? "*" : "-",
-		       pp_code_to_kstr(work_ctm[i].cf_ptr->pp[work_ctm[i].cf_element_num[j]][0]),
-		       work_ctm[i].elem_b_ptr[j]->head_ptr->Goi2);
-	    }
-	    for (j = 0; j < work_ctm[i].cf_ptr->element_num; j++) {
-		if (!work_ctm[i].filled_element[j] && 
-		    match_ellipsis_case(pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]), NULL))
-		    printf(" %s:×", pp_code_to_kstr(work_ctm[i].cf_ptr->pp[j][0]));
-	    }
-	    printf("\n");
-	}
-    }
-
-    if (OptDisplay == OPT_DEBUG || OptExpress == OPT_TABLE) {
+    if (OptExpress == OPT_TEST || OptDisplay == OPT_DEBUG || OptExpress == OPT_TABLE) {
 	for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
 	    if (work_ctm[i].score == INITIAL_SCORE) break;
 	    printf(";;格解析候補%d-%d:%2d %.3f %s",
@@ -1665,6 +1649,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 				    work_ctm[i].omit_feature[j][k] != INITIAL_SCORE && work_ctm[i].omit_feature[j][k] < -1)
 				    work_ctm[i].omit_feature[j][k] = -1;
 				//if (k == LOCATION_PROB) work_ctm[i].omit_feature[j][k] = 0; //
+				if (k == CLS_PMI) work_ctm[i].omit_feature[j][k] = 0; //
 
 				(work_ctm[i].omit_feature[j][k] == INITIAL_SCORE) ?
 				    printf(" 0,") : 
@@ -1929,7 +1914,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	if (tag_ptr->cf_ptr) {
 	    /* tag_ptr->tcf_ptrを作成 */
-	    tag_ptr->tcf_ptr = 	(TAG_CASE_FRAME *)
+	    tag_ptr->tcf_ptr = (TAG_CASE_FRAME *)
 		malloc_data(sizeof(TAG_CASE_FRAME), "make_context_structure");
 	    set_tag_case_frame(sp, tag_ptr);
 	    	    	    
