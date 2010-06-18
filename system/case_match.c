@@ -657,7 +657,8 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 	   int elmnt_match_score(int as1, CASE_FRAME *cfd, 
 				 int as2, CASE_FRAME *cfp, 
-				 int flag, int *pos, double *score)
+				 int flag, int *pos, double *score, 
+				 CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 意味マーカのマッチング度の計算 */
@@ -717,7 +718,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	       cf_match_sm(as1, cfd, as2, cfp, pos);
 	    */
 
-	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE) + get_case_function_probability(as1, cfd, as2, cfp, FALSE);
+	    *score = get_ex_probability_with_para(as1, cfd, as2, cfp) + get_case_probability(as2, cfp, TRUE, para_cpm_ptr) + get_case_function_probability(as1, cfd, as2, cfp, FALSE);
 	    return TRUE;
 	}
 
@@ -1051,7 +1052,8 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 /*==================================================================*/
 	 void eval_assign_prob(CASE_FRAME *cfd, LIST *list1,
 			       CASE_FRAME *cfp, LIST *list2,
-			       double score, int closest)
+			       double score, int closest, 
+			       CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* フレームのマッチング度の評価 (確率版) */
@@ -1094,7 +1096,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    }
 	    /* 対応する格スロットがない場合 => 仮想的に格スロットを作成して割り当て */
 	    else {
-		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE);
+		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE, para_cpm_ptr);
 	    }
 	    /* score += NIL_ASSINED_SCORE;
 	       score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp); */
@@ -1116,11 +1118,11 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    /* list2->score[i] += get_case_probability(i, cfp, TRUE) / cfd->weight[list2->flag[i]]; */
 	}
 	else { /* 割り当てなし */
-	    list2->score[i] = get_case_probability(i, cfp, FALSE);
+	    list2->score[i] = get_case_probability(i, cfp, FALSE, para_cpm_ptr);
 	    score += list2->score[i];
 	}
     }
-    score += get_case_num_probability(cfp, cf_element); /* 割り当てのある個数 */
+    score += get_case_num_probability(cfp, cf_element, para_cpm_ptr); /* 割り当てのある個数 */
 
     local_score = score;
 
@@ -1149,12 +1151,14 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 
 int assign_list(CASE_FRAME *cfd, LIST list1,
 		CASE_FRAME *cfp, LIST list2,
-		double score, int flag, int closest);
+		double score, int flag, int closest, 
+		CF_PRED_MGR *para_cpm_ptr);
 
 /*==================================================================*/
 	    int _assign_list(CASE_FRAME *cfd, LIST list1,
 			     CASE_FRAME *cfp, LIST list2,
-			     double score, int flag, int assign_flag, int closest)
+			     double score, int flag, int assign_flag, int closest, 
+			     CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 
@@ -1254,7 +1258,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			    case_available = 1;
 			    pos = MATCH_NONE;
 			    match_result = 
-				elmnt_match_score(target, cfd, i, cfp, flag, &pos, &elmnt_score);
+				elmnt_match_score(target, cfd, i, cfp, flag, &pos, &elmnt_score, para_cpm_ptr);
 
 			    if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
 				(cfp->pp[i][j] != pp_kstr_to_code("外の関係") && 
@@ -1281,7 +1285,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 				    list2.score[i] = elmnt_score;
 				    list2.pos[i] = pos;
 				    assign_list(cfd, list1, cfp, list2, 
-						score + elmnt_score, flag, closest);
+						score + elmnt_score, flag, closest, para_cpm_ptr);
 				    list2.flag[i] = UNASSIGNED;
 				    list2.pos[i] = MATCH_NONE;
 				}
@@ -1317,7 +1321,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 
 	    assign_list(cfd, list1, cfp, list2, 
 			(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? score + elmnt_score : score, 
-			flag, closest);
+			flag, closest, para_cpm_ptr);
 	}
 	return FALSE;
     }
@@ -1327,21 +1331,22 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 /*==================================================================*/
 	     int assign_list(CASE_FRAME *cfd, LIST list1,
 			     CASE_FRAME *cfp, LIST list2,
-			     double score, int flag, int closest)
+			     double score, int flag, int closest, 
+			     CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 未格, 連格以外を先に割り当て */
 
-    if (_assign_list(cfd, list1, cfp, list2, score, flag, TRUE, closest) == FALSE) {
+    if (_assign_list(cfd, list1, cfp, list2, score, flag, TRUE, closest, para_cpm_ptr) == FALSE) {
 	return FALSE;
     }
-    if (_assign_list(cfd, list1, cfp, list2, score, flag, FALSE, closest) == FALSE) {
+    if (_assign_list(cfd, list1, cfp, list2, score, flag, FALSE, closest, para_cpm_ptr) == FALSE) {
 	return FALSE;
     }
 
     /* 評価 : すべての対応付けが終わった場合 */
     if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	eval_assign_prob(cfd, &list1, cfp, &list2, score, closest);
+	eval_assign_prob(cfd, &list1, cfp, &list2, score, closest, para_cpm_ptr);
     }
     else {
 	eval_assign_score(cfd, &list1, cfp, &list2, (int)score, closest);
@@ -1350,7 +1355,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 }
 
 /*==================================================================*/
-int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest)
+int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 格フレームのマッチング */
@@ -1383,7 +1388,7 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
     /* 処理 */
 
     /* flag: 例 or 意味コード */
-    assign_list(cfd, assign_d_list, cmm_ptr->cf_ptr, assign_p_list, 0, flag, closest);
+    assign_list(cfd, assign_d_list, cmm_ptr->cf_ptr, assign_p_list, 0, flag, closest, para_cpm_ptr);
 
     /* 後処理 */
 

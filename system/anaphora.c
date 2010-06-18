@@ -876,7 +876,7 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
     /* 格フレームの格が埋まっているかどうかに関するスコア */
     for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
 	if (tcf_ptr->cf.type == CF_NOUN) continue;
-	score += get_case_probability(e_num, ctm_ptr->cf_ptr, ctm_ptr->filled_element[e_num]);	
+	score += get_case_probability(e_num, ctm_ptr->cf_ptr, ctm_ptr->filled_element[e_num], NULL);	
     }
     if (OptDisplay == OPT_DEBUG && debug) printf(";; %f\n", score);
 
@@ -1137,7 +1137,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    match_ellipsis_case(pp_code_to_kstr(ctm_ptr->cf_ptr->pp[e_num][0]), NULL) &&
 	    ctm_ptr->cf_ptr->oblig[e_num]) {
 	    of_ptr = ctm_ptr->omit_feature[ctm_ptr->cf_ptr->pp[e_num][0] - 1];
-	    of_ptr[NO_ASSIGNMENT] = get_case_probability(e_num, ctm_ptr->cf_ptr, FALSE); //log(0.5)
+	    of_ptr[NO_ASSIGNMENT] = get_case_probability(e_num, ctm_ptr->cf_ptr, FALSE, NULL); //log(0.5)
             score += of_ptr[NO_ASSIGNMENT];
 	}
     }

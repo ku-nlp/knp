@@ -230,7 +230,7 @@ extern void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr);
 extern int get_dist_from_work_mgr(BNST_DATA *bp, BNST_DATA *hp);
 extern int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr);
-extern double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide);
+extern double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide, CF_PRED_MGR *para_cpm_ptr);
 
 /* case_data.c */
 extern char *make_fukugoji_id(BNST_DATA *b_ptr);
@@ -268,9 +268,9 @@ extern double get_case_interpret_probability(char *scase, char *cfcase, int elli
 extern double get_general_probability(char *key1, char *key2);
 extern double get_class_probability(char *key, int as2, CASE_FRAME *cfp);
 extern double get_key_probability(TAG_DATA *tag_ptr);
-extern double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag);
-extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag);
-extern double get_case_num_probability(CASE_FRAME *cfp, int num);
+extern double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr);
+extern double get_case_probability(int as2, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr);
+extern double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_ptr);
 extern double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
 				 int as2, CASE_FRAME *cfp, int sm_flag);
 extern double get_ex_probability_with_para(int as1, CASE_FRAME *cfd,
@@ -286,13 +286,13 @@ extern double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr);
 extern double get_para_exist_probability(char *para_key, double score, int flag, TAG_DATA *dp, TAG_DATA *gp);
 extern double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
-extern double get_noun_co_num_probability(TAG_DATA *gp, int num);
+extern double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr);
 extern char *malloc_db_buf(int size);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
 extern int _sm_match_score(char *cpp, char *cpd, int flag);
-extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest);
+extern int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest, CF_PRED_MGR *para_cpm_ptr);
 extern int cf_match_element(char *d, char *target, int flag);
 extern int count_pat_element(CASE_FRAME *cfp, LIST *list2);
 extern int count_assigned_adjacent_element(CASE_FRAME *cfp, LIST *list2);

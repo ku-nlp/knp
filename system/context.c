@@ -4956,7 +4956,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
 
 	/* 今ある格要素を対応づけ */
-	case_frame_match(cpm_ptr, &cmm, OptCFMode, -1);
+	case_frame_match(cpm_ptr, &cmm, OptCFMode, -1, NULL);
 	cpm_ptr->score = cmm.score;
 
 	/* for (i = 0; i < cmm.result_num; i++) */ {

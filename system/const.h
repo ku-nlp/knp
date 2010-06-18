@@ -201,6 +201,7 @@
 
 #define OPT_PARA_MULTIPLY_ALL_EX	1
 #define OPT_PARA_GENERATE_SIMILARITY	2
+#define OPT_PARA_SYNCHRONIZE		4
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
@@ -1065,6 +1066,31 @@ typedef struct {
     CF_PRED_MGR cpm[CPM_MAX];	/* 文中の各用言の格解析結果 */
     int		ID;		/* DPND の ID */
 } TOTAL_MGR;
+
+typedef struct _CKY *CKYptr;
+typedef struct _CKY {
+    int		i;
+    int		j;
+    char	cp;
+    double	score;		/* score at this point */
+    double	para_score;	/* coordination score */
+    double      chicase_score;
+    double      chicase_lex_score;
+    int		para_flag;	/* coordination flag */
+    char	dpnd_type;	/* type of dependency (D or P) */
+    int		direction;	/* direction of dependency */
+    int         index;          /* index of dpnd rule for Chinese */
+    BNST_DATA	*b_ptr;
+    int 	scase_check[SCASE_CODE_SIZE];
+    int		un_count;
+    CF_PRED_MGR *cpm_ptr;	/* case components */
+    CKYptr	left;		/* pointer to the left child */
+    CKYptr	right;		/* pointer to the right child */
+    CKYptr	next;		/* pointer to the next CKY data at this point */
+
+  int        left_pos_index;  /* pos index for Chinese */
+  int        right_pos_index;  /* pos index for Chinese */
+} CKY;
 
 /*====================================================================
 			       文脈処理

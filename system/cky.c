@@ -7,31 +7,6 @@
 
 #include "knp.h"
 
-typedef struct _CKY *CKYptr;
-typedef struct _CKY {
-    int		i;
-    int		j;
-    char	cp;
-    double	score;		/* score at this point */
-    double	para_score;	/* coordination score */
-    double      chicase_score;
-    double      chicase_lex_score;
-    int		para_flag;	/* coordination flag */
-    char	dpnd_type;	/* type of dependency (D or P) */
-    int		direction;	/* direction of dependency */
-    int         index;          /* index of dpnd rule for Chinese */
-    BNST_DATA	*b_ptr;
-    int 	scase_check[SCASE_CODE_SIZE];
-    int		un_count;
-    CF_PRED_MGR *cpm_ptr;	/* case components */
-    CKYptr	left;		/* pointer to the left child */
-    CKYptr	right;		/* pointer to the right child */
-    CKYptr	next;		/* pointer to the next CKY data at this point */
-
-  int        left_pos_index;  /* pos index for Chinese */
-  int        right_pos_index;  /* pos index for Chinese */
-} CKY;
-
 #define DOUBLE_MINUS    -999.0
 #define PARA_THRESHOLD	0
 
@@ -193,7 +168,7 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    make_work_mgr_dpnd_check(sp, cky_ptr->left, cky_ptr->right->b_ptr);
 	    make_data_cframe_rentai_simple(cpm_ptr, cpm_ptr->pred_b_ptr, 
 					   cky_ptr->right->b_ptr->tag_ptr + cky_ptr->right->b_ptr->tag_num - 1);
-	    find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), 1);
+	    find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), TRUE, NULL);
 	}
     }
 
@@ -1160,13 +1135,13 @@ int count_distance(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *g_ptr, int *pos) 
 
 /* scoring function based on case structure probabilities */
 double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mgr) {
-    CKY *right_ptr = cky_ptr->right, *orig_cky_ptr = cky_ptr;
+    CKY *right_ptr = cky_ptr->right, *orig_cky_ptr = cky_ptr, *para_cky_ptr = NULL;
     BNST_DATA *g_ptr = cky_ptr->b_ptr, *d_ptr;
     TAG_DATA *t_ptr, *dt_ptr;
     CF_PRED_MGR *cpm_ptr, *pre_cpm_ptr;
     int i, pred_p = 0, child_num = 0, wo_ni_overwritten_flag = 0;
     int renyou_modifying_num = 0, adverb_modifying_num = 0, noun_modifying_num = 0, flag;
-    double one_score = 0, orig_score;
+    double one_score = 0, orig_score, case_analysis_score;
     char *para_key;
 
     /* 対象の用言以外のスコアを集める (rightをたどりながらleftのスコアを足す) */
@@ -1274,6 +1249,9 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		    flag++;
 		}
 	    }
+	    else if (cky_ptr->dpnd_type == 'P') {
+		para_cky_ptr = cky_ptr->left;
+	    }
 
 	    /* clausal modifiee */
 	    if ((check_feature(d_ptr->f, "係:連格") || check_feature(d_ptr->f, "強調構文")) && 
@@ -1286,7 +1264,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 
 		orig_score = pre_cpm_ptr->score;
 		one_score -= orig_score;
-		one_score += find_best_cf(sp, pre_cpm_ptr, get_closest_case_component(sp, pre_cpm_ptr), 1);
+		one_score += find_best_cf(sp, pre_cpm_ptr, get_closest_case_component(sp, pre_cpm_ptr), FALSE, NULL);
 		pre_cpm_ptr->score = orig_score;
 		pre_cpm_ptr->cf.element_num--;
 		flag++;
@@ -1334,13 +1312,25 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 	}
 
 	/* call case structure analysis */
-	one_score += find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), 1);
+	case_analysis_score = find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), FALSE, para_cky_ptr ? para_cky_ptr->cpm_ptr : NULL);
+	one_score += case_analysis_score;
 
 	/* for each child */
 	cky_ptr = orig_cky_ptr;
 	while (cky_ptr) {
 	    if (cky_ptr->left) {
 		d_ptr = cky_ptr->left->b_ptr;
+		if (cky_ptr->dpnd_type == 'P' && /* 判定詞並列にcase_analysis_scoreを足す */
+		    check_feature(g_ptr->f, "用言:判") && 
+		    !check_feature(d_ptr->f, "用言")) {
+		    one_score += case_analysis_score;
+		}
+		if (cky_ptr->dpnd_type == 'P' && 
+		    check_feature(g_ptr->f, "用言") && 
+		    !check_feature(g_ptr->f, "用言:判") && 
+		    !check_feature(d_ptr->f, "用言")) {
+		    one_score -= 1000; /* penalty */
+		}
 		if (cky_ptr->dpnd_type != 'P' && 
 		    !(cky_ptr->left->i == cky_ptr->left->j && /* 「〜に」が格要素なので除外 */
 		      check_feature(d_ptr->f, "ID:（〜を）〜に"))) {
@@ -1371,8 +1361,8 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
     }
 
     /* 名詞修飾個数生成 */
-    if (OptParaFix == 0 && !pred_p || check_feature(t_ptr->f, "用言:判")) {
-	one_score += get_noun_co_num_probability(t_ptr, noun_modifying_num);
+    if (OptParaFix == 0 && (!pred_p || check_feature(t_ptr->f, "用言:判"))) {
+	one_score += get_noun_co_num_probability(t_ptr, noun_modifying_num, para_cky_ptr);
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -1949,10 +1939,11 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
-				(dpnd_type == 'P' || 
-				 dep_check[i + k] <= 0 || /* no barrier */
-				 dep_check[i + k] >= j || /* before barrier */
-				 (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))) { /* barrier relaxation for P */
+				((dpnd_type == 'P' && right_ptr->dpnd_type != 'P') || 
+				 (dpnd_type != 'P' && 
+				  (dep_check[i + k] <= 0 || /* no barrier */
+				   dep_check[i + k] >= j || /* before barrier */
+				   (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))))) { /* barrier relaxation for P */
 
 				if (Language == CHINESE) {
 				    for (l = 0; l < Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].count; l++) {

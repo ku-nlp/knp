@@ -316,7 +316,7 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 }
 
 /*==================================================================*/
-double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide)
+double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int decide, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     int i, j, frame_num = 0, pat_num;
@@ -346,7 +346,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	else {
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr;
 	}
-	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode, -1);
+	case_frame_match(cpm_ptr, Cf_match_mgr, OptCFMode, -1, NULL);
 	cpm_ptr->score = Cf_match_mgr->score;
 	cpm_ptr->cmm[0] = *Cf_match_mgr;
 	cpm_ptr->result_num = 1;
@@ -394,7 +394,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	       SEMANTIC_MARKER */
 
 	    /* closest があれば、直前格要素のみのスコアになる */
-	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode, closest);
+	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode, closest, para_cpm_ptr);
 
 	    /* 結果を格納 */
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
@@ -786,7 +786,7 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
        文脈解析: 直前格要素がなければ格フレームを決定しない */
 
     /* 直前格要素がある場合 (closest > -1) のときは格フレームを決定する */
-    find_best_cf(sp, cpm_ptr, closest, 1);
+    find_best_cf(sp, cpm_ptr, closest, 1, NULL);
 
     if (OptAnalysis == OPT_CASE && 
 	!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {

@@ -351,6 +351,10 @@ extern int	EX_match_subject;
 	    OptParaNoFixFlag |= OPT_PARA_GENERATE_SIMILARITY;
 	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
 	}
+	else if (str_eq(argv[0], "-no-parafix-synchronize")) {
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_SYNCHRONIZE;
+	}
 	else if (str_eq(argv[0], "-no-generalize-agent")) {
 	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
 	}

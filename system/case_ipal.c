@@ -2353,23 +2353,55 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
+double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 格確率 P(ガ格○|食べる:動2)
        KNP格解析結果から計算 (cfcases.prob) */
 
-    char *key, *value, *verb, *cp;
+    char *key, *value, *verb, *cp, *para_cond = NULL;
     double pred_ret = 0, cf_ret = 0;
-    int denominator = 0;
+    int denominator = 0, num;
 
     if (CFCaseExist == FALSE) {
 	return 0;
     }
 
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* 同期並列手法 */
+	para_cpm_ptr && /* 述語並列が存在 */
+	para_cpm_ptr->result_num != 0 && 
+	para_cpm_ptr->cmm[0].cf_ptr && 
+	para_cpm_ptr->cmm[0].cf_ptr->cf_address != -1 && 
+	para_cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+	int i;
+	for (i = 0; i < para_cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+	    if (MatchPP(para_cpm_ptr->cmm[0].cf_ptr->pp[i][0], case_str)) {
+		num = para_cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+		if (num == UNASSIGNED) { /* 並列述語の格フレームに対象格があるが、割り当てなし */
+		    para_cond = "PX";
+		}
+		else {
+		    para_cond = "PO";
+		}
+		break;
+	    }
+	}
+	if (!para_cond) {
+	    para_cond = "PX"; /* 並列述語の格フレームに対象格がない */
+	}
+    }
+    else {
+	para_cond = "-"; /* 述語並列が存在しない */
+    }
+
     /* 格フレーム */
-    key = malloc_db_buf(strlen(case_str) + strlen(cfp->cf_id) + 2);
-    sprintf(key, "%s|%s", case_str, cfp->cf_id);
+    key = malloc_db_buf(strlen(case_str) * 2 + strlen(cfp->cf_id) + 6);
+    if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	sprintf(key, "%s|%s,%s,%s", case_str, cfp->cf_id, case_str, para_cond);
+    }
+    else {
+	sprintf(key, "%s|%s,%s", case_str, cfp->cf_id, case_str);
+    }
     value = db_get(cf_case_db, key);
     if (value) {
 	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
@@ -2380,7 +2412,12 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     }
     else {
 	/* obtain the denominator */
-	sprintf(key, "NIL|%s", cfp->cf_id);
+	if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	    sprintf(key, "NIL|%s,%s,%s", cfp->cf_id, case_str, para_cond);
+	}
+	else {
+	    sprintf(key, "NIL|%s,%s", cfp->cf_id, case_str);
+	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
 	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
@@ -2393,7 +2430,12 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* 用言表記 */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
-    sprintf(key, "%s|%s", case_str, verb);
+    if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	sprintf(key, "%s|%s,%s,%s", case_str, verb, case_str, para_cond);
+    }
+    else {
+	sprintf(key, "%s|%s,%s", case_str, verb, case_str);
+    }
     value = db_get(cf_case_db, key);
     if (value) {
 	if ((cp = strchr(value, '/'))) {
@@ -2406,9 +2448,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* interpolation between cf and pred */
     if (denominator > 0) {
         double lambda = (double)denominator / (denominator + 1);
-        if (VerboseLevel >= VERBOSE3) {
-            fprintf(Outfp, ";; (C) lambda * P(%s|%s) + (1 - lambda) * P\(%s|%s) = %lf * %lf + %lf * %lf\n", 
-		    case_str, cfp->cf_id, case_str, verb, 
+        if (VerboseLevel >= VERBOSE1) {
+            fprintf(Outfp, ";; (C) lambda * P(%s|%s,%s) + (1 - lambda) * P\(%s|%s,%s) = %lf * %lf + %lf * %lf\n", 
+		    case_str, cfp->cf_id, para_cond, case_str, verb, para_cond, 
 		    lambda, cf_ret, (1 - lambda), pred_ret);
         }
         pred_ret *= 1 - lambda;
@@ -2448,28 +2490,28 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
 }
 
 /*==================================================================*/
-   double get_case_probability(int as2, CASE_FRAME *cfp, int aflag)
+double get_case_probability(int as2, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 格確率 P(ガ格○|食べる/たべる:動2)
        KNP格解析結果から計算 (cfcase.prob) */
 
     if (cfp->type == CF_PRED) { /* 用言格フレーム */
-	return get_case_probability_from_str(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag);
+	return get_case_probability_from_str(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag, para_cpm_ptr);
     }
     else { /* 名詞格フレーム */
-	return get_case_probability_from_str(cfp->pp_str[as2], cfp, aflag);
+	return get_case_probability_from_str(cfp->pp_str[as2], cfp, aflag, para_cpm_ptr);
     }
 }
 
 /*==================================================================*/
-      double get_case_num_probability(CASE_FRAME *cfp, int num)
+double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
     /* 格の個数確率 P(2|食べる/たべる:動2)
        KNP格解析結果から計算 (cfcase.prob) */
 
-    char *key, *value, *verb, *cp;
+    char *key, *value, *verb, *cp, *para_cond;
     double cf_ret = 0, pred_ret = 0;
     int denominator = 0;
 
@@ -2478,9 +2520,31 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
 	return 0;
     }
 
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* 同期並列手法 */
+	para_cpm_ptr && /* 述語並列が存在 */
+	para_cpm_ptr->result_num != 0 && 
+	para_cpm_ptr->cmm[0].cf_ptr && 
+	para_cpm_ptr->cmm[0].cf_ptr->cf_address != -1 && 
+	para_cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_PROB) {
+	if (para_cpm_ptr->cmm[0].cf_ptr->element_num > 0) {
+	    para_cond = "PO"; /* 項が1つ以上 */
+	}
+	else {
+	    para_cond = "PX";
+	}
+    }
+    else {
+	para_cond = "-"; /* 述語並列が存在しない */
+    }
+
     /* 格フレーム */
-    key = malloc_db_buf(strlen(cfp->cf_id) + 6);
-    sprintf(key, "%d|N:%s", num, cfp->cf_id);
+    key = malloc_db_buf(strlen(cfp->cf_id) + 9);
+    if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	sprintf(key, "%d|N:%s,%s", num, cfp->cf_id, para_cond);
+    }
+    else {
+	sprintf(key, "%d|N:%s", num, cfp->cf_id);
+    }
     value = db_get(cf_case_db, key);
     if (value) {
 	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
@@ -2491,7 +2555,12 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     }
     else {
 	/* obtain the denominator */
-	sprintf(key, "NIL|N:%s", cfp->cf_id);
+	if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	    sprintf(key, "NIL|N:%s,%s", cfp->cf_id, para_cond);
+	}
+	else {
+	    sprintf(key, "NIL|N:%s", cfp->cf_id);
+	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
 	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
@@ -2504,7 +2573,12 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* 用言表記 */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
-    sprintf(key, "%d|N:%s", num, verb);
+    if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	sprintf(key, "%d|N:%s,%s", num, verb, para_cond);
+    }
+    else {
+	sprintf(key, "%d|N:%s", num, verb);
+    }
     value = db_get(cf_case_db, key);
     if (value) {
 	if ((cp = strchr(value, '/'))) {
@@ -2517,9 +2591,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag)
     /* interpolation between cf and pred */
     if (denominator > 0) {
         double lambda = (double)denominator / (denominator + 1);
-        if (VerboseLevel >= VERBOSE3) {
-            fprintf(Outfp, ";; (CN) lambda * P(%d|N:%s) + (1 - lambda) * P\(%d|N:%s) = %lf * %lf + %lf * %lf\n", 
-		    num, cfp->cf_id, num, verb, 
+        if (VerboseLevel >= VERBOSE2) {
+            fprintf(Outfp, ";; (CN) lambda * P(%d|N:%s,%s) + (1 - lambda) * P\(%d|N:%s,%s) = %lf * %lf + %lf * %lf\n", 
+		    num, cfp->cf_id, para_cond, num, verb, para_cond, 
 		    lambda, cf_ret, (1 - lambda), pred_ret);
         }
         pred_ret *= 1 - lambda;
@@ -4283,15 +4357,34 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 }
 
 /*==================================================================*/
-      double get_noun_co_num_probability(TAG_DATA *gp, int num)
+double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
 /*==================================================================*/
 {
-    char *key, *value, *cp, *mrph_str;
+    char *key, *value, *cp, *mrph_str, *para_cond = NULL;
     int rep_malloc_flag = 0;
     double ret;
 
     if (NounCoExist == FALSE) {
 	return 0;
+    }
+
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* 同期並列手法 */
+	para_cky_ptr) {
+	while (para_cky_ptr) {
+	    if (para_cky_ptr->left && para_cky_ptr->para_flag == 0 && para_cky_ptr->left->b_ptr && 
+		(check_feature(para_cky_ptr->left->b_ptr->f, "係:ノ格") || 
+		 check_feature(para_cky_ptr->left->b_ptr->f, "係:連体"))) {
+		para_cond = "PO";
+		break;
+	    }
+	    para_cky_ptr = para_cky_ptr->right;
+	}
+	if (!para_cond) {
+	    para_cond = "PX";
+	}
+    }
+    else {
+	para_cond = "-";
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
@@ -4312,8 +4405,13 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	mrph_str = gp->head_ptr->Goi;
     }
 
-    key = malloc_db_buf(strlen(mrph_str) + 6);
-    sprintf(key, "%d|N:%s", num, mrph_str);
+    key = malloc_db_buf(strlen(mrph_str) + 9);
+    if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
+	sprintf(key, "%d|N:%s,%s", num, mrph_str, para_cond);
+    }
+    else {
+	sprintf(key, "%d|N:%s", num, mrph_str);
+    }
     if (rep_malloc_flag) {
 	free(mrph_str);
     }
