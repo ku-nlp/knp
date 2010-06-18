@@ -534,6 +534,8 @@ DBM_FILE db_write_open(char *filename)
     DBM_FILE db;
 
     db = tchdbnew(); /* make a hash object */
+    /* tchdbtune(db, 30000000, 8, -1, 0); */
+    tchdbsetxmsiz(db, 4294967296);
 
     /* open a database */
     if (!tchdbopen(db, filename, HDBOWRITER | HDBOCREAT | HDBOTRUNC)) {
