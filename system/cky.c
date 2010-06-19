@@ -2297,7 +2297,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
 		if (next_pp_for_ij) {
 		    /* leave the best candidates within the beam */
-		    if (OptBeam) {
+		    if (OptBeam && !(i == 0 && j == sp->Bnst_num - 1)) {
 			sort_cky_ptrs(&(cky_matrix[i][j]), OptBeam);
 			next_pp = &(cky_matrix[i][j]);
 			for (l = 0; l < OptBeam && *next_pp; l++) {
