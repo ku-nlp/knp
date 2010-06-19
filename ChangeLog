@@ -1,3 +1,16 @@
+2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Modified to output all existing candidates against beam width.
+
+2010-06-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/db.c:
+	Tuned db_write_open for Tokyo Cabinet.
+
+	* system/anaphora.c, system/case_analysis.c, system/case_ipal.c, system/case_match.c, system/cky.c, system/const.h, system/context.c, system/extern.h, system/main.c:
+	Added a new method of coordination disambiguation (-no-parafix-synchronize).
+
 2010-06-02  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/case_ipal.c, system/const.h, system/extern.h, system/main.c:
