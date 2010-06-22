@@ -22,6 +22,8 @@ int preArticleID = 0;
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
+#define KATAKANA_VARIATION_ABSORB_LENGTH 8 /* 4文字以上でカタカナ末尾の長音符を吸収 */
+
 /*==================================================================*/
 	void selected_imi2feature(char *str, MRPH_DATA *m_ptr)
 /*==================================================================*/
@@ -169,12 +171,25 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 /*==================================================================*/
 {
     char *buf;
+    int goi_length = strlen(m_ptr->Goi);
+    int yomi_length = strlen(m_ptr->Yomi);
 
     /* (代表表記がないときに)代表表記を作る */
 
     /* 基本形の方が長いかもしれないので余分に確保 */
-    buf = (char *)malloc_data(strlen(m_ptr->Goi) + strlen(m_ptr->Yomi) + SMALL_DATA_LEN, "make_mrph_rn");
-    sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Yomi);
+    buf = (char *)malloc_data(goi_length + yomi_length + SMALL_DATA_LEN, "make_mrph_rn");
+
+    /* 指定された文字以上で長音符で終わるカタカナの代表表記は長音符を削除 */
+    if (!strcmp(Class[m_ptr->Hinshi][0].id, "未定義語") && 
+	!strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "カタカナ") && 
+	goi_length >= KATAKANA_VARIATION_ABSORB_LENGTH && 
+	!strcmp(m_ptr->Goi + goi_length - BYTES4CHAR, "ー") && /* 末尾が長音符 */
+	strcmp(m_ptr->Goi + goi_length - BYTES4CHAR - BYTES4CHAR, "ーー")) { /* 長音符は一つだけ */
+	sprintf(buf, "%.*s/%.*s", goi_length - BYTES4CHAR, m_ptr->Goi, yomi_length - BYTES4CHAR, m_ptr->Yomi);
+    }
+    else {
+	sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Yomi);
+    }
 
     if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* 活用語 */
 	buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* 語幹にする */
