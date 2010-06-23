@@ -1,3 +1,20 @@
+2010-06-23  Keiji Shinzato  <shinzato@i.kyoto-u.ac.jp>
+
+	* rule/search_query.data, rule/search_query.rule:
+	「する」をストップワードに, 基本句として独立している名詞接尾辞からの係り受けを必須に.
+
+2010-06-22  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Modified to output normalized repnames for unknown KATAKANA that ends with macron.
+
+2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* ChangeLog: updated.
+
+	* system/cky.c:
+	Modified to output all existing candidates against beam width.
+
 2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
