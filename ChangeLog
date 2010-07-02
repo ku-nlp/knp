@@ -1,3 +1,8 @@
+2010-07-02  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Applied macron handling to automatically acquired words.
+
 2010-06-23  Keiji Shinzato  <shinzato@i.kyoto-u.ac.jp>
 
 	* rule/search_query.data, rule/search_query.rule:
