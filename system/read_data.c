@@ -180,8 +180,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     buf = (char *)malloc_data(goi_length + yomi_length + SMALL_DATA_LEN, "make_mrph_rn");
 
     /* 指定された文字以上で長音符で終わるカタカナの代表表記は長音符を削除 */
-    if (!strcmp(Class[m_ptr->Hinshi][0].id, "未定義語") && 
-	!strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "カタカナ") && 
+    if (((!strcmp(Class[m_ptr->Hinshi][0].id, "未定義語") && 
+	  !strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "カタカナ")) || /* 未知語-カタカナ */
+	 strstr(m_ptr->Imi, "自動獲得")) && /* 自動獲得語 */
 	goi_length >= KATAKANA_VARIATION_ABSORB_LENGTH && 
 	!strcmp(m_ptr->Goi + goi_length - BYTES4CHAR, "ー") && /* 末尾が長音符 */
 	strcmp(m_ptr->Goi + goi_length - BYTES4CHAR - BYTES4CHAR, "ーー")) { /* 長音符は一つだけ */
@@ -1122,6 +1123,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
 			    strcmp(Hinshi_str, "助動詞") && strcmp(Hinshi_str, "助詞") && 
 			    !strstr(imip, "代表表記")) {
+			    sprintf(m_ptr->Imi, "\"%s\"", imip); /* make_mrph_rn()における参照用 */
 			    rep_buf = make_mrph_rn(m_ptr);
 			    if (strlen(imip) + strlen(" 疑似代表表記 代表表記:") +
 				strlen(rep_buf) + 2 < DATA_LEN) {
