@@ -4,6 +4,7 @@
 
 # --mrph: 形態素レベルで括弧をマージ (default)
 # --bnst: 文節レベルで括弧をマージ
+# --nbest-max-n integer: nbest時のnの数の制限 (デフォルト: 10)
 
 # $Id$
 
@@ -15,8 +16,9 @@ use encoding 'euc-jp';
 binmode(STDERR, ':encoding(euc-jp)');
 
 our (%opt);
-&GetOptions(\%opt, 'mrph', 'bnst');
+&GetOptions(\%opt, 'mrph', 'bnst', 'nbest-max-n=i');
 $opt{mrph} = 1 if !$opt{mrph} and !$opt{bnst};
+$opt{'nbest-max-n'} = 10 if !$opt{'nbest-max-n'};
 
 our %PAREN_MORPHEME = ('（' => '（ （ （ 特殊 1 括弧始 3 * 0 * 0 <記英数カ><英記号><記号><括弧始><括弧><接頭><非独立接頭辞>', 
 		      '）' => '） ） ） 特殊 1 括弧終 4 * 0 * 0 <記英数カ><英記号><記号><括弧終><括弧><述語区切><付属>');
@@ -31,15 +33,18 @@ while (my $result = $knp->each()) {
 	my ($paren_b) = ($result->comment =~ /括弧始:(\S+)/);
 	my ($paren_e) = ($result->comment =~ /括弧終:(\S+)/);
 	$paren_num++ if $pre_paren_id ne $result->id; # nbest用に、入れる番号を調整
-	push(@{$paren_sentences[$paren_num]}, {result => $result, 
+	my ($score) = ($result->comment =~ /SCORE:([\.\-\d])+/);
+	push(@{$paren_sentences[$paren_num]}, {result => $result, score => $score, 
 				start_pos => $start_pos, paren_b => $paren_b, paren_e => $paren_e});
 	$pre_paren_id = $result->id;
     }
     else { # 原文
 	if (@main_sentences and @paren_sentences) { # 原文と括弧文がとれているとき
-	    for my $main_sentence (@main_sentences) { # for nbest
+	    my $count = 0;
+	    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
 		&recover_sid($main_sentence->{result}); # もとのS-IDに復元(-01削除)
 		&select_merge_print_paren($main_sentence, \@paren_sentences, 0, []); # 括弧マージ処理
+		last if ++$count >= $opt{'nbest-max-n'};
 	    }
 	    @main_sentences = ();
 	    @paren_sentences = ();
@@ -48,7 +53,8 @@ while (my $result = $knp->each()) {
 	}
 
 	if ($result->comment =~ /括弧削除/) { # 後続が括弧文 -> 後で処理後にprint
-	    push(@main_sentences, {result => $result, type => 'main'}); # nbest時は複数個保持
+	    my ($score) = ($result->comment =~ /SCORE:([\.\-\d])+/);
+	    push(@main_sentences, {result => $result, score => $score, type => 'main'}); # nbest時は複数個保持
 	}
 	else {
 	    print $result->all;
@@ -57,9 +63,11 @@ while (my $result = $knp->each()) {
 }
 
 if (@main_sentences and @paren_sentences) {
-    for my $main_sentence (@main_sentences) { # for nbest
+    my $count = 0;
+    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
 	&recover_sid($main_sentence->{result}); # もとのS-IDに復元(-01削除)
 	&select_merge_print_paren($main_sentence, \@paren_sentences, 0, []); # 括弧マージ処理
+	last if ++$count >= $opt{'nbest-max-n'};
     }
 }
 
@@ -70,10 +78,12 @@ sub select_merge_print_paren {
 
     if (defined($paren_sentences_ar->[$paren_num])) {
 	# 再帰的に括弧文を選択 (for nbest)
-	for my $i (0 .. $#{$paren_sentences_ar->[$paren_num]}) {
+	my $count = 0;
+	for my $i (sort {$paren_sentences_ar->[$paren_num][$b]{score} <=> $paren_sentences_ar->[$paren_num][$a]{score}} 0 .. $#{$paren_sentences_ar->[$paren_num]}) {
 	    push(@{$target_paren_ar}, $paren_sentences_ar->[$paren_num][$i]);
 	    &select_merge_print_paren($main_sentence, $paren_sentences_ar, $paren_num + 1, $target_paren_ar);
 	    pop(@{$target_paren_ar});
+	    last if ++$count >= $opt{'nbest-max-n'};
 	}
     }
     else {
