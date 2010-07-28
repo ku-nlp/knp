@@ -465,7 +465,12 @@ DBM_FILE db_read_open(char *filename)
 	return NULL;
     }
 
-    cdb_init(&(db->cdb), db->fd);
+    if (cdb_init(&(db->cdb), db->fd) != 0) { /* mmap error? */
+#ifdef DEBUG
+        fprintf(stderr, "db_read_open (cdb_init): %s\n", filename);
+#endif
+	return NULL;
+    }
     return db;
 }
 
