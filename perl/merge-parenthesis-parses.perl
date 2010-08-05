@@ -37,9 +37,9 @@ while (my $result = $knp->each()) {
 	push(@{$paren_sentences[$paren_num]}, {result => $result, score => $score, 
 				start_pos => $start_pos, paren_b => $paren_b, paren_e => $paren_e});
 	$pre_paren_id = $result->id;
-    }
-    else { # 原文
-	if (@main_sentences and @paren_sentences) { # 原文と括弧文がとれているとき
+
+	# 一文終了=EOS
+	if ($result->eos eq 'EOS') {
 	    my $count = 0;
 	    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
 		&recover_sid($main_sentence->{result}); # もとのS-IDに復元(-01削除)
@@ -51,7 +51,8 @@ while (my $result = $knp->each()) {
 	    $pre_paren_id = '';
 	    $paren_num = -1;
 	}
-
+    }
+    else { # 原文
 	if ($result->comment =~ /括弧削除/) { # 後続が括弧文 -> 後で処理後にprint
 	    my ($score) = ($result->comment =~ /SCORE:([\.\-\d])+/);
 	    push(@main_sentences, {result => $result, score => $score, type => 'main'}); # nbest時は複数個保持
@@ -62,16 +63,8 @@ while (my $result = $knp->each()) {
     }
 }
 
-if (@main_sentences and @paren_sentences) {
-    my $count = 0;
-    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
-	&recover_sid($main_sentence->{result}); # もとのS-IDに復元(-01削除)
-	&select_merge_print_paren($main_sentence, \@paren_sentences, 0, []); # 括弧マージ処理
-	last if ++$count >= $opt{'nbest-max-n'};
-    }
-}
-
 # END
+
 
 sub select_merge_print_paren {
     my ($main_sentence, $paren_sentences_ar, $paren_num, $target_paren_ar) = @_;
@@ -166,6 +159,7 @@ sub merge_print_paren_sentences {
     &update_score($orig_modified_sentence_result, $paren_score);
 
     # 表示
+    $orig_modified_sentence_result->set_eos('EOS'); # EOP -> EOS
     print $orig_modified_sentence_result->all_dynamic;
 }
 
