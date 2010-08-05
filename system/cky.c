@@ -1812,7 +1812,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		if (OptAnalysis == OPT_CASE) { /* preserve case analysis result for n-best */
 		    record_all_case_analisys(sp, TRUE);
 		}
-		print_result(sp, 0, eos_flag);
+		print_result(sp, 0, (eos_flag && cky_ptr->next == NULL) ? 1 : 0); /* 最後のparseのみEOS */
 
 		if (OptAnalysis == OPT_CASE && OptDisplay == OPT_DEBUG) { /* case analysis results */
 		    for (i = 0; i < Best_mgr->pred_num; i++) {
