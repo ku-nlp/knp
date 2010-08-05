@@ -62,7 +62,7 @@ KNP の出力文字列，または，その文字列を行を単位として格納されたリストに
 =back
 
 =cut
-%DEFAULT = ( pattern => '^EOS$',
+%DEFAULT = ( pattern => '^EO[SP]$',
 	     bclass  => 'KNP::Bunsetsu',
 	     mclass  => 'KNP::Morpheme',
 	     tclass  => 'KNP::Tag' );
@@ -259,7 +259,7 @@ sub all_dynamic {
 	    }
 	}
     }
-    $ret .= "EOS\n";
+    $ret .= $this->{_eos};
 
     return $ret;
 }
@@ -315,6 +315,36 @@ sub set_id {
 	$this->{comment} = "S-ID:$id\n";
     }
     $this->{_id} = $id;
+}
+
+=item eos
+
+解析結果終了区切りを得る
+
+=cut
+sub eos {
+    my $this = shift;
+    if( @_ ){
+	$this->set_eos( @_ );
+    }
+    else {
+	my $eos = $this->{_eos};
+	chomp($eos); # delete newline for return
+	$eos;
+    }
+}
+
+=item set_eos ( EOS )
+
+解析結果終了区切りを設定する．
+
+=cut
+sub set_eos {
+    my( $this, $eos ) = @_;
+    $eos .= "\n" unless $eos =~ /\n$/; # append newline if unavailable
+    $this->{_eos} = $eos;
+    chomp($eos); # delete newline for return
+    $eos;
 }
 
 =item spec
