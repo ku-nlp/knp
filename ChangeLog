@@ -1,3 +1,16 @@
+2010-08-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Modified to use partial parse delimiter also for nbest output.
+
+	* system/case_analysis.c, system/case_print.c, system/cky.c, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
+	Modified to use partial parse delimiter (EOP) for parenthesis analysis.
+
+2010-07-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* rule/mrph_homo.rule:
+	Modified a lexical disambiguation rule.
+
 2010-07-02  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/read_data.c:
@@ -14,8 +27,6 @@
 	Modified to output normalized repnames for unknown KATAKANA that ends with macron.
 
 2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
-
-	* ChangeLog: updated.
 
 	* system/cky.c:
 	Modified to output all existing candidates against beam width.
