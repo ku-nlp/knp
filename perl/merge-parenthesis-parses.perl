@@ -43,7 +43,9 @@ while (my $result = $knp->each()) {
 	    my $count = 0;
 	    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
 		&recover_sid($main_sentence->{result}); # もとのS-IDに復元(-01削除)
-		&select_merge_print_paren($main_sentence, \@paren_sentences, 0, []); # 括弧マージ処理
+		# 括弧マージ処理
+		&select_merge_print_paren($main_sentence, \@paren_sentences, 0, [], 
+					  ($count + 1 == scalar(@main_sentences) or $count + 1 >= $opt{'nbest-max-n'}) ? 1 : 0);
 		last if ++$count >= $opt{'nbest-max-n'};
 	    }
 	    @main_sentences = ();
@@ -67,21 +69,22 @@ while (my $result = $knp->each()) {
 
 
 sub select_merge_print_paren {
-    my ($main_sentence, $paren_sentences_ar, $paren_num, $target_paren_ar) = @_;
+    my ($main_sentence, $paren_sentences_ar, $paren_num, $target_paren_ar, $eos_flag) = @_;
 
     if (defined($paren_sentences_ar->[$paren_num])) {
 	# 再帰的に括弧文を選択 (for nbest)
 	my $count = 0;
 	for my $i (sort {$paren_sentences_ar->[$paren_num][$b]{score} <=> $paren_sentences_ar->[$paren_num][$a]{score}} 0 .. $#{$paren_sentences_ar->[$paren_num]}) {
 	    push(@{$target_paren_ar}, $paren_sentences_ar->[$paren_num][$i]);
-	    &select_merge_print_paren($main_sentence, $paren_sentences_ar, $paren_num + 1, $target_paren_ar);
+	    &select_merge_print_paren($main_sentence, $paren_sentences_ar, $paren_num + 1, $target_paren_ar, 
+				      ($eos_flag and ($count + 1 == scalar(@{$paren_sentences_ar->[$paren_num]}) or $count + 1 >= $opt{'nbest-max-n'})) ? 1 : 0);
 	    pop(@{$target_paren_ar});
 	    last if ++$count >= $opt{'nbest-max-n'};
 	}
     }
     else {
 	# すべて選択が終わったので、マージして表示
-	&merge_print_paren_sentences($main_sentence, $target_paren_ar);
+	&merge_print_paren_sentences($main_sentence, $target_paren_ar, $eos_flag);
     }
 }
 
@@ -115,7 +118,7 @@ sub update_score {
 
 # main: 括弧マージ処理
 sub merge_print_paren_sentences {
-    my ($orig_sentence, $paren_sentences_ar) = @_;
+    my ($orig_sentence, $paren_sentences_ar, $eos_flag) = @_;
 
     my $orig_modified_sentence_result = dclone($orig_sentence->{result}); # まるごとcopy (for nbnst)
     my @bnsts = $orig_modified_sentence_result->bnst;
@@ -159,7 +162,7 @@ sub merge_print_paren_sentences {
     &update_score($orig_modified_sentence_result, $paren_score);
 
     # 表示
-    $orig_modified_sentence_result->set_eos('EOS'); # EOP -> EOS
+    $orig_modified_sentence_result->set_eos('EOS') if $eos_flag; # EOP -> EOS
     print $orig_modified_sentence_result->all_dynamic;
 }
 
