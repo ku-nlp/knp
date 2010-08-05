@@ -147,7 +147,19 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 }
 
 /*==================================================================*/
-	     void print_tags(SENTENCE_DATA *sp, int flag)
+		     void print_eos(int eos_flag)
+/*==================================================================*/
+{
+    if (eos_flag) {
+	fputs("EOS\n", Outfp);
+    }
+    else {
+	fputs("EOP\n", Outfp);
+    }
+}
+
+/*==================================================================*/
+      void print_tags(SENTENCE_DATA *sp, int flag, int eos_flag)
 /*==================================================================*/
 {
     /* 現在は常に flag == 1 (0は旧形式出力) */
@@ -349,11 +361,11 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	}
 	count++;
     }
-    fputs("EOS\n", Outfp);
+    print_eos(eos_flag);
 }
 
 /*==================================================================*/
-		 void print_mrphs(SENTENCE_DATA *sp)
+	  void print_mrphs(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
     int i;
@@ -440,30 +452,11 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	}
 	fputc('\n', Outfp);
     }
-    fputs("EOS\n", Outfp);
+    print_eos(eos_flag);
 }
 
 /*==================================================================*/
-	       void print_all_result(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    if (OptAnalysis == OPT_FILTER) {
-	print_mrphs_only(sp);
-    }
-    else if (OptAnalysis == OPT_BNST) {
-	print_bnst_with_mrphs(sp, 0);
-    }
-    else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
-	print_result(sp, 1);
-    }
-    if (Language == CHINESE) {
-	print_tree_for_chinese(sp);
-    }
-    fflush(Outfp);
-}
-
-/*==================================================================*/
-	       void print_mrphs_only(SENTENCE_DATA *sp)
+	void print_mrphs_only(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
     int i;
@@ -476,11 +469,11 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	}
 	fprintf(Outfp, "\n");
     }
-    fprintf(Outfp, "EOS\n");
+    print_eos(eos_flag);
 }
 
 /*==================================================================*/
-       void print_bnst_with_mrphs(SENTENCE_DATA *sp, int flag)
+void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 /*==================================================================*/
 {
     int		i, j;
@@ -492,7 +485,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	if (b_ptr->num == -1) {
 	    continue; /* 後処理でマージされた文節 */
 	}
-	if (flag == 1) {
+	if (have_dpnd_flag == 1) {
 	    if (Language == CHINESE && (b_ptr->is_para == 1 || b_ptr->is_para ==2)) {
 		fprintf(Outfp, "* %dP", b_ptr->dpnd_head);
 	    }
@@ -519,7 +512,26 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    fprintf(Outfp, "\n");
 	}
     }
-    fprintf(Outfp, "EOS\n");
+    print_eos(eos_flag);
+}
+
+/*==================================================================*/
+	void print_all_result(SENTENCE_DATA *sp, int eos_flag)
+/*==================================================================*/
+{
+    if (OptAnalysis == OPT_FILTER) {
+	print_mrphs_only(sp, eos_flag);
+    }
+    else if (OptAnalysis == OPT_BNST) {
+	print_bnst_with_mrphs(sp, 0, eos_flag);
+    }
+    else if (OptNbest == FALSE && !(OptArticle && OptEllipsis)) {
+	print_result(sp, 1, eos_flag);
+    }
+    if (Language == CHINESE) {
+	print_tree_for_chinese(sp);
+    }
+    fflush(Outfp);
 }
 
 /*==================================================================*/
@@ -1330,7 +1342,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-	    void print_kakari(SENTENCE_DATA *sp, int type)
+     void print_kakari(SENTENCE_DATA *sp, int type, int eos_flag)
 /*==================================================================*/
 {
     int i, last_b_offset = 1, last_t_offset = 1;
@@ -1384,7 +1396,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	Sen_Num++;
     }
     else {
-	fprintf(Outfp, "EOS\n");
+	print_eos(eos_flag);
     }
 }
 
@@ -1551,7 +1563,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*==================================================================*/
-      void print_result(SENTENCE_DATA *sp, int case_print_flag)
+void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 /*==================================================================*/
 {
     /* case_print_flag: 格解析結果を出力 */
@@ -1634,50 +1646,50 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     /* 解析結果のメインの出力 */
 
     if (OptExpress == OPT_MRPH) {
-	print_mrphs(sp);
+	print_mrphs(sp, eos_flag);
     }
     else if (OptExpress == OPT_TAB) {
-	print_tags(sp, 1);
+	print_tags(sp, 1, eos_flag);
     }
     else if (OptExpress == OPT_NOTAG) {
-	print_bnst_with_mrphs(sp, 1);
+	print_bnst_with_mrphs(sp, 1, eos_flag);
     }
     else if (OptExpress == OPT_PA) {
 	/* FIXME: 格解析結果の整合性をとる必要がある */
-	print_pa_structure(sp);
+	print_pa_structure(sp, eos_flag);
     }
     else if (OptExpress == OPT_BNSTTREE) {
 	/* 文節のtree出力 */
 	if (make_dpnd_tree(sp)) {
-	    print_kakari(sp, OptExpress);
+	    print_kakari(sp, OptExpress, eos_flag);
 	}
 	else {
-	    fprintf(Outfp, "EOS\n");
+	    print_eos(eos_flag);
 	}
     }
     else if (OptExpress == OPT_MRPHTREE) {
 	/* 形態素のtree出力 */
 	if (make_dpnd_tree(sp)) {
 	    bnst_to_mrph_tree(sp); /* 形態素の木へ */
-	    print_kakari(sp, OptExpress);
+	    print_kakari(sp, OptExpress, eos_flag);
 	}
 	else {
-	    fprintf(Outfp, "EOS\n");
+	    print_eos(eos_flag);
 	}
     }
     else {
 	/* タグ単位のtree出力 */
 	if (make_dpnd_tree(sp)) {
 	    bnst_to_tag_tree(sp); /* タグ単位の木へ */
-	    print_kakari(sp, OptExpress); /* OPT_TREE */
+	    print_kakari(sp, OptExpress, eos_flag); /* OPT_TREE */
 	}
 	else {
-	    fprintf(Outfp, "EOS\n");
+	    print_eos(eos_flag);
 	}
     }
 
     if (OptExpress == OPT_TABLE) {
-	print_tags(sp, 1);
+	print_tags(sp, 1, eos_flag);
 	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) 
 	    print_case_for_table(sp);
 	if (OptNE)

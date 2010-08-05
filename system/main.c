@@ -1256,7 +1256,7 @@ extern int	EX_match_subject;
 }
 
 /*==================================================================*/
-	     int one_sentence_analysis(SENTENCE_DATA *sp)
+      int one_sentence_analysis(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
     int flag, i;
@@ -1366,7 +1366,7 @@ extern int	EX_match_subject;
     }
 
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG)
-	print_bnst_with_mrphs(sp, 0);
+	print_bnst_with_mrphs(sp, 0, eos_flag);
 
     fix_sm_person(sp);
 
@@ -1469,7 +1469,7 @@ extern int	EX_match_subject;
 	para_recovery(sp);
 	para_postprocess(sp);
 	assign_para_similarity_feature(sp);
-	after_decide_dpnd(sp);
+	after_decide_dpnd(sp, eos_flag);
 	if (OptCheck == TRUE) {
 	    check_candidates(sp);
 	}
@@ -1530,7 +1530,7 @@ extern int	EX_match_subject;
 
     if (OptCKY) {
 	/* CKY */
-	if (cky(sp, sp->Best_mgr) == FALSE) {
+	if (cky(sp, sp->Best_mgr, eos_flag) == FALSE) {
 	    if (Language == CHINESE) {
 		printf("sentence %d cannot be parsed\n",sen_num);
 		return FALSE;
@@ -1551,7 +1551,7 @@ extern int	EX_match_subject;
 #endif
 
 	/* 依存・格構造解析の呼び出し */
-	if (detect_dpnd_case_struct(sp) == FALSE) {
+	if (detect_dpnd_case_struct(sp, eos_flag) == FALSE) {
 	    sp->available = 0;
 	    ErrorComment = strdup("Cannot detect dependency structure");
 	    when_no_dpnd_struct(sp);	/* 係り受け構造が求まらない場合
@@ -1679,7 +1679,7 @@ PARSED:
 	}
 
 	/* 一文構文・格解析 */
-	if ((flag = one_sentence_analysis(sp)) == FALSE) {
+	if ((flag = one_sentence_analysis(sp, paren_num ? 0 : 1)) == FALSE) {
 	    sp->Sen_num--; /* 解析失敗時には文の数を増やさない */
 	    return FALSE;
 	}
@@ -1724,7 +1724,7 @@ PARSED:
     /************/
     /* 結果表示 */
     /************/
-    print_all_result(sp);
+    print_all_result(sp, paren_num ? 0 : 1); /* 括弧含む文: EOP(0); 通常文: EOS(1) */
 
     /* 括弧文の解析 */
     if (paren_num) {
@@ -1734,10 +1734,10 @@ PARSED:
 	    prepare_paren_sentence(sp, paren_sentence_data + i); /* spに設定 */
 	    free((paren_sentence_data + i)->mrph_data);
 
-	    if ((flag = one_sentence_analysis(sp)) == FALSE) {
+	    if ((flag = one_sentence_analysis(sp, i != paren_num - 1 ? 0 : 1)) == FALSE) {
 		continue; /* 解析失敗 */
 	    }
-	    print_all_result(sp);
+	    print_all_result(sp, i != paren_num - 1 ? 0 : 1); /* last -> EOS(1); otherwise -> EOP(0) */
 	}
 
 	free(paren_sentence_data);
@@ -1802,7 +1802,7 @@ PARSED:
 		if (OptPostProcess) { /* 後処理 */
 		    do_postprocess(sp);
 		}
-		print_result(sp, 1);
+		print_result(sp, 1, 1);
 	    }
 	    else {
 		PreserveCPM(PreserveSentence(sp), sp);
@@ -1838,7 +1838,7 @@ PARSED:
 	    if (OptPostProcess) { /* 後処理 */
 		do_postprocess(sentence_data+i);
 	    }
-	    print_result(sentence_data+i, 1);	    
+	    print_result(sentence_data+i, 1, 1);
 	}
     }
 }

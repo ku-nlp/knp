@@ -1053,7 +1053,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 }
 
 /*==================================================================*/
-	 int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd)
+int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 /*==================================================================*/
 {
     int i, j, k;
@@ -1072,7 +1072,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     bnst_to_tag_tree(sp);
 	
     if (OptDisplay == OPT_DEBUG)
-	print_kakari(sp, OPT_TREE);
+	print_kakari(sp, OPT_TREE, 1);
 
     /* 格解析作業領域の初期化 */
 	
@@ -1231,7 +1231,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	}
 
 	sp->score = Work_mgr.score;
-	print_result(sp, 0);
+	print_result(sp, 0, eos_flag);
 
 	/* 仮付与したfeatureを削除 */
 	for (i = 0; i < sp->Bnst_num; i++) {

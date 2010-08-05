@@ -426,7 +426,7 @@ struct _sort_kv {
 }
 
 /*==================================================================*/
-	      void print_pa_structure(SENTENCE_DATA *sp)
+       void print_pa_structure(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
     int p, i, num;
@@ -476,7 +476,7 @@ struct _sort_kv {
 	}
 	fputc('\n', Outfp);
     }
-    fputs("EOS\n", Outfp);
+    print_eos(eos_flag);
 }
 
 /*====================================================================

@@ -1656,7 +1656,7 @@ void copy_cky_data(CKY *dest, CKY *src) {
     dest->cpm_ptr = src->cpm_ptr;
 }
 
-int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_flag) {
+int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_flag, int eos_flag) {
     int i, j;
     CKY *tmp_cky_ptr;
     CKY *node_stack[BNST_MAX];
@@ -1677,7 +1677,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 	    if (OptPostProcess) {
 		do_postprocess(sp);
 	    }
-	    print_result(sp, 0);
+	    print_result(sp, 0, eos_flag);
 	}
 	return return_flag;
     }
@@ -1812,7 +1812,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		if (OptAnalysis == OPT_CASE) { /* preserve case analysis result for n-best */
 		    record_all_case_analisys(sp, TRUE);
 		}
-		print_result(sp, 0);
+		print_result(sp, 0, eos_flag);
 
 		if (OptAnalysis == OPT_CASE && OptDisplay == OPT_DEBUG) { /* case analysis results */
 		    for (i = 0; i < Best_mgr->pred_num; i++) {
@@ -1832,7 +1832,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		}
 	    }
 	    else if (OptDisplay == OPT_DEBUG) {
-		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE);
+		print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE, 1);
 	    }
 	}
 
@@ -1875,7 +1875,7 @@ void sort_cky_ptrs(CKY **orig_cky_ptr_ptr, int beam) {
 //  best_ptr->next = NULL; /* do not consider more candidates than beam */
 }
 
-int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
+int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, int eos_flag) {
     int i, j, k, l, m, sort_flag, sen_len, cky_table_num, pre_cky_table_num, dep_check[BNST_MAX];
     double best_score, para_score;
     char dpnd_type;
@@ -2388,7 +2388,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 
     /* choose the best one */
     if (!cky_matrix[0][sp->Bnst_num - 1]) { /* parse failed */
-	return after_cky(sp, Best_mgr, NULL, FALSE);
+	return after_cky(sp, Best_mgr, NULL, FALSE, eos_flag);
     }
     cky_ptr = cky_matrix[0][sp->Bnst_num - 1];
 
@@ -2434,7 +2434,7 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr) {
 	}
     }
 
-    return after_cky(sp, Best_mgr, cky_ptr, TRUE);
+    return after_cky(sp, Best_mgr, cky_ptr, TRUE, eos_flag);
 }
 
 /* check if there exists special word in one region */

@@ -213,7 +213,7 @@ extern char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num);
 extern int MatchPP(int n, char *pp);
 extern int MatchPPn(int n, int *list);
 extern int CF_MatchPP(int c, CASE_FRAME *cf);
-extern int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd);
+extern int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag);
 extern void assign_case_component_feature(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int temp_assign_flag);
 extern void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, ELLIPSIS_MGR *em_ptr, int temp_assign_flag);
 extern void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag);
@@ -310,7 +310,7 @@ extern int sms_match(char *cpp, char *cpd, int expand);
 extern void print_data_cframe(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
 extern void print_good_crrspnds(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int ipal_num);
 extern void print_crrspnd(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr);
-extern void print_pa_structure(SENTENCE_DATA *sp);
+extern void print_pa_structure(SENTENCE_DATA *sp, int eos_flag);
 
 /* configfile.c */
 extern char *check_dict_filename(char *file, int flag);
@@ -349,7 +349,7 @@ extern void dpnd_info_to_bnst(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp);
 extern void dpnd_info_to_mrph(SENTENCE_DATA *sp);
 extern int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr);
-extern int after_decide_dpnd(SENTENCE_DATA *sp);
+extern int after_decide_dpnd(SENTENCE_DATA *sp, int eos_flag);
 extern void calc_dpnd_matrix(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_matrix_forProbModel(SENTENCE_DATA *sp);
 extern void calc_chi_dpnd_matrix_wpos(SENTENCE_DATA *sp);
@@ -358,7 +358,7 @@ extern int relax_dpnd_matrix(SENTENCE_DATA *sp);
 extern void tag_bnst_postprocess(SENTENCE_DATA *sp, int flag);
 extern void undo_tag_bnst_postprocess(SENTENCE_DATA *sp);
 extern void para_postprocess(SENTENCE_DATA *sp);
-extern int detect_dpnd_case_struct(SENTENCE_DATA *sp);
+extern int detect_dpnd_case_struct(SENTENCE_DATA *sp, int eos_flag);
 extern void when_no_dpnd_struct(SENTENCE_DATA *sp);
 extern void check_candidates(SENTENCE_DATA *sp);
 extern void memo_by_program(SENTENCE_DATA *sp);
@@ -414,10 +414,10 @@ extern float get_cf_event_value(CASE_FRAME *cf1, CASE_FRAME *cf2);
 extern int str_part_eq(char *dat, char *pat);
 
 /* lib_print.c */
-extern void print_kakari(SENTENCE_DATA *sp, int type);
+extern void print_kakari(SENTENCE_DATA *sp, int type, int eos_flag);
 extern void _print_bnst(TAG_DATA *ptr);
 extern void print_matrix(SENTENCE_DATA *sp, int type, int L_B);
-extern void print_result(SENTENCE_DATA *sp, int case_print_flag);
+extern void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag);
 extern void print_bnst(BNST_DATA *ptr, char *cp);
 extern void check_bnst(SENTENCE_DATA *sp);
 extern void print_para_relation(SENTENCE_DATA *sp);
@@ -425,7 +425,9 @@ extern void assign_para_similarity_feature(SENTENCE_DATA *sp);
 extern void prepare_all_entity(SENTENCE_DATA *sp);
 extern void print_tree_for_chinese(SENTENCE_DATA *sp);
 extern void do_postprocess(SENTENCE_DATA *sp);
-extern void print_all_result(SENTENCE_DATA *sp);
+extern void print_all_result(SENTENCE_DATA *sp, int eos_flag);
+extern void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag);
+extern void print_eos(int eos_flag);
 
 /* lib_scase.c */
 extern void get_scase_code(BNST_DATA *ptr);
@@ -502,8 +504,6 @@ extern void change_mrph(MRPH_DATA *m_ptr, FEATURE *f);
 extern void assign_general_feature(void *data, int size, int flag, int also_assign_flag, int temp_assign_flag);
 extern int make_bunsetsu(SENTENCE_DATA *sp);
 extern int make_bunsetsu_pm(SENTENCE_DATA *sp);
-extern void print_mrphs_only(SENTENCE_DATA *sp);
-extern void print_bnst_with_mrphs(SENTENCE_DATA *sp, int flag);
 extern void assign_dpnd_rule(SENTENCE_DATA *sp);
 extern int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr);
 extern void make_tag_units(SENTENCE_DATA *sp);
@@ -577,7 +577,7 @@ extern char **GetDefinitionFromBunsetsu(BNST_DATA *bp);
 extern int ParseSentence(SENTENCE_DATA *s, char *input);
 
 /* cky.c */
-extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr);
+extern int cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, int eos_flag);
 
 /* base_phrase.c */
 extern int base_phrase(SENTENCE_DATA *sp, int is_frag);

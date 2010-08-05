@@ -2417,7 +2417,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 }
 
 /*==================================================================*/
-        void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd)
+   void dpnd_evaluation(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 /*==================================================================*/
 {
   int i, j, k, one_score, score, rentai, vacant_slot_num;
@@ -2681,11 +2681,11 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
       }
 
       if (OptNbest == TRUE) {
-	sp->score = score;
-	print_result(sp, 0);
+	  sp->score = score;
+	  print_result(sp, 0, eos_flag);
       }
       else {
-	print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE);
+	  print_kakari(sp, OptExpress & OPT_NOTAG ? OPT_BNSTTREE : OPT_TREE, eos_flag);
       }
     }
   }
@@ -2770,7 +2770,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 }
 
 /*==================================================================*/
-            void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd)
+     void decide_dpnd(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 /*==================================================================*/
 {
   int i, count, possibilities[BNST_MAX], default_pos, d_possibility;
@@ -2809,10 +2809,10 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 
     if (OptAnalysis == OPT_DPND ||
 	OptAnalysis == OPT_CASE2) {
-      dpnd_evaluation(sp, dpnd);
+	dpnd_evaluation(sp, dpnd, eos_flag);
     } 
     else if (OptAnalysis == OPT_CASE) {
-      call_case_analysis(sp, dpnd);
+	call_case_analysis(sp, dpnd, eos_flag);
     }
     return;
   }
@@ -2837,7 +2837,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
       /* 並列の場合は一意に決まっているので、候補を挙げるのは意味がない */
       dpnd.check[dpnd.pos].num = 1;
       dpnd.check[dpnd.pos].pos[0] = i;
-      decide_dpnd(sp, dpnd);
+      decide_dpnd(sp, dpnd, eos_flag);
       return;
     } else if (Mask_matrix[dpnd.pos][i] == 3) {
       dpnd.head[dpnd.pos] = i;
@@ -2845,7 +2845,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 
       dpnd.check[dpnd.pos].num = 1;
       dpnd.check[dpnd.pos].pos[0] = i;
-      decide_dpnd(sp, dpnd);
+      decide_dpnd(sp, dpnd, eos_flag);
       return;
     }
   }
@@ -2857,7 +2857,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
     dpnd.type[dpnd.pos] = 'D';
     dpnd.dflt[dpnd.pos] = 0;
     dpnd.check[dpnd.pos].num = 1;
-    decide_dpnd(sp, dpnd);
+    decide_dpnd(sp, dpnd, eos_flag);
     return;
   }
 
@@ -2927,7 +2927,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
       }
       dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
       dpnd.dflt[dpnd.pos] = 0;
-      decide_dpnd(sp, dpnd);
+      decide_dpnd(sp, dpnd, eos_flag);
     } 
 
     /* すべての可能性をつくり出す場合 */
@@ -2938,7 +2938,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 	dpnd.head[dpnd.pos] = possibilities[i];
 	dpnd.type[dpnd.pos] = Dpnd_matrix[dpnd.pos][dpnd.head[dpnd.pos]];
 	dpnd.dflt[dpnd.pos] = abs(default_pos - 1 - i);
-	decide_dpnd(sp, dpnd);
+	decide_dpnd(sp, dpnd, eos_flag);
       }
     }
   } 
@@ -2953,7 +2953,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
       dpnd.dflt[dpnd.pos] = 10;
       dpnd.check[dpnd.pos].num = 1;
       dpnd.check[dpnd.pos].pos[0] = sp->Bnst_num - 1;
-      decide_dpnd(sp, dpnd);
+      decide_dpnd(sp, dpnd, eos_flag);
     }
   }
 }
@@ -2978,7 +2978,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 }
 
 /*==================================================================*/
-              int after_decide_dpnd(SENTENCE_DATA *sp)
+	int after_decide_dpnd(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
   int i, j;
@@ -2993,7 +2993,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
     /* 依存構造決定後 格解析を行う場合 */
     if (OptAnalysis == OPT_CASE2) {
       sp->Best_mgr->score = -10000;
-      if (call_case_analysis(sp, sp->Best_mgr->dpnd) == FALSE) {
+      if (call_case_analysis(sp, sp->Best_mgr->dpnd, eos_flag) == FALSE) {
 	return FALSE;
       }
     }
@@ -3097,7 +3097,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 }
 
 /*==================================================================*/
-            int detect_dpnd_case_struct(SENTENCE_DATA *sp)
+     int detect_dpnd_case_struct(SENTENCE_DATA *sp, int eos_flag)
 /*==================================================================*/
 {
   int i;
@@ -3130,14 +3130,14 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
 
   /* 依存構造解析 --> 格構造解析 */
 
-  decide_dpnd(sp, dpnd);
+  decide_dpnd(sp, dpnd, eos_flag);
 
   /* 格解析キャッシュの初期化 */
   if (OptAnalysis == OPT_CASE) {
     ClearCPMcache();
   }
 
-  return after_decide_dpnd(sp);
+  return after_decide_dpnd(sp, eos_flag);
 }
 
 /*==================================================================*/
