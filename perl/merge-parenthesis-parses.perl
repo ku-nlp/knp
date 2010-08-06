@@ -15,6 +15,9 @@ use Getopt::Long;
 use encoding 'euc-jp';
 binmode(STDERR, ':encoding(euc-jp)');
 
+use FileHandle;
+STDOUT->autoflush(1);
+
 our (%opt);
 &GetOptions(\%opt, 'mrph', 'bnst', 'nbest-max-n=i');
 $opt{mrph} = 1 if !$opt{mrph} and !$opt{bnst};
