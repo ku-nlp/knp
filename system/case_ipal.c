@@ -2400,7 +2400,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	sprintf(key, "%s|%s,%s,%s", case_str, cfp->cf_id, case_str, para_cond);
     }
     else {
-	sprintf(key, "%s|%s,%s", case_str, cfp->cf_id, case_str);
+	sprintf(key, "%s|%s", case_str, cfp->cf_id);
     }
     value = db_get(cf_case_db, key);
     if (value) {
@@ -2416,7 +2416,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	    sprintf(key, "NIL|%s,%s,%s", cfp->cf_id, case_str, para_cond);
 	}
 	else {
-	    sprintf(key, "NIL|%s,%s", cfp->cf_id, case_str);
+	    sprintf(key, "NIL|%s", cfp->cf_id);
 	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
@@ -2434,7 +2434,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	sprintf(key, "%s|%s,%s,%s", case_str, verb, case_str, para_cond);
     }
     else {
-	sprintf(key, "%s|%s,%s", case_str, verb, case_str);
+	sprintf(key, "%s|%s", case_str, verb);
     }
     value = db_get(cf_case_db, key);
     if (value) {
