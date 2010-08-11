@@ -1,3 +1,11 @@
+2010-08-11  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_ipalc:
+	Bug fix of looking-up cfcase.db.
+
+	* system/main.c:
+	Added a check of parsing success for output.
+
 2010-08-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c:
@@ -25,11 +33,6 @@
 
 	* system/read_data.c:
 	Modified to output normalized repnames for unknown KATAKANA that ends with macron.
-
-2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
-
-	* system/cky.c:
-	Modified to output all existing candidates against beam width.
 
 2010-06-19  Daisuke Kawahara  <dk@nict.go.jp>
 
