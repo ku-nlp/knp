@@ -1,3 +1,8 @@
+2010-08-12  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c: 
+	Relaxed a dependency barrier.
+
 2010-08-11  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_ipalc:
