@@ -1939,11 +1939,10 @@ int cky (SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, int eos_flag) {
 			    /* make a phrase if condition is satisfied */
 			    if ((dpnd_type = check_dpnd_possibility(sp, left_ptr->b_ptr->num, right_ptr->b_ptr->num, i, 
 								    (j == sp->Bnst_num - 1) && dep_check[i + k] == -1 ? TRUE : FALSE)) && 
-				((dpnd_type == 'P' && right_ptr->dpnd_type != 'P') || 
-				 (dpnd_type != 'P' && 
-				  (dep_check[i + k] <= 0 || /* no barrier */
-				   dep_check[i + k] >= j || /* before barrier */
-				   (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))))) { /* barrier relaxation for P */
+				(dpnd_type == 'P' || 
+				 dep_check[i + k] <= 0 || /* no barrier */
+				 dep_check[i + k] >= j || /* before barrier */
+				 (OptParaFix == 0 && relax_barrier_for_P(right_ptr, i + k, j, dep_check)))) { /* barrier relaxation for P */
 
 				if (Language == CHINESE) {
 				    for (l = 0; l < Chi_dpnd_matrix[left_ptr->b_ptr->num][right_ptr->b_ptr->num].count; l++) {
