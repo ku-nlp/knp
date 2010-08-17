@@ -1768,7 +1768,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	if (!check_feature(mp->f, "ÀÜÆ¬")) {
 	    if (strlen(ptr->Jiritu_Go) + strlen(mp->Goi) + 2 > BNST_LENGTH_MAX) {
 		fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
-			sp->Comment ? sp->Comment : "", ptr->mrph_ptr);
+			sp->Comment ? sp->Comment : "", ptr->Jiritu_Go);
 		return;
 	    }
 	    strcat(ptr->Jiritu_Go, mp->Goi);
@@ -1812,23 +1812,27 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
       int calc_bnst_length(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    int j;
+    int j, current_length;
     MRPH_DATA *m_ptr;
 
     b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
 	if (Language == CHINESE) {
-	    b_ptr->length += strlen(m_ptr->Goi2) * 2 / 3;
+	    current_length = strlen(m_ptr->Goi2) * 2 / 3;
 	}
 	else {
-	    b_ptr->length += strlen(m_ptr->Goi2);
+	    current_length = strlen(m_ptr->Goi2);
 	}
 
-	if (b_ptr->length > BNST_LENGTH_MAX) {
-	    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
-		    sp->Comment ? sp->Comment : "", b_ptr->mrph_ptr);
-	    return FALSE;
+	if (b_ptr->length + current_length >= BNST_LENGTH_MAX) {
+	    if (OptDisplay == OPT_DEBUG) {
+		fprintf(stderr, ";; Too big bunsetsu (%s ...%s...)!\n", 
+			sp->Comment ? sp->Comment : "", m_ptr->Goi2);
+	    }
+	    break;
 	}
+
+	b_ptr->length += current_length;
     }
     return TRUE;
 }
