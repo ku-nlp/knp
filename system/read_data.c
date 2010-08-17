@@ -652,7 +652,7 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 }
 
 /*==================================================================*/
-	    void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src)
+ void copy_mrph(MRPH_DATA *dst, MRPH_DATA *src, int imi2feature_flag)
 /*==================================================================*/
 {
     char *imip, *cp;
@@ -667,17 +667,23 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     strcpy(dst->Imi, src->Imi);
 
     /* 意味情報をfeatureへ */
-    if (src->Imi[0] == '\"') { /* 通常 "" で括られている */
-	imip = &src->Imi[1];
-	if (cp = strchr(imip, '\"')) {
-	    *cp = '\0';
+    if (imi2feature_flag) {
+	if (src->Imi[0] == '\"') { /* 通常 "" で括られている */
+	    imip = &src->Imi[1];
+	    if (cp = strchr(imip, '\"')) {
+		*cp = '\0';
+	    }
 	}
+	else {
+	    imip = src->Imi;
+	}
+
+	imi2feature(imip, dst);
     }
     else {
-	imip = src->Imi;
+	dst->f = src->f;
+	src->f = NULL;
     }
-
-    imi2feature(imip, dst);
 }
 
 /*==================================================================*/
@@ -2167,15 +2173,11 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	else {
 	    move_table[i] = delete_count; /* 何個前に移動させるか */
 	}
-
-	if (delete_count) { /* 上書きされるところのfeatureを削除しておく */
-	    clear_feature(&((sp->mrph_data + i)->f));
-	}
     }
 
     for (i = 1; i < sp->Mrph_num; i++) {
 	if (move_table[i] > 0) { /* 移動させるべき形態素 */
-	    copy_mrph(sp->mrph_data + i - move_table[i], sp->mrph_data + i);
+	    copy_mrph(sp->mrph_data + i - move_table[i], sp->mrph_data + i, FALSE); /* featureはコピー */
 	}
     }
 
