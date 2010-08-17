@@ -1994,7 +1994,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    (mention_ptr->flag == 'C' || mention_ptr->flag == 'N' || mention_ptr->flag == 'O')) {
 
 		    printf(" POS: %s", check_feature(mention_ptr->tag_ptr->f, "用言") + strlen("用言:"));
-		    printf(" KEY: %s", make_pred_string(mention_ptr->tag_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED));
+		    printf(" KEY: %s", make_pred_string(mention_ptr->tag_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE));
 
 		    /* 代表表記が曖昧な用言の場合 */
 		    if (check_feature(mention_ptr->tag_ptr->head_ptr->f, "原形曖昧")) {
@@ -2006,7 +2006,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 				       m.Goi2, m.Yomi, m.Goi, 
 				       &m.Hinshi, &m.Bunrui, 
 				       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-				printf("-%s", make_pred_string(mention_ptr->tag_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED));
+				printf("-%s", make_pred_string(mention_ptr->tag_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE));
 			    }
 			    fp = fp->next;
 			}

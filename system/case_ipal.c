@@ -1694,16 +1694,21 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 }
 
 /*==================================================================*/
-char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, int flag)
+char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, 
+		       int cf_type, int cpncf_flag)
 /*==================================================================*/
 {
     char *buffer, *main_pred = NULL, *cp, *rep_strt;
-    int rep_length, main_pred_malloc_flag = 0, i, cpncf_flag = 0;
+    int rep_length, main_pred_malloc_flag = 0, i;
 
     /* orig_form == 1: 可能動詞のもとの形を用いるとき */
 
     /* m_ptr == NULL: 本動詞の形態素は t_ptr->head_ptr を用いる
        otherwise    : 本動詞の形態素として m_ptr を用いる (ALTのもの) */
+
+    /* cpncf_flag: 複合名詞格フレーム (下で設定) or 
+                   用言表記 == 主辞のみ (引数)   ならTRUE
+		   ※ for future extension */
 
     /* 用言タイプ, voiceの分(7)も確保しておく */
 
@@ -1721,9 +1726,9 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
             }
         }
 	/* 連想照応解析をする場合は正規化代表表記を使用する */
-	else if (flag == CF_NOUN && OptAnaphora &&
+	else if (cf_type == CF_NOUN && OptAnaphora &&
 		 (cp = check_feature(t_ptr->b_ptr->f, "正規化代表表記"))) {
-	    cpncf_flag = 1;
+	    cpncf_flag = TRUE;
 	    rep_strt = cp + strlen("正規化代表表記:");
 	    rep_length = strlen(rep_strt);		
 
@@ -1734,7 +1739,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	}
 	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
 	/* ただし、BGH中に"|"が含まれている場合は除く */
-	else if (flag == CF_NOUN && OptUseCPNCF &&  
+	else if (cf_type == CF_NOUN && OptUseCPNCF &&  
 		 !check_feature(t_ptr->head_ptr->f, "特殊非見出語") &&		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
@@ -1745,7 +1750,7 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    }
 	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
 	    else {
-		cpncf_flag = 1;
+		cpncf_flag = TRUE;
 		rep_strt = cp + strlen("BGH:");
 		rep_length = strlen(rep_strt);
 
@@ -1772,16 +1777,16 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	}
 	else {
 	    /* 用言のとき、末尾の名詞性名詞接尾辞は無視する */
-	    if ((flag & CF_PRED) &&
+	    if ((cf_type & CF_PRED) &&
 		!strcmp(Class[t_ptr->head_ptr->Hinshi][t_ptr->head_ptr->Bunrui].id, "名詞性名詞接尾辞")) {
-		if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr - 1, (flag & CF_PRED) && 
+		if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr - 1, (cf_type & CF_PRED) && 
 						     check_feature((t_ptr->head_ptr - 1)->f, "Ｔ代表表記変更前用言見出"))) == NULL) {
 		    main_pred = make_mrph_rn(t_ptr->head_ptr - 1);
 		    main_pred_malloc_flag = 1;
 		}
 	    }
 	    /* 用言のとき、a化している形容詞語幹は、元の代表表記で引く(e.g., 「平和/条約」の「平和」) */
-	    else if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (flag & CF_PRED) && 
+	    else if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (cf_type & CF_PRED) && 
 						 check_feature(t_ptr->head_ptr->f, "Ｔ代表表記変更前用言見出"))) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
@@ -1805,9 +1810,9 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     /* 「形容詞+なる」など */
     else if (check_feature(t_ptr->f, "Ｔ用言見出→") && !cpncf_flag &&
 	     (!check_feature(t_ptr->head_ptr->f, "サ変") ||
-	      ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag)) && strcmp(cp, "する/する")))) {
+	      ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, cf_type)) && strcmp(cp, "する/する")))) {
 	if (use_rep_flag) {
-	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, flag))) {
+	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, cf_type))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
 					     "make_pred_string");
 		strcpy(buffer, main_pred);
@@ -1865,6 +1870,180 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 }
 
 /*==================================================================*/
+char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, 
+				 int cf_type, int cpncf_flag)
+/*==================================================================*/
+{
+    char *buffer, *main_pred = NULL, *cp, *rep_strt;
+    int rep_length, main_pred_malloc_flag = 0, i;
+
+    /* orig_form == 1: 可能動詞のもとの形を用いるとき */
+
+    /* m_ptr == NULL: 本動詞の形態素は t_ptr->head_ptr を用いる
+       otherwise    : 本動詞の形態素として m_ptr を用いる (ALTのもの) */
+
+    /* cpncf_flag: 複合名詞格フレーム (下で設定) or 
+                   用言表記 == 主辞のみ (引数)   ならTRUE */
+
+    /* 用言タイプ, voiceの分(7)も確保しておく */
+
+    /* 代表表記を使う場合で代表表記があるとき */
+    if (use_rep_flag) {
+
+	if (m_ptr) {
+            rep_strt = get_mrph_rep(m_ptr);
+            rep_length = get_mrph_rep_length(rep_strt);
+            if (rep_length) {
+                main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string_from_mrph");
+                strncpy(main_pred, rep_strt, rep_length);
+                *(main_pred + rep_length) = '\0';
+                main_pred_malloc_flag = 1;
+            }
+        }
+	/* 連想照応解析をする場合は正規化代表表記を使用する */
+	else if (cf_type == CF_NOUN && OptAnaphora &&
+		 (cp = check_feature(t_ptr->b_ptr->f, "正規化代表表記"))) {
+	    cpncf_flag = TRUE;
+	    rep_strt = cp + strlen("正規化代表表記:");
+	    rep_length = strlen(rep_strt);		
+
+	    main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string_from_mrph");
+	    strncpy(main_pred, rep_strt, rep_length);
+	    *(main_pred + rep_length) = '\0';
+	    main_pred_malloc_flag = 1;
+	}
+	/* 複合名詞格フレームを用いる場合で、分類語彙表が引けている場合 */
+	/* ただし、BGH中に"|"が含まれている場合は除く */
+	else if (cf_type == CF_NOUN && OptUseCPNCF &&  
+		 !check_feature(t_ptr->head_ptr->f, "特殊非見出語") &&		 
+		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
+
+	    /* 形容詞語幹の場合は通常の代表表記を使用する */
+	    if (check_feature(t_ptr->f, "名詞的形容詞語幹")) {
+		rep_strt = get_mrph_rep(t_ptr->head_ptr);
+		rep_length = get_mrph_rep_length(rep_strt);
+	    }
+	    /* 複合名詞格フレームを用いる場合は分類語彙表の見出しを用いる */
+	    else {
+		cpncf_flag = TRUE;
+		rep_strt = cp + strlen("BGH:");
+		rep_length = strlen(rep_strt);
+
+		/* 後方の基本句の分類語彙表の見出しに含まれる基本句は省略解析の対象としない */
+		/* 分類語彙表の見出しが処理対象の基本句より長い場合のみ実行*/
+		cp = get_mrph_rep(t_ptr->head_ptr);
+		if (0 && cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
+		    i = 1;
+		    while ((t_ptr - i) && (t_ptr - i)->head_ptr) {
+			assign_cfeature(&((t_ptr - i)->f), "省略解析なし", FALSE);
+			if (check_feature((t_ptr - i)->head_ptr->f, "文節始")) break;
+			cp = get_mrph_rep((t_ptr - i)->head_ptr);
+			if (!cp || !strncmp(cp, rep_strt, strlen(cp) - 1)) break;
+			i++;
+		    }
+		}
+	    }
+	    if (rep_length) {
+		main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string_from_mrph");
+		strncpy(main_pred, rep_strt, rep_length);
+		*(main_pred + rep_length) = '\0';
+		main_pred_malloc_flag = 1;
+	    }
+	}
+	else {
+	    /* 用言のとき、a化している形容詞語幹は、元の代表表記で引く(e.g., 「平和/条約」の「平和」) */
+	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (cf_type & CF_PRED) && 
+						 check_feature(t_ptr->head_ptr->f, "Ｔ代表表記変更前用言見出"))) == NULL) {
+		main_pred = make_mrph_rn(t_ptr->head_ptr);
+		main_pred_malloc_flag = 1;
+	    }
+	}
+    }
+    if (main_pred == NULL) {
+	main_pred = m_ptr ? m_ptr->Goi : t_ptr->head_ptr->Goi;
+    }
+
+    /* 「（〜を）〜に」 のときは 「する」 で探す */
+    if (check_feature(t_ptr->f, "ID:（〜を）〜に") && !cpncf_flag) {
+	buffer = (char *)malloc_data(strlen("する/する") + 8, "make_pred_string_from_mrph"); /* 9(euc) + 8 */
+	if (use_rep_flag) {
+	    strcpy(buffer, "する/する");
+	}
+	else {
+	    strcpy(buffer, "する");
+	}
+    }
+    else {
+	/* メモリ領域計算 */
+	MRPH_DATA *mrph_ptr = t_ptr->head_ptr;
+	int length = 0;
+	for (i = 0; i < t_ptr->mrph_num; i++) {
+	    if (use_rep_flag &&
+		(cp = get_mrph_rep_from_f(t_ptr->mrph_ptr + i, FALSE))) {
+		;
+	    }
+	    else if (t_ptr->mrph_ptr + i < t_ptr->head_ptr) { /* 主辞より前側 */
+		cp = (t_ptr->mrph_ptr + i)->Goi2;
+	    }
+	    else {
+		cp = (t_ptr->mrph_ptr + i)->Goi;
+	    }
+	    length += strlen(cp) + 1;
+	}
+	buffer = (char *)malloc_data(length + strlen(main_pred) + 8, "make_pred_string_from_mrph");
+	buffer[0] = '\0';
+
+	/* 前側に延ばす場合: 「形容詞語幹+的だ」など */
+	if (!cpncf_flag) {
+	    mrph_ptr = t_ptr->mrph_ptr;
+	    while (mrph_ptr < t_ptr->head_ptr && 
+		   check_feature((mrph_ptr + 1)->f, "Ｔ用言見出←")) {
+		if (use_rep_flag && 
+		    (cp = get_mrph_rep_from_f(mrph_ptr, FALSE))) {
+		    strcat(buffer, cp);
+		}
+		else {
+		    strcat(buffer, mrph_ptr->Goi2); /* 出現形 */
+		}
+		strcat(buffer, "+");
+		mrph_ptr++;
+	    }
+	}
+
+	/* 主辞 */
+	if (orig_form) {
+	    strcat(buffer, orig_form);
+	}
+	else {
+	    strcat(buffer, main_pred);
+	}
+
+	/* 後側に延ばす場合: 「形容詞+なる」など */
+	if (!cpncf_flag) {
+	    mrph_ptr = t_ptr->head_ptr;
+	    while (mrph_ptr <= t_ptr->mrph_ptr + t_ptr->mrph_num - 1 && 
+		   check_feature(mrph_ptr->f, "Ｔ用言見出→")) {
+		strcat(buffer, "+");
+		if (use_rep_flag && 
+		    (cp = get_mrph_rep_from_f(mrph_ptr + 1, (cf_type & CF_PRED)))) {
+		    strcat(buffer, cp);
+		}
+		else {
+		    strcat(buffer, (mrph_ptr + 1)->Goi);
+		}
+		mrph_ptr++;
+	    }
+	}
+    }
+
+    if (main_pred_malloc_flag) {
+	free(main_pred);
+    }
+
+    return buffer;
+}
+
+/*==================================================================*/
 int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 /*==================================================================*/
 {
@@ -1877,7 +2056,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return f_num;
     }
     
-    pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag);
+    pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
 
     /* 代表表記が曖昧な用言の場合 */
@@ -1893,7 +2072,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag);
+		new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
 		/* 代表と異なるもの */
 		if (strcmp(pred_string, new_pred_string)) {
 		    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, new_pred_string, flag);
@@ -1909,7 +2088,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* ないときで、可能動詞のときは、もとの形を使う */
     if (f_num == 0 && 
 	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
-	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"), OptCaseFlag & OPT_CASE_USE_REP_CF, flag);
+	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"), OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
 	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);	
 	free(pred_string);
     }
@@ -1937,7 +2116,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    continue;
 	}
 
-	pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED);
+	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
 	strcat(pred_string, make_pred_type(t_ptr));
 
 	strcpy(pred_merged_rep, "用言代表表記:");
@@ -1956,7 +2135,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 			   m.Goi2, m.Yomi, m.Goi, 
 			   &m.Hinshi, &m.Bunrui, 
 			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		    new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED);
+		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
 		    /* 代表と異なるもの */
 		    if (strcmp(pred_string, new_pred_string)) {
 			strcat(new_pred_string, make_pred_type(t_ptr));

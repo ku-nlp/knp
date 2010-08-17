@@ -1376,13 +1376,14 @@ extern int	EX_match_subject;
 
     assign_dpnd_rule(sp);			/* 係り受け規則 */
 
+    assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
+
     /* 格フレーム取得 */
     if ((OptAnalysis == OPT_CASE ||
 	OptAnalysis == OPT_CASE2 || OptUseNCF) &&
 	!((OptReadFeature & OPT_ELLIPSIS) && (OptExpress != OPT_TEST) &&
 	  (OptReadFeature & OPT_REL_NOUN) && OptAnaphora)) {
 	set_caseframes(sp);
-	assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
     }
 
     /*この時点の文節情報を表示 */
