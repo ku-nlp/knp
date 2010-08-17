@@ -1,3 +1,24 @@
+2010-08-18  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/read_data.c:
+	Modified to be tolerant to big bunsetsu.
+
+2010-08-17  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/extern.h, system/read_data.c:
+	Fixed a bug of feature handling in pre-processing of morphemes.
+
+	* rule/mrph_basic.rule:
+	Added rules for predicate representations.
+
+	* system/anaphora.c, system/case_ipal.c, system/extern.h, system/lib_event.c, system/lib_scase.c, system/main.c:
+	Output predicate representations.
+
+2010-08-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/cky.c:
+	Adjusted dependency barrier for coordination disambiguation.
+
 2010-08-12  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/cky.c: 
@@ -18,6 +39,11 @@
 
 	* system/case_analysis.c, system/case_print.c, system/cky.c, system/context.c, system/dpnd_analysis.c, system/extern.h, system/lib_print.c, system/main.c:
 	Modified to use partial parse delimiter (EOP) for parenthesis analysis.
+
+2010-07-28  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/db.c:
+	Added error check of cdb_init.
 
 2010-07-16  Daisuke Kawahara  <dk@nict.go.jp>
 
