@@ -1,3 +1,8 @@
+2010-08-19  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/case_analysis.c, system/case_ipal.c, system/db.c, system/para_dpnd.c:
+	Fixed memory leaks and illegal access of uninitialized values.
+
 2010-08-18  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/read_data.c:
