@@ -462,6 +462,7 @@ DBM_FILE db_read_open(char *filename)
 #ifdef DEBUG
         fprintf(stderr, "db_read_open: %s\n", filename);
 #endif
+	free(db);
 	return NULL;
     }
 
@@ -469,6 +470,7 @@ DBM_FILE db_read_open(char *filename)
 #ifdef DEBUG
         fprintf(stderr, "db_read_open (cdb_init): %s\n", filename);
 #endif
+	free(db);
 	return NULL;
     }
     return db;

@@ -58,6 +58,9 @@ int	TEIDAI_STEP	= 2;
 	cf->ex_freq[j] = (int *)malloc_data(sizeof(int), 
 					    "init_case_frame");
     }
+
+    cf->cf_id[0] = '\0';
+    cf->imi[0] = '\0';
 }
 
 /*==================================================================*/

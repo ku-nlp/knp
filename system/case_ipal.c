@@ -1066,7 +1066,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 (代表表記) */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
     for (i = 0; i_ptr->cf_align[i].cf_id != NULL; i++) {
-	cf_ptr->cf_align[i].cf_id = strdup(i_ptr->cf_align[i].cf_id);
+	cf_ptr->cf_align[i].cf_id = i_ptr->cf_align[i].cf_id;
+	i_ptr->cf_align[i].cf_id = NULL;
 	for (j = 0; i_ptr->cf_align[i].aligned_case[j][0] != END_M; j++) {
 	    cf_ptr->cf_align[i].aligned_case[j][0] = i_ptr->cf_align[i].aligned_case[j][0];
 	    cf_ptr->cf_align[i].aligned_case[j][1] = i_ptr->cf_align[i].aligned_case[j][1];
@@ -2333,7 +2334,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		       void clear_cf(int flag)
 /*==================================================================*/
 {
-    int i, j, k, end;
+    int i, j, end;
 
     end = flag ? MAX_Case_frame_num : Case_frame_num;
 
@@ -2348,6 +2349,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	if ((Case_frame_array+i)->feature) {
 	    free((Case_frame_array+i)->feature);
 	    (Case_frame_array+i)->feature = NULL;
+	}
+	for (j = 0; (Case_frame_array+i)->cf_align[j].cf_id != NULL; j++) {
+	    free((Case_frame_array+i)->cf_align[j].cf_id);
+	    (Case_frame_array+i)->cf_align[j].cf_id = NULL;
 	}
     }
 }
