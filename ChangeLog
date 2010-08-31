@@ -1,3 +1,11 @@
+2010-08-31  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/lib_scase.c:
+	Changed to look up scase db with repnames.
+
+	* dict/gcf/scase.dat:
+	Newly converted and changed keys to be repnames.
+
 2010-08-19  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/case_analysis.c, system/case_ipal.c, system/db.c, system/para_dpnd.c:
