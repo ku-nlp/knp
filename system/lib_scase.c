@@ -162,7 +162,7 @@ int		OptUseScase;
 /*==================================================================*/
 {
     int i;
-    char *cp, *ans = NULL, *anscp, *str_buffer = NULL, *vtype, voice[3];
+    char *cp, *ans = NULL, *anscp, *str_buffer = NULL, *vtype, voice[4];
 
     /* 初期化: init_bnst でもしている */
     for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
@@ -196,15 +196,15 @@ int		OptUseScase;
 	    if (str_buffer) {
 		free(str_buffer);
 	    }
-	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL, FALSE, FALSE, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+	    str_buffer = make_pred_string((TAG_DATA *)ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, FALSE, FALSE);
 	    strcat(str_buffer, ":");
 	    strcat(str_buffer, vtype);
 	    if (voice[0]) strcat(str_buffer, voice);
 
 	    ans = get_scase(str_buffer);
 
-	    /* 代表表記が曖昧な用言の場合 => scase.datが代表表記化され次第使用 */
-	    if (0 && check_feature(ptr->head_ptr->f, "原形曖昧")) {
+	    /* 代表表記が曖昧な用言の場合 */
+	    if (check_feature(ptr->head_ptr->f, "原形曖昧")) {
 		FEATURE *fp;
 		MRPH_DATA m;
 		char *str;
@@ -218,13 +218,13 @@ int		OptUseScase;
 			       &m.Hinshi, &m.Bunrui, 
 			       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 			free(str_buffer);
-			str_buffer = make_pred_string((TAG_DATA *)ptr, &m, NULL, FALSE, FALSE, FALSE); /* OptCaseFlag & OPT_CASE_USE_REP_CF */
+			str_buffer = make_pred_string((TAG_DATA *)ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, FALSE, FALSE);
 			strcat(str_buffer, ":");
 			strcat(str_buffer, vtype);
 			if (voice[0]) strcat(str_buffer, voice);
 
 			new_ans = get_scase(str_buffer);
-			or_scase_code(&ans, new_ans);
+			or_scase_code(&ans, new_ans); /* ORで足す */
 		    }
 		    fp = fp->next;
 		}
@@ -250,6 +250,9 @@ int		OptUseScase;
 	    goto Match;
 	}
 	else {
+	    if (OptDisplay == OPT_DEBUG) {
+		fprintf(stderr, ";; Cannot find SCASE: %s\n", str_buffer);
+	    }
 	    free(str_buffer);
 	}
     }
