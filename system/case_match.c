@@ -1392,7 +1392,7 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
 
     /* ¸å½èÍý */
 
-    if (Current_max_num == MAX_MATCH_MAX) {
+    if (Current_max_num == MAX_MATCH_MAX && OptDisplay == OPT_DEBUG) {
 	fprintf(stderr, "; Too many case matching result !\n");
     }
 
