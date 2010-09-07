@@ -194,7 +194,7 @@ extern int	EX_match_subject;
     OptCKY = TRUE;
     OptEllipsis = 0;
     OptGeneralCF = 0;
-    OptCorefer = 0;
+    OptCorefer = 4;
     OptInput = OPT_RAW;
     OptExpress = OPT_TREE;
     OptDisplay = OPT_NORMAL;
@@ -275,7 +275,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-mrphtree")) OptExpress = OPT_MRPHTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
-	else if (str_eq(argv[0], "-test"))   OptExpress  = OPT_TEST;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
 	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
@@ -399,44 +398,29 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-demonstrative")) {
 	    OptEllipsis |= OPT_DEMO;
 	}
-/* 	else if (str_eq(argv[0], "-anaphora")) { */
-/* 	    OptEllipsis |= OPT_ELLIPSIS; */
-/* 	    OptEllipsis |= OPT_DEMO; */
-/* 	} */
-	else if (str_eq(argv[0], "-anaphora")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_PRINT_ENTITY;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_COREFER;
-	    OptGeneralCF |= OPT_CF_NE;
-	    OptGeneralCF |= OPT_CF_CATEGORY;
-	    OptGeneralCF |= OPT_CF_CLASS;
+	else if (str_eq(argv[0], "-anaphora-detail")) {
+	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	}
+	else if (str_eq(argv[0], "-anaphora-train")) {
+	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_TRAIN);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
 	}
 	else if (str_eq(argv[0], "-anaphora-prob")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_ANAPHORA_PROB;
-	    OptAnaphora |= OPT_PRINT_ENTITY;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_COREFER;
-	    OptGeneralCF |= OPT_CF_NE;
-	    OptGeneralCF |= OPT_CF_CATEGORY;
+	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_ANAPHORA_PROB);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY);
 	}
-	else if (str_eq(argv[0], "-anaphora-normal")) {
+	else if (str_eq(argv[0], "-anaphora-normal") || str_eq(argv[0], "-anaphora")) {
 	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_ANAPHORA_PROB;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_ELLIPSIS;
-	    OptEllipsis |= OPT_COREFER;
-	    OptGeneralCF |= OPT_CF_NE;
-	    OptGeneralCF |= OPT_CF_CATEGORY;
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
 	}
 	else if (str_eq(argv[0], "-anaphora-copula")) {
-	    OptAnaphora |= OPT_ANAPHORA;
-	    OptAnaphora |= OPT_ANAPHORA_COPULA;
-	    OptCorefer = 4;
-	    OptEllipsis |= OPT_COREFER;
+	    OptAnaphora |= (OPT_ANAPHORA | OPT_ANAPHORA_COPULA);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	}	
 	else if (str_eq(argv[0], "-read-ne")) {
 	    OptReadNE = 1;    
@@ -1379,10 +1363,10 @@ extern int	EX_match_subject;
     assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
 
     /* 格フレーム取得 */
-    if ((OptAnalysis == OPT_CASE ||
-	OptAnalysis == OPT_CASE2 || OptUseNCF) &&
-	!((OptReadFeature & OPT_ELLIPSIS) && (OptExpress != OPT_TEST) &&
-	  (OptReadFeature & OPT_REL_NOUN) && OptAnaphora)) {
+    if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2 || OptUseNCF) &&
+	/* 訓練時以外ですべての関係タグを読み込む場合は格フレームは読み込まない */
+	(!OptAnaphora || (OptAnaphora & OPT_TRAIN) ||
+	 !(OptReadFeature & OPT_ELLIPSIS) || !(OptReadFeature & OPT_REL_NOUN))) {
 	set_caseframes(sp);
     }
 
@@ -1591,8 +1575,7 @@ PARSED:
     assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, FALSE);
 
     /* 照応解析に必要なFEATUREの付与 */
-    if (OptEllipsis & OPT_COREFER || OptEllipsis & OPT_REL_NOUN)
-	assign_anaphor_feature(sp);
+    if (OptEllipsis) assign_anaphor_feature(sp);
 
     /* 文節情報の表示 */
     if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {

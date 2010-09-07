@@ -156,7 +156,6 @@
 #define OPT_MRPH	4
 #define OPT_TABLE      16
 #define OPT_PA	       32
-#define OPT_TEST       64
 #define OPT_BNSTTREE	3 /* NOTAGTREE */
 #define OPT_MRPHTREE	5
 #define OPT_NORMAL	1
@@ -174,6 +173,7 @@
 #define OPT_PRINT_ENTITY    2
 #define OPT_ANAPHORA_COPULA 4
 #define OPT_ANAPHORA_PROB   8
+#define OPT_TRAIN           16
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
@@ -806,8 +806,7 @@ typedef struct mention {
     int                 tag_num;
     char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
-    int                 level; /* 用言のレベル(C, B+, B, B-, A, A-の順で1〜6) */
-    char                flag; /* 'S', '=', 'N', 'C', 'O', 'D' */
+    char                type; /* 'S', '=', 'N', 'C', 'O', 'D' */
     double              salience_score; /* どのくらい先行詞になりやすいか */    
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
@@ -1364,10 +1363,10 @@ typedef struct tcf_def {
 #define CEX_PMI           2 /* カテゴリPMI */	       
 #define NEX_PMI           3 /* 固有表現PMI */	       
 #define CLS_PMI           4 /* クラスPMI */
-#define SCASE_PMI         5 /* 格PMI */
-#define LOCATION_PROB     6 /* 位置カテゴリの確率 */
-#define VERB_PMI          7 /* 共起用言PMI */
-#define SALIENCE_SCORE    8 /* salience score */
+#define LOCATION_PROB     5 /* 位置カテゴリの確率 */
+#define SALIENCE_CHECK1   6 /* salience score >= 1.00 */
+#define SALIENCE_CHECK2   7 /* salience score >= 0.25 */
+#define ASSIGNED          8 /* 埋まったかどうか */
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
@@ -1394,7 +1393,7 @@ typedef struct ctm_def {
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
-    char        flag[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
+    char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
 
     /* 機械学習用のfeature */
     double cf_select_score;                                /* 格フレーム選択確率(以下いずれも対数) */

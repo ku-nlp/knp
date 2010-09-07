@@ -1,3 +1,13 @@
+2010-09-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/main.c:
+	照応関係のオプションを整理
+
+	* system/anaphora.c, system/const.h:
+	素性ごとの重みを学習した重みに変更
+	salience_scoreの閾値を緩め、代わりに閾値に関する素性を追加
+	実験用コードの整理
+
 2010-08-31  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/lib_scase.c:
