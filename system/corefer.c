@@ -9,6 +9,7 @@
 #include "knp.h"
 
 int COREFER_ID = 0;
+int ASCEND_SEN_MAX = 20;
 DBM_FILE synonym_db;
 char *SynonymFile;
 
@@ -397,7 +398,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 
     sdp = sentence_data + sp->Sen_num - 1;
     for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
-	
+	if (j >= ASCEND_SEN_MAX) break; /* ASCEND_SEN_MAX以上前の文は考慮しない */
+
 	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */
 	    
 	    tag_ptr = (sdp - j)->tag_data + k;	    		

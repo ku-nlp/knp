@@ -1,3 +1,12 @@
+2010-09-11  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h, system/corefer.c:
+	長い文の照応解析を行えるよう修正:
+	- 共参照の先行詞探索範囲を先行20文までに制限
+	- 保持できる談話要素の最大数を変更(1024→16384)
+	- ゼロ照応・連想照応解析時に考慮する非省略格の対応付け候補の絞り込みを強化
+	- 不必要な基本句ごとの対応付け解析結果を保持しないように変更	
+
 2010-09-07  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c:

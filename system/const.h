@@ -86,10 +86,10 @@
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
-#define CLASS_NUM       2000 /* 単語クラスの数 */
-#define MENTION_MAX     32   /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
-#define ENTITY_MAX      1024 /* ENTITYの数 */
-#define MENTIONED_MAX   1024 /* 1つのENTITYが言及される回数 */
+#define CLASS_NUM       2000  /* 単語クラスの数 */
+#define MENTION_MAX     8     /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
+#define ENTITY_MAX      16384 /* ENTITYの数 */
+#define MENTIONED_MAX   1024  /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
 	#define IMI_MAX	1024	/* defined in "juman.h" */	
@@ -818,6 +818,7 @@ typedef struct mention_manager {
     /* 0番目には必ず自分自身を入れる */
     /* 1番目以降は関係する格要素を入れていく */
     int                 num;
+    char 	        cf_id[CF_ID_LEN_MAX]; /* 格構造出力用 */
     MENTION             mention[MENTION_MAX];        
 } MENTION_MGR;
 
@@ -828,7 +829,6 @@ typedef struct entity {
     int                 mentioned_num;  /* 言及されている回数 */
     double              salience_score; /* どのくらい先行詞になりやすいか */
     int                 tmp_salience_flag; /* 同一文中に出現したノ格 */
-    int                 antecedent_num; /* 先行詞となっている回数 */
     MENTION             *mention[MENTIONED_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
 } ENTITY;
@@ -1371,7 +1371,6 @@ typedef struct tcf_def {
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
-    double      case_score;                      /* 格解析の対応付けのスコア */
     CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
 
     /* 格フレームの要素のうち対応付けがついたもの
@@ -1396,9 +1395,7 @@ typedef struct ctm_def {
     char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
 
     /* 機械学習用のfeature */
-    double cf_select_score;                                /* 格フレーム選択確率(以下いずれも対数) */
-    double overt_arguments_score;                          /* 非省略格要素との対応付けスコア */
-    int    noassign_arguments_num;                         /* 対応付けられなかった入力格要素のスコア */    
+    double overt_arguments_score;                          /* 格解析スコア */
     double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* 省略対応付け評価のための素性 */
 } CF_TAG_MGR;
 
