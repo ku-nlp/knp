@@ -1508,15 +1508,15 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		}
 		printf(")");
 	    }
-	    printf("\n", work_ctm[i].cf_ptr->cf_id);
+	    printf("\n");
 	}
     }
    
     /* BEST解を保存 */
     if (work_ctm[CASE_CANDIDATE_MAX].score == INITIAL_SCORE) return FALSE;
     copy_ctm(&work_ctm[CASE_CANDIDATE_MAX], tag_ptr->ctm_ptr);
-    strcpy(tag_ptr->ctm_ptr->cf_ptr->cf_id, tag_ptr->mention_mgr.cf_id);
-    
+    strcpy(tag_ptr->mention_mgr.cf_id, work_ctm[CASE_CANDIDATE_MAX].cf_ptr->cf_id);
+        
     /* 格フレームを解放 */
     free(cf_array);
 

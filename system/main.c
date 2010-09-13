@@ -1585,15 +1585,13 @@ PARSED:
     memo_by_program(sp);	/* メモへの書き込み */
 
     /* 後処理 */
-    if (!OptEllipsis) { /* 省略解析のときは、省略解析後に行う */
-	if (OptPostProcess) {
-	    do_postprocess(sp);
-	}
+    if (!OptEllipsis && OptPostProcess) {
+	do_postprocess(sp);
+    }
 
-	/* 格解析結果をfeatureへ */
-	if (sp->available && (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) && !OptReadFeature) {
-	    record_all_case_analisys(sp, FALSE);
-	}
+    /* 格解析結果をfeatureへ */
+    if (sp->available && (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2) && !OptReadFeature) {
+	record_all_case_analisys(sp, FALSE);
     }
 
     return TRUE;

@@ -1,3 +1,9 @@
+2010-09-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/main.c:
+	照応解析時も通常の<格解析結果>に関する情報を出力するように変更
+	<格構造>に関する情報を出力する際、格フレームIDが出力されない問題を修正
+
 2010-09-13  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/main.c:
