@@ -1676,6 +1676,10 @@ PARSED:
     if (OptEllipsis) {
 	assign_mrph_num(sp);
 	make_dpnd_tree(sp);
+	if (sp->Sen_num > SENTENCE_MAX) {
+	    fprintf(stderr, "Sentence buffer overflowed!\n");
+	    exit(1);
+	}
 	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
 	if (OptAnaphora) anaphora_analysis(sp);
@@ -1687,7 +1691,7 @@ PARSED:
     }
 
     /* entity 情報の feature の作成 */
-    if (OptDisplay  == OPT_ENTITY) {
+    if (OptDisplay == OPT_ENTITY) {
 	prepare_all_entity(sp);
     }
 

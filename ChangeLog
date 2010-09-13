@@ -1,5 +1,8 @@
 2010-09-13  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/main.c:
+	照応解析の際、文数がSENTENCE_MAXを越えた場合、終了するように変更
+
 	* system/anaphora.c, system/case_ipal.c, system/main.h:
 	ゼロ照応解析において意味クラスを使用する際、意味クラスの出現確率を
 	使用する度に読み込んでいたのを最初に読み込むように変更(高速化のため)
