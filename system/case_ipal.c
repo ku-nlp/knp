@@ -56,6 +56,8 @@ int     CHIPAExist;
 int	PrintDeletedSM = 0;
 int	SM_AGENT_THRESHOLD = 0.40;
 
+double  ClassProb[CLASS_NUM];
+
 /*==================================================================*/
 	   void init_cf_structure(CASE_FRAME *p, int size)
 /*==================================================================*/
@@ -2061,7 +2063,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
 
     /* 代表表記が曖昧な用言の場合 */
-    if (check_feature(t_ptr->head_ptr->f, "原形曖昧")) {
+    if (check_feature(t_ptr->head_ptr->f, "原形曖昧") && flag == CF_PRED) {
 	FEATURE *fp;
 	MRPH_DATA m;
 	char *str;
@@ -2861,22 +2863,19 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
     /* 入力key=NE:LOCATION:京大 */
     /* flagがたっている場合P(LOCATION|行く:動2:ニ格)を返す */
     /* またflagがたっている場合は、固有表現以外でも使用可 */
-
     int i;
-    char *value, ne[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
+    char *value, tag[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
     
-    strcpy(ne, cp);
-    strcpy(key, strchr(ne + 3, ':') + 1); /* key = 京大 */
-    *strchr(ne + 3, ':') = '\0'; /* ne = NE:LOCATION */
+    strcpy(tag, cp);
+    if (!flag) strcpy(key, strchr(tag + 3, ':') + 1); /* key = 京大 */
+    *strchr(tag + 3, ':') = '\0'; /* tag = NE:LOCATION */
 
     for (i = 0; i < cfp->gex_num[as2]; i++) {
-	if (!strcmp(ne, cfp->gex_list[as2][i])) {
+	if (!strcmp(tag, cfp->gex_list[as2][i])) {
+	    if (flag) return cfp->gex_freq[as2][i];
 
-	    if (flag) {
-		return cfp->gex_freq[as2][i];
-	    }	
 	    strcat(key, "|");
-	    strcat(key, ne);
+	    strcat(key, tag);
 		
 	    if ((value = db_get(case_db, key))) {
 		if (VerboseLevel >= VERBOSE3) {
@@ -3355,21 +3354,36 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     return get_general_probability(key, "KEY");
 }
 
+
+/*==================================================================*/
+			void init_class_prob()
+/*==================================================================*/
+{
+    int i;
+    char cp[8];
+
+    for (i = 0; i < CLASS_NUM; i++) {
+
+	sprintf(cp, "CL:%d", i);
+	ClassProb[i] = exp(get_general_probability(cp, "KEY"));
+    }
+}
+
 /*==================================================================*/
   double get_class_probability(char *key, int as, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     int i;
-    double class[CLASS_NUM], prob, ret;
+    double key_class_prob[CLASS_NUM], prob, ret;
     char *cp, *cp2, *key2;
 
     /* keyのclass情報を読み込み */
     if ((cp = db_get(case_db, key))) {  
 	for (i = 0; i < CLASS_NUM; i++) {
-	    class[i] = 0;
+	    key_class_prob[i] = 0;
 	}
 	while (cp && sscanf(cp, "%d:%lf", &i, &prob)) {
-	    class[i] = prob;
+	    key_class_prob[i] = prob;
 	    cp = strstr(cp, ",");
 	    if (cp) cp++;
 	}
@@ -3381,18 +3395,13 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     ret = 0;
     for (i = 0; i < cfp->gex_num[as]; i++) {
 	cp = cfp->gex_list[as][i];
-	if (!strncmp(cp, "CL:", 3)) {    
-	    prob = get_general_probability(cp, "KEY");
-
-	    if (prob != FREQ0_ASSINED_SCORE && class[atoi(cp + 3)] > 0) {
-		ret += cfp->gex_freq[as][i] / exp(prob) * class[atoi(cp + 3)];
-		/* printf("%d %f %f %f %f ok?\n", 
-		   atoi(cp + 3), class[atoi(cp + 3)], exp(prob), cfp->gex_freq[as][i], ret); */
-	    }
+	if (!strncmp(cp, "CL:", 3) && key_class_prob[atoi(cp + 3)] > 0) {
+	    ret += cfp->gex_freq[as][i] / ClassProb[atoi(cp + 3)] * key_class_prob[atoi(cp + 3)];
 	}
     }
     return ret;
 }
+
 
 /*==================================================================*/
 	double get_general_probability(char *key1, char *key2)

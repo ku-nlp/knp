@@ -1357,7 +1357,7 @@ typedef struct tcf_def {
 
 /* CF_TAG_MGR中のomit_feature用の定数 */
 #define ELLIPSIS_CASE_NUM 3
-#define O_FEATURE_NUM     9
+#define O_FEATURE_NUM     8
 #define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
 #define EX_PMI            1 /* 語PMI */	       
 #define CEX_PMI           2 /* カテゴリPMI */	       
@@ -1365,8 +1365,7 @@ typedef struct tcf_def {
 #define CLS_PMI           4 /* クラスPMI */
 #define LOCATION_PROB     5 /* 位置カテゴリの確率 */
 #define SALIENCE_CHECK1   6 /* salience score >= 1.00 */
-#define SALIENCE_CHECK2   7 /* salience score >= 0.25 */
-#define ASSIGNED          8 /* 埋まったかどうか */
+#define ASSIGNED          7 /* 埋まったかどうか */
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {

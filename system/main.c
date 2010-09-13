@@ -1744,6 +1744,9 @@ PARSED:
     init_case_analysis_cpm(sp);
     init_case_analysis_cmm();
 
+    /* 意味クラスを用いた照応解析を行う場合クラスごとの出現確率を読み込む */    
+    if (OptAnaphora && (OptGeneralCF & OPT_CF_CLASS)) init_class_prob();
+
     /* ルール読み込み
        Server Mode において、読み込むルールの変更がありえるので、ここで行う */
     read_rules();
