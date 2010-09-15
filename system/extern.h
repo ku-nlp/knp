@@ -31,6 +31,7 @@ extern SENTENCE_DATA	sentence_data[];
 extern SENTENCE_DATA	current_sentence_data;
 
 extern ENTITY_MGR       entity_manager;
+extern int              corefer_id;
 
 extern int 		match_matrix[][BNST_MAX];
 extern int 		path_matrix[][BNST_MAX];
@@ -193,6 +194,7 @@ extern int sen_num;
 /* anaphora.c */
 extern void assign_mrph_num(SENTENCE_DATA *sp);
 extern void anaphora_analysis(SENTENCE_DATA *sp);
+extern void clear_log(SENTENCE_DATA *sp, int init_flag);
 
 /* bnst_compare.c */
 extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);

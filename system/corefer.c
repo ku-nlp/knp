@@ -8,8 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
-int COREFER_ID = 0;
 int ASCEND_SEN_MAX = 20;
+int corefer_id = 0;
 DBM_FILE synonym_db;
 char *SynonymFile;
 
@@ -505,8 +505,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
 		    }
 		    else {
-			COREFER_ID++;
-			sprintf(CO, "COREFER_ID:%d", COREFER_ID);
+			corefer_id++;
+			sprintf(CO, "COREFER_ID:%d", corefer_id);
 			assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
 			assign_cfeature(&(tag_ptr->f), CO, FALSE);
 			if (j > 0) {
@@ -598,8 +598,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	assign_cfeature(&(tag_ptr->f), cp, FALSE);
     }
     else {
-	COREFER_ID++;
-	sprintf(CO, "COREFER_ID:%d", COREFER_ID);
+	corefer_id++;
+	sprintf(CO, "COREFER_ID:%d", corefer_id);
 	assign_cfeature(&(tag_ptr->f), CO, FALSE);
 	assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
     }
@@ -714,8 +714,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    assign_cfeature(&((sp->tag_data + j)->f), cp, FALSE);
 	}
 	else {
-	    COREFER_ID++;
-	    sprintf(CO, "COREFER_ID:%d", COREFER_ID);
+	    corefer_id++;
+	    sprintf(CO, "COREFER_ID:%d", corefer_id);
 	    assign_cfeature(&((sp->tag_data + j)->f), CO, FALSE);
 	    assign_cfeature(&((sp->tag_data + i - 1)->f), CO, FALSE);
 	}
@@ -861,8 +861,8 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 		    assign_cfeature(&(tag_ptr->f), cp, FALSE);
 		}
 		else {
-		    COREFER_ID++;
-		    sprintf(CO, "COREFER_ID:%d", COREFER_ID);
+		    corefer_id++;
+		    sprintf(CO, "COREFER_ID:%d", corefer_id);
 		    assign_cfeature(&((sp->tag_data + i)->f), CO, FALSE);
 		    assign_cfeature(&(tag_ptr->f), CO, FALSE);
 		}

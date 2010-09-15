@@ -36,6 +36,10 @@
 #define	LOC_OTHERS_AFTER     8 /* その他(後)   */
 #define	LOC_OTHERS_THEME     9 /* その他(主題) */
 
+/* clear_logされた時点での文数、ENTITY数を記録 */
+int base_sentence_num = 0;
+int base_entity_num = 0;
+
 /* 位置カテゴリを保持 */
 int loc_category[BNST_MAX];
 
@@ -56,6 +60,33 @@ double case_feature_weight[ELLIPSIS_CASE_NUM][O_FEATURE_NUM] =
 {0.029563, 0.194784, 0.667385,  0.241577,  0.065311, 0.883273, 1.248845, -2.112211, 
  0.777541, 0.201221, 0.248724,  0.129887,  0.182114, 0.599318, 0.421981, -1.784192, 
  0.999177, 0.214329, 0.167154, -0.123141, -0.004030, 0.400042, 0.601607, -2.369781};
+
+/* 重み付けパラメータ(素性出力用) */
+/* double overt_arguments_weight = 1.0; */
+/* double case_feature_weight[ELLIPSIS_CASE_NUM][O_FEATURE_NUM] = */
+/* {{1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0}, */
+/*  {1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0}, */
+/*  {1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0}}; */
+
+/*==================================================================*/
+	   void clear_log(SENTENCE_DATA *sp, int init_flag)
+/*==================================================================*/
+{
+    int i;
+
+    if (OptAnaphora & OPT_PRINT_ENTITY) printf(";;\n;;CONTEXT INITIALIZED\n");
+    for (i = 0; i < sp->Sen_num - 1; i++) ClearSentence(sentence_data + i);
+    if (init_flag) {
+	base_sentence_num = base_entity_num = 0;
+	corefer_id = 0;
+    }
+    else {
+	base_sentence_num += sp->Sen_num - 1;
+	base_entity_num += entity_manager.num;
+    }   
+    sp->Sen_num = 1;
+    entity_manager.num = 0;
+}
 
 /*==================================================================*/
 	    int match_ellipsis_case(char *key, char **list)
@@ -541,10 +572,11 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     if (!mention_ptr) return FALSE;
     mention_ptr->entity->mention[mention_ptr->entity->mentioned_num] = mention_ptr;
     if (mention_ptr->entity->mentioned_num >= MENTIONED_MAX - 1) { 
-	fprintf(stderr, "Entity %s mentiond too many times!\n", mention_ptr->entity->name);
-	exit(1);
+	fprintf(stderr, "Entity \"%s\" mentiond too many times!\n", mention_ptr->entity->name);
     }
-    mention_ptr->entity->mentioned_num++;
+    else {
+	mention_ptr->entity->mentioned_num++;
+    }
 
     /* 学習用情報の出力 */
     if ((OptAnaphora & OPT_TRAIN) && type == 'O' && strcmp(rel, "=")) {
@@ -703,10 +735,11 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 
 	mention_ptr->entity->mention[mention_ptr->entity->mentioned_num] = mention_ptr;
 	if (mention_ptr->entity->mentioned_num >= MENTIONED_MAX - 1) { 
-	    fprintf(stderr, "Entity %s mentiond too many times!\n", mention_ptr->entity->name);
-	    exit(1);
+	    fprintf(stderr, "Entity \"%s\" mentiond too many times!\n", mention_ptr->entity->name);
 	}
-	mention_ptr->entity->mentioned_num++;
+	else {
+	    mention_ptr->entity->mentioned_num++;
+	}
     }  
 }
 
@@ -1135,8 +1168,7 @@ int case_analysis_for_anaphora(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, in
 		    ctm_ptr->cf_element_num[r_num] = e_num;
 		    ctm_ptr->tcf_element_num[r_num] = i;
     		    ctm_ptr->type[r_num] = tag_ptr->tcf_ptr->elem_b_num[i] == -1 ? 'N' : 'C';
-		    ctm_ptr->entity_num[r_num] = 
-			ctm_ptr->elem_b_ptr[r_num]->mention_mgr.mention->entity->num;
+		    ctm_ptr->entity_num[r_num] = ctm_ptr->elem_b_ptr[r_num]->mention_mgr.mention->entity->num;
 
 		    /* i+1番目の要素のチェックへ */
 		    case_analysis_for_anaphora(tag_ptr, ctm_ptr, i + 1, r_num + 1);
@@ -1530,10 +1562,6 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     char *cp;
     ENTITY *entity_ptr;
 
-    if (entity_manager.num >= ENTITY_MAX - 1) { 
-	fprintf(stderr, "Entity buffer overflowed!\n");
-	exit(1);
-    }
     entity_ptr = entity_manager.entity + entity_manager.num;
     entity_ptr->num = entity_ptr->output_num = entity_manager.num;
     entity_manager.num++;				
@@ -1785,17 +1813,17 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     FEATURE *fp;
     MRPH_DATA m;
 
-    printf(";;\n;;SENTENCE %d\n", sen_num); 
+    printf(";;\n;;SENTENCE %d\n", sen_num + base_sentence_num); 
     for (i = 0; i < entity_manager.num; i++) {
 	entity_ptr = entity_manager.entity + i;
 	if (entity_ptr->salience_score < 0.01 && entity_ptr->mentioned_num < 2 ||
 	    entity_ptr->salience_score == 0) continue;
 
-	printf(";; ENTITY %d [ %s ] %f {\n", entity_ptr->output_num, entity_ptr->name, entity_ptr->salience_score);
+	printf(";; ENTITY %d [ %s ] %f {\n", entity_ptr->output_num + base_entity_num, entity_ptr->name, entity_ptr->salience_score);
 	for (j = 0; j < entity_ptr->mentioned_num; j++) {
 	    mention_ptr = entity_ptr->mention[j];
 	    printf(";;\tMENTION%3d {", j);
-	    printf(" SEN:%3d", mention_ptr->sent_num);
+	    printf(" SEN:%3d", mention_ptr->sent_num + base_sentence_num);
 	    printf(" TAG:%3d", mention_ptr->tag_num);
 	    printf(" (%3d)", mention_ptr->tag_ptr->head_ptr->Num);
 	    printf(" CPP: %4s", mention_ptr->cpp_string);
@@ -1895,7 +1923,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     for (i = 0; i < sp->Tag_num; i++) {
 	tag_ptr = substance_tag_ptr(sp->tag_data + i);
 
-	sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num);
+	sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num + base_entity_num);
 	assign_cfeature(&(tag_ptr->f), buf, FALSE);
 
 	buf[0] = '\0';
@@ -1914,7 +1942,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 		sprintf(tmp, "%s/%c/%s/%d",
 			mention_ptr->cpp_string, mention_ptr->type, 
-			mention_ptr->entity->name, mention_ptr->entity->num);
+			mention_ptr->entity->name, mention_ptr->entity->num + base_entity_num);
 		strcat(buf, tmp);
 	    }
 	}

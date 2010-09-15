@@ -904,7 +904,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;
-    entity_manager.num = 0;
+    corefer_id = 0;
     ClearAnaphoraList();
     ClearEntityList();
     ClearCFList();

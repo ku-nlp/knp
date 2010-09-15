@@ -1,3 +1,9 @@
+2010-09-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h, system/context.c, system/corefer.c, system/extern.h, system/main.c, system/read_data.c:
+	照応解析の際、文数や談話要素数が既定値を越えた場合に終了するのではなく、
+	先行文情報・談話要素を初期化して解析を継続するように変更
+
 2010-09-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/main.c:

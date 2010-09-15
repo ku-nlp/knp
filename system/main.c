@@ -1674,9 +1674,14 @@ PARSED:
     if (OptEllipsis) {
 	assign_mrph_num(sp);
 	make_dpnd_tree(sp);
-	if (sp->Sen_num > SENTENCE_MAX) {
-	    fprintf(stderr, "Sentence buffer overflowed!\n");
-	    exit(1);
+	if (OptAnaphora && sp->Sen_num > SENTENCE_MAX) {
+	    fprintf(stderr, "Sentence buffer overflowed! ... Initialized context!\n");
+	    clear_log(sp, FALSE);
+	}
+	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
+	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
+	    fprintf(stderr, "Entity buffer overflowed! ... Initialized context!\n");
+	    clear_log(sp, FALSE);
 	}
 	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
@@ -1793,7 +1798,7 @@ PARSED:
 		}
 		print_result(sp, 1, 1);
 	    }
-	    else {
+	    else if (OptEllipsis != OPT_COREFER && !OptAnaphora) {
 		PreserveCPM(PreserveSentence(sp), sp);
 	    }
 	    fflush(Outfp);
