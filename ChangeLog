@@ -1,3 +1,12 @@
+2010-09-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* system/knp.h, system/main.c:
+	Added a server mode for Windows.
+
+	* configure.ac:
+	Added a header check of winsock2.h.
+	Modified to link winsock library on Windows.
+
 2010-09-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/const.h, system/context.c, system/corefer.c, system/extern.h, system/main.c, system/read_data.c:
