@@ -243,6 +243,8 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
     sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h \
     sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h winsock2.h limits.h)
+# link ws2_32 on Windows
+AC_CHECK_HEADER(winsock2.h, KNP_LIBS="-lws2_32 $KNP_LIBS")
 
 
 # Checks for typedefs, structures, and compiler characteristics.
