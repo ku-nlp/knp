@@ -242,7 +242,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
     sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h \
-    sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h limits.h)
+    sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h winsock2.h limits.h)
 
 
 # Checks for typedefs, structures, and compiler characteristics.
