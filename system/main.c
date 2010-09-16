@@ -176,7 +176,11 @@ extern int	EX_match_subject;
 	    "           [-tree|bnsttree|sexp|tab|bnsttab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
+#ifdef _WIN32
+	    "           [-C host:port] [-S] [-N port]\n"
+#else
 	    "           [-C host:port] [-S|F] [-N port]\n"
+#endif
 	    "           [-timeout second] [-r rcfile]\n");
     exit(1);    
 }
@@ -701,11 +705,13 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    strcpy(OptHostname, argv[0]);
 	}
-	/* daemonにしない場合 (cygwin用) */
+#ifndef _WIN32
+	/* daemonにしない場合 */
 	else if (str_eq(argv[0], "-F")) {
 	    OptMode = SERVER_MODE;
 	    OptServerFlag = OPT_SERV_FORE;
 	}
+#endif
 	else if (str_eq(argv[0], "-timeout")) {
 	    argv++; argc--;
 	    if (argc < 1) usage();
@@ -1738,17 +1744,11 @@ PARSED:
 }
 
 /*==================================================================*/
-			   void knp_main()
+			 void init_knp_main()
 /*==================================================================*/
 {
-    int i, success = 1, flag;
-    FILE *Jumanfp;
-    SENTENCE_DATA *sp_new;
-
-    SENTENCE_DATA *sp = &current_sentence_data;
-
     /* 格解析の準備 */
-    init_case_analysis_cpm(sp);
+    init_case_analysis_cpm(&current_sentence_data);
     init_case_analysis_cmm();
 
     /* 意味クラスを用いた照応解析を行う場合クラスごとの出現確率を読み込む */    
@@ -1759,6 +1759,16 @@ PARSED:
     read_rules();
 
     if (OptExpress == OPT_TABLE) fprintf(Outfp, "%%%% title=KNP解析結果\n");
+}
+
+/*==================================================================*/
+			   void knp_main()
+/*==================================================================*/
+{
+    int i, success = 1, flag;
+    FILE *Jumanfp;
+    SENTENCE_DATA *sp_new;
+    SENTENCE_DATA *sp = &current_sentence_data;
 
     while ( 1 ) {
 
@@ -1853,17 +1863,32 @@ static void sig_term()
     exit(0);
 }
 
+#define closesocket(s)  close(s)
+#endif
+
+static void clean_and_exit(int status)
+{
+#ifdef _WIN32
+    WSACleanup();
+#endif
+    exit(status);
+}
+
 /*==================================================================*/
 			  void server_mode()
 /*==================================================================*/
 {
     /* サーバモード */
 
-    int i;
+    int i, run_count = 0;
     struct sockaddr_in sin;
     FILE *pidfile;
     struct passwd *ent_pw;
+#ifdef _WIN32
+    WSADATA wsd;
+#endif
 
+#ifndef _WIN32
     if (OptServerFlag != OPT_SERV_FORE) {
 	/* parent */
 	if ((i = fork()) > 0) {
@@ -1882,10 +1907,18 @@ static void sig_term()
     signal(SIGINT,  sig_term);
     signal(SIGQUIT, sig_term);
     signal(SIGCHLD, sig_child);
-  
-    if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	fprintf(stderr,";; socket error\n");
-	exit(1);
+#endif
+
+#ifdef _WIN32
+    if (WSAStartup(MAKEWORD(2, 0), &wsd)) { /* use winsock2 */
+	fprintf(stderr, ";; WSAStartup error\n");
+    }
+    if ((sfd = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0)) == INVALID_SOCKET) {
+#else
+    if ((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+#endif
+        fprintf(stderr,";; socket error: %s\n", (char *)strerror(errno));
+	clean_and_exit(1);
     }
   
     memset(&sin, 0, sizeof(sin));
@@ -1896,22 +1929,25 @@ static void sig_term()
     /* bind */  
     if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 	fprintf(stderr, ";; bind error\n");
-	close(sfd);
-	exit(1);
+	closesocket(sfd);
+	clean_and_exit(1);
     }
   
     /* listen */  
     if (listen(sfd, SOMAXCONN) < 0) {
 	fprintf(stderr, ";; listen error\n");
-	close(sfd);
-	exit(1);
+	closesocket(sfd);
+	clean_and_exit(1);
     }
 
+#ifndef _WIN32
     /* make pid file */
     umask(022);
     pidfile = fopen(KNP_PIDFILE, "w");
     if (!pidfile) {
-	fputs(";; can't write pidfile: " KNP_PIDFILE "\n", stderr);
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs(";; can't write pidfile: " KNP_PIDFILE "\n", stderr);
+	}
     }
     else {
 	fprintf(pidfile, "%d\n", getpid());
@@ -1931,35 +1967,58 @@ static void sig_term()
 	/* finally drop root */
 	setuid(ent_pw->pw_uid);
     }
+#endif
 
     /* accept loop */
     while (1) {
-	int pid;
+        int pid = 0;
+	struct sockaddr_in from;
+	int from_len = sizeof(struct sockaddr_in);
 
-	if ((fd = accept(sfd, NULL, NULL)) < 0) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(stderr, ";; accepting ... ");
+	}
+	if ((fd = accept(sfd, (struct sockaddr *)&from, &from_len)) < 0) {
 	    if (errno == EINTR) 
 		continue;
 	    fprintf(stderr, ";; accept error\n");
-	    close(sfd);
-	    exit(1);
+	    closesocket(sfd);
+	    clean_and_exit(1);
 	}
-    
+	if (OptDisplay == OPT_DEBUG) {
+	    fprintf(stderr, "done.\n");
+	}
+
+#ifndef _WIN32
 	if ((pid = fork()) < 0) {
 	    fprintf(stderr, ";; fork error\n");
 	    sleep(1);
 	    continue;
 	}
+#endif
 
 	/* 子供 */
 	if (pid == 0) {
 	    char buf[1024];
 
-	    /* ? */
-	    chdir("/tmp");
-
-	    close(sfd);
+#ifdef _WIN32
+	    int fd_osfhandle;
+	    if ((fd_osfhandle = _open_osfhandle(fd, O_RDWR | O_BINARY)) < 0) {
+		fprintf(stderr, ";; _open_osfhandle error\n");
+		closesocket(sfd);
+		clean_and_exit(1);
+	    }
+	    Infp  = fdopen(fd_osfhandle, "rb+");
+	    Outfp = fdopen(fd_osfhandle, "wb+");
+#else
 	    Infp  = fdopen(fd, "r");
 	    Outfp = fdopen(fd, "w");
+#endif
+	    if (!Infp || !Outfp) {
+		fprintf(stderr, ";; fdopen error\n");
+		closesocket(sfd);
+		clean_and_exit(1);
+	    }
 
 	    /* 挨拶 */
 	    fprintf(Outfp, "200 Running KNP Server\n");
@@ -1972,7 +2031,7 @@ static void sig_term()
 		if (strncasecmp(buf, "QUIT", 4) == 0) {
 		    fprintf(Outfp, "200 OK Quit\n");
 		    fflush(Outfp);
-		    exit(0);
+		    break;
 		}
 
 		if (strncasecmp(buf, "RC", 2) == 0) {
@@ -2006,9 +2065,18 @@ static void sig_term()
 			if (*p != '\0') OptIgnoreChar = *p;
 		    } 
 		    fprintf(Outfp, "200 OK option=[Analysis=%d Express=%d"
-			    " Display=%d IgnoreChar=%c]\n",
-			    OptAnalysis, OptExpress, OptDisplay, OptIgnoreChar);
+			    " Display=%d]\n",
+			    OptAnalysis, OptExpress, OptDisplay);
 		    fflush(Outfp);
+
+		    /* 解析 */
+#ifdef _WIN32
+		    if (run_count == 0) /* Windowsのときはforkしないので一回だけ初期化 */
+#endif
+			init_knp_main();
+		    knp_main();
+		    run_count++;
+
 		    break;
 		} else {
 		    fprintf(Outfp, "500 What?\n");
@@ -2016,15 +2084,17 @@ static void sig_term()
 		}
 	    }
 
-	    /* 解析 */
-	    knp_main();
-
 	    /* 後処理 */
 	    shutdown(fd, 2);
 	    fclose(Infp);
 	    fclose(Outfp);
+#ifdef _WIN32
+	    close(fd_osfhandle);
+#else
+	    closesocket(sfd);
 	    close(fd);
-	    exit(0); /* これしないと大変なことになるかも */
+	    clean_and_exit(0);
+#endif
 	}
 
 	/* 親 */
@@ -2071,6 +2141,12 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     int  port = DEFAULT_PORT;
     int  strnum = 0;
 
+#ifdef _WIN32
+    int fd_osfhandle;
+    WSADATA wsd;
+    WSAStartup(MAKEWORD(2, 0), &wsd);
+#endif
+
     /* host:port という形の場合 */
     if ((p = strchr(OptHostname, ':')) != NULL) {
 	*p++ = '\0';
@@ -2080,12 +2156,16 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     /* つなげる準備 */
     if ((hp = gethostbyname(OptHostname)) == NULL) {
 	fprintf(stderr, ";; host unkown\n");
-	exit(1);
+	clean_and_exit(1);
     }
-  
-    while ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
+
+#ifdef _WIN32
+    if ((fd = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0)) == INVALID_SOCKET) {
+#else
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
+#endif
 	fprintf(stderr, ";; socket error\n");
-	exit(1);
+	clean_and_exit(1);
     }
   
     sin.sin_family = AF_INET;
@@ -2094,20 +2174,29 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 
     if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 	fprintf(stderr, ";; connect error\n");
-	exit(1);
+	clean_and_exit(1);
     }
 
+#ifdef _WIN32
+    if ((fd_osfhandle = _open_osfhandle(fd, O_RDWR | O_BINARY)) < 0) {
+	fprintf(stderr, ";; _open_osfhandle error\n");
+	closesocket(fd);
+	clean_and_exit(1);
+    }
     /* Server 用との通信ハンドルを作成 */
+    if ((fi = fdopen(fd_osfhandle, "rb+")) == NULL || (fo = fdopen(fd_osfhandle, "wb+")) == NULL) {
+#else
     if ((fi = fdopen(fd, "r")) == NULL || (fo = fdopen(fd, "w")) == NULL) {
-	close(fd);
+#endif
+	closesocket(fd);
 	fprintf(stderr, ";; fd error\n");
-	exit(1);
+	clean_and_exit(1);
     }
 
     /* 挨拶 */
     if (send_string(fi, fo, NULL) != 200) {
 	fprintf(stderr, ";; greet error\n");
-	exit(1);
+	clean_and_exit(1);
     }
 
     /* オプション解析 (いいかげん) */
@@ -2140,8 +2229,8 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     sprintf(buf, "RUN%s\n", option);
     if (send_string(fi, fo, buf) != 200) {
 	fprintf(stderr, ";; argument error OK? [%s]\n", option);
-	close(fd);
-	exit(1);
+	closesocket(fd);
+	clean_and_exit(1);
     }
 
     /* LOOP */
@@ -2169,10 +2258,12 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     fprintf(fo,"\n%c\nQUIT\n", EOf);
     fclose(fo);
     fclose(fi);
-    close(fd);
-    exit(0);
-}
+    closesocket(fd);
+#ifdef _WIN32
+    close(fd_osfhandle);
 #endif
+    clean_and_exit(0);
+}
 
 /*==================================================================*/
 		   int main(int argc, char **argv)
@@ -2186,10 +2277,10 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     /* モードによって処理を分岐 */
     if (OptMode == STAND_ALONE_MODE) {
 	init_all();
+	init_knp_main();
 	knp_main();
 	close_all();
     }
-#ifndef _WIN32
     else if (OptMode == SERVER_MODE) {
 	init_all();
 	server_mode();
@@ -2198,7 +2289,6 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
-#endif
 
     exit(0);
 }

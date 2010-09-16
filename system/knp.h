@@ -91,6 +91,9 @@
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
 #endif
 
 #ifdef HAVE_PWD_H
