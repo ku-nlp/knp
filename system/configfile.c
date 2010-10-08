@@ -447,6 +447,22 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
+	/* º´∆∞≥Õ∆¿º≠ΩÒ≈¨Õ—¬∞¿≠ */
+	else if (!strcmp(DEF_AUTO_DIC_FEATURES, _Atom(car(cell1)))) {
+	    cell1 = cdr(cell1);
+	    while (!Null(car(cell1))) {
+		dicttype = _Atom(car(car(cell1)));
+		if (used_auto_dic_features_num >= AUTO_DIC_FEATURES_MAX) {
+		    fprintf(stderr, ";; the number of auto dic features exceeded AUTO_DIC_FEATURES_MAX\n");
+		    exit(0);
+		}
+		used_auto_dic_features[used_auto_dic_features_num++] = strdup(dicttype);
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Auto dic feature: %s\n", dicttype);
+		}
+		cell1 = cdr(cell1);
+	    }
+	}
 	/* æ Œ¨≤Ú¿œ≥  */
 	else if (!strcmp(DEF_DISC_CASES, _Atom(car(cell1)))) {
 	    int n = 0, cn;

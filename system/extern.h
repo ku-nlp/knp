@@ -602,6 +602,8 @@ extern RuleVector *RULE;
 extern int CurrentRuleNum;
 extern int RuleNumMax;
 extern char *DICT[];
+extern char *used_auto_dic_features[];
+extern int used_auto_dic_features_num;
 
 extern GeneralRuleType *GeneralRuleArray;
 extern int GeneralRuleNum;

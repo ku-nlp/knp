@@ -11,6 +11,8 @@
 DBM_FILE auto_dic_db;
 int AutoDicExist;
 
+char *used_auto_dic_features[AUTO_DIC_FEATURES_MAX];
+int used_auto_dic_features_num = 0;
 
 /*==================================================================*/
 			 void init_auto_dic()
@@ -73,6 +75,20 @@ int AutoDicExist;
     if (AutoDicExist == FALSE) {
 	return FALSE;
     }
+
+    if (used_auto_dic_features_num > 0) { /* 使用する自動獲得属性が指定されているとき */
+	ret = FALSE;
+	for (i = 0; i < used_auto_dic_features_num; i++) {
+	    if (!strcmp(used_auto_dic_features[i], value)) {
+		ret = TRUE;
+		break;
+	    }
+	}
+	if (ret == FALSE) { /* マッチしなかった */
+	    return FALSE;
+	}
+    }
+
 
     key[0] = '\0';
     for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */

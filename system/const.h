@@ -502,6 +502,8 @@ typedef struct {
 #define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
+#define		DEF_AUTO_DIC_FEATURES	"KNP自動獲得辞書適用属性"
+
 #define		DEF_DISC_CASES		"KNP省略解析格"
 #define		DEF_DISC_ORDER		"KNP省略解析探索範囲"
 
@@ -594,6 +596,9 @@ typedef struct _RuleVector {
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
+
+/* 指定できる自動獲得辞書属性の最大数 */
+#define	AUTO_DIC_FEATURES_MAX	10
 
 
 /*====================================================================
