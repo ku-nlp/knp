@@ -590,7 +590,7 @@ extern void init_hownet();
 extern float  similarity_chinese(char* str1, char* str2);
 
 /* dic.c */
-extern int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);
+extern char *check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value);
 
 /* nv_mi.c */
 extern int check_nv_mi_parent_and_children(TAG_DATA *v_ptr, int rank_threshold);

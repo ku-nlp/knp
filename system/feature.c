@@ -444,7 +444,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
      *  構造体自身に対する処理も可能としておく
      */
 
-    int i;
+    int i, assign_pos;
     char *cp, *pat, buffer[DATA_LEN];
     FEATURE **fpp, *next;
 
@@ -548,9 +548,20 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    }
 	    /* 自動辞書 : 自動獲得した辞書をチェック (マッチ部分全体) */
 	    else if (!strncmp((*fpp2)->cp, "&自動辞書:", strlen("&自動辞書:"))) {
-		if (offset == 0 && check_auto_dic((MRPH_DATA *)ptr, length, (*fpp2)->cp + strlen("&自動辞書:"))) {
-		    for (i = 0; i < length; i ++) {
-			assign_cfeature(&(((MRPH_DATA *)ptr + i)->f), (*fpp2)->cp + strlen("&自動辞書:"), temp_assign_flag);
+		if (offset == 0) {
+		    if (!strncmp((*fpp2)->cp + strlen("&自動辞書:"), "先頭:", strlen("先頭:"))) {
+			assign_pos = 0;
+		    }
+		    else if (!strncmp((*fpp2)->cp + strlen("&自動辞書:"), "末尾:", strlen("末尾:"))) {
+			assign_pos = length - 1;
+		    }
+		    else {
+			fprintf(stderr, ";; Invalid feature: %s\n", (*fpp2)->cp);
+			exit(-1);
+		    }
+		    if (cp = check_auto_dic((MRPH_DATA *)ptr, length, (*fpp2)->cp + strlen("&自動辞書:先頭:"))) {
+			assign_cfeature(&(((MRPH_DATA *)ptr + assign_pos)->f), cp, temp_assign_flag);
+			free(cp);
 		    }
 		}
 	    }

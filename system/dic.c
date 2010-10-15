@@ -66,59 +66,62 @@ int used_auto_dic_features_num = 0;
 }
 
 /*==================================================================*/
-   int check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *value)
+  char *check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *rule_value)
 /*==================================================================*/
 {
-    int i, ret;
-    char *dic_str, *rep_str, key[DATA_LEN];
+    int i, flag;
+    char *ret = NULL, *dic_str, *rep_str, key[DATA_LEN];
 
     if (AutoDicExist == FALSE) {
-	return FALSE;
+	return NULL;
     }
 
     if (used_auto_dic_features_num > 0) { /* 使用する自動獲得属性が指定されているとき */
-	ret = FALSE;
+	flag = FALSE;
 	for (i = 0; i < used_auto_dic_features_num; i++) {
-	    if (!strcmp(used_auto_dic_features[i], value)) {
-		ret = TRUE;
+	    if (!strcmp(used_auto_dic_features[i], rule_value)) {
+		flag = TRUE;
 		break;
 	    }
 	}
-	if (ret == FALSE) { /* マッチしなかった */
-	    return FALSE;
+	if (flag == FALSE) { /* マッチしなかった */
+	    return NULL;
 	}
     }
-
 
     key[0] = '\0';
     for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
 	if (i) strcat(key, "+");
 	if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
 	    if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
-		return FALSE;
+		return NULL;
 	    }
 	    strcat(key, rep_str);
 	}
 	else { /* 助詞、助動詞などは代表表記がない */
-	    return FALSE;
+	    strcat(key, (m_ptr + i)->Goi2); /* 表記 */
 	}
     }
 
     dic_str = lookup_auto_dic(key);
 
     if (dic_str) {
-	if (!strcmp(dic_str, value)) { /* 辞書項目とルールから与えられた文字列がマッチ */
-	    ret = TRUE;
-	}
-	else {
-	    ret = FALSE;
+	int cmp_length = strlen(rule_value); /* strncmpの長さ */
+	char *token = strtok(dic_str, "|"); /* 辞書項目を区切る (dict/auto/Makefile.amで指定) */
+	while (token) {
+	    if (!strncmp(token, rule_value, cmp_length)) { /* 辞書項目とルールから与えられた文字列がマッチ */
+		ret = (char *)malloc_data(strlen(token) + 9, "check_auto_dic");
+		sprintf(ret, "%s:%d-%d", token, m_ptr->num, (m_ptr + m_length - 1)->num);
+		break;
+	    }
+	    token = strtok(NULL, "|");
 	}
 
 	free(dic_str);
 	return ret;
     }
 
-    return FALSE;
+    return NULL;
 }
 
 /*====================================================================
