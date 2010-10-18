@@ -436,6 +436,26 @@ void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 }    
 
 /*==================================================================*/
+	       char *str_delete_last_column(char *str)
+/*==================================================================*/
+{
+    /* ':'区切りとみなし、最後のカラムを削除 */
+
+    char *cp;
+
+    if (str) {
+	char *ret = strdup(str);
+	if (cp = strrchr(ret, ':')) { /* 後から':'を探す */
+	    *cp = '\0'; /* あれば、その前で終端 */
+	}
+	return ret;
+    }
+    else {
+	return NULL;
+    }
+}
+
+/*==================================================================*/
 void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int length, int temp_assign_flag)
 /*==================================================================*/
 {
@@ -445,7 +465,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
      */
 
     int i, assign_pos;
-    char *cp, *pat, buffer[DATA_LEN];
+    char *cp, *cp2, *pat, buffer[DATA_LEN];
     FEATURE **fpp, *next;
 
     while (*fpp2) {
@@ -514,6 +534,15 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 			(*fpp2)->cp + strlen("&記憶語彙付与:"), 
 			((MRPH_DATA *)matched_ptr)->Goi);
 		assign_cfeature(&(((BNST_DATA *)ptr + offset)->f), buffer, temp_assign_flag);
+	    }
+	    /* &記憶FEATURE昇格 : 記憶した形態素からFEATUREを探し、それを基本句に付与 */
+	    else if (!strncmp((*fpp2)->cp, "&記憶FEATURE昇格:", strlen("&記憶FEATURE昇格:"))) {
+		if (cp = check_feature(((MRPH_DATA *)matched_ptr)->f, (*fpp2)->cp + strlen("&記憶FEATURE付与:"))) {
+		    if (cp2 = str_delete_last_column(cp)) { /* ':'区切りの最後のカラムを削除 */
+			assign_cfeature(&(((TAG_DATA *)ptr + offset)->f), cp2, temp_assign_flag);
+			free(cp2);
+		    }
+		}
 	    }
 	    /* &伝搬:n:FEATURE : FEATUREの伝搬  */
 	    else if (!strncmp((*fpp2)->cp, "&伝搬:", strlen("&伝搬:"))) {
