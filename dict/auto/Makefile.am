@@ -17,7 +17,7 @@ auto.dat:
 
 auto.db: auto.dat
 	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
+		LANG=C sort *.dat | @MAKE_DB_COMMAND@ $@ -append \|; \
 	fi
 
 nv_mi.db: nv_mi.dat
