@@ -1,3 +1,9 @@
+2010-10-25  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/extern.h, system/main.c, system/read_data.c:
+	関数clear_log()の名前をclear_context()に変更
+	構文解析済みデータを読み込む場合は形態素列の前処理(preprocess_mrph)を行わないように変更
+
 2010-09-16  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* system/knp.h, system/main.c:

@@ -1659,7 +1659,7 @@ PARSED:
     }
     else { /* 形態素読み込み成功 */
 	/* 形態素列の前処理 */
-	preprocess_mrph(sp);
+	if (!(OptInput & OPT_PARSED)) preprocess_mrph(sp);
 
 	/* 括弧を処理して文として分割する場合 */
 	if (OptProcessParen) {
@@ -1682,12 +1682,12 @@ PARSED:
 	make_dpnd_tree(sp);
 	if (OptAnaphora && sp->Sen_num > SENTENCE_MAX) {
 	    fprintf(stderr, "Sentence buffer overflowed! ... Initialized context!\n");
-	    clear_log(sp, FALSE);
+	    clear_context(sp, FALSE);
 	}
 	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
 	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
 	    fprintf(stderr, "Entity buffer overflowed! ... Initialized context!\n");
-	    clear_log(sp, FALSE);
+	    clear_context(sp, FALSE);
 	}
 	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */

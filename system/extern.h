@@ -194,7 +194,7 @@ extern int sen_num;
 /* anaphora.c */
 extern void assign_mrph_num(SENTENCE_DATA *sp);
 extern void anaphora_analysis(SENTENCE_DATA *sp);
-extern void clear_log(SENTENCE_DATA *sp, int init_flag);
+extern void clear_context(SENTENCE_DATA *sp, int init_flag);
 
 /* bnst_compare.c */
 extern int subordinate_level_comp(BNST_DATA *ptr1, BNST_DATA *ptr2);

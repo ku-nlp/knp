@@ -36,7 +36,7 @@
 #define	LOC_OTHERS_AFTER     8 /* その他(後)   */
 #define	LOC_OTHERS_THEME     9 /* その他(主題) */
 
-/* clear_logされた時点での文数、ENTITY数を記録 */
+/* clear_contextされた時点での文数、ENTITY数を記録 */
 int base_sentence_num = 0;
 int base_entity_num = 0;
 
@@ -69,7 +69,7 @@ double case_feature_weight[ELLIPSIS_CASE_NUM][O_FEATURE_NUM] =
 /*  {1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0}}; */
 
 /*==================================================================*/
-	   void clear_log(SENTENCE_DATA *sp, int init_flag)
+	   void clear_context(SENTENCE_DATA *sp, int init_flag)
 /*==================================================================*/
 {
     int i;
@@ -1291,13 +1291,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
   
     /* まだチェックしていない省略解析対象格がある場合 */
     if (*ELLIPSIS_CASE_LIST[i]) {
-	/* 対象の格について */
 	exist_flag = 0;
+	/* すべての格スロットを調べ、格がELLIPSIS_CASE_LIST[i]と一致していれば対応付けを生成する */
 	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
 	    /* 名詞の場合は対象の格をノ格として扱う */
 	    if (tag_ptr->tcf_ptr->cf.type == CF_NOUN)
-		ctm_ptr->cf_ptr->pp[e_num][0] = pp_kstr_to_code("ノ");
-			    
+		ctm_ptr->cf_ptr->pp[e_num][0] = pp_kstr_to_code("ノ");			    
 	    /* 格の一致をチェック */
 	    if (ctm_ptr->cf_ptr->pp[e_num][0] != pp_kstr_to_code(ELLIPSIS_CASE_LIST[i]))
 		continue;
