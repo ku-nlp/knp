@@ -927,6 +927,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-disable-emoticon-recognition")) { /* used in rules */
 	    ;
 	}
+	else if (str_eq(argv[0], "-wikipedia")) { /* used in rules */
+	    ;
+	}
 	else {
 	    usage();
 	}
