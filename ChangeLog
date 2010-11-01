@@ -1,8 +1,77 @@
+2010-11-02  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_homo.rule:
+	Deleted needless features.
+
+2010-11-01  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.rule:
+	Modified a rule of conjunctive words.
+
+2010-10-29  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.data, rule/mrph_auto_dic.rule:
+	Fixed a bug of a wikipedia rule.
+
+2010-10-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.data, rule/mrph_auto_dic.rule:
+	Modified to assign wikipedia features only if -wikipedia option is used.
+
+	* system/main.c: Added -wikipedia option.
+
 2010-10-25  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/extern.h, system/main.c, system/read_data.c:
 	関数clear_log()の名前をclear_context()に変更
 	構文解析済みデータを読み込む場合は形態素列の前処理(preprocess_mrph)を行わないように変更
+	
+2010-10-18  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.data, rule/bnst_basic.rule:
+	Raised morpheme features of Wikipedia to phrase features.
+
+	* system/feature.c:
+	Added a feature function that raises morpheme features to phrase features.
+
+	* dict/auto/Makefile.am:
+	Modified to accept multiple entries and multiple files.
+
+2010-10-15  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.data, rule/mrph_auto_dic.rule:
+	Modified to add wikipedia information.
+
+	* system/extern.h, system/feature.c, system/dic.c:
+	Improved autodic handling.
+
+2010-10-12  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/modality.data, rule/modality.rule:
+	Modified a modality rule of "darou."
+
+2010-10-11  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/tag_after_dpnd_and_case.data, rule/tag_after_dpnd_and_case.rule:
+	Moved rules of action/state discrimination to modality.rule.
+
+	* rule/modality.data, rule/modality.rule:
+	Modified according to Nakamura-kun's comments.
+
+2010-10-08  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/extern.h, system/const.h, system/dic.c, system/configfile.c:
+	Modified to specify automatically acquired features.
+
+2010-09-16  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* ChangeLog: updated.
+
+	* configure.ac: Modified to link winsock library on Windows.
+
+	* configure.ac: AdAdded a header check of winsock2.h.
+
+	* system/knp.h, system/main.c: Added a server mode for Windows.
 
 2010-09-16  Daisuke Kawahara  <dk@nict.go.jp>
 
