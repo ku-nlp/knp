@@ -588,10 +588,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 			fprintf(stderr, ";; Invalid feature: %s\n", (*fpp2)->cp);
 			exit(-1);
 		    }
-		    if (cp = check_auto_dic((MRPH_DATA *)ptr, length, (*fpp2)->cp + strlen("&自動辞書:先頭:"))) {
-			assign_cfeature(&(((MRPH_DATA *)ptr + assign_pos)->f), cp, temp_assign_flag);
-			free(cp);
-		    }
+		    check_auto_dic((MRPH_DATA *)ptr, assign_pos, length, (*fpp2)->cp + strlen("&自動辞書:先頭:"), temp_assign_flag);
 		}
 	    }
 	} else {			/* 追加の場合 */

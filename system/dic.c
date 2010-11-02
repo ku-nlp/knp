@@ -66,14 +66,14 @@ int used_auto_dic_features_num = 0;
 }
 
 /*==================================================================*/
-  char *check_auto_dic(MRPH_DATA *m_ptr, int m_length, char *rule_value)
+int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_value, int temp_assign_flag)
 /*==================================================================*/
 {
-    int i, flag;
-    char *ret = NULL, *dic_str, *rep_str, key[DATA_LEN];
+    int i, flag, length;
+    char *ret, *dic_str, *rep_str, key[DATA_LEN];
 
     if (AutoDicExist == FALSE) {
-	return NULL;
+	return FALSE;
     }
 
     if (used_auto_dic_features_num > 0) { /* 使用する自動獲得属性が指定されているとき */
@@ -85,43 +85,55 @@ int used_auto_dic_features_num = 0;
 	    }
 	}
 	if (flag == FALSE) { /* マッチしなかった */
-	    return NULL;
+	    return FALSE;
 	}
     }
 
-    key[0] = '\0';
-    for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
-	if (i) strcat(key, "+");
-	if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
-	    if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
-		return NULL;
+    /* 後側をひとつずつ短くしていく */
+    for (; m_length > 0; m_length--) {
+	key[0] = '\0';
+	for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
+	    if (i) strcat(key, "+");
+	    if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
+		if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
+		    return FALSE;
+		}
+		strcat(key, rep_str);
 	    }
-	    strcat(key, rep_str);
-	}
-	else { /* 助詞、助動詞などは代表表記がない */
-	    strcat(key, (m_ptr + i)->Goi2); /* 表記 */
-	}
-    }
-
-    dic_str = lookup_auto_dic(key);
-
-    if (dic_str) {
-	int cmp_length = strlen(rule_value); /* strncmpの長さ */
-	char *token = strtok(dic_str, "|"); /* 辞書項目を区切る (dict/auto/Makefile.amで指定) */
-	while (token) {
-	    if (!strncmp(token, rule_value, cmp_length)) { /* 辞書項目とルールから与えられた文字列がマッチ */
-		ret = (char *)malloc_data(strlen(token) + 9, "check_auto_dic");
-		sprintf(ret, "%s:%d-%d", token, m_ptr->num, (m_ptr + m_length - 1)->num);
-		break;
+	    else { /* 助詞、助動詞などは代表表記がない */
+		strcat(key, (m_ptr + i)->Goi2); /* 表記 */
 	    }
-	    token = strtok(NULL, "|");
 	}
 
-	free(dic_str);
-	return ret;
+	dic_str = lookup_auto_dic(key);
+
+	if (dic_str) {
+	    int cmp_length = strlen(rule_value); /* strncmpの長さ */
+	    char *token = strtok(dic_str, "|"); /* 辞書項目を区切る (dict/auto/Makefile.amで指定) */
+	    ret = NULL;
+	    while (token) {
+		if (!strncmp(token, rule_value, cmp_length)) { /* 辞書項目とルールから与えられた文字列がマッチ */
+		    ret = (char *)malloc_data(strlen(token) + 9, "check_auto_dic");
+		    sprintf(ret, "%s:%d-%d", token, m_ptr->num, (m_ptr + m_length - 1)->num);
+		    break;
+		}
+		token = strtok(NULL, "|");
+	    }
+
+	    free(dic_str);
+	    if (ret) { /* マッチすれば、featureをassign_posの形態素に付与して終了 */
+		assign_cfeature(&((m_ptr + assign_pos)->f), ret, temp_assign_flag);
+		free(ret);
+		return TRUE;
+	    }
+	}
+	if (assign_pos) { /* 末尾にfeatureを付与する場合は、一つ前にずらす */
+	    assign_pos--;
+	}
+	/* 辞書になければ、次のループに入り、後側を短くする */
     }
 
-    return NULL;
+    return FALSE;
 }
 
 /*====================================================================
