@@ -314,13 +314,13 @@ double  ClassProb[CLASS_NUM];
 	 void get_cf_alignment(char *str, int cf_aligned_num)
 /*==================================================================*/
 {
-    char *buf, *token, *cp, *strtok_context;
+    char *buf, *token, *cp;
     int count = 0, c1, c2;
 
     buf = strdup(str);
-    token = strtok_r(buf, ";", &strtok_context);
+    token = strtok(buf, ";");
     CF_frame.cf_align[cf_aligned_num].cf_id = strdup(token);
-    token = strtok_r(NULL, ";", &strtok_context);
+    token = strtok(NULL, ";");
     while (token) {
 	if ((cp = strstr(token, "бс")) != NULL) {
 	    *cp = '\0';
@@ -337,7 +337,7 @@ double  ClassProb[CLASS_NUM];
 		count++;
 	    }
 	}
-	token = strtok_r(NULL, ";", &strtok_context);
+	token = strtok(NULL, ";");
     }
     free(buf);
 
