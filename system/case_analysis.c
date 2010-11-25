@@ -1684,10 +1684,15 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1, case_num;
     char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
     ELLIPSIS_COMPONENT *ccp;
-    TAG_DATA *elem_b_ptr;
+    TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
     /* 格フレーム側からの記述
        => ★「格要素-ガ」などを集めるように修正する */
+
+    /* 述語が後処理により併合された場合: 併合された先の基本句を探す */
+    while (pred_b_ptr->num < 0) {
+	pred_b_ptr--;
+    }
 
     /* 格フレームID */
     sprintf(feature_buffer, "%s%s:", feature_head, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
@@ -1748,7 +1753,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    while (elem_b_ptr->num < 0) {
 			elem_b_ptr--;
 		    }
-		    if (elem_b_ptr->num >= cpm_ptr->pred_b_ptr->num) { /* 併合された連体修飾は用言自身になってしまうので非表示 */
+		    if (elem_b_ptr->num >= pred_b_ptr->num) { /* 併合された連体修飾は用言自身になってしまうので非表示 */
 			tag_n = -1;
 		    }
 		    else {
@@ -1767,8 +1772,8 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 		/* 格・省略関係の保存 (文脈解析用) */
 		if (OptEllipsis) {
-		    RegisterTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
-				      cpm_ptr->pred_b_ptr->voice, 
+		    RegisterTagTarget(pred_b_ptr->head_ptr->Goi, 
+				      pred_b_ptr->voice, 
 				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
 				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
@@ -1779,7 +1784,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+    assign_cfeature(&(pred_b_ptr->f), feature_buffer, temp_assign_flag);
 }
 
 /*==================================================================*/
@@ -1791,20 +1796,25 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
     int i, num;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], *word, *sid, *cp;
-    TAG_DATA *elem_b_ptr;
+    TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
+
+    /* 述語が後処理により併合された場合: 併合された先の基本句を探す */
+    while (pred_b_ptr->num < 0) {
+	pred_b_ptr--;
+    }
 
     /* voice 決定 */
-    if (cpm_ptr->pred_b_ptr->voice == VOICE_UNKNOWN) {
+    if (pred_b_ptr->voice == VOICE_UNKNOWN) {
 	decide_voice(sp, cpm_ptr);
     }
 
     /* 主節かどうかチェック
-    check_feature(cpm_ptr->pred_b_ptr->f, "主節")
+    check_feature(pred_b_ptr->f, "主節")
     */
 
     /* 「格フレーム変化」フラグがついている格フレームを使用した場合 */
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
-	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "格フレーム変化", temp_assign_flag);
+	assign_cfeature(&(pred_b_ptr->f), "格フレーム変化", temp_assign_flag);
     }
 
     /* 類似格をfeatureに */
@@ -1823,7 +1833,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    while (elem_b_ptr->num < 0) {
 		elem_b_ptr--;
 	    }
-	    if (elem_b_ptr->num >= cpm_ptr->pred_b_ptr->num) { /* 連体修飾 */
+	    if (elem_b_ptr->num >= pred_b_ptr->num) { /* 連体修飾 */
 		continue;
 	    }
 	}
@@ -1844,7 +1854,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* else: UNASSIGNED はないはず */
 
 	/* featureを格要素文節に与える */
-	if (elem_b_ptr->num < cpm_ptr->pred_b_ptr->num) {
+	if (elem_b_ptr->num < pred_b_ptr->num) {
 	    sprintf(feature_buffer, "解析格:%s", relation);
 	}
 	else {
@@ -1865,7 +1875,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			elem_b_ptr->parent->num, 
 			relation, word);
 	    }
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
+	    assign_cfeature(&(pred_b_ptr->f), feature_buffer, temp_assign_flag);
 	    free(word);
 	}
     }
