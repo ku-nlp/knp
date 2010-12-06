@@ -130,7 +130,15 @@ sub new {
 	    push @{ ( $this->tag ) [-1]->{synnodes} }, $synnodes;
 	} elsif( $str =~ m/^!/ ){
 	    my $synnode = KNP::SynNode->new($str);
-	    ( $this->tag ) [-1]->{synnodes}[-1]->push_synnode( $synnode );
+	    my $last_tag = ( $this->tag ) [-1];
+	    # synnodesがある場合
+	    if ( defined $last_tag->{synnodes} ){
+		$last_tag->{synnodes}[-1]->push_synnode( $synnode );
+	    }
+	    # synnodesがない場合 (tagにpushする)
+	    else {
+		$last_tag->push_synnode( $synnode );
+	    }
 	} else {
 	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph), $mrph_parent_id, $mrph_dpndtype ) );
 	    my $fstring = ( $this->mrph )[-1]->fstring;

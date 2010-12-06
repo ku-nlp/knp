@@ -127,6 +127,32 @@ sub synnodes {
     }
 }
 
+=item push_synnode
+
+Synノードを追加する
+
+=cut
+sub push_synnode {
+    my ($this, $synnode) = @_;
+
+    push @{$this->{synnode}}, $synnode;
+}
+
+=item synnode
+
+全てのSynノードを返す
+
+=cut
+sub synnode {
+    my ($this) = @_;
+
+    if( defined $this->{synnode} ){
+	@{$this->{synnode}};
+    } else {
+	wantarray ? () : 0;
+    }
+}
+
 =back
 
 =head1 SEE ALSO
