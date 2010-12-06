@@ -317,6 +317,19 @@ sub set_id {
     $this->{_id} = $id;
 }
 
+=item version
+
+バージョンを得る．
+
+=cut
+sub version {
+    my $this = shift;
+    unless( defined $this->{_version} ){
+	$this->{_version} = $this->{comment} =~ m/ KNP:(\S+)/ ? $1 : -1;
+    }
+    $this->{_version};
+}
+
 =item eos
 
 解析結果終了区切りを得る
