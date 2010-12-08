@@ -1,7 +1,18 @@
+2010-12-06  Tomohide Shibata  <shibata@i.kyoto-u.ac.jp>
+
+	* lib/KNP/Result.pm, lib/KNP/Tag.pm: synnodeに関する変更
+
+	* lib/KNP/Result.pm: versionを得るメソッドを追加
+
 2010-08-06  Daisuke Kawahara  <dk@nict.go.jp>
 
 	* lib/KNP/Result.pm:
 	Added EOP handling.
+
+	* merge-parenthesis-parses.perl:
+	Added delimiter handling for nbest output.
+	Modified to use new parse delimiter for unbuffering.
+	Added autoflush.
 
 2010-07-14  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
 
