@@ -1,3 +1,12 @@
+2010-12-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/const.h:
+	ゼロ照応解析における位置素性をバイナリ素性に変更、いくつかの素性を追加
+	学習用データを作成する際、salience_socreの出力が不適当だったのを修正
+	
+	* system/case_ipal.c:
+	get_general_probabilityがFREQ0_ASSINED_SCOREより小さな値を返さないように変更
+	
 2010-11-02  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* rule/mrph_homo.rule:

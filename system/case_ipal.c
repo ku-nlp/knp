@@ -3420,6 +3420,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	ret = atof(value);
 	ret = log(ret);
 	free(value);
+	if (ret < FREQ0_ASSINED_SCORE) ret = FREQ0_ASSINED_SCORE;
 	return ret;
     }
     else {

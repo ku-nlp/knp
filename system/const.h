@@ -824,6 +824,7 @@ typedef struct mention_manager {
     /* 1番目以降は関係する格要素を入れていく */
     int                 num;
     char 	        cf_id[CF_ID_LEN_MAX]; /* 格構造出力用 */
+    CF_ptr 	        cf_ptr;
     MENTION             mention[MENTION_MAX];        
 } MENTION_MGR;
 
@@ -833,6 +834,7 @@ typedef struct entity {
     int                 output_num; /* {A,B}=CとなっているときにAとBの出力numを統一する */
     int                 mentioned_num;  /* 言及されている回数 */
     double              salience_score; /* どのくらい先行詞になりやすいか */
+    double              salience_mem; /* 正解を読み込んだ場合のsalienceの変化の記録 */
     int                 tmp_salience_flag; /* 同一文中に出現したノ格 */
     MENTION             *mention[MENTIONED_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
@@ -1362,15 +1364,19 @@ typedef struct tcf_def {
 
 /* CF_TAG_MGR中のomit_feature用の定数 */
 #define ELLIPSIS_CASE_NUM 3
-#define O_FEATURE_NUM     8
+#define O_FEATURE_NUM    94 /* 10 + 84 */
 #define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
 #define EX_PMI            1 /* 語PMI */	       
 #define CEX_PMI           2 /* カテゴリPMI */	       
 #define NEX_PMI           3 /* 固有表現PMI */	       
 #define CLS_PMI           4 /* クラスPMI */
-#define LOCATION_PROB     5 /* 位置カテゴリの確率 */
-#define SALIENCE_CHECK1   6 /* salience score >= 1.00 */
-#define ASSIGNED          7 /* 埋まったかどうか */
+#define WA_IN_THE_SENT    5 /* 先行詞候補が同一文に出現かつ格助詞「は」を伴う */
+#define SALIENCE_CHECK    6 /* SALIENCEが一定以上あるかどうか */
+#define NE_PERSON         7 /* 先行詞候補が人名 */
+#define LOCATION_PROB     8 /* 位置カテゴリPMI */
+#define ASSIGNED          9 /* 埋まったかどうか */
+#define LOCATION_S       10 /* 位置カテゴリ素性の開始位置 */
+#define LOCATION_NUM     84 /* 位置カテゴリ素性の種類 */
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
