@@ -1,5 +1,9 @@
 2010-12-21  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
+	* system/anaphora.c:
+	ゼロ照応解析において意味クラスのPMIを計算する際に、対象の基本句の代表表記が
+	SMALL_DATA_LENより長い場合に起こる Segmentation Fault を修正
+
 	* system/anaphora.c, system/const.h:
 	ゼロ照応解析における位置素性をバイナリ素性に変更、いくつかの素性を追加
 	学習用データを作成する際、salience_socreの出力が不適当だったのを修正
