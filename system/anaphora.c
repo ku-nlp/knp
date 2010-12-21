@@ -962,8 +962,12 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 
 	    /* クラスのスコアを計算 */
 	    if ((OptGeneralCF & OPT_CF_CLASS) && tcf_ptr->cf.type == CF_PRED) {
-		sprintf(key, "%s:CL", get_bnst_head_canonical_rep(entity_ptr->mention[j]->tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF));
-		if ((prob = get_class_probability(key, e_num, ctm_ptr->cf_ptr)) && log(prob) > of_ptr[CLS_PMI]) of_ptr[CLS_PMI] = log(prob);
+		cp = get_bnst_head_canonical_rep(entity_ptr->mention[j]->tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF);
+		if (strlen(cp) < SMALL_DATA_LEN - 4) {
+		    sprintf(key, "%s:CL", cp);
+		    prob = get_class_probability(key, e_num, ctm_ptr->cf_ptr); 
+		    if (prob && log(prob) > of_ptr[CLS_PMI]) of_ptr[CLS_PMI] = log(prob);
+		}
 	    }
 
  	    /* カテゴリがある場合はP(食べる:動2,ヲ格|カテゴリ:人)もチェック */
