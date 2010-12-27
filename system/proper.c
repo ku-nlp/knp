@@ -53,7 +53,7 @@ struct NE_MANAGER {
     char feature[FEATURE_MAX];          /* 素性 */
     int notHEAD;                        /* head, singleにはならない場合1 */
     int NEresult;                       /* NEの解析結果 */
-    double prob[NE_MODEL_NUMBER];   /* 各タグ・ポジションとなる確率 */
+    double prob[NE_MODEL_NUMBER];       /* 各タグ・ポジションとなる確率 */
     double max[NE_MODEL_NUMBER];        /* そこまでの最大スコア */
     int parent[NE_MODEL_NUMBER];        /* 最大スコアの経路 */
 } NE_mgr[MRPH_MAX];
@@ -131,13 +131,6 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-			  void init_NE_mgr()
-/*==================================================================*/
-{
-    memset(NE_mgr, 0, sizeof(struct NE_MANAGER)*MRPH_MAX);
-}
-
-/*==================================================================*/
 			 void init_ne_cache()
 /*==================================================================*/
 {
@@ -178,7 +171,6 @@ char *ne_code_to_tagposition(int num)
        NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持
        その場合のみtagが与えられ、TAGの種類+1を記憶する
        この場合、古いデータがあれば上書きされる(現在は不使用) */
-
     NE_CACHE **ncpp;
 
     ncpp = &(ne_cache[hash(key, strlen(key))]);
@@ -884,8 +876,6 @@ char *ne_code_to_tagposition(int num)
 		 void ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    init_NE_mgr();
-
     if (OptNECRF) {
 	make_crf_feature(sp);
     }

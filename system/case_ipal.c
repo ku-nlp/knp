@@ -814,8 +814,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 {   
     double freq;
 
-    cp += 4; /* gex用 (先頭の"<NE:"、"<TH:", "<CT:", "<CL:"は読み飛ばす */
-
+    cp += 4; /* 先頭の"<NE:"、"<TH:", "<CT:", "<CL:"を読み飛ばす */
     while (1) {
 	if (*cp == ':') {
 	    sscanf(cp + 1, "%lf", &freq);
