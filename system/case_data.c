@@ -483,7 +483,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 
 	cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 0;
 	cpm_ptr->cf.element_num++;
-	if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+	if (cpm_ptr->cf.element_num >= CF_ELEMENT_MAX) {
 	    cpm_ptr->cf.element_num = 0;
 	}
 	return TRUE;
@@ -713,7 +713,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 		    cpm_ptr->cf.element_num++;
 		}
-		if (cpm_ptr->cf.element_num > CF_ELEMENT_MAX) {
+		if (cpm_ptr->cf.element_num >= CF_ELEMENT_MAX) {
 		    cpm_ptr->cf.element_num = 0;
 		    return -1;
 		}
