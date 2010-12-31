@@ -1,3 +1,11 @@
+2010-12-31  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/clause_function.phrase:
+	Modified purpose rules.
+
+	* system/case_data.c:
+	Bug fix for too many arguments.
+
 2010-12-27  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/proper.c:
@@ -15,7 +23,33 @@
 	
 	* system/case_ipal.c:
 	get_general_probabilityがFREQ0_ASSINED_SCOREより小さな値を返さないように変更
-	
+
+2010-12-06  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* perl/lib/KNP/Result.pm, perl/lib/KNP/Tag.pm: synnodeに関する変更
+
+	* perl/lib/KNP/Result.pm: versionを得るメソッドを追加
+
+2010-11-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_analysis.c:
+	Fixed output of case analysis for postprocess.
+
+2010-11-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_analysis.c:
+	Fixed output of case analysis for postprocess.
+
+2010-11-05  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.rule, rule/bnst_basic.rule:
+	Deleted needless modifier features.
+
+2010-11-03  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.rule:
+	Modified a wikipedia rule to preserve longest matches.
+
 2010-11-02  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* rule/mrph_homo.rule:
@@ -28,12 +62,12 @@
 
 2010-10-29  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
-	* rule/mrph_auto_dic.data, rule/mrph_auto_dic.rule:
+	* rule/mrph_auto_dic.rule:
 	Fixed a bug of a wikipedia rule.
 
 2010-10-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
-	* rule/mrph_auto_dic.data, rule/mrph_auto_dic.rule:
+	* rule/mrph_auto_dic.rule:
 	Modified to assign wikipedia features only if -wikipedia option is used.
 
 	* system/main.c: Added -wikipedia option.
