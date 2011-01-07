@@ -180,7 +180,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     buf = (char *)malloc_data(goi_length + yomi_length + SMALL_DATA_LEN, "make_mrph_rn");
 
     /* 指定された文字以上で長音符で終わるカタカナの代表表記は長音符を削除 */
-    if (((!strcmp(Class[m_ptr->Hinshi][0].id, "未定義語") && 
+    if (OptKatakanaNormalize && /* defaultはTRUE */
+	((!strcmp(Class[m_ptr->Hinshi][0].id, "未定義語") && 
 	  !strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "カタカナ")) || /* 未知語-カタカナ */
 	 strstr(m_ptr->Imi, "自動獲得")) && /* 自動獲得語 */
 	goi_length >= KATAKANA_VARIATION_ABSORB_LENGTH && 

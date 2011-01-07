@@ -83,6 +83,7 @@ extern int		OptMergeCFResult;
 extern int		OptUseRN;
 extern int		OptUseScase;
 extern int		OptUseSmfix;
+extern int		OptKatakanaNormalize;
 extern int		OptDiscPredMethod;
 extern int		OptDiscNounMethod;
 extern int		OptLearn;
