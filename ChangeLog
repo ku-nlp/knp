@@ -1,3 +1,8 @@
+2011-01-07  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/extern.h, system/main.c, system/read_data.c:
+	Added an option of suppressing KATAKANA normalization (-suppress-katakana-normalization).
+
 2010-12-31  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* rule/clause_function.phrase:
