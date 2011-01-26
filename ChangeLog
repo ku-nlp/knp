@@ -1,3 +1,8 @@
+2011-01-26  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	Bug fix for calculating class probabilities of words without canonical representations.
+
 2011-01-07  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/extern.h, system/main.c, system/read_data.c:
