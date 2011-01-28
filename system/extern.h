@@ -267,7 +267,7 @@ extern double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
 						     int as2, CASE_FRAME *cfp, int flag);
 extern double get_case_function_probability(int as1, CASE_FRAME *cfd,
 					    int as2, CASE_FRAME *cfp, int flag);
-extern double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag);
+extern double get_case_interpret_probability(char *scase, char *cfcase);
 extern double get_general_probability(char *key1, char *key2);
 extern double get_class_probability(char *key, int as2, CASE_FRAME *cfp);
 extern double get_key_probability(TAG_DATA *tag_ptr);

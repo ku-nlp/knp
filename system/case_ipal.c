@@ -3325,23 +3325,17 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	return get_general_probability(key, "KEY");
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
-	    (cp = get_bnst_head_canonical_rep(tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
-	    mrph_str = strdup(cp);
+    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	(cp = get_bnst_head_canonical_rep(tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	mrph_str = strdup(cp);
+	rep_malloc_flag = 1;
+    }
+    else {
+	mrph_str = get_mrph_rep_from_f(tag_ptr->head_ptr, FALSE);
+	if (mrph_str == NULL) {
+	    mrph_str = make_mrph_rn(tag_ptr->head_ptr);
 	    rep_malloc_flag = 1;
 	}
-	else {
-	    mrph_str = get_mrph_rep_from_f(tag_ptr->head_ptr, FALSE);
-	    if (mrph_str == NULL) {
-		mrph_str = make_mrph_rn(tag_ptr->head_ptr);
-		rep_malloc_flag = 1;
-	    }
-	}
-    }
-
-    else {
-	mrph_str = tag_ptr->head_ptr->Goi;
     }
 
     key = malloc_db_buf(strlen(mrph_str) + 3);
@@ -3428,11 +3422,9 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 }
 
 /*==================================================================*/
-double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_flag)
+double get_case_interpret_probability(char *scase, char *cfcase)
 /*==================================================================*/
 {
-    /* ellipsis_flag = 1 の場合は省略用 */
-
     char *value, *key;
     double ret;
 
@@ -3441,41 +3433,7 @@ double get_case_interpret_probability(char *scase, char *cfcase, int ellipsis_fl
     }
     
     key = malloc_db_buf(strlen(scase) + strlen(cfcase) + 20);
-    if (ellipsis_flag) 
-	sprintf(key, "%s|O:%s", scase, cfcase);
-    else
-	sprintf(key, "%s|C:%s", scase, cfcase);
-    value = db_get(case_db, key);
-
-    if (value) {
-	ret = atof(value);
-	ret = log(ret);
-	free(value);
-	return ret;
-    }
-    else {
-	return UNKNOWN_CASE_SCORE;
-    }
-}
-
-/*==================================================================*/
-double get_case_surface_probability(char *scase, char *cfcase, int ellipsis_flag)
-/*==================================================================*/
-{
-    /* ellipsis_flag = 1 の場合は省略用 */
-
-    char *value, *key;
-    double ret;
-
-    if (CaseExist == FALSE) {
-	return 0;
-    }
-    
-    key = malloc_db_buf(strlen(scase) + strlen(cfcase) + 20);
-    if (ellipsis_flag) 
-	sprintf(key, "%s|O:%s", scase, cfcase);
-    else
-	sprintf(key, "%s|C:%s", scase, cfcase);
+    sprintf(key, "%s|C:%s", scase, cfcase);
     value = db_get(case_db, key);
 
     if (value) {
@@ -3719,7 +3677,7 @@ double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
 
     /* 格の解釈 */
     cfcase = make_cf_case_string(as1, cfd, as2, cfp);
-    score1 = get_case_interpret_probability(scase, cfcase, FALSE);
+    score1 = get_case_interpret_probability(scase, cfcase);
     if (ellipsis_flag) return score1;
 
     /* 読点の生成 */

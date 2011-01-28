@@ -1098,14 +1098,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    else {
 		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE, para_cpm_ptr);
 	    }
-	    /* score += NIL_ASSINED_SCORE;
-	       score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp); */
 	}
-	/* ³Ê²ò¼á³ÎÎ¨ P(É½ÁØ³Ê|³Ê¥¹¥í¥Ã¥È) *
-	else {
-	    score += get_case_interpret_probability(i, cfd, list1->flag[i], cfp);
-	}
-	*/
     }
 
     score += get_topic_generating_probability(have_topic, cfd->pred_b_ptr);
