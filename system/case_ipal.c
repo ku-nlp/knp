@@ -2269,7 +2269,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     int i, j, start, hiragana_count, pred_num = 0;
     TAG_DATA  *t_ptr;
 
-    Case_frame_num = 0;
+    if (OptCaseFlag & OPT_CASE_CLEAR_CF) { /* 格フレームを文単位でクリアする場合 (default) */
+	Case_frame_num = 0;
+    }
+    start = Case_frame_num;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	/* 正解コーパスを入力したときに自立語がない場合がある */
@@ -2304,7 +2307,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     }
 
     /* 各タグ単位から格フレームへのリンク付け */
-    start = 0;
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->cf_num) {
 	    t_ptr->cf_ptr = Case_frame_array + start;
