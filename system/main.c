@@ -220,7 +220,7 @@ extern int	EX_match_subject;
     OptDiscPredMethod = OPT_NORMAL;
     OptDiscNounMethod = OPT_NORMAL;
     OptLearn = FALSE;
-    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_CREP_CF | OPT_CASE_USE_CN_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS | OPT_CASE_GENERALIZE_AGENT | OPT_CASE_FIX_CF_SEARCH;
+    OptCaseFlag = OPT_CASE_USE_REP_CF | OPT_CASE_USE_CREP_CF | OPT_CASE_USE_CN_CF | OPT_CASE_USE_PROBABILITY | OPT_CASE_ADD_SOTO_WORDS | OPT_CASE_GENERALIZE_AGENT | OPT_CASE_FIX_CF_SEARCH | OPT_CASE_CLEAR_CF;
     OptDiscFlag = 0;
     OptServerFlag = 0;
     OptIgnoreChar = '\0';
@@ -768,6 +768,9 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-no-fix-cf-search")) {
 	    OptCaseFlag &= ~OPT_CASE_FIX_CF_SEARCH;
+	}
+	else if (str_eq(argv[0], "-no-clear-cf")) {
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
 	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
@@ -1614,9 +1617,10 @@ PARSED:
 /*==================================================================*/
 {
     /* 格フレームの初期化 */
-    if (OptAnalysis == OPT_CASE || 
-	OptAnalysis == OPT_CASE2 ||
-	OptUseNCF) {
+    if ((OptCaseFlag & OPT_CASE_CLEAR_CF) && 
+	(OptAnalysis == OPT_CASE || 
+	 OptAnalysis == OPT_CASE2 ||
+	 OptUseNCF)) {
 	clear_cf(0);
     }
 
