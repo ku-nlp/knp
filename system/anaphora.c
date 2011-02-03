@@ -2002,26 +2002,19 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	assign_cfeature(&(tag_ptr->f), buf, FALSE);
 	if (!check_feature(tag_ptr->f, "£Ô¾ÊÎ¬²òÀÏ")) continue;
 
-	buf[0] = '\0';
+	sprintf(buf, "³Ê¹½Â¤:%s:", (OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);		    
 	for (j = 1; j < tag_ptr->mention_mgr.num; j++) {
 	    mention_ptr = tag_ptr->mention_mgr.mention + j;
 	    
 	    if (mention_ptr->type == 'N' || mention_ptr->type == 'C' ||
 		mention_ptr->type == 'O' || mention_ptr->type == 'D') {
-
-		if (!buf[0]) {
-		    sprintf(buf, "³Ê¹½Â¤:%s:", (OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);
-		}
-		else {
-		    strcat(buf, ";");
-		}
-		
-		sprintf(tmp, "%s/%c/%s/%d", mention_ptr->cpp_string, mention_ptr->type, 
+		sprintf(tmp, "%s/%c/%s/%d;", mention_ptr->cpp_string, mention_ptr->type, 
 			mention_ptr->entity->name, mention_ptr->entity->num + base_entity_num);
 		strcat(buf, tmp);
 	    }
 	}
-	if (buf[0]) assign_cfeature(&(tag_ptr->f), buf, FALSE);
+	buf[strlen(buf) - 1] = '\0'; /* ËöÈø¤Î';'¡¢':'¤òºï½ü */
+	assign_cfeature(&(tag_ptr->f), buf, FALSE);
     }
 }
 

@@ -1,3 +1,8 @@
+2011-02-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c:
+	格の対応付け結果がない場合も省略解析の対象になった場合は格構造を素性として出力するよう変更
+
 2011-01-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c:
