@@ -2263,15 +2263,114 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+	void copy_cf_pointer(CASE_FRAME *dst, CASE_FRAME *src)
+/*==================================================================*/
+{
+    int i, j;
+
+    dst->type = src->type;
+    dst->type_flag = src->type_flag;
+    dst->element_num = src->element_num;
+    for (i = 0; i < src->element_num; i++) {
+	dst->oblig[i] = src->oblig[i];
+	dst->adjacent[i] = src->adjacent[i];
+	for (j = 0; j < PP_ELEMENT_MAX; j++) {
+	    dst->pp[i][j] = src->pp[i][j];
+	}
+	dst->sp[i] = src->sp[i];
+	dst->pp_str[i] = src->pp_str[i];
+	src->pp_str[i] = NULL;
+	if (src->sm[i]) {
+	    dst->sm[i] = src->sm[i];
+	    src->sm[i] = NULL;
+	}
+	if (src->ex[i]) {
+	    dst->ex[i] = src->ex[i];
+	    src->ex[i] = NULL;
+	}
+	if (src->sm_delete[i]) {
+	    dst->sm_delete[i] = src->sm_delete[i];
+	    src->sm_delete[i] = NULL;
+	    dst->sm_delete_size[i] = src->sm_delete_size[i];
+	    src->sm_delete_size[i] = 0;
+	    dst->sm_delete_num[i] = src->sm_delete_num[i];
+	    src->sm_delete_num[i] = 0;
+	}
+	if (src->sm_specify[i]) {
+	    dst->sm_specify[i] = src->sm_specify[i];
+	    src->sm_specify[i] = NULL;
+	    dst->sm_specify_size[i] = src->sm_specify_size[i];
+	    src->sm_specify_size[i] = 0;
+	    dst->sm_specify_num[i] = src->sm_specify_num[i];
+	    src->sm_specify_num[i] = 0;
+	}
+	dst->ex_list[i] = src->ex_list[i];
+	src->ex_list[i] = NULL;
+	dst->ex_freq[i] = src->ex_freq[i];
+	src->ex_freq[i] = NULL;
+	dst->ex_size[i] = src->ex_size[i];
+	src->ex_size[i] = 0;
+	dst->ex_num[i] = src->ex_num[i];
+	src->ex_num[i] = 0;
+	dst->gex_list[i] = src->gex_list[i];
+	src->gex_list[i] = NULL;
+	dst->gex_freq[i] = src->gex_freq[i];
+	src->gex_freq[i] = NULL;
+	dst->gex_size[i] = src->gex_size[i];
+	src->gex_size[i] = 0;
+	dst->gex_num[i] = src->gex_num[i];
+	src->gex_num[i] = 0;
+	dst->freq[i] = src->freq[i];
+	dst->semantics[i] = src->semantics[i];
+	src->semantics[i] = NULL;
+	dst->weight[i] = src->weight[i];
+	dst->samecase[i][0] = src->samecase[i][0];
+	dst->samecase[i][1] = src->samecase[i][1];
+    }
+    dst->voice = src->voice;
+    dst->cf_address = src->cf_address;
+    dst->cf_size = src->cf_size;
+    strcpy(dst->cf_id, src->cf_id);
+    strcpy(dst->pred_type, src->pred_type);
+    strcpy(dst->imi, src->imi);
+    dst->etcflag = src->etcflag;
+    dst->feature = src->feature;
+    src->feature = NULL;
+    dst->entry = src->entry;
+    src->entry = NULL;
+    for (i = 0; src->cf_align[i].cf_id != NULL; i++) {
+	dst->cf_align[i].cf_id = src->cf_align[i].cf_id;
+	src->cf_align[i].cf_id = NULL;
+    }
+    dst->pred_b_ptr = src->pred_b_ptr;
+    dst->cf_similarity = src->cf_similarity;
+}
+
+/*==================================================================*/
+      CASE_FRAME *copy_cf_array(CASE_FRAME *start_ptr, int num)
+/*==================================================================*/
+{
+    int i;
+    CASE_FRAME *dst_ptr;
+
+    /* CASE_FRAME構造体を個数分確保し、Case_frame_arrayからポインタをコピー */
+    dst_ptr = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME) * num, "copy_cf_array");
+    init_cf_structure(dst_ptr, num);
+
+    for (i = 0; i < num; i++) {
+	copy_cf_pointer(dst_ptr + i, start_ptr + i);
+    }
+    return dst_ptr;
+}
+
+/*==================================================================*/
 		void set_caseframes(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, start, hiragana_count, pred_num = 0;
     TAG_DATA  *t_ptr;
 
-    if (OptCaseFlag & OPT_CASE_CLEAR_CF) { /* 格フレームを文単位でクリアする場合 (default) */
-	Case_frame_num = 0;
-    }
+    Case_frame_num = 0;
     start = Case_frame_num;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
@@ -2309,7 +2408,12 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     /* 各タグ単位から格フレームへのリンク付け */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->cf_num) {
-	    t_ptr->cf_ptr = Case_frame_array + start;
+	    if (OptCaseFlag & OPT_CASE_CLEAR_CF) { /* 格フレームを文単位でクリアする場合 (default) */
+		t_ptr->cf_ptr = Case_frame_array + start;
+	    }
+	    else { /* 格フレームをクリアしない場合: 格フレームを新たに確保しコピーする */
+		t_ptr->cf_ptr = copy_cf_array(Case_frame_array + start, t_ptr->cf_num);
+	    }
 	    t_ptr->pred_num = pred_num++;
 
 	    /* 表記がひらがなの場合: 
