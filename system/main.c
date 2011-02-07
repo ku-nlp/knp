@@ -1538,12 +1538,15 @@ extern int	EX_match_subject;
 		printf("sentence %d cannot be parsed\n",sen_num);
 		return FALSE;
 	    }
-	    else if (OptCaseFlag & OPT_CASE_FALLBACK_TO_DPND) { /* fallback to dpnd */
+	    else if (OptAnalysis == OPT_CASE && (OptCaseFlag & OPT_CASE_FALLBACK_TO_DPND)) { /* fallback to dpnd */
 		OptAnalysis = OPT_DPND;
 		if (cky(sp, sp->Best_mgr, eos_flag) == FALSE) {
 		    sp->available = 0;
 		    ErrorComment = strdup("Cannot detect dependency structure");
 		    when_no_dpnd_struct(sp);
+		}
+		else {
+		    ErrorComment = strdup("Fell back to dependency analysis");
 		}
 		OptAnalysis = OPT_CASE;
 	    }
