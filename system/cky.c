@@ -15,6 +15,7 @@
 #else
 #define	CKY_TABLE_MAX	1000000 
 #endif
+#define	CKY_TABLE_MAX_FOR_CASE	10000
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */
@@ -1622,8 +1623,9 @@ CKY *new_cky_data(int *cky_table_num) {
     }
 
     (*cky_table_num)++;
-    if (*cky_table_num >= CKY_TABLE_MAX) {
-	fprintf(stderr, ";;; cky_table_num exceeded maximum\n");
+    if (((OptCaseFlag & OPT_CASE_FALLBACK_TO_DPND) && OptAnalysis == OPT_CASE && *cky_table_num >= CKY_TABLE_MAX_FOR_CASE) || 
+	*cky_table_num >= CKY_TABLE_MAX) {
+	fprintf(stderr, ";;; cky_table_num exceeded maximum (%d)\n", *cky_table_num);
 	return NULL;
     }
 

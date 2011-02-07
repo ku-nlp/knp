@@ -302,6 +302,9 @@ extern int	EX_match_subject;
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
 	}
+	else if (str_eq(argv[0], "-fallback-to-dpnd")) {
+	    OptCaseFlag |= OPT_CASE_FALLBACK_TO_DPND;
+	}
 	else if (str_eq(argv[0], "-filter")) {
 	    OptAnalysis = OPT_FILTER;
 	    OptUseCF = FALSE;
@@ -1534,6 +1537,15 @@ extern int	EX_match_subject;
 	    if (Language == CHINESE) {
 		printf("sentence %d cannot be parsed\n",sen_num);
 		return FALSE;
+	    }
+	    else if (OptCaseFlag & OPT_CASE_FALLBACK_TO_DPND) { /* fallback to dpnd */
+		OptAnalysis = OPT_DPND;
+		if (cky(sp, sp->Best_mgr, eos_flag) == FALSE) {
+		    sp->available = 0;
+		    ErrorComment = strdup("Cannot detect dependency structure");
+		    when_no_dpnd_struct(sp);
+		}
+		OptAnalysis = OPT_CASE;
 	    }
 	    else {
 		sp->available = 0;
