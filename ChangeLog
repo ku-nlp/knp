@@ -1,7 +1,23 @@
+2011-02-07  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/cky.c, system/const.h, system/main.c:
+	Added an option of falling back to dpnd (-fallback-to-dpnd).
+
+	* system/main.c:
+	Strictly checked the condition of falling back to dpnd and added an error message.
+
 2011-02-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c:
 	格の対応付け結果がない場合も省略解析の対象になった場合は格構造を素性として出力するよう変更
+
+2011-02-01  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	Fixed for non-clearance of caes frames.
+
+	* system/const.h, system/main.c:
+	Added an option not to clear case frames (-no-clear-cf).
 
 2011-01-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
