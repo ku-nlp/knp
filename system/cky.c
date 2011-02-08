@@ -15,7 +15,7 @@
 #else
 #define	CKY_TABLE_MAX	1000000 
 #endif
-#define	CKY_TABLE_MAX_FOR_CASE	10000
+#define	CKY_TABLE_MAX_FOR_CASE	2048
 
 CKY *cky_matrix[BNST_MAX][BNST_MAX];/* CKY行列の各位置の最初のCKYデータへのポインタ */
 CKY cky_table[CKY_TABLE_MAX];	  /* an array of CKY data */

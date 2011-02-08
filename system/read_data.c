@@ -16,9 +16,8 @@ int Tag_dpnd[TAG_MAX];
 int Tag_type[TAG_MAX];
 FEATURE *Input_bnst_feature[BNST_MAX];
 FEATURE *Input_tag_feature[TAG_MAX];
-
-int ArticleID = 0;
-int preArticleID = 0;
+char ArticleID[SMALL_DATA_LEN2];
+char preArticleID[SMALL_DATA_LEN2];
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
@@ -886,28 +885,14 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    sscanf(input_buffer, "# %s %[^\n]", sp->KNPSID, sp->Comment);
 
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
-	    if (!strncmp(input_buffer, "# S-ID", 6) && 
-		strchr(input_buffer+6, '-')) { /* 「記事ID-文ID」という形式ならば */
+	    if (!strncmp(sp->KNPSID, "S-ID:", 5) && strchr(sp->KNPSID + 5, '-') &&
+		strlen(sp->KNPSID) < sizeof(ArticleID)/sizeof(ArticleID[0])) { /* 「記事ID-文ID」という形式ならば */	
 
-		/* 様々な文章IDに対応するためコメント行を逆順にしてsscanfする */
-		/* このためArticleIDは本来のArticleIDを逆順にしたもの(ex. 135→531)になっている*/
-		i = strlen(input_buffer);
-		j = 0;
-		while (i > 0) {
-		    i--;
-		    rev_ibuffer[j++] = input_buffer[i];
-		    /* 記事番号以降のコメントを除外するため2文字目(#とS-IDの間の空白)以外の */
-		    /* 空白以降を除外する */
-		    if (i != 1 && (input_buffer[i] == ' ' || input_buffer[i] == '\t')) {
-			j = 0;
-		    }
-		}
-		rev_ibuffer[j++] = '\0';
+		/* 末尾の'-'より前をArticleIDとみなす */
+		strcpy(ArticleID, sp->KNPSID + 5);
+		*(strrchr(ArticleID, '-')) = '\0';
 
-		/* intは2147483647までしか取れないため上位9桁(元の下位9桁)のみ読んで比較 */
-		sscanf(rev_ibuffer, "%*d-%9d", &ArticleID);
-
-		if (ArticleID && preArticleID && ArticleID != preArticleID) {
+		if (strcmp(ArticleID, preArticleID)) {
 		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, "New Article %s\n", input_buffer);
 		    if (OptAnaphora) {
 			clear_context(sp, TRUE);
@@ -918,11 +903,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    if (OptNE) {
 			clear_ne_cache();
 		    }
-		    /* if (OptEllipsis & OPT_COREFER) {
-			clear_entity_cache();
-			} */
 		}
-		preArticleID = ArticleID;
+		strcpy(preArticleID, ArticleID);
 	    }
 	}
 

@@ -10,18 +10,19 @@
 #include "knp.h"
 
 /* 省略解析に関するパラメータ */
-#define CASE_CANDIDATE_MAX  10 /* 照応解析用格解析結果を保持する数 */
-#define CASE_CAND_DIF_MAX   2.3 /* 格解析の候補として考慮するスコアの差の最大値(log(20)) */
-#define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する */
-#define SALIENCE_DECAY_RATE 0.5 /* salience_scoreの減衰率 */
-#define SALIENCE_THRESHOLD 0.099 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
-#define INITIAL_SCORE -10000
+#define CASE_CANDIDATE_MAX  10    /* 照応解析用格解析結果を保持する数 */
+#define CASE_CAND_DIF_MAX   2.3   /* 格解析の候補として考慮するスコアの差の最大値(log(10)) */
+#define ELLIPSIS_RESULT_MAX 10    /* 省略解析結果を保持する */
+#define SALIENCE_DECAY_RATE 0.5   /* salience_scoreの減衰率 */
+#define SALIENCE_THRESHOLD  0.199 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
+#define FRAME_FOR_ZERO_MAX  256   /* チェックする格フレームの最大数 */
+#define INITIAL_SCORE      -10000
 
 /* 文の出現要素に与えるsalience_score */
 #define SALIENCE_THEMA 2.0 /* 重要な要素(未格,文末)に与える */
 #define SALIENCE_CANDIDATE 1.0 /* 先行詞候補とする要素(ガ格,ヲ格など)に与える */
-#define SALIENCE_NORMAL 0.1 /* 上記以外の要素に与える */
-#define SALIENCE_ZERO 1.0 /* ゼロ代名詞に与える */
+#define SALIENCE_NORMAL 0.2 /* 上記以外の要素に与える */
+#define SALIENCE_ZERO 0.2 /* ゼロ代名詞に与える */
 #define SALIENCE_ASSO 0.01 /* 連想照応の先行詞に与える */
 
 /* 位置カテゴリ(主節や用言であるか等は無視)    */
@@ -1456,6 +1457,9 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
     /* work_ctmのスコアを初期化 */
     for (i = 0; i < CASE_CANDIDATE_MAX + ELLIPSIS_RESULT_MAX; i++) 
 	work_ctm[i].score = INITIAL_SCORE;
+
+    /* FRAME_FOR_ZERO_MAX個以上の格フレームはチェックしない */
+    if (frame_num > FRAME_FOR_ZERO_MAX) frame_num = FRAME_FOR_ZERO_MAX;
 
     /* 照応解析用格解析(上位CASE_CANDIDATE_MAX個の結果を保持する) */
     for (i = 0; i < frame_num; i++) {

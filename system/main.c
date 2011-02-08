@@ -1705,13 +1705,13 @@ PARSED:
     if (OptEllipsis) {
 	assign_mrph_num(sp);
 	make_dpnd_tree(sp);
-	if (OptAnaphora && sp->Sen_num > SENTENCE_MAX) {
-	    fprintf(stderr, "Sentence buffer overflowed! ... Initialized context!\n");
+	if (OptAnaphora && (sp->Sen_num > SENTENCE_MAX)) {
+	    fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
 	    clear_context(sp, FALSE);
 	}
 	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
 	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
-	    fprintf(stderr, "Entity buffer overflowed! ... Initialized context!\n");
+	    fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
 	    clear_context(sp, FALSE);
 	}
 	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */

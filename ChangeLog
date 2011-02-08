@@ -1,3 +1,11 @@
+2011-02-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, cky.c, const.h, main.c:
+	メモリの使用を抑えるようにいくつかのパラメータを修正
+	
+	* read_data.c:
+	記事IDの読み込み方法を修正	
+
 2011-02-07  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/cky.c, system/const.h, system/main.c:

@@ -38,7 +38,7 @@
 #define WORD_LEN_MAX	128
 #define REPNAME_LEN_MAX	256
 #define CF_ID_LEN_MAX	280
-#define SENTENCE_MAX	1024
+#define SENTENCE_MAX	512
 #define PRINT_WIDTH	100
 #define PARENT_MAX	20
 #define BROTHER_MAX	20
@@ -86,10 +86,10 @@
 #define CPM_MAX 	64				/* 文内述語数 */
 #define TM_MAX 		5				/* 最適依存構造数 */
 
-#define CLASS_NUM       2000  /* 単語クラスの数 */
-#define MENTION_MAX     8     /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
-#define ENTITY_MAX      16384 /* ENTITYの数 */
-#define MENTIONED_MAX   1024  /* 1つのENTITYが言及される回数 */
+#define CLASS_NUM               2000  /* 単語クラスの数 */
+#define MENTION_MAX             8     /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
+#define ENTITY_MAX              8192  /* ENTITYの数 */
+#define MENTIONED_MAX           1024  /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
 	#define IMI_MAX	1024	/* defined in "juman.h" */	
