@@ -4339,6 +4339,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		    maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		    etc_buffer, maxi);
 	}
+	free(word);
 	assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
@@ -4508,6 +4509,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		maxscore, maxs->KNPSID ? maxs->KNPSID + 5 : "?", 
 		etc_buffer, maxi);
 	assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
+	free(word);
 
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 			       maxs, maxi, maxscore, distance);

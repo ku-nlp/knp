@@ -2715,6 +2715,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 		cf_ret = atof(value); /* 0 */
 		/* denominator = 0; -> 用言のみで */
 	    }
+	    free(value);
 	}
     }
 
@@ -4129,6 +4130,7 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 			cf_ret = atof(value); /* 0 */
 			/* denominator = 0; -> 用言のみで */
 		    }
+		    free(value);
 		}
 	    }
 
@@ -4244,6 +4246,7 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
 		    cf_ret = atof(value); /* 0 */
 		    /* denominator = 0; -> 用言のみで */
 		}
+		free(value);
 	    }
 	}
 

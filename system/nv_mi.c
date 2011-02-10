@@ -85,6 +85,7 @@ int NV_MI_Exist;
 
     if (dic_str) {
 	if ((given_verb = get_mrph_rep_from_f(v_ptr->head_ptr, FALSE)) == NULL) { /* チェックする動詞 */
+	    free(dic_str);
 	    return INT_MAX;
 	}
 	given_verb_length = strlen(given_verb);

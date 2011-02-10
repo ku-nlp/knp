@@ -1,3 +1,8 @@
+2011-02-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* anaphora.c, case_ipal.c, context.c, corefer.c, dpnd_analysis.c, nv_mi.c, ,similarity.c:
+	メモリリークに関する修正、コメント追加
+
 2011-02-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c, cky.c, const.h, main.c:

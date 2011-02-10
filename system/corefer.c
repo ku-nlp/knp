@@ -263,7 +263,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
     /* repがある場合は先頭形態素を代表表記化して比較する場合(ex.「立てこもる事件 = 立てこもり事件」) */
 
     int i, j, left, right;
-    char *ant_ne, word[WORD_LEN_MAX * 4];
+    char *ant_ne, word[WORD_LEN_MAX * 4], *value;
 
     ant_ne = check_feature(tag_ptr->f, "NE");
 
@@ -334,7 +334,8 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
     strcpy(word, anaphor);
     strcat(word, ":");
     strcat(word, antecedent);
-    if (db_get(synonym_db, word)) {
+    if (value = db_get(synonym_db, word)) {
+	free(value);
 	return 1;
     } 
 
@@ -360,7 +361,8 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
     strncat(word, antecedent + i, strlen(antecedent) - i - j);
     strcat(word, "\0");
 
-    if (db_get(synonym_db, word)) {
+    if (value = db_get(synonym_db, word)) {
+	free(value);
 	return 1;
     }   
     return 0;

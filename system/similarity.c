@@ -198,7 +198,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
     trans_w2 = get_hownet_tran(str2);
 
     if (def_w1 == NULL || def_w2 == NULL || trans_w1 == NULL || trans_w2 == NULL) {
-	return 0.0;
+	return 0.0; /* memory leak? */
     }
 
     i = 0;
@@ -208,7 +208,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_TRAN_MAX) {
 		fprintf(stderr, "Too many translations for one word");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    tran_w1[i] = NULL;
 	    tran_w1[i] = strtok(NULL, ":");
@@ -226,7 +226,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_TRAN_MAX) {
 		fprintf(stderr, "Too many translations for one word");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    tran_w2[i] = NULL;
 	    tran_w2[i] = strtok(NULL, ":");
@@ -244,7 +244,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_CONCEPT_MAX) {
 		fprintf(stderr, "Too many concept definitions for one word");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    concept_w1[i] = NULL;
 	    concept_w1[i] = strtok(NULL, ":");
@@ -262,7 +262,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_CONCEPT_MAX) {
 		fprintf(stderr, "Too many concept definitions for one word");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    concept_w2[i] = NULL;
 	    concept_w2[i] = strtok(NULL, ":");
@@ -284,7 +284,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_CONCEPT_MAX) {
 		fprintf(stderr, "Too many concept definitions for one sememe");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    concept_sem_w1[i] = NULL;
 	    concept_sem_w1[i] = strtok(NULL, ":");
@@ -302,7 +302,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
 	while (1) {
 	    if (++i == HOWNET_CONCEPT_MAX) {
 		fprintf(stderr, "Too many concept definitions for one sememe");
-		return 0;
+		return 0; /* memory leak? */
 	    }
 	    concept_sem_w2[i] = NULL;
 	    concept_sem_w2[i] = strtok(NULL, ":");
@@ -333,7 +333,7 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
     }
     if (is_sim) {
 	sim = 1.0;
-	return sim;
+	return sim; /* memory leak? */
     }
 
     /* step 2 */
@@ -356,13 +356,13 @@ char *concept_sem_w2[HOWNET_CONCEPT_MAX];
     }
     if (is_sim) {
 	sim = 0.95;
-	return sim;
+	return sim; /* memory leak? */
     }
 
     /* step 3 */
     if (get_hownet_antonym(str1, str2)) {
 	sim = 1.0;
-	return sim;
+	return sim; /* memory leak? */
     }
 
     /* step 5 */

@@ -209,7 +209,6 @@ char* get_chi_dpnd_rule(char *word1, char *pos1, char *word2, char *pos2, int di
 {
   char *key;
 
-
   if ((!OptChiGenerative && CHIDpndExist == FALSE) || (OptChiGenerative && CHIDpndProbExist == FALSE)) {
     return NULL;
   }
@@ -1769,7 +1768,7 @@ void calc_chi_dpnd_matrix_wpos(SENTENCE_DATA *sp)
 /* get pos rule for Chinese */
 /*==================================================================*/
 char* get_chi_pos_rule(char *word, char *pos)
-     /*==================================================================*/
+/*==================================================================*/
 {
   char *key;
   
@@ -1786,7 +1785,7 @@ char* get_chi_pos_rule(char *word, char *pos)
 /* calculate pos probability for Chinese probabilistic model */
 /*==================================================================*/
 void calc_chi_pos_matrix(SENTENCE_DATA *sp)
-     /*==================================================================*/
+/*==================================================================*/
 {
   int i, j, k, l;
   char *pos_rule;
