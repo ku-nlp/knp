@@ -1006,6 +1006,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    /* 固有表現の場合はP(食べる:動2,ヲ格|ARTIFACT)もチェック */
 	    if ((OptGeneralCF & OPT_CF_NE) && 
 		(cp = check_feature(entity_ptr->mention[j]->tag_ptr->f, "NE")) &&
+		strlen(cp) < SMALL_DATA_LEN && /* SMALL_DATA_LENより長い素性は読み込めないので無視 */
 		(prob = get_ex_ne_probability(cp, e_num, ctm_ptr->cf_ptr, TRUE))) {
 
 		/* P(ARTIFACT|食べる:動2,ヲ格) */

@@ -241,16 +241,13 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_pos(MRPH_DATA *mrph_data, int num)
+	     char *get_pos(char *ret, MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
-    int i, j, flag;
-    char *ret, buf[SMALL_DATA_LEN], pos[SMALL_DATA_LEN];
+    int i, j, flag = 0;
+    char buf[SMALL_DATA_LEN], pos[SMALL_DATA_LEN];
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_pos");
     ret[0] = '\0'; /* 再帰的に代入するため */
-    flag = 0;
-
     /* 品詞曖昧性のある場合 */
     for (i = 0; i < CLASSIFY_NO + 1; i++) {    
 	for (j = 0; j < CLASSIFY_NO + 1; j++) {
@@ -287,16 +284,14 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-		  char *get_cache(char *key, int num)
+		  char *get_cache(char *ret, char *key, int num)
 /*==================================================================*/
 {
     int NEresult;
     NE_CACHE *ncp;
-    char *ret, buf[SMALL_DATA_LEN2];
+    char buf[SMALL_DATA_LEN2];
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_cache");
     ret[0] = '\0'; /* 再帰的に代入するため */
-
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
 	if (check_ne_cache(key, NEresult)) {
 	    if (OptNECRF) sprintf(buf, "%s:%d", ret, NEresult);
@@ -308,16 +303,14 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_feature(MRPH_DATA *mrph_data, int num)
+	     char *get_feature(char *ret, MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, buf[SMALL_DATA_LEN], *cp;
+    char buf[SMALL_DATA_LEN], *cp;
     char *feature_name[] = {"人名末尾", "組織名末尾", '\0'};
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN, "get_feature");
     ret[0] = '\0'; /* 再帰的に代入するため */
-
     /* 文節後方に人名末尾、組織名末尾という語があるか */
     for (j = 1;; j++) {
 	if (!(mrph_data + j)->f || 
@@ -356,13 +349,12 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_parent(MRPH_DATA *mrph_data, int num)
+	     char *get_parent(char *ret, MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
     int j, c;
-    char *ret, buf[WORD_LEN_MAX * 2], *pcp, *ccp, *ncp;
+    char buf[WORD_LEN_MAX * 2], *pcp, *ccp, *ncp;
 
-    ret = (char *)malloc_data(WORD_LEN_MAX * 2, "get_parent");
     ret[0] = '\0'; /* 再帰的に代入するため */
     if (num != SIZE + 1) return ret;
 
@@ -476,13 +468,12 @@ char *ne_code_to_tagposition(int num)
 }
 
 /*==================================================================*/
-	     char *get_imi(MRPH_DATA *mrph_data, int num)
+	     char *get_imi(char *ret, MRPH_DATA *mrph_data, int num)
 /*==================================================================*/
 {
     int i, j;
-    char *ret, buf[SMALL_DATA_LEN2], cp[WORD_LEN_MAX];
+    char buf[SMALL_DATA_LEN2], cp[WORD_LEN_MAX];
 
-    ret = (char *)malloc_data(SMALL_DATA_LEN2, "get_imi");
     ret[0] = '\0'; /* 再帰的に代入するため */
     if (num != SIZE + 1) return ret;
 
@@ -543,14 +534,14 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, k;
-    char *s[4];
+    char s[4][SMALL_DATA_LEN2];
 
     for (i = 0; i < sp->Mrph_num; i++) {
 
-	s[0] = get_pos(sp->mrph_data + i, 0);
-	s[1] = get_feature(sp->mrph_data + i, 0);
-	s[2] = get_parent(sp->mrph_data + i, SIZE + 1);
-	s[3] = get_cache(sp->mrph_data[i].Goi2, 0);
+	get_pos(s[0], sp->mrph_data + i, 0);
+	get_feature(s[1], sp->mrph_data + i, 0);
+	get_parent(s[2], sp->mrph_data + i, SIZE + 1);
+	get_cache(s[3], sp->mrph_data[i].Goi2, 0);
 	
 	/* 見出し 品詞 品詞細分類 品詞曖昧性 文字種 文字数
 	   (表層格 係り先の主辞 主辞 文節内位置) キャッシュ */
@@ -568,9 +559,6 @@ char *ne_code_to_tagposition(int num)
 		s[2], /* MAX 256字 */
 		OptNEcache ? "" : s[3]  /* MAX 256文字 */
 	    );
-	for (k = 0; k < 4; k++) {
-	    free(s[k]);
-	}
     }
 }
 
@@ -579,7 +567,7 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j, k, f[FEATURE_MAX];
-    char buf[FEATURE_MAX], *s[6], bnstb[7], bnsth[7], *cp, tmp[16];
+    char buf[FEATURE_MAX], s[5][SMALL_DATA_LEN2], *id, bnstb[7], bnsth[7], *cp, tmp[16];
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	buf[0] = '\0';
@@ -595,32 +583,29 @@ char *ne_code_to_tagposition(int num)
 		continue;
 
 	    k = i - j + SIZE + 1;           
-	    s[0] = db_get(ne_db, sp->mrph_data[j].Goi2);
-	    s[1] = get_pos(sp->mrph_data + j, k);       /* 末尾空白 */
-	    s[2] = get_cache(sp->mrph_data[j].Goi2, k); /* 末尾空白 */
-	    s[3] = get_feature(sp->mrph_data + j, k);   /* 末尾空白 */
-	    s[4] = get_parent(sp->mrph_data + j, k);    /* 末尾空白 */
-	    s[5] = get_imi(sp->mrph_data + j, k);       /* 末尾空白 */
+	    id = db_get(ne_db, sp->mrph_data[j].Goi2);
+	    get_pos(s[0], sp->mrph_data + j, k);       /* 末尾空白 */
+	    get_cache(s[1], sp->mrph_data[j].Goi2, k); /* 末尾空白 */
+	    get_feature(s[2], sp->mrph_data + j, k);   /* 末尾空白 */
+	    get_parent(s[3], sp->mrph_data + j, k);    /* 末尾空白 */
+	    get_imi(s[4], sp->mrph_data + j, k);       /* 末尾空白 */
 	    check_feature(sp->mrph_data[j].f, "文節始") ? 
 		sprintf(bnstb, "%d00:1 ", k) : (bnstb[0] = '\0');   /* 末尾空白 */
 	    check_feature(sp->mrph_data[j].f, "Ｔ文節主辞") ? 
 		sprintf(bnsth, "%d90:1 ", k) : (bnsth[0] = '\0');   /* 末尾空白 */
 	    
 	    sprintf(buf, "%s%s%d:1 %s%s%s%d%d20:1 %s%s%d%d50:1 %s%s",
-		    buf, s[0] ? s[0] : "", k,
+		    buf, id ? id : "", k,
 		    bnstb[0] ? bnstb : "",
 		    bnsth[0] ? bnsth : "",
-		    s[1], 
+		    s[0], 
 		    get_chara(sp->mrph_data + j), k,
-		    OptNEcache ? "" : s[2],
-		    OptNEend ? "" : s[3],
+		    OptNEcache ? "" : s[1],
+		    OptNEend ? "" : s[2],
 		    strlen(sp->mrph_data[j].Goi2) / 2, k, 
-		    OptNEparent ? "" : s[4],
-		    OptNEcase ? s[5] : "");
-
-	    for (k = 0; k < 6; k++) {
-		free(s[k]);
-	    }
+		    OptNEparent ? "" : s[3],
+		    OptNEcase ? s[4] : "");
+	    free(id);
 	}
 
 	/* svm_lightでは素性が昇順である必要があるためソートする */

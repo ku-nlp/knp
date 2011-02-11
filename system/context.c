@@ -874,8 +874,13 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 		void ClearSentence(SENTENCE_DATA *s)
 /*==================================================================*/
 {
+    int i;
+
+    for (i = 0; i < s->Mrph_num; i++) clear_feature(&(s->mrph_data[i].f));
     free(s->mrph_data);
+    for (i = 0; i < s->Bnst_num; i++) clear_feature(&(s->bnst_data[i].f));
     free(s->bnst_data);
+    for (i = 0; i < s->Tag_num; i++) clear_feature(&(s->tag_data[i].f));
     free(s->tag_data);
     free(s->para_data);
     free(s->para_manager);
@@ -899,8 +904,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     int i;
 
     for (i = 0; i < sp->Sen_num - 1; i++) {
-	if (OptArticle)
-	    print_result(sentence_data+i, 1, 1);
+	if (OptArticle) print_result(sentence_data+i, 1, 1);
 	ClearSentence(sentence_data+i);
     }
     sp->Sen_num = 1;

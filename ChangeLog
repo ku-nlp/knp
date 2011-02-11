@@ -1,3 +1,8 @@
+2011-02-11  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/const.h, system/context.c, system/proper.c, system/read_data.c:
+	メモリ使用量に関する修正	
+
 2011-02-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* anaphora.c, case_ipal.c, context.c, corefer.c, dpnd_analysis.c, nv_mi.c, ,similarity.c:

@@ -897,7 +897,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		    if (OptAnaphora) {
 			clear_context(sp, TRUE);
 		    }
-		    if (OptEllipsis) {
+		    else if (OptEllipsis) {
 			ClearSentences(sp);
 		    }
 		    if (OptNE) {

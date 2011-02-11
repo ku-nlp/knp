@@ -88,8 +88,8 @@
 
 #define CLASS_NUM               2000  /* 単語クラスの数 */
 #define MENTION_MAX             8     /* 1つの基本句が持つ照応詞数(ゼロ照応含む) */
-#define ENTITY_MAX              8192  /* ENTITYの数 */
-#define MENTIONED_MAX           1024  /* 1つのENTITYが言及される回数 */
+#define ENTITY_MAX              4096  /* ENTITYの数 */
+#define MENTIONED_MAX           256   /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
 	#define IMI_MAX	1024	/* defined in "juman.h" */	
