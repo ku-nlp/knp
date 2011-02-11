@@ -82,7 +82,9 @@ int main(int argc, char *argv[])
     int Type, num, pre_content_size = 0;
     char *Separator = NULL, *cp;
     char key[DBM_KEY_MAX], content[DBM_CON_MAX];
-    char buffer[DBM_CON_MAX], pre_key[DBM_KEY_MAX], *pre_content;
+    char pre_key[DBM_KEY_MAX], *pre_content;
+
+    char *buffer = (char *)malloc(DBM_CON_MAX);
 
     if (argc == 2) {
 	Type = DBM_APPEND;
@@ -105,12 +107,14 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Create Database <%s>.\n", argv[1]);
 
     pre_key[0] = '\0';
+	
     buffer[DBM_CON_MAX - 1] = '\n';
     num = 0;
     while (fgets(buffer, DBM_CON_MAX, stdin) != NULL) {
 	/* 行の長さチェック */
 	if (buffer[DBM_CON_MAX - 1] != '\n') {
 	    fprintf(stderr, "Line %d is larger than %d bytes.\n", num, DBM_CON_MAX);
+	    free(buffer);
 	    exit(1);
 	}
 
@@ -118,6 +122,7 @@ int main(int argc, char *argv[])
 	if (cp = strchr(buffer, ' ')) {
 	    if (cp - buffer >= DBM_KEY_MAX) {
 		fprintf(stderr, "Key is too long (in %s).\n", buffer);
+	    free(buffer);
 		exit(1);
 	    }
 	}
@@ -161,5 +166,6 @@ int main(int argc, char *argv[])
     fputc('\n', stderr);
 
     DB_close(db);
+    free(buffer);
     return 0;
 }
