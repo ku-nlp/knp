@@ -60,7 +60,7 @@ struct NE_MANAGER {
 
 typedef struct ne_cache {
     char            *key;
-    int	            ne_result[NE_MODEL_NUMBER + 1];
+    int	            ne_result[NE_MODEL_NUMBER];
     struct ne_cache *next;
 } NE_CACHE;
 
@@ -147,45 +147,35 @@ char *ne_code_to_tagposition(int num)
     for (i = 0; i < TBLSIZE; i++) {
 	if (!ne_cache[i]) continue;
 	ncp = ne_cache[i];
-	if (ncp->key) {
-	    free(ncp->key);
-	}
-	ncp = ncp->next;
 	while (ncp) {
-	    if (ncp->key) {
-		free(ncp->key);
-	    }
+	    free(ncp->key);
 	    next = ncp->next;
 	    free(ncp);
 	    ncp = next;
 	}
+	ne_cache[i] = NULL;
     }
-    memset(ne_cache, 0, sizeof(NE_CACHE *)*TBLSIZE);
 }
 
 /*==================================================================*/
-       void register_ne_cache(char *key, int NEresult, int tag)
+       void register_ne_cache(char *key, int NEresult)
 /*==================================================================*/
 {
-    /* NEの解析結果を登録する
-       NEresult = NE_MODEL_NUMBERの場合はNE全体の情報を保持
-       その場合のみtagが与えられ、TAGの種類+1を記憶する
-       この場合、古いデータがあれば上書きされる(現在は不使用) */
+    /* NEの解析結果を登録する */
+    int i;
     NE_CACHE **ncpp;
 
     ncpp = &(ne_cache[hash(key, strlen(key))]);
-    while (*ncpp && (*ncpp)->key && strcmp((*ncpp)->key, key)) {
+    while (*ncpp && strcmp((*ncpp)->key, key)) {
 	ncpp = &((*ncpp)->next);
     }
     if (!(*ncpp)) {
 	*ncpp = (NE_CACHE *)malloc_data(sizeof(NE_CACHE), "register_ne_cache");
-	memset(*ncpp, 0, sizeof(NE_CACHE));
-    }
-    if (!(*ncpp)->key) {
+	for (i = 0; i < NE_MODEL_NUMBER; i++) (*ncpp)->ne_result[NEresult] = 0;
 	(*ncpp)->key = strdup(key);
 	(*ncpp)->next = NULL;
     }
-    (*ncpp)->ne_result[NEresult] = tag;
+    (*ncpp)->ne_result[NEresult] = 1;
 }
 
 /*==================================================================*/
@@ -195,9 +185,6 @@ char *ne_code_to_tagposition(int num)
     NE_CACHE *ncp;
 
     ncp = ne_cache[hash(key, strlen(key))];
-    if (!ncp || !ncp->key) {
-	return 0;
-    }
     while (ncp) {
 	if (!strcmp(ncp->key, key)) {
 	    return ncp->ne_result[NEresult];
@@ -1073,7 +1060,7 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
 
     /* 各形態素の情報を記憶 */
     for (i = 0; i < sp->Mrph_num; i++) {
-	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult, 1);
+	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult);
     }
 }
 	  

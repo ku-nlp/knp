@@ -10,20 +10,20 @@
 #include "knp.h"
 
 /* 省略解析に関するパラメータ */
-#define CASE_CANDIDATE_MAX  10    /* 照応解析用格解析結果を保持する数 */
-#define CASE_CAND_DIF_MAX   2.3   /* 格解析の候補として考慮するスコアの差の最大値(log(10)) */
-#define ELLIPSIS_RESULT_MAX 10    /* 省略解析結果を保持する */
-#define SALIENCE_DECAY_RATE 0.5   /* salience_scoreの減衰率 */
-#define SALIENCE_THRESHOLD  0.199 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
-#define FRAME_FOR_ZERO_MAX  256   /* チェックする格フレームの最大数 */
-#define INITIAL_SCORE      -10000
+#define CASE_CANDIDATE_MAX  10   /* 照応解析用格解析結果を保持する数 */
+#define CASE_CAND_DIF_MAX   2.3  /* 格解析の候補として考慮するスコアの差の最大値(log(10)) */
+#define ELLIPSIS_RESULT_MAX 10   /* 省略解析結果を保持する */
+#define SALIENCE_DECAY_RATE 0.5  /* salience_scoreの減衰率 */
+#define SALIENCE_THRESHOLD  0.39 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
+#define FRAME_FOR_ZERO_MAX  64   /* チェックする格フレームの最大数 */
+#define INITIAL_SCORE      -9999
 
 /* 文の出現要素に与えるsalience_score */
-#define SALIENCE_THEMA 2.0 /* 重要な要素(未格,文末)に与える */
+#define SALIENCE_THEMA     2.0 /* 重要な要素(未格,文末)に与える */
 #define SALIENCE_CANDIDATE 1.0 /* 先行詞候補とする要素(ガ格,ヲ格など)に与える */
-#define SALIENCE_NORMAL 0.2 /* 上記以外の要素に与える */
-#define SALIENCE_ZERO 0.2 /* ゼロ代名詞に与える */
-#define SALIENCE_ASSO 0.01 /* 連想照応の先行詞に与える */
+#define SALIENCE_NORMAL    0.4 /* 上記以外の要素に与える */
+#define SALIENCE_ZERO      0.4 /* ゼロ代名詞に与える */
+#define SALIENCE_ASSO      0.0 /* 連想照応の先行詞に与える */
 
 /* 位置カテゴリ(主節や用言であるか等は無視)    */
 #define	LOC_SELF             0 /* 自分自身     */
@@ -791,57 +791,11 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
     int set_cf_candidate(TAG_DATA *tag_ptr, CASE_FRAME **cf_array)
 /*==================================================================*/
 {
-    int i, l, frame_num = 0, hiragana_prefer_type = 0;
-    CFLIST *cfp;
-    char *key;
+    int i, frame_num = 0;
     
-    /* 格フレームcache */
-    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
-		
-	if ((key = get_pred_id(tag_ptr->cf_ptr->cf_id)) != NULL) {
-	    cfp = CheckCF(key);
-	    free(key);
-
-	    if (cfp) {
-		for (l = 0; l < tag_ptr->cf_num; l++) {
-		    for (i = 0; i < cfp->cfid_num; i++) {
-			if (((tag_ptr->cf_ptr + l)->type == tag_ptr->tcf_ptr->cf.type) &&
-			    ((tag_ptr->cf_ptr + l)->cf_similarity = 
-			     get_cfs_similarity((tag_ptr->cf_ptr + l)->cf_id, 
-						*(cfp->cfid + i))) > CFSimThreshold) {
-			    *(cf_array + frame_num++) = tag_ptr->cf_ptr + l;
-			    break;
-			}
-		    }
-		}
-		tag_ptr->e_cf_num = frame_num;
-	    }
-	}
-    }
-
-    if (frame_num == 0) {
-	/* 表記がひらがなの場合: 
-	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
-	   ひらがな以外が多ければひらがな以外のみを対象にする */
-	if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
-	    check_str_type(tag_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
-	    if (check_feature(tag_ptr->f, "代表ひらがな")) {
-		hiragana_prefer_type = 1;
-	    }
-	    else {
-		hiragana_prefer_type = -1;
-	    }
-	}
-
-	for (l = 0; l < tag_ptr->cf_num; l++) {
-	    if ((tag_ptr->cf_ptr + l)->type == tag_ptr->tcf_ptr->cf.type && 
-		(hiragana_prefer_type == 0 || 
-		 (hiragana_prefer_type > 0 && 
-		  check_str_type((tag_ptr->cf_ptr + l)->entry) == TYPE_HIRAGANA) || 
-		 (hiragana_prefer_type < 0 && 
-		  check_str_type((tag_ptr->cf_ptr + l)->entry) != TYPE_HIRAGANA))) {
-		*(cf_array + frame_num++) = tag_ptr->cf_ptr + l;
-	    }
+    for (i = 0; i < tag_ptr->cf_num; i++) {
+	if ((tag_ptr->cf_ptr + i)->type == tag_ptr->tcf_ptr->cf.type) {
+	    *(cf_array + frame_num++) = tag_ptr->cf_ptr + i;
 	}
     }
     return frame_num;

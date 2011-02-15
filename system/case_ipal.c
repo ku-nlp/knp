@@ -442,7 +442,6 @@ double  ClassProb[CLASS_NUM];
 	    }
 	    else if (!strcmp(token, "自発")) {
 		CF_frame.voice |= CF_SPONTANE;
-		;
 	    }
 	    else if ((!strncmp(token, "格フレーム対応:", strlen("格フレーム対応:")))) {
 		if (cf_aligned_num < CF_ALIGNMENT_MAX - 1) {

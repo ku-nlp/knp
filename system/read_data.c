@@ -893,7 +893,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		*(strrchr(ArticleID, '-')) = '\0';
 
 		if (strcmp(ArticleID, preArticleID)) {
-		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, "New Article %s\n", input_buffer);
+		    if (OptDisplay == OPT_DEBUG) fprintf(stderr, ";; New Article %s\n", input_buffer);
 		    if (OptAnaphora) {
 			clear_context(sp, TRUE);
 		    }

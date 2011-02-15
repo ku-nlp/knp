@@ -1,3 +1,8 @@
+2011-02-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c, system/case_analysis.c, system/case_ipal.c, system/dpnd_analysis.c, system/proper.c, system/read_data.c:
+	コードの整理
+	
 2011-02-11  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/const.h, system/context.c, system/proper.c, system/read_data.c:
@@ -5,15 +10,15 @@
 
 2011-02-10  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c, case_ipal.c, context.c, corefer.c, dpnd_analysis.c, nv_mi.c, ,similarity.c:
+	* system/anaphora.c, system/case_ipal.c, system/context.c, system/corefer.c, system/dpnd_analysis.c, system/nv_mi.c, system/similarity.c:
 	メモリリークに関する修正、コメント追加
 
 2011-02-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c, cky.c, const.h, main.c:
+	* system/anaphora.c, system/cky.c, system/const.h, system/main.c:
 	メモリの使用を抑えるようにいくつかのパラメータを修正
 	
-	* read_data.c:
+	* system/read_data.c:
 	記事IDの読み込み方法を修正	
 
 2011-02-07  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
@@ -26,7 +31,7 @@
 
 2011-02-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c:
+	* system/anaphora.c:
 	格の対応付け結果がない場合も省略解析の対象になった場合は格構造を素性として出力するよう変更
 
 2011-02-01  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
@@ -39,10 +44,10 @@
 
 2011-01-28  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
-	* anaphora.c:
+	* system/anaphora.c:
 	学習結果を更新
 	
-	* case_ipal.c, case_match.c, extern.h:
+	* system/case_ipal.c, system/case_match.c, system/extern.h:
 	コードの整理
 
 2011-01-26  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>

@@ -736,10 +736,12 @@ CPM_CACHE *CPMcache[TBLSIZE];
     ccp = CPMcache[num];
     while (ccp) {
 	if (str_eq(key, ccp->key)) {
+	    free(key);
 	    return ccp->cpm;
 	}
 	ccp = ccp->next;
     }
+    free(key);
     return NULL;
 }
 
