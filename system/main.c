@@ -682,6 +682,13 @@ extern int	EX_match_subject;
 	    if (argc < 1) usage();
 	    OptIgnoreChar = *argv[0];
 	}
+	else if (str_eq(argv[0], "-f")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if ((Infp = fopen(argv[0], "r")) == NULL) {
+		usage();
+	    }
+	}
 	else if (str_eq(argv[0], "-use-ex-all")) {
 	    OptCaseFlag |= OPT_CASE_USE_EX_ALL;
 	}
@@ -2294,10 +2301,10 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 		   int main(int argc, char **argv)
 /*==================================================================*/
 {
-    option_proc(argc, argv);
-
     Infp  = stdin;
     Outfp = stdout;
+
+    option_proc(argc, argv);
 
     /* モードによって処理を分岐 */
     if (OptMode == STAND_ALONE_MODE) {
@@ -2314,6 +2321,9 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     else if (OptMode == CLIENT_MODE) {
 	client_mode();
     }
+
+    if (Infp != stdin)
+	fclose(Infp);
 
     exit(0);
 }
