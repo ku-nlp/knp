@@ -102,6 +102,7 @@ int		OptParaFix;
 int		OptParaNoFixFlag;
 int		OptNbest;
 int		OptBeam;
+int		OptEncoding;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
@@ -251,6 +252,7 @@ extern int	EX_match_subject;
     OptBeam = 0;
     OptChiGenerative = 0;
     OptChiPos = 0;
+    OptEncoding = ENCODING_EUC;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -686,6 +688,16 @@ extern int	EX_match_subject;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    if ((Infp = fopen(argv[0], "r")) == NULL) {
+		usage();
+	    }
+	}
+	else if (str_eq(argv[0], "-encoding")) {
+	    argv++; argc--;
+	    if (argc < 1) usage();
+	    if (!strcasecmp(argv[0], "shift_jis")) {
+		OptEncoding = ENCODING_SHIFTJIS;
+	    }
+	    else {
 		usage();
 	    }
 	}

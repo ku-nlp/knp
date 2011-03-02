@@ -21,9 +21,7 @@
 #define str_eq(c1, c2) ( ! strcmp(c1, c2) )
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 
-#ifdef _WIN32
-#define fprintf sjis_fprintf
-#endif 
+#define fprintf knp_fprintf
 
 /*====================================================================
 				LENGTH
@@ -304,6 +302,9 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 
 #define	CF_DECIDE_THRESHOLD	7
 #define	DEFAULT_SOTO_THRESHOLD	8
+
+#define	ENCODING_EUC		1
+#define	ENCODING_SHIFTJIS	2
 
 /*====================================================================
 				  ?

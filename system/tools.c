@@ -10,9 +10,8 @@
 
 unsigned int seed[NSEED][256];
 
-#ifdef _WIN32
 /*==================================================================*/
-	 int sjis_fprintf(FILE *output, const char *fmt, ...)
+	 int knp_fprintf(FILE *output, const char *fmt, ...)
 /*==================================================================*/
 {
     va_list ap;
@@ -23,13 +22,20 @@ unsigned int seed[NSEED][256];
     vsprintf(buffer, fmt, ap);
     va_end(ap);
 
-    SJISbuffer = (char *)toStringSJIS(buffer);
-    fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
-    free(SJISbuffer);
+#ifndef _WIN32
+    if (OptEncoding == ENCODING_SHIFTJIS) {
+#endif
+	SJISbuffer = (char *)toStringSJIS(buffer);
+	fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
+	free(SJISbuffer);
+#ifndef _WIN32
+    }
+    else
+	fwrite(buffer, sizeof(char), strlen(buffer), output);
+#endif
 
     return TRUE;
 }
-#endif 
 
 /*==================================================================*/
 	    void *malloc_data(size_t size, char *comment)

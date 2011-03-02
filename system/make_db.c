@@ -26,6 +26,7 @@
 extern DBM_FILE db_write_open(char *filename);
 extern int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode);
 extern void DB_close(DBM_FILE db);
+int OptEncoding;
 
 int content_process(char *content, char **pre_content, int *pre_content_size, 
 		    int Type, char *Separator)

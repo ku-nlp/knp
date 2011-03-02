@@ -115,6 +115,7 @@ extern int		OptParaFix;
 extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
+extern int		OptEncoding;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
@@ -618,6 +619,10 @@ extern int   OptMode;
 /* context.c for anaphra.c */
 extern char *get_pred_id(char *cfid);
 extern CFLIST *CheckCF(char *key);
+
+/* japanese.c in JUMAN */
+extern char *toStringEUC(char *str);
+extern char *toStringSJIS(char *str);
 
 /*====================================================================
 				 END

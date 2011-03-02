@@ -595,20 +595,22 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
     int len;
-#ifdef _WIN32
     char *EUCbuffer;
-#endif
 
     if (fgets(buffer, DATA_LEN, fp) == NULL) return EOF;
 
-#ifdef _WIN32
-    EUCbuffer = toStringEUC(buffer);
-    strcpy(buffer, EUCbuffer);
-    free(EUCbuffer);
+#ifndef _WIN32
+    if (OptEncoding == ENCODING_SHIFTJIS) {
+#endif
+	EUCbuffer = toStringEUC(buffer);
+	strcpy(buffer, EUCbuffer);
+	free(EUCbuffer);
+#ifndef _WIN32
+    }
 #endif
 
     /* Server モードの場合は 注意 \r\n になる*/
-    if (OptMode == SERVER_MODE) {
+    if (OptMode == SERVER_MODE || OptEncoding == ENCODING_SHIFTJIS) {
 	len = strlen(buffer);
 	if (len > 2 && buffer[len-1] == '\n' && buffer[len-2] == '\r') {
 	    buffer[len-2] = '\n';
