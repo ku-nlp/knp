@@ -686,8 +686,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	/* 固有表現直後の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
 	tail_ptr = (sp->tag_data + i)->mrph_ptr;
 	k = 0;
-	while (check_feature(((sp->tag_data + j)->mrph_ptr + k)->f, "NE") &&
-	       k < (sp->tag_data + j)->mrph_num) k++;	       
+	while (k < (sp->tag_data + j)->mrph_num &&
+	       check_feature(((sp->tag_data + j)->mrph_ptr + k)->f, "NE")) k++;	       
 	if ((k != (sp->tag_data + j)->mrph_num) &&
 	    !strcmp(((sp->tag_data + j)->mrph_ptr + k)->Goi2,
 		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) {
@@ -739,6 +739,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     int i, person;
     char *anaphor, *cp, *ne;
     MRPH_DATA *mrph_ptr;
+    sp = sentence_data + sp->Sen_num - 1;
 
     for (i = sp->Tag_num - 1; i >= 0 ; i--) { /* 解析文のタグ単位:i番目のタグについて */
 
@@ -759,17 +760,20 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    if (check_feature((sp->tag_data + i)->f, "指示詞")) {
 		continue; /* ここでは処理をしない */
 	    }
+
+	    /* 基本句が固有表現を含まず、かつ、基本句主辞の後に形態素がある場合、それをmrph_ptrとする */
+	    mrph_ptr = NULL;
+	    ne = check_feature((sp->tag_data + i)->f, "NE");
+	    if (!ne && ((sp->tag_data + i)->mrph_ptr + (sp->tag_data + i)->mrph_num) - (sp->tag_data + i)->head_ptr > 1)
+		mrph_ptr = (sp->tag_data + i)->head_ptr + 1;		
 	    
-	    mrph_ptr = (sp->tag_data + i)->head_ptr + 1;
-	    /* 名詞性接尾辞が付いた固有表現以外の語はまず接尾辞も含めたものを調べる */
-	    if (!((ne = check_feature((sp->tag_data + i)->f, "NE"))) &&
-		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5)
-		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2, NULL);
-    
-	    /* 一般の場合 */
-	    if (search_antecedent(sp, i, anaphor+11, NULL, ne)) {
-		/* すでに見つかった共参照関係に含まれる関係は解析しない */
-		while (i > 0) {
+	    /* 先行する表現と共参照関係にあるかをチェック */
+	    if (mrph_ptr && /* 名詞性接尾辞が付いた語はまず接尾辞も含めたものを調べる */
+		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
+		search_antecedent(sp, i, anaphor+11, mrph_ptr->Goi2, NULL) ||
+		search_antecedent(sp, i, anaphor+11, NULL, ne)) { /* 一般の場合 */
+
+		while (i > 0) {	/* すでに見つかった共参照関係に含まれる関係は解析しない */
 		    if ((cp = check_feature((sp->tag_data + i - 1)->f, "照応詞候補")) &&
 			!strncmp(cp, anaphor, strlen(cp))) {
 			assign_cfeature(&((sp->tag_data + i - 1)->f), "共参照内", FALSE);

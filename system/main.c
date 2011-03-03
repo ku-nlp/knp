@@ -1204,7 +1204,7 @@ extern int	EX_match_subject;
     if (OptEllipsis) {
 	/* 中身は保存しておくので */
 	for (i = 0; i < sp->Mrph_num + sp->New_Mrph_num; i++) {
-	    (sp->mrph_data+i)->f = NULL;
+	    (sp->mrph_data+i)->f = NULL; /* (sp->mrph_data+i)->fはClearSentenceで解放 */
 	}
     }
     else {
@@ -1227,7 +1227,7 @@ extern int	EX_match_subject;
     if (OptEllipsis) {
 	/* 中身は保存しておくので */
 	for (i = 0; i < sp->Bnst_num + sp->Max_New_Bnst_num; i++) {
-	    (sp->bnst_data+i)->f = NULL;
+	    (sp->bnst_data+i)->f = NULL; /* (sp->bnst_data+i)->fはClearSentenceで解放 */
 	}
     }
     else {
@@ -1253,7 +1253,7 @@ extern int	EX_match_subject;
     if (OptEllipsis) {
 	/* 中身は保存しておくので */
 	for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
-	    (sp->tag_data+i)->f = NULL;
+	    (sp->tag_data+i)->f = NULL; /* (sp->tag_data+i)->fはClearSentenceで解放 */
 	}
     }
     else {

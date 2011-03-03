@@ -982,6 +982,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 						 "MRPH DATA");
     for (i = 0; i < sp->Mrph_num; i++) {
 	sp_new->mrph_data[i] = sp->mrph_data[i];
+	/* featureポインタはそのままコピーして、clear_all_featuresの際にspからのリンクを切る */
     }
 
     sp_new->Bnst_num = sp->Bnst_num;
@@ -992,6 +993,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 
 	sp_new->bnst_data[i] = sp->bnst_data[i]; /* ここでbnst_dataをコピー */
+	/* featureポインタはそのままコピーして、clear_all_featuresの際にspからのリンクを切る */
 
 	/* SENTENCE_DATA 型 の sp は, MRPH_DATA をメンバとして持っている    */
 	/* 同じく sp のメンバである BNST_DATA は MRPH_DATA をメンバとして   */
@@ -1056,6 +1058,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
 
 	sp_new->tag_data[i] = sp->tag_data[i]; /* ここでtag_dataをコピー */
+	/* featureポインタはそのままコピーして、clear_all_featuresの際にspからのリンクを切る */
 
 	sp_new->tag_data[i].mrph_ptr = sp_new->mrph_data + (sp->tag_data[i].mrph_ptr - sp->mrph_data);
 	if (sp->tag_data[i].settou_ptr)

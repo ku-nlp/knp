@@ -1,3 +1,9 @@
+2011-03-03  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/context.c, system/corefer.c, system/main.c:
+	共参照解析を行う対象とするSENTENCE_DATAを"sp"から"sentence_data"に変更
+	コメントの追加
+
 2011-02-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c, system/case_analysis.c, system/case_ipal.c, system/dpnd_analysis.c, system/proper.c, system/read_data.c:
