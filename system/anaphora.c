@@ -1963,7 +1963,8 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
 	sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num + base_entity_num);
 	assign_cfeature(&(tag_ptr->f), buf, FALSE);
-	if (!check_feature(tag_ptr->f, "£Ô¾ÊÎ¬²òÀÏ")) continue;
+	if (!check_feature(tag_ptr->f, "£Ô¾ÊÎ¬²òÀÏ") ||
+	    !((OptReadFeature & OPT_ELLIPSIS) || tag_ptr->mention_mgr.cf_id[0])) continue;
 
 	sprintf(buf, "³Ê¹½Â¤:%s:", (OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);		    
 	for (j = 1; j < tag_ptr->mention_mgr.num; j++) {

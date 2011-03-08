@@ -1,3 +1,8 @@
+2011-03-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	ゼロ照応解析において適当な格フレームがない場合"格構造"という素性を出力しないように変更
+
 2011-03-04  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/corefer.c:
