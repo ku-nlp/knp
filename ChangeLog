@@ -1,3 +1,8 @@
+2011-03-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	名詞句の解析を行う際、calc_ellipsis_score_of_ctm において、存在しない配列の要素にアクセスするバグを修正
+
 2011-03-08  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:

@@ -650,7 +650,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 
 		if (para_ptr != t_ptr && check_feature(para_ptr->f, "体言") &&
 		    para_ptr->para_type == PARA_NORMAL &&
-		    /* 橋渡し指示には適用しない(暫定的) */
+		    /* 連想照応解析には適用しない(暫定的) */
 		    !(ctm_ptr->type[i] == 'O' && 
 		      check_analyze_tag(tag_ptr, FALSE) == CF_NOUN) &&
 		    /* 省略の場合は拡張先が解析対象の係り先である場合、拡張しない*/
@@ -908,7 +908,8 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
     for (i = ctm_ptr->case_result_num; i < ctm_ptr->result_num; i++) {
 	e_num = ctm_ptr->cf_element_num[i];
 	entity_ptr = entity_manager.entity + ctm_ptr->entity_num[i]; /* 関連付けられたENTITY */	
-	pp = ctm_ptr->cf_ptr->pp[e_num][0]; /* "が"、"を"、"に"のcodeはそれぞれ1、2、3 */
+	pp = (tcf_ptr->cf.type == CF_NOUN) ? 1 /* 連想照応解析の場合は1とする(暫定的) */
+	    : ctm_ptr->cf_ptr->pp[e_num][0];   /* "が"、"を"、"に"のcodeはそれぞれ1、2、3 */
 	of_ptr = ctm_ptr->omit_feature[pp - 1];
 
 	/* 埋まったかどうか */
@@ -1291,7 +1292,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	ctm_ptr->filled_entity[substance_tag_ptr(tag_ptr->child[j])->mention_mgr.mention->entity->num] = TRUE;
     }  
 
-    /* 自分と並列な要素も不可(橋渡し指示の場合) */
+    /* 自分と並列な要素も不可(連想照応解析の場合) */
     if (check_analyze_tag(tag_ptr, FALSE) == CF_NOUN &&
 	tag_ptr->para_type == PARA_NORMAL &&
 	tag_ptr->parent && tag_ptr->parent->para_top_p) {
@@ -1376,7 +1377,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 	    }   
 	}
 
-	/* 橋渡し指示の場合で"その"に修飾されている場合は
+	/* 連想照応解析の場合で"その"に修飾されている場合は
 	   対応付けが取れなかった場合はlog(4)くらいペナルティ:todo */
 	if (tag_ptr->tcf_ptr->cf.type == CF_NOUN && 
 	    check_analyze_tag(tag_ptr, TRUE) && r_num == 0) ctm_ptr->score += -1.3863;
