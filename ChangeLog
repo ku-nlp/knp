@@ -1,3 +1,8 @@
+2011-03-15  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/const.h, system/db.c, system/extern.h, system/main.c:
+	Added an option to load case frames on memory (-cf-on-memory).
+
 2011-03-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
