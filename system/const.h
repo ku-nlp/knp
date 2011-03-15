@@ -185,6 +185,8 @@
 #define	OPT_CASE_USE_CREP_CF	1024 /* 常にOPT_CASE_USE_REP_CF */
 #define OPT_CASE_FIX_CF_SEARCH	2048
 #define OPT_CASE_USE_NCF	4096
+#define	OPT_CASE_CF_CACHE	8192
+#define	OPT_CASE_CF_ON_MEMORY	16384
 #define	OPT_CASE_CLEAR_CF	32768
 #define	OPT_CASE_FALLBACK_TO_DPND	65536
 
@@ -960,7 +962,8 @@ typedef struct {
     int aligned_case[CF_ELEMENT_MAX][2];
 } CF_ALIGNMENT;
 
-typedef struct {
+typedef struct cf_frame_def {
+    unsigned int address;
     char *yomi;
     char *hyoki;
     char *feature;
@@ -972,6 +975,7 @@ typedef struct {
     int	samecase[CF_ELEMENT_MAX][2];
     CF_ALIGNMENT cf_align[CF_ALIGNMENT_MAX];
     unsigned char *DATA;
+    struct cf_frame_def *next;
 } CF_FRAME;
 
 /* 格フレーム構造体
@@ -1100,6 +1104,13 @@ typedef struct _CKY {
   int        left_pos_index;  /* pos index for Chinese */
   int        right_pos_index;  /* pos index for Chinese */
 } CKY;
+
+typedef struct _cfcm_def {
+    char	*key;
+    int		pos;
+    int		num;
+    struct _cfcm_def	*next;
+} CASE_FRAME_CACHE_MGR;
 
 /*====================================================================
 			       文脈処理

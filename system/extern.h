@@ -292,6 +292,7 @@ extern double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp
 extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr);
 extern char *malloc_db_buf(int size);
+extern CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);
@@ -341,6 +342,7 @@ extern int mark_location_classes(SENTENCE_DATA *sp, TAG_DATA *tp);
 /* db.c */
 extern char *db_get(DBM_FILE db, char *buf);
 extern DBM_FILE db_read_open(char *filename);
+extern void list_db_and_register_caseframe(DBM_FILE db, int flag);
 
 /* dpnd_analysis.c */
 extern void init_chi_dpnd_db();

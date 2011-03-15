@@ -57,6 +57,7 @@ int	PrintDeletedSM = 0;
 int	SM_AGENT_THRESHOLD = 0.40;
 
 double  ClassProb[CLASS_NUM];
+CF_FRAME *CFcache[TBLSIZE];
 
 /*==================================================================*/
 	   void init_cf_structure(CASE_FRAME *p, int size)
@@ -267,6 +268,14 @@ double  ClassProb[CLASS_NUM];
 
 	/* 名詞-意味素HASHの初期化 */
 	memset(smlist, 0, sizeof(SMLIST)*TBLSIZE);
+
+	/* 格フレームcacheのHASHの初期化 */
+	memset(CFcache, 0, sizeof(CASE_FRAME_CACHE_MGR *)*TBLSIZE);
+
+	/* 格フレームすべてをメモリに読み込む場合 */
+	if (OptCaseFlag & OPT_CASE_CF_ON_MEMORY) {
+	    list_db_and_register_caseframe(cf_db, CF_PRED);
+	}
     }
 }
 
@@ -346,6 +355,90 @@ double  ClassProb[CLASS_NUM];
 }
 
 /*==================================================================*/
+	   void copy_cf_frame(CF_FRAME *dst, CF_FRAME *src)
+/*==================================================================*/
+{
+    int i, j;
+
+    dst->address = src->address;
+    dst->yomi = strdup(src->yomi);
+    dst->hyoki = strdup(src->hyoki);
+    dst->feature = strdup(src->feature);
+    strcpy(dst->pred_type, src->pred_type);
+    dst->voice = src->voice;
+    dst->etcflag = src->etcflag;
+    dst->casenum = src->casenum;
+    for (i = 0; i < dst->casenum; i++) {
+	dst->cs[i].kaku_keishiki = strdup(src->cs[i].kaku_keishiki);
+	dst->cs[i].meishiku = strdup(src->cs[i].meishiku);
+	dst->cs[i].imisosei = strdup(src->cs[i].imisosei);
+    }
+    for (i = 0; i < CF_ELEMENT_MAX; i++) {
+	dst->samecase[i][0] = src->samecase[i][0];
+	dst->samecase[i][1] = src->samecase[i][1];
+	if (src->samecase[i][0] == END_M) {
+	    break;
+	}
+    }
+    for (i = 0; i < CF_ALIGNMENT_MAX; i++) {
+	if (src->cf_align[i].cf_id == NULL) {
+	    break;
+	}
+	dst->cf_align[i].cf_id = strdup(src->cf_align[i].cf_id);
+	for (j = 0; j < CF_ALIGNMENT_MAX; j++) {
+	    dst->cf_align[i].aligned_case[j][0] = src->cf_align[i].aligned_case[j][0];
+	    dst->cf_align[i].aligned_case[j][1] = src->cf_align[i].aligned_case[j][1];
+	    if (src->cf_align[i].aligned_case[j][0] == END_M) {
+		break;
+	    }
+	}
+    }
+    dst->DATA = strdup(src->DATA); /* actally, cf_id */
+}
+
+/*==================================================================*/
+    void register_caseframe(unsigned int address, CF_FRAME *i_ptr)
+/*==================================================================*/
+{
+    int num;
+    CF_FRAME **cfcmpp;
+    char key[SMALL_DATA_LEN];
+
+    sprintf(key, "%u", address);
+    num = hash(key, strlen(key));
+
+    cfcmpp = &(CFcache[num]);
+    while (*cfcmpp) {
+	cfcmpp = &((*cfcmpp)->next);
+    }
+
+    *cfcmpp = (CF_FRAME *)malloc_data(sizeof(CF_FRAME), "register_caseframe");
+    copy_cf_frame((*cfcmpp), i_ptr);
+    (*cfcmpp)->next = NULL;
+}
+
+/*==================================================================*/
+	   CF_FRAME *lookup_caseframe(unsigned int address)
+/*==================================================================*/
+{
+    int num;
+    CF_FRAME *cfcmp;
+    char key[SMALL_DATA_LEN];
+
+    sprintf(key, "%u", address);
+    num = hash(key, strlen(key));
+
+    cfcmp = CFcache[num];
+    while (cfcmp) {
+	if (address == cfcmp->address) {
+	    return cfcmp;
+	}
+	cfcmp = cfcmp->next;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
   CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag)
 /*==================================================================*/
 {
@@ -377,6 +470,8 @@ double  ClassProb[CLASS_NUM];
 	fprintf(stderr, ";; Error in fread.\n");
 	exit(1);
     }
+
+    CF_frame.address = address;
 
     /* 読み, 表記, 素性を設定 */
     CF_frame.casenum = 0;
@@ -494,6 +589,10 @@ double  ClassProb[CLASS_NUM];
     }
     else {
 	CF_frame.pred_type[0] = '\0';
+    }
+
+    if (OptCaseFlag & OPT_CASE_CF_CACHE) { /* 格フレームcacheを使う場合は登録 */
+	register_caseframe(address, &CF_frame);
     }
 
     return &CF_frame;
@@ -1434,7 +1533,9 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		exit(1);
 	    }
 
-	    i_ptr = get_ipal_frame(address, size, flag);
+	    if (!((OptCaseFlag & OPT_CASE_CF_CACHE) && (i_ptr = lookup_caseframe(address)))) { /* 格フレームcacheを使う場合は、cacheを引く */
+		i_ptr = get_ipal_frame(address, size, flag);
+	    }
 	    pre_pos = cp + 1;
 
 	    /* 用言のタイプがマッチしなければ (準用言なら通過) */
@@ -4730,6 +4831,86 @@ double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
     }
 
     return ret;
+}
+
+static unsigned char *cdb_buf;
+static unsigned cdb_blen;
+
+static void allocbuf(unsigned len) {
+    if (cdb_blen < len) {
+	cdb_buf = (unsigned char*)(cdb_buf ? realloc(cdb_buf, len) : malloc(len));
+	if (!cdb_buf)
+	    fprintf(stderr, "unable to allocate %u bytes\n", len);
+	cdb_blen = len;
+    }
+}
+
+static void fget(int f, unsigned char *b, unsigned len, unsigned *posp, unsigned limit)
+{
+    if (posp && limit - *posp < len)
+	fprintf(stderr, "invalid database format\n");
+    if (read(f, b, len) != len) {
+	fprintf(stderr, "unable to read: short file\n");
+	exit(2);
+    }
+    if (posp) *posp += len;
+}
+
+static unsigned char *fcpy(int fi, unsigned len, unsigned *posp, unsigned limit)
+{
+    unsigned char *retbuf = (char *)malloc_data(len + 1, "fcpy");
+    fget(fi, retbuf, len, posp, limit);
+    retbuf[len] = '\0';
+    return retbuf;
+}
+
+void list_db_and_register_caseframe(DBM_FILE db, int flag)
+{
+    unsigned int eod, klen, vlen, address;
+    unsigned int pos = 0;
+    unsigned char *key, *val, *cp, *pre_pos;
+    int match, size, break_flag;
+
+    allocbuf(2048);
+    fget(db->fd, cdb_buf, 2048, &pos, 2048);
+    eod = cdb_unpack(cdb_buf);
+    while(pos < eod) {
+	fget(db->fd, cdb_buf, 8, &pos, eod);
+	klen = cdb_unpack(cdb_buf);
+	vlen = cdb_unpack(cdb_buf + 4);
+	key = fcpy(db->fd, klen, &pos, eod);
+	val = fcpy(db->fd, vlen, &pos, eod);
+	fprintf(stderr, "%s %s\n\t", (char *)key, (char *)val);
+
+	break_flag = 0;
+	for (cp = pre_pos = val; ; cp++) {
+	    if (*cp == '/' || *cp == '\0') {
+		if (*cp == '\0')
+		    break_flag = 1;
+		else 
+		    *cp = '\0';
+
+		match = sscanf((char *)pre_pos, "%u:%d", &address, &size);
+		if (match != 2) {
+		    fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
+		    exit(1);
+		}
+
+		if (!lookup_caseframe(address)) { /* if not registered yet */
+		    get_ipal_frame(address, size, flag);
+		    fprintf(stderr, " %u", address);
+		}
+		pre_pos = cp + 1;
+		if (break_flag)
+		    break;
+	    }
+	}
+	fprintf(stderr, "\n");
+	free(key);
+	free(val);
+    }
+    if (pos != eod)
+	fprintf(stderr, "invalid cdb file format\n");
 }
 
 /*====================================================================

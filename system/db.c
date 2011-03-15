@@ -728,6 +728,36 @@ void db_list(DBM_FILE db)
     dbc->c_close(dbc);
 }
 
+void list_db_and_register_caseframe(DBM_FILE db, int flag)
+{
+    DBC *dbc;
+    DBT content, key;
+    unsigned int address;
+    int match, size;
+
+    if ((errno = db->cursor(db, NULL, &dbc, 0))) {
+        fprintf(stderr, "db_list : %s\n", strerror(errno));
+	exit(1);
+    }
+
+    /* Initialization */
+    memset(&key, 0, sizeof(key));
+    memset(&content, 0, sizeof(content));
+
+    while ((errno = dbc->c_get(dbc, &key, &content, DB_NEXT)) == 0) {	
+	match = sscanf((char *)content.data, "%u:%d", &address, &size);
+	if (match != 2) {
+	    fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
+	    exit(1);
+	}
+
+	get_ipal_frame(address, size, flag);
+	fprintf(stderr, "%.*s %.*s\n", (int)key.size, (char *)key.data, 
+		(int)content.size, (char *)content.data);
+    }
+    dbc->c_close(dbc);
+}
+
 /* DB get */
 char *db_get(DBM_FILE db, char *buf)
 {

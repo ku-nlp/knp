@@ -794,6 +794,13 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-clear-cf")) {
 	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
 	}
+	else if (str_eq(argv[0], "-cf-cache")) {
+	    OptCaseFlag |= OPT_CASE_CF_CACHE;
+	}
+	else if (str_eq(argv[0], "-cf-on-memory")) {
+	    OptCaseFlag |= OPT_CASE_CF_ON_MEMORY;
+	    OptCaseFlag |= OPT_CASE_CF_CACHE;
+	}
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
 	}
