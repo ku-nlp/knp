@@ -1204,7 +1204,7 @@ typedef struct ellipsis_list {
 } ELLIPSIS_MGR;
 
 typedef struct ellipsis_features {
-    int		class;
+    int		ellipsis_class;
     float	similarity;
     float	event1;
     float	event2;

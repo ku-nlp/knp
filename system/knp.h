@@ -88,11 +88,11 @@
 #endif
 
 #ifdef _WIN32
-#ifdef HAVE_WINDOWS_H
-#include <windows.h>
-#endif
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
+#endif
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
 #endif
 #endif
 
@@ -106,6 +106,14 @@
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+
+#ifdef HAVE_IO_H
+#include <io.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
 #endif
 
 #include <juman.h>

@@ -1438,9 +1438,9 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 
     /* 桁数の計算は常用対数の代わりに自然対数でやる (1000でも6.9) */
     max = (sizeof(E_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
-    sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
+    sbuf = (char *)malloc_data(sizeof(char) * (10 + log((double)max)), 
 			       "EllipsisSvmFeatures2String");
-    buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
+    buffer = (char *)malloc_data((sizeof(char) * (10 + log((double)max))) * max + 20, 
 				 "EllipsisSvmFeatures2String");
 #ifdef DISC_USE_EVENT
     sprintf(buffer, "1:%.5f 2:%.5f 3:%.5f", esf->similarity, esf->event1, esf->event2);
@@ -1513,9 +1513,9 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
     prenum = 2;
 
     max = (sizeof(E_TWIN_CAND_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
-    sbuf = (char *)malloc_data(sizeof(char) * (10 + log(max)), 
+    sbuf = (char *)malloc_data(sizeof(char) * (10 + log((double)max)), 
 			       "TwinCandSvmFeatures2String");
-    buffer = (char *)malloc_data((sizeof(char) * (10 + log(max))) * max + 20, 
+    buffer = (char *)malloc_data((sizeof(char) * (10 + log((double)max))) * max + 20, 
 				 "TwinCandSvmFeatures2String");
 
     sprintf(buffer, "1:%.5f 2:%.5f", esf->c1_similarity, esf->c2_similarity);
@@ -1529,7 +1529,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 }
 
 /*==================================================================*/
-void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, int class, char *ecp, 
+void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, int ellipsis_class, char *ecp, 
 				       char *word, int pp, char *sid, int num, int loc)
 /*==================================================================*/
 {
@@ -1548,7 +1548,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
 				 "EllipsisSvmFeaturesString2FeatureString");
     sprintf(buffer, "SVM学習FEATURE;%s;%s;%s;%s;%d:%d %s", 
 	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
-	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, class, ecp);
+	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, ellipsis_class, ecp);
     assign_cfeature(&(em_ptr->f), buffer, FALSE);
     free(buffer);
 }
@@ -2006,10 +2006,10 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     /* 正解かどうか */
     if (cpm_ptr->pred_b_ptr->c_cpm_ptr) {
-	f->class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, s, bp, cf_ptr, n);
+	f->ellipsis_class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, s, bp, cf_ptr, n);
     }
     else {
-	f->class = 0;
+	f->ellipsis_class = 0;
     }
 
     /* 類似度計算 */
@@ -2168,10 +2168,10 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 
     /* 正解かどうか */
     if (cpm_ptr->pred_b_ptr->c_cpm_ptr) {
-	f->class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, NULL, NULL, cf_ptr, n);
+	f->ellipsis_class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, NULL, NULL, cf_ptr, n);
     }
     else {
-	f->class = 0;
+	f->ellipsis_class = 0;
     }
 
     if (!strcmp(ExtraTags[tag], "不特定-人") && 
@@ -2353,7 +2353,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
 		cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, 
 		(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-		(ante_cands + i)->ef->class, /* 正解かどうか */
+		(ante_cands + i)->ef->ellipsis_class, /* 正解かどうか */
 		(ante_cands + i)->ef->similarity, /* 類似度 */
 		(ante_cands + i)->ef->frequency, /* 頻度 */
 		loc_code_to_str((ante_cands + i)->ef->c_location), /* 位置カテゴリ */
@@ -2381,7 +2381,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     }
     
     /* 学習FEATURE */
-    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->class, cp, 
+    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->ellipsis_class, cp, 
 				      (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
 				      (ante_cands + i)->ef->p_pp, 
 				      (ante_cands + i)->s ? ((ante_cands + i)->s->KNPSID ? (ante_cands + i)->s->KNPSID + 5 : "?") : "-1", 
@@ -2600,7 +2600,7 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 	ecp = EllipsisSvmFeatures2String(esf);
 
 	/* 学習FEATURE */
-	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 					  "?", -1, -1);
     }
@@ -2650,7 +2650,7 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	ecp = EllipsisSvmFeatures2String(esf);
 
 	/* 学習FEATURE */
-	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 
@@ -2754,7 +2754,7 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	    esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
 	    ecp = EllipsisSvmFeatures2String(esf);
 
-	    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+	    EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					      ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 					      "?", -1, -1);
 
@@ -2797,7 +2797,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	ecp = EllipsisSvmFeatures2String(esf);
 
 	/* 学習FEATURE */
-	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->class, 
+	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
 

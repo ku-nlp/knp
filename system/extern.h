@@ -565,6 +565,7 @@ extern char *get_most_similar_code(char *exd, char *exp);
 extern char *get_str_code_with_len(char *cp, int len, int flag);
 
 /* tools.c */
+extern int knp_fprintf(FILE *output, const char *fmt, ...);
 extern void *malloc_data(size_t size, char *comment);
 extern void *realloc_data(void *ptr, size_t size, char *comment);
 extern void init_hash();

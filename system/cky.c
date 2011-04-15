@@ -557,6 +557,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 	    /* calc score for Chinese */
 	    if (Language == CHINESE) {
 		if (OptChiGenerative) {
+		    char *det_head = (char *)malloc(12);
 		    prob = 0;
 		    chicase_prob = 0;
 		   
@@ -570,7 +571,6 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 		    right_arg_num = 0;
 
 		    /* add penalty from deterministic parsing */
-		    char *det_head = malloc(12);
 		    if (cky_ptr->i == 0 && cky_ptr->j == sp->Bnst_num) {
 		      sprintf(det_head, "DETHEAD_-1");
 		    }
