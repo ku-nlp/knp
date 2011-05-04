@@ -1,3 +1,8 @@
+2011-05-04  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/const.h, system/main.c:
+	Added an option (-use-cv-cf).
+
 2011-03-15  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/const.h, system/db.c, system/extern.h, system/main.c:
