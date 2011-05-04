@@ -788,6 +788,9 @@ extern int	EX_match_subject;
 	    OptCaseFlag &= ~OPT_CASE_USE_CREP_CF;
 	    OptCaseFlag &= ~OPT_CASE_USE_CN_CF;
 	}
+	else if (str_eq(argv[0], "-use-cv-cf")) { /* 用言代表表記(複合動詞を連結)に基づく格フレーム */
+	    OptCaseFlag |= OPT_CASE_USE_CV_CF;
+	}
 	else if (str_eq(argv[0], "-no-fix-cf-search")) {
 	    OptCaseFlag &= ~OPT_CASE_FIX_CF_SEARCH;
 	}

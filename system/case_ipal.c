@@ -9,6 +9,7 @@
 ====================================================================*/
 #include "knp.h"
 #define INITIAL_SCORE -10000
+#define SOTO_EX_CUT_THRESHOLD 10
 
 FILE *cf_fp;
 DBM_FILE cf_db;
@@ -1013,9 +1014,8 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    continue;
 	}
 
-	/* fflag == TRUE: 頻度1を削除 */
-	if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-	    fflag && freq < 2) {
+	/* fflag == TRUE: 低頻度を削除 */
+	if (fflag && freq < SOTO_EX_CUT_THRESHOLD) {
 	    continue;
 	}
 
@@ -1224,12 +1224,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : !MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : !MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
@@ -1437,7 +1437,7 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 
 /*==================================================================*/
 int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
-				  char *verb, int voice, int flag)
+				  char *verb, int voice, int flag, int use_closest_cc)
 /*==================================================================*/
 {
     CF_FRAME *i_ptr;
@@ -1453,7 +1453,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     cf_ptr = Case_frame_array + start;
 
     /* 直前格要素をくっつけて検索 */
-    if (flag == CF_PRED) {
+    if (use_closest_cc) {
 	/* ひらがなで曖昧性のあるときは、格解析で曖昧性解消するために
 	   ここではすべての格フレームを検索しておく */
 	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
@@ -1716,7 +1716,17 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     char *verb;
 
     if (flag == CF_NOUN) {
-	return _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag);
+	return _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, FALSE);
+    }
+    else if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* 用言代表表記版(受身など込み)格フレーム */
+	/* CF_PRED: 直前格要素をくっつけて検索 → ない場合はくっつけないで検索 */
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, TRUE);
+	if (f_num == 0) {
+	    return _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, FALSE);
+	}
+	else {
+	    return f_num;
+	}
     }
 
     verb = (char *)malloc_data(strlen(in_verb) + 4, "make_ipal_cframe_subcontract");
@@ -1724,7 +1734,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
 	t_ptr->voice = 0; /* 能動態でtry */
-	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0, flag);
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0, flag, TRUE);
 
 	/* 今のところ受身の場合を考えない */
 	free(verb);
@@ -1754,7 +1764,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	    suffix = 3;
 	}
 
-	plus_num = _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, 0, flag);
+	plus_num = _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, 0, flag, TRUE);
 	if (plus_num != 0) {
 	    free(verb);
 	    return f_num + plus_num;
@@ -1763,10 +1773,10 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     }
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
-	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI, flag); /* 受身 */
+	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI, flag, TRUE); /* 受身 */
     }
     else {
-	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice, flag);
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice, flag, TRUE);
     }
     free(verb);    
     return f_num;
@@ -2157,8 +2167,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     if (!t_ptr->jiritu_ptr) {
 	return f_num;
     }
-    
-    pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+
+    if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
+	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+    }
+    else {
+	pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+    }
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
 
     /* 代表表記が曖昧な用言の場合 */
@@ -2174,7 +2189,12 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+		if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
+		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+		}
+		else {
+		    new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+		}
 		/* 代表と異なるもの */
 		if (strcmp(pred_string, new_pred_string)) {
 		    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, new_pred_string, flag);
@@ -2188,7 +2208,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     free(pred_string);
 
     /* ないときで、可能動詞のときは、もとの形を使う */
-    if (f_num == 0 && 
+    if (!(OptCaseFlag & OPT_CASE_USE_CV_CF) && f_num == 0 && 
 	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
 	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"), OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
 	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);	
@@ -2219,7 +2239,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
 
 	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
-	strcat(pred_string, make_pred_type(t_ptr));
 
 	strcpy(pred_merged_rep, "用言代表表記:");
 	strcat(pred_merged_rep, pred_string);
@@ -2240,8 +2259,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
 		    /* 代表と異なるもの */
 		    if (strcmp(pred_string, new_pred_string)) {
-			strcat(new_pred_string, make_pred_type(t_ptr));
-
 			if (strlen(pred_merged_rep) + strlen(new_pred_string) + 2 > pred_merged_rep_size) {
 			    pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
 								   pred_merged_rep_size *= 2, "assign_pred_feature_to_bp");
@@ -2358,6 +2375,14 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     /* ないときで用言のときは、defaultの格フレームをつくる */
     if (t_ptr->cf_num == 0 && flag == CF_PRED) {
+	if (OptDisplay == OPT_DEBUG) {
+	    int i;
+	    fprintf(stderr, ";; %s: Cannot find case frame for: ", sp->KNPSID ? sp->KNPSID + 5 : "?");
+	    for (i = 0; i < t_ptr->mrph_num; i++) {
+		fputs((t_ptr->mrph_ptr + i)->Goi2, stderr);
+	    }
+	    fputs("\n", stderr);
+	}
 	make_default_cframe(t_ptr, Case_frame_num);
     }
 }
