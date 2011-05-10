@@ -1875,7 +1875,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    (mention_ptr->type == 'C' || mention_ptr->type == 'N' || mention_ptr->type == 'O')) {
 
 		    printf(" POS: %s", check_feature(mention_ptr->tag_ptr->f, "用言") + strlen("用言:"));
-		    cp = make_pred_string(mention_ptr->tag_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                    if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
+                        cp = make_pred_string_from_mrph(mention_ptr->tag_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                    }
+                    else {
+                        cp = make_pred_string(mention_ptr->tag_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                    }
 		    printf(" KEY: %s", cp);
 		    free(cp);
 
@@ -1889,7 +1894,12 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 				       m.Goi2, m.Yomi, m.Goi, 
 				       &m.Hinshi, &m.Bunrui, 
 				       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-				cp = make_pred_string(mention_ptr->tag_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                                if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
+                                    cp = make_pred_string_from_mrph(mention_ptr->tag_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                                }
+                                else {
+                                    cp = make_pred_string(mention_ptr->tag_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
+                                }
 				printf("-%s", cp);
 				free(cp);
 			    }
