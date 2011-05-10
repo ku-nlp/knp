@@ -1155,7 +1155,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     else if (!strncmp(rule, "&·¸Â¦:", strlen("&·¸Â¦:"))) {
 	cp = rule + strlen("&·¸Â¦:");
 	if ((*cp != '^' && check_feature(((BNST_DATA *)ptr1)->f, cp)) ||
-	    (*cp == '^' && !check_feature(((BNST_DATA *)ptr1)->f, cp))) {
+	    (*cp == '^' && !check_feature(((BNST_DATA *)ptr1)->f, cp + 1))) {
 	    return TRUE;
 	} else {
 	    return FALSE;
