@@ -259,6 +259,7 @@ extern int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, i
 extern int check_examples(char *cp, int cp_len, char **ex_list, int ex_num);
 extern int check_cf_case(CASE_FRAME *cfp, char *pp);
 extern char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, int cf_type, int cpncf_flag);
+extern char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int use_rep_flag, int cf_type, int cpncf_flag);
 extern void assign_pred_feature_to_bp(SENTENCE_DATA *sp);
 extern char *feature2case(TAG_DATA *tp);
 extern float get_cfs_similarity(char *cf1, char *cf2);

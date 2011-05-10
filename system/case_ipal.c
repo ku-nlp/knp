@@ -1709,28 +1709,43 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 }
 
 /*==================================================================*/
-int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, char *in_verb, int flag)
+int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, 
+				 int start, int flag)
 /*==================================================================*/
 {
     int f_num = 0, plus_num;
-    char *verb;
+    char *verb, *pred_string;
+
+    if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
+	pred_string = make_pred_string_from_mrph(t_ptr, m_ptr, orig_form, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+    }
+    else {
+	pred_string = make_pred_string(t_ptr, m_ptr, orig_form, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
+    }
 
     if (flag == CF_NOUN) {
-	return _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, FALSE);
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, 0, flag, FALSE);
+	free(pred_string);
+	return f_num;
     }
     else if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* 用言代表表記版(受身など込み)格フレーム */
 	/* CF_PRED: 直前格要素をくっつけて検索 → ない場合はくっつけないで検索 */
-	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, TRUE);
+	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, 0, flag, TRUE);
 	if (f_num == 0) {
-	    return _make_ipal_cframe_subcontract(sp, t_ptr, start, in_verb, 0, flag, FALSE);
+	    f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, 0, flag, FALSE);
+	    if (f_num == 0) {
+		free(pred_string);
+		/* 主辞だけで用言表記を作り、態変換をする */
+		pred_string = make_pred_string_from_mrph(t_ptr, m_ptr, orig_form, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, TRUE);
+		f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, t_ptr->voice, flag, FALSE);
+	    }
 	}
-	else {
-	    return f_num;
-	}
+	free(pred_string);
+	return f_num;
     }
 
-    verb = (char *)malloc_data(strlen(in_verb) + 4, "make_ipal_cframe_subcontract");
-    strcpy(verb, in_verb);
+    verb = (char *)malloc_data(strlen(pred_string) + 4, "make_ipal_cframe_subcontract");
+    strcpy(verb, pred_string);
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
 	t_ptr->voice = 0; /* 能動態でtry */
@@ -1738,6 +1753,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 
 	/* 今のところ受身の場合を考えない */
 	free(verb);
+	free(pred_string);
 	return f_num;
 
 	t_ptr->voice = VOICE_UNKNOWN;
@@ -1767,6 +1783,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 	plus_num = _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, 0, flag, TRUE);
 	if (plus_num != 0) {
 	    free(verb);
+	    free(pred_string);
 	    return f_num + plus_num;
 	}
 	*(verb + strlen(verb) - suffix) = '\0'; /* みつからなかったらもとにもどす */
@@ -1778,7 +1795,8 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
     else {
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice, flag, TRUE);
     }
-    free(verb);    
+    free(verb);
+    free(pred_string);
     return f_num;
 }
 
@@ -2160,7 +2178,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 /*==================================================================*/
 {
     int f_num = 0;
-    char *cp, *pred_string, *new_pred_string;
+    char *cp;
 
     /* 自立語末尾語を用いて格フレーム辞書を引く */
 
@@ -2168,13 +2186,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return f_num;
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
-	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
-    }
-    else {
-	pred_string = make_pred_string(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
-    }
-    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);
+    f_num += make_ipal_cframe_subcontract(sp, t_ptr, NULL, NULL, start, flag);
 
     /* 代表表記が曖昧な用言の場合 */
     if (check_feature(t_ptr->head_ptr->f, "原形曖昧") && flag == CF_PRED) {
@@ -2189,30 +2201,16 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		if (OptCaseFlag & OPT_CASE_USE_CV_CF) {
-		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
-		}
-		else {
-		    new_pred_string = make_pred_string(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
-		}
-		/* 代表と異なるもの */
-		if (strcmp(pred_string, new_pred_string)) {
-		    f_num += make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, new_pred_string, flag);
-		}
-		free(new_pred_string);
+		f_num += make_ipal_cframe_subcontract(sp, t_ptr, &m, NULL, start + f_num, flag);
 	    }
 	    fp = fp->next;
 	}
     }
 
-    free(pred_string);
-
     /* ないときで、可能動詞のときは、もとの形を使う */
     if (!(OptCaseFlag & OPT_CASE_USE_CV_CF) && f_num == 0 && 
 	(cp = check_feature(t_ptr->head_ptr->f, "可能動詞"))) {
-	pred_string = make_pred_string(t_ptr, NULL, cp + strlen("可能動詞:"), OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
-	f_num += make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, flag);	
-	free(pred_string);
+	f_num += make_ipal_cframe_subcontract(sp, t_ptr, NULL, cp + strlen("可能動詞:"), start, flag);	
     }
 
     Case_frame_num += f_num;
@@ -2716,14 +2714,26 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return UNKNOWN_CF_SCORE;
     }
 
-    /* 用言表記は格フレームIDから抽出しない */
-
-    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(tp->head_ptr->Goi) + 8);
-    if ((num = sscanf(cfp->cf_id, "%*[^:]:%*[^:]:%[PC]%*d", voice)) == 1) {
-	sprintf(key, "%s|%s:%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype, voice);
+    if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* 用言代表表記版(受身など込み)格フレーム */
+	char *pred_string;
+	if ((pred_string = check_feature(tp->f, "用言代表表記"))) {
+	    pred_string += strlen("用言代表表記:");
+	    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(pred_string) + 8);
+	    sprintf(key, "%s|%s:%s", cfp->cf_id, pred_string, vtype);
+	}
+	else {
+	    return UNKNOWN_CF_SCORE;
+	}
     }
     else {
-	sprintf(key, "%s|%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype);
+	/* 用言表記を格フレームIDから抽出しない場合 */
+	key = malloc_db_buf(strlen(cfp->cf_id) + strlen(tp->head_ptr->Goi) + 8);
+	if ((num = sscanf(cfp->cf_id, "%*[^:]:%*[^:]:%[PC]%*d", voice)) == 1) {
+	    sprintf(key, "%s|%s:%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype, voice);
+	}
+	else {
+	    sprintf(key, "%s|%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype);
+	}
     }
 
     return get_cf_probability_internal(key);
