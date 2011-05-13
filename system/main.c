@@ -1551,8 +1551,8 @@ extern int	EX_match_subject;
 	ErrorComment = strdup("Cannot detect consistent CS scopes");
 	init_mask_matrix(sp);
     }
-    else if (flag == CONTINUE)
-	return FALSE;
+    else if (flag == CONTINUE) /* 並列キーが多すぎる場合 → 並列構造解析しない */
+        ;
 
  ParaOK:
     /********************/
