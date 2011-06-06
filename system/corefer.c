@@ -280,21 +280,21 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 	if (!ant_ne || strncmp(ant_ne, "NE:PERSON", 7)) return 0;
 
 	left = right = 0;
-	for (i = 0; i < strlen(anaphor); i += 2) {
-	    if (strncmp(antecedent + i, anaphor + i, 2)) {
+	for (i = 0; i < strlen(anaphor); i += BYTES4CHAR) {
+	    if (strncmp(antecedent + i, anaphor + i, BYTES4CHAR)) {
 		break;
 	    }
 	    left++;
 	}  
-	for (j = 0; j < strlen(anaphor); j += 2) {
-	    if (strncmp(antecedent + strlen(antecedent) - j - 2, 
-			anaphor + strlen(anaphor) - j - 2, 2)) {
+	for (j = 0; j < strlen(anaphor); j += BYTES4CHAR) {
+	    if (strncmp(antecedent + strlen(antecedent) - j - BYTES4CHAR, 
+			anaphor + strlen(anaphor) - j - BYTES4CHAR, BYTES4CHAR)) {
 		break;
 	    } 
 	    right++;
 	}
 	if (yomi_flag == 2) (left > right) ? (right += 2) : (left += 2);
-	if (left * right * 4 > strlen(anaphor)) return 1;
+	if (left * right * 2 * BYTES4CHAR > strlen(anaphor)) return 1;
 	return 0;
     }
 
@@ -322,7 +322,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
     if (ant_ne && strlen(ant_ne) > strlen(antecedent) && /* 先行詞がNE全体である */
 	!strcmp(ant_ne + strlen(ant_ne) - strlen(antecedent), antecedent) &&
 	(!strncmp(ant_ne, "NE:PERSON", 7) && ana_ne && !strncmp(ana_ne, "NE:PERSON", 7) || 
-	 !strncmp(ant_ne, "NE:LOCATION", 7) && strlen(antecedent) - strlen(anaphor) == 2 &&
+	 !strncmp(ant_ne, "NE:LOCATION", 7) && strlen(antecedent) - strlen(anaphor) == BYTES4CHAR &&
 	 check_feature(tag_ptr->head_ptr->f, "住所末尾")) &&
 	!strncmp(antecedent, anaphor, strlen(anaphor))) return 1;
     
@@ -342,14 +342,14 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
     /* 前後から同じ表記の文字を削除して残りの文字列のペアを比較する */
     /* 「金融派生商品-取引」と「デリバティブ-取引」は認識できる */
     /* 「日本銀行」と「日銀」のように同義表現が同じ文字を含む場合は認識できない */
-    for (i = 0; i < strlen(anaphor); i += 2) {
-	if (strncmp(antecedent + i, anaphor + i, 2)) {
+    for (i = 0; i < strlen(anaphor); i += BYTES4CHAR) {
+	if (strncmp(antecedent + i, anaphor + i, BYTES4CHAR)) {
 	    break;
 	}
     }  
-    for (j = 0; j < strlen(anaphor); j += 2) {
-	if (strncmp(antecedent + strlen(antecedent) - j - 2, 
-		    anaphor + strlen(anaphor) - j - 2, 2)) {
+    for (j = 0; j < strlen(anaphor); j += BYTES4CHAR) {
+	if (strncmp(antecedent + strlen(antecedent) - j - BYTES4CHAR, 
+		    anaphor + strlen(anaphor) - j - BYTES4CHAR, BYTES4CHAR)) {
 	    break;
 	} 
     }
@@ -410,7 +410,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    if (!check_feature(tag_ptr->f, "照応詞候補")) continue;
 			
 	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
-	    if (setubi && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
+	    if (setubi && tag_ptr->head_ptr < tag_ptr->mrph_ptr + tag_ptr->mrph_num - 1 && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
 
     	    /* Ｔ照応可能接尾辞が付与されている場合は接尾辞と照応詞の比較を行い
 	       同表記であれば共参照関係にあると決定 */
@@ -776,18 +776,18 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    /* 先行する表現と共参照関係にあるかをチェック */
 	    if (mrph_ptr && /* 名詞性接尾辞が付いた語はまず接尾辞も含めたものを調べる */
 		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
-		search_antecedent(sp, i, anaphor + 11, mrph_ptr->Goi2, NULL) ||
-		search_antecedent(sp, i, anaphor + 11, NULL, ne)) { /* 一般の場合 */
+		search_antecedent(sp, i, anaphor + strlen("照応詞候補") + 1, mrph_ptr->Goi2, NULL) ||
+		search_antecedent(sp, i, anaphor + strlen("照応詞候補") + 1, NULL, ne)) { /* 一般の場合 */
 
 		/* すでに見つかった共参照関係に含まれる関係は解析しない */
 		/* e.g. 照応詞が「国立大学」なら「国立」は照応詞として考慮しない */
-		if (!strcmp(anaphor + 11, (sp->tag_data + i)->mrph_ptr->Goi2)) continue; /* １形態素から成る場合は考慮せず */
+		if (!strcmp(anaphor + strlen("照応詞候補") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) continue; /* １形態素から成る場合は考慮せず */
 		while (i > 0) {
 		    if ((cp = check_feature((sp->tag_data + i - 1)->f, "照応詞候補")) &&
 			!strncmp(cp, anaphor, strlen(cp))) {
 			i--;
 			assign_cfeature(&((sp->tag_data + i)->f), "共参照内", FALSE);
-			if (!strcmp(cp + 11, (sp->tag_data + i)->mrph_ptr->Goi2)) break; /* １形態素から成るならそこまで */
+			if (!strcmp(cp + strlen("照応詞候補") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) break; /* １形態素から成るならそこまで */
 		    }
 		    else break;
 		}
@@ -853,7 +853,7 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 			check_feature(tag_ptr2->f, "COREFER_ID"))) {
 
 		cp = check_feature(tag_ptr->f, "照応詞候補");
-		cp += 11;
+		cp += strlen("照応詞候補") + 1;
 		
 		if (j == 0) {
 		    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
