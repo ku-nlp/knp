@@ -153,8 +153,8 @@ char *ne_code_to_tagposition(int num)
 	    free(ncp);
 	    ncp = next;
 	}
-	ne_cache[i] = NULL;
     }
+    init_ne_cache();
 }
 
 /*==================================================================*/
@@ -171,7 +171,7 @@ char *ne_code_to_tagposition(int num)
     }
     if (!(*ncpp)) {
 	*ncpp = (NE_CACHE *)malloc_data(sizeof(NE_CACHE), "register_ne_cache");
-	for (i = 0; i < NE_MODEL_NUMBER; i++) (*ncpp)->ne_result[NEresult] = 0;
+	for (i = 0; i < NE_MODEL_NUMBER; i++) (*ncpp)->ne_result[i] = 0;
 	(*ncpp)->key = strdup(key);
 	(*ncpp)->next = NULL;
     }

@@ -1,3 +1,8 @@
+2011-06-09  Ryohei Sasano  <sasano@pi.titech.ac.jp>
+
+	* system/proper.c:
+	Fixed a bug in cache initialization for NE recognition.
+
 2011-05-04  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/case_ipal.c, system/const.h, system/main.c:
