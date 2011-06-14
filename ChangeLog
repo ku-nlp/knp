@@ -1,3 +1,8 @@
+2011-06-14  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* rule/mrph_filter.rule
+	Added several rules for dealing with input files with NE tags.
+
 2011-06-09  Ryohei Sasano  <sasano@pi.titech.ac.jp>
 
 	* system/proper.c:
