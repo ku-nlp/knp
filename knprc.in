@@ -32,16 +32,8 @@
         @pkgdatadir@/dict
 )
 
-(SVMモデルファイル
-	(@pkgdatadir@/svm/anaphora-ga.model ガ)
-	(@pkgdatadir@/svm/anaphora-wo.model ヲ)
-	(@pkgdatadir@/svm/anaphora-ni.model ニ)
-)
-
-(KNP省略解析探索範囲
-        (ガ 0)
-        (ヲ 12)
-        (ニ 9)
+(同義表現ファイル
+	@pkgdatadir@/dict/synonym/synonym.db
 )
 
 (NEモデルファイル
