@@ -1,3 +1,8 @@
+2011-06-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_type.phrase:
+	Added a rule to mark unreliable dependencies.
+
 2011-06-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* knprc.in:
@@ -13,6 +18,35 @@
 
 	* system/proper.c:
 	Fixed a bug in cache initialization for NE recognition.
+
+2011-06-06  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/corefer.c, system/proper.c: Modifications for multi-encoding.
+
+2011-05-20  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.rule, rule/mrph_basic.data:
+	Deleted a useless rule for recognizing character type.
+
+2011-05-13  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/main.c:
+	Fixed to output a result for an input with many para keys.
+
+2011-05-10  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/anaphora.c:
+	Modified pred strings of print_entities() for -use-cv-cf.
+
+	* system/feature.c: bug fix.
+
+	* system/extern.h, system/case_ipal.c:
+	Modified the denominator of cfp.prob for -use-cv-cf.
+
+2011-05-09  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.data, rule/bnst_basic.rule:
+	Modified the recognition of passive voice.
 
 2011-05-04  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
