@@ -3,18 +3,18 @@
 # $Id$
 
 use strict;
-use encoding 'euc-jp';
-binmode STDERR, ':encoding(euc-jp)';
-binmode DB::OUT, ':encoding(euc-jp)';
+use encoding 'utf8';
+binmode STDERR, ':utf8';
+binmode DB::OUT, ':utf8';
 use KNP;
 
-# Ê¬Îà¸ì×ÃÉ½¤Ë¥¨¥ó¥È¥ê¤òÄÉ²Ã¤¹¤ë¥¹¥¯¥ê¥×¥È
+# åˆ†é¡èªå½™è¡¨ã«ã‚¨ãƒ³ãƒˆãƒªã‚’è¿½åŠ ã™ã‚‹ã‚¹ã‚¯ãƒªãƒ—ãƒˆ
 
 # usage:
 # ./add_usr_bgh.pl bgh.dat < usr_bgh.dat
  
-# usr_bgh.dat¤ÎÎã
-# ¥¢¥¹¥Ñ¥é=¤­¤å¤¦¤ê
+# usr_bgh.datã®ä¾‹
+# ã‚¢ã‚¹ãƒ‘ãƒ©=ãã‚…ã†ã‚Š
 
 my $knp = new KNP;
 
@@ -22,7 +22,7 @@ my %word2code;
 
 open F, "<:encoding(euc-jp)", $ARGV[0] or die;
 
-# bgh.orig¤ÎÆÉ¤ß¹ş¤ß
+# bgh.origã®èª­ã¿è¾¼ã¿
 while (<F>) {
     print;
 
@@ -34,7 +34,7 @@ while (<F>) {
 }
 close F;
 
-# usr_bgh.dat¤ÎÆÉ¤ß¹ş¤ß
+# usr_bgh.datã®èª­ã¿è¾¼ã¿
 while (<STDIN>) {
     chomp;
 
@@ -54,7 +54,7 @@ while (<STDIN>) {
     $new_repname = $newword =~ /\// ? $newword : &get_repname($newword);
     $repname = $word =~ /\// ? $word : &get_repname($word);
 
-    # ¤¹¤Ç¤Ë¥¨¥ó¥È¥ê¤¬¤¢¤ë
+    # ã™ã§ã«ã‚¨ãƒ³ãƒˆãƒªãŒã‚ã‚‹
     if (defined $word2code{$new_repname}) {
 	my $outputted_flag = 0;
 	foreach my $code (keys %{$word2code{$repname}}) {
@@ -72,7 +72,7 @@ while (<STDIN>) {
 	    print "$new_repname $code\n";
 	}
 	
-	# ÄÉ²Ã¤·¤¿¤â¤Î¤òÅĞÏ¿¤·¤Æ¤ª¤¯
+	# è¿½åŠ ã—ãŸã‚‚ã®ã‚’ç™»éŒ²ã—ã¦ãŠã
 	$word2code{$new_repname} = $word2code{$repname};
     }
     else {
@@ -86,7 +86,7 @@ sub get_repname {
     my $result = $knp->parse($word);
 
     if ($result && $result->bnst == 1) {
-	# Û£ËæÀ­¤¬¤¢¤ë¾ì¹ç(?¤ÇÏ¢·ë¤µ¤ì¤Æ¤¤¤ë¾ì¹ç)¡¢°ìÈÖºÇ½é¤À¤±¤ò¤È¤ë
+	# æ›–æ˜§æ€§ãŒã‚ã‚‹å ´åˆ(?ã§é€£çµã•ã‚Œã¦ã„ã‚‹å ´åˆ)ã€ä¸€ç•ªæœ€åˆã ã‘ã‚’ã¨ã‚‹
 	return (split(/\?/, ($result->bnst)[0]->repname))[0];
     }
     else {

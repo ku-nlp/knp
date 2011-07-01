@@ -5,15 +5,15 @@ use strict;
 
 =head1 NAME
 
-KNP::KULM::TList - KULM ¸ß´¹ API
+KNP::KULM::TList - KULM äº’æ› API
 
 =head1 SYNOPSIS
 
-¤³¤Î¥¯¥é¥¹¤ò¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ï¼
 
 =head1 DESCRIPTION
 
-C<KULM> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::TList> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
+C<KULM> äº’æ›ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ C<KNP::TList> ã‚¯ãƒ©ã‚¹ã«è¿½åŠ ã™ã‚‹ï¼
 
 =head1 METHODS
 
@@ -21,11 +21,11 @@ C<KULM> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::TList> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
 
 =item tag ( NUM )
 
-Âè I<NUM> ÈÖÌÜ¤Î¥¿¥°¤òÊÖ¤¹¡¥
+ç¬¬ I<NUM> ç•ªç›®ã®ã‚¿ã‚°ã‚’è¿”ã™ï¼
 
 =item tag
 
-Á´¤Æ¤Î¥¿¥°¤Î¥ê¥¹¥È¤òÊÖ¤¹¡¥
+å…¨ã¦ã®ã‚¿ã‚°ã®ãƒªã‚¹ãƒˆã‚’è¿”ã™ï¼
 
 =cut
 sub tag {
@@ -39,7 +39,7 @@ sub tag {
 
 =item tag_num
 
-¥¿¥°Îó¤ÎÄ¹¤µ¤òÊÖ¤¹¡¥
+ã‚¿ã‚°åˆ—ã®é•·ã•ã‚’è¿”ã™ï¼
 
 =cut
 sub tag_num {
@@ -65,14 +65,13 @@ L<KNP::TList>
 =over 4
 
 =item
-ÅÚ²° ²íÌ­ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+åœŸå±‹ é›…ç¨” <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

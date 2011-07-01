@@ -6,15 +6,15 @@ use base qw/ Juman::KULM::Morpheme /;
 
 =head1 NAME
 
-KNP::KULM::Morpheme - KULM ¸ß´¹ API
+KNP::KULM::Morpheme - KULM äº’æ› API
 
 =head1 SYNOPSIS
 
-¤³¤Î¥¯¥é¥¹¤ò¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ï¼
 
 =head1 DESCRIPTION
 
-C<KULM::KNP::M> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::Morpheme> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
+C<KULM::KNP::M> äº’æ›ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ C<KNP::Morpheme> ã‚¯ãƒ©ã‚¹ã«è¿½åŠ ã™ã‚‹ï¼
 
 =head1 METHODS
 
@@ -22,7 +22,7 @@ C<KULM::KNP::M> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::Morpheme> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
 
 =item get ($attr)
 
-»ØÄê¤µ¤ì¤¿Â°À­¤òÊÖ¤¹¡¥
+æŒ‡å®šã•ã‚ŒãŸå±æ€§ã‚’è¿”ã™ï¼
 
 =cut
 sub get {
@@ -43,7 +43,7 @@ sub get {
 
 =item gets (@attr)
 
-»ØÄê¤µ¤ì¤¿Â°À­¤Î¥ê¥¹¥È¤òÊÖ¤¹¡¥C<all> ¤È¤¤¤¦»ØÄê¤¬²ÄÇ½¤Ç¤¢¤ë¡¥
+æŒ‡å®šã•ã‚ŒãŸå±æ€§ã®ãƒªã‚¹ãƒˆã‚’è¿”ã™ï¼C<all> ã¨ã„ã†æŒ‡å®šãŒå¯èƒ½ã§ã‚ã‚‹ï¼
 
 =cut
 sub gets {
@@ -82,14 +82,13 @@ L<KULM::KNP::M>
 =over 4
 
 =item
-ÅÚ²° ²íÌ­ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+åœŸå±‹ é›…ç¨” <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

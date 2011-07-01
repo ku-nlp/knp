@@ -2,6 +2,7 @@
 package KNP::SynNode;
 require 5.004_04; # For base pragma.
 use strict;
+use vars qw/ $ENCODING /;
 use Encode;
 
 =head1 NAME
@@ -10,21 +11,24 @@ KNP::SynNode - SynNode in KNP
 
 =head1 DESCRIPTION
 
-SynNode¤Î³Æ¼ï¾ğÊó¤òÊİ»ı¤¹¤ë¥ª¥Ö¥¸¥§¥¯¥È¡¥
+SynNodeã®å„ç¨®æƒ…å ±ã‚’ä¿æŒã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼
 
 =cut
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
+
 sub new {
     my( $class, $str ) = @_;
     my $this = {};
 
-    my $score_pat = '¥¹¥³¥¢';
+    my $score_pat = 'ã‚¹ã‚³ã‚¢';
     if( utf8::is_utf8( $str ) ){
-	$score_pat = decode('euc-jp', $score_pat);
+	$score_pat = decode($ENCODING, $score_pat);
     }
 
-    # ! 1 <SYNID:¶á¤¤/¤Á¤«¤¤><¥¹¥³¥¢:1>
-    # ! 1 <SYNID:s199:¿Æ¤·¤¤/¤·¤¿¤·¤¤><¥¹¥³¥¢:0.99>
-    # ! 1 <SYNID:s1201:½êºß/¤·¤ç¤¶¤¤><¥¹¥³¥¢:0.693><¾å°Ì¸ì><²¼°Ì¸ì¿ô:323>
+    # ! 1 <SYNID:è¿‘ã„/ã¡ã‹ã„><ã‚¹ã‚³ã‚¢:1>
+    # ! 1 <SYNID:s199:è¦ªã—ã„/ã—ãŸã—ã„><ã‚¹ã‚³ã‚¢:0.99>
+    # ! 1 <SYNID:s1201:æ‰€åœ¨/ã—ã‚‡ã–ã„><ã‚¹ã‚³ã‚¢:0.693><ä¸Šä½èª><ä¸‹ä½èªæ•°:323>
     my ($tagid, $string) = (split(' ', $str))[1,2];
     my @tagids = split(',', $tagid);
 
@@ -38,7 +42,7 @@ sub new {
 	elsif ($s =~ /<$score_pat:(.+?)>/) {
 	    $score = $1;
 	}
-	# ¤½¤ÎÂ¾¤Ïfeature
+	# ãã®ä»–ã¯feature
 	else {
 	    push @features, $s;
 	}
@@ -55,13 +59,13 @@ sub new {
 
 =head1 METHODS
 
-°Ê²¼¤Î¥á¥½¥Ã¥É¤¬ÍøÍÑ²ÄÇ½¤Ç¤¢¤ë¡£
+ä»¥ä¸‹ã®ãƒ¡ã‚½ãƒƒãƒ‰ãŒåˆ©ç”¨å¯èƒ½ã§ã‚ã‚‹ã€‚
 
 =over 4
 
 =item tagid
 
-ÂĞ±ş¤¹¤ë´ğËÜ¶çID¤òÊÖ¤¹¡£
+å¯¾å¿œã™ã‚‹åŸºæœ¬å¥IDã‚’è¿”ã™ã€‚
 
 =cut
 sub tagid {
@@ -71,7 +75,7 @@ sub tagid {
 
 =item tagids
 
-ÂĞ±ş¤¹¤ë´ğËÜ¶çID(ÇÛÎó)¤òÊÖ¤¹¡£
+å¯¾å¿œã™ã‚‹åŸºæœ¬å¥ID(é…åˆ—)ã‚’è¿”ã™ã€‚
 
 =cut
 sub tagids {
@@ -81,7 +85,7 @@ sub tagids {
 
 =item synid
 
-SynID¤òÊÖ¤¹¡£
+SynIDã‚’è¿”ã™ã€‚
 
 =cut
 sub synid {
@@ -91,7 +95,7 @@ sub synid {
 
 =item score
 
-¥¹¥³¥¢¤òÊÖ¤¹¡£
+ã‚¹ã‚³ã‚¢ã‚’è¿”ã™ã€‚
 
 =cut
 sub score {
@@ -101,7 +105,7 @@ sub score {
 
 =item feature
 
-Ê¸Ë¡ÁÇÀ­¤òÊÖ¤¹¡£
+æ–‡æ³•ç´ æ€§ã‚’è¿”ã™ã€‚
 
 =cut
 sub feature {
@@ -116,7 +120,7 @@ sub feature {
 =over 4
 
 =item
-¼ÆÅÄ ÃÎ½¨ <shibata@nlp.kuee.kyoto-u.ac.jp>
+æŸ´ç”° çŸ¥ç§€ <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -124,7 +128,6 @@ sub feature {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

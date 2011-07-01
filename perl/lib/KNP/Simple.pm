@@ -9,18 +9,18 @@ use vars qw/ @EXPORT /;
 
 =head1 NAME
 
-KNP::Simple - ��ʸ���Ϥ�Ԥ��⥸�塼��
+KNP::Simple - 構文解析を行うモジュール
 
 =head1 DESCRIPTION
 
-C<KNP::Simple> �ϡ�KNP ���Ѥ��ƹ�ʸ���Ϥ�Ԥ��ؿ� C<knp> ����������
-���塼��Ǥ��롥
+C<KNP::Simple> は，KNP を用いて構文解析を行う関数 C<knp> を定義するモ
+ジュールである．
 
-���Υ⥸�塼���Ȥ��ȡ�C<KNP> �⥸�塼����ñ�ˡ����������¤��줿��
-�����Ѥ��뤳�Ȥ��Ǥ��롥�㤨�С����Υ⥸�塼��ϡ��ǽ�˺������� 
-C<KNP> ���֥������Ȥ�����Ѥ���Τǡ����ץ����������ѹ��ʤɤϤǤ���
-���������٤�����ǹ�ʸ���Ϥ�Ԥ�ɬ�פ�������ϡ�C<KNP> �⥸�塼��
-��ľ�ܸƤӽФ����ȡ�
+このモジュールを使うと，C<KNP> モジュールを簡単に，しかし制限された形
+で利用することができる．例えば，このモジュールは，最初に作成した 
+C<KNP> オブジェクトを再利用するので，オプションの途中変更などはできな
+い．より高度な設定で構文解析を行う必要がある場合は，C<KNP> モジュール
+を直接呼び出すこと．
 
 =head1 FUNCTION
 
@@ -28,25 +28,25 @@ C<KNP> ���֥������Ȥ�����Ѥ���Τǡ����ץ����������ѹ��ʤɤϤǤ���
 
 =item knp ($str)
 
-���ꤵ�줿ʸ������оݤȤ��ƹ�ʸ���Ϥ�Ԥ��ؿ���C<KNP::Result> ���֥���
-���Ȥ��֤���
+指定された文字列を対象として構文解析を行う関数．C<KNP::Result> オブジェ
+クトを返す．
 
   Example:
 
     use KNP::Simple;
-    $result = &knp( "����ʸ��ʸ���Ϥ��Ƥ���������" );
+    $result = &knp( "この文を構文解析してください．" );
     print $result->all();
 
-��ʸ���ϤΥ��ץ������ѹ�������ϡ�C<use> �λ����ǻ��ꤷ�Ƥ�����
+構文解析のオプションを変更する場合は，C<use> の時点で指定しておく．
 
   Example:
 
     use KNP::Simple -Option => "-tab -case2";
-    $result = &knp( "����ʸ��ʸ���Ϥ��Ƥ���������" );
+    $result = &knp( "この文を構文解析してください．" );
     print $result->all();
 
-���ץ����ˤϡ�C<KNP::new> �μ����դ��륪�ץ�����Ʊ����Τ�����Ǥ�
-�롥
+オプションには，C<KNP::new> の受け付けるオプションと同じものが指定でき
+る．
 
 =cut
 my @OPTION;
@@ -87,14 +87,13 @@ L<KNP::Result>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

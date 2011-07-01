@@ -7,30 +7,30 @@ use Juman;
 use KNP::Result;
 use strict;
 use base qw/ KNP::Obsolete Juman::Process /;
-use vars qw/ $VERSION %DEFAULT /;
+use vars qw/ $VERSION %DEFAULT $ENCODING /;
 
 =head1 NAME
 
-KNP - ��ʸ���Ϥ�Ԥ��⥸�塼��
+KNP - 構文解析を行うモジュール
 
 =head1 SYNOPSIS
 
  use KNP;
  $knp = new KNP;
- $result = $knp->parse( "����ʸ��ʸ���Ϥ��Ƥ���������" );
+ $result = $knp->parse( "この文を構文解析してください．" );
  print $result->all;
 
 =head1 DESCRIPTION
 
-C<KNP> �ϡ�KNP ���Ѥ��ƹ�ʸ���Ϥ�Ԥ��⥸�塼��Ǥ��롥
+C<KNP> は，KNP を用いて構文解析を行うモジュールである．
 
-ñ��˹�ʸ���Ϥ�Ԥ������ʤ�С�C<KNP::Simple> �����ѤǤ��롥
-C<KNP::Simple> �ϡ�C<KNP> �⥸�塼��Υ�åѡ��Ǥ��ꡤ����ñ�˹�ʸ��
-�ϴ�����ѤǤ���褦���߷פ���Ƥ��롥
+単純に構文解析を行うだけならば、C<KNP::Simple> が利用できる．
+C<KNP::Simple> は，C<KNP> モジュールのラッパーであり，より簡単に構文解
+析器を利用できるように設計されている．
 
 =head1 CONSTRUCTOR
 
-C<KNP> ���֥������Ȥ��������륳�󥹥ȥ饯���ϡ��ʲ��ΰ���������դ��롥
+C<KNP> オブジェクトを生成するコンストラクタは，以下の引数を受け付ける．
 
 =head2 Synopsis
 
@@ -53,42 +53,42 @@ C<KNP> ���֥������Ȥ��������륳�󥹥ȥ饯���ϡ��ʲ��ΰ���������դ��롥
 
 =item -Server
 
-KNP �����С��Υۥ���̾����ά���줿���ϡ��Ķ��ѿ� C<KNPSERVER> �ǻ���
-���줿�����С������Ѥ���롥�Ķ��ѿ�����ꤵ��Ƥ��ʤ����ϡ�KNP ���
-�ץ������Ȥ��ƸƤӽФ���
+KNP サーバーのホスト名．省略された場合は，環境変数 C<KNPSERVER> で指定
+されたサーバーが利用される．環境変数も指定されていない場合は，KNP を子
+プロセスとして呼び出す．
 
 =item -Port
 
-KNP �����С��Υݡ����ֹ桥
+KNP サーバーのポート番号．
 
 =item -Command
 
-KNP �μ¹ԥե�����̾��KNP �����С������Ѥ��ʤ����˻��Ȥ���롥
+KNP の実行ファイル名．KNP サーバーを利用しない場合に参照される．
 
 =item -Timeout
 
-�����С��ޤ��ϻҥץ��������̿���������Ԥ����֡�
+サーバーまたは子プロセスと通信する時の待ち時間．
 
 =item -Option
 
-KNP ��¹Ԥ���ݤΥ��ޥ�ɥ饤���������ά�������ϡ�
-C<$KNP::DEFAULT{option}> ���ͤ��Ѥ����롥
+KNP を実行する際のコマンドライン引数．省略した場合は，
+C<$KNP::DEFAULT{option}> の値が用いられる．
 
-������������ե��������ꤹ�� C<-r> ���ץ����ȡ�KNP �ˤ�ä�̵�뤵
-����Ƭ�ѥ��������ꤹ�� C<-i> ���ץ����ˤĤ��Ƥϡ����줾����̤� 
-C<-Rcfile>, C<-IgnorePattern> �ˤ�äƻ��ꤹ��٤��Ǥ��롥
+ただし，設定ファイルを指定する C<-r> オプションと，KNP によって無視さ
+れる行頭パターンを指定する C<-i> オプションについては，それぞれ個別に 
+C<-Rcfile>, C<-IgnorePattern> によって指定するべきである．
 
 =item -Rcfile
 
-KNP ������ե��������ꤹ�륪�ץ����
+KNP の設定ファイルを指定するオプション．
 
-���Υ��ץ����ȡ�KNP �����С������Ѥ�ξΩ���ʤ����Ȥ�¿�����äˡ�����
-�С������Ѥ��Ƥ��뼭��Ȱ㤦�������ꤷ�Ƥ�������ե�����ϡ��տޤ���
-�̤�ˤ�ư��ʤ���
+このオプションと，KNP サーバーの利用は両立しないことが多い．特に，サー
+バーが利用している辞書と違う辞書を指定している設定ファイルは，意図した
+通りには動作しない．
 
 =item -IgnorePattern
 
-KNP �ˤ�ä�̵�뤵����Ƭ�ѥ�����
+KNP によって無視される行頭パターン．
 
 =item -JumanServer
 
@@ -100,7 +100,7 @@ KNP �ˤ�ä�̵�뤵����Ƭ�ѥ�����
 
 =item -JumanRcfile
 
-Juman ��ƤӽФ����Υ��ץ���������Ū�˻��ꤹ�뤿��Υ��ץ����
+Juman を呼び出す時のオプションを明示的に指定するためのオプション．
 
 =back
 
@@ -112,73 +112,73 @@ Juman ��ƤӽФ����Υ��ץ���������Ū�˻��ꤹ�뤿��Υ��ץ����
 
 =item parse( OBJ )
 
-ʸ����ޤ��Ϸ������󥪥֥������� OBJ ���оݤȤ��ƹ�ʸ���Ϥ�Ԥ�����ʸ
-���Ϸ�̥��֥������Ȥ��֤���
+文字列または形態素列オブジェクト OBJ を対象として構文解析を行い，構文
+解析結果オブジェクトを返す．
 
-��������ʸ���󤬶�ʸ����Ǥ��ä��ꡤʸ�������Ƭ��ʸ���� C<#> �Ǥ��ä�
-�ꤷ�����ˤϡ�ʸ�����̵�뤵�� undef ���֤��ͤȤʤ롥
+ただし，文字列が空文字列であったり，文字列の先頭の文字が C<#> であった
+りした場合には，文字列は無視され undef が返り値となる．
 
-�ޤ�����ʸ���������̿Ū�ʥ��顼��ȯ���������� undef ���֤������ξ�
-��ϡ�����ľ��� C<error> �᥽�åɤ��Ѥ��뤳�Ȥˤ�äơ��ºݤ�ȯ������
-���顼���Τ뤳�Ȥ��Ǥ��롥
+また，構文解析中に致命的なエラーが発生した場合も undef を返す．この場
+合は，その直後に C<error> メソッドを用いることによって，実際に発生した
+エラーを知ることができる．
 
-�������äơ�C<parse> �᥽�åɤ��֤��ͤ򡤴������İ����˽������뤿���
-�ϡ��ʲ��Τ褦�ʥץ�����बɬ�פǤ��롥
+したがって，C<parse> メソッドの返り値を，完全かつ安全に処理するために
+は，以下のようなプログラムが必要である．
 
   Example:
 
     $result = $knp->parse( $str );
     if( $result ){
-        # ��ʸ���Ϥ������������
+        # 構文解析が成功した場合
         if( $result->error() ){
-            # ����������ʸ������˲��餫�Υ��顼��å�������
-            # ���Ϥ��줿���
+            # ただし，構文解析中に何らかのエラーメッセージが
+            # 出力された場合
         }
         else {
-            # �����˹�ʸ���Ϥ���λ�������
+            # 安全に構文解析が終了した場合
         }
     } else {
         if( $knp->error() ){
-            # ��ʸ���������̿Ū�ʥ��顼��ȯ���������
+            # 構文解析中に致命的なエラーが発生した場合
         }
         else {
-            # �оݤȤʤ�ʸ����̵�뤵�졤�������Ԥ��ʤ��ä����
+            # 対象となる文字列が無視され，処理が行われなかった場合
         }
     }
 
-����Ū�ˤϰʲ��Τ褦�ʥץ������ǽ�ʬ��������
+一般的には以下のようなプログラムで十分だろう．
 
   Example:
 
     $result = $knp->parse( $str );
     if( $result ){
-        # ��ʸ���Ϥ������������
+        # 構文解析が成功した場合
     }
 
 =item parse_string( STRING )
 
-ʸ������оݤȤ��ƹ�ʸ���Ϥ�Ԥ�����ʸ���ϥ��֥������Ȥ��֤���
+文字列を対象として構文解析を行い，構文解析オブジェクトを返す．
 
 =item parse_mlist( MLIST )
 
-�������󥪥֥������Ȥ��оݤȤ��ƹ�ʸ���Ϥ�Ԥ�����ʸ���Ϸ�̥��֥�����
-�Ȥ��֤���
+形態素列オブジェクトを対象として構文解析を行い，構文解析結果オブジェク
+トを返す．
 
 =item result
 
-ľ���ι�ʸ���Ϸ�̥��֥������Ȥ��֤���
+直前の構文解析結果オブジェクトを返す．
 
 =item error
 
-ľ������̿Ū�ʥ��顼���֤���
+直前の致命的なエラーを返す．
 
 =item detail( [TYPE] )
 
-C<-detail> ���ץ�������ꤷ�����˸¤�ͭ���Ȥʤ�᥽�åɡ�
+C<-detail> オプションを指定した場合に限り有効となるメソッド．
 
 =item juman( STRING )
 
-ʸ���������ǲ��Ϥ��������ǲ��Ϸ�̥��֥������Ȥ��֤���
+文字列を形態素解析し，形態素解析結果オブジェクトを返す．
 
 =back
 
@@ -188,8 +188,8 @@ C<-detail> ���ץ�������ꤷ�����˸¤�ͭ���Ȥʤ�᥽�åɡ�
 
 =item KNPSERVER
 
-�Ķ��ѿ� C<KNPSERVER> �����ꤵ��Ƥ�����ϡ����ꤵ��Ƥ���ۥ��Ȥ� 
-KNP �����С��Ȥ������Ѥ��롥
+環境変数 C<KNPSERVER> が設定されている場合は，指定されているホストを 
+KNP サーバーとして利用する．
 
 =back
 
@@ -223,21 +223,24 @@ TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =head1 COPYRIGHT
 
-���ѵڤӺ����ۤˤĤ��Ƥ� GPL2 �ޤ��� Artistic License �˽��äƤ���������
+利用及び再配布については GPL2 または Artistic License に従ってください。
 
 =cut
 
 
-### �С������ɽ��
+### バージョン表示
 $VERSION = '0.4.9';
 
-# �������ޥ������ѿ�
+# KNPコマンドの入出力エンコーディング
+$ENCODING = 'utf8';
+
+# カスタマイズ用変数
 %DEFAULT =
     ( command => &Juman::Process::which_command('knp'),
-      server  => $ENV{KNPSERVER} || '',		# KNP �����С��Υۥ���̾
-      port    => 31000,				# KNP �����С��Υݡ����ֹ�
-      timeout => 60,				# KNP �����С��α������Ԥ�����
-      option  => '-tab',			# KNP ���Ϥ���륪�ץ����
+      server  => $ENV{KNPSERVER} || '',		# KNP サーバーのホスト名
+      port    => 31000,				# KNP サーバーのポート番号
+      timeout => 60,				# KNP サーバーの応答の待ち時間
+      option  => '-tab',			# KNP に渡されるオプション
       rcfile  => (exists($ENV{HOME}) ? $ENV{HOME} : '') . '/.knprc',
       bclass  => $KNP::Result::DEFAULT{bclass},
       mclass  => $KNP::Result::DEFAULT{mclass},
@@ -252,8 +255,8 @@ while( my( $key, $value ) = each %Juman::DEFAULT ){
 #		Constructor
 #----------------------------------------------------------------------
 
-# KNP ��ҥץ������Ȥ��Ƽ¹Ԥ��Ƥ����硤ɸ����ϤΥХåե���󥰤ˤ��
-# �ƽ��Ϥ���Ťˤʤ�ʤ��褦�ˤ��뤿��Τ��ޤ��ʤ�
+# KNP を子プロセスとして実行している場合，標準出力のバッファリングによっ
+# て出力が二重にならないようにするためのおまじない
 sub BEGIN {
     unless( $DEFAULT{server} ){
 	require FileHandle or die;
@@ -267,11 +270,11 @@ sub new {
     bless $this, $class;
 
     if( @_ == 1 ){
-	# ��С������η����ǸƤӽФ��줿���ν���
+	# 旧バージョンの形式で呼び出された場合の処理
 	my( $argv ) = @_;
 	$this->setup( $argv, \%DEFAULT );
     } else {
-	# �����������ǸƤӽФ��줿���ν���
+	# 新しい形式で呼び出された場合の処理
 	my( %option ) = @_;
 	$this->setup( \%option, \%DEFAULT );
     }
@@ -292,7 +295,7 @@ sub close {
 
 
 #----------------------------------------------------------------------
-#		��ʸ���Ϥ�Ԥ��᥽�å�
+#		構文解析を行うメソッド
 #----------------------------------------------------------------------
 sub knp { &parse(@_); }
 sub parse {
@@ -304,14 +307,14 @@ sub parse {
     }
 }
 
-# ʸ������оݤȤ��ơ���ʸ���Ϥ�Ԥ��᥽�å�
+# 文字列を対象として，構文解析を行うメソッド
 sub parse_string {
     my( $this, $str ) = @_;
     
-    # ����Ȳ��ԤΤߤ���ʤ�����ʸ��̵�뤵���
+    # 空白と改行のみからなる入力文は無視される
     return &_set_error( $this, undef ) if $str =~ m/^\s*$/s;
 
-    # "#" �ǻϤޤ�����ʸ��̵�뤵���
+    # "#" で始まる入力文は無視される
     return &_set_error( $this, undef ) if $str =~ /^\#/;
 
     &_real_parse( $this,
@@ -319,7 +322,7 @@ sub parse_string {
 		  $str );
 }
 
-# �������󥪥֥������Ȥ��оݤȤ��ơ���ʸ���Ϥ�Ԥ��᥽�å�
+# 形態素列オブジェクトを対象として，構文解析を行うメソッド
 sub parse_mlist {
     my( $this, $mlist ) = @_;
     &_real_parse( $this,
@@ -327,18 +330,18 @@ sub parse_mlist {
 		  join( '', map( $_->midasi(), $mlist->mrph ) ) );
 }
 
-# �ºݤι�ʸ���Ϥ�Ԥ������ؿ�
+# 実際の構文解析を行う内部関数
 sub _real_parse {
     my( $this, $array, $str ) = @_;
 
     return &_set_error( $this, ";; TIMEOUT is occured when Juman was called.\n" )
 	unless( @{$array} );
 
-    # UTF�ե饰������å�����
+    # UTFフラグをチェックする
     if (utf8::is_utf8($str)) {
 	require Encode;
 	foreach my $str (@{$array}) {
-	    $str = Encode::encode('euc-jp', $str);
+	    $str = Encode::encode($KNP::ENCODING, $str);
 	}
 	$this->{input_is_utf8} = 1;
     }
@@ -346,12 +349,12 @@ sub _real_parse {
 	$this->{input_is_utf8} = 0;
     }
 
-    # Parse ERROR �ʤɤ�ȯ���������˸�����Ĵ�٤뤿�ᡤ��ʸ���Ϥ���ʸ
-    # ���������¸���Ƥ�����
+    # Parse ERROR などが発生した場合に原因を調べるため，構文解析した文
+    # の履歴を保存しておく．
     unshift( @{$this->{PREVIOUS}}, $str );
     splice( @{$this->{PREVIOUS}}, 10 ) if @{$this->{PREVIOUS}} > 10;
 
-    # ��ʸ����
+    # 構文解析
     my @error;
     my $counter = 0;
     my $pattern = $this->pattern();
@@ -360,14 +363,14 @@ sub _real_parse {
     $sock->print( @$array );
     $counter++;
 
-    # ��ʸ���Ϸ�̤��ɤ߽Ф�
+    # 構文解析結果を読み出す
     my( @buf );
     my $skip = ( $this->{OPTION}->{option} =~ /\-detail/ ) ? 1 : 0;
     while( defined( $str = $sock->getline ) ){
 	if ($this->{input_is_utf8}) {
-	    $str = Encode::decode('euc-jp', $str);
+	    $str = Encode::decode($KNP::ENCODING, $str);
 	}
-	# ��;; Too many para ()!�ס�;; Invalid input�פʤɤΥ��顼��å�����
+	# 「;; Too many para ()!」「;; Invalid input」などのエラーメッセージ
 	if( $str =~ /^;; (?:Too|Invalid) /) {
 	    push( @error, $str);
 	    $this->close();
@@ -379,8 +382,8 @@ sub _real_parse {
     }
 #    die "Mysterious error: KNP server or process gives no response" unless @buf;
 
-    # ��ʸ���Ϸ�̤κǸ�� EOS �ΤߤιԤ�̵�����ϡ��ɤ߽Ф���˥���
-    # �ॢ���Ȥ�ȯ�����Ƥ��롥
+    # 構文解析結果の最後に EOS のみの行が無い場合は，読み出し中にタイ
+    # ムアウトが発生している．
     unless( @buf and $buf[$#buf] =~ /$pattern/ ){
  	if( $counter == 1 ){
  	    push( @error, ";; TIMEOUT is occured.\n" );
@@ -393,8 +396,8 @@ sub _real_parse {
 	return &_set_error( $this, join( '', @error ) );
     }
 
-    # "Cannot detect consistent CS scopes." �Ȥ������顼�ξ��ϡ�KNP 
-    # �ΥХ��Ǥ����ǽ��������Τǡ���ö KNP ��Ƶ�ư���롥
+    # "Cannot detect consistent CS scopes." というエラーの場合は，KNP 
+    # のバグである可能性があるので，一旦 KNP を再起動する．
     if( grep( /^;; Cannot detect consistent CS scopes./, @buf ) ){
  	if( $counter == 1 ){
  	    push( @error, ";; Cannot detect consistent CS scopes.\n" );
@@ -406,7 +409,7 @@ sub _real_parse {
  	goto PARSE if( $counter <= 1 );
     }
 
-    # -detail ���ץ���󤬻��ꤵ��Ƥ�����
+    # -detail オプションが指定されている場合
     if( $this->{OPTION}->{option} =~ /\-detail/ ){
 	my( $str, @mrph, @bnst );
 	while( defined( $str = shift @buf ) ){
@@ -425,7 +428,7 @@ sub _real_parse {
 			    struct => join( '', @buf ) };
     }
 
-    # ��ʸ���Ϸ�̤�������롥
+    # 構文解析結果を処理する．
     unshift( @buf, @error );
     &_internal_analysis( $this, \@buf );
 }
@@ -433,7 +436,7 @@ sub _real_parse {
 
 
 #----------------------------------------------------------------------
-#		�����ǲ��Ϥ�Ԥ��᥽�å�
+#		形態素解析を行うメソッド
 #----------------------------------------------------------------------
 sub _new_juman {
     my( $this ) = @_;
@@ -461,7 +464,7 @@ sub juman {
 
 
 #----------------------------------------------------------------------
-#		��ʸ���Ϸ�̤���Ϥ���ؿ�
+#		構文解析結果を解析する関数
 #----------------------------------------------------------------------
 sub analysis {
     my( $this, @result ) = @_;
@@ -478,11 +481,11 @@ sub _internal_analysis {
 			       mclass  => $this->{OPTION}->{mclass},
 			       tclass  => $this->{OPTION}->{tclass} );
 
-    # result �᥽�åɤ��黲�ȤǤ���褦����¸
+    # result メソッドから参照できるように保存
     $this->{RESULT} = $result;
 
-    # NOTE: �����Υϥå��幽¤��ľ�ܥ����������Ƥ��륹����ץȤθ�����
-    # �����Τ���ξ��ٹ�
+    # NOTE: 内部のハッシュ構造を直接アクセスしているスクリプトの後方互
+    # 換性のための小細工
     $this->{ALL}     = $result->all;
     $this->{COMMENT} = $result->comment;
     $this->{ERROR}   = $result->error;
@@ -496,10 +499,10 @@ sub _internal_analysis {
 sub _set_error {
     my( $this, $error ) = @_;
 
-    # �¹Է�̤�ꥻ�å�
+    # 実行結果をリセット
     delete $this->{RESULT};
 
-    # �����ߴ����Τ���Υϥå������
+    # 後方互換性のためのハッシュを削除
     delete $this->{ALL};
     delete $this->{COMMENT};
     delete $this->{ERROR};
@@ -517,7 +520,7 @@ sub _set_error {
 
 
 #----------------------------------------------------------------------
-#		��ʸ���Ϸ�̤���Ф��᥽�å�
+#		構文解析結果を取り出すメソッド
 #----------------------------------------------------------------------
 sub detail {
     if( @_ == 1 ){
@@ -552,7 +555,6 @@ sub error {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

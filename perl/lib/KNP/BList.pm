@@ -8,7 +8,7 @@ use base qw/ KNP::DrawTree KNP::KULM::BList KNP::KULM::TList Juman::KULM::MList 
 
 =head1 NAME
 
-KNP::BList - ʸ���󥪥֥�������
+KNP::BList - 文節列オブジェクト
 
 =head1 SYNOPSIS
 
@@ -16,7 +16,7 @@ KNP::BList - ʸ���󥪥֥�������
 
 =head1 DESCRIPTION
 
-ʸ������ݻ����륪�֥������ȡ�
+文節列を保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -24,8 +24,8 @@ KNP::BList - ʸ���󥪥֥�������
 
 =item new( @BNST )
 
-���ꤵ�줿ʸ��Υꥹ�Ȥ��ݻ����륪�֥������Ȥ��������롥��������ά����
-�����ϡ���ʸ������ݻ����륪�֥������Ȥ��������롥
+指定された文節のリストを保持するオブジェクトを生成する．引数が省略され
+た場合は，空文節列を保持するオブジェクトを生成する．
 
 =cut
 sub new {
@@ -44,21 +44,21 @@ sub new {
 
 =item bnst ( NUM )
 
-�� I<NUM> ���ܤ�ʸ����֤���
+第 I<NUM> 番目の文節を返す．
 
 =item bnst
 
-���Ƥ�ʸ��Υꥹ�Ȥ��֤���
+全ての文節のリストを返す．
 
 =begin comment
 
-C<bnst> �᥽�åɤμ��Τϡ�C<KNP::KULM::BList> ���饹���������Ƥ��롥
+C<bnst> メソッドの実体は，C<KNP::KULM::BList> クラスで定義されている．
 
 =end comment
 
 =item bnst_list
 
-���Ƥ�ʸ��Υꥹ�Ȥ��֤���
+全ての文節のリストを返す．
 
 =cut
 sub bnst_list {
@@ -72,7 +72,7 @@ sub bnst_list {
 
 =item push_bnst( @BNST )
 
-���ꤵ�줿ʸ�����ʸ�����ɲä��롥
+指定された文節列を文末に追加する．
 
 =cut
 sub push_bnst {
@@ -88,21 +88,21 @@ sub push_bnst {
 
 =item tag ( NUM )
 
-�� I<NUM> ���ܤΥ������֤���
+第 I<NUM> 番目のタグを返す．
 
 =item tag
 
-���ƤΥ����Υꥹ�Ȥ��֤���
+全てのタグのリストを返す．
 
 =begin comment
 
-C<tag> �᥽�åɤμ��Τϡ�C<KNP::KULM::TList> ���饹���������Ƥ��롥
+C<tag> メソッドの実体は，C<KNP::KULM::TList> クラスで定義されている．
 
 =end comment
 
 =item tag_list
 
-���ƤΥ����Υꥹ�Ȥ��֤���
+全てのタグのリストを返す．
 
 =cut
 sub tag_list {
@@ -111,8 +111,8 @@ sub tag_list {
 
 =item push_tag( @TAG )
 
-���ꤵ�줿������ʸ�����ɲä�������ʸ��Υ�����Ȥ��Ƥ�Ĺ�����֤����ɲ�
-�оݤȤʤ�ʸ�᤬¸�ߤ��ʤ�(= ʸ���󤬶��Ǥ���)���ϡ��ɲäϹԤ��ʤ���
+指定されたタグを文末に追加し，その文節のタグ列としての長さを返す．追加
+対象となる文節が存在しない(= 文節列が空である)場合は，追加は行われない．
 
 =cut
 sub push_tag {
@@ -126,21 +126,21 @@ sub push_tag {
 
 =item mrph ( NUM )
 
-�� I<NUM> ���ܤη����Ǥ��֤���
+第 I<NUM> 番目の形態素を返す．
 
 =item mrph
 
-���Ƥη����ǤΥꥹ�Ȥ��֤���
+全ての形態素のリストを返す．
 
 =begin comment
 
-C<mrph> �᥽�åɤμ��Τ� C<Juman::KULM::MList> ���������Ƥ��롥
+C<mrph> メソッドの実体は C<Juman::KULM::MList> で定義されている．
 
 =end comment
 
 =item mrph_list
 
-���Ƥη����ǤΥꥹ�Ȥ��֤���
+全ての形態素のリストを返す．
 
 =cut
 sub mrph_list {
@@ -149,9 +149,9 @@ sub mrph_list {
 
 =item push_mrph( @MRPH )
 
-���ꤵ�줿�����Ǥ�ʸ�����ɲä�������ʸ��η�������Ȥ��Ƥ�Ĺ�����֤���
-�ɲ��оݤȤʤ�ʸ�᤬¸�ߤ��ʤ�(= ʸ���󤬶��Ǥ���)���ϡ��ɲäϹԤ��
-�ʤ���
+指定された形態素を文末に追加し，その文節の形態素列としての長さを返す．
+追加対象となる文節が存在しない(= 文節列が空である)場合は，追加は行われ
+ない．
 
 =cut
 sub push_mrph {
@@ -165,7 +165,7 @@ sub push_mrph {
 
 =item set_readonly
 
-ʸ������Ф���񤭹��ߤ��Ե��Ĥ����ꤹ�롥
+文節列に対する書き込みを不許可に設定する．
 
 =cut
 sub set_readonly {
@@ -178,7 +178,7 @@ sub set_readonly {
 
 =item spec
 
-ʸ�����ʸ������Ѵ����롥
+文節列を文字列に変換する．
 
 =cut
 sub spec {
@@ -190,7 +190,7 @@ sub spec {
 
 =item draw_bnst_tree
 
-ʸ����ΰ�¸�ط����ڹ�¤�Ȥ���ɽ�����ƽ��Ϥ��롥
+文節列の依存関係を木構造として表現して出力する．
 
 =cut
 sub draw_bnst_tree {
@@ -199,7 +199,7 @@ sub draw_bnst_tree {
 
 =item draw_tag_tree
 
-������ΰ�¸�ط����ڹ�¤�Ȥ���ɽ�����ƽ��Ϥ��롥
+タグ列の依存関係を木構造として表現して出力する．
 
 =cut
 sub draw_tag_tree {
@@ -208,7 +208,7 @@ sub draw_tag_tree {
     $tlist->draw_tree( @_ );
 }
 
-# draw_tree �᥽�åɤȤ��̿��ѤΥ᥽�åɡ�
+# draw_tree メソッドとの通信用のメソッド．
 sub draw_tree_leaves {
     shift->bnst_list( @_ );
 }
@@ -221,9 +221,9 @@ sub set_nodestroy {
 
 =head1 DESTRUCTOR
 
-ʸ�ᥪ�֥������ȴ֤˴ľ��Υ�ե���󥹤����������ȡ��̾�� Garbage
-Collection �ˤ�äƤϥ��꤬�������ʤ��ʤ롥����������򤱤뤿��ˡ�
-����Ū�˥�ե���󥹤��˲����� destructor ��������Ƥ��롥
+文節オブジェクト間に環状のリファレンスが作成されると，通常の Garbage
+Collection によってはメモリが回収されなくなる．この問題を避けるために，
+明示的にリファレンスを破壊する destructor を定義している．
 
 =cut
 sub DESTROY {
@@ -248,7 +248,7 @@ L<KNP::Bunsetsu>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =back
 
@@ -258,7 +258,6 @@ L<KNP::Bunsetsu>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

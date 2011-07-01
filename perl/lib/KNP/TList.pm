@@ -7,7 +7,7 @@ use base qw/ KNP::DrawTree KNP::KULM::TList Juman::KULM::MList /;
 
 =head1 NAME
 
-KNP::TList - �����󥪥֥�������
+KNP::TList - タグ列オブジェクト
 
 =head1 SYNOPSIS
 
@@ -15,7 +15,7 @@ KNP::TList - �����󥪥֥�������
 
 =head1 DESCRIPTION
 
-KNP �ˤ��ʲ��Ϥ�ñ�̤Ǥ��륿���Υꥹ�Ȥ��ݻ����륪�֥������ȡ�
+KNP による格解析の単位であるタグのリストを保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -23,8 +23,8 @@ KNP �ˤ��ʲ��Ϥ�ñ�̤Ǥ��륿���Υꥹ�Ȥ��ݻ����륪�֥������ȡ�
 
 =item new( @TAG )
 
-���ꤵ�줿�����Υꥹ�Ȥ��ݻ����륪�֥������Ȥ��������롥��������ά����
-�����ϡ����Υꥹ�Ȥ��ݻ����륪�֥������Ȥ��������롥
+指定されたタグのリストを保持するオブジェクトを生成する．引数が省略され
+た場合は，空のリストを保持するオブジェクトを生成する．
 
 =cut
 sub new {
@@ -43,21 +43,21 @@ sub new {
 
 =item tag ( NUM )
 
-�� I<NUM> ���ܤΥ������֤���
+第 I<NUM> 番目のタグを返す．
 
 =item tag
 
-���ƤΥ����Υꥹ�Ȥ��֤���
+全てのタグのリストを返す．
 
 =begin comment
 
-C<tag> �᥽�åɤμ��Τϡ�C<KNP::KULM::TList> ���饹���������Ƥ��롥
+C<tag> メソッドの実体は，C<KNP::KULM::TList> クラスで定義されている．
 
 =end comment
 
 =item tag_list
 
-���ƤΥ����Υꥹ�Ȥ��֤���
+全てのタグのリストを返す．
 
 =cut
 sub tag_list {
@@ -71,7 +71,7 @@ sub tag_list {
 
 =item push_tag( @TAG )
 
-���ꤵ�줿�����򥿥�����ɲä��롥
+指定されたタグをタグ列に追加する．
 
 =cut
 sub push_tag {
@@ -87,21 +87,21 @@ sub push_tag {
 
 =item mrph ( NUM )
 
-�� I<NUM> ���ܤη����Ǥ��֤���
+第 I<NUM> 番目の形態素を返す．
 
 =item mrph
 
-���Ƥη����ǤΥꥹ�Ȥ��֤���
+全ての形態素のリストを返す．
 
 =begin comment
 
-C<mrph> �᥽�åɤμ��Τ� C<Juman::KULM::MList> ���������Ƥ��롥
+C<mrph> メソッドの実体は C<Juman::KULM::MList> で定義されている．
 
 =end comment
 
 =item mrph_list
 
-���Ƥη����ǤΥꥹ�Ȥ��֤���
+全ての形態素のリストを返す．
 
 =cut
 sub mrph_list {
@@ -110,9 +110,9 @@ sub mrph_list {
 
 =item push_mrph( @MRPH )
 
-���ꤵ�줿�����Ǥ�ʸ�����ɲä������Υ����η�������Ȥ��Ƥ�Ĺ�����֤���
-�ɲ��оݤȤʤ륿����¸�ߤ��ʤ�(= �����󤬶��Ǥ���)���ϡ��ɲäϹԤ��
-�ʤ���
+指定された形態素を文末に追加し，そのタグの形態素列としての長さを返す．
+追加対象となるタグが存在しない(= タグ列が空である)場合は，追加は行われ
+ない．
 
 =cut
 sub push_mrph {
@@ -126,7 +126,7 @@ sub push_mrph {
 
 =item set_readonly
 
-��������Ф���񤭹��ߤ��Ե��Ĥ����ꤹ�롥
+タグ列に対する書き込みを不許可に設定する．
 
 =cut
 sub set_readonly {
@@ -139,7 +139,7 @@ sub set_readonly {
 
 =item spec
 
-�������ʸ������Ѵ����롥
+タグ列を文字列に変換する．
 
 =cut
 sub spec {
@@ -151,14 +151,14 @@ sub spec {
 
 =item draw_tag_tree
 
-������ΰ�¸�ط����ڹ�¤�Ȥ���ɽ�����ƽ��Ϥ��롥
+タグ列の依存関係を木構造として表現して出力する．
 
 =cut
 sub draw_tag_tree {
     shift->draw_tree( @_ );
 }
 
-# draw_tree �᥽�åɤȤ��̿��ѤΥ᥽�åɡ�
+# draw_tree メソッドとの通信用のメソッド．
 sub draw_tree_leaves {
     shift->tag_list( @_ );
 }
@@ -171,9 +171,9 @@ sub set_nodestroy {
 
 =head1 DESTRUCTOR
 
-�������֥������ȴ֤˴ľ��Υ�ե���󥹤����������ȡ��̾�� Garbage
-Collection �ˤ�äƤϥ��꤬�������ʤ��ʤ롥����������򤱤뤿��ˡ�
-����Ū�˥�ե���󥹤��˲����� destructor ��������Ƥ��롥
+タグオブジェクト間に環状のリファレンスが作成されると，通常の Garbage
+Collection によってはメモリが回収されなくなる．この問題を避けるために，
+明示的にリファレンスを破壊する destructor を定義している．
 
 =cut
 sub DESTROY {
@@ -198,7 +198,7 @@ L<KNP::Tag>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -206,7 +206,6 @@ L<KNP::Tag>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

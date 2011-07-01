@@ -8,12 +8,12 @@ use strict;
 use vars qw/ @ISA /;
 @ISA = qw/ KNP::Bunsetsu Exporter /;
 
-# Ê¸Àá¤ò¼«Î©¸ìÎó¤ÈÉÕÂ°¸ìÎó¤ËÊ¬³ä¤¹¤ë¥á¥½¥Ã¥É
+# æ–‡ç¯€ã‚’è‡ªç«‹èªåˆ—ã¨ä»˜å±èªåˆ—ã«åˆ†å‰²ã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
 sub split {
     my( $this ) = @_;
     my @mrph = $this->mrph;
     my @buf;
-    while ( @mrph and $mrph[0]->fstring !~ /<ÉÕÂ°>/ ) {
+    while ( @mrph and $mrph[0]->fstring !~ /<ä»˜å±>/ ) {
 	push( @buf, shift @mrph );
     }
     ( new Juman::MList( @buf ), new Juman::MList( @mrph ) );
@@ -28,12 +28,12 @@ BEGIN { plan tests => 3 }
 use KNP;
 
 my $knp = new KNP( bclass => 'MyBunsetsu' );
-my $result = $knp->parse( "ÀÖ¤¤²Ö¤¬ºé¤¤¤¿¡£" );
+my $result = $knp->parse( "èµ¤ã„èŠ±ãŒå’²ã„ãŸã€‚" );
 ok( $result );
 if( ($result->bnst)[1]->can('split') ){
     my( $jiritsu, $huzoku ) = ( $result->bnst )[1]->split();
-    ok( join( '', map( $_->midasi, $jiritsu->mrph ) ) eq "²Ö" );
-    ok( join( '', map( $_->midasi, $huzoku->mrph ) ) eq "¤¬" );
+    ok( join( '', map( $_->midasi, $jiritsu->mrph ) ) eq "èŠ±" );
+    ok( join( '', map( $_->midasi, $huzoku->mrph ) ) eq "ãŒ" );
 } else {
     ok(0);
     ok(0);

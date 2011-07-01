@@ -14,7 +14,7 @@ ok( $x->tag == 0 );
 ok( $x->mrph == 0 );
 
 my $b = KNP::Bunsetsu->new( <<'__bunsetsu__', 3 );
-* -1D <BGH:²òÀÏ><SM:²òÀÏ:711006601***71100650****><Ê¸Æ¬><Ê¸Ëö><¥µÊÑ><ÂÎ¸À><ÍÑ¸À:Æ°><ÂÎ¸À»ß><¥ì¥Ù¥ë:C><¶èÀÚ:5-5><ID:¡ÊÊ¸Ëö¡Ë><RID:110><ÄóÂê¼õ:30><Ãê¾Ý>
+* -1D <BGH:è§£æž><SM:è§£æž:711006601***71100650****><æ–‡é ­><æ–‡æœ«><ã‚µå¤‰><ä½“è¨€><ç”¨è¨€:å‹•><ä½“è¨€æ­¢><ãƒ¬ãƒ™ãƒ«:C><åŒºåˆ‡:5-5><ID:ï¼ˆæ–‡æœ«ï¼‰><RID:110><æé¡Œå—:30><æŠ½è±¡>
 __bunsetsu__
 ok( defined $b );
 $x->push_bnst( $b );
@@ -23,7 +23,7 @@ ok( $x->tag  == 0 );
 ok( $x->mrph == 0 );
 
 my $t = KNP::Tag->new( <<'__tag__', 0 );
-+ 1D <¥À¥ß¡¼1>
++ 1D <ãƒ€ãƒŸãƒ¼1>
 __tag__
 ok( defined $t );
 $x->push_tag( $t );
@@ -32,7 +32,7 @@ ok( $x->tag  == 1 );
 ok( $x->mrph == 0 );
 
 my $m = KNP::Morpheme->new( <<'__koubun_mrph__' );
-¹½Ê¸ ¤³¤¦¤Ö¤ó ¹½Ê¸ Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL <Ê¸Æ¬><´Á»ú><¤«¤Ê´Á»ú><¼«Î©><Ì¾»ìÁêÅö¸ì>
+æ§‹æ–‡ ã“ã†ã¶ã‚“ æ§‹æ–‡ åè©ž 6 æ™®é€šåè©ž 1 * 0 * 0 NIL <æ–‡é ­><æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><åè©žç›¸å½“èªž>
 __koubun_mrph__
 ok( defined $m );
 $x->push_mrph( $m );
@@ -42,7 +42,7 @@ ok( $x->mrph == 1 );
 ok( $t->mrph == 1 );
 
 $m = KNP::Morpheme->new( <<'__kaiseki_mrph__' );
-²òÀÏ ¤«¤¤¤»¤­ ²òÀÏ Ì¾»ì 6 ¥µÊÑÌ¾»ì 2 * 0 * 0 NIL <Ê¸Ëö><É½¸½Ê¸Ëö><´Á»ú><¤«¤Ê´Á»ú><¥µÊÑ><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>
+è§£æž ã‹ã„ã›ã è§£æž åè©ž 6 ã‚µå¤‰åè©ž 2 * 0 * 0 NIL <æ–‡æœ«><è¡¨ç¾æ–‡æœ«><æ¼¢å­—><ã‹ãªæ¼¢å­—><ã‚µå¤‰><è‡ªç«‹><â†è¤‡åˆ><åè©žç›¸å½“èªž>
 __kaiseki_mrph__
 ok( defined $m );
 $x->push_mrph( $m );

@@ -6,15 +6,15 @@ use strict;
 
 =head1 NAME
 
-KNP::KULM::Bunsetsu - KULM ¸ß´¹ API
+KNP::KULM::Bunsetsu - KULM äº’æ› API
 
 =head1 SYNOPSIS
 
-¤³¤Î¥¯¥é¥¹¤ò¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ï¼
 
 =head1 DESCRIPTION
 
-C<KULM::KNP::B> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::Bunsetsu> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
+C<KULM::KNP::B> äº’æ›ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ C<KNP::Bunsetsu> ã‚¯ãƒ©ã‚¹ã«è¿½åŠ ã™ã‚‹ï¼
 
 =head1 METHODS
 
@@ -22,16 +22,16 @@ C<KULM::KNP::B> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::Bunsetsu> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
 
 =item get ($attr)
 
-»ØÄê¤µ¤ì¤¿Â°À­¤òÊÖ¤¹¡¥
+æŒ‡å®šã•ã‚ŒãŸå±æ€§ã‚’è¿”ã™ï¼
 
 =cut
 sub get {
     my $this = shift;
     my $attr = shift;
 
-    # ¸ß´¹À­¤òÊİ¤Ä¤¿¤á, $m->get( [ F => $j ] ) ¤È¤¤¤¦·Á¼°¤Î»ØÄê¤â¼õ¤±
-    # ÉÕ¤±¤ë¤è¤¦¤Ë¤·¤Æ¤¤¤ë¡¥¤·¤«¤·¡¤¤³¤Î»ÅÍÍ¤Ï KULM::KNP::M ¤Î»ÅÍÍ¤È¤â
-    # À°¹ç¤·¤Æ¤¤¤Ê¤¤¤Î¤Ç¡¤¥Ğ¥°¤Î²ÄÇ½À­¤¬¹â¤¤¡¥
+    # äº’æ›æ€§ã‚’ä¿ã¤ãŸã‚, $m->get( [ F => $j ] ) ã¨ã„ã†å½¢å¼ã®æŒ‡å®šã‚‚å—ã‘
+    # ä»˜ã‘ã‚‹ã‚ˆã†ã«ã—ã¦ã„ã‚‹ï¼ã—ã‹ã—ï¼Œã“ã®ä»•æ§˜ã¯ KULM::KNP::M ã®ä»•æ§˜ã¨ã‚‚
+    # æ•´åˆã—ã¦ã„ãªã„ã®ã§ï¼Œãƒã‚°ã®å¯èƒ½æ€§ãŒé«˜ã„ï¼
     if( ref $attr eq 'ARRAY' ){
 	( $attr, @_ ) = @{$attr};
     }
@@ -65,7 +65,7 @@ sub get {
 
 =item gets (@attr)
 
-»ØÄê¤µ¤ì¤¿Â°À­¤Î¥ê¥¹¥È¤òÊÖ¤¹¡¥C<all> ¤È¤¤¤¦»ØÄê¤¬²ÄÇ½¤Ç¤¢¤ë¡¥
+æŒ‡å®šã•ã‚ŒãŸå±æ€§ã®ãƒªã‚¹ãƒˆã‚’è¿”ã™ï¼C<all> ã¨ã„ã†æŒ‡å®šãŒå¯èƒ½ã§ã‚ã‚‹ï¼
 
 =cut
 sub gets {
@@ -79,7 +79,7 @@ sub gets {
 
 =item string ($delimiter, @attr)
 
-»ØÄê¤µ¤ì¤¿Â°À­¤ò C<$delimiter> ¤Ç·ë¹ç¤·¤¿Ê¸»úÎó¤òÊÖ¤¹¡¥
+æŒ‡å®šã•ã‚ŒãŸå±æ€§ã‚’ C<$delimiter> ã§çµåˆã—ãŸæ–‡å­—åˆ—ã‚’è¿”ã™ï¼
 
 =cut
 sub string {
@@ -111,14 +111,13 @@ L<KULM::KNP::B>
 =over 4
 
 =item
-ÅÚ²° ²íÌ­ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+åœŸå±‹ é›…ç¨” <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

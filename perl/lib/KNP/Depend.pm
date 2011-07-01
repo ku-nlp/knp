@@ -5,21 +5,21 @@ use strict;
 
 =head1 NAME
 
-KNP::Depend - ��¸�ط����ݻ������Ȥ���
+KNP::Depend - 依存関係を保持・参照する
 
 =head1 SYNOPSIS
 
-���Υ��饹��ߥ����󥰤��ƻ��Ѥ��롥
+このクラスをミキシングして使用する．
 
 =head1 DESCRIPTION
 
-C<KNP::Depend> ���饹�ϡ�����ñ��(ʸ�ᡤ����)�֤ΰ�¸�ط����ݻ������
-���뤿��Υ᥽�åɤ��󶡤��륯�饹�Ǥ��롥
+C<KNP::Depend> クラスは，解析単位(文節，タグ)間の依存関係を保持，操作
+するためのメソッドを提供するクラスである．
 
 =head1 CONSTRUCTOR
 
-���Υ��饹�ϥߥ����󥰤��ƻ��Ѥ���褦���߷פ���Ƥ��뤿�ᡤ���̤ʥ���
-���ȥ饯�����������Ƥ��ʤ���
+このクラスはミキシングして使用するように設計されているため，特別なコン
+ストラクタは定義されていない．
 
 =head1 METHODS
 
@@ -27,11 +27,11 @@ C<KNP::Depend> ���饹�ϡ�����ñ��(ʸ�ᡤ����)�֤ΰ�¸�ط����ݻ������
 
 =item parent
 
-��������֤���
+係り先を返す．
 
 =item parent [ UNIT ]
 
-����������ꤹ�롥
+係り先を設定する．
 
 =cut
 sub parent {
@@ -47,11 +47,11 @@ sub parent {
 
 =item child
 
-���긵�Υꥹ�Ȥ��֤���
+係り元のリストを返す．
 
 =item child [ UNIT... ]
 
-���긵�����ꤹ�롥
+係り元を設定する．
 
 =cut
 sub child {
@@ -68,11 +68,11 @@ sub child {
 
 =item dpndtype
 
-��¸�ط��μ���(D,P,I,A)���֤���
+依存関係の種類(D,P,I,A)を返す．
 
 =item dpndtype [ STRING ]
 
-��¸�ط��μ�������ꤹ�롥
+依存関係の種類を設定する．
 
 =cut
 sub dpndtype {
@@ -88,11 +88,11 @@ sub dpndtype {
 
 =item id
 
-����ñ�̤� ID ���֤���̵����ξ��� -1 ���֤���
+解析単位の ID を返す．無指定の場合は -1 を返す．
 
 =item id [ STRING ]
 
-����ñ�̤� ID �����ꤹ�롥
+解析単位の ID を設定する．
 
 =cut
 sub id {
@@ -110,9 +110,9 @@ sub id {
 
 =item pstring [ STRING ]
 
-����ñ�̤� I<pstring> °�����ͤ����롥���������ꤵ�줿���ϡ����ΰ���
-���������롥����°���ϡ�C<KNP::DrawTree::draw_tree> �᥽�åɤ��黲�Ȥ�
-��롥
+解析単位の I<pstring> 属性の値を得る．引数が指定された場合は，その引数
+を代入する．この属性は，C<KNP::DrawTree::draw_tree> メソッドから参照さ
+れる．
 
 =cut
 sub pstring {
@@ -130,19 +130,19 @@ sub pstring {
 
 =head1 INTERNAL METHODS
 
-�ʲ��Υ᥽�åɤϡ�����ñ�̤Υꥹ�Ȥ��ݻ����륪�֥�������
-(C<KNP::BList>, C<KNP::TList>)�Υ��󥹥ȥ饯������ƤӽФ���뤳�Ȥ���
-�ꤷ�Ƥ���᥽�åɤǤ��롥���̤����ѤϿ侩����ʤ���
+以下のメソッドは，解析単位のリストを保持するオブジェクト
+(C<KNP::BList>, C<KNP::TList>)のコンストラクタから呼び出されることを想
+定しているメソッドである．一般の利用は推奨されない．
 
 =over 4
 
 =item parent_id
 
-������ñ�̤� ID ���֤���
+係り先単位の ID を返す．
 
 =item parent_id [ STRING ]
 
-������ñ�̤� ID �����ꤹ�롥
+係り先単位の ID を設定する．
 
 =cut
 sub parent_id {
@@ -154,7 +154,7 @@ sub parent_id {
 	} elsif( defined $value ){
 	    $this->{_parent_id} = $value;
 	} else {
-	    # ̤����ͤ����ꤵ�줿���ϡ��ϥå��夫���ͤ��������
+	    # 未定義値が指定された場合は，ハッシュから値を取り除く．
 	    delete $this->{_parent_id};
 	    $value;
 	}
@@ -169,9 +169,9 @@ sub parent_id {
 
 =item make_reference( LISTREF )
 
-����ñ�̤η����褬��������ե���󥹤Ȥ��ƻ��Ȥ����褦�ˡ����֥�����
-�Ȥ���������������롥������ñ�̤��ޤޤ��ꥹ�Ȥ��Ф����ե����
-������Ȥ��ƸƤӽФ���
+解析単位の係り先が正しくリファレンスとして参照されるように，オブジェク
+トの内部情報を修正する．係り先単位が含まれるリストに対するリファレンス
+を引数として呼び出す．
 
 =cut
 sub make_reference {
@@ -191,10 +191,10 @@ sub make_reference {
 
 =head1 DESTRUCTOR
 
-C<make_reference> �᥽�åɤˤ�äƴľ��Υ�ե���󥹤����������ȡ���
-��� Garbage Collection �ˤ�äƤϡ����꤬�������ʤ��ʤ롥��������
-���򤱤뤿��ˡ�����Ū�˥�ե���󥹤��˲����� destructor ��������Ƥ�
-�롥
+C<make_reference> メソッドによって環状のリファレンスが作成されると，通
+常の Garbage Collection によっては，メモリが回収されなくなる．この問題
+を避けるために，明示的にリファレンスを破壊する destructor を定義してい
+る．
 
 =cut
 sub DESTROY {
@@ -208,7 +208,7 @@ sub DESTROY {
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -216,7 +216,6 @@ sub DESTROY {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

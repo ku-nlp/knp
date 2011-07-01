@@ -8,15 +8,15 @@ use Encode;
 
 =head1 NAME
 
-KNP::Tag - �������֥������� in KNP
+KNP::Tag - タグオブジェクト in KNP
 
 =head1 SYNOPSIS
 
-  $b = new KNP::Tag( "+ 1D <���ϳ�-��>", 0 );
+  $b = new KNP::Tag( "+ 1D <解析格-ニ>", 0 );
 
 =head1 DESCRIPTION
 
-�ʲ��Ϥ�ñ�̤Ȥʤ륿���γƼ������ݻ����륪�֥������ȡ�
+格解析の単位となるタグの各種情報を保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -24,8 +24,8 @@ KNP::Tag - �������֥������� in KNP
 
 =item new ( SPEC, ID )
 
-��1���� C<SPEC> �� KNP �ν��Ϥ��������ƸƤӽФ��ȡ����ιԤ����Ƥ����
-�����������륿�����֥������Ȥ��������롥
+第1引数 C<SPEC> に KNP の出力を代入して呼び出すと，その行の内容を解析
+し，相当するタグオブジェクトを生成する．
 
 =cut
 sub new {
@@ -50,57 +50,57 @@ sub new {
 
 =head1 METHODS
 
-1�ĤΥ����ϡ�ʣ���η����Ǥ���ʤ롥�������äơ��������֥������Ȥϡ���
-�����󥪥֥������� C<KNP::MList> ��Ѿ�����褦�˼������졤��������
-����Ф������ C<mrph> �᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+1つのタグは，複数の形態素からなる．したがって，タグオブジェクトは，形
+態素列オブジェクト C<KNP::MList> を継承するように実装され，形態素列
+を取り出すための C<mrph> メソッドが利用可能である．
 
-�����֤ΰ�¸�ط��˴ؤ��������ݻ������뤿��ˡ�C<KNP::Depend> ��
-�饹��Ѿ����Ƥ��롥�������äơ��ʲ��Υ᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+タグ間の依存関係に関する情報を保持・操作するために，C<KNP::Depend> ク
+ラスを継承している．したがって，以下のメソッドが利用可能である．
 
 =over 4
 
 =item parent
 
-�����西�����֤���
+係り先タグを返す．
 
 =item child
 
-���Υ����˷��äƤ��륿���Υꥹ�Ȥ��֤���
+このタグに係っているタグのリストを返す．
 
 =item id
 
-���󥹥ȥ饯����ƤӽФ��Ȥ��˻��ꤵ�줿 ID ���֤���̵����ξ��� -1 
-���֤���
+コンストラクタを呼び出すときに指定された ID を返す．無指定の場合は -1 
+を返す．
 
 =back
 
-KNP �ˤ�äƳ�����Ƥ�줿��ħʸ������ݻ������Ȥ��뤿��ˡ�
-C<KNP::Fstring> ���饹��Ѿ����Ƥ��롥�������äơ��ʲ��Υ᥽�åɤ�����
-��ǽ�Ǥ��롥
+KNP によって割り当てられた特徴文字列を保持・参照するために，
+C<KNP::Fstring> クラスを継承している．したがって，以下のメソッドが利用
+可能である．
 
 =over 4
 
 =item fstring
 
-��ħʸ������֤���
+特徴文字列を返す．
 
 =item feature
 
-��ħ�Υꥹ�Ȥ��֤���
+特徴のリストを返す．
 
 =item push_feature
 
-��ħ���ɲä��롥
+特徴を追加する．
 
 =back
 
-�ä��ơ��ʲ��Υ᥽�åɤ��������Ƥ��롥
+加えて，以下のメソッドが定義されている．
 
 =over 4
 
 =item spec
 
-�������֥������Ȥ�ʸ������Ѵ����롥
+タグオブジェクトを文字列に変換する．
 
 =cut
 sub spec {
@@ -114,7 +114,7 @@ sub spec {
 
 =item synnodes
 
-SynNodes�ξ�����֤���
+SynNodesの情報を返す．
 
 =cut
 sub synnodes {
@@ -129,7 +129,7 @@ sub synnodes {
 
 =item push_synnode
 
-Syn�Ρ��ɤ��ɲä���
+Synノードを追加する
 
 =cut
 sub push_synnode {
@@ -140,7 +140,7 @@ sub push_synnode {
 
 =item synnode
 
-���Ƥ�Syn�Ρ��ɤ��֤�
+全てのSynノードを返す
 
 =cut
 sub synnode {
@@ -182,7 +182,7 @@ L<KNP::Morpheme>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -190,7 +190,6 @@ L<KNP::Morpheme>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

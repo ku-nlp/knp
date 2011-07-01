@@ -1,41 +1,41 @@
-(JUMANÊ¸Ë¡¥Ç¥£¥ì¥¯¥È¥ê
+(JUMANæ–‡æ³•ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 	@juman_prefix@/share/juman/dic
 )
 
-(KNP¥ë¡¼¥ë¥Ç¥£¥ì¥¯¥È¥ê
+(KNPãƒ«ãƒ¼ãƒ«ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 	@pkgdatadir@/rule
 )
 
-(KNP¥ë¡¼¥ë¥Õ¥¡¥¤¥ë
-	(mrph_homo Æ±·Á°ÛµÁ¸ì)
-	(mrph_filter ·ÁÂÖÁÇ-Á°½èÍý ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(mrph_auto_dic ·ÁÂÖÁÇ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(mrph_basic ·ÁÂÖÁÇ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(mrph_ne ¸ÇÍ­É½¸½·ÁÂÖÁÇ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(bnst_basic Ê¸Àá µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(bnst_type Ê¸Àá µÕÊý¸þ BREAK)
-	(bnst_etc Ê¸Àá µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(modality Ê¸Àá µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(kakari_uke ·¸¤ê¼õ¤±)
-	(koou ¸Æ±þ)
-	(bnst_basic ´ðËÜ¶ç µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(modality ´ðËÜ¶ç µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(clause_function ´ðËÜ¶ç µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(context ´ðËÜ¶ç µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(case_analysis ´ðËÜ¶ç µÕÊý¸þ)
-	(tag_after_dpnd_and_case ´ðËÜ¶ç-¹½Â¤·èÄê¸å µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(search_query ´ðËÜ¶ç-¹½Â¤·èÄê¸å µÕÊý¸þ ¥ë¡¼¥ë¥ë¡¼¥×Àè¹Ô)
-	(tag_postprocess ´ðËÜ¶ç-¸å½èÍý µÕÊý¸þ)
+(KNPãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«
+	(mrph_homo åŒå½¢ç•°ç¾©èªž)
+	(mrph_filter å½¢æ…‹ç´ -å‰å‡¦ç† ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(mrph_auto_dic å½¢æ…‹ç´  ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(mrph_basic å½¢æ…‹ç´  ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(mrph_ne å›ºæœ‰è¡¨ç¾å½¢æ…‹ç´  ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(bnst_basic æ–‡ç¯€ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(bnst_type æ–‡ç¯€ é€†æ–¹å‘ BREAK)
+	(bnst_etc æ–‡ç¯€ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(modality æ–‡ç¯€ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(kakari_uke ä¿‚ã‚Šå—ã‘)
+	(koou å‘¼å¿œ)
+	(bnst_basic åŸºæœ¬å¥ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(modality åŸºæœ¬å¥ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(clause_function åŸºæœ¬å¥ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(context åŸºæœ¬å¥ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(case_analysis åŸºæœ¬å¥ é€†æ–¹å‘)
+	(tag_after_dpnd_and_case åŸºæœ¬å¥-æ§‹é€ æ±ºå®šå¾Œ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(search_query åŸºæœ¬å¥-æ§‹é€ æ±ºå®šå¾Œ é€†æ–¹å‘ ãƒ«ãƒ¼ãƒ«ãƒ«ãƒ¼ãƒ—å…ˆè¡Œ)
+	(tag_postprocess åŸºæœ¬å¥-å¾Œå‡¦ç† é€†æ–¹å‘)
 )
 
-(KNP¼­½ñ¥Ç¥£¥ì¥¯¥È¥ê
+(KNPè¾žæ›¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
         @pkgdatadir@/dict
 )
 
-(Æ±µÁÉ½¸½¥Õ¥¡¥¤¥ë
+(åŒç¾©è¡¨ç¾ãƒ•ã‚¡ã‚¤ãƒ«
 	@pkgdatadir@/dict/synonym/synonym.db
 )
 
-(NE¥â¥Ç¥ë¥Õ¥¡¥¤¥ë
+(NEãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«
 	@pkgdatadir@/dict/crf.model
 )

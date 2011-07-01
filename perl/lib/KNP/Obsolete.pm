@@ -7,21 +7,21 @@ use strict;
 
 =head1 NAME
 
-KNP::Obsolete - �����ߴ��Υ᥽�åɤ��������
+KNP::Obsolete - 後方互換のメソッドを定義する
 
 =head1 SYNOPSIS
 
-���Υ��饹��ߥ����󥰤��ƻ��Ѥ��롥
+このクラスをミキシングして使用する．
 
 =head1 DESCRIPTION
 
-C<KNP::Obsolete> ���饹�ϡ�C<KNP> �⥸�塼��˰���(2001ǯ8��28����)��
-Ʊ�� API ���ɲä��륯�饹�Ǥ��롥
+C<KNP::Obsolete> クラスは，C<KNP> モジュールに以前(2001年8月28日版)と
+同じ API を追加するクラスである．
 
 =head1 CONSTRUCTOR
 
-���Υ��饹�ϥߥ����󥰤��ƻ��Ѥ���褦���߷פ���Ƥ��뤿�ᡤ���̤ʥ���
-���ȥ饯�����������Ƥ��ʤ���
+このクラスはミキシングして使用するように設計されているため，特別なコン
+ストラクタは定義されていない．
 
 =head1 METHODS
 
@@ -29,7 +29,7 @@ C<KNP::Obsolete> ���饹�ϡ�C<KNP> �⥸�塼��˰���(2001ǯ8��28����)��
 
 =item all()
 
-KNP �����Ϥ�����ʸ���Ϸ�̤��Τޤޤ�ʸ������֤��᥽�åɡ�
+KNP が出力した構文解析結果そのままの文字列を返すメソッド。
 
 =cut
 sub all {
@@ -38,7 +38,7 @@ sub all {
 
 =item comment()
 
-KNP �����Ϥ�����ʸ���Ϸ�̤���Ƭ�˴ޤޤ�륳���Ȥ��֤��᥽�åɡ�
+KNP が出力した構文解析結果の先頭に含まれるコメントを返すメソッド。
 
 =cut
 sub comment {
@@ -47,7 +47,7 @@ sub comment {
 
 =item mrph_num()
 
-�����ǿ����֤��᥽�åɡ�
+形態素数を返すメソッド。
 
 =cut
 sub mrph_num {
@@ -56,28 +56,28 @@ sub mrph_num {
 
 =item mrph( [ARG,TYPE,SUFFIX] )
 
-��ʸ���Ϸ�̤η����Ǿ���˥����������뤿��Υ᥽�åɡ�
+構文解析結果の形態素情報にアクセスするためのメソッド。
 
 Examples:
 
    $knp->mrph;
-   # ��������ά���줿���ϡ������Ǿ���Υꥹ�Ȥ���
-   # �����ե���󥹤��֤���
+   # 引数が省略された場合は、形態素情報のリストに対
+   # するリファレンスを返す。
 
    $knp->mrph( 1 );
-   # ARG �ˤ�äơ������ܤη����Ǥξ�����֤������
-   # �ꤹ�롣���ξ��ϡ�1���ܤη����Ǿ���Υϥå���
-   # ���Ф����ե���󥹤��֤���
+   # ARG によって、何番目の形態素の情報を返すかを指
+   # 定する。この場合は、1つ目の形態素情報のハッシュ
+   # に対するリファレンスを返す。
 
    $knp->mrph( 2, 'fstring' );
-   # TYPE �ˤ�ä�ɬ�פʷ����Ǿ������ꤹ�롣���ξ�
-   # �硢2���ܤη����Ǥ����Ƥ� feature ��ʸ�������
-   # ����
+   # TYPE によって必要な形態素情報を指定する。この場
+   # 合、2つ目の形態素の全ての feature の文字列を返
+   # す。
 
    $knp->mrph( 3, 'feature', 4 );
-   # 3���ܤη����Ǥ�4���ܤ� feature ���֤���
+   # 3つ目の形態素の4個目の feature を返す。
 
-TYPE �Ȥ��ƻ��ꤹ�뤳�Ȥ��Ǥ���ʸ����ϼ����̤�Ǥ��롣
+TYPE として指定することができる文字列は次の通りである。
 
    midasi
    yomi
@@ -94,8 +94,8 @@ TYPE �Ȥ��ƻ��ꤹ�뤳�Ȥ��Ǥ���ʸ����ϼ����̤�Ǥ��롣
    fstring
    feature
 
-��3���� SUFFIX ���뤳�Ȥ��Ǥ���Τ� TYPE �Ȥ��� feature ����ꤷ����
-��˸¤��롣
+第3引数 SUFFIX を取ることができるのは TYPE として feature を指定した場
+合に限られる。
 
 =cut
 sub mrph {
@@ -137,7 +137,7 @@ sub mrph {
 
 =item bnst_num()
 
-ʸ������֤��᥽�åɡ�
+文節数を返すメソッド。
 
 =cut
 sub bnst_num {
@@ -146,27 +146,27 @@ sub bnst_num {
 
 =item bnst( [ARG,TYPE,SUFFIX] )
 
-��ʸ���Ϸ�̤�ʸ��˴ؤ���������Ф��᥽�åɡ�
+構文解析結果の文節に関する情報を取り出すメソッド。
 
 Examples:
 
    $knp->bnst;
-   # ��������ά���줿���ϡ�ʸ�����Υꥹ�Ȥ��Ф�
-   # ���ե���󥹤��֤���
+   # 引数が省略された場合は、文節情報のリストに対す
+   # るリファレンスを返す。
 
    $knp->bnst( 1 );
-   # ARG �ˤ�äơ������ܤ�ʸ��ξ�����֤��������
-   # ���롣���ξ��ϡ�1���ܤ�ʸ�����Υϥå������
-   # �����ե���󥹤��֤���
+   # ARG によって、何番目の文節の情報を返すかを指定
+   # する。この場合は、1つ目の文節情報のハッシュに対
+   # するリファレンスを返す。
 
    $knp->bnst( 2, 'fstring' );
-   # TYPE �ˤ�ä�ɬ�פ�ʸ��������ꤹ�롣���ξ�硢
-   # 2���ܤ�ʸ������Ƥ� feature ��ʸ������֤���
+   # TYPE によって必要な文節情報を指定する。この場合、
+   # 2つ目の文節の全ての feature の文字列を返す。
 
    $knp->bnst( 3, 'feature', 4 );
-   # 3���ܤ�ʸ���4���ܤ� feature ���֤���
+   # 3つ目の文節の4個目の feature を返す。
 
-TYPE �Ȥ��ƻ��ꤹ�뤳�Ȥ��Ǥ���ʸ����ϼ����̤�Ǥ��롣
+TYPE として指定することができる文字列は次の通りである。
 
    start
    end
@@ -178,8 +178,8 @@ TYPE �Ȥ��ƻ��ꤹ�뤳�Ȥ��Ǥ���ʸ����ϼ����̤�Ǥ��롣
    fstring
    feature
 
-��3���� SUFFIX ���뤳�Ȥ��Ǥ���Τ� TYPE �Ȥ��� feature ����ꤷ����
-��˸¤��롣
+第3引数 SUFFIX を取ることができるのは TYPE として feature を指定した場
+合に限られる。
 
 =cut
 sub bnst {
@@ -257,7 +257,7 @@ L<KNP>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -265,7 +265,6 @@ L<KNP>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

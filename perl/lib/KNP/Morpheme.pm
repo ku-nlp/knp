@@ -3,21 +3,21 @@ package KNP::Morpheme;
 require 5.004_04; # For base pragma.
 use strict;
 use base qw/ KNP::Fstring KNP::KULM::Morpheme Juman::Morpheme KNP::Depend /;
-use vars qw/ @ATTRS /;
+use vars qw/ @ATTRS $ENCODING /;
 use Juman::Hinsi qw/ get_hinsi get_bunrui get_type get_form /;
 use Encode;
 
 =head1 NAME
 
-KNP::Morpheme - �����ǥ��֥������� in KNP
+KNP::Morpheme - 形態素オブジェクト in KNP
 
 =head1 SYNOPSIS
 
-  $m = new KNP::Morpheme( "���� �������� ���� ̾�� 6 ����̾�� 2 * 0 * 0 NIL <ʸƬ>", 1 );
+  $m = new KNP::Morpheme( "解析 かいせき 解析 名詞 6 サ変名詞 2 * 0 * 0 NIL <文頭>", 1 );
 
 =head1 DESCRIPTION
 
-�����ǤγƼ������ݻ����륪�֥������ȡ�
+形態素の各種情報を保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -25,12 +25,14 @@ KNP::Morpheme - �����ǥ��֥������� in KNP
 
 =item new ( SPEC, ID )
 
-��1���� C<SPEC> �� KNP �ν��Ϥ��������ƸƤӽФ��ȡ����ιԤ����Ƥ����
-����������������ǥ��֥������Ȥ��������롥
+第1引数 C<SPEC> に KNP の出力を代入して呼び出すと，その行の内容を解析
+し，相当する形態素オブジェクトを生成する．
 
 =cut
 
 @ATTRS = ( 'fstring' );
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
 
 sub _alt2spec {
     my( $str ) = @_;
@@ -40,10 +42,10 @@ sub _alt2spec {
     my $katuyou1 = &get_type( $katuyou1_id );
     my $katuyou2 = &get_form( $katuyou1_id, $katuyou2_id );
     if( utf8::is_utf8( $str ) ){
-	$hinsi = decode('euc-jp', $hinsi);
-	$bunrui = decode('euc-jp', $bunrui);
-	$katuyou1 = decode('euc-jp', $katuyou1);
-	$katuyou2 = decode('euc-jp', $katuyou2);
+	$hinsi = decode($ENCODING, $hinsi);
+	$bunrui = decode($ENCODING, $bunrui);
+	$katuyou1 = decode($ENCODING, $katuyou1);
+	$katuyou2 = decode($ENCODING, $katuyou2);
     }
 
     return join( ' ', $midasi, $yomi, $genkei, $hinsi, $hinsi_id, $bunrui, $bunrui_id, 
@@ -54,7 +56,7 @@ sub new {
     my( $class, $spec, $id, $parent, $type ) = @_;
     my $this = { id => $id };
 
-    # ALT��ɸ���JUMAN�������Ѵ�����
+    # ALTは標準のJUMAN形式に変換する
     if ($spec =~ /^ALT-(.+)/){
 	$spec = _alt2spec($1);
     }
@@ -63,17 +65,17 @@ sub new {
     my( @keys ) = @Juman::Morpheme::ATTRS;
     push( @keys, @ATTRS );
     $spec =~ s/\s*$//;
-    if( $spec =~ s/^\\ \\ \\ �ü� 1 ���� 6 // ){
-	@value = ( '\ ', '\ ', '\ ', '�ü�', '1', '����', '6' );
+    if( $spec =~ s/^\\ \\ \\ 特殊 1 空白 6 // ){
+	@value = ( '\ ', '\ ', '\ ', '特殊', '1', '空白', '6' );
 	push( @value, split( / /, $spec, scalar(@keys) - 7 ) );
     } else {
 #	@value = split( / /, $spec, scalar(@keys) );
 
-	# ��̣�����""�Ǥ������Ƥ���
+	# 意味情報は""でくくられている
 	
-	# �ʲ��Τ褦�ʾ����б����뤿�������ɽ������
+	# 以下のような場合に対応するために正規表現を修正
 
-	# ���ä� ���ä� ���� ư�� 2 * 0 �Ҳ�ư���� 12 ���� 8 "��ɽɽ��:��" <��ɽɽ��:��><��ۣ><ALT-���ä�-���ä�-����-2-0-12-8-"��°ư�����ʴ��ܡ� ��ɽɽ��:�礦"><ALT-���ä�-���ä�-����-2-0-10-8-"��ʸ�� ��ɽɽ��:ͭ��"><����ۣ��><��ۣ-ư��><��ۣ-����¾><��°ư��������><���ʴ���><�Ҥ餬��><���Ѹ�><��Ω��><��Ω><����ñ�̻�><ʸ���>
+	# あった あった あう 動詞 2 * 0 子音動詞ワ行 12 タ形 8 "代表表記:会う" <代表表記:会う><品曖><ALT-あった-あった-あう-2-0-12-8-"付属動詞候補（基本） 代表表記:合う"><ALT-あった-あった-ある-2-0-10-8-"補文ト 代表表記:有る"><原形曖昧><品曖-動詞><品曖-その他><付属動詞候補基本><かな漢字><ひらがな><活用語><独立語><自立><タグ単位始><文節始>
 
 	while ($spec =~ s/\"([^\"\s]+)(\s)([^\"]+)\"/\"$1\@\@$3\"/) {
 	    ;
@@ -104,33 +106,33 @@ sub new {
 
 =head1 METHODS
 
-L<Juman::Morpheme> �γƥ᥽�åɤ˲ä��ơ�KNP �ˤ�äƳ�����Ƥ�줿��
-ħʸ����򻲾Ȥ��뤿��Υ᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+L<Juman::Morpheme> の各メソッドに加えて，KNP によって割り当てられた特
+徴文字列を参照するためのメソッドが利用可能である．
 
 =over 4
 
 =item fstring
 
-��ħʸ������֤���
+特徴文字列を返す．
 
 =item feature
 
-��ħ�Υꥹ�Ȥ��֤���
+特徴のリストを返す．
 
 =item push_feature
 
-��ħ���ɲä��롥
+特徴を追加する．
 
 =back
 
-�����Υ᥽�åɤξܺ٤ˤĤ��Ƥϡ�L<KNP::Fstring> �򻲾ȤΤ��ȡ����ˡ�
-�ʲ��Υ᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+これらのメソッドの詳細については，L<KNP::Fstring> を参照のこと．更に，
+以下のメソッドが利用可能である．
 
 =over 4
 
 =item repname
 
-�����Ǥ���ɽɽ�����֤���
+形態素の代表表記を返す．
 
 =cut
 
@@ -140,9 +142,9 @@ sub repname {
     my $result = $this->Juman::Morpheme::repname;
     return $result if ( defined $result );
 
-    my $pat = '(����)��ɽɽ��';
+    my $pat = '(疑似)代表表記';
     if( utf8::is_utf8( $this->midasi ) ){
-	$pat = decode('euc-jp', $pat);
+	$pat = decode($ENCODING, $pat);
     }
 
     if ( defined $this->{fstring} ){
@@ -157,8 +159,8 @@ sub repname {
 
 =item spec
 
-�����Ǥ����Ƥν�����ؼ�����ʸ������������롥KNP �ν��Ϥ�1�Ԥ�������
-�롥
+形態素の全ての諸元を指示する文字列を生成する．KNP の出力の1行に相当す
+る．
 
 =cut
 
@@ -186,7 +188,7 @@ L<Juman::Morpheme>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -194,7 +196,6 @@ L<Juman::Morpheme>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

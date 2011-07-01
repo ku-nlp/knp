@@ -8,19 +8,19 @@ use KNP::SynNodes;
 use KNP::SynNode;
 use strict;
 use base qw/ KNP::BList /;
-use vars qw/ %DEFAULT /;
+use vars qw/ %DEFAULT $ENCODING /;
 
 =head1 NAME
 
-KNP::Result - ��ʸ���Ϸ�̥��֥�������
+KNP::Result - 構文解析結果オブジェクト
 
 =head1 SYNOPSIS
 
-  $result = new KNP::Result( "* -1D <BGH:����>\n...\nEOS\n" );
+  $result = new KNP::Result( "* -1D <BGH:解析>\n...\nEOS\n" );
 
 =head1 DESCRIPTION
 
-��ʸ���Ϸ�̤��ݻ����륪�֥������ȡ�
+構文解析結果を保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -28,40 +28,43 @@ KNP::Result - ��ʸ���Ϸ�̥��֥�������
 
 =item new ( RESULT )
 
-KNP �ν���ʸ���󡤤ޤ��ϡ�����ʸ�����Ԥ�ñ�̤Ȥ��Ƴ�Ǽ���줿�ꥹ�Ȥ�
-�Ф����ե���� RESULT ������Ȥ��ƸƤӽФ��ȡ����ι�ʸ���Ϸ�̤�ɽ
-�����֥������Ȥ��������롥
+KNP の出力文字列，または，その文字列を行を単位として格納されたリストに
+対するリファレンス RESULT を引数として呼び出すと，その構文解析結果を表
+すオブジェクトを生成する．
 
 =item new ( OPTIONS )
 
-�ʲ��γ�ĥ���ץ�������ꤷ�ƥ��󥹥ȥ饯����ƤӽФ���
+以下の拡張オプションを指定してコンストラクタを呼び出す．
 
 =over 4
 
 =item result => RESULT
 
-KNP �ν���ʸ���󡤤ޤ��ϡ�����ʸ�����Ԥ�ñ�̤Ȥ��Ƴ�Ǽ���줿�ꥹ�Ȥ�
-�Ф����ե���󥹤���ꤹ�롥
+KNP の出力文字列，または，その文字列を行を単位として格納されたリストに
+対するリファレンスを指定する．
 
 =item pattern => STRING
 
-��ʸ���Ϸ�̤�ü���뤿��Υѥ��������ꤹ�롥
+構文解析結果を終端するためのパターンを指定する．
 
 =item bclass => NAME
 
-ʸ�ᥪ�֥������Ȥ���ꤹ�롥̵����ξ��ϡ�C<KNP::Bunsetsu> ���Ѥ��롥
+文節オブジェクトを指定する．無指定の場合は，C<KNP::Bunsetsu> を用いる．
 
 =item mclass => NAME
 
-�����ǥ��֥������Ȥ���ꤹ�롥̵����ξ��ϡ�C<KNP::Morpheme> ���Ѥ��롥
+形態素オブジェクトを指定する．無指定の場合は，C<KNP::Morpheme> を用いる．
 
 =item tclass => NAME
 
-�������֥������Ȥ���ꤹ�롥̵����ξ��ϡ�C<KNP::Tag> ���Ѥ��롥
+タグオブジェクトを指定する．無指定の場合は，C<KNP::Tag> を用いる．
 
 =back
 
 =cut
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
+
 %DEFAULT = ( pattern => '^EO[SP]$',
 	     bclass  => 'KNP::Bunsetsu',
 	     mclass  => 'KNP::Morpheme',
@@ -88,14 +91,14 @@ sub new {
     my $tclass  = $opt{tclass};
     return undef unless( $result and $pattern and $bclass and $mclass and $tclass );
 
-    # ʸ����ľ�ܻ��ꤵ�줿���
+    # 文字列が直接指定された場合
     $result = [ map( "$_\n", split( /\n/, $result ) ) ] unless ref $result;
 
     my $this = { all => join( '', @$result ) };
     bless $this, $class;
     return $this unless $pattern;
 
-    # ��ʸ���Ϸ�̤���Ƭ�˴ޤޤ�Ƥ��륳���Ȥȥ��顼����ʬ�������
+    # 構文解析結果の先頭に含まれているコメントとエラーの部分を取り除く
     my( $str, $comment, $error );
     while( defined( $str = shift @$result ) ){
 	if( $str =~ /^#/ ){
@@ -131,11 +134,11 @@ sub new {
 	} elsif( $str =~ m/^!/ ){
 	    my $synnode = KNP::SynNode->new($str);
 	    my $last_tag = ( $this->tag ) [-1];
-	    # synnodes��������
+	    # synnodesがある場合
 	    if ( defined $last_tag->{synnodes} ){
 		$last_tag->{synnodes}[-1]->push_synnode( $synnode );
 	    }
-	    # synnodes���ʤ���� (tag��push����)
+	    # synnodesがない場合 (tagにpushする)
 	    else {
 		$last_tag->push_synnode( $synnode );
 	    }
@@ -148,7 +151,7 @@ sub new {
 	}
     }
 
-    # ��������������Ф�
+    # 係り受け情報を取り出す
     my( @bnst ) = $this->bnst;
     for my $bnst ( @bnst ){
 	$bnst->make_reference( \@bnst );
@@ -164,7 +167,7 @@ sub new {
 	}
     }
 
-    # �񤭹��ߤ�ػߤ���
+    # 書き込みを禁止する
     $this->set_readonly();
 
     $this->{comment} = $comment;
@@ -176,35 +179,35 @@ sub new {
 
 =head1 METHODS
 
-��ʸ���Ϸ�̤ϡ��оݤȤʤ�ʸ��ʸ��ñ�̤�ʬ�򤷤��ꥹ�Ȥȸ��뤳�Ȥ��Ǥ�
-�롥���Τ��ᡤ�ܥ��饹�� C<KNP::BList> ���饹��Ѿ�����褦�˼�������
-�Ƥ��ꡤ�ʲ��Υ᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+構文解析結果は，対象となる文を文節単位に分解したリストと見ることができ
+る．そのため，本クラスは C<KNP::BList> クラスを継承するように実装され
+ており，以下のメソッドが利用可能である．
 
 =over 4
 
 =item bnst
 
-ʸ�������Ф���
+文節列を取り出す．
 
 =item tag
 
-���������Ф���
+タグ列を取り出す．
 
 =item mrph
 
-�����������Ф���
+形態素列を取り出す．
 
 =back
 
-�����Υ᥽�åɤξܺ٤ˤĤ��Ƥϡ�L<KNP::BList> �򻲾ȤΤ��ȡ�
+これらのメソッドの詳細については，L<KNP::BList> を参照のこと．
 
-�ä��ơ��ʲ��Υ᥽�åɤ��������Ƥ��롥
+加えて，以下のメソッドが定義されている．
 
 =over 4
 
 =item all
 
-��ʸ���Ϸ�̤���ʸ������֤���
+構文解析結果の全文字列を返す．
 
 =cut
 sub all {
@@ -214,37 +217,37 @@ sub all {
 
 =item all_dynamic
 
-��ʸ���Ϸ�̤���ʸ�����ưŪ�˺�ä��֤���
-�ؿ�push_feature�ʤɤ�Ȥä����������񤭴��������ˡ�all�Ǥ��ѹ���ȿ�Ǥ���ʤ����ᡤ���δؿ���Ȥ���
+構文解析結果の全文字列を動的に作って返す．
+関数push_featureなどを使って内部情報を書き換えた時に，allでは変更が反映されないため，この関数を使う．
 
 =cut
 sub all_dynamic {
     my( $this, $option ) = @_;
 
-    my $MIDASI = '���Ф�';
-    my $SCORE = '������';
+    my $MIDASI = '見出し';
+    my $SCORE = 'スコア';
 
     if (utf8::is_utf8($this->{all})) {
 	require Encode;
-	$MIDASI = Encode::decode('euc-jp', $MIDASI);
-	$SCORE = Encode::decode('euc-jp', $SCORE);
+	$MIDASI = Encode::decode($ENCODING, $MIDASI);
+	$SCORE = Encode::decode($ENCODING, $SCORE);
     }
 
     my $ret;
     $ret .= $this->{comment};
-    # ʸ�����֤�
+    # 文節を順番に
     foreach my $bnst ($this->bnst) {
 	$ret .= '* ';
 	$ret .= defined $bnst->parent ? $bnst->parent->id : -1;
 	$ret .=  $bnst->dpndtype . ' ' . $bnst->fstring . "\n";
 
-	# ���ܶ����֤�
+	# 基本句を順番に
 	foreach my $tag ($bnst->tag) {
 	    $ret .=  '+ ';
 	    $ret .= defined $tag->parent ? $tag->parent->id : -1;
 	    $ret .= $tag->dpndtype . ' ' . $tag->fstring . "\n";
 
-	    # �����Ǥ���֤�
+	    # 形態素を順番に
 	    for my $mrph ($tag->mrph) {
 		if (defined $mrph->dpndtype) {
 		    $ret .=  '- ';
@@ -274,7 +277,7 @@ sub all_dynamic {
 
 =item comment
 
-��ʸ���Ϸ����Υ����Ȥ��֤���
+構文解析結果中のコメントを返す．
 
 =cut
 sub comment {
@@ -284,7 +287,7 @@ sub comment {
 
 =item error
 
-��ʸ���Ϸ����Υ��顼��å��������֤���
+構文解析結果中のエラーメッセージを返す．
 
 =cut
 sub error {
@@ -294,7 +297,7 @@ sub error {
 
 =item id
 
-��ʸ���Ϸ��ID�����롥
+構文解析結果IDを得る．
 
 =cut
 sub id {
@@ -311,7 +314,7 @@ sub id {
 
 =item set_id ( ID )
 
-��ʸ���Ϸ��ID�����ꤹ�롥
+構文解析結果IDを設定する．
 
 =cut
 sub set_id {
@@ -327,7 +330,7 @@ sub set_id {
 
 =item version
 
-�С����������롥
+バージョンを得る．
 
 =cut
 sub version {
@@ -340,7 +343,7 @@ sub version {
 
 =item eos
 
-���Ϸ�̽�λ���ڤ������
+解析結果終了区切りを得る
 
 =cut
 sub eos {
@@ -357,7 +360,7 @@ sub eos {
 
 =item set_eos ( EOS )
 
-���Ϸ�̽�λ���ڤ�����ꤹ�롥
+解析結果終了区切りを設定する．
 
 =cut
 sub set_eos {
@@ -370,8 +373,8 @@ sub set_eos {
 
 =item spec
 
-��ʸ���Ϸ�̤�ɽ������ʸ������������롥
-SynGraph��ʬ�Ͻ�����롥
+構文解析結果を表現する文字列を生成する．
+SynGraph部分は除かれる．
 
 =cut
 sub spec {
@@ -384,7 +387,7 @@ sub spec {
 
 =item make_ss
 
-ɸ�๽¤(Standard Structure)���֤���
+標準構造(Standard Structure)を返す．
 
 =cut
 sub make_ss {
@@ -400,9 +403,9 @@ sub make_ss {
 
     my $phrase = $ss{sentence}{phrase};
 
-    # ���ܶ����֤�
+    # 基本句を順番に
     foreach my $tag ( $this->tag ) {
-	# �Ҷ�
+	# 子供
 	my @child_ids;
 	if (defined $tag->child) {
 	    foreach my $ctag ($tag->child) {
@@ -419,12 +422,12 @@ sub make_ss {
 
 	push @{$phrase->[-1]{node}}, { type => 'base' };
 
-	# �����Ǥ���֤�
+	# 形態素を順番に
 	foreach my $mrph ( $tag->mrph ) {
 	    my $repname = $mrph->repname ? $mrph->repname : $mrph->genkei . '/' .  $mrph->yomi;
 
 	    push @{$phrase->[-1]{node}[0]{word}}, { fstring => $mrph->fstring,
-						    content => $mrph->midasi, # <word ...>(����������)</word> 
+						    content => $mrph->midasi, # <word ...>(ここに入る)</word> 
 						    katuyou1 => $mrph->katuyou1 eq '*' ? '' : $mrph->katuyou1,
 						    katuyou2 => $mrph->katuyou2 eq '*' ? '' : $mrph->katuyou2,
 						    repname => $repname,
@@ -441,7 +444,7 @@ sub make_ss {
 
 =item all_xml
 
-XML���֤���
+XMLを返す．
 
 =cut
 sub all_xml {
@@ -475,7 +478,7 @@ L<KNP::BList>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -483,7 +486,6 @@ L<KNP::BList>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

@@ -7,23 +7,23 @@ BEGIN { plan tests => 21 }
 
 use KNP::Morpheme;
 
-my $spec = "¹½Ê¸ ¤³¤¦¤Ö¤ó ¹½Ê¸ Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL <´Á»ú><¤«¤Ê´Á»ú><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>\n";
+my $spec = "æ§‹æ–‡ ã“ã†ã¶ã‚“ æ§‹æ–‡ åè© 6 æ™®é€šåè© 1 * 0 * 0 NIL <æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><â†è¤‡åˆ><åè©ç›¸å½“èª>\n";
 my $mrph = KNP::Morpheme->new( $spec );
 
 ok(defined $mrph);
-ok($mrph->midasi eq '¹½Ê¸');
-ok($mrph->yomi eq '¤³¤¦¤Ö¤ó');
-ok($mrph->genkei eq '¹½Ê¸');
-ok($mrph->hinsi eq 'Ì¾»ì');
+ok($mrph->midasi eq 'æ§‹æ–‡');
+ok($mrph->yomi eq 'ã“ã†ã¶ã‚“');
+ok($mrph->genkei eq 'æ§‹æ–‡');
+ok($mrph->hinsi eq 'åè©');
 ok($mrph->hinsi_id == 6);
-ok($mrph->bunrui eq 'ÉáÄÌÌ¾»ì');
+ok($mrph->bunrui eq 'æ™®é€šåè©');
 ok($mrph->bunrui_id == 1);
 ok($mrph->katuyou1 eq '*');
 ok($mrph->katuyou1_id == 0);
 ok($mrph->katuyou2 eq '*');
 ok($mrph->katuyou2_id == 0);
 ok($mrph->imis eq 'NIL');
-ok($mrph->fstring eq '<´Á»ú><¤«¤Ê´Á»ú><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>');
+ok($mrph->fstring eq '<æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><â†è¤‡åˆ><åè©ç›¸å½“èª>');
 ok($mrph->feature == 5);
 ok($mrph->spec eq $spec);
 

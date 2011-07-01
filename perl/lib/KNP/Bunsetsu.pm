@@ -8,15 +8,15 @@ use base qw/ KNP::Depend KNP::Fstring KNP::TList KNP::KULM::Bunsetsu KNP::MList 
 
 =head1 NAME
 
-KNP::Bunsetsu - ʸ�ᥪ�֥������� in KNP
+KNP::Bunsetsu - 文節オブジェクト in KNP
 
 =head1 SYNOPSIS
 
-  $b = new KNP::Bunsetsu( "* -1D <BGH:����>" );
+  $b = new KNP::Bunsetsu( "* -1D <BGH:解析>" );
 
 =head1 DESCRIPTION
 
-KNP �ˤ�뷸��������Ϥ�ñ�̤Ǥ���ʸ��γƼ������ݻ����륪�֥������ȡ�
+KNP による係り受け解析の単位である文節の各種情報を保持するオブジェクト．
 
 =head1 CONSTRUCTOR
 
@@ -24,8 +24,8 @@ KNP �ˤ�뷸��������Ϥ�ñ�̤Ǥ���ʸ��γƼ������ݻ����륪�֥������ȡ�
 
 =item new ( SPEC, ID )
 
-��1���� C<SPEC> �� KNP �ν��Ϥ��������ƸƤӽФ��ȡ����ιԤ����Ƥ����
-������������ʸ�ᥪ�֥������Ȥ��������롥
+第1引数 C<SPEC> に KNP の出力を代入して呼び出すと，その行の内容を解析
+し，相当する文節オブジェクトを生成する．
 
 =cut
 sub new {
@@ -50,19 +50,19 @@ sub new {
 
 =head1 METHODS
 
-1�Ĥ�ʸ���ʣ���η����Ǥ���ʤ뤿�ᡤʸ�ᥪ�֥������ȤϷ������󥪥֥���
-���� C<KNP::MList> ��Ѿ����Ƥ��롥�������äơ������������Ф���
-��� C<mrph> �᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+1つの文節は複数の形態素からなるため，文節オブジェクトは形態素列オブジェ
+クト C<KNP::MList> を継承している．したがって，形態素列を取り出すた
+めの C<mrph> メソッドが利用可能である．
 
-�ޤ����ʲ��Ϥ�Ԥä����ϡ�1�Ĥ�ʸ�᤬ʣ���Υ�������ʤ���⤢�롥
-���Τ��ᡤʸ�ᥪ�֥������Ȥϥ����󥪥֥������� C<KNP::TList> ��Ѿ�����
-�����Υꥹ�Ȥ���Ф������ C<tag> �᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+また，格解析を行った場合は，1つの文節が複数のタグからなる場合もある．
+そのため，文節オブジェクトはタグ列オブジェクト C<KNP::TList> を継承し，
+タグのリストを取り出すための C<tag> メソッドが利用可能である．
 
 =over 4
 
 =item mrph_list
 
-ʸ��˴ޤޤ�����Ƥη����Ǥ��֤���
+文節に含まれる全ての形態素を返す．
 
 =cut
 sub mrph_list {
@@ -76,7 +76,7 @@ sub mrph_list {
 
 =item push_mrph ( @MRPH )
 
-���ꤵ�줿�����Ǥ�ʸ����ɲä��롥
+指定された形態素を文節に追加する．
 
 =cut
 sub push_mrph {
@@ -90,14 +90,14 @@ sub push_mrph {
 
 =item push_tag ( @TAG )
 
-���ꤵ�줿������ʸ����ɲä��롥
+指定されたタグを文節に追加する．
 
 =cut
 sub push_tag {
     my $this = shift;
     if( $this->KNP::MList::mrph_list ){
-	# ����ʸ��ˤϡ������˴ޤޤ�Ƥ��ʤ������Ǥ�����¸�ߤ��Ƥ����
-	# �ǡ��ǡ�����̷��������������ǽ�������롥
+	# この文節には，タグに含まれていない形態素が既に存在しているの
+	# で，データの矛盾を引き起こす可能性がある．
 	carp "Unsafe addition of tags";
     }
     $this->KNP::TList::push_tag( @_ );
@@ -105,57 +105,57 @@ sub push_tag {
 
 =back
 
-ʸ��֤ΰ�¸�ط��˴ؤ��������ݻ������뤿��ˡ�C<KNP::Depend> ��
-�饹��Ѿ����Ƥ��롥�������äơ��ʲ��Υ᥽�åɤ����Ѳ�ǽ�Ǥ��롥
+文節間の依存関係に関する情報を保持・操作するために，C<KNP::Depend> ク
+ラスを継承している．したがって，以下のメソッドが利用可能である．
 
 =over 4
 
 =item parent
 
-������ʸ����֤���
+係り先文節を返す．
 
 =item child
 
-����ʸ��˷��äƤ���ʸ��Υꥹ�Ȥ��֤���
+この文節に係っている文節のリストを返す．
 
 =item dpndtype
 
-��������ط��μ���(D,P,I,A)���֤���
+係り受け関係の種類(D,P,I,A)を返す．
 
 =item id
 
-���󥹥ȥ饯����ƤӽФ��Ȥ��˻��ꤵ�줿 ID ���֤���̵����ξ��� -1 
-���֤���
+コンストラクタを呼び出すときに指定された ID を返す．無指定の場合は -1 
+を返す．
 
 =back
 
-KNP �ˤ�äƳ�����Ƥ�줿��ħʸ������ݻ������Ȥ��뤿��ˡ�
-C<KNP::Fstring> ���饹��Ѿ����Ƥ��롥�������äơ��ʲ��Υ᥽�åɤ�����
-��ǽ�Ǥ��롥
+KNP によって割り当てられた特徴文字列を保持・参照するために，
+C<KNP::Fstring> クラスを継承している．したがって，以下のメソッドが利用
+可能である．
 
 =over 4
 
 =item fstring
 
-��ħʸ������֤���
+特徴文字列を返す．
 
 =item feature
 
-��ħ�Υꥹ�Ȥ��֤���
+特徴のリストを返す．
 
 =item push_feature
 
-��ħ���ɲä��롥
+特徴を追加する．
 
 =back
 
-�ä��ơ��ʲ��Υ᥽�åɤ��������Ƥ��롥
+加えて，以下のメソッドが定義されている．
 
 =over 4
 
 =item spec
 
-ʸ�ᥪ�֥������Ȥ�ʸ������Ѵ����롥
+文節オブジェクトを文字列に変換する．
 
 =cut
 sub spec {
@@ -171,9 +171,9 @@ sub spec {
 
 =head1 DESTRUCTOR
 
-ʸ�ᥪ�֥������Ȥϡ��ǥ��ȥ饯����������Ƥ���2����Υ��֥������� 
-C<KNP::Depend>, C<KNP::TList> ��Ѿ����Ƥ��롥ξ���Υǥ��ȥ饯���򤭤�
-��ȸƤӽФ��ʤ��ȡ�����꡼���θ����Ȥʤ롥
+文節オブジェクトは，デストラクタを定義している2種類のオブジェクト 
+C<KNP::Depend>, C<KNP::TList> を継承している．両方のデストラクタをきち
+んと呼び出さないと，メモリリークの原因となる．
 
 =cut
 sub DESTROY {
@@ -209,7 +209,7 @@ L<KNP::MList>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -217,7 +217,6 @@ L<KNP::MList>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

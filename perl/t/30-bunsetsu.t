@@ -8,7 +8,7 @@ BEGIN { plan tests => 20 }
 use KNP::Bunsetsu;
 
 my $b = KNP::Bunsetsu->new( <<'__bunsetsu__', 3 );
-* -1D <BGH:²òÀÏ><SM:²òÀÏ:711006601***71100650****><Ê¸Æ¬><Ê¸Ëö><¥µÊÑ><ÂÎ¸À><ÍÑ¸À:Æ°><ÂÎ¸À»ß><¥ì¥Ù¥ë:C><¶èÀÚ:5-5><ID:¡ÊÊ¸Ëö¡Ë><RID:110><ÄóÂê¼õ:30><Ãê¾Ý>
+* -1D <BGH:è§£æž><SM:è§£æž:711006601***71100650****><æ–‡é ­><æ–‡æœ«><ã‚µå¤‰><ä½“è¨€><ç”¨è¨€:å‹•><ä½“è¨€æ­¢><ãƒ¬ãƒ™ãƒ«:C><åŒºåˆ‡:5-5><ID:ï¼ˆæ–‡æœ«ï¼‰><RID:110><æé¡Œå—:30><æŠ½è±¡>
 __bunsetsu__
 
 ok( defined $b );
@@ -17,32 +17,32 @@ ok( $b->dpndtype eq "D" );
 ok( $b->mrph == 0 );
 ok( $b->tag == 0 );
 
-my $pstring = "¹½Ê¸ÌÚ¤ÎÄÉ²ÃÊ¸»úÎó";
+my $pstring = "æ§‹æ–‡æœ¨ã®è¿½åŠ æ–‡å­—åˆ—";
 ok( $b->pstring( $pstring ) eq $pstring );
 ok( $b->pstring eq $pstring );
 ok( ! $b->pstring( "" ) );
 ok( ! $b->pstring );
 
 my $m = KNP::Morpheme->new( <<'__koubun_mrph__' );
-¹½Ê¸ ¤³¤¦¤Ö¤ó ¹½Ê¸ Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL <Ê¸Æ¬><´Á»ú><¤«¤Ê´Á»ú><¼«Î©><Ì¾»ìÁêÅö¸ì>
+æ§‹æ–‡ ã“ã†ã¶ã‚“ æ§‹æ–‡ åè©ž 6 æ™®é€šåè©ž 1 * 0 * 0 NIL <æ–‡é ­><æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><åè©žç›¸å½“èªž>
 __koubun_mrph__
 ok( defined $m );
 $b->push_mrph( $m );
 ok( scalar($b->mrph) == 1 );
 
 $m = KNP::Morpheme->new( <<'__kaiseki_mrph__' );
-²òÀÏ ¤«¤¤¤»¤­ ²òÀÏ Ì¾»ì 6 ¥µÊÑÌ¾»ì 2 * 0 * 0 NIL <Ê¸Ëö><É½¸½Ê¸Ëö><´Á»ú><¤«¤Ê´Á»ú><¥µÊÑ><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>
+è§£æž ã‹ã„ã›ã è§£æž åè©ž 6 ã‚µå¤‰åè©ž 2 * 0 * 0 NIL <æ–‡æœ«><è¡¨ç¾æ–‡æœ«><æ¼¢å­—><ã‹ãªæ¼¢å­—><ã‚µå¤‰><è‡ªç«‹><â†è¤‡åˆ><åè©žç›¸å½“èªž>
 __kaiseki_mrph__
 ok( defined $m );
 $b->push_mrph( $m );
 ok( scalar($b->mrph) == 2 );
 
-ok( join('',map($_->midasi,$b->mrph)) eq '¹½Ê¸²òÀÏ' );
+ok( join('',map($_->midasi,$b->mrph)) eq 'æ§‹æ–‡è§£æž' );
 
 ok( $b->spec eq <<'__spec__' );
-* -1D <BGH:²òÀÏ><SM:²òÀÏ:711006601***71100650****><Ê¸Æ¬><Ê¸Ëö><¥µÊÑ><ÂÎ¸À><ÍÑ¸À:Æ°><ÂÎ¸À»ß><¥ì¥Ù¥ë:C><¶èÀÚ:5-5><ID:¡ÊÊ¸Ëö¡Ë><RID:110><ÄóÂê¼õ:30><Ãê¾Ý>
-¹½Ê¸ ¤³¤¦¤Ö¤ó ¹½Ê¸ Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL <Ê¸Æ¬><´Á»ú><¤«¤Ê´Á»ú><¼«Î©><Ì¾»ìÁêÅö¸ì>
-²òÀÏ ¤«¤¤¤»¤­ ²òÀÏ Ì¾»ì 6 ¥µÊÑÌ¾»ì 2 * 0 * 0 NIL <Ê¸Ëö><É½¸½Ê¸Ëö><´Á»ú><¤«¤Ê´Á»ú><¥µÊÑ><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>
+* -1D <BGH:è§£æž><SM:è§£æž:711006601***71100650****><æ–‡é ­><æ–‡æœ«><ã‚µå¤‰><ä½“è¨€><ç”¨è¨€:å‹•><ä½“è¨€æ­¢><ãƒ¬ãƒ™ãƒ«:C><åŒºåˆ‡:5-5><ID:ï¼ˆæ–‡æœ«ï¼‰><RID:110><æé¡Œå—:30><æŠ½è±¡>
+æ§‹æ–‡ ã“ã†ã¶ã‚“ æ§‹æ–‡ åè©ž 6 æ™®é€šåè©ž 1 * 0 * 0 NIL <æ–‡é ­><æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><åè©žç›¸å½“èªž>
+è§£æž ã‹ã„ã›ã è§£æž åè©ž 6 ã‚µå¤‰åè©ž 2 * 0 * 0 NIL <æ–‡æœ«><è¡¨ç¾æ–‡æœ«><æ¼¢å­—><ã‹ãªæ¼¢å­—><ã‚µå¤‰><è‡ªç«‹><â†è¤‡åˆ><åè©žç›¸å½“èªž>
 __spec__
 
 ok( $b->fstring );

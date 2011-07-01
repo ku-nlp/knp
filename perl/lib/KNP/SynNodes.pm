@@ -3,6 +3,7 @@ package KNP::SynNodes;
 
 require 5.004_04; # For base pragma.
 use strict;
+use vars qw/ $ENCODING /;
 use Encode;
 
 =head1 NAME
@@ -11,20 +12,23 @@ KNP::SynNodes - SynNodes in KNP
 
 =head1 DESCRIPTION
 
-SynNodes(SynNode¤Î½¸¹ç)¤Î³Æ¼ï¾ğÊó¤òÊİ»ı¤¹¤ë¥ª¥Ö¥¸¥§¥¯¥È¡¥
+SynNodes(SynNodeã®é›†åˆ)ã®å„ç¨®æƒ…å ±ã‚’ä¿æŒã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼
 
 =cut
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
+
 sub new {
     my( $class, $str ) = @_;
 
     my $this = {};
 
-    my $midasi_pat = '¸«½Ğ¤·';
+    my $midasi_pat = 'è¦‹å‡ºã—';
     if( utf8::is_utf8( $str ) ){
-	$midasi_pat = decode('euc-jp', $midasi_pat);
+	$midasi_pat = decode($ENCODING, $midasi_pat);
     }
 
-    # !! 0 1D <¸«½Ğ¤·:¹ñºİ²½¤¬><³Ê²òÀÏ·ë²Ì:¥¬³Ê>
+    # !! 0 1D <è¦‹å‡ºã—:å›½éš›åŒ–ãŒ><æ ¼è§£æçµæœ:ã‚¬æ ¼>
     my ($tagid, $dpnd, $string) = (split(' ', $str))[1,2,3];
     my @tagids = split(',', $tagid);
 
@@ -33,9 +37,9 @@ sub new {
 	$parent = $1;
 	$dpndtype = $2;
 
-	# ·¸¤êÀè¤¬Ê£¿ô¤¢¤ë¾ì¹ç¤¬¤¢¤ë
+	# ä¿‚ã‚Šå…ˆãŒè¤‡æ•°ã‚ã‚‹å ´åˆãŒã‚ã‚‹
 	for (split('/', $parent)) {
-	    # ÂĞ±ş¤¹¤ë´ğËÜ¶çID¤¬Ê£¿ô¤¢¤ë¾ì¹ç¤¬¤¢¤ë
+	    # å¯¾å¿œã™ã‚‹åŸºæœ¬å¥IDãŒè¤‡æ•°ã‚ã‚‹å ´åˆãŒã‚ã‚‹
 	    push @parentids, [split(',', $_)];
 	}
     }
@@ -46,11 +50,11 @@ sub new {
     my ($midasi, @features);
     while ($string =~ /(<.+?>)/g) {
 	my $s = $1;
-	# ¸«½Ğ¤·
+	# è¦‹å‡ºã—
 	if ($s =~ /<$midasi_pat:(.+?)>/) {
 	    $midasi = $1;
 	}
-	# ¤½¤ÎÂ¾¤Ïfeature
+	# ãã®ä»–ã¯feature
 	else {
 	    push @features, $s;
 	}
@@ -69,13 +73,13 @@ sub new {
 
 =head1 METHODS
 
-°Ê²¼¤Î¥á¥½¥Ã¥É¤¬ÍøÍÑ²ÄÇ½¤Ç¤¢¤ë¡£
+ä»¥ä¸‹ã®ãƒ¡ã‚½ãƒƒãƒ‰ãŒåˆ©ç”¨å¯èƒ½ã§ã‚ã‚‹ã€‚
 
 =over 4
 
 =item push_synnode
 
-Syn¥Î¡¼¥É¤òÄÉ²Ã¤¹¤ë
+Synãƒãƒ¼ãƒ‰ã‚’è¿½åŠ ã™ã‚‹
 
 =cut
 sub push_synnode {
@@ -86,7 +90,7 @@ sub push_synnode {
 
 =item synnode
 
-Á´¤Æ¤ÎSyn¥Î¡¼¥É¤òÊÖ¤¹
+å…¨ã¦ã®Synãƒãƒ¼ãƒ‰ã‚’è¿”ã™
 
 =cut
 sub synnode {
@@ -101,7 +105,7 @@ sub synnode {
 
 =item tagid
 
-ÂĞ±ş¤¹¤ë´ğËÜ¶çID¤òÊÖ¤¹¡£
+å¯¾å¿œã™ã‚‹åŸºæœ¬å¥IDã‚’è¿”ã™ã€‚
 
 =cut
 sub tagid {
@@ -111,7 +115,7 @@ sub tagid {
 
 =item tagids
 
-ÂĞ±ş¤¹¤ë´ğËÜ¶çID(ÇÛÎó)¤òÊÖ¤¹¡£
+å¯¾å¿œã™ã‚‹åŸºæœ¬å¥ID(é…åˆ—)ã‚’è¿”ã™ã€‚
 
 =cut
 sub tagids {
@@ -121,7 +125,7 @@ sub tagids {
 
 =item parent
 
-·¸¤êÀè¤Î´ğËÜ¶çID¤òÊÖ¤¹¡£
+ä¿‚ã‚Šå…ˆã®åŸºæœ¬å¥IDã‚’è¿”ã™ã€‚
 
 =cut
 sub parent {
@@ -131,7 +135,7 @@ sub parent {
 
 =item parentids
 
-·¸¤êÀè¤Î´ğËÜ¶çID(ÇÛÎó¤ÎÇÛÎó)¤òÊÖ¤¹¡£
+ä¿‚ã‚Šå…ˆã®åŸºæœ¬å¥ID(é…åˆ—ã®é…åˆ—)ã‚’è¿”ã™ã€‚
 
 =cut
 sub parentids {
@@ -141,7 +145,7 @@ sub parentids {
 
 =item dpndtype
 
-°ÍÂ¸´Ø·¸¤Î¼ïÎà(D,P,I,A)¤òÊÖ¤¹¡£
+ä¾å­˜é–¢ä¿‚ã®ç¨®é¡(D,P,I,A)ã‚’è¿”ã™ã€‚
 
 =cut
 sub dpndtype {
@@ -151,7 +155,7 @@ sub dpndtype {
 
 =item midasi
 
-¸«½Ğ¤·¤òÊÖ¤¹¡£
+è¦‹å‡ºã—ã‚’è¿”ã™ã€‚
 
 =cut
 sub midasi {
@@ -161,7 +165,7 @@ sub midasi {
 
 =item feature
 
-Ê¸Ë¡ÁÇÀ­¤òÊÖ¤¹¡£
+æ–‡æ³•ç´ æ€§ã‚’è¿”ã™ã€‚
 
 =cut
 sub feature {
@@ -176,7 +180,7 @@ sub feature {
 =over 4
 
 =item
-¼ÆÅÄ ÃÎ½¨ <shibata@nlp.kuee.kyoto-u.ac.jp>
+æŸ´ç”° çŸ¥ç§€ <shibata@nlp.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -184,7 +188,6 @@ sub feature {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

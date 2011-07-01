@@ -14,7 +14,7 @@ unless( eval { require KULM::KNP::M; } ){
 }
 use KNP::Morpheme;
 
-my $spec = "¹½Ê¸ ¤³¤¦¤Ö¤ó ¹½Ê¸ Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL <´Á»ú><¤«¤Ê´Á»ú><¼«Î©><¢«Ê£¹ç><Ì¾»ìÁêÅö¸ì>\n";
+my $spec = "æ§‹æ–‡ ã“ã†ã¶ã‚“ æ§‹æ–‡ åè© 6 æ™®é€šåè© 1 * 0 * 0 NIL <æ¼¢å­—><ã‹ãªæ¼¢å­—><è‡ªç«‹><â†è¤‡åˆ><åè©ç›¸å½“èª>\n";
 my $x = KNP::Morpheme->new( $spec );
 my $y = KULM::KNP::M->new( string => $spec );
 

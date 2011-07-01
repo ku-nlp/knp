@@ -6,21 +6,21 @@ use strict;
 
 =head1 NAME
 
-KNP::Fstring - ��ħʸ����򻲾Ȥ���
+KNP::Fstring - 特徴文字列を参照する
 
 =head1 SYNOPSIS
 
-���Υ��饹��ߥ����󥰤��ƻ��Ѥ��롥
+このクラスをミキシングして使用する．
 
 =head1 DESCRIPTION
 
-C<KNP::Fstring> ���饹�ϡ���ħʸ����򻲾Ȥ���᥽�åɤ��󶡤��륯�饹
-�Ǥ��롥
+C<KNP::Fstring> クラスは，特徴文字列を参照するメソッドを提供するクラス
+である．
 
 =head1 CONSTRUCTOR
 
-���Υ��饹�ϥߥ����󥰤��ƻ��Ѥ���褦���߷פ���Ƥ��뤿�ᡤ���̤ʥ���
-���ȥ饯�����������Ƥ��ʤ���
+このクラスはミキシングして使用するように設計されているため，特別なコン
+ストラクタは定義されていない．
 
 =head1 METHODS
 
@@ -30,8 +30,8 @@ C<KNP::Fstring> ���饹�ϡ���ħʸ����򻲾Ȥ���᥽�åɤ��󶡤��륯�饹
 
 =item fstring [ STRING ]
 
-��ħʸ������֤������������ꤵ�줿���ϡ����ꤵ�줿ʸ�������ħʸ����
-�Ȥ����������롥
+特徴文字列を返す．引数が指定された場合は，指定された文字列を特徴文字列
+として代入する．
 
 =cut
 sub fstring {
@@ -49,11 +49,11 @@ sub fstring {
 
 =item feature [ STRING... ]
 
-���Ƥ���ħ�Υꥹ�Ȥ��֤������������ꤵ�줿���ϡ����ꤵ�줿��ħ�Υꥹ
-�Ȥ��������롥
+全ての特徴のリストを返す．引数が指定された場合は，指定された特徴のリス
+トを代入する．
 
-�����������ꥹ�Ȥ�����Ȥ��ƻ��ꤹ�뤳�ȤϤǤ��ʤ��Τǡ���ħ�����ƾõ�
-���뤿��ˤϻȤ��ʤ���
+ただし，空リストを引数として指定することはできないので，特徴を全て消去
+するためには使えない．
 
 =cut
 sub feature {
@@ -69,7 +69,7 @@ sub feature {
 
 =item set_fstring [ STRING ]
 
-��ħʸ��������ꤹ�롥���ꤵ�줿ʸ������֤���
+特徴文字列を設定する．設定された文字列を返す．
 
 =cut
 sub set_fstring {
@@ -94,13 +94,13 @@ sub set_fstring {
 
 =item set_feature [ STRING... ]
 
-��ħ�Υꥹ�Ȥ����ꤹ�롥���ꤵ�줿��ħ�Υꥹ�Ȥ��֤���
+特徴のリストを設定する．設定された特徴のリストを返す．
 
 =cut
 sub set_feature {
     my $this = shift;
     if( grep( /[<>]/, @_ ) ){
-	# <> ��ޤ�褦����ħʸ������ɲäǤ��ʤ���
+	# <> を含むような特徴文字列は追加できない．
 	carp "Illegal feature string: @_";
 	return ( wantarray ? () : 0 );
     }
@@ -111,7 +111,7 @@ sub set_feature {
 
 =item push_feature ( FEATURES )
 
-���ꤵ�줿��ħ���ɲä��롥�ɲø����ħ�ο����֤���
+指定された特徴を追加する．追加後の特徴の数を返す．
 
 =cut
 sub push_feature {
@@ -126,7 +126,7 @@ sub push_feature {
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -134,7 +134,6 @@ sub push_feature {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

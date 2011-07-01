@@ -7,21 +7,21 @@ use strict;
 
 =head1 NAME
 
-KNP::DrawTree - °ÍÂ¸´Ø·¸¤ÎÌÚ¹½Â¤¤òÉ½¼¨¤¹¤ë
+KNP::DrawTree - ä¾å­˜é–¢ä¿‚ã®æœ¨æ§‹é€ ã‚’è¡¨ç¤ºã™ã‚‹
 
 =head1 SYNOPSIS
 
-¤³¤Î¥¯¥é¥¹¤ò¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ï¼
 
 =head1 DESCRIPTION
 
-C<KNP::DrawTree> ¥¯¥é¥¹¤Ï¡¤²òÀÏÃ±°Ì(Ê¸Àá¡¤¥¿¥°)´Ö¤Î°ÍÂ¸´Ø·¸¤òÌÚ¹½Â¤¤È
-¤·¤ÆÉ½¼¨¤¹¤ë¤¿¤á¤Î¥á¥½¥Ã¥É¤òÄó¶¡¤¹¤ë¥¯¥é¥¹¤Ç¤¢¤ë¡¥
+C<KNP::DrawTree> ã‚¯ãƒ©ã‚¹ã¯ï¼Œè§£æå˜ä½(æ–‡ç¯€ï¼Œã‚¿ã‚°)é–“ã®ä¾å­˜é–¢ä¿‚ã‚’æœ¨æ§‹é€ ã¨
+ã—ã¦è¡¨ç¤ºã™ã‚‹ãŸã‚ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’æä¾›ã™ã‚‹ã‚¯ãƒ©ã‚¹ã§ã‚ã‚‹ï¼
 
 =head1 CONSTRUCTOR
 
-¤³¤Î¥¯¥é¥¹¤Ï¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¤è¤¦¤ËÀß·×¤µ¤ì¤Æ¤¤¤ë¤¿¤á¡¤ÆÃÊÌ¤Ê¥³¥ó
-¥¹¥È¥é¥¯¥¿¤ÏÄêµÁ¤µ¤ì¤Æ¤¤¤Ê¤¤¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã¯ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ã‚ˆã†ã«è¨­è¨ˆã•ã‚Œã¦ã„ã‚‹ãŸã‚ï¼Œç‰¹åˆ¥ãªã‚³ãƒ³
+ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯å®šç¾©ã•ã‚Œã¦ã„ãªã„ï¼
 
 =head1 METHODS
 
@@ -29,34 +29,34 @@ C<KNP::DrawTree> ¥¯¥é¥¹¤Ï¡¤²òÀÏÃ±°Ì(Ê¸Àá¡¤¥¿¥°)´Ö¤Î°ÍÂ¸´Ø·¸¤òÌÚ¹½Â¤¤È
 
 =item draw_tree ( FILE_HANDLE )
 
-¹½Ê¸ÌÚ¤ò»ØÄê¤µ¤ì¤¿ C<FILE_HANDLE> ¤Ë½ĞÎÏ¤¹¤ë¡¥»ØÄê¤ò¾ÊÎ¬¤·¤¿¾ì¹ç¤Ï¡¤É¸
-½à½ĞÎÏ¤Ë½ĞÎÏ¤µ¤ì¤ë¡¥
+æ§‹æ–‡æœ¨ã‚’æŒ‡å®šã•ã‚ŒãŸ C<FILE_HANDLE> ã«å‡ºåŠ›ã™ã‚‹ï¼æŒ‡å®šã‚’çœç•¥ã—ãŸå ´åˆã¯ï¼Œæ¨™
+æº–å‡ºåŠ›ã«å‡ºåŠ›ã•ã‚Œã‚‹ï¼
 
 =item sprint_tree ( )
 
-¹½Ê¸ÌÚ¤òÊ¸»úÎó¤ÇÊÖ¤¹¡¥
+æ§‹æ–‡æœ¨ã‚’æ–‡å­—åˆ—ã§è¿”ã™ï¼
 
 =cut
 my %POS_MARK = 
-    ( 'ÆÃ¼ì'     => '*',
-      'Æ°»ì'     => 'v',
-      '·ÁÍÆ»ì'   => 'j',
-      'È½Äê»ì'   => 'c',
-      '½õÆ°»ì'   => 'x',
-      'Ì¾»ì'     => 'n',
-      '¸ÇÍ­Ì¾»ì' => 'N',	# ÆÃÊÌ
-      '¿ÍÌ¾'     => 'J',	# ÆÃÊÌ
-      'ÃÏÌ¾'     => 'C',	# ÆÃÊÌ
-      'ÁÈ¿¥Ì¾'   => 'A',	# ÆÃÊÌ
-      '»Ø¼¨»ì'   => 'd',
-      'Éû»ì'     => 'a',
-      '½õ»ì'     => 'p',
-      'ÀÜÂ³»ì'   => 'c',
-      'Ï¢ÂÎ»ì'   => 'm',
-      '´¶Æ°»ì'   => '!',
-      'ÀÜÆ¬¼­'   => 'p',
-      'ÀÜÈø¼­'   => 's',
-      'Ì¤ÄêµÁ¸ì' => '?',
+    ( 'ç‰¹æ®Š'     => '*',
+      'å‹•è©'     => 'v',
+      'å½¢å®¹è©'   => 'j',
+      'åˆ¤å®šè©'   => 'c',
+      'åŠ©å‹•è©'   => 'x',
+      'åè©'     => 'n',
+      'å›ºæœ‰åè©' => 'N',	# ç‰¹åˆ¥
+      'äººå'     => 'J',	# ç‰¹åˆ¥
+      'åœ°å'     => 'C',	# ç‰¹åˆ¥
+      'çµ„ç¹”å'   => 'A',	# ç‰¹åˆ¥
+      'æŒ‡ç¤ºè©'   => 'd',
+      'å‰¯è©'     => 'a',
+      'åŠ©è©'     => 'p',
+      'æ¥ç¶šè©'   => 'c',
+      'é€£ä½“è©'   => 'm',
+      'æ„Ÿå‹•è©'   => '!',
+      'æ¥é ­è¾'   => 'p',
+      'æ¥å°¾è¾'   => 's',
+      'æœªå®šç¾©èª' => '?',
     );
 
 sub _leaf_string {
@@ -65,20 +65,20 @@ sub _leaf_string {
     my $utf8_flag = 0;
     for my $mrph ( $obj->mrph() ) {
 	my ($midasi, $bunrui, $hinsi) = ($mrph->midasi(), $mrph->bunrui(), $mrph->hinsi());
-	if ($utf8_flag or utf8::is_utf8($midasi)) { # euc-jp¤Ç½èÍı¤·¡¢ºÇ¸å¤Ëutf8_flag¤òºÆ¤Ó¤¿¤Æ¤ë
+	if ($utf8_flag or utf8::is_utf8($midasi)) { # utf8_flagã‚’ã¯ãšã—ã¦å‡¦ç†ã—ã€æœ€å¾Œã«utf8_flagã‚’å†ã³ãŸã¦ã‚‹
 	    $utf8_flag = 1 unless $utf8_flag;
-	    $midasi = Encode::encode('euc-jp', $midasi);
-	    $bunrui = Encode::encode('euc-jp', $bunrui);
-	    $hinsi = Encode::encode('euc-jp', $hinsi);
+	    $midasi = Encode::encode($KNP::ENCODING, $midasi);
+	    $bunrui = Encode::encode($KNP::ENCODING, $bunrui);
+	    $hinsi = Encode::encode($KNP::ENCODING, $hinsi);
 	}
 	$string .= $midasi;
-	if ( $bunrui =~ /^(?:¸ÇÍ­Ì¾»ì|¿ÍÌ¾|ÃÏÌ¾)$/ ) {
+	if ( $bunrui =~ /^(?:å›ºæœ‰åè©|äººå|åœ°å)$/ ) {
 	    $string .= $POS_MARK{$bunrui};
 	} else {
 	    $string .= $POS_MARK{$hinsi};
 	}
     }
-    $utf8_flag ? Encode::decode('euc-jp', $string) : $string;
+    $utf8_flag ? Encode::decode($KNP::ENCODING, $string) : $string;
 }
 
 sub _str_real_length {
@@ -88,7 +88,7 @@ sub _str_real_length {
 	my $length = 0;
 	for my $chr (split(//, $str)) {
 	    if ($chr =~ /^[a-zA-Z\*\!\?]$/) {
-		$length++; # ÉÊ»ì¾ğÊó¤ÏÄ¹¤µ1
+		$length++; # å“è©æƒ…å ±ã¯é•·ã•1
 	    }
 	    else {
 		$length += 2;
@@ -105,7 +105,7 @@ sub draw_tree {
     my( $this, $fh ) = @_;
 
     no strict qw/refs/;
-    $fh ||= 'STDOUT';			# »ØÄê¤Ê¤·¤Î¾ì¹ç¤ÏÉ¸½à½ĞÎÏ¤òÍÑ¤¤¤ë¡¥
+    $fh ||= 'STDOUT';			# æŒ‡å®šãªã—ã®å ´åˆã¯æ¨™æº–å‡ºåŠ›ã‚’ç”¨ã„ã‚‹ï¼
     print $fh $this->sprint_tree();
 }
 
@@ -121,30 +121,30 @@ sub sprint_tree {
 	for $j ( ( $i + 1 ) .. $limit ){
 	    if ( $j < ( $this->draw_tree_leaves )[$i]->parent->id() ) {
 		if ( $active_column[$j] == 2 ) {
-		    $item[$i][$j] = ( $para_row ? "¨¶" : "¨À" );
+		    $item[$i][$j] = ( $para_row ? "â•‹" : "â•‚" );
 		} elsif ( $active_column[$j] == 1 ) {
-		    $item[$i][$j] = ( $para_row ? "¨»" : "¨«" );
+		    $item[$i][$j] = ( $para_row ? "â”¿" : "â”¼" );
 		} else {
-		    $item[$i][$j] = ( $para_row ? "¨¬" : "¨¡" );
+		    $item[$i][$j] = ( $para_row ? "â”" : "â”€" );
 		}
 	    } elsif ( $j == ( $this->draw_tree_leaves )[$i]->parent->id() ) {
 		if ( ( $this->draw_tree_leaves )[$i]->dpndtype() eq "P" ) {
-		    $item[$i][$j] = "£Ğ";
+		    $item[$i][$j] = "ï¼°";
 		} elsif ( ( $this->draw_tree_leaves )[$i]->dpndtype() eq "I" ) {
-		    $item[$i][$j] = "£É";
+		    $item[$i][$j] = "ï¼©";
 		} elsif ( ( $this->draw_tree_leaves )[$i]->dpndtype() eq "A" ) {
-		    $item[$i][$j] = "£Á";
+		    $item[$i][$j] = "ï¼¡";
 		} else {
 		    if ( $active_column[$j] == 2 ) {
-			$item[$i][$j] = "¨¹";
+			$item[$i][$j] = "â”¨";
 		    } elsif ( $active_column[$j] == 1 ) {
-			$item[$i][$j] = "¨©";
+			$item[$i][$j] = "â”¤";
 		    } else {
-			$item[$i][$j] = "¨¤";
+			$item[$i][$j] = "â”";
 		    }
 		}
 		if ( $active_column[$j] == 2 ) {
-		    ;		# ¤¹¤Ç¤Ë£Ğ¤«¤é¤ÎÂÀÀş¤¬¤¢¤ì¤Ğ¤½¤Î¤Ş¤Ş
+		    ;		# ã™ã§ã«ï¼°ã‹ã‚‰ã®å¤ªç·šãŒã‚ã‚Œã°ãã®ã¾ã¾
 		} elsif ( $para_row ) {
 		    $active_column[$j] = 2;
 		} else {
@@ -152,11 +152,11 @@ sub sprint_tree {
 		}
 	    } else {
 		if ( $active_column[$j] == 2 ) {
-		    $item[$i][$j] = "¨­";
+		    $item[$i][$j] = "â”ƒ";
 		} elsif ( $active_column[$j] == 1 ) {
-		    $item[$i][$j] = "¨¢";
+		    $item[$i][$j] = "â”‚";
 		} else {
-		    $item[$i][$j] = "¡¡";
+		    $item[$i][$j] = "ã€€";
 		}
 	    }
 	}
@@ -166,7 +166,7 @@ sub sprint_tree {
     my $utf8_flag = utf8::is_utf8($line[0]) ? 1 : 0 if @line;
     for $i ( 0 .. $limit ){
 	for $j ( ( $i + 1 ) .. $limit ){
-	    $line[$i] .= $utf8_flag ? Encode::decode('euc-jp', $item[$i][$j]) : $item[$i][$j];
+	    $line[$i] .= $utf8_flag ? Encode::decode($KNP::ENCODING, $item[$i][$j]) : $item[$i][$j];
 	}
     }
     my $max_length = ( sort { $b <=> $a; } map( &_str_real_length($_, $utf8_flag), @line ) )[0];
@@ -181,8 +181,8 @@ sub sprint_tree {
 
 =item draw_tree_leaves
 
-ÌÚ¹½Â¤¤ÎÍÕ¤È¤Ê¤ë¥ª¥Ö¥¸¥§¥¯¥È¤Î¥ê¥¹¥È¤òÊÖ¤¹¥á¥½¥Ã¥É¡¥C<KNP::DrawTree> 
-¥¯¥é¥¹¤ò·Ñ¾µ¤¹¤ë¥¯¥é¥¹¤ÇÄêµÁ¤¹¤ëÉ¬Í×¤¬¤¢¤ë¡¥
+æœ¨æ§‹é€ ã®è‘‰ã¨ãªã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒªã‚¹ãƒˆã‚’è¿”ã™ãƒ¡ã‚½ãƒƒãƒ‰ï¼C<KNP::DrawTree> 
+ã‚¯ãƒ©ã‚¹ã‚’ç¶™æ‰¿ã™ã‚‹ã‚¯ãƒ©ã‚¹ã§å®šç¾©ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ï¼
 
 =cut
 sub draw_tree_leaves {
@@ -196,7 +196,7 @@ sub draw_tree_leaves {
 =over 4
 
 =item
-ÅÚ²° ²íÌ­ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+åœŸå±‹ é›…ç¨” <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =back
 
@@ -206,7 +206,6 @@ sub draw_tree_leaves {
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

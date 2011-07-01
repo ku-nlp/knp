@@ -8,7 +8,7 @@ use strict;
 
 =head1 NAME
 
-KNP::File - ��ʸ���Ϸ�̤γ�Ǽ����Ƥ���ե����������⥸�塼��
+KNP::File - 構文解析結果の格納されているファイルを操作するモジュール
 
 =head1 SYNOPSIS
 
@@ -23,14 +23,14 @@ KNP::File - ��ʸ���Ϸ�̤γ�Ǽ����Ƥ���ե����������⥸�塼��
 
 =item new ( FILE )
 
-��ʸ���Ϸ�̤γ�Ǽ����Ƥ���ե��������ꤷ�ơ����֥������Ȥ�������
-�롥
+構文解析結果の格納されているファイルを指定して，オブジェクトを初期化す
+る．
 
 =item new ( OPTIONS )
 
-��ĥ���ץ�������ꤷ�ƥ��֥������Ȥ��������롥�㤨�С���ʸ���Ϸ��
-�ե�����˴ޤޤ�Ƥ�����Ϸ�̤�ʸ ID �Υǡ����١����ե��������ꤹ��
-ɬ�פ�������ˤϡ��ʲ��Τ褦�˻��ꤹ�뤳�Ȥ��Ǥ��롥
+拡張オプションを指定してオブジェクトを初期化する．例えば，構文解析結果
+ファイルに含まれている解析結果の文 ID のデータベースファイルを指定する
+必要がある場合には，以下のように指定することができる．
 
   Example:
 
@@ -81,7 +81,7 @@ sub new {
 
 =item name
 
-���Ȥ��Ƥ���ե�����Υե�����̾���֤���
+参照しているファイルのファイル名を返す．
 
 =cut
 sub name {
@@ -91,7 +91,7 @@ sub name {
 
 =item each
 
-��Ǽ����Ƥ��빽ʸ���Ϸ�̤�ʸ��ñ�̤Ȥ��ƽ���֤���
+格納されている構文解析結果を文を単位として順に返す．
 
 =cut
 sub each {
@@ -123,7 +123,7 @@ sub _result {
 
 =item look
 
-ʸ ID ����ꤷ�ơ���ʸ���Ϸ�̤���Ф���
+文 ID を指定して，構文解析結果を取り出す．
 
 =cut
 sub look {
@@ -150,7 +150,7 @@ sub look {
 
 =item makedb
 
-�ե�����˴ޤޤ�Ƥ��빽ʸ���Ϸ�̤�ʸ ID �Υǡ����١�����������롥
+ファイルに含まれている構文解析結果の文 ID のデータベースを作成する．
 
 =cut
 sub makedb {
@@ -164,11 +164,11 @@ sub makedb {
     1;
 }
 
-# ʸ ID ��Ϣ�������������������ؿ�
+# 文 ID の連想配列を作成する内部関数
 sub _make_hash {
     my( $this, $hash ) = @_;
 
-    %$hash = ();			# Ϣ�����������
+    %$hash = ();			# 連想配列を初期化
     $this->setpos( 0 ) or return 0;
     my $pos = 0;
     my $pattern = $this->{pattern};
@@ -196,7 +196,7 @@ sub _make_hash {
 
 =item dbname
 
-ʸ ID �ǡ����١����Υե�����̾���֤���
+文 ID データベースのファイル名を返す．
 
 =cut
 sub dbname {
@@ -206,7 +206,7 @@ sub dbname {
 
 =item getpos
 
-�����Ƥ���ե�����θ��ߤΥե�����ݥ��󥿤ΰ��֤��֤���
+開いているファイルの現在のファイルポインタの位置を返す．
 
 =cut
 sub getpos {
@@ -217,8 +217,8 @@ sub getpos {
 
 =item setpos ( POS )
 
-�����Ƥ���ե�����Υե�����ݥ��󥿤ΰ��֤� C<POS> �˰�ư���롥������
-�ˤ� 1 �򡤼��Ի��ˤ� 0 ���֤���
+開いているファイルのファイルポインタの位置を C<POS> に移動する．成功時
+には 1 を，失敗時には 0 を返す．
 
 =cut
 sub setpos {
@@ -231,8 +231,8 @@ sub setpos {
 
 =head1 MEMO
 
-Perl-5.8 �ʹߤξ�硤�ҥץ������Ȥ��̿��ˤϡ� C<encoding> �ץ饰�ޤǻ�
-�ꤵ�줿ʸ�������ɤ��Ȥ��ޤ���
+Perl-5.8 以降の場合，子プロセスとの通信には， C<encoding> プラグマで指
+定された文字コードが使われます．
 
 =cut
 BEGIN {
@@ -259,7 +259,7 @@ L<KNP::Result>
 =over 4
 
 =item
-�ڲ� ��̭ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+土屋 雅稔 <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 

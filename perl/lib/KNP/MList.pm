@@ -3,11 +3,12 @@ package KNP::MList;
 require 5.003_07; # For UNIVERSAL->isa().
 use strict;
 use base qw/ Juman::MList /;
+use vars qw/ $ENCODING /;
 use Encode;
 
 =head1 NAME
 
-KNP::MList - ╥абжагнС╔╙╔ж╔╦╔╖╔╞╔х
+KNP::MList - Е╫╒Ф┘▀Г╢═Е┬≈Ц┌╙Ц┐√Ц┌╦Ц┌╖Ц┌╞Ц┐┬
 
 =head1 SYNOPSIS
 
@@ -15,7 +16,7 @@ KNP::MList - ╥абжагнС╔╙╔ж╔╦╔╖╔╞╔х
 
 =head1 DESCRIPTION
 
-╥абжагнС╓Рйщ╩Щ╓╧╓К╔╙╔ж╔╦╔╖╔╞╔х║╔
+Е╫╒Ф┘▀Г╢═Е┬≈Ц┌▓Д©²Ф▄│Ц│≥Ц┌▀Ц┌╙Ц┐√Ц┌╦Ц┌╖Ц┌╞Ц┐┬О╪▌
 
 =head1 CONSTRUCTOR
 
@@ -23,8 +24,8 @@ KNP::MList - ╥абжагнС╔╙╔ж╔╦╔╖╔╞╔х
 
 =item new ( [MRPHS] )
 
-╩ьдЙ╓╣╓Л╓©╥абжагнС╓Рйщ╩Щ╓╧╓К╔╙╔ж╔╦╔╖╔╞╔х╓Рю╦ю╝╓╧╓К║╔╬йн╛╓╣╓Л╓©╬Л╧Г╓о║╓
-╤У╥абжагнС╓Р╫И╢Эцм╓х╓╥╓фмя╓╓╓К║╔
+Ф▄┤Е╝ Ц│∙Ц┌▄Ц│÷Е╫╒Ф┘▀Г╢═Е┬≈Ц┌▓Д©²Ф▄│Ц│≥Ц┌▀Ц┌╙Ц┐√Ц┌╦Ц┌╖Ц┌╞Ц┐┬Ц┌▓Г■÷Ф┬░Ц│≥Ц┌▀О╪▌Г°│Г∙╔Ц│∙Ц┌▄Ц│÷Е═╢Е░┬Ц│╞О╪▄
+Г╘╨Е╫╒Ф┘▀Г╢═Е┬≈Ц┌▓Е┬²Ф°÷Е─╓Ц│╗Ц│≈Ц│╕Г■╗Ц│└Ц┌▀О╪▌
 
 =head1 METHODS
 
@@ -32,57 +33,60 @@ KNP::MList - ╥абжагнС╔╙╔ж╔╦╔╖╔╞╔х
 
 =item mrph ( NUM )
 
-бХ I<NUM> хжлэ╓н╥абжаг╓Рйж╓╧║╔
+Г╛╛ I<NUM> Г∙╙Г⌡╝Ц│╝Е╫╒Ф┘▀Г╢═Ц┌▓Х©■Ц│≥О╪▌
 
 =item mrph
 
-а╢╓ф╓н╥абжаг╓н╔Й╔╧╔х╓Рйж╓╧║╔
+Е┘╗Ц│╕Ц│╝Е╫╒Ф┘▀Г╢═Ц│╝Ц┐╙Ц┌╧Ц┐┬Ц┌▓Х©■Ц│≥О╪▌
 
 =begin comment
 
-C<mrph> ╔А╔╫╔ц╔и╓н╪ббн╓о C<Juman::KULM::MList> ╓гдЙ╣а╓╣╓Л╓ф╓╓╓К║╔
+C<mrph> Ц┐║Ц┌╫Ц┐┐Ц┐┴Ц│╝Е╝÷Д╫⌠Ц│╞ C<Juman::KULM::MList> Ц│╖Е╝ Г╬╘Ц│∙Ц┌▄Ц│╕Ц│└Ц┌▀О╪▌
 
 =end comment
 
 =item mrph_list
 
-а╢╓ф╓н╥абжаг╓н╔Й╔╧╔х╓Рйж╓╧║╔
+Е┘╗Ц│╕Ц│╝Е╫╒Ф┘▀Г╢═Ц│╝Ц┐╙Ц┌╧Ц┐┬Ц┌▓Х©■Ц│≥О╪▌
 
 =item push_mrph ( @MRPH )
 
-╩ьдЙ╓╣╓Л╓©╥абжагнС╓Рй╦кЖ╓кди╡ц╓╧╓К║╔
+Ф▄┤Е╝ Ц│∙Ц┌▄Ц│÷Е╫╒Ф┘▀Г╢═Е┬≈Ц┌▓Ф√┤Ф°╚Ц│╚Х©╫Е┼═Ц│≥Ц┌▀О╪▌
 
 =item set_readonly
 
-╥абжагнС╓кбп╓╧╓К╫Я╓╜╧Ч╓ъ╓Рит╣Ж╡д╓кюъдЙ╓╧╓К║╔
+Е╫╒Ф┘▀Г╢═Е┬≈Ц│╚Е╞╬Ц│≥Ц┌▀Ф⌡╦Ц│█Х╬╪Ц│©Ц┌▓Д╦█Х╗╠Е▐╞Ц│╚Х╗╜Е╝ Ц│≥Ц┌▀О╪▌
 
 =item spec
 
-╥абжагнС╓на╢й╦╩ЗнС╓Рйж╓╧║╔KNP ╓к╓Х╓К╫пно╓хф╠╓╦╥а╪╟╓н╥К╡л╓╛фю╓И╓Л╓К║╔
+Е╫╒Ф┘▀Г╢═Е┬≈Ц│╝Е┘╗Ф√┤Е╜≈Е┬≈Ц┌▓Х©■Ц│≥О╪▌KNP Ц│╚Ц┌┬Ц┌▀Е┤╨Е┼⌡Ц│╗Е░▄Ц│≤Е╫╒Е╪▐Ц│╝Г╣░Ф·°Ц│▄Е╬≈Ц┌┴Ц┌▄Ц┌▀О╪▌
 
 =cut
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
+
 sub spec {
     my( $this ) = @_;
     my $str;
     for my $mrph ( $this->mrph_list() ){
 	$str .= $mrph->spec();
 
-	# KNP::Morpheme ╓о fstring ╓кф╠╥а╓╛кД╓А╧Ч╓ч╓Л╓ф╓╓╓К╓н╓г
-	# фцйл╓й╫ХмЩ╓о╧т╓й╓О╓й╓╓
+	# KNP::Morpheme Ц│╞ fstring Ц│╚Е░▄Е╫╒Ц│▄Е÷▀Ц┌│Х╬╪Ц│╬Ц┌▄Ц│╕Ц│└Ц┌▀Ц│╝Ц│╖
+	# Г┴╧Е┬╔Ц│╙Е┤╕Г░├Ц│╞Х║▄Ц│╙Ц┌▐Ц│╙Ц│└
     }
     $str;
 }
 
 =item repname
 
-╥абжагнС╓нбЕи╫и╫╣╜╓Рйж╓╧║╔
+Е╫╒Ф┘▀Г╢═Е┬≈Ц│╝Д╩ёХ║╗Х║╗Х╗≤Ц┌▓Х©■Ц│≥О╪▌
 
 =cut
 sub repname {
     my ( $this ) = @_;
-    my $pat = 'ю╣╣╛╡╫бЕи╫и╫╣╜';
+    my $pat = 'Ф╜ёХ╕▐Е▄√Д╩ёХ║╗Х║╗Х╗≤';
     if( utf8::is_utf8( $this->fstring ) ){
-	$pat = decode('euc-jp', $pat);
+	$pat = decode($ENCODING, $pat);
     }
 
     if ( defined $this->{fstring} ){
@@ -114,7 +118,7 @@ L<KNP::Morpheme>
 =over 4
 
 =item
-ез╡╟ ╡Мл╜ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+Е°÷Е╠▀ И⌡┘Г╗■ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
@@ -122,7 +126,6 @@ L<KNP::Morpheme>
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:

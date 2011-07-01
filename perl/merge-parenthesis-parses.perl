@@ -2,9 +2,9 @@
 
 # A post-processor of parentheses
 
-# --mrph: ·ÁÂÖÁÇ¥ì¥Ù¥ë¤Ç³ç¸Ì¤ò¥Þ¡¼¥¸ (default)
-# --bnst: Ê¸Àá¥ì¥Ù¥ë¤Ç³ç¸Ì¤ò¥Þ¡¼¥¸
-# --nbest-max-n integer: nbest»þ¤În¤Î¿ô¤ÎÀ©¸Â (¥Ç¥Õ¥©¥ë¥È: 10)
+# --mrph: å½¢æ…‹ç´ ãƒ¬ãƒ™ãƒ«ã§æ‹¬å¼§ã‚’ãƒžãƒ¼ã‚¸ (default)
+# --bnst: æ–‡ç¯€ãƒ¬ãƒ™ãƒ«ã§æ‹¬å¼§ã‚’ãƒžãƒ¼ã‚¸
+# --nbest-max-n integer: nbestæ™‚ã®nã®æ•°ã®åˆ¶é™ (ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ: 10)
 
 # $Id$
 
@@ -12,8 +12,10 @@ use strict;
 use KNP::File;
 use Storable qw(dclone);
 use Getopt::Long;
-use encoding 'euc-jp';
-binmode(STDERR, ':encoding(euc-jp)');
+use utf8;
+binmode(STDIN, ':utf8');
+binmode(STDOUT, ':utf8');
+binmode(STDERR, ':utf8');
 
 use FileHandle;
 STDOUT->autoflush(1);
@@ -23,30 +25,30 @@ our (%opt);
 $opt{mrph} = 1 if !$opt{mrph} and !$opt{bnst};
 $opt{'nbest-max-n'} = 10 if !$opt{'nbest-max-n'};
 
-our %PAREN_MORPHEME = ('¡Ê' => '¡Ê ¡Ê ¡Ê ÆÃ¼ì 1 ³ç¸Ì»Ï 3 * 0 * 0 <µ­±Ñ¿ô¥«><±Ñµ­¹æ><µ­¹æ><³ç¸Ì»Ï><³ç¸Ì><ÀÜÆ¬><ÈóÆÈÎ©ÀÜÆ¬¼­>', 
-		      '¡Ë' => '¡Ë ¡Ë ¡Ë ÆÃ¼ì 1 ³ç¸Ì½ª 4 * 0 * 0 <µ­±Ñ¿ô¥«><±Ñµ­¹æ><µ­¹æ><³ç¸Ì½ª><³ç¸Ì><½Ò¸ì¶èÀÚ><ÉÕÂ°>');
+our %PAREN_MORPHEME = ('ï¼ˆ' => 'ï¼ˆ ï¼ˆ ï¼ˆ ç‰¹æ®Š 1 æ‹¬å¼§å§‹ 3 * 0 * 0 <è¨˜è‹±æ•°ã‚«><è‹±è¨˜å·><è¨˜å·><æ‹¬å¼§å§‹><æ‹¬å¼§><æŽ¥é ­><éžç‹¬ç«‹æŽ¥é ­è¾ž>', 
+		      'ï¼‰' => 'ï¼‰ ï¼‰ ï¼‰ ç‰¹æ®Š 1 æ‹¬å¼§çµ‚ 4 * 0 * 0 <è¨˜è‹±æ•°ã‚«><è‹±è¨˜å·><è¨˜å·><æ‹¬å¼§çµ‚><æ‹¬å¼§><è¿°èªžåŒºåˆ‡><ä»˜å±ž>');
 
 
-my $knp = new KNP::File(file => $ARGV[0]); # , encoding => 'euc-jp');
+my $knp = new KNP::File(file => $ARGV[0]); # , encoding => 'utf8');
 my (@main_sentences, @paren_sentences, $pre_paren_id);
 my $paren_num = -1;
 while (my $result = $knp->each()) {
-    if ($result->comment =~ /³ç¸Ì°ÌÃÖ:(\d+)/) { # ³ç¸ÌÊ¸
+    if ($result->comment =~ /æ‹¬å¼§ä½ç½®:(\d+)/) { # æ‹¬å¼§æ–‡
 	my $start_pos = $1;
-	my ($paren_b) = ($result->comment =~ /³ç¸Ì»Ï:(\S+)/);
-	my ($paren_e) = ($result->comment =~ /³ç¸Ì½ª:(\S+)/);
-	$paren_num++ if $pre_paren_id ne $result->id; # nbestÍÑ¤Ë¡¢Æþ¤ì¤ëÈÖ¹æ¤òÄ´À°
+	my ($paren_b) = ($result->comment =~ /æ‹¬å¼§å§‹:(\S+)/);
+	my ($paren_e) = ($result->comment =~ /æ‹¬å¼§çµ‚:(\S+)/);
+	$paren_num++ if $pre_paren_id ne $result->id; # nbestç”¨ã«ã€å…¥ã‚Œã‚‹ç•ªå·ã‚’èª¿æ•´
 	my ($score) = ($result->comment =~ /SCORE:([\.\-\d])+/);
 	push(@{$paren_sentences[$paren_num]}, {result => $result, score => $score, 
 				start_pos => $start_pos, paren_b => $paren_b, paren_e => $paren_e});
 	$pre_paren_id = $result->id;
 
-	# °ìÊ¸½ªÎ»=EOS
+	# ä¸€æ–‡çµ‚äº†=EOS
 	if ($result->eos eq 'EOS') {
 	    my $count = 0;
 	    for my $main_sentence (sort {$b->{score} <=> $a->{score}} @main_sentences) { # for nbest
-		&recover_sid($main_sentence->{result}); # ¤â¤È¤ÎS-ID¤ËÉü¸µ(-01ºï½ü)
-		# ³ç¸Ì¥Þ¡¼¥¸½èÍý
+		&recover_sid($main_sentence->{result}); # ã‚‚ã¨ã®S-IDã«å¾©å…ƒ(-01å‰Šé™¤)
+		# æ‹¬å¼§ãƒžãƒ¼ã‚¸å‡¦ç†
 		&select_merge_print_paren($main_sentence, \@paren_sentences, 0, [], 
 					  ($count + 1 == scalar(@main_sentences) or $count + 1 >= $opt{'nbest-max-n'}) ? 1 : 0);
 		last if ++$count >= $opt{'nbest-max-n'};
@@ -57,10 +59,10 @@ while (my $result = $knp->each()) {
 	    $paren_num = -1;
 	}
     }
-    else { # ¸¶Ê¸
-	if ($result->comment =~ /³ç¸Ìºï½ü/) { # ¸åÂ³¤¬³ç¸ÌÊ¸ -> ¸å¤Ç½èÍý¸å¤Ëprint
+    else { # åŽŸæ–‡
+	if ($result->comment =~ /æ‹¬å¼§å‰Šé™¤/) { # å¾Œç¶šãŒæ‹¬å¼§æ–‡ -> å¾Œã§å‡¦ç†å¾Œã«print
 	    my ($score) = ($result->comment =~ /SCORE:([\.\-\d])+/);
-	    push(@main_sentences, {result => $result, score => $score, type => 'main'}); # nbest»þ¤ÏÊ£¿ô¸ÄÊÝ»ý
+	    push(@main_sentences, {result => $result, score => $score, type => 'main'}); # nbestæ™‚ã¯è¤‡æ•°å€‹ä¿æŒ
 	}
 	else {
 	    print $result->all;
@@ -75,7 +77,7 @@ sub select_merge_print_paren {
     my ($main_sentence, $paren_sentences_ar, $paren_num, $target_paren_ar, $eos_flag) = @_;
 
     if (defined($paren_sentences_ar->[$paren_num])) {
-	# ºÆµ¢Åª¤Ë³ç¸ÌÊ¸¤òÁªÂò (for nbest)
+	# å†å¸°çš„ã«æ‹¬å¼§æ–‡ã‚’é¸æŠž (for nbest)
 	my $count = 0;
 	for my $i (sort {$paren_sentences_ar->[$paren_num][$b]{score} <=> $paren_sentences_ar->[$paren_num][$a]{score}} 0 .. $#{$paren_sentences_ar->[$paren_num]}) {
 	    push(@{$target_paren_ar}, $paren_sentences_ar->[$paren_num][$i]);
@@ -86,7 +88,7 @@ sub select_merge_print_paren {
 	}
     }
     else {
-	# ¤¹¤Ù¤ÆÁªÂò¤¬½ª¤ï¤Ã¤¿¤Î¤Ç¡¢¥Þ¡¼¥¸¤·¤ÆÉ½¼¨
+	# ã™ã¹ã¦é¸æŠžãŒçµ‚ã‚ã£ãŸã®ã§ã€ãƒžãƒ¼ã‚¸ã—ã¦è¡¨ç¤º
 	&merge_print_paren_sentences($main_sentence, $target_paren_ar, $eos_flag);
     }
 }
@@ -98,7 +100,7 @@ sub recover_sid {
     $sid =~ s/-01$//;
     $result->id($sid);
 
-    $result->{comment} =~ s/ ³ç¸Ìºï½ü//;
+    $result->{comment} =~ s/ æ‹¬å¼§å‰Šé™¤//;
 }
 
 sub get_score {
@@ -119,22 +121,22 @@ sub update_score {
     $result->{comment} =~ s/SCORE:([-\.\d]+)/SCORE:$new_score/;
 }
 
-# main: ³ç¸Ì¥Þ¡¼¥¸½èÍý
+# main: æ‹¬å¼§ãƒžãƒ¼ã‚¸å‡¦ç†
 sub merge_print_paren_sentences {
     my ($orig_sentence, $paren_sentences_ar, $eos_flag) = @_;
 
-    my $orig_modified_sentence_result = dclone($orig_sentence->{result}); # ¤Þ¤ë¤´¤Ècopy (for nbnst)
+    my $orig_modified_sentence_result = dclone($orig_sentence->{result}); # ã¾ã‚‹ã”ã¨copy (for nbnst)
     my @bnsts = $orig_modified_sentence_result->bnst;
     my $paren_score = 0;
 
-    for my $j (0 .. $#{$paren_sentences_ar}) { # ³ç¸ÌÊ¸loop
-	my $paren_sentence = dclone($paren_sentences_ar->[$j]); # ¤Þ¤ë¤´¤Ècopy
+    for my $j (0 .. $#{$paren_sentences_ar}) { # æ‹¬å¼§æ–‡loop
+	my $paren_sentence = dclone($paren_sentences_ar->[$j]); # ã¾ã‚‹ã”ã¨copy
 	$paren_score += &get_score($paren_sentence->{result});
 	my @paren_bnsts = $paren_sentence->{result}->bnst;
 	my $pos = 0;
 	my $merged_flag = 0;
 	for my $i (0 .. $#bnsts) {
-	    if ($opt{bnst} and $pos >= $paren_sentence->{start_pos}) { # ³ç¸Ì³«»ÏÅÀ¤ò±Û¤¨¤¿ºÇ½é¤ÎÊ¸Àá
+	    if ($opt{bnst} and $pos >= $paren_sentence->{start_pos}) { # æ‹¬å¼§é–‹å§‹ç‚¹ã‚’è¶ŠãˆãŸæœ€åˆã®æ–‡ç¯€
 		&insert_paren_bnst(\@bnsts, $i, \@paren_bnsts, $paren_sentence->{paren_b}, $paren_sentence->{paren_e});
 		$merged_flag = 1;
 		last;
@@ -143,20 +145,20 @@ sub merge_print_paren_sentences {
 	    my @mrphs = $bnsts[$i]->mrph;
 	    for my $m (0 .. $#mrphs) {
 		my $mrph = $mrphs[$m];
-		if ($opt{mrph} and $pos >= $paren_sentence->{start_pos}) { # ³ç¸Ì³«»ÏÅÀ¤ò±Û¤¨¤¿ºÇ½é¤Î·ÁÂÖÁÇ
+		if ($opt{mrph} and $pos >= $paren_sentence->{start_pos}) { # æ‹¬å¼§é–‹å§‹ç‚¹ã‚’è¶ŠãˆãŸæœ€åˆã®å½¢æ…‹ç´ 
 		    &insert_paren_mrph(\@bnsts, $i, \@paren_bnsts, $paren_sentence->{paren_b}, $paren_sentence->{paren_e}, $m);
 		    $merged_flag = 1;
 		    last;
 		}
-		$pos += utf8::is_utf8($mrph->midasi) ? length($mrph->midasi) : length($mrph->midasi) / 2; # »ú¿ô
+		$pos += utf8::is_utf8($mrph->midasi) ? length($mrph->midasi) : length($mrph->midasi) / 2; # å­—æ•°
 	    }
-	    if ($opt{mrph} and $merged_flag == 0 and $pos >= $paren_sentence->{start_pos}) { # ³ç¸Ì¤¬Ê¸ÀáËö
+	    if ($opt{mrph} and $merged_flag == 0 and $pos >= $paren_sentence->{start_pos}) { # æ‹¬å¼§ãŒæ–‡ç¯€æœ«
 		&insert_paren_mrph(\@bnsts, $i, \@paren_bnsts, $paren_sentence->{paren_b}, $paren_sentence->{paren_e}, -1);
 		$merged_flag = 1;
 	    }
 	    last if $merged_flag;
 	}
-	if ($opt{bnst} and $merged_flag == 0 and $pos >= $paren_sentence->{start_pos}) { # ³ç¸Ì¤¬Ê¸Ëö¤Î¾ì¹ç
+	if ($opt{bnst} and $merged_flag == 0 and $pos >= $paren_sentence->{start_pos}) { # æ‹¬å¼§ãŒæ–‡æœ«ã®å ´åˆ
 	    &insert_paren_bnst(\@bnsts, scalar(@bnsts), \@paren_bnsts, $paren_sentence->{paren_b}, $paren_sentence->{paren_e});
 	}
     }
@@ -164,7 +166,7 @@ sub merge_print_paren_sentences {
     $orig_modified_sentence_result->{bnst} = \@bnsts;
     &update_score($orig_modified_sentence_result, $paren_score);
 
-    # É½¼¨
+    # è¡¨ç¤º
     $orig_modified_sentence_result->set_eos('EOS') if $eos_flag; # EOP -> EOS
     print $orig_modified_sentence_result->all_dynamic;
 }
@@ -172,19 +174,19 @@ sub merge_print_paren_sentences {
 sub insert_paren_bnst {
     my ($bnsts_ar, $b_pos, $paren_bnsts_ar, $paren_b, $paren_e) = @_;
 
-    # $b_pos: ÁÞÆþ°ÌÃÖÊ¸Àá
-    my $paren_b_num = scalar(@{$paren_bnsts_ar});   # ³ç¸ÌÆâ¤ÎÊ¸Àá¿ô
-    my $t_pos = &count_tag($bnsts_ar, $b_pos);      # ÁÞÆþ°ÌÃÖ´ðËÜ¶ç
-    my $paren_t_num = &count_tag($paren_bnsts_ar);  # ³ç¸ÌÆâ¤Î´ðËÜ¶ç¿ô
-    my $m_pos = &count_mrph($bnsts_ar, $b_pos);     # ÁÞÆþ°ÌÃÖ·ÁÂÖÁÇ
-    my $paren_m_num = &count_mrph($paren_bnsts_ar); # ³ç¸ÌÆâ¤Î·ÁÂÖÁÇ¿ô
+    # $b_pos: æŒ¿å…¥ä½ç½®æ–‡ç¯€
+    my $paren_b_num = scalar(@{$paren_bnsts_ar});   # æ‹¬å¼§å†…ã®æ–‡ç¯€æ•°
+    my $t_pos = &count_tag($bnsts_ar, $b_pos);      # æŒ¿å…¥ä½ç½®åŸºæœ¬å¥
+    my $paren_t_num = &count_tag($paren_bnsts_ar);  # æ‹¬å¼§å†…ã®åŸºæœ¬å¥æ•°
+    my $m_pos = &count_mrph($bnsts_ar, $b_pos);     # æŒ¿å…¥ä½ç½®å½¢æ…‹ç´ 
+    my $paren_m_num = &count_mrph($paren_bnsts_ar); # æ‹¬å¼§å†…ã®å½¢æ…‹ç´ æ•°
 
-    # ³ç¸Ì»Ï¤È³ç¸Ì½ª¤ò³ç¸ÌÊ¸¤ËÄÉ²Ã
-    if (&insert_paren_to_tag($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num)) { # À®¸ù
-	$paren_m_num += 2; # ³ç¸Ì¼«ÂÎ¤ÎÊ¬
+    # æ‹¬å¼§å§‹ã¨æ‹¬å¼§çµ‚ã‚’æ‹¬å¼§æ–‡ã«è¿½åŠ 
+    if (&insert_paren_to_tag($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num)) { # æˆåŠŸ
+	$paren_m_num += 2; # æ‹¬å¼§è‡ªä½“ã®åˆ†
     }
 
-    # ¸¶Ê¸¤Î$b_pos¤«¤é¸åÂ¦¤Îid¤ò¹¹¿·
+    # åŽŸæ–‡ã®$b_posã‹ã‚‰å¾Œå´ã®idã‚’æ›´æ–°
     for my $i ($b_pos .. $#{$bnsts_ar}) {
 	my $bnst = $bnsts_ar->[$i];
 	$bnst->{id} = $bnst->id + $paren_b_num;
@@ -196,20 +198,20 @@ sub insert_paren_bnst {
 	}
     }
 
-    if ($b_pos == 0) { # ³ç¸Ì¤¬ÀèÆ¬¤Î¤È¤­
-	# ³ç¸ÌÊ¸¤ÎºÇ¸å¤ÎÊ¸Àá¤Î¿Æ = ¸¶Ê¸¤ÎÊ¸Ëö¤ÎÊ¸Àá
+    if ($b_pos == 0) { # æ‹¬å¼§ãŒå…ˆé ­ã®ã¨ã
+	# æ‹¬å¼§æ–‡ã®æœ€å¾Œã®æ–‡ç¯€ã®è¦ª = åŽŸæ–‡ã®æ–‡æœ«ã®æ–‡ç¯€
 	$paren_bnsts_ar->[$#{$paren_bnsts_ar}]->parent($bnsts_ar->[-1]);
 	$bnsts_ar->[-1]->child($bnsts_ar->[-1]->child, $paren_bnsts_ar->[$#{$paren_bnsts_ar}]);
-	# ´ðËÜ¶ç
+	# åŸºæœ¬å¥
 	($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->parent(($bnsts_ar->[-1]->tag)[-1]);
 	($bnsts_ar->[-1]->tag)[-1]->child(($bnsts_ar->[-1]->tag)[-1]->child, ($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]);
-	# ·ÁÂÖÁÇ
+	# å½¢æ…‹ç´ 
 	my $head_mrph = &find_head_mrph(($bnsts_ar->[-1]->tag)[-1]);
 	(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-1]->parent($head_mrph);
 	$head_mrph->child($head_mrph->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-1]);
     }
     else {
-	# ³ç¸ÌÊ¸¤ÎID¤ò¹¹¿·
+	# æ‹¬å¼§æ–‡ã®IDã‚’æ›´æ–°
 	for my $bnst (@{$paren_bnsts_ar}) {
 	    $bnst->{id} = $bnst->id + $b_pos;
 	    for my $tag ($bnst->tag) {
@@ -220,43 +222,43 @@ sub insert_paren_bnst {
 	    }
 	}
 
-	# ³ç¸ÌÊ¸¤ÎºÇ¸å¤ÎÊ¸Àá¤Î¿Æ = ¸¶Ê¸¤Î³ç¸Ì¤ÎÁ°¤ÎÊ¸Àá
+	# æ‹¬å¼§æ–‡ã®æœ€å¾Œã®æ–‡ç¯€ã®è¦ª = åŽŸæ–‡ã®æ‹¬å¼§ã®å‰ã®æ–‡ç¯€
 	$paren_bnsts_ar->[$#{$paren_bnsts_ar}]->parent($bnsts_ar->[$b_pos - 1]);
 	$bnsts_ar->[$b_pos - 1]->child($bnsts_ar->[$b_pos - 1]->child, $paren_bnsts_ar->[$#{$paren_bnsts_ar}]);
-	# ´ðËÜ¶ç
+	# åŸºæœ¬å¥
 	($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->parent(($bnsts_ar->[$b_pos - 1]->tag)[-1]);
 	($bnsts_ar->[$b_pos - 1]->tag)[-1]->child(($bnsts_ar->[$b_pos - 1]->tag)[-1]->child, ($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]);
-	# ·ÁÂÖÁÇ
+	# å½¢æ…‹ç´ 
 	my $head_mrph = &find_head_mrph(($bnsts_ar->[$b_pos - 1]->tag)[-1]);
 	(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-1]->parent($head_mrph);
 	$head_mrph->child($head_mrph->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-1]);
     }
 
-    # ³ç¸ÌÊ¸¤òÁÞÆþ
+    # æ‹¬å¼§æ–‡ã‚’æŒ¿å…¥
     splice(@{$bnsts_ar}, $b_pos, 0, @{$paren_bnsts_ar});
 }
 
 sub insert_paren_mrph {
     my ($bnsts_ar, $b_pos, $paren_bnsts_ar, $paren_b, $paren_e, $m_pos_in_bnst) = @_;
 
-    # $b_pos: ÁÞÆþ°ÌÃÖÊ¸Àá
-    my $paren_m_num = &count_mrph($paren_bnsts_ar); # ³ç¸ÌÆâ¤Î·ÁÂÖÁÇ¿ô
+    # $b_pos: æŒ¿å…¥ä½ç½®æ–‡ç¯€
+    my $paren_m_num = &count_mrph($paren_bnsts_ar); # æ‹¬å¼§å†…ã®å½¢æ…‹ç´ æ•°
     my ($m_pos, $target_mrph);
-    if ($m_pos_in_bnst == -1) { # Ê¸ÀáËö¤Î¤È¤­
-	$m_pos = $bnsts_ar->[$b_pos]->mrph(-1)->id + 1; # ÁÞÆþ°ÌÃÖ·ÁÂÖÁÇ
-	$target_mrph = $bnsts_ar->[$b_pos]->mrph(-1); # ³ç¸Ì¤ò¤¯¤Ã¤Ä¤±¤ë¿Æ·ÁÂÖÁÇ
+    if ($m_pos_in_bnst == -1) { # æ–‡ç¯€æœ«ã®ã¨ã
+	$m_pos = $bnsts_ar->[$b_pos]->mrph(-1)->id + 1; # æŒ¿å…¥ä½ç½®å½¢æ…‹ç´ 
+	$target_mrph = $bnsts_ar->[$b_pos]->mrph(-1); # æ‹¬å¼§ã‚’ãã£ã¤ã‘ã‚‹è¦ªå½¢æ…‹ç´ 
     }
     else {
-	$m_pos = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst)->id; # ÁÞÆþ°ÌÃÖ·ÁÂÖÁÇ
-	$target_mrph = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst - 1); # ³ç¸Ì¤ò¤¯¤Ã¤Ä¤±¤ë¿Æ·ÁÂÖÁÇ
+	$m_pos = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst)->id; # æŒ¿å…¥ä½ç½®å½¢æ…‹ç´ 
+	$target_mrph = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst - 1); # æ‹¬å¼§ã‚’ãã£ã¤ã‘ã‚‹è¦ªå½¢æ…‹ç´ 
     }
 
-    # ³ç¸Ì»Ï¤È³ç¸Ì½ª¤ò³ç¸ÌÊ¸¤ËÄÉ²Ã
-    if (&insert_paren_to_tag($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num)) { # À®¸ù
-	$paren_m_num += 2; # ³ç¸Ì¼«ÂÎ¤ÎÊ¬
+    # æ‹¬å¼§å§‹ã¨æ‹¬å¼§çµ‚ã‚’æ‹¬å¼§æ–‡ã«è¿½åŠ 
+    if (&insert_paren_to_tag($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num)) { # æˆåŠŸ
+	$paren_m_num += 2; # æ‹¬å¼§è‡ªä½“ã®åˆ†
     }
 
-    # ¸¶Ê¸¤Î$b_pos¤«¤é¸åÂ¦¤Îid¤ò¹¹¿·
+    # åŽŸæ–‡ã®$b_posã‹ã‚‰å¾Œå´ã®idã‚’æ›´æ–°
     for my $i ($b_pos .. $#{$bnsts_ar}) {
 	my $bnst = $bnsts_ar->[$i];
 	for my $tag ($bnst->tag) {
@@ -268,12 +270,12 @@ sub insert_paren_mrph {
 	}
     }
 
-    if ($m_pos == 0) { # ³ç¸Ì¤¬ÀèÆ¬¤Î¤È¤­
+    if ($m_pos == 0) { # æ‹¬å¼§ãŒå…ˆé ­ã®ã¨ã
 	(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]->parent((($bnsts_ar->[0]->tag)[0]->mrph)[0]);
 	(($bnsts_ar->[0]->tag)[0]->mrph)[0]->child((($bnsts_ar->[0]->tag)[0]->mrph)[0]->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]);
     }
     else {
-	# ³ç¸ÌÊ¸¤ÎID¤ò¹¹¿·
+	# æ‹¬å¼§æ–‡ã®IDã‚’æ›´æ–°
 	for my $bnst (@{$paren_bnsts_ar}) {
 	    for my $tag ($bnst->tag) {
 		for my $mrph ($tag->mrph) {
@@ -286,8 +288,8 @@ sub insert_paren_mrph {
 	$target_mrph->child($target_mrph->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]);
     }
 
-    # ³ç¸ÌÊ¸¤òÁÞÆþ
-    my ($target_tag, $m_pos_in_tag) = &find_target_tag($bnsts_ar->[$b_pos], $m_pos_in_bnst); # ÂÐ¾Ý¤Î´ðËÜ¶ç
+    # æ‹¬å¼§æ–‡ã‚’æŒ¿å…¥
+    my ($target_tag, $m_pos_in_tag) = &find_target_tag($bnsts_ar->[$b_pos], $m_pos_in_bnst); # å¯¾è±¡ã®åŸºæœ¬å¥
     my $added_mrph_count = 0;
     for my $bnst (@{$paren_bnsts_ar}) {
 	for my $tag ($bnst->tag) {
@@ -302,7 +304,7 @@ sub insert_paren_to_tag {
 
     if (defined($PAREN_MORPHEME{$paren_b})) {
 	my $new_mrph = new KNP::Morpheme($PAREN_MORPHEME{$paren_b}, 0, $paren_m_num, 'D');
-	for my $bnst (@{$paren_bnsts_ar}) { # ·ÁÂÖÁÇID¤ò+1
+	for my $bnst (@{$paren_bnsts_ar}) { # å½¢æ…‹ç´ IDã‚’+1
 	    for my $tag ($bnst->tag) {
 		for my $mrph ($tag->mrph) {
 		    $mrph->{id} = $mrph->id + 1;
@@ -366,7 +368,7 @@ sub find_head_mrph {
     my ($tag_r) = @_;
 
     for my $mrph (reverse($tag_r->mrph)) {
-	if ($mrph->fstring =~ /<(?:½à)?ÆâÍÆ¸ì>/) {
+	if ($mrph->fstring =~ /<(?:æº–)?å†…å®¹èªž>/) {
 	    return $mrph;
 	}
     }
@@ -374,7 +376,7 @@ sub find_head_mrph {
     return ($tag_r->mrph)[-1];
 }
 
-# Ê¸Àá¤È¤½¤ÎÊ¸ÀáÃæ¤Î·ÁÂÖÁÇ°ÌÃÖ¤«¤é´ðËÜ¶ç¤È¤½¤Î´ðËÜ¶ç¤Î·ÁÂÖÁÇ°ÌÃÖ¤òÊÖ¤¹
+# æ–‡ç¯€ã¨ãã®æ–‡ç¯€ä¸­ã®å½¢æ…‹ç´ ä½ç½®ã‹ã‚‰åŸºæœ¬å¥ã¨ãã®åŸºæœ¬å¥ã®å½¢æ…‹ç´ ä½ç½®ã‚’è¿”ã™
 sub find_target_tag {
     my ($bnst_r, $m_pos_in_bnst) = @_;
 
@@ -388,7 +390,7 @@ sub find_target_tag {
 	}
     }
 
-    if ($m_pos_in_bnst == -1) { # ËöÈø»ØÄê
+    if ($m_pos_in_bnst == -1) { # æœ«å°¾æŒ‡å®š
 	return ($bnst_r->tag(-1), $m_pos - $pre_m_pos);
     }
 }

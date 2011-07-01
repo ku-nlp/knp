@@ -5,15 +5,15 @@ use strict;
 
 =head1 NAME
 
-KNP::KULM::BList - KULM ¸ß´¹ API
+KNP::KULM::BList - KULM äº’æ› API
 
 =head1 SYNOPSIS
 
-¤³¤Î¥¯¥é¥¹¤ò¥ß¥­¥·¥ó¥°¤·¤Æ»ÈÍÑ¤¹¤ë¡¥
+ã“ã®ã‚¯ãƒ©ã‚¹ã‚’ãƒŸã‚­ã‚·ãƒ³ã‚°ã—ã¦ä½¿ç”¨ã™ã‚‹ï¼
 
 =head1 DESCRIPTION
 
-C<KULM::KNP::Result> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::BList> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
+C<KULM::KNP::Result> äº’æ›ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ C<KNP::BList> ã‚¯ãƒ©ã‚¹ã«è¿½åŠ ã™ã‚‹ï¼
 
 =head1 METHODS
 
@@ -21,11 +21,11 @@ C<KULM::KNP::Result> ¸ß´¹¤Î¥á¥½¥Ã¥É¤ò C<KNP::BList> ¥¯¥é¥¹¤ËÄÉ²Ã¤¹¤ë¡¥
 
 =item bnst ( NUM )
 
-Âè I<NUM> ÈÖÌÜ¤ÎÊ¸Àá¤òÊÖ¤¹¡¥
+ç¬¬ I<NUM> ç•ªç›®ã®æ–‡ç¯€ã‚’è¿”ã™ï¼
 
 =item bnst
 
-Á´¤Æ¤ÎÊ¸Àá¤Î¥ê¥¹¥È¤òÊÖ¤¹¡¥
+å…¨ã¦ã®æ–‡ç¯€ã®ãƒªã‚¹ãƒˆã‚’è¿”ã™ï¼
 
 =cut
 sub bnst {
@@ -39,7 +39,7 @@ sub bnst {
 
 =item bnst_num
 
-Ê¸ÀáÎó¤ÎÄ¹¤µ¤òÊÖ¤¹¡¥
+æ–‡ç¯€åˆ—ã®é•·ã•ã‚’è¿”ã™ï¼
 
 =cut
 sub bnst_num {
@@ -69,14 +69,13 @@ L<KULM::KNP::Result>
 =over 4
 
 =item
-ÅÚ²° ²íÌ­ <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+åœŸå±‹ é›…ç¨” <tsuchiya@pine.kuee.kyoto-u.ac.jp>
 
 =cut
 
 __END__
 # Local Variables:
 # mode: perl
-# coding: euc-japan
 # use-kuten-for-period: nil
 # use-touten-for-comma: nil
 # End:
