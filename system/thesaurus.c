@@ -1,6 +1,6 @@
 /*====================================================================
 
-		      ¥·¥½¡¼¥é¥¹ ¸¡º÷¥×¥í¥°¥é¥à
+		      ã‚·ã‚½ãƒ¼ãƒ©ã‚¹ æ¤œç´¢ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
 
                                                S.Kurohashi 93. 5.31
 
@@ -18,7 +18,7 @@ int	ParaThesaurus = USE_BGH;
     int i;
     char *filename;
 
-    /* tentative: ¿·¤·¤¤¥·¥½¡¼¥é¥¹¤ÏNTT¤ÈÇÓÂ¾Åª */
+    /* tentative: æ–°ã—ã„ã‚·ã‚½ãƒ¼ãƒ©ã‚¹ã¯NTTã¨æ’ä»–çš„ */
     if (Thesaurus != USE_NONE && Thesaurus != USE_BGH && Thesaurus != USE_NTT && 
 	ParaThesaurus == USE_NTT) {
 	ParaThesaurus = Thesaurus;
@@ -112,7 +112,7 @@ int	ParaThesaurus = USE_BGH;
     char *code, arg = '\0';
     unsigned char *hira;
 
-    /* Ê¸»úÎó¤Î°ÕÌ£ÁÇ¥³¡¼¥É¤ò¼èÆÀ */
+    /* æ–‡å­—åˆ—ã®æ„å‘³ç´ ã‚³ãƒ¼ãƒ‰ã‚’å–å¾— */
 
     if (flag & USE_NTT) {
 	if (code = check_noun_sm(cp)) {
@@ -142,8 +142,8 @@ int	ParaThesaurus = USE_BGH;
 
     if (flag & USE_RN) return NULL;
 
-    /* °ÕÌ£ÁÇ¤¬¤Ê¤¤¾ì¹ç¤Ç¡¢
-       ¤¹¤Ù¤Æ¤ÎÊ¸»ú¤¬¥«¥¿¥«¥Ê¤Î¾ì¹ç¤Ï¤Ò¤é¤¬¤Ê¤ËÊÑ´¹¤·¤Æ¼­½ñ°ú¤­ */
+    /* æ„å‘³ç´ ãŒãªã„å ´åˆã§ã€
+       ã™ã¹ã¦ã®æ–‡å­—ãŒã‚«ã‚¿ã‚«ãƒŠã®å ´åˆã¯ã²ã‚‰ãŒãªã«å¤‰æ›ã—ã¦è¾æ›¸å¼•ã */
 
     for (i = 0; i < strlen(cp); i += BYTES4CHAR) { /* euc-jp */
 	if (*(cp+i) != 0xa5) {
@@ -215,7 +215,7 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
 	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "add_rep_str");
 	    return 0;
 	}
-	/* org_flag == 0 ¤Î¤È¤­¤Ï³èÍÑ¤µ¤»¤ëÉ¬Í×¤¬¤¢¤ë */
+	/* org_flag == 0 ã®ã¨ãã¯æ´»ç”¨ã•ã›ã‚‹å¿…è¦ãŒã‚ã‚‹ */
 	strncat(str_buffer, rep_strt, add_len);
     }
     else {
@@ -225,18 +225,18 @@ int add_rep_str(MRPH_DATA *ptr, char *str_buffer, int org_flag, int flag)
 	    return 0;
 	}
 	if (org_flag) {
-	    /* ¥Ê·ÁÍÆ»ì¤Î¾ì¹ç¤Ï¸ì´´¤Ç¸¡º÷ */
+	    /* ãƒŠå½¢å®¹è©ã®å ´åˆã¯èªå¹¹ã§æ¤œç´¢ */
 	    if (Language == JAPANESE && 
-		str_eq(Class[ptr->Hinshi][0].id, "·ÁÍÆ»ì") && 
-		(str_eq(Type[ptr->Katuyou_Kata].name, "¥Ê·ÁÍÆ»ì") || 
-		 str_eq(Type[ptr->Katuyou_Kata].name, "¥Ê·ÁÍÆ»ìÆÃ¼ì") || 
-		 str_eq(Type[ptr->Katuyou_Kata].name, "¥Ê¥Î·ÁÍÆ»ì"))) {
+		str_eq(Class[ptr->Hinshi][0].id, "å½¢å®¹è©") && 
+		(str_eq(Type[ptr->Katuyou_Kata].name, "ãƒŠå½¢å®¹è©") || 
+		 str_eq(Type[ptr->Katuyou_Kata].name, "ãƒŠå½¢å®¹è©ç‰¹æ®Š") || 
+		 str_eq(Type[ptr->Katuyou_Kata].name, "ãƒŠãƒå½¢å®¹è©"))) {
 		add_len -= 2;
 	    }
-	    strncat(str_buffer, ptr->Goi, add_len); /* ¸¶·Á */
+	    strncat(str_buffer, ptr->Goi, add_len); /* åŸå½¢ */
 	}
 	else {
-	    strcat(str_buffer, ptr->Goi2); /* É½µ­ */
+	    strcat(str_buffer, ptr->Goi2); /* è¡¨è¨˜ */
 	}
     }
 
@@ -275,19 +275,19 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     char last_key[BNST_LENGTH_MAX];
     int add_len;
 
-    /* ËöÈø¤Ş¤ÇÊ¸»úÎó¤òºî¤ê½Ğ¤·½ª¤ï¤ê¡¢DB¤ò°ú¤¯ */
+    /* æœ«å°¾ã¾ã§æ–‡å­—åˆ—ã‚’ä½œã‚Šå‡ºã—çµ‚ã‚ã‚Šã€DBã‚’å¼•ã */
     if (strt > end) {
 	char *code;
 
-	/* ¡Ö¥µÊÑ+¤¹¤ë¡×¤¬¤Ê¤¯¡Ö¤¹¤ë¡×¤À¤±¤Ë¤Ê¤ë¤è¤¦¤Ê¾ì¹ç¤Ïskip */
-	if (end > 0 && str_eq(str_buffer, "¤¹¤ë")) {
+	/* ã€Œã‚µå¤‰+ã™ã‚‹ã€ãŒãªãã€Œã™ã‚‹ã€ã ã‘ã«ãªã‚‹ã‚ˆã†ãªå ´åˆã¯skip */
+	if (end > 0 && str_eq(str_buffer, "ã™ã‚‹")) {
 	    return;
 	}
 
 	if (str_buffer[strlen(str_buffer)-1] == '+') {
 	    str_buffer[strlen(str_buffer)-1] = '\0';
 	}
-	if (code = get_str_code(str_buffer, flag)) { /* DB¤ò¤Ò¤¯ */
+	if (code = get_str_code(str_buffer, flag)) { /* DBã‚’ã²ã */
 	    strcat(ret_buffer, code);
 	    free(code);
 
@@ -303,7 +303,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 
 	return;
     }
-    /* Ê£¹çÌ¾»ì¤ÎÁ°¤ÎÉôÊ¬ (É½µ­¤Î¤ß, ÂåÉ½É½µ­¤äALT¤ÏÍÑ¤¤¤Æ¤¤¤Ê¤¤) */
+    /* è¤‡åˆåè©ã®å‰ã®éƒ¨åˆ† (è¡¨è¨˜ã®ã¿, ä»£è¡¨è¡¨è¨˜ã‚„ALTã¯ç”¨ã„ã¦ã„ãªã„) */
     else if (strt < end) {
 	if (flag & USE_RN) {
 	    buf = get_mrph_rep_from_f(ptr->mrph_ptr + strt, FALSE);
@@ -316,7 +316,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	    overflowed_function(str_buffer, BNST_LENGTH_MAX, "make_key_and_get_code");
 	    return;
 	}
-	strcat(str_buffer, buf); /* É½µ­ */
+	strcat(str_buffer, buf); /* è¡¨è¨˜ */
 	if (flag & USE_RN) {
 	    strcat(str_buffer, "+");
 	}
@@ -325,25 +325,25 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	return;
     }
 
-    /* strt == end => ºÇ¸å¸¶·Á */
-    if ((add_len = add_rep_str(ptr->mrph_ptr + end, str_buffer, TRUE, flag)) == 0) { /* ÂåÉ½É½µ­ */
+    /* strt == end => æœ€å¾ŒåŸå½¢ */
+    if ((add_len = add_rep_str(ptr->mrph_ptr + end, str_buffer, TRUE, flag)) == 0) { /* ä»£è¡¨è¡¨è¨˜ */
 	return;
     }
     make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
     strcpy(last_key, str_buffer);
     str_buffer[strlen(str_buffer) - add_len] = '\0';
 
-    /* ALT¤ÎÂåÉ½É½µ­ */
+    /* ALTã®ä»£è¡¨è¡¨è¨˜ */
     while (*fpp) {
 	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
 	    sscanf((*fpp)->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
 		   m.Goi2, m.Yomi, m.Goi, 
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-	    if ((add_len = add_rep_str(&m, str_buffer, TRUE, flag)) == 0) { /* ÂåÉ½É½µ­ */
+	    if ((add_len = add_rep_str(&m, str_buffer, TRUE, flag)) == 0) { /* ä»£è¡¨è¡¨è¨˜ */
 		return;
 	    }
-	    if (strcmp(last_key, str_buffer)) { /* °Û¤Ê¤ë¾ì¹ç¤Î¤ßÄ´¤Ù¤ë */
+	    if (strcmp(last_key, str_buffer)) { /* ç•°ãªã‚‹å ´åˆã®ã¿èª¿ã¹ã‚‹ */
 		make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
 		str_buffer[strlen(str_buffer) - add_len] = '\0';
 	    }
@@ -351,11 +351,11 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	fpp = &((*fpp)->next);
     }
 
-    /* ¡Ö¹¬±¿¤òÆÀ¤ë¡×¤Î¡Ö¹¬±¿¡×¤ò°ú¤¯¤¿¤á¤Ë¤Ï¡¢
-       ¡Ö¹¬±¿/¤³¤¦¤¦¤óa¡×¤Ç¤Ï¤Ê¤¯¡¢¤â¤È¤Î¡Ö¹¬±¿¤À/¤³¤¦¤¦¤ó¤À¡×¤Ç°ú¤¯É¬Í×¤¬¤¢¤ë */
-    if (!str_buffer[0] && (buf = check_feature((ptr->mrph_ptr + end)->f, "ÂåÉ½É½µ­ÊÑ¹¹"))) { /* ºÇ¸å¤ÎÍ×ÁÇ */
-	strcpy(str_buffer, buf + strlen("ÂåÉ½É½µ­ÊÑ¹¹:"));
-	if (strcmp(last_key, str_buffer)) { /* °Û¤Ê¤ë¾ì¹ç¤Î¤ßÄ´¤Ù¤ë */
+    /* ã€Œå¹¸é‹ã‚’å¾—ã‚‹ã€ã®ã€Œå¹¸é‹ã€ã‚’å¼•ããŸã‚ã«ã¯ã€
+       ã€Œå¹¸é‹/ã“ã†ã†ã‚“aã€ã§ã¯ãªãã€ã‚‚ã¨ã®ã€Œå¹¸é‹ã /ã“ã†ã†ã‚“ã ã€ã§å¼•ãå¿…è¦ãŒã‚ã‚‹ */
+    if (!str_buffer[0] && (buf = check_feature((ptr->mrph_ptr + end)->f, "ä»£è¡¨è¡¨è¨˜å¤‰æ›´"))) { /* æœ€å¾Œã®è¦ç´  */
+	strcpy(str_buffer, buf + strlen("ä»£è¡¨è¡¨è¨˜å¤‰æ›´:"));
+	if (strcmp(last_key, str_buffer)) { /* ç•°ãªã‚‹å ´åˆã®ã¿èª¿ã¹ã‚‹ */
 	    make_key_and_get_code(ptr, strt + 1, end, str_buffer, ret_buffer, used_key, flag);
 	    str_buffer[0] = '\0';
 	}
@@ -368,16 +368,16 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	     void get_bnst_code(BNST_DATA *ptr, int flag)
 /*==================================================================*/
 {
-    /* Ê¸Àá¤Î°ÕÌ£ÁÇ¥³¡¼¥É¤ò¼èÆÀ
+    /* æ–‡ç¯€ã®æ„å‘³ç´ ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—
 
-       Ê£¹ç¸ì¤Î°·¤¤
-       		¤Ş¤ºÉÕÂ°¸ì¤ò¸ÇÄê¡¤¼«Î©¸ì¤ò¸º¤é¤·¤Æ¤¤¤¯
-		³Æ·ÁÂÖÁÇÎó¤ËÂĞ¤·¤ÆÉ½µ­Îó¤ÇÄ´¤Ù¤ë
+       è¤‡åˆèªã®æ‰±ã„
+       		ã¾ãšä»˜å±èªã‚’å›ºå®šï¼Œè‡ªç«‹èªã‚’æ¸›ã‚‰ã—ã¦ã„ã
+		å„å½¢æ…‹ç´ åˆ—ã«å¯¾ã—ã¦è¡¨è¨˜åˆ—ã§èª¿ã¹ã‚‹
 
-       Ê¬Îà¸ì×ÃÉ½¤Î¾ì¹ç:
-       ¡Ö¤¹¤ë¡×°Ê³°¤ÎÉÕÂ°¸ì¤ÎÆ°»ì¤Ïºï½ü¤¹¤ë
-       ¡Ö·ëº§¤·»Ï¤á¤ë¡×: ¡Ö»Ï¤á¤ë¡×¤Ïºï½ü¤·¡¢¡Ö·ëº§¤¹¤ë¡×¤Ç¸¡º÷
-       (Ê¬Îà¸ì×ÃÉ½¤Ç¤Ï¥µÊÑÌ¾»ì¤Ï¡Ö¤¹¤ë¡×ÉÕ¤­¤ÇÅĞÏ¿¤µ¤ì¤Æ¤¤¤ë)
+       åˆ†é¡èªå½™è¡¨ã®å ´åˆ:
+       ã€Œã™ã‚‹ã€ä»¥å¤–ã®ä»˜å±èªã®å‹•è©ã¯å‰Šé™¤ã™ã‚‹
+       ã€Œçµå©šã—å§‹ã‚ã‚‹ã€: ã€Œå§‹ã‚ã‚‹ã€ã¯å‰Šé™¤ã—ã€ã€Œçµå©šã™ã‚‹ã€ã§æ¤œç´¢
+       (åˆ†é¡èªå½™è¡¨ã§ã¯ã‚µå¤‰åè©ã¯ã€Œã™ã‚‹ã€ä»˜ãã§ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹)
     */
 
     int strt, end, i, lookup_pos = 0;
@@ -399,25 +399,25 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	return;
     }
 
-    /* ½é´ü²½ */
+    /* åˆæœŸåŒ– */
     *result_code = '\0';
     used_key[0] = '\0';
     str_buffer[BNST_LENGTH_MAX-1] = GUARD;
-    /* result_num ¤Ïinit_bnst¤Ç0¤Ë½é´ü²½¤µ¤ì¤Æ¤¤¤ë */
+    /* result_num ã¯init_bnstã§0ã«åˆæœŸåŒ–ã•ã‚Œã¦ã„ã‚‹ */
 
-    if (flag == USE_BGH && /* Ê¬Îà¸ì×ÃÉ½¤Ç¤Ï¥µÊÑÌ¾»ì¤Ï¡Ö¤¹¤ë¡×ÉÕ¤­¤ÇÅĞÏ¿¤µ¤ì¤Æ¤¤¤ë */
+    if (flag == USE_BGH && /* åˆ†é¡èªå½™è¡¨ã§ã¯ã‚µå¤‰åè©ã¯ã€Œã™ã‚‹ã€ä»˜ãã§ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ */
 	ptr->mrph_ptr + ptr->mrph_num - 1 > ptr->head_ptr && 
-	!strcmp(Class[(ptr->head_ptr + 1)->Hinshi][0].id, "Æ°»ì") && 
-	!strcmp((ptr->head_ptr + 1)->Goi, "¤¹¤ë")) {
+	!strcmp(Class[(ptr->head_ptr + 1)->Hinshi][0].id, "å‹•è©") && 
+	!strcmp((ptr->head_ptr + 1)->Goi, "ã™ã‚‹")) {
 	end = ptr->head_ptr - ptr->mrph_ptr + 1;
     }
     else {
 	end = ptr->head_ptr - ptr->mrph_ptr;
     }
 
-    /* NTT: ¥«¥¦¥ó¥¿¤Î¤ß¤Ç°ú¤¯ */
+    /* NTT: ã‚«ã‚¦ãƒ³ã‚¿ã®ã¿ã§å¼•ã */
     if (flag == USE_NTT && 
-	check_feature((ptr->head_ptr)->f, "¥«¥¦¥ó¥¿")) {
+	check_feature((ptr->head_ptr)->f, "ã‚«ã‚¦ãƒ³ã‚¿")) {
 	lookup_pos = USE_SUFFIX_SM;
 	strt = end;
     }
@@ -430,7 +430,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	}
     }
 
-    /* ¤â¤Ã¤È¤âÄ¹¤¤¤â¤Î¤«¤é½ç¤Ë»î¤¹ */
+    /* ã‚‚ã£ã¨ã‚‚é•·ã„ã‚‚ã®ã‹ã‚‰é †ã«è©¦ã™ */
     for (; strt <= end; strt++) {
 	str_buffer[0] = '\0';
 	make_key_and_get_code(ptr, strt, end, str_buffer, result_code, used_key, 
@@ -438,15 +438,15 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	if (*result_code) {
 	    if (flag == USE_BGH && !strstr(result_code, "sm")) {
 		if (bgh_code_match_for_sm(result_code, "sm-sub*****"))
-		    assign_cfeature(&(ptr->f), "SM-¼çÂÎ", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-ä¸»ä½“", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-act*****"))
-		    assign_cfeature(&(ptr->f), "SM-Æ°ºî", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-å‹•ä½œ", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-per*****")) 
-		    assign_cfeature(&(ptr->f), "SM-¿Í", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-äºº", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-loc*****"))
-		    assign_cfeature(&(ptr->f), "SM-¾ì½ê", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-å ´æ‰€", FALSE);
 		if (bgh_code_match_for_sm(result_code, "sm-org*****"))
-		    assign_cfeature(&(ptr->f), "SM-ÁÈ¿¥", FALSE);
+		    assign_cfeature(&(ptr->f), "SM-çµ„ç¹”", FALSE);
 	    }
 	    break;
 	}
@@ -473,7 +473,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 {
     int i;
 
-    /* °ÕÌ£ÁÇ¥³¡¼¥É¤Î¿¼¤µ¤òÊÖ¤¹´Ø¿ô (0 .. code_size-1) */
+    /* æ„å‘³ç´ ã‚³ãƒ¼ãƒ‰ã®æ·±ã•ã‚’è¿”ã™é–¢æ•° (0 .. code_size-1) */
 
     for (i = 1; i < code_size; i++) {
 	if (*(cp + i) == '*') {
@@ -503,7 +503,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     }
 
     l = 0;
-    for (i = 0; th->format[i]; i++) { /* »ØÄê¤µ¤ì¤¿·å¿ô¤´¤È¤Ë¥Á¥§¥Ã¥¯ */
+    for (i = 0; th->format[i]; i++) { /* æŒ‡å®šã•ã‚ŒãŸæ¡æ•°ã”ã¨ã«ãƒã‚§ãƒƒã‚¯ */
 	if (strncmp(c1 + l, c2 + l, th->format[i])) {
 	    return (float) 2 * l / (d1 + d2);
 	}
@@ -519,9 +519,9 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     int i, j, code_size;
     float score = 0, tempscore;
 
-    /* Îà»÷ÅÙ·×»»: °ÕÌ£ÁÇ - °ÕÌ£ÁÇ */
+    /* é¡ä¼¼åº¦è¨ˆç®—: æ„å‘³ç´  - æ„å‘³ç´  */
 
-    /* ¤É¤Á¤é¤«¤ËÍÑÎã¤Î¥³¡¼¥É¤¬¤Ê¤¤¤È¤­ */
+    /* ã©ã¡ã‚‰ã‹ã«ç”¨ä¾‹ã®ã‚³ãƒ¼ãƒ‰ãŒãªã„ã¨ã */
     if (!(exd && exp && *exd && *exp)) {
 	return score;
     }
@@ -537,7 +537,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 
     code_size = THESAURUS[Thesaurus].code_size;
 
-    /* ºÇÂç¥Ş¥Ã¥Á¥¹¥³¥¢¤òµá¤á¤ë */
+    /* æœ€å¤§ãƒãƒƒãƒã‚¹ã‚³ã‚¢ã‚’æ±‚ã‚ã‚‹ */
     for (j = 0; exp[j]; j+=code_size) {
 	for (i = 0; exd[i]; i+=code_size) {
 	    if (Thesaurus == USE_BGH) {
@@ -555,14 +555,14 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 	}
     }
 
-    /* ¥¹¥³¥¢¤ÎÉı¤ËÃí°Õ
-       NTT: 0 ¡Á 1.0
-       BGH: 0 ¡Á 7 */
+    /* ã‚¹ã‚³ã‚¢ã®å¹…ã«æ³¨æ„
+       NTT: 0 ã€œ 1.0
+       BGH: 0 ã€œ 7 */
     if (Thesaurus == USE_BGH) {
 	score /= 7;
     }
 
-    /* ¥¹¥³¥¢: 0 ¡Á 1.0 */
+    /* ã‚¹ã‚³ã‚¢: 0 ã€œ 1.0 */
     return score;
 }
 
@@ -574,7 +574,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     float score = 0, tempscore;
     char *ret_sm;
 
-    /* ¤É¤Á¤é¤«¤ËÍÑÎã¤Î¥³¡¼¥É¤¬¤Ê¤¤¤È¤­ */
+    /* ã©ã¡ã‚‰ã‹ã«ç”¨ä¾‹ã®ã‚³ãƒ¼ãƒ‰ãŒãªã„ã¨ã */
     if (!(exd && exp && *exd && *exp)) {
 	return NULL;
     }
@@ -588,7 +588,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     ret_sm = (char *)malloc_data(sizeof(char)*strlen(exd)+1, "get_most_similar_code");
     *ret_sm = '\0';
 
-    /* ºÇÂç¥Ş¥Ã¥Á¥¹¥³¥¢¤òµá¤á¤ë */
+    /* æœ€å¤§ãƒãƒƒãƒã‚¹ã‚³ã‚¢ã‚’æ±‚ã‚ã‚‹ */
     for (i = 0; exd[i]; i+=code_size) {
 	for (j = 0; exp[j]; j+=code_size) {
 	    if (Thesaurus == USE_BGH) {
@@ -608,7 +608,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
 		pre_i = i;
 	    }
 	    else if (tempscore == score && 
-		     pre_i != i) { /* ½ÅÊ£¤òÈò¤±¤ë¤¿¤áÄ¾Á°¤Îi¤È¤Ï°ã¤¦¤È¤­¤Î¤ß */
+		     pre_i != i) { /* é‡è¤‡ã‚’é¿ã‘ã‚‹ãŸã‚ç›´å‰ã®iã¨ã¯é•ã†ã¨ãã®ã¿ */
 		strncat(ret_sm, exd+i, code_size);
 		ret_sm_num++;
 		pre_i = i;
@@ -626,7 +626,7 @@ void make_key_and_get_code(BNST_DATA *ptr, int strt, int end,
     char *smd, *smp;
     float score = 0;
 
-    /* Îà»÷ÅÙ·×»»: Ã±¸ì - Ã±¸ì */
+    /* é¡ä¼¼åº¦è¨ˆç®—: å˜èª - å˜èª */
 
     smd = get_str_code(exd, Thesaurus);
     smp = get_str_code(exp, Thesaurus);
@@ -651,7 +651,7 @@ float calc_sm_word_similarity(char *smd, char *exp, char *del, int expand)
     char *smp;
     float score = 0;
 
-    /* Îà»÷ÅÙ·×»»: °ÕÌ£ÁÇ - Ã±¸ì */
+    /* é¡ä¼¼åº¦è¨ˆç®—: æ„å‘³ç´  - å˜èª */
 
     if ((smp = get_str_code(exp, Thesaurus)) == NULL) {
 	return 0;
@@ -676,7 +676,7 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
     int i;
     float maxscore = 0, score;
 
-    /* Îà»÷ÅÙ·×»»: Ã±¸ì - Ã±¸ì·² */
+    /* é¡ä¼¼åº¦è¨ˆç®—: å˜èª - å˜èªç¾¤ */
 
     for (i = 0; i < num; i++) {
 	score = calc_word_similarity(exd, *(exp+i));
@@ -698,11 +698,11 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
     int i;
     float maxscore = 0, score;
 
-    /* Îà»÷ÅÙ·×»»: °ÕÌ£ÁÇ - Ã±¸ì·² */
+    /* é¡ä¼¼åº¦è¨ˆç®—: æ„å‘³ç´  - å˜èªç¾¤ */
 
     for (i = 0; i < num; i++) {
 	if (unmatch_word && 
-	    !strcmp(*(exp+i), unmatch_word)) { /* ¥Ş¥Ã¥Á¤µ¤»¤Ê¤¤Ã±¸ì */
+	    !strcmp(*(exp+i), unmatch_word)) { /* ãƒãƒƒãƒã•ã›ãªã„å˜èª */
 	    continue;
 	}
 	score = calc_sm_word_similarity(smd, *(exp+i), del, expand);

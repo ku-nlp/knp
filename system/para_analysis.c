@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     ÊÂÎó¹½Â¤²òÀÏ
+			     ä¸¦åˆ—æ§‹é€ è§£æ
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -10,7 +10,7 @@
 #include "knp.h"
 
 #define PENALTY		1 /* 2 */
-#define BONUS   	2 /* Á°¤ÏÀµµ¬²½¤ÎÁ°¤Ë6 */
+#define BONUS   	2 /* å‰ã¯æ­£è¦åŒ–ã®å‰ã«6 */
 #define MINUS   	7
 #define PENA_MAX   	1000
 #define ENOUGH_MINUS	-100.0
@@ -39,14 +39,14 @@ extern QUOTE_DATA quote_data;
 {
     int i, j, k, l;
 
-    /* ³ç¸Ì¤¬¤¢¤ë¾ì¹ç¤ËÊÂÎó¹½Â¤¤ÎÈÏ°Ï¤ËÀ©¸Â¤òÀß¤±¤ë */
+    /* æ‹¬å¼§ãŒã‚ã‚‹å ´åˆã«ä¸¦åˆ—æ§‹é€ ã®ç¯„å›²ã«åˆ¶é™ã‚’è¨­ã‘ã‚‹ */
 
     for (k = 0; quote_data.in_num[k] >= 0; k++) {
 
 	int start = quote_data.in_num[k];
 	int end = quote_data.out_num[k];
 
-	/* ¸å¤Ë³ç¸Ì¤¬¤¢¤ë¾ì¹ç */
+	/* å¾Œã«æ‹¬å¼§ãŒã‚ã‚‹å ´åˆ */
 
 	if (key_pos < start) {
 	    for (i = 0; i < start; i++)
@@ -54,7 +54,7 @@ extern QUOTE_DATA quote_data;
 		    restrict_matrix[i][j] = 0;
 	} 
 
-	/* Á°¤Ë³ç¸Ì¤¬¤¢¤ë¾ì¹ç (¥­¡¼¤¬³ç¸ÌÆâ¤ÎËöÈø¤Î¾ì¹ç¤â) */
+	/* å‰ã«æ‹¬å¼§ãŒã‚ã‚‹å ´åˆ (ã‚­ãƒ¼ãŒæ‹¬å¼§å†…ã®æœ«å°¾ã®å ´åˆã‚‚) */
 
 	else if (end <= key_pos) {
 	    for (i = start + 1; i <= end; i++)
@@ -62,7 +62,7 @@ extern QUOTE_DATA quote_data;
 		    restrict_matrix[i][j] = 0;
 	}
 
-	/* ¥­¡¼¤¬³ç¸Ì¤ÎÃæ¤Ë¤¢¤ë¾ì¹ç */
+	/* ã‚­ãƒ¼ãŒæ‹¬å¼§ã®ä¸­ã«ã‚ã‚‹å ´åˆ */
 
 	else {
 	    for (i = 0; i <= end; i++)
@@ -70,9 +70,9 @@ extern QUOTE_DATA quote_data;
 		    if (i < start || end < j)
 			restrict_matrix[i][j] = 0;
 
-	    /* ³ç¸Ì¤ÎÃæ¤Ë¶çÅÀ¤¬¤¢¤ë¾ì¹ç */
+	    /* æ‹¬å¼§ã®ä¸­ã«å¥ç‚¹ãŒã‚ã‚‹å ´åˆ */
 	    for (l = start; l < end; l++)
-		if (check_feature(sp->bnst_data[l].f, "·¸:Ê¸Ëö"))
+		if (check_feature(sp->bnst_data[l].f, "ä¿‚:æ–‡æœ«"))
 		    for (i = start; i <= l; i++)
 			for (j = l + 1; j <= end; j++)
 			    restrict_matrix[i][j] = 0;
@@ -93,30 +93,30 @@ extern QUOTE_DATA quote_data;
     BNST_DATA *ptr2 = &(sp->bnst_data[pos2]);
 
     /*
-      ¥Ñ¥¹¤Î¥¹¥³¥¢·×»»¤Ë¤ª¤¤¤Æ¶èÀÚ¤ê¥Ú¥Ê¥ë¥Æ¥£¤òcancel¤¹¤ë¾ò·ï
-    	¡¦·¸¤¬Æ±¤¸
-	¡¦ÍÑ¸À¤Ç¤¢¤ë¤«¤É¤¦¤«¤¬Æ±¤¸
-	¡¦ÆÉÅÀ¤¬¤¢¤ë¤«¤Ê¤¤¤«¤¬Æ±¤¸
+      ãƒ‘ã‚¹ã®ã‚¹ã‚³ã‚¢è¨ˆç®—ã«ãŠã„ã¦åŒºåˆ‡ã‚ŠãƒšãƒŠãƒ«ãƒ†ã‚£ã‚’cancelã™ã‚‹æ¡ä»¶
+    	ãƒ»ä¿‚ãŒåŒã˜
+	ãƒ»ç”¨è¨€ã§ã‚ã‚‹ã‹ã©ã†ã‹ãŒåŒã˜
+	ãƒ»èª­ç‚¹ãŒã‚ã‚‹ã‹ãªã„ã‹ãŒåŒã˜
 	
-       ¢¨ ¾ò·ï¤Ï¾¯¤·´Ë¤¯¤·¤Æ¤¢¤ë¡¥ÌäÂê¤¬¤¢¤ì¤Ğ¶¯¤á¤ë 
+       â€» æ¡ä»¶ã¯å°‘ã—ç·©ãã—ã¦ã‚ã‚‹ï¼å•é¡ŒãŒã‚ã‚Œã°å¼·ã‚ã‚‹ 
     */
 
-    cp1 = (char *)check_feature(ptr1->f, "·¸");
-    cp2 = (char *)check_feature(ptr2->f, "·¸");
+    cp1 = (char *)check_feature(ptr1->f, "ä¿‚");
+    cp2 = (char *)check_feature(ptr2->f, "ä¿‚");
     if (!cp1 || !cp2 || strcmp(cp1, cp2)) return 0;
 	
-    flag1 = check_feature(ptr1->f, "ÍÑ¸À") ? 1 : 0;
-    flag2 = check_feature(ptr2->f, "ÍÑ¸À") ? 1 : 0;
+    flag1 = check_feature(ptr1->f, "ç”¨è¨€") ? 1 : 0;
+    flag2 = check_feature(ptr2->f, "ç”¨è¨€") ? 1 : 0;
     if (flag1 != flag2) return 0;
 
-    if (check_feature(ptr1->f, "ÍÑ¸À")) {
+    if (check_feature(ptr1->f, "ç”¨è¨€")) {
 	cp1 = (char *)check_feature(ptr1->f, "ID");
 	cp2 = (char *)check_feature(ptr2->f, "ID");
 	if (!cp1 || !cp2 || strcmp(cp1, cp2)) return 0;
     }
     
-    flag1 = check_feature(ptr1->f, "ÆÉÅÀ") ? 1 : 0;
-    flag2 = check_feature(ptr2->f, "ÆÉÅÀ") ? 1 : 0;
+    flag1 = check_feature(ptr1->f, "èª­ç‚¹") ? 1 : 0;
+    flag2 = check_feature(ptr2->f, "èª­ç‚¹") ? 1 : 0;
     if (flag1 != flag2) return 0;
 
     return 1;
@@ -143,10 +143,10 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
 	bnst_match(sp, pos1, pos2) &&
 	!bnst_match(sp, pos1, key_pos))
 	return 0;
-    else if (check_feature(sp->bnst_data[pos1].f, "ÄóÂê") &&
-	     check_feature(sp->bnst_data[pos2].f, "ÄóÂê"))
+    else if (check_feature(sp->bnst_data[pos1].f, "æé¡Œ") &&
+	     check_feature(sp->bnst_data[pos2].f, "æé¡Œ"))
 	return 0;
-			/* ¡Ö¡Á¤Ï¡×¤Î¾ì¹ç¤ÏÆÉÅÀ¤ÎÍ­Ìµ,¥ì¥Ù¥ë¤òÌµ»ë */
+			/* ã€Œã€œã¯ã€ã®å ´åˆã¯èª­ç‚¹ã®æœ‰ç„¡,ãƒ¬ãƒ™ãƒ«ã‚’ç„¡è¦– */
     else
 	return(penalty_table[pos1] + penalty_table[pos2]);
 }
@@ -163,12 +163,12 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
 	return 0;
     } 
     else if (p_ptr->type == PARA_KEY_N) {
-	if (check_feature(b_ptr->f, "Ì¾ÊÂ»ÏÅÀ"))
+	if (check_feature(b_ptr->f, "åä¸¦å§‹ç‚¹"))
 	    return BONUS;
 	else return 0;
     }
     else if (p_ptr->type == PARA_KEY_P) {
-	if (check_feature(b_ptr->f, "½ÒÊÂ»ÏÅÀ"))
+	if (check_feature(b_ptr->f, "è¿°ä¸¦å§‹ç‚¹"))
 	    return BONUS;
 	else return 0;
     }
@@ -189,15 +189,15 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
 	return 0;
     } 
     else if (p_ptr->type == PARA_KEY_N) {
-        if (check_feature(sp->bnst_data[p_ptr->key_pos].f, "·¸:¥È³Ê") &&
-	    check_feature(b_ptr->f, "Ì¾ÊÂ½ªÅÀ¡Á¤È¡Á¤È")) 
+        if (check_feature(sp->bnst_data[p_ptr->key_pos].f, "ä¿‚:ãƒˆæ ¼") &&
+	    check_feature(b_ptr->f, "åä¸¦çµ‚ç‚¹ã€œã¨ã€œã¨")) 
 	    return BONUS;
-	if (check_feature(b_ptr->f, "Ì¾ÊÂ½ªÅÀ"))
+	if (check_feature(b_ptr->f, "åä¸¦çµ‚ç‚¹"))
 	    return BONUS;
 	else return 0;
     }
     else if (p_ptr->type == PARA_KEY_P) {
-	if (check_feature(b_ptr->f, "½ÒÊÂ½ªÅÀ"))
+	if (check_feature(b_ptr->f, "è¿°ä¸¦çµ‚ç‚¹"))
 	    return BONUS;
 	else return 0;
     }
@@ -212,11 +212,11 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 {
     int i, j, current_max, score_upward, score_sideway;
     
-    /* £Ä£Ğ¥Ş¥Ã¥Á¥ó¥° */
+    /* ï¼¤ï¼°ãƒãƒƒãƒãƒ³ã‚° */
 
     for (j = jend_pos; j > key_pos; j--)  {
 
-	/* ºÇ±¦Îó¤Î½èÍı */
+	/* æœ€å³åˆ—ã®å‡¦ç† */
 	
 	if (j == jend_pos) {
 	    score_matrix[iend_pos][jend_pos] = match_matrix[iend_pos][jend_pos];
@@ -227,14 +227,14 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 	
 	else {
 
-	    /* ºÇ²¼¹Ô¤Î½èÍı */
+	    /* æœ€ä¸‹è¡Œã®å‡¦ç† */
 
 	    score_sideway = score_matrix[iend_pos][j+1] 
 	      		    - PENALTY - penalty_table[j];
 	    score_matrix[iend_pos][j] = score_sideway;
 	    prepos_matrix[iend_pos][j] = iend_pos;
 
-	    /* Â¾¤Î¹Ô¤Î½èÍı:²¼¤«¤é¤Èº¸¤«¤é¤Î¥¹¥³¥¢¤òÈæ³Ó */
+	    /* ä»–ã®è¡Œã®å‡¦ç†:ä¸‹ã‹ã‚‰ã¨å·¦ã‹ã‚‰ã®ã‚¹ã‚³ã‚¢ã‚’æ¯”è¼ƒ */
 
 	    for (i=iend_pos-1; i>=0; i--) {
 		score_upward = (Language == CHINESE) ? 
@@ -247,7 +247,7 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 		if (Language == CHINESE &&
 		    (check_feature((sp->bnst_data + j)->f, "CC") ||
 		     check_feature((sp->bnst_data + j)->f, "PU"))) {
-		    /* Ãæ¹ñ¸ì¤ÇÊÂÎó¤Î¥­¡¼¤¬¸åÉô¤ÎÀèÆ¬¤Î¾ì¹ç¤ÎÎã³°½èÍı */
+		    /* ä¸­å›½èªã§ä¸¦åˆ—ã®ã‚­ãƒ¼ãŒå¾Œéƒ¨ã®å…ˆé ­ã®å ´åˆã®ä¾‹å¤–å‡¦ç† */
 		    score_matrix[i][j] = score_sideway;
 		    prepos_matrix[i][j] = i;
 		} 
@@ -262,7 +262,7 @@ void dp_search_scope(SENTENCE_DATA *sp, int key_pos, int iend_pos, int jend_pos)
 	    }
 	}
 
-	/* ¼¡¤ÎÎó¤Î¤¿¤á¤ËºÇÂçÃÍ¡¤ºÇÂç°ÌÃÖ¤ò·×»» */
+	/* æ¬¡ã®åˆ—ã®ãŸã‚ã«æœ€å¤§å€¤ï¼Œæœ€å¤§ä½ç½®ã‚’è¨ˆç®— */
 
 	current_max = score_matrix[iend_pos][j];
 	maxpos_array[iend_pos] = iend_pos;
@@ -299,18 +299,18 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     FEATURE *fp;
 
     /*							    */
-    /* ¥¹¥¿¡¼¥È°ÌÃÖ(jend_pos)¤«¤é¤Î²òÀÏ¤òËÜÅö¤Ë¹Ô¤¦¤«¤É¤¦¤« */
+    /* ã‚¹ã‚¿ãƒ¼ãƒˆä½ç½®(jend_pos)ã‹ã‚‰ã®è§£æã‚’æœ¬å½“ã«è¡Œã†ã‹ã©ã†ã‹ */
     /*							    */
 
     for (i = iend_pos; i >= 0; i--) {
 	Para_matrix[para_num][i][jend_pos] = -INT_MAX;
     }
 
-    /* Îà»÷ÅÙ¤¬0¤Ê¤éÃæ»ß */
+    /* é¡ä¼¼åº¦ãŒ0ãªã‚‰ä¸­æ­¢ */
 
     if (match_matrix[iend_pos][jend_pos] == 0) return;
 
-    /* restrict_matrix¤Ç²ÄÇ½À­¤¬¤Ê¤¤¾ì¹ç¤ÏÃæ»ß */
+    /* restrict_matrixã§å¯èƒ½æ€§ãŒãªã„å ´åˆã¯ä¸­æ­¢ */
 
     flag = FALSE;
     for (i = 0; i <= iend_pos; i++) {
@@ -320,19 +320,19 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     }
     if (flag == FALSE) return;
 
-    /* ¡Ö¡Á¡¤¤½¤ì¤ò¡×¤È¤¤¤¦ÊÂÎó¤ÏÃæ»ß */
+    /* ã€Œã€œï¼Œãã‚Œã‚’ã€ã¨ã„ã†ä¸¦åˆ—ã¯ä¸­æ­¢ */
 
     if (key_pos + 1 == jend_pos &&	
-	check_feature(sp->bnst_data[jend_pos].f, "»Ø¼¨»ì"))
+	check_feature(sp->bnst_data[jend_pos].f, "æŒ‡ç¤ºè©"))
 	return;
 
-    /* ¥ë¡¼¥ë¤Ë¤è¤ëÀ©¸Â(Îà»÷¥¹¥³¥¢¤ÎïçÃÍ¤ò¼èÆÀ) */
+    /* ãƒ«ãƒ¼ãƒ«ã«ã‚ˆã‚‹åˆ¶é™(é¡ä¼¼ã‚¹ã‚³ã‚¢ã®é–¾å€¤ã‚’å–å¾—) */
 
-    /* ¾ò·ï¤¬¤Ê¤±¤ì¤ĞïçÃÍ¤Ï0.0¤Ë */
+    /* æ¡ä»¶ãŒãªã‘ã‚Œã°é–¾å€¤ã¯0.0ã« */
     if ((ptr->f_pattern).fp[0] == NULL) {
 	sim_threshold = 0.0;
     } 
-    /* ¾ò·ï¤¬¤¢¤ì¤Ğ¡¤¥Ş¥Ã¥Á¤¹¤ë¤â¤Î¤ÎÃæ¤ÇºÇÄã¤ÎïçÃÍ¤Ë */
+    /* æ¡ä»¶ãŒã‚ã‚Œã°ï¼Œãƒãƒƒãƒã™ã‚‹ã‚‚ã®ã®ä¸­ã§æœ€ä½ã®é–¾å€¤ã« */
     else {
 	sim_threshold = 100.0;
 	nth = 0;
@@ -361,7 +361,7 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     dp_search_scope(sp, key_pos, iend_pos, jend_pos);
 
 
-    /* ºÇÂç¥Ñ¥¹¤Î¸¡½Ğ */
+    /* æœ€å¤§ãƒ‘ã‚¹ã®æ¤œå‡º */
 
     ending_bonus_score = calc_ending_bonus_score(sp, jend_pos, ptr);
     for (i = iend_pos; i >= 0; i--) {
@@ -383,11 +383,11 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
 	    pure_score = (Language == CHINESE) ?
 		(float)score_matrix[i][key_pos+2] / norm[jend_pos - i + 1] : 
 		(float)score_matrix[i][key_pos+1] / norm[jend_pos - i + 1];
-	    /* pure_score ¤ÏËöÈøÉ½¸½¤Î¥Ü¡¼¥Ê¥¹¤ò½ü¤¤¤¿ÃÍ */
+	    /* pure_score ã¯æœ«å°¾è¡¨ç¾ã®ãƒœãƒ¼ãƒŠã‚¹ã‚’é™¤ã„ãŸå€¤ */
 	    max_pos = i;
 	}
 
-	/* ³ÎÎ¨ÅªÊÂÎó¹½Â¤²òÀÏ¤Î¤¿¤á¤ËÎà»÷ÅÙ¤òÊİÂ¸ */
+	/* ç¢ºç‡çš„ä¸¦åˆ—æ§‹é€ è§£æã®ãŸã‚ã«é¡ä¼¼åº¦ã‚’ä¿å­˜ */
 	if (restrict_matrix[i][jend_pos] && 
 	    pure_score >= sim_threshold) {
 	    Para_matrix[para_num][i][jend_pos] = current_score;
@@ -395,14 +395,14 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     }
 
 
-    /* Îà»÷ÅÙ¤¬0¤Ê¤éÃæ»ß 01/07/12 */
+    /* é¡ä¼¼åº¦ãŒ0ãªã‚‰ä¸­æ­¢ 01/07/12 */
     if (max_score < 0.0) return;
 
 
-    /* ¢§ (a...)(b)¤È¤¤¤¦ÊÂÎó¤Ï°·¤¨¤Ê¤¤¡¥³ç¸Ì¤ÎÀ©¸Â¤Ê¤É¤Ç¤³¤¦¤Ê¤é¤¶¤ë
-       ¤ò¤¨¤Ê¤¤¾ì¹ç¤Ï¡¤ÊÂÎó¤È¤ÏÇ§¤á¤Ê¤¤¤³¤È¤Ë¤¹¤ë (»ÃÄêÅª) */
+    /* â–¼ (a...)(b)ã¨ã„ã†ä¸¦åˆ—ã¯æ‰±ãˆãªã„ï¼æ‹¬å¼§ã®åˆ¶é™ãªã©ã§ã“ã†ãªã‚‰ã–ã‚‹
+       ã‚’ãˆãªã„å ´åˆã¯ï¼Œä¸¦åˆ—ã¨ã¯èªã‚ãªã„ã“ã¨ã«ã™ã‚‹ (æš«å®šçš„) */
 
-    /* ¡Ö¡Á¤Ï¤â¤Á¤í¤ó¡×¤Î°·¤¤¤ÇÏÃ¤¬ÊÑ¤Ã¤Æ¤Ã¤­¤¿¡©¡©¡©
+    /* ã€Œã€œã¯ã‚‚ã¡ã‚ã‚“ã€ã®æ‰±ã„ã§è©±ãŒå¤‰ã£ã¦ã£ããŸï¼Ÿï¼Ÿï¼Ÿ
     if (key_pos + 1 == jend_pos && max_pos != key_pos) {
 	max_pos = i;
 	max_score = -100;
@@ -411,9 +411,9 @@ void _detect_para_scope(SENTENCE_DATA *sp, int para_num, PARA_DATA *ptr, int jen
     */
 
     /*
-      ïçÃÍ¤ò±Û¤¨¤Æ¡¤¤Ş¤Àstatus¤¬ x ¤Ê¤é n ¤Ë
-      ïçÃÍ¤ò±Û¤¨¤Æ¡¤status¤¬ n ¤Ê¤é ¥¹¥³¥¢Èæ³Ó
-      ïçÃÍ¤ò±Û¤¨¤Ê¤¯¤Æ¤â¡¤»²¹Í¤Î¤¿¤á¥¹¥³¥¢¤òµ­²±
+      é–¾å€¤ã‚’è¶Šãˆã¦ï¼Œã¾ã statusãŒ x ãªã‚‰ n ã«
+      é–¾å€¤ã‚’è¶Šãˆã¦ï¼ŒstatusãŒ n ãªã‚‰ ã‚¹ã‚³ã‚¢æ¯”è¼ƒ
+      é–¾å€¤ã‚’è¶Šãˆãªãã¦ã‚‚ï¼Œå‚è€ƒã®ãŸã‚ã‚¹ã‚³ã‚¢ã‚’è¨˜æ†¶
     */
     flag = FALSE;
     if (sim_threshold <= pure_score &&
@@ -455,12 +455,12 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     /* 
        restrict_p
-         TRUE : Á°¤ÎÊÂÎó²òÀÏ¤Î¼ºÇÔ¤Ë¤è¤Ã¤ÆÆÃÄê¤Î¥­¡¼¤À¤±¤ò½èÍı¤¹¤ë¾ì¹ç
-	 FALSE : ¤Ï¤¸¤á¤Ë¤¹¤Ù¤Æ¤Î¥­¡¼¤ò½èÍı¤¹¤ë¾ì¹ç
+         TRUE : å‰ã®ä¸¦åˆ—è§£æã®å¤±æ•—ã«ã‚ˆã£ã¦ç‰¹å®šã®ã‚­ãƒ¼ã ã‘ã‚’å‡¦ç†ã™ã‚‹å ´åˆ
+	 FALSE : ã¯ã˜ã‚ã«ã™ã¹ã¦ã®ã‚­ãƒ¼ã‚’å‡¦ç†ã™ã‚‹å ´åˆ
 	 
        restrict_matrix
-         ³ç¸Ì¤Ë¤è¤ëÀ©¸Â¤ÈÁ°¤ÎÊÂÎó¹½Â¤²òÀÏ¤Ë¤è¤ëÀ©¸Â(restrict_p¤Î¾ì¹ç)
-	 (restrict_p==FALSE¤Î¾ì¹ç¤³¤³¤Ç½é´ü²½)
+         æ‹¬å¼§ã«ã‚ˆã‚‹åˆ¶é™ã¨å‰ã®ä¸¦åˆ—æ§‹é€ è§£æã«ã‚ˆã‚‹åˆ¶é™(restrict_pã®å ´åˆ)
+	 (restrict_p==FALSEã®å ´åˆã“ã“ã§åˆæœŸåŒ–)
     */
 
     para_ptr->status = 'x';
@@ -500,7 +500,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	para_ptr->status = 's';
     }
     
-    return TRUE;	/* ²òÀÏ·ë²Ìstatus¤¬x¤Ç¤â,°ì±şTRUE¤òÊÖ¤¹ */
+    return TRUE;	/* è§£æçµæœstatusãŒxã§ã‚‚,ä¸€å¿œTRUEã‚’è¿”ã™ */
 }
 
 /*==================================================================*/
@@ -522,7 +522,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
-	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ÊÂ¥­")) != NULL &&
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "ä¸¦ã‚­")) != NULL &&
 	    (Language != CHINESE ||
 	     (Language == CHINESE && (check_feature(sp->bnst_data[i + 1].f, "CC") || check_feature(sp->bnst_data[i + 1].f, "PU"))))) {
 	    sp->bnst_data[i].para_num = sp->Para_num;
@@ -533,18 +533,18 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    condition[0] = '\0';
 	    sscanf(cp, "%*[^:]:%[^:]:%s", type, condition);
 
-	    if (!strncmp(type, "Ì¾", strlen("Ì¾"))) {
+	    if (!strncmp(type, "å", strlen("å"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_N	;
-	    } else if (!strncmp(type, "½Ò", strlen("½Ò"))) {
+	    } else if (!strncmp(type, "è¿°", strlen("è¿°"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_P;
-	    } else if (!strncmp(type, "¡©", strlen("¡©"))) {
+	    } else if (!strncmp(type, "ï¼Ÿ", strlen("ï¼Ÿ"))) {
 		sp->bnst_data[i].para_key_type = PARA_KEY_A;
 	    }
 	    sp->para_data[sp->Para_num].type = sp->bnst_data[i].para_key_type;
 	    
-	    /* ¡Ö¡Á¤Ï¤â¤Á¤í¤ó¡×¤Ê¤É¤Î¾ì¹ç¤Î"ÊÂ¥­:Ì¾-1:...."¤Î½èÍı */
-	    if (*(type+2)) {
-		sp->para_data[sp->Para_num].iend_pos = i + atoi(type+2);
+	    /* ã€Œã€œã¯ã‚‚ã¡ã‚ã‚“ã€ãªã©ã®å ´åˆã®"ä¸¦ã‚­:å-1:...."ã®å‡¦ç† */
+	    if (*(type+BYTES4CHAR)) {
+		sp->para_data[sp->Para_num].iend_pos = i + atoi(type+BYTES4CHAR);
 	    } else {
 		sp->para_data[sp->Para_num].iend_pos = i;
 	    }
@@ -553,7 +553,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    
 	    sp->Para_num ++;
 	    if (sp->Para_num >= PARA_MAX) {
-		for (i++; i < sp->Bnst_num; i++) { /* »Ä¤ê¤ÎÊ¸Àá¤Ë-1¤òÍ¿¤¨¤ë */
+		for (i++; i < sp->Bnst_num; i++) { /* æ®‹ã‚Šã®æ–‡ç¯€ã«-1ã‚’ä¸ãˆã‚‹ */
 		    sp->bnst_data[i].para_num = -1;
 		}
 		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
@@ -569,8 +569,8 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
-	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "¶èÀÚ")) != NULL) {
-	    if (check_feature(sp->bnst_data[i].f, "ÆÉÅÀ")) {
+	if ((cp = (char *)check_feature(sp->bnst_data[i].f, "åŒºåˆ‡")) != NULL) {
+	    if (check_feature(sp->bnst_data[i].f, "èª­ç‚¹")) {
 		sscanf(cp, "%*[^:]:%*d-%d", &(sp->bnst_data[i].sp_level));
 	    } else {
 		sscanf(cp, "%*[^:]:%d-%*d", &(sp->bnst_data[i].sp_level));
@@ -588,8 +588,8 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
        int farthest_child(SENTENCE_DATA *sp, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    /* °ìÈÖ±ó¤¤»Ò¶¡¤ÎÊ¸ÀáÈÖ¹æ¤òÊÖ¤¹
-       (º£¤Î¤È¤³¤í¤³¤Î´Ø¿ô¤Ï»È¤Ã¤Æ¤¤¤Ê¤¤) */
+    /* ä¸€ç•ªé ã„å­ä¾›ã®æ–‡ç¯€ç•ªå·ã‚’è¿”ã™
+       (ä»Šã®ã¨ã“ã‚ã“ã®é–¢æ•°ã¯ä½¿ã£ã¦ã„ãªã„) */
 
     int i;
     BNST_DATA	*loop_ptr = b_ptr;
@@ -606,7 +606,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 		 int para_recovery(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ÊÂÎó¹½Â¤¤Î¾ğÊó¤ÎºÆ¸½ */
+    /* ä¸¦åˆ—æ§‹é€ ã®æƒ…å ±ã®å†ç¾ */
 
     int		i, j;
     int		ending_bonus_score = 0;
@@ -620,7 +620,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->dpnd_type == 'P') {
 	    if (sp->Para_num >= PARA_MAX) {
-		for (; i < sp->Bnst_num; i++, b_ptr++) { /* »Ä¤ê¤ÎÊ¸Àá¤Ë-1¤òÍ¿¤¨¤ë */
+		for (; i < sp->Bnst_num; i++, b_ptr++) { /* æ®‹ã‚Šã®æ–‡ç¯€ã«-1ã‚’ä¸ãˆã‚‹ */
 		    b_ptr->para_num = -1;
 		}
 		fprintf(stderr, ";; Too many para (%s)!\n", sp->Comment ? sp->Comment : "");
@@ -629,7 +629,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    b_ptr->para_num = sp->Para_num;
 	    sp->para_data[sp->Para_num].key_pos = i;
 	    sp->para_data[sp->Para_num].jend_pos = b_ptr->dpnd_head;
-	    sp->para_data[sp->Para_num].iend_pos = i; /* ÉÔÀµ³Î */
+	    sp->para_data[sp->Para_num].iend_pos = i; /* ä¸æ­£ç¢º */
 	    for (j = i - 1; 
 		 j >= 0 && 
 		     (sp->bnst_data[j].dpnd_head < i ||
@@ -639,14 +639,14 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    sp->para_data[sp->Para_num].max_path[0] = j + 1;
 	    sp->para_data[sp->Para_num].status = 'n';
 
-	    /* Àµ²òÆşÎÏ¤Î¤È¤­¤Ï¥¹¥³¥¢·×»» */
+	    /* æ­£è§£å…¥åŠ›ã®ã¨ãã¯ã‚¹ã‚³ã‚¢è¨ˆç®— */
 	    if (OptInput & OPT_PARSED) {
-		if ((cp = check_feature(b_ptr->f, "ÊÂ¥­"))) {
-		    cp += strlen("ÊÂ¥­:");
-		    if (!strncmp(cp, "Ì¾", strlen("Ì¾"))) {
+		if ((cp = check_feature(b_ptr->f, "ä¸¦ã‚­"))) {
+		    cp += strlen("ä¸¦ã‚­:");
+		    if (!strncmp(cp, "å", strlen("å"))) {
 			sp->para_data[sp->Para_num].type = PARA_KEY_N;
 		    }
-		    else if (!strncmp(cp, "½Ò", strlen("½Ò"))) {
+		    else if (!strncmp(cp, "è¿°", strlen("è¿°"))) {
 			sp->para_data[sp->Para_num].type = PARA_KEY_P;
 		    }
 		    else {

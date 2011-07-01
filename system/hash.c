@@ -101,7 +101,7 @@
     key_size = strlen(key);
     h = internal_hash(hashdb, key, key_size);
 
-    /* ½ñ¤­¹ş¤ß¥â¡¼¥É¤Î¤È¤­ */
+    /* æ›¸ãè¾¼ã¿ãƒ¢ãƒ¼ãƒ‰ã®ã¨ã */
     if (hashdb->mode == HASH_WRITE_MODE) {
 	HASH_DATA_UNIT_INTERNAL **hdpp;
 
@@ -118,7 +118,7 @@
 	return NULL;
     }
 
-    /* ÆÉ¤ß¹ş¤ß¥â¡¼¥É¤Î¤È¤­ */
+    /* èª­ã¿è¾¼ã¿ãƒ¢ãƒ¼ãƒ‰ã®ã¨ã */
 
     if (hashdb->hhdata[h].pos == 0) {
 	return NULL;
@@ -128,9 +128,9 @@
 	max_key_size = 0;
 
 	fseek(hashdb->fp, hashdb->hhdata[h].pos, SEEK_SET);
-	fread(&num, sizeof(int), 1, hashdb->fp);	/* Æ±¤¸hashÃæ¤Î¸Ä¿ô */
+	fread(&num, sizeof(int), 1, hashdb->fp);	/* åŒã˜hashä¸­ã®å€‹æ•° */
 
-	/* ¸Ä¿ôÊ¬¤Îkey, value¤Î¥µ¥¤¥º¤ò¼èÆÀ */
+	/* å€‹æ•°åˆ†ã®key, valueã®ã‚µã‚¤ã‚ºã‚’å–å¾— */
 	hdp = (HASH_DATA_UNIT *)malloc_data(sizeof(HASH_DATA_UNIT)*num, "hash_fetch");
 	for (i = 0; i < num; i++) {
 	    fread(&hdu, sizeof(HASH_DATA_UNIT), 1, hashdb->fp);
@@ -143,7 +143,7 @@
 
 	rkey = (char *)malloc_data(max_key_size, "hash_fetch");
 
-	/* ¥Ş¥Ã¥Á¤¹¤ëkey¤òÃµ¤¹ */
+	/* ãƒãƒƒãƒã™ã‚‹keyã‚’æ¢ã™ */
 	for (i = 0; i < num; i++) {
 	    if (target < 0) {
 		fread(rkey, (hdp+i)->key_size, 1, hashdb->fp);
@@ -153,7 +153,7 @@
 		}
 	    }
 	    else {
-		/* key¤¬¤ß¤Ä¤«¤Ã¤¿¸å¤Ïvalue¤ÎÆ¬¤Ş¤Çseek¤·¤Æ¤ª¤¯ */
+		/* keyãŒã¿ã¤ã‹ã£ãŸå¾Œã¯valueã®é ­ã¾ã§seekã—ã¦ãŠã */
 		fseek(hashdb->fp, (hdp+i)->key_size, SEEK_CUR);
 	    }
 	}
@@ -161,12 +161,12 @@
 	free(rkey);
 	if (target < 0) {
 	    free(hdp);
-	    return NULL;	/* ¥Ş¥Ã¥Á¤·¤Ê¤«¤Ã¤¿ */
+	    return NULL;	/* ãƒãƒƒãƒã—ãªã‹ã£ãŸ */
 	}
 
 	rvalue = (char *)malloc_data((hdp+target)->value_size+1, "hash_fetch");
 
-	/* ÌÜÅª¤Îvalue¤Ş¤Çseek */
+	/* ç›®çš„ã®valueã¾ã§seek */
 	for (i = 0; i < target; i++) {
 	    fseek(hashdb->fp, (hdp+i)->value_size, SEEK_CUR);
 	}
@@ -191,7 +191,7 @@
     hdpp = &(hashdb->hddata[h]);
 
     while (*hdpp) {
-	/* Æ±¤¸key¤¬¤¹¤Ç¤Ë¤¢¤ì¤Ğ¾å½ñ¤­ */
+	/* åŒã˜keyãŒã™ã§ã«ã‚ã‚Œã°ä¸Šæ›¸ã */
 	if (!strcmp((*hdpp)->key, key)) {
 	    if (mode == HASH_NOOVERWRITE) {
 		return HASH_KEYEXIST;
@@ -225,7 +225,7 @@
     HASH_DATA_UNIT_INTERNAL *hdp;
     int cdata[HASH_TBLSIZE];
 
-    /* SEED¤Î½ñ¤­¹ş¤ß */
+    /* SEEDã®æ›¸ãè¾¼ã¿ */
     for (i = 0; i < NSEED; ++i) {
 	for (j = 0; j < NSIZE; ++j) {
 	    if (fwrite(&(hashdb->seed[i][j]), sizeof(unsigned int), 1, hashdb->fp) < 1) {
@@ -235,7 +235,7 @@
 	}
     }
 
-    /* ¸Ä¿ô¤Î¥«¥¦¥ó¥È */
+    /* å€‹æ•°ã®ã‚«ã‚¦ãƒ³ãƒˆ */
     for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
 	    count = 0;
@@ -251,7 +251,7 @@
 	}
     }
 
-    /* ¥Ï¥Ã¥·¥åÇÛÎó(¥¢¥É¥ì¥¹)¤Î½ñ¤­¹ş¤ß */
+    /* ãƒãƒƒã‚·ãƒ¥é…åˆ—(ã‚¢ãƒ‰ãƒ¬ã‚¹)ã®æ›¸ãè¾¼ã¿ */
     pos = sizeof(unsigned int)*NSEED*NSIZE+sizeof(HASH_HEADER_UNIT)*HASH_TBLSIZE;
     for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
@@ -274,16 +274,16 @@
 	}
     }
 
-    /* ¥Ç¡¼¥¿¤Î½ñ¤­¹ş¤ß */
+    /* ãƒ‡ãƒ¼ã‚¿ã®æ›¸ãè¾¼ã¿ */
     for (i = 0; i < HASH_TBLSIZE; i++) {
 	if (hashdb->hddata[i]) {
-	    /* ¸Ä¿ô¤Î½ñ¤­¹ş¤ß */
+	    /* å€‹æ•°ã®æ›¸ãè¾¼ã¿ */
 	    if (fwrite(&cdata[i], sizeof(int), 1, hashdb->fp) < 1) {
 		fprintf(stderr, ";; Error in fwrite.\n");
 		exit(1);
 	    }
 
-	    /* key, value ¤Î¥µ¥¤¥º¤ò½ñ¤­¹ş¤ß */
+	    /* key, value ã®ã‚µã‚¤ã‚ºã‚’æ›¸ãè¾¼ã¿ */
 	    hdp = hashdb->hddata[i];
 	    while (hdp) {
 		hdu.key_size = hdp->key_size;

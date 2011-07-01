@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     ¸ÇÍ­É½¸½½èÍı
+			     å›ºæœ‰è¡¨ç¾å‡¦ç†
 
                                                R.SASANO 05. 7. 31
 
@@ -9,33 +9,33 @@
 #include "knp.h"
 
 /*
-  svm¤ÎfeatureÊ¸»úÎó¤Ë¤Ä¤¤¤Æ
-  ËöÈø¤¬0°Ê³°(¡Áa) : Ê¸»úÎó (a:1¡Á5:ÂĞ¾İ¤Î·ÁÂÖÁÇ¤Î°ÌÃÖ)   
-  ËöÈø¤¬00   (a00) : Ê¸Àá»Ï
-  ËöÈø¤¬10 (¡Áa10) : ÉÊ»ì
-  ËöÈø¤¬20 (¡Áa20) : Ê¸»ú¼ï
-  ËöÈø¤¬30 (¡Áa30) : ¥­¥ã¥Ã¥·¥å
-  ËöÈø¤¬40 (¡Áa40) : ËöÈø
-  ËöÈø¤¬50 (¡Áa50) : Ê¸»ú¿ô
-  ËöÈø¤¬6    (¡Á6) : ·¸¤êÀè¤Î¼ç¼­(¼«Ê¬¼«¿È)
-  ËöÈø¤¬60  (¡Á60) : É½ÁØ³Ê(¼«Ê¬¼«¿È)
-  ËöÈø¤¬7    (¡Á7) : ·¸¤êÀè¤Î¼ç¼­(Ê¸ÀáËö)
-  ËöÈø¤¬70  (¡Á70) : É½ÁØ³Ê(Ê¸ÀáËö)
-  ËöÈø¤¬80 (¡Áb80) : ³Ê¥Õ¥ì¡¼¥à¤Î°ÕÌ£ (b:1¡Á4)
-  ËöÈø¤¬9    (¡Á9) : ¼«Ê¬¼«¿È¤Î¼ç¼­
-  ËöÈø¤¬90  (¡Á90) : Ê¸Àá¼ç¼­
+  svmã®featureæ–‡å­—åˆ—ã«ã¤ã„ã¦
+  æœ«å°¾ãŒ0ä»¥å¤–(ã€œa) : æ–‡å­—åˆ— (a:1ã€œ5:å¯¾è±¡ã®å½¢æ…‹ç´ ã®ä½ç½®)   
+  æœ«å°¾ãŒ00   (a00) : æ–‡ç¯€å§‹
+  æœ«å°¾ãŒ10 (ã€œa10) : å“è©
+  æœ«å°¾ãŒ20 (ã€œa20) : æ–‡å­—ç¨®
+  æœ«å°¾ãŒ30 (ã€œa30) : ã‚­ãƒ£ãƒƒã‚·ãƒ¥
+  æœ«å°¾ãŒ40 (ã€œa40) : æœ«å°¾
+  æœ«å°¾ãŒ50 (ã€œa50) : æ–‡å­—æ•°
+  æœ«å°¾ãŒ6    (ã€œ6) : ä¿‚ã‚Šå…ˆã®ä¸»è¾(è‡ªåˆ†è‡ªèº«)
+  æœ«å°¾ãŒ60  (ã€œ60) : è¡¨å±¤æ ¼(è‡ªåˆ†è‡ªèº«)
+  æœ«å°¾ãŒ7    (ã€œ7) : ä¿‚ã‚Šå…ˆã®ä¸»è¾(æ–‡ç¯€æœ«)
+  æœ«å°¾ãŒ70  (ã€œ70) : è¡¨å±¤æ ¼(æ–‡ç¯€æœ«)
+  æœ«å°¾ãŒ80 (ã€œb80) : æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ„å‘³ (b:1ã€œ4)
+  æœ«å°¾ãŒ9    (ã€œ9) : è‡ªåˆ†è‡ªèº«ã®ä¸»è¾
+  æœ«å°¾ãŒ90  (ã€œ90) : æ–‡ç¯€ä¸»è¾
 */
 
 #define SIZE               2
 #define NE_TAG_NUMBER      9
 #define NE_POSITION_NUMBER 4
-#define FEATURE_MAX        1024 /* CRL¥Ç¡¼¥¿¤Ë¤ª¤±¤ëºÇÄ¹¤Ï272Ê¸»ú */
-#define TAG_POSITION_NAME  20 /* ºÇÄ¹¤Ï ORGANIZATION:single ¤Ê¤É19Ê¸»ú */
+#define FEATURE_MAX        1024 /* CRLãƒ‡ãƒ¼ã‚¿ã«ãŠã‘ã‚‹æœ€é•·ã¯272æ–‡å­— */
+#define TAG_POSITION_NAME  20 /* æœ€é•·ã¯ ORGANIZATION:single ãªã©19æ–‡å­— */
 #define HEAD               0
 #define MIDDLE             1
 #define TAIL               2
 #define SINGLE             3
-#define SIGX               10 /* SVM¤Î·ë²Ì¤ò³ÎÎ¨¤Ë¶á»÷¤¹¤ë¥·¥°¥â¥¤¥É´Ø¿ô¤Î·¸¿ô */
+#define SIGX               10 /* SVMã®çµæœã‚’ç¢ºç‡ã«è¿‘ä¼¼ã™ã‚‹ã‚·ã‚°ãƒ¢ã‚¤ãƒ‰é–¢æ•°ã®ä¿‚æ•° */
 
 DBM_FILE ne_db;
 char *DBforNE;
@@ -45,17 +45,17 @@ char *Tag_name[] = {
     "DATE", "TIME", "MONEY", "PERCENT", "OTHER", "OPTIONAL", "\0"};
 char *Position_name[] = {
     "head", "middle", "tail", "single", "\0"};
-char *Imi_feature[] = {"ÁÈ¿¥", "¿Í", "¼çÂÎ", "¾ì½ê", "\0"};
+char *Imi_feature[] = {"çµ„ç¹”", "äºº", "ä¸»ä½“", "å ´æ‰€", "\0"};
 char *Chara_name[] = {
-    "´Á»ú", "¤Ò¤é¤¬¤Ê", "¤«¤Ê´Á»ú", "¥«¥¿¥«¥Ê", "µ­¹æ", "±Ñµ­¹æ", "¿ô»ú", "¤½¤ÎÂ¾", "\0"};
+    "æ¼¢å­—", "ã²ã‚‰ãŒãª", "ã‹ãªæ¼¢å­—", "ã‚«ã‚¿ã‚«ãƒŠ", "è¨˜å·", "è‹±è¨˜å·", "æ•°å­—", "ãã®ä»–", "\0"};
 
 struct NE_MANAGER {
-    char feature[FEATURE_MAX];          /* ÁÇÀ­ */
-    int notHEAD;                        /* head, single¤Ë¤Ï¤Ê¤é¤Ê¤¤¾ì¹ç1 */
-    int NEresult;                       /* NE¤Î²òÀÏ·ë²Ì */
-    double prob[NE_MODEL_NUMBER];       /* ³Æ¥¿¥°¡¦¥İ¥¸¥·¥ç¥ó¤È¤Ê¤ë³ÎÎ¨ */
-    double max[NE_MODEL_NUMBER];        /* ¤½¤³¤Ş¤Ç¤ÎºÇÂç¥¹¥³¥¢ */
-    int parent[NE_MODEL_NUMBER];        /* ºÇÂç¥¹¥³¥¢¤Î·ĞÏ© */
+    char feature[FEATURE_MAX];          /* ç´ æ€§ */
+    int notHEAD;                        /* head, singleã«ã¯ãªã‚‰ãªã„å ´åˆ1 */
+    int NEresult;                       /* NEã®è§£æçµæœ */
+    double prob[NE_MODEL_NUMBER];       /* å„ã‚¿ã‚°ãƒ»ãƒã‚¸ã‚·ãƒ§ãƒ³ã¨ãªã‚‹ç¢ºç‡ */
+    double max[NE_MODEL_NUMBER];        /* ãã“ã¾ã§ã®æœ€å¤§ã‚¹ã‚³ã‚¢ */
+    int parent[NE_MODEL_NUMBER];        /* æœ€å¤§ã‚¹ã‚³ã‚¢ã®çµŒè·¯ */
 } NE_mgr[MRPH_MAX];
 
 typedef struct ne_cache {
@@ -67,7 +67,7 @@ typedef struct ne_cache {
 NE_CACHE *ne_cache[TBLSIZE];
 
 /*====================================================================
-		     ¥¿¥°¡¦¥İ¥¸¥·¥ç¥ó¡İ¥³¡¼¥ÉÂĞ±ş
+		     ã‚¿ã‚°ãƒ»ãƒã‚¸ã‚·ãƒ§ãƒ³âˆ’ã‚³ãƒ¼ãƒ‰å¯¾å¿œ
 ====================================================================*/
 void init_tagposition()
 {
@@ -84,7 +84,7 @@ void init_tagposition()
 }
 
 /*====================================================================
-		   ¥¿¥°¡¦¥İ¥¸¥·¥ç¥ó¡İ¥³¡¼¥ÉÂĞ±ş´Ø¿ô
+		   ã‚¿ã‚°ãƒ»ãƒã‚¸ã‚·ãƒ§ãƒ³âˆ’ã‚³ãƒ¼ãƒ‰å¯¾å¿œé–¢æ•°
 ====================================================================*/
 int ne_tagposition_to_code(char *cp)
 {
@@ -161,7 +161,7 @@ char *ne_code_to_tagposition(int num)
        void register_ne_cache(char *key, int NEresult)
 /*==================================================================*/
 {
-    /* NE¤Î²òÀÏ·ë²Ì¤òÅĞÏ¿¤¹¤ë */
+    /* NEã®è§£æçµæœã‚’ç™»éŒ²ã™ã‚‹ */
     int i;
     NE_CACHE **ncpp;
 
@@ -220,8 +220,8 @@ char *ne_code_to_tagposition(int num)
 {
     int i;
 
-    if (mrph_data->Goi && !strncmp(mrph_data->Goi, "¡¦", BYTES4CHAR)) return 5; /* µ­¹æ */
-    for (i = 0; strcmp(Chara_name[i], "¤½¤ÎÂ¾"); i++)
+    if (mrph_data->Goi && !strncmp(mrph_data->Goi, "ãƒ»", BYTES4CHAR)) return 5; /* è¨˜å· */
+    for (i = 0; strcmp(Chara_name[i], "ãã®ä»–"); i++)
 	if (check_feature(mrph_data->f, Chara_name[i]))
             break;
     return i + 1;
@@ -234,12 +234,12 @@ char *ne_code_to_tagposition(int num)
     int i, j, flag = 0;
     char buf[SMALL_DATA_LEN], pos[SMALL_DATA_LEN];
 
-    ret[0] = '\0'; /* ºÆµ¢Åª¤ËÂåÆş¤¹¤ë¤¿¤á */
-    /* ÉÊ»ìÛ£ËæÀ­¤Î¤¢¤ë¾ì¹ç */
+    ret[0] = '\0'; /* å†å¸°çš„ã«ä»£å…¥ã™ã‚‹ãŸã‚ */
+    /* å“è©æ›–æ˜§æ€§ã®ã‚ã‚‹å ´åˆ */
     for (i = 0; i < CLASSIFY_NO + 1; i++) {    
 	for (j = 0; j < CLASSIFY_NO + 1; j++) {
 	    if (!Class[i][j].id) continue;
-	    sprintf(pos, "ÉÊÛ£-%s", Class[i][j].id);   
+	    sprintf(pos, "å“æ›–-%s", Class[i][j].id);   
 	    if (check_feature(mrph_data->f, pos)) {
 		if (OptNECRF) {
 		    sprintf(buf, "%s:%s", ret, Class[i][j].id);
@@ -256,7 +256,7 @@ char *ne_code_to_tagposition(int num)
     	return ret;
     }
     
-    /* ÉÊ»ìÛ£ËæÀ­¤Î¤Ê¤¤¾ì¹ç */
+    /* å“è©æ›–æ˜§æ€§ã®ãªã„å ´åˆ */
     if (OptNECRF) {
 	sprintf(ret, ":%s", Class[mrph_data->Hinshi][mrph_data->Bunrui].id);
 	return ret;
@@ -278,7 +278,7 @@ char *ne_code_to_tagposition(int num)
     NE_CACHE *ncp;
     char buf[SMALL_DATA_LEN2];
 
-    ret[0] = '\0'; /* ºÆµ¢Åª¤ËÂåÆş¤¹¤ë¤¿¤á */
+    ret[0] = '\0'; /* å†å¸°çš„ã«ä»£å…¥ã™ã‚‹ãŸã‚ */
     for (NEresult = 0; NEresult < NE_MODEL_NUMBER - 1; NEresult++) {
 	if (check_ne_cache(key, NEresult)) {
 	    if (OptNECRF) sprintf(buf, "%s:%d", ret, NEresult);
@@ -295,15 +295,15 @@ char *ne_code_to_tagposition(int num)
 {
     int i, j;
     char buf[SMALL_DATA_LEN], *cp;
-    char *feature_name[] = {"¿ÍÌ¾ËöÈø", "ÁÈ¿¥Ì¾ËöÈø", '\0'};
+    char *feature_name[] = {"äººåæœ«å°¾", "çµ„ç¹”åæœ«å°¾", '\0'};
 
-    ret[0] = '\0'; /* ºÆµ¢Åª¤ËÂåÆş¤¹¤ë¤¿¤á */
-    /* Ê¸Àá¸åÊı¤Ë¿ÍÌ¾ËöÈø¡¢ÁÈ¿¥Ì¾ËöÈø¤È¤¤¤¦¸ì¤¬¤¢¤ë¤« */
+    ret[0] = '\0'; /* å†å¸°çš„ã«ä»£å…¥ã™ã‚‹ãŸã‚ */
+    /* æ–‡ç¯€å¾Œæ–¹ã«äººåæœ«å°¾ã€çµ„ç¹”åæœ«å°¾ã¨ã„ã†èªãŒã‚ã‚‹ã‹ */
     for (j = 1;; j++) {
 	if (!(mrph_data + j)->f || 
-	    check_feature((mrph_data + j)->f, "Ê¸Àá»Ï") ||
-	    check_feature((mrph_data + j)->f, "µ­¹æ") ||
-	    check_feature((mrph_data + j)->f, "³ç¸Ì")) break;
+	    check_feature((mrph_data + j)->f, "æ–‡ç¯€å§‹") ||
+	    check_feature((mrph_data + j)->f, "è¨˜å·") ||
+	    check_feature((mrph_data + j)->f, "æ‹¬å¼§")) break;
 	for (i = 0; feature_name[i]; i++) {
 	    if (check_feature((mrph_data + j)->f, feature_name[i])) {
 		if (OptNECRF) sprintf(ret, "H:%s ", feature_name[i]);
@@ -312,7 +312,7 @@ char *ne_code_to_tagposition(int num)
 	}
     }
 
-    /* ¿ÍÌ¾ËöÈø¡¢ÁÈ¿¥Ì¾ËöÈø¤Ç¤¢¤ë¤« */
+    /* äººåæœ«å°¾ã€çµ„ç¹”åæœ«å°¾ã§ã‚ã‚‹ã‹ */
     for (i = 0; feature_name[i]; i++) {
 	if (check_feature(mrph_data->f, feature_name[i])) {
 	    if (OptNECRF) sprintf(buf, "S:%s ", feature_name[i]);
@@ -323,13 +323,13 @@ char *ne_code_to_tagposition(int num)
 
     if (!OptNECRF) return ret;
 
-    /* °Ê²¼¤ÏOptNECRF¤Î¾ì¹ç¤Î¤ß¼Â¹Ô */
+    /* ä»¥ä¸‹ã¯OptNECRFã®å ´åˆã®ã¿å®Ÿè¡Œ */
     if (!ret[0]) sprintf(ret, "NIL ");
 
-    /* ¥«¥Æ¥´¥ê¤Î¾ğÊó */
+    /* ã‚«ãƒ†ã‚´ãƒªã®æƒ…å ± */
     strcat(ret, "CT");
-    if ((cp = check_feature(mrph_data->f, "¥«¥Æ¥´¥ê"))) {
-	strcat(ret, cp + strlen("¥«¥Æ¥´¥ê"));
+    if ((cp = check_feature(mrph_data->f, "ã‚«ãƒ†ã‚´ãƒª"))) {
+	strcat(ret, cp + strlen("ã‚«ãƒ†ã‚´ãƒª"));
     }
     
     return ret;
@@ -342,55 +342,55 @@ char *ne_code_to_tagposition(int num)
     int j, c;
     char buf[WORD_LEN_MAX * 2], *pcp, *ccp, *ncp;
 
-    ret[0] = '\0'; /* ºÆµ¢Åª¤ËÂåÆş¤¹¤ë¤¿¤á */
+    ret[0] = '\0'; /* å†å¸°çš„ã«ä»£å…¥ã™ã‚‹ãŸã‚ */
     if (num != SIZE + 1) return ret;
 
-    if ((pcp = check_feature(mrph_data->f, "£Ô·¸¤êÀè¤Î¼ç¼­"))) {
+    if ((pcp = check_feature(mrph_data->f, "ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾"))) {
 	if (OptNECRF) strcpy(ret, "CS");	
-	if ((ccp = check_feature(mrph_data->f, "·¸"))) {
+	if ((ccp = check_feature(mrph_data->f, "ä¿‚"))) {
 	    if (OptNECRF) {
-		sprintf(buf, "%s:%s", ret, ccp + strlen("·¸") + 1);
+		sprintf(buf, "%s:%s", ret, ccp + strlen("ä¿‚") + 1);
 	    }
 	    else {
-		c = case2num(ccp + strlen("·¸") + 1) + 3;
-		if (!strcmp("·¸:Ì¤³Ê", ccp)) c = 1;
+		c = case2num(ccp + strlen("ä¿‚") + 1) + 3;
+		if (!strcmp("ä¿‚:æœªæ ¼", ccp)) c = 1;
 		sprintf(buf, "%s%d60:1 ", ret, c);	
 	    }
 	    strcpy(ret, buf);	    	    
 	}
-	if (OptNECRF) sprintf(buf, "%s P:%s", ret, pcp + strlen("£Ô·¸¤êÀè¤Î¼ç¼­") + 1);
+	if (OptNECRF) sprintf(buf, "%s P:%s", ret, pcp + strlen("ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾") + 1);
 	else {
-	    ncp = db_get(ne_db, pcp + strlen("£Ô·¸¤êÀè¤Î¼ç¼­") + 1);
+	    ncp = db_get(ne_db, pcp + strlen("ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾") + 1);
 	    sprintf(buf, "%s%s6:1 ", ret, ncp ? ncp : "");	
 	    free(ncp);
 	}
 	strcpy(ret, buf);	    
     }
     
-    /* Ê¸Àá¸åÊı¤Ë¤¢¤ë¤« */
+    /* æ–‡ç¯€å¾Œæ–¹ã«ã‚ã‚‹ã‹ */
     if (!OptNECRF || !strstr(ret, "CS")) {
 	for (j = 1;; j++) {
 	    if (!(mrph_data + j)->f ||
-		check_feature((mrph_data + j)->f, "Ê¸Àá»Ï") ||
-		check_feature((mrph_data + j)->f, "³ç¸Ì")) break;
-	    if ((pcp = check_feature((mrph_data + j)->f, "£Ô·¸¤êÀè¤Î¼ç¼­"))) {
+		check_feature((mrph_data + j)->f, "æ–‡ç¯€å§‹") ||
+		check_feature((mrph_data + j)->f, "æ‹¬å¼§")) break;
+	    if ((pcp = check_feature((mrph_data + j)->f, "ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾"))) {
 		if (OptNECRF) strcpy(ret, "CS");	
-		if ((ccp = check_feature((mrph_data + j)->f, "·¸"))) {
+		if ((ccp = check_feature((mrph_data + j)->f, "ä¿‚"))) {
 		    if (OptNECRF) {
-			sprintf(buf, "%s:%s", ret, ccp + strlen("·¸") + 1);
+			sprintf(buf, "%s:%s", ret, ccp + strlen("ä¿‚") + 1);
 		    }
 		    else {
-			c = case2num(ccp + strlen("·¸") + 1) + 3;
-			if (!strcmp("·¸:Ì¤³Ê", ccp)) c = 1;
+			c = case2num(ccp + strlen("ä¿‚") + 1) + 3;
+			if (!strcmp("ä¿‚:æœªæ ¼", ccp)) c = 1;
 			sprintf(buf, "%s%d70:1 ", ret, c);	
 		    }
 		    strcpy(ret, buf);	    	    
 		}
 		if (OptNECRF) {
-		    sprintf(buf, "%s P:%s", ret, pcp + strlen("£Ô·¸¤êÀè¤Î¼ç¼­") + 1);
+		    sprintf(buf, "%s P:%s", ret, pcp + strlen("ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾") + 1);
 		}
 		else {
-		    ncp = db_get(ne_db, pcp + strlen("£Ô·¸¤êÀè¤Î¼ç¼­") + 1);
+		    ncp = db_get(ne_db, pcp + strlen("ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾") + 1);
 		    sprintf(buf, "%s%s7:1 ", ret, ncp ? ncp : "");	
 		    free(ncp);
 		}
@@ -403,24 +403,24 @@ char *ne_code_to_tagposition(int num)
     if (OptNECRF && !strstr(ret, "P"))
 	strcat(ret, "NIL NIL");
 
-    if (OptNECRF && !(check_feature(mrph_data->f, "Ê¸Àá¼ç¼­") ||
-		      check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) &&
-	!check_feature(mrph_data->f, "£Ô¼ç¼­")) 
+    if (OptNECRF && !(check_feature(mrph_data->f, "æ–‡ç¯€ä¸»è¾") ||
+		      check_feature(mrph_data->f, "ï¼´æ–‡ç¯€ä¸»è¾")) &&
+	!check_feature(mrph_data->f, "ï¼´ä¸»è¾")) 
 	strcat(ret, " NIL");
 
-    if ((pcp = check_feature(mrph_data->f, "£Ô¼ç¼­"))) {
+    if ((pcp = check_feature(mrph_data->f, "ï¼´ä¸»è¾"))) {
 	if (OptNECRF) {
-	    sprintf(buf, "%s H:%s", ret, pcp + strlen("£Ô¼ç¼­") + 1);
+	    sprintf(buf, "%s H:%s", ret, pcp + strlen("ï¼´ä¸»è¾") + 1);
 	}
 	else {
-	    ncp = db_get(ne_db, pcp + strlen("£Ô¼ç¼­") + 1);
+	    ncp = db_get(ne_db, pcp + strlen("ï¼´ä¸»è¾") + 1);
 	    sprintf(buf, "%s%s9:1 ", ret, ncp ? ncp : "");	
 	    free(ncp);
 	}
 	strcpy(ret, buf);	    
     }
-    if (OptNECRF && (check_feature(mrph_data->f, "Ê¸Àá¼ç¼­") ||
-		     check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­"))) {
+    if (OptNECRF && (check_feature(mrph_data->f, "æ–‡ç¯€ä¸»è¾") ||
+		     check_feature(mrph_data->f, "ï¼´æ–‡ç¯€ä¸»è¾"))) {
 	if (strlen(mrph_data->Goi2) < WORD_LEN_MAX / BYTES4CHAR) {
 	    sprintf(buf, "%s S:%s", ret, mrph_data->Goi2);
 	}
@@ -431,19 +431,19 @@ char *ne_code_to_tagposition(int num)
     }
 
     if (OptNECRF) {
-	if (check_feature(mrph_data->f, "Ê¸Àá»Ï") && 
-	    (check_feature(mrph_data->f, "Ê¸Àá¼ç¼­") ||
-	     check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­"))) {
+	if (check_feature(mrph_data->f, "æ–‡ç¯€å§‹") && 
+	    (check_feature(mrph_data->f, "æ–‡ç¯€ä¸»è¾") ||
+	     check_feature(mrph_data->f, "ï¼´æ–‡ç¯€ä¸»è¾"))) {
 	    strcat(ret, " SINGLE");
 	}
-	else if (check_feature(mrph_data->f, "Ê¸Àá»Ï")) {
+	else if (check_feature(mrph_data->f, "æ–‡ç¯€å§‹")) {
 	    strcat(ret, " START");
 	}
-	else if (check_feature(mrph_data->f, "Ê¸Àá¼ç¼­") ||
-		 check_feature(mrph_data->f, "£ÔÊ¸Àá¼ç¼­")) {
+	else if (check_feature(mrph_data->f, "æ–‡ç¯€ä¸»è¾") ||
+		 check_feature(mrph_data->f, "ï¼´æ–‡ç¯€ä¸»è¾")) {
 	    strcat(ret, " END");
 	}
-	else if (check_feature(mrph_data->f, "£Ô¼ç¼­")) {
+	else if (check_feature(mrph_data->f, "ï¼´ä¸»è¾")) {
 	    strcat(ret, " INTER");
 	}
 	else {
@@ -461,22 +461,22 @@ char *ne_code_to_tagposition(int num)
     int i, j;
     char buf[SMALL_DATA_LEN2], cp[WORD_LEN_MAX];
 
-    ret[0] = '\0'; /* ºÆµ¢Åª¤ËÂåÆş¤¹¤ë¤¿¤á */
+    ret[0] = '\0'; /* å†å¸°çš„ã«ä»£å…¥ã™ã‚‹ãŸã‚ */
     if (num != SIZE + 1) return ret;
 
-    /* ÁÈ¿¥¡¢¿Í¡¢¼çÂÎ¡¢¾ì½ê */
+    /* çµ„ç¹”ã€äººã€ä¸»ä½“ã€å ´æ‰€ */
     for (i = 0; i < 4; i++) {
-	sprintf (cp, "°ÕÌ£-%s", Imi_feature[i]);
-	/* °ÕÌ£ÁÇÀ­¤¬¤¢¤ë¤« */
+	sprintf (cp, "æ„å‘³-%s", Imi_feature[i]);
+	/* æ„å‘³ç´ æ€§ãŒã‚ã‚‹ã‹ */
 	if (check_feature(mrph_data->f, cp)) {
 	    sprintf(buf, "%s%d180:1 ", ret, i + 1);
 	    strcpy(ret, buf);
 	}
-	/* Ê¸Àá¸åÊı¤Ë¤¢¤ë¤« */
+	/* æ–‡ç¯€å¾Œæ–¹ã«ã‚ã‚‹ã‹ */
 	for (j = 1;; j++) {
 	    if (!(mrph_data + j)->f ||
-		check_feature((mrph_data + j)->f, "Ê¸Àá»Ï") ||
-		check_feature((mrph_data + j)->f, "³ç¸Ì")) break;
+		check_feature((mrph_data + j)->f, "æ–‡ç¯€å§‹") ||
+		check_feature((mrph_data + j)->f, "æ‹¬å¼§")) break;
 	    if (check_feature((mrph_data + j)->f, cp)) {
 		sprintf(buf, "%s%d280:1 ", ret, i + 1);
 		strcpy(ret, buf);
@@ -485,19 +485,19 @@ char *ne_code_to_tagposition(int num)
 	}
     }
 
-    /* ¸ÇÍ­É½¸½ */
+    /* å›ºæœ‰è¡¨ç¾ */
     for (i = 0; i < NE_TAG_NUMBER - 1; i++) {
-	sprintf (cp, "°ÕÌ£-%s", Tag_name[i]);
-	/* °ÕÌ£ÁÇÀ­¤¬¤¢¤ë¤« */
+	sprintf (cp, "æ„å‘³-%s", Tag_name[i]);
+	/* æ„å‘³ç´ æ€§ãŒã‚ã‚‹ã‹ */
 	if (check_feature(mrph_data->f, cp)) {
 	    sprintf(buf, "%s%d380:1 ", ret, i + 1);
 	    strcpy(ret, buf);
 	}
-	/* Ê¸Àá¸åÊı¤Ë¤¢¤ë¤« */
+	/* æ–‡ç¯€å¾Œæ–¹ã«ã‚ã‚‹ã‹ */
 	for (j = 1;; j++) {
 	    if (!(mrph_data + j)->f ||
-		check_feature((mrph_data + j)->f, "Ê¸Àá»Ï") ||
-		check_feature((mrph_data + j)->f, "³ç¸Ì")) break;
+		check_feature((mrph_data + j)->f, "æ–‡ç¯€å§‹") ||
+		check_feature((mrph_data + j)->f, "æ‹¬å¼§")) break;
 	    if (check_feature((mrph_data + j)->f, cp)) {
 		sprintf(buf, "%s%d480:1 ", ret, i + 1);
 		strcpy(ret, buf);
@@ -530,21 +530,21 @@ char *ne_code_to_tagposition(int num)
 	get_parent(s[2], sp->mrph_data + i, SIZE + 1);
 	get_cache(s[3], sp->mrph_data[i].Goi2, 0);
 	
-	/* ¸«½Ğ¤· ÉÊ»ì ÉÊ»ìºÙÊ¬Îà ÉÊ»ìÛ£ËæÀ­ Ê¸»ú¼ï Ê¸»ú¿ô
-	   (É½ÁØ³Ê ·¸¤êÀè¤Î¼ç¼­ ¼ç¼­ Ê¸ÀáÆâ°ÌÃÖ) ¥­¥ã¥Ã¥·¥å */
-	/* feature¤Ï1024»ú¤Ş¤Ç */
+	/* è¦‹å‡ºã— å“è© å“è©ç´°åˆ†é¡ å“è©æ›–æ˜§æ€§ æ–‡å­—ç¨® æ–‡å­—æ•°
+	   (è¡¨å±¤æ ¼ ä¿‚ã‚Šå…ˆã®ä¸»è¾ ä¸»è¾ æ–‡ç¯€å†…ä½ç½®) ã‚­ãƒ£ãƒƒã‚·ãƒ¥ */
+	/* featureã¯1024å­—ã¾ã§ */
 	sprintf(NE_mgr[i].feature, "%s %s %s A%s %s L:%d %s %s C%s",
 		(strlen(sp->mrph_data[i].Goi2) < WORD_LEN_MAX / BYTES4CHAR) ? 
-		sp->mrph_data[i].Goi2 : "LONG_WORD", /* MAX 64Ê¸»ú */
-		Class[sp->mrph_data[i].Hinshi][0].id, /* MAX 8+1Ê¸»ú(Ì¤ÄêµÁ¸ì) */
+		sp->mrph_data[i].Goi2 : "LONG_WORD", /* MAX 64æ–‡å­— */
+		Class[sp->mrph_data[i].Hinshi][0].id, /* MAX 8+1æ–‡å­—(æœªå®šç¾©èª) */
 		Class[sp->mrph_data[i].Hinshi][sp->mrph_data[i].Bunrui].id,
-		/* MAX 18+1Ê¸»ú (·ÁÍÆ»ìÀ­½Ò¸ìÀÜÈø¼­) */
-		s[0], /* MAX 22+2Ê¸»ú? (³Ê½õ»ì:ÀÜÂ³½õ»ì:¤½¤ÎÂ¾) */
-		Chara_name[get_chara(sp->mrph_data + i) - 1], /* MAX 8+1Ê¸»ú (¤Ò¤é¤¬¤Ê) */
-		strlen(sp->mrph_data[i].Goi2) / BYTES4CHAR, /* MAX 3+2Ê¸»ú */
-		s[1], /* MAX 128Ê¸»ú */ 
-		s[2], /* MAX 256»ú */
-		OptNEcache ? "" : s[3]  /* MAX 256Ê¸»ú */
+		/* MAX 18+1æ–‡å­— (å½¢å®¹è©æ€§è¿°èªæ¥å°¾è¾) */
+		s[0], /* MAX 22+2æ–‡å­—? (æ ¼åŠ©è©:æ¥ç¶šåŠ©è©:ãã®ä»–) */
+		Chara_name[get_chara(sp->mrph_data + i) - 1], /* MAX 8+1æ–‡å­— (ã²ã‚‰ãŒãª) */
+		strlen(sp->mrph_data[i].Goi2) / BYTES4CHAR, /* MAX 3+2æ–‡å­— */
+		s[1], /* MAX 128æ–‡å­— */ 
+		s[2], /* MAX 256å­— */
+		OptNEcache ? "" : s[3]  /* MAX 256æ–‡å­— */
 	    );
     }
 }
@@ -559,10 +559,10 @@ char *ne_code_to_tagposition(int num)
     for (i = 0; i < sp->Mrph_num; i++) {
 	buf[0] = '\0';
 	
-	/* ³ç¸Ì»Ï¤ò½ü¤¯µ­¹æ¤Ï¸ÇÍ­É½¸½¤ÎÀèÆ¬¤Ë¤Ï¤Ê¤é¤Ê¤¤(¥ë¡¼¥ë)  */
+	/* æ‹¬å¼§å§‹ã‚’é™¤ãè¨˜å·ã¯å›ºæœ‰è¡¨ç¾ã®å…ˆé ­ã«ã¯ãªã‚‰ãªã„(ãƒ«ãƒ¼ãƒ«)  */
 	NE_mgr[i].notHEAD = 0;
 	if (get_chara(sp->mrph_data + i) == 5 &&
-	    !check_feature(sp->mrph_data[i].f, "³ç¸Ì»Ï"))
+	    !check_feature(sp->mrph_data[i].f, "æ‹¬å¼§å§‹"))
 	    NE_mgr[i].notHEAD = 1;
 	
 	for (j = i - SIZE; j <= i + SIZE; j++) {
@@ -571,15 +571,15 @@ char *ne_code_to_tagposition(int num)
 
 	    k = i - j + SIZE + 1;           
 	    id = db_get(ne_db, sp->mrph_data[j].Goi2);
-	    get_pos(s[0], sp->mrph_data + j, k);       /* ËöÈø¶õÇò */
-	    get_cache(s[1], sp->mrph_data[j].Goi2, k); /* ËöÈø¶õÇò */
-	    get_feature(s[2], sp->mrph_data + j, k);   /* ËöÈø¶õÇò */
-	    get_parent(s[3], sp->mrph_data + j, k);    /* ËöÈø¶õÇò */
-	    get_imi(s[4], sp->mrph_data + j, k);       /* ËöÈø¶õÇò */
-	    check_feature(sp->mrph_data[j].f, "Ê¸Àá»Ï") ? 
-		sprintf(bnstb, "%d00:1 ", k) : (bnstb[0] = '\0');   /* ËöÈø¶õÇò */
-	    check_feature(sp->mrph_data[j].f, "£ÔÊ¸Àá¼ç¼­") ? 
-		sprintf(bnsth, "%d90:1 ", k) : (bnsth[0] = '\0');   /* ËöÈø¶õÇò */
+	    get_pos(s[0], sp->mrph_data + j, k);       /* æœ«å°¾ç©ºç™½ */
+	    get_cache(s[1], sp->mrph_data[j].Goi2, k); /* æœ«å°¾ç©ºç™½ */
+	    get_feature(s[2], sp->mrph_data + j, k);   /* æœ«å°¾ç©ºç™½ */
+	    get_parent(s[3], sp->mrph_data + j, k);    /* æœ«å°¾ç©ºç™½ */
+	    get_imi(s[4], sp->mrph_data + j, k);       /* æœ«å°¾ç©ºç™½ */
+	    check_feature(sp->mrph_data[j].f, "æ–‡ç¯€å§‹") ? 
+		sprintf(bnstb, "%d00:1 ", k) : (bnstb[0] = '\0');   /* æœ«å°¾ç©ºç™½ */
+	    check_feature(sp->mrph_data[j].f, "ï¼´æ–‡ç¯€ä¸»è¾") ? 
+		sprintf(bnsth, "%d90:1 ", k) : (bnsth[0] = '\0');   /* æœ«å°¾ç©ºç™½ */
 	    
 	    sprintf(buf, "%s%s%d:1 %s%s%s%d%d20:1 %s%s%d%d50:1 %s%s",
 		    buf, id ? id : "", k,
@@ -595,7 +595,7 @@ char *ne_code_to_tagposition(int num)
 	    free(id);
 	}
 
-	/* svm_light¤Ç¤ÏÁÇÀ­¤¬¾º½ç¤Ç¤¢¤ëÉ¬Í×¤¬¤¢¤ë¤¿¤á¥½¡¼¥È¤¹¤ë */
+	/* svm_lightã§ã¯ç´ æ€§ãŒæ˜‡é †ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹ãŸã‚ã‚½ãƒ¼ãƒˆã™ã‚‹ */
 	for (j = 0, cp = buf; sscanf(cp, "%d:1", &(f[j])); j++) {
 	    if (!(cp = strstr(cp, " "))) break;
 	    cp++;
@@ -629,8 +629,8 @@ char *ne_code_to_tagposition(int num)
 	}
 	else {
 	    if (OptNECRF) {
-		/* CRF¤Î³Ø½¬·ë²Ì¤ÎÊ¸»ú¤È¤·¤Æ¤Î¥½¡¼¥È½ç¤È¡¢¿ô»ú¤È¤·¤Æ¤Î¥½¡¼¥È½ç¤ò°ìÃ×¤µ¤»¤ë¤¿¤á
-		   code¤Ë100¤òÂ­¤·¤Æ¤¤¤ë */
+		/* CRFã®å­¦ç¿’çµæœã®æ–‡å­—ã¨ã—ã¦ã®ã‚½ãƒ¼ãƒˆé †ã¨ã€æ•°å­—ã¨ã—ã¦ã®ã‚½ãƒ¼ãƒˆé †ã‚’ä¸€è‡´ã•ã›ã‚‹ãŸã‚
+		   codeã«100ã‚’è¶³ã—ã¦ã„ã‚‹ */
 		fprintf(stderr, "%s %d\n", NE_mgr[i].feature, code + 100);
 	    }
 	    else {
@@ -658,7 +658,7 @@ char *ne_code_to_tagposition(int num)
 	    if (OptDisplayNE == OPT_DEBUG)
 		fprintf(stderr, "%d %s\t%s\n", i, sp->mrph_data[i].Goi2, NE_mgr[i].feature);
 #ifdef IO_ENCODING_SJIS
-            /* SJISÈÇ¤ÏEUC¤Î¥â¥Ç¥ë¥Õ¥¡¥¤¥ë¤òÍÑ¤¤¤ë */
+            /* SJISç‰ˆã¯EUCã®ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ç”¨ã„ã‚‹ */
             EUCbuffer = toStringEUC(NE_mgr[i].feature);
 	    crf_add(EUCbuffer);
             free(EUCbuffer);
@@ -678,7 +678,7 @@ char *ne_code_to_tagposition(int num)
 	    if (NE_mgr[i].notHEAD && 
 		j  != NE_MODEL_NUMBER - 1 &&
 		(j % 4 == HEAD || j % 4 == SINGLE)) {
-		NE_mgr[i].prob[j] = 0; /* ¥Ò¥å¡¼¥ê¥¹¥Æ¥£¥Ã¥¯¥ë¡¼¥ë */
+		NE_mgr[i].prob[j] = 0; /* ãƒ’ãƒ¥ãƒ¼ãƒªã‚¹ãƒ†ã‚£ãƒƒã‚¯ãƒ«ãƒ¼ãƒ« */
 	    }
 	    else {
 #ifdef USE_CRF
@@ -706,7 +706,7 @@ char *ne_code_to_tagposition(int num)
 		  int constraint(int pre, int self, int last)
 /*==================================================================*/
 {
-    /* Á°¸å¤ËÍè¤ì¤ë¥¿¥°¤ÎÀ©Ìó¤Ë°ãÈ¿¤¹¤ì¤Ğ1¤òÊÖ¤¹  */
+    /* å‰å¾Œã«æ¥ã‚Œã‚‹ã‚¿ã‚°ã®åˆ¶ç´„ã«é•åã™ã‚Œã°1ã‚’è¿”ã™  */
     if (pre  == NE_MODEL_NUMBER - 1) pre  += 3;
     if (self == NE_MODEL_NUMBER - 1) self += 3;
 
@@ -736,15 +736,15 @@ char *ne_code_to_tagposition(int num)
     for (i = 0; i < sp->Mrph_num; i++) {
 	for (j = 0; j < NE_MODEL_NUMBER; j++) {
 
-	    /* Ê¸Æ¬¤Î¾ì¹ç */
+	    /* æ–‡é ­ã®å ´åˆ */
 	    if (i == 0) {
 		if (constraint(-1, j, 0)) continue;
 		NE_mgr[i].max[j] = NE_mgr[i].prob[j];
-		NE_mgr[i].parent[j] = -1; /* Ê¸Æ¬ */
+		NE_mgr[i].parent[j] = -1; /* æ–‡é ­ */
 		continue;
 	    }
 
-	    /* Ê¸Æ¬¡¢Ê¸Ëö°Ê³° */
+	    /* æ–‡é ­ã€æ–‡æœ«ä»¥å¤– */
 	    NE_mgr[i].max[j] = 0;
 	    for (k = 0; k < NE_MODEL_NUMBER; k++) {
 		if (i == sp->Mrph_num - 1) {
@@ -754,7 +754,7 @@ char *ne_code_to_tagposition(int num)
 		    if (constraint(k, j, 0)) continue;
 		}
 		score = NE_mgr[i-1].max[k]*NE_mgr[i].prob[j];
-		if (score > NE_mgr[i].max[j]) { /* Æ±ÅÀ¤Î¾ì¹ç¤ÏÌµ»ë */
+		if (score > NE_mgr[i].max[j]) { /* åŒç‚¹ã®å ´åˆã¯ç„¡è¦– */
 		    NE_mgr[i].max[j] = score;
 		    NE_mgr[i].parent[j] = k;
 		}
@@ -780,9 +780,9 @@ char *ne_code_to_tagposition(int num)
     int i;
     char cp[WORD_LEN_MAX];
 
-    /* ·ÁÂÖÁÇ¤ËÉÕÍ¿ */
+    /* å½¢æ…‹ç´ ã«ä»˜ä¸ */
     for (i = 0; i < sp->Mrph_num; i++) {
-	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue; /* OTHER¤Î¾ì¹ç */
+	if (NE_mgr[i].NEresult == NE_MODEL_NUMBER -1) continue; /* OTHERã®å ´åˆ */
 	sprintf(cp, "NE:%s", ne_code_to_tagposition(NE_mgr[i].NEresult));
 	assign_cfeature(&(sp->mrph_data[i].f), cp, FALSE);
     }
@@ -796,20 +796,20 @@ char *ne_code_to_tagposition(int num)
     char cp[WORD_LEN_MAX * 16];
     char cp_nai[WORD_LEN_MAX * 16];
 
-    /* ¥¿¥°¤ËÉÕÍ¿ */
-    for (j = 0; j < sp->Tag_num; j++) { /* Æ±°ì¥¿¥°¤Î¸ÇÍ­É½¸½¤Ï°ì¼ïÎà¤Ş¤Ç */
+    /* ã‚¿ã‚°ã«ä»˜ä¸ */
+    for (j = 0; j < sp->Tag_num; j++) { /* åŒä¸€ã‚¿ã‚°ã®å›ºæœ‰è¡¨ç¾ã¯ä¸€ç¨®é¡ã¾ã§ */
 	for (i = 0; i < sp->tag_data[j].mrph_num; i++) {
 	    if (check_feature((sp->tag_data[j].mrph_ptr + i)->f, "NE")) break;
 	}
-	/* ÂĞ¾İ¤Î¥¿¥°¤Ë¸ÇÍ­É½¸½¤¬Ìµ¤±¤ì¤Ğ¼¡¤Î¥¿¥°¤Ø */
+	/* å¯¾è±¡ã®ã‚¿ã‚°ã«å›ºæœ‰è¡¨ç¾ãŒç„¡ã‘ã‚Œã°æ¬¡ã®ã‚¿ã‚°ã¸ */
 	if (i == sp->tag_data[j].mrph_num) continue;
 
-	/* ORGANIZATION¡¢PERSON¤Î¾ì¹ç¤Ï°ÕÌ£ÁÇ¤È¤·¤ÆÍ¿¤¨¤ë */
+	/* ORGANIZATIONã€PERSONã®å ´åˆã¯æ„å‘³ç´ ã¨ã—ã¦ä¸ãˆã‚‹ */
 	if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4], "ORGANIZATION")) {
-	    assign_sm((BNST_DATA *)(sp->tag_data +j), "ÁÈ¿¥");
+	    assign_sm((BNST_DATA *)(sp->tag_data +j), "çµ„ç¹”");
 	}
 	else if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4], "PERSON")) {
-	    assign_sm((BNST_DATA *)(sp->tag_data + j), "¿Í");
+	    assign_sm((BNST_DATA *)(sp->tag_data + j), "äºº");
 	}
  
 	sprintf(cp, "NE:%s:",
@@ -839,11 +839,11 @@ char *ne_code_to_tagposition(int num)
 		assign_cfeature(&(sp->tag_data[j].f), cp, FALSE);
 		break;
 	    }
-	    /* Ê£¿ô¤Î¥¿¥°¤Ë¤Ş¤¿¤¬¤Ã¤Æ¤¤¤ë¾ì¹ç¤Ï¼¡¤Î¥¿¥°¤Ë¿Ê¤à */
+	    /* è¤‡æ•°ã®ã‚¿ã‚°ã«ã¾ãŸãŒã£ã¦ã„ã‚‹å ´åˆã¯æ¬¡ã®ã‚¿ã‚°ã«é€²ã‚€ */
 	    i++;
 	    if (i == sp->tag_data[j].mrph_num) {
 		i = 0;
-		sprintf(cp_nai, "NEÆâ:%s",
+		sprintf(cp_nai, "NEå†…:%s",
 			Tag_name[get_mrph_ne((sp->tag_data[j].mrph_ptr + i)->f) / 4]);
 		assign_cfeature(&(sp->tag_data[j].f), cp_nai, FALSE);
 		j++;
@@ -867,13 +867,13 @@ char *ne_code_to_tagposition(int num)
 	output_feature(sp);
     }
     else {
-	/* ¥â¥Ç¥ë¤òÅ¬ÍÑ */
+	/* ãƒ¢ãƒ‡ãƒ«ã‚’é©ç”¨ */
 	apply_model(sp);
-	/* Ê¸Á´ÂÎ¤ÇºÇÅ¬²½ */
+	/* æ–‡å…¨ä½“ã§æœ€é©åŒ– */
 	viterbi(sp);
-	/* ·ë²Ì¤òÉÕÍ¿ */
+	/* çµæœã‚’ä»˜ä¸ */
 	assign_ne_feature_mrph(sp);
-	/* ¿ÍÌ¾¤ò¤Ò¤È¤Ä¤Î¥¿¥°¤Ë¤¹¤ë¤¿¤á¤Î¥ë¡¼¥ë¤òÆÉ¤à */
+	/* äººåã‚’ã²ã¨ã¤ã®ã‚¿ã‚°ã«ã™ã‚‹ãŸã‚ã®ãƒ«ãƒ¼ãƒ«ã‚’èª­ã‚€ */
 	assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
     }
 }
@@ -900,7 +900,7 @@ char *ne_code_to_tagposition(int num)
 	}  
 	NE_mgr[i].NEresult = code;
     }
-    /* ¿ÍÌ¾¤ò¤Ò¤È¤Ä¤Î¥¿¥°¤Ë¤¹¤ë¤¿¤á¤Î¥ë¡¼¥ë¤òÆÉ¤à */
+    /* äººåã‚’ã²ã¨ã¤ã®ã‚¿ã‚°ã«ã™ã‚‹ãŸã‚ã®ãƒ«ãƒ¼ãƒ«ã‚’èª­ã‚€ */
     assign_general_feature(sp->mrph_data, sp->Mrph_num, NeMorphRuleType, FALSE, FALSE);
 }
 
@@ -908,68 +908,68 @@ char *ne_code_to_tagposition(int num)
 	    void for_ne_analysis(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ¹½Ê¸¡¦³Ê²òÀÏ·ë²Ì¤«¤é¡¢¸ÇÍ­É½¸½²òÀÏÍÑ¤Îfeature¤òÉÕÍ¿¤¹¤ë */
+    /* æ§‹æ–‡ãƒ»æ ¼è§£æçµæœã‹ã‚‰ã€å›ºæœ‰è¡¨ç¾è§£æç”¨ã®featureã‚’ä»˜ä¸ã™ã‚‹ */
    
     int i, j, k, l, num;
     char cp[WORD_LEN_MAX];
     CF_PRED_MGR *cpm_ptr;
 
-    /* ¼ç¼­¤Î¾ğÊó */
+    /* ä¸»è¾ã®æƒ…å ± */
     for (j = 0; j < sp->Bnst_num - 1; j++) {
-	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), "£ÔÊ¸Àá¼ç¼­", FALSE);
+	assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), "ï¼´æ–‡ç¯€ä¸»è¾", FALSE);
 
 	(strlen((sp->bnst_data[j].head_ptr)->Goi) < WORD_LEN_MAX / BYTES4CHAR) ? 
-	    sprintf(cp, "£Ô¼ç¼­:%s", (sp->bnst_data[j].head_ptr)->Goi) :
-	    sprintf(cp, "£Ô¼ç¼­:LONG_WORD");
+	    sprintf(cp, "ï¼´ä¸»è¾:%s", (sp->bnst_data[j].head_ptr)->Goi) :
+	    sprintf(cp, "ï¼´ä¸»è¾:LONG_WORD");
 	for (i = 1; (sp->bnst_data[j].head_ptr - i)->f; i++) {
 	    if (!(sp->bnst_data[j].head_ptr - i)->f ||
-		check_feature((sp->bnst_data[j].head_ptr - i + 1)->f, "Ê¸Àá»Ï")) break;
+		check_feature((sp->bnst_data[j].head_ptr - i + 1)->f, "æ–‡ç¯€å§‹")) break;
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr - i)->f), cp, FALSE);
 	}
     }
 
-    /* ¿Æ¤Î¾ğÊó */
+    /* è¦ªã®æƒ…å ± */
     if (!OptNEparent) {
-	/* Ê¸Àá¤òÁ°¤«¤é¥Á¥§¥Ã¥¯ */
+	/* æ–‡ç¯€ã‚’å‰ã‹ã‚‰ãƒã‚§ãƒƒã‚¯ */
 	for (j = 0; j < sp->Bnst_num - 1; j++) {	    
 	    (strlen((sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) < WORD_LEN_MAX / BYTES4CHAR) ? 
-		sprintf(cp, "£Ô·¸¤êÀè¤Î¼ç¼­:%s",
+		sprintf(cp, "ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾:%s",
 			 (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) :
-		sprintf(cp, "£Ô·¸¤êÀè¤Î¼ç¼­:LONG_WORD");
+		sprintf(cp, "ï¼´ä¿‚ã‚Šå…ˆã®ä¸»è¾:LONG_WORD");
 			 
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), 
-			    check_feature(sp->bnst_data[j].f, "·¸"), FALSE);    
+			    check_feature(sp->bnst_data[j].f, "ä¿‚"), FALSE);    
 	}
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î°ÕÌ£¾ğÊó */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ„å‘³æƒ…å ± */
     if (OptNEcase) {
-	/* ¥¿¥°¤ò¸å¤«¤é¥Á¥§¥Ã¥¯ */
+	/* ã‚¿ã‚°ã‚’å¾Œã‹ã‚‰ãƒã‚§ãƒƒã‚¯ */
 	for (j = sp->Tag_num - 1; j > 0 ; j--) {
 	    if (!(cpm_ptr = sp->tag_data[j].cpm_ptr)) continue;
 
 	    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 		num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 
-		/* Á°Êı¤ËÂ¸ºß¤·¡¢¼ç¼­¤ÎÄ¾¸å¤Ë½õ»ì¤¬Íè¤ë¾ì¹ç¤Î¤ß */
+		/* å‰æ–¹ã«å­˜åœ¨ã—ã€ä¸»è¾ã®ç›´å¾Œã«åŠ©è©ãŒæ¥ã‚‹å ´åˆã®ã¿ */
 		if (((cpm_ptr->elem_b_ptr[i])->head_ptr + 1)->Hinshi != 9 ||
 		    cpm_ptr->elem_b_ptr[i]->num > j) continue;
 		
-		/* ÁÈ¿¥¡¢¿Í¡¢¼çÂÎ¡¢¾ì½ê */
+		/* çµ„ç¹”ã€äººã€ä¸»ä½“ã€å ´æ‰€ */
 		for (k = 0; k < 4; k++) {
 		    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], 
 					 Imi_feature[k], TRUE)) {
-			sprintf (cp, "°ÕÌ£-%s", Imi_feature[k]);
+			sprintf (cp, "æ„å‘³-%s", Imi_feature[k]);
 			assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), 
 					cp, FALSE);
 		    }
 		}
-		/* ¸ÇÍ­É½¸½ */
+		/* å›ºæœ‰è¡¨ç¾ */
 		for (k = 0; k < NE_TAG_NUMBER - 1; k++) {
 		    if (cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], 
 					 Tag_name[k], TRUE)) {
-			sprintf (cp, "°ÕÌ£-%s", Tag_name[k]);
+			sprintf (cp, "æ„å‘³-%s", Tag_name[k]);
 			assign_cfeature(&((cpm_ptr->elem_b_ptr[i])->head_ptr->f), 
 					cp, FALSE);
 		    }
@@ -983,9 +983,9 @@ char *ne_code_to_tagposition(int num)
 int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
 /*==================================================================*/
 {
-    /* ¸ÇÍ­É½¸½(ORGANIZATION)¤È */
-    /* ¶¦»²¾È´Ø·¸¤Ë¤¢¤ë¤ÈÈ½ÃÇ¤µ¤ì¤¿¸ÇÍ­É½¸½¥¿¥°¤ÎÉÕÍ¿¤µ¤ì¤Æ¤¤¤Ê¤¤É½¸½¤Ë */
-    /* ¸ÇÍ­É½¸½¥¿¥°¤òÉÕÍ¿¤¹¤ë */
+    /* å›ºæœ‰è¡¨ç¾(ORGANIZATION)ã¨ */
+    /* å…±å‚ç…§é–¢ä¿‚ã«ã‚ã‚‹ã¨åˆ¤æ–­ã•ã‚ŒãŸå›ºæœ‰è¡¨ç¾ã‚¿ã‚°ã®ä»˜ä¸ã•ã‚Œã¦ã„ãªã„è¡¨ç¾ã« */
+    /* å›ºæœ‰è¡¨ç¾ã‚¿ã‚°ã‚’ä»˜ä¸ã™ã‚‹ */
    
     int start, end, ne_tag, j, k;
     char cp[WORD_LEN_MAX], word[WORD_LEN_MAX];
@@ -993,27 +993,27 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
     if (strlen(anaphor) == BYTES4CHAR) return 0;
 
     for (ne_tag = 0; ne_tag < NE_TAG_NUMBER; ne_tag++) {
-	/* ¤É¤Î¥¿¥°¤Ç¤¢¤ë¤«¤ò"NE:"¤ËÂ³¤¯4Ê¸»ú¤ÇÈ½ÃÇ¤¹¤ë */
+	/* ã©ã®ã‚¿ã‚°ã§ã‚ã‚‹ã‹ã‚’"NE:"ã«ç¶šã4æ–‡å­—ã§åˆ¤æ–­ã™ã‚‹ */
 	if (!strncmp(ne + 3, Tag_name[ne_tag], 4)) break;
     }
 
-    /* ORGANIZATION¡¢PERSON¤Î¾ì¹ç¤Î¤ß */
+    /* ORGANIZATIONã€PERSONã®å ´åˆã®ã¿ */
     if (strcmp(Tag_name[ne_tag], "ORGANIZATION") &&
 	(strcmp(Tag_name[ne_tag], "PERSON") || !yomi_flag)) return 0;
 
-    end = (sp->tag_data + i)->head_ptr - sp->mrph_data;  /* ÀÜÈø¼­¤ò´Ş¤à¤â¤Î¤Ë¤ÏÌ¤ÂĞ±ş */
-    if (check_feature(((sp->tag_data + i)->head_ptr)->f, "µ­¹æ")) end--;
+    end = (sp->tag_data + i)->head_ptr - sp->mrph_data;  /* æ¥å°¾è¾ã‚’å«ã‚€ã‚‚ã®ã«ã¯æœªå¯¾å¿œ */
+    if (check_feature(((sp->tag_data + i)->head_ptr)->f, "è¨˜å·")) end--;
     
     for (start = end; start >= 0; start--) {
 	word[0] = '\0';
 	for (k = start; k <= end; k++) {
-	    strcat(word, (sp->mrph_data + k)->Goi2); /* Àè¹Ô»ì¸õÊä */
+	    strcat(word, (sp->mrph_data + k)->Goi2); /* å…ˆè¡Œè©å€™è£œ */
 	}
 	if (!strcmp(word, anaphor)) break;
     }    
     if (strcmp(word, anaphor)) return 0;
 
-    /* ·ÁÂÖÁÇ¤ËÉÕÍ¿¡¢NEresult¤Ëµ­Ï¿ */
+    /* å½¢æ…‹ç´ ã«ä»˜ä¸ã€NEresultã«è¨˜éŒ² */
     if ((j = start) == end) {
 	sprintf(cp, "NE:%s:single", Tag_name[ne_tag]);
 	assign_cfeature(&(sp->mrph_data[j].f), cp, FALSE);
@@ -1037,20 +1037,20 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
 	}
     }
 
-    /* ORGANIZATION¡¢PERSON¤Î¾ì¹ç¤Ï°ÕÌ£ÁÇ¤È¤·¤ÆÍ¿¤¨¤ë */
+    /* ORGANIZATIONã€PERSONã®å ´åˆã¯æ„å‘³ç´ ã¨ã—ã¦ä¸ãˆã‚‹ */
     if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[i].head_ptr)->f) / 4],
 		"ORGANIZATION")) {
-	assign_sm((BNST_DATA *)(sp->tag_data + i), "ÁÈ¿¥");
+	assign_sm((BNST_DATA *)(sp->tag_data + i), "çµ„ç¹”");
     }
     else if (!strcmp(Tag_name[get_mrph_ne((sp->tag_data[i].head_ptr)->f) / 4],
 		     "PERSON")) {
-	assign_sm((BNST_DATA *)(sp->tag_data + i), "¿Í");
+	assign_sm((BNST_DATA *)(sp->tag_data + i), "äºº");
     }
 
-    /* ¥¿¥°¤ËÉÕÍ¿ */
+    /* ã‚¿ã‚°ã«ä»˜ä¸ */
     sprintf(cp, "NE:%s:%s", Tag_name[ne_tag], anaphor);
     assign_cfeature(&(sp->tag_data[i].f), cp, FALSE);  
-    sprintf(cp, "NEÆâ:%s", Tag_name[ne_tag]);
+    sprintf(cp, "NEå†…:%s", Tag_name[ne_tag]);
     for (k = 0; start < sp->tag_data[i - k].mrph_ptr - sp->mrph_data;) {
 	k++;
 	assign_cfeature(&(sp->tag_data[i - k].f), cp, FALSE);
@@ -1066,7 +1066,7 @@ int ne_corefer(SENTENCE_DATA *sp, int i, char *anaphor, char *ne, int yomi_flag)
     int i, ne_tag;
     char *cp;
 
-    /* ³Æ·ÁÂÖÁÇ¤Î¾ğÊó¤òµ­²± */
+    /* å„å½¢æ…‹ç´ ã®æƒ…å ±ã‚’è¨˜æ†¶ */
     for (i = 0; i < sp->Mrph_num; i++) {
 	register_ne_cache(sp->mrph_data[i].Goi2, NE_mgr[i].NEresult);
     }

@@ -165,7 +165,7 @@ extern int	LocationOrder[][LOC_NUMBER];
 
 extern SMLIST	smlist[];
 
-/* ³Æ¼ï¥¹¥³¥¢, ¥³¥¹¥È */
+/* å„ç¨®ã‚¹ã‚³ã‚¢, ã‚³ã‚¹ãƒˆ */
 extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;
 extern int	PrintFrequency;
@@ -191,7 +191,7 @@ extern int Language;
 
 extern int sen_num;
 
-/* ´Ø¿ô¥×¥í¥È¥¿¥¤¥× */
+/* é–¢æ•°ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ— */
 
 /* anaphora.c */
 extern void assign_mrph_num(SENTENCE_DATA *sp);
@@ -395,7 +395,7 @@ extern void delete_cfeature(FEATURE **fpp, char *type);
 extern void delete_alt_feature(FEATURE **fpp);
 extern void delete_cfeature_from_mrphs(MRPH_DATA *m_ptr, int length, char *type);
 extern void copy_feature(FEATURE **dst_fpp, FEATURE *src_fp);
-extern int check_str_type(unsigned char *ucp);
+extern int check_str_type(unsigned char *ucp, int allowed_type);
 extern char* get_feature_for_chi (BNST_DATA *p_ptr);
 
 /* koou.c */
@@ -601,7 +601,7 @@ extern int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *
 /* nv_mi.c */
 extern int check_nv_mi_parent_and_children(TAG_DATA *v_ptr, int rank_threshold);
 
-/* KNP ½é´ü²½ */
+/* KNP åˆæœŸåŒ– */
 extern char *Knprule_Dirname;
 extern char *Knpdict_Dirname;
 extern RuleVector *RULE;

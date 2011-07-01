@@ -1,6 +1,6 @@
 /*====================================================================
 
-			       •ƒ°º•Î∑≤
+			       „ÉÑ„Éº„É´Áæ§
 
                                                S.Kurohashi 1999. 4. 1
 
@@ -9,33 +9,6 @@
 #include "knp.h"
 
 unsigned int seed[NSEED][256];
-
-/*==================================================================*/
-	 int knp_fprintf(FILE *output, const char *fmt, ...)
-/*==================================================================*/
-{
-    va_list ap;
-    char buffer[DATA_LEN];
-    char *SJISbuffer;
-
-    va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
-    va_end(ap);
-
-#ifndef _WIN32
-    if (OptEncoding == ENCODING_SHIFTJIS) {
-#endif
-	SJISbuffer = (char *)toStringSJIS(buffer);
-	fwrite(SJISbuffer, sizeof(char), strlen(SJISbuffer), output);
-	free(SJISbuffer);
-#ifndef _WIN32
-    }
-    else
-	fwrite(buffer, sizeof(char), strlen(buffer), output);
-#endif
-
-    return TRUE;
-}
 
 /*==================================================================*/
 	    void *malloc_data(size_t size, char *comment)
@@ -102,7 +75,7 @@ unsigned int seed[NSEED][256];
 	    *(hira+i) = 0xa4;
 	}
     }    
-    return hira;	/* free §∑§∆§Ø§¿§µ§§ */
+    return hira;	/* free „Åó„Å¶„Åè„Å†„Åï„ÅÑ */
 }
 
 /*==================================================================*/
@@ -119,7 +92,7 @@ unsigned int seed[NSEED][256];
 	    *(hira+i) = 0xa5;
 	}
     }    
-    return hira;	/* free §∑§∆§Ø§¿§µ§§ */
+    return hira;	/* free „Åó„Å¶„Åè„Å†„Åï„ÅÑ */
 }
 
 /*==================================================================*/

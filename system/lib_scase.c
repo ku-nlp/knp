@@ -1,6 +1,6 @@
 /*====================================================================
 
-			      É½ÁØ³Ê¾ðÊó
+			      è¡¨å±¤æ ¼æƒ…å ±
 
                                                S.Kurohashi 92.10.21
                                                S.Kurohashi 93. 5.31
@@ -89,9 +89,9 @@ int		OptUseScase;
     int i;
 
     for (i = bp->mrph_num - 1; i >= 0 ; i--) {
-	if (check_feature((bp->mrph_ptr + i)->f, "ÉÕÂ°")) {
-	    if (!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "½õ»ì") && 
-		!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][(bp->mrph_ptr + i)->Bunrui].id, "³Ê½õ»ì")) {
+	if (check_feature((bp->mrph_ptr + i)->f, "ä»˜å±ž")) {
+	    if (!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "åŠ©è©ž") && 
+		!strcmp(Class[(bp->mrph_ptr + i)->Hinshi][(bp->mrph_ptr + i)->Bunrui].id, "æ ¼åŠ©è©ž")) {
 		return (bp->mrph_ptr + i)->Goi;
 	    }
 	}
@@ -154,7 +154,7 @@ int		OptUseScase;
 
 	free(src);
     }
-    /* *dst¤¬¤¢¤Ã¤Æsrc¤¬¤Ê¤¤¤È¤­¤Ï¤Ê¤Ë¤â¤·¤Ê¤¤ */
+    /* *dstãŒã‚ã£ã¦srcãŒãªã„ã¨ãã¯ãªã«ã‚‚ã—ãªã„ */
 }
 
 /*==================================================================*/
@@ -164,13 +164,13 @@ int		OptUseScase;
     int i;
     char *cp, *ans = NULL, *anscp, *str_buffer = NULL, *vtype, voice[4];
 
-    /* ½é´ü²½: init_bnst ¤Ç¤â¤·¤Æ¤¤¤ë */
+    /* åˆæœŸåŒ–: init_bnst ã§ã‚‚ã—ã¦ã„ã‚‹ */
     for (i = 0, cp = ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
 
     if (ScaseDicExist == TRUE && 
-	(vtype = check_feature(ptr->f, "ÍÑ¸À")) && 
-	strcmp(vtype, "ÍÑ¸À:È½")) { /* È½Äê»ì¤Ç¤Ï¤Ê¤¤¾ì¹ç */
-	vtype += strlen("ÍÑ¸À:");
+	(vtype = check_feature(ptr->f, "ç”¨è¨€")) && 
+	strcmp(vtype, "ç”¨è¨€:åˆ¤")) { /* åˆ¤å®šè©žã§ã¯ãªã„å ´åˆ */
+	vtype += strlen("ç”¨è¨€:");
 
 	voice[0] = '\0';
 	if (ptr->voice & VOICE_UKEMI) {
@@ -183,7 +183,7 @@ int		OptUseScase;
 	    strcpy(voice, ":PC");
 	}
 
-	/* ¤Þ¤º¡¢Ä¾Á°³ÊÍ×ÁÇ¤È¤ÎÁÈ¤Ç¸¡º÷ *
+	/* ã¾ãšã€ç›´å‰æ ¼è¦ç´ ã¨ã®çµ„ã§æ¤œç´¢ *
 	str_buffer = make_pred_string_for_scase(ptr);
 	strcat(str_buffer, ":");
 	strcat(str_buffer, vtype);
@@ -192,7 +192,7 @@ int		OptUseScase;
 	ans = get_scase(str_buffer);
 	*/
 
-	if (ans == NULL) { /* ¤Ê¤±¤ì¤Ð¡¢ÍÑ¸À¤À¤±¤Ç¸¡º÷ */
+	if (ans == NULL) { /* ãªã‘ã‚Œã°ã€ç”¨è¨€ã ã‘ã§æ¤œç´¢ */
 	    if (str_buffer) {
 		free(str_buffer);
 	    }
@@ -203,8 +203,8 @@ int		OptUseScase;
 
 	    ans = get_scase(str_buffer);
 
-	    /* ÂåÉ½É½µ­¤¬Û£Ëæ¤ÊÍÑ¸À¤Î¾ì¹ç */
-	    if (check_feature(ptr->head_ptr->f, "¸¶·ÁÛ£Ëæ")) {
+	    /* ä»£è¡¨è¡¨è¨˜ãŒæ›–æ˜§ãªç”¨è¨€ã®å ´åˆ */
+	    if (check_feature(ptr->head_ptr->f, "åŽŸå½¢æ›–æ˜§")) {
 		FEATURE *fp;
 		MRPH_DATA m;
 		char *str;
@@ -224,7 +224,7 @@ int		OptUseScase;
 			if (voice[0]) strcat(str_buffer, voice);
 
 			new_ans = get_scase(str_buffer);
-			or_scase_code(&ans, new_ans); /* OR¤ÇÂ­¤¹ */
+			or_scase_code(&ans, new_ans); /* ORã§è¶³ã™ */
 		    }
 		    fp = fp->next;
 		}
@@ -232,7 +232,7 @@ int		OptUseScase;
 	}
 
 	if (ans != NULL) {
-	    /* DEBUG É½¼¨ */
+	    /* DEBUG è¡¨ç¤º */
 	    if (OptDisplay == OPT_DEBUG) {
 		char *print_buffer;
 
@@ -257,45 +257,45 @@ int		OptUseScase;
 	}
     }
 
-    /* È½Äê»ì¤Ê¤É¤Î¾ì¹ç,
-       É½ÁØ³Ê¼­½ñ¤¬¤Ê¤¤¾ì¹ç, 
-       ¤Þ¤¿¤Ï¼­½ñ¤Ë¤Ê¤¤ÍÑ¸À¤Î¾ì¹ç */
+    /* åˆ¤å®šè©žãªã©ã®å ´åˆ,
+       è¡¨å±¤æ ¼è¾žæ›¸ãŒãªã„å ´åˆ, 
+       ã¾ãŸã¯è¾žæ›¸ã«ãªã„ç”¨è¨€ã®å ´åˆ */
     
-    if (check_feature(ptr->f, "ÍÑ¸À:È½")) {
-	ptr->SCASE_code[case2num("¥¬³Ê")] = 1;
+    if (check_feature(ptr->f, "ç”¨è¨€:åˆ¤")) {
+	ptr->SCASE_code[case2num("ã‚¬æ ¼")] = 1;
     } 
-    else if (check_feature(ptr->f, "ÍÑ¸À:·Á")) {
-	ptr->SCASE_code[case2num("¥¬³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥Ë³Ê")] = 1;
-	/* ·ÁÍÆ»ì¤ÎÉ½ÁØ³Ê¤ÎÉÕÍ¿¤ÏÉûºîÍÑ¤¬Â¿¤¤¤Î¤ÇÀ©¸Â
-	ptr->SCASE_code[case2num("¥è¥ê³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥È³Ê")] = 1;
+    else if (check_feature(ptr->f, "ç”¨è¨€:å½¢")) {
+	ptr->SCASE_code[case2num("ã‚¬æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ‹æ ¼")] = 1;
+	/* å½¢å®¹è©žã®è¡¨å±¤æ ¼ã®ä»˜ä¸Žã¯å‰¯ä½œç”¨ãŒå¤šã„ã®ã§åˆ¶é™
+	ptr->SCASE_code[case2num("ãƒ¨ãƒªæ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒˆæ ¼")] = 1;
 	*/
     } 
-    else if (check_feature(ptr->f, "ÍÑ¸À:Æ°")) {
-	ptr->SCASE_code[case2num("¥¬³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥ò³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥Ë³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥Ø³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥È³Ê")] = 1;
+    else if (check_feature(ptr->f, "ç”¨è¨€:å‹•")) {
+	ptr->SCASE_code[case2num("ã‚¬æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ²æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ‹æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ˜æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒˆæ ¼")] = 1;
     }
 
   Match:
 
-    /* ¥ô¥©¥¤¥¹¤Ë¤è¤ë½¤Àµ */
+    /* ãƒ´ã‚©ã‚¤ã‚¹ã«ã‚ˆã‚‹ä¿®æ­£ */
 
     if (ptr->voice & VOICE_SHIEKI) {
-	ptr->SCASE_code[case2num("¥ò³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥Ë³Ê")] = 1;
+	ptr->SCASE_code[case2num("ãƒ²æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ‹æ ¼")] = 1;
     }
     else if (ptr->voice & VOICE_UKEMI || 
 	     ptr->voice & VOICE_SHIEKI_UKEMI) {
-	ptr->SCASE_code[case2num("¥Ë³Ê")] = 1;
+	ptr->SCASE_code[case2num("ãƒ‹æ ¼")] = 1;
     }
     else if (ptr->voice & VOICE_MORAU || 
 	     ptr->voice & VOICE_HOSHII) {
-	ptr->SCASE_code[case2num("¥ò³Ê")] = 1;
-	ptr->SCASE_code[case2num("¥Ë³Ê")] = 1;
+	ptr->SCASE_code[case2num("ãƒ²æ ¼")] = 1;
+	ptr->SCASE_code[case2num("ãƒ‹æ ¼")] = 1;
     }
 }
 

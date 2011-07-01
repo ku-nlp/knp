@@ -1,6 +1,6 @@
 /*====================================================================
 
-			      ³Ê¹½Â¤²òÀÏ
+			      æ ¼æ§‹é€ è§£æ
 
                                                S.Kurohashi 91.10. 9
                                                S.Kurohashi 93. 5.31
@@ -12,7 +12,7 @@
 extern int Possibility;
 extern int MAX_Case_frame_num;
 
-CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* ºî¶ÈÎÎ°è */
+CF_MATCH_MGR	*Cf_match_mgr = NULL;	/* ä½œæ¥­é ˜åŸŸ */
 TOTAL_MGR	Work_mgr;
 
 int	DISTANCE_STEP	= 5;
@@ -70,7 +70,7 @@ int	TEIDAI_STEP	= 2;
     if (OptAnalysis == OPT_CASE || 
 	OptAnalysis == OPT_CASE2) {
 
-	/* ºî¶ÈcmmÎÎ°è³ÎÊİ */
+	/* ä½œæ¥­cmmé ˜åŸŸç¢ºä¿ */
 	Cf_match_mgr = 
 	    (CF_MATCH_MGR *)malloc_data(sizeof(CF_MATCH_MGR)*ALL_CASE_FRAME_MAX, 
 					"init_case_analysis_cmm");
@@ -95,73 +95,73 @@ int	TEIDAI_STEP	= 2;
 }
 
 /*====================================================================
-		       ³Ê½õ»ì¤ÎÊ¸»ú¡İ¥³¡¼¥ÉÂĞ±ş
+		       æ ¼åŠ©è©ã®æ–‡å­—âˆ’ã‚³ãƒ¼ãƒ‰å¯¾å¿œ
 ====================================================================*/
 
 struct PP_STR_TO_CODE {
     char *hstr;
     char *kstr;
     int  code;
-} PP_str_to_code[] = {          /* Ê¸»ú¿ô¤ÏPP_STRING_MAX°ÊÆâ¤Ë¤¹¤ë */
-    {"¦Õ", "¦Õ", 0},		/* ³Ê½õ»ì¤Î¤Ê¤¤¤â¤Î(¿ôÎÌÉ½¸½Åù) */
-    {"¤¬", "¥¬", 1},            /* anaphora.c¤Ç"¤¬"¡¢"¤ò"¡¢"¤Ë"¤¬1¡¢2¡¢3¤Ç¤¢¤ë¤³¤È¤ò */
-    {"¤ò", "¥ò", 2},            /* ÍøÍÑ¤·¤Æ¤¤¤ë¤Î¤ÇÊÑ¹¹¤¹¤ëºİ¤ÏÍ×Ãí°Õ */
-    {"¤Ë", "¥Ë", 3},
-    {"¤«¤é", "¥«¥é", 4},
-    {"¤Ø", "¥Ø", 5},
-    {"¤è¤ê", "¥è¥ê", 6},
-    {"¤È", "¥È", 7},
-    {"¤Ç", "¥Ç", 8},
-    {"¤Ë¤è¤Ã¤Æ", "¥Ë¥è¥Ã¥Æ", 9}, /* Ê£¹ç¼­´Ø·¸(FUKUGOJI_START¤«¤éFUKUGOJI_END¤Ş¤Ç) */
-    {"¤ò¤á¤°¤ë", "¥ò¥á¥°¥ë", 10},	
-    {"¤ò¤Ä¤¦¤¸¤ë", "¥ò¥Ä¥¦¥¸¥ë", 11},
-    {"¤ò¤Ä¤¦¤º¤ë", "¥ò¥Ä¥¦¥º¥ë", 12},
-    {"¤ò¤Õ¤¯¤á¤ë", "¥ò¥Õ¥¯¥á¥ë", 13},
-    {"¤ò¤Ï¤¸¤á¤ë", "¥ò¥Ï¥¸¥á¥ë", 14},
-    {"¤Ë¤«¤é¤à", "¥Ë¥«¥é¥à", 15},
-    {"¤Ë¤½¤¦", "¥Ë¥½¥¦", 16},
-    {"¤Ë¤à¤±¤ë", "¥Ë¥à¥±¥ë", 17},
-    {"¤Ë¤È¤â¤Ê¤¦", "¥Ë¥È¥â¥Ê¥¦", 18},
-    {"¤Ë¤â¤È¤Å¤¯", "¥Ë¥â¥È¥Å¥¯", 19},
-    {"¤ò¤Î¤¾¤¯", "¥ò¥Î¥¾¥¯", 20},
-    {"¤Ë¤è¤ë", "¥Ë¥è¥ë", 21},
-    {"¤Ë¤¿¤¤¤¹¤ë", "¥Ë¥¿¥¤¥¹¥ë", 22},
-    {"¤Ë¤«¤ó¤¹¤ë", "¥Ë¥«¥ó¥¹¥ë", 23},
-    {"¤Ë¤«¤ï¤ë", "¥Ë¥«¥ï¥ë", 24},
-    {"¤Ë¤ª¤¯", "¥Ë¥ª¥¯", 25},
-    {"¤Ë¤Ä¤¯", "¥Ë¥Ä¥¯", 26},
-    {"¤Ë¤È¤ë", "¥Ë¥È¥ë", 27},
-    {"¤Ë¤¯¤ï¤¨¤ë", "¥Ë¥¯¥ï¥¨¥ë", 28},
-    {"¤Ë¤«¤®¤ë", "¥Ë¥«¥®¥ë", 29},
-    {"¤Ë¤Ä¤Å¤¯", "¥Ë¥Ä¥Å¥¯", 30},
-    {"¤Ë¤¢¤ï¤»¤ë", "¥Ë¥¢¥ï¥»¥ë", 31},
-    {"¤Ë¤¯¤é¤Ù¤ë", "¥Ë¥¯¥é¥Ù¥ë", 32},
-    {"¤Ë¤Ê¤é¤Ö", "¥Ë¥Ê¥é¥Ö", 33},
-    {"¤È¤¹¤ë", "¥È¥¹¥ë", 34},
-    {"¤Ë¤è¤ë¤Ì", "¥Ë¥è¥ë¥Ì", 35},
-    {"¤Ë¤«¤®¤ë¤Ì", "¥Ë¥«¥®¥ë¥Ì", 36},
-    {"¤È¤¤¤¦", "¥È¥¤¥¦", 37},	/* ¡Á¤È¤¤¤¦¤È? */
-    {"»ş´Ö", "»ş´Ö", 38},	/* ¥Ë³Ê, Ìµ³Ê¤Ç»ş´Ö¤Ç¤¢¤ë¤â¤Î¤ò»ş´Ö¤È¤¤¤¦³Ê¤È¤·¤Æ°·¤¦ */
-    {"¤Ş¤Ç", "¥Ş¥Ç", 39},	/* ÌÀ¼¨¤µ¤ì¤Ê¤¤³Ê¤Ç¤¢¤ë¤¬¡¢¼­½ñÂ¦¤Î³Ê¤È¤·¤ÆÉ½¼¨¤¹¤ë¤¿¤á¤Ë
-				   ½ñ¤¤¤Æ¤ª¤¯ */
-    {"½¤¾ş", "½¤¾ş", 40},
-    {"¤Î", "¥Î", 41},		/* ³Ê¥Õ¥ì¡¼¥à¤Î¥Î³Ê */
-    {"¤¬£²", "¥¬£²", 42},
-    {"³°¤Î´Ø·¸", "³°¤Î´Ø·¸", 43},
-    {"¤¬¤¬", "¥¬¥¬", 42},
-    {"³°¤Î´Ø·¸", "³°¥Î´Ø·¸", 43},	/* for backward compatibility */
-    {"¤Ï", "¥Ï", 1},		/* NTT¼­½ñ¤Ç¤Ï¡Ö¥¬¥¬¡×¹½Ê¸¤¬¡Ö¥Ï¥¬¡×
-				   ¢¨ NTT¼­½ñ¤Î¡Ö¥Ï¡×¤Ï1(code)¤ËÊÑ´¹¤µ¤ì¤ë¤¬,
-				      1¤ÏÇÛÎó½ç¤À¤±¤Ç¡Ö¥¬¡×¤ËÊÑ´¹¤µ¤ì¤ë */
-    {"Ì¤", "Ì¤", -3},		/* ³Ê¥Õ¥ì¡¼¥à¤Ë¤è¤Ã¤ÆÆ°Åª¤Ë³ä¤êÅö¤Æ¤ë³Ê¤ò·èÄê¤¹¤ë */
-    {"¡ö", "¡ö", -2},		/* Ëä¤á¹ş¤ßÊ¸¤ÎÈï½¤¾ş»ì¡¢¾È±ş²òÀÏ¤Î³Ê¤¬¤Ê¤¤¾ì¹ç¤Ë¤â»ÈÍÑ */
-    {NULL, NULL, -1}		/* ³Ê½õ»ì¤ÎÈóÌÀ¼¨¤Î¤â¤Î(ÄóÂê½õ»ìÅù) */
+} PP_str_to_code[] = {          /* æ–‡å­—æ•°ã¯PP_STRING_MAXä»¥å†…ã«ã™ã‚‹ */
+    {"Ï†", "Ï†", 0},		/* æ ¼åŠ©è©ã®ãªã„ã‚‚ã®(æ•°é‡è¡¨ç¾ç­‰) */
+    {"ãŒ", "ã‚¬", 1},            /* anaphora.cã§"ãŒ"ã€"ã‚’"ã€"ã«"ãŒ1ã€2ã€3ã§ã‚ã‚‹ã“ã¨ã‚’ */
+    {"ã‚’", "ãƒ²", 2},            /* åˆ©ç”¨ã—ã¦ã„ã‚‹ã®ã§å¤‰æ›´ã™ã‚‹éš›ã¯è¦æ³¨æ„ */
+    {"ã«", "ãƒ‹", 3},
+    {"ã‹ã‚‰", "ã‚«ãƒ©", 4},
+    {"ã¸", "ãƒ˜", 5},
+    {"ã‚ˆã‚Š", "ãƒ¨ãƒª", 6},
+    {"ã¨", "ãƒˆ", 7},
+    {"ã§", "ãƒ‡", 8},
+    {"ã«ã‚ˆã£ã¦", "ãƒ‹ãƒ¨ãƒƒãƒ†", 9}, /* è¤‡åˆè¾é–¢ä¿‚(FUKUGOJI_STARTã‹ã‚‰FUKUGOJI_ENDã¾ã§) */
+    {"ã‚’ã‚ãã‚‹", "ãƒ²ãƒ¡ã‚°ãƒ«", 10},	
+    {"ã‚’ã¤ã†ã˜ã‚‹", "ãƒ²ãƒ„ã‚¦ã‚¸ãƒ«", 11},
+    {"ã‚’ã¤ã†ãšã‚‹", "ãƒ²ãƒ„ã‚¦ã‚ºãƒ«", 12},
+    {"ã‚’ãµãã‚ã‚‹", "ãƒ²ãƒ•ã‚¯ãƒ¡ãƒ«", 13},
+    {"ã‚’ã¯ã˜ã‚ã‚‹", "ãƒ²ãƒã‚¸ãƒ¡ãƒ«", 14},
+    {"ã«ã‹ã‚‰ã‚€", "ãƒ‹ã‚«ãƒ©ãƒ ", 15},
+    {"ã«ãã†", "ãƒ‹ã‚½ã‚¦", 16},
+    {"ã«ã‚€ã‘ã‚‹", "ãƒ‹ãƒ ã‚±ãƒ«", 17},
+    {"ã«ã¨ã‚‚ãªã†", "ãƒ‹ãƒˆãƒ¢ãƒŠã‚¦", 18},
+    {"ã«ã‚‚ã¨ã¥ã", "ãƒ‹ãƒ¢ãƒˆãƒ…ã‚¯", 19},
+    {"ã‚’ã®ãã", "ãƒ²ãƒã‚¾ã‚¯", 20},
+    {"ã«ã‚ˆã‚‹", "ãƒ‹ãƒ¨ãƒ«", 21},
+    {"ã«ãŸã„ã™ã‚‹", "ãƒ‹ã‚¿ã‚¤ã‚¹ãƒ«", 22},
+    {"ã«ã‹ã‚“ã™ã‚‹", "ãƒ‹ã‚«ãƒ³ã‚¹ãƒ«", 23},
+    {"ã«ã‹ã‚ã‚‹", "ãƒ‹ã‚«ãƒ¯ãƒ«", 24},
+    {"ã«ãŠã", "ãƒ‹ã‚ªã‚¯", 25},
+    {"ã«ã¤ã", "ãƒ‹ãƒ„ã‚¯", 26},
+    {"ã«ã¨ã‚‹", "ãƒ‹ãƒˆãƒ«", 27},
+    {"ã«ãã‚ãˆã‚‹", "ãƒ‹ã‚¯ãƒ¯ã‚¨ãƒ«", 28},
+    {"ã«ã‹ãã‚‹", "ãƒ‹ã‚«ã‚®ãƒ«", 29},
+    {"ã«ã¤ã¥ã", "ãƒ‹ãƒ„ãƒ…ã‚¯", 30},
+    {"ã«ã‚ã‚ã›ã‚‹", "ãƒ‹ã‚¢ãƒ¯ã‚»ãƒ«", 31},
+    {"ã«ãã‚‰ã¹ã‚‹", "ãƒ‹ã‚¯ãƒ©ãƒ™ãƒ«", 32},
+    {"ã«ãªã‚‰ã¶", "ãƒ‹ãƒŠãƒ©ãƒ–", 33},
+    {"ã¨ã™ã‚‹", "ãƒˆã‚¹ãƒ«", 34},
+    {"ã«ã‚ˆã‚‹ã¬", "ãƒ‹ãƒ¨ãƒ«ãƒŒ", 35},
+    {"ã«ã‹ãã‚‹ã¬", "ãƒ‹ã‚«ã‚®ãƒ«ãƒŒ", 36},
+    {"ã¨ã„ã†", "ãƒˆã‚¤ã‚¦", 37},	/* ã€œã¨ã„ã†ã¨? */
+    {"æ™‚é–“", "æ™‚é–“", 38},	/* ãƒ‹æ ¼, ç„¡æ ¼ã§æ™‚é–“ã§ã‚ã‚‹ã‚‚ã®ã‚’æ™‚é–“ã¨ã„ã†æ ¼ã¨ã—ã¦æ‰±ã† */
+    {"ã¾ã§", "ãƒãƒ‡", 39},	/* æ˜ç¤ºã•ã‚Œãªã„æ ¼ã§ã‚ã‚‹ãŒã€è¾æ›¸å´ã®æ ¼ã¨ã—ã¦è¡¨ç¤ºã™ã‚‹ãŸã‚ã«
+				   æ›¸ã„ã¦ãŠã */
+    {"ä¿®é£¾", "ä¿®é£¾", 40},
+    {"ã®", "ãƒ", 41},		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒæ ¼ */
+    {"ãŒï¼’", "ã‚¬ï¼’", 42},
+    {"å¤–ã®é–¢ä¿‚", "å¤–ã®é–¢ä¿‚", 43},
+    {"ãŒãŒ", "ã‚¬ã‚¬", 42},
+    {"å¤–ã®é–¢ä¿‚", "å¤–ãƒé–¢ä¿‚", 43},	/* for backward compatibility */
+    {"ã¯", "ãƒ", 1},		/* NTTè¾æ›¸ã§ã¯ã€Œã‚¬ã‚¬ã€æ§‹æ–‡ãŒã€Œãƒã‚¬ã€
+				   â€» NTTè¾æ›¸ã®ã€Œãƒã€ã¯1(code)ã«å¤‰æ›ã•ã‚Œã‚‹ãŒ,
+				      1ã¯é…åˆ—é †ã ã‘ã§ã€Œã‚¬ã€ã«å¤‰æ›ã•ã‚Œã‚‹ */
+    {"æœª", "æœª", -3},		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚ˆã£ã¦å‹•çš„ã«å‰²ã‚Šå½“ã¦ã‚‹æ ¼ã‚’æ±ºå®šã™ã‚‹ */
+    {"ï¼Š", "ï¼Š", -2},		/* åŸ‹ã‚è¾¼ã¿æ–‡ã®è¢«ä¿®é£¾è©ã€ç…§å¿œè§£æã®æ ¼ãŒãªã„å ´åˆã«ã‚‚ä½¿ç”¨ */
+    {NULL, NULL, -1}		/* æ ¼åŠ©è©ã®éæ˜ç¤ºã®ã‚‚ã®(æé¡ŒåŠ©è©ç­‰) */
 };
 
-/* ¢¨ ³Ê¤ÎºÇÂç¿ô¤òÊÑ¤¨¤¿¤é¡¢PP_NUMBER(const.h)¤òÊÑ¤¨¤ë¤³¤È */
+/* â€» æ ¼ã®æœ€å¤§æ•°ã‚’å¤‰ãˆãŸã‚‰ã€PP_NUMBER(const.h)ã‚’å¤‰ãˆã‚‹ã“ã¨ */
 
 /*====================================================================
-			 Ê¸»ú¡İ¥³¡¼¥ÉÂĞ±ş´Ø¿ô
+			 æ–‡å­—âˆ’ã‚³ãƒ¼ãƒ‰å¯¾å¿œé–¢æ•°
 ====================================================================*/
 int pp_kstr_to_code(char *cp)
 {
@@ -174,9 +174,9 @@ int pp_kstr_to_code(char *cp)
 	if (str_eq(PP_str_to_code[i].kstr, cp))
 	    return PP_str_to_code[i].code;
     
-    if (str_eq(cp, "¥Ë¥È¥Ã¥Æ"))		/* ¡ÖÂÔ¤Ä¡× IPAL¤Î¥Ğ¥° ?? */
-	return pp_kstr_to_code("¥Ë¥è¥Ã¥Æ");
-    else if (str_eq(cp, "¥Î"))		/* ³ÊÍ×ÁÇ¤Ç¤Ê¤¯¤Ê¤ë¾ì¹ç */
+    if (str_eq(cp, "ãƒ‹ãƒˆãƒƒãƒ†"))		/* ã€Œå¾…ã¤ã€ IPALã®ãƒã‚° ?? */
+	return pp_kstr_to_code("ãƒ‹ãƒ¨ãƒƒãƒ†");
+    else if (str_eq(cp, "ãƒ"))		/* æ ¼è¦ç´ ã§ãªããªã‚‹å ´åˆ */
 	return END_M;
 
     /* fprintf(stderr, "Invalid string (%s) in PP !\n", cp); */
@@ -204,8 +204,8 @@ char *pp_code_to_hstr(int num)
 
 char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 {
-    if ((cpm_ptr->cf.type_flag && MatchPP(num, "¦Õ")) || cpm_ptr->cf.type == CF_NOUN) {
-	return "¥Î";
+    if ((cpm_ptr->cf.type_flag && MatchPP(num, "Ï†")) || cpm_ptr->cf.type == CF_NOUN) {
+	return "ãƒ";
     }   
     return pp_code_to_kstr(num);
 }
@@ -247,7 +247,7 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 {
     int i;
 
-    /* ³Ê¤ÎÇÛÎó¤ÎÃæ¤ËÄ´¤Ù¤¿¤¤³Ê¤¬¤¢¤ë¤«¤É¤¦¤« */
+    /* æ ¼ã®é…åˆ—ã®ä¸­ã«èª¿ã¹ãŸã„æ ¼ãŒã‚ã‚‹ã‹ã©ã†ã‹ */
 
     if (n < 0) {
 	return 0;
@@ -284,7 +284,7 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
     int i;
     for (i = 0; i < cf->element_num; i++) {
 	if (cf->adjacent[i] && 
-	    MatchPP(cf->pp[i][0], "½¤¾ş")) {
+	    MatchPP(cf->pp[i][0], "ä¿®é£¾")) {
 	    return FALSE;
 	}
     }
@@ -302,13 +302,13 @@ char *pp_code_to_kstr_in_context(CF_PRED_MGR *cpm_ptr, int num)
 	     int have_real_component(CASE_FRAME *cf_ptr)
 /*==================================================================*/
 {
-    /* ÆşÎÏÂ¦¤¬½¤¾ş¡¢Ìµ³Ê°Ê³°¤ò¤â¤Ã¤Æ¤¤¤ë¤«¤É¤¦¤« */
+    /* å…¥åŠ›å´ãŒä¿®é£¾ã€ç„¡æ ¼ä»¥å¤–ã‚’ã‚‚ã£ã¦ã„ã‚‹ã‹ã©ã†ã‹ */
 
     int i;
 
     for (i = 0; i < cf_ptr->element_num; i++) {
-	if (MatchPP(cf_ptr->pp[i][0], "½¤¾ş") || 
-	    MatchPP(cf_ptr->pp[i][0], "¦Õ")) {
+	if (MatchPP(cf_ptr->pp[i][0], "ä¿®é£¾") || 
+	    MatchPP(cf_ptr->pp[i][0], "Ï†")) {
 	    ;
 	}
 	else {
@@ -327,12 +327,12 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
     TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr;
     CF_MATCH_MGR tempcmm;
 
-    /* ³ÊÍ×ÁÇ¤Ê¤·¤Î»ş¤Î¼Â¸³ */
+    /* æ ¼è¦ç´ ãªã—ã®æ™‚ã®å®Ÿé¨“ */
     if (cf_ptr->type == CF_PRED && 
 	(cf_ptr->element_num == 0 || 
 	 have_real_component(cf_ptr) == FALSE)) {
-	/* ¤³¤ÎÍÑ¸À¤Î¤¹¤Ù¤Æ¤Î³Ê¥Õ¥ì¡¼¥à¤Î OR¡¢¤Ş¤¿¤Ï
-	   ³Ê¥Õ¥ì¡¼¥à¤¬ 1 ¤Ä¤Î¤È¤­¤Ï¤½¤ì¤½¤Î¤â¤Î ¤Ë¤¹¤ëÍ½Äê */
+	/* ã“ã®ç”¨è¨€ã®ã™ã¹ã¦ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã® ORã€ã¾ãŸã¯
+	   æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒ 1 ã¤ã®ã¨ãã¯ãã‚Œãã®ã‚‚ã® ã«ã™ã‚‹äºˆå®š */
 	if (b_ptr->cf_num > 1) {
 	    for (i = 0; i < b_ptr->cf_num; i++) {
 		if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
@@ -340,8 +340,8 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 		    break;
 		}
 	    }
-	    /* OR³Ê¥Õ¥ì¡¼¥à¤¬¤Ê¤¤¤È¤­
-	       ¡ÖÆ°,·Á,½à¡×¤Î»ØÄê¤¬¤Ê¤¤¤³¤È¤¬¤¢¤ì¤Ğ¤³¤¦¤Ê¤ë */
+	    /* ORæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãªã„ã¨ã
+	       ã€Œå‹•,å½¢,æº–ã€ã®æŒ‡å®šãŒãªã„ã“ã¨ãŒã‚ã‚Œã°ã“ã†ãªã‚‹ */
 	    if (frame_num == 0) {
 		(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr;
 	    }
@@ -357,12 +357,12 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
     else {
 	int hiragana_prefer_flag = 0;
 
-	/* É½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç: 
-	   ³Ê¥Õ¥ì¡¼¥à¤ÎÉ½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê¤Î³Ê¥Õ¥ì¡¼¥à¤Î¤ß¤òÂĞ¾İ¤Ë¡¢
-	   ¤Ò¤é¤¬¤Ê°Ê³°¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê°Ê³°¤Î¤ß¤òÂĞ¾İ¤Ë¤¹¤ë */
-	if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ÂåÉ½É½µ­¤Ç¤Ï¤Ê¤¤¾ì¹ç¤Î¤ß */
-	    check_str_type(b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
-	    if (check_feature(b_ptr->f, "ÂåÉ½¤Ò¤é¤¬¤Ê")) {
+	/* è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆ: 
+	   æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¿ã‚’å¯¾è±¡ã«ã€
+	   ã²ã‚‰ãŒãªä»¥å¤–ãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªä»¥å¤–ã®ã¿ã‚’å¯¾è±¡ã«ã™ã‚‹ */
+	if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ä»£è¡¨è¡¨è¨˜ã§ã¯ãªã„å ´åˆã®ã¿ */
+	    check_str_type(b_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
+	    if (check_feature(b_ptr->f, "ä»£è¡¨ã²ã‚‰ãŒãª")) {
 		hiragana_prefer_flag = 1;
 	    }
 	    else {
@@ -370,20 +370,20 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    }
 	}
 
-	/* ³Ê¥Õ¥ì¡¼¥àÀßÄê */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ è¨­å®š */
 	for (i = 0; i < b_ptr->cf_num; i++) {
-	    /* OR ¤Î³Ê¥Õ¥ì¡¼¥à¤ò½ü¤¯ */
+	    /* OR ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é™¤ã */
 	    if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
 		continue;
 	    }
-	    else if ((hiragana_prefer_flag > 0 && check_str_type((b_ptr->cf_ptr + i)->entry) != TYPE_HIRAGANA) || 
-		     (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry) == TYPE_HIRAGANA)) {
+	    else if ((hiragana_prefer_flag > 0 && !check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA)) || 
+		     (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA))) {
 		continue;
 	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
 	}
 
-	if (frame_num == 0) { /* ¾å¤Î½èÍı¤Ç¤Ò¤È¤Ä¤â»Ä¤é¤Ê¤¤¤È¤­ */
+	if (frame_num == 0) { /* ä¸Šã®å‡¦ç†ã§ã²ã¨ã¤ã‚‚æ®‹ã‚‰ãªã„ã¨ã */
 	    for (i = 0; i < b_ptr->cf_num; i++) {
 		(Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
 	    }
@@ -392,17 +392,17 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	cpm_ptr->result_num = 0;
 	for (i = 0; i < frame_num; i++) {
 
-	    /* ÁªÂò²ÄÇ½
+	    /* é¸æŠå¯èƒ½
 	       EXAMPLE
 	       SEMANTIC_MARKER */
 
-	    /* closest ¤¬¤¢¤ì¤Ğ¡¢Ä¾Á°³ÊÍ×ÁÇ¤Î¤ß¤Î¥¹¥³¥¢¤Ë¤Ê¤ë */
+	    /* closest ãŒã‚ã‚Œã°ã€ç›´å‰æ ¼è¦ç´ ã®ã¿ã®ã‚¹ã‚³ã‚¢ã«ãªã‚‹ */
 	    case_frame_match(cpm_ptr, Cf_match_mgr+i, OptCFMode, closest, para_cpm_ptr);
 
-	    /* ·ë²Ì¤ò³ÊÇ¼ */
+	    /* çµæœã‚’æ ¼ç´ */
 	    cpm_ptr->cmm[cpm_ptr->result_num] = *(Cf_match_mgr+i);
 
-	    /* DEBUG½ĞÎÏÍÑ: ²¼¤Î print_good_crrspnds() ¤Ç»È¤¦ Cf_match_mgr ¤Î¥¹¥³¥¢¤òÀµµ¬²½ */
+	    /* DEBUGå‡ºåŠ›ç”¨: ä¸‹ã® print_good_crrspnds() ã§ä½¿ã† Cf_match_mgr ã®ã‚¹ã‚³ã‚¢ã‚’æ­£è¦åŒ– */
 	    if (OptDisplay == OPT_DEBUG && closest > -1 && !OptEllipsis) {
 		pat_num = count_pat_element((Cf_match_mgr+i)->cf_ptr, &((Cf_match_mgr+i)->result_lists_p[0]));
 		if (!((Cf_match_mgr+i)->score < 0 || pat_num == 0)) {
@@ -410,7 +410,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 		}
 	    }
 
-	    /* ¥¹¥³¥¢½ç¤Ë¥½¡¼¥È */
+	    /* ã‚¹ã‚³ã‚¢é †ã«ã‚½ãƒ¼ãƒˆ */
 	    for (j = cpm_ptr->result_num - 1; j >= 0; j--) {
 		if (cpm_ptr->cmm[j].score < cpm_ptr->cmm[j+1].score || 
 		    ((((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
@@ -436,7 +436,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    }
 	}
 
-	/* ¥¹¥³¥¢¤¬Æ±ÅÀ¤Î³Ê¥Õ¥ì¡¼¥à¤Î¸Ä¿ô¤òÀßÄê */
+	/* ã‚¹ã‚³ã‚¢ãŒåŒç‚¹ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®å€‹æ•°ã‚’è¨­å®š */
 	if (cpm_ptr->result_num > 0 && 
 	    (((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	      cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
@@ -451,11 +451,11 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 		cflag = 1;
 	    }
 	    for (i = 1; i < cpm_ptr->result_num; i++) {
-		/* score ¤¬ºÇ¹â¤Ç¡¢
-		   Ä¾Á°³ÊÍ×ÁÇ¤¬³Ê¥Õ¥ì¡¼¥à¤ÎÄ¾Á°³Ê¤Ë¥Ş¥Ã¥Á¤·¤Æ¤¤¤ë¤â¤Î¤¬¤¢¤ì¤Ğ(0ÈÖÌÜ¤ò¥Á¥§¥Ã¥¯)
-		   Ä¾Á°³ÊÍ×ÁÇ¤¬³Ê¥Õ¥ì¡¼¥à¤ÎÄ¾Á°³Ê¤Ë¥Ş¥Ã¥Á¤·¤Æ¤¤¤ë¤³¤È¤¬¾ò·ï
-		   ¢­
-		   score ¤¬ºÇ¹â¤Ç¤¢¤ë¤³¤È¤À¤±¤Ë¤·¤¿
+		/* score ãŒæœ€é«˜ã§ã€
+		   ç›´å‰æ ¼è¦ç´ ãŒæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç›´å‰æ ¼ã«ãƒãƒƒãƒã—ã¦ã„ã‚‹ã‚‚ã®ãŒã‚ã‚Œã°(0ç•ªç›®ã‚’ãƒã‚§ãƒƒã‚¯)
+		   ç›´å‰æ ¼è¦ç´ ãŒæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç›´å‰æ ¼ã«ãƒãƒƒãƒã—ã¦ã„ã‚‹ã“ã¨ãŒæ¡ä»¶
+		   â†“
+		   score ãŒæœ€é«˜ã§ã‚ã‚‹ã“ã¨ã ã‘ã«ã—ãŸ
 		*/
 		if (cpm_ptr->cmm[i].score == top) {
 /*		if (cpm_ptr->cmm[i].score == top && 
@@ -468,12 +468,12 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    }
 	}
 
-	/* ¤È¤ê¤¢¤¨¤ºÀßÄê
-	   closest > -1: decided ·èÄêÍÑ */
+	/* ã¨ã‚Šã‚ãˆãšè¨­å®š
+	   closest > -1: decided æ±ºå®šç”¨ */
 	cpm_ptr->score = (int)cpm_ptr->cmm[0].score;
     }
 
-    /* Ê¸Ì®²òÀÏ: Ä¾Á°³ÊÍ×ÁÇ¤Î¥¹¥³¥¢¤¬ïçÃÍ°Ê¾å¤Ê¤é³Ê¥Õ¥ì¡¼¥à¤ò·èÄê */
+    /* æ–‡è„ˆè§£æ: ç›´å‰æ ¼è¦ç´ ã®ã‚¹ã‚³ã‚¢ãŒé–¾å€¤ä»¥ä¸Šãªã‚‰æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®š */
     if (decide) {
 	if (OptEllipsis) {
 	    if (closest > -1 && cpm_ptr->score > CF_DECIDE_THRESHOLD) {
@@ -482,14 +482,14 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 		}
 		else {
 		    cpm_ptr->decided = CF_DECIDED;
-		    /* exact match ¤·¤Æ¡¢ºÇ¹âÅÀ¤Î³Ê¥Õ¥ì¡¼¥à¤¬¤Ò¤È¤Ä¤Ê¤é¡¢¤½¤ì¤À¤±¤òÉ½¼¨ */
+		    /* exact match ã—ã¦ã€æœ€é«˜ç‚¹ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒã²ã¨ã¤ãªã‚‰ã€ãã‚Œã ã‘ã‚’è¡¨ç¤º */
 		    if (cpm_ptr->score == EX_match_exact) {
 			cpm_ptr->result_num = 1;
 		    }
 		}
 	    }
 	    else if (closest == -1 && cpm_ptr->cf.element_num > 0 && 
-		     check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:·Á")) {
+		     check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€:å½¢")) {
 		cpm_ptr->decided = CF_DECIDED;
 	    }
 	}
@@ -499,21 +499,21 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
     }
 
     if (cf_ptr->element_num != 0) {
-	/* Ä¾Á°³Ê¤¬¤¢¤ë¤È¤­¤ÏÄ¾Á°³Ê¤Î¥¹¥³¥¢¤·¤«¹ÍÎ¸¤µ¤ì¤Æ¤¤¤Ê¤¤¤Î¤Ç¡¢
-	   ¤¹¤Ù¤Æ¤Î³Ê¤Î¥¹¥³¥¢¤òÂ­¤·¤ÆÀµµ¬²½¤·¤¿¤â¤Î¤Ë¤¹¤ë */
+	/* ç›´å‰æ ¼ãŒã‚ã‚‹ã¨ãã¯ç›´å‰æ ¼ã®ã‚¹ã‚³ã‚¢ã—ã‹è€ƒæ…®ã•ã‚Œã¦ã„ãªã„ã®ã§ã€
+	   ã™ã¹ã¦ã®æ ¼ã®ã‚¹ã‚³ã‚¢ã‚’è¶³ã—ã¦æ­£è¦åŒ–ã—ãŸã‚‚ã®ã«ã™ã‚‹ */
 	if (closest > -1) {
 	    int slot_i, slot_j, pos_i, pos_j;
 
 	    for (i = 0; i < cpm_ptr->result_num; i++) {
-		/* ³ä¤êÅö¤Æ¼ºÇÔ¤Î¤È¤­(score==-1)¤Ï¡¢pure_score ¤ÏÄêµÁ¤µ¤ì¤Æ¤¤¤Ê¤¤ */
-		/* ÆşÎÏÂ¦¤ËÇ¤°Õ³Ê¤·¤«¤Ê¤¯³ä¤êÅö¤Æ¤¬¤Ê¤¤¤È¤­(score==0)¤Ï¡¢Ê¬»ÒÊ¬Êì¤È¤â¤Ë0¤Ë¤Ê¤ë */
+		/* å‰²ã‚Šå½“ã¦å¤±æ•—ã®ã¨ã(score==-1)ã¯ã€pure_score ã¯å®šç¾©ã•ã‚Œã¦ã„ãªã„ */
+		/* å…¥åŠ›å´ã«ä»»æ„æ ¼ã—ã‹ãªãå‰²ã‚Šå½“ã¦ãŒãªã„ã¨ã(score==0)ã¯ã€åˆ†å­åˆ†æ¯ã¨ã‚‚ã«0ã«ãªã‚‹ */
 		pat_num = count_pat_element(cpm_ptr->cmm[i].cf_ptr, &(cpm_ptr->cmm[i].result_lists_p[0]));
 		if (cpm_ptr->cmm[i].score < 0 || pat_num == 0) {
 		    break;
 		}
 		cpm_ptr->cmm[i].score = (OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? cpm_ptr->cmm[i].pure_score[0] : (cpm_ptr->cmm[i].pure_score[0] / sqrt((double)pat_num));
 	    }
-	    /* Ä¾Á°³Ê¥¹¥³¥¢¤¬Æ±ÅÀ¤Î³Ê¥Õ¥ì¡¼¥à¤ò¡¢¤¹¤Ù¤Æ¤Î¥¹¥³¥¢¤Çsort */
+	    /* ç›´å‰æ ¼ã‚¹ã‚³ã‚¢ãŒåŒç‚¹ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã€ã™ã¹ã¦ã®ã‚¹ã‚³ã‚¢ã§sort */
 	    for (i = cpm_ptr->tie_num - 1; i >= 1; i--) {
 		for (j = i - 1; j >= 0; j--) {
 		    slot_i = cpm_ptr->cmm[i].result_lists_d[0].flag[closest];
@@ -523,7 +523,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 		    pos_j = (slot_j >= 0 && cpm_ptr->cmm[j].cf_ptr->ex_freq[slot_j]) ? 
 			    cpm_ptr->cmm[j].result_lists_p[0].pos[slot_j] : -1;
 		    if (cpm_ptr->cmm[i].score > cpm_ptr->cmm[j].score || 
-			(pos_i >= 0 && pos_j >= 0 && /* ¥Ş¥Ã¥Á¤·¤¿ÍÑÎãÉÑÅÙ¤ÎÂç¤­¤¤Êı¤òÁªÂò */
+			(pos_i >= 0 && pos_j >= 0 && /* ãƒãƒƒãƒã—ãŸç”¨ä¾‹é »åº¦ã®å¤§ãã„æ–¹ã‚’é¸æŠ */
 			 cpm_ptr->cmm[i].cf_ptr->ex_freq[slot_i][pos_i] > cpm_ptr->cmm[j].cf_ptr->ex_freq[slot_j][pos_j])) {
 			tempcmm = cpm_ptr->cmm[i];
 			cpm_ptr->cmm[i] = cpm_ptr->cmm[j];
@@ -550,66 +550,66 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 int get_closest_case_component(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¤è¤êÁ°¤Ë¤¢¤ë³ÊÍ×ÁÇ¤ÎÃæ¤Ç
-       ¤â¤Ã¤È¤âÍÑ¸À¤Ë¶á¤¤¤â¤Î¤òÃµ¤¹
-       (ÆâÉôÊ¸Àá¤Ï½ü¤¯: num == -1) 
-       ÂĞ¾İ³Ê: ¥ò³Ê, ¥Ë³Ê */
+    /* ç”¨è¨€ã‚ˆã‚Šå‰ã«ã‚ã‚‹æ ¼è¦ç´ ã®ä¸­ã§
+       ã‚‚ã£ã¨ã‚‚ç”¨è¨€ã«è¿‘ã„ã‚‚ã®ã‚’æ¢ã™
+       (å†…éƒ¨æ–‡ç¯€ã¯é™¤ã: num == -1) 
+       å¯¾è±¡æ ¼: ãƒ²æ ¼, ãƒ‹æ ¼ */
 
     int i, min = -1, elem_b_num;
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤òÁöºº */
+    /* ç›´å‰æ ¼è¦ç´ ã‚’èµ°æŸ» */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (cpm_ptr->elem_b_ptr[i] == NULL) {
 	    ;
 	}
-	/* Ê£¹çÌ¾»ì¤Î°ìÉô: Ä¾Á°¤È¤·¤Ê¤¤ */
+	/* è¤‡åˆåè©ã®ä¸€éƒ¨: ç›´å‰ã¨ã—ãªã„ */
 	else if (cpm_ptr->elem_b_ptr[i]->inum > 0) {
 	    return -1;
 	}
-	/* ¡Ö¡Á¤ò¡Á¤Ë¡× */
+	/* ã€Œã€œã‚’ã€œã«ã€ */
 	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num) {
 	    return i;
 	}
-	/* ÍÑ¸À¤Ë¤â¤Ã¤È¤â¶á¤¤³ÊÍ×ÁÇ¤òÃµ¤¹ 
-	   <²ó¿ô>:Ìµ³Ê °Ê³° */
-	else if (cpm_ptr->elem_b_num[i] > -2 && /* ¾ÊÎ¬¤Î³ÊÍ×ÁÇ¤¸¤ã¤Ê¤¤ */
+	/* ç”¨è¨€ã«ã‚‚ã£ã¨ã‚‚è¿‘ã„æ ¼è¦ç´ ã‚’æ¢ã™ 
+	   <å›æ•°>:ç„¡æ ¼ ä»¥å¤– */
+	else if (cpm_ptr->elem_b_num[i] > -2 && /* çœç•¥ã®æ ¼è¦ç´ ã˜ã‚ƒãªã„ */
 		 cpm_ptr->elem_b_ptr[i]->num <= cpm_ptr->pred_b_ptr->num && 
 		 min < cpm_ptr->elem_b_ptr[i]->num && 
-		 !(MatchPP(cpm_ptr->cf.pp[i][0], "¦Õ") && 
-		   check_feature(cpm_ptr->elem_b_ptr[i]->f, "²ó¿ô"))) {
+		 !(MatchPP(cpm_ptr->cf.pp[i][0], "Ï†") && 
+		   check_feature(cpm_ptr->elem_b_ptr[i]->f, "å›æ•°"))) {
 	    min = cpm_ptr->elem_b_ptr[i]->num;
 	    elem_b_num = i;
 	}
     }
 
-    /* 1. ¥ò³Ê, ¥Ë³Ê¤Ç¤¢¤ë¤È¤­
-       2. <¼çÂÎ>¤Ë¥Ş¥Ã¥Á¤·¤Ê¤¤ 1, 2 °Ê³°¤Î³Ê (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥¬"))
-       3. ÍÑ¸À¤ÎÄ¾Á°¤ÎÌ¤³Ê (Éû»ì¤¬¤Ï¤µ¤Ş¤Ã¤Æ¤â¤è¤¤)
-       ¡ú·ÁÍÆ»ì, È½Äê»ì¤Ï?
-       check_feature ¤·¤Æ¤â¤è¤¤
-       ¾ò·ïÇÑ»ß: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
+    /* 1. ãƒ²æ ¼, ãƒ‹æ ¼ã§ã‚ã‚‹ã¨ã
+       2. <ä¸»ä½“>ã«ãƒãƒƒãƒã—ãªã„ 1, 2 ä»¥å¤–ã®æ ¼ (MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ã‚¬"))
+       3. ç”¨è¨€ã®ç›´å‰ã®æœªæ ¼ (å‰¯è©ãŒã¯ã•ã¾ã£ã¦ã‚‚ã‚ˆã„)
+       â˜…å½¢å®¹è©, åˆ¤å®šè©ã¯?
+       check_feature ã—ã¦ã‚‚ã‚ˆã„
+       æ¡ä»¶å»ƒæ­¢: cpm_ptr->cf.pp[elem_b_num][1] == END_M */
     if (min != -1) {
-	/* ·èÄê¤·¤Ê¤¤:
-	   1. ºÇ¶á³ÊÍ×ÁÇ¤¬»Ø¼¨»ì¤Î¾ì¹ç ¡ú³Ê¤À¤±¥Ş¥Ã¥Á¤µ¤»¤ë?
-	   2. ¥¬³Ê¤Ç°ÕÌ£ÁÇ¤¬¤Ê¤¤¤È¤­ */
-	if (check_feature((sp->tag_data+min)->f, "»Ø¼¨»ì") || 
+	/* æ±ºå®šã—ãªã„:
+	   1. æœ€è¿‘æ ¼è¦ç´ ãŒæŒ‡ç¤ºè©ã®å ´åˆ â˜…æ ¼ã ã‘ãƒãƒƒãƒã•ã›ã‚‹?
+	   2. ã‚¬æ ¼ã§æ„å‘³ç´ ãŒãªã„ã¨ã */
+	if (check_feature((sp->tag_data+min)->f, "æŒ‡ç¤ºè©") || 
 	    (Thesaurus == USE_NTT && 
 	     (sp->tag_data+min)->SM_code[0] == '\0' && 
-	     MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥¬"))) {
+	     MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ã‚¬"))) {
 	    return -2;
 	}
-	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* Ì¤³Ê */
+	else if ((cpm_ptr->cf.pp[elem_b_num][0] == -1 && /* æœªæ ¼ */
 		  (cpm_ptr->pred_b_ptr->num == min + 1 || 
-		   (cpm_ptr->pred_b_ptr->num == min + 2 && /* Éû»ì¤¬¤Ï¤µ¤Ş¤Ã¤Æ¤¤¤ë¾ì¹ç */
-		    (check_feature((sp->tag_data + min + 1)->f, "Éû»ì") || 
-		     check_feature((sp->tag_data + min + 1)->f, "·¸:Ï¢ÍÑ"))))) || 
-		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥ò") || 
-		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥Ë") || 
+		   (cpm_ptr->pred_b_ptr->num == min + 2 && /* å‰¯è©ãŒã¯ã•ã¾ã£ã¦ã„ã‚‹å ´åˆ */
+		    (check_feature((sp->tag_data + min + 1)->f, "å‰¯è©") || 
+		     check_feature((sp->tag_data + min + 1)->f, "ä¿‚:é€£ç”¨"))))) || 
+		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ãƒ²") || 
+		 MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ãƒ‹") || 
 		 (((cpm_ptr->cf.pp[elem_b_num][0] > 0 && 
-		    cpm_ptr->cf.pp[elem_b_num][0] < 9) || /* ´ğËÜ³Ê */
-		   MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "¥Ş¥Ç")) && 
-		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "¼çÂÎ", FALSE))) {
-	    cpm_ptr->cf.adjacent[elem_b_num] = TRUE;	/* Ä¾Á°³Ê¤Î¥Ş¡¼¥¯ */
+		    cpm_ptr->cf.pp[elem_b_num][0] < 9) || /* åŸºæœ¬æ ¼ */
+		   MatchPP(cpm_ptr->cf.pp[elem_b_num][0], "ãƒãƒ‡")) && 
+		   !cf_match_element(cpm_ptr->cf.sm[elem_b_num], "ä¸»ä½“", FALSE))) {
+	    cpm_ptr->cf.adjacent[elem_b_num] = TRUE;	/* ç›´å‰æ ¼ã®ãƒãƒ¼ã‚¯ */
 	    return elem_b_num;
 	}
     }
@@ -750,17 +750,17 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
 /*==================================================================*/
 {
     /*
-                                              ÌáÃÍ
-      ÆşÎÏ¤Î³ÊÍ×ÁÇ¤¬¤Ê¤¤¾ì¹ç                    -3
-      ³Ê¥Õ¥ì¡¼¥à¤¬¤Ê¤¤¾ì¹ç                      -2
-      ÆşÎÏÂ¦¤ËÉ¬¿Ü³Ê¤¬»Ä¤ë¾ì¹ç(²òÀÏÉÔÀ®¸ù)      -1
-      ²òÀÏÀ®¸ù                               score (0°Ê¾å)
+                                              æˆ»å€¤
+      å…¥åŠ›ã®æ ¼è¦ç´ ãŒãªã„å ´åˆ                    -3
+      æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãªã„å ´åˆ                      -2
+      å…¥åŠ›å´ã«å¿…é ˆæ ¼ãŒæ®‹ã‚‹å ´åˆ(è§£æä¸æˆåŠŸ)      -1
+      è§£ææˆåŠŸ                               score (0ä»¥ä¸Š)
     */
 
     int closest;
     CF_PRED_MGR *cache_ptr;
 
-    /* ½é´ü²½ */
+    /* åˆæœŸåŒ– */
     cpm_ptr->pred_b_ptr = t_ptr;
     cpm_ptr->score = -1;
     cpm_ptr->result_num = 0;
@@ -768,11 +768,11 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
     cpm_ptr->cmm[0].cf_ptr = NULL;
     cpm_ptr->decided = CF_UNDECIDED;
 
-    /* ÆşÎÏÊ¸Â¦¤Î³ÊÍ×ÁÇÀßÄê */
+    /* å…¥åŠ›æ–‡å´ã®æ ¼è¦ç´ è¨­å®š */
     set_data_cf_type(cpm_ptr);
     closest = make_data_cframe(sp, cpm_ptr);
 
-    /* ³Ê¥Õ¥ì¡¼¥à²òÀÏ¥¹¥­¥Ã¥×
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ è§£æã‚¹ã‚­ãƒƒãƒ—
     if (cpm_ptr->cf.element_num == 0) {
 	cpm_ptr->cmm[0].cf_ptr = NULL;
 	return -3;
@@ -787,10 +787,10 @@ double case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr)
 	return cpm_ptr->score;
     }
 
-    /* ¤â¤Ã¤È¤â¥¹¥³¥¢¤Î¤è¤¤³Ê¥Õ¥ì¡¼¥à¤ò·èÄê¤¹¤ë
-       Ê¸Ì®²òÀÏ: Ä¾Á°³ÊÍ×ÁÇ¤¬¤Ê¤±¤ì¤Ğ³Ê¥Õ¥ì¡¼¥à¤ò·èÄê¤·¤Ê¤¤ */
+    /* ã‚‚ã£ã¨ã‚‚ã‚¹ã‚³ã‚¢ã®ã‚ˆã„æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®šã™ã‚‹
+       æ–‡è„ˆè§£æ: ç›´å‰æ ¼è¦ç´ ãŒãªã‘ã‚Œã°æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®šã—ãªã„ */
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤¬¤¢¤ë¾ì¹ç (closest > -1) ¤Î¤È¤­¤Ï³Ê¥Õ¥ì¡¼¥à¤ò·èÄê¤¹¤ë */
+    /* ç›´å‰æ ¼è¦ç´ ãŒã‚ã‚‹å ´åˆ (closest > -1) ã®ã¨ãã¯æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®šã™ã‚‹ */
     find_best_cf(sp, cpm_ptr, closest, 1, NULL);
 
     if (OptAnalysis == OPT_CASE && 
@@ -809,9 +809,9 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     int i, renyou_modifying_num, adverb_modifying_num, current_pred_num;
     double one_case_point;
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤ÎÍ­Ìµ¤ò¥Á¥§¥Ã¥¯: set_pred_caseframe()¤Î¾ò·ï¤Ë½¾¤¦ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æœ‰ç„¡ã‚’ãƒã‚§ãƒƒã‚¯: set_pred_caseframe()ã®æ¡ä»¶ã«å¾“ã† */
     if (t_ptr->para_top_p != TRUE && 
-	t_ptr->cf_num > 0) { /* ³Ê¥Õ¥ì¡¼¥à¼­½ñ¤Ë¤Ê¤¯¤Æ¤â¥Ç¥Õ¥©¥ë¥È³Ê¥Õ¥ì¡¼¥à¤¬¤¢¤ë¤Î¤Ç1°Ê¾å¤Ë¤Ê¤ë */
+	t_ptr->cf_num > 0) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ è¾æ›¸ã«ãªãã¦ã‚‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒã‚ã‚‹ã®ã§1ä»¥ä¸Šã«ãªã‚‹ */
 
 	if (t_mgr->pred_num >= CPM_MAX) {
 	    fprintf(stderr, ";; too many predicates in a sentence. (> %d)\n", CPM_MAX);
@@ -822,8 +822,8 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 
 	one_case_point = case_analysis(sp, cpm_ptr, t_ptr);
 
-	/* ²òÀÏÉÔÀ®¸ù(ÆşÎÏÂ¦¤ËÉ¬¿Ü³Ê¤¬»Ä¤ë)¾ì¹ç¤Ë¤½¤Î°ÍÂ¸¹½Â¤¤Î²òÀÏ¤ò
-	   ¤ä¤á¤ë¾ì¹ç
+	/* è§£æä¸æˆåŠŸ(å…¥åŠ›å´ã«å¿…é ˆæ ¼ãŒæ®‹ã‚‹)å ´åˆã«ãã®ä¾å­˜æ§‹é€ ã®è§£æã‚’
+	   ã‚„ã‚ã‚‹å ´åˆ
 	if (one_case_point == -1) return FALSE;
 	*/
 
@@ -831,11 +831,11 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	t_mgr->pred_num++;
     }
 
-    /* Ê¸Ëö¤ÏEOS¤«¤é¤ÎÀ¸À® (¤É¤Î¹½Â¤¤âÅù¤·¤¤¤Î¤Ç¡¢º£¤Î¤È¤³¤í¹ÍÎ¸¤·¤Ê¤¤) *
-    if (check_feature(t_ptr->f, "Ê¸Ëö") && 
+    /* æ–‡æœ«ã¯EOSã‹ã‚‰ã®ç”Ÿæˆ (ã©ã®æ§‹é€ ã‚‚ç­‰ã—ã„ã®ã§ã€ä»Šã®ã¨ã“ã‚è€ƒæ…®ã—ãªã„) *
+    if (check_feature(t_ptr->f, "æ–‡æœ«") && 
 	t_ptr->para_top_p != TRUE && 
 	t_ptr->cf_num > 0 && 
-	check_feature(t_ptr->f, "ÍÑ¸À")) {
+	check_feature(t_ptr->f, "ç”¨è¨€")) {
 	t_mgr->score += calc_vp_modifying_probability(NULL, NULL, t_ptr, cpm_ptr->cmm[0].cf_ptr);
     }
     */
@@ -851,20 +851,20 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	    t_ptr->para_top_p != TRUE && 
 	    t_ptr->cf_num > 0 && 
-	    check_feature(t_ptr->f, "ÍÑ¸À")) {
-	    if (check_feature(t_ptr->child[i]->f, "·¸:Ï¢ÍÑ") && 
-		check_feature(t_ptr->child[i]->f, "ÍÑ¸À") && 
-		!check_feature(t_ptr->child[i]->f, "Ê£¹ç¼­")) {
+	    check_feature(t_ptr->f, "ç”¨è¨€")) {
+	    if (check_feature(t_ptr->child[i]->f, "ä¿‚:é€£ç”¨") && 
+		check_feature(t_ptr->child[i]->f, "ç”¨è¨€") && 
+		!check_feature(t_ptr->child[i]->f, "è¤‡åˆè¾")) {
 		t_mgr->score += calc_vp_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
 							      t_ptr->child[i], 
 							      t_mgr->cpm[current_pred_num].cmm[0].cf_ptr);
 		renyou_modifying_num++;
 	    }
 
-	    /* ¤³¤ÎÍÑ¸À¤Ë·¸¤ëÉû»ì¤Ş¤¿¤Ï½¤¾ş¤ò¥«¥¦¥ó¥È */
-	    if ((check_feature(t_ptr->child[i]->f, "·¸:Ï¢ÍÑ") && 
-		 !check_feature(t_ptr->child[i]->f, "ÍÑ¸À")) || 
-		check_feature(t_ptr->child[i]->f, "½¤¾ş")) {
+	    /* ã“ã®ç”¨è¨€ã«ä¿‚ã‚‹å‰¯è©ã¾ãŸã¯ä¿®é£¾ã‚’ã‚«ã‚¦ãƒ³ãƒˆ */
+	    if ((check_feature(t_ptr->child[i]->f, "ä¿‚:é€£ç”¨") && 
+		 !check_feature(t_ptr->child[i]->f, "ç”¨è¨€")) || 
+		check_feature(t_ptr->child[i]->f, "ä¿®é£¾")) {
 		t_mgr->score += calc_adv_modifying_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
 							       t_ptr->child[i]);
 		adverb_modifying_num++;
@@ -875,7 +875,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	t_ptr->para_top_p != TRUE && 
 	t_ptr->cf_num > 0 && 
-	check_feature(t_ptr->f, "ÍÑ¸À")) {
+	check_feature(t_ptr->f, "ç”¨è¨€")) {
 	t_mgr->score += calc_vp_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
 							  renyou_modifying_num);
 	t_mgr->score += calc_adv_modifying_num_probability(t_ptr, cpm_ptr->cmm[0].cf_ptr, 
@@ -964,7 +964,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	dst->samecase[i][1] = src->samecase[i][1];
     }
     dst->cf_similarity = src->cf_similarity;
-    /* weight, pred_b_ptr ¤ÏÌ¤ÀßÄê */
+    /* weight, pred_b_ptr ã¯æœªè¨­å®š */
 }
 
 /*==================================================================*/
@@ -983,7 +983,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
 	for (j = 0; j < PP_ELEMENT_MAX; j++) {
 	    dst->pp[i][j] = src->pp[i][j];
 	}
-	dst->pp_str[i] = src->pp_str[i];	/* ¤³¤ì¤ò»È¤¦¾ì¹çÌäÂê¤¢¤ê */
+	dst->pp_str[i] = src->pp_str[i];	/* ã“ã‚Œã‚’ä½¿ã†å ´åˆå•é¡Œã‚ã‚Š */
 	/* for (j = 0; j < SM_ELEMENT_MAX*SM_CODE_SIZE; j++) {
 	    dst->sm[i][j] = src->sm[i][j];
 	} */
@@ -1065,9 +1065,9 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
     int one_topic_score, topic_score, topic_score_sum = 0, topic_slot[2], distance_cost = 0;
     char *cp;
 
-    /* ³Ê¹½Â¤²òÀÏ¤Î¥á¥¤¥ó´Ø¿ô */
+    /* æ ¼æ§‹é€ è§£æã®ãƒ¡ã‚¤ãƒ³é–¢æ•° */
 
-    /* °ÍÂ¸¹½Â¤ÌÚºîÀ® */
+    /* ä¾å­˜æ§‹é€ æœ¨ä½œæˆ */
 
     dpnd_info_to_bnst(sp, &dpnd);
     dpnd_info_to_tag(sp, &dpnd);
@@ -1079,7 +1079,7 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
     if (OptDisplay == OPT_DEBUG)
 	print_kakari(sp, OPT_TREE, 1);
 
-    /* ³Ê²òÀÏºî¶ÈÎÎ°è¤Î½é´ü²½ */
+    /* æ ¼è§£æä½œæ¥­é ˜åŸŸã®åˆæœŸåŒ– */
 	
     Work_mgr.pssb = Possibility;
     Work_mgr.dpnd = dpnd;
@@ -1089,31 +1089,31 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
     for (i = 0; i < sp->Bnst_num; i++)
 	Work_mgr.dflt += dpnd.dflt[i];
     
-    /* ³Ê²òÀÏ¸Æ¤Ó½Ğ¤· */
+    /* æ ¼è§£æå‘¼ã³å‡ºã— */
 
     if (all_case_analysis(sp, sp->tag_data + sp->Tag_num - 1, &Work_mgr) == TRUE)
 	Possibility++;
     else
 	return FALSE;
 
-    /* ¤³¤³¤Ç default ¤È¤Îµ÷Î¥¤Î¤º¤ì, ÄóÂê¤ò½èÍı */
+    /* ã“ã“ã§ default ã¨ã®è·é›¢ã®ãšã‚Œ, æé¡Œã‚’å‡¦ç† */
 
     for (i = 0; i < sp->Bnst_num - 1; i++) {
-	/* ¥¬³Ê -> ¥ì¥Ù¥ë:A (¥ë¡¼¥ë¤Ç¤³¤Î·¸¤ê¼õ¤±¤òµö¤·¤¿¾ì¹ç¤Ï¡¢
-	   ¤³¤³¤Ç¥³¥¹¥È¤òÍ¿¤¨¤ë) */
+	/* ã‚¬æ ¼ -> ãƒ¬ãƒ™ãƒ«:A (ãƒ«ãƒ¼ãƒ«ã§ã“ã®ä¿‚ã‚Šå—ã‘ã‚’è¨±ã—ãŸå ´åˆã¯ã€
+	   ã“ã“ã§ã‚³ã‚¹ãƒˆã‚’ä¸ãˆã‚‹) */
 	if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-	    check_feature((sp->bnst_data + i)->f, "·¸:¥¬³Ê") && 
-	    check_feature((sp->bnst_data + dpnd.head[i])->f, "¥ì¥Ù¥ë:A")) {
+	    check_feature((sp->bnst_data + i)->f, "ä¿‚:ã‚¬æ ¼") && 
+	    check_feature((sp->bnst_data + dpnd.head[i])->f, "ãƒ¬ãƒ™ãƒ«:A")) {
 	    distance_cost += LEVELA_COST;
 	}
 
 	if (dpnd.dflt[i] > 0) {
-	    /* ÄóÂê */
+	    /* æé¡Œ */
 	    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-		check_feature((sp->bnst_data + i)->f, "ÄóÂê")) {
+		check_feature((sp->bnst_data + i)->f, "æé¡Œ")) {
 		distance_cost += dpnd.dflt[i];
 
-		/* ÄóÂê¤Ë¤Ä¤é¤ì¤Æ±ó¤¯¤Ë·¸¤Ã¤Æ¤·¤Ş¤Ã¤¿Ê¸Àá¤Îµ÷Î¥¥³¥¹¥È */
+		/* æé¡Œã«ã¤ã‚‰ã‚Œã¦é ãã«ä¿‚ã£ã¦ã—ã¾ã£ãŸæ–‡ç¯€ã®è·é›¢ã‚³ã‚¹ãƒˆ */
 		for (j = 0; j < i - 1; j++) {
 		    if (dpnd.head[i] == dpnd.head[j]) {
 			for (k = j + 1; k < i; k++) {
@@ -1125,41 +1125,41 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 		}
 		continue;
 	    }
-	    /* ÄóÂê°Ê³° */
-	    /* ·¸¤êÂ¦¤¬Ï¢ÍÑ¤Ç¤Ê¤¤¤È¤­ */
+	    /* æé¡Œä»¥å¤– */
+	    /* ä¿‚ã‚Šå´ãŒé€£ç”¨ã§ãªã„ã¨ã */
 	    if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-		!check_feature((sp->bnst_data + i)->f, "·¸:Ï¢ÍÑ")) {
-		/* ¼«Ê¬¤ËÆÉÅÀ¤¬¤Ê¤¯¡¢ÎÙ¤Î¶¯¤¤ÍÑ¸À (Ï¢ÂÎ°Ê³°) ¤ò±Û¤¨¤Æ¤¤¤ë¤È¤­ */
-		if (!check_feature((sp->bnst_data + i)->f, "ÆÉÅÀ")) {
+		!check_feature((sp->bnst_data + i)->f, "ä¿‚:é€£ç”¨")) {
+		/* è‡ªåˆ†ã«èª­ç‚¹ãŒãªãã€éš£ã®å¼·ã„ç”¨è¨€ (é€£ä½“ä»¥å¤–) ã‚’è¶Šãˆã¦ã„ã‚‹ã¨ã */
+		if (!check_feature((sp->bnst_data + i)->f, "èª­ç‚¹")) {
 		    if (dpnd.head[i] > i + 1 && 
 			subordinate_level_check("B", (sp->bnst_data + i + 1)->f) && 
-			(cp = (char *)check_feature((sp->bnst_data + i + 1)->f, "·¸"))) {
-			if (strcmp(cp+3, "Ï¢ÂÎ") && strcmp(cp+3, "Ï¢³Ê")) {
+			(cp = (char *)check_feature((sp->bnst_data + i + 1)->f, "ä¿‚"))) {
+			if (strcmp(cp+3, "é€£ä½“") && strcmp(cp+3, "é€£æ ¼")) {
 			    distance_cost += STRONG_V_COST;
 			}
 		    }
 		}
-		/* ¼«Ê¬¤ËÆÉÅÀ¤¬¤¢¤ê*/
+		/* è‡ªåˆ†ã«èª­ç‚¹ãŒã‚ã‚Š*/
 		else {
-		    /* ÎÙ¤Ë·¸¤ë¤È¤­ */
+		    /* éš£ã«ä¿‚ã‚‹ã¨ã */
 		    if (dpnd.head[i] == i + 1) {
 			distance_cost += ADJACENT_TOUTEN_COST;
 		    }
 		}
 	    }
 
-	    /* ³ÎÎ¨Åª: Éû»ì¤Ê¤É¤Î¥³¥¹¥È (tentative) */
+	    /* ç¢ºç‡çš„: å‰¯è©ãªã©ã®ã‚³ã‚¹ãƒˆ (tentative) */
 	    if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-		if (check_feature((sp->bnst_data + i)->f, "·¸:Ï¢ÍÑ") && 
-		    !check_feature((sp->bnst_data + i)->f, "ÍÑ¸À")) {
+		if (check_feature((sp->bnst_data + i)->f, "ä¿‚:é€£ç”¨") && 
+		    !check_feature((sp->bnst_data + i)->f, "ç”¨è¨€")) {
 		    distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
 		}
 	    }
-	    /* ¥Ç¥Õ¥©¥ë¥È¤È¤Îº¹ x 2 ¤òµ÷Î¥¤Î¥³¥¹¥È¤È¤¹¤ë
-	       ¤¿¤À¤·¡¢·ÁÍÆ»ì¤ò½ü¤¯Ï¢³Ê¤Î¾ì¹ç¤Ï x 1 */
+	    /* ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¨ã®å·® x 2 ã‚’è·é›¢ã®ã‚³ã‚¹ãƒˆã¨ã™ã‚‹
+	       ãŸã ã—ã€å½¢å®¹è©ã‚’é™¤ãé€£æ ¼ã®å ´åˆã¯ x 1 */
 	    else {
-		if (!check_feature((sp->bnst_data + i)->f, "·¸:Ï¢³Ê") || 
-		    check_feature((sp->bnst_data + i)->f, "ÍÑ¸À:·Á")) {
+		if (!check_feature((sp->bnst_data + i)->f, "ä¿‚:é€£æ ¼") || 
+		    check_feature((sp->bnst_data + i)->f, "ç”¨è¨€:å½¢")) {
 		    distance_cost += dpnd.dflt[i]*DISTANCE_STEP;
 		}
 		else {
@@ -1173,25 +1173,25 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 
     if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {
 	for (i = sp->Bnst_num - 1; i > 0; i--) {
-	    /* Ê¸Ëö¤«¤éÍÑ¸À¤´¤È¤ËÄóÂê¤ò½èÍı¤¹¤ë */
-	    if ((cp = (char *)check_feature((sp->bnst_data + i)->f, "ÄóÂê¼õ"))) {
+	    /* æ–‡æœ«ã‹ã‚‰ç”¨è¨€ã”ã¨ã«æé¡Œã‚’å‡¦ç†ã™ã‚‹ */
+	    if ((cp = (char *)check_feature((sp->bnst_data + i)->f, "æé¡Œå—"))) {
 
-		/* topic_slot[0]	»ş´Ö°Ê³°¤Î¥Ï³Ê¤Î¥¹¥í¥Ã¥È
-		   topic_slot[1]	¡Ö<<»ş´Ö>>¤Ï¡×¤Î¥¹¥í¥Ã¥È
-		   Î¾Êı¤È¤â 1 °Ê²¼¤·¤«µö²Ä¤·¤Ê¤¤
+		/* topic_slot[0]	æ™‚é–“ä»¥å¤–ã®ãƒæ ¼ã®ã‚¹ãƒ­ãƒƒãƒˆ
+		   topic_slot[1]	ã€Œ<<æ™‚é–“>>ã¯ã€ã®ã‚¹ãƒ­ãƒƒãƒˆ
+		   ä¸¡æ–¹ã¨ã‚‚ 1 ä»¥ä¸‹ã—ã‹è¨±å¯ã—ãªã„
 		*/
 
 		topic_slot[0] = 0;
 		topic_slot[1] = 0;
 		one_topic_score = 0;
 
-		/* ·¸¤êÂ¦¤òÃµ¤¹ */
+		/* ä¿‚ã‚Šå´ã‚’æ¢ã™ */
 		for (j = i - 1; j >= 0; j--) {
 		    if (dpnd.head[j] != i) {
 			continue;
 		    }
-		    if (check_feature((sp->bnst_data + j)->f, "ÄóÂê")) {
-			if (check_feature((sp->bnst_data + j)->f, "»ş´Ö")) {
+		    if (check_feature((sp->bnst_data + j)->f, "æé¡Œ")) {
+			if (check_feature((sp->bnst_data + j)->f, "æ™‚é–“")) {
 			    topic_slot[1]++;
 			}
 			else {
@@ -1215,22 +1215,22 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 
     if (OptDisplay == OPT_DEBUG) {
 	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	    fprintf(stdout, "¢£ %.5fÅÀ (µ÷Î¥¸ºÅÀ %dÅÀ)\n", 
+	    fprintf(stdout, "â–  %.5fç‚¹ (è·é›¢æ¸›ç‚¹ %dç‚¹)\n", 
 		    Work_mgr.score, distance_cost);
 	}
 	else {
-	    fprintf(stdout, "¢£ %dÅÀ (µ÷Î¥¸ºÅÀ %dÅÀ (%dÅÀ) ÄóÂê¥¹¥³¥¢ %dÅÀ)\n", 
+	    fprintf(stdout, "â–  %dç‚¹ (è·é›¢æ¸›ç‚¹ %dç‚¹ (%dç‚¹) æé¡Œã‚¹ã‚³ã‚¢ %dç‚¹)\n", 
 		    (int)Work_mgr.score, distance_cost, (int)Work_mgr.dflt*2, topic_score_sum);
 	}
     }
 
-    /* -nbest¤Î¤¿¤á½ĞÎÏ */
+    /* -nbestã®ãŸã‚å‡ºåŠ› */
     if (OptNbest == TRUE) {
-	/* feature¤ò²¾ÉÕÍ¿ */
+	/* featureã‚’ä»®ä»˜ä¸ */
 	assign_general_feature(sp->bnst_data, sp->Bnst_num, AfterDpndBnstRuleType, FALSE, TRUE);
 	assign_general_feature(sp->tag_data, sp->Tag_num, AfterDpndTagRuleType, FALSE, TRUE);
 
-	/* ³Ê²òÀÏ¤Î·ë²Ì¤òfeature¤È¤·¤Æ²¾ÉÕÍ¿ */
+	/* æ ¼è§£æã®çµæœã‚’featureã¨ã—ã¦ä»®ä»˜ä¸ */
 	for (i = 0; i < Work_mgr.pred_num; i++) {
 	    record_case_analysis(sp, &(Work_mgr.cpm[i]), NULL, TRUE);
 	}
@@ -1238,7 +1238,7 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 	sp->score = Work_mgr.score;
 	print_result(sp, 0, eos_flag);
 
-	/* ²¾ÉÕÍ¿¤·¤¿feature¤òºï½ü */
+	/* ä»®ä»˜ä¸ã—ãŸfeatureã‚’å‰Šé™¤ */
 	for (i = 0; i < sp->Bnst_num; i++) {
 	    delete_temp_feature(&(sp->bnst_data[i].f));
 	}
@@ -1247,7 +1247,7 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 	}
     }
         
-    /* ¸å½èÍı */
+    /* å¾Œå‡¦ç† */
 
     if (Work_mgr.score > sp->Best_mgr->score ||
 	(Work_mgr.score == sp->Best_mgr->score && 
@@ -1279,7 +1279,7 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
     int assign_cf_slot(CF_PRED_MGR *cpm_ptr, int cnum, int num)
 /*==================================================================*/
 {
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î¤½¤Î³Ê¤Ë¤¹¤Ç¤ËÂĞ±şÉÕ¤±¤¬¤¢¤ì¤Ğ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãã®æ ¼ã«ã™ã§ã«å¯¾å¿œä»˜ã‘ãŒã‚ã‚Œã° */
     if (cpm_ptr->cmm[0].result_lists_p[0].flag[cnum] != UNASSIGNED) {
 	return FALSE;
     }
@@ -1298,12 +1298,12 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 {
     int i;
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
-	/* ³ä¤êÅö¤Æ¤Ê¤·¡¢<¼çÂÎ>¥¢¥ê¤Î¥¬³Ê, ¥ò³Ê, ¥Ë³Ê¤¬Â¸ºß¤¹¤ë¤Ê¤é¤Ğ¡¢¥¬£²ÉÔ²Ä */
+	/* å‰²ã‚Šå½“ã¦ãªã—ã€<ä¸»ä½“>ã‚¢ãƒªã®ã‚¬æ ¼, ãƒ²æ ¼, ãƒ‹æ ¼ãŒå­˜åœ¨ã™ã‚‹ãªã‚‰ã°ã€ã‚¬ï¼’ä¸å¯ */
 	if (cpm_ptr->cmm[0].result_lists_p[0].flag[i] == UNASSIGNED && 
-	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[i], "¼çÂÎ", FALSE) && 
-	    (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥¬") || 
-	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥ò") || 
-	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "¥Ë"))) {
+	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[i], "ä¸»ä½“", FALSE) && 
+	    (MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ã‚¬") || 
+	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ãƒ²") || 
+	     MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "ãƒ‹"))) {
 	    return 0;
 	}
     }
@@ -1323,7 +1323,7 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 	cpm_ptr->pred_b_ptr->voice = VOICE_UKEMI;
     }
 
-    /* ¤Ê¤¯¤Ê¤é¤Ê¤¤¤è¤¦¤Ë */
+    /* ãªããªã‚‰ãªã„ã‚ˆã†ã« */
     check_b_ptr = cpm_ptr->pred_b_ptr;
     while (check_b_ptr->parent && check_b_ptr->parent->para_top_p == TRUE) {
 	check_b_ptr->parent->voice = cpm_ptr->pred_b_ptr->voice;
@@ -1339,29 +1339,29 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
     char *ret;
 
     /*
-       flag == 1: ¼«Î©¸ìÎó
-       flag == 0: ºÇ¸å¤Î¼«Î©¸ì
+       flag == 1: è‡ªç«‹èªåˆ—
+       flag == 0: æœ€å¾Œã®è‡ªç«‹èª
     */
 
     if (flag) {
-	/* ÀèÆ¬¤ò¤ß¤ë */
+	/* å…ˆé ­ã‚’ã¿ã‚‹ */
 	for (i = 0; i < bp->mrph_num; i++) {
-	    /* ÉÕÂ°¤ÎÆÃ¼ì¤ò½ü¤¯ */
-	    if (strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "ÆÃ¼ì") || 
-		check_feature((bp->mrph_ptr + i)->f, "¼«Î©")) {
+	    /* ä»˜å±ã®ç‰¹æ®Šã‚’é™¤ã */
+	    if (strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "ç‰¹æ®Š") || 
+		check_feature((bp->mrph_ptr + i)->f, "è‡ªç«‹")) {
 		start = i;
 		break;
 	    }
 	}
 
-	/* ËöÈø¤ò¤ß¤ë */
+	/* æœ«å°¾ã‚’ã¿ã‚‹ */
 	for (i = bp->mrph_num - 1; i >= start; i--) {
-	    /* ÆÃ¼ì, ½õ»ì, ½õÆ°»ì, È½Äê»ì¤ò½ü¤¯ */
-	    if ((strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "ÆÃ¼ì") || 
-		 check_feature((bp->mrph_ptr + i)->f, "¼«Î©")) && 
-		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "½õ»ì") && 
-		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "½õÆ°»ì") && 
-		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "È½Äê»ì")) {
+	    /* ç‰¹æ®Š, åŠ©è©, åŠ©å‹•è©, åˆ¤å®šè©ã‚’é™¤ã */
+	    if ((strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "ç‰¹æ®Š") || 
+		 check_feature((bp->mrph_ptr + i)->f, "è‡ªç«‹")) && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "åŠ©è©") && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "åŠ©å‹•è©") && 
+		strcmp(Class[(bp->mrph_ptr + i)->Hinshi][0].id, "åˆ¤å®šè©")) {
 		end = i;
 		break;
 	    }
@@ -1399,17 +1399,17 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	if (num != NIL_ASSIGNED && /* ³ä¤êÅö¤Æ¤¬¤¢¤ë */
-	    cpm_ptr->elem_b_ptr[i]) { /* && cpm_ptr->elem_b_num[i] < 0) { * ¾ÊÎ¬, ¡Á¤Ï, Ï¢ÂÎ½¤¾ş¤Ë¸ÂÄê¤¹¤ë¾ì¹ç */
+	if (num != NIL_ASSIGNED && /* å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ */
+	    cpm_ptr->elem_b_ptr[i]) { /* && cpm_ptr->elem_b_num[i] < 0) { * çœç•¥, ã€œã¯, é€£ä½“ä¿®é£¾ã«é™å®šã™ã‚‹å ´åˆ */
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos == MATCH_NONE || pos == MATCH_SUBJECT) {
-		sprintf(feature_buffer, "¥Ş¥Ã¥ÁÍÑÎã;%s:%s-%s", 
+		sprintf(feature_buffer, "ãƒãƒƒãƒç”¨ä¾‹;%s:%s-%s", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
 			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			pos == MATCH_NONE ? "NONE" : "SUBJECT");
 	    }
 	    else {
-		sprintf(feature_buffer, "¥Ş¥Ã¥ÁÍÑÎã;%s:%s-%s:%.5f", 
+		sprintf(feature_buffer, "ãƒãƒƒãƒç”¨ä¾‹;%s:%s-%s:%.5f", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]), 
 			cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, 
 			cpm_ptr->cmm[0].cf_ptr->ex_list[num][pos], 
@@ -1424,12 +1424,12 @@ int call_case_analysis(SENTENCE_DATA *sp, DPND dpnd, int eos_flag)
 void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¤Ë¤Ä¤¤¤Æ¡¢Ä¾Á°³ÊÍ×ÁÇ¤Î¥Ş¥Ã¥Á¥¹¥³¥¢¤òfeature¤Ë */
+    /* ç”¨è¨€ã«ã¤ã„ã¦ã€ç›´å‰æ ¼è¦ç´ ã®ãƒãƒƒãƒã‚¹ã‚³ã‚¢ã‚’featureã« */
 
     int num, pos, closest;
     char feature_buffer[DATA_LEN];
 
-    if (!check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À")) {
+    if (!check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€")) {
 	return;
     }
 
@@ -1439,7 +1439,7 @@ void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	if (num != NIL_ASSIGNED) {
 	    pos = cpm_ptr->cmm[0].result_lists_p[0].pos[num];
 	    if (pos != MATCH_SUBJECT) {
-		sprintf(feature_buffer, "Ä¾Á°³Ê¥Ş¥Ã¥Á:%d", 
+		sprintf(feature_buffer, "ç›´å‰æ ¼ãƒãƒƒãƒ:%d", 
 			(int)cpm_ptr->cmm[0].result_lists_p[0].score[num]);
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 	    }
@@ -1457,45 +1457,45 @@ void record_closest_cc_match(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	return;
     }
 
-    /* Ì¤ÂĞ±ş¤Î³ÊÍ×ÁÇ¤Î½èÍı */
+    /* æœªå¯¾å¿œã®æ ¼è¦ç´ ã®å‡¦ç† */
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (cpm_ptr->cmm[0].result_lists_d[0].flag[i] == NIL_ASSIGNED) {
-	    /* Ì¤³Ê, Ï¢³Ê */
+	    /* æœªæ ¼, é€£æ ¼ */
 	    if (cpm_ptr->elem_b_num[i] == -1) {
-		/* <»ş´Ö> => »ş´Ö */
-		if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "»ş´Ö")) {
-		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "»ş´Ö") < 0) {
-			add_cf_slot(cpm_ptr, "»ş´Ö", i);
+		/* <æ™‚é–“> => æ™‚é–“ */
+		if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "æ™‚é–“")) {
+		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "æ™‚é–“") < 0) {
+			add_cf_slot(cpm_ptr, "æ™‚é–“", i);
 		    }
 		}
-		/* Æó½Å¼ç¸ì¹½Ê¸¤Î³°¤Î¥¬³Ê */
+		/* äºŒé‡ä¸»èªæ§‹æ–‡ã®å¤–ã®ã‚¬æ ¼ */
 		else if (cpm_ptr->elem_b_ptr[i]->num < cpm_ptr->pred_b_ptr->num && 
-			 check_feature(cpm_ptr->elem_b_ptr[i]->f, "·¸:Ì¤³Ê") && 
-			 cpm_ptr->pred_b_ptr->num != cpm_ptr->elem_b_ptr[i]->num+1 && /* ÍÑ¸À¤ÎÄ¾Á°¤Ç¤Ï¤Ê¤¤ (¼Â¤Ï¡¢¤â¤¦¤Ò¤È¤Ä¤Î¥¬³Ê¤è¤ê¤âÁ°¤Ë¤¢¤ë¤³¤È¤ò¾ò·ï¤Ë¤·¤¿¤¤) */
+			 check_feature(cpm_ptr->elem_b_ptr[i]->f, "ä¿‚:æœªæ ¼") && 
+			 cpm_ptr->pred_b_ptr->num != cpm_ptr->elem_b_ptr[i]->num+1 && /* ç”¨è¨€ã®ç›´å‰ã§ã¯ãªã„ (å®Ÿã¯ã€ã‚‚ã†ã²ã¨ã¤ã®ã‚¬æ ¼ã‚ˆã‚Šã‚‚å‰ã«ã‚ã‚‹ã“ã¨ã‚’æ¡ä»¶ã«ã—ãŸã„) */
 			 check_ga2_ok(cpm_ptr)) {
-		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "¥¬£²") < 0) {
-			add_cf_slot(cpm_ptr, "¥¬£²", i);
+		    if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, "ã‚¬ï¼’") < 0) {
+			add_cf_slot(cpm_ptr, "ã‚¬ï¼’", i);
 		    }
 		}
-		/* ¤½¤ÎÂ¾ => ³°¤Î´Ø·¸
-		   Ê£¹çÌ¾»ì¤ÎÁ°Â¦: ÊİÎ±
-		   ÍÑ¸ÀÄ¾Á°¤Î¥Î³Ê: ÊİÎ± */
+		/* ãã®ä»– => å¤–ã®é–¢ä¿‚
+		   è¤‡åˆåè©ã®å‰å´: ä¿ç•™
+		   ç”¨è¨€ç›´å‰ã®ãƒæ ¼: ä¿ç•™ */
 		else if (cpm_ptr->cf.type != CF_NOUN && 
 			 !(cpm_ptr->elem_b_ptr[i]->inum > 0 && 
 			   cpm_ptr->elem_b_ptr[i]->parent == cpm_ptr->pred_b_ptr) && 
-			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("Ì¤") && 
-			 MatchPP2(cpm_ptr->cf.pp[i], "³°¤Î´Ø·¸")) { /* ¡Ö³°¤Î´Ø·¸¡×¤Î²ÄÇ½À­¤¢¤ë¤â¤Î */
-		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "³°¤Î´Ø·¸")) < 0) {
-			add_cf_slot(cpm_ptr, "³°¤Î´Ø·¸", i);
+			 cpm_ptr->cf.pp[i][0] != pp_kstr_to_code("æœª") && 
+			 MatchPP2(cpm_ptr->cf.pp[i], "å¤–ã®é–¢ä¿‚")) { /* ã€Œå¤–ã®é–¢ä¿‚ã€ã®å¯èƒ½æ€§ã‚ã‚‹ã‚‚ã® */
+		    if ((c = check_cf_case(cpm_ptr->cmm[0].cf_ptr, "å¤–ã®é–¢ä¿‚")) < 0) {
+			add_cf_slot(cpm_ptr, "å¤–ã®é–¢ä¿‚", i);
 		    }
 		    else {
 			assign_cf_slot(cpm_ptr, c, i);
 		    }
 		}
 	    }
-	    /* ³Ê¤ÏÌÀ¼¨¤µ¤ì¤Æ¤¤¤ë¤¬¡¢³Ê¥Õ¥ì¡¼¥àÂ¦¤Ë¤½¤Î³Ê¤¬¤Ê¤«¤Ã¤¿¾ì¹ç */
-	    /* ¡ú ¤È¤ê¤¦¤ë³Ê¤¬Ê£¿ô¤¢¤ë¤È¤­: ¥Ø³Ê */
+	    /* æ ¼ã¯æ˜ç¤ºã•ã‚Œã¦ã„ã‚‹ãŒã€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´ã«ãã®æ ¼ãŒãªã‹ã£ãŸå ´åˆ */
+	    /* â˜… ã¨ã‚Šã†ã‚‹æ ¼ãŒè¤‡æ•°ã‚ã‚‹ã¨ã: ãƒ˜æ ¼ */
 	    else {
 		if (check_cf_case(cpm_ptr->cmm[0].cf_ptr, pp_code_to_kstr(cpm_ptr->cf.pp[i][0])) < 0) {
 		    add_cf_slot(cpm_ptr, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]), i);
@@ -1515,14 +1515,14 @@ char *make_cc_string(char *word, int tag_n, char *pp_str, int cc_type,
     buf = (char *)malloc_data(strlen(pp_str) + strlen(word) + strlen(sid) + (dist ? log(dist) : 0) + 11, 
 			      "make_cc_string");
 
-    if (tag_n < 0) { /* ¸å½èÍı¤Ë¤è¤êÊ»¹ç¤µ¤ì¤¿´ğËÜ¶ç */
+    if (tag_n < 0) { /* å¾Œå‡¦ç†ã«ã‚ˆã‚Šä½µåˆã•ã‚ŒãŸåŸºæœ¬å¥ */
 	sprintf(buf, "%s/U/-/-/-/-", pp_str);
     }
     else {
 	sprintf(buf, "%s/%c/%s/%d/%d/%s", 
 		pp_str, 
-		cc_type == -2 ? 'O' : 	/* ¾ÊÎ¬ */
-		cc_type == -3 ? 'D' : 	/* ¾È±ş */
+		cc_type == -2 ? 'O' : 	/* çœç•¥ */
+		cc_type == -3 ? 'D' : 	/* ç…§å¿œ */
 		cc_type == -1 ? 'N' : 'C', 
 		word, 
 		tag_n, 
@@ -1539,21 +1539,21 @@ void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, 
 {
     char feature_buffer[DATA_LEN];
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î¥¬³Ê¤¬<¼çÂÎ½à>¤ò¤â¤Ä¤«¤É¤¦¤« */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã‚¬æ ¼ãŒ<ä¸»ä½“æº–>ã‚’ã‚‚ã¤ã‹ã©ã†ã‹ */
     if ((cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
-	MatchPP(cf_ptr->pp[n][0], "¥¬")) {
-	sprintf(feature_buffer, "³Ê¥Õ¥ì¡¼¥à-%s-¼çÂÎ½à", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	MatchPP(cf_ptr->pp[n][0], "ã‚¬")) {
+	sprintf(feature_buffer, "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -%s-ä¸»ä½“æº–", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
-    /* ³Ê¥Õ¥ì¡¼¥à¤¬<¼çÂÎ>¤ò¤â¤Ä¤«¤É¤¦¤« */
-    else if (cf_match_element(cf_ptr->sm[n], "¼çÂÎ", FALSE)) {
-	sprintf(feature_buffer, "³Ê¥Õ¥ì¡¼¥à-%s-¼çÂÎ", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒ<ä¸»ä½“>ã‚’ã‚‚ã¤ã‹ã©ã†ã‹ */
+    else if (cf_match_element(cf_ptr->sm[n], "ä¸»ä½“", FALSE)) {
+	sprintf(feature_buffer, "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -%s-ä¸»ä½“", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤¬<ÊäÊ¸>¤ò¤â¤Ä¤«¤É¤¦¤« *
-    if (cf_match_element(cf_ptr->sm[n], "ÊäÊ¸", TRUE)) {
-	sprintf(feature_buffer, "³Ê¥Õ¥ì¡¼¥à-%s-ÊäÊ¸", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒ<è£œæ–‡>ã‚’ã‚‚ã¤ã‹ã©ã†ã‹ *
+    if (cf_match_element(cf_ptr->sm[n], "è£œæ–‡", TRUE)) {
+	sprintf(feature_buffer, "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -%s-è£œæ–‡", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
     */
@@ -1567,20 +1567,20 @@ void assign_case_component_feature(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     int i, num;
     char feature_buffer[DATA_LEN], *word;
 
-    /* ÍÑ¸À¤Î³Æ¥¹¥í¥Ã¥È¤Î³ä¤êÅö¤Æ¤òÍÑ¸Àfeature¤Ë */
+    /* ç”¨è¨€ã®å„ã‚¹ãƒ­ãƒƒãƒˆã®å‰²ã‚Šå½“ã¦ã‚’ç”¨è¨€featureã« */
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 
-	/* ³ä¤êÅö¤Æ¤Ê¤· */
+	/* å‰²ã‚Šå½“ã¦ãªã— */
 	if (num == UNASSIGNED) {
-	    sprintf(feature_buffer, "³ÊÍ×ÁÇ-%s:NIL", 
+	    sprintf(feature_buffer, "æ ¼è¦ç´ -%s:NIL", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]));
 	}
-	/* ³ä¤êÅö¤Æ¤¢¤ê (¾ÊÎ¬°Ê³°¤Î¾ì¹ç) */
+	/* å‰²ã‚Šå½“ã¦ã‚ã‚Š (çœç•¥ä»¥å¤–ã®å ´åˆ) */
 	else if (cpm_ptr->elem_b_num[num] > -2) {
 	    word = make_print_string(cpm_ptr->elem_b_ptr[num], 0);
 	    if (word) {
-		sprintf(feature_buffer, "³ÊÍ×ÁÇ-%s:%s", 
+		sprintf(feature_buffer, "æ ¼è¦ç´ -%s:%s", 
 			pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[i][0]), word);
 		free(word);
 	    }
@@ -1599,19 +1599,19 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
     char *word, *cp;
     int num = cpm_ptr->cmm[0].result_lists_p[0].flag[cf_i];
 
-    /* ÊÂÎó¤Î»Ò¶¡¤ò¼èÆÀ¤·¤Æ¡¢buffer¤Ëcat */
+    /* ä¸¦åˆ—ã®å­ä¾›ã‚’å–å¾—ã—ã¦ã€bufferã«cat */
 
-    /* ¾ÊÎ¬¤ÎÀè¹Ô»ì¤Î¾ì¹ç: elem_b_ptr¤Î¿Æ¤¬para_top_p */
+    /* çœç•¥ã®å…ˆè¡Œè©ã®å ´åˆ: elem_b_ptrã®è¦ªãŒpara_top_p */
     if (!cpm_ptr->cf.type == CF_NOUN && 
 	cpm_ptr->elem_b_ptr[num]->para_type == PARA_NORMAL && 
 	cpm_ptr->elem_b_ptr[num]->parent && 
 	cpm_ptr->elem_b_ptr[num]->parent->para_top_p) {
 	for (j = 0; cpm_ptr->elem_b_ptr[num]->parent->child[j]; j++) {
-	    if (cpm_ptr->elem_b_ptr[num] == cpm_ptr->elem_b_ptr[num]->parent->child[j] || /* target¼«¿È */
-		cpm_ptr->elem_b_ptr[num]->parent->child[j]->para_type != PARA_NORMAL || /* ÊÂÎó¤Ç¤Ï¤Ê¤¤ */
-		(cpm_ptr->pred_b_ptr->num < cpm_ptr->elem_b_ptr[num]->num && /* Ï¢ÂÎ½¤¾ş¤Î¾ì¹ç¤Ï¡¢ */
-		 (cpm_ptr->elem_b_ptr[num]->parent->child[j]->num < cpm_ptr->pred_b_ptr->num || /* ÍÑ¸À¤è¤êÁ°¤Ï¤¤¤±¤Ê¤¤ */
-		  cpm_ptr->elem_b_ptr[num]->num < cpm_ptr->elem_b_ptr[num]->parent->child[j]->num))) { /* ¿·¤¿¤ÊÊÂÎó¤Î»Ò¤¬¸µ¤Î»Ò¤è¤ê¸å¤Ï¤¤¤±¤Ê¤¤ */
+	    if (cpm_ptr->elem_b_ptr[num] == cpm_ptr->elem_b_ptr[num]->parent->child[j] || /* targetè‡ªèº« */
+		cpm_ptr->elem_b_ptr[num]->parent->child[j]->para_type != PARA_NORMAL || /* ä¸¦åˆ—ã§ã¯ãªã„ */
+		(cpm_ptr->pred_b_ptr->num < cpm_ptr->elem_b_ptr[num]->num && /* é€£ä½“ä¿®é£¾ã®å ´åˆã¯ã€ */
+		 (cpm_ptr->elem_b_ptr[num]->parent->child[j]->num < cpm_ptr->pred_b_ptr->num || /* ç”¨è¨€ã‚ˆã‚Šå‰ã¯ã„ã‘ãªã„ */
+		  cpm_ptr->elem_b_ptr[num]->num < cpm_ptr->elem_b_ptr[num]->parent->child[j]->num))) { /* æ–°ãŸãªä¸¦åˆ—ã®å­ãŒå…ƒã®å­ã‚ˆã‚Šå¾Œã¯ã„ã‘ãªã„ */
 		continue;
 	    }
 	    word = make_print_string(cpm_ptr->elem_b_ptr[num]->parent->child[j], 0);
@@ -1625,12 +1625,12 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    /* Ä¾ÀÜ¤Î·¸¤ê¼õ¤±¤Î¾ì¹ç: elem_b_ptr¤¬para_top_p */
+    /* ç›´æ¥ã®ä¿‚ã‚Šå—ã‘ã®å ´åˆ: elem_b_ptrãŒpara_top_p */
     if (cpm_ptr->elem_b_ptr[num]->para_top_p) {
-	for (j = 1; cpm_ptr->elem_b_ptr[num]->child[j]; j++) { /* 0¤Ï¼«Ê¬¤ÈÆ±¤¸¤Ç¥Á¥§¥Ã¥¯¤µ¤ì¤Æ¤¤¤ë */
+	for (j = 1; cpm_ptr->elem_b_ptr[num]->child[j]; j++) { /* 0ã¯è‡ªåˆ†ã¨åŒã˜ã§ãƒã‚§ãƒƒã‚¯ã•ã‚Œã¦ã„ã‚‹ */
 	    if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL && 
 		(cpm_ptr->pred_b_ptr->num > cpm_ptr->elem_b_ptr[num]->num || 
-		 cpm_ptr->elem_b_ptr[num]->child[j]->num > cpm_ptr->pred_b_ptr->num)) { /* Ï¢ÂÎ½¤¾ş¤Î¾ì¹ç¤ÏÍÑ¸À¤è¤ê¸å¤Î¤ß */
+		 cpm_ptr->elem_b_ptr[num]->child[j]->num > cpm_ptr->pred_b_ptr->num)) { /* é€£ä½“ä¿®é£¾ã®å ´åˆã¯ç”¨è¨€ã‚ˆã‚Šå¾Œã®ã¿ */
 		word = make_print_string(cpm_ptr->elem_b_ptr[num]->child[j], 0);
 		cp = make_cc_string(word ? word : "(null)", cpm_ptr->elem_b_ptr[num]->child[j]->num, 
 				    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[cf_i][0]), 
@@ -1652,10 +1652,10 @@ void assign_feature_samecase(CF_PRED_MGR *cpm_ptr, int temp_assign_flag)
     char feature_buffer[DATA_LEN], *case_str1, *case_str2;
 
     for (i = 0; cpm_ptr->cmm[0].cf_ptr->samecase[i][0] != END_M; i++) {
-	/* ³Ê¤¬Â¸ºß¤·¡¢¡Ö½¤¾ş¡×¤Ç¤Ï¤Ê¤¤ */
-	if ((case_str1 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][0])) && strcmp(case_str1, "½¤¾ş")) {
-	    if ((case_str2 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][1])) && strcmp(case_str2, "½¤¾ş")) {
-		sprintf(feature_buffer, "Îà»÷³Ê;%s¡á%s", case_str1, case_str2);
+	/* æ ¼ãŒå­˜åœ¨ã—ã€ã€Œä¿®é£¾ã€ã§ã¯ãªã„ */
+	if ((case_str1 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][0])) && strcmp(case_str1, "ä¿®é£¾")) {
+	    if ((case_str2 = pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->samecase[i][1])) && strcmp(case_str2, "ä¿®é£¾")) {
+		sprintf(feature_buffer, "é¡ä¼¼æ ¼;%sï¼%s", case_str1, case_str2);
 		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, temp_assign_flag);
 	    }
 	}
@@ -1688,32 +1688,32 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     ELLIPSIS_COMPONENT *ccp;
     TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
-    /* ³Ê¥Õ¥ì¡¼¥àÂ¦¤«¤é¤Îµ­½Ò
-       => ¡ú¡Ö³ÊÍ×ÁÇ-¥¬¡×¤Ê¤É¤ò½¸¤á¤ë¤è¤¦¤Ë½¤Àµ¤¹¤ë */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´ã‹ã‚‰ã®è¨˜è¿°
+       => â˜…ã€Œæ ¼è¦ç´ -ã‚¬ã€ãªã©ã‚’é›†ã‚ã‚‹ã‚ˆã†ã«ä¿®æ­£ã™ã‚‹ */
 
-    /* ½Ò¸ì¤¬¸å½èÍı¤Ë¤è¤êÊ»¹ç¤µ¤ì¤¿¾ì¹ç: Ê»¹ç¤µ¤ì¤¿Àè¤Î´ğËÜ¶ç¤òÃµ¤¹ */
+    /* è¿°èªãŒå¾Œå‡¦ç†ã«ã‚ˆã‚Šä½µåˆã•ã‚ŒãŸå ´åˆ: ä½µåˆã•ã‚ŒãŸå…ˆã®åŸºæœ¬å¥ã‚’æ¢ã™ */
     while (pred_b_ptr->num < 0) {
 	pred_b_ptr--;
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥àID */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ID */
     sprintf(feature_buffer, "%s%s:", feature_head, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
 
-    /* ¤½¤ì¤¾¤ì¤Î³ÊÍ×ÁÇ */
+    /* ãã‚Œãã‚Œã®æ ¼è¦ç´  */
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 	ccp = em_ptr ? CheckEllipsisComponent(&(em_ptr->cc[cpm_ptr->cmm[0].cf_ptr->pp[i][0]]), 
 					      cpm_ptr->cmm[0].cf_ptr->pp_str[i]) : NULL;
 	case_num = cf_align ? find_aligned_case(cf_align, cpm_ptr->cmm[0].cf_ptr->pp[i][0]) : cpm_ptr->cmm[0].cf_ptr->pp[i][0];
-	if (case_num == END_M) { /* Àµµ¬²½»ş¤Ë¡¢ÂĞ±şÀè¤Î³Ê¤¬¤Ê¤¤(NIL)¾ì¹ç */
+	if (case_num == END_M) { /* æ­£è¦åŒ–æ™‚ã«ã€å¯¾å¿œå…ˆã®æ ¼ãŒãªã„(NIL)å ´åˆ */
 	    continue;
 	}
 	case_str = pp_code_to_kstr_in_context(cpm_ptr, case_num);
 
-	/* ³ä¤êÅö¤Æ¤Ê¤· */
+	/* å‰²ã‚Šå½“ã¦ãªã— */
 	if (num == UNASSIGNED) {
-	    if (!cf_align) { /* Àµµ¬²½»ş¤Ï³ä¤êÅö¤Æ¤Ê¤·¤òÉ½¼¨¤·¤Ê¤¤ */
-		if (first_arg_flag == 0) { /* 2¤ÄÌÜ°Ê¹ß¤Î³ÊÍ×ÁÇ¤Ê¤é¶èÀÚ¤ê¤ò½ĞÎÏ */
+	    if (!cf_align) { /* æ­£è¦åŒ–æ™‚ã¯å‰²ã‚Šå½“ã¦ãªã—ã‚’è¡¨ç¤ºã—ãªã„ */
+		if (first_arg_flag == 0) { /* 2ã¤ç›®ä»¥é™ã®æ ¼è¦ç´ ãªã‚‰åŒºåˆ‡ã‚Šã‚’å‡ºåŠ› */
 		    strcat(feature_buffer, ";");
 		}
 		first_arg_flag = 0;
@@ -1721,41 +1721,41 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		strcat(feature_buffer, buffer);
 	    }
 	}
-	/* ³ä¤êÅö¤Æ¤¢¤ê */
+	/* å‰²ã‚Šå½“ã¦ã‚ã‚Š */
 	else {
-	    if (first_arg_flag == 0) { /* 2¤ÄÌÜ°Ê¹ß¤Î³ÊÍ×ÁÇ¤Ê¤é¶èÀÚ¤ê¤ò½ĞÎÏ */
+	    if (first_arg_flag == 0) { /* 2ã¤ç›®ä»¥é™ã®æ ¼è¦ç´ ãªã‚‰åŒºåˆ‡ã‚Šã‚’å‡ºåŠ› */
 		strcat(feature_buffer, ";");
 	    }
 	    first_arg_flag = 0;
-	    /* Îã³°¥¿¥° */
+	    /* ä¾‹å¤–ã‚¿ã‚° */
 	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
-		sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* ÉÔÆÃÄê-¿Í */
+		sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* ä¸ç‰¹å®š-äºº */
 		strcat(feature_buffer, buffer);
 	    }
 	    else {
-		/* ¾ÊÎ¬¤Î¾ì¹ç (ÆÃ¼ì¥¿¥°°Ê³°) */
+		/* çœç•¥ã®å ´åˆ (ç‰¹æ®Šã‚¿ã‚°ä»¥å¤–) */
 		if (cpm_ptr->elem_b_num[num] <= -2) {
 		    sid = cpm_ptr->elem_s_ptr[num]->KNPSID ? 
 			cpm_ptr->elem_s_ptr[num]->KNPSID + 5 : NULL;
 		    dist_n = sp->Sen_num - cpm_ptr->elem_s_ptr[num]->Sen_num;
 		    sent_n = cpm_ptr->elem_s_ptr[num]->Sen_num;
 		}
-		/* Æ±Ê¸Æâ */
+		/* åŒæ–‡å†… */
 		else {
 		    sid = sp->KNPSID ? sp->KNPSID + 5 : NULL;
 		    dist_n = 0;
 		    sent_n = sp->Sen_num;
 		}
 
-		/* ÊÂÎó¤Î»Ò¶¡ */
+		/* ä¸¦åˆ—ã®å­ä¾› */
 		cat_case_analysis_result_parallel_child(feature_buffer, cpm_ptr, i, dist_n, sid);
 
-		if (cpm_ptr->elem_b_ptr[num]->num < 0) { /* ¸å½èÍı¤Ë¤è¤êÊ»¹ç¤µ¤ì¤¿´ğËÜ¶ç */
+		if (cpm_ptr->elem_b_ptr[num]->num < 0) { /* å¾Œå‡¦ç†ã«ã‚ˆã‚Šä½µåˆã•ã‚ŒãŸåŸºæœ¬å¥ */
 		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
 		    while (elem_b_ptr->num < 0) {
 			elem_b_ptr--;
 		    }
-		    if (elem_b_ptr->num >= pred_b_ptr->num) { /* Ê»¹ç¤µ¤ì¤¿Ï¢ÂÎ½¤¾ş¤ÏÍÑ¸À¼«¿È¤Ë¤Ê¤Ã¤Æ¤·¤Ş¤¦¤Î¤ÇÈóÉ½¼¨ */
+		    if (elem_b_ptr->num >= pred_b_ptr->num) { /* ä½µåˆã•ã‚ŒãŸé€£ä½“ä¿®é£¾ã¯ç”¨è¨€è‡ªèº«ã«ãªã£ã¦ã—ã¾ã†ã®ã§éè¡¨ç¤º */
 			tag_n = -1;
 		    }
 		    else {
@@ -1772,7 +1772,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		strcat(feature_buffer, cp);
 		free(cp);
 
-		/* ³Ê¡¦¾ÊÎ¬´Ø·¸¤ÎÊİÂ¸ (Ê¸Ì®²òÀÏÍÑ) */
+		/* æ ¼ãƒ»çœç•¥é–¢ä¿‚ã®ä¿å­˜ (æ–‡è„ˆè§£æç”¨) */
 		if (OptEllipsis) {
 		    RegisterTagTarget(pred_b_ptr->head_ptr->Goi, 
 				      pred_b_ptr->voice, 
@@ -1794,48 +1794,48 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 			  ELLIPSIS_MGR *em_ptr, int temp_assign_flag)
 /*==================================================================*/
 {
-    /* temp_assign_flag: TRUE¤Î¤È¤­feature¤ò¡Ö²¾ÉÕÍ¿¡×¤¹¤ë */
+    /* temp_assign_flag: TRUEã®ã¨ãfeatureã‚’ã€Œä»®ä»˜ä¸ã€ã™ã‚‹ */
 
     int i, num;
     char feature_buffer[DATA_LEN], relation[DATA_LEN], *word, *sid, *cp;
     TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
-    /* ½Ò¸ì¤¬¸å½èÍı¤Ë¤è¤êÊ»¹ç¤µ¤ì¤¿¾ì¹ç: Ê»¹ç¤µ¤ì¤¿Àè¤Î´ğËÜ¶ç¤òÃµ¤¹ */
+    /* è¿°èªãŒå¾Œå‡¦ç†ã«ã‚ˆã‚Šä½µåˆã•ã‚ŒãŸå ´åˆ: ä½µåˆã•ã‚ŒãŸå…ˆã®åŸºæœ¬å¥ã‚’æ¢ã™ */
     while (pred_b_ptr->num < 0) {
 	pred_b_ptr--;
     }
 
-    /* voice ·èÄê */
+    /* voice æ±ºå®š */
     if (pred_b_ptr->voice == VOICE_UNKNOWN) {
 	decide_voice(sp, cpm_ptr);
     }
 
-    /* ¼çÀá¤«¤É¤¦¤«¥Á¥§¥Ã¥¯
-    check_feature(pred_b_ptr->f, "¼çÀá")
+    /* ä¸»ç¯€ã‹ã©ã†ã‹ãƒã‚§ãƒƒã‚¯
+    check_feature(pred_b_ptr->f, "ä¸»ç¯€")
     */
 
-    /* ¡Ö³Ê¥Õ¥ì¡¼¥àÊÑ²½¡×¥Õ¥é¥°¤¬¤Ä¤¤¤Æ¤¤¤ë³Ê¥Õ¥ì¡¼¥à¤ò»ÈÍÑ¤·¤¿¾ì¹ç */
+    /* ã€Œæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰åŒ–ã€ãƒ•ãƒ©ã‚°ãŒã¤ã„ã¦ã„ã‚‹æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ä½¿ç”¨ã—ãŸå ´åˆ */
     if (cpm_ptr->cmm[0].cf_ptr->etcflag & CF_CHANGE) {
-	assign_cfeature(&(pred_b_ptr->f), "³Ê¥Õ¥ì¡¼¥àÊÑ²½", temp_assign_flag);
+	assign_cfeature(&(pred_b_ptr->f), "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰åŒ–", temp_assign_flag);
     }
 
-    /* Îà»÷³Ê¤òfeature¤Ë */
+    /* é¡ä¼¼æ ¼ã‚’featureã« */
     assign_feature_samecase(cpm_ptr, temp_assign_flag);
 
-    /* ÆşÎÏÂ¦¤Î³Æ³ÊÍ×ÁÇ¤Îµ­½Ò */
+    /* å…¥åŠ›å´ã®å„æ ¼è¦ç´ ã®è¨˜è¿° */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	/* ¾ÊÎ¬²òÀÏ¤Î·ë²Ì¤Ï½ü¤¯
-	   »Ø¼¨»ì¤Î²òÀÏ¤ò¤¹¤ë¾ì¹ç¤Ï¡¢»Ø¼¨»ì¤ò½ü¤¯ */
+	/* çœç•¥è§£æã®çµæœã¯é™¤ã
+	   æŒ‡ç¤ºè©ã®è§£æã‚’ã™ã‚‹å ´åˆã¯ã€æŒ‡ç¤ºè©ã‚’é™¤ã */
 	if (cpm_ptr->elem_b_num[i] <= -2) {
 	    continue;
 	}
-	/* ¸å½èÍı¤Ë¤è¤êÊ»¹ç¤µ¤ì¤¿Ï¢ÂÎ½¤¾ş»ì¤ò½ü¤¯ */
+	/* å¾Œå‡¦ç†ã«ã‚ˆã‚Šä½µåˆã•ã‚ŒãŸé€£ä½“ä¿®é£¾è©ã‚’é™¤ã */
 	if (cpm_ptr->elem_b_ptr[i]->num < 0) {
 	    elem_b_ptr = cpm_ptr->elem_b_ptr[i];
 	    while (elem_b_ptr->num < 0) {
 		elem_b_ptr--;
 	    }
-	    if (elem_b_ptr->num >= pred_b_ptr->num) { /* Ï¢ÂÎ½¤¾ş */
+	    if (elem_b_ptr->num >= pred_b_ptr->num) { /* é€£ä½“ä¿®é£¾ */
 		continue;
 	    }
 	}
@@ -1845,35 +1845,35 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 
-	/* ³ä¤êÅö¤Æ¤Ê¤· */
+	/* å‰²ã‚Šå½“ã¦ãªã— */
 	if (num == NIL_ASSIGNED) {
 	    continue;
 	}
-	/* ³ä¤êÅö¤Æ¤é¤ì¤Æ¤¤¤ë³Ê */
+	/* å‰²ã‚Šå½“ã¦ã‚‰ã‚Œã¦ã„ã‚‹æ ¼ */
 	else if (num >= 0) {
 	    strcpy(relation, pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	}
-	/* else: UNASSIGNED ¤Ï¤Ê¤¤¤Ï¤º */
+	/* else: UNASSIGNED ã¯ãªã„ã¯ãš */
 
-	/* feature¤ò³ÊÍ×ÁÇÊ¸Àá¤ËÍ¿¤¨¤ë */
+	/* featureã‚’æ ¼è¦ç´ æ–‡ç¯€ã«ä¸ãˆã‚‹ */
 	if (elem_b_ptr->num < pred_b_ptr->num) {
-	    sprintf(feature_buffer, "²òÀÏ³Ê:%s", relation);
+	    sprintf(feature_buffer, "è§£ææ ¼:%s", relation);
 	}
 	else {
-	    sprintf(feature_buffer, "²òÀÏÏ¢³Ê:%s", relation);
+	    sprintf(feature_buffer, "è§£æé€£æ ¼:%s", relation);
 	}
 	assign_cfeature(&(elem_b_ptr->f), feature_buffer, temp_assign_flag);
 
-	/* feature ¤òÍÑ¸ÀÊ¸Àá¤ËÍ¿¤¨¤ë */
+	/* feature ã‚’ç”¨è¨€æ–‡ç¯€ã«ä¸ãˆã‚‹ */
 	word = make_print_string(elem_b_ptr, 0);
 	if (word) {
 	    if (elem_b_ptr->num >= 0) {
-		sprintf(feature_buffer, "³Ê´Ø·¸%d:%s:%s", 
+		sprintf(feature_buffer, "æ ¼é–¢ä¿‚%d:%s:%s", 
 			elem_b_ptr->num, 
 			relation, word);
 	    }
 	    else {
-		sprintf(feature_buffer, "³Ê´Ø·¸%d:%s:%s", 
+		sprintf(feature_buffer, "æ ¼é–¢ä¿‚%d:%s:%s", 
 			elem_b_ptr->parent->num, 
 			relation, word);
 	    }
@@ -1882,12 +1882,12 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥àÂ¦¤«¤é¤Î³Ê²òÀÏ·ë²Ì¤Îµ­½Ò */
-    record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "³Ê²òÀÏ·ë²Ì:", NULL);
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´ã‹ã‚‰ã®æ ¼è§£æçµæœã®è¨˜è¿° */
+    record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "æ ¼è§£æçµæœ:", NULL);
 
-    /* Àµµ¬²½³Ê²òÀÏ·ë²Ì */
+    /* æ­£è¦åŒ–æ ¼è§£æçµæœ */
     for (i = 0; cpm_ptr->cmm[0].cf_ptr->cf_align[i].cf_id != NULL; i++) {
-	sprintf(feature_buffer, "Àµµ¬²½³Ê²òÀÏ·ë²Ì-%d:", i);
+	sprintf(feature_buffer, "æ­£è¦åŒ–æ ¼è§£æçµæœ-%d:", i);
 	record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, feature_buffer, &(cpm_ptr->cmm[0].cf_ptr->cf_align[i]));
     }
 }
@@ -1899,7 +1899,7 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
     int i;
 
     for (i = 0; i < sp->Best_mgr->pred_num; i++) {
-	if (sp->Best_mgr->cpm[i].pred_b_ptr == NULL) { /* ½Ò¸ì¤Ç¤Ï¤Ê¤¤¤ÈÈ½ÃÇ¤·¤¿¤â¤Î¤Ï¥¹¥­¥Ã¥× */
+	if (sp->Best_mgr->cpm[i].pred_b_ptr == NULL) { /* è¿°èªã§ã¯ãªã„ã¨åˆ¤æ–­ã—ãŸã‚‚ã®ã¯ã‚¹ã‚­ãƒƒãƒ— */
 	    continue;
 	}
 	if ((sp->Best_mgr->cpm[i].result_num != 0 && 
@@ -1908,7 +1908,7 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_PROB) || 
 	      (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
 	       sp->Best_mgr->cpm[i].cmm[0].score != CASE_MATCH_FAILURE_SCORE))) || 
-	    ((sp->Best_mgr->cpm[i].result_num == 0 || /* ³Ê¥Õ¥ì¡¼¥à¤Ê¤¤¾ì¹ç¤â³Ê²òÀÏ·ë²Ì¤ò½ñ¤¯ */
+	    ((sp->Best_mgr->cpm[i].result_num == 0 || /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãªã„å ´åˆã‚‚æ ¼è§£æçµæœã‚’æ›¸ã */
 	      sp->Best_mgr->cpm[i].cmm[0].cf_ptr->cf_address == -1))) {
 	    record_case_analysis(sp, &(sp->Best_mgr->cpm[i]), NULL, temp_assign_flag);
 	}
@@ -1927,7 +1927,7 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 	FEATURE *fp = m_ptr->f;
 	MRPH_DATA m;
 
-	/* ALT¤ò¥Á¥§¥Ã¥¯ */
+	/* ALTã‚’ãƒã‚§ãƒƒã‚¯ */
 	while (fp) {
 	    if (!strncmp(fp->cp, "ALT-", 4)) {
 		if (alt_count == alt_num) { /* target */
@@ -1935,10 +1935,10 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 			   m.Goi2, m.Yomi, m.Goi, 
 			   &m.Hinshi, &m.Bunrui, 
 			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		    /* ¸½ºß¤Î·ÁÂÖÁÇ¤òALT¤ËÊİÂ¸ */
+		    /* ç¾åœ¨ã®å½¢æ…‹ç´ ã‚’ALTã«ä¿å­˜ */
 		    assign_feature_alt_mrph(&(m_ptr->f), m_ptr);
-		    /* ¤³¤ÎALT¤òºÇ½ª·ë²Ì¤Î·ÁÂÖÁÇ¤Ë¤¹¤ë */
-		    delete_existing_features(m_ptr); /* ¸½ºß¤Î·ÁÂÖÁÇfeature¤òºï½ü */
+		    /* ã“ã®ALTã‚’æœ€çµ‚çµæœã®å½¢æ…‹ç´ ã«ã™ã‚‹ */
+		    delete_existing_features(m_ptr); /* ç¾åœ¨ã®å½¢æ…‹ç´ featureã‚’å‰Šé™¤ */
 		    copy_mrph(m_ptr, &m, TRUE);
 		    delete_cfeature(&(m_ptr->f), fp->cp);
 		    assign_cfeature(&(m_ptr->f), f_str, FALSE);
@@ -1955,9 +1955,9 @@ void record_all_case_analisys(SENTENCE_DATA *sp, int temp_assign_flag)
 int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, int exact_flag)
 /*==================================================================*/
 {
-    /* ³Ê²òÀÏ·ë²Ì¤«¤éÌ¾»ì¤ÎÛ£ËæÀ­²ò¾Ã¤ò¹Ô¤¦
+    /* æ ¼è§£æçµæœã‹ã‚‰åè©ã®æ›–æ˜§æ€§è§£æ¶ˆã‚’è¡Œã†
 
-    ÂĞ¾İ¤Î·ÁÂÖÁÇ: cpm_ptr->elem_b_ptr[i]->head_ptr */
+    å¯¾è±¡ã®å½¢æ…‹ç´ : cpm_ptr->elem_b_ptr[i]->head_ptr */
 
     int num, pos, expand, alt_num, alt_count, rep_length, rep_malloc_flag = 0;
     char *rep_strt, *exd;
@@ -1971,7 +1971,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
     alt_count = 0;
 
     if (!exact_flag) {
-	if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß")) {
+	if (check_feature(cpm_ptr->elem_b_ptr[i]->f, "ï¼´å›ºæœ‰ä¸€èˆ¬å±•é–‹ç¦æ­¢")) {
 	    expand = SM_NO_EXPAND_NE;
 	}
 	else {
@@ -1979,11 +1979,11 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	}
     }
 
-    /* ¤Ş¤º¸½ºß¤Î·ÁÂÖÁÇ¤ò¥Á¥§¥Ã¥¯ */
+    /* ã¾ãšç¾åœ¨ã®å½¢æ…‹ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) { 
-	rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr); /* ÂåÉ½É½µ­ */
+	rep_strt = get_mrph_rep(cpm_ptr->elem_b_ptr[i]->head_ptr); /* ä»£è¡¨è¡¨è¨˜ */
 	rep_length = get_mrph_rep_length(rep_strt);
-	if (rep_length == 0) { /* ¤Ê¤±¤ì¤Ğºî¤ë */
+	if (rep_length == 0) { /* ãªã‘ã‚Œã°ä½œã‚‹ */
 	    rep_strt = make_mrph_rn(cpm_ptr->elem_b_ptr[i]->head_ptr);
 	    rep_length = strlen(rep_strt);
 	    rep_malloc_flag = 1;
@@ -1994,7 +1994,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	rep_length = strlen(rep_strt);
     }
     if (rep_strt && rep_length) {
-	if (exact_flag) { /* exact match¤Ë¤è¤ë¥Á¥§¥Ã¥¯ */
+	if (exact_flag) { /* exact matchã«ã‚ˆã‚‹ãƒã‚§ãƒƒã‚¯ */
 	    if (cf_match_exactly(rep_strt, rep_length, 
 				 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 				 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
@@ -2002,7 +2002,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		alt_num = alt_count; /* 0 */
 	    }
 	}
-	else { /* °ÕÌ£ÁÇ¤Ë¤è¤ë¥Á¥§¥Ã¥¯ */
+	else { /* æ„å‘³ç´ ã«ã‚ˆã‚‹ãƒã‚§ãƒƒã‚¯ */
 	    if (exd = get_str_code_with_len(rep_strt, rep_length, Thesaurus)) {
 		score = _calc_similarity_sm_cf(exd, expand, 
 					       cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
@@ -2019,7 +2019,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	free(rep_strt);
     }
 
-    /* ALT¤ò¥Á¥§¥Ã¥¯ */
+    /* ALTã‚’ãƒã‚§ãƒƒã‚¯ */
     alt_count++;
     fp = cpm_ptr->elem_b_ptr[i]->head_ptr->f;
     while (fp) {
@@ -2030,9 +2030,9 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		   &m.Hinshi, &m.Bunrui, 
 		   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-		rep_strt = get_mrph_rep(&m); /* ÂåÉ½É½µ­ */
+		rep_strt = get_mrph_rep(&m); /* ä»£è¡¨è¡¨è¨˜ */
 		rep_length = get_mrph_rep_length(rep_strt);
-		if (rep_length == 0) { /* ¤Ê¤±¤ì¤Ğºî¤ë */
+		if (rep_length == 0) { /* ãªã‘ã‚Œã°ä½œã‚‹ */
 		    rep_strt = make_mrph_rn(&m);
 		    rep_length = strlen(rep_strt);
 		    rep_malloc_flag = 1;
@@ -2043,7 +2043,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 		rep_length = strlen(rep_strt);
 	    }
 	    if (rep_strt && rep_length) {
-		if (exact_flag) { /* exact match¤Ë¤è¤ë¥Á¥§¥Ã¥¯ */
+		if (exact_flag) { /* exact matchã«ã‚ˆã‚‹ãƒã‚§ãƒƒã‚¯ */
 		    if (cf_match_exactly(rep_strt, rep_length, 
 					 cpm_ptr->cmm[0].cf_ptr->ex_list[num], 
 					 cpm_ptr->cmm[0].cf_ptr->ex_num[num], &pos)) {
@@ -2054,7 +2054,7 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 			}
 		    }
 		}
-		else { /* °ÕÌ£ÁÇ¤Ë¤è¤ë¥Á¥§¥Ã¥¯ */
+		else { /* æ„å‘³ç´ ã«ã‚ˆã‚‹ãƒã‚§ãƒƒã‚¯ */
 		    if (exd = get_str_code_with_len(rep_strt, rep_length, Thesaurus)) {
 			tmp_score = _calc_similarity_sm_cf(exd, expand, 
 							   cpm_ptr->elem_b_ptr[i]->head_ptr->Goi2, 
@@ -2076,9 +2076,9 @@ int _noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr, int i, i
 	fp = fp->next;
     }
 
-    /* ·èÄê */
+    /* æ±ºå®š */
     if (alt_num > -1) {
-	decide_alt_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, alt_num, "Ì¾»ìÛ£ËæÀ­²ò¾Ã");
+	decide_alt_mrph(cpm_ptr->elem_b_ptr[i]->head_ptr, alt_num, "åè©æ›–æ˜§æ€§è§£æ¶ˆ");
 	return TRUE;
     }
     return FALSE;
@@ -2092,23 +2092,23 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (!cpm_ptr->elem_b_ptr[i] || 
-	    !check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ÉÊÛ£") || /* Û£Ëæ¤Ê·ÁÂÖÁÇ */
-	    check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ÍÑ¸ÀÛ£ËæÀ­²ò¾Ã")) {
+	    !check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "å“æ›–") || /* æ›–æ˜§ãªå½¢æ…‹ç´  */
+	    check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "ç”¨è¨€æ›–æ˜§æ€§è§£æ¶ˆ")) {
 	    continue;
 	}
-	/* ¾ÊÎ¬¤Î³ÊÍ×ÁÇ¡¢³Ê¥Õ¥ì¡¼¥à¤È¤¢¤Ş¤ê¥Ş¥Ã¥Á¤·¤Ê¤¤¤È¤­¤Ê¤É¤ÏÂĞ¾İ¤È¤·¤Ê¤¤ */
-	else if (cpm_ptr->elem_b_num[i] < -1 || /* ¾ÊÎ¬¤Ç¤Ï¤Ê¤¤ */
-		 cpm_ptr->cmm[0].result_lists_d[0].flag[i] < 0 || /* ³ä¤êÅö¤Æ¤¢¤ê */
-		 cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] == MATCH_SUBJECT || /* <¼çÂÎ>match¤Ç¤Ï¤Ê¤¤ */
-		 ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && cpm_ptr->cmm[0].result_lists_d[0].score[i] < FREQ0_ASSINED_SCORE) || /* ¥¹¥³¥¢¤¬É¬Í× */
-		 (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && cpm_ptr->cmm[0].result_lists_d[0].score[i] <= CF_DECIDE_THRESHOLD) || /* ¥¹¥³¥¢¤¬É¬Í× */
-		 check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "²»·±²ò¾Ã")) { /*²»·±²ò¾Ã¤Ï¤µ¤ì¤Æ¤¤¤Ê¤¤ */
+	/* çœç•¥ã®æ ¼è¦ç´ ã€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã¨ã‚ã¾ã‚Šãƒãƒƒãƒã—ãªã„ã¨ããªã©ã¯å¯¾è±¡ã¨ã—ãªã„ */
+	else if (cpm_ptr->elem_b_num[i] < -1 || /* çœç•¥ã§ã¯ãªã„ */
+		 cpm_ptr->cmm[0].result_lists_d[0].flag[i] < 0 || /* å‰²ã‚Šå½“ã¦ã‚ã‚Š */
+		 cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] == MATCH_SUBJECT || /* <ä¸»ä½“>matchã§ã¯ãªã„ */
+		 ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && cpm_ptr->cmm[0].result_lists_d[0].score[i] < FREQ0_ASSINED_SCORE) || /* ã‚¹ã‚³ã‚¢ãŒå¿…è¦ */
+		 (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) && cpm_ptr->cmm[0].result_lists_d[0].score[i] <= CF_DECIDE_THRESHOLD) || /* ã‚¹ã‚³ã‚¢ãŒå¿…è¦ */
+		 check_feature(cpm_ptr->elem_b_ptr[i]->head_ptr->f, "éŸ³è¨“è§£æ¶ˆ")) { /*éŸ³è¨“è§£æ¶ˆã¯ã•ã‚Œã¦ã„ãªã„ */
 	    continue;
 	}
 
-	/* exact¥Ş¥Ã¥Á¤ò¥Á¥§¥Ã¥¯¤·¤ÆÌ¾»ì¤ÎÛ£ËæÀ­²ò¾Ã */
+	/* exactãƒãƒƒãƒã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦åè©ã®æ›–æ˜§æ€§è§£æ¶ˆ */
 	if (!_noun_lexical_disambiguation_by_case_analysis(cpm_ptr, i, 1)) {
-	    /* ¥Ş¥Ã¥Á¤·¤¿°ÕÌ£ÁÇ¤ò¤â¤È¤ËÌ¾»ì¤ÎÛ£ËæÀ­²ò¾Ã */
+	    /* ãƒãƒƒãƒã—ãŸæ„å‘³ç´ ã‚’ã‚‚ã¨ã«åè©ã®æ›–æ˜§æ€§è§£æ¶ˆ */
 	    _noun_lexical_disambiguation_by_case_analysis(cpm_ptr, i, 0);
 	}
     }
@@ -2118,28 +2118,28 @@ void noun_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* ³Ê²òÀÏ·ë²Ì¤«¤éÍÑ¸À¤ÎÛ£ËæÀ­²ò¾Ã¤ò¹Ô¤¦ */
+    /* æ ¼è§£æçµæœã‹ã‚‰ç”¨è¨€ã®æ›–æ˜§æ€§è§£æ¶ˆã‚’è¡Œã† */
 
     char *rep_cp;
     FEATURE *fp;
     MRPH_DATA m;
 
-    /* Ä¾Á°³Ê¤¬1¤Ä°Ê¾å³ä¤êÅö¤Æ¤é¤ì¤Æ¤¤¤ë¤³¤È¤ò¾ò·ï¤È¤¹¤ë */
+    /* ç›´å‰æ ¼ãŒ1ã¤ä»¥ä¸Šå‰²ã‚Šå½“ã¦ã‚‰ã‚Œã¦ã„ã‚‹ã“ã¨ã‚’æ¡ä»¶ã¨ã™ã‚‹ */
     if (count_assigned_adjacent_element(cpm_ptr->cmm[0].cf_ptr, &(cpm_ptr->cmm[0].result_lists_p[0])) && 
-	(check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "¸¶·ÁÛ£Ëæ") || /* ¸¶·Á¤¬Û£Ëæ¤ÊÍÑ¸À */
-	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
-	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "ÉÊÛ£"))) && /* ÉÊÛ£¤Ê¤Ò¤é¤¬¤Ê */
-	!check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "²»·±²ò¾Ã")) { /*²»·±²ò¾Ã¤Ï¤µ¤ì¤Æ¤¤¤Ê¤¤ */
-	/* ¸½ºß¤Î·ÁÂÖÁÇ¤Ç¤è¤¤¤È¤­ */
+	(check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "åŸå½¢æ›–æ˜§") || /* åŸå½¢ãŒæ›–æ˜§ãªç”¨è¨€ */
+	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA) && 
+	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "å“æ›–"))) && /* å“æ›–ãªã²ã‚‰ãŒãª */
+	!check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "éŸ³è¨“è§£æ¶ˆ")) { /*éŸ³è¨“è§£æ¶ˆã¯ã•ã‚Œã¦ã„ãªã„ */
+	/* ç¾åœ¨ã®å½¢æ…‹ç´ ã§ã‚ˆã„ã¨ã */
 	if ((rep_cp = get_mrph_rep(cpm_ptr->pred_b_ptr->head_ptr)) && 
 	    !strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
 		     strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
-	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "ÍÑ¸ÀÛ£ËæÀ­²ò¾Ã", FALSE);
-	    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "Ì¾»ìÛ£ËæÀ­²ò¾Ã"); /* ¤¢¤ì¤Ğºï½ü */
+	    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "ç”¨è¨€æ›–æ˜§æ€§è§£æ¶ˆ", FALSE);
+	    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "åè©æ›–æ˜§æ€§è§£æ¶ˆ"); /* ã‚ã‚Œã°å‰Šé™¤ */
 	    return;
 	}
 
-	/* ¸½ºß¤Î·ÁÂÖÁÇÂåÉ½É½µ­¤È³Ê¥Õ¥ì¡¼¥à¤ÎÉ½µ­¤¬°Û¤Ê¤ë¾ì¹ç¤Î¤ß·ÁÂÖÁÇ¤òÊÑ¹¹ */
+	/* ç¾åœ¨ã®å½¢æ…‹ç´ ä»£è¡¨è¡¨è¨˜ã¨æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¡¨è¨˜ãŒç•°ãªã‚‹å ´åˆã®ã¿å½¢æ…‹ç´ ã‚’å¤‰æ›´ */
 
 	fp = cpm_ptr->pred_b_ptr->head_ptr->f;
 	while (fp) {
@@ -2149,19 +2149,19 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 		rep_cp = get_mrph_rep(&m);
-		/* ÁªÂò¤·¤¿³Ê¥Õ¥ì¡¼¥à¤ÎÉ½µ­¤È°ìÃ×¤¹¤ëÂåÉ½É½µ­¤ò¤â¤Ä·ÁÂÖÁÇ¤òÁªÂò */
+		/* é¸æŠã—ãŸæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¡¨è¨˜ã¨ä¸€è‡´ã™ã‚‹ä»£è¡¨è¡¨è¨˜ã‚’ã‚‚ã¤å½¢æ…‹ç´ ã‚’é¸æŠ */
 		if (rep_cp && 
 		    !strncmp(rep_cp, cpm_ptr->cmm[0].cf_ptr->entry, 
 			     strlen(cpm_ptr->cmm[0].cf_ptr->entry))) {
-		    /* ¸½ºß¤Î·ÁÂÖÁÇ¤òALT¤ËÊİÂ¸ */
+		    /* ç¾åœ¨ã®å½¢æ…‹ç´ ã‚’ALTã«ä¿å­˜ */
 		    assign_feature_alt_mrph(&(cpm_ptr->pred_b_ptr->head_ptr->f), 
 					    cpm_ptr->pred_b_ptr->head_ptr);
-		    /* ¤³¤ÎALT¤òºÇ½ª·ë²Ì¤Î·ÁÂÖÁÇ¤Ë¤¹¤ë */
-		    delete_existing_features(cpm_ptr->pred_b_ptr->head_ptr); /* ¸½ºß¤Î·ÁÂÖÁÇfeature¤òºï½ü */
+		    /* ã“ã®ALTã‚’æœ€çµ‚çµæœã®å½¢æ…‹ç´ ã«ã™ã‚‹ */
+		    delete_existing_features(cpm_ptr->pred_b_ptr->head_ptr); /* ç¾åœ¨ã®å½¢æ…‹ç´ featureã‚’å‰Šé™¤ */
 		    copy_mrph(cpm_ptr->pred_b_ptr->head_ptr, &m, TRUE);
 		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), fp->cp);
-		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "ÍÑ¸ÀÛ£ËæÀ­²ò¾Ã", FALSE);
-		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "Ì¾»ìÛ£ËæÀ­²ò¾Ã"); /* ¤¢¤ì¤Ğºï½ü */
+		    assign_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "ç”¨è¨€æ›–æ˜§æ€§è§£æ¶ˆ", FALSE);
+		    delete_cfeature(&(cpm_ptr->pred_b_ptr->head_ptr->f), "åè©æ›–æ˜§æ€§è§£æ¶ˆ"); /* ã‚ã‚Œã°å‰Šé™¤ */
 		    break;
 		}
 	    }
@@ -2176,7 +2176,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
 {
     int i, dist = 0;
 
-    /* ¸õÊä¥Á¥§¥Ã¥¯ */
+    /* å€™è£œãƒã‚§ãƒƒã‚¯ */
     if (Work_mgr.dpnd.check[bp->num].num == -1) {
 	return -1;
     }

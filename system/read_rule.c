@@ -1,6 +1,6 @@
 /*====================================================================
 
-			  µ¬Â§¥Ç¡¼¥¿ÆÉ¤ß¹þ¤ß
+			  è¦å‰‡ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿
 
                                                K.Yamagami
                                                S.Kurohashi 93. 5.31
@@ -42,7 +42,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     FILE     *fp;
     CELL     *body_cell;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (*count) {
 	fprintf(stderr, ";; Mrph rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -108,7 +108,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     CELL     *body_cell;
     KoouRule  *rp = KoouRuleArray;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (CurKoouRuleSize) {
 	fprintf(stderr, ";; Koou rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -174,7 +174,7 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
     CELL     *body_cell;
     HomoRule  *rp = HomoRuleArray;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (CurHomoRuleSize) {
 	fprintf(stderr, ";; Homo rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -200,10 +200,10 @@ void read_mrph_rule(char *file_name, MrphRule *rp, int *count, int max)
 
 	body_cell = s_read(fp);
 
-	/* Á°¤Î·ÁÂÖÁÇÎó¥ë¡¼¥ë¤ÎÆÉ¹þ */
+	/* å‰ã®å½¢æ…‹ç´ åˆ—ãƒ«ãƒ¼ãƒ«ã®èª­è¾¼ */
 	store_regexpmrphs(&(rp->pre_pattern), car(body_cell));
 
-	/* homo¤Î·ÁÂÖÁÇÎó¥ë¡¼¥ë¤ÎÆÉ¹þ */
+	/* homoã®å½¢æ…‹ç´ åˆ—ãƒ«ãƒ¼ãƒ«ã®èª­è¾¼ */
 	store_regexpmrphs(&(rp->pattern), car(cdr(body_cell)));
 
 	list2feature(cdr(cdr(body_cell)), &(rp->f));
@@ -230,7 +230,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     FILE     *fp;
     CELL     *body_cell;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (*count) {
 	fprintf(stderr, ";; Bnst rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -285,7 +285,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     CELL	*body_cell, *loop_cell;
     DpndRule	*rp = DpndRuleArray;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (CurDpndRuleSize) {
 	fprintf(stderr, ";; Dpnd rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -324,12 +324,12 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 		exit(1);
 	    }
 	}
-	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 ¤¬governor¤Î¤¢¤ë°õ */
+	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 ãŒgovernorã®ã‚ã‚‹å° */
 
 	list2feature_pattern(&(rp->barrier), car(cdr(cdr(body_cell))));
 	rp->preference = atoi(_Atom(car(cdr(cdr(cdr(body_cell))))));
 
-	/* °ì°Õ¤Ë·èÄê¤¹¤ë¤«¤É¤¦¤« */
+	/* ä¸€æ„ã«æ±ºå®šã™ã‚‹ã‹ã©ã†ã‹ */
 	if (!Null(car(cdr(cdr(cdr(cdr(body_cell)))))) && 
 	    str_eq(_Atom(car(cdr(cdr(cdr(cdr(body_cell)))))), "U"))
 	    rp->decide = 1;
@@ -361,7 +361,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
     CELL	*body_cell, *loop_cell, *prob_cell;
     DpndRule	*rp = DpndRuleArray;
 
-    /* ½ÅÊ£¤·¤Æ¥ë¡¼¥ë¥Õ¥¡¥¤¥ë¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤È¤­ */
+    /* é‡è¤‡ã—ã¦ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã¨ã */
     if (CurDpndRuleSize) {
 	fprintf(stderr, ";; Dpnd rule is duplicated (%s) !!\n", file_name);
 	exit(1);
@@ -407,13 +407,13 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 		exit(1);
 	    }
 	}
-	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 ¤¬governor¤Î¤¢¤ë°õ */
+	rp->dpnd_type[i] = 0;	/* dpnd_type[i] != 0 ãŒgovernorã®ã‚ã‚‹å° */
 	
 	num++;
 	list2feature_pattern(&(rp->barrier), car(cdr(cdr(body_cell))));
 	rp->preference = atoi(_Atom(car(cdr(cdr(cdr(body_cell))))));
 
-	/* °ì°Õ¤Ë·èÄê¤¹¤ë¤«¤É¤¦¤« */
+	/* ä¸€æ„ã«æ±ºå®šã™ã‚‹ã‹ã©ã†ã‹ */
 	if (!Null(car(cdr(cdr(cdr(cdr(body_cell)))))) && 
 	    str_eq(_Atom(car(cdr(cdr(cdr(cdr(body_cell)))))), "U"))
 	    rp->decide = 1;
@@ -472,7 +472,7 @@ void read_bnst_rule(char *file_name, BnstRule *rp, int *count, int max)
 						      sizeof(GeneralRuleType)*GeneralRuleMax);
     }
 
-    /* ³Æ¼ï¥¿¥¤¥×, ¥â¡¼¥É¤ÎÅÁÇÅ */
+    /* å„ç¨®ã‚¿ã‚¤ãƒ—, ãƒ¢ãƒ¼ãƒ‰ã®ä¼æ’­ */
     (GeneralRuleArray+GeneralRuleNum)->type = rule->type;
     (GeneralRuleArray+GeneralRuleNum)->mode = rule->mode;
     (GeneralRuleArray+GeneralRuleNum)->breakmode = rule->breakmode;

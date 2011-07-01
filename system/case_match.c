@@ -1,6 +1,6 @@
 /*====================================================================
 
-			³Ê¹½Â¤²òÀÏ: ¥Ş¥Ã¥Á¥ó¥°
+			æ ¼æ§‹é€ è§£æ: ãƒãƒƒãƒãƒ³ã‚°
 
                                                S.Kurohashi 93. 5.31
 
@@ -8,12 +8,12 @@
 ====================================================================*/
 #include "knp.h"
 
-double 	Current_max_score;	/* ÆÀÅÀ */
-double 	Current_pure_score[MAX_MATCH_MAX];	/* Àµµ¬²½¤¹¤ëÁ°¤ÎÆÀÅÀ */
-double	Current_sufficiency;	/* Ëä¤Ş¤ê¤°¤¢¤¤ */
-int 	Current_max_m_e;	/* Í×ÁÇ¿ô */
-int 	Current_max_m_p;	/* Í×ÁÇ¤Î°ÌÃÖ */
-int 	Current_max_c_e;	/* ¸òº¹¿ô */
+double 	Current_max_score;	/* å¾—ç‚¹ */
+double 	Current_pure_score[MAX_MATCH_MAX];	/* æ­£è¦åŒ–ã™ã‚‹å‰ã®å¾—ç‚¹ */
+double	Current_sufficiency;	/* åŸ‹ã¾ã‚Šãã‚ã„ */
+int 	Current_max_m_e;	/* è¦ç´ æ•° */
+int 	Current_max_m_p;	/* è¦ç´ ã®ä½ç½® */
+int 	Current_max_c_e;	/* äº¤å·®æ•° */
 
 int 	Current_max_num;
 LIST 	Current_max_list1[MAX_MATCH_MAX];
@@ -22,35 +22,35 @@ LIST 	Current_max_list2[MAX_MATCH_MAX];
 
 int 	SM_match_score[] = {0, 10, 10, 10, 10, 10, 10, 10, 10, 
 			    10, 10, 10, 10};
-  				/*{0, 5, 8, 10, 12};*/	/* £Ó£ÍÂĞ±ş¥¹¥³¥¢ */
-int     SM_match_unknown = 10;			 	/* ¥Ç¡¼¥¿Ì¤ÃÎ     */
+  				/*{0, 5, 8, 10, 12};*/	/* ï¼³ï¼­å¯¾å¿œã‚¹ã‚³ã‚¢ */
+int     SM_match_unknown = 10;			 	/* ãƒ‡ãƒ¼ã‚¿æœªçŸ¥     */
 
 /* int 	EX_match_score[] = {0, 0, 5, 7, 8, 9, 10, 11}; */
 /* int 	EX_match_score[] = {0, 0, 0, 1, 3, 5, 10, 11}; */
 int 	EX_match_score[]  = {0, 0, 0, 1, 3, 5, 8, 11};
 int 	EX_match_score2[] = {0, 0, 0, 1, 2, 4, 7, 11};
-							/* ÍÑÎãÂĞ±ş¥¹¥³¥¢ */
-int     EX_match_unknown = 6;				/* ¥Ç¡¼¥¿Ì¤ÃÎ     */
-int     EX_match_sentence = 10;				/* ³ÊÍ×ÁÇ -- Ê¸   */
-int     EX_match_tim = 0;				/* ³ÊÍ×ÁÇ -- »ş´Ö:»ş´Ö³Ê */
-int     EX_match_tim2 = 12;				/* ³ÊÍ×ÁÇ -- »ş´Ö:¤½¤ÎÂ¾¤Î³Ê */
-int     EX_match_tim3 = 8;				/* ³ÊÍ×ÁÇ -- »ş´Ö:³ÊÁªÂò»ş */
-int     EX_match_qua = 9; /* 10; */			/* ³ÊÍ×ÁÇ -- ¿ôÎÌ */
+							/* ç”¨ä¾‹å¯¾å¿œã‚¹ã‚³ã‚¢ */
+int     EX_match_unknown = 6;				/* ãƒ‡ãƒ¼ã‚¿æœªçŸ¥     */
+int     EX_match_sentence = 10;				/* æ ¼è¦ç´  -- æ–‡   */
+int     EX_match_tim = 0;				/* æ ¼è¦ç´  -- æ™‚é–“:æ™‚é–“æ ¼ */
+int     EX_match_tim2 = 12;				/* æ ¼è¦ç´  -- æ™‚é–“:ãã®ä»–ã®æ ¼ */
+int     EX_match_tim3 = 8;				/* æ ¼è¦ç´  -- æ™‚é–“:æ ¼é¸æŠæ™‚ */
+int     EX_match_qua = 9; /* 10; */			/* æ ¼è¦ç´  -- æ•°é‡ */
 int	EX_match_exact = 12;
 int	EX_match_subject = 8;
 int	EX_match_modification = 0;
 int	EX_match_demonstrative = 0;
 
 int	SOTO_THRESHOLD = 0; /* if -probcase; otherwise DEFAULT_SOTO_THRESHOLD */
-/*int	NOUN_THRESHOLD = 5; /* ¶¶ÅÏ¤·»Ø¼¨´Ø·¸¤ÎïçÃÍ */
-int	NOUN_THRESHOLD = 5; /* ¶¶ÅÏ¤·»Ø¼¨´Ø·¸¤ÎïçÃÍ */
+/*int	NOUN_THRESHOLD = 5; /* æ©‹æ¸¡ã—æŒ‡ç¤ºé–¢ä¿‚ã®é–¾å€¤ */
+int	NOUN_THRESHOLD = 5; /* æ©‹æ¸¡ã—æŒ‡ç¤ºé–¢ä¿‚ã®é–¾å€¤ */
 int	CASE_ASSIGN_THRESHOLD = 0;
 
 /*==================================================================*/
 	    void print_assign(LIST *list, CASE_FRAME *cf)
 /*==================================================================*/
 {
-    /* ÂĞ±ş¥ê¥¹¥È¤ÎÉ½¼¨ */
+    /* å¯¾å¿œãƒªã‚¹ãƒˆã®è¡¨ç¤º */
 
     int i;
     for (i = 0; i < cf->element_num; i++) {
@@ -66,9 +66,9 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	     int comp_sm(char *cpp, char *cpd, int start)
 /*==================================================================*/
 {
-    /* start ¤«¤é¥Á¥§¥Ã¥¯¤¹¤ë
-       ÉáÄÌ¤Ï 1 
-       ÉÊ»ì¤´¤È¥Á¥§¥Ã¥¯¤¹¤ë¤È¤­¤Ï 0 */
+    /* start ã‹ã‚‰ãƒã‚§ãƒƒã‚¯ã™ã‚‹
+       æ™®é€šã¯ 1 
+       å“è©ã”ã¨ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã¨ãã¯ 0 */
 
     int i;
 
@@ -88,17 +88,17 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 /*==================================================================*/
 {
     /*
-      NTT¤Î°ÕÌ£ÁÇ¤Î°ì·åÌÜ¤ÏÉÊ»ì¾ğÊó
-      ³Ê¥Õ¥ì¡¼¥à <-----> ¥Ç¡¼¥¿
-       x(ÊäÊ¸)   <-----> x¤À¤±OK
-       1(Ì¾»ì)   <-----> x°Ê³°OK
-                         (Ì¾»ì°Ê³°¤Î¤â¤Î¤Ïget_sm¤Î»şÅÀ¤ÇÇÓ½ü 99/01/13)
+      NTTã®æ„å‘³ç´ ã®ä¸€æ¡ç›®ã¯å“è©æƒ…å ±
+      æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  <-----> ãƒ‡ãƒ¼ã‚¿
+       x(è£œæ–‡)   <-----> xã ã‘OK
+       1(åè©)   <-----> xä»¥å¤–OK
+                         (åè©ä»¥å¤–ã®ã‚‚ã®ã¯get_smã®æ™‚ç‚¹ã§æ’é™¤ 99/01/13)
     */
 
     /* 
-       flag == SM_EXPAND_NE    : ¸ÇÍ­Ì¾»ì°ÕÌ£Â°À­¤ò°ìÈÌÌ¾»ì°ÕÌ£Â°À­¤ËÊÑ´¹¤¹¤ë
-       flag == SM_NO_EXPAND_NE : ¸ÇÍ­Ì¾»ì°ÕÌ£Â°À­¤ò°ìÈÌÌ¾»ì°ÕÌ£Â°À­¤ËÊÑ´¹¤·¤Ê¤¤
-       flag == SM_CHECK_FULL   : ¥³¡¼¥É¤Î°ìÊ¸»úÌÜ¤«¤é¥Á¥§¥Ã¥¯¤¹¤ë
+       flag == SM_EXPAND_NE    : å›ºæœ‰åè©æ„å‘³å±æ€§ã‚’ä¸€èˆ¬åè©æ„å‘³å±æ€§ã«å¤‰æ›ã™ã‚‹
+       flag == SM_NO_EXPAND_NE : å›ºæœ‰åè©æ„å‘³å±æ€§ã‚’ä¸€èˆ¬åè©æ„å‘³å±æ€§ã«å¤‰æ›ã—ãªã„
+       flag == SM_CHECK_FULL   : ã‚³ãƒ¼ãƒ‰ã®ä¸€æ–‡å­—ç›®ã‹ã‚‰ãƒã‚§ãƒƒã‚¯ã™ã‚‹
      */
 
     int current_score, score = 0;
@@ -117,17 +117,17 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	    return 0;
     }
 
-    /* °ÕÌ£¥Ş¡¼¥«¤Î¥Ş¥Ã¥Á¥ó¥°ÅÙ¤Î·×»»
+    /* æ„å‘³ãƒãƒ¼ã‚«ã®ãƒãƒƒãƒãƒ³ã‚°åº¦ã®è¨ˆç®—
 
-       ¡¦¥Ñ¥¿¡¼¥ó¤¬Àè¤Ë* --- ¥Ş¥Ã¥Á
-       ¡¦¥Ç¡¼¥¿¤¬Àè¤Ë* --- ¥Ş¥Ã¥Á¤·¤Ê¤¤
-       ¡¦ºÇ¸å¤Ş¤Ç°ìÃ× --- ¥Ş¥Ã¥Á
+       ãƒ»ãƒ‘ã‚¿ãƒ¼ãƒ³ãŒå…ˆã«* --- ãƒãƒƒãƒ
+       ãƒ»ãƒ‡ãƒ¼ã‚¿ãŒå…ˆã«* --- ãƒãƒƒãƒã—ãªã„
+       ãƒ»æœ€å¾Œã¾ã§ä¸€è‡´ --- ãƒãƒƒãƒ
 
-         ¥Ş¥Ã¥Á : ¥Ş¥Ã¥Á¤¹¤ë³¬ÁØ¤Î¿¼¤µ¤òÊÖ¤¹
-	 ¥Ş¥Ã¥Á¤·¤Ê¤¤¤È¤­ : 0¤òÊÖ¤¹
+         ãƒãƒƒãƒ : ãƒãƒƒãƒã™ã‚‹éšå±¤ã®æ·±ã•ã‚’è¿”ã™
+	 ãƒãƒƒãƒã—ãªã„ã¨ã : 0ã‚’è¿”ã™
     */
 
-    /* ¥Ç¡¼¥¿¤¬¸ÇÍ­Ì¾»ì¤Î¤È¤­ */
+    /* ãƒ‡ãƒ¼ã‚¿ãŒå›ºæœ‰åè©ã®ã¨ã */
     if (cpd[0] == '2') {
 	if (flag == SM_EXPAND_NE && cpp[0] != '2') {
 	    if (SMP2SMGExist == FALSE) {
@@ -149,9 +149,9 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 				*cp, start);
 		    }
 
-		    /* ÉûºîÍÑ¥Õ¥é¥°¤¬¤¢¤ë°ÕÌ£ÁÇÊÑ´¹¤Ï¹Ô¤ï¤Ê¤¤ */
+		    /* å‰¯ä½œç”¨ãƒ•ãƒ©ã‚°ãŒã‚ã‚‹æ„å‘³ç´ å¤‰æ›ã¯è¡Œã‚ãªã„ */
 		    if (!strncmp(cp+SM_CODE_SIZE, " side-effect", 12)) {
-			cp += 12; /* " side-effect" ¤ÎÊ¬¿Ê¤á¤ë */
+			cp += 12; /* " side-effect" ã®åˆ†é€²ã‚ã‚‹ */
 			continue;
 		    }
 
@@ -169,7 +169,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	else
 	    return 0;
     }
-    /* Î¾Êı¤È¤â°ìÈÌÌ¾»ì¤Î¤È¤­ */
+    /* ä¸¡æ–¹ã¨ã‚‚ä¸€èˆ¬åè©ã®ã¨ã */
     else if (cpp[0] != '2')
 	return comp_sm(cpp, cpd, 1);
     else
@@ -210,10 +210,10 @@ int	CASE_ASSIGN_THRESHOLD = 0;
     }
     else if (Thesaurus == USE_NTT) {
 	for (i = 0; *(d+i); i += SM_CODE_SIZE) {
-	    /* ¸ÇÍ­Ì¾»ìÂÎ·Ï */
+	    /* å›ºæœ‰åè©ä½“ç³» */
 	    if (*(d+i) == '2') {
-		/* °ìÈÌÂÎ·Ï¤Ë¥Ş¥Ã¥Ô¥ó¥° 
-		   ¢¨ side-effect ¤òÌµ»ë¤¹¤ë */
+		/* ä¸€èˆ¬ä½“ç³»ã«ãƒãƒƒãƒ”ãƒ³ã‚° 
+		   â€» side-effect ã‚’ç„¡è¦–ã™ã‚‹ */
 		code = smp2smg(d+i, TRUE);
 		if (code == NULL) {
 		    continue;
@@ -243,8 +243,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
     char *code;
     int size;
 
-    /* flag == TRUE  : ¤½¤Î°ÕÌ£ÁÇ¤È exact match
-       flag == FALSE : ¤½¤Î°ÕÌ£ÁÇ°Ê²¼¤Ë¤¢¤ì¤Ğ match */
+    /* flag == TRUE  : ãã®æ„å‘³ç´ ã¨ exact match
+       flag == FALSE : ãã®æ„å‘³ç´ ä»¥ä¸‹ã«ã‚ã‚Œã° match */
 
     if (d == NULL) {
 	return FALSE;
@@ -263,7 +263,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	return _cf_match_element(d, code, 0, size);
     }
     else {
-	/* ¢¨ ¥³¡¼¥É¤¬2Ê¸»ú°Ê¾å¤¢¤ëÉ¬Í×¤¬¤¢¤ë */
+	/* â€» ã‚³ãƒ¼ãƒ‰ãŒ2æ–‡å­—ä»¥ä¸Šã‚ã‚‹å¿…è¦ãŒã‚ã‚‹ */
 	return _cf_match_element(d, code, 1, code_depth(code, size));
     }
 }
@@ -275,10 +275,10 @@ int	CASE_ASSIGN_THRESHOLD = 0;
     int len;
     char *code;
 
-    /* Î¾Êı¤Ë target ¤¬Â¸ºß¤¹¤ë¤«¥Á¥§¥Ã¥¯ */
+    /* ä¸¡æ–¹ã« target ãŒå­˜åœ¨ã™ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ */
 
-    /* flag == TRUE  : ¤½¤Î°ÕÌ£ÁÇ¤È exact match
-       flag == FALSE : ¤½¤Î°ÕÌ£ÁÇ°Ê²¼¤Ë¤¢¤ì¤Ğ match */
+    /* flag == TRUE  : ãã®æ„å‘³ç´ ã¨ exact match
+       flag == FALSE : ãã®æ„å‘³ç´ ä»¥ä¸‹ã«ã‚ã‚Œã° match */
 
     if (p == NULL) {
 	return FALSE;
@@ -306,8 +306,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	    }
 	}
 	else {
-	    /* ¢¨ ¥³¡¼¥É¤¬ 2 Ê¸»ú°Ê¾å¤¢¤ëÉ¬Í×¤¬¤¢¤ë
-	       1Ê¸»úÌÜ(ÉÊ»ì)¤òÌµ»ë¤·¤Æ¡¢Í¿¤¨¤é¤ì¤¿¥³¡¼¥É°Ê²¼¤Ë¤¢¤ë¤«¤É¤¦¤«¥Á¥§¥Ã¥¯ */
+	    /* â€» ã‚³ãƒ¼ãƒ‰ãŒ 2 æ–‡å­—ä»¥ä¸Šã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
+	       1æ–‡å­—ç›®(å“è©)ã‚’ç„¡è¦–ã—ã¦ã€ä¸ãˆã‚‰ã‚ŒãŸã‚³ãƒ¼ãƒ‰ä»¥ä¸‹ã«ã‚ã‚‹ã‹ã©ã†ã‹ãƒã‚§ãƒƒã‚¯ */
 	    len = code_depth(code, SM_CODE_SIZE);
 	    if (_cf_match_element(d, code, 1, len) == TRUE && 
 		_cf_match_element(p, code, 1, len) == TRUE) {
@@ -325,10 +325,10 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 			      int as2, CASE_FRAME *cfp, int *pos)
 /*==================================================================*/
 {
-    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "¼çÂÎ", TRUE) || 
-	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "ÊäÊ¸", TRUE) || 
-	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "»ş´Ö", TRUE) || 
-	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "¿ôÎÌ", TRUE)) {
+    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "ä¸»ä½“", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "è£œæ–‡", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "æ™‚é–“", TRUE) || 
+	cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "æ•°é‡", TRUE)) {
 	*pos = MATCH_SUBJECT;
 	return 1;
     }
@@ -340,21 +340,21 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 				     int as2, CASE_FRAME *cfp, int *pos)
 /*==================================================================*/
 {
-    /* °ÕÌ£ÁÇ : ³ÊÍ×ÁÇ -- ÊäÊ¸ */
-    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "ÊäÊ¸", TRUE)) {
+    /* æ„å‘³ç´  : æ ¼è¦ç´  -- è£œæ–‡ */
+    if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "è£œæ–‡", TRUE)) {
 	return EX_match_sentence;
     }
-    /* °ÕÌ£ÁÇ : ³ÊÍ×ÁÇ -- »ş´Ö */
-    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "»ş´Ö", TRUE)) {
-	/* ³Ê¥Õ¥ì¡¼¥àÂ¦¤¬»ş´Ö³Ê¤Î¾ì¹ç¤Ï¥¹¥³¥¢¤òÄã¤¯ */
-	if (MatchPP(cfp->pp[as2][0], "»ş´Ö")) {
+    /* æ„å‘³ç´  : æ ¼è¦ç´  -- æ™‚é–“ */
+    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "æ™‚é–“", TRUE)) {
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´ãŒæ™‚é–“æ ¼ã®å ´åˆã¯ã‚¹ã‚³ã‚¢ã‚’ä½ã */
+	if (MatchPP(cfp->pp[as2][0], "æ™‚é–“")) {
 	    return EX_match_tim;
 	}
-	/* ³Ê¥Õ¥ì¡¼¥à:»ş´Ö³Ê°Ê³°, ÆşÎÏÂ¦:³ÊÁªÂò»ş
-	   ³Ê¤¬Û£Ëæ¤Ê¤È¤­¤Ï
-	   1. <»ş´Ö>»ş´Ö³Ê : <»ş´Ö>»ş´Ö³Ê (score == 0)
-	   2. ¡ÖÍÑÎã¡×ÉáÄÌ¤Î³Ê : ¡ÖÍÑÎã¡×ÉáÄÌ¤Î³Ê
-	   3. <»ş´Ö>ÉáÄÌ¤Î³Ê : <»ş´Ö>ÉáÄÌ¤Î³Ê (here) */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ :æ™‚é–“æ ¼ä»¥å¤–, å…¥åŠ›å´:æ ¼é¸æŠæ™‚
+	   æ ¼ãŒæ›–æ˜§ãªã¨ãã¯
+	   1. <æ™‚é–“>æ™‚é–“æ ¼ : <æ™‚é–“>æ™‚é–“æ ¼ (score == 0)
+	   2. ã€Œç”¨ä¾‹ã€æ™®é€šã®æ ¼ : ã€Œç”¨ä¾‹ã€æ™®é€šã®æ ¼
+	   3. <æ™‚é–“>æ™®é€šã®æ ¼ : <æ™‚é–“>æ™®é€šã®æ ¼ (here) */
 	else if (cfd->pp[as1][1] != END_M) {
 	    return EX_match_tim3;
 	}
@@ -362,8 +362,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	    return EX_match_tim2;
 	}
     }
-    /* °ÕÌ£ÁÇ : ³ÊÍ×ÁÇ -- ¿ôÎÌ */
-    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "¿ôÎÌ", TRUE)) {
+    /* æ„å‘³ç´  : æ ¼è¦ç´  -- æ•°é‡ */
+    else if (cf_match_both_element(cfd->sm[as1], cfp->sm[as2], "æ•°é‡", TRUE)) {
 	return EX_match_qua;
     }
     return -100;
@@ -383,14 +383,14 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	step = SM_CODE_SIZE;
     }
 
-    if (check_feature(tp->f, "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß")) {
+    if (check_feature(tp->f, "ï¼´å›ºæœ‰ä¸€èˆ¬å±•é–‹ç¦æ­¢")) {
 	expand = SM_NO_EXPAND_NE;
     }
     else {
 	expand = SM_EXPAND_NE;
     }
 
-    if (check_feature(tp->f, "Èó¼çÂÎ")) {
+    if (check_feature(tp->f, "éä¸»ä½“")) {
 	non_subj_flag = 1;
     }
 
@@ -401,34 +401,34 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	code = tp->SM_code;
     }    
 
-    /* °ÕÌ£Â°À­¤Î¥Ş¥Ã¥Á¥ó¥° */
+    /* æ„å‘³å±æ€§ã®ãƒãƒƒãƒãƒ³ã‚° */
     if (cfp->sm[n]) {
 	int i, j;
 
 	for (j = 0; cfp->sm[n][j]; j += step) {
-	    /* ³Ê¥Õ¥ì¡¼¥à-¼çÂÎ, ¿Í, ÁÈ¿¥
-	       ¼çÂÎ <=> <¼çÂÎ>, ¿ÍÌ¾, ÁÈ¿¥Ì¾
-	       ¿Í   <=> <¿Í>, ¿ÍÌ¾
-	       ÁÈ¿¥ <=> <ÁÈ¿¥>, ÁÈ¿¥Ì¾
-	    ¢¨ ¿ÍÌ¾¤Ë¤Ï<¿Í>, ÁÈ¿¥Ì¾¤Ë¤Ï<ÁÈ¿¥>¤òrule¤ÇÉÕÍ¿¤º¤ß */
-	    if (!strncmp(cfp->sm[n] + j, sm2code("¼çÂÎ"), step) || 
-		!strncmp(cfp->sm[n] + j, sm2code("¿Í"), step) || 
-		!strncmp(cfp->sm[n] + j, sm2code("ÁÈ¿¥"), step)) {
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -ä¸»ä½“, äºº, çµ„ç¹”
+	       ä¸»ä½“ <=> <ä¸»ä½“>, äººå, çµ„ç¹”å
+	       äºº   <=> <äºº>, äººå
+	       çµ„ç¹” <=> <çµ„ç¹”>, çµ„ç¹”å
+	    â€» äººåã«ã¯<äºº>, çµ„ç¹”åã«ã¯<çµ„ç¹”>ã‚’ruleã§ä»˜ä¸ãšã¿ */
+	    if (!strncmp(cfp->sm[n] + j, sm2code("ä¸»ä½“"), step) || 
+		!strncmp(cfp->sm[n] + j, sm2code("äºº"), step) || 
+		!strncmp(cfp->sm[n] + j, sm2code("çµ„ç¹”"), step)) {
 		if (non_subj_flag == 0 && 
-		    !MatchPP(cfp->pp[n][0], "¥ò") && /* ¼çÂÎ¤Î¥Ş¥Ã¥Á¥ó¥° (¥ò³Ê°Ê³°) */
+		    !MatchPP(cfp->pp[n][0], "ãƒ²") && /* ä¸»ä½“ã®ãƒãƒƒãƒãƒ³ã‚° (ãƒ²æ ¼ä»¥å¤–) */
 		    sms_match(cfp->sm[n] + j, code, expand)) {
 		    return 1;
 		}
 	    }
-	    /* ³Ê¥Õ¥ì¡¼¥à-Æ°ºî <=> <Ì¾(Å¾À¸)>, <¥µÊÑ> */
-	    else if (Thesaurus == USE_NTT && !strncmp(cfp->sm[n] + j, sm2code("Æ°ºî"), SM_CODE_SIZE)) {
-		if (sms_match(sm2code("Ì¾(Å¾À¸)"), code, SM_CHECK_FULL) || 
-		    sms_match(sm2code("¥µÊÑ"), code, SM_CHECK_FULL)) {
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -å‹•ä½œ <=> <å(è»¢ç”Ÿ)>, <ã‚µå¤‰> */
+	    else if (Thesaurus == USE_NTT && !strncmp(cfp->sm[n] + j, sm2code("å‹•ä½œ"), SM_CODE_SIZE)) {
+		if (sms_match(sm2code("å(è»¢ç”Ÿ)"), code, SM_CHECK_FULL) || 
+		    sms_match(sm2code("ã‚µå¤‰"), code, SM_CHECK_FULL)) {
 		    return 1;
 		}
 	    }
-	    /* ³Ê¥Õ¥ì¡¼¥à-¾ì½ê <=> <¾ì½ê> */
-	    else if (!strncmp(cfp->sm[n] + j, sm2code("¾ì½ê"), step)) {
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ -å ´æ‰€ <=> <å ´æ‰€> */
+	    else if (!strncmp(cfp->sm[n] + j, sm2code("å ´æ‰€"), step)) {
 		if (sms_match(cfp->sm[n] + j, code, expand)) {
 		    return 1;
 		}
@@ -449,8 +449,8 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     }
 
-    if (!strcmp(sm, "¼çÂÎ")) {
-	if (check_feature(tp->f, "Èó¼çÂÎ")) {
+    if (!strcmp(sm, "ä¸»ä½“")) {
+	if (check_feature(tp->f, "éä¸»ä½“")) {
 	    return 0;
 	}
 
@@ -473,7 +473,7 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 	code = cfd->sm[as1];
     }
 
-    if (check_feature(tp->f, "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß")) {
+    if (check_feature(tp->f, "ï¼´å›ºæœ‰ä¸€èˆ¬å±•é–‹ç¦æ­¢")) {
 	expand = SM_NO_EXPAND_NE;
     }
     else {
@@ -507,7 +507,7 @@ int cf_match_exactly_for_canonical_rep(char *word, int word_len, char **ex_list,
 {
     char *token;
 
-    /* Àµµ¬²½ÂåÉ½É½µ­¤Î¾ì¹ç¤Ï?¤ÇÀÚ¤Ã¤Æ¥Á¥§¥Ã¥¯ */
+    /* æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã®å ´åˆã¯?ã§åˆ‡ã£ã¦ãƒã‚§ãƒƒã‚¯ */
     token = strtok(word, "?");
     while (token) {
 	if (cf_match_exactly(token, strlen(token), ex_list, ex_num, pos)) {
@@ -524,10 +524,10 @@ float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word,
 			     CASE_FRAME *cfp, int n, int *pos)
 /*==================================================================*/
 {
-    /* Îà»÷ÅÙ·×»»: °ÕÌ£ÁÇ·² - ³Ê¥Õ¥ì¡¼¥à¤Î³Ê
-       unmatch_word: ¥Ş¥Ã¥Á¤µ¤»¤¿¤¯¤Ê¤¤Ã±¸ì */
+    /* é¡ä¼¼åº¦è¨ˆç®—: æ„å‘³ç´ ç¾¤ - æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼
+       unmatch_word: ãƒãƒƒãƒã•ã›ãŸããªã„å˜èª */
 
-    if (cfp->sm_specify[n]) { /* °ÕÌ£ÁÇÀ©¸Â */
+    if (cfp->sm_specify[n]) { /* æ„å‘³ç´ åˆ¶é™ */
 	return calc_similarity(exd, cfp->sm_specify[n], expand);
     }
     else {
@@ -553,7 +553,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	exd = tp->SM_code;
     }
 
-    if (check_feature(tp->f, "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß")) {
+    if (check_feature(tp->f, "ï¼´å›ºæœ‰ä¸€èˆ¬å±•é–‹ç¦æ­¢")) {
 	expand = SM_NO_EXPAND_NE;
     }
     else {
@@ -561,13 +561,13 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
 
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 	    (cp = get_bnst_head_canonical_rep(tp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 	    strp = strdup(cp);
 	    strp_malloc_flag = 1;
 	}
-	else if ((strp = get_mrph_rep_from_f(tp->head_ptr, FALSE)) == NULL) { /* featureÃæ¤ÎÂåÉ½É½µ­ */
-	    strp = make_mrph_rn(tp->head_ptr); /* ¤Ê¤±¤ì¤Ğºî¤ë */
+	else if ((strp = get_mrph_rep_from_f(tp->head_ptr, FALSE)) == NULL) { /* featureä¸­ã®ä»£è¡¨è¡¨è¨˜ */
+	    strp = make_mrph_rn(tp->head_ptr); /* ãªã‘ã‚Œã°ä½œã‚‹ */
 	    strp_malloc_flag = 1;
 	}
     }
@@ -576,12 +576,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     }
 
     /* exact match */
-    if (!check_feature(tp->f, "·ÁÉûÌ¾»ì")) {
+    if (!check_feature(tp->f, "å½¢å‰¯åè©")) {
 	if (cf_match_exactly_for_canonical_rep(strp, strlen(strp), 
 					       cfp->ex_list[n], cfp->ex_num[n], pos)) {
 	    exact_matched_flag = 1;
 	}
-	/* Àµµ¬²½ÂåÉ½É½µ­¤ò»È¤ï¤Ê¤¤ÂåÉ½É½µ­¤Î¾ì¹ç¤ÏALT¤âÄ´¤Ù¤ë */
+	/* æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ã‚ãªã„ä»£è¡¨è¡¨è¨˜ã®å ´åˆã¯ALTã‚‚èª¿ã¹ã‚‹ */
 	else if ((OptCaseFlag & OPT_CASE_USE_REP_CF) && 
 		 !(OptCaseFlag & OPT_CASE_USE_CREP_CF)) {
 	    fp = tp->head_ptr->f;
@@ -595,9 +595,9 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 			   m.Goi2, m.Yomi, m.Goi, 
 			   &m.Hinshi, &m.Bunrui, 
 			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		    strp = get_mrph_rep(&m); /* ÂåÉ½É½µ­ */
+		    strp = get_mrph_rep(&m); /* ä»£è¡¨è¡¨è¨˜ */
 		    rep_length = get_mrph_rep_length(strp);
-		    if (rep_length == 0) { /* ¤Ê¤±¤ì¤Ğºî¤ë */
+		    if (rep_length == 0) { /* ãªã‘ã‚Œã°ä½œã‚‹ */
 			strp = make_mrph_rn(&m);
 			rep_length = strlen(strp);
 			strp_malloc_flag = 1;
@@ -620,12 +620,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
     if (exact_matched_flag) {
 	return 1.1;
     }
-    /* °ÕÌ£ÁÇ¤Ê¤·
-       ¸õÊä¤Ë¤¹¤ë¤¿¤á¤Ë -1 ¤òÊÖ¤¹ */
+    /* æ„å‘³ç´ ãªã—
+       å€™è£œã«ã™ã‚‹ãŸã‚ã« -1 ã‚’è¿”ã™ */
     else if (!exd[0]) {
 	return -1;
     }
-    /* °ÕÌ£ÁÇ match */
+    /* æ„å‘³ç´  match */
     else {
 	return _calc_similarity_sm_cf(exd, expand, NULL, cfp, n, pos);
     }
@@ -640,12 +640,12 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 
     ex_rawscore = calc_similarity_word_cf(tp, cfp, n, pos);
 
-    /* exact¥Ş¥Ã¥Á */
+    /* exactãƒãƒƒãƒ */
     if (ex_rawscore > 1.0) {
 	return ex_rawscore;
     }
 
-    /* ¼çÂÎ¥Ş¥Ã¥Á */
+    /* ä¸»ä½“ãƒãƒƒãƒ */
     if (cf_match_sm_thesaurus(tp, cfp, n)) {
 	*pos = MATCH_SUBJECT;
 	return (float)EX_match_subject / 11;
@@ -661,7 +661,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 				 CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* °ÕÌ£¥Ş¡¼¥«¤Î¥Ş¥Ã¥Á¥ó¥°ÅÙ¤Î·×»» */
+    /* æ„å‘³ãƒãƒ¼ã‚«ã®ãƒãƒƒãƒãƒ³ã‚°åº¦ã®è¨ˆç®— */
 
     int i, j, k;
     char *exd, *exp;
@@ -684,8 +684,8 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	}
 
 	for (j = 0; cfp->sm[as2][j]; j+=SM_CODE_SIZE) {
-	    /* ¶ñÂÎÅª¤ÊÍÑÎã¤¬½ñ¤¤¤Æ¤¢¤ë¾ì¹ç */
-	    if (!strncmp(cfp->sm[as2]+j, sm2code("¢ª"), SM_CODE_SIZE)) {
+	    /* å…·ä½“çš„ãªç”¨ä¾‹ãŒæ›¸ã„ã¦ã‚ã‚‹å ´åˆ */
+	    if (!strncmp(cfp->sm[as2]+j, sm2code("â†’"), SM_CODE_SIZE)) {
 		tmp_score = (int)calc_similarity(exd, exp, 0);
 		if (tmp_score == 1) {
 		    *score = 10;
@@ -693,7 +693,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 		}
 	    }
 	    else {
-		/* ÁªÂòÀ©¸Â¤Ë¤è¤ë¥Ş¥Ã¥Á (NTT¥·¥½¡¼¥é¥¹¤¬¤¢¤ë¾ì¹ç) */
+		/* é¸æŠåˆ¶é™ã«ã‚ˆã‚‹ãƒãƒƒãƒ (NTTã‚·ã‚½ãƒ¼ãƒ©ã‚¹ãŒã‚ã‚‹å ´åˆ) */
 		for (i = 0; cfd->sm[as1][i]; i+=SM_CODE_SIZE) {
 		    tmp_score = 
 			SM_match_score[_sm_match_score(cfp->sm[as2]+j,
@@ -709,9 +709,9 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	int ex_score;
 	float ex_rawscore;
 
-	/* ³ÎÎ¨Åª³Ê²òÀÏ¤Î¤È¤­ */
+	/* ç¢ºç‡çš„æ ¼è§£æã®ã¨ã */
 	if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
-	    /* ¥Ş¥Ã¥Á¤òÄ´¤Ù¤ë¤È¤­ *
+	    /* ãƒãƒƒãƒã‚’èª¿ã¹ã‚‹ã¨ã *
 	       cf_match_exactly(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi, 
 	       strlen(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->head_ptr->Goi), 
 	       cfp->ex_list[as2], cfp->ex_num[as2], pos);
@@ -722,33 +722,33 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	    return TRUE;
 	}
 
-	/* ½¤¾ş³Ê¤Î¤È¤­ */
-	if (MatchPP(cfd->pp[as1][0], "½¤¾ş")) {
+	/* ä¿®é£¾æ ¼ã®ã¨ã */
+	if (MatchPP(cfd->pp[as1][0], "ä¿®é£¾")) {
 	    *score = EX_match_modification;
 	    return TRUE;
 	}
 
-	/* »Ø¼¨»ì¤Î¤È¤­ */
-	if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "»Ø¼¨»ì")) {
+	/* æŒ‡ç¤ºè©ã®ã¨ã */
+	if (check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->f, "æŒ‡ç¤ºè©")) {
 	    *score = EX_match_demonstrative;
 	    return TRUE;
 	}
 
-	/* ¼çÂÎ¥Ş¥Ã¥Á -- ¥¬³Ê¤Ç°ÕÌ£ÁÇ¤Ê¤·¤Î¤È¤­¸ÇÍ­Ì¾»ì¤À¤È»×¤¦ *
+	/* ä¸»ä½“ãƒãƒƒãƒ -- ã‚¬æ ¼ã§æ„å‘³ç´ ãªã—ã®ã¨ãå›ºæœ‰åè©ã ã¨æ€ã† *
 	    (cfd->ex[as1][0] == '\0' && 
-	     cf_match_element(cfp->sm[as2], "¼çÂÎ", TRUE))) {
+	     cf_match_element(cfp->sm[as2], "ä¸»ä½“", TRUE))) {
 	*/
 
 	if (cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED) {   
-	    /* ÍÑÎã¤Î¥Ş¥Ã¥Á¥ó¥° */
+	    /* ç”¨ä¾‹ã®ãƒãƒƒãƒãƒ³ã‚° */
 	    ex_rawscore = calc_similarity_word_cf_with_sm(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], cfp, as2, pos);
 	}
 	else {
 	    ex_rawscore = calc_similarity_word_cf(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1], cfp, as2, pos);
 	}
 	
-	if (MatchPP(cfp->pp[as2][0], "³°¤Î´Ø·¸")) {
-	    /* ³°¤Î´Ø·¸¤Î¤È¤­¥·¥½¡¼¥é¥¹¤ò»È¤ï¤Ê¤¤ */
+	if (MatchPP(cfp->pp[as2][0], "å¤–ã®é–¢ä¿‚")) {
+	    /* å¤–ã®é–¢ä¿‚ã®ã¨ãã‚·ã‚½ãƒ¼ãƒ©ã‚¹ã‚’ä½¿ã‚ãªã„ */
 	    if (ex_rawscore > 1.0) {
 		*score = *(match_score + 7);
 		return TRUE;
@@ -766,37 +766,37 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 	    }
 	}
 
-	/* <¼çÂÎ>¶¦ÄÌ¥¹¥³¥¢ */
+	/* <ä¸»ä½“>å…±é€šã‚¹ã‚³ã‚¢ */
 	if (*pos == MATCH_SUBJECT) {
 	    *score = EX_match_subject;
 	    return TRUE;
 	}
 	else {
-	    /* <ÊäÊ¸>, <»ş´Ö>, <¿ôÎÌ> */
+	    /* <è£œæ–‡>, <æ™‚é–“>, <æ•°é‡> */
 	    *score = elmnt_match_score_each_sm(as1, cfd, as2, cfp, pos);
 	}
 
-	/* ÆşÎÏÂ¦¤ÎÍÑÎã¤Î°ÕÌ£Â°À­¤¬¤Ê¤¤¾ì¹ç */
+	/* å…¥åŠ›å´ã®ç”¨ä¾‹ã®æ„å‘³å±æ€§ãŒãªã„å ´åˆ */
 	if (*exd == '\0' && *cfd->sm[as1] == '\0') {
-	    ex_rawscore = 0; /* ex_rawscore == -1 ¤Î¤Ï¤º */
+	    ex_rawscore = 0; /* ex_rawscore == -1 ã®ã¯ãš */
 	    *score = EX_match_unknown;
 	}
 
-	/* ³Ê²òÀÏÍÑ¥¹¥³¥¢¤ËÊÑ´¹ */
+	/* æ ¼è§£æç”¨ã‚¹ã‚³ã‚¢ã«å¤‰æ› */
 	ex_score = *(match_score + (int)(ex_rawscore * 7));
 	/*
 	if (Thesaurus == USE_NTT && 
-	    sm_check_match_max(exd, exp, 0, sm2code("Ãê¾İ"))) { * <Ãê¾İ>¤Î¥Ş¥Ã¥Á¤òÄã¤¯ *
+	    sm_check_match_max(exd, exp, 0, sm2code("æŠ½è±¡"))) { * <æŠ½è±¡>ã®ãƒãƒƒãƒã‚’ä½ã *
 	    ex_score = EX_match_score2[(int)(ex_rawscore * 7)];
 	}
 	*/
 
-	/* Âç¤­¤¤Êı¤ò¤«¤¨¤¹ */
+	/* å¤§ãã„æ–¹ã‚’ã‹ãˆã™ */
 	if (ex_score > *score) {
 	    *score = ex_score;
 	}
 
-	/* ÍÑÎã, °ÕÌ£ÁÇ¤Î¥Ş¥Ã¥Á¤¬ÉÔÀ®¸ù */
+	/* ç”¨ä¾‹, æ„å‘³ç´ ã®ãƒãƒƒãƒãŒä¸æˆåŠŸ */
 	if (*score > CASE_ASSIGN_THRESHOLD) {
 	    return TRUE;
 	}
@@ -813,7 +813,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 {
     int i, pat_element = 0;
 
-    /* ¤¹¤Ù¤Æ¤Î³Ê¤¬Ç¤°Õ³Ê¤À¤È 0 ¤òÊÖ¤·¤Æ 0 ¤Ç½ü»»¤·¤Æ¤·¤Ş¤¦ */
+    /* ã™ã¹ã¦ã®æ ¼ãŒä»»æ„æ ¼ã ã¨ 0 ã‚’è¿”ã—ã¦ 0 ã§é™¤ç®—ã—ã¦ã—ã¾ã† */
 
     for (i = 0; i < cfp->element_num; i++) {
 	if (!(cfp->oblig[i] == FALSE && list2->flag[i] == UNASSIGNED)) {
@@ -829,7 +829,7 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 {
     int i, count = 0;
 
-    /* ³ä¤êÅö¤Æ¤¬¤¢¤ëÄ¾Á°³Ê¤Î¿ô¤ò¿ô¤¨¤ë (³Ê¥Õ¥ì¡¼¥àÂ¦) */
+    /* å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ç›´å‰æ ¼ã®æ•°ã‚’æ•°ãˆã‚‹ (æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´) */
 
     for (i = 0; i < cfp->element_num; i++) {
 	if (cfp->adjacent[i] == TRUE && list2->flag[i] != UNASSIGNED) {
@@ -901,10 +901,10 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 				   int score, int closest)
 /*==================================================================*/
 {
-    /* ¥Õ¥ì¡¼¥à¤Î¥Ş¥Ã¥Á¥ó¥°ÅÙ¤Î·×»»(³ÊÌÀ¼¨ÉôÊ¬¤ò½ü¤¯) */
+    /* ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒãƒƒãƒãƒ³ã‚°åº¦ã®è¨ˆç®—(æ ¼æ˜ç¤ºéƒ¨åˆ†ã‚’é™¤ã) */
 
     int i, j;
-    int local_m_e = 0; /* ¥Ç¡¼¥¿Â¦³ä¤êÅö¤Æ¿ô */
+    int local_m_e = 0; /* ãƒ‡ãƒ¼ã‚¿å´å‰²ã‚Šå½“ã¦æ•° */
     int local_m_p = 0;
     int local_c_e = 0;
     int pat_element, dat_element = 0;
@@ -914,7 +914,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 
     local_score = score;
 
-    /* Í×ÁÇ¿ô¡¤Í×ÁÇ¤Î°ÌÃÖ¡¤¸òº¹¿ô */
+    /* è¦ç´ æ•°ï¼Œè¦ç´ ã®ä½ç½®ï¼Œäº¤å·®æ•° */
     for (i = 0; i < cfd->element_num; i++) {
 	if (list1->flag[i] != NIL_ASSIGNED) {
 	    local_m_e++;
@@ -928,25 +928,25 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	}
     }
 
-    /* Ê¸Ãæ¤ÎÍ×ÁÇ¿ô(Ç¤°Õ¤Ç¥Ş¥Ã¥Á¤·¤Æ¤¤¤Ê¤¤Í×ÁÇ°Ê³°) */
-    /* ¢¨ Ëä¤á¹ş¤ßÊ¸¤ÎÈï½¤¾ş¸ì¤ÏÇ¤°Õ°·¤¤ */
+    /* æ–‡ä¸­ã®è¦ç´ æ•°(ä»»æ„ã§ãƒãƒƒãƒã—ã¦ã„ãªã„è¦ç´ ä»¥å¤–) */
+    /* â€» åŸ‹ã‚è¾¼ã¿æ–‡ã®è¢«ä¿®é£¾èªã¯ä»»æ„æ‰±ã„ */
     for (i = 0; i < cfd->element_num; i++) {
 	if (!(cfd->oblig[i] == FALSE && list1->flag[i] == NIL_ASSIGNED)) {
 	    dat_element++;
 	}
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥àÃæ¤ÎÍ×ÁÇ¿ô(Ç¤°Õ¤Ç¥Ş¥Ã¥Á¤·¤Æ¤¤¤Ê¤¤Í×ÁÇ°Ê³°) */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ä¸­ã®è¦ç´ æ•°(ä»»æ„ã§ãƒãƒƒãƒã—ã¦ã„ãªã„è¦ç´ ä»¥å¤–) */
     pat_element = count_pat_element(cfp, list2);
 
-    /* ³Ê¥Õ¥ì¡¼¥àÃæ¤ÎÍ×ÁÇ¿ô */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ä¸­ã®è¦ç´ æ•° */
     for (i = 0; i < cfp->element_num; i++) {
 	if (list2->flag[i] != UNASSIGNED) {
 	    cf_element++;
 	    lastpp = cfp->pp[i][0];
 	}
-	/* ³ä¤êÅö¤Æ¤Î¤Ê¤¤¥¬³Ê¤¬¤¢¤ë */
-	else if (MatchPP(cfp->pp[i][0], "¥¬")) {
+	/* å‰²ã‚Šå½“ã¦ã®ãªã„ã‚¬æ ¼ãŒã‚ã‚‹ */
+	else if (MatchPP(cfp->pp[i][0], "ã‚¬")) {
 	    unassigned_ga = 1;
 	}
     }
@@ -961,11 +961,11 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 #endif
 
     if ((local_m_e < dat_element) || 
-	/* (ÆşÎÏÂ¦)É¬¿Ü³Ê¤ÎÄ¾Á°³Ê¤Î¥Ş¥Ã¥Á¤ò¾ò·ï¤È¤¹¤ë */
+	/* (å…¥åŠ›å´)å¿…é ˆæ ¼ã®ç›´å‰æ ¼ã®ãƒãƒƒãƒã‚’æ¡ä»¶ã¨ã™ã‚‹ */
 	(closest > -1 && cfd->oblig[closest] == TRUE && list1->flag[closest] == NIL_ASSIGNED) || 
-	/* ³°¤Î´Ø·¸¤À¤±¤Î¥Ş¥Ã¥Á¤òÈò¤±¤ë */
+	/* å¤–ã®é–¢ä¿‚ã ã‘ã®ãƒãƒƒãƒã‚’é¿ã‘ã‚‹ */
 	(!OptEllipsis && 
-	 cf_element == 1 && MatchPP(lastpp, "³°¤Î´Ø·¸"))) {
+	 cf_element == 1 && MatchPP(lastpp, "å¤–ã®é–¢ä¿‚"))) {
 	local_score = -1;
     }
     else if (dat_element == 0 || pat_element == 0 || local_m_e == 0) {
@@ -978,16 +978,16 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	/* local_score = local_score * local_m_e
 	   / (dat_element * sqrt((double)pat_element)); */
 
-	/* Æ±¤¸³Ê¥Õ¥ì¡¼¥à¤Ç¤ÎÂĞ±şÉÕ¤±¤Ë±Æ¶Á */
+	/* åŒã˜æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã§ã®å¯¾å¿œä»˜ã‘ã«å½±éŸ¿ */
 	local_score = local_score / sqrt((double)pat_element);
 
 	/* corpus based case analysis 00/01/04 */
-	/* local_score /= 10;	* Àµµ¬²½¤·¤Ê¤¤,ºÇÂç11¤Ë */
+	/* local_score /= 10;	* æ­£è¦åŒ–ã—ãªã„,æœ€å¤§11ã« */
     }
 
     /* corpus based case analysis 00/01/04 */
-    /* Ç¤°Õ³Ê¤Ë²ÃÅÀ */
-    /* ÊÂÎó¤Î expand ¤ò¹Ô¤Ã¤¿¤È¤­¤Î¥¹¥³¥¢¤ò¹ÍÎ¸¤¹¤ëÉ¬Í×¤¬¤¢¤ë */
+    /* ä»»æ„æ ¼ã«åŠ ç‚¹ */
+    /* ä¸¦åˆ—ã® expand ã‚’è¡Œã£ãŸã¨ãã®ã‚¹ã‚³ã‚¢ã‚’è€ƒæ…®ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ */
     /* local_score += (cfd->element_num - dat_element) * OPTIONAL_CASE_SCORE; */
 
     if (0 && OptEllipsis) {
@@ -1056,45 +1056,45 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 			       CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* ¥Õ¥ì¡¼¥à¤Î¥Ş¥Ã¥Á¥ó¥°ÅÙ¤ÎÉ¾²Á (³ÎÎ¨ÈÇ) */
+    /* ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒãƒƒãƒãƒ³ã‚°åº¦ã®è©•ä¾¡ (ç¢ºç‡ç‰ˆ) */
 
     int i;
     int cf_element = 0, have_topic = 0;
     double local_score;
 
-    /* ³Ê¥Õ¥ì¡¼¥à³ÎÎ¨ */
-    if (cfp->type == CF_PRED) { /* ¤È¤ê¤¢¤¨¤º¡¢ÍÑ¸À¤Î¤ß */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ç¢ºç‡ */
+    if (cfp->type == CF_PRED) { /* ã¨ã‚Šã‚ãˆãšã€ç”¨è¨€ã®ã¿ */
 	score = get_cf_probability(cfd, cfp);
     }
     else {
 	score = 0;
     }
 
-    /* ÆşÎÏÂ¦¥Á¥§¥Ã¥¯ */
+    /* å…¥åŠ›å´ãƒã‚§ãƒƒã‚¯ */
     for (i = 0; i < cfd->element_num; i++) {
 	cf_element++;
 
 	if (list1->flag[i] == NIL_ASSIGNED && 
 	    cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[i]->num < cfd->pred_b_ptr->num && 
-	    check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[i]->f, "ÄóÂê")) {
+	    check_feature(cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[i]->f, "æé¡Œ")) {
 	    have_topic = 1;
 	}
 
-	/* Ï¢ÂÎ½¤¾şÀáÀ¸À®³ÎÎ¨ */
+	/* é€£ä½“ä¿®é£¾ç¯€ç”Ÿæˆç¢ºç‡ */
 	score += get_np_modifying_probability(i, cfd);
 
 	score += list1->score[i];
 
-	if (MatchPP(cfd->pp[i][0], "¦Õ") || 
-	    MatchPP(cfd->pp[i][0], "½¤¾ş")) {
+	if (MatchPP(cfd->pp[i][0], "Ï†") || 
+	    MatchPP(cfd->pp[i][0], "ä¿®é£¾")) {
 	    ;
 	}
-	/* ³ä¤êÅö¤Æ¤Ê¤· */
+	/* å‰²ã‚Šå½“ã¦ãªã— */
 	else if (list1->flag[i] == NIL_ASSIGNED) {
 	    if (CF_MatchPP(cfd->pp[i][0], cfp)) {
 		score += NIL_ASSINED_SCORE;
 	    }
-	    /* ÂĞ±ş¤¹¤ë³Ê¥¹¥í¥Ã¥È¤¬¤Ê¤¤¾ì¹ç => ²¾ÁÛÅª¤Ë³Ê¥¹¥í¥Ã¥È¤òºîÀ®¤·¤Æ³ä¤êÅö¤Æ */
+	    /* å¯¾å¿œã™ã‚‹æ ¼ã‚¹ãƒ­ãƒƒãƒˆãŒãªã„å ´åˆ => ä»®æƒ³çš„ã«æ ¼ã‚¹ãƒ­ãƒƒãƒˆã‚’ä½œæˆã—ã¦å‰²ã‚Šå½“ã¦ */
 	    else {
 		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE, para_cpm_ptr);
 	    }
@@ -1103,23 +1103,23 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 
     score += get_topic_generating_probability(have_topic, cfd->pred_b_ptr);
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î³ÊÀ¸À®³ÎÎ¨ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼ç”Ÿæˆç¢ºç‡ */
     for (i = 0; i < cfp->element_num; i++) {
-	if (list2->flag[i] != UNASSIGNED) { /* ³ä¤êÅö¤Æ¤¢¤ê */
+	if (list2->flag[i] != UNASSIGNED) { /* å‰²ã‚Šå½“ã¦ã‚ã‚Š */
 	    /* cf_element++; */
-	    /* list2->score[i]: ÍÑÎã¤òÀ¸À®¤¹¤ë³ÎÎ¨¤¬Æş¤Ã¤Æ¤¤¤ë */
+	    /* list2->score[i]: ç”¨ä¾‹ã‚’ç”Ÿæˆã™ã‚‹ç¢ºç‡ãŒå…¥ã£ã¦ã„ã‚‹ */
 	    /* list2->score[i] += get_case_probability(i, cfp, TRUE) / cfd->weight[list2->flag[i]]; */
 	}
-	else { /* ³ä¤êÅö¤Æ¤Ê¤· */
+	else { /* å‰²ã‚Šå½“ã¦ãªã— */
 	    list2->score[i] = get_case_probability(i, cfp, FALSE, para_cpm_ptr);
 	    score += list2->score[i];
 	}
     }
-    score += get_case_num_probability(cfp, cf_element, para_cpm_ptr); /* ³ä¤êÅö¤Æ¤Î¤¢¤ë¸Ä¿ô */
+    score += get_case_num_probability(cfp, cf_element, para_cpm_ptr); /* å‰²ã‚Šå½“ã¦ã®ã‚ã‚‹å€‹æ•° */
 
     local_score = score;
 
-    /* (ÆşÎÏÂ¦)É¬¿Ü³Ê¤ÎÄ¾Á°³Ê¤Î¥Ş¥Ã¥Á¤ò¾ò·ï¤È¤¹¤ë */
+    /* (å…¥åŠ›å´)å¿…é ˆæ ¼ã®ç›´å‰æ ¼ã®ãƒãƒƒãƒã‚’æ¡ä»¶ã¨ã™ã‚‹ */
     if (closest > -1 && cfd->oblig[closest] == TRUE && list1->flag[closest] == NIL_ASSIGNED) {
 	local_score -= 500;
     }
@@ -1133,7 +1133,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	Current_max_num = 1;
     }
     else if (local_score == Current_max_score &&
-	     cfp->type == CF_PRED && /* Ì¾»ì¤Î²òÀÏ»ş¤ÏÆ±ÅÀ¤òÊİÂ¸¤·¤Ê¤¤ */
+	     cfp->type == CF_PRED && /* åè©ã®è§£ææ™‚ã¯åŒç‚¹ã‚’ä¿å­˜ã—ãªã„ */
 	     Current_max_num < MAX_MATCH_MAX) {
 	Current_max_list1[Current_max_num] = *list1;
 	Current_max_list2[Current_max_num] = *list2;
@@ -1155,26 +1155,26 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 /*==================================================================*/
 {
     /* 
-       Ê¸Ãæ¤Î³ÊÍ×ÁÇ¤È³Ê¥Õ¥ì¡¼¥à¤Î³ÊÍ×ÁÇ¤ÎÂĞ±şÉÕ¤±
+       æ–‡ä¸­ã®æ ¼è¦ç´ ã¨æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼è¦ç´ ã®å¯¾å¿œä»˜ã‘
 
-       ¡¦¤³¤Î´Ø¿ô¤Î°ì²ó¤Î¸Æ¤Ó½Ğ¤·¤Ç½èÍı¤¹¤ë¤Î¤ÏÊ¸Ãæ¤Î³ÊÍ×ÁÇ°ì¤Ä
+       ãƒ»ã“ã®é–¢æ•°ã®ä¸€å›ã®å‘¼ã³å‡ºã—ã§å‡¦ç†ã™ã‚‹ã®ã¯æ–‡ä¸­ã®æ ¼è¦ç´ ä¸€ã¤
 
-       ¡¦ÌÀ¼¨¤µ¤ì¤Æ¤¤¤ë³ÊÍ×ÁÇ(¥¬³Ê,¥ò³Ê¤Ê¤É)¤¬¤¢¤ì¤Ğ¡¤¤½¤ì¤ò½èÍı,
-         ¤Ê¤±¤ì¤ĞÌÀ¼¨¤µ¤ì¤Æ¤¤¤Ê¤¤³ÊÍ×ÁÇ(Ì¤³Ê,Ëä¹şÊ¸¤Ê¤É)¤ò½èÍı
+       ãƒ»æ˜ç¤ºã•ã‚Œã¦ã„ã‚‹æ ¼è¦ç´ (ã‚¬æ ¼,ãƒ²æ ¼ãªã©)ãŒã‚ã‚Œã°ï¼Œãã‚Œã‚’å‡¦ç†,
+         ãªã‘ã‚Œã°æ˜ç¤ºã•ã‚Œã¦ã„ãªã„æ ¼è¦ç´ (æœªæ ¼,åŸ‹è¾¼æ–‡ãªã©)ã‚’å‡¦ç†
 
-       ¡¦list.flag[i]¤Ë¤ÏiÈÖÌÜ¤Î³ÊÍ×ÁÇ¤ÎÂĞ±şÉÕ¤±¤Î¾õ¶·¤òÊİ»ı
+       ãƒ»list.flag[i]ã«ã¯iç•ªç›®ã®æ ¼è¦ç´ ã®å¯¾å¿œä»˜ã‘ã®çŠ¶æ³ã‚’ä¿æŒ
 
-	  UNASSINGED ---- ÂĞ±şÉÕ¤±¤Ş¤À
-	  NIL_ASSINGED -- ÂĞ±şÉÕ¤±¤·¤Ê¤¤¤³¤È¤ò·èÄê
-          j(¤½¤ÎÂ¾)------ Áê¼ê¤ÎjÈÖÌÜ¤ÈÂĞ±şÉÕ¤±
+	  UNASSINGED ---- å¯¾å¿œä»˜ã‘ã¾ã 
+	  NIL_ASSINGED -- å¯¾å¿œä»˜ã‘ã—ãªã„ã“ã¨ã‚’æ±ºå®š
+          j(ãã®ä»–)------ ç›¸æ‰‹ã®jç•ªç›®ã¨å¯¾å¿œä»˜ã‘
 
-       ¡¦ÌÀ¼¨¤µ¤ì¤Æ¤¤¤ë³Ê½õ»ì¤ÎÉ¬¿Ü³Ê¤Ç¡¤ÂĞ±ş¤¹¤ë³Ê¥¹¥í¥Ã¥È¤¬¤¢¤ë¤Î¤Ë
-         °ÕÌ£¥Ş¡¼¥«ÉÔ°ìÃ×¤Î¾ì¹ç¡¤³Ê¥Õ¥ì¡¼¥à¤¬Ê¸¤ËÂĞ¤·¤ÆÉÔÅ¬Åö¤È¤¤¤¦¤è
-	 ¤ê¤Ï°ÕÌ£¥Ş¡¼¥«¤Î»ØÄê¤¬¹Å¤¹¤®¤ë¤Î¤Ç¡¤°ì±şÂĞ±şÉÕ¤±¤ò¹Ô¤Ã¤Æ½èÍı
-	 ¤ò¿Ê¤á¤ë¡¥
+       ãƒ»æ˜ç¤ºã•ã‚Œã¦ã„ã‚‹æ ¼åŠ©è©ã®å¿…é ˆæ ¼ã§ï¼Œå¯¾å¿œã™ã‚‹æ ¼ã‚¹ãƒ­ãƒƒãƒˆãŒã‚ã‚‹ã®ã«
+         æ„å‘³ãƒãƒ¼ã‚«ä¸ä¸€è‡´ã®å ´åˆï¼Œæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒæ–‡ã«å¯¾ã—ã¦ä¸é©å½“ã¨ã„ã†ã‚ˆ
+	 ã‚Šã¯æ„å‘³ãƒãƒ¼ã‚«ã®æŒ‡å®šãŒç¡¬ã™ãã‚‹ã®ã§ï¼Œä¸€å¿œå¯¾å¿œä»˜ã‘ã‚’è¡Œã£ã¦å‡¦ç†
+	 ã‚’é€²ã‚ã‚‹ï¼
     */
 
-    int target = -1;	/* ¥Ç¡¼¥¿Â¦¤Î½èÍıÂĞ¾İ¤Î³ÊÍ×ÁÇ */
+    int target = -1;	/* ãƒ‡ãƒ¼ã‚¿å´ã®å‡¦ç†å¯¾è±¡ã®æ ¼è¦ç´  */
     int target_pp = 0;
     int gaflag = 0, sotoflag = 0, toflag = 0, match_result;
     int i, j, pos, case_available = 0;
@@ -1191,12 +1191,12 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
     fputc('\n', Outfp);
 #endif 
     
-    /* ¤Ş¤À³ä¤êÅö¤Æ¤Î¤Ê¤¤³Ê½õ»ì¤Î¥Á¥§¥Ã¥¯ */
+    /* ã¾ã å‰²ã‚Šå½“ã¦ã®ãªã„æ ¼åŠ©è©ã®ãƒã‚§ãƒƒã‚¯ */
     for (i = 0; i < cfd->element_num; i++) {
 	if (list1.flag[i] == UNASSIGNED) {
 		/* if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) && 
-		(MatchPP(cfd->pp[i][0], "½¤¾ş") || 
-		MatchPP(cfd->pp[i][0], "¦Õ"))) {
+		(MatchPP(cfd->pp[i][0], "ä¿®é£¾") || 
+		MatchPP(cfd->pp[i][0], "Ï†"))) {
 		list1.flag[i] = NIL_ASSIGNED;
 		continue;
 		} */
@@ -1209,44 +1209,44 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
     }
 
     if (target >= 0) {
-	/* ¤¹¤Ç¤Ë¥¬³Ê¤Ë³ä¤êÅö¤Æ¤¬¤¢¤ë¤«¤É¤¦¤« (¥¬£²³ä¤êÅö¤Æ²ÄÇ½¤«¤É¤¦¤«) */
+	/* ã™ã§ã«ã‚¬æ ¼ã«å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ã‹ã©ã†ã‹ (ã‚¬ï¼’å‰²ã‚Šå½“ã¦å¯èƒ½ã‹ã©ã†ã‹) */
 	for (i = 0; i < cfp->element_num; i++) {
 	    if (list2.flag[i] != UNASSIGNED && 
-		MatchPP2(cfp->pp[i], "¥¬")) {
+		MatchPP2(cfp->pp[i], "ã‚¬")) {
 		gaflag = 1;
 		break;
 	    }
 	}
 
-	/* <¼çÂÎ>¤«¤É¤¦¤« (³°¤Î´Ø·¸³ä¤êÅö¤Æ²ÄÇ½¤«¤É¤¦¤«) */
-	if (!cf_match_element(cfd->sm[target], "¼çÂÎ", FALSE)) {
+	/* <ä¸»ä½“>ã‹ã©ã†ã‹ (å¤–ã®é–¢ä¿‚å‰²ã‚Šå½“ã¦å¯èƒ½ã‹ã©ã†ã‹) */
+	if (!cf_match_element(cfd->sm[target], "ä¸»ä½“", FALSE)) {
 	    sotoflag = 1;
 	}
 
-	/* ¤¹¤Ç¤ËÊäÊ¸¥È³Ê¤Ë³ä¤êÅö¤Æ¤¬¤¢¤ë¤«¤É¤¦¤« (¥ò³Ê³ä¤êÅö¤Æ²ÄÇ½¤«¤É¤¦¤«) */
+	/* ã™ã§ã«è£œæ–‡ãƒˆæ ¼ã«å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ã‹ã©ã†ã‹ (ãƒ²æ ¼å‰²ã‚Šå½“ã¦å¯èƒ½ã‹ã©ã†ã‹) */
 	for (i = 0; i < cfp->element_num; i++) {
 	    if (list2.flag[i] != UNASSIGNED && 
-		MatchPP2(cfp->pp[i], "¥È")) {
-		/* cf_match_element(cfp->sm[i], "ÊäÊ¸", TRUE)) { */
+		MatchPP2(cfp->pp[i], "ãƒˆ")) {
+		/* cf_match_element(cfp->sm[i], "è£œæ–‡", TRUE)) { */
 		toflag = 1;
 		break;
 	    }
 	}
 
-	/* ³Ê¥Õ¥ì¡¼¥à¤Î³Ê¥ë¡¼¥× */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼ãƒ«ãƒ¼ãƒ— */
 	for (i = 0; i < cfp->element_num; i++) {
-	    /* ³Ê¥Õ¥ì¡¼¥à¤Î¶õ¤¤¤Æ¤¤¤ë³Ê */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç©ºã„ã¦ã„ã‚‹æ ¼ */
 	    if (list2.flag[i] == UNASSIGNED) {
-		/* ²ò¼á¤µ¤ì¤¦¤ë³Ê¤Î¥ë¡¼¥× */
+		/* è§£é‡ˆã•ã‚Œã†ã‚‹æ ¼ã®ãƒ«ãƒ¼ãƒ— */
 		for (target_pp = 0; cfd->pp[target][target_pp] != END_M; target_pp++) {
-		    for (j = 0; cfp->pp[i][j] >= 0; j++) { /* ¼«Æ°¹½ÃÛ³Ê¥Õ¥ì¡¼¥à¤Ë¤ÏÊ£¿ô¤Î³Ê¤Ï¤Ê¤¤ */
+		    for (j = 0; cfp->pp[i][j] >= 0; j++) { /* è‡ªå‹•æ§‹ç¯‰æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã¯è¤‡æ•°ã®æ ¼ã¯ãªã„ */
 			if ((cfd->pp[target][target_pp] == cfp->pp[i][j] && 
-			     !((cfp->pp[i][j] == pp_kstr_to_code("³°¤Î´Ø·¸") && !sotoflag) || 
-			       (cfp->pp[i][j] == pp_kstr_to_code("¥¬£²") && !gaflag) || 
-			       /* (cfp->pp[i][j] == pp_kstr_to_code("¥ò") && toflag) || */
-			       (cfp->pp[i][j] == pp_kstr_to_code("¥Î") && 
+			     !((cfp->pp[i][j] == pp_kstr_to_code("å¤–ã®é–¢ä¿‚") && !sotoflag) || 
+			       (cfp->pp[i][j] == pp_kstr_to_code("ã‚¬ï¼’") && !gaflag) || 
+			       /* (cfp->pp[i][j] == pp_kstr_to_code("ãƒ²") && toflag) || */
+			       (cfp->pp[i][j] == pp_kstr_to_code("ãƒ") && 
 				check_adjacent_assigned(cfd, cfp, &list1) == FALSE))) || 
-			    (cfd->pp[target][target_pp] == pp_kstr_to_code("Ì¤") && 
+			    (cfd->pp[target][target_pp] == pp_kstr_to_code("æœª") && 
 			     check_same_case(cfd->sp[target], cfp->pp[i][j], cfp))) {
 			    case_available = 1;
 			    pos = MATCH_NONE;
@@ -1254,20 +1254,20 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 				elmnt_match_score(target, cfd, i, cfp, flag, &pos, &elmnt_score, para_cpm_ptr);
 
 			    if ((OptCaseFlag & OPT_CASE_USE_PROBABILITY) || 
-				(cfp->pp[i][j] != pp_kstr_to_code("³°¤Î´Ø·¸") && 
-				 cfp->pp[i][j] != pp_kstr_to_code("¥Î") && 
+				(cfp->pp[i][j] != pp_kstr_to_code("å¤–ã®é–¢ä¿‚") && 
+				 cfp->pp[i][j] != pp_kstr_to_code("ãƒ") && 
 				 cfd->pred_b_ptr->cpm_ptr->cf.type != CF_NOUN) || 
-				((cfp->pp[i][j] == pp_kstr_to_code("³°¤Î´Ø·¸") || 
-				  cfp->pp[i][j] == pp_kstr_to_code("¥Î")) &&
+				((cfp->pp[i][j] == pp_kstr_to_code("å¤–ã®é–¢ä¿‚") || 
+				  cfp->pp[i][j] == pp_kstr_to_code("ãƒ")) &&
 				 elmnt_score >= SOTO_THRESHOLD) || 
 				(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_NOUN && 
 				 elmnt_score >= NOUN_THRESHOLD)) {
 				if ((flag == EXAMPLE) || 
 				    (flag == SEMANTIC_MARKER && elmnt_score >= 0)) {
-				    /* ÂĞ±şÉÕ¤±¤ò¤·¤Æ¡¤»Ä¤ê¤Î³ÊÍ×ÁÇ¤Î½èÍı¤Ë¿Ê¤à
-				       ¢¨ flag == SEMANTIC_MARKER && elmnt_score == 0
-				       ¤¹¤Ê¤ï¤Á¡¤³Ê½õ»ì¤ÎÂĞ±ş¤¹¤ë³Ê¥¹¥í¥Ã¥È¤¬¤¢¤ë¤Î¤Ë
-				       °ÕÌ£¥Ş¡¼¥«ÉÔ°ìÃ×¤Î¾ì¹ç¤â¡¤½èÍı¤ò¿Ê¤á¤ë */
+				    /* å¯¾å¿œä»˜ã‘ã‚’ã—ã¦ï¼Œæ®‹ã‚Šã®æ ¼è¦ç´ ã®å‡¦ç†ã«é€²ã‚€
+				       â€» flag == SEMANTIC_MARKER && elmnt_score == 0
+				       ã™ãªã‚ã¡ï¼Œæ ¼åŠ©è©ã®å¯¾å¿œã™ã‚‹æ ¼ã‚¹ãƒ­ãƒƒãƒˆãŒã‚ã‚‹ã®ã«
+				       æ„å‘³ãƒãƒ¼ã‚«ä¸ä¸€è‡´ã®å ´åˆã‚‚ï¼Œå‡¦ç†ã‚’é€²ã‚ã‚‹ */
 
 				    if (cfd->weight[target]) {
 					elmnt_score /= cfd->weight[target];
@@ -1290,22 +1290,22 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	    }
 	}
 
-	if (!(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED && /* ¤È¤ê¤¢¤¨¤ºÍÑ¸À¤Î¤ß */
+	if (!(cfd->pred_b_ptr->cpm_ptr->cf.type == CF_PRED && /* ã¨ã‚Šã‚ãˆãšç”¨è¨€ã®ã¿ */
 	      (OptCaseFlag & OPT_CASE_USE_PROBABILITY)) || 
 	    !case_available) {
-	    /* targetÈÖÌÜ¤Î³ÊÍ×ÁÇ¤Ë¤ÏÂĞ±şÉÕ¤±¤ò¹Ô¤ï¤Ê¤¤¥Ş¡¼¥¯ */
+	    /* targetç•ªç›®ã®æ ¼è¦ç´ ã«ã¯å¯¾å¿œä»˜ã‘ã‚’è¡Œã‚ãªã„ãƒãƒ¼ã‚¯ */
 	    list1.flag[target] = NIL_ASSIGNED;
 
-	    /* Ç¤°Õ³Ê¤È¤·ÂĞ±şÉÕ¤±¤ò¹Ô¤ï¤Ê¤¤¾ì¹ç
-	       ¢¨ Æ±¤¸É½ÁØ³Ê¤¬³Ê¥Õ¥ì¡¼¥à¤Ë¤¢¤ë¾ì¹ç¡¤ÂĞ±şÉÕ¤±¤ò¤¹¤ë¤³¤È¤Ï
-	       ¤¹¤Ç¤Ë¾å¤Ç»î¤µ¤ì¤Æ¤¤¤ë
+	    /* ä»»æ„æ ¼ã¨ã—å¯¾å¿œä»˜ã‘ã‚’è¡Œã‚ãªã„å ´åˆ
+	       â€» åŒã˜è¡¨å±¤æ ¼ãŒæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚ã‚‹å ´åˆï¼Œå¯¾å¿œä»˜ã‘ã‚’ã™ã‚‹ã“ã¨ã¯
+	       ã™ã§ã«ä¸Šã§è©¦ã•ã‚Œã¦ã„ã‚‹
 	       if (cfd->oblig[target] == FALSE) */
-	    /* É¬¿Ü³Ê¤ÇÂĞ±şÌµ(É½ÁØ³Ê¤Î°ìÃ×¤¹¤ë¤â¤Î¤¬¤Ê¤¤)¤Î¾ì¹ç
-	       => eval_assign¤ÇÉÔµö²Ä
-	       É¬¿Ü³Ê¤ÇÂĞ±şÍ­¤Î¾ì¹ç
-	       => ¸å¤í¤ËÆ±¤¸³Ê½õ»ì¤¬¤¢¤ì¤ĞÂĞ±şÉÕ¤±¤ò¤·¤Ê¤¤²ÄÇ½À­¤â»î¤¹? */
+	    /* å¿…é ˆæ ¼ã§å¯¾å¿œç„¡(è¡¨å±¤æ ¼ã®ä¸€è‡´ã™ã‚‹ã‚‚ã®ãŒãªã„)ã®å ´åˆ
+	       => eval_assignã§ä¸è¨±å¯
+	       å¿…é ˆæ ¼ã§å¯¾å¿œæœ‰ã®å ´åˆ
+	       => å¾Œã‚ã«åŒã˜æ ¼åŠ©è©ãŒã‚ã‚Œã°å¯¾å¿œä»˜ã‘ã‚’ã—ãªã„å¯èƒ½æ€§ã‚‚è©¦ã™? */
 
-	    /* ³ä¤êÅö¤Æ¤Ê¤·¤Î¥¹¥³¥¢ */
+	    /* å‰²ã‚Šå½“ã¦ãªã—ã®ã‚¹ã‚³ã‚¢ */
 	    elmnt_score = FREQ0_ASSINED_SCORE + get_case_function_probability_for_pred(target, cfd, NIL_ASSIGNED, cfp, FALSE);
 	    if (cfd->weight[target]) {
 		elmnt_score /= cfd->weight[target];
@@ -1328,7 +1328,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 			     CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* Ì¤³Ê, Ï¢³Ê°Ê³°¤òÀè¤Ë³ä¤êÅö¤Æ */
+    /* æœªæ ¼, é€£æ ¼ä»¥å¤–ã‚’å…ˆã«å‰²ã‚Šå½“ã¦ */
 
     if (_assign_list(cfd, list1, cfp, list2, score, flag, TRUE, closest, para_cpm_ptr) == FALSE) {
 	return FALSE;
@@ -1337,7 +1337,7 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 	return FALSE;
     }
 
-    /* É¾²Á : ¤¹¤Ù¤Æ¤ÎÂĞ±şÉÕ¤±¤¬½ª¤ï¤Ã¤¿¾ì¹ç */
+    /* è©•ä¾¡ : ã™ã¹ã¦ã®å¯¾å¿œä»˜ã‘ãŒçµ‚ã‚ã£ãŸå ´åˆ */
     if (OptCaseFlag & OPT_CASE_USE_PROBABILITY) {
 	eval_assign_prob(cfd, &list1, cfp, &list2, score, closest, para_cpm_ptr);
     }
@@ -1351,13 +1351,13 @@ int assign_list(CASE_FRAME *cfd, LIST list1,
 int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int closest, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î¥Ş¥Ã¥Á¥ó¥° */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒãƒƒãƒãƒ³ã‚° */
 
     LIST assign_d_list, assign_p_list;
     int i;
     CASE_FRAME *cfd = &(cpm_ptr->cf);
 
-    /* ½é´ü²½ */
+    /* åˆæœŸåŒ– */
 
     Current_max_num = 0;
     Current_max_score = (OptCaseFlag & OPT_CASE_USE_PROBABILITY) ? CASE_MATCH_FAILURE_PROB : CASE_MATCH_FAILURE_SCORE;
@@ -1378,12 +1378,12 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
 	assign_p_list.pos[i] = -1;
     }
 
-    /* ½èÍı */
+    /* å‡¦ç† */
 
-    /* flag: Îã or °ÕÌ£¥³¡¼¥É */
+    /* flag: ä¾‹ or æ„å‘³ã‚³ãƒ¼ãƒ‰ */
     assign_list(cfd, assign_d_list, cmm_ptr->cf_ptr, assign_p_list, 0, flag, closest, para_cpm_ptr);
 
-    /* ¸å½èÍı */
+    /* å¾Œå‡¦ç† */
 
     if (Current_max_num == MAX_MATCH_MAX && OptDisplay == OPT_DEBUG) {
 	fprintf(stderr, "; Too many case matching result !\n");
@@ -1397,10 +1397,10 @@ int case_frame_match(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int flag, int 
 	cmm_ptr->pure_score[i] = Current_pure_score[i];
     }
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤Î¥¹¥³¥¢¤Î¤ß¤òÍÑ¤¤¤ë¤È¤­ */
+    /* ç›´å‰æ ¼è¦ç´ ã®ã‚¹ã‚³ã‚¢ã®ã¿ã‚’ç”¨ã„ã‚‹ã¨ã */
     if (closest > -1 && Current_max_score >= 0 && 
 	Current_max_list1[0].flag[closest] != NIL_ASSIGNED) {
-	/* Ä¾Á°³ÊÍ×ÁÇ¤Î³ä¤êÅö¤Æ¤¬¤¢¤ë¤³¤È¤¬¾ò·ï */
+	/* ç›´å‰æ ¼è¦ç´ ã®å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ã“ã¨ãŒæ¡ä»¶ */
 	cmm_ptr->score = Current_max_list1[0].score[closest];
     }
     else {

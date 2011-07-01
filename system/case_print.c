@@ -1,6 +1,6 @@
 /*====================================================================
 
-			   ³Ê¹½Â¤²òÀÏ: É½¼¨
+			   æ ¼æ§‹é€ è§£æ: è¡¨ç¤º
 
                                                S.Kurohashi 93. 5.31
 
@@ -17,26 +17,26 @@ int	PrintFrequency = 0;
 {
     int i;
 
-    /* ·¸¥¿¥¤¥×¤Î½ĞÎÏ
-       flag == FALSE : ÂĞ±ş²ÄÇ½¤Ê³Ê¤ò½ĞÎÏ¤·¤Ê¤¤
+    /* ä¿‚ã‚¿ã‚¤ãƒ—ã®å‡ºåŠ›
+       flag == FALSE : å¯¾å¿œå¯èƒ½ãªæ ¼ã‚’å‡ºåŠ›ã—ãªã„
     */
 
-    /* ¾ÊÎ¬¤Î¤È¤­ */
+    /* çœç•¥ã®ã¨ã */
     if (cpm_ptr->elem_b_num[num] == -2) {
-	fprintf(Outfp, "¡Ô¾Ê¡Õ");
+	fprintf(Outfp, "ã€Šçœã€‹");
 	return;
     }
-    /* ¾È±ş¤Î¤È¤­ */
+    /* ç…§å¿œã®ã¨ã */
     else if (cpm_ptr->elem_b_num[num] == -3) {
-	fprintf(Outfp, "¡Ô¾È¡Õ");
+	fprintf(Outfp, "ã€Šç…§ã€‹");
 	return;
     }
     else if (flag == FALSE && cpm_ptr->elem_b_num[num] == -1) {
-	fprintf(Outfp, "¡Ô--¡Õ");
+	fprintf(Outfp, "ã€Š--ã€‹");
 	return;
     }
 
-    fprintf(Outfp, "¡Ô");
+    fprintf(Outfp, "ã€Š");
 
     if (cpm_ptr->cf.type == CF_PRED) {
 	for (i = 0; cpm_ptr->cf.pp[num][i] != END_M; i++) {
@@ -55,7 +55,7 @@ int	PrintFrequency = 0;
 	fputs("--", Outfp);
     }
 
-    fprintf(Outfp, "¡Õ");
+    fprintf(Outfp, "ã€‹");
 }
 
 /*==================================================================*/
@@ -65,27 +65,27 @@ int	PrintFrequency = 0;
     int i;
     char *cp, tmp;
 
-    fprintf(Outfp, "¡Ú");
+    fprintf(Outfp, "ã€");
     
     if (cpm_ptr->cmm[0].cf_ptr->entry) {
 	fprintf(Outfp, "%s", cpm_ptr->cmm[0].cf_ptr->entry);
     }   
     else {
-	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* ÍÑ¸ÀÉ½µ­ */
+	fprintf(Outfp, "%s", cpm_ptr->pred_b_ptr->head_ptr->Goi); /* ç”¨è¨€è¡¨è¨˜ */
     }
 
     if (cpm_ptr->cf.voice == VOICE_SHIEKI)
-	fprintf(Outfp, "(»ÈÌò)¡Û");
+	fprintf(Outfp, "(ä½¿å½¹)ã€‘");
     else if (cpm_ptr->cf.voice == VOICE_UKEMI)
-	fprintf(Outfp, "(¼õ¿È)¡Û");
+	fprintf(Outfp, "(å—èº«)ã€‘");
     else if (cpm_ptr->cf.voice == VOICE_SHIEKI_UKEMI)
-	fprintf(Outfp, "(»ÈÌò&¼õ¿È)¡Û");
+	fprintf(Outfp, "(ä½¿å½¹&å—èº«)ã€‘");
     else if (cpm_ptr->cf.voice == VOICE_MORAU)
-	fprintf(Outfp, "(¤â¤é¤¦)¡Û");
+	fprintf(Outfp, "(ã‚‚ã‚‰ã†)ã€‘");
     else if (cpm_ptr->cf.voice == VOICE_HOSHII)
-	fprintf(Outfp, "(¤Û¤·¤¤)¡Û");
+	fprintf(Outfp, "(ã»ã—ã„)ã€‘");
     else
-	fprintf(Outfp, "¡Û");
+	fprintf(Outfp, "ã€‘");
 
     fprintf(Outfp, " %s ", cpm_ptr->cf.pred_type);
 
@@ -100,7 +100,7 @@ int	PrintFrequency = 0;
 		cpm_ptr->pred_b_ptr->cf_num > 1 ? cpm_ptr->pred_b_ptr->cf_num-1 : 1);
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤ò·èÄê¤·¤¿ÊıË¡ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®šã—ãŸæ–¹æ³• */
     if (cpm_ptr->decided == CF_DECIDED) {
 	fputs(" D", Outfp);
     }
@@ -116,42 +116,42 @@ int	PrintFrequency = 0;
 	fputc(' ', Outfp);
 	_print_bnst(cpm_ptr->elem_b_ptr[i]);
 
-	/* ·¸¥¿¥¤¥×¤Î½ĞÎÏ */
+	/* ä¿‚ã‚¿ã‚¤ãƒ—ã®å‡ºåŠ› */
 	print_depend_type(cpm_ptr, i, TRUE);
 
-	/* °ÕÌ£¥Ş¡¼¥« */
+	/* æ„å‘³ãƒãƒ¼ã‚« */
 
 	fputc('[', Outfp);
 
 	if (Thesaurus == USE_NTT) {
 	    if (cpm_ptr->cf.sm[i][0]) {
-		fprintf(Outfp, "SM:¡û");
+		fprintf(Outfp, "SM:â—‹");
 	    }
 	    else {
-		fprintf(Outfp, "SM:¡ß");
+		fprintf(Outfp, "SM:Ã—");
 	    }
 	}
 
-	/* Ê¬Îà¸ì×ÃÉ½¥³¡¼¥É */
+	/* åˆ†é¡èªå½™è¡¨ã‚³ãƒ¼ãƒ‰ */
 
 	else if (Thesaurus == USE_BGH) {
 	    if (cpm_ptr->cf.ex[i][0]) {
-		fprintf(Outfp, "BGH:¡û");
+		fprintf(Outfp, "BGH:â—‹");
 	    }
 	    else {
-		fprintf(Outfp, "BGH:¡ß");
+		fprintf(Outfp, "BGH:Ã—");
 	    }
 	}
 
 	fputc(']', Outfp);	
 
-	/* Ç¤°Õ³Ê¤ÎÍ×ÁÇ¤ò¥Ş¡¼¥¯ */
+	/* ä»»æ„æ ¼ã®è¦ç´ ã‚’ãƒãƒ¼ã‚¯ */
 	if (cpm_ptr->cf.oblig[i] == FALSE) {
 	    fputc('*', Outfp);
 	}
     }
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "¾ÊÎ¬²òÀÏ¤Ê¤·"))
-	printf (" <¾ÊÎ¬²òÀÏ¤Ê¤·>");
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "çœç•¥è§£æãªã—"))
+	printf (" <çœç•¥è§£æãªã—>");
 
     if (OptExpress == OPT_TABLE) {
 	fprintf(Outfp, "<BR>");
@@ -179,11 +179,11 @@ struct _sort_kv {
     int i, j, k, l, num, print_num;
     struct _sort_kv elist[CF_ELEMENT_MAX];
 
-    if (cmm_ptr->cf_ptr->cf_address == -1)	/* ³Ê¥Õ¥ì¡¼¥à¤¬¤Ê¤¤¾ì¹ç */
+    if (cmm_ptr->cf_ptr->cf_address == -1)	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãªã„å ´åˆ */
 	return;
 
-    /* ÆÀÅÀ, °ÕÌ£¤ÎÉ½¼¨ */
-    fprintf(Outfp, "¡ú%6.3fÅÀ ", cmm_ptr->score);
+    /* å¾—ç‚¹, æ„å‘³ã®è¡¨ç¤º */
+    fprintf(Outfp, "â˜…%6.3fç‚¹ ", cmm_ptr->score);
     if (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY)) {
 	fprintf(Outfp, "(%d/%.3f) ", 
 		(int)cmm_ptr->pure_score[0], 
@@ -192,7 +192,7 @@ struct _sort_kv {
     }
     fprintf(Outfp, "%s ", cmm_ptr->cf_ptr->cf_id);
 
-    /* ³Ê¥Õ¥ì¡¼¥àÎà»÷ÅÙ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é¡ä¼¼åº¦ */
     if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
 	fprintf(Outfp, "(%.2f) ", cmm_ptr->cf_ptr->cf_similarity);
     }
@@ -202,23 +202,23 @@ struct _sort_kv {
     }
 
     if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_I)
-	fprintf(Outfp, "(´Ö¼õ)");
+	fprintf(Outfp, "(é–“å—)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_1)
-	fprintf(Outfp, "(Ä¾¼õ1)");
+	fprintf(Outfp, "(ç›´å—1)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_PASSIVE_2)
-	fprintf(Outfp, "(Ä¾¼õ2)");
+	fprintf(Outfp, "(ç›´å—2)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO_NI || 
 	     cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_WO || 
              cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_NI)
-	fprintf(Outfp, "(»ÈÌò)");
+	fprintf(Outfp, "(ä½¿å½¹)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_CAUSATIVE_PASSIVE)
-	fprintf(Outfp, "(»ÈÌò&¼õ¿È)");
+	fprintf(Outfp, "(ä½¿å½¹&å—èº«)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POSSIBLE)
-	fprintf(Outfp, "(²ÄÇ½)");
+	fprintf(Outfp, "(å¯èƒ½)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_POLITE)
-	fprintf(Outfp, "(Âº·É)");
+	fprintf(Outfp, "(å°Šæ•¬)");
     else if (cmm_ptr->cf_ptr->voice == FRAME_SPONTANE)
-	fprintf(Outfp, "(¼«È¯)");
+	fprintf(Outfp, "(è‡ªç™º)");
 
     /* fprintf(Outfp, "%s\n", i_ptr->DATA + i_ptr->imi); */
     if (OptExpress == OPT_TABLE) {
@@ -228,7 +228,7 @@ struct _sort_kv {
 	fputs("-----------------------------------\n", Outfp);
     }
 
-    /* ³ÊÍ×ÁÇÂĞ±ş¤ÎÉ½¼¨ */
+    /* æ ¼è¦ç´ å¯¾å¿œã®è¡¨ç¤º */
 
     for (k = 0; k < cmm_ptr->result_num; k++) {
 	if (k != 0) {
@@ -238,7 +238,7 @@ struct _sort_kv {
 	    }
 	}
 
-	/* ³Ê¤ò¥½¡¼¥È¤·¤Æ½ĞÎÏ */
+	/* æ ¼ã‚’ã‚½ãƒ¼ãƒˆã—ã¦å‡ºåŠ› */
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	    elist[i].key = i;
 	    elist[i].value = cmm_ptr->cf_ptr->pp[i][0];
@@ -250,32 +250,32 @@ struct _sort_kv {
 	    num = cmm_ptr->result_lists_p[k].flag[i];
 
 	    if (cmm_ptr->cf_ptr->adjacent[i] == TRUE)
-		fprintf(Outfp, " ¡ı ");
+		fprintf(Outfp, " â— ");
 	    else
-		fprintf(Outfp, " ¡ü ");
+		fprintf(Outfp, " â— ");
 
-	    if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2¤ÏÁ´ÂÎ¤ÇÉÔ°ìÃ× */
+	    if (num == UNASSIGNED || cmm_ptr->score == -2) { /* -2ã¯å…¨ä½“ã§ä¸ä¸€è‡´ */
 		fputs("--", Outfp);
 		if (OptCaseFlag & OPT_CASE_USE_PROBABILITY)
-		    fprintf(Outfp, " ¡Î%.3f¡Ï", cmm_ptr->result_lists_p[k].score[i]);
+		    fprintf(Outfp, " ï¼»%.3fï¼½", cmm_ptr->result_lists_p[k].score[i]);
 	    }
 	    else {
 		_print_bnst(cpm_ptr->elem_b_ptr[num]);
 
-		/* ·¸¥¿¥¤¥×¤Î½ĞÎÏ */
+		/* ä¿‚ã‚¿ã‚¤ãƒ—ã®å‡ºåŠ› */
 		print_depend_type(cpm_ptr, num, FALSE);
 
 		if (num != UNASSIGNED && cpm_ptr->cf.oblig[num] == FALSE)
 		    fputc('*', Outfp);
 
-		/* ³Ê¤´¤È¤Î¥¹¥³¥¢¤òÉ½¼¨ */
+		/* æ ¼ã”ã¨ã®ã‚¹ã‚³ã‚¢ã‚’è¡¨ç¤º */
 		if (OptCaseFlag & OPT_CASE_USE_PROBABILITY)
-		    fprintf(Outfp, "¡Î%.3f¡Ï", cmm_ptr->result_lists_p[k].score[i]);
+		    fprintf(Outfp, "ï¼»%.3fï¼½", cmm_ptr->result_lists_p[k].score[i]);
 		else if (cmm_ptr->result_lists_p[k].score[i] >= 0)
-		    fprintf(Outfp, "¡Î%2dÅÀ¡Ï", (int)cmm_ptr->result_lists_p[k].score[i]);
+		    fprintf(Outfp, "ï¼»%2dç‚¹ï¼½", (int)cmm_ptr->result_lists_p[k].score[i]);
 	    }
 
-	    fprintf(Outfp, " : ¡Ô");
+	    fprintf(Outfp, " : ã€Š");
 
 	    if (cmm_ptr->cf_ptr->pp_str[i]) {	
 		fprintf(Outfp, "%s", cmm_ptr->cf_ptr->pp_str[i]);
@@ -287,9 +287,9 @@ struct _sort_kv {
 		}	
 	    }
 
-	    fprintf(Outfp, "¡Õ");
+	    fprintf(Outfp, "ã€‹");
 
-	    /* ÍÑÎã¤Î½ĞÎÏ */
+	    /* ç”¨ä¾‹ã®å‡ºåŠ› */
 	    if (cmm_ptr->cf_ptr->ex_list[i]) {
 		print_num = EX_PRINT_NUM < 0 ? cmm_ptr->cf_ptr->ex_num[i] : 
 		    cmm_ptr->cf_ptr->ex_num[i] > EX_PRINT_NUM ? 
@@ -297,17 +297,17 @@ struct _sort_kv {
 		fputc('(', Outfp);
 		for (j = 0; j < print_num; j++) {
 		    if (j != 0) fputc('|', Outfp);
-		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "¡Ú");
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "ã€");
 		    if (PrintFrequency) {
 			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][j], cmm_ptr->cf_ptr->ex_freq[i][j]);
 		    }
 		    else {
 			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][j]);
 		    }
-		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "¡Û");
+		    if (j == cmm_ptr->result_lists_p[k].pos[i]) fprintf(Outfp, "ã€‘");
 		}
 		if (cmm_ptr->result_lists_p[k].pos[i] >= print_num) {
-		    fprintf(Outfp, "/¡Ú");
+		    fprintf(Outfp, "/ã€");
 		    if (PrintFrequency) {
 			fprintf(Outfp, "%s:%d", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]], 
 				cmm_ptr->cf_ptr->ex_freq[i][cmm_ptr->result_lists_p[k].pos[i]]);
@@ -315,7 +315,7 @@ struct _sort_kv {
 		    else {
 			fprintf(Outfp, "%s", cmm_ptr->cf_ptr->ex_list[i][cmm_ptr->result_lists_p[k].pos[i]]);
 		    }
-		    fprintf(Outfp, "¡Û");
+		    fprintf(Outfp, "ã€‘");
 		}
 		if (print_num != cmm_ptr->cf_ptr->ex_num[i])
 		    fputs("...", Outfp);
@@ -325,7 +325,7 @@ struct _sort_kv {
 	    if (cmm_ptr->cf_ptr->oblig[i] == FALSE)
 		fputc('*', Outfp);
 
-	    /* °ÕÌ£ÁÇ¤Î½ĞÎÏ */
+	    /* æ„å‘³ç´ ã®å‡ºåŠ› */
 	    if (cmm_ptr->cf_ptr->semantics[i]) {
 		fprintf(Outfp, "[%s]", cmm_ptr->cf_ptr->semantics[i]);
 	    }
@@ -353,7 +353,7 @@ struct _sort_kv {
     for (i = 0; i < ipal_num; i++) check[i] = 1;
     for (i = 0; i < ipal_num; i++) {
 	max_num = -1;
-	max_score = -10;	/* case_analysis ¤Ç¤Ï -1 ¤Î»ş¤¬¤¢¤ë */
+	max_score = -10;	/* case_analysis ã§ã¯ -1 ã®æ™‚ãŒã‚ã‚‹ */
 	for (j = 0; j < ipal_num; j++) {
 	    if (check[j] && (cmm_ptr+j)->score > max_score) {
 		max_score = (cmm_ptr+j)->score;
@@ -366,7 +366,7 @@ struct _sort_kv {
 	}
 	if (i == 0) all_max_score = max_score;
 
-	/* É½¼¨¤ÎÄä»ß¾ò·ï
+	/* è¡¨ç¤ºã®åœæ­¢æ¡ä»¶
 	if (OptDisplay == OPT_NORMAL || OptDisplay == OPT_DETAIL) {
 	    if (max_score != all_max_score && i >= 3) 
 		break;
@@ -388,14 +388,14 @@ struct _sort_kv {
 
     if (OptExpress != OPT_TABLE) {
 	fputs("<Case Structure Analysis Data>\n", Outfp);
-	fprintf(Outfp, "¢£ %d Score:%.3f, Dflt:%d, Possibility:%d/%d ¢£\n", 
+	fprintf(Outfp, "â–  %d Score:%.3f, Dflt:%d, Possibility:%d/%d â– \n", 
 		sp->Sen_num, tm->score, tm->dflt, tm->pssb+1, 1);
     }
-    /* ¾åµ­½ĞÎÏ¤ÎºÇ¸å¤Î°ú¿ô(°ÍÂ¸¹½Â¤¤Î¿ô)¤Ï1¤Ë¤·¤Æ¤¤¤ë¡¥
-       ¤Á¤ã¤ó¤È°·¤Ã¤Æ¤Ê¤¤ */
+    /* ä¸Šè¨˜å‡ºåŠ›ã®æœ€å¾Œã®å¼•æ•°(ä¾å­˜æ§‹é€ ã®æ•°)ã¯1ã«ã—ã¦ã„ã‚‹ï¼
+       ã¡ã‚ƒã‚“ã¨æ‰±ã£ã¦ãªã„ */
 
     for (i = tm->pred_num - 1; i >= 0; i--) {
-	if (tm->cpm[i].pred_b_ptr == NULL) { /* ½Ò¸ì¤Ç¤Ï¤Ê¤¤¤ÈÈ½ÃÇ¤·¤¿¤â¤Î¤Ï¥¹¥­¥Ã¥× */
+	if (tm->cpm[i].pred_b_ptr == NULL) { /* è¿°èªã§ã¯ãªã„ã¨åˆ¤æ–­ã—ãŸã‚‚ã®ã¯ã‚¹ã‚­ãƒƒãƒ— */
 	    continue;
 	}
 
@@ -433,27 +433,27 @@ struct _sort_kv {
     CF_PRED_MGR *cpm_ptr;
     char relation[DATA_LEN], *word;
 
-    /* Á°¤«¤é½çÈÖ¤Ë¡¢Predicate-Argument Structure ¤ò½ĞÎÏ */
+    /* å‰ã‹ã‚‰é †ç•ªã«ã€Predicate-Argument Structure ã‚’å‡ºåŠ› */
 
     for (p = sp->Best_mgr->pred_num - 1; p >= 0; p--) {
 	cpm_ptr = &(sp->Best_mgr->cpm[p]);
 	fprintf(Outfp, "%2d %s", sp->Best_mgr->pred_num-1-p, cpm_ptr->pred_b_ptr->head_ptr->Goi);
 
-	/* ÆşÎÏÂ¦¤Î³Æ³ÊÍ×ÁÇ¤Îµ­½Ò */
+	/* å…¥åŠ›å´ã®å„æ ¼è¦ç´ ã®è¨˜è¿° */
 	for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	    /* »Ø¼¨»ì¤Î²òÀÏ¤ò¤¹¤ë¾ì¹ç¤Ï¡¢»Ø¼¨»ì¤ò½ü¤¯ */
+	    /* æŒ‡ç¤ºè©ã®è§£æã‚’ã™ã‚‹å ´åˆã¯ã€æŒ‡ç¤ºè©ã‚’é™¤ã */
 	    if ((OptEllipsis & OPT_DEMO) && 
-		check_feature(cpm_ptr->elem_b_ptr[i]->f, "¾ÊÎ¬²òÀÏÂĞ¾İ»Ø¼¨»ì")) {
+		check_feature(cpm_ptr->elem_b_ptr[i]->f, "çœç•¥è§£æå¯¾è±¡æŒ‡ç¤ºè©")) {
 		continue;
 	    }
 
 	    num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
 
-	    /* ³ä¤êÅö¤Æ¤Ê¤· */
+	    /* å‰²ã‚Šå½“ã¦ãªã— */
 	    if (num == NIL_ASSIGNED) {
-		/* ³ä¤êÅö¤Æ¤Ê¤·¤À¤¬¡¢ÆşÎÏÂ¦¤Î³Ê¤¬ÌÀ¼¨¤µ¤ì¤Æ¤¤¤ë¾ì¹ç¤Ï¤½¤ì¤òÉ½¼¨
-		   (³Ê¤Î²ÄÇ½À­¤Ï¤Ò¤È¤Ä¤·¤«¤Ê¤¯¡¢Ì¤³Ê°Ê³°) */
-		/* ¡ú¡Ö¤Ø¡×¤â°·¤¤¤¿¤¤ (¸½ºß¤Ï¡Ö¤Ø/¥Ë¡×¤È¤Ê¤Ã¤Æ¤¤¤ë) */
+		/* å‰²ã‚Šå½“ã¦ãªã—ã ãŒã€å…¥åŠ›å´ã®æ ¼ãŒæ˜ç¤ºã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ãã‚Œã‚’è¡¨ç¤º
+		   (æ ¼ã®å¯èƒ½æ€§ã¯ã²ã¨ã¤ã—ã‹ãªãã€æœªæ ¼ä»¥å¤–) */
+		/* â˜…ã€Œã¸ã€ã‚‚æ‰±ã„ãŸã„ (ç¾åœ¨ã¯ã€Œã¸/ãƒ‹ã€ã¨ãªã£ã¦ã„ã‚‹) */
 		if (cpm_ptr->cf.pp[i][1] == END_M && 
 		    cpm_ptr->cf.pp[i][0] >= 0) {
 		    strcpy(relation, pp_code_to_kstr(cpm_ptr->cf.pp[i][0]));
@@ -462,14 +462,14 @@ struct _sort_kv {
 		    continue;
 		}
 	    }
-	    /* ³ä¤êÅö¤Æ¤é¤ì¤Æ¤¤¤ë³Ê */
+	    /* å‰²ã‚Šå½“ã¦ã‚‰ã‚Œã¦ã„ã‚‹æ ¼ */
 	    else if (num >= 0) {
 		strcpy(relation, pp_code_to_kstr(cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
 	    }
 
 	    word = make_print_string(cpm_ptr->elem_b_ptr[i], 0);
 	    if (word) {
-		/* ¾ÊÎ¬¤Î¾ì¹ç¤Ï * ¤òÉÕÍ¿ */
+		/* çœç•¥ã®å ´åˆã¯ * ã‚’ä»˜ä¸ */
 		fprintf(Outfp, " %s:%s%s", word, relation, cpm_ptr->elem_b_num[i] <= -2 ? "*" : "");
 		free(word);
 	    }

@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     ��ư��������
+			     自動獲得辞書
 
                                          Daisuke Kawahara 2007. 3. 13
 
@@ -76,7 +76,7 @@ int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_va
 	return FALSE;
     }
 
-    if (used_auto_dic_features_num > 0) { /* ���Ѥ��뼫ư����°�������ꤵ��Ƥ���Ȥ� */
+    if (used_auto_dic_features_num > 0) { /* 使用する自動獲得属性が指定されているとき */
 	flag = FALSE;
 	for (i = 0; i < used_auto_dic_features_num; i++) {
 	    if (!strcmp(used_auto_dic_features[i], rule_value)) {
@@ -84,15 +84,15 @@ int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_va
 		break;
 	    }
 	}
-	if (flag == FALSE) { /* �ޥå����ʤ��ä� */
+	if (flag == FALSE) { /* マッチしなかった */
 	    return FALSE;
 	}
     }
 
-    /* ��¦��ҤȤĤ���û�����Ƥ��� */
+    /* 後側をひとつずつ短くしていく */
     for (; m_length > 0; m_length--) {
 	key[0] = '\0';
-	for (i = 0; i < m_length; i++) { /* �������󤫤饭������ */
+	for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
 	    if (i) strcat(key, "+");
 	    if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
 		if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
@@ -100,19 +100,19 @@ int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_va
 		}
 		strcat(key, rep_str);
 	    }
-	    else { /* ���졢��ư��ʤɤ���ɽɽ�����ʤ� */
-		strcat(key, (m_ptr + i)->Goi2); /* ɽ�� */
+	    else { /* 助詞、助動詞などは代表表記がない */
+		strcat(key, (m_ptr + i)->Goi2); /* 表記 */
 	    }
 	}
 
 	dic_str = lookup_auto_dic(key);
 
 	if (dic_str) {
-	    int cmp_length = strlen(rule_value); /* strncmp��Ĺ�� */
-	    char *token = strtok(dic_str, "|"); /* ������ܤ���ڤ� (dict/auto/Makefile.am�ǻ���) */
+	    int cmp_length = strlen(rule_value); /* strncmpの長さ */
+	    char *token = strtok(dic_str, "|"); /* 辞書項目を区切る (dict/auto/Makefile.amで指定) */
 	    ret = NULL;
 	    while (token) {
-		if (!strncmp(token, rule_value, cmp_length)) { /* ������ܤȥ롼�뤫��Ϳ����줿ʸ���󤬥ޥå� */
+		if (!strncmp(token, rule_value, cmp_length)) { /* 辞書項目とルールから与えられた文字列がマッチ */
 		    ret = (char *)malloc_data(strlen(token) + 9, "check_auto_dic");
 		    sprintf(ret, "%s:%d-%d", token, m_ptr->num, (m_ptr + m_length - 1)->num);
 		    break;
@@ -121,16 +121,16 @@ int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_va
 	    }
 
 	    free(dic_str);
-	    if (ret) { /* �ޥå�����С�feature��assign_pos�η����Ǥ���Ϳ���ƽ�λ */
+	    if (ret) { /* マッチすれば、featureをassign_posの形態素に付与して終了 */
 		assign_cfeature(&((m_ptr + assign_pos)->f), ret, temp_assign_flag);
 		free(ret);
 		return TRUE;
 	    }
 	}
-	if (assign_pos) { /* ������feature����Ϳ������ϡ�������ˤ��餹 */
+	if (assign_pos) { /* 末尾にfeatureを付与する場合は、一つ前にずらす */
 	    assign_pos--;
 	}
-	/* ����ˤʤ���С����Υ롼�פ����ꡢ��¦��û������ */
+	/* 辞書になければ、次のループに入り、後側を短くする */
     }
 
     return FALSE;

@@ -1,6 +1,6 @@
 /*====================================================================
 
-		    ∑¡¬÷¡«°§ ∏¿·•ﬁ•√•¡•Û•∞•Î°º•¡•Û
+		    ÂΩ¢ÊÖãÁ¥†ÔºåÊñáÁØÄ„Éû„ÉÉ„ÉÅ„É≥„Ç∞„É´„Éº„ÉÅ„É≥
 
                                                K.Yamagami
                                                M.Nishida
@@ -16,7 +16,7 @@
 #define MRPH_KEI	4
 #define MRPH_GOI	5
 
-void *matched_ptr; /* •ﬁ•√•¡§∑§ø∑¡¬÷¡«or ∏¿·§Œ•›•§•Û•ø§Œµ≠≤± */
+void *matched_ptr; /* „Éû„ÉÉ„ÉÅ„Åó„ÅüÂΩ¢ÊÖãÁ¥†orÊñáÁØÄ„ÅÆ„Éù„Ç§„É≥„Çø„ÅÆË®òÊÜ∂ */
 
 const REGEXPMRPH RegexpMrphInitValue = { 
     MAT_FLG, (char) NULL, 
@@ -60,7 +60,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 };
 
 /*==================================================================*/
-/*   		              •π•»•¢                                */
+/*   		              „Çπ„Éà„Ç¢                                */
 /*==================================================================*/
 
 /*==================================================================*/
@@ -216,7 +216,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	  char store_regexpmrph(REGEXPMRPH *mp, CELL *mcell)
 /*==================================================================*/
 {
-    /* ∑¡¬÷¡«§¨∆√ºÏ ∏ª˙§À§Ë§ÎªÿƒÍ§ŒæÏπÁ */
+    /* ÂΩ¢ÊÖãÁ¥†„ÅåÁâπÊÆäÊñáÂ≠ó„Å´„Çà„ÇãÊåáÂÆö„ÅÆÂ†¥Âêà */
 
     if (Atomp(mcell)) {
 	if (str_eq(_Atom(mcell), NOT_STR)) {	 	/* "^" */
@@ -244,7 +244,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	}
     } 
 
-    /* ∑¡¬÷¡«§¨ƒÃæÔ§ŒªÿƒÍ§ŒæÏπÁ */
+    /* ÂΩ¢ÊÖãÁ¥†„ÅåÈÄöÂ∏∏„ÅÆÊåáÂÆö„ÅÆÂ†¥Âêà */
 
     else {
 	mp->f_pattern.fp[0] = NULL;
@@ -303,7 +303,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	  char store_regexpbnst(REGEXPBNST *bp, CELL *cell)
 /*==================================================================*/
 {
-    /*  ∏¿·§¨∆√ºÏ ∏ª˙§À§Ë§ÎªÿƒÍ§ŒæÏπÁ */
+    /* ÊñáÁØÄ„ÅåÁâπÊÆäÊñáÂ≠ó„Å´„Çà„ÇãÊåáÂÆö„ÅÆÂ†¥Âêà */
 
     if (Atomp(cell)) {
 	if (str_eq(_Atom(cell), NOT_STR)) {	 	/* "^" */
@@ -331,7 +331,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 	}
     } 
 
-    /*  ∏¿·§¨ƒÃæÔ§ŒªÿƒÍ§ŒæÏπÁ */
+    /* ÊñáÁØÄ„ÅåÈÄöÂ∏∏„ÅÆÊåáÂÆö„ÅÆÂ†¥Âêà */
 
     else {
 	store_regexpmrphs(&(bp->mrphs), car(cell));
@@ -373,14 +373,14 @@ const REGEXPBNST RegexpBnstInitValue = {
 }
 
 /*==================================================================*/
-/*   		            •ﬁ•√•¡•Û•∞                              */
+/*   		            „Éû„ÉÉ„ÉÅ„É≥„Ç∞                              */
 /*==================================================================*/
 
 /*==================================================================*/
     int rule_HBK_cmp(char flg, int r_data[], int data)
 /*==================================================================*/
 {
-    /* … ªÏ°¢∫Ÿ ¨Œ‡°§≥ËÕ—∑ø§Œ•ﬁ•√•¡•Û•∞ */
+    /* ÂìÅË©û„ÄÅÁ¥∞ÂàÜÈ°ûÔºåÊ¥ªÁî®Âûã„ÅÆ„Éû„ÉÉ„ÉÅ„É≥„Ç∞ */
     int i, tmp_ret = FALSE;
 
     if (r_data[0] == -1 || r_data[0] == 0)
@@ -403,7 +403,7 @@ const REGEXPBNST RegexpBnstInitValue = {
     int rule_Kei_cmp(char flg, char *r_string[], int kata, int kei)
 /*==================================================================*/
 {
-    /* ≥ËÕ—∑¡§Œ•ﬁ•√•¡•Û•∞ */
+    /* Ê¥ªÁî®ÂΩ¢„ÅÆ„Éû„ÉÉ„ÉÅ„É≥„Ç∞ */
     int i, tmp_ret = FALSE;
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
@@ -445,14 +445,14 @@ const REGEXPBNST RegexpBnstInitValue = {
      int rule_Goi_cmp(char flg, char *r_string[], char *d_string)
 /*==================================================================*/
 {
-    /* ∏Ï◊√§Œ•ﬁ•√•¡•Û•∞ */
+    /* Ë™ûÂΩô„ÅÆ„Éû„ÉÉ„ÉÅ„É≥„Ç∞ */
     int i, tmp_ret = FALSE;
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
 	return TRUE;
     else {
 	for (i = 0; r_string[i]; i++) {
-	    /* ¥ÿøÙ∏∆§”Ω–§∑
+	    /* Èñ¢Êï∞Âëº„Å≥Âá∫„Åó
 	    if (r_string[i][0] == '&')
 		if (mrph_check_function(r_string[i], d_string)) {
 		    tmp_ret = TRUE;
@@ -475,7 +475,7 @@ const REGEXPBNST RegexpBnstInitValue = {
        int regexpmrph_match(REGEXPMRPH *ptr1, MRPH_DATA *ptr2)
 /*==================================================================*/
 {
-    /* ∑¡¬÷¡«§Œ•ﬁ•√•¡•Û•∞ */
+    /* ÂΩ¢ÊÖãÁ¥†„ÅÆ„Éû„ÉÉ„ÉÅ„É≥„Ç∞ */
 
     int ret_mrph;
 
@@ -512,7 +512,7 @@ const REGEXPBNST RegexpBnstInitValue = {
 				int short_or_long)
 /*==================================================================*/
 {
-    /* ∑¡¬÷¡«ŒÛ§À¬–§∑§∆§‚feature§ÚÕø§®§È§Ï§Î§Ë§¶§À —ππ 99/04/09 */
+    /* ÂΩ¢ÊÖãÁ¥†Âàó„Å´ÂØæ„Åó„Å¶„ÇÇfeature„Çí‰∏é„Åà„Çâ„Çå„Çã„Çà„ÅÜ„Å´Â§âÊõ¥ 99/04/09 */
 
     int step, return_num;
 
@@ -527,12 +527,12 @@ const REGEXPBNST RegexpBnstInitValue = {
         if (r_ptr->ast_flag == AST_FLG) {
 	    
 	    /* 
-	       •—•ø°º•Û§À"condition*"§¨§¢§ÎæÏπÁ°§º°§Œ≤ƒ«Ω¿≠§Úƒ¥§Ÿ§Î
+	       „Éë„Çø„Éº„É≥„Å´"condition*"„Åå„ÅÇ„ÇãÂ†¥ÂêàÔºåÊ¨°„ÅÆÂèØËÉΩÊÄß„ÇíË™ø„Åπ„Çã
 
-	        1. •—•ø°º•Û§Œ§ﬂø §·§Î(•—•ø°º•Û§Œ"*"§Ú•π•≠•√•◊)
-	        2. •«°º•ø§Œ§ﬂø §·§Î(condition§¨•«°º•ø§»•ﬁ•√•¡§π§Ï§–)
+	        1. „Éë„Çø„Éº„É≥„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(„Éë„Çø„Éº„É≥„ÅÆ"*"„Çí„Çπ„Ç≠„ÉÉ„Éó)
+	        2. „Éá„Éº„Çø„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(condition„Åå„Éá„Éº„Çø„Å®„Éû„ÉÉ„ÉÅ„Åô„Çå„Å∞)
 
-	       1§Ú¿Ë§À§π§Ï§–SHORT_MATCHING, 2§Ú¿Ë§À§π§Ï§–LONG_MATCHING
+	       1„ÇíÂÖà„Å´„Åô„Çå„Å∞SHORT_MATCHING, 2„ÇíÂÖà„Å´„Åô„Çå„Å∞LONG_MATCHING
 	    */
 	    
 	    if (short_or_long == SHORT_MATCHING) {
@@ -596,43 +596,43 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     /* 
-       pre_pattern  (shortest match §«§Ë§§)
-       self_pattern (longest match  §¨§Ë§§)
-       post_pattern (shortest match §«§Ë§§)
+       pre_pattern  (shortest match „Åß„Çà„ÅÑ)
+       self_pattern (longest match  „Åå„Çà„ÅÑ)
+       post_pattern (shortest match „Åß„Çà„ÅÑ)
        
-       §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ°§º°§Àself_pattern§Œlongest match§´§È
-       ΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
+       „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„ÅπÔºåÊ¨°„Å´self_pattern„ÅÆlongest match„Åã„Çâ
+       È†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
     */
 
     int match_length, match_rest;
 
-    matched_ptr = NULL;	/* •ﬁ•√•¡§∑§ø∑¡¬÷¡«or ∏¿·§Œ•›•§•Û•ø§Œµ≠≤±§ŒΩÈ¥¸≤Ω */
+    matched_ptr = NULL;	/* „Éû„ÉÉ„ÉÅ„Åó„ÅüÂΩ¢ÊÖãÁ¥†orÊñáÁØÄ„ÅÆ„Éù„Ç§„É≥„Çø„ÅÆË®òÊÜ∂„ÅÆÂàùÊúüÂåñ */
 
-    /* §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ§Î */
+    /* „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„Åπ„Çã */
 
-    if ((r_ptr->pre_pattern == NULL &&	/* ∞„§§ */
+    if ((r_ptr->pre_pattern == NULL &&	/* ÈÅï„ÅÑ */
 	 bw_length != 0) ||
 	(r_ptr->pre_pattern != NULL &&
 	 regexpmrphs_match(r_ptr->pre_pattern->mrph + 
 			   r_ptr->pre_pattern->mrphsize - 1,
 			   r_ptr->pre_pattern->mrphsize,
 			   d_ptr - 1, 
-			   bw_length,	/* ∞„§§ */
+			   bw_length,	/* ÈÅï„ÅÑ */
 			   BW_MATCHING, 
-			   ALL_MATCHING,/* ∞„§§ */
+			   ALL_MATCHING,/* ÈÅï„ÅÑ */
 			   SHORT_MATCHING) == -1))
 	return -1;
 
     
-    /* º°§Àself_pattern§Œlongest match§´§ÈΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
-       match_length §œ self_pattern §Œ match §Œ(≤ƒ«Ω¿≠§Œ)ƒπ§µ */
+    /* Ê¨°„Å´self_pattern„ÅÆlongest match„Åã„ÇâÈ†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
+       match_length „ÅØ self_pattern „ÅÆ match „ÅÆ(ÂèØËÉΩÊÄß„ÅÆ)Èï∑„Åï */
 
-    match_length = fw_length;		/* ∞„§§ */
+    match_length = fw_length;		/* ÈÅï„ÅÑ */
 
     while (match_length > 0) {
 	if (r_ptr->self_pattern == NULL) {
-	    match_length = 1;	/* self_pattern §¨§ §±§Ï§–
-				   •ﬁ•√•¡§Œƒπ§µ§œ1§À§∑§∆§™§Ø */
+	    match_length = 1;	/* self_pattern „Åå„Å™„Åë„Çå„Å∞
+				   „Éû„ÉÉ„ÉÅ„ÅÆÈï∑„Åï„ÅØ1„Å´„Åó„Å¶„Åä„Åè */
 	}
 	else if ((match_rest = 
 		  regexpmrphs_match(r_ptr->self_pattern->mrph, 
@@ -652,9 +652,9 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    regexpmrphs_match(r_ptr->post_pattern->mrph, 
 			      r_ptr->post_pattern->mrphsize,
 			      d_ptr + match_length,
-			      fw_length - match_length,	/* ∞„§§ */
+			      fw_length - match_length,	/* ÈÅï„ÅÑ */
 			      FW_MATCHING, 
-			      ALL_MATCHING,		/* ∞„§§ */ 
+			      ALL_MATCHING,		/* ÈÅï„ÅÑ */ 
 			      SHORT_MATCHING) != -1) {
 	    return match_length;
 	}
@@ -668,7 +668,7 @@ const REGEXPBNST RegexpBnstInitValue = {
      int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr)
 /*==================================================================*/
 {
-    /* æ≠ÕË§œ§§§È§ §§ */
+    /* Â∞ÜÊù•„ÅØ„ÅÑ„Çâ„Å™„ÅÑ */
 
     return regexpmrphs_match(r_ptr->mrph, r_ptr->mrphsize, 
 			     b_ptr->mrph_ptr, b_ptr->mrph_num, 
@@ -679,7 +679,7 @@ const REGEXPBNST RegexpBnstInitValue = {
        int regexpbnst_match(REGEXPBNST *ptr1, BNST_DATA *ptr2)
 /*==================================================================*/
 {
-    /*  ∏¿·§Œ•ﬁ•√•¡•Û•∞ */
+    /* ÊñáÁØÄ„ÅÆ„Éû„ÉÉ„ÉÅ„É≥„Ç∞ */
 
     int ret_mrph;
 
@@ -727,12 +727,12 @@ const REGEXPBNST RegexpBnstInitValue = {
         if (r_ptr->ast_flag == AST_FLG) {
 	    
 	    /* 
-	       •—•ø°º•Û§À"condition*"§¨§¢§ÎæÏπÁ°§º°§Œ≤ƒ«Ω¿≠§Úƒ¥§Ÿ§Î
+	       „Éë„Çø„Éº„É≥„Å´"condition*"„Åå„ÅÇ„ÇãÂ†¥ÂêàÔºåÊ¨°„ÅÆÂèØËÉΩÊÄß„ÇíË™ø„Åπ„Çã
 
-	        1. •—•ø°º•Û§Œ§ﬂø §·§Î(•—•ø°º•Û§Œ"*"§Ú•π•≠•√•◊)
-	        2. •«°º•ø§Œ§ﬂø §·§Î(condition§¨•«°º•ø§»•ﬁ•√•¡§π§Ï§–)
+	        1. „Éë„Çø„Éº„É≥„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(„Éë„Çø„Éº„É≥„ÅÆ"*"„Çí„Çπ„Ç≠„ÉÉ„Éó)
+	        2. „Éá„Éº„Çø„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(condition„Åå„Éá„Éº„Çø„Å®„Éû„ÉÉ„ÉÅ„Åô„Çå„Å∞)
 
-	       1§Ú¿Ë§À§π§Ï§–SHORT_MATCHING, 2§Ú¿Ë§À§π§Ï§–LONG_MATCHING
+	       1„ÇíÂÖà„Å´„Åô„Çå„Å∞SHORT_MATCHING, 2„ÇíÂÖà„Å´„Åô„Çå„Å∞LONG_MATCHING
 	    */
 
 	    if (short_or_long == SHORT_MATCHING) {
@@ -796,43 +796,43 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     /* 
-       pre_pattern  (shortest match §«§Ë§§)
-       self_pattern (longest match  §¨§Ë§§)
-       post_pattern (shortest match §«§Ë§§)
+       pre_pattern  (shortest match „Åß„Çà„ÅÑ)
+       self_pattern (longest match  „Åå„Çà„ÅÑ)
+       post_pattern (shortest match „Åß„Çà„ÅÑ)
        
-       §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ°§º°§Àself_pattern§Œlongest match§´§È
-       ΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
+       „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„ÅπÔºåÊ¨°„Å´self_pattern„ÅÆlongest match„Åã„Çâ
+       È†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
     */
 
     int match_length, match_rest;
 
-    matched_ptr = NULL;	/* •ﬁ•√•¡§∑§ø∑¡¬÷¡«or ∏¿·§Œ•›•§•Û•ø§Œµ≠≤±§ŒΩÈ¥¸≤Ω */
+    matched_ptr = NULL;	/* „Éû„ÉÉ„ÉÅ„Åó„ÅüÂΩ¢ÊÖãÁ¥†orÊñáÁØÄ„ÅÆ„Éù„Ç§„É≥„Çø„ÅÆË®òÊÜ∂„ÅÆÂàùÊúüÂåñ */
 
-    /* §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ§Î */
+    /* „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„Åπ„Çã */
 
-    if ((r_ptr->pre_pattern == NULL &&	/* ∞„§§ */
+    if ((r_ptr->pre_pattern == NULL &&	/* ÈÅï„ÅÑ */
 	 bw_length != 0) ||
 	(r_ptr->pre_pattern != NULL &&
 	 regexpbnsts_match(r_ptr->pre_pattern->bnst + 
 			   r_ptr->pre_pattern->bnstsize - 1,
 			   r_ptr->pre_pattern->bnstsize,
 			   d_ptr - 1, 
-			   bw_length,	/* ∞„§§ */
+			   bw_length,	/* ÈÅï„ÅÑ */
 			   BW_MATCHING, 
-			   ALL_MATCHING,/* ∞„§§ */
+			   ALL_MATCHING,/* ÈÅï„ÅÑ */
 			   SHORT_MATCHING) == -1))
 	return -1;
 
     
-    /* º°§Àself_pattern§Œlongest match§´§ÈΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
-       match_length §œ self_pattern §Œ match §Œ(≤ƒ«Ω¿≠§Œ)ƒπ§µ */
+    /* Ê¨°„Å´self_pattern„ÅÆlongest match„Åã„ÇâÈ†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
+       match_length „ÅØ self_pattern „ÅÆ match „ÅÆ(ÂèØËÉΩÊÄß„ÅÆ)Èï∑„Åï */
 
-    match_length = fw_length;		/* ∞„§§ */
+    match_length = fw_length;		/* ÈÅï„ÅÑ */
 
     while (match_length > 0) {
 	if (r_ptr->self_pattern == NULL) {
-	    match_length = 1;	/* self_pattern §¨§ §±§Ï§–
-				   •ﬁ•√•¡§Œƒπ§µ§œ1§À§∑§∆§™§Ø */
+	    match_length = 1;	/* self_pattern „Åå„Å™„Åë„Çå„Å∞
+				   „Éû„ÉÉ„ÉÅ„ÅÆÈï∑„Åï„ÅØ1„Å´„Åó„Å¶„Åä„Åè */
 	}
 	else if ((match_rest = 
 		  regexpbnsts_match(r_ptr->self_pattern->bnst, 
@@ -852,9 +852,9 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    regexpbnsts_match(r_ptr->post_pattern->bnst, 
 			      r_ptr->post_pattern->bnstsize,
 			      d_ptr + match_length,
-			      fw_length - match_length,	/* ∞„§§ */
+			      fw_length - match_length,	/* ÈÅï„ÅÑ */
 			      FW_MATCHING, 
-			      ALL_MATCHING,		/* ∞„§§ */ 
+			      ALL_MATCHING,		/* ÈÅï„ÅÑ */ 
 			      SHORT_MATCHING) != -1) {
 	    return match_length;
 	}
@@ -885,12 +885,12 @@ const REGEXPBNST RegexpBnstInitValue = {
         if (r_ptr->ast_flag == AST_FLG) {
 	    
 	    /* 
-	       •—•ø°º•Û§À"condition*"§¨§¢§ÎæÏπÁ°§º°§Œ≤ƒ«Ω¿≠§Úƒ¥§Ÿ§Î
+	       „Éë„Çø„Éº„É≥„Å´"condition*"„Åå„ÅÇ„ÇãÂ†¥ÂêàÔºåÊ¨°„ÅÆÂèØËÉΩÊÄß„ÇíË™ø„Åπ„Çã
 
-	        1. •—•ø°º•Û§Œ§ﬂø §·§Î(•—•ø°º•Û§Œ"*"§Ú•π•≠•√•◊)
-	        2. •«°º•ø§Œ§ﬂø §·§Î(condition§¨•«°º•ø§»•ﬁ•√•¡§π§Ï§–)
+	        1. „Éë„Çø„Éº„É≥„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(„Éë„Çø„Éº„É≥„ÅÆ"*"„Çí„Çπ„Ç≠„ÉÉ„Éó)
+	        2. „Éá„Éº„Çø„ÅÆ„ÅøÈÄ≤„ÇÅ„Çã(condition„Åå„Éá„Éº„Çø„Å®„Éû„ÉÉ„ÉÅ„Åô„Çå„Å∞)
 
-	       1§Ú¿Ë§À§π§Ï§–SHORT_MATCHING, 2§Ú¿Ë§À§π§Ï§–LONG_MATCHING
+	       1„ÇíÂÖà„Å´„Åô„Çå„Å∞SHORT_MATCHING, 2„ÇíÂÖà„Å´„Åô„Çå„Å∞LONG_MATCHING
 	    */
 
 	    if (short_or_long == SHORT_MATCHING) {
@@ -954,43 +954,43 @@ const REGEXPBNST RegexpBnstInitValue = {
 /*==================================================================*/
 {
     /* 
-       pre_pattern  (shortest match §«§Ë§§)
-       self_pattern (longest match  §¨§Ë§§)
-       post_pattern (shortest match §«§Ë§§)
+       pre_pattern  (shortest match „Åß„Çà„ÅÑ)
+       self_pattern (longest match  „Åå„Çà„ÅÑ)
+       post_pattern (shortest match „Åß„Çà„ÅÑ)
        
-       §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ°§º°§Àself_pattern§Œlongest match§´§È
-       ΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
+       „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„ÅπÔºåÊ¨°„Å´self_pattern„ÅÆlongest match„Åã„Çâ
+       È†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
     */
 
     int match_length, match_rest;
 
-    matched_ptr = NULL;	/* •ﬁ•√•¡§∑§ø∑¡¬÷¡«or ∏¿·§Œ•›•§•Û•ø§Œµ≠≤±§ŒΩÈ¥¸≤Ω */
+    matched_ptr = NULL;	/* „Éû„ÉÉ„ÉÅ„Åó„ÅüÂΩ¢ÊÖãÁ¥†orÊñáÁØÄ„ÅÆ„Éù„Ç§„É≥„Çø„ÅÆË®òÊÜ∂„ÅÆÂàùÊúüÂåñ */
 
-    /* §ﬁ§∫°§pre_pattern§Úƒ¥§Ÿ§Î */
+    /* „Åæ„ÅöÔºåpre_pattern„ÇíË™ø„Åπ„Çã */
 
-    if ((r_ptr->pre_pattern == NULL &&	/* ∞„§§ */
+    if ((r_ptr->pre_pattern == NULL &&	/* ÈÅï„ÅÑ */
 	 bw_length != 0) ||
 	(r_ptr->pre_pattern != NULL &&
 	 regexptags_match(r_ptr->pre_pattern->bnst + 
 			  r_ptr->pre_pattern->bnstsize - 1,
 			  r_ptr->pre_pattern->bnstsize,
 			  d_ptr - 1, 
-			  bw_length,	/* ∞„§§ */
+			  bw_length,	/* ÈÅï„ÅÑ */
 			  BW_MATCHING, 
-			  ALL_MATCHING,/* ∞„§§ */
+			  ALL_MATCHING,/* ÈÅï„ÅÑ */
 			  SHORT_MATCHING) == -1))
 	return -1;
 
     
-    /* º°§Àself_pattern§Œlongest match§´§ÈΩÁ§À°§§Ω§Œ∏Â§«post_pattern§Úƒ¥§Ÿ§Î
-       match_length §œ self_pattern §Œ match §Œ(≤ƒ«Ω¿≠§Œ)ƒπ§µ */
+    /* Ê¨°„Å´self_pattern„ÅÆlongest match„Åã„ÇâÈ†Ü„Å´Ôºå„Åù„ÅÆÂæå„Åßpost_pattern„ÇíË™ø„Åπ„Çã
+       match_length „ÅØ self_pattern „ÅÆ match „ÅÆ(ÂèØËÉΩÊÄß„ÅÆ)Èï∑„Åï */
 
-    match_length = fw_length;		/* ∞„§§ */
+    match_length = fw_length;		/* ÈÅï„ÅÑ */
 
     while (match_length > 0) {
 	if (r_ptr->self_pattern == NULL) {
-	    match_length = 1;	/* self_pattern §¨§ §±§Ï§–
-				   •ﬁ•√•¡§Œƒπ§µ§œ1§À§∑§∆§™§Ø */
+	    match_length = 1;	/* self_pattern „Åå„Å™„Åë„Çå„Å∞
+				   „Éû„ÉÉ„ÉÅ„ÅÆÈï∑„Åï„ÅØ1„Å´„Åó„Å¶„Åä„Åè */
 	}
 	else if ((match_rest = 
 		  regexptags_match(r_ptr->self_pattern->bnst, 
@@ -1010,9 +1010,9 @@ const REGEXPBNST RegexpBnstInitValue = {
 	    regexptags_match(r_ptr->post_pattern->bnst, 
 			     r_ptr->post_pattern->bnstsize,
 			     d_ptr + match_length,
-			     fw_length - match_length,	/* ∞„§§ */
+			     fw_length - match_length,	/* ÈÅï„ÅÑ */
 			     FW_MATCHING, 
-			     ALL_MATCHING,		/* ∞„§§ */ 
+			     ALL_MATCHING,		/* ÈÅï„ÅÑ */ 
 			     SHORT_MATCHING) != -1) {
 	    return match_length;
 	}

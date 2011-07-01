@@ -15,8 +15,8 @@
 #define	PP_NUMBER	44
 #define NE_MODEL_NUMBER	33
 
-char *SVMFile[PP_NUMBER];	/* model¥Õ¥¡¥¤¥ë¤Î»ØÄê */
-char *SVMFileNE[NE_MODEL_NUMBER]; /* ne²òÀÏÍÑmodel¥Õ¥¡¥¤¥ë¤Î»ØÄê */
+char *SVMFile[PP_NUMBER];	/* modelãƒ•ã‚¡ã‚¤ãƒ«ã®æŒ‡å®š */
+char *SVMFileNE[NE_MODEL_NUMBER]; /* neè§£æç”¨modelãƒ•ã‚¡ã‚¤ãƒ«ã®æŒ‡å®š */
 
 MODEL *model[PP_NUMBER];
 MODEL *modelNE[NE_MODEL_NUMBER];
@@ -85,7 +85,7 @@ int init_svm_for_anaphora() {
 		add_weight_vector_to_linear_model(model[i]);
 	    }
 
-	    if (i == 0) { /* ¤¹¤Ù¤Æ¤Î³ÊÍÑ */
+	    if (i == 0) { /* ã™ã¹ã¦ã®æ ¼ç”¨ */
 		return 0;
 	    }
 	}
@@ -113,7 +113,7 @@ double svm_classify_for_anaphora(char *line, int pp)
 {
     MODEL *m;
 
-    /* 0¤Ï¤¹¤Ù¤Æ¤Î³ÊÍÑ */
+    /* 0ã¯ã™ã¹ã¦ã®æ ¼ç”¨ */
     if (model[0]) {
 	m = model[0];
 	pp = 0;

@@ -1,6 +1,6 @@
 /*====================================================================
 
-			  ³Ê¹½Â¤²òÀÏ: ÆşÎÏÂ¦
+			  æ ¼æ§‹é€ è§£æ: å…¥åŠ›å´
 
                                                S.Kurohashi 93. 5.31
 
@@ -19,30 +19,30 @@ char *extract_fukugoji_string(BNST_DATA *b_ptr, BNST_DATA *pre_b_ptr)
 {
     int i;
 
-    /* ÉÕÂ°¸ì¤¬¤Ê¤¤¤È¤­ */
+    /* ä»˜å±èªãŒãªã„ã¨ã */
     if (b_ptr->num < 1 || pre_b_ptr->mrph_num == 0) {
 	return NULL;
     }
 
     fukugoji_string[0] = '\0';
 
-    /* Á°¤ÎÊ¸Àá¤Î½õ»ì */
+    /* å‰ã®æ–‡ç¯€ã®åŠ©è© */
     strcat(fukugoji_string, (pre_b_ptr->mrph_ptr + pre_b_ptr->mrph_num - 1)->Goi);
 
-    /* ¤³¤ÎÊ¸Àá */
+    /* ã“ã®æ–‡ç¯€ */
     for (i = 0; i < b_ptr->mrph_num; i++) {
-	if (check_feature((b_ptr->mrph_ptr + i)->f, "¼«Î©") && /* ÆÃ¼ì°Ê³°¤Î¼«Î©¸ì */
-	    strcmp(Class[(b_ptr->mrph_ptr + i)->Hinshi][0].id, "ÆÃ¼ì")) {
+	if (check_feature((b_ptr->mrph_ptr + i)->f, "è‡ªç«‹") && /* ç‰¹æ®Šä»¥å¤–ã®è‡ªç«‹èª */
+	    strcmp(Class[(b_ptr->mrph_ptr + i)->Hinshi][0].id, "ç‰¹æ®Š")) {
 	    strcat(fukugoji_string, (b_ptr->mrph_ptr + i)->Goi);
-	    if (i + 1 < b_ptr->mrph_num && !strcmp((b_ptr->mrph_ptr + i + 1)->Goi, "¤Ì") && /* ¼¡¤Î·ÁÂÖÁÇ¤¬½õÆ°»ì¡Ö¤Ì¡× */
-		!strcmp(Class[(b_ptr->mrph_ptr + i + 1)->Hinshi][0].id, "½õÆ°»ì")) {
+	    if (i + 1 < b_ptr->mrph_num && !strcmp((b_ptr->mrph_ptr + i + 1)->Goi, "ã¬") && /* æ¬¡ã®å½¢æ…‹ç´ ãŒåŠ©å‹•è©ã€Œã¬ã€ */
+		!strcmp(Class[(b_ptr->mrph_ptr + i + 1)->Hinshi][0].id, "åŠ©å‹•è©")) {
 		strcat(fukugoji_string, (b_ptr->mrph_ptr + i + 1)->Goi);
 	    }
 	    break;
 	}
     }
 
-    /* ¸¶·Á¤ÎÆÉ¤ß¤ËÅı°ì */
+    /* åŸå½¢ã®èª­ã¿ã«çµ±ä¸€ */
     for (i = 0; *(FukugojiYomiTable[i]); i += 2) {
 	if (str_eq(fukugoji_string, FukugojiYomiTable[i])) {
 	    strcpy(fukugoji_string, FukugojiYomiTable[i + 1]);
@@ -59,7 +59,7 @@ char *extract_fukugoji_string(BNST_DATA *b_ptr, BNST_DATA *pre_b_ptr)
 {
     int i;
 
-    /* Ê£¹ç¼­¤Î¤¤¤ï¤ĞÂåÉ½É½µ­¤òÊÖ¤¹ */
+    /* è¤‡åˆè¾ã®ã„ã‚ã°ä»£è¡¨è¡¨è¨˜ã‚’è¿”ã™ */
     for (i = 0; *(FukugojiCanonicalTable[i]); i += 2) {
 	if (str_eq(str, FukugojiCanonicalTable[i])) {
 	    return FukugojiCanonicalTable[i + 1];
@@ -78,7 +78,7 @@ char *extract_fukugoji_string(BNST_DATA *b_ptr, BNST_DATA *pre_b_ptr)
 
     fukugoji_str = extract_fukugoji_string(b_ptr, b_ptr - 1);
     if (fukugoji_str && (canonical_str = canonicalize_fukugoji(fukugoji_str)) != NULL) {
-	sprintf(fukugoji_string, "ID:¡Á%s", canonical_str);
+	sprintf(fukugoji_string, "ID:ã€œ%s", canonical_str);
 	return fukugoji_string;
     }
     else {
@@ -95,7 +95,7 @@ char *extract_fukugoji_string(BNST_DATA *b_ptr, BNST_DATA *pre_b_ptr)
 
     fukugoji_str = extract_fukugoji_string((BNST_DATA *)b_ptr, (BNST_DATA *)(b_ptr - 1));
     if (fukugoji_str && (fc = pp_hstr_to_code(fukugoji_str)) != END_M) {
-	sprintf(fukugoji_string, "£Ô²òÀÏ³Ê-%s", pp_code_to_kstr(fc));
+	sprintf(fukugoji_string, "ï¼´è§£ææ ¼-%s", pp_code_to_kstr(fc));
 	return fukugoji_string;
     }
     else {
@@ -132,12 +132,12 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     int cc;
 
-    /* ÍÑ¸À¤Î¹à¤È¤Ê¤ë¤â¤Î */
+    /* ç”¨è¨€ã®é …ã¨ãªã‚‹ã‚‚ã® */
     if (cpm_ptr->cf.type == CF_PRED) {
-	if (!strncmp(fcp, "£Ô²òÀÏ³Ê-", strlen("£Ô²òÀÏ³Ê-"))) {
-	    cc = pp_kstr_to_code(fcp+strlen("£Ô²òÀÏ³Ê-"));
+	if (!strncmp(fcp, "ï¼´è§£ææ ¼-", strlen("ï¼´è§£ææ ¼-"))) {
+	    cc = pp_kstr_to_code(fcp+strlen("ï¼´è§£ææ ¼-"));
 	    if (cc == END_M) {
-		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp + strlen("£Ô²òÀÏ³Ê-"));
+		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp + strlen("ï¼´è§£ææ ¼-"));
 		exit(1);
 	    }
 	    c_ptr->pp[c_ptr->element_num][(*pp_num)++] = cc;
@@ -146,23 +146,23 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
 		exit(1);
 	    }
 	}
-	else if (!strcmp(fcp, "£ÔÉ¬¿Ü³Ê")) {
+	else if (!strcmp(fcp, "ï¼´å¿…é ˆæ ¼")) {
 	    c_ptr->oblig[c_ptr->element_num] = TRUE;
 	}
-	else if (!strcmp(fcp, "£ÔÍÑ¸ÀÆ±Ê¸Àá")) {	/* ¡Ö¡Á¤ò¡Á¤Ë¡×¤Î¤È¤­ */
+	else if (!strcmp(fcp, "ï¼´ç”¨è¨€åŒæ–‡ç¯€")) {	/* ã€Œã€œã‚’ã€œã«ã€ã®ã¨ã */
 	    if (cpm_ptr->pred_b_ptr->num != b_ptr->num) {
 		return FALSE;
 	    }
 	}
     }
-    /* Ì¾»ì¤Î¹à¤È¤Ê¤ë¤â¤Î */
+    /* åè©ã®é …ã¨ãªã‚‹ã‚‚ã® */
     else {
-	if (!strcmp(fcp, "£ÔÌ¾»ì¹à")) {
-	    /* ¾ò·ï: Æ±³Ê¤Ç¤Ï¤Ê¤¤ 
-	             Ï¢ÂÎ½¤¾şÀá¤Î¾ì¹ç¤Ï¤½¤Î´Ø·¸¤¬³°¤Î´Ø·¸ */
+	if (!strcmp(fcp, "ï¼´åè©é …")) {
+	    /* æ¡ä»¶: åŒæ ¼ã§ã¯ãªã„ 
+	             é€£ä½“ä¿®é£¾ç¯€ã®å ´åˆã¯ãã®é–¢ä¿‚ãŒå¤–ã®é–¢ä¿‚ */
 	    if (b_ptr->dpnd_type != 'A' &&
-		(!check_feature(b_ptr->f, "·¸:Ï¢³Ê") || 
-		 check_cc_relation(b_ptr->cpm_ptr, cpm_ptr->pred_b_ptr, "³°¤Î´Ø·¸"))) {
+		(!check_feature(b_ptr->f, "ä¿‚:é€£æ ¼") || 
+		 check_cc_relation(b_ptr->cpm_ptr, cpm_ptr->pred_b_ptr, "å¤–ã®é–¢ä¿‚"))) {
 		c_ptr->pp[c_ptr->element_num][(*pp_num)++] = 0;
 		c_ptr->pp_str[c_ptr->element_num] = NULL;
 	    }
@@ -181,31 +181,31 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     FEATURE *fp;
 
-    /* flag == TRUE:  ³ÊÍ×ÁÇ
-       flag == FALSE: ÈïÏ¢ÂÎ½¤¾ş»ì */
+    /* flag == TRUE:  æ ¼è¦ç´ 
+       flag == FALSE: è¢«é€£ä½“ä¿®é£¾è© */
 
-    /* ³ÊÍ×ÁÇ */
+    /* æ ¼è¦ç´  */
     if (flag == TRUE) {
-	if (b_ptr->num > 0 && /* Ê£¹ç¼­¤Ê¤É¤Ï¤Ò¤È¤ÄÁ°¤Î´ğËÜ¶ç¤ò¤ß¤ë */
-	    check_feature(b_ptr->f, "³ÊÍ×ÁÇÉ½µ­Ä¾Á°»²¾È")) {
+	if (b_ptr->num > 0 && /* è¤‡åˆè¾ãªã©ã¯ã²ã¨ã¤å‰ã®åŸºæœ¬å¥ã‚’ã¿ã‚‹ */
+	    check_feature(b_ptr->f, "æ ¼è¦ç´ è¡¨è¨˜ç›´å‰å‚ç…§")) {
 	    b_ptr--;
 	}
 
-	/* ¡Ö¡Á¤ÎN¤À¡£¡×¶Ø»ß (¡ú=>¥ë¡¼¥ë¤Ø) */
+	/* ã€Œã€œã®Nã ã€‚ã€ç¦æ­¢ (â˜…=>ãƒ«ãƒ¼ãƒ«ã¸) */
 	if (cpm_ptr->cf.type == CF_PRED && 
-	    check_feature(b_ptr->f, "·¸:¥Î³Ê") && 
-	    check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:È½")) {
+	    check_feature(b_ptr->f, "ä¿‚:ãƒæ ¼") && 
+	    check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€:åˆ¤")) {
 	    return NULL;
 	}
 
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
-	/* ·¸¤êÀè¤ò¤ß¤ë¾ì¹ç */
-	if (start_cp = check_feature(b_ptr->f, "·¸¥Á")) {
-	    buffer = strdup(start_cp+strlen("·¸¥Á:"));
+	/* ä¿‚ã‚Šå…ˆã‚’ã¿ã‚‹å ´åˆ */
+	if (start_cp = check_feature(b_ptr->f, "ä¿‚ãƒ")) {
+	    buffer = strdup(start_cp+strlen("ä¿‚ãƒ:"));
 	    start_cp = buffer;
 	    loop_cp = start_cp;
-	    flag = 1; /* 2: OK, 1: Ì¤Äê, 0: NG */
+	    flag = 1; /* 2: OK, 1: æœªå®š, 0: NG */
 	    not_flag = 0;
 	    while (*loop_cp) {
 		if (flag == 1 && *loop_cp == '&' && *(loop_cp+1) == '&') {
@@ -255,14 +255,14 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    free(buffer);
 	}
 
-	if (check_feature(b_ptr->f, "£Ô³ÊÄ¾¸å»²¾È")) { /* ¡Ö¡Á¤Î(Êı)¡×¤Ê¤É¤Î³Ê¤Ï¡ÖÊı¡×¤ÎÊı¤Î³Ê¤ò¤ß¤ë */
+	if (check_feature(b_ptr->f, "ï¼´æ ¼ç›´å¾Œå‚ç…§")) { /* ã€Œã€œã®(æ–¹)ã€ãªã©ã®æ ¼ã¯ã€Œæ–¹ã€ã®æ–¹ã®æ ¼ã‚’ã¿ã‚‹ */
 	    fp = (b_ptr + 1)->f;
 	}
 	else {
 	    fp = b_ptr->f;
 	}
 
-	/* feature¤«¤é³Ê¤Ø */
+	/* featureã‹ã‚‰æ ¼ã¸ */
 	while (fp) {
 	    if (_make_data_from_feature_to_pp(cpm_ptr, b_ptr, &pp_num, fp->cp) == FALSE) {
 		return NULL;
@@ -278,14 +278,14 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    return NULL;
 	}
     }
-    /* ÈïÏ¢ÂÎ½¤¾ş»ì (¤È¤ê¤¢¤¨¤ºÍÑ¸À¤Î¤È¤­¤Î¤ß) */
+    /* è¢«é€£ä½“ä¿®é£¾è© (ã¨ã‚Šã‚ãˆãšç”¨è¨€ã®ã¨ãã®ã¿) */
     else if (cpm_ptr->cf.type == CF_PRED) {
 	fp = b_ptr->f;
 	c_ptr->oblig[c_ptr->element_num] = FALSE;
 
 	while (fp) {
-	    if (!strncmp(fp->cp, "£Ô²òÀÏÏ¢³Ê-", strlen("£Ô²òÀÏÏ¢³Ê-"))) {
-		cc = pp_kstr_to_code(fp->cp+strlen("£Ô²òÀÏÏ¢³Ê-"));
+	    if (!strncmp(fp->cp, "ï¼´è§£æé€£æ ¼-", strlen("ï¼´è§£æé€£æ ¼-"))) {
+		cc = pp_kstr_to_code(fp->cp+strlen("ï¼´è§£æé€£æ ¼-"));
 		if (cc == END_M) {
 		    fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fp->cp+11);
 		    exit(1);
@@ -318,48 +318,48 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	size = BGH_CODE_SIZE;
     }
 
-    /* ³ÊÍ×ÁÇ -- Ê¸ */
-    if (check_feature(b_ptr->f, "ÊäÊ¸")) {
+    /* æ ¼è¦ç´  -- æ–‡ */
+    if (check_feature(b_ptr->f, "è£œæ–‡")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-	       sm2code("ÊäÊ¸"));
+	       sm2code("è£œæ–‡"));
 	sm_num++;
     }
-    /* ½¤¾ş *
-    else if (check_feature(b_ptr->f, "½¤¾ş")) {
+    /* ä¿®é£¾ *
+    else if (check_feature(b_ptr->f, "ä¿®é£¾")) {
 	strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-	       sm2code("½¤¾ş"));
+	       sm2code("ä¿®é£¾"));
 	sm_num++;
 	} */
     else {
-	if (check_feature(b_ptr->f, "»ş´Ö")) {
+	if (check_feature(b_ptr->f, "æ™‚é–“")) {
 	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-		   sm2code("»ş´Ö"));
+		   sm2code("æ™‚é–“"));
 	    sm_num++;
 	}
-	if (check_feature(b_ptr->f, "¿ôÎÌ")) {
+	if (check_feature(b_ptr->f, "æ•°é‡")) {
 	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-		   sm2code("¿ôÎÌ"));
+		   sm2code("æ•°é‡"));
 	    sm_num++;
 	}
-	/* ¸ÇÍ­Ì¾»ì => ¼çÂÎ */
-	if (check_feature(b_ptr->f, "¿ÍÌ¾") || 
-	    check_feature(b_ptr->f, "ÁÈ¿¥Ì¾")) {
+	/* å›ºæœ‰åè© => ä¸»ä½“ */
+	if (check_feature(b_ptr->f, "äººå") || 
+	    check_feature(b_ptr->f, "çµ„ç¹”å")) {
 	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-		   sm2code("¼çÂÎ"));
+		   sm2code("ä¸»ä½“"));
 	    sm_num++;
 	}
 	
-	/* ¼çÂÎ */
+	/* ä¸»ä½“ */
 	if (Thesaurus == USE_NTT) {
-	    /* ¤¤¤í¤¤¤í»È¤¨¤ë¤Î¤Ç°ÕÌ£ÁÇ¤¹¤Ù¤Æ¥³¥Ô¡¼ */
+	    /* ã„ã‚ã„ã‚ä½¿ãˆã‚‹ã®ã§æ„å‘³ç´ ã™ã¹ã¦ã‚³ãƒ”ãƒ¼ */
 	    strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
 		   b_ptr->SM_code);
 	    sm_num += strlen(b_ptr->SM_code)/size;	    
 	}
 	else if (Thesaurus == USE_BGH) {
-	    if (bgh_match_check(sm2code("¼çÂÎ"), b_ptr->BGH_code)) {
+	    if (bgh_match_check(sm2code("ä¸»ä½“"), b_ptr->BGH_code)) {
 		strcpy(c_ptr->sm[c_ptr->element_num]+size*sm_num, 
-		       sm2code("¼çÂÎ"));
+		       sm2code("ä¸»ä½“"));
 		sm_num++;
 	    }
 	}
@@ -407,19 +407,19 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     cpm_ptr->cf.type_flag = 0;
     cpm_ptr->cf.voice = b_ptr->voice;
 
-    if ((vtype = check_feature(b_ptr->f, "ÍÑ¸À"))) {
-	vtype += strlen("ÍÑ¸À:");
+    if ((vtype = check_feature(b_ptr->f, "ç”¨è¨€"))) {
+	vtype += strlen("ç”¨è¨€:");
 	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
-    else if ((vtype = check_feature(b_ptr->f, "ÈóÍÑ¸À³Ê²òÀÏ"))) {
-	vtype += strlen("ÈóÍÑ¸À³Ê²òÀÏ:");
+    else if ((vtype = check_feature(b_ptr->f, "éç”¨è¨€æ ¼è§£æ"))) {
+	vtype += strlen("éç”¨è¨€æ ¼è§£æ:");
 	strcpy(cpm_ptr->cf.pred_type, vtype);
     }
-    else if (check_feature(b_ptr->f, "½àÍÑ¸À")) {
-	strcpy(cpm_ptr->cf.pred_type, "½à");
+    else if (check_feature(b_ptr->f, "æº–ç”¨è¨€")) {
+	strcpy(cpm_ptr->cf.pred_type, "æº–");
     }
-    else if (check_feature(b_ptr->f, "ÂÎ¸À")) {
-	strcpy(cpm_ptr->cf.pred_type, "Ì¾");
+    else if (check_feature(b_ptr->f, "ä½“è¨€")) {
+	strcpy(cpm_ptr->cf.pred_type, "å");
 	cpm_ptr->cf.type = CF_NOUN;
     }
     else {
@@ -427,8 +427,8 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
     }
 
     if (cpm_ptr->cf.type == CF_PRED &&
-	(check_feature(b_ptr->f, "¥µÊÑ") || 
-	 check_feature(b_ptr->f, "ÍÑ¸À:È½"))) {
+	(check_feature(b_ptr->f, "ã‚µå¤‰") || 
+	 check_feature(b_ptr->f, "ç”¨è¨€:åˆ¤"))) {
 	cpm_ptr->cf.type_flag = 1;
     }
 }
@@ -440,24 +440,24 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
     TAG_DATA *cel_b_ptr;
 
     if ((cel_b_ptr = _make_data_cframe_pp(cpm_ptr, child_ptr, TRUE))) {
-	/* ¡Ö¤ß¤«¤ó»°¸Ä¤ò¿©¤Ù¤ë¡× ¤Ò¤È¤ÄÁ°¤ÎÌ¾»ì¤ò³ÊÍ×ÁÇ¤È¤¹¤ë¤È¤­
-	   ¡Ö¤ß¤«¤ó¤ò»°¸Ä¿©¤Ù¤ë¡× ¤Î¾ì¹ç¤Ï¤½¤Î¤Ş¤ŞÎ¾Êı³ÊÍ×ÁÇ¤Ë¤Ê¤ë
+	/* ã€Œã¿ã‹ã‚“ä¸‰å€‹ã‚’é£Ÿã¹ã‚‹ã€ ã²ã¨ã¤å‰ã®åè©ã‚’æ ¼è¦ç´ ã¨ã™ã‚‹ã¨ã
+	   ã€Œã¿ã‹ã‚“ã‚’ä¸‰å€‹é£Ÿã¹ã‚‹ã€ ã®å ´åˆã¯ãã®ã¾ã¾ä¸¡æ–¹æ ¼è¦ç´ ã«ãªã‚‹
 	*/
 
-	if (check_feature(cel_b_ptr->f, "¿ôÎÌ") && 
-	    (check_feature(cel_b_ptr->f, "·¸:¥¬³Ê") || check_feature(cel_b_ptr->f, "·¸:¥ò³Ê")) && 
+	if (check_feature(cel_b_ptr->f, "æ•°é‡") && 
+	    (check_feature(cel_b_ptr->f, "ä¿‚:ã‚¬æ ¼") || check_feature(cel_b_ptr->f, "ä¿‚:ãƒ²æ ¼")) && 
 	    cel_b_ptr->num > 0 && 
-	    (check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "·¸:ÎÙ") || 
-	     check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "·¸:Æ±³ÊÌ¤³Ê")) && 
-	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "¿ôÎÌ") && 
-	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "»ş´Ö")) {
+	    (check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "ä¿‚:éš£") || 
+	     check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "ä¿‚:åŒæ ¼æœªæ ¼")) && 
+	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "æ•°é‡") && 
+	    !check_feature((sp->tag_data + cel_b_ptr->num - 1)->f, "æ™‚é–“")) {
 	    _make_data_cframe_sm(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
 	    _make_data_cframe_ex(cpm_ptr, sp->tag_data + cel_b_ptr->num - 1);
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = sp->tag_data + cel_b_ptr->num - 1;
 	    cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 	}
 	else {
-	    /* Ä¾Á°³Ê¤Î¥Ş¡¼¥¯ (¸·¤·¤¤ÈÇ: ´°Á´¤ËÄ¾Á°¤Î¤ß) */
+	    /* ç›´å‰æ ¼ã®ãƒãƒ¼ã‚¯ (å³ã—ã„ç‰ˆ: å®Œå…¨ã«ç›´å‰ã®ã¿) */
 	    if (closest_flag) {
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = TRUE;
 	    }
@@ -469,11 +469,11 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 	}
 
-	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL; /* ÊÂÎóÍ×ÁÇ³ÊÇ¼ÍÑ */
+	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL; /* ä¸¦åˆ—è¦ç´ æ ¼ç´ç”¨ */
 
-	/* ³Ê¤¬ÌÀ¼¨¤µ¤ì¤Æ¤¤¤Ê¤¤¤³¤È¤ò¥Ş¡¼¥¯ */
-	if (check_feature(cel_b_ptr->f, "·¸:Ì¤³Ê") || 
-	    check_feature(cel_b_ptr->f, "·¸:¥Î³Ê") || 
+	/* æ ¼ãŒæ˜ç¤ºã•ã‚Œã¦ã„ãªã„ã“ã¨ã‚’ãƒãƒ¼ã‚¯ */
+	if (check_feature(cel_b_ptr->f, "ä¿‚:æœªæ ¼") || 
+	    check_feature(cel_b_ptr->f, "ä¿‚:ãƒæ ¼") || 
 	    cel_b_ptr->inum > 0) {
 	    cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 	}
@@ -499,34 +499,34 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
     TAG_DATA *b_ptr = cpm_ptr->pred_b_ptr, *cel_b_ptr = NULL;
     int renkaku_exception_p = 0;
 
-    if (check_feature(b_ptr->f, "³ÊÍ×ÁÇ»ØÄê:2")) {
+    if (check_feature(b_ptr->f, "æ ¼è¦ç´ æŒ‡å®š:2")) {
 	renkaku_exception_p = 1;
     }
 
-    /* ÈïÏ¢ÂÎ½¤¾ş»ì */
-    if ((check_feature(b_ptr->f, "·¸:Ï¢³Ê") && 
+    /* è¢«é€£ä½“ä¿®é£¾è© */
+    if ((check_feature(b_ptr->f, "ä¿‚:é€£æ ¼") && 
 	 (b_ptr->para_type != PARA_NORMAL || 
-	  b_ptr->num == b_ptr->parent->num)) || /* ÍÑ¸ÀÊÂÎó¤Ê¤é¡¢¡ÖV¤·¤¿¡×¤È<PARA>¤¬Æ±¤¸¤È¤­¤Î¤ß */
-	(b_ptr->para_type == PARA_NORMAL && /* ÊÂÎó¤ÎÏ¢ÂÎ½¤¾ş */
-	 check_feature(b_ptr->f, "·¸:Ï¢ÍÑ") && /* ¡úÃ±½ã¤ÊÏ¢ÍÑ·Á¤Ë¸ÂÄê¤¹¤Ù¤­¡ú */
+	  b_ptr->num == b_ptr->parent->num)) || /* ç”¨è¨€ä¸¦åˆ—ãªã‚‰ã€ã€ŒVã—ãŸã€ã¨<PARA>ãŒåŒã˜ã¨ãã®ã¿ */
+	(b_ptr->para_type == PARA_NORMAL && /* ä¸¦åˆ—ã®é€£ä½“ä¿®é£¾ */
+	 check_feature(b_ptr->f, "ä¿‚:é€£ç”¨") && /* â˜…å˜ç´”ãªé€£ç”¨å½¢ã«é™å®šã™ã¹ãâ˜… */
 	 b_ptr->parent->para_top_p && 
-	 check_feature(b_ptr->parent->child[0]->f, "·¸:Ï¢³Ê")) || 
+	 check_feature(b_ptr->parent->child[0]->f, "ä¿‚:é€£æ ¼")) || 
 	renkaku_exception_p) {
 
-	/* para_type == PARA_NORMAL ¤Ï¡ÖV¤·,V¤·¤¿ PARA N¡×¤Î¤È¤­
-	   ¤³¤Î¤È¤­¤Ï¿Æ(PARA)¤Î¿Æ(N)¤ò³ÊÍ×ÁÇ¤È¤¹¤ë¡¥
+	/* para_type == PARA_NORMAL ã¯ã€ŒVã—,Vã—ãŸ PARA Nã€ã®ã¨ã
+	   ã“ã®ã¨ãã¯è¦ª(PARA)ã®è¦ª(N)ã‚’æ ¼è¦ç´ ã¨ã™ã‚‹ï¼
 
-	   ¿Æ¤¬para_top_p¤«¤É¤¦¤«¤ò¤ß¤Æ¤â¡ÖV¤·¤¿N¤ÈN PARA¡×¤Î
-	   »ş¤È¶èÊÌ¤¬¤Ç¤­¤Ê¤¤
+	   è¦ªãŒpara_top_pã‹ã©ã†ã‹ã‚’ã¿ã¦ã‚‚ã€ŒVã—ãŸNã¨N PARAã€ã®
+	   æ™‚ã¨åŒºåˆ¥ãŒã§ããªã„
         */
 
-	/* ÍÑ¸À¤¬ÊÂÎó¤Ç¤Ï¤Ê¤¤¤È¤­ */
+	/* ç”¨è¨€ãŒä¸¦åˆ—ã§ã¯ãªã„ã¨ã */
 	if (b_ptr->para_type != PARA_NORMAL) {
 	    if (b_ptr->parent) {
-		/* ¡Á¤Î¤Ï */
+		/* ã€œã®ã¯ */
 		if (renkaku_exception_p && 
 		    b_ptr->parent->parent) {
-		    if (check_feature(b_ptr->parent->parent->f, "ÂÎ¸À")) {
+		    if (check_feature(b_ptr->parent->parent->f, "ä½“è¨€")) {
 			cel_b_ptr = b_ptr->parent->parent;
 			_make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
 		    }
@@ -547,7 +547,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		}
 	    }
 	}
-	/* ÍÑ¸À¤¬ÊÂÎó¤Î¤È¤­ */
+	/* ç”¨è¨€ãŒä¸¦åˆ—ã®ã¨ã */
 	else {
 	    cel_b_ptr = b_ptr;
 	    while (cel_b_ptr->parent->para_type == PARA_NORMAL) {
@@ -561,7 +561,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		_make_data_cframe_ex(cpm_ptr, cel_b_ptr->parent->parent);
 		cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr->parent->parent;
 		cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
-		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 2; /* ¡úÉÔÀµ³Î¡ú */
+		cpm_ptr->cf.weight[cpm_ptr->cf.element_num] = 2; /* â˜…ä¸æ­£ç¢ºâ˜… */
 		cpm_ptr->cf.adjacent[cpm_ptr->cf.element_num] = FALSE;
 		cpm_ptr->cf.element_num++;
 	    }
@@ -585,29 +585,29 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
     cpm_ptr->cf.pred_b_ptr = b_ptr;
     b_ptr->cpm_ptr = cpm_ptr;
 
-    /* É½ÁØ³Ê etc. ¤ÎÀßÄê */
+    /* è¡¨å±¤æ ¼ etc. ã®è¨­å®š */
 
     cpm_ptr->cf.element_num = 0;
 
-    /* Ï¢ÂÎ½¤¾ş */
+    /* é€£ä½“ä¿®é£¾ */
     make_data_cframe_rentai(sp, cpm_ptr);
 
     for (child_num = 0; b_ptr->child[child_num]; child_num++);
 
-    /* ¼«Ê¬(ÍÑ¸À)¤¬Ê£¹çÌ¾»ìÆâ */
+    /* è‡ªåˆ†(ç”¨è¨€)ãŒè¤‡åˆåè©å†… */
     if (b_ptr->inum > 0) {
 	TAG_DATA *t_ptr;
 
-	/* ¼«Ê¬(ÍÑ¸À)¤¬Ê£¹çÌ¾»ìÆâ¤Î¤È¤­¤Î¿Æ : ÈïÏ¢ÂÎ½¤¾ş»ì°·¤¤
-	   ¢¨ Ï¢³Ê¤Î¤È¤­(¡Ö¡Á¤·¤¿¤Î¤Ï¡×)¤Ï¤¹¤Ç¤Ë°·¤Ã¤Æ¤¤¤ë */
-	if (cpm_ptr->cf.type == CF_PRED && /* ¤È¤ê¤¢¤¨¤º¥µÊÑ¤Î¤È¤­¤Î¤ß */
-	    !check_feature(b_ptr->f, "·¸:Ï¢³Ê")) {
-	    if (!check_feature(b_ptr->parent->f, "³°¤Î´Ø·¸") || 
-		check_feature(b_ptr->f, "ÍÑ¸À:·Á")) {
+	/* è‡ªåˆ†(ç”¨è¨€)ãŒè¤‡åˆåè©å†…ã®ã¨ãã®è¦ª : è¢«é€£ä½“ä¿®é£¾è©æ‰±ã„
+	   â€» é€£æ ¼ã®ã¨ã(ã€Œã€œã—ãŸã®ã¯ã€)ã¯ã™ã§ã«æ‰±ã£ã¦ã„ã‚‹ */
+	if (cpm_ptr->cf.type == CF_PRED && /* ã¨ã‚Šã‚ãˆãšã‚µå¤‰ã®ã¨ãã®ã¿ */
+	    !check_feature(b_ptr->f, "ä¿‚:é€£æ ¼")) {
+	    if (!check_feature(b_ptr->parent->f, "å¤–ã®é–¢ä¿‚") || 
+		check_feature(b_ptr->f, "ç”¨è¨€:å½¢")) {
 		_make_data_cframe_pp(cpm_ptr, b_ptr, FALSE);
 	    }
 	    else {
-		cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("³°¤Î´Ø·¸");
+		cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("å¤–ã®é–¢ä¿‚");
 		cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
 		cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
 	    }
@@ -620,11 +620,11 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	    cpm_ptr->cf.element_num++;
 	}
 
-	/* Ê¸Àá¤Îhead¤Ë·¸¤ëÌ¾»ì¤Î¼è¤ê°·¤¤ *
+	/* æ–‡ç¯€ã®headã«ä¿‚ã‚‹åè©ã®å–ã‚Šæ‰±ã„ *
 
 	t_ptr = b_ptr->parent;
 	while (1) {
-	    if (t_ptr->cpm_ptr) { * ÊÌ¤Î³Ê²òÀÏÂĞ¾İ *
+	    if (t_ptr->cpm_ptr) { * åˆ¥ã®æ ¼è§£æå¯¾è±¡ *
 		t_ptr = NULL;
 		break;
 	    }
@@ -635,12 +635,12 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	}
 
 	* ... n3 n2 n1
-	   Ê£¹çÌ¾»ìÆâ¤Î(¤¦¤·¤í¤«¤é¤ß¤Æ)ºÇ½é¤ÎÍÑ¸À(³Ê²òÀÏÂĞ¾İ)¤ËÂĞ¤·¤Æ
-	   n1¤Î»Ò¶¡¤ò¤È¤Ã¤Æ¤¯¤ë *
+	   è¤‡åˆåè©å†…ã®(ã†ã—ã‚ã‹ã‚‰ã¿ã¦)æœ€åˆã®ç”¨è¨€(æ ¼è§£æå¯¾è±¡)ã«å¯¾ã—ã¦
+	   n1ã®å­ä¾›ã‚’ã¨ã£ã¦ãã‚‹ *
 	if (t_ptr) {
 	    orig_child_num = child_num;
 	    for (i = 0; t_ptr->child[i]; i++) {
-		* Ê¸ÀáÆâÉô°Ê³° *
+		* æ–‡ç¯€å†…éƒ¨ä»¥å¤– *
 		if (t_ptr->child[i]->inum == 0) {
 		    b_ptr->child[child_num++] = t_ptr->child[i];
 		}
@@ -649,26 +649,26 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	*/
     }
 
-    /* »Ò¶¡¤ò³ÊÍ×ÁÇ¤Ë */
+    /* å­ä¾›ã‚’æ ¼è¦ç´ ã« */
     for (i = child_num - 1; i >= 0; i--) {
 	if (make_data_cframe_child(sp, cpm_ptr, b_ptr->child[i], i, 
 				   i == 0 && b_ptr->num == b_ptr->child[i]->num + 1 && 
-				   !check_feature(b_ptr->f, "£ÔÍÑ¸ÀÆ±Ê¸Àá") ? TRUE : FALSE)) {
-	    if (cpm_ptr->cf.element_num == 0) { /* »Ò¶¡¤¬ºî¤ì¤ë¤Ï¤º¤Ê¤Î¤Ë¡¢ºî¤ì¤Ê¤«¤Ã¤¿ */
+				   !check_feature(b_ptr->f, "ï¼´ç”¨è¨€åŒæ–‡ç¯€") ? TRUE : FALSE)) {
+	    if (cpm_ptr->cf.element_num == 0) { /* å­ä¾›ãŒä½œã‚Œã‚‹ã¯ãšãªã®ã«ã€ä½œã‚Œãªã‹ã£ãŸ */
 		return -1;
 	    }
 	}
     }
 
-    /* Ê£¹çÌ¾»ì: »Ò¶¡¤ò¤â¤È¤Ë¤â¤É¤¹ */
+    /* è¤‡åˆåè©: å­ä¾›ã‚’ã‚‚ã¨ã«ã‚‚ã©ã™ */
     if (orig_child_num >= 0) {
 	b_ptr->child[orig_child_num] = NULL;
     }
 
-    /* ÍÑ¸ÀÊ¸Àá¤¬¡Ö¡Ê¡Á¤ò¡Ë¡Á¤Ë¡×¤Î¤È¤­ 
-       ¡Ö¤¹¤ë¡×¤Î³Ê¥Õ¥ì¡¼¥à¤ËÂĞ¤·¤Æ¥Ë³Ê(Æ±Ê¸Àá)¤òÀßÄê
-       ¥ò³Ê¤Ï»Ò¶¡¤Î½èÍı¤Ç°·¤ï¤ì¤ë */
-    if (check_feature(b_ptr->f, "£ÔÍÑ¸ÀÆ±Ê¸Àá")) {
+    /* ç”¨è¨€æ–‡ç¯€ãŒã€Œï¼ˆã€œã‚’ï¼‰ã€œã«ã€ã®ã¨ã 
+       ã€Œã™ã‚‹ã€ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã—ã¦ãƒ‹æ ¼(åŒæ–‡ç¯€)ã‚’è¨­å®š
+       ãƒ²æ ¼ã¯å­ä¾›ã®å‡¦ç†ã§æ‰±ã‚ã‚Œã‚‹ */
+    if (check_feature(b_ptr->f, "ï¼´ç”¨è¨€åŒæ–‡ç¯€")) {
 	if (_make_data_cframe_pp(cpm_ptr, b_ptr, TRUE)) {
 	    _make_data_cframe_sm(cpm_ptr, b_ptr);
 	    _make_data_cframe_ex(cpm_ptr, b_ptr);
@@ -680,13 +680,13 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	}
     }
 
-    /* ÍÑ¸À¤¬ÊÂÎó¤Î¤È¤­¡¢³ÊÍ×ÁÇ¤ò expand ¤¹¤ë */
+    /* ç”¨è¨€ãŒä¸¦åˆ—ã®ã¨ãã€æ ¼è¦ç´ ã‚’ expand ã™ã‚‹ */
     if (b_ptr->para_type == PARA_NORMAL && 
 	b_ptr->parent && 
 	b_ptr->parent->para_top_p) {
 	child_num = 0;
 
-	/* <PARA>¤Ë·¸¤ë»Ò¶¡¤ò¥Á¥§¥Ã¥¯ */
+	/* <PARA>ã«ä¿‚ã‚‹å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ */
 	for (i = 0; b_ptr->parent->child[i]; i++) {
 	    if (b_ptr->parent->child[i]->para_type == PARA_NORMAL) {
 		child_num++;
@@ -700,9 +700,9 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		    _make_data_cframe_ex(cpm_ptr, cel_b_ptr);
 		    cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num] = cel_b_ptr;
 
-		    /* ³Ê¤¬ÌÀ¼¨¤µ¤ì¤Æ¤¤¤Ê¤¤¤³¤È¤ò¥Ş¡¼¥¯ */
-		    if (check_feature(cel_b_ptr->f, "·¸:Ì¤³Ê") || 
-			check_feature(cel_b_ptr->f, "·¸:¥Î³Ê")) {
+		    /* æ ¼ãŒæ˜ç¤ºã•ã‚Œã¦ã„ãªã„ã“ã¨ã‚’ãƒãƒ¼ã‚¯ */
+		    if (check_feature(cel_b_ptr->f, "ä¿‚:æœªæ ¼") || 
+			check_feature(cel_b_ptr->f, "ä¿‚:ãƒæ ¼")) {
 			cpm_ptr->elem_b_num[cpm_ptr->cf.element_num] = -1;
 		    }
 		    else {
@@ -721,25 +721,25 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	}
     }
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤Î¼èÆÀ */
+    /* ç›´å‰æ ¼è¦ç´ ã®å–å¾— */
     closest = get_closest_case_component(sp, cpm_ptr);
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤Î¤Ò¤È¤Ä¼êÁ°¤Î¥Î³Ê
-       ¢¨ <¿ôÎÌ>°Ê³°: °ì¸Ş¡ó¤Î³ô¼°¤ò V
-          <»ş´Ö>°Ê³°: */
+    /* ç›´å‰æ ¼è¦ç´ ã®ã²ã¨ã¤æ‰‹å‰ã®ãƒæ ¼
+       â€» <æ•°é‡>ä»¥å¤–: ä¸€äº”ï¼…ã®æ ªå¼ã‚’ V
+          <æ™‚é–“>ä»¥å¤–: */
     if (OptCaseFlag & OPT_CASE_NO && 
 	closest > -1 && 
 	cpm_ptr->elem_b_ptr[closest]->num > 0 && 
-	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "¿ôÎÌ") && 
-	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "»ş´Ö") && 
-	check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "·¸:¥Î³Ê")) {
+	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "æ•°é‡") && 
+	!check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "æ™‚é–“") && 
+	check_feature((sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1)->f, "ä¿‚:ãƒæ ¼")) {
 	TAG_DATA *bp;
 	bp = sp->tag_data + cpm_ptr->elem_b_ptr[closest]->num - 1;
 
-	/* ³ä¤êÅö¤Æ¤ë³Ê¤Ï³Ê¥Õ¥ì¡¼¥à¤Ë¤è¤Ã¤ÆÆ°Åª¤ËÊÑ¤ï¤ë */
-	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("Ì¤");
+	/* å‰²ã‚Šå½“ã¦ã‚‹æ ¼ã¯æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚ˆã£ã¦å‹•çš„ã«å¤‰ã‚ã‚‹ */
+	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][0] = pp_hstr_to_code("æœª");
 	cpm_ptr->cf.pp[cpm_ptr->cf.element_num][1] = END_M;
-	cpm_ptr->cf.sp[cpm_ptr->cf.element_num] = pp_hstr_to_code("¤Î"); /* É½ÁØ³Ê */
+	cpm_ptr->cf.sp[cpm_ptr->cf.element_num] = pp_hstr_to_code("ã®"); /* è¡¨å±¤æ ¼ */
 	cpm_ptr->cf.oblig[cpm_ptr->cf.element_num] = FALSE;
 	_make_data_cframe_sm(cpm_ptr, bp);
 	_make_data_cframe_ex(cpm_ptr, bp);
@@ -752,18 +752,18 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	}
     }
 
-    return closest; /* °Ê²¼¤Ïºï½ü¤¹¤ëÍ½Äê */
+    return closest; /* ä»¥ä¸‹ã¯å‰Šé™¤ã™ã‚‹äºˆå®š */
 
-    /* ³ÊÍ×ÁÇ¤¬¤Ò¤È¤Ä¤Ç»ş´Ö³Ê¤Î¤ß¤Î¾ì¹ç¡¢³ÊÍ×ÁÇ¤Ê¤·¤ÈÆ±¤¸¤è¤¦¤Ë°·¤¦
-       ¡úÄ¾Á°¤Î»ş´Ö³Ê¤Ç¤â¤È¤Î³Ê¤¬¶¯¤¤³Ê¤Ç¤¢¤ë¤È¤­¤ÏÉáÄÌ¤Ë°·¤¦¡ú (¸½ºß¤Ï¥Ë³Ê¤Î¤ß) */
+    /* æ ¼è¦ç´ ãŒã²ã¨ã¤ã§æ™‚é–“æ ¼ã®ã¿ã®å ´åˆã€æ ¼è¦ç´ ãªã—ã¨åŒã˜ã‚ˆã†ã«æ‰±ã†
+       â˜…ç›´å‰ã®æ™‚é–“æ ¼ã§ã‚‚ã¨ã®æ ¼ãŒå¼·ã„æ ¼ã§ã‚ã‚‹ã¨ãã¯æ™®é€šã«æ‰±ã†â˜… (ç¾åœ¨ã¯ãƒ‹æ ¼ã®ã¿) */
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
-	if (!MatchPP(cpm_ptr->cf.pp[i][0], "»ş´Ö")) {
+	if (!MatchPP(cpm_ptr->cf.pp[i][0], "æ™‚é–“")) {
 	    return closest;
 	}
-	/* Ä¾Á°³Ê¤Ç¥Ë³Ê¤Ç <»ş´Ö> ¤Î¤È¤­¤Ïºï½ü¤·¤Ê¤¤ */
+	/* ç›´å‰æ ¼ã§ãƒ‹æ ¼ã§ <æ™‚é–“> ã®ã¨ãã¯å‰Šé™¤ã—ãªã„ */
 	else if (cpm_ptr->pred_b_ptr->num == cpm_ptr->elem_b_ptr[i]->num + 1 && 
-		 check_feature(cpm_ptr->elem_b_ptr[i]->f, "·¸:¥Ë³Ê")) {
+		 check_feature(cpm_ptr->elem_b_ptr[i]->f, "ä¿‚:ãƒ‹æ ¼")) {
 	    return closest;
 	}
     }
@@ -775,34 +775,34 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 		 void set_pred_voice(BNST_DATA *ptr)
 /*==================================================================*/
 {
-    /* ¥ô¥©¥¤¥¹¤ÎÀßÄê */
+    /* ãƒ´ã‚©ã‚¤ã‚¹ã®è¨­å®š */
 
     char *cp;
 
     ptr->voice = 0;
 
-    if (cp = check_feature(ptr->f, "ÂÖ")) {
+    if (cp = check_feature(ptr->f, "æ…‹")) {
 	char *token, *str;
 
-	str = strdup(cp + strlen("ÂÖ:"));
+	str = strdup(cp + strlen("æ…‹:"));
 	token = strtok(str, "|");
 	while (token) {
-	    if (!strcmp(token, "¼õÆ°")) {
+	    if (!strcmp(token, "å—å‹•")) {
 		ptr->voice |= VOICE_UKEMI;
 	    }
-	    else if (!strcmp(token, "»ÈÌò")) {
+	    else if (!strcmp(token, "ä½¿å½¹")) {
 		ptr->voice |= VOICE_SHIEKI;
 	    }
-	    else if (!strcmp(token, "¤â¤é¤¦")) {
+	    else if (!strcmp(token, "ã‚‚ã‚‰ã†")) {
 		ptr->voice |= VOICE_MORAU;
 	    }
-	    else if (!strcmp(token, "¤Û¤·¤¤")) {
+	    else if (!strcmp(token, "ã»ã—ã„")) {
 		ptr->voice |= VOICE_HOSHII;
 	    }
-	    else if (!strcmp(token, "»ÈÌò&¼õÆ°")) {
+	    else if (!strcmp(token, "ä½¿å½¹&å—å‹•")) {
 		ptr->voice |= VOICE_SHIEKI_UKEMI;
 	    }
-	    /* ¡Ö²ÄÇ½¡×¤ÏÌ¤°·¤¤ */
+	    /* ã€Œå¯èƒ½ã€ã¯æœªæ‰±ã„ */
 
 	    token = strtok(NULL, "|");
 	}

@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     �����Ȳ���
+			     共参照解析
 
                                                R.SASANO 05. 9.24
 
@@ -52,47 +52,47 @@ char *SynonymFile;
 		int get_modify_num(TAG_DATA *tag_ptr)
 /*==================================================================*/
 {
-    /* ���������Ƥ����Ĥ�ʸ��˽�������Ƥ��뤫���֤� */
-    /* ���Σ£äȤʤäƤ�����ϣ����¤˷��äƤ��뤫��Ƚ�Ǥ�Ԥ� */
+    /* 並列を除いていくつの文節に修飾されているかを返す */
+    /* ＡのＢＣとなっている場合はＡがＢに係っているかの判断も行う */
 
     int i, ret;
     BNST_DATA *b_ptr;
 
     b_ptr = tag_ptr->b_ptr;
 
-    /* OptCorefer >= 4�ξ��Ͻ�������Ƥ��뤫�ɤ������Ѥ��ʤ� */
+    /* OptCorefer >= 4の場合は修飾されているかどうかを用いない */
     if (OptCorefer >= 4) return 0;
 
-    /* ��°����ʸ�᤬��������Ƥ��ʤ���� */
+    /* 所属する文節が修飾されていない場合 */
     if (!b_ptr->child[0]) {
 	return 0;
     }
 
     if (OptCorefer == 1) {
-	/* "ľ��������"�Ǥ�����ϼ缭�ʳ��Ǥ⽤������Ƥ���ȹͤ��� */
+	/* "直前タグ受"である場合は主辞以外でも修飾されていると考える */
 	if (tag_ptr->head_ptr != b_ptr->head_ptr) {
-	    if (check_feature(tag_ptr->f, "ľ��������")) 
+	    if (check_feature(tag_ptr->f, "直前タグ受")) 
 		return 1;
 	    else 
 		return 0;
 	}
     }
     else if (OptCorefer == 3) {
-	/* ʸ��μ缭�Ǥʤ��ʤ齤������Ƥ��ʤ���Ƚ�Ǥ��� */
+	/* 文節の主辞でないなら修飾されていないと判断する */
     	if (tag_ptr->head_ptr != b_ptr->head_ptr) {
 	    return 0;   
 	}
     }
 
-    /* ��°����ʸ�᤬��������Ƥ����餽�ο����֤� */
+    /* 所属する文節が修飾されていたらその数を返す */
     if ((b_ptr->child[0])->para_type) {
 	b_ptr = b_ptr->child[0];
     }
     for (i = ret = 0; b_ptr->child[i]; i++) {
-	if (!check_feature((b_ptr->child[i])->f, "��:�����") &&
-	    !check_feature((b_ptr->child[i])->f, "��:Ʊ��̤��") &&
-	    !check_feature((b_ptr->child[i])->f, "��:Ʊ��Ϣ��") &&
-	    !check_feature((b_ptr->child[i])->f, "��:Ʊ��Ϣ��"))
+	if (!check_feature((b_ptr->child[i])->f, "係:カラ格") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格未格") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格連体") &&
+	    !check_feature((b_ptr->child[i])->f, "係:同格連用"))
 	    ret++; 
     }
     return ret;
@@ -102,58 +102,58 @@ char *SynonymFile;
 	    void assign_anaphor_feature(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ʣ��̾��˾ȱ������Ȥ���feature����Ϳ���� */
+    /* 複合名詞に照応詞候補というfeatureを付与する */
 
-    /* ʣ��̾�� */
-    /* ��ͭɽ���ϴ���Ū�ˤ��Τޤ�(LOCATION��DATE��ʬ��) */
-    /* ����ʳ����оݤθ줫��ʸ����Ƭ�ޤǤ���Ͽ */
-    /* ���κݡ���Ƭ�η����ǤΤ���ɽɽ������¸���ơ��̤���¸�����ȱ�������������� */
-    /* ex. ��Ω�Ƥ�������� �� ��Ω�Ƥ�������ס���Ω���Ƥ�/���Ƥ����+����� */
+    /* 複合名詞 */
+    /* 固有表現は基本的にそのまま(LOCATION、DATEは分解) */
+    /* それ以外は対象の語から文節先頭までを登録 */
+    /* この際、先頭の形態素のみ代表表記を保存して、別に保存した照応詞候補も作成する */
+    /* ex. 「立てこもり事件」 → 「立てこもり事件」、「立て籠る/たてこもる+事件」 */
 
     int i, j, k, l, tag_num, mrph_num, rep_flag;
     char word[WORD_LEN_MAX * 2], word_rep[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
     TAG_DATA *tag_ptr;      
 
-    /* ʸ��ñ�̤�ʸ����������� */
+    /* 文節単位で文の前から処理 */
     for (i = 0; i < sp->Bnst_num; i++) {
 	
-	if (!check_feature((sp->bnst_data + i)->f, "�θ�")) continue;
+	if (!check_feature((sp->bnst_data + i)->f, "体言")) continue;
 
 	tag_num = (sp->bnst_data + i)->tag_num;
 	tag_ptr = (sp->bnst_data + i)->tag_ptr;
 	
   	for (j = tag_num - 1; j >= 0; j--) {
 	    
-	    /* ��ͭɽ����Ǥ����� */
+	    /* 固有表現内である場合 */
 	    if (check_feature((tag_ptr + j)->f, "NE") ||
-		check_feature((tag_ptr + j)->f, "NE��")) {
+		check_feature((tag_ptr + j)->f, "NE内")) {
 		
-		/* ��ͭɽ���μ缭�ˤ���Ϳ */
+		/* 固有表現の主辞には付与 */
 		if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
-		    cp += 3; /* "NE:"���ɤ����Ф� */
+		    cp += 3; /* "NE:"を読み飛ばす */
 		    while (*cp != ':') cp++;
-		    sprintf(buf, "�ȱ������:%s", cp + 1);
+		    sprintf(buf, "照応詞候補:%s", cp + 1);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		    continue;
 		} 
 		
-		/* ��ͭɽ����Ǥ�����(DATE�ޤ���LOCATION�ξ��) */
+		/* 固有表現中である場合(DATEまたはLOCATIONの場合) */
 		mrph_num = (tag_ptr + j)->mrph_num - 1;
-		if (/* DATE�Ǥ���л���̾�졢̾����̾����������ڤ� */
+		if (/* DATEであれば時相名詞、名詞性名詞助数辞で切る */
 		    check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE:DATE") &&
 		    (((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 6 &&
 		     ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 10 ||
 		     ((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 14 &&
 		     ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 3) || 
-		    /* LOCATION�Ǥ����̾�����ü����������ڤ� */
+		    /* LOCATIONであれば名詞性特殊接尾辞で切る */
 		    check_feature(((tag_ptr + j)->mrph_ptr + mrph_num)->f, "NE:LOCATION") &&
 		    ((tag_ptr + j)->mrph_ptr + mrph_num)->Hinshi == 14 &&
 		    ((tag_ptr + j)->mrph_ptr + mrph_num)->Bunrui == 4) {
 		    
 		    for (k = 0; !(cp = check_feature((tag_ptr + j + k)->f, "NE")); k++);
-		    cp += 3; /* "NE:"���ɤ����Ф� */
+		    cp += 3; /* "NE:"を読み飛ばす */
 		    while (*cp != ':') cp++;
-		    /* cp + 1 ���оݤθ�ͭɽ��ʸ����ؤΥݥ��� */
+		    /* cp + 1 は対象の固有表現文字列へのポインタ */
 		    for (k = 0; 
 			 strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
 				 strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2));
@@ -161,20 +161,20 @@ char *SynonymFile;
 		    strncpy(word, cp + 1, k);
 		    word[k] = '\0';
 		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
-		    sprintf(buf, "�ȱ������:%s", word);
+		    sprintf(buf, "照応詞候補:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
 	    }
 	    
 	    else {
-		/* ��ͭɽ����θ��缭�Ȥ��ʤ����
+		/* 固有表現内の語を主辞としない場合
 		   
-		/* ���졢����̾�졢������٤˷�����ƻ�Ͻ��� */
+		/* 数詞、形式名詞、および隣に係る形容詞は除外 */
 		if ((tag_ptr + j)->head_ptr->Hinshi == 6 &&
 		    (tag_ptr + j)->head_ptr->Bunrui > 7 &&
 		    (tag_ptr + j)->head_ptr->Bunrui < 9 ||
 		    (tag_ptr + j)->head_ptr->Hinshi == 3 &&
-		    check_feature((tag_ptr + j)->f, "��:��")) {
+		    check_feature((tag_ptr + j)->f, "係:隣")) {
 		    continue;
 		}
 
@@ -182,15 +182,15 @@ char *SynonymFile;
 		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
 		     k >= 0; k--) {
 		    
-		    /* ��Ƭ���ü졢�ȱ���Ƭ���ϴޤ�ʤ� */
+		    /* 先頭の特殊、照応接頭辞は含めない */
 		    if (!word[0] &&
 			(((tag_ptr + j)->head_ptr - k)->Hinshi == 1 ||
-			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "�ȱ���Ƭ��")))
+			 check_feature(((tag_ptr + j)->head_ptr - k)->f, "照応接頭辞")))
 			continue;
 		    
-		    /* �֡��פʤɤ�����ϴޤ�ʤ� */
-		    if (!strcmp(((tag_ptr + j)->head_ptr - k)->Goi2, "��") ||
-			check_feature(((tag_ptr + j)->head_ptr - k)->f, "��̽�")) {
+		    /* 「・」などより前は含めない */
+		    if (!strcmp(((tag_ptr + j)->head_ptr - k)->Goi2, "・") ||
+			check_feature(((tag_ptr + j)->head_ptr - k)->f, "括弧終")) {
 			if (k > 0) word[0] = word_rep[0] = '\0';
 		    }
 		    else {
@@ -198,8 +198,8 @@ char *SynonymFile;
 			strcat(word, ((tag_ptr + j)->head_ptr - k)->Goi2);
 			if (word_rep[0] == '\0') {
 			    if (k > 0 &&
-				((cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "��ɽɽ���ѹ�")) ||
-				 (cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "��ɽɽ��")))) {
+				((cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記変更")) ||
+				 (cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記")))) {
 				strcat(word_rep, strchr(cp, ':') + 1);
 				strcat(word_rep, "+");
 			    }
@@ -211,43 +211,43 @@ char *SynonymFile;
 		}
 
 		if (word[0]) {
-		    sprintf(buf, "�ȱ������:%s", word);
+		    sprintf(buf, "照応詞候補:%s", word);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
 		if (word_rep[0]) {
-		    sprintf(buf, "�Ծȱ������:%s", word_rep);
+		    sprintf(buf, "Ｔ照応詞候補:%s", word_rep);
 		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
 		}
 	    }
 	}
     }
 
-    /* �����Τդ꤬�ʤؤ��б� */
+    /* 括弧内のふりがなへの対応 */
     for (j = 0; j < sp->Tag_num; j++) {
 	
 	for (i = 0; i < (sp->tag_data + j)->mrph_num; i++) {
 
 	    if (j + 1 < sp->Tag_num &&
 		(check_feature(((sp->tag_data + j)->mrph_ptr + i + 1)->f, 
-			      "�Ҥ餬��") ||
-		!strcmp(((sp->tag_data + j)->mrph_ptr + i + 1)->Goi2, "��"))) break;
+			      "ひらがな") ||
+		!strcmp(((sp->tag_data + j)->mrph_ptr + i + 1)->Goi2, "・"))) break;
 	    
 	    word[0] = '\0';
 	    for (k = 0; (sp->tag_data + j)->mrph_ptr + i - k > sp->mrph_data; k++) {
 		if (!check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, 
-				   "�Ҥ餬��") &&
-		    strcmp(((sp->tag_data + j)->mrph_ptr + i - k)->Goi2, "��")) break;
+				   "ひらがな") &&
+		    strcmp(((sp->tag_data + j)->mrph_ptr + i - k)->Goi2, "・")) break;
 	    }
 	    if (k > 0 && 
-		check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, "��̻�")) {
+		check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, "括弧始")) {
 		for (k = k - 1; k >= 0; k--) 
 		    strcat(word, ((sp->tag_data + j)->mrph_ptr + i - k)->Goi2);
 	    }
 	    
 	    if (word[0]) {
-		sprintf(buf, "�ȱ������:%s", word);
+		sprintf(buf, "照応詞候補:%s", word);
 		assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
-		assign_cfeature(&((sp->tag_data + j)->f), "�ɤ���", FALSE);
+		assign_cfeature(&((sp->tag_data + j)->f), "読み方", FALSE);
 	    }
 	}		
     }
@@ -258,24 +258,24 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 		    int yomi_flag, TAG_DATA *tag_ptr, char *rep)
 /*==================================================================*/
 {
-    /* �ȱ���������Ի�������� */
-    /* yomi_flag��Ω�äƤ�����ϴ������ɤߤξȱ� */
-    /* rep�����������Ƭ�����Ǥ���ɽɽ����������Ӥ�����(ex.��Ω�Ƥ������� = Ω�Ƥ��������) */
+    /* 照応詞候補と先行詞候補を比較 */
+    /* yomi_flagが立っている場合は漢字と読みの照応 */
+    /* repがある場合は先頭形態素を代表表記化して比較する場合(ex.「立てこもる事件 = 立てこもり事件」) */
 
     int i, j, left, right;
     char *ant_ne, word[WORD_LEN_MAX * 4], *value;
 
     ant_ne = check_feature(tag_ptr->f, "NE");
 
-    /* �ɤ����ξ�� */
+    /* 読み方の場合 */
     if (yomi_flag) { 
-    /* ex. �������Ϻ�ʤʤ����ޡ����錄����) */
-    /* ���
-       �Ȥꤢ������̾�ξ��Τ�
-       �����ޥå�ʸ�����߸����ޥå�ʸ������2 > anaphoraʸ����
-       �Ǥ����硢�ɤ�����ɽ�路�Ƥ����Ƚ�� 
-       ������antecedent��ľ�夬<��̻�>�ξ��(yomi_flag=2)�ξ���Ϣ³���Ƥ���ȹͤ�
-       �ޥå�ʸ�����ξ��ʤ�����2ʸ���ܡ��ʥ� */
+    /* ex. 中島河太郎（なかじま・かわたろう) */
+    /* 基準
+       とりあえず人名の場合のみ
+       前方マッチ文字数×後方マッチ文字数×2 > anaphora文字数
+       である場合、読み方を表わしていると判定 
+       ただしantecedentの直後が<括弧始>の場合(yomi_flag=2)の場合は連続していると考え
+       マッチ文字数の少ない方に2文字ボーナス */
            
 	if (!ant_ne || strncmp(ant_ne, "NE:PERSON", 7)) return 0;
 
@@ -298,38 +298,38 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 	return 0;
     }
 
-    /* �ۤʤ����θ�ͭɽ���ξ����Բ� */ 
+    /* 異なる種類の固有表現の場合は不可 */ 
     if (ana_ne && ant_ne && strncmp(ana_ne, ant_ne, 7)) return 0;
 
-    /* rep�����������Ƭ�����Ǥ���ɽɽ����������Ӥ����� */
+    /* repがある場合は先頭形態素を代表表記化して比較する場合 */
     if (rep) {
 	if (!strncmp(anaphor, rep, strlen(rep)) &&
 	    !strncmp(anaphor + strlen(rep), "+", 1) &&
 	    !strcmp(anaphor + strlen(rep) + 1, antecedent)) return 1;
     }
 
-    /* Ʊɽ���ξ�� */
+    /* 同表記の場合 */
     if (!strcmp(antecedent, anaphor)) return 1;
 
-    /* ��ͭɽ����Ʊɽ���ξ��(ʸ���ޤ������ͭɽ���Τ���) */
+    /* 固有表現が同表記の場合(文節をまたがる固有表現のため) */
     if (ant_ne && ana_ne && !strcmp(ant_ne, ana_ne)) {
 	return 1;
     }
 
-    /* ��Ի줬PERSON�Ǥ�����Ͼȱ�����䤬��Ի�������Ƭ�˴ޤޤ�Ƥ����OK */
-    /* ��Ի줬LOCATION�Ǥ�����Ϥ���˾ȱ�����䤬��������1ʸ������û�������Τ�OK */
-    /* ex. ¼���ٻ�=¼������ʬ��=��ʬ */
-    if (ant_ne && strlen(ant_ne) > strlen(antecedent) && /* ��Ի줬NE���ΤǤ��� */
+    /* 先行詞がPERSONである場合は照応詞候補が先行詞候補の先頭に含まれていればOK */
+    /* 先行詞がLOCATIONである場合はさらに照応詞候補が住所末尾1文字だけ短かい場合のみOK */
+    /* ex. 村山富市=村山、大分県=大分 */
+    if (ant_ne && strlen(ant_ne) > strlen(antecedent) && /* 先行詞がNE全体である */
 	!strcmp(ant_ne + strlen(ant_ne) - strlen(antecedent), antecedent) &&
 	(!strncmp(ant_ne, "NE:PERSON", 7) && ana_ne && !strncmp(ana_ne, "NE:PERSON", 7) || 
 	 !strncmp(ant_ne, "NE:LOCATION", 7) && strlen(antecedent) - strlen(anaphor) == BYTES4CHAR &&
-	 check_feature(tag_ptr->head_ptr->f, "��������")) &&
+	 check_feature(tag_ptr->head_ptr->f, "住所末尾")) &&
 	!strncmp(antecedent, anaphor, strlen(anaphor))) return 1;
     
-    /* Ʊ��ɽ�������ɤ߹���ʤ��ä����Ϥ����ǽ�λ */
+    /* 同義表現辞書が読み込めなかった場合はここで終了 */
     if (!synonym_db) return 0;
 
-    /* ���Τޤ�Ʊ��ɽ���������Ͽ����Ƥ����� */
+    /* そのまま同義表現辞書に登録されている場合 */
     word[0] = '\0';
     strcpy(word, anaphor);
     strcat(word, ":");
@@ -339,9 +339,9 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 	return 1;
     } 
 
-    /* ���夫��Ʊ��ɽ����ʸ���������ƻĤ��ʸ����Υڥ�����Ӥ��� */
-    /* �ֶ�ͻ��������-����פȡ֥ǥ�Хƥ���-����פ�ǧ���Ǥ��� */
-    /* �����ܶ�ԡפȡ�����פΤ褦��Ʊ��ɽ����Ʊ��ʸ����ޤ����ǧ���Ǥ��ʤ� */
+    /* 前後から同じ表記の文字を削除して残りの文字列のペアを比較する */
+    /* 「金融派生商品-取引」と「デリバティブ-取引」は認識できる */
+    /* 「日本銀行」と「日銀」のように同義表現が同じ文字を含む場合は認識できない */
     for (i = 0; i < strlen(anaphor); i += BYTES4CHAR) {
 	if (strncmp(antecedent + i, anaphor + i, BYTES4CHAR)) {
 	    break;
@@ -353,7 +353,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 	    break;
 	} 
     }
-    if (strlen(anaphor) < i + j) return 0; /* ��ʸ����� ���� �ΤȤ� */
+    if (strlen(anaphor) < i + j) return 0; /* 公文書公開 公開 のとき */
 
     memset(word, 0, sizeof(char) * WORD_LEN_MAX * 4);
     strncpy(word, anaphor + i, strlen(anaphor) - i - j);
@@ -372,50 +372,50 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, char *ne)
 /*==================================================================*/
 {
-    /* ���Ϥ��줿�����ȡ������ȴط��ˤ��륿���������ʸ���鸡������ */
-    /* setubi��Ϳ����줿����ľ�����������ޤ��õ������ */
+    /* 入力されたタグと、共参照関係にあるタグを以前の文から検索する */
+    /* setubiが与えられた場合は直後の接尾辞も含めて探索する */
 
-    /* �����ȴط��ˤ���줬���Ĥ��ä����Ϸ�̤�feature����Ϳ���� */
-    /* �����ȴط��ˤ���Ȥ��줿�ȱ���ʸ�������Ƭ�Υ������ֹ� */
-    /* ���Ĥ���ʤ��ä�����-2���֤� */
+    /* 共参照関係にある語が見つかった場合は結果がfeatureに付与され */
+    /* 共参照関係にあるとされた照応詞文字列の先頭のタグの番号 */
+    /* 見つからなかった場合は-2を返す */
 
     int j, k, l, m, length, yomi_flag, word2_flag, setubi_flag;
-    /* word1:�֡��פʤɤ������ޤ�ʤ���Ի����(��Ի����1)
-       word2:�֡��פʤɤ������ޤ����Ի����(��Ի����2)
-       yomi2:��Ի����2���ɤ��� 
-       anaphor_rep:�ȱ���������Ƭ�����Ǥ���ɽɽ����������� */
+    /* word1:「・」などより前を含めない先行詞候補(先行詞候補1)
+       word2:「・」などより前を含める先行詞候補(先行詞候補2)
+       yomi2:先行詞候補2の読み方 
+       anaphor_rep:照応詞候補の先頭形態素を代表表記化したもの */
     char word1[WORD_LEN_MAX], word2[WORD_LEN_MAX], yomi2[WORD_LEN_MAX], buf[WORD_LEN_MAX], 
 	*anaphor_rep;
     char *cp, CO[WORD_LEN_MAX];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
  
-    if ((cp = check_feature((sp->tag_data + i)->f, "�Ծȱ������"))) {
+    if ((cp = check_feature((sp->tag_data + i)->f, "Ｔ照応詞候補"))) {
 	anaphor_rep = strchr(cp, ':') + 1;
     }
     else {
 	anaphor_rep = NULL;
     }
-    yomi_flag = (check_feature((sp->tag_data + i)->f, "�ɤ���")) ? 1 : 0;
+    yomi_flag = (check_feature((sp->tag_data + i)->f, "読み方")) ? 1 : 0;
 
     sdp = sentence_data + sp->Sen_num - 1;
-    for (j = 0; j <= sdp - sentence_data; j++) { /* �ȱ��褬��ʸ���� */
-	if (j >= ASCEND_SEN_MAX) break; /* ASCEND_SEN_MAX�ʾ�����ʸ�Ϲ�θ���ʤ� */
+    for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
+	if (j >= ASCEND_SEN_MAX) break; /* ASCEND_SEN_MAX以上前の文は考慮しない */
 
-	for (k = (j != 0) ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* �ȱ���Υ��� */
+	for (k = (j != 0) ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */
 	    
 	    tag_ptr = (sdp - j)->tag_data + k;	    		
 	    
-	    /* �ȱ������Ǥ�����ʳ�����Ի����Ȥ��ʤ� */
-	    if (!check_feature(tag_ptr->f, "�ȱ������")) continue;
+	    /* 照応詞候補である場合以外は先行詞候補としない */
+	    if (!check_feature(tag_ptr->f, "照応詞候補")) continue;
 			
-	    /* setubi��Ϳ����줿��硢��³��̾������������� */
+	    /* setubiが与えられた場合、後続の名詞性接尾を比較 */
 	    if (setubi && tag_ptr->head_ptr < tag_ptr->mrph_ptr + tag_ptr->mrph_num - 1 && strcmp((tag_ptr->head_ptr + 1)->Goi2, setubi)) continue;
 
-    	    /* �Ծȱ���ǽ����������Ϳ����Ƥ�������������Ⱦȱ������Ӥ�Ԥ�
-	       Ʊɽ���Ǥ���ж����ȴط��ˤ���ȷ��� */
+    	    /* Ｔ照応可能接尾辞が付与されている場合は接尾辞と照応詞の比較を行い
+	       同表記であれば共参照関係にあると決定 */
 	    setubi_flag = 0;
-	    if (!setubi && check_feature(tag_ptr->f, "�Ծȱ���ǽ������")) {
+	    if (!setubi && check_feature(tag_ptr->f, "Ｔ照応可能接尾辞")) {
 		for (l = 1; l <= tag_ptr->fuzoku_num; l++) {
 		    if ((tag_ptr->head_ptr + l) && !strcmp((tag_ptr->head_ptr + l)->Goi2, anaphor)) {
 			setubi_flag = l;
@@ -428,32 +428,32 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		
 		word1[0] = word2[0] = yomi2[0] = '\0';
 		for (m = setubi_flag ? 0 : l; m >= 0; m--) {
-		    /* ��Ƭ���ü졢�ȱ���Ƭ���ϴޤ�ʤ� */
+		    /* 先頭の特殊、照応接頭辞は含めない */
 		    if (!strncmp(word1, "\0", 1) &&
 			((tag_ptr->head_ptr - m)->Hinshi == 1 ||
-			 check_feature((tag_ptr->head_ptr - m)->f, "�ȱ���Ƭ��")))
+			 check_feature((tag_ptr->head_ptr - m)->f, "照応接頭辞")))
 			continue;
-		    /* �֡��פʤɤ�����ϴޤ�ʤ�(word1) */
-		    if (!strcmp((tag_ptr->head_ptr - m)->Goi2, "��") ||
-			!strcmp((tag_ptr->head_ptr - m)->Goi2, "��") ||
-			check_feature((tag_ptr->head_ptr - m)->f, "��̽�")) {
+		    /* 「・」などより前は含めない(word1) */
+		    if (!strcmp((tag_ptr->head_ptr - m)->Goi2, "・") ||
+			!strcmp((tag_ptr->head_ptr - m)->Goi2, "＝") ||
+			check_feature((tag_ptr->head_ptr - m)->f, "括弧終")) {
 			word1[0] = '\0';
 		    }
 		    else {
 			if (strlen(word1) + strlen((tag_ptr->head_ptr - m)->Goi2) >= WORD_LEN_MAX) break;
-			strcat(word1, (tag_ptr->head_ptr - m)->Goi2); /* ��Ի����1 */
+			strcat(word1, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補1 */
 		    }
 		    if (strlen(word2) + strlen((tag_ptr->head_ptr - m)->Goi2) >= WORD_LEN_MAX)	break;
-		    strcat(word2, (tag_ptr->head_ptr - m)->Goi2); /* ��Ի����2 */
+		    strcat(word2, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補2 */
 		    if (strlen(yomi2) + strlen((tag_ptr->head_ptr - m)->Yomi) >= WORD_LEN_MAX) break;
-		    strcat(yomi2, (tag_ptr->head_ptr - m)->Yomi); /* ��Ի����2���ɤ��� */
+		    strcat(yomi2, (tag_ptr->head_ptr - m)->Yomi); /* 先行詞候補2の読み方 */
 		}
 		if (setubi_flag) {
 		    strcpy(word1, (tag_ptr->head_ptr + setubi_flag)->Goi2);
 		}
 		if (!word1[0]) continue;
 
-		/* Ʊ��ʸ�����Ի���䤬�ȱ���˴ޤޤ�Ƥ�����Ͻ���(ex.�����ܡ����ܹ��) n*/
+		/* 同一文節で先行詞候補が照応詞に含まれている場合は除外(ex.「日本＝日本国」) n*/
 		if (j == 0 && (sp->tag_data + i)->b_ptr == (sp->tag_data + k)->b_ptr) {
 		    length = 0;
 		    for (m = 0; (sp->tag_data + k + 1)->head_ptr + m <= (sp->tag_data + i)->head_ptr; m++) {
@@ -466,49 +466,49 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		if (setubi_flag ||
 		    compare_strings(word1, anaphor, ne, 0, tag_ptr, NULL) ||
 		    compare_strings(word2, anaphor, ne, 0, tag_ptr, NULL) && (word2_flag = 1) ||
-		    /* ʸ�����Ƭ�ޤǴޤ����ľ���δ��ܶ���θ������� */
-		    /* (ex.��Ω�Ƥ������� = Ω�Ƥ��������) */
+		    /* 文節の先頭まで含む場合は直前の基本句も考慮に入れる */
+		    /* (ex.「立てこもる事件 = 立てこもり事件」) */
 		    l == tag_ptr->head_ptr - (tag_ptr->b_ptr)->mrph_ptr && anaphor_rep && 
-		    !check_feature(tag_ptr->f, "ʸ����") && /* ʸ��μ缭�ξ��Τ� */
-		    tag_ptr->b_ptr->child[0] && /* ľ���δ��ܶ�ȷ�������ط��ˤ��� */
-		    check_feature((tag_ptr->b_ptr - 1)->f, "Ϣ�ν���") &&
-		    ((cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "��ɽɽ���ѹ�")) ||
-		     (cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "��ɽɽ��"))) &&
+		    !check_feature(tag_ptr->f, "文節内") && /* 文節の主辞の場合のみ */
+		    tag_ptr->b_ptr->child[0] && /* 直前の基本句と係り受け関係にある */
+		    check_feature((tag_ptr->b_ptr - 1)->f, "連体修飾") &&
+		    ((cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "代表表記変更")) ||
+		     (cp = check_feature((tag_ptr->b_ptr - 1)->head_ptr->f, "代表表記"))) &&
 		    compare_strings(word1, anaphor_rep, ne, 0, tag_ptr, strchr(cp, ':') + 1) ||
-		    /* �ɤ����ξ��(Ʊ��ʸ����10���ܶ�̤��) */
+		    /* 読み方の場合(同一文かつ10基本句未満) */
 		    yomi_flag && j == 0 && (i - k < 10) &&
 		    compare_strings(yomi2, anaphor, ne, 1, tag_ptr, NULL) ||
 		    yomi_flag && j == 0 && (i - k < 10) &&
-		    check_feature((tag_ptr + 1)->f, "��̻�") &&
+		    check_feature((tag_ptr + 1)->f, "括弧始") &&
 		    compare_strings(yomi2, anaphor, ne, 2, tag_ptr, NULL) ||
-		    /* �;�̾��ξ������� */
-		    (check_feature((sp->tag_data + i)->f, "�;���̾��") &&
+		    /* 人称名詞の場合の特例 */
+		    (check_feature((sp->tag_data + i)->f, "人称代名詞") &&
 		     check_feature(tag_ptr->f, "NE:PERSON")) ||
-		    /* ����̾��ξ������� */
-		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "�Բ��ϳ�-��") &&
-		     check_feature((sp->tag_data + i)->f, "�Լ���̾��") &&
-		     sms_match(sm2code("����"), tag_ptr->SM_code, SM_NO_EXPAND_NE))) {
+		    /* 自称名詞の場合の特例 */
+		    (!j && (k == i - 1) && check_feature(tag_ptr->f, "Ｔ解析格-ガ") &&
+		     check_feature((sp->tag_data + i)->f, "Ｔ自称名詞") &&
+		     sms_match(sm2code("主体"), tag_ptr->SM_code, SM_NO_EXPAND_NE))) {
 		    
-		    /* �֡��פʤɤ������ޤ᤿���Τ�Ʊ��ɽ�������ä���� */
+		    /* 「・」などより前を含めた場合のみ同義表現があった場合 */
 		    if (word2_flag) strcpy(word1, word2);
 		    
-		    /* Ʊ��ɽ���Ǥ���� */
+		    /* 同義表現であれば */
 		    if (j == 0) {
-			sprintf(buf, "C��;��%s%s��;=;0;%d;9.99:%s(Ʊ��ʸ):%dʸ��",
+			sprintf(buf, "C用;【%s%s】;=;0;%d;9.99:%s(同一文):%d文節",
 				word1, setubi ? setubi : "", k, 
 				sp->KNPSID ? sp->KNPSID + 5 : "?", k);
 		    }
 		    else {
-			sprintf(buf, "C��;��%s%s��;=;%d;%d;9.99:%s(%dʸ��):%dʸ��",
+			sprintf(buf, "C用;【%s%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
 				word1, setubi ? setubi : "", j, k, 
 				(sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		    }
 		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
-		    assign_cfeature(&((sp->tag_data + i)->f), "������", FALSE); 
-		    sprintf(buf, "�Զ�����:=/O/%s%s/%d/%d/-", word1, setubi ? setubi : "", k, j);
+		    assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
+		    sprintf(buf, "Ｔ共参照:=/O/%s%s/%d/%d/-", word1, setubi ? setubi : "", k, j);
 		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 		    
-		    /* COREFER_ID����Ϳ */   
+		    /* COREFER_IDを付与 */   
 		    if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
 			assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
 		    }
@@ -523,16 +523,16 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			}
 		    }
 		    
-		    /* ��ͭɽ����corefer�δط��ˤ������ͭɽ���Ȥߤʤ� */
+		    /* 固有表現とcoreferの関係にある語を固有表現とみなす */
 		    if (OptNE) {
 			if (!check_feature((sp->tag_data + i)->f, "NE") &&
-			    !check_feature((sp->tag_data + i)->f, "NE��") &&
-			    !check_feature((sp->tag_data + i)->f, "�;���̾��") &&
-			    !check_feature((sp->tag_data + i)->f, "�Լ���̾��") &&
+			    !check_feature((sp->tag_data + i)->f, "NE内") &&
+			    !check_feature((sp->tag_data + i)->f, "人称代名詞") &&
+			    !check_feature((sp->tag_data + i)->f, "Ｔ自称名詞") &&
 			    (cp = check_feature(tag_ptr->f, "NE")) && !setubi ||
 			    yomi_flag && 
 			    (cp = check_feature(tag_ptr->f, "NE:PERSON"))) {
-			    cp += 3; /* "NE:"���ɤ����Ф� */
+			    cp += 3; /* "NE:"を読み飛ばす */
 			    while (*cp != ':') cp++;
 			    if (!strcmp(cp + 1, word1)) {
 				ne_corefer(sp, i, anaphor,
@@ -552,53 +552,53 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	 int person_post(SENTENCE_DATA *sp, char *cp, int i)
 /*==================================================================*/
 {
-    /* PERSON + �� ��"="��������Ϳ */
+    /* PERSON + 役職 に"="タグを付与 */
 
     int j, flag;
     char buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
     MRPH_DATA *mrph_ptr;
     TAG_DATA *tag_ptr;
 
-    tag_ptr = sp->tag_data + i; /* tag_ptr�ϳμ¤�¸�� */
+    tag_ptr = sp->tag_data + i; /* tag_ptrは確実に存在 */
     mrph_ptr = tag_ptr->mrph_ptr;
-    /* ���������ޤ�NE��Ǥ�����Τ��оݤȤ��� */
-    if (!check_feature((mrph_ptr - 1)->f, "NE") && /* mrph_ptr - 1 �ϳμ¤�¸�� */
-	!(check_feature((mrph_ptr - 2)->f, "NE") && /* ľ�����ܶ��NE�ʤΤǡ�mrph_ptr - 1 ��NE�Ǥʤ��ʤ� mrph_ptr - 2 ��¸�� */
+    /* タグ末尾までNE中である場合のみ対象とする */
+    if (!check_feature((mrph_ptr - 1)->f, "NE") && /* mrph_ptr - 1 は確実に存在 */
+	!(check_feature((mrph_ptr - 2)->f, "NE") && /* 直前基本句はNEなので、mrph_ptr - 1 がNEでないなら mrph_ptr - 2 は存在 */
 	  (mrph_ptr - 1)->Hinshi == 1 && 
-	  (mrph_ptr - 1)->Bunrui == 5)) /* ľ��������Ǥ��� */
+	  (mrph_ptr - 1)->Bunrui == 5)) /* 直前が記号である */
 	return 0;
 
     flag = 0;
     for (j = 0; mrph_ptr - sp->mrph_data + j < sp->Mrph_num; j++) {
-	if (check_feature((mrph_ptr + j)->f, "��̾����")) {
+	if (check_feature((mrph_ptr + j)->f, "人名末尾")) {
 	    flag = 1;
 	    continue;
 	}
 	else if (check_feature((mrph_ptr + j)->f, "NE") ||
-		 check_feature((mrph_ptr + j)->f, "��ͭ����")) {
-	    /* ����Ū�ˤϡ��֥å��塦����ꥫ������ */
-	    /* ������̱�޴���Ĺ�ʤɤ����ꤷ�Ƥ��� */
-	    /* ���󥰥�å���������Ĺ */
+		 check_feature((mrph_ptr + j)->f, "固有修飾")) {
+	    /* 基本的には、ブッシュ・アメリカ大統領 */
+	    /* 武部自民党幹事長などを想定している */
+	    /* ギングリッチ新下院議長 */
 	    continue;
 	}
 	else break;
     }
     if (!flag) return 0;
 	
-    /* ʣ���Υ����ˤޤ����äƤ�����ϼ��Υ����˿ʤ� */
+    /* 複数のタグにまたがっている場合は次のタグに進む */
     while (j > tag_ptr->mrph_num) {
 	j -= tag_ptr->mrph_num;
 	tag_ptr++;
     }
     
-    sprintf(buf, "C��;��%s��;=;0;%d;9.99:%s(Ʊ��ʸ):%dʸ��",
+    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 	    cp, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1); 
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
-    assign_cfeature(&(tag_ptr->f), "������(��)", FALSE);
-    sprintf(buf, "�Զ�����:=/O/%s/%d/%d/-", cp, i - 1, 0);
+    assign_cfeature(&(tag_ptr->f), "共参照(役職)", FALSE);
+    sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, i - 1, 0);
     assign_cfeature(&(tag_ptr->f), buf, FALSE);
     
-    /* COREFER_ID����Ϳ */
+    /* COREFER_IDを付与 */
     if (cp = check_feature(tag_ptr->f, "COREFER_ID")) {
 	assign_cfeature(&((sp->tag_data + i - 1)->f), cp, FALSE);
     }
@@ -619,77 +619,77 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	 int recognize_apposition(SENTENCE_DATA *sp, int i)
 /*==================================================================*/
 {
-    /* �֥��ƥ���:�� + "��" + PERSON�פʤɤν���(Ʊ��) */
+    /* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 
     int j, k;
     char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
     MRPH_DATA *head_ptr, *mrph_ptr, *tail_ptr;
 
-    /* �����ʳ���i-1���ܤδ��ܶ���������ޤ���"��"��ȼ�äƤ��� */
+    /* この段階でi-1番目の基本句は読点、または"・"を伴っている */
 
-    /* Ʊ�ʤ�ǧ�������� */
-    /* i-1���ܤδ��ܶ�μ缭�����ǤΥ��ƥ��� i���ܤδ��ܶ����Ƭ������     */
-    /* ��                                    PERSON (single or head)       */
-    /* �ȿ�������                            ORGANIZATION (single or head) */
-    /* ���-���ߡ����-���������-����¾     LOCATION (single or head)     */
-    /* �͹�ʪ-���ʪ                         ARTIFACT or ̤�θ�            */
+    /* 同格と認識する条件 */
+    /* i-1番目の基本句の主辞形態素のカテゴリ i番目の基本句の先頭形態素     */
+    /* 人                                    PERSON (single or head)       */
+    /* 組織・団体                            ORGANIZATION (single or head) */
+    /* 場所-施設、場所-自然、場所-その他     LOCATION (single or head)     */
+    /* 人工物-乗り物                         ARTIFACT or 未知語            */
 
-    head_ptr = (sp->tag_data + i - 1)->head_ptr; /* i-1���ܤμ缭������ */
-    mrph_ptr = (sp->tag_data + i)->mrph_ptr;     /* i���ܤ���Ƭ������ */
+    head_ptr = (sp->tag_data + i - 1)->head_ptr; /* i-1番目の主辞形態素 */
+    mrph_ptr = (sp->tag_data + i)->mrph_ptr;     /* i番目の先頭形態素 */
     
-    /* head_ptr��mrph_ptr�δ֤ϡ��������ޤ���"��"�Τ߲� */
+    /* head_ptrとmrph_ptrの間は、読点、または"・"のみ可 */
     if (mrph_ptr - head_ptr > 2 ||
 	mrph_ptr - head_ptr == 2 && 
-	!check_feature((sp->tag_data + i - 1)->f, "����") &&
-	strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "��")) return 0;
+	!check_feature((sp->tag_data + i - 1)->f, "読点") &&
+	strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・")) return 0;
 
     if (/* NE:PERSON */
-	check_category(head_ptr->f, "��") &&
+	check_category(head_ptr->f, "人") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:PERSON") &&
 	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
 	 check_feature(mrph_ptr->f, "NE:PERSON:single")) ||
 	
 	/* NE:ORGANIZATION */
-	check_category(head_ptr->f, "�ȿ�������") &&
+	check_category(head_ptr->f, "組織・団体") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:ORGANIZATION") &&
 	(check_feature(mrph_ptr->f, "NE:ORGANIZATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:ORGANIZATION:single")) ||
 	
 	/* NE:LOCATION */
-	(check_category(head_ptr->f, "���-����") ||
-	 check_category(head_ptr->f, "���-����") ||
-	 check_category(head_ptr->f, "���-����¾")) &&
-	strcmp(head_ptr->Goi2, "����") &&
+	(check_category(head_ptr->f, "場所-施設") ||
+	 check_category(head_ptr->f, "場所-自然") ||
+	 check_category(head_ptr->f, "場所-その他")) &&
+	strcmp(head_ptr->Goi2, "あと") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:LOCATION") &&
 	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:LOCATION:single")) ||
 
 	/* NE:ARTIFACT */
-	check_category(head_ptr->f, "�͹�ʪ-���ʪ") &&
+	check_category(head_ptr->f, "人工物-乗り物") &&
 	(check_feature(mrph_ptr->f, "NE:ARTIFACT:head") || 
 	 check_feature(mrph_ptr->f, "NE:ARTIFACT:single") ||
-	 !check_feature(mrph_ptr->f, "NE") && check_feature(mrph_ptr->f, "̤�θ�"))) {	
+	 !check_feature(mrph_ptr->f, "NE") && check_feature(mrph_ptr->f, "未知語"))) {	
 
-	/* ��ͭɽ���ν�λ������ܶ�˲��Ϸ�̤���Ϳ */
+	/* 固有表現の終了する基本句に解析結果を付与 */
 	j = i;
 	if (check_feature(mrph_ptr->f, "NE")) 
 	    while (!check_feature((sp->tag_data + j)->f, "NE")) j++;
 	
-	/* A, B, C�ʤɤΤ褦������¤����θ����Ф��ɻ� */
-	/* (�ʲ��ǡ�i���ܤδ��ܶ��ľ���η����Ǥ��������ޤ���"��") */
-	/* i-1���ܤδ��ܶ��ޤ�ʸ��ľ���η����Ǥ���i���ܤδ��ܶ��ľ���η����ǤȰ��פ�������Բ� */
+	/* A, B, Cなどのような並列構造からの誤検出を防止 */
+	/* (以下で、i番目の基本句の直前の形態素は読点、または"・") */
+	/* i-1番目の基本句を含む文節直前の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
 	if ((sp->tag_data + i - 1)->b_ptr != sp->bnst_data &&
 	    !strcmp(((sp->tag_data + i - 1)->b_ptr->mrph_ptr - 1)->Goi2,
 		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) return 0;
-	/* ��ͭɽ������ޤ�ʸ��κǸ�η����Ǥ���i���ܤδ��ܶ��ľ���η����ǤȰ��פ�������Բ� */
-	/* �������������ޤ���Ͻ��� */
-	if (!check_feature((sp->tag_data + j)->b_ptr->f, "����") &&
+	/* 固有表現末を含む文節の最後の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
+	/* ただし、助詞を含む場合は除く */
+	if (!check_feature((sp->tag_data + j)->b_ptr->f, "助詞") &&
 	    !strcmp(((sp->tag_data + j)->b_ptr->mrph_ptr + 
 		     (sp->tag_data + j)->b_ptr->mrph_num - 1)->Goi2,
 		    ((sp->tag_data + i)->mrph_ptr - 1)->Goi2)) {
 	    return 0;
 	}
-	/* ��ͭɽ��ľ��η����Ǥ���i���ܤδ��ܶ��ľ���η����ǤȰ��פ�������Բ� */
+	/* 固有表現直後の形態素が、i番目の基本句の直前の形態素と一致する場合は不可 */
 	tail_ptr = (sp->tag_data + i)->mrph_ptr;
 	k = 0;
 	while (k < (sp->tag_data + j)->mrph_num &&
@@ -700,21 +700,21 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    return 0;
 	}
 	
-	/* ��ͭɽ����ޤ���ܶ礬�����ȼ�����ޤ��ϡ�ʸ���Ǥ���
-	   �ޤ��ϡ�ľ��ˡ�PERSON + ��̾�����פǤ�����ʳ����Բ� */
-	if (!check_feature((sp->tag_data + j)->f, "����") &&
-	    !check_feature((sp->tag_data + j)->f, "ʸ��") &&
+	/* 固有表現を含む基本句が助詞を伴う、または、文末である
+	   または、直後に「PERSON + 人名末尾」である場合以外は不可 */
+	if (!check_feature((sp->tag_data + j)->f, "助詞") &&
+	    !check_feature((sp->tag_data + j)->f, "文末") &&
 	    !(check_feature((sp->tag_data + j)->f, "NE:PERSON") &&
-	      check_feature((sp->tag_data + j + 1)->mrph_ptr->f, "��̾����"))) return 0;
+	      check_feature((sp->tag_data + j + 1)->mrph_ptr->f, "人名末尾"))) return 0;
 	      	
-	sprintf(buf, "C��;��%s��;=;0;%d;9.99:%s(Ʊ��ʸ):%dʸ��",
+	sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 		head_ptr->Goi2, i - 1, sp->KNPSID ? sp->KNPSID + 5 : "?", i - 1);
 	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
-	assign_cfeature(&((sp->tag_data + j)->f), "Ʊ��", FALSE);
-	sprintf(buf, "�Զ�����:=/O/null/%d/%d/-", i - 1, 0);
+	assign_cfeature(&((sp->tag_data + j)->f), "同格", FALSE);
+	sprintf(buf, "Ｔ共参照:=/O/null/%d/%d/-", i - 1, 0);
 	assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 
-	/* COREFER_ID����Ϳ */
+	/* COREFER_IDを付与 */
 	if (cp = check_feature((sp->tag_data + j)->f, "COREFER_ID")) {
 	    assign_cfeature(&((sp->tag_data + i - 1)->f), cp, FALSE);
 	}
@@ -728,9 +728,9 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    assign_cfeature(&((sp->tag_data + i - 1)->f), CO, FALSE);
 	}
 
-	/* ����̾��¦�ˡ־�ά���Ϥʤ��פ���Ϳ����Ƥ�����Ͻ���� */
-	if (check_feature((sp->tag_data + i - 1)->f, "��ά���Ϥʤ�")) {
-	    delete_cfeature(&((sp->tag_data + i - 1)->f), "��ά���Ϥʤ�");
+	/* 普通名詞側に「省略解析なし」が付与されている場合は除去する */
+	if (check_feature((sp->tag_data + i - 1)->f, "省略解析なし")) {
+	    delete_cfeature(&((sp->tag_data + i - 1)->f), "省略解析なし");
 	}
 
 	return 1;
@@ -747,47 +747,47 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     MRPH_DATA *mrph_ptr;
     sp = sentence_data + sp->Sen_num - 1;
 
-    for (i = sp->Tag_num - 1; i >= 0 ; i--) { /* ����ʸ�Υ���ñ��:i���ܤΥ����ˤĤ��� */
+    for (i = sp->Tag_num - 1; i >= 0 ; i--) { /* 解析文のタグ単位:i番目のタグについて */
 
-	/* �����Ȳ��Ϥ�Ԥ���� */
-	/* �ȱ������Ǥ��ꡢ��ͭɽ����θ졢�ޤ��� */
-	/* Ϣ�λ���ֻؼ���ʳ��˽�������Ƥ��ʤ��� */
-	if ((anaphor = check_feature((sp->tag_data + i)->f, "�ȱ������")) &&
+	/* 共参照解析を行う条件 */
+	/* 照応詞候補であり、固有表現中の語、または */
+	/* 連体詞形態指示詞以外に修飾されていない語 */
+	if ((anaphor = check_feature((sp->tag_data + i)->f, "照応詞候補")) &&
 	    (check_feature((sp->tag_data + i)->f, "NE") ||  
-	     check_feature((sp->tag_data + i)->f, "NE��") || /* DATA��LOCATION�ʤɰ��� */
-	     check_feature((sp->tag_data + i)->f, "�ɤ���") ||
-	     !get_modify_num(sp->tag_data + i) || /* ��������Ƥ��ʤ� */
+	     check_feature((sp->tag_data + i)->f, "NE内") || /* DATA、LOCATIONなど一部 */
+	     check_feature((sp->tag_data + i)->f, "読み方") ||
+	     !get_modify_num(sp->tag_data + i) || /* 修飾されていない */
 	     (((sp->tag_data + i)->mrph_ptr - 1)->Hinshi == 1 && 
-	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* ľ���������Ǥ��� */
-	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "Ϣ�λ���ֻؼ���") ||
-	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "�ȱ���Ƭ��"))) {
+	      ((sp->tag_data + i)->mrph_ptr - 1)->Bunrui == 2) || /* 直前が読点である */
+	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "連体詞形態指示詞") ||
+	     check_feature(((sp->tag_data + i)->b_ptr->child[0])->f, "照応接頭辞"))) {
 	    
-	    /* �ؼ���ξ�� */
-	    if (check_feature((sp->tag_data + i)->f, "�ؼ���")) {
-		continue; /* �����ǤϽ����򤷤ʤ� */
+	    /* 指示詞の場合 */
+	    if (check_feature((sp->tag_data + i)->f, "指示詞")) {
+		continue; /* ここでは処理をしない */
 	    }
 
-	    /* ���ܶ礬��ͭɽ����ޤޤ������ġ����ܶ�缭�θ�˷����Ǥ������硢�����mrph_ptr�Ȥ��� */
+	    /* 基本句が固有表現を含まず、かつ、基本句主辞の後に形態素がある場合、それをmrph_ptrとする */
 	    mrph_ptr = NULL;
 	    ne = check_feature((sp->tag_data + i)->f, "NE");
 	    if (!ne && ((sp->tag_data + i)->mrph_ptr + (sp->tag_data + i)->mrph_num) - (sp->tag_data + i)->head_ptr > 1)
 		mrph_ptr = (sp->tag_data + i)->head_ptr + 1;		
 	    
-	    /* ��Ԥ���ɽ���ȶ����ȴط��ˤ��뤫������å� */
-	    if (mrph_ptr && /* ̾�������������դ�����Ϥޤ���������ޤ᤿��Τ�Ĵ�٤� */
+	    /* 先行する表現と共参照関係にあるかをチェック */
+	    if (mrph_ptr && /* 名詞性接尾辞が付いた語はまず接尾辞も含めたものを調べる */
 		mrph_ptr->Hinshi == 14 && mrph_ptr->Bunrui < 5 &&
-		search_antecedent(sp, i, anaphor + strlen("�ȱ������") + 1, mrph_ptr->Goi2, NULL) ||
-		search_antecedent(sp, i, anaphor + strlen("�ȱ������") + 1, NULL, ne)) { /* ���̤ξ�� */
+		search_antecedent(sp, i, anaphor + strlen("照応詞候補") + 1, mrph_ptr->Goi2, NULL) ||
+		search_antecedent(sp, i, anaphor + strlen("照応詞候補") + 1, NULL, ne)) { /* 一般の場合 */
 
-		/* ���Ǥ˸��Ĥ��ä������ȴط��˴ޤޤ��ط��ϲ��Ϥ��ʤ� */
-		/* e.g. �ȱ��줬�ֹ�Ω��ءפʤ�ֹ�Ω�פϾȱ���Ȥ��ƹ�θ���ʤ� */
-		if (!strcmp(anaphor + strlen("�ȱ������") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) continue; /* �������Ǥ���������Ϲ�θ���� */
+		/* すでに見つかった共参照関係に含まれる関係は解析しない */
+		/* e.g. 照応詞が「国立大学」なら「国立」は照応詞として考慮しない */
+		if (!strcmp(anaphor + strlen("照応詞候補") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) continue; /* １形態素から成る場合は考慮せず */
 		while (i > 0) {
-		    if ((cp = check_feature((sp->tag_data + i - 1)->f, "�ȱ������")) &&
+		    if ((cp = check_feature((sp->tag_data + i - 1)->f, "照応詞候補")) &&
 			!strncmp(cp, anaphor, strlen(cp))) {
 			i--;
-			assign_cfeature(&((sp->tag_data + i)->f), "��������", FALSE);
-			if (!strcmp(cp + strlen("�ȱ������") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) break; /* �������Ǥ�������ʤ餽���ޤ� */
+			assign_cfeature(&((sp->tag_data + i)->f), "共参照内", FALSE);
+			if (!strcmp(cp + strlen("照応詞候補") + 1, (sp->tag_data + i)->mrph_ptr->Goi2)) break; /* １形態素から成るならそこまで */
 		    }
 		    else break;
 		}
@@ -795,12 +795,12 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    }		
 	}
 
-	/* PERSON + ��̾���� �ν���(������(��)) */
+	/* PERSON + 人名末尾 の処理(共参照(役職)) */
 	if (i > 0 && (cp = check_feature((sp->tag_data + i - 1)->f, "NE:PERSON"))) {
 	    person_post(sp, cp + 10, i);
 	}
 
-	/* �֥��ƥ���:�� + "��" + PERSON�פʤɤν���(Ʊ��) */
+	/* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 	if (i > 0 && 
 	    !check_feature((sp->tag_data + i - 1)->f, "NE")) {
 	    recognize_apposition(sp, i);
@@ -818,58 +818,58 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
     TAG_DATA *tag_ptr, *tag_ptr2;
  
     sdp = sentence_data + sp->Sen_num - 1;
-    for (j = 0; j <= sdp - sentence_data; j++) { /* �ȱ��褬��ʸ���� */
+    for (j = 0; j <= sdp - sentence_data; j++) { /* 照応先が何文前か */
 	
-	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* �ȱ���Υ��� */
+	for (k = j ? (sdp - j)->Tag_num - 1 : i - 1; k >= 0; k--) { /* 照応先のタグ */
    
 	    tag_ptr = (sdp - j)->tag_data + k;	    		
 		
-	    /* �ȱ������Ǥ�����ʳ�����Ի����Ȥ��ʤ� */
-	    if (!check_feature(tag_ptr->f, "�ȱ������")) continue;
+	    /* 照応詞候補である場合以外は先行詞候補としない */
+	    if (!check_feature(tag_ptr->f, "照応詞候補")) continue;
 
-	    /* �ȱ�������Ʊ��ɽ���Τ�Τ�����Ի����Ȥ��ʤ� */
+	    /* 照応詞候補と同じ表記のものしか先行詞候補としない */
 	    if (strcmp((sp->tag_data + i)->head_ptr->Goi2, tag_ptr->head_ptr->Goi2))
 		continue;
 	    
-	    /* �ʲ��Ϸ�̤����� */
-	    sprintf(buf, "�ʲ��Ϸ��:%s:̾1", tag_ptr->head_ptr->Goi2);
+	    /* 格解析結果がある */
+	    sprintf(buf, "格解析結果:%s:名1", tag_ptr->head_ptr->Goi2);
 	    cp = check_feature(tag_ptr->f, buf);
 	    if (!cp) continue;
 	    
-	    /* <�ʲ��Ϸ��:���:̾1:��/O/���󥱡���/0/1/?> */
+	    /* <格解析結果:結果:名1:ノ/O/アンケート/0/1/?> */
 	    for (l = 0; l < 3; l++) {
 		while (*cp != '/') cp++;
 		cp++;
 	    }
 	    if (!sscanf(cp, "%d/%d/", &tag, &sent)) continue;
   
-	    /* �ؼ���Υ����ؤΥݥ��� */
+	    /* 指示先のタグへのポインタ */
 	    tag_ptr2 = (sdp - j - sent)->tag_data + tag;
 
-	    /* �ؼ���Υ����������ȴط��ˤ��뤫��Ƚ�� */
+	    /* 指示先のタグが共参照関係にあるかを判定 */
 	    if (check_feature(tag_ptr1->f, "COREFER_ID") &&
 		check_feature(tag_ptr2->f, "COREFER_ID") &&
 		!strcmp(check_feature(tag_ptr1->f, "COREFER_ID"),
 			check_feature(tag_ptr2->f, "COREFER_ID"))) {
 
-		cp = check_feature(tag_ptr->f, "�ȱ������");
-		cp += strlen("�ȱ������") + 1;
+		cp = check_feature(tag_ptr->f, "照応詞候補");
+		cp += strlen("照応詞候補") + 1;
 		
 		if (j == 0) {
-		    sprintf(buf, "C��;��%s��;=;0;%d;9.99:%s(Ʊ��ʸ):%dʸ��",
+		    sprintf(buf, "C用;【%s】;=;0;%d;9.99:%s(同一文):%d文節",
 			    cp, k, sp->KNPSID ? sp->KNPSID + 5 : "?", k);
 		}
 		else {
-		    sprintf(buf, "C��;��%s��;=;%d;%d;9.99:%s(%dʸ��):%dʸ��",
+		    sprintf(buf, "C用;【%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
 			    cp, j, k, 
 			    (sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		}
 		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
-		assign_cfeature(&((sp->tag_data + i)->f), "������", FALSE); 
-		sprintf(buf, "�Զ�����:=/O/%s/%d/%d/-", cp, k, j);
+		assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
+		sprintf(buf, "Ｔ共参照:=/O/%s/%d/%d/-", cp, k, j);
 		assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
 		
-		/* COREFER_ID����Ϳ */   
+		/* COREFER_IDを付与 */   
 		if ((cp = check_feature(tag_ptr->f, "COREFER_ID"))) {
 		    assign_cfeature(&((sp->tag_data + i)->f), cp, FALSE);
 		}
@@ -898,23 +898,23 @@ int search_antecedent_after_br(SENTENCE_DATA *sp, TAG_DATA *tag_ptr1, int i)
 
     for (i = 0; i < sp->Tag_num; i++) {
 
-	/* �ȱ������Ǥ�����ʳ�����Ի����Ȥ��ʤ� */
-	if (!check_feature((sp->tag_data + i)->f, "�ȱ������")) continue;
-	/* ̾��˸���(���������оݳ�) */
+	/* 照応詞候補である場合以外は先行詞候補としない */
+	if (!check_feature((sp->tag_data + i)->f, "照応詞候補")) continue;
+	/* 名詞に限定(接尾辞は対象外) */
 	if ((sp->tag_data + i)->head_ptr->Hinshi != 6) continue;
 
-	/* �����ȥ������ʤ����ʲ��Ϸ�̤����� */
-	sprintf(buf, "�ʲ��Ϸ��:%s:̾1", (sp->tag_data + i)->head_ptr->Goi2);
+	/* 共参照タグがなく、格解析結果がある */
+	sprintf(buf, "格解析結果:%s:名1", (sp->tag_data + i)->head_ptr->Goi2);
 	if (!check_feature((sp->tag_data + i)->f, "COREFER_ID") &&
 	    (cp = check_feature((sp->tag_data + i)->f, buf))) {
 
-	    /* <�ʲ��Ϸ��:���:̾1:��/O/���󥱡���/0/1/?> */
+	    /* <格解析結果:結果:名1:ノ/O/アンケート/0/1/?> */
 	    for (j = 0; j < 3; j++) {
 		while (*cp != '/') cp++;
 		cp++;
 	    }
 	    if (sscanf(cp, "%d/%d/", &tag, &sent)) {
-		/* �ؼ���Υ����ؤΥݥ��� */
+		/* 指示先のタグへのポインタ */
 		tag_ptr = ((sentence_data + sp->Sen_num - 1 - sent)->tag_data + tag);
 		search_antecedent_after_br(sp, tag_ptr, i);
 	    }

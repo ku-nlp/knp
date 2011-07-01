@@ -19,7 +19,7 @@
 #include <config.h>
 #endif
 
-#ifdef STDC_HEADERS
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 
@@ -128,6 +128,19 @@
 #define	calloc	GC_calloc
 #define	realloc	GC_realloc
 #define	free
+#endif
+
+#ifdef _WIN32
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
+
+#ifndef PACKAGE_NAME
+#define PACKAGE_NAME "KNP"
+#endif
+
+#ifndef VERSION
+#define VERSION "3.1"
+#endif
 #endif
 
 /*====================================================================

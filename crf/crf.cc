@@ -84,6 +84,6 @@ void crf_parse() {
 }
 
 void get_crf_prob(int i, int j, double *prob) {
-    tagger->prob(); // ²¿¸Î¤«É¬Í×
+    tagger->prob(); // ä½•æ•…ã‹å¿…è¦
     *prob = tagger->prob(i, j);
 }

@@ -1,5 +1,5 @@
 /*====================================================================
-			   ½ĞÎÏ¤ÎPS¤Ø¤ÎÊÑ´¹
+			   å‡ºåŠ›ã®PSã¸ã®å¤‰æ›
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -15,7 +15,7 @@
 #define X2 	497
 #define Y2 	757
 
-/* #define FOR_GLOSS ÌõÁŞÆşÍÑ */
+/* #define FOR_GLOSS è¨³æŒ¿å…¥ç”¨ */
 
 void write_head(FILE *fp)
 {
@@ -101,12 +101,12 @@ static char tmp[64];
 /*==================================================================*/
 {
     int i, j, comma_p;
-    int para_char = 0;     /* para_key ¤ÎÉ½¼¨ÍÑ */
+    int para_char = 0;     /* para_key ã®è¡¨ç¤ºç”¨ */
     char point_B[10];
     PARA_DATA *ptr;
     BNST_DATA *b_ptr;
 
-    /* ¥Ñ¥¹¤Î¥Ş¡¼¥¯ÉÕ¤± */
+    /* ãƒ‘ã‚¹ã®ãƒãƒ¼ã‚¯ä»˜ã‘ */
 
     for (i = 0; i < sp->Bnst_num; i++)
 	for (j = 0; j < sp->Bnst_num; j++)
@@ -122,7 +122,7 @@ static char tmp[64];
 	}
     }
 
-    /* £Ğ£Ó¤Î½ĞÎÏ */
+    /* ï¼°ï¼³ã®å‡ºåŠ› */
 
     write_head(stdout);
 
@@ -136,10 +136,10 @@ static char tmp[64];
 	    for (j = 1; j < (b_ptr->mrph_num - 1); j++) 
 		strcat(tmp, (b_ptr->mrph_ptr + j)->Goi2);
 	    if (!strcmp(Class[(b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Hinshi][0].id,
-			"ÆÃ¼ì") &&
+			"ç‰¹æ®Š") &&
 		!strcmp(Class[(b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Hinshi]
 			[(b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Bunrui].id, 
-			"ÆÉÅÀ")) {
+			"èª­ç‚¹")) {
 		comma_p = TRUE;
 	    } else {
 		strcat(tmp, (b_ptr->mrph_ptr + b_ptr->mrph_num - 1)->Goi2);
@@ -183,7 +183,7 @@ static char tmp[64];
 	write_text14(stdout, point_B, 
 		     X+(sp->Bnst_num-1)*20+15-(strlen(point_B)-1)*7-35, 
 		     Y-sp->Bnst_num*20);
-	write_kanji(stdout, "Ê¸»ú", X+(sp->Bnst_num-1)*20+15-35, Y-sp->Bnst_num*20);
+	write_kanji(stdout, "æ–‡å­—", X+(sp->Bnst_num-1)*20+15-35, Y-sp->Bnst_num*20);
 	write_text14(stdout, "\\)", X+(sp->Bnst_num-1)*20+15-7, Y-sp->Bnst_num*20);
     }
     write_tail(stdout);
@@ -245,15 +245,15 @@ void show_link2ps(int depth, char *ans_flag, int para_flag, int x_pos)
     if (depth != 1) {
 
 	if (para_flag == PARA_NORMAL || para_flag == PARA_INCOMP) {
-	    write_kanji(stdout, "¨¡", X_pos, Y_pos); X_pos += Wid*2;
+	    write_kanji(stdout, "â”€", X_pos, Y_pos); X_pos += Wid*2;
 	} else {
-	    write_kanji(stdout, "¨¡¨¡", X_pos, Y_pos); X_pos += Wid*4;
+	    write_kanji(stdout, "â”€â”€", X_pos, Y_pos); X_pos += Wid*4;
 	}
 
 	if (ans_flag[depth-1] == '1') {
-	    write_kanji(stdout, "¨©", X_pos, Y_pos); X_pos += Wid*2;
+	    write_kanji(stdout, "â”¤", X_pos, Y_pos); X_pos += Wid*2;
 	} else {
-	    write_kanji(stdout, "¨¤", X_pos, Y_pos); X_pos += Wid*2;
+	    write_kanji(stdout, "â”", X_pos, Y_pos); X_pos += Wid*2;
 	}
 
 	X_pos += Wid*2;
@@ -261,14 +261,14 @@ void show_link2ps(int depth, char *ans_flag, int para_flag, int x_pos)
 	for (i = depth - 1; i > 1; i--) {
 	    X_pos += Wid*4;
 	    if (ans_flag[i-1] == '1') {
-		write_kanji(stdout, "¨¢", X_pos, Y_pos); X_pos += Wid*2;
+		write_kanji(stdout, "â”‚", X_pos, Y_pos); X_pos += Wid*2;
 	    } else {
 		X_pos += Wid*2;
 	    }
 	    X_pos += Wid*2;
 	}
 
-#ifdef FOR_GLOSS /* ÌõÁŞÆşÍÑ */
+#ifdef FOR_GLOSS /* è¨³æŒ¿å…¥ç”¨ */
 	Y_pos -= Hig;
 	X_pos = x_pos;
 
@@ -278,14 +278,14 @@ void show_link2ps(int depth, char *ans_flag, int para_flag, int x_pos)
             X_pos += Wid*4;
         }
 
-	write_kanji(stdout, "¨¢", X_pos, Y_pos); X_pos += Wid*2;
+	write_kanji(stdout, "â”‚", X_pos, Y_pos); X_pos += Wid*2;
 
 	X_pos += Wid*2;
 
 	for (i = depth - 1; i > 1; i--) {
 	    X_pos += Wid*4;
 	    if (ans_flag[i-1] == '1') {
-		write_kanji(stdout, "¨¢", X_pos, Y_pos); X_pos += Wid*2;
+		write_kanji(stdout, "â”‚", X_pos, Y_pos); X_pos += Wid*2;
 	    } else {
 		X_pos += Wid*2;
 	    }
@@ -307,24 +307,24 @@ void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
     if (ans_flag_p) {
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
-	ans_flag[0] = '0';	/* ºÇ½é¤Ë¸Æ¤Ğ¤ì¤ë¤È¤­ */
+	ans_flag[0] = '0';	/* æœ€åˆã«å‘¼ã°ã‚Œã‚‹ã¨ã */
     }
 
     if (ptr->child[0]) {
 	for (i = 0; ptr->child[i]; i++);
 
-	/* ºÇ¸å¤Î»Ò¤Ï ans_flag ¤ò 0 ¤Ë */ 
+	/* æœ€å¾Œã®å­ã¯ ans_flag ã‚’ 0 ã« */ 
 	ans_flag[depth] = '0';
 	show_self2ps(ptr->child[i-1], depth+1, ans_flag, 0);
 
 	if (i > 1) {
-	    /* Â¾¤Î»Ò¤Ï ans_flag ¤ò 1 ¤Ë */ 
+	    /* ä»–ã®å­ã¯ ans_flag ã‚’ 1 ã« */ 
 	    ans_flag[depth] = '1';
 	    for (j = i - 2; j > 0; j--) {
 		show_self2ps(ptr->child[j], depth+1, ans_flag, 0);
 	    }
 
-	    /* flag: 1: ¨¡PARA 2: -<P>PARA */
+	    /* flag: 1: â”€PARA 2: -<P>PARA */
 	    if (ptr->para_top_p == TRUE && ptr->para_type == PARA_NIL)
 		show_self2ps(ptr->child[0], depth+1, ans_flag, 1);
 	    else if (ptr->para_top_p == TRUE && ptr->para_type != PARA_NIL)
@@ -342,7 +342,7 @@ void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
     if (flag == 0) {
 	show_link2ps(depth, ans_flag, ptr->para_type, X_pos);
     } else if (flag == 1) {
-	write_kanji(stdout, "¨¡", X_pos, Y_pos); X_pos += Wid*2;
+	write_kanji(stdout, "â”€", X_pos, Y_pos); X_pos += Wid*2;
     } else if (flag == 2) {
 	write_text10(stdout, "-", X_pos, Y_pos); X_pos += Wid;
     }
@@ -352,14 +352,14 @@ void show_self2ps(BNST_DATA *ptr, int depth, char *ans_flag_p, int flag)
 	       void print_kakari2ps(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* °ÍÂ¸¹½Â¤ÌÚ¤ÎÉ½¼¨ */
+    /* ä¾å­˜æ§‹é€ æœ¨ã®è¡¨ç¤º */
 
     calc_tree_width2ps((sp->bnst_data + sp->Bnst_num - 1), 1);
 
     X_pos = X2; Y_pos = Y2;
     Wid = 7;   Hig = 14;
 
-    /* £Ğ£Ó¤Î½ĞÎÏ */
+    /* ï¼°ï¼³ã®å‡ºåŠ› */
 
     write_head(stdout);
 

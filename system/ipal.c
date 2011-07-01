@@ -1,5 +1,5 @@
 /*
- *	£É£Ğ£Á£Ì ¥Ç¡¼¥¿¥Ù¡¼¥¹²½
+ *	ï¼©ï¼°ï¼¡ï¼¬ ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹åŒ–
  *
  *	Sadao Kurohashi 1995/07/07
  */
@@ -23,6 +23,27 @@ char buffer[IPAL_DATA_SIZE];
 IPAL_TRANS_FRAME ipal_frame;
 FILE *fp_idx, *fp_dat;
 
+int utf8_length(unsigned char c)
+{
+    if (c > 0xfb) {
+	return 6;
+    }
+    else if (c > 0xf7) {
+	return 5;
+    }
+    else if (c > 0xef) {
+	return 4;
+    }
+    else if (c > 0xdf) {
+	return 3;
+    }
+    else if (c > 0x7f) {
+	return 2;
+    }
+    else {
+	return 1;
+    }
+}
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
 		     unsigned char *hyouki, unsigned char *pp, 
@@ -30,14 +51,14 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 {
     unsigned char output_buf[IPAL_DATA_SIZE];
     unsigned char *point;
-    int length = 0;
+    int i, length = 0, char_bytes = 2;
 
     if (pp) {
 	for (point = hyouki; *point; point++) {
-	    /* ÍÑÎã¤Î¶èÀÚ¤ê */
+	    /* ç”¨ä¾‹ã®åŒºåˆ‡ã‚Š */
 	    if (*point == ' ') {
 		output_buf[length] = '\0';
-		if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT ¤Ê¤É°Ê³° */
+		if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT ãªã©ä»¥å¤– */
 		    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
 		}
 		length = 0;
@@ -49,15 +70,20 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 		    output_buf[length++] = *point;
 		}
 
-		/* ÆüËÜ¸ì¤Ê¤é¤â¤¦1byte¿Ê¤á¤ë */
+		/* æ—¥æœ¬èªãªã‚‰ã‚‚ã†1byteé€²ã‚ã‚‹ */
 		if (*point & 0x80) {
-		    output_buf[length++] = *(point+1);
-		    point++;
+#if !defined(IO_ENCODING_EUC) && !defined(IO_ENCODING_SJIS)
+		    char_bytes = utf8_length(*point);
+#endif
+		    for (i = 1; i < char_bytes; i++) {
+			output_buf[length++] = *(point+1);
+			point++;
+		    }
 		}
 	    }
 	}
 	output_buf[length] = '\0';
-	if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT ¤Ê¤É°Ê³° */
+	if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT ãªã©ä»¥å¤– */
 	    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
 	}
     }
@@ -77,16 +103,16 @@ void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest,
 		    NULL, 
 		    *address, writesize, flag);
 
-    /* ¡ÖÄ¾Á°³ÊÍ×ÁÇ-Ä¾Á°³Ê-ÍÑ¸À¡×¤ÇÅĞÏ¿¡× */
-    if (flag) { /* OR¤Î³Ê¥Õ¥ì¡¼¥à¤ò½ü¤¯ */
+    /* ã€Œç›´å‰æ ¼è¦ç´ -ç›´å‰æ ¼-ç”¨è¨€ã€ã§ç™»éŒ²ã€ */
+    if (flag) { /* ORã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é™¤ã */
 	for (i = 0; i < casenum; i++) {
 	    if (closest[i] > 0 && 
 		*(ipal_frame->DATA+point[closest[i]]) != '\0') {
 		pp = strdup(ipal_frame->DATA+point[i*3+4]);
-		*(pp+strlen(pp)-1) = '\0'; /* *¤ò¤±¤¹ */
+		*(pp+strlen(pp)-1) = '\0'; /* *ã‚’ã‘ã™ */
 		fprint_ipal_idx(fp_idx, 
-				ipal_frame->DATA+point[2], /* ÍÑ¸ÀÉ½µ­ */
-				ipal_frame->DATA+point[closest[i]], /* Ä¾Á°³ÊÍ×ÁÇ·² */
+				ipal_frame->DATA+point[2], /* ç”¨è¨€è¡¨è¨˜ */
+				ipal_frame->DATA+point[closest[i]], /* ç›´å‰æ ¼è¦ç´ ç¾¤ */
 				pp, 
 				*address, writesize, 0);
 		free(pp);
@@ -94,7 +120,7 @@ void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest,
 	}
     }
 
-    /* ¥Ç¡¼¥¿½ñ¤­½Ğ¤· */
+    /* ãƒ‡ãƒ¼ã‚¿æ›¸ãå‡ºã— */
 
     if (fwrite(ipal_frame, writesize, 1, fp_dat) < 1) {
 	fprintf(stderr, "Error in fwrite.\n");
@@ -128,7 +154,7 @@ main(int argc, char **argv)
 	line++;
 	    
 	if (fgets(buffer, IPAL_DATA_SIZE, stdin) == NULL) {
-	    /* ºÇ¸å¤Î¥Ç¡¼¥¿ */
+	    /* æœ€å¾Œã®ãƒ‡ãƒ¼ã‚¿ */
 	    write_data(&ipal_frame, point, closest, 
 		       pos, casenum, &address, flag);
 	    fclose(fp_idx);
@@ -139,28 +165,28 @@ main(int argc, char **argv)
 	sscanf(buffer, "%s %[^\n]\n", tag, DATA);
 
 	if (!strcmp(tag, "ID")) {
-	    /* ¥¢¥É¥ì¥¹½ñ¤­½Ğ¤· */
+	    /* ã‚¢ãƒ‰ãƒ¬ã‚¹æ›¸ãå‡ºã— */
 
-	    if (line != 1) { /* ½é²ó°Ê³° */
+	    if (line != 1) { /* åˆå›ä»¥å¤– */
 		write_data(&ipal_frame, point, closest, 
 			   pos, casenum, &address, flag);
 	    }
 
-	    /* ½é´ü²½ */
+	    /* åˆæœŸåŒ– */
 	    pos = 0;
 	    item = 0;
 	    casenum = 0;
 	    memset(closest, 0, sizeof(int)*CASE_MAX_NUM);
 	}
-	else if (!strncmp(tag, "³Ê", strlen("³Ê"))) {
+	else if (!strncmp(tag, "æ ¼", strlen("æ ¼"))) {
 	    casenum++;
 	    if (casenum > CASE_MAX_NUM) {
 		fprintf(stderr, "# of cases is more than MAX (%d).\n", CASE_MAX_NUM);
 		exit(1);
 	    }
-	    /* Ä¾Á°³Ê */
+	    /* ç›´å‰æ ¼ */
 	    if (*(DATA+strlen(DATA)-1) == '*') {
-		closest[(item-4)/3] = item+1; /* ¤³¤Î³Ê¤ÎÍÑÎã¤Î°ÌÃÖ */
+		closest[(item-4)/3] = item+1; /* ã“ã®æ ¼ã®ç”¨ä¾‹ã®ä½ç½® */
 	    }
 	}
 
@@ -181,14 +207,14 @@ main(int argc, char **argv)
 	}
 	item++;
 
-	/* OR¤Î³Ê¥Õ¥ì¡¼¥à¤Ê¤éÆÉ¤ß¤òÅĞÏ¿¤·¤Ê¤¤ */
-	if (!strncmp(tag, "ÁÇÀ­", strlen("ÁÇÀ­"))) {
+	/* ORã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãªã‚‰èª­ã¿ã‚’ç™»éŒ²ã—ãªã„ */
+	if (!strncmp(tag, "ç´ æ€§", strlen("ç´ æ€§"))) {
 	    flag = 1;
-	    /* Í×ÁÇ¤òsplit */
+	    /* è¦ç´ ã‚’split */
 	    token = strtok(DATA, " ");
 	    while (token) {
-		if (!strcmp(token, "ÏÂ¥Õ¥ì¡¼¥à")) {
-		    flag = 0;	/* ÆÉ¤ß¤òÅĞÏ¿¤·¤Ê¤¤ */
+		if (!strcmp(token, "å’Œãƒ•ãƒ¬ãƒ¼ãƒ ")) {
+		    flag = 0;	/* èª­ã¿ã‚’ç™»éŒ²ã—ãªã„ */
 		    break;
 		}
 		token = strtok(NULL, " ");

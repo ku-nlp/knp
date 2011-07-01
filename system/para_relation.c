@@ -1,6 +1,6 @@
 /*====================================================================
 
-			   ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸
+			   ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚
 
                                                S.Kurohashi 91.10.17
                                                S.Kurohashi 93. 5.31
@@ -12,8 +12,8 @@
 int 	para_rel_matrix[PARA_MAX][PARA_MAX];
 
 static char *RESULT[] = {
-    "½Å¤Ê¤ê¤Ê¤·", "¾¯¤·½Å¤Ê¤ë", "Á°¤Ç½Å¤Ê¤ë", "¸å¤Ç½Å¤Ê¤ë",  "½ÅÊ£",
-    "Á°Éô¤Î½¤Àµ", "´Ş¤Ş¤ì¤ëÁ°", "´Ş¤Ş¤ì¤ë¸å", "¸í¤ê"};
+    "é‡ãªã‚Šãªã—", "å°‘ã—é‡ãªã‚‹", "å‰ã§é‡ãªã‚‹", "å¾Œã§é‡ãªã‚‹",  "é‡è¤‡",
+    "å‰éƒ¨ã®ä¿®æ­£", "å«ã¾ã‚Œã‚‹å‰", "å«ã¾ã‚Œã‚‹å¾Œ", "èª¤ã‚Š"};
 
 static int rel_matrix_normal[4][4] = {
     {REL_BIT, REL_POS, REL_BAD, REL_IN2},
@@ -29,17 +29,17 @@ static int rel_matrix_strong[4][4] = {
 };
 
 /* 
-   strong¤Î(0,1)¤ÏBAD¤Ë¤·¤Æ¤¤¤¿¤¬¡¤POS¤Ç¤è¤¤ÎãÊ¸¤¬¤¢¤Ã¤¿¤Î¤Ç½¤Àµ¤·¤¿¡¥
+   strongã®(0,1)ã¯BADã«ã—ã¦ã„ãŸãŒï¼ŒPOSã§ã‚ˆã„ä¾‹æ–‡ãŒã‚ã£ãŸã®ã§ä¿®æ­£ã—ãŸï¼
 
-   ÎãÊ¸) ¥é¥¸¤µ¤ó¼«¿È¤Ï±Ñ¹ñÀÒ¤ò»ı¤Ä¤¬¡¢¥¤¥ó¥É·Ï¤ÎÆóËü¸ŞÀé¿Í¤Î¤¦¤ÁÌó¸Ş¡¢
-   Ï»Àé¿Í¤Ï¥¤¥ó¥É¹ñÀÒ¤â±Ñ¹ñÀÒ¤â¤Ê¤¯¡¢¹á¹Á½»Ì±¤È¤·¤Æ¤Î»ñ³Ê¤·¤«¤Ê¤¤¡£
+   ä¾‹æ–‡) ãƒ©ã‚¸ã•ã‚“è‡ªèº«ã¯è‹±å›½ç±ã‚’æŒã¤ãŒã€ã‚¤ãƒ³ãƒ‰ç³»ã®äºŒä¸‡äº”åƒäººã®ã†ã¡ç´„äº”ã€
+   å…­åƒäººã¯ã‚¤ãƒ³ãƒ‰å›½ç±ã‚‚è‹±å›½ç±ã‚‚ãªãã€é¦™æ¸¯ä½æ°‘ã¨ã—ã¦ã®è³‡æ ¼ã—ã‹ãªã„ã€‚
 */
 
 /*==================================================================*/
 void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 /*==================================================================*/
 {
-    /* ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸¤ÎÉ½¼¨ */
+    /* ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚ã®è¡¨ç¤º */
 
     int a1, a2, a3, b1, b2, b3;
     PARA_DATA *ptr1, *ptr2;
@@ -96,7 +96,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
     int para_location(SENTENCE_DATA *sp, int pre_num, int pos_num)
 /*==================================================================*/
 {
-    /* ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸¤Î·èÄê */
+    /* ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚ã®æ±ºå®š */
 
     int a1, a2, a3, b1, b2, b3;
     int rel_pre, rel_pos;
@@ -130,9 +130,9 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
    int para_brother_p(SENTENCE_DATA *sp, int pre_num, int pos_num)
 /*==================================================================*/
 {
-    /* REL_POS -> REL_PAR ¤ËÊÑ´¹¤¹¤ë¾ò·ï
-       Á°¤ÎÊÂÎó¹½Â¤¤Îpost-conjunct¤È¸å¤ÎÊÂÎó¹½Â¤¤Îpre-conjunct¤Î
-       Âç¤­¤µ¤¬¤½¤ì¤Û¤É¤«¤ï¤é¤Ê¤¤¡Ê£´¡§£³°Ê²¼¡Ë
+    /* REL_POS -> REL_PAR ã«å¤‰æ›ã™ã‚‹æ¡ä»¶
+       å‰ã®ä¸¦åˆ—æ§‹é€ ã®post-conjunctã¨å¾Œã®ä¸¦åˆ—æ§‹é€ ã®pre-conjunctã®
+       å¤§ãã•ãŒãã‚Œã»ã©ã‹ã‚ã‚‰ãªã„ï¼ˆï¼”ï¼šï¼“ä»¥ä¸‹ï¼‰
        */
 
     int pre_length, pos_length;
@@ -173,7 +173,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	    for (j = 0; j < parent_ptr->para_num; j++) {
 		j_num = parent_ptr->para_data_num[j];
 
-		/* ¸µ¤Î¿Æ¤¬Ä¾ÀÜ¤Î¿Æ */
+		/* å…ƒã®è¦ªãŒç›´æ¥ã®è¦ª */
 
 		if ((i_num < j_num &&
 		     (para_rel_matrix[i_num][j_num] == REL_BIT ||
@@ -185,7 +185,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 		      para_rel_matrix[j_num][i_num] == REL_IN2)))
 		  return TRUE;
 
-		/* ¿·¤·¤¤¿Æ¤¬Ä¾ÀÜ¤Î¿Æ */
+		/* æ–°ã—ã„è¦ªãŒç›´æ¥ã®è¦ª */
 
 		else if ((i_num < j_num &&
 			  (para_rel_matrix[i_num][j_num] == REL_POS ||
@@ -208,7 +208,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	}
 
 #ifdef DEBUG
-	/* ¸µ¤Î¿Æ¤È¿·¤·¤¤¿Æ¤Ë´Ø·¸¤¬¤Ê¤¤ */
+	/* å…ƒã®è¦ªã¨æ–°ã—ã„è¦ªã«é–¢ä¿‚ãŒãªã„ */
 	fprintf(stderr, ";; Invalid relation !!\n");
 #endif
 	
@@ -232,19 +232,19 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     if (ptr->child_num) {
 
-	/* »Ò¶¡¤Î½èÍı */
+	/* å­ä¾›ã®å‡¦ç† */
 
 	for (i = 0; i < ptr->child_num; i++)
 	    para_revise_scope(ptr->child[i]);
 
 
-	/* º¸Â¦¤Î½¤Àµ */
+	/* å·¦å´ã®ä¿®æ­£ */
 
 	if (ptr->child[0]->start[0] < ptr->start[0])
 	    ptr->start[0] = ptr->child[0]->start[0];
 	
 
-	/* ±¦Â¦¤Î½¤Àµ */
+	/* å³å´ã®ä¿®æ­£ */
 	
 	child_ptr = ptr->child[ptr->child_num-1];
 	if (ptr->end[ptr->part_num-1] < child_ptr->end[child_ptr->part_num-1])
@@ -256,13 +256,13 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	     int detect_para_relation(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸¤ÎÀ°Íı */
+    /* ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚ã®æ•´ç† */
 
     int i, j, k, flag;
     PARA_MANAGER *m_ptr, *m_ptr1, *m_ptr2;
     char buffer1[SMALL_DATA_LEN], buffer2[SMALL_DATA_LEN];
 
-    /* °ÌÃÖ´Ø·¸¤Î·èÄê¡¤¸í¤ê¤Î½¤Àµ */
+    /* ä½ç½®é–¢ä¿‚ã®æ±ºå®šï¼Œèª¤ã‚Šã®ä¿®æ­£ */
 
     for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
@@ -279,7 +279,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 
     init_para_manager(sp);
 
-    /* REL_POS¤Ç½Å¤Ê¤ê¤Î³ä¹ç¤¬Âç¤­¤¤¾ì¹çREL_PAR¤ËÊÑ¹¹ */
+    /* REL_POSã§é‡ãªã‚Šã®å‰²åˆãŒå¤§ãã„å ´åˆREL_PARã«å¤‰æ›´ */
 
     for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
@@ -292,7 +292,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	}
     }
 
-    /* º¸¤ËREL_POS¡¤±¦¤ËREL_PRE¤Î¾ì¹ç¡¤¤½¤Î´Ö¤òREL_REV¤ËÊÑ¹¹ */
+    /* å·¦ã«REL_POSï¼Œå³ã«REL_PREã®å ´åˆï¼Œãã®é–“ã‚’REL_REVã«å¤‰æ›´ */
 
     for (i = 1; i < sp->Para_num-1; i++) {
 	if (sp->para_data[i].status == 'x') continue;
@@ -309,7 +309,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	}
     }
 
-    /* ·»Äï´Ø·¸¤Î¤Ş¤È¤á¡¤MANAGER¤Ë¤è¤ë´ÉÍı */
+    /* å…„å¼Ÿé–¢ä¿‚ã®ã¾ã¨ã‚ï¼ŒMANAGERã«ã‚ˆã‚‹ç®¡ç† */
 
     for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
@@ -347,7 +347,7 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	}
     }
     
-    /* ¿Æ»Ò´Ø·¸¤Î¤Ş¤È¤á m_ptr1¤¬»Ò¡¤m_ptr2¤¬¿Æ¤Î»ş¤Ë½èÍı */
+    /* è¦ªå­é–¢ä¿‚ã®ã¾ã¨ã‚ m_ptr1ãŒå­ï¼Œm_ptr2ãŒè¦ªã®æ™‚ã«å‡¦ç† */
 
     for (i = 0; i < sp->Para_num; i++) {
 	if (sp->para_data[i].status == 'x') continue;
@@ -370,13 +370,13 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	}
     }
 
-    /* ÈÏ°Ï¤Î½¤Àµ */
+    /* ç¯„å›²ã®ä¿®æ­£ */
 
     for (i = 0; i < sp->Para_M_num; i++)
 	if (sp->para_manager[i].parent == NULL)
 	    para_revise_scope(&sp->para_manager[i]);    
 
-    /* ¶¯ÊÂÎó¤Î¥Ş¡¼¥¯ */
+    /* å¼·ä¸¦åˆ—ã®ãƒãƒ¼ã‚¯ */
 
     for (i = 0; i < sp->Para_M_num; i++) {
 	flag = TRUE;
@@ -389,12 +389,12 @@ void print_two_para_relation(SENTENCE_DATA *sp, int p_num1, int p_num2)
 	sp->para_manager[i].status = (flag == TRUE) ? 's' : 'w';
     }
 
-    /* ÊÂÎó²òÀÏ·ë²Ì¤òfeature¤Ë */
+    /* ä¸¦åˆ—è§£æçµæœã‚’featureã« */
 
     for (i = 0; i < sp->Para_M_num; i++) {
 	for (j = 0; j < sp->para_manager[i].part_num-1; j++) {
-	    sprintf(buffer1, "ÊÂ·ë¶ç¿ô:%d", sp->para_manager[i].part_num);
-	    sprintf(buffer2, "ÊÂ·ëÊ¸Àá¿ô:%d", 
+	    sprintf(buffer1, "ä¸¦çµå¥æ•°:%d", sp->para_manager[i].part_num);
+	    sprintf(buffer2, "ä¸¦çµæ–‡ç¯€æ•°:%d", 
 		    sp->para_manager[i].end[1] - sp->para_manager[i].start[1] + 1);
 	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer1, FALSE);
 	    assign_cfeature(&(sp->bnst_data[sp->para_manager[i].end[j]].f), buffer2, FALSE);

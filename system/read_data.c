@@ -1,6 +1,6 @@
 /*====================================================================
 
-		·ÁÂÖÁÇ²òÀÏÎó¤ÎÆÉ¤ß¹ş¤ß¡¤Ê¸Àá¤Ø¤Î¤Ş¤È¤á
+		å½¢æ…‹ç´ è§£æåˆ—ã®èª­ã¿è¾¼ã¿ï¼Œæ–‡ç¯€ã¸ã®ã¾ã¨ã‚
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -21,7 +21,7 @@ char preArticleID[SMALL_DATA_LEN2];
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
-#define KATAKANA_VARIATION_ABSORB_LENGTH 8 /* 4Ê¸»ú°Ê¾å¤Ç¥«¥¿¥«¥ÊËöÈø¤ÎÄ¹²»Éä¤òµÛ¼ı */
+#define KATAKANA_VARIATION_ABSORB_LENGTH (4 * BYTES4CHAR) /* 4æ–‡å­—ä»¥ä¸Šã§ã‚«ã‚¿ã‚«ãƒŠæœ«å°¾ã®é•·éŸ³ç¬¦ã‚’å¸å */
 
 /*==================================================================*/
 	void selected_imi2feature(char *str, MRPH_DATA *m_ptr)
@@ -35,7 +35,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     buf = strdup(str);
 
-    /* ÄÌ¾ï "" ¤Ç³ç¤é¤ì¤Æ¤¤¤ë */
+    /* é€šå¸¸ "" ã§æ‹¬ã‚‰ã‚Œã¦ã„ã‚‹ */
     if (buf[0] == '\"') {
 	imip = &buf[1];
 	if (cp = strchr(imip, '\"')) {
@@ -48,12 +48,12 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     token = strtok(imip, " ");
     while (token) {
-	/* °Ê²¼¤Î¤â¤Î°Ê³°¤òÉÕÍ¿ */
-	if (strncmp(token, "ÂåÉ½É½µ­", strlen("ÂåÉ½É½µ­")) && 
-	    strncmp(token, "²ÄÇ½Æ°»ì", strlen("²ÄÇ½Æ°»ì")) && 
-	    strncmp(token, "´Á»úÆÉ¤ß", strlen("´Á»úÆÉ¤ß")) &&
-	    strncmp(token, "¥«¥Æ¥´¥ê", strlen("¥«¥Æ¥´¥ê")) &&
-	    strncmp(token, "¥É¥á¥¤¥ó", strlen("¥É¥á¥¤¥ó"))) {
+	/* ä»¥ä¸‹ã®ã‚‚ã®ä»¥å¤–ã‚’ä»˜ä¸ */
+	if (strncmp(token, "ä»£è¡¨è¡¨è¨˜", strlen("ä»£è¡¨è¡¨è¨˜")) && 
+	    strncmp(token, "å¯èƒ½å‹•è©", strlen("å¯èƒ½å‹•è©")) && 
+	    strncmp(token, "æ¼¢å­—èª­ã¿", strlen("æ¼¢å­—èª­ã¿")) &&
+	    strncmp(token, "ã‚«ãƒ†ã‚´ãƒª", strlen("ã‚«ãƒ†ã‚´ãƒª")) &&
+	    strncmp(token, "ãƒ‰ãƒ¡ã‚¤ãƒ³", strlen("ãƒ‰ãƒ¡ã‚¤ãƒ³"))) {
 	    assign_cfeature(&(m_ptr->f), token, FALSE);
 	}
 	token = strtok(NULL, " ");
@@ -71,7 +71,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     buf = malloc_data(strlen(m_ptr->Goi2) + 
 		      strlen(m_ptr->Yomi) + 
 		      strlen(m_ptr->Goi) + 
-		      strlen(m_ptr->Imi) + 20, "assign_feature_alt_mrph");
+		      strlen(m_ptr->Imi) + 10 * BYTES4CHAR, "assign_feature_alt_mrph");
     sprintf(buf, "ALT-%s-%s-%s-%d-%d-%d-%d-%s", 
 	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
@@ -87,8 +87,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     char *cp;
 
-    if ((cp = strstr(m_ptr->Imi, "ÂåÉ½É½µ­:"))) {
-	return cp + strlen("ÂåÉ½É½µ­:");
+    if ((cp = strstr(m_ptr->Imi, "ä»£è¡¨è¡¨è¨˜:"))) {
+	return cp + strlen("ä»£è¡¨è¡¨è¨˜:");
     }
     return NULL;
 }
@@ -99,13 +99,13 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     char *cp;
 
-    /* flag¤¬Î©¤Ã¤Æ¤¤¤Æ¤«¤Ä¡¢ÂåÉ½É½µ­¤¬ÊÑ¹¹¤µ¤ì¤Æ¤¤¤ë¾ì¹ç¤ÏÊÑ¹¹Á°¤ÎÂåÉ½É½µ­¤òÊÖ¤¹ */
-    if (flag && (cp = check_feature(m_ptr->f, "ÂåÉ½É½µ­ÊÑ¹¹"))) {
-	return cp + strlen("ÂåÉ½É½µ­ÊÑ¹¹:");
+    /* flagãŒç«‹ã£ã¦ã„ã¦ã‹ã¤ã€ä»£è¡¨è¡¨è¨˜ãŒå¤‰æ›´ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯å¤‰æ›´å‰ã®ä»£è¡¨è¡¨è¨˜ã‚’è¿”ã™ */
+    if (flag && (cp = check_feature(m_ptr->f, "ä»£è¡¨è¡¨è¨˜å¤‰æ›´"))) {
+	return cp + strlen("ä»£è¡¨è¡¨è¨˜å¤‰æ›´:");
     }
     
-    if ((cp = check_feature(m_ptr->f, "ÂåÉ½É½µ­"))) {
-	return cp + strlen("ÂåÉ½É½µ­:");
+    if ((cp = check_feature(m_ptr->f, "ä»£è¡¨è¡¨è¨˜"))) {
+	return cp + strlen("ä»£è¡¨è¡¨è¨˜:");
     }
     return NULL;
 }
@@ -133,14 +133,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     char *cp;
 
-    if (compound_flag) { /* ¼ç¼­+¦Á */
-	if ((cp = check_feature(ptr->f, "¼ç¼­¡ÇÂåÉ½É½µ­"))) {
-	    return cp + strlen("¼ç¼­¡ÇÂåÉ½É½µ­:");
+    if (compound_flag) { /* ä¸»è¾+Î± */
+	if ((cp = check_feature(ptr->f, "ä¸»è¾â€™ä»£è¡¨è¡¨è¨˜"))) {
+	    return cp + strlen("ä¸»è¾â€™ä»£è¡¨è¡¨è¨˜:");
 	}
     }
 
-    if ((cp = check_feature(ptr->f, "¼ç¼­ÂåÉ½É½µ­"))) {
-	return cp + strlen("¼ç¼­ÂåÉ½É½µ­:");
+    if ((cp = check_feature(ptr->f, "ä¸»è¾ä»£è¡¨è¡¨è¨˜"))) {
+	return cp + strlen("ä¸»è¾ä»£è¡¨è¡¨è¨˜:");
     }
     else {
 	return NULL;
@@ -154,7 +154,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     char *cp, buf[IMI_MAX];
     int length;
 
-    if ((cp = strstr(m_ptr->Imi, "ÂåÉ½É½µ­:"))) {
+    if ((cp = strstr(m_ptr->Imi, "ä»£è¡¨è¡¨è¨˜:"))) {
 	length = get_mrph_rep_length(cp);
 	strncpy(buf, cp, length);
 	buf[length] = '\0';
@@ -173,28 +173,28 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int goi_length = strlen(m_ptr->Goi);
     int yomi_length = strlen(m_ptr->Yomi);
 
-    /* (ÂåÉ½É½µ­¤¬¤Ê¤¤¤È¤­¤Ë)ÂåÉ½É½µ­¤òºî¤ë */
+    /* (ä»£è¡¨è¡¨è¨˜ãŒãªã„ã¨ãã«)ä»£è¡¨è¡¨è¨˜ã‚’ä½œã‚‹ */
 
-    /* ´ğËÜ·Á¤ÎÊı¤¬Ä¹¤¤¤«¤â¤·¤ì¤Ê¤¤¤Î¤ÇÍ¾Ê¬¤Ë³ÎÊİ */
+    /* åŸºæœ¬å½¢ã®æ–¹ãŒé•·ã„ã‹ã‚‚ã—ã‚Œãªã„ã®ã§ä½™åˆ†ã«ç¢ºä¿ */
     buf = (char *)malloc_data(goi_length + yomi_length + SMALL_DATA_LEN, "make_mrph_rn");
 
-    /* »ØÄê¤µ¤ì¤¿Ê¸»ú°Ê¾å¤ÇÄ¹²»Éä¤Ç½ª¤ï¤ë¥«¥¿¥«¥Ê¤ÎÂåÉ½É½µ­¤ÏÄ¹²»Éä¤òºï½ü */
-    if (OptKatakanaNormalize && /* default¤ÏTRUE */
-	((!strcmp(Class[m_ptr->Hinshi][0].id, "Ì¤ÄêµÁ¸ì") && 
-	  !strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "¥«¥¿¥«¥Ê")) || /* Ì¤ÃÎ¸ì-¥«¥¿¥«¥Ê */
-	 strstr(m_ptr->Imi, "¼«Æ°³ÍÆÀ")) && /* ¼«Æ°³ÍÆÀ¸ì */
+    /* æŒ‡å®šã•ã‚ŒãŸæ–‡å­—ä»¥ä¸Šã§é•·éŸ³ç¬¦ã§çµ‚ã‚ã‚‹ã‚«ã‚¿ã‚«ãƒŠã®ä»£è¡¨è¡¨è¨˜ã¯é•·éŸ³ç¬¦ã‚’å‰Šé™¤ */
+    if (OptKatakanaNormalize && /* defaultã¯TRUE */
+	((!strcmp(Class[m_ptr->Hinshi][0].id, "æœªå®šç¾©èª") && 
+	  !strcmp(Class[m_ptr->Hinshi][m_ptr->Bunrui].id, "ã‚«ã‚¿ã‚«ãƒŠ")) || /* æœªçŸ¥èª-ã‚«ã‚¿ã‚«ãƒŠ */
+	 strstr(m_ptr->Imi, "è‡ªå‹•ç²å¾—")) && /* è‡ªå‹•ç²å¾—èª */
 	goi_length >= KATAKANA_VARIATION_ABSORB_LENGTH && 
-	!strcmp(m_ptr->Goi + goi_length - BYTES4CHAR, "¡¼") && /* ËöÈø¤¬Ä¹²»Éä */
-	strcmp(m_ptr->Goi + goi_length - BYTES4CHAR - BYTES4CHAR, "¡¼¡¼")) { /* Ä¹²»Éä¤Ï°ì¤Ä¤À¤± */
+	!strcmp(m_ptr->Goi + goi_length - BYTES4CHAR, "ãƒ¼") && /* æœ«å°¾ãŒé•·éŸ³ç¬¦ */
+	strcmp(m_ptr->Goi + goi_length - BYTES4CHAR - BYTES4CHAR, "ãƒ¼ãƒ¼")) { /* é•·éŸ³ç¬¦ã¯ä¸€ã¤ã ã‘ */
 	sprintf(buf, "%.*s/%.*s", goi_length - BYTES4CHAR, m_ptr->Goi, yomi_length - BYTES4CHAR, m_ptr->Yomi);
     }
     else {
 	sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Yomi);
     }
 
-    if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* ³èÍÑ¸ì */
-	buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* ¸ì´´¤Ë¤¹¤ë */
-	strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* ´ğËÜ·Á¤ò¤Ä¤±¤ë */
+    if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* æ´»ç”¨èª */
+	buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* èªå¹¹ã«ã™ã‚‹ */
+	strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* åŸºæœ¬å½¢ã‚’ã¤ã‘ã‚‹ */
     }
     return buf;
 }
@@ -205,11 +205,11 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     char *rn, *buf;
 
-    /* ÂåÉ½É½µ­¤ò¤½¤Î¤Ş¤ŞÀµµ¬²½ÂåÉ½É½µ­¤Ë */
+    /* ä»£è¡¨è¡¨è¨˜ã‚’ãã®ã¾ã¾æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã« */
 
     if (rn = get_mrph_rep_from_f(m_ptr, FALSE)) {
-	buf = (char *)malloc_data(strlen("Àµµ¬²½ÂåÉ½É½µ­:") + strlen(rn) + 1, "rn2canonical_rn");
-	strcpy(buf, "Àµµ¬²½ÂåÉ½É½µ­:");
+	buf = (char *)malloc_data(strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:") + strlen(rn) + 1, "rn2canonical_rn");
+	strcpy(buf, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:");
 	strcat(buf, rn);
 	assign_cfeature(&(m_ptr->f), buf, FALSE);
 	free(buf);
@@ -223,23 +223,23 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int i, j, merged_rep_size = DATA_LEN;
     char *cp, *merged_rep;
 
-    /* <ÆâÍÆ¸ì>·ÁÂÖÁÇ¤ÎÀµµ¬²½ÂåÉ½É½µ­¤«¤é¡¢´ğËÜ¶ç¤ÎÀµµ¬²½ÂåÉ½É½µ­¤òºîÀ® */
+    /* <å†…å®¹èª>å½¢æ…‹ç´ ã®æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‹ã‚‰ã€åŸºæœ¬å¥ã®æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä½œæˆ */
 
     merged_rep = (char *)malloc_data(merged_rep_size, "assign_cc_feature_to_bp");
 
-    for (i = 0; i < sp->Tag_num; i++) { /* ¤¹¤Ù¤Æ¤Î´ğËÜ¶ç¤ËÉÕÍ¿ */
+    for (i = 0; i < sp->Tag_num; i++) { /* ã™ã¹ã¦ã®åŸºæœ¬å¥ã«ä»˜ä¸ */
 	*merged_rep = '\0';
 	for (j = 0; j < (sp->tag_data + i)->mrph_num; j++) {
-	    if ((check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "ÆâÍÆ¸ì") || 
-		 check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "½àÆâÍÆ¸ì")) && /* <ÆâÍÆ¸ì>·ÁÂÖÁÇ¤òÂĞ¾İ¤Ë */
-		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "ÆÃ¼ìÈó¸«½Ğ¸ì") && /* ¡Ö¡Á¤Î¡Á¡×°Ê³° */
-		(cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "Àµµ¬²½ÂåÉ½É½µ­"))) {
+	    if ((check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "å†…å®¹èª") || 
+		 check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "æº–å†…å®¹èª")) && /* <å†…å®¹èª>å½¢æ…‹ç´ ã‚’å¯¾è±¡ã« */
+		!check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "ç‰¹æ®Šéè¦‹å‡ºèª") && /* ã€Œã€œã®ã€œã€ä»¥å¤– */
+		(cp = check_feature(((sp->tag_data + i)->mrph_ptr + j)->f, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜"))) {
 		if (*merged_rep) {
-		    if (strlen(merged_rep) + strlen(cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:")) + 2 > merged_rep_size) {
+		    if (strlen(merged_rep) + strlen(cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:")) + 2 > merged_rep_size) {
 			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_cc_feature_to_bp");
 		    }
 		    strcat(merged_rep, "+");
-		    strcat(merged_rep, cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:"));
+		    strcat(merged_rep, cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:"));
 		}
 		else {
 		    strcpy(merged_rep, cp);
@@ -248,7 +248,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	}
 
 	if (*merged_rep) {
-	    assign_cfeature(&((sp->tag_data + i)->f), merged_rep, FALSE); /* Ï¢·ëÂåÉ½É½µ­ */
+	    assign_cfeature(&((sp->tag_data + i)->f), merged_rep, FALSE); /* é€£çµä»£è¡¨è¡¨è¨˜ */
 	}
     }
 
@@ -262,21 +262,21 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     int i, j, merged_rep_size = DATA_LEN, error_flag;
     char *cp, *merged_rep, *last_rep;
 
-    /* ´ğËÜ¶ç¤ÎÀµµ¬²½ÂåÉ½É½µ­¤«¤éÊ¸Àá¤ÎÀµµ¬²½ÂåÉ½É½µ­¤òºîÀ® */
+    /* åŸºæœ¬å¥ã®æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‹ã‚‰æ–‡ç¯€ã®æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä½œæˆ */
 
     merged_rep = (char *)malloc_data(merged_rep_size, "assign_cc_feature_to_bnst");
 
-    for (i = 0; i < sp->Bnst_num; i++) { /* ¤¹¤Ù¤Æ¤ÎÊ¸Àá¤ËÉÕÍ¿ */
+    for (i = 0; i < sp->Bnst_num; i++) { /* ã™ã¹ã¦ã®æ–‡ç¯€ã«ä»˜ä¸ */
 	*merged_rep = '\0';
 	last_rep = NULL;
 	for (j = 0; j < (sp->bnst_data + i)->tag_num; j++) {
-	    if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "Àµµ¬²½ÂåÉ½É½µ­"))) {
+	    if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜"))) {
 		if (*merged_rep) {
-		    if (strlen(merged_rep) + strlen(cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:")) + 2 > merged_rep_size) {
+		    if (strlen(merged_rep) + strlen(cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:")) + 2 > merged_rep_size) {
 			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_cc_feature_to_bnst");
 		    }
 		    strcat(merged_rep, "+");
-		    strcat(merged_rep, cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:"));
+		    strcat(merged_rep, cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:"));
 		}
 		else {
 		    strcpy(merged_rep, cp);
@@ -286,25 +286,25 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	}
 
 	if (*merged_rep) {
-	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* Ï¢·ë¤·¤¿ÂåÉ½É½µ­ */
+	    assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* é€£çµã—ãŸä»£è¡¨è¡¨è¨˜ */
 	}
 
 	if (last_rep) {
-	    strncpy(last_rep + strlen("Àµ"), "¼ç¼­", strlen("¼ç¼­"));
-	    assign_cfeature(&((sp->bnst_data + i)->f), last_rep + strlen("Àµ"), FALSE); /* ¼ç¼­ÂåÉ½É½µ­ */
-	    strncpy(last_rep + strlen("Àµ"), "µ¬²½", strlen("µ¬²½"));
+	    strncpy(last_rep + strlen("æ­£"), "ä¸»è¾", strlen("ä¸»è¾"));
+	    assign_cfeature(&((sp->bnst_data + i)->f), last_rep + strlen("æ­£"), FALSE); /* ä¸»è¾ä»£è¡¨è¡¨è¨˜ */
+	    strncpy(last_rep + strlen("æ­£"), "è¦åŒ–", strlen("è¦åŒ–"));
 	}
 
-	/* ËöÈø¤¬°ìÊ¸»ú´Á»ú¤Î¤È¤­¤Ï¡¢¼ç¼­¡ÇÂåÉ½É½µ­¤ò½ĞÎÏ */
+	/* æœ«å°¾ãŒä¸€æ–‡å­—æ¼¢å­—ã®ã¨ãã¯ã€ä¸»è¾â€™ä»£è¡¨è¡¨è¨˜ã‚’å‡ºåŠ› */
 	if ((sp->bnst_data + i)->tag_num > 1 && 
-	    check_feature(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f, "°ìÊ¸»ú´Á»ú")) {
+	    check_feature(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f, "ä¸€æ–‡å­—æ¼¢å­—")) {
 	    *merged_rep = '\0';
 	    error_flag = 0;
 	    for (j = (sp->bnst_data + i)->tag_num - 2; j < (sp->bnst_data + i)->tag_num; j++) {
-		if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "Àµµ¬²½ÂåÉ½É½µ­"))) {
+		if ((cp = check_feature(((sp->bnst_data + i)->tag_ptr + j)->f, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜"))) {
 		    if (*merged_rep) {
 			strcat(merged_rep, "+");
-			strcat(merged_rep, cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:"));
+			strcat(merged_rep, cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:"));
 		    }
 		    else {
 			strcpy(merged_rep, cp);
@@ -317,9 +317,9 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    }
 
 	    if (!error_flag) {
-		strncpy(merged_rep, "¼ç¼­¡Ç", strlen("¼ç¼­¡Ç"));
-		assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* ¼ç¼­¡ÜÂåÉ½É½µ­ */
-		strncpy(merged_rep, "Àµµ¬²½", strlen("Àµµ¬²½"));
+		strncpy(merged_rep, "ä¸»è¾â€™", strlen("ä¸»è¾â€™"));
+		assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* ä¸»è¾ï¼‹ä»£è¡¨è¡¨è¨˜ */
+		strncpy(merged_rep, "æ­£è¦åŒ–", strlen("æ­£è¦åŒ–"));
 	    }
 	}
     }
@@ -340,14 +340,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
     for (i = 0; i < sp->Mrph_num; i++, m_ptr++) {
 
-	/* ºÎÍÑ¤µ¤ì¤Æ¤¤¤ë·ÁÂÖÁÇ¤ÎÂåÉ½É½µ­ */
+	/* æ¡ç”¨ã•ã‚Œã¦ã„ã‚‹å½¢æ…‹ç´ ã®ä»£è¡¨è¡¨è¨˜ */
 	rep_strt = get_mrph_rep(m_ptr);
 	rep_length = get_mrph_rep_length(rep_strt);
 	if (rep_length < 1) {
 	    continue;
 	}
 
-	strcpy(merged_rep, "Àµµ¬²½ÂåÉ½É½µ­:");
+	strcpy(merged_rep, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:");
 	strncat(merged_rep, rep_strt, rep_length);
 
 	fp = m_ptr->f;
@@ -361,7 +361,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		rep_length2 = get_mrph_rep_length(rep_strt2);
 		if (rep_length2 > 0 && 
 		    (rep_length != rep_length2 || strncmp(rep_strt, rep_strt2, rep_length))) {
-		    /* Àµµ¬²½ÂåÉ½É½µ­¤Ë"?"¤ÇÏ¢·ë */
+		    /* æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã«"?"ã§é€£çµ */
 		    if (strlen(merged_rep) + rep_length2 + 2 > merged_rep_size) {
 			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_canonical_rep_to_mrph");
 		    }
@@ -372,7 +372,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    fp = fp->next;
 	}
 
-	/* Àµµ¬²½ÂåÉ½É½µ­¤òÉÕÍ¿ */
+	/* æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä»˜ä¸ */
 	assign_cfeature(&(m_ptr->f), merged_rep, FALSE);
     }
 
@@ -386,21 +386,21 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     int i, j, k, flag, orig_amb_flag, pref_mrph, pref_rule;
     int bw_length;
     int real_homo_num;
-    int uniq_flag[HOMO_MAX];		/* ¼Â¼ÁÅªÆ±·Á°ÛµÁ¸ì¤Ê¤é 1 */
-    int matched_flag[HOMO_MRPH_MAX];	/* ¤¤¤º¤ì¤«¤Î·ÁÂÖÁÇ¤È¥Ş¥Ã¥Á¤·¤¿
-					   ¥ë¡¼¥ëÆâ·ÁÂÖÁÇ¥Ñ¥¿¡¼¥ó¤Ë 1 */
+    int uniq_flag[HOMO_MAX];		/* å®Ÿè³ªçš„åŒå½¢ç•°ç¾©èªãªã‚‰ 1 */
+    int matched_flag[HOMO_MRPH_MAX];	/* ã„ãšã‚Œã‹ã®å½¢æ…‹ç´ ã¨ãƒãƒƒãƒã—ãŸ
+					   ãƒ«ãƒ¼ãƒ«å†…å½¢æ…‹ç´ ãƒ‘ã‚¿ãƒ¼ãƒ³ã« 1 */
     int rep_length, rep_length2, merged_rep_size = DATA_LEN;
     HomoRule	*r_ptr;
     MRPH_DATA	*loop_ptr, *loop_ptr2;
     char fname[SMALL_DATA_LEN2], *cp, *cp2, *rep_strt, *rep_strt2;
 
-    /* ½èÍı¤¹¤ëºÇÂç¿ô¤ò±Û¤¨¤Æ¤¤¤ì¤Ğ¡¢ºÇÂç¿ô¸Ä¤À¤±¥Á¥§¥Ã¥¯¤¹¤ë */
+    /* å‡¦ç†ã™ã‚‹æœ€å¤§æ•°ã‚’è¶Šãˆã¦ã„ã‚Œã°ã€æœ€å¤§æ•°å€‹ã ã‘ãƒã‚§ãƒƒã‚¯ã™ã‚‹ */
     if (homo_num > HOMO_MAX) {
 	homo_num = HOMO_MAX;
     }
 
-    /* ÉÊ»ì(ºÙÊ¬Îà)¤¬°Û¤Ê¤ë·ÁÂÖÁÇ¤À¤±¤ò»Ä¤·¡¤uniq_flag¤ò1¤Ë¤¹¤ë
-       => ¤¹¤Ù¤Æ»Ä¤¹¤è¤¦¤ËÊÑ¹¹ (2006/10/16) */
+    /* å“è©(ç´°åˆ†é¡)ãŒç•°ãªã‚‹å½¢æ…‹ç´ ã ã‘ã‚’æ®‹ã—ï¼Œuniq_flagã‚’1ã«ã™ã‚‹
+       => ã™ã¹ã¦æ®‹ã™ã‚ˆã†ã«å¤‰æ›´ (2006/10/16) */
 
     uniq_flag[0] = 1;
     real_homo_num = 1;
@@ -409,14 +409,14 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	if (uniq_flag[i]) real_homo_num++;
     }
 
-    /* ¼Â¼ÁÅªÆ±·Á°ÛµÁ¸ì¤¬¤Ê¤±¤ì¤Ğ²¿¤â½èÍı¤Ï¤·¤Ê¤¤ */
+    /* å®Ÿè³ªçš„åŒå½¢ç•°ç¾©èªãŒãªã‘ã‚Œã°ä½•ã‚‚å‡¦ç†ã¯ã—ãªã„ */
 
     if (real_homo_num == 1) return;
 
-    /* ¥ë¡¼¥ë (mrph_homo.rule)¤Ë½¾¤Ã¤ÆÍ¥Àè¤¹¤ë·ÁÂÖÁÇ¤òÁªÂò
-       ¢¨ Æ±·Á°ÛµÁ¸ì¿ô¤È¥ë¡¼¥ëÃæ¤Î·ÁÂÖÁÇ¿ô¤¬Æ±¤¸¤³¤È¤¬¾ò·ï
-          ³ÆÆ±·Á°ÛµÁ¸ì¤¬¥ë¡¼¥ëÃæ¤Î·ÁÂÖÁÇ¤Î¤¤¤º¤ì¤«¤Ë¥Ş¥Ã¥Á¤¹¤ì¤Ğ¤è¤¤
-	  ¥ë¡¼¥ë¤ÎºÇ½é¤Î·ÁÂÖÁÇ¤Ë¥Ş¥Ã¥Á¤·¤¿¤â¤Î¤òÍ¥Àè(pref_mrph ¤¬µ­²±)
+    /* ãƒ«ãƒ¼ãƒ« (mrph_homo.rule)ã«å¾“ã£ã¦å„ªå…ˆã™ã‚‹å½¢æ…‹ç´ ã‚’é¸æŠ
+       â€» åŒå½¢ç•°ç¾©èªæ•°ã¨ãƒ«ãƒ¼ãƒ«ä¸­ã®å½¢æ…‹ç´ æ•°ãŒåŒã˜ã“ã¨ãŒæ¡ä»¶
+          å„åŒå½¢ç•°ç¾©èªãŒãƒ«ãƒ¼ãƒ«ä¸­ã®å½¢æ…‹ç´ ã®ã„ãšã‚Œã‹ã«ãƒãƒƒãƒã™ã‚Œã°ã‚ˆã„
+	  ãƒ«ãƒ¼ãƒ«ã®æœ€åˆã®å½¢æ…‹ç´ ã«ãƒãƒƒãƒã—ãŸã‚‚ã®ã‚’å„ªå…ˆ(pref_mrph ãŒè¨˜æ†¶)
     */
 
     flag = FALSE;
@@ -428,18 +428,18 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	    exit(1);
 	}
 	
-	/* ¤½¤³¤Ş¤Ç¤Î·ÁÂÖÁÇÎó¤ò¥Á¥§¥Ã¥¯ */
+	/* ãã“ã¾ã§ã®å½¢æ…‹ç´ åˆ—ã‚’ãƒã‚§ãƒƒã‚¯ */
 	bw_length = m_ptr - sp->mrph_data;
-	if ((r_ptr->pre_pattern == NULL &&	/* °ã¤¤ */
+	if ((r_ptr->pre_pattern == NULL &&	/* é•ã„ */
 	     bw_length != 0) ||
 	    (r_ptr->pre_pattern != NULL &&
 	     regexpmrphs_match(r_ptr->pre_pattern->mrph + 
 			       r_ptr->pre_pattern->mrphsize - 1,
 			       r_ptr->pre_pattern->mrphsize,
 			       m_ptr - 1, 
-			       bw_length,	/* °ã¤¤ */
+			       bw_length,	/* é•ã„ */
 			       BW_MATCHING, 
-			       ALL_MATCHING,/* °ã¤¤ */
+			       ALL_MATCHING,/* é•ã„ */
 			       SHORT_MATCHING) == -1)) {
 	    continue;
 	}
@@ -476,11 +476,11 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
     }
 
-    /* Â¿µÁÀ­¤ò¥Ş¡¼¥¯¤¹¤ëfeature¤òÍ¿¤¨¤ë */
-    assign_cfeature(&((m_ptr+pref_mrph)->f), "ÉÊÛ£", FALSE);
+    /* å¤šç¾©æ€§ã‚’ãƒãƒ¼ã‚¯ã™ã‚‹featureã‚’ä¸ãˆã‚‹ */
+    assign_cfeature(&((m_ptr+pref_mrph)->f), "å“æ›–", FALSE);
 
-    if (flag == TRUE) { /* ¥ë¡¼¥ë¤Ë¥Ş¥Ã¥Á */
-	/* ¥ë¡¼¥ë¤Ëµ­½Ò¤µ¤ì¤Æ¤¤¤ëfeature¤òÍ¿¤¨¤ë (¡ÖÉÊÛ£¡×¤òºï½ü¤¹¤ë¥ë¡¼¥ë¤â¤¢¤ë) */
+    if (flag == TRUE) { /* ãƒ«ãƒ¼ãƒ«ã«ãƒãƒƒãƒ */
+	/* ãƒ«ãƒ¼ãƒ«ã«è¨˜è¿°ã•ã‚Œã¦ã„ã‚‹featureã‚’ä¸ãˆã‚‹ (ã€Œå“æ›–ã€ã‚’å‰Šé™¤ã™ã‚‹ãƒ«ãƒ¼ãƒ«ã‚‚ã‚ã‚‹) */
 	assign_feature(&((m_ptr+pref_mrph)->f), &((HomoRuleArray + pref_rule)->f), m_ptr, 0, 1, FALSE);
 
 	if (0 && OptDisplay == OPT_DEBUG) {
@@ -508,17 +508,17 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	}
     }
 
-    /* pref_mrph°Ê³°¤Î·ÁÂÖÁÇ¾ğÊó¤òALT¤ÇÊİÂ¸¤¹¤ë
-       ¤Ş¤¿¡¢¤½¤ì¤é¤Î°ÕÌ£¾ğÊó¤Î°ìÉô¤òpref_mrph¤Îfeature¤ËÉÕÍ¿ */
+    /* pref_mrphä»¥å¤–ã®å½¢æ…‹ç´ æƒ…å ±ã‚’ALTã§ä¿å­˜ã™ã‚‹
+       ã¾ãŸã€ãã‚Œã‚‰ã®æ„å‘³æƒ…å ±ã®ä¸€éƒ¨ã‚’pref_mrphã®featureã«ä»˜ä¸ */
     orig_amb_flag = 0;
-    if (check_feature((m_ptr+pref_mrph)->f, "ÉÊÛ£")) {
-	/* pref_mrph¤ÎÂåÉ½É½µ­ */
+    if (check_feature((m_ptr+pref_mrph)->f, "å“æ›–")) {
+	/* pref_mrphã®ä»£è¡¨è¡¨è¨˜ */
 	rep_strt = get_mrph_rep(m_ptr + pref_mrph);
 	rep_length = get_mrph_rep_length(rep_strt);
 
 	for (i = 0; i < homo_num; i++) {
 	    if (i != pref_mrph) {
-		/* ÂåÉ½É½µ­¤¬pref_mrph¤È°Û¤Ê¤ë¾ì¹ç¡¢orig_amb_flag¤ò1¤Ë¤¹¤ë */
+		/* ä»£è¡¨è¡¨è¨˜ãŒpref_mrphã¨ç•°ãªã‚‹å ´åˆã€orig_amb_flagã‚’1ã«ã™ã‚‹ */
 		rep_strt2 = get_mrph_rep(m_ptr+i);
 		rep_length2 = get_mrph_rep_length(rep_strt2);
 		if (rep_length > 0 && 
@@ -526,28 +526,28 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 		    orig_amb_flag = 1;
 		}
 
-		/* ·ÁÂÖÁÇ¾ğÊó¤òfeature(<ALT-...>)¤È¤·¤ÆÊİÂ¸ */
+		/* å½¢æ…‹ç´ æƒ…å ±ã‚’feature(<ALT-...>)ã¨ã—ã¦ä¿å­˜ */
 		assign_feature_alt_mrph(&((m_ptr+pref_mrph)->f), m_ptr + i);
 
-		/* pref_mrph°Ê³°¤Î·ÁÂÖÁÇ¤¬¤â¤Ä°ÕÌ£¾ğÊó¤ò¤¹¤Ù¤ÆÉÕÍ¿¤·¤Æ¤ª¤¯ */
+		/* pref_mrphä»¥å¤–ã®å½¢æ…‹ç´ ãŒã‚‚ã¤æ„å‘³æƒ…å ±ã‚’ã™ã¹ã¦ä»˜ä¸ã—ã¦ãŠã */
 		selected_imi2feature((m_ptr+i)->Imi, m_ptr+pref_mrph);
 	    }
 	}
 
 	for (i = 0; i < homo_num; i++) {
 	    if (uniq_flag[i] == 0) continue;
-	    sprintf(fname, "ÉÊÛ£-%s", 
+	    sprintf(fname, "å“æ›–-%s", 
 		    Class[(m_ptr+i)->Hinshi][(m_ptr+i)->Bunrui].id);
 	    assign_cfeature(&((m_ptr+pref_mrph)->f), fname, FALSE);
 	}
     }
 
-    /* ÂåÉ½É½µ­¤¬Û£Ëæ¤Ê¤È¤­¤Ï¥Ş¡¼¥¯¤·¤Æ¤ª¤¯ */
+    /* ä»£è¡¨è¡¨è¨˜ãŒæ›–æ˜§ãªã¨ãã¯ãƒãƒ¼ã‚¯ã—ã¦ãŠã */
     if (orig_amb_flag) {
-	assign_cfeature(&((m_ptr+pref_mrph)->f), "¸¶·ÁÛ£Ëæ", FALSE);
+	assign_cfeature(&((m_ptr+pref_mrph)->f), "åŸå½¢æ›–æ˜§", FALSE);
     }
 
-    /* pref_mrphÈÖÌÜ¤Î¥Ç¡¼¥¿¤ò¥³¥Ô¡¼ */
+    /* pref_mrphç•ªç›®ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ */
     if (pref_mrph != 0) {
 	strcpy(m_ptr->Goi2, (m_ptr+pref_mrph)->Goi2);
 	strcpy(m_ptr->Yomi, (m_ptr+pref_mrph)->Yomi);
@@ -595,22 +595,11 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 /*==================================================================*/
 {
     int len;
-    char *EUCbuffer;
 
     if (fgets(buffer, DATA_LEN, fp) == NULL) return EOF;
 
-#ifndef _WIN32
-    if (OptEncoding == ENCODING_SHIFTJIS) {
-#endif
-	EUCbuffer = toStringEUC(buffer);
-	strcpy(buffer, EUCbuffer);
-	free(EUCbuffer);
-#ifndef _WIN32
-    }
-#endif
-
-    /* Server ¥â¡¼¥É¤Î¾ì¹ç¤Ï Ãí°Õ \r\n ¤Ë¤Ê¤ë*/
-    if (OptMode == SERVER_MODE || OptEncoding == ENCODING_SHIFTJIS) {
+    /* Server ãƒ¢ãƒ¼ãƒ‰ã®å ´åˆã¯ æ³¨æ„ \r\n ã«ãªã‚‹*/
+    if (OptMode == SERVER_MODE) {
 	len = strlen(buffer);
 	if (len > 2 && buffer[len-1] == '\n' && buffer[len-2] == '\r') {
 	    buffer[len-2] = '\n';
@@ -641,16 +630,16 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
 	   void delete_existing_features(MRPH_DATA *m_ptr)
 /*==================================================================*/
 {
-    delete_cfeature(&(m_ptr->f), "¥«¥Æ¥´¥ê");
-    delete_cfeature(&(m_ptr->f), "¥É¥á¥¤¥ó");
-    delete_cfeature(&(m_ptr->f), "²ÄÇ½Æ°»ì");
-    delete_cfeature(&(m_ptr->f), "´Á»úÆÉ¤ß");
-    delete_cfeature(&(m_ptr->f), "Ãí¼á");
-    delete_cfeature(&(m_ptr->f), "¸¬¾ùÆ°»ì");
-    delete_cfeature(&(m_ptr->f), "Âº·ÉÆ°»ì");
-    delete_cfeature(&(m_ptr->f), "ÃúÇ«Æ°»ì");
-    delete_cfeature(&(m_ptr->f), "É¸½à");
-    delete_cfeature(&(m_ptr->f), "¾ÊÎ¬");
+    delete_cfeature(&(m_ptr->f), "ã‚«ãƒ†ã‚´ãƒª");
+    delete_cfeature(&(m_ptr->f), "ãƒ‰ãƒ¡ã‚¤ãƒ³");
+    delete_cfeature(&(m_ptr->f), "å¯èƒ½å‹•è©");
+    delete_cfeature(&(m_ptr->f), "æ¼¢å­—èª­ã¿");
+    delete_cfeature(&(m_ptr->f), "æ³¨é‡ˆ");
+    delete_cfeature(&(m_ptr->f), "è¬™è­²å‹•è©");
+    delete_cfeature(&(m_ptr->f), "å°Šæ•¬å‹•è©");
+    delete_cfeature(&(m_ptr->f), "ä¸å¯§å‹•è©");
+    delete_cfeature(&(m_ptr->f), "æ¨™æº–");
+    delete_cfeature(&(m_ptr->f), "çœç•¥");
 }
 
 /*==================================================================*/
@@ -668,9 +657,9 @@ void lexical_disambiguation(SENTENCE_DATA *sp, MRPH_DATA *m_ptr, int homo_num)
     dst->Katuyou_Kei = src->Katuyou_Kei;
     strcpy(dst->Imi, src->Imi);
 
-    /* °ÕÌ£¾ğÊó¤òfeature¤Ø */
+    /* æ„å‘³æƒ…å ±ã‚’featureã¸ */
     if (imi2feature_flag) {
-	if (src->Imi[0] == '\"') { /* ÄÌ¾ï "" ¤Ç³ç¤é¤ì¤Æ¤¤¤ë */
+	if (src->Imi[0] == '\"') { /* é€šå¸¸ "" ã§æ‹¬ã‚‰ã‚Œã¦ã„ã‚‹ */
 	    imip = &src->Imi[1];
 	    if (cp = strchr(imip, '\"')) {
 		*cp = '\0';
@@ -717,13 +706,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	return TRUE;
     }
 
-    if (flag == 'E' || flag == 'U') { /* ÉÔÆÃÄê¡¢¤Ş¤¿¤Ï¡¢³ä¤êÅö¤Æ¤Ê¤·(OptReadFeatureÍÑ) */
+    if (flag == 'E' || flag == 'U') { /* ä¸ç‰¹å®šã€ã¾ãŸã¯ã€å‰²ã‚Šå½“ã¦ãªã—(OptReadFeatureç”¨) */
 	tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;
 	tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = NULL;	
     }
     else {
 	if (sent_n > 0) {
-	    /* °Û¾ï¤Ê¥¿¥°Ã±°Ì¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤«¥Á¥§¥Ã¥¯ */
+	    /* ç•°å¸¸ãªã‚¿ã‚°å˜ä½ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ */
 	    if (sp->Sen_num - sent_n < 1 || 
 		tag_n >= (sentence_data + sp->Sen_num - 1 - sent_n)->Tag_num) {
 		fprintf(stderr, ";; discarded inappropriate annotation: %s/%c/%s/%d/%d\n", rel, flag, word, tag_n, sent_n);
@@ -732,8 +721,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = (sentence_data + sp->Sen_num - 1 - sent_n)->tag_data + tag_n;
 	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sentence_data + sp->Sen_num - 1 - sent_n;
 	}
-	/* ¸½ºß¤ÎÂĞ¾İÊ¸ (¤³¤ÎÊ¸¤Ï¤Ş¤Àsentence_data¤ËÆş¤Ã¤Æ¤¤¤Ê¤¤¤¿¤á¡¢¾å¤Î¤è¤¦¤Ë¤Ï°·¤¨¤Ê¤¤)
-   	   °Û¾ï¤Ê¥¿¥°Ã±°Ì¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤«¤Î¥Á¥§¥Ã¥¯¤Ïcheck_annotation()¤Ç¹Ô¤¦ */
+	/* ç¾åœ¨ã®å¯¾è±¡æ–‡ (ã“ã®æ–‡ã¯ã¾ã sentence_dataã«å…¥ã£ã¦ã„ãªã„ãŸã‚ã€ä¸Šã®ã‚ˆã†ã«ã¯æ‰±ãˆãªã„)
+   	   ç•°å¸¸ãªã‚¿ã‚°å˜ä½ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã‹ã®ãƒã‚§ãƒƒã‚¯ã¯check_annotation()ã§è¡Œã† */
 	else {
 	    tp->c_cpm_ptr->elem_b_ptr[tp->c_cpm_ptr->cf.element_num] = sp->tag_data + tag_n;
 	    tp->c_cpm_ptr->elem_s_ptr[tp->c_cpm_ptr->cf.element_num] = sp;
@@ -764,12 +753,12 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 {
     char *cp, *start_cp;
 
-    /* feature¤«¤é³Ê²òÀÏ·ë²Ì¤ò¼èÆÀ */
-    if (cp = check_feature(tp->f, "³Ê²òÀÏ·ë²Ì")) {
+    /* featureã‹ã‚‰æ ¼è§£æçµæœã‚’å–å¾— */
+    if (cp = check_feature(tp->f, "æ ¼è§£æçµæœ")) {
 	tp->c_cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "read_annotation");
 	memset(tp->c_cpm_ptr, 0, sizeof(CF_PRED_MGR));
 
-	cp += strlen("³Ê²òÀÏ·ë²Ì:");
+	cp += strlen("æ ¼è§£æçµæœ:");
 	cp = strchr(cp, ':') + 1;
 
 	if (OptAnaphora) {
@@ -804,7 +793,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	tp = sp->tag_data + i;
 	if (tp->c_cpm_ptr) {
 	    for (j = 0; j < tp->c_cpm_ptr->cf.element_num; j++) {
-		/* ÂĞ¾İÊ¸¤Î¾ì¹ç¤Ë¡¢°Û¾ï¤Ê¥¿¥°Ã±°Ì¤¬»ØÄê¤µ¤ì¤Æ¤¤¤ë¤«¥Á¥§¥Ã¥¯ */
+		/* å¯¾è±¡æ–‡ã®å ´åˆã«ã€ç•°å¸¸ãªã‚¿ã‚°å˜ä½ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ */
 		if (sp == tp->c_cpm_ptr->elem_s_ptr[j] && 
 		    (tp->c_cpm_ptr->elem_b_ptr[j] - sp->tag_data) >= sp->Tag_num) {
 		    fprintf(stderr, ";; discarded inappropriate annotation: %s/?/%s/%d/0\n", 
@@ -818,7 +807,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 	    }
 
-	    /* ¤º¤é¤¹ */
+	    /* ãšã‚‰ã™ */
 	    k = 0;
 	    for (j = 0; j < tp->c_cpm_ptr->cf.element_num; j++) {
 		if (check[j] == TRUE) {
@@ -835,7 +824,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    if (k) {
 		tp->c_cpm_ptr->cf.element_num = k;
 	    }
-	    else { /* 1¤Ä¤â¤Ê¤¯¤Ê¤Ã¤¿¤éfree */
+	    else { /* 1ã¤ã‚‚ãªããªã£ãŸã‚‰free */
 		free(tp->c_cpm_ptr);
 		tp->c_cpm_ptr = NULL;
 	    }
@@ -871,14 +860,14 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    return FALSE;
 	}
 
-	/* -i ¤Ë¤è¤ë¥³¥á¥ó¥È¹Ô */
+	/* -i ã«ã‚ˆã‚‹ã‚³ãƒ¡ãƒ³ãƒˆè¡Œ */
 	if (OptIgnoreChar && *input_buffer == OptIgnoreChar) {
 	    fprintf(Outfp, "%s", input_buffer);
 	    fflush(Outfp);
 	    continue;
 	}
 
-	/* # ¤Ë¤è¤ëÀµµ¬¤Î¥³¥á¥ó¥È¹Ô */
+	/* # ã«ã‚ˆã‚‹æ­£è¦ã®ã‚³ãƒ¡ãƒ³ãƒˆè¡Œ */
 
 	if (input_buffer[0] == '#') {
 	    input_buffer[strlen(input_buffer)-1] = '\0';
@@ -886,11 +875,11 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer) + 3, "read_mrph");
 	    sscanf(input_buffer, "# %s %[^\n]", sp->KNPSID, sp->Comment);
 
-	    /* Ê¸¾Ï¤¬ÊÑ¤ï¤Ã¤¿¤é¸ÇÍ­Ì¾»ì¥¹¥¿¥Ã¥¯, Á°Ê¸¥Ç¡¼¥¿¤ò¥¯¥ê¥¢ */
+	    /* æ–‡ç« ãŒå¤‰ã‚ã£ãŸã‚‰å›ºæœ‰åè©ã‚¹ã‚¿ãƒƒã‚¯, å‰æ–‡ãƒ‡ãƒ¼ã‚¿ã‚’ã‚¯ãƒªã‚¢ */
 	    if (!strncmp(sp->KNPSID, "S-ID:", 5) && strchr(sp->KNPSID + 5, '-') &&
-		strlen(sp->KNPSID) < sizeof(ArticleID)/sizeof(ArticleID[0])) { /* ¡Öµ­»öID-Ê¸ID¡×¤È¤¤¤¦·Á¼°¤Ê¤é¤Ğ */	
+		strlen(sp->KNPSID) < sizeof(ArticleID)/sizeof(ArticleID[0])) { /* ã€Œè¨˜äº‹ID-æ–‡IDã€ã¨ã„ã†å½¢å¼ãªã‚‰ã° */	
 
-		/* ËöÈø¤Î'-'¤è¤êÁ°¤òArticleID¤È¤ß¤Ê¤¹ */
+		/* æœ«å°¾ã®'-'ã‚ˆã‚Šå‰ã‚’ArticleIDã¨ã¿ãªã™ */
 		strcpy(ArticleID, sp->KNPSID + 5);
 		*(strrchr(ArticleID, '-')) = '\0';
 
@@ -910,8 +899,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    }
 	}
 
-	/* ²òÀÏºÑ¤ß¤Î¾ì¹ç */
-	/* Ê¸Àá¹Ô */
+	/* è§£ææ¸ˆã¿ã®å ´åˆ */
+	/* æ–‡ç¯€è¡Œ */
 	else if (input_buffer[0] == '*') {
 	    if (sp->Mrph_num == 0) {
 		OptInput |= OPT_PARSED;
@@ -938,10 +927,10 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			       &(sp->Best_mgr->dpnd.type[sp->Bnst_num]),
 			       rest_buffer);
 
-	    /* Ê¸Àá¤ÎÆşÎÏ¤µ¤ì¤¿feature¤ò»È¤¦ */
+	    /* æ–‡ç¯€ã®å…¥åŠ›ã•ã‚ŒãŸfeatureã‚’ä½¿ã† */
 	    if (bnst_item == 3) {
 		if (OptReadFeature) { 
-		    /* feature¤ò<>¤Çsplit¤·¤Æf¤ËÊÑ´¹ */
+		    /* featureã‚’<>ã§splitã—ã¦fã«å¤‰æ› */
 		    feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
 		}
 	    }
@@ -954,7 +943,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    Bnst_start[sp->Mrph_num - homo_num] = 1;
 	    sp->Bnst_num++;
 	}
-	/* ¥¿¥°Ã±°Ì¹Ô */
+	/* ã‚¿ã‚°å˜ä½è¡Œ */
 	else if (input_buffer[0] == '+') {
 	    if (OptInput == OPT_RAW) {
 		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
@@ -966,10 +955,10 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			      &Tag_type[sp->Tag_num],
 			      rest_buffer);
 
-	    /* ¥¿¥°Ã±°Ì¤ÎÆşÎÏ¤µ¤ì¤¿feature¤ò»È¤¦ */
+	    /* ã‚¿ã‚°å˜ä½ã®å…¥åŠ›ã•ã‚ŒãŸfeatureã‚’ä½¿ã† */
 	    if (tag_item == 3) {
 		if (OptReadFeature) { 
-		    /* feature¤ò<>¤Çsplit¤·¤Æf¤ËÊÑ´¹ */
+		    /* featureã‚’<>ã§splitã—ã¦fã«å¤‰æ› */
 		    feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
 		}
 	    }
@@ -983,20 +972,20 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    sp->Tag_num++;
 	}
 
-	/* Ê¸Ëö */
+	/* æ–‡æœ« */
 
 	else if (str_eq(input_buffer, "EOS\n")) {
-	    /* ·ÁÂÖÁÇ¤¬°ì¤Ä¤â¤Ê¤¤¤È¤­ */
+	    /* å½¢æ…‹ç´ ãŒä¸€ã¤ã‚‚ãªã„ã¨ã */
 	    if (sp->Mrph_num == 0) {
 		return FALSE;
 	    }
 
-	    /* ¥¿¥°Ã±°Ì¤Î¤Ê¤¤²òÀÏºÑ¤Î¾ì¹ç */
+	    /* ã‚¿ã‚°å˜ä½ã®ãªã„è§£ææ¸ˆã®å ´åˆ */
 	    if ((OptInput & OPT_PARSED) && sp->Tag_num == 0) {
 		OptInput |= OPT_INPUT_BNST;
 	    }
 
-	    if (homo_num) {	/* Á°¤ËÆ±·Á°ÛµÁ¸ì¥»¥Ã¥È¤¬¤¢¤ì¤Ğ½èÍı¤¹¤ë */
+	    if (homo_num) {	/* å‰ã«åŒå½¢ç•°ç¾©èªã‚»ãƒƒãƒˆãŒã‚ã‚Œã°å‡¦ç†ã™ã‚‹ */
 		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
 		m_ptr -= homo_num;
@@ -1005,13 +994,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 		homo_num = 0;
 	    }
-	    else if (sp->Mrph_num > 0) { /* Æ±·Á°ÛµÁ¸ì¤¬¤Ê¤¤¤È¤­¤ËÀµµ¬²½ÂåÉ½É½µ­¤òÉÕÍ¿ */
+	    else if (sp->Mrph_num > 0) { /* åŒå½¢ç•°ç¾©èªãŒãªã„ã¨ãã«æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä»˜ä¸ */
 		rn2canonical_rn(m_ptr - 1);
 	    }
 
-	    /* KNPSID¤¬¤Ê¤¤¤È¤­(# S-ID¹Ô¤¬¤Ê¤¤¤È¤­)¤ÏÉÕÍ¿ */
+	    /* KNPSIDãŒãªã„ã¨ã(# S-IDè¡ŒãŒãªã„ã¨ã)ã¯ä»˜ä¸ */
 	    if (!sp->KNPSID) {
-		/* "S-ID:"(5¥Ğ¥¤¥È), log(Ê¸¿ô)/log(10) + 1¥Ğ¥¤¥È, ³ç¸ÌID(3¥Ğ¥¤¥È), +1¥Ğ¥¤¥È */
+		/* "S-ID:"(5ãƒã‚¤ãƒˆ), log(æ–‡æ•°)/log(10) + 1ãƒã‚¤ãƒˆ, æ‹¬å¼§ID(3ãƒã‚¤ãƒˆ), +1ãƒã‚¤ãƒˆ */
 		sp->KNPSID = (char *)malloc_data(log(sp->Sen_num) / log(10) + 10, "read_mrph");
 		sprintf(sp->KNPSID, "S-ID:%d", sp->Sen_num);
 	    }
@@ -1019,11 +1008,11 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    return TRUE;
 	}
 
-	/* ÄÌ¾ï¤Î·ÁÂÖÁÇ */
+	/* é€šå¸¸ã®å½¢æ…‹ç´  */
 
 	else {
 
-	    /* Æ±·Á°ÛµÁ¸ì¤«¤É¤¦¤« */
+	    /* åŒå½¢ç•°ç¾©èªã‹ã©ã†ã‹ */
 	    if (input_buffer[0] == '@' && input_buffer[1] == ' ' && input_buffer[2] != '@') {
 		homo_flag = 1;
 	    }
@@ -1033,8 +1022,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    
 	    if (homo_flag == 0 && homo_num) {
 
-		/* Æ±·Á°ÛµÁ¸ì¥Ş¡¼¥¯¤¬¤Ê¤¯¡¤Á°¤ËÆ±·Á°ÛµÁ¸ì¥»¥Ã¥È¤¬¤¢¤ì¤Ğ
-	           lexical_disambiguation¤ò¸Æ¤ó¤Ç½èÍı */		   
+		/* åŒå½¢ç•°ç¾©èªãƒãƒ¼ã‚¯ãŒãªãï¼Œå‰ã«åŒå½¢ç•°ç¾©èªã‚»ãƒƒãƒˆãŒã‚ã‚Œã°
+	           lexical_disambiguationã‚’å‘¼ã‚“ã§å‡¦ç† */		   
 
 		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
 		sp->Mrph_num -= homo_num;
@@ -1044,21 +1033,21 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 		homo_num = 0;
 	    }
-	    else if (sp->Mrph_num > 0) { /* Æ±·Á°ÛµÁ¸ì¤¬¤Ê¤¤¤È¤­¤ËÀµµ¬²½ÂåÉ½É½µ­¤òÉÕÍ¿ */
+	    else if (sp->Mrph_num > 0) { /* åŒå½¢ç•°ç¾©èªãŒãªã„ã¨ãã«æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä»˜ä¸ */
 		rn2canonical_rn(m_ptr - 1);
 	    }
 
-	    /* ºÇÂç¿ô¤ò±Û¤¨¤Ê¤¤¤è¤¦¤Ë¥Á¥§¥Ã¥¯ */
+	    /* æœ€å¤§æ•°ã‚’è¶Šãˆãªã„ã‚ˆã†ã«ãƒã‚§ãƒƒã‚¯ */
 	    if (sp->Mrph_num >= MRPH_MAX) {
 		fprintf(stderr, ";; Too many mrph (%s %s%s...)!\n", 
 			sp->Comment ? sp->Comment : "", sp->mrph_data, sp->mrph_data+1);
 		return readtoeos(fp);
 	    }
 
-	    /* ·ÁÂÖÁÇ¾ğÊó :
-	       ¸ì×Ã(³èÍÑ·Á) ÆÉ¤ß ¸ì×Ã(¸¶·¿) 
-	       ÉÊ»ì(+ÈÖ¹æ) ºÙÊ¬Îà(+ÈÖ¹æ) ³èÍÑ·¿(+ÈÖ¹æ) ³èÍÑ·Á(+ÈÖ¹æ) 
-	       °ÕÌ£¾ğÊó
+	    /* å½¢æ…‹ç´ æƒ…å ± :
+	       èªå½™(æ´»ç”¨å½¢) èª­ã¿ èªå½™(åŸå‹) 
+	       å“è©(+ç•ªå·) ç´°åˆ†é¡(+ç•ªå·) æ´»ç”¨å‹(+ç•ªå·) æ´»ç”¨å½¢(+ç•ªå·) 
+	       æ„å‘³æƒ…å ±
 	    */
 
 	    offset = homo_flag ? 2 : 0;
@@ -1080,16 +1069,16 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		  // treat different punc as different type
 		  if (!strcmp(Chi_word_type[m_ptr->Hinshi], "punc")) {
-		    if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "¡¤")) {
+		    if (!strcmp(m_ptr->Goi, ",") || !strcmp(m_ptr->Goi, "ï¼Œ")) {
 		      strcpy(m_ptr->Type, "punc");
 		    }
-		    else if (!strcmp(m_ptr->Goi, "¡§") || !strcmp(m_ptr->Goi, ":")) {
+		    else if (!strcmp(m_ptr->Goi, "ï¼š") || !strcmp(m_ptr->Goi, ":")) {
 		      strcpy(m_ptr->Type, "punc");
 		    }
-		    else if (!strcmp(m_ptr->Goi, "¡¢")) {
+		    else if (!strcmp(m_ptr->Goi, "ã€")) {
 		      strcpy(m_ptr->Type, "punc");
 		    }
-		    else if (!strcmp(m_ptr->Goi, "¡¨")) {
+		    else if (!strcmp(m_ptr->Goi, "ï¼›")) {
 		      strcpy(m_ptr->Type, "punc");
 		    }
 		    else {
@@ -1104,24 +1093,24 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	    if (mrph_item == 12) {
 		char *imip, *cp, *rep_buf;
-		/* °ÕÌ£¾ğÊó¤òfeature¤Ø */
+		/* æ„å‘³æƒ…å ±ã‚’featureã¸ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
 
-		    /* ÄÌ¾ï "" ¤Ç³ç¤é¤ì¤Æ¤¤¤ë */
+		    /* é€šå¸¸ "" ã§æ‹¬ã‚‰ã‚Œã¦ã„ã‚‹ */
 		    if (rest_buffer[0] == '\"') {
 			imip = &rest_buffer[1];
 			if (cp = strchr(imip, '\"')) {
 			    *cp = '\0';
 			}
-			/* µ¿»÷ÂåÉ½É½µ­¤òÄÉ²Ã¤¹¤ë */
-			if (strcmp(Hinshi_str, "ÆÃ¼ì") && strcmp(Hinshi_str, "È½Äê»ì") && 
-			    strcmp(Hinshi_str, "½õÆ°»ì") && strcmp(Hinshi_str, "½õ»ì") && 
-			    !strstr(imip, "ÂåÉ½É½µ­")) {
-			    sprintf(m_ptr->Imi, "\"%s\"", imip); /* make_mrph_rn()¤Ë¤ª¤±¤ë»²¾ÈÍÑ */
+			/* ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ã‚’è¿½åŠ ã™ã‚‹ */
+			if (strcmp(Hinshi_str, "ç‰¹æ®Š") && strcmp(Hinshi_str, "åˆ¤å®šè©") && 
+			    strcmp(Hinshi_str, "åŠ©å‹•è©") && strcmp(Hinshi_str, "åŠ©è©") && 
+			    !strstr(imip, "ä»£è¡¨è¡¨è¨˜")) {
+			    sprintf(m_ptr->Imi, "\"%s\"", imip); /* make_mrph_rn()ã«ãŠã‘ã‚‹å‚ç…§ç”¨ */
 			    rep_buf = make_mrph_rn(m_ptr);
-			    if (strlen(imip) + strlen(" µ¿»÷ÂåÉ½É½µ­ ÂåÉ½É½µ­:") +
+			    if (strlen(imip) + strlen(" ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ ä»£è¡¨è¡¨è¨˜:") +
 				strlen(rep_buf) + 2 < DATA_LEN) {
-				strcat(imip, " µ¿»÷ÂåÉ½É½µ­ ÂåÉ½É½µ­:");
+				strcat(imip, " ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ ä»£è¡¨è¡¨è¨˜:");
 				strcat(imip, rep_buf);
 			    }
 			    free(rep_buf);
@@ -1138,15 +1127,15 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 		    imi2feature(imip, m_ptr);
 		}
-		else { /* °ÕÌ£¾ğÊó¤¬NIL¤Î¤È¤­ */
-		    /* µ¿»÷ÂåÉ½É½µ­¤òÄÉ²Ã¤¹¤ë */
+		else { /* æ„å‘³æƒ…å ±ãŒNILã®ã¨ã */
+		    /* ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ã‚’è¿½åŠ ã™ã‚‹ */
 		    rep_buf = make_mrph_rn(m_ptr);			
-		    if (strcmp(Hinshi_str, "ÆÃ¼ì") && strcmp(Hinshi_str, "È½Äê»ì") && 
-			strcmp(Hinshi_str, "½õÆ°»ì") &&	strcmp(Hinshi_str, "½õ»ì") && 
-			strlen(" µ¿»÷ÂåÉ½É½µ­ ÂåÉ½É½µ­:") + strlen(rep_buf) + 1 < DATA_LEN) {
+		    if (strcmp(Hinshi_str, "ç‰¹æ®Š") && strcmp(Hinshi_str, "åˆ¤å®šè©") && 
+			strcmp(Hinshi_str, "åŠ©å‹•è©") &&	strcmp(Hinshi_str, "åŠ©è©") && 
+			strlen(" ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ ä»£è¡¨è¡¨è¨˜:") + strlen(rep_buf) + 1 < DATA_LEN) {
 			imip = rest_buffer;		    
 			*imip = '\0';
-			strcat(imip, "µ¿»÷ÂåÉ½É½µ­ ÂåÉ½É½µ­:");
+			strcat(imip, "ç–‘ä¼¼ä»£è¡¨è¡¨è¨˜ ä»£è¡¨è¡¨è¨˜:");
 			strcat(imip, rep_buf);
 			sprintf(m_ptr->Imi, "\"%s\"", imip);
 			imi2feature(imip, m_ptr);
@@ -1175,9 +1164,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    }
 
 	    /* clear_feature(&(m_ptr->f)); 
-	       main¤ÎÊ¸¤´¤È¤Î¥ë¡¼¥×¤ÎÀèÆ¬¤Ç½èÍı¤Ë°ÜÆ° */
+	       mainã®æ–‡ã”ã¨ã®ãƒ«ãƒ¼ãƒ—ã®å…ˆé ­ã§å‡¦ç†ã«ç§»å‹• */
 
-	    /* Æ±·Á°ÛµÁ¸ì¤Ï°ìÃ¶ sp->mrph_data ¤Ë¤¤¤ì¤ë */
+	    /* åŒå½¢ç•°ç¾©èªã¯ä¸€æ—¦ sp->mrph_data ã«ã„ã‚Œã‚‹ */
 	    if (homo_flag) homo_num++;
 
 	    sp->Mrph_num++;
@@ -1192,21 +1181,21 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 {
     char org_buffer[DATA_LEN], *cp;
 
-    /* ¤â¤È¤Î·ÁÂÖÁÇ¾ğÊó¤ò°ÕÌ£¾ğÊó¤ª¤è¤Ófeature¤È¤·¤ÆÊİÂ¸ */
+    /* ã‚‚ã¨ã®å½¢æ…‹ç´ æƒ…å ±ã‚’æ„å‘³æƒ…å ±ãŠã‚ˆã³featureã¨ã—ã¦ä¿å­˜ */
 
-    sprintf(org_buffer, "ÉÊ»ìÊÑ¹¹:%s-%s-%s-%d-%d-%d-%d-%s", 
+    sprintf(org_buffer, "å“è©å¤‰æ›´:%s-%s-%s-%d-%d-%d-%d-%s", 
 	    m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 	    m_ptr->Hinshi, m_ptr->Bunrui, 
 	    m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei, m_ptr->Imi);
-    assign_cfeature(&(m_ptr->f), org_buffer, FALSE); /* feature¤Ø */
+    assign_cfeature(&(m_ptr->f), org_buffer, FALSE); /* featureã¸ */
 
     if ((cp = strrchr(m_ptr->Imi, '\"'))) {
 	*cp = '\0';
-	sprintf(org_buffer, " ÉÊ»ìÊÑ¹¹:%s-%s-%s-%d-%d-%d-%d\"", /* ¸µ¤ÎÉÊ»ì¤Î°ÕÌ£¾ğÊó¤ÏÉÕÍ¿¤·¤Ê¤¤ */
+	sprintf(org_buffer, " å“è©å¤‰æ›´:%s-%s-%s-%d-%d-%d-%d\"", /* å…ƒã®å“è©ã®æ„å‘³æƒ…å ±ã¯ä»˜ä¸ã—ãªã„ */
 		m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
 		m_ptr->Hinshi, m_ptr->Bunrui, 
 		m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
-	strcat(m_ptr->Imi, org_buffer); /* Imi¤Ø */
+	strcat(m_ptr->Imi, org_buffer); /* Imiã¸ */
     }
 }
 
@@ -1217,15 +1206,15 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
     int i, offset;
     char pre[IMI_MAX], str1[IMI_MAX], str2[IMI_MAX], post[IMI_MAX], orig_rep[IMI_MAX], *cp;
 
-    /* ¡ÖÂåÉ½É½µ­:Æ°¤¯/¤¦¤´¤¯¡×->¡ÖÂåÉ½É½µ­:Æ°¤­/¤¦¤´¤­v¡× */
+    /* ã€Œä»£è¡¨è¡¨è¨˜:å‹•ã/ã†ã”ãã€->ã€Œä»£è¡¨è¡¨è¨˜:å‹•ã/ã†ã”ãvã€ */
 
-    /* ³èÍÑ¤¹¤ëÉÊ»ì¤Ç¤Ï¤Ê¤¤¾ì¹ç */
+    /* æ´»ç”¨ã™ã‚‹å“è©ã§ã¯ãªã„å ´åˆ */
     if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
 	return;
     }
 
-    if (cp = strstr(m_ptr->Imi, "ÂåÉ½É½µ­:")) {
-	cp += strlen("ÂåÉ½É½µ­:");
+    if (cp = strstr(m_ptr->Imi, "ä»£è¡¨è¡¨è¨˜:")) {
+	cp += strlen("ä»£è¡¨è¡¨è¨˜:");
 	sscanf(cp, "%[^/]", str1);
 
 	pre[0] = '\0';
@@ -1237,34 +1226,34 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	offset += strlen(str2);
 	strcat(post, cp + offset);
 
-	strcpy(orig_rep, "ÂåÉ½É½µ­ÊÑ¹¹:");
-	strncat(orig_rep, cp, offset); /* ¤â¤È¤ÎÂåÉ½É½µ­¤òÊİ»ı */
+	strcpy(orig_rep, "ä»£è¡¨è¡¨è¨˜å¤‰æ›´:");
+	strncat(orig_rep, cp, offset); /* ã‚‚ã¨ã®ä»£è¡¨è¡¨è¨˜ã‚’ä¿æŒ */
     }
     else {
 	return;
     }
 
-    /* ¸ì´´¤Ë¤¹¤ë */
+    /* èªå¹¹ã«ã™ã‚‹ */
     str1[strlen(str1) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
     str2[strlen(str2) - strlen(Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi)] = '\0';
 
-    /* ³èÍÑ·Á¤ò¤Ä¤±¤ë */
+    /* æ´»ç”¨å½¢ã‚’ã¤ã‘ã‚‹ */
     strcat(str1, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
     strcat(str2, Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi);
 
-    /* °ÕÌ£¾ğÊó¤Î½¤Àµ: ½¤Àµ¤·¤¿ÂåÉ½É½µ­¤È¤â¤È¤ÎÂåÉ½É½µ­ */
+    /* æ„å‘³æƒ…å ±ã®ä¿®æ­£: ä¿®æ­£ã—ãŸä»£è¡¨è¡¨è¨˜ã¨ã‚‚ã¨ã®ä»£è¡¨è¡¨è¨˜ */
     if (strlen(pre) + strlen(str1) + strlen(str2) + strlen(orig_rep) + strlen(post) + 4 <= IMI_MAX) {
 	sprintf(m_ptr->Imi, "%s%s/%s%c %s%s", pre, str1, str2, suffix_char, orig_rep, post);
     }
 
-    /* feature¤Î½¤Àµ */
+    /* featureã®ä¿®æ­£ */
     if (modify_feature_flag) {
-	if (cp = check_feature(m_ptr->f, "ÂåÉ½É½µ­")) { /* ¤â¤È¤ÎÂåÉ½É½µ­¤òfeature¤ËÊİÂ¸ */
-	    cp += strlen("ÂåÉ½É½µ­:");
-	    sprintf(pre, "ÂåÉ½É½µ­ÊÑ¹¹:%s", cp);
+	if (cp = check_feature(m_ptr->f, "ä»£è¡¨è¡¨è¨˜")) { /* ã‚‚ã¨ã®ä»£è¡¨è¡¨è¨˜ã‚’featureã«ä¿å­˜ */
+	    cp += strlen("ä»£è¡¨è¡¨è¨˜:");
+	    sprintf(pre, "ä»£è¡¨è¡¨è¨˜å¤‰æ›´:%s", cp);
 	    assign_cfeature(&(m_ptr->f), pre, FALSE);
 	}
-	sprintf(pre, "ÂåÉ½É½µ­:%s/%s%c", str1, str2, suffix_char); /* ¿·¤·¤¤ÂåÉ½É½µ­¤òfeature¤Ø */
+	sprintf(pre, "ä»£è¡¨è¡¨è¨˜:%s/%s%c", str1, str2, suffix_char); /* æ–°ã—ã„ä»£è¡¨è¡¨è¨˜ã‚’featureã¸ */
 	assign_cfeature(&(m_ptr->f), pre, FALSE);
     }
 }
@@ -1297,8 +1286,8 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 					 m_ptr->Katuyou_Kata);
     }
     
-    /* ÉÊ»ìÊÑ¹¹¤¬³èÍÑ¤Ê¤·¤Î¾ì¹ç¤Ï¸¶·¿¤âÊÑ¹¹¤¹¤ë */
-    /* ¢§ µÕ(³èÍÑ¤Ê¤·¢ª³èÍÑ¤¢¤ê)¤Ï°·¤Ã¤Æ¤¤¤Ê¤¤ */
+    /* å“è©å¤‰æ›´ãŒæ´»ç”¨ãªã—ã®å ´åˆã¯åŸå‹ã‚‚å¤‰æ›´ã™ã‚‹ */
+    /* â–¼ é€†(æ´»ç”¨ãªã—â†’æ´»ç”¨ã‚ã‚Š)ã¯æ‰±ã£ã¦ã„ãªã„ */
     if (m_ptr->Katuyou_Kata == 0) {
 	strcpy(m_ptr->Goi, m_ptr->Goi2);
     }
@@ -1311,7 +1300,7 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
     FEATURE **fpp = &(m_ptr->f), *ret_fp = NULL;
     MRPH_DATA m;
 
-    /* ALTÃæ¤Î¡ÖÂåÉ½É½µ­:Æ°¤¯/¤¦¤´¤¯¡×->¡ÖÂåÉ½É½µ­:Æ°¤­/¤¦¤´¤­v¡× */
+    /* ALTä¸­ã®ã€Œä»£è¡¨è¡¨è¨˜:å‹•ã/ã†ã”ãã€->ã€Œä»£è¡¨è¡¨è¨˜:å‹•ã/ã†ã”ãvã€ */
 
     m.f = NULL;
     while (*fpp) {
@@ -1324,7 +1313,7 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	    change_one_mrph_rep(&m, 0, 'v');
 	    change_one_mrph(&m, f);
 	    assign_feature_alt_mrph(&ret_fp, &m);
-	    free((*fpp)->cp); /* ¸Å¤¤ALT¤Ïºï½ü */
+	    free((*fpp)->cp); /* å¤ã„ALTã¯å‰Šé™¤ */
 	    *fpp = (*fpp)->next;
 	}
 	else {
@@ -1332,7 +1321,7 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	}
     }
 
-    /* ¿·¤·¤¤ALT */
+    /* æ–°ã—ã„ALT */
     if (ret_fp) {
 	append_feature(&(m_ptr->f), ret_fp);
     }
@@ -1342,11 +1331,11 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 	    void change_mrph(MRPH_DATA *m_ptr, FEATURE *f)
 /*==================================================================*/
 {
-    change_one_mrph_imi(m_ptr); /* °ÕÌ£¾ğÊó¡¢feature¤ò½¤Àµ */
-    change_one_mrph_rep(m_ptr, 1, 'v'); /* ÂåÉ½É½µ­¤ò½¤Àµ */
-    change_one_mrph(m_ptr, f); /* ÉÊ»ì¤Ê¤É¤ò½¤Àµ */
+    change_one_mrph_imi(m_ptr); /* æ„å‘³æƒ…å ±ã€featureã‚’ä¿®æ­£ */
+    change_one_mrph_rep(m_ptr, 1, 'v'); /* ä»£è¡¨è¡¨è¨˜ã‚’ä¿®æ­£ */
+    change_one_mrph(m_ptr, f); /* å“è©ãªã©ã‚’ä¿®æ­£ */
 
-    change_alt_mrph(m_ptr, f); /* ALT¤ÎÃæ¤â½¤Àµ */
+    change_alt_mrph(m_ptr, f); /* ALTã®ä¸­ã‚‚ä¿®æ­£ */
 }
 
 /*==================================================================*/
@@ -1384,26 +1373,26 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 				int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
-    /* ¤¢¤ëÈÏ°Ï(Ê¸Á´ÂÎ,Ê¸ÀáÆâ¤Ê¤É)¤ËÂĞ¤·¤Æ·ÁÂÖÁÇ¤Î¥Ş¥Ã¥Á¥ó¥°¤ò¹Ô¤¦ */
+    /* ã‚ã‚‹ç¯„å›²(æ–‡å…¨ä½“,æ–‡ç¯€å†…ãªã©)ã«å¯¾ã—ã¦å½¢æ…‹ç´ ã®ãƒãƒƒãƒãƒ³ã‚°ã‚’è¡Œã† */
 
     int i, j, k, match_length, feature_break_mode;
     MrphRule *r_ptr;
     MRPH_DATA *m_ptr;
 
-    /* µÕÊı¸ş¤ËÅ¬ÍÑ¤¹¤ë¾ì¹ç¤Ï¥Ç¡¼¥¿¤Î¤ª¤·¤ê¤ò¤µ¤·¤Æ¤ª¤¯É¬Í×¤¬¤¢¤ë */
+    /* é€†æ–¹å‘ã«é©ç”¨ã™ã‚‹å ´åˆã¯ãƒ‡ãƒ¼ã‚¿ã®ãŠã—ã‚Šã‚’ã•ã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ */
     if (direction == RtoL)
 	s_m_ptr += m_length-1;
     
     /* MRM
-       	1.self_pattern¤ÎÀèÆ¬¤Î·ÁÂÖÁÇ°ÌÃÖ
-	  2.¥ë¡¼¥ë
-	    3.self_pattern¤ÎËöÈø¤Î·ÁÂÖÁÇ°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpmrphrule_match¤ÎÃæ)
+       	1.self_patternã®å…ˆé ­ã®å½¢æ…‹ç´ ä½ç½®
+	  2.ãƒ«ãƒ¼ãƒ«
+	    3.self_patternã®æœ«å°¾ã®å½¢æ…‹ç´ ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpmrphrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹
 	break_mode == RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤·¡¤self_patternÄ¹¤À¤±1¤Î¥ë¡¼¥×¤ò¿Ê¤á¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã—ï¼Œself_patterné•·ã ã‘1ã®ãƒ«ãƒ¼ãƒ—ã‚’é€²ã‚ã‚‹
      */
 
     if (mode == RLOOP_MRM) {
@@ -1433,13 +1422,13 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
     }
 
     /* RMM
-       	1.¥ë¡¼¥ë
-	  2.self_pattern¤ÎÀèÆ¬¤Î·ÁÂÖÁÇ°ÌÃÖ
-	    3.self_pattern¤ÎËöÈø¤Î·ÁÂÖÁÇ°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpmrphrule_match¤ÎÃæ)
+       	1.ãƒ«ãƒ¼ãƒ«
+	  2.self_patternã®å…ˆé ­ã®å½¢æ…‹ç´ ä½ç½®
+	    3.self_patternã®æœ«å°¾ã®å½¢æ…‹ç´ ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpmrphrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë (¢¨¤³¤Î»È¤¤Êı¤Ï¹Í¤¨¤Ë¤¯¤¤¤¬)
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹ (â€»ã“ã®ä½¿ã„æ–¹ã¯è€ƒãˆã«ãã„ãŒ)
     */
 
     else if (mode == RLOOP_RMM) {
@@ -1474,26 +1463,26 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 			int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
-    /* ¤¢¤ëÈÏ°Ï(Ê¸Á´ÂÎ,Ê¸ÀáÆâ¤Ê¤É)¤ËÂĞ¤·¤Æ¥¿¥°Ã±°Ì¤Î¥Ş¥Ã¥Á¥ó¥°¤ò¹Ô¤¦ */
+    /* ã‚ã‚‹ç¯„å›²(æ–‡å…¨ä½“,æ–‡ç¯€å†…ãªã©)ã«å¯¾ã—ã¦ã‚¿ã‚°å˜ä½ã®ãƒãƒƒãƒãƒ³ã‚°ã‚’è¡Œã† */
 
     int i, j, k, match_length, feature_break_mode;
     BnstRule *r_ptr;
     TAG_DATA *b_ptr;
 
-    /* µÕÊı¸ş¤ËÅ¬ÍÑ¤¹¤ë¾ì¹ç¤Ï¥Ç¡¼¥¿¤Î¤ª¤·¤ê¤ò¤µ¤·¤Æ¤ª¤¯É¬Í×¤¬¤¢¤ë */
+    /* é€†æ–¹å‘ã«é©ç”¨ã™ã‚‹å ´åˆã¯ãƒ‡ãƒ¼ã‚¿ã®ãŠã—ã‚Šã‚’ã•ã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ */
     if (direction == RtoL)
 	s_b_ptr += b_length-1;
     
     /* MRM
-       	1.self_pattern¤ÎÀèÆ¬¤ÎÊ¸Àá°ÌÃÖ
-	  2.¥ë¡¼¥ë
-	    3.self_pattern¤ÎËöÈø¤ÎÊ¸Àá°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpbnstrule_match¤ÎÃæ)
+       	1.self_patternã®å…ˆé ­ã®æ–‡ç¯€ä½ç½®
+	  2.ãƒ«ãƒ¼ãƒ«
+	    3.self_patternã®æœ«å°¾ã®æ–‡ç¯€ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpbnstrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹
 	break_mode == RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤·¡¤self_patternÄ¹¤À¤±1¤Î¥ë¡¼¥×¤ò¿Ê¤á¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã—ï¼Œself_patterné•·ã ã‘1ã®ãƒ«ãƒ¼ãƒ—ã‚’é€²ã‚ã‚‹
      */
 
     if (mode == RLOOP_MRM) {
@@ -1508,7 +1497,7 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
-			if (also_assign_flag) { /* Â°¤¹¤ëÊ¸Àá¤Ë¤âÉÕÍ¿¤¹¤ë¾ì¹ç */
+			if (also_assign_flag) { /* å±ã™ã‚‹æ–‡ç¯€ã«ã‚‚ä»˜ä¸ã™ã‚‹å ´åˆ */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
 					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
@@ -1528,13 +1517,13 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     /* RMM
-       	1.¥ë¡¼¥ë
-	  2.self_pattern¤ÎÀèÆ¬¤ÎÊ¸Àá°ÌÃÖ
-	    3.self_pattern¤ÎËöÈø¤ÎÊ¸Àá°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpbnstrule_match¤ÎÃæ)
+       	1.ãƒ«ãƒ¼ãƒ«
+	  2.self_patternã®å…ˆé ­ã®æ–‡ç¯€ä½ç½®
+	    3.self_patternã®æœ«å°¾ã®æ–‡ç¯€ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpbnstrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë (¢¨¤³¤Î»È¤¤Êı¤Ï¹Í¤¨¤Ë¤¯¤¤¤¬)
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹ (â€»ã“ã®ä½¿ã„æ–¹ã¯è€ƒãˆã«ãã„ãŒ)
     */
 
     else if (mode == RLOOP_RMM) {
@@ -1550,7 +1539,7 @@ void assign_tag_feature(BnstRule *s_r_ptr, int r_size,
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
-			if (also_assign_flag) { /* Â°¤¹¤ëÊ¸Àá¤Ë¤âÉÕÍ¿¤¹¤ë¾ì¹ç */
+			if (also_assign_flag) { /* å±ã™ã‚‹æ–‡ç¯€ã«ã‚‚ä»˜ä¸ã™ã‚‹å ´åˆ */
 			    assign_feature(&((s_b_ptr+i*direction+k)->b_ptr->f), 
 					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
@@ -1574,26 +1563,26 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 			 int also_assign_flag, int temp_assign_flag)
 /*==================================================================*/
 {
-    /* ¤¢¤ëÈÏ°Ï(Ê¸Á´ÂÎ,Ê¸ÀáÆâ¤Ê¤É)¤ËÂĞ¤·¤ÆÊ¸Àá¤Î¥Ş¥Ã¥Á¥ó¥°¤ò¹Ô¤¦ */
+    /* ã‚ã‚‹ç¯„å›²(æ–‡å…¨ä½“,æ–‡ç¯€å†…ãªã©)ã«å¯¾ã—ã¦æ–‡ç¯€ã®ãƒãƒƒãƒãƒ³ã‚°ã‚’è¡Œã† */
 
     int i, j, k, match_length, feature_break_mode;
     BnstRule *r_ptr;
     BNST_DATA *b_ptr;
 
-    /* µÕÊı¸ş¤ËÅ¬ÍÑ¤¹¤ë¾ì¹ç¤Ï¥Ç¡¼¥¿¤Î¤ª¤·¤ê¤ò¤µ¤·¤Æ¤ª¤¯É¬Í×¤¬¤¢¤ë */
+    /* é€†æ–¹å‘ã«é©ç”¨ã™ã‚‹å ´åˆã¯ãƒ‡ãƒ¼ã‚¿ã®ãŠã—ã‚Šã‚’ã•ã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ */
     if (direction == RtoL)
 	s_b_ptr += b_length-1;
     
     /* MRM
-       	1.self_pattern¤ÎÀèÆ¬¤ÎÊ¸Àá°ÌÃÖ
-	  2.¥ë¡¼¥ë
-	    3.self_pattern¤ÎËöÈø¤ÎÊ¸Àá°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpbnstrule_match¤ÎÃæ)
+       	1.self_patternã®å…ˆé ­ã®æ–‡ç¯€ä½ç½®
+	  2.ãƒ«ãƒ¼ãƒ«
+	    3.self_patternã®æœ«å°¾ã®æ–‡ç¯€ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpbnstrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹
 	break_mode == RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤·¡¤self_patternÄ¹¤À¤±1¤Î¥ë¡¼¥×¤ò¿Ê¤á¤ë
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã—ï¼Œself_patterné•·ã ã‘1ã®ãƒ«ãƒ¼ãƒ—ã‚’é€²ã‚ã‚‹
      */
 
     if (mode == RLOOP_MRM) {
@@ -1608,7 +1597,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
-			if (also_assign_flag) { /* head¤Î¥¿¥°Ã±°Ì¤Ë¤âÉÕÍ¿¤¹¤ë¾ì¹ç */
+			if (also_assign_flag) { /* headã®ã‚¿ã‚°å˜ä½ã«ã‚‚ä»˜ä¸ã™ã‚‹å ´åˆ */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
 					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
@@ -1628,13 +1617,13 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
     }
 
     /* RMM
-       	1.¥ë¡¼¥ë
-	  2.self_pattern¤ÎÀèÆ¬¤ÎÊ¸Àá°ÌÃÖ
-	    3.self_pattern¤ÎËöÈø¤ÎÊ¸Àá°ÌÃÖ
-	¤Î½ç¤Ë¥ë¡¼¥×¤¬²ó¤ë (3¤Î¥ë¡¼¥×¤Ïregexpbnstrule_match¤ÎÃæ)
+       	1.ãƒ«ãƒ¼ãƒ«
+	  2.self_patternã®å…ˆé ­ã®æ–‡ç¯€ä½ç½®
+	    3.self_patternã®æœ«å°¾ã®æ–‡ç¯€ä½ç½®
+	ã®é †ã«ãƒ«ãƒ¼ãƒ—ãŒå›ã‚‹ (3ã®ãƒ«ãƒ¼ãƒ—ã¯regexpbnstrule_matchã®ä¸­)
 	
 	break_mode == RLOOP_BREAK_NORMAL||RLOOP_BREAK_JUMP
-	    2¤Î¥ì¥Ù¥ë¤Çbreak¤¹¤ë (¢¨¤³¤Î»È¤¤Êı¤Ï¹Í¤¨¤Ë¤¯¤¤¤¬)
+	    2ã®ãƒ¬ãƒ™ãƒ«ã§breakã™ã‚‹ (â€»ã“ã®ä½¿ã„æ–¹ã¯è€ƒãˆã«ãã„ãŒ)
     */
 
     else if (mode == RLOOP_RMM) {
@@ -1650,7 +1639,7 @@ void assign_bnst_feature(BnstRule *s_r_ptr, int r_size,
 		    for (k = 0; k < match_length; k++) {
 			assign_feature(&((s_b_ptr+i*direction+k)->f), 
 				       &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
-			if (also_assign_flag) { /* head¤Î¥¿¥°Ã±°Ì¤Ë¤âÉÕÍ¿¤¹¤ë¾ì¹ç */
+			if (also_assign_flag) { /* headã®ã‚¿ã‚°å˜ä½ã«ã‚‚ä»˜ä¸ã™ã‚‹å ´åˆ */
 			    assign_feature(&(((s_b_ptr+i*direction+k)->tag_ptr + (s_b_ptr+i*direction+k)->tag_num - 1)->f), 
 					   &(r_ptr->f), s_b_ptr+i*direction, k, match_length - k, temp_assign_flag);
 			}
@@ -1674,7 +1663,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     int i;
     void (*assign_function)();
 
-    /* ·ÁÂÖÁÇ, ¥¿¥°Ã±°Ì, Ê¸Àá¤Î¾ì¹çÊ¬¤± */
+    /* å½¢æ…‹ç´ , ã‚¿ã‚°å˜ä½, æ–‡ç¯€ã®å ´åˆåˆ†ã‘ */
     if (flag == MorphRuleType || flag == PreProcessMorphRuleType || flag == NeMorphRuleType) {
 	assign_function = assign_mrph_feature;
     }
@@ -1738,7 +1727,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     for (i = 0, cp = b_ptr->SCASE_code; i < SCASE_CODE_SIZE; i++, cp++) *cp = 0;
 
     /* clear_feature(&(b_ptr->f));
-       main¤ÎÊ¸¤´¤È¤Î¥ë¡¼¥×¤ÎÀèÆ¬¤Ç½èÍı¤Ë°ÜÆ° */
+       mainã®æ–‡ã”ã¨ã®ãƒ«ãƒ¼ãƒ—ã®å…ˆé ­ã§å‡¦ç†ã«ç§»å‹• */
 
     return b_ptr;
 }
@@ -1751,9 +1740,9 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     ptr->Jiritu_Go[0] = '\0';
 
-    /* ¼ç¼­¤è¤êÁ°¤ÎÉôÊ¬¤ÇÀÜÆ¬¼­°Ê³°¤ò¼«Î©¸ì¤È¤·¤Æ¤ª¤¤¤Æ¤ª¤¯ */
+    /* ä¸»è¾ã‚ˆã‚Šå‰ã®éƒ¨åˆ†ã§æ¥é ­è¾ä»¥å¤–ã‚’è‡ªç«‹èªã¨ã—ã¦ãŠã„ã¦ãŠã */
     for (mp = ptr->mrph_ptr; mp <= ptr->head_ptr; mp++) {
-	if (!check_feature(mp->f, "ÀÜÆ¬")) {
+	if (!check_feature(mp->f, "æ¥é ­")) {
 	    if (strlen(ptr->Jiritu_Go) + strlen(mp->Goi) + 2 > BNST_LENGTH_MAX) {
 		fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
 			sp->Comment ? sp->Comment : "", ptr->Jiritu_Go);
@@ -1772,27 +1761,27 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     if (ptr->type == IS_TAG_DATA) {
 	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	    if (check_feature((ptr->mrph_ptr + i)->f, "ÆâÍÆ¸ì") || 
-		check_feature((ptr->mrph_ptr + i)->f, "½àÆâÍÆ¸ì")) {
+	    if (check_feature((ptr->mrph_ptr + i)->f, "å†…å®¹èª") || 
+		check_feature((ptr->mrph_ptr + i)->f, "æº–å†…å®¹èª")) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
 		return;
 	    }
 	}
     }
-    /* Ê¸Àá¤Î¤È¤­¤Ï·Á¼°Ì¾»ì¡Ö¤Î¡×¤òhead¤È¤·¤Ê¤¤ */
+    /* æ–‡ç¯€ã®ã¨ãã¯å½¢å¼åè©ã€Œã®ã€ã‚’headã¨ã—ãªã„ */
     else {
 	for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	    if (!check_feature((ptr->mrph_ptr + i)->f, "ÆÃ¼ìÈó¸«½Ğ¸ì") && /* ¡Ö¤Î¡× */
-		(check_feature((ptr->mrph_ptr + i)->f, "ÆâÍÆ¸ì") || 
-		 check_feature((ptr->mrph_ptr + i)->f, "½àÆâÍÆ¸ì"))) {
+	    if (!check_feature((ptr->mrph_ptr + i)->f, "ç‰¹æ®Šéè¦‹å‡ºèª") && /* ã€Œã®ã€ */
+		(check_feature((ptr->mrph_ptr + i)->f, "å†…å®¹èª") || 
+		 check_feature((ptr->mrph_ptr + i)->f, "æº–å†…å®¹èª"))) {
 		ptr->head_ptr = ptr->mrph_ptr + i;
-		assign_cfeature(&(ptr->head_ptr->f), "Ê¸Àá¼ç¼­", FALSE);
+		assign_cfeature(&(ptr->head_ptr->f), "æ–‡ç¯€ä¸»è¾", FALSE);
 		return;
 	    }
 	}
     }
 
-    /* ÉÕÂ°¸ì¤·¤«¤Ê¤¤¾ì¹ç */
+    /* ä»˜å±èªã—ã‹ãªã„å ´åˆ */
     ptr->head_ptr = ptr->mrph_ptr + ptr->mrph_num - 1;
 }
 
@@ -1805,12 +1794,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
-	if (Language == CHINESE) {
-	    current_length = strlen(m_ptr->Goi2) * 2 / 3;
-	}
-	else {
-	    current_length = strlen(m_ptr->Goi2);
-	}
+	current_length = strlen(m_ptr->Goi2) * 2 / BYTES4CHAR;
 
 	if (b_ptr->length + current_length >= BNST_LENGTH_MAX) {
 	    if (OptDisplay == OPT_DEBUG) {
@@ -1837,7 +1821,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     sp->Max_New_Bnst_num = 0;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
-	if (check_feature(m_ptr->f, "Ê¸Àá»Ï")) {
+	if (check_feature(m_ptr->f, "æ–‡ç¯€å§‹")) {
 	    if ((b_ptr = init_bnst(sp, m_ptr)) == NULL) return FALSE;
 	}
 	b_ptr->mrph_num++;
@@ -1873,7 +1857,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    for (j = 0, cp = b_ptr->SCASE_code; j < SCASE_CODE_SIZE; j++, cp++)
 		*cp = 0;
 	    /* clear_feature(&(b_ptr->f));
-	       main¤ÎÊ¸¤´¤È¤Î¥ë¡¼¥×¤ÎÀèÆ¬¤Ç½èÍı¤Ë°ÜÆ° */
+	       mainã®æ–‡ã”ã¨ã®ãƒ«ãƒ¼ãƒ—ã®å…ˆé ­ã§å‡¦ç†ã«ç§»å‹• */
 	}
 	else {
 	    b_ptr->mrph_num++;
@@ -1884,7 +1868,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	if (OptReadFeature) {
 	    b_ptr->f = Input_bnst_feature[i];
 	}
-	assign_cfeature(&(b_ptr->f), "²òÀÏºÑ", FALSE);
+	assign_cfeature(&(b_ptr->f), "è§£ææ¸ˆ", FALSE);
 	if (calc_bnst_length(sp, b_ptr) == FALSE) {
 	    return FALSE;
 	}
@@ -1896,14 +1880,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	   void push_tag_units(TAG_DATA *tp, MRPH_DATA *mp)
 /*==================================================================*/
 {
-    if (check_feature(mp->f, "ÈóÆÈÎ©ÀÜÆ¬¼­")) {
+    if (check_feature(mp->f, "éç‹¬ç«‹æ¥é ­è¾")) {
 	if (tp->settou_num == 0) {
 	    tp->settou_ptr = mp;
 	}
 	tp->settou_num++;
     }
-    else if (check_feature(mp->f, "¼«Î©") || 
-	     check_feature(mp->f, "ÆâÍÆ¸ì")) {
+    else if (check_feature(mp->f, "è‡ªç«‹") || 
+	     check_feature(mp->f, "å†…å®¹èª")) {
 	if (tp->jiritu_num == 0) {
 	    tp->jiritu_ptr = mp;
 	}
@@ -1940,40 +1924,40 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    tp->c_cpm_ptr = NULL;
 	}
 
-	/* BNST_DATA¤Ëcast¤·¤Æ¤¤¤ë tricky? */
+	/* BNST_DATAã«castã—ã¦ã„ã‚‹ tricky? */
 	get_bnst_code_all((BNST_DATA *)tp);
 
 	if (tp->inum != 0) {
-	    assign_cfeature(&(tp->f), "Ê¸ÀáÆâ", FALSE); /* case_analysis.rule ¤Ç»È¤Ã¤Æ¤¤¤ë */
-	    assign_cfeature(&(tp->f), "·¸:Ê¸ÀáÆâ", FALSE);
+	    assign_cfeature(&(tp->f), "æ–‡ç¯€å†…", FALSE); /* case_analysis.rule ã§ä½¿ã£ã¦ã„ã‚‹ */
+	    assign_cfeature(&(tp->f), "ä¿‚:æ–‡ç¯€å†…", FALSE);
 	}
 	else {
-	    /* head¤Î¤È¤­¤ÏÊ¸Àá¤Îfeature¤ò¥³¥Ô¡¼ */
-	    /* <Ê¸Æ¬>, <Ê¸Ëö>¤â¤Ä¤¯¤¬¡¢Ê¸Æ¬¤ÎÊ¸Àá¤¬2¥¿¥°Ã±°Ì°Ê¾å¤â¤Ä¾ì¹ç¤Ï¡¢
-	       <Ê¸Æ¬>¤Î¤Ä¤¯°ÌÃÖ¤¬´Ö°ã¤Ã¤Æ¤¤¤ë¤Î¤Ç²¼¤Ç½¤Àµ¤¹¤ë */
+	    /* headã®ã¨ãã¯æ–‡ç¯€ã®featureã‚’ã‚³ãƒ”ãƒ¼ */
+	    /* <æ–‡é ­>, <æ–‡æœ«>ã‚‚ã¤ããŒã€æ–‡é ­ã®æ–‡ç¯€ãŒ2ã‚¿ã‚°å˜ä½ä»¥ä¸Šã‚‚ã¤å ´åˆã¯ã€
+	       <æ–‡é ­>ã®ã¤ãä½ç½®ãŒé–“é•ã£ã¦ã„ã‚‹ã®ã§ä¸‹ã§ä¿®æ­£ã™ã‚‹ */
 	    copy_feature(&(tp->f), tp->b_ptr->f);
-	    delete_cfeature(&(tp->f), "¥µÊÑ"); /* <¥µÊÑ>¤ÏÊ¸Àá¤È¥¿¥°Ã±°Ì¤Ç¤Ï°Û¤Ê¤ë */
+	    delete_cfeature(&(tp->f), "ã‚µå¤‰"); /* <ã‚µå¤‰>ã¯æ–‡ç¯€ã¨ã‚¿ã‚°å˜ä½ã§ã¯ç•°ãªã‚‹ */
 
-	    /* ·Á¼°Ì¾»ì¡Ö¤Î¡×¤ËÍÑ¸À¤¬¥³¥Ô¡¼¤µ¤ì¤ë¤Î¤Çºï½ü */
-	    if (check_feature(tp->head_ptr->f, "ÆÃ¼ìÈó¸«½Ğ¸ì")) {
-		delete_cfeature(&(tp->f), "ÍÑ¸À");
+	    /* å½¢å¼åè©ã€Œã®ã€ã«ç”¨è¨€ãŒã‚³ãƒ”ãƒ¼ã•ã‚Œã‚‹ã®ã§å‰Šé™¤ */
+	    if (check_feature(tp->head_ptr->f, "ç‰¹æ®Šéè¦‹å‡ºèª")) {
+		delete_cfeature(&(tp->f), "ç”¨è¨€");
 	    }
 	}
 
-	/* ³Æ¥¿¥°Ã±°Ì¤ÎÄ¹¤µ¤ò·×»»¤·¤Æ¤ª¤¯ */
+	/* å„ã‚¿ã‚°å˜ä½ã®é•·ã•ã‚’è¨ˆç®—ã—ã¦ãŠã */
 	calc_bnst_length(sp, (BNST_DATA *)tp);
     }
 
-    /* <Ê¸Æ¬>¤Î½¤Àµ */
+    /* <æ–‡é ­>ã®ä¿®æ­£ */
     if (sp->bnst_data->tag_num > 1) {
-	delete_cfeature(&((sp->bnst_data->tag_ptr + sp->bnst_data->tag_num - 1)->f), "Ê¸Æ¬");
-	assign_cfeature(&(sp->tag_data->f), "Ê¸Æ¬", FALSE);
+	delete_cfeature(&((sp->bnst_data->tag_ptr + sp->bnst_data->tag_num - 1)->f), "æ–‡é ­");
+	assign_cfeature(&(sp->tag_data->f), "æ–‡é ­", FALSE);
     }
 
-    /* ¥¿¥°Ã±°Ì¥ë¡¼¥ë¤òÅ¬ÍÑ¤¹¤ë */
+    /* ã‚¿ã‚°å˜ä½ãƒ«ãƒ¼ãƒ«ã‚’é©ç”¨ã™ã‚‹ */
     assign_general_feature(sp->tag_data, sp->Tag_num, TagRuleType, FALSE, FALSE);
 
-    /* NTT¥³¡¼¥É¤òfeature¤ËÉ½¼¨ */
+    /* NTTã‚³ãƒ¼ãƒ‰ã‚’featureã«è¡¨ç¤º */
     sm2feature(sp);
 }
 
@@ -2019,15 +2003,15 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     for (i = 0; i < sp->Mrph_num; i++) {
 	mp = sp->mrph_data + i;
-	flag = check_feature(mp->f, "¥¿¥°Ã±°Ì»Ï");
+	flag = check_feature(mp->f, "ã‚¿ã‚°å˜ä½å§‹");
 
-	/* Ê¸Àá»Ï¤Ş¤ê¤Î·ÁÂÖÁÇ¤À¤±¤É<¥¿¥°Ã±°Ì»Ï>¤¬¤Ä¤¤¤Æ¤¤¤Ê¤¤¾ì¹ç¤âµö¤¹ */
+	/* æ–‡ç¯€å§‹ã¾ã‚Šã®å½¢æ…‹ç´ ã ã‘ã©<ã‚¿ã‚°å˜ä½å§‹>ãŒã¤ã„ã¦ã„ãªã„å ´åˆã‚‚è¨±ã™ */
 	if (flag || 
 	    (bp != NULL && bp->mrph_ptr == mp)) {
 	    tp = sp->tag_data + sp->Tag_num;
 
 	    if (flag == NULL) {
-		fprintf(stderr, ";; morpheme %d must be <¥¿¥°Ã±°Ì»Ï>! (%s)\n", i, 
+		fprintf(stderr, ";; morpheme %d must be <ã‚¿ã‚°å˜ä½å§‹>! (%s)\n", i, 
 			sp->KNPSID ? sp->KNPSID : "?");
 	    }
 
@@ -2037,22 +2021,22 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    mp->tnum = tp->num;
 	    make_mrph_set_inum(sp, i);
 
-	    /* Ê¸Àá¶èÀÚ¤ê¤È°ìÃ×¤¹¤ë¤È¤­ */
+	    /* æ–‡ç¯€åŒºåˆ‡ã‚Šã¨ä¸€è‡´ã™ã‚‹ã¨ã */
 	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
-		/* ÁÌ¤Ã¤Æinum¤òÉÕÍ¿ */
+		/* é¡ã£ã¦inumã‚’ä»˜ä¸ */
 		if (sp->Tag_num > 0 && (tp - 1)->bnum < 0) {
 		    make_tag_unit_set_inum(sp, sp->Tag_num);
 		}
 		tp->bnum = bp->num;
-		tp->b_ptr = bp;		/* ¥¿¥°Ã±°Ì¤«¤éÊ¸Àá¤Ø¥Ş¡¼¥¯ */
-		bp->tag_ptr = tp;	/* Ê¸Àá¤«¤é¥¿¥°Ã±°Ì¤Ø¥Ş¡¼¥¯ */
+		tp->b_ptr = bp;		/* ã‚¿ã‚°å˜ä½ã‹ã‚‰æ–‡ç¯€ã¸ãƒãƒ¼ã‚¯ */
+		bp->tag_ptr = tp;	/* æ–‡ç¯€ã‹ã‚‰ã‚¿ã‚°å˜ä½ã¸ãƒãƒ¼ã‚¯ */
 		bp->tag_num = 1;
 		pre_bp = bp;
 		if (bp->num < sp->Bnst_num - 1) {
 		    bp++;
 		}
 		else {
-		    /* ºÇ¸å¤ÎÊ¸Àá¤¬½ª¤ï¤Ã¤¿ */
+		    /* æœ€å¾Œã®æ–‡ç¯€ãŒçµ‚ã‚ã£ãŸ */
 		    bp = NULL;
 		}
 	    }
@@ -2092,8 +2076,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	if (Tag_start[i]) {
 	    if (i != 0) tp++;
 
-	    if (check_feature(mp->f, "¥¿¥°Ã±°Ì»Ï") == NULL) {
-		fprintf(stderr, ";; morpheme %d must be <¥¿¥°Ã±°Ì»Ï>! (%s)\n", i, 
+	    if (check_feature(mp->f, "ã‚¿ã‚°å˜ä½å§‹") == NULL) {
+		fprintf(stderr, ";; morpheme %d must be <ã‚¿ã‚°å˜ä½å§‹>! (%s)\n", i, 
 			sp->KNPSID ? sp->KNPSID : "?");
 	    }
 
@@ -2101,22 +2085,22 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    tp->num = tp - sp->tag_data;
 	    tp->mrph_ptr = mp;
 
-	    /* Ê¸Àá¶èÀÚ¤ê¤È°ìÃ×¤¹¤ë¤È¤­ */
+	    /* æ–‡ç¯€åŒºåˆ‡ã‚Šã¨ä¸€è‡´ã™ã‚‹ã¨ã */
 	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
-		/* ÁÌ¤Ã¤Æinum¤òÉÕÍ¿ */
+		/* é¡ã£ã¦inumã‚’ä»˜ä¸ */
 		if (tp->num > 0 && (tp - 1)->bnum < 0) {
 		    make_tag_unit_set_inum(sp, tp->num);
 		}
 		tp->bnum = bp->num;
-		tp->b_ptr = bp;		/* ¥¿¥°Ã±°Ì¤«¤éÊ¸Àá¤Ø¥Ş¡¼¥¯ */
-		bp->tag_ptr = tp;	/* Ê¸Àá¤«¤é¥¿¥°Ã±°Ì¤Ø¥Ş¡¼¥¯ */
+		tp->b_ptr = bp;		/* ã‚¿ã‚°å˜ä½ã‹ã‚‰æ–‡ç¯€ã¸ãƒãƒ¼ã‚¯ */
+		bp->tag_ptr = tp;	/* æ–‡ç¯€ã‹ã‚‰ã‚¿ã‚°å˜ä½ã¸ãƒãƒ¼ã‚¯ */
 		bp->tag_num = 1;
 		pre_bp = bp;
 		if (bp->num < sp->Bnst_num - 1) {
 		    bp++;
 		}
 		else {
-		    /* ºÇ¸å¤ÎÊ¸Àá¤¬½ª¤ï¤Ã¤¿ */
+		    /* æœ€å¾Œã®æ–‡ç¯€ãŒçµ‚ã‚ã£ãŸ */
 		    bp = NULL;
 		}
 	    }
@@ -2141,7 +2125,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	     void dpnd_info_to_tag_pm(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ·¸¤ê¼õ¤±¤Ë´Ø¤¹¤ë¼ï¡¹¤Î¾ğÊó¤ò DPND ¤«¤é TAG_DATA ¤Ë¥³¥Ô¡¼ (²òÀÏºÑÈÇ) */
+    /* ä¿‚ã‚Šå—ã‘ã«é–¢ã™ã‚‹ç¨®ã€…ã®æƒ…å ±ã‚’ DPND ã‹ã‚‰ TAG_DATA ã«ã‚³ãƒ”ãƒ¼ (è§£ææ¸ˆç‰ˆ) */
 
     int		i;
 
@@ -2158,18 +2142,18 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     int i, delete_count = 0, move_table[MRPH_MAX];
 
     for (i = 1; i < sp->Mrph_num; i++) {
-	if ((sp->mrph_data + i)->Goi[0] == '\0') { /* ¥Ş¡¼¥¸¤µ¤ì¤Æ¤Ê¤¯¤Ê¤Ã¤¿·ÁÂÖÁÇ */
+	if ((sp->mrph_data + i)->Goi[0] == '\0') { /* ãƒãƒ¼ã‚¸ã•ã‚Œã¦ãªããªã£ãŸå½¢æ…‹ç´  */
 	    move_table[i] = 0;
 	    delete_count++;
 	}
 	else {
-	    move_table[i] = delete_count; /* ²¿¸ÄÁ°¤Ë°ÜÆ°¤µ¤»¤ë¤« */
+	    move_table[i] = delete_count; /* ä½•å€‹å‰ã«ç§»å‹•ã•ã›ã‚‹ã‹ */
 	}
     }
 
     for (i = 1; i < sp->Mrph_num; i++) {
-	if (move_table[i] > 0) { /* °ÜÆ°¤µ¤»¤ë¤Ù¤­·ÁÂÖÁÇ */
-	    copy_mrph(sp->mrph_data + i - move_table[i], sp->mrph_data + i, FALSE); /* feature¤Ï¥³¥Ô¡¼ */
+	if (move_table[i] > 0) { /* ç§»å‹•ã•ã›ã‚‹ã¹ãå½¢æ…‹ç´  */
+	    copy_mrph(sp->mrph_data + i - move_table[i], sp->mrph_data + i, FALSE); /* featureã¯ã‚³ãƒ”ãƒ¼ */
 	}
     }
 
@@ -2185,8 +2169,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     char dst_pre[IMI_MAX], dst_str1[IMI_MAX], dst_str2[IMI_MAX], dst_post[IMI_MAX];
     char *cp;
 
-    if (cp = strstr(src->Imi, "ÂåÉ½É½µ­:")) { /* ¥Ş¡¼¥¸¤¹¤ë¤â¤Î */
-	cp += strlen("ÂåÉ½É½µ­:");
+    if (cp = strstr(src->Imi, "ä»£è¡¨è¡¨è¨˜:")) { /* ãƒãƒ¼ã‚¸ã™ã‚‹ã‚‚ã® */
+	cp += strlen("ä»£è¡¨è¡¨è¨˜:");
 	sscanf(cp, "%[^/]", src_str1);
 	sscanf(cp + strlen(src_str1) + 1, "%[^ \"]", src_str2);
     }
@@ -2194,8 +2178,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	return;
     }
 
-    if (cp = strstr(dst->Imi, "ÂåÉ½É½µ­:")) { /* ¥Ş¡¼¥¸Àè */
-	cp += strlen("ÂåÉ½É½µ­:");
+    if (cp = strstr(dst->Imi, "ä»£è¡¨è¡¨è¨˜:")) { /* ãƒãƒ¼ã‚¸å…ˆ */
+	cp += strlen("ä»£è¡¨è¡¨è¨˜:");
 	sscanf(cp, "%[^/]", dst_str1);
 
 	dst_pre[0] = '\0';
@@ -2213,14 +2197,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     if (strlen(dst_str1) + strlen(src_str1) < IMI_MAX && 
 	strlen(dst_str2) + strlen(src_str2) < IMI_MAX) {
-	strcat(dst_str1, src_str1); /* ´Á»úÉôÊ¬¤Î¥Ş¡¼¥¸ */
-	strcat(dst_str2, src_str2); /* ÆÉ¤ßÉôÊ¬¤Î¥Ş¡¼¥¸ */
+	strcat(dst_str1, src_str1); /* æ¼¢å­—éƒ¨åˆ†ã®ãƒãƒ¼ã‚¸ */
+	strcat(dst_str2, src_str2); /* èª­ã¿éƒ¨åˆ†ã®ãƒãƒ¼ã‚¸ */
     }
     else {
 	return;
     }
 
-    /* °ÕÌ£¾ğÊó¤Î½¤Àµ */
+    /* æ„å‘³æƒ…å ±ã®ä¿®æ­£ */
     if (strlen(dst_pre) + strlen(dst_str1) + strlen(dst_str2) + strlen(dst_post) + 2 <= IMI_MAX) {
 	sprintf(dst->Imi, "%s%s/%s%s", dst_pre, dst_str1, dst_str2, dst_post);
     }
@@ -2232,9 +2216,9 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 {
     int i, goi_length = 0, yomi_length = 0, goi2_length = 0;
 
-    /* ÀèÆ¬¤Î·ÁÂÖÁÇ¤Ë¥Ş¡¼¥¸ */
+    /* å…ˆé ­ã®å½¢æ…‹ç´ ã«ãƒãƒ¼ã‚¸ */
 
-    /* ¤Ş¤º¡¢¥Ş¡¼¥¸¸å¤ÎÄ¹¤µ¤ò¥Á¥§¥Ã¥¯ */
+    /* ã¾ãšã€ãƒãƒ¼ã‚¸å¾Œã®é•·ã•ã‚’ãƒã‚§ãƒƒã‚¯ */
     for (i = 0; i < length; i++) {
 	goi_length  += strlen((sp->mrph_data + start_num + i)->Goi);
 	yomi_length += strlen((sp->mrph_data + start_num + i)->Yomi);
@@ -2243,20 +2227,20 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     if (goi_length  > WORD_LEN_MAX || 
 	yomi_length > WORD_LEN_MAX || 
 	goi2_length > WORD_LEN_MAX) {
-	return FALSE; /* Ä¹¤¹¤®¤ë¤Ê¤é¡¢¤½¤Î¤è¤¦¤Ê¥Ş¡¼¥¸¤ÏÉÔÅ¬Åö¤Ê¤Î¤Ç¡¢´şµÑ¤¹¤ë */
+	return FALSE; /* é•·ã™ãã‚‹ãªã‚‰ã€ãã®ã‚ˆã†ãªãƒãƒ¼ã‚¸ã¯ä¸é©å½“ãªã®ã§ã€æ£„å´ã™ã‚‹ */
     }
 
     for (i = 1; i < length; i++) {
 	strcat((sp->mrph_data + start_num)->Goi,  (sp->mrph_data + start_num + i)->Goi);
 	strcat((sp->mrph_data + start_num)->Yomi, (sp->mrph_data + start_num + i)->Yomi);
 	strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
-	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* ImiÎÎ°è¤ÎÂåÉ½É½µ­¤ò¥Ş¡¼¥¸ */
+	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imié ˜åŸŸã®ä»£è¡¨è¡¨è¨˜ã‚’ãƒãƒ¼ã‚¸ */
 
-	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* ¥Ş¡¼¥¸ºÑ¤ß¤Î°õ */
+	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* ãƒãƒ¼ã‚¸æ¸ˆã¿ã®å° */
     }
 
-    delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* µìALT¾ğÊó¤òºï½ü */
-    assign_rep_f_from_imi(sp->mrph_data + start_num); /* ImiÎÎ°è¤ÎÂåÉ½É½µ­¤òfeature¤Ø */
+    delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* æ—§ALTæƒ…å ±ã‚’å‰Šé™¤ */
+    assign_rep_f_from_imi(sp->mrph_data + start_num); /* Imié ˜åŸŸã®ä»£è¡¨è¡¨è¨˜ã‚’featureã¸ */
     return TRUE;
 }
 
@@ -2275,7 +2259,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	cp = NULL;
 	fp = (sp->mrph_data + i)->f;
 	while (fp) {
-	    if (!strncmp(fp->cp, "·ÁÂÖÁÇÏ¢·ë-", strlen("·ÁÂÖÁÇÏ¢·ë-"))) {
+	    if (!strncmp(fp->cp, "å½¢æ…‹ç´ é€£çµ-", strlen("å½¢æ…‹ç´ é€£çµ-"))) {
 		if (cp) {
 		    fprintf(stderr, ";; Both %s and %s are assigned to %s\n", cp, fp->cp, (sp->mrph_data + i)->Goi);
 		}
@@ -2286,12 +2270,12 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    fp = fp->next;
 	}
 
-	if (cp) { /* ·ÁÂÖÁÇÏ¢·ë¤¬¤¢¤Ã¤¿¾ì¹ç */
-	    if (!merge_type[0]) { /* ³«»Ï */
+	if (cp) { /* å½¢æ…‹ç´ é€£çµãŒã‚ã£ãŸå ´åˆ */
+	    if (!merge_type[0]) { /* é–‹å§‹ */
 		start_num = i;
 		strcpy(merge_type, cp);
 	    }
-	    else if (strcmp(merge_type, cp)) { /* Ä¾Á°¤Ş¤Ç¤È¥¿¥¤¥×¤¬°Û¤Ê¤ë¾ì¹ç */
+	    else if (strcmp(merge_type, cp)) { /* ç›´å‰ã¾ã§ã¨ã‚¿ã‚¤ãƒ—ãŒç•°ãªã‚‹å ´åˆ */
 		if (merge_mrph(sp, start_num, i - start_num) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}
@@ -2300,7 +2284,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    }
 	}
 	else {
-	    if (merge_type[0]) { /* Ä¾Á°¤Ş¤Ç¤Î·ÁÂÖÁÇÏ¢·ë¤ò½èÍı */
+	    if (merge_type[0]) { /* ç›´å‰ã¾ã§ã®å½¢æ…‹ç´ é€£çµã‚’å‡¦ç† */
 		if (merge_mrph(sp, start_num, i - start_num) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}

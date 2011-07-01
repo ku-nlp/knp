@@ -21,13 +21,11 @@
 #define str_eq(c1, c2) ( ! strcmp(c1, c2) )
 #define L_Jiritu_M(ptr)   (ptr->jiritu_ptr + ptr->jiritu_num - 1)
 
-#define fprintf knp_fprintf
-
 /*====================================================================
 				LENGTH
 ====================================================================*/
 #define	MRPH_MAX	200
-#define	BNST_MAX	200 /* ÆüËÜ¸ì¤Î¾ì¹ç¤Ï64¤°¤é¤¤¤Ç½½Ê¬ */
+#define	BNST_MAX	200 /* æ—¥æœ¬èªã®å ´åˆã¯64ãã‚‰ã„ã§ååˆ† */
 #define	BNST_LENGTH_MAX	256
 #define	TAG_MAX		200
 #define	PAREN_MAX	100
@@ -43,9 +41,9 @@
 #define TEIDAI_TYPES	5
 #define HOMO_MAX	30
 #define HOMO_MRPH_MAX	10
-#define PP_STRING_MAX   16 /* ºÇÂç¤È¤Ê¤ë¤Î¤Ï"Ìµ³Ê½¾Â°:-1"¤Ê¤É */
-#define FUKUGOJI_START  9  /* PP_STR_TO_CODE¤ÇÊ£¹ç¼­¤¬»Ï¤Ş¤ëÈÖ¹æ */
-#define FUKUGOJI_END    37 /* PP_STR_TO_CODE¤ÇÊ£¹ç¼­¤¬½ª¤ï¤ëÈÖ¹æ */
+#define PP_STRING_MAX   16 /* æœ€å¤§ã¨ãªã‚‹ã®ã¯"ç„¡æ ¼å¾“å±:-1"ãªã© */
+#define FUKUGOJI_START  9  /* PP_STR_TO_CODEã§è¤‡åˆè¾ãŒå§‹ã¾ã‚‹ç•ªå· */
+#define FUKUGOJI_END    37 /* PP_STR_TO_CODEã§è¤‡åˆè¾ãŒçµ‚ã‚ã‚‹ç•ªå· */
 
 #define BGH_CODE_SIZE	11
 #define SM_CODE_SIZE	12
@@ -72,7 +70,7 @@
 #else
 #define ALL_CASE_FRAME_MAX 	0
 #endif
-#define CF_ELEMENT_MAX 		24    /* ´ğËÜÅª¤Ë¤Ï20¤Ş¤Ç¤À¤¬merge_em¤ÇÉ¬Í× */
+#define CF_ELEMENT_MAX 		24    /* åŸºæœ¬çš„ã«ã¯20ã¾ã§ã ãŒmerge_emã§å¿…è¦ */
 #define PP_ELEMENT_MAX		10
 #define SM_ELEMENT_MAX		256
 #define EX_ELEMENT_MAX		256
@@ -80,14 +78,14 @@
 
 #define CF_ALIGNMENT_MAX	5
 
-#define CMM_MAX 	5				/* ºÇÅ¬³Ê¥Õ¥ì¡¼¥à¿ô */
-#define CPM_MAX 	64				/* Ê¸Æâ½Ò¸ì¿ô */
-#define TM_MAX 		5				/* ºÇÅ¬°ÍÂ¸¹½Â¤¿ô */
+#define CMM_MAX 	5				/* æœ€é©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+#define CPM_MAX 	64				/* æ–‡å†…è¿°èªæ•° */
+#define TM_MAX 		5				/* æœ€é©ä¾å­˜æ§‹é€ æ•° */
 
-#define CLASS_NUM               2000  /* Ã±¸ì¥¯¥é¥¹¤Î¿ô */
-#define MENTION_MAX             8     /* 1¤Ä¤Î´ğËÜ¶ç¤¬»ı¤Ä¾È±ş»ì¿ô(¥¼¥í¾È±ş´Ş¤à) */
-#define ENTITY_MAX              4096  /* ENTITY¤Î¿ô */
-#define MENTIONED_MAX           256   /* 1¤Ä¤ÎENTITY¤¬¸ÀµÚ¤µ¤ì¤ë²ó¿ô */
+#define CLASS_NUM               2000  /* å˜èªã‚¯ãƒ©ã‚¹ã®æ•° */
+#define MENTION_MAX             8     /* 1ã¤ã®åŸºæœ¬å¥ãŒæŒã¤ç…§å¿œè©æ•°(ã‚¼ãƒ­ç…§å¿œå«ã‚€) */
+#define ENTITY_MAX              4096  /* ENTITYã®æ•° */
+#define MENTIONED_MAX           256   /* 1ã¤ã®ENTITYãŒè¨€åŠã•ã‚Œã‚‹å›æ•° */
 
 #ifndef IMI_MAX
 	#define IMI_MAX	1024	/* defined in "juman.h" */	
@@ -100,10 +98,16 @@
 #define DEFAULT_PARSETIMEOUT	180
 
 #define	TBLSIZE	1024
-#define	NSEED	32	/* Íğ¿ôÉ½¤Î¼ïÎà¡£2 ¤Îæ²¾è¤Ç¤Ê¤±¤ì¤Ğ¤Ê¤é¤Ê¤¤¡£ */
+#define	NSEED	32	/* ä¹±æ•°è¡¨ã®ç¨®é¡ã€‚2 ã®ç¾ƒä¹—ã§ãªã‘ã‚Œã°ãªã‚‰ãªã„ã€‚ */
 #define NSIZE	256
 
-#define	BYTES4CHAR	2	/* euc-jp */
+#ifndef BYTES4CHAR
+#if defined(IO_ENCODING_EUC) || defined(IO_ENCODING_SJIS)
+#define	BYTES4CHAR	2	/* EUC-JP or SHIFT-JIS */
+#else
+#define	BYTES4CHAR	3	/* UTF-8 (usually) */
+#endif
+#endif
 
 #define TREE_WIDTH_MAX  100     /* Chinese parse tree width */
 #define CHI_WORD_LEN_MAX 30   /* maximum Chinese word length */
@@ -182,7 +186,7 @@
 #define	OPT_CASE_GENERALIZE_AGENT	128
 #define	OPT_CASE_GENERATE_EOS	256
 #define	OPT_CASE_USE_CN_CF	512
-#define	OPT_CASE_USE_CREP_CF	1024 /* ¾ï¤ËOPT_CASE_USE_REP_CF */
+#define	OPT_CASE_USE_CREP_CF	1024 /* å¸¸ã«OPT_CASE_USE_REP_CF */
 #define OPT_CASE_FIX_CF_SEARCH	2048
 #define OPT_CASE_USE_NCF	4096
 #define	OPT_CASE_CF_CACHE	8192
@@ -219,10 +223,10 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
 
 #define PARA_KEY_O          0
-#define PARA_KEY_N          1	/* ÂÎ¸À¤ÎÊÂÎó */
-#define PARA_KEY_P          2	/* ÍÑ¸À¤ÎÊÂÎó */
-#define PARA_KEY_A          4	/* ÂÎ¸À¤«ÍÑ¸À¤«Ê¬¤«¤é¤Ê¤¤ÊÂÎó */
-#define PARA_KEY_I          3	/* GAP¤Î¤¢¤ëÊÂÎó ¡©¡© */
+#define PARA_KEY_N          1	/* ä½“è¨€ã®ä¸¦åˆ— */
+#define PARA_KEY_P          2	/* ç”¨è¨€ã®ä¸¦åˆ— */
+#define PARA_KEY_A          4	/* ä½“è¨€ã‹ç”¨è¨€ã‹åˆ†ã‹ã‚‰ãªã„ä¸¦åˆ— */
+#define PARA_KEY_I          3	/* GAPã®ã‚ã‚‹ä¸¦åˆ— ï¼Ÿï¼Ÿ */
 
 #define PRINT_PARA	0
 #define PRINT_DPND	1
@@ -283,10 +287,11 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 
 #define TYPE_KATAKANA	1
 #define TYPE_HIRAGANA	2
-#define TYPE_KANJI	3
-#define TYPE_SUUJI	4
-#define TYPE_EIGO	5
-#define TYPE_KIGOU	6
+#define TYPE_KANJI	4
+#define TYPE_SUUJI	8
+#define TYPE_EIGO	16
+#define TYPE_KIGOU	32
+#define TYPE_PUNC	64
 
 #define SM_NO_EXPAND_NE	1
 #define SM_EXPAND_NE	2
@@ -306,9 +311,6 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define	CF_DECIDE_THRESHOLD	7
 #define	DEFAULT_SOTO_THRESHOLD	8
 
-#define	ENCODING_EUC		1
-#define	ENCODING_SHIFTJIS	2
-
 /*====================================================================
 				  ?
 ====================================================================*/
@@ -317,18 +319,18 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 #define PARA_NORMAL 	1	/* <P> */
 #define PARA_INCOMP 	2	/* <I> */
 
-#define REL_NOT		0 /* ½Å¤Ê¤ê¤Ê¤· */
-#define REL_BIT 	1 /* ¾¯¤·½Å¤Ê¤ë */
-#define REL_PRE 	2 /* Á°¤Ç½Å¤Ê¤ë */
-#define REL_POS 	3 /* ¸å¤Ç½Å¤Ê¤ë */
-#define REL_PAR 	4 /* ½ÅÊ£ 	*/
-#define REL_REV 	5 /* Á°Éô¤Î½¤Àµ */
-#define REL_IN1 	6 /* ´Ş¤Ş¤ì¤ëÁ°	*/
-#define REL_IN2 	7 /* ´Ş¤Ş¤ì¤ë¸å	*/
-#define REL_BAD 	8 /* ¸í¤ê 	*/
+#define REL_NOT		0 /* é‡ãªã‚Šãªã— */
+#define REL_BIT 	1 /* å°‘ã—é‡ãªã‚‹ */
+#define REL_PRE 	2 /* å‰ã§é‡ãªã‚‹ */
+#define REL_POS 	3 /* å¾Œã§é‡ãªã‚‹ */
+#define REL_PAR 	4 /* é‡è¤‡ 	*/
+#define REL_REV 	5 /* å‰éƒ¨ã®ä¿®æ­£ */
+#define REL_IN1 	6 /* å«ã¾ã‚Œã‚‹å‰	*/
+#define REL_IN2 	7 /* å«ã¾ã‚Œã‚‹å¾Œ	*/
+#define REL_BAD 	8 /* èª¤ã‚Š 	*/
 
 /*====================================================================
-		       Client/Server  Æ°ºî¥â¡¼¥É
+		       Client/Server  å‹•ä½œãƒ¢ãƒ¼ãƒ‰
 ====================================================================*/
 
 #define STAND_ALONE_MODE 0
@@ -347,20 +349,20 @@ typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 
 #define RF_MAX	16
 
-/* FEATURE¹½Â¤ÂÎ */
+/* FEATUREæ§‹é€ ä½“ */
 typedef struct _FEATURE *FEATUREptr;
 typedef struct _FEATURE {
     char	*cp;
     FEATUREptr	next;
 } FEATURE;
 
-/* FEATURE¥Ñ¥¿¡¼¥ó */
+/* FEATUREãƒ‘ã‚¿ãƒ¼ãƒ³ */
 typedef struct {
     FEATURE 	*fp[RF_MAX];
 } FEATURE_PATTERN;
 
 /*====================================================================
-			     µ¿»÷Àµµ¬É½¸½
+			     ç–‘ä¼¼æ­£è¦è¡¨ç¾
 ====================================================================*/
 
 #define NOT_FLG '^'
@@ -383,7 +385,7 @@ typedef struct {
 #define RM_KEI_MAX  64
 #define RM_GOI_MAX  64
 
-/* ·ÁÂÖÁÇ¥Ñ¥¿¡¼¥ó */
+/* å½¢æ…‹ç´ ãƒ‘ã‚¿ãƒ¼ãƒ³ */
 typedef struct {
     char type_flag;	/* '?' or '^' or NULL */
     char ast_flag;	/* '*' or NULL */
@@ -400,13 +402,13 @@ typedef struct {
     FEATURE_PATTERN f_pattern;
 } REGEXPMRPH;
 
-/* ·ÁÂÖÁÇÎó¥Ñ¥¿¡¼¥ó */
+/* å½¢æ…‹ç´ åˆ—ãƒ‘ã‚¿ãƒ¼ãƒ³ */
 typedef struct {
     REGEXPMRPH 	*mrph;
     char 	mrphsize;
 } REGEXPMRPHS;
 
-/* Ê¸Àá¥Ñ¥¿¡¼¥ó */
+/* æ–‡ç¯€ãƒ‘ã‚¿ãƒ¼ãƒ³ */
 typedef struct {
     char 	type_flag;	/* '?' or '^' or NULL */
     char 	ast_flag;	/* '*' or NULL */
@@ -414,27 +416,27 @@ typedef struct {
     FEATURE_PATTERN f_pattern;
 } REGEXPBNST;
 
-/* Ê¸ÀáÎó¥Ñ¥¿¡¼¥ó */
+/* æ–‡ç¯€åˆ—ãƒ‘ã‚¿ãƒ¼ãƒ³ */
 typedef struct {
     REGEXPBNST	*bnst;
     char	bnstsize;
 } REGEXPBNSTS;
 
 /*====================================================================
-				 µ¬Â§
+				 è¦å‰‡
 ====================================================================*/
 
 #define LOOP_BREAK	0
 #define LOOP_ALL	1
 
-/* Æ±·Á°ÛµÁ¸ìµ¬Â§ */
+/* åŒå½¢ç•°ç¾©èªè¦å‰‡ */
 typedef struct {
     REGEXPMRPHS	*pre_pattern;
     REGEXPMRPHS *pattern;
     FEATURE	*f;
 } HomoRule;
 
-/* ·ÁÂÖÁÇÎóµ¬Â§ */
+/* å½¢æ…‹ç´ åˆ—è¦å‰‡ */
 typedef struct {
     REGEXPMRPHS	*pre_pattern;
     REGEXPMRPHS	*self_pattern;
@@ -442,7 +444,7 @@ typedef struct {
     FEATURE	*f;
 } MrphRule;
 
-/* Ê¸ÀáÎóµ¬Â§ */
+/* æ–‡ç¯€åˆ—è¦å‰‡ */
 typedef struct {
     REGEXPBNSTS	*pre_pattern;
     REGEXPBNSTS	*self_pattern;
@@ -450,23 +452,23 @@ typedef struct {
     FEATURE	*f;
 } BnstRule;
 
-/* ·¸¤ê¼õ¤±µ¬Â§ */
+/* ä¿‚ã‚Šå—ã‘è¦å‰‡ */
 typedef struct {
     FEATURE_PATTERN dependant;
     FEATURE_PATTERN governor[DpndRule_G_MAX];
     char	    dpnd_type[DpndRule_G_MAX];
     FEATURE_PATTERN barrier;
     int 	    preference;
-    int		    decide;	/* °ì°Õ¤Ë·èÄê¤¹¤ë¤«¤É¤¦¤« */
+    int		    decide;	/* ä¸€æ„ã«æ±ºå®šã™ã‚‹ã‹ã©ã†ã‹ */
 } DpndRule;
 
-/* ¥Ü¡¼¥Ê¥¹µ¬Â§ */
+/* ãƒœãƒ¼ãƒŠã‚¹è¦å‰‡ */
 typedef struct {
     REGEXPMRPHS *pattern;
-    int		type;		/* ÊÂÎó¤Î¥¿¥¤¥× */
+    int		type;		/* ä¸¦åˆ—ã®ã‚¿ã‚¤ãƒ— */
 } BonusRule;
 
-/* ¸Æ±şµ¬Â§ */
+/* å‘¼å¿œè¦å‰‡ */
 typedef struct {
     REGEXPMRPHS 	*start_pattern;
     REGEXPMRPHS 	*end_pattern;
@@ -486,7 +488,7 @@ typedef struct {
     FEATUREptr f;
 } DicForRule;
 
-/* ·ÁÂÖÁÇÎóµ¬Â§, Ê¸ÀáÎóµ¬Â§¤Î½¸¤Ş¤ê¤ò°·¤¦¤¿¤á¤Î¹½Â¤ÂÎ */
+/* å½¢æ…‹ç´ åˆ—è¦å‰‡, æ–‡ç¯€åˆ—è¦å‰‡ã®é›†ã¾ã‚Šã‚’æ‰±ã†ãŸã‚ã®æ§‹é€ ä½“ */
 typedef struct {
     void	*RuleArray;
     int		CurRuleSize;
@@ -496,40 +498,40 @@ typedef struct {
     int		direction;
 } GeneralRuleType;
 
-/* KNP ¤Î¥ë¡¼¥ë¥Õ¥¡¥¤¥ë»ØÄêÍÑ (.knprc) */
-#define		DEF_JUMAN_GRAM_FILE	"JUMANÊ¸Ë¡¥Ç¥£¥ì¥¯¥È¥ê"
+/* KNP ã®ãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«æŒ‡å®šç”¨ (.knprc) */
+#define		DEF_JUMAN_GRAM_FILE	"JUMANæ–‡æ³•ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª"
 
-#define		DEF_KNP_FILE		"KNP¥ë¡¼¥ë¥Õ¥¡¥¤¥ë"
-#define		DEF_KNP_DIR		"KNP¥ë¡¼¥ë¥Ç¥£¥ì¥¯¥È¥ê"
-#define		DEF_KNP_DICT_DIR	"KNP¼­½ñ¥Ç¥£¥ì¥¯¥È¥ê"
-#define		DEF_KNP_DICT_FILE	"KNP¼­½ñ¥Õ¥¡¥¤¥ë"
+#define		DEF_KNP_FILE		"KNPãƒ«ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«"
+#define		DEF_KNP_DIR		"KNPãƒ«ãƒ¼ãƒ«ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª"
+#define		DEF_KNP_DICT_DIR	"KNPè¾æ›¸ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª"
+#define		DEF_KNP_DICT_FILE	"KNPè¾æ›¸ãƒ•ã‚¡ã‚¤ãƒ«"
 
-#define		DEF_THESAURUS		"KNP¥·¥½¡¼¥é¥¹"
-#define		DEF_CASE_THESAURUS	"KNP³Ê²òÀÏ¥·¥½¡¼¥é¥¹"
-#define		DEF_PARA_THESAURUS	"KNPÊÂÎó²òÀÏ¥·¥½¡¼¥é¥¹"
+#define		DEF_THESAURUS		"KNPã‚·ã‚½ãƒ¼ãƒ©ã‚¹"
+#define		DEF_CASE_THESAURUS	"KNPæ ¼è§£æã‚·ã‚½ãƒ¼ãƒ©ã‚¹"
+#define		DEF_PARA_THESAURUS	"KNPä¸¦åˆ—è§£æã‚·ã‚½ãƒ¼ãƒ©ã‚¹"
 
-#define		DEF_AUTO_DIC_FEATURES	"KNP¼«Æ°³ÍÆÀ¼­½ñÅ¬ÍÑÂ°À­"
+#define		DEF_AUTO_DIC_FEATURES	"KNPè‡ªå‹•ç²å¾—è¾æ›¸é©ç”¨å±æ€§"
 
-#define		DEF_DISC_CASES		"KNP¾ÊÎ¬²òÀÏ³Ê"
-#define		DEF_DISC_ORDER		"KNP¾ÊÎ¬²òÀÏÃµº÷ÈÏ°Ï"
+#define		DEF_DISC_CASES		"KNPçœç•¥è§£ææ ¼"
+#define		DEF_DISC_ORDER		"KNPçœç•¥è§£ææ¢ç´¢ç¯„å›²"
 
-#define		DEF_SVM_MODEL_FILE	"SVM¥â¥Ç¥ë¥Õ¥¡¥¤¥ë"
-#define		DEF_DT_MODEL_FILE	"·èÄêÌÚ¥Õ¥¡¥¤¥ë"
+#define		DEF_SVM_MODEL_FILE	"SVMãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«"
+#define		DEF_DT_MODEL_FILE	"æ±ºå®šæœ¨ãƒ•ã‚¡ã‚¤ãƒ«"
 
-#define		DEF_SVM_FREQ_SD		"SVMÉÑÅÙÉ¸½àÊĞº¹"
-#define		DEF_SVM_FREQ_SD_NO	"SVMÉÑÅÙÉ¸½àÊĞº¹¥Î³Ê"
+#define		DEF_SVM_FREQ_SD		"SVMé »åº¦æ¨™æº–åå·®"
+#define		DEF_SVM_FREQ_SD_NO	"SVMé »åº¦æ¨™æº–åå·®ãƒæ ¼"
 
-#define		DEF_SVM_REFERRED_NUM_SURFACE_SD		"SVMÉ½ÁØ»²¾È²ó¿ôÉ¸½àÊĞº¹"
-#define		DEF_SVM_REFERRED_NUM_ELLIPSIS_SD	"SVM¾ÊÎ¬»²¾È²ó¿ôÉ¸½àÊĞº¹"
+#define		DEF_SVM_REFERRED_NUM_SURFACE_SD		"SVMè¡¨å±¤å‚ç…§å›æ•°æ¨™æº–åå·®"
+#define		DEF_SVM_REFERRED_NUM_ELLIPSIS_SD	"SVMçœç•¥å‚ç…§å›æ•°æ¨™æº–åå·®"
 
-#define		DEF_DISC_LOC_ORDER	"KNP¾ÊÎ¬²òÀÏÃµº÷½ç½ø"
-#define		DEF_DISC_SEN_NUM	"KNP¾ÊÎ¬²òÀÏÃµº÷Ê¸¿ô"
+#define		DEF_DISC_LOC_ORDER	"KNPçœç•¥è§£ææ¢ç´¢é †åº"
+#define		DEF_DISC_SEN_NUM	"KNPçœç•¥è§£ææ¢ç´¢æ–‡æ•°"
 
-#define		DEF_ANTECEDENT_DECIDE_TH	"KNP¾ÊÎ¬²òÀÏÃµº÷ïçÃÍ"
+#define		DEF_ANTECEDENT_DECIDE_TH	"KNPçœç•¥è§£ææ¢ç´¢é–¾å€¤"
 
-#define         DEF_NE_MODEL_DIR        "NE¥â¥Ç¥ë¥Õ¥¡¥¤¥ë¥Ç¥£¥ì¥¯¥È¥ê" /* SVM */
-#define         DEF_NE_MODEL_FILE       "NE¥â¥Ç¥ë¥Õ¥¡¥¤¥ë" /* CRF */
-#define         DEF_SYNONYM_FILE        "Æ±µÁÉ½¸½¥Õ¥¡¥¤¥ë"
+#define         DEF_NE_MODEL_DIR        "NEãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª" /* SVM */
+#define         DEF_NE_MODEL_FILE       "NEãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«" /* CRF */
+#define         DEF_SYNONYM_FILE        "åŒç¾©è¡¨ç¾ãƒ•ã‚¡ã‚¤ãƒ«"
 
 typedef struct _RuleVector {
     char	*file;
@@ -541,7 +543,7 @@ typedef struct _RuleVector {
 
 #define RuleIncrementStep 10
 
-/* ÆÉ¤ß¹ş¤ßÊıË¡ */
+/* èª­ã¿è¾¼ã¿æ–¹æ³• */
 #define MorphRuleType 1
 #define BnstRuleType 2
 #define HomoRuleType 3
@@ -559,10 +561,10 @@ typedef struct _RuleVector {
 #define CaseFrameRuleType 15
 #define PreProcessMorphRuleType 16
 
-/* ¼­½ñ¤ÎºÇÂç¿ô */
+/* è¾æ›¸ã®æœ€å¤§æ•° */
 #define DICT_MAX	37
 
-/* ¼­½ñ¤ÎÄêµÁ */
+/* è¾æ›¸ã®å®šç¾© */
 #define	BGH_DB		1
 #define	SM_DB		2
 #define	SM2CODE_DB	3
@@ -600,46 +602,46 @@ typedef struct _RuleVector {
 #define CHI_POS_DB           36
 #define NV_MI_DB	37
 
-/* ¥·¥½¡¼¥é¥¹¤ÎºÇÂç¿ô */
+/* ã‚·ã‚½ãƒ¼ãƒ©ã‚¹ã®æœ€å¤§æ•° */
 #define THESAURUS_MAX	3
 
-/* »ØÄê¤Ç¤­¤ë¼«Æ°³ÍÆÀ¼­½ñÂ°À­¤ÎºÇÂç¿ô */
+/* æŒ‡å®šã§ãã‚‹è‡ªå‹•ç²å¾—è¾æ›¸å±æ€§ã®æœ€å¤§æ•° */
 #define	AUTO_DIC_FEATURES_MAX	10
 
 
 /*====================================================================
-			      ´ğËÜ¥Ç¡¼¥¿
+			      åŸºæœ¬ãƒ‡ãƒ¼ã‚¿
 ====================================================================*/
 
 typedef struct tnode_b *Treeptr_B;
 
-/* ·ÁÂÖÁÇ¥Ç¡¼¥¿ */
+/* å½¢æ…‹ç´ ãƒ‡ãƒ¼ã‚¿ */
 typedef struct {
-    int		type;	/* ¥¿¥¤¥× (·ÁÂÖÁÇ, ´ğËÜ¶ç, Ê¸Àá) */
-    int		num;	/* ÈÖ¹æ (0¡Á) */
-    /* ÌÚ¹½Â¤¥İ¥¤¥ó¥¿ */
+    int		type;	/* ã‚¿ã‚¤ãƒ— (å½¢æ…‹ç´ , åŸºæœ¬å¥, æ–‡ç¯€) */
+    int		num;	/* ç•ªå· (0ã€œ) */
+    /* æœ¨æ§‹é€ ãƒã‚¤ãƒ³ã‚¿ */
     Treeptr_B 	parent;
     Treeptr_B 	child[PARA_PART_MAX];
-    /* treeÉ½¼¨ÍÑ */
+    /* treeè¡¨ç¤ºç”¨ */
     int  	length;
     int 	space;
-    /* ·¸¤ê¼õ¤±¾ğÊó */
+    /* ä¿‚ã‚Šå—ã‘æƒ…å ± */
     int		dpnd_head;
     char 	dpnd_type;
-    int		dpnd_dflt;	/* ¤¤¤é¤Ê¤¤? */
-    /* ÊÂÎó¹½Â¤ (¾ÜºÙ¤ÏBNST_DATA¤ò»²¾È¤Î¤³¤È) */
+    int		dpnd_dflt;	/* ã„ã‚‰ãªã„? */
+    /* ä¸¦åˆ—æ§‹é€  (è©³ç´°ã¯BNST_DATAã‚’å‚ç…§ã®ã“ã¨) */
     int 	para_num;
     char   	para_key_type;
     char	para_top_p;
     char	para_type;
     char	to_para_p;
-    /* MRPH_DATA, BNST_DATA, TAG_DATA¤È¤Î¶¦ÄÌÉôÊ¬¤Ï¤³¤³¤Ş¤Ç */
+    /* MRPH_DATA, BNST_DATA, TAG_DATAã¨ã®å…±é€šéƒ¨åˆ†ã¯ã“ã“ã¾ã§ */
 
-    /* ´ğËÜ¶ç¤È¤Î´Ø·¸ */
-    int 	tnum;	/* ´ğËÜ¶ç¶èÀÚ¤ê¤È°ìÃ×¤¹¤ë¤È¤­¤ÎÈÖ¹æ */
-    int		inum;	/* ´ğËÜ¶çËö¤Î·ÁÂÖÁÇ:0, ¤½¤Î1¤ÄÁ°¤Î·ÁÂÖÁÇ: 1, ... */
-    /* ·ÁÂÖÁÇ¾ğÊó */
-    char 	Goi[WORD_LEN_MAX+1];	/* ¸¶·¿ */
+    /* åŸºæœ¬å¥ã¨ã®é–¢ä¿‚ */
+    int 	tnum;	/* åŸºæœ¬å¥åŒºåˆ‡ã‚Šã¨ä¸€è‡´ã™ã‚‹ã¨ãã®ç•ªå· */
+    int		inum;	/* åŸºæœ¬å¥æœ«ã®å½¢æ…‹ç´ :0, ãã®1ã¤å‰ã®å½¢æ…‹ç´ : 1, ... */
+    /* å½¢æ…‹ç´ æƒ…å ± */
+    char 	Goi[WORD_LEN_MAX+1];	/* åŸå‹ */
     char 	Yomi[WORD_LEN_MAX+1];
     char 	Goi2[WORD_LEN_MAX+1];
     int  	Hinshi;
@@ -648,64 +650,64 @@ typedef struct {
     int  	Katuyou_Kei;
     char	Imi[IMI_MAX];
     FEATUREptr	f;
-    int         Num;         /* Ê¸ÀèÆ¬¤«¤é¤³¤Î·ÁÂÖÁÇ¤Î½ª¤ê¤Ş¤Ç¤ÎÊ¸»ú¿ô */
-    char 	*SM;				/* ÄÉ²Ã */
+    int         Num;         /* æ–‡å…ˆé ­ã‹ã‚‰ã“ã®å½¢æ…‹ç´ ã®çµ‚ã‚Šã¾ã§ã®æ–‡å­—æ•° */
+    char 	*SM;				/* è¿½åŠ  */
     char        Pos[CHI_POS_LEN_MAX+1];    /* pos-tag for Chinese word */
     char        Type[CHI_TYPE_LEN_MAX+1];    /* type for Chinese word */
 } MRPH_DATA;
 
 typedef struct cf_def *CF_ptr;
 typedef struct cpm_def *CPM_ptr;
-/* Ê¸Àá¥Ç¡¼¥¿ */
+/* æ–‡ç¯€ãƒ‡ãƒ¼ã‚¿ */
 typedef struct tnode_b {
-    int		type;	/* ¥¿¥¤¥× (·ÁÂÖÁÇ, ´ğËÜ¶ç, Ê¸Àá) */
-    int 	num;	/* ÈÖ¹æ (0¡Á) */
-    /* ÌÚ¹½Â¤¥İ¥¤¥ó¥¿ */
+    int		type;	/* ã‚¿ã‚¤ãƒ— (å½¢æ…‹ç´ , åŸºæœ¬å¥, æ–‡ç¯€) */
+    int 	num;	/* ç•ªå· (0ã€œ) */
+    /* æœ¨æ§‹é€ ãƒã‚¤ãƒ³ã‚¿ */
     Treeptr_B 	parent;
     Treeptr_B 	child[PARA_PART_MAX];
-    /* treeÉ½¼¨ÍÑ */
+    /* treeè¡¨ç¤ºç”¨ */
     int  	length;
     int 	space;
-    /* ·¸¤ê¼õ¤±¾ğÊó (½èÍı¤¬³ÎÄê¸å¥³¥Ô¡¼) */
-    int		dpnd_head;	/* ·¸¤êÀè¤ÎÊ¸ÀáÈÖ¹æ */
-    char 	dpnd_type;	/* ·¸¤ê¤Î¥¿¥¤¥× : D, P, I, A */
-    int		dpnd_dflt;	/* default¤Î·¸¤êÀèÊ¸ÀáÈÖ¹æ */
-    /* ÊÂÎó¹½Â¤ */
-    int 	para_num;	/* ÂĞ±ş¤¹¤ëÊÂÎó¹½Â¤¥Ç¡¼¥¿ÈÖ¹æ */
-    char   	para_key_type;  /* Ì¾|½Ò|¡© feature¤«¤é¥³¥Ô¡¼ */
+    /* ä¿‚ã‚Šå—ã‘æƒ…å ± (å‡¦ç†ãŒç¢ºå®šå¾Œã‚³ãƒ”ãƒ¼) */
+    int		dpnd_head;	/* ä¿‚ã‚Šå…ˆã®æ–‡ç¯€ç•ªå· */
+    char 	dpnd_type;	/* ä¿‚ã‚Šã®ã‚¿ã‚¤ãƒ— : D, P, I, A */
+    int		dpnd_dflt;	/* defaultã®ä¿‚ã‚Šå…ˆæ–‡ç¯€ç•ªå· */
+    /* ä¸¦åˆ—æ§‹é€  */
+    int 	para_num;	/* å¯¾å¿œã™ã‚‹ä¸¦åˆ—æ§‹é€ ãƒ‡ãƒ¼ã‚¿ç•ªå· */
+    char   	para_key_type;  /* å|è¿°|ï¼Ÿ featureã‹ã‚‰ã‚³ãƒ”ãƒ¼ */
     char	para_top_p;	/* TRUE -> PARA */
     char	para_type;	/* 0, 1:<P>, 2:<I> */
-    				/* ¤³¤Î2¤Ä¤ÏPARA¥Î¡¼¥É¤òÆ³Æş¤¹¤ë¤¿¤á¤Î¤â¤Î
-				   dpnd_type¤Ê¤É¤È¤ÏÈùÌ¯¤Ë°Û¤Ê¤ë */
-    char	to_para_p;	/* ¥³¥Ô¡¼ */
-    /* MRPH_DATA, BNST_DATA, TAG_DATA¤È¤Î¶¦ÄÌÉôÊ¬¤Ï¤³¤³¤Ş¤Ç */
+    				/* ã“ã®2ã¤ã¯PARAãƒãƒ¼ãƒ‰ã‚’å°å…¥ã™ã‚‹ãŸã‚ã®ã‚‚ã®
+				   dpnd_typeãªã©ã¨ã¯å¾®å¦™ã«ç•°ãªã‚‹ */
+    char	to_para_p;	/* ã‚³ãƒ”ãƒ¼ */
+    /* MRPH_DATA, BNST_DATA, TAG_DATAã¨ã®å…±é€šéƒ¨åˆ†ã¯ã“ã“ã¾ã§ */
 
-    int 	sp_level;	/* ÊÂÎó¹½Â¤¤ËÂĞ¤¹¤ë¥Ğ¥ê¥¢ */
-    /* ·ÁÂÖÁÇ¥Ç¡¼¥¿ */
+    int 	sp_level;	/* ä¸¦åˆ—æ§‹é€ ã«å¯¾ã™ã‚‹ãƒãƒªã‚¢ */
+    /* å½¢æ…‹ç´ ãƒ‡ãƒ¼ã‚¿ */
     int		mrph_num;
     int		preserve_mrph_num;
     MRPH_DATA 	*mrph_ptr, *head_ptr;
-    /* °ÕÌ£¾ğÊó */
+    /* æ„å‘³æƒ…å ± */
     char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
     int		BGH_num;
     char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
-    /* ³Ê²òÀÏ¥Ç¡¼¥¿ */
+    /* æ ¼è§£æãƒ‡ãƒ¼ã‚¿ */
     int 	voice;
-    int 	cf_num;		/* ¤½¤ÎÍÑ¸À¤ËÂĞ¤¹¤ë³Ê¥Õ¥ì¡¼¥à¤Î¿ô */
-    CF_ptr 	cf_ptr;		/* ³Ê¥Õ¥ì¡¼¥à´ÉÍıÇÛÎó(Case_frame_array)
-				   ¤Ç¤Î¤½¤ÎÍÑ¸À¤Î³Ê¥Õ¥ì¡¼¥à¤Î°ÌÃÖ */
-    CPM_ptr     cpm_ptr;	/* ³Ê²òÀÏ¤Î·ë²Ì¤ÎÊİ»ı */
+    int 	cf_num;		/* ãã®ç”¨è¨€ã«å¯¾ã™ã‚‹æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ•° */
+    CF_ptr 	cf_ptr;		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ç®¡ç†é…åˆ—(Case_frame_array)
+				   ã§ã®ãã®ç”¨è¨€ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ä½ç½® */
+    CPM_ptr     cpm_ptr;	/* æ ¼è§£æã®çµæœã®ä¿æŒ */
     int		pred_num;
     /* feature */
     FEATUREptr	f;
-    /* ÍÑ¸ÀÊ¸Àá¤Ø¤Î¥İ¥¤¥ó¥¿ */
+    /* ç”¨è¨€æ–‡ç¯€ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
     struct tnode_b *pred_b_ptr;
     /* tag for Chinese coordination */
     int         is_para;
-    /* É½ÁØ³Ê¥Ç¡¼¥¿ */
-    char 	SCASE_code[SCASE_CODE_SIZE];	/* É½ÁØ³Ê */
-    /* BNST_DATA, TAG_DATA¤È¤Î¶¦ÄÌÉôÊ¬¤Ï¤³¤³¤Ş¤Ç */
+    /* è¡¨å±¤æ ¼ãƒ‡ãƒ¼ã‚¿ */
+    char 	SCASE_code[SCASE_CODE_SIZE];	/* è¡¨å±¤æ ¼ */
+    /* BNST_DATA, TAG_DATAã¨ã®å…±é€šéƒ¨åˆ†ã¯ã“ã“ã¾ã§ */
 
     char 	Jiritu_Go[BNST_LENGTH_MAX];
     DpndRule	*dpnd_rule;
@@ -714,7 +716,7 @@ typedef struct tnode_b {
     int		tag_num;
 } BNST_DATA;
 
-/* ÊÂÎó¹½Â¤¥Ç¡¼¥¿ */
+/* ä¸¦åˆ—æ§‹é€ ãƒ‡ãƒ¼ã‚¿ */
 typedef struct node_para_manager *Para_M_ptr;
 typedef struct tnode_p *Treeptr_P;
 typedef struct tnode_p {
@@ -722,9 +724,9 @@ typedef struct tnode_p {
     int  	type;
     int  	max_num;
     int         key_pos, iend_pos, jend_pos, max_path[BNST_MAX];
-    FEATURE_PATTERN f_pattern;	/* ËöÈøÊ¸Àá¤Î¾ò·ï */
-    float	max_score;	/* Îà»÷À­¤ÎºÇÂçÃÍ */
-    float	pure_score;	/* ËöÈøÉ½¸½¤Î¥Ü¡¼¥Ê¥¹¤ò½ü¤¤¤¿ÃÍ,¶¯ÊÂÎó¤Î´ğ½à */
+    FEATURE_PATTERN f_pattern;	/* æœ«å°¾æ–‡ç¯€ã®æ¡ä»¶ */
+    float	max_score;	/* é¡ä¼¼æ€§ã®æœ€å¤§å€¤ */
+    float	pure_score;	/* æœ«å°¾è¡¨ç¾ã®ãƒœãƒ¼ãƒŠã‚¹ã‚’é™¤ã„ãŸå€¤,å¼·ä¸¦åˆ—ã®åŸºæº– */
     char        status;
     Para_M_ptr  manager_ptr;
 } PARA_DATA;
@@ -748,13 +750,13 @@ typedef struct _check {
     int pos[BNST_MAX];
 } CHECK_DATA;
 
-/* Ê¸Ãæ¤Î³ÆÊ¸Àá¤Î·¸¤êÀè¤Ê¤É¤Îµ­Ï¿ */
+/* æ–‡ä¸­ã®å„æ–‡ç¯€ã®ä¿‚ã‚Šå…ˆãªã©ã®è¨˜éŒ² */
 typedef struct {
-    int  	head[BNST_MAX];	/* ·¸¤êÀè */
-    char  	type[BNST_MAX];	/* ·¸¤ê¥¿¥¤¥× */
-    int   	dflt[BNST_MAX];	/* ·¸¤ê¤Îµ÷Î¥ */
-    int 	mask[BNST_MAX];	/* Èó¸òº¹¾ò·ï */
-    int 	pos;		/* ¸½ºß¤Î½èÍı°ÌÃÖ */
+    int  	head[BNST_MAX];	/* ä¿‚ã‚Šå…ˆ */
+    char  	type[BNST_MAX];	/* ä¿‚ã‚Šã‚¿ã‚¤ãƒ— */
+    int   	dflt[BNST_MAX];	/* ä¿‚ã‚Šã®è·é›¢ */
+    int 	mask[BNST_MAX];	/* éäº¤å·®æ¡ä»¶ */
+    int 	pos;		/* ç¾åœ¨ã®å‡¦ç†ä½ç½® */
     CHECK_DATA	check[BNST_MAX];
     FEATURE	*f[BNST_MAX];	/* feature */
 } DPND;
@@ -808,28 +810,28 @@ typedef struct {
 } CHI_ROOT;
 
 /*====================================================================
-			       ¾È±ş²òÀÏ
+			       ç…§å¿œè§£æ
 ====================================================================*/
 
-/* ENTITY¤Ø¤Î¸ÀµÚ(¥¼¥í¤ò´Ş¤à) */
+/* ENTITYã¸ã®è¨€åŠ(ã‚¼ãƒ­ã‚’å«ã‚€) */
 typedef struct mention {
     int 		sent_num;
     int                 tag_num;
-    char                cpp_string[PP_STRING_MAX]; /* ÍÑ¸À¤Î³ÊÍ×ÁÇ¤È¤·¤Æ¤Î³Ê */   
-    char                spp_string[PP_STRING_MAX]; /* ³Ê¹½Â¤¤Ë¤ª¤±¤ëÉ½ÁØ³Ê */
+    char                cpp_string[PP_STRING_MAX]; /* ç”¨è¨€ã®æ ¼è¦ç´ ã¨ã—ã¦ã®æ ¼ */   
+    char                spp_string[PP_STRING_MAX]; /* æ ¼æ§‹é€ ã«ãŠã‘ã‚‹è¡¨å±¤æ ¼ */
     char                type; /* 'S', '=', 'N', 'C', 'O', 'D' */
-    double              salience_score; /* ¤É¤Î¤¯¤é¤¤Àè¹Ô»ì¤Ë¤Ê¤ê¤ä¤¹¤¤¤« */    
+    double              salience_score; /* ã©ã®ãã‚‰ã„å…ˆè¡Œè©ã«ãªã‚Šã‚„ã™ã„ã‹ */    
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
-    struct mention      *explicit_mention; /* Ä¾ÀÜ¤Î³ÊÍ×ÁÇ¤Ø¤Î¥İ¥¤¥ó¥¿(flag=C¤Î¾ì¹ç¤Î¤ß) */
+    struct mention      *explicit_mention; /* ç›´æ¥ã®æ ¼è¦ç´ ã¸ã®ãƒã‚¤ãƒ³ã‚¿(flag=Cã®å ´åˆã®ã¿) */
 } MENTION;
 
-/* ´ğËÜ¶ç¤´¤È¤ËMENTION¤ò´ÉÍı¤¹¤ë¹½Â¤ÂÎ */
+/* åŸºæœ¬å¥ã”ã¨ã«MENTIONã‚’ç®¡ç†ã™ã‚‹æ§‹é€ ä½“ */
 typedef struct mention_manager {
-    /* 0ÈÖÌÜ¤Ë¤ÏÉ¬¤º¼«Ê¬¼«¿È¤òÆş¤ì¤ë */
-    /* 1ÈÖÌÜ°Ê¹ß¤Ï´Ø·¸¤¹¤ë³ÊÍ×ÁÇ¤òÆş¤ì¤Æ¤¤¤¯ */
+    /* 0ç•ªç›®ã«ã¯å¿…ãšè‡ªåˆ†è‡ªèº«ã‚’å…¥ã‚Œã‚‹ */
+    /* 1ç•ªç›®ä»¥é™ã¯é–¢ä¿‚ã™ã‚‹æ ¼è¦ç´ ã‚’å…¥ã‚Œã¦ã„ã */
     int                 num;
-    char 	        cf_id[CF_ID_LEN_MAX]; /* ³Ê¹½Â¤½ĞÎÏÍÑ */
+    char 	        cf_id[CF_ID_LEN_MAX]; /* æ ¼æ§‹é€ å‡ºåŠ›ç”¨ */
     CF_ptr 	        cf_ptr;
     MENTION             mention[MENTION_MAX];        
 } MENTION_MGR;
@@ -837,57 +839,57 @@ typedef struct mention_manager {
 /* ENTITY */
 typedef struct entity {
     int                 num;
-    int                 output_num; /* {A,B}=C¤È¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤ËA¤ÈB¤Î½ĞÎÏnum¤òÅı°ì¤¹¤ë */
-    int                 mentioned_num;  /* ¸ÀµÚ¤µ¤ì¤Æ¤¤¤ë²ó¿ô */
-    double              salience_score; /* ¤É¤Î¤¯¤é¤¤Àè¹Ô»ì¤Ë¤Ê¤ê¤ä¤¹¤¤¤« */
-    double              salience_mem; /* Àµ²ò¤òÆÉ¤ß¹ş¤ó¤À¾ì¹ç¤Îsalience¤ÎÊÑ²½¤Îµ­Ï¿ */
-    int                 tmp_salience_flag; /* Æ±°ìÊ¸Ãæ¤Ë½Ğ¸½¤·¤¿¥Î³Ê */
+    int                 output_num; /* {A,B}=Cã¨ãªã£ã¦ã„ã‚‹ã¨ãã«Aã¨Bã®å‡ºåŠ›numã‚’çµ±ä¸€ã™ã‚‹ */
+    int                 mentioned_num;  /* è¨€åŠã•ã‚Œã¦ã„ã‚‹å›æ•° */
+    double              salience_score; /* ã©ã®ãã‚‰ã„å…ˆè¡Œè©ã«ãªã‚Šã‚„ã™ã„ã‹ */
+    double              salience_mem; /* æ­£è§£ã‚’èª­ã¿è¾¼ã‚“ã å ´åˆã®salienceã®å¤‰åŒ–ã®è¨˜éŒ² */
+    int                 tmp_salience_flag; /* åŒä¸€æ–‡ä¸­ã«å‡ºç¾ã—ãŸãƒæ ¼ */
     MENTION             *mention[MENTIONED_MAX];
-    char                name[WORD_LEN_MAX+1]; /* ENTITYÌ¾ */
+    char                name[WORD_LEN_MAX+1]; /* ENTITYå */
 } ENTITY;
 
-/* Ê¸¾ÏÁ´ÂÎ¤Ë½Ğ¸½¤·¤¿ENTITY¤ò´ÉÍı¤¹¤ë¹½Â¤ÂÎ */
+/* æ–‡ç« å…¨ä½“ã«å‡ºç¾ã—ãŸENTITYã‚’ç®¡ç†ã™ã‚‹æ§‹é€ ä½“ */
 typedef struct entity_manager {
     int                 num;
     ENTITY              entity[ENTITY_MAX];        
 } ENTITY_MGR;
 
 /*====================================================================
-				³Ê²òÀÏ
+				æ ¼è§£æ
 ====================================================================*/
 
 typedef struct tnode_t {
-    int		type;	/* ¥¿¥¤¥× (·ÁÂÖÁÇ, ´ğËÜ¶ç, Ê¸Àá) */
-    int 	num;	/* ÈÖ¹æ (0¡Á) */
-    /* ÌÚ¹½Â¤¥İ¥¤¥ó¥¿ */
+    int		type;	/* ã‚¿ã‚¤ãƒ— (å½¢æ…‹ç´ , åŸºæœ¬å¥, æ–‡ç¯€) */
+    int 	num;	/* ç•ªå· (0ã€œ) */
+    /* æœ¨æ§‹é€ ãƒã‚¤ãƒ³ã‚¿ */
     struct tnode_t	*parent;
     struct tnode_t	*child[PARA_PART_MAX];
-    /* treeÉ½¼¨ÍÑ */
+    /* treeè¡¨ç¤ºç”¨ */
     int  	length;
     int 	space;
-    /* ·¸¤ê¼õ¤±¾ğÊó */
+    /* ä¿‚ã‚Šå—ã‘æƒ…å ± */
     int		dpnd_head;
     char 	dpnd_type;
-    int		dpnd_dflt;	/* ¤¤¤é¤Ê¤¤? */
-    /* ÊÂÎó¹½Â¤ (¾ÜºÙ¤ÏBNST_DATA¤ò»²¾È¤Î¤³¤È) */
+    int		dpnd_dflt;	/* ã„ã‚‰ãªã„? */
+    /* ä¸¦åˆ—æ§‹é€  (è©³ç´°ã¯BNST_DATAã‚’å‚ç…§ã®ã“ã¨) */
     int 	para_num;
     char   	para_key_type;
     char	para_top_p;
     char	para_type;
     char	to_para_p;
-    /* MRPH_DATA, BNST_DATA, TAG_DATA¤È¤Î¶¦ÄÌÉôÊ¬¤Ï¤³¤³¤Ş¤Ç */
+    /* MRPH_DATA, BNST_DATA, TAG_DATAã¨ã®å…±é€šéƒ¨åˆ†ã¯ã“ã“ã¾ã§ */
 
-    int 	sp_level;	/* ÊÂÎó¹½Â¤¤ËÂĞ¤¹¤ë¥Ğ¥ê¥¢ */
-    /* ·ÁÂÖÁÇ¥Ç¡¼¥¿ */
+    int 	sp_level;	/* ä¸¦åˆ—æ§‹é€ ã«å¯¾ã™ã‚‹ãƒãƒªã‚¢ */
+    /* å½¢æ…‹ç´ ãƒ‡ãƒ¼ã‚¿ */
     int		mrph_num;
     int		preserve_mrph_num;
     MRPH_DATA 	*mrph_ptr, *head_ptr;
-    /* °ÕÌ£¾ğÊó */
+    /* æ„å‘³æƒ…å ± */
     char 	BGH_code[EX_ELEMENT_MAX*BGH_CODE_SIZE+1];
     int		BGH_num;
     char 	SM_code[SM_ELEMENT_MAX*SM_CODE_SIZE+1];
     int         SM_num;
-    /* ³Ê²òÀÏ¥Ç¡¼¥¿ */
+    /* æ ¼è§£æãƒ‡ãƒ¼ã‚¿ */
     int 	voice;
     int 	cf_num;
     CF_ptr 	cf_ptr;
@@ -895,31 +897,31 @@ typedef struct tnode_t {
     int		pred_num;
     /* feature */
     FEATUREptr	f;
-    /* ÍÑ¸ÀÊ¸Àá¤Ø¤Î¥İ¥¤¥ó¥¿ */
+    /* ç”¨è¨€æ–‡ç¯€ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
     struct tnode_t	*pred_b_ptr;
     /* tag for Chinese coordination */
     int         is_para;
-    /* É½ÁØ³Ê¥Ç¡¼¥¿ */
+    /* è¡¨å±¤æ ¼ãƒ‡ãƒ¼ã‚¿ */
     char 	SCASE_code[SCASE_CODE_SIZE];
-    /* BNST_DATA, TAG_DATA¤È¤Î¶¦ÄÌÉôÊ¬¤Ï¤³¤³¤Ş¤Ç */
+    /* BNST_DATA, TAG_DATAã¨ã®å…±é€šéƒ¨åˆ†ã¯ã“ã“ã¾ã§ */
 
-    /* Ê¸Àá¤È¤Î´Ø·¸ */
-    int 	bnum;	/* Ê¸Àá¶èÀÚ¤ê¤È°ìÃ×¤¹¤ë¤È¤­¤ÎÈÖ¹æ */
-    int		inum;	/* Ê¸ÀáËö¤Î´ğËÜ¶ç:0, ¤½¤Î1¤ÄÁ°¤Î´ğËÜ¶ç: 1, ... */
-    BNST_DATA	*b_ptr;	/* ½êÂ°¤¹¤ëÊ¸Àá */
-    /* ·ÁÂÖÁÇ¥Ç¡¼¥¿ */
+    /* æ–‡ç¯€ã¨ã®é–¢ä¿‚ */
+    int 	bnum;	/* æ–‡ç¯€åŒºåˆ‡ã‚Šã¨ä¸€è‡´ã™ã‚‹ã¨ãã®ç•ªå· */
+    int		inum;	/* æ–‡ç¯€æœ«ã®åŸºæœ¬å¥:0, ãã®1ã¤å‰ã®åŸºæœ¬å¥: 1, ... */
+    BNST_DATA	*b_ptr;	/* æ‰€å±ã™ã‚‹æ–‡ç¯€ */
+    /* å½¢æ…‹ç´ ãƒ‡ãƒ¼ã‚¿ */
     int		settou_num, jiritu_num, fuzoku_num;
     MRPH_DATA 	*settou_ptr, *jiritu_ptr, *fuzoku_ptr;
     int 	e_cf_num;
-    /* Àµ²ò¤Î´Ø·¸¥Ç¡¼¥¿ */
+    /* æ­£è§£ã®é–¢ä¿‚ãƒ‡ãƒ¼ã‚¿ */
     CPM_ptr	c_cpm_ptr;
-    /* ³Ê²òÀÏ¤Ë¤ª¤±¤ëÊÂÎó³ÊÍ×ÁÇ */
+    /* æ ¼è§£æã«ãŠã‘ã‚‹ä¸¦åˆ—æ ¼è¦ç´  */
     struct tnode_t	*next;
-    /* MENTION¤Î´ÉÍı */
+    /* MENTIONã®ç®¡ç† */
     MENTION_MGR mention_mgr;
-    /* ¾È±ş²òÀÏ */
-    struct tcf_def *tcf_ptr; /* ÆşÎÏ´ğËÜ¶ç¤ÎÉ½ÁØÅª¤Ê³Ê¹½Â¤ */
-    struct ctm_def *ctm_ptr; /* ´ğËÜ¶ç¤Î³Ê¡¦¾ÊÎ¬²òÀÏ·ë²Ì¤Îµ­Ï¿ */
+    /* ç…§å¿œè§£æ */
+    struct tcf_def *tcf_ptr; /* å…¥åŠ›åŸºæœ¬å¥ã®è¡¨å±¤çš„ãªæ ¼æ§‹é€  */
+    struct ctm_def *ctm_ptr; /* åŸºæœ¬å¥ã®æ ¼ãƒ»çœç•¥è§£æçµæœã®è¨˜éŒ² */
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -941,7 +943,7 @@ typedef struct tnode_t {
 #define	CF_NOUN	2
 
 #define	CF_NORMAL	0
-#define	CF_SUM		1	/* OR ¤Î³Ê¥Õ¥ì¡¼¥à */
+#define	CF_SUM		1	/* OR ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 #define	CF_GA_SEMI_SUBJECT	2
 #define	CF_CHANGE	4
 
@@ -953,9 +955,9 @@ typedef struct tnode_t {
 #define MATCH_NONE	-2
 
 typedef struct {
-    char *kaku_keishiki;	/* ³Ê·Á¼° */
-    char *meishiku;		/* Ì¾»ì¶ç */
-    char *imisosei;		/* °ÕÌ£ÁÇÀ­ */
+    char *kaku_keishiki;	/* æ ¼å½¢å¼ */
+    char *meishiku;		/* åè©å¥ */
+    char *imisosei;		/* æ„å‘³ç´ æ€§ */
 } CF_CASE_SLOT;
 
 typedef struct {
@@ -968,7 +970,7 @@ typedef struct cf_frame_def {
     char *yomi;
     char *hyoki;
     char *feature;
-    char pred_type[3];
+    char pred_type[BYTES4CHAR + 1];
     int voice;
     int etcflag;
     int casenum;
@@ -979,46 +981,46 @@ typedef struct cf_frame_def {
     struct cf_frame_def *next;
 } CF_FRAME;
 
-/* ³Ê¥Õ¥ì¡¼¥à¹½Â¤ÂÎ
-	¡û ÆşÎÏÊ¸¤ËÂĞ¤·¤Æºî¤é¤ì¤ë
-	¡û ¤Ş¤¿¡¤³Ê¥Õ¥ì¡¼¥à¼­½ñ¤Î³Æ¥¨¥ó¥È¥ê¤Ë¤âºî¤é¤ì¤ë
-		(¡Ö¡Á¤ì¤ë¡×¤Ê¤É¤Î¾ì¹ç¤Ï¼õ¿È,Âº·É¤Ê¤É¤Ë¤½¤ì¤¾¤ì°ì¤Ä)
+/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ§‹é€ ä½“
+	â—‹ å…¥åŠ›æ–‡ã«å¯¾ã—ã¦ä½œã‚‰ã‚Œã‚‹
+	â—‹ ã¾ãŸï¼Œæ ¼ãƒ•ãƒ¬ãƒ¼ãƒ è¾æ›¸ã®å„ã‚¨ãƒ³ãƒˆãƒªã«ã‚‚ä½œã‚‰ã‚Œã‚‹
+		(ã€Œã€œã‚Œã‚‹ã€ãªã©ã®å ´åˆã¯å—èº«,å°Šæ•¬ãªã©ã«ãã‚Œãã‚Œä¸€ã¤)
  */
 typedef struct cf_def {
-    int		type;                                   /* ³Ê¥Õ¥ì¡¼¥à¤Î¼ïÎà */
-    int         type_flag;                              /* ÍÑ¸À¡¦Ì¾»ìÎ¾Êı¤Î³Ê¥Õ¥ì¡¼¥à¤òÄ´¤Ù¤ë¾ì¹ç */
-    int 	element_num;				/* ³ÊÍ×ÁÇ¿ô */
-    int 	oblig[CF_ELEMENT_MAX]; 			/* É¬¿Ü³Ê¤«¤É¤¦¤« */
-    int 	adjacent[CF_ELEMENT_MAX];		/* Ä¾Á°³Ê¤«¤É¤¦¤« */
-    int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* ³Ê½õ»ì */
-    int 	sp[CF_ELEMENT_MAX];		 	/* É½ÁØ³Ê (ÆşÎÏÂ¦) */
+    int		type;                                   /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç¨®é¡ */
+    int         type_flag;                              /* ç”¨è¨€ãƒ»åè©ä¸¡æ–¹ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’èª¿ã¹ã‚‹å ´åˆ */
+    int 	element_num;				/* æ ¼è¦ç´ æ•° */
+    int 	oblig[CF_ELEMENT_MAX]; 			/* å¿…é ˆæ ¼ã‹ã©ã†ã‹ */
+    int 	adjacent[CF_ELEMENT_MAX];		/* ç›´å‰æ ¼ã‹ã©ã†ã‹ */
+    int 	pp[CF_ELEMENT_MAX][PP_ELEMENT_MAX]; 	/* æ ¼åŠ©è© */
+    int 	sp[CF_ELEMENT_MAX];		 	/* è¡¨å±¤æ ¼ (å…¥åŠ›å´) */
     char	*pp_str[CF_ELEMENT_MAX];
-    char	*sm[CF_ELEMENT_MAX]; 			/* °ÕÌ£¥Ş¡¼¥« */
-    char	*sm_delete[CF_ELEMENT_MAX];		/* »ÈÍÑ¶Ø»ß°ÕÌ£¥Ş¡¼¥« */
+    char	*sm[CF_ELEMENT_MAX]; 			/* æ„å‘³ãƒãƒ¼ã‚« */
+    char	*sm_delete[CF_ELEMENT_MAX];		/* ä½¿ç”¨ç¦æ­¢æ„å‘³ãƒãƒ¼ã‚« */
     int		sm_delete_size[CF_ELEMENT_MAX];
     int		sm_delete_num[CF_ELEMENT_MAX];
-    char	*sm_specify[CF_ELEMENT_MAX];		/* À©¸Â°ÕÌ£¥Ş¡¼¥« */
+    char	*sm_specify[CF_ELEMENT_MAX];		/* åˆ¶é™æ„å‘³ãƒãƒ¼ã‚« */
     int		sm_specify_size[CF_ELEMENT_MAX];
     int		sm_specify_num[CF_ELEMENT_MAX];
-    char 	*ex[CF_ELEMENT_MAX];			/* ÍÑÎã */
+    char 	*ex[CF_ELEMENT_MAX];			/* ç”¨ä¾‹ */
     char	**ex_list[CF_ELEMENT_MAX];
     int		*ex_freq[CF_ELEMENT_MAX];
     int		ex_size[CF_ELEMENT_MAX];
     int		ex_num[CF_ELEMENT_MAX];
     int		freq[CF_ELEMENT_MAX];
     char	*semantics[CF_ELEMENT_MAX];
-    char	**gex_list[CF_ELEMENT_MAX];              /* ÍÑÎãÃæ¤Ëµ­¤µ¤ì¤¿ÈÆ²½ÁÇÀ­¤ò³ÊÇ¼ */
+    char	**gex_list[CF_ELEMENT_MAX];              /* ç”¨ä¾‹ä¸­ã«è¨˜ã•ã‚ŒãŸæ±åŒ–ç´ æ€§ã‚’æ ¼ç´ */
     double	*gex_freq[CF_ELEMENT_MAX];
     int		gex_size[CF_ELEMENT_MAX];
     int		gex_num[CF_ELEMENT_MAX];
-    int 	voice;					/* ¥ô¥©¥¤¥¹ */
-    unsigned int	cf_address;				/* ³Ê¥Õ¥ì¡¼¥à¤Î¥¢¥É¥ì¥¹ */
-    int 	cf_size;				/* ³Ê¥Õ¥ì¡¼¥à¤Î¥µ¥¤¥º */
-    char 	cf_id[CF_ID_LEN_MAX];			/* ³Ê¥Õ¥ì¡¼¥à¤ÎID (ÂåÉ½É½µ­+¥¿¥¤¥×+ÈÖ¹æ) */
-    char	pred_type[3];				/* ÍÑ¸À¥¿¥¤¥× (Æ°, ·Á, È½) */
-    char 	*entry;					/* ÍÑ¸À¤ÎÉ½µ­ */
+    int 	voice;					/* ãƒ´ã‚©ã‚¤ã‚¹ */
+    unsigned int	cf_address;				/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ */
+    int 	cf_size;				/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã‚µã‚¤ã‚º */
+    char 	cf_id[CF_ID_LEN_MAX];			/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ID (ä»£è¡¨è¡¨è¨˜+ã‚¿ã‚¤ãƒ—+ç•ªå·) */
+    char	pred_type[3];				/* ç”¨è¨€ã‚¿ã‚¤ãƒ— (å‹•, å½¢, åˆ¤) */
+    char 	*entry;					/* ç”¨è¨€ã®è¡¨è¨˜ */
     char 	imi[SMALL_DATA_LEN];
-    int		etcflag;				/* ³Ê¥Õ¥ì¡¼¥à¤¬ OR ¤«¤É¤¦¤« */
+    int		etcflag;				/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒ OR ã‹ã©ã†ã‹ */
     char	*feature;
     int		weight[CF_ELEMENT_MAX];
     int		samecase[CF_ELEMENT_MAX][2];
@@ -1027,58 +1029,58 @@ typedef struct cf_def {
     float	cf_similarity;
 } CASE_FRAME;
 
-/* Ê¸Ãæ¤Î³ÊÍ×ÁÇ¤È³Ê¥Õ¥ì¡¼¥à¤Î¥¹¥í¥Ã¥È¤È¤ÎÂĞ±şÉÕ¤±µ­Ï¿ */
+/* æ–‡ä¸­ã®æ ¼è¦ç´ ã¨æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã‚¹ãƒ­ãƒƒãƒˆã¨ã®å¯¾å¿œä»˜ã‘è¨˜éŒ² */
 typedef struct {
-    /* ¤¢¤ë³Ê¤¬¤É¤ÎÆşÎÏ³ÊÍ×ÁÇ¤ËÂĞ±ş¤·¤Æ¤¤¤ë¤«¤ÎÈÖ¹æ */
+    /* ã‚ã‚‹æ ¼ãŒã©ã®å…¥åŠ›æ ¼è¦ç´ ã«å¯¾å¿œã—ã¦ã„ã‚‹ã‹ã®ç•ªå· */
     int  	flag[CF_ELEMENT_MAX];
-    /* ¤½¤Î¥¹¥³¥¢ */
+    /* ãã®ã‚¹ã‚³ã‚¢ */
     double	score[CF_ELEMENT_MAX];
-    /* ÍÑÎã¤Î²¿ÈÖÌÜ¤È¥Ş¥Ã¥Á¤·¤¿¤«(¼çÂÎ¥Ş¥Ã¥Á¤Î¾ì¹ç¤ÏMATCH_SUBJECT(-1)) */
+    /* ç”¨ä¾‹ã®ä½•ç•ªç›®ã¨ãƒãƒƒãƒã—ãŸã‹(ä¸»ä½“ãƒãƒƒãƒã®å ´åˆã¯MATCH_SUBJECT(-1)) */
     int		pos[CF_ELEMENT_MAX];
 } LIST;
 
-/* Ê¸¤È³Ê¥Õ¥ì¡¼¥à¤ÎÂĞ±şÉÕ¤±·ë²Ì¤Îµ­Ï¿ */
+/* æ–‡ã¨æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®å¯¾å¿œä»˜ã‘çµæœã®è¨˜éŒ² */
 typedef struct {
-    CASE_FRAME 	*cf_ptr;			/* ³Ê¥Õ¥ì¡¼¥à¤Ø¤Î¥İ¥¤¥ó¥¿ */
-    double 	score;				/* ¥¹¥³¥¢ */
-    double	pure_score[MAX_MATCH_MAX];	/* Àµµ¬²½¤¹¤ëÁ°¤Î¥¹¥³¥¢ */
-    double	sufficiency;			/* ³Ê¥Õ¥ì¡¼¥à¤ÎËä¤Ş¤ê¤°¤¢¤¤ */
-    int 	result_num;			/* µ­²±¤¹¤ëÂĞ±ş´Ø·¸¿ô */
-    /* ¥Ñ¥¿¡¼¥ó(³Ê¥Õ¥ì¡¼¥à)¤«¤é¸«¤¿³ä¤êÅö¤Æ¾õ¶· */
-    LIST	result_lists_p[MAX_MATCH_MAX]; 	/* ¥¹¥³¥¢ºÇÂç¤ÎÂĞ±ş´Ø·¸
-						   (Æ±ÅÀ¤Î¾ì¹ç¤ÏÊ£¿ô) */
-    /* ¥Ç¡¼¥¿(ÆşÎÏ)¤«¤é¸«¤¿³ä¤êÅö¤Æ¾õ¶· */
+    CASE_FRAME 	*cf_ptr;			/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
+    double 	score;				/* ã‚¹ã‚³ã‚¢ */
+    double	pure_score[MAX_MATCH_MAX];	/* æ­£è¦åŒ–ã™ã‚‹å‰ã®ã‚¹ã‚³ã‚¢ */
+    double	sufficiency;			/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®åŸ‹ã¾ã‚Šãã‚ã„ */
+    int 	result_num;			/* è¨˜æ†¶ã™ã‚‹å¯¾å¿œé–¢ä¿‚æ•° */
+    /* ãƒ‘ã‚¿ãƒ¼ãƒ³(æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ )ã‹ã‚‰è¦‹ãŸå‰²ã‚Šå½“ã¦çŠ¶æ³ */
+    LIST	result_lists_p[MAX_MATCH_MAX]; 	/* ã‚¹ã‚³ã‚¢æœ€å¤§ã®å¯¾å¿œé–¢ä¿‚
+						   (åŒç‚¹ã®å ´åˆã¯è¤‡æ•°) */
+    /* ãƒ‡ãƒ¼ã‚¿(å…¥åŠ›)ã‹ã‚‰è¦‹ãŸå‰²ã‚Šå½“ã¦çŠ¶æ³ */
     LIST	result_lists_d[MAX_MATCH_MAX];
-    /* result_lists_d[0].flag[10] == 4 ¤Ê¤é¤Ğ result_lists_p[0].flag[4] == 10 */
+    /* result_lists_d[0].flag[10] == 4 ãªã‚‰ã° result_lists_p[0].flag[4] == 10 */
 
     struct cpm_def	*cpm;
 } CF_MATCH_MGR;
 
-/* Ê¸¤È(ÍÑ¸À¤ËÂĞ¤¹¤ëÊ£¿ô¤Î²ÄÇ½¤Ê)³Ê¥Õ¥ì¡¼¥à¤ÎÂĞ±şÉÕ¤±·ë²Ì¤Îµ­Ï¿ */
+/* æ–‡ã¨(ç”¨è¨€ã«å¯¾ã™ã‚‹è¤‡æ•°ã®å¯èƒ½ãª)æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®å¯¾å¿œä»˜ã‘çµæœã®è¨˜éŒ² */
 typedef struct cpm_def {
-    CASE_FRAME 	cf;				/* ÆşÎÏÊ¸¤Î³Ê¹½Â¤ */
-    TAG_DATA	*pred_b_ptr;			/* ÆşÎÏÊ¸¤ÎÍÑ¸ÀÊ¸Àá */
-    TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* ÆşÎÏÊ¸¤Î³ÊÍ×ÁÇÊ¸Àá */
-    struct sentence	*elem_s_ptr[CF_ELEMENT_MAX];	/* ¤É¤ÎÊ¸¤ÎÍ×ÁÇ¤Ç¤¢¤ë¤« (¾ÊÎ¬ÍÑ) */
-    int 	elem_b_num[CF_ELEMENT_MAX];	/* ÆşÎÏÊ¸¤Î³ÊÍ×ÁÇÊ¸Àá(Ï¢³Ê¤Î·¸¤êÀè¤Ï-1,Â¾¤Ï»Ò¤Î½çÈÖ,¾ÊÎ¬¤Ï-2,¾È±ş¤Ï-3) */
-    double 	score;				/* ¥¹¥³¥¢ºÇÂçÃÍ(=cmm[0].score) */
-    int 	result_num;			/* µ­²±¤¹¤ë³Ê¥Õ¥ì¡¼¥à¿ô */
+    CASE_FRAME 	cf;				/* å…¥åŠ›æ–‡ã®æ ¼æ§‹é€  */
+    TAG_DATA	*pred_b_ptr;			/* å…¥åŠ›æ–‡ã®ç”¨è¨€æ–‡ç¯€ */
+    TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* å…¥åŠ›æ–‡ã®æ ¼è¦ç´ æ–‡ç¯€ */
+    struct sentence	*elem_s_ptr[CF_ELEMENT_MAX];	/* ã©ã®æ–‡ã®è¦ç´ ã§ã‚ã‚‹ã‹ (çœç•¥ç”¨) */
+    int 	elem_b_num[CF_ELEMENT_MAX];	/* å…¥åŠ›æ–‡ã®æ ¼è¦ç´ æ–‡ç¯€(é€£æ ¼ã®ä¿‚ã‚Šå…ˆã¯-1,ä»–ã¯å­ã®é †ç•ª,çœç•¥ã¯-2,ç…§å¿œã¯-3) */
+    double 	score;				/* ã‚¹ã‚³ã‚¢æœ€å¤§å€¤(=cmm[0].score) */
+    int 	result_num;			/* è¨˜æ†¶ã™ã‚‹æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
     int		tie_num;
-    CF_MATCH_MGR cmm[CMM_MAX];			/* ¥¹¥³¥¢ºÇÂç¤Î³Ê¥Õ¥ì¡¼¥à¤È¤Î
-						   ÂĞ±şÉÕ¤±¤òµ­Ï¿
-						   (Æ±ÅÀ¤Î¾ì¹ç¤ÏÊ£¿ô) */
+    CF_MATCH_MGR cmm[CMM_MAX];			/* ã‚¹ã‚³ã‚¢æœ€å¤§ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã¨ã®
+						   å¯¾å¿œä»˜ã‘ã‚’è¨˜éŒ²
+						   (åŒç‚¹ã®å ´åˆã¯è¤‡æ•°) */
     int		decided;
 } CF_PRED_MGR;
 
-/* °ìÊ¸¤Î²òÀÏ·ë²Ì¤ÎÁ´µ­Ï¿ */
+/* ä¸€æ–‡ã®è§£æçµæœã®å…¨è¨˜éŒ² */
 typedef struct {
-    DPND 	dpnd;		/* °ÍÂ¸¹½Â¤ */
-    int		pssb;		/* °ÍÂ¸¹½Â¤¤Î²ÄÇ½À­¤Î²¿ÈÖÌÜ¤« */
-    int		dflt;		/* ¡© */
-    double 	score;		/* ¥¹¥³¥¢ */
-    int 	pred_num;	/* Ê¸Ãæ¤ÎÍÑ¸À¿ô */
-    CF_PRED_MGR cpm[CPM_MAX];	/* Ê¸Ãæ¤Î³ÆÍÑ¸À¤Î³Ê²òÀÏ·ë²Ì */
-    int		ID;		/* DPND ¤Î ID */
+    DPND 	dpnd;		/* ä¾å­˜æ§‹é€  */
+    int		pssb;		/* ä¾å­˜æ§‹é€ ã®å¯èƒ½æ€§ã®ä½•ç•ªç›®ã‹ */
+    int		dflt;		/* ï¼Ÿ */
+    double 	score;		/* ã‚¹ã‚³ã‚¢ */
+    int 	pred_num;	/* æ–‡ä¸­ã®ç”¨è¨€æ•° */
+    CF_PRED_MGR cpm[CPM_MAX];	/* æ–‡ä¸­ã®å„ç”¨è¨€ã®æ ¼è§£æçµæœ */
+    int		ID;		/* DPND ã® ID */
 } TOTAL_MGR;
 
 typedef struct _CKY *CKYptr;
@@ -1114,11 +1116,11 @@ typedef struct _cfcm_def {
 } CASE_FRAME_CACHE_MGR;
 
 /*====================================================================
-			       Ê¸Ì®½èÍı
+			       æ–‡è„ˆå‡¦ç†
 ====================================================================*/
 
 typedef struct sentence {
-    int 		Sen_num;	/* Ê¸ÈÖ¹æ 1¡Á */
+    int 		Sen_num;	/* æ–‡ç•ªå· 1ã€œ */
     int			available;
     int			Mrph_num;
     int			New_Mrph_num;
@@ -1127,8 +1129,8 @@ typedef struct sentence {
     int			Max_New_Bnst_num;
     int			Tag_num;
     int			New_Tag_num;
-    int			Para_M_num;	/* ÊÂÎó´ÉÍı¥Ş¥Í¡¼¥¸¥ã¿ô */
-    int			Para_num;	/* ÊÂÎó¹½Â¤¿ô */
+    int			Para_M_num;	/* ä¸¦åˆ—ç®¡ç†ãƒãƒãƒ¼ã‚¸ãƒ£æ•° */
+    int			Para_num;	/* ä¸¦åˆ—æ§‹é€ æ•° */
     MRPH_DATA		*mrph_data;
     BNST_DATA	 	*bnst_data;
     TAG_DATA	 	*tag_data;
@@ -1142,8 +1144,8 @@ typedef struct sentence {
     double		score;
 } SENTENCE_DATA;
 
-#define	CREL	1	/* ³Ê´Ø·¸ */
-#define	EREL	2	/* ¾ÊÎ¬´Ø·¸ */
+#define	CREL	1	/* æ ¼é–¢ä¿‚ */
+#define	EREL	2	/* çœç•¥é–¢ä¿‚ */
 
 typedef struct case_component {
     char	*word;
@@ -1155,50 +1157,50 @@ typedef struct case_component {
     struct case_component *next;
 } CASE_COMPONENT;
 
-/* ÍÑ¸À¤È³ÊÍ×ÁÇ¤ÎÁÈ¤Î¹½Â¤ÂÎ */
+/* ç”¨è¨€ã¨æ ¼è¦ç´ ã®çµ„ã®æ§‹é€ ä½“ */
 typedef struct predicate_anaphora_list {
-    char	*key;		/* ÍÑ¸À */
+    char	*key;		/* ç”¨è¨€ */
     int		voice;
     int		cf_addr;
-    CASE_COMPONENT *cc[CASE_MAX_NUM];	/* ³ÊÍ×ÁÇ¤Î¥ê¥¹¥È */
+    CASE_COMPONENT *cc[CASE_MAX_NUM];	/* æ ¼è¦ç´ ã®ãƒªã‚¹ãƒˆ */
     struct predicate_anaphora_list *next;
 } PALIST;
 
-/* ÍÑ¸À¤È³Ê¥Õ¥ì¡¼¥àID¤Î¹½Â¤ÂÎ */
+/* ç”¨è¨€ã¨æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ IDã®æ§‹é€ ä½“ */
 typedef struct cf_list {
-    char	*key;		/* ÍÑ¸À */
-    char	**cfid;		/* ³Ê¥Õ¥ì¡¼¥àID */
+    char	*key;		/* ç”¨è¨€ */
+    char	**cfid;		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ID */
     int		cfid_num;
     int		cfid_max;
     struct cf_list *next;
 } CFLIST;
 
-#define	ELLIPSIS_TAG_UNSPECIFIED_PEOPLE	-2	/* ÉÔÆÃÄê:¿Í */
-#define	ELLIPSIS_TAG_I_WE		-3	/* 1¿Í¾Î */
-#define	ELLIPSIS_TAG_UNSPECIFIED_CASE	-4	/* ÉÔÆÃÄê:¾õ¶· */
-#define	ELLIPSIS_TAG_PRE_SENTENCE	-5	/* Á°Ê¸ */
-#define	ELLIPSIS_TAG_POST_SENTENCE	-6	/* ¸åÊ¸ */
-#define	ELLIPSIS_TAG_EXCEPTION		-7	/* ÂĞ¾İ³° */
+#define	ELLIPSIS_TAG_UNSPECIFIED_PEOPLE	-2	/* ä¸ç‰¹å®š:äºº */
+#define	ELLIPSIS_TAG_I_WE		-3	/* 1äººç§° */
+#define	ELLIPSIS_TAG_UNSPECIFIED_CASE	-4	/* ä¸ç‰¹å®š:çŠ¶æ³ */
+#define	ELLIPSIS_TAG_PRE_SENTENCE	-5	/* å‰æ–‡ */
+#define	ELLIPSIS_TAG_POST_SENTENCE	-6	/* å¾Œæ–‡ */
+#define	ELLIPSIS_TAG_EXCEPTION		-7	/* å¯¾è±¡å¤– */
 
 typedef struct ellipsis_component {
     SENTENCE_DATA	*s;
-    char		*pp_str;		/* ¥Î³ÊÍÑ */
+    char		*pp_str;		/* ãƒæ ¼ç”¨ */
     int			bnst;
     float		score;
-    int			dist;			/* µ÷Î¥ */
+    int			dist;			/* è·é›¢ */
     struct ellipsis_component *next;
 } ELLIPSIS_COMPONENT;
 
 typedef struct ellipsis_cmm_list {
     CF_MATCH_MGR	cmm;
     CF_PRED_MGR		cpm;
-    int			element_num;		/* ÆşÎÏÂ¦ */
+    int			element_num;		/* å…¥åŠ›å´ */
 } ELLIPSIS_CMM;
 
 typedef struct ellipsis_list {
-    float		score;                  /* Àµµ¬²½¤µ¤ì¤¿¥¹¥³¥¢ */
-    float		pure_score;             /* Àµµ¬²½Á°¤Î¥¹¥³¥¢ */
-    ELLIPSIS_COMPONENT  cc[CASE_TYPE_NUM];	/* ¾ÊÎ¬³ÊÍ×ÁÇ¤Î¥ê¥¹¥È */
+    float		score;                  /* æ­£è¦åŒ–ã•ã‚ŒãŸã‚¹ã‚³ã‚¢ */
+    float		pure_score;             /* æ­£è¦åŒ–å‰ã®ã‚¹ã‚³ã‚¢ */
+    ELLIPSIS_COMPONENT  cc[CASE_TYPE_NUM];	/* çœç•¥æ ¼è¦ç´ ã®ãƒªã‚¹ãƒˆ */
     FEATUREptr		f;
     int			result_num;
     ELLIPSIS_CMM	ecmm[CMM_MAX];
@@ -1350,14 +1352,14 @@ typedef struct ellipsis_candidate {
     char	*tag;
 } E_CANDIDATE;
 
-/* Ì¾»ì¤È°ÕÌ£ÁÇ¤Î¹½Â¤ÂÎ */
+/* åè©ã¨æ„å‘³ç´ ã®æ§‹é€ ä½“ */
 typedef struct sm_list {
-    char	*key;		/* Ì¾»ì */
-    char	*sm;		/* °ÕÌ£ÁÇ */
+    char	*key;		/* åè© */
+    char	*sm;		/* æ„å‘³ç´  */
     struct sm_list *next;
 } SMLIST;
 
-/* Ì¾»ì¤ÎÈï»²¾È²ó¿ô¤Î¹½Â¤ÂÎ */
+/* åè©ã®è¢«å‚ç…§å›æ•°ã®æ§‹é€ ä½“ */
 typedef struct entity_list {
     char	*key;
     double	surface_num;
@@ -1366,62 +1368,62 @@ typedef struct entity_list {
 } ENTITY_LIST;
 
 /*====================================================================
-			 ENTITY BASE Ê¸Ì®½èÍı
+			 ENTITY BASE æ–‡è„ˆå‡¦ç†
 ====================================================================*/
 
-/* ÆşÎÏ´ğËÜ¶ç¤Î³Ê¹½Â¤ */
+/* å…¥åŠ›åŸºæœ¬å¥ã®æ ¼æ§‹é€  */
 typedef struct tcf_def {
-    CASE_FRAME 	    cf;				 /* ÆşÎÏÊ¸¤Î³Ê¹½Â¤ */
-    TAG_DATA	    *pred_b_ptr;		 /* ÆşÎÏÊ¸¤ÎÍÑ¸ÀÊ¸Àá */
-    TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* ÆşÎÏÊ¸¤Î³ÊÍ×ÁÇÊ¸Àá */
-    int 	    elem_b_num[CF_ELEMENT_MAX];	 /* ÆşÎÏÊ¸¤Î³ÊÍ×ÁÇÊ¸Àá(Ï¢³Ê¤Î·¸¤êÀè¤Ï-1,Â¾¤Ï»Ò¤Î½çÈÖ) */
+    CASE_FRAME 	    cf;				 /* å…¥åŠ›æ–‡ã®æ ¼æ§‹é€  */
+    TAG_DATA	    *pred_b_ptr;		 /* å…¥åŠ›æ–‡ã®ç”¨è¨€æ–‡ç¯€ */
+    TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* å…¥åŠ›æ–‡ã®æ ¼è¦ç´ æ–‡ç¯€ */
+    int 	    elem_b_num[CF_ELEMENT_MAX];	 /* å…¥åŠ›æ–‡ã®æ ¼è¦ç´ æ–‡ç¯€(é€£æ ¼ã®ä¿‚ã‚Šå…ˆã¯-1,ä»–ã¯å­ã®é †ç•ª) */
 } TAG_CASE_FRAME;
 
-/* CF_TAG_MGRÃæ¤Îomit_featureÍÑ¤ÎÄê¿ô */
+/* CF_TAG_MGRä¸­ã®omit_featureç”¨ã®å®šæ•° */
 #define ELLIPSIS_CASE_NUM 3
 #define O_FEATURE_NUM    94 /* 10 + 84 */
-#define NO_ASSIGNMENT     0 /* ¤¢¤ë³Ê¥¹¥í¥Ã¥È¤¬ÂĞ±şÉÕ¤±¤é¤ì¤Ê¤¤³ÎÎ¨ */
-#define EX_PMI            1 /* ¸ìPMI */	       
-#define CEX_PMI           2 /* ¥«¥Æ¥´¥êPMI */	       
-#define NEX_PMI           3 /* ¸ÇÍ­É½¸½PMI */	       
-#define CLS_PMI           4 /* ¥¯¥é¥¹PMI */
-#define WA_IN_THE_SENT    5 /* Àè¹Ô»ì¸õÊä¤¬Æ±°ìÊ¸¤Ë½Ğ¸½¤«¤Ä³Ê½õ»ì¡Ö¤Ï¡×¤òÈ¼¤¦ */
-#define SALIENCE_CHECK    6 /* SALIENCE¤¬°ìÄê°Ê¾å¤¢¤ë¤«¤É¤¦¤« */
-#define NE_PERSON         7 /* Àè¹Ô»ì¸õÊä¤¬¿ÍÌ¾ */
-#define LOCATION_PROB     8 /* °ÌÃÖ¥«¥Æ¥´¥êPMI */
-#define ASSIGNED          9 /* Ëä¤Ş¤Ã¤¿¤«¤É¤¦¤« */
-#define LOCATION_S       10 /* °ÌÃÖ¥«¥Æ¥´¥êÁÇÀ­¤Î³«»Ï°ÌÃÖ */
-#define LOCATION_NUM     84 /* °ÌÃÖ¥«¥Æ¥´¥êÁÇÀ­¤Î¼ïÎà */
+#define NO_ASSIGNMENT     0 /* ã‚ã‚‹æ ¼ã‚¹ãƒ­ãƒƒãƒˆãŒå¯¾å¿œä»˜ã‘ã‚‰ã‚Œãªã„ç¢ºç‡ */
+#define EX_PMI            1 /* èªPMI */	       
+#define CEX_PMI           2 /* ã‚«ãƒ†ã‚´ãƒªPMI */	       
+#define NEX_PMI           3 /* å›ºæœ‰è¡¨ç¾PMI */	       
+#define CLS_PMI           4 /* ã‚¯ãƒ©ã‚¹PMI */
+#define WA_IN_THE_SENT    5 /* å…ˆè¡Œè©å€™è£œãŒåŒä¸€æ–‡ã«å‡ºç¾ã‹ã¤æ ¼åŠ©è©ã€Œã¯ã€ã‚’ä¼´ã† */
+#define SALIENCE_CHECK    6 /* SALIENCEãŒä¸€å®šä»¥ä¸Šã‚ã‚‹ã‹ã©ã†ã‹ */
+#define NE_PERSON         7 /* å…ˆè¡Œè©å€™è£œãŒäººå */
+#define LOCATION_PROB     8 /* ä½ç½®ã‚«ãƒ†ã‚´ãƒªPMI */
+#define ASSIGNED          9 /* åŸ‹ã¾ã£ãŸã‹ã©ã†ã‹ */
+#define LOCATION_S       10 /* ä½ç½®ã‚«ãƒ†ã‚´ãƒªç´ æ€§ã®é–‹å§‹ä½ç½® */
+#define LOCATION_NUM     84 /* ä½ç½®ã‚«ãƒ†ã‚´ãƒªç´ æ€§ã®ç¨®é¡ */
 
-/* ´ğËÜ¶ç¤Î³Ê¡¦¾ÊÎ¬²òÀÏ·ë²Ì¤Îµ­Ï¿ */
+/* åŸºæœ¬å¥ã®æ ¼ãƒ»çœç•¥è§£æçµæœã®è¨˜éŒ² */
 typedef struct ctm_def {
-    double      score;                           /* ÂĞ±şÉÕ¤±¤Î¥¹¥³¥¢ */
-    CASE_FRAME 	*cf_ptr;			 /* ³Ê¥Õ¥ì¡¼¥à¤Ø¤Î¥İ¥¤¥ó¥¿ */
+    double      score;                           /* å¯¾å¿œä»˜ã‘ã®ã‚¹ã‚³ã‚¢ */
+    CASE_FRAME 	*cf_ptr;			 /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤ÎÍ×ÁÇ¤Î¤¦¤ÁÂĞ±şÉÕ¤±¤¬¤Ä¤¤¤¿¤â¤Î
-       (=cf_element_num¤Ë´Ş¤Ş¤ì¤ë)¤Î¤ßTRUE¤È¤Ê¤ë */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¦ç´ ã®ã†ã¡å¯¾å¿œä»˜ã‘ãŒã¤ã„ãŸã‚‚ã®
+       (=cf_element_numã«å«ã¾ã‚Œã‚‹)ã®ã¿TRUEã¨ãªã‚‹ */
     int         filled_element[CF_ELEMENT_MAX];  
 
-    /* ENTITY¤Î¤¦¤ÁÂĞ±şÉÕ¤±¤¬¤Ä¤¤¤¿¤â¤Î
-       (=entity_num¤Ë´Ş¤Ş¤ì¤ë)¤Î¤ßTRUE¤È¤Ê¤ë */
+    /* ENTITYã®ã†ã¡å¯¾å¿œä»˜ã‘ãŒã¤ã„ãŸã‚‚ã®
+       (=entity_numã«å«ã¾ã‚Œã‚‹)ã®ã¿TRUEã¨ãªã‚‹ */
     int         filled_entity[ENTITY_MAX];
 
-    /* ÂĞ±şÉÕ¤±¤é¤ì¤Ê¤«¤Ã¤¿ÆşÎÏÊ¸³ÊÍ×ÁÇ
-       ÆşÎÏÊ¸³ÊÍ×ÁÇ¤Î¤¦¤ÁÂĞ±ş¤¬ÉÕ¤¤¤Æ¤¤¤Ê¤¤¤â¤Î¤ÎÈÖ¹æ¤òÊİÂ¸ */
+    /* å¯¾å¿œä»˜ã‘ã‚‰ã‚Œãªã‹ã£ãŸå…¥åŠ›æ–‡æ ¼è¦ç´ 
+       å…¥åŠ›æ–‡æ ¼è¦ç´ ã®ã†ã¡å¯¾å¿œãŒä»˜ã„ã¦ã„ãªã„ã‚‚ã®ã®ç•ªå·ã‚’ä¿å­˜ */
     int         non_match_element[CF_ELEMENT_MAX]; 
 
-    /* °Ê²¼¤Ï´ğËÜ¶ç¤Î³Ê¹½Â¤¤Î¾ğÊó */
-    int         result_num;                      /* ÂĞ±şÉÕ¤±¤é¤ì¤¿Í×ÁÇ¿ô */
-    int         case_result_num;                 /* ³Ê²òÀÏ¤ÇÂĞ±şÉÕ¤±¤é¤ì¤¿Í×ÁÇ¿ô */
-    int         cf_element_num[CF_ELEMENT_MAX];  /* ³Ê¥Õ¥ì¡¼¥à¤Î³ÊÍ×ÁÇ¤Ø¤ÎÂĞ±ş */
-    int         tcf_element_num[CF_ELEMENT_MAX]; /* ÆşÎÏÊ¸¤Î³ÊÍ×ÁÇ¤Ø¤ÎÂĞ±ş */
-    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* ´ØÏ¢ÉÕ¤±¤é¤ì¤¿´ğËÜ¶ç */       
-    int         entity_num[CF_ELEMENT_MAX];      /* ´ØÏ¢ÉÕ¤±¤é¤ì¤¿ENTITY */
+    /* ä»¥ä¸‹ã¯åŸºæœ¬å¥ã®æ ¼æ§‹é€ ã®æƒ…å ± */
+    int         result_num;                      /* å¯¾å¿œä»˜ã‘ã‚‰ã‚ŒãŸè¦ç´ æ•° */
+    int         case_result_num;                 /* æ ¼è§£æã§å¯¾å¿œä»˜ã‘ã‚‰ã‚ŒãŸè¦ç´ æ•° */
+    int         cf_element_num[CF_ELEMENT_MAX];  /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼è¦ç´ ã¸ã®å¯¾å¿œ */
+    int         tcf_element_num[CF_ELEMENT_MAX]; /* å…¥åŠ›æ–‡ã®æ ¼è¦ç´ ã¸ã®å¯¾å¿œ */
+    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* é–¢é€£ä»˜ã‘ã‚‰ã‚ŒãŸåŸºæœ¬å¥ */       
+    int         entity_num[CF_ELEMENT_MAX];      /* é–¢é€£ä»˜ã‘ã‚‰ã‚ŒãŸENTITY */
     char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
 
-    /* µ¡³£³Ø½¬ÍÑ¤Îfeature */
-    double overt_arguments_score;                          /* ³Ê²òÀÏ¥¹¥³¥¢ */
-    double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* ¾ÊÎ¬ÂĞ±şÉÕ¤±É¾²Á¤Î¤¿¤á¤ÎÁÇÀ­ */
+    /* æ©Ÿæ¢°å­¦ç¿’ç”¨ã®feature */
+    double overt_arguments_score;                          /* æ ¼è§£æã‚¹ã‚³ã‚¢ */
+    double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* çœç•¥å¯¾å¿œä»˜ã‘è©•ä¾¡ã®ãŸã‚ã®ç´ æ€§ */
 } CF_TAG_MGR;
 
 /*====================================================================

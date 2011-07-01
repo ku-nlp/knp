@@ -1,6 +1,6 @@
 /*====================================================================
 
-			 NTT  �����ץ������
+			 NTT  検索プログラム
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -28,17 +28,17 @@ SMLIST smlist[TBLSIZE];
 {
     char *filename;
 
-    /***  �ǡ����١��������ץ�  ***/
+    /***  データベースオープン  ***/
     
-    /* ñ�� <=> ��̣�ǥ����� */
+    /* 単語 <=> 意味素コード */
 
-    // �ե�����̾����ꤹ��
+    // ファイル名を指定する
     if (DICT[SM_DB]) {   
-	filename = check_dict_filename(DICT[SM_DB], TRUE);  // .knprc ���������Ƥ���Ȥ�   �� SM_DB �� const.h ���������Ƥ���
-	                                                    //                                  DICT[SM_DB] �� configfile.c �ǻ��ꤵ��Ƥ���
+	filename = check_dict_filename(DICT[SM_DB], TRUE);  // .knprc で定義されているとき   → SM_DB は const.h で定義されている
+	                                                    //                                  DICT[SM_DB] は configfile.c で指定されている
     }
     else {
-	filename = check_dict_filename(SM_DB_NAME, FALSE);  // .knprc ���������Ƥ��ʤ��Ȥ� �� path.h �� default��(SM_DB_NAME) ��Ȥ�
+	filename = check_dict_filename(SM_DB_NAME, FALSE);  // .knprc で定義されていないとき → path.h の default値(SM_DB_NAME) を使う
     }
 
     if (OptDisplay == OPT_DEBUG) {
@@ -63,7 +63,7 @@ SMLIST smlist[TBLSIZE];
     free(filename);
     THESAURUS[USE_NTT].exist = SMExist;
     
-    /* ��̣�� => ��̣�ǥ����� */
+    /* 意味素 => 意味素コード */
     if (Thesaurus == USE_NTT) {
 	if (DICT[SM2CODE_DB]) {
 	    filename = check_dict_filename(DICT[SM2CODE_DB], TRUE);
@@ -94,7 +94,7 @@ SMLIST smlist[TBLSIZE];
 	free(filename);
     }
 
-    /* ��̣�ǥ����� => ��̣�� */
+    /* 意味素コード => 意味素 */
     if (DICT[CODE2SM_DB]) {
 	filename = check_dict_filename(DICT[CODE2SM_DB], TRUE);
     }
@@ -123,7 +123,7 @@ SMLIST smlist[TBLSIZE];
     }
     free(filename);
 
-    /* ��ͭ̾���η� <=> ����̾���η� */
+    /* 固有名詞体系 <=> 一般名詞体系 */
     if (DICT[SMP2SMG_DB]) {
 	filename = check_dict_filename(DICT[SMP2SMG_DB], TRUE);
     }
@@ -198,7 +198,7 @@ SMLIST smlist[TBLSIZE];
 {
     int i;
 
-    /* ���٤Ƥΰ�̣°������ͭ̾��ʤ� TRUE */
+    /* すべての意味属性が固有名詞なら TRUE */
 
     for (i = 0; *(code+i); i+=SM_CODE_SIZE) {
 	if (*(code+i) != '2') {
@@ -213,14 +213,14 @@ SMLIST smlist[TBLSIZE];
 /*==================================================================*/
 {
 
-    /* �ǡ����١���������Ф��� code ��������� */
+    /* データベースから取り出した code を処理する */
     int i, pos;
     char *code;
 
     code = db_get(sm_db, cp);
     if (code) {
 
-	/* ��줿�顢�̤�� */
+	/* 溢れたら、縮める */
 	if (strlen(code) > SM_CODE_SIZE*SM_ELEMENT_MAX) {
 #ifdef DEBUG
 	    fprintf(stderr, "Too long SM content <%s>.\n", code);
@@ -230,27 +230,27 @@ SMLIST smlist[TBLSIZE];
 	
 	pos = 0;
 	
-	/* ���٤Ƥΰ�̣°������ͭ̾��ΤȤ� */
+	/* すべての意味属性が固有名詞のとき */
 	if (ne_check_all_sm(code) == TRUE) {
 	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
 		if (code[i] == '2' && 
-		    strncmp(code+i, "2001030", 7)) { /* ��� �ǤϤʤ� */
+		    strncmp(code+i, "2001030", 7)) { /* 大字 ではない */
 		    strncpy(code+pos, code+i, SM_CODE_SIZE);
 		    pos += SM_CODE_SIZE;
 		}
 	    }
 	}
 	else {
-	    /* ��̣�Ǥ���Ϳ�����ʻ� */
+	    /* 意味素を付与する品詞 */
 	    for (i = 0; code[i]; i+=SM_CODE_SIZE) {
-		if ((*arg && code[i] == *arg) ||	/* ���ꤵ�줿�ʻ� */
-		    code[i] == '3' ||	/* ̾ */
-		    code[i] == '4' ||	/* ̾(����) */
-		    code[i] == '5' ||	/* ̾(��ư) */
-		    code[i] == '6' ||	/* ̾(ž��) */
-		    code[i] == '7' ||	/* ���� */
-		    code[i] == '9' ||	/* ���� */
-		    code[i] == 'a') {	/* ��̾ */
+		if ((*arg && code[i] == *arg) ||	/* 指定された品詞 */
+		    code[i] == '3' ||	/* 名 */
+		    code[i] == '4' ||	/* 名(形式) */
+		    code[i] == '5' ||	/* 名(形動) */
+		    code[i] == '6' ||	/* 名(転生) */
+		    code[i] == '7' ||	/* サ変 */
+		    code[i] == '9' ||	/* 時詞 */
+		    code[i] == 'a') {	/* 代名 */
 		    strncpy(code+pos, code+i, SM_CODE_SIZE);
 		    pos += SM_CODE_SIZE;
 		}
@@ -267,8 +267,8 @@ SMLIST smlist[TBLSIZE];
 {
     char *code;
 
-    /* sm �� code �� 1:1 �б� 
-       -> cont_str �ϰ��ʤ� */
+    /* sm と code は 1:1 対応 
+       -> cont_str は溢れない */
 
     if (SM2CODEExist == FALSE) {
 	cont_str[0] = '\0';
@@ -280,7 +280,7 @@ SMLIST smlist[TBLSIZE];
 	strcpy(cont_str, code);
 	free(code);
     }
-    /* NE�ξ����㳰 */
+    /* NEの場合は例外 */
     else if (Thesaurus == USE_NTT) {
 	if (!strncmp(cp, "ORGANIZATION", 12)) {
 	    strcpy(cont_str, "ne1*********");
@@ -345,8 +345,8 @@ SMLIST smlist[TBLSIZE];
 {
     char *sm;
 
-    /* sm �� code �� 1:1 �б� 
-       -> cont_str �ϰ��ʤ� */
+    /* sm と code は 1:1 対応 
+       -> cont_str は溢れない */
 
     if (CODE2SMExist == FALSE) {
 	cont_str[0] = '\0';
@@ -386,7 +386,7 @@ SMLIST smlist[TBLSIZE];
 {
     char *code, key[SM_CODE_SIZE+1];
 
-    /* �ͤ�Ĺ���Ƥ� 52 bytes ���餤 */
+    /* 値は長くても 52 bytes ぐらい */
 
     if (SMP2SMGExist == FALSE) {
 	cont_str[0] = '\0';
@@ -427,11 +427,11 @@ SMLIST smlist[TBLSIZE];
 	    if (*(cp+SM_CODE_SIZE+12) == '/') {
 		inc = 13;		
 	    }
-	    /* ����ǽ���� */
+	    /* 今回で終わり */
 	    else {
 		inc = 0;
 	    }
-	    /* flag == FALSE �ξ�� side-effect ��Ȥ�ʤ� */
+	    /* flag == FALSE の場合 side-effect を使わない */
 	    if (flag == FALSE) {
 		use = 0;
 	    }
@@ -441,7 +441,7 @@ SMLIST smlist[TBLSIZE];
 		    *(cp+SM_CODE_SIZE), "smp2smg");
 	    inc = 1;
 	}
-	/* ����ǽ���� '\0' */
+	/* 今回で終わり '\0' */
 	else {
 	    inc = 0;
 	}
@@ -473,7 +473,7 @@ SMLIST smlist[TBLSIZE];
     int i;
     char *p;
 
-    /* smp2smg �η�̤򤯤äĤ��� */
+    /* smp2smg の結果をくっつける */
 
     if (bp->SM_code[0] == '\0') {
 	return;
@@ -483,7 +483,7 @@ SMLIST smlist[TBLSIZE];
 	if (bp->SM_code[i*SM_CODE_SIZE] == '2') {
 	    p = smp2smg(&(bp->SM_code[i*SM_CODE_SIZE]), FALSE);
 	    if (p) {
-		/* ��줿��� */
+		/* 溢れた場合 */
 		if ((strlen(bp->SM_code)+strlen(p))/SM_CODE_SIZE > SM_ELEMENT_MAX) {
 		    return;
 		}
@@ -579,12 +579,12 @@ SMLIST smlist[TBLSIZE];
 	int i;
 	int f2 = 0, c2num = 1;
 
-	/* PATTERN: ��ͭ̾�� */
+	/* PATTERN: 固有名詞 */
 	if (*c1 == '2') {
 	    return _ntt_code_match(c1, c2);
 	}
 
-	/* PATTERN: ����̾�� */
+	/* PATTERN: 普通名詞 */
 
 	if (*c2 == '2') {
 	    c2 = smp2smg(c2, FALSE);
@@ -650,12 +650,12 @@ SMLIST smlist[TBLSIZE];
 	return FALSE;
     }
 
-    /* ���Ǥˤ��ΰ�̣°�����äƤ���Ȥ� */
+    /* すでにその意味属性をもっているとき */
     if (sms_match(target_code, code, SM_NO_EXPAND_NE) == TRUE) {
 	return FALSE;
     }
 
-    /* ������?�� */
+    /* ★溢れる?★ */
     strcat(code, target_code);
     (*num_p)++;
 
@@ -669,7 +669,7 @@ SMLIST smlist[TBLSIZE];
     int i, j, step = SM_CODE_SIZE, flag;
     float score = 0, tempscore;
 
-    /* �ɤ��餫������Υ����ɤ��ʤ��Ȥ� */
+    /* どちらかに用例のコードがないとき */
     if (!(exd && exp && *exd && *exp)) {
 	return FALSE;
     }
@@ -678,13 +678,13 @@ SMLIST smlist[TBLSIZE];
 	expand = SM_EXPAND_NE_DATA;
     }
 
-    /* ����ޥå������������ */
+    /* 最大マッチスコアを求める */
     for (j = 0; exp[j]; j+=step) {
 	for (i = 0; exd[i]; i+=step) {
 	    tempscore = ntt_code_match(exp+j, exd+i, expand);
 	    if (tempscore > score) {
 		score = tempscore;
-		/* ξ�� target ��̣�Ǥ�°�� */
+		/* 両方 target 意味素に属す */
 		if (sm_match_check(target, exd, expand) && sm_match_check(target, exp, expand)) {
 		    flag = TRUE;
 		}
@@ -720,7 +720,7 @@ SMLIST smlist[TBLSIZE];
 	}
     }
 
-    /* match ���ʤ����äƤɤ�ʤȤ�? */
+    /* match しない場合ってどんなとき? */
     if (pos != 0) {
 	*(codes+pos) = '\0';
 	bp->SM_num = strlen(codes)/SM_CODE_SIZE;
@@ -734,14 +734,14 @@ SMLIST smlist[TBLSIZE];
 {
     char *p, flag = 0;
 
-    /* ��ͭ̾��ΤȤ��ʳ��ǡ����٤Ƥΰ�̣°�������֤Ǥ���� TRUE */
+    /* 固有名詞のとき以外で、すべての意味属性が時間であれば TRUE */
     for (p = c;*p; p+=SM_CODE_SIZE) {
-	/* ��ͭ̾��ΤȤ���Τ��� */
+	/* 固有名詞のときをのぞく */
 	if (*p == '2') {
 	    continue;
 	}
 
-	/* ��̣�ǤΥ����å� */
+	/* 意味素のチェック */
 	if (!comp_sm(target, p, 1)) {
 	    return FALSE;
 	}
@@ -762,12 +762,12 @@ SMLIST smlist[TBLSIZE];
 	       void assign_time_feature(BNST_DATA *bp)
 /*==================================================================*/
 {
-    /* <����> �ΰ�̣�Ǥ�����äƤ��ʤ���� <����> ��Ϳ���� */
+    /* <時間> の意味素しかもっていなければ <時間> を与える */
 
-    if (!check_feature(bp->f, "����") && 
-	sm_all_match(bp->SM_code, sm2code("����"))) {
-	assign_cfeature(&(bp->f), "����Ƚ��", FALSE);
-	assign_cfeature(&(bp->f), "����", FALSE);
+    if (!check_feature(bp->f, "時間") && 
+	sm_all_match(bp->SM_code, sm2code("時間"))) {
+	assign_cfeature(&(bp->f), "時間判定", FALSE);
+	assign_cfeature(&(bp->f), "時間", FALSE);
     }
 }
 
@@ -775,18 +775,18 @@ SMLIST smlist[TBLSIZE];
 	      void assign_sm_aux_feature(BNST_DATA *bp)
 /*==================================================================*/
 {
-    /* �롼������줿 */
+    /* ルールに入れた */
 
     if (Thesaurus != USE_NTT) {
 	return;
     }
 
-    /* <����>°������Ϳ���� */
+    /* <時間>属性を付与する */
     assign_time_feature(bp);
 
-    /* <���>°������Ϳ���� */
-    if (sm_all_match(bp->SM_code, sm2code("���"))) {
-	assign_cfeature(&(bp->f), "���", FALSE);
+    /* <抽象>属性を付与する */
+    if (sm_all_match(bp->SM_code, sm2code("抽象"))) {
+	assign_cfeature(&(bp->f), "抽象", FALSE);
     }
 }
 
@@ -798,7 +798,7 @@ SMLIST smlist[TBLSIZE];
 
     for (i = 0; sm[i]; i += SM_CODE_SIZE) {
 	flag = 1;
-	/* ��ͭ�ǤϤʤ��Ȥ������å� */
+	/* 固有ではないときチェック */
 	if (sm[i] != '2') {
 	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
 		if (_sm_match_score(sm+i, del+j, SM_NO_EXPAND_NE) > 0) {
@@ -824,7 +824,7 @@ SMLIST smlist[TBLSIZE];
 
     for (i = 0; sm[i]; i += SM_CODE_SIZE) {
 	flag = 1;
-	/* ��ͭ�ǤϤʤ��Ȥ����оݤȤ��� */
+	/* 固有ではないときを対象とする */
 	if (sm[i] != '2') {
 	    for (j = 0; del[j]; j += SM_CODE_SIZE) {
 		if (!strncmp(sm+i+1, del+j+1, SM_CODE_SIZE-1)) {
@@ -850,15 +850,15 @@ SMLIST smlist[TBLSIZE];
 
     if (Thesaurus != USE_NTT) return;
 
-    /* ��̾�ΤȤ�: 
-       o ����̾���ηϤ�<����>�ʲ��ΰ�̣�Ǥ���
-       o ��ͭ̾���ηϤΰ�̣�Ǥΰ���̾���ηϤؤΥޥåԥ󥰤�ػ� */
+    /* 人名のとき: 
+       o 一般名詞体系の<主体>以下の意味素を削除
+       o 固有名詞体系の意味素の一般名詞体系へのマッピングを禁止 */
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (check_feature((sp->bnst_data+i)->f, "��̾")) {
-	    /* ��ͭ�ΰ�̣�Ǥ����Ĥ����� */
-	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <����>�ΰ�̣�� */
-	    assign_cfeature(&((sp->bnst_data+i)->f), "�Ը�ͭ����Ÿ���ػ�", FALSE);
+	if (check_feature((sp->bnst_data+i)->f, "人名")) {
+	    /* 固有の意味素だけ残したい */
+	    delete_matched_sm((sp->bnst_data+i)->SM_code, "100*********"); /* <主体>の意味素 */
+	    assign_cfeature(&((sp->bnst_data+i)->f), "Ｔ固有一般展開禁止", FALSE);
 	}
     }
 }
@@ -867,8 +867,8 @@ SMLIST smlist[TBLSIZE];
       void fix_sm_place(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* ���Τ������Ѳ�����
-       ���ߤ� <���> �Τ� */
+    /* そのうち汎用化する
+       現在は <場所> のみ */
 
     int i, num;
 
@@ -876,18 +876,18 @@ SMLIST smlist[TBLSIZE];
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* ��ά�����ǤǤϤʤ�������Ƥ����ä��Ȥ� */
+	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    cpm_ptr->elem_b_ptr[i] && /* ������ǤϤʤ� */
+	    cpm_ptr->elem_b_ptr[i] && /* 不特定ではない */
 	    num >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "��") && 
-	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "���", TRUE)) {
-	    /* ��ͭ�������Ѵ����Ƥ��� */
+	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "デ") && 
+	    cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "場所", TRUE)) {
+	    /* 固有→一般変換しておく */
 	    merge_smp2smg((BNST_DATA *)cpm_ptr->elem_b_ptr[i]);
-	    /* <���>�Τߤ˸��ꤹ�� */
+	    /* <場所>のみに限定する */
 	    sm_fix((BNST_DATA *)cpm_ptr->elem_b_ptr[i], "101*********20**********");
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "�Ը�ͭ����Ÿ���ػ�", FALSE);
-	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "�����", FALSE);
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "Ｔ固有一般展開禁止", FALSE);
+	    assign_cfeature(&(cpm_ptr->elem_b_ptr[i]->f), "非主体", FALSE);
 	    break;
 	}
     }
@@ -909,7 +909,7 @@ SMLIST smlist[TBLSIZE];
 	slpp = &slp;
 	do {
 	    if (!strcmp((*slpp)->key, key)) {
-		/* ���Ǥˤ���sm���� */
+		/* すでにあるsmを上書き */
 		free((*slpp)->sm);
 		(*slpp)->sm = strdup(sm);
 		return;
@@ -970,10 +970,10 @@ SMLIST smlist[TBLSIZE];
 	    continue;
 	}
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* ��ά�����ǤǤϤʤ�������Ƥ����ä��Ȥ� */
+	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && num >= 0 && cpm_ptr->cmm[0].cf_ptr->ex[num] && 
 	    cpm_ptr->cmm[0].result_lists_p[0].pos[cpm_ptr->cmm[0].result_lists_d[0].flag[i]] != MATCH_SUBJECT && 
-	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* �ʥե졼��Ȥ������٥ޥå�����Ȥ� */
+	    cpm_ptr->cmm[0].result_lists_d[0].score[i] > CF_DECIDE_THRESHOLD) { /* 格フレームとある程度マッチするとき */
 
 	    if (cpm_ptr->cmm[0].cf_ptr->sm_specify[num]) {
 		sm_codes = strdup(cpm_ptr->cmm[0].cf_ptr->sm_specify[num]);
@@ -984,9 +984,9 @@ SMLIST smlist[TBLSIZE];
 		    delete_specified_sm(sm_codes, cpm_ptr->cmm[0].cf_ptr->sm_delete[num]);
 		}
 	    }
-	    /* ��äȤ�������Ƥ����̣°���˷��� */
+	    /* もっとも類似している意味属性に決定 */
 	    if (new_code = get_most_similar_code(cpm_ptr->elem_b_ptr[i]->SM_code, sm_codes)) {
-		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* ��̣�ǹ��� */
+		if (strcmp(cpm_ptr->elem_b_ptr[i]->SM_code, new_code)) { /* 意味素更新 */
 		    if (VerboseLevel >= VERBOSE2) {
 			fprintf(stderr, ";;; %s %d %s [", sp->KNPSID ? sp->KNPSID : "?", cpm_ptr->elem_b_ptr[i]->num, 
 				cpm_ptr->elem_b_ptr[i]->head_ptr->Goi);
@@ -999,7 +999,7 @@ SMLIST smlist[TBLSIZE];
 		    strcpy((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_code, new_code);
 		    (sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->SM_num = strlen(new_code) / SM_CODE_SIZE;
 
-		    /* ��̣����Ͽ */
+		    /* 意味素登録 */
 		    register_noun_sm(cpm_ptr->elem_b_ptr[i]->head_ptr->Goi, new_code);
 		}
 		free(new_code);
@@ -1019,30 +1019,30 @@ SMLIST smlist[TBLSIZE];
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	num = cpm_ptr->cmm[0].result_lists_d[0].flag[i];
-	/* ��ά�����ǤǤϤʤ�������Ƥ����ä��Ȥ� */
+	/* 省略格要素ではない割り当てがあったとき */
 	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    cpm_ptr->elem_b_ptr[i] && /* ������ǤϤʤ� */
+	    cpm_ptr->elem_b_ptr[i] && /* 不特定ではない */
 	    cpm_ptr->cmm[0].result_lists_d[0].flag[i] >= 0 && 
-	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "��")) {
-	    /* o ���Ǥ˼�����Ϳ����Ƥ��ʤ�
-	       o <����> �ǤϤʤ� (<����>�ΤȤ���̣°�����ʤ�)
-	       o <�Ѹ�:ư>�Ǥ��� 
-	       o �ʥե졼�ब<����>����, <���ν�>�ǤϤʤ�
-	       o ����¦����̣�Ǥ��ʤ�����(��ͭ̾��ȿ���)
-	         <���ʪ> or <��>�Ȥ�����̣�Ǥ��� (�Ĥޤꡢ<���Ū�ط�>�����ǤϤʤ�)
+	    MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[num][0], "ガ")) {
+	    /* o すでに主体付与されていない
+	       o <数量> ではない (<数量>のとき意味属性がない)
+	       o <用言:動>である 
+	       o 格フレームが<主体>をもつ, <主体準>ではない
+	       o 入力側が意味素がないか、(固有名詞と推定)
+	         <抽象物> or <事>という意味素をもつ (つまり、<抽象的関係>だけではない)
 	    */
-	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "������Ϳ") && 
-		!check_feature(cpm_ptr->elem_b_ptr[i]->f, "����") && 
-		check_feature(cpm_ptr->pred_b_ptr->f, "�Ѹ�:ư") && 
-		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "����", TRUE) && 
+	    if (!check_feature(cpm_ptr->elem_b_ptr[i]->f, "主体付与") && 
+		!check_feature(cpm_ptr->elem_b_ptr[i]->f, "数量") && 
+		check_feature(cpm_ptr->pred_b_ptr->f, "用言:動") && 
+		cf_match_element(cpm_ptr->cmm[0].cf_ptr->sm[num], "主体", TRUE) && 
 		(cpm_ptr->elem_b_ptr[i]->SM_num == 0 || 
 		 /* (!(cpm_ptr->cmm[0].cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && ( */
-		 sm_match_check(sm2code("����"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
-		 sm_match_check(sm2code("��̾"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || /* �ȿ�̾, ��̾�Ϥ��Ǥ˼��� */
-		 sm_match_check(sm2code("���ʪ"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
-		 sm_match_check(sm2code("��"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
-		assign_sm((BNST_DATA *)(sp->tag_data + cpm_ptr->elem_b_ptr[i]->num), "����");
-		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "������Ϳ", FALSE);
+		 sm_match_check(sm2code("具体"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
+		 sm_match_check(sm2code("地名"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || /* 組織名, 人名はすでに主体 */
+		 sm_match_check(sm2code("抽象物"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE) || 
+		 sm_match_check(sm2code("事"), cpm_ptr->elem_b_ptr[i]->SM_code, SM_NO_EXPAND_NE))) {
+		assign_sm((BNST_DATA *)(sp->tag_data + cpm_ptr->elem_b_ptr[i]->num), "主体");
+		assign_cfeature(&((sp->tag_data + cpm_ptr->elem_b_ptr[i]->num)->f), "主体付与", FALSE);
 	    }
 	    break;
 	}
@@ -1057,7 +1057,7 @@ SMLIST smlist[TBLSIZE];
     char *cp, feature_buffer[BNST_LENGTH_MAX + SM_CODE_SIZE * SM_ELEMENT_MAX + 4];
 
     for (i = 0; i < sp->Tag_num; i++) {
-	/* thesaurus.c: get_bnst_code() ��Ϳ����줿feature���� */
+	/* thesaurus.c: get_bnst_code() で与えられたfeatureを上書き */
 	if (cp = check_feature((sp->tag_data + i)->f, "NTT")) {
 	    sprintf(feature_buffer, "%s:%s", cp, (sp->tag_data + i)->SM_code);
 	    assign_cfeature(&((sp->tag_data + i)->f), feature_buffer, FALSE);

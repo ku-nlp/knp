@@ -1,6 +1,6 @@
 /*====================================================================
 
-		       ³Ê¹½Â¤²òÀÏ: ³Ê¥Õ¥ì¡¼¥àÂ¦
+		       æ ¼æ§‹é€ è§£æ: æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å´
 
                                                S.Kurohashi 93. 5.31
 
@@ -26,12 +26,12 @@ DBM_FILE para_db;
 DBM_FILE noun_co_db;
 DBM_FILE chi_pa_db;
 
-CASE_FRAME 	*Case_frame_array = NULL; 	/* ³Ê¥Õ¥ì¡¼¥à */
-int 	   	Case_frame_num;			/* ³Ê¥Õ¥ì¡¼¥à¿ô */
-int 	   	MAX_Case_frame_num = 0;		/* ºÇÂç³Ê¥Õ¥ì¡¼¥à¿ô */
+CASE_FRAME 	*Case_frame_array = NULL; 	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
+int 	   	Case_frame_num;			/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+int 	   	MAX_Case_frame_num = 0;		/* æœ€å¤§æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
 
-char *GENERAL_SOTO_WORDS ="Å¸³«/¤Æ¤ó¤«¤¤:1¡¿Í×°ø/¤è¤¦¤¤¤ó:1¡¿¹½¤¨/¤«¤Ş¤¨v:1¡¿¾õ¶·/¤¸¤ç¤¦¤­¤ç¤¦:1¡¿ÃÊ³¬/¤À¤ó¤«¤¤:1¡¿·¹¸ş/¤±¤¤¤³¤¦:1¡¿À©ÅÙ/¤»¤¤¤É:1¡¿¥±¡¼¥¹/¤±¡¼¤¹:1¡¿À¼/¤³¤¨:1¡¿²ÄÇ½/¤«¤Î¤¦a+À­/¤»¤¤:1¡¿¸«¹ş¤ß/¤ß¤³¤ßv:1¡¿ºàÎÁ/¤¶¤¤¤ê¤ç¤¦:1¡¿´Ä¶­/¤«¤ó¤­¤ç¤¦:1¡¿É¬Í×¤À/¤Ò¤Ä¤è¤¦¤À:1¡¿¹Í¤¨/¤«¤ó¤¬¤¨v:1¡¿ÁÀ¤¤/¤Í¤é¤¤v:1¡¿¸ø»»/¤³¤¦¤µ¤ó:1¡¿»ö¼Â/¤¸¤¸¤Ä:1¡¿Í½Äê/¤è¤Æ¤¤:1¡¿¸ú²Ì/¤³¤¦¤«:1¡¿°Õ¸ş/¤¤¤³¤¦:1¡¿À¯¸¢/¤»¤¤¤±¤ó:1¡¿ÂÎÀ©/¤¿¤¤¤»¤¤:1¡¿ÌäÂê/¤â¤ó¤À¤¤:1¡¿·üÇ°/¤±¤Í¤ó:1¡¿ÃÏ°è/¤Á¤¤¤­:1¡¿ÊıË¡/¤Û¤¦¤Û¤¦:1¡¿ÂĞºö/¤¿¤¤¤µ¤¯:1¡¿Îã/¤ì¤¤:1¡¿»ö¶È/¤¸¤®¤ç¤¦:1¡¿»ÅÁÈ¤ß/¤·¤¯¤ßv:1¡¿ÅÀ/¤Æ¤ó:1¡¿ºîÉÊ/¤µ¤¯¤Ò¤ó:1¡¿ÍıÍ³/¤ê¤æ¤¦:1¡¿µ¿¤¤/¤¦¤¿¤¬¤¤v:1¡¿³æ¹¥/¤«¤Ã¤³¤¦:1¡¿Êı¿Ë/¤Û¤¦¤·¤ó:1¡¿ÍÍ»Ò/¤è¤¦¤¹:1¡¿»ÑÀª/¤·¤»¤¤:1¡¿¶²¤ì/¤ª¤½¤ìv:1¡¿ÌÏÍÍ/¤â¤è¤¦:1¡¿»ö·ï/¤¸¤±¤ó:1¡¿ºî¶È/¤µ¤®¤ç¤¦:1¡¿µ¡²ñ/¤­¤«¤¤:1¡¿¸«ÄÌ¤·/¤ß¤È¤ª¤·v:1¡¿À¯ºö/¤»¤¤¤µ¤¯:1¡¿ÆâÍÆ/¤Ê¤¤¤è¤¦:1¡¿Á¼ÃÖ/¤½¤Á:1¡¿ÇØ·Ê/¤Ï¤¤¤±¤¤:1¡¿ÌÌ/¤ª¤â¤Æ:1¡¿Êı¸ş/¤Û¤¦¤³¤¦:1¡¿·ë²Ì/¤±¤Ã¤«:1¡¿¾õÂÖ/¤¸¤ç¤¦¤¿¤¤:1¡¿Êı¼°/¤Û¤¦¤·¤­:1¡¿¾¦ÉÊ/¤·¤ç¤¦¤Ò¤ó:1¡¿ÌÜÅª/¤â¤¯¤Æ¤­:1¡¿¾ìÌÌ/¤Ğ¤á¤ó:1¡¿»öÂÖ/¤¸¤¿¤¤:1¡¿Æ°¤­/¤¦¤´¤­v:1¡¿·×²è/¤±¤¤¤«¤¯:1¡¿°Æ/¤¢¤ó:1¡¿¤Î/¤Î:1¡¿¤ó/¤ó:1¡¿¤³¤È/¤³¤È:1¡¿¤Ï¤º/¤Ï¤º:1¡¿¤ï¤±/¤ï¤±:1¡¿¤Ä¤â¤ê/¤Ä¤â¤ê:1¡¿¤È¤³¤í/¤È¤³¤í:1¡¿°Ù/¤¿¤á:1¡¿¤ª±¢/¤ª¤«¤²:1¡¿¤»¤¤/¤»¤¤:1¡¿¤¢¤Ş¤ê/¤¢¤Ş¤ê:1¡¿ÄÌ¤ê/¤È¤ª¤ê:1¡¿ÍÍ/¤è¤¦:1¡¿Âå¤ï¤ê/¤«¤ï¤ê:1¡¿Â¾/¤Û¤«:1¡¿¤Ä¤¤¤Ç/¤Ä¤¤¤Ç:1¡¿¤Ş¤Ş/¤Ş¤Ş:1¡¿»ş/¤È¤­:1¡¿ÀŞ¤ê/¤ª¤ê:1¡¿´Ö/¤¢¤¤¤À:1¡¿¤¦¤Á/¤¦¤Á:1¡¿¸å/¤¢¤È:1¡¿¸å/¤¢¤È:1¡¿Á°/¤Ş¤¨:1¡¿ºÇÃæ/¤µ¤¤¤Á¤å¤¦:1¡¿ºİ/¤µ¤¤:1¡¿¾ì¹ç/¤Ğ¤¢¤¤:1¡¿ÅÓÃæ/¤È¤Á¤å¤¦:1¡¿°ìÊı/¤¤¤Ã¤İ¤¦:1¡¿·ë²Ì/¤±¤Ã¤«:1¡¿È¿ÌÌ/¤Ï¤ó¤á¤ó:1¡¿È¾ÌÌ/¤Ï¤ó¤á¤ó:1¡¿¸Â¤ê/¤«¤®¤ê:1¡¿Êı/¤Û¤¦:1¡¿¤¯¤»/¤¯¤»:1¡¿ÄøÅÙ/¤Æ¤¤¤É:1¡¿°Ê³°/¤¤¤¬¤¤:1¡¿º¢/¤³¤í:1¡¿Äø/¤Û¤É:1¡¿¾å/¤¦¤¨:1¡¿Ëè/¤´¤È:1¡¿¸Î/¤æ¤¨:1¡¿¤¯¤é¤¤/¤¯¤é¤¤:1¡¿»İ/¤à¤Í:1¡¿ÅÓÃ¼/¤È¤¿¤ó:1¡¿ÌğÀè/¤ä¤µ¤­:1¡¿°Ê¾å/¤¤¤¸¤ç¤¦:1¡¿¤¿¤Ó/¤¿¤Ó:1";
-/* Éû»ìÅªÌ¾»ì¡ÖÃæ/¤Ê¤«:1¡×¤ÏÊİÎ± */
+char *GENERAL_SOTO_WORDS ="å±•é–‹/ã¦ã‚“ã‹ã„:1ï¼è¦å› /ã‚ˆã†ã„ã‚“:1ï¼æ§‹ãˆ/ã‹ã¾ãˆv:1ï¼çŠ¶æ³/ã˜ã‚‡ã†ãã‚‡ã†:1ï¼æ®µéš/ã ã‚“ã‹ã„:1ï¼å‚¾å‘/ã‘ã„ã“ã†:1ï¼åˆ¶åº¦/ã›ã„ã©:1ï¼ã‚±ãƒ¼ã‚¹/ã‘ãƒ¼ã™:1ï¼å£°/ã“ãˆ:1ï¼å¯èƒ½/ã‹ã®ã†a+æ€§/ã›ã„:1ï¼è¦‹è¾¼ã¿/ã¿ã“ã¿v:1ï¼ææ–™/ã–ã„ã‚Šã‚‡ã†:1ï¼ç’°å¢ƒ/ã‹ã‚“ãã‚‡ã†:1ï¼å¿…è¦ã /ã²ã¤ã‚ˆã†ã :1ï¼è€ƒãˆ/ã‹ã‚“ãŒãˆv:1ï¼ç‹™ã„/ã­ã‚‰ã„v:1ï¼å…¬ç®—/ã“ã†ã•ã‚“:1ï¼äº‹å®Ÿ/ã˜ã˜ã¤:1ï¼äºˆå®š/ã‚ˆã¦ã„:1ï¼åŠ¹æœ/ã“ã†ã‹:1ï¼æ„å‘/ã„ã“ã†:1ï¼æ”¿æ¨©/ã›ã„ã‘ã‚“:1ï¼ä½“åˆ¶/ãŸã„ã›ã„:1ï¼å•é¡Œ/ã‚‚ã‚“ã ã„:1ï¼æ‡¸å¿µ/ã‘ã­ã‚“:1ï¼åœ°åŸŸ/ã¡ã„ã:1ï¼æ–¹æ³•/ã»ã†ã»ã†:1ï¼å¯¾ç­–/ãŸã„ã•ã:1ï¼ä¾‹/ã‚Œã„:1ï¼äº‹æ¥­/ã˜ãã‚‡ã†:1ï¼ä»•çµ„ã¿/ã—ãã¿v:1ï¼ç‚¹/ã¦ã‚“:1ï¼ä½œå“/ã•ãã²ã‚“:1ï¼ç†ç”±/ã‚Šã‚†ã†:1ï¼ç–‘ã„/ã†ãŸãŒã„v:1ï¼æ°å¥½/ã‹ã£ã“ã†:1ï¼æ–¹é‡/ã»ã†ã—ã‚“:1ï¼æ§˜å­/ã‚ˆã†ã™:1ï¼å§¿å‹¢/ã—ã›ã„:1ï¼æã‚Œ/ãŠãã‚Œv:1ï¼æ¨¡æ§˜/ã‚‚ã‚ˆã†:1ï¼äº‹ä»¶/ã˜ã‘ã‚“:1ï¼ä½œæ¥­/ã•ãã‚‡ã†:1ï¼æ©Ÿä¼š/ãã‹ã„:1ï¼è¦‹é€šã—/ã¿ã¨ãŠã—v:1ï¼æ”¿ç­–/ã›ã„ã•ã:1ï¼å†…å®¹/ãªã„ã‚ˆã†:1ï¼æªç½®/ãã¡:1ï¼èƒŒæ™¯/ã¯ã„ã‘ã„:1ï¼é¢/ãŠã‚‚ã¦:1ï¼æ–¹å‘/ã»ã†ã“ã†:1ï¼çµæœ/ã‘ã£ã‹:1ï¼çŠ¶æ…‹/ã˜ã‚‡ã†ãŸã„:1ï¼æ–¹å¼/ã»ã†ã—ã:1ï¼å•†å“/ã—ã‚‡ã†ã²ã‚“:1ï¼ç›®çš„/ã‚‚ãã¦ã:1ï¼å ´é¢/ã°ã‚ã‚“:1ï¼äº‹æ…‹/ã˜ãŸã„:1ï¼å‹•ã/ã†ã”ãv:1ï¼è¨ˆç”»/ã‘ã„ã‹ã:1ï¼æ¡ˆ/ã‚ã‚“:1ï¼ã®/ã®:1ï¼ã‚“/ã‚“:1ï¼ã“ã¨/ã“ã¨:1ï¼ã¯ãš/ã¯ãš:1ï¼ã‚ã‘/ã‚ã‘:1ï¼ã¤ã‚‚ã‚Š/ã¤ã‚‚ã‚Š:1ï¼ã¨ã“ã‚/ã¨ã“ã‚:1ï¼ç‚º/ãŸã‚:1ï¼ãŠé™°/ãŠã‹ã’:1ï¼ã›ã„/ã›ã„:1ï¼ã‚ã¾ã‚Š/ã‚ã¾ã‚Š:1ï¼é€šã‚Š/ã¨ãŠã‚Š:1ï¼æ§˜/ã‚ˆã†:1ï¼ä»£ã‚ã‚Š/ã‹ã‚ã‚Š:1ï¼ä»–/ã»ã‹:1ï¼ã¤ã„ã§/ã¤ã„ã§:1ï¼ã¾ã¾/ã¾ã¾:1ï¼æ™‚/ã¨ã:1ï¼æŠ˜ã‚Š/ãŠã‚Š:1ï¼é–“/ã‚ã„ã :1ï¼ã†ã¡/ã†ã¡:1ï¼å¾Œ/ã‚ã¨:1ï¼å¾Œ/ã‚ã¨:1ï¼å‰/ã¾ãˆ:1ï¼æœ€ä¸­/ã•ã„ã¡ã‚…ã†:1ï¼éš›/ã•ã„:1ï¼å ´åˆ/ã°ã‚ã„:1ï¼é€”ä¸­/ã¨ã¡ã‚…ã†:1ï¼ä¸€æ–¹/ã„ã£ã½ã†:1ï¼çµæœ/ã‘ã£ã‹:1ï¼åé¢/ã¯ã‚“ã‚ã‚“:1ï¼åŠé¢/ã¯ã‚“ã‚ã‚“:1ï¼é™ã‚Š/ã‹ãã‚Š:1ï¼æ–¹/ã»ã†:1ï¼ãã›/ãã›:1ï¼ç¨‹åº¦/ã¦ã„ã©:1ï¼ä»¥å¤–/ã„ãŒã„:1ï¼é ƒ/ã“ã‚:1ï¼ç¨‹/ã»ã©:1ï¼ä¸Š/ã†ãˆ:1ï¼æ¯/ã”ã¨:1ï¼æ•…/ã‚†ãˆ:1ï¼ãã‚‰ã„/ãã‚‰ã„:1ï¼æ—¨/ã‚€ã­:1ï¼é€”ç«¯/ã¨ãŸã‚“:1ï¼çŸ¢å…ˆ/ã‚„ã•ã:1ï¼ä»¥ä¸Š/ã„ã˜ã‚‡ã†:1ï¼ãŸã³/ãŸã³:1";
+/* å‰¯è©çš„åè©ã€Œä¸­/ãªã‹:1ã€ã¯ä¿ç•™ */
 
 char *db_buf = NULL;
 int db_buf_size = 0;
@@ -116,7 +116,7 @@ CF_FRAME *CFcache[TBLSIZE];
 	    fprintf(Outfp, "done.\nOpening %s ... failed.\n", index_db_filename);
 	}
 	fprintf(stderr, ";; Cannot open CF INDEX Database <%s>.\n", index_db_filename);
-	/* ³Ê¥Õ¥ì¡¼¥à DATA ¤ÏÆÉ¤á¤ë¤Î¤Ë¡¢DB ¤¬ÆÉ¤á¤Ê¤¤¤È¤­¤Ï½ª¤ï¤ë */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  DATA ã¯èª­ã‚ã‚‹ã®ã«ã€DB ãŒèª­ã‚ãªã„ã¨ãã¯çµ‚ã‚ã‚‹ */
 	exit(1);
     } 
     else {
@@ -129,35 +129,35 @@ CF_FRAME *CFcache[TBLSIZE];
     free(data_filename);
     free(index_db_filename);
 
-    /* ³Ê¥Õ¥ì¡¼¥àÎà»÷ÅÙDB (cfsim.db) */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é¡ä¼¼åº¦DB (cfsim.db) */
     cf_sim_db = open_dict(CF_SIM_DB, CF_SIM_DB_NAME, &CFSimExist);
 
-    /* ³Ê³ÎÎ¨DB (cfcase.db) */
+    /* æ ¼ç¢ºç‡DB (cfcase.db) */
     cf_case_db = open_dict(CF_CASE_DB, CF_CASE_DB_NAME, &CFCaseExist);
 
-    /* ÍÑÎã³ÎÎ¨DB (cfex.db) *
+    /* ç”¨ä¾‹ç¢ºç‡DB (cfex.db) *
     cf_ex_db = open_dict(CF_EX_DB, CF_EX_DB_NAME, &CFExExist);
     */
     CFExExist = FALSE;
 
-    /* ³Ê¥Õ¥ì¡¼¥àÁªÂò³ÎÎ¨DB (cfp.db) */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é¸æŠç¢ºç‡DB (cfp.db) */
     cfp_db = open_dict(CFP_DB, CFP_DB_NAME, &CfpExist);
 
-    /* ³Ê²ò¼á³ÎÎ¨DB (case.db) */
+    /* æ ¼è§£é‡ˆç¢ºç‡DB (case.db) */
     case_db = open_dict(CASE_DB, CASE_DB_NAME, &CaseExist);
 
-    /* Ï¢ÍÑ³ÎÎ¨DB (renyou.db) */
+    /* é€£ç”¨ç¢ºç‡DB (renyou.db) */
     renyou_db = open_dict(RENYOU_DB, RENYOU_DB_NAME, &RenyouExist);
 
-    /* Éû»ì³ÎÎ¨DB (adverb.db) */
+    /* å‰¯è©ç¢ºç‡DB (adverb.db) */
     adverb_db = open_dict(ADVERB_DB, ADVERB_DB_NAME, &AdverbExist);
 
     if (OptParaFix == FALSE) {
-	/* ÊÂÎó³ÎÎ¨DB (para.db) */
+	/* ä¸¦åˆ—ç¢ºç‡DB (para.db) */
 	para_db = open_dict(PARA_DB, PARA_DB_NAME, &ParaExist);
     }
 
-    /* Ì¾»ì¶¦µ¯³ÎÎ¨DB (noun_co.db) */
+    /* åè©å…±èµ·ç¢ºç‡DB (noun_co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
     if (Language == CHINESE) {
@@ -204,7 +204,7 @@ CF_FRAME *CFcache[TBLSIZE];
 	    fprintf(Outfp, "done.\nOpening %s ... failed.\n", index_db_filename);
 	}
 	fprintf(stderr, ";; Cannot open CF(noun) INDEX Database <%s>.\n", index_db_filename);
-	/* ³Ê¥Õ¥ì¡¼¥à DATA ¤ÏÆÉ¤á¤ë¤Î¤Ë¡¢DB ¤¬ÆÉ¤á¤Ê¤¤¤È¤­¤Ï½ª¤ï¤ë */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  DATA ã¯èª­ã‚ã‚‹ã®ã«ã€DB ãŒèª­ã‚ãªã„ã¨ãã¯çµ‚ã‚ã‚‹ */
 	exit(1);
     } 
     else {
@@ -258,22 +258,22 @@ CF_FRAME *CFcache[TBLSIZE];
 	OptAnalysis == OPT_CASE2 ||
 	OptUseNCF) {
 
-	/* ³Ê¥Õ¥ì¡¼¥àÎÎ°è³ÎÊİ */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é ˜åŸŸç¢ºä¿ */
 	Case_frame_array = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME)*ALL_CASE_FRAME_MAX, 
 						     "init_case_analysis_cpm");
 	MAX_Case_frame_num = ALL_CASE_FRAME_MAX;
 	init_cf_structure(Case_frame_array, MAX_Case_frame_num);
 
-	/* Best_mgr¤ÎcpmÎÎ°è³ÎÊİ */
+	/* Best_mgrã®cpmé ˜åŸŸç¢ºä¿ */
 	init_mgr_cf(sp->Best_mgr);
 
-	/* Ì¾»ì-°ÕÌ£ÁÇHASH¤Î½é´ü²½ */
+	/* åè©-æ„å‘³ç´ HASHã®åˆæœŸåŒ– */
 	memset(smlist, 0, sizeof(SMLIST)*TBLSIZE);
 
-	/* ³Ê¥Õ¥ì¡¼¥àcache¤ÎHASH¤Î½é´ü²½ */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ cacheã®HASHã®åˆæœŸåŒ– */
 	memset(CFcache, 0, sizeof(CASE_FRAME_CACHE_MGR *)*TBLSIZE);
 
-	/* ³Ê¥Õ¥ì¡¼¥à¤¹¤Ù¤Æ¤ò¥á¥â¥ê¤ËÆÉ¤ß¹ş¤à¾ì¹ç */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã™ã¹ã¦ã‚’ãƒ¡ãƒ¢ãƒªã«èª­ã¿è¾¼ã‚€å ´åˆ */
 	if (OptCaseFlag & OPT_CASE_CF_ON_MEMORY) {
 	    list_db_and_register_caseframe(cf_db, CF_PRED);
 	}
@@ -332,16 +332,16 @@ CF_FRAME *CFcache[TBLSIZE];
     CF_frame.cf_align[cf_aligned_num].cf_id = strdup(token);
     token = strtok(NULL, ";");
     while (token) {
-	if ((cp = strstr(token, "¡á")) != NULL) {
+	if ((cp = strstr(token, "ï¼")) != NULL) {
 	    *cp = '\0';
 	    c1 = pp_kstr_to_code(token);
-	    c2 = pp_kstr_to_code(cp + strlen("¡á"));
-	    if (c1 == END_M) { /* c2¤ÏNIL¤Î¤È¤­END_M¤Ë¤Ê¤ë */
+	    c2 = pp_kstr_to_code(cp + strlen("ï¼"));
+	    if (c1 == END_M) { /* c2ã¯NILã®ã¨ãEND_Mã«ãªã‚‹ */
 		if (OptDisplay == OPT_DEBUG) {
 		    fprintf(stderr, ";; Can't understand <%s> as cf alignment\n", token);
 		}
 	    }
-	    else if (count < CF_ELEMENT_MAX - 1) { /* °î¤ì¥Á¥§¥Ã¥¯ */
+	    else if (count < CF_ELEMENT_MAX - 1) { /* æº¢ã‚Œãƒã‚§ãƒƒã‚¯ */
 		CF_frame.cf_align[cf_aligned_num].aligned_case[count][0] = c1;
 		CF_frame.cf_align[cf_aligned_num].aligned_case[count][1] = c2;
 		count++;
@@ -474,7 +474,7 @@ CF_FRAME *CFcache[TBLSIZE];
 
     CF_frame.address = address;
 
-    /* ÆÉ¤ß, É½µ­, ÁÇÀ­¤òÀßÄê */
+    /* èª­ã¿, è¡¨è¨˜, ç´ æ€§ã‚’è¨­å®š */
     CF_frame.casenum = 0;
     for (i = 0; i < size-1; i++) {
 	if (*(CF_frame.DATA+i) == '\0') {
@@ -509,50 +509,50 @@ CF_FRAME *CFcache[TBLSIZE];
 	string = strdup(CF_frame.feature);
 	token = strtok(string, " ");
 	while (token) {
-	    if (!strcmp(token, "ÏÂ¥Õ¥ì¡¼¥à")) {
+	    if (!strcmp(token, "å’Œãƒ•ãƒ¬ãƒ¼ãƒ ")) {
 		CF_frame.etcflag |= CF_SUM;
 	    }
-	    else if (!strcmp(token, "³Ê¥Õ¥ì¡¼¥àÊÑ²½")) {
+	    else if (!strcmp(token, "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰åŒ–")) {
 		CF_frame.etcflag |= CF_CHANGE;
 	    }
-	    else if (!strcmp(token, "¥ò»ÈÌò")) {
+	    else if (!strcmp(token, "ãƒ²ä½¿å½¹")) {
 		CF_frame.voice |= CF_CAUSATIVE_WO;
 	    }
-	    else if (!strcmp(token, "¥Ë»ÈÌò")) {
+	    else if (!strcmp(token, "ãƒ‹ä½¿å½¹")) {
 		CF_frame.voice |= CF_CAUSATIVE_NI;
 	    }
-	    else if (!strcmp(token, "Ä¾¼õ1")) {
+	    else if (!strcmp(token, "ç›´å—1")) {
 		CF_frame.voice |= CF_PASSIVE_1;
 	    }
-	    else if (!strcmp(token, "Ä¾¼õ2")) {
+	    else if (!strcmp(token, "ç›´å—2")) {
 		CF_frame.voice |= CF_PASSIVE_2;
 	    }
-	    else if (!strcmp(token, "´Ö¼õ")) {
+	    else if (!strcmp(token, "é–“å—")) {
 		CF_frame.voice |= CF_PASSIVE_I;
 	    }
-	    else if (!strcmp(token, "²ÄÇ½")) {
+	    else if (!strcmp(token, "å¯èƒ½")) {
 		CF_frame.voice |= CF_POSSIBLE;
 	    }
-	    else if (!strcmp(token, "Âº·É")) {
+	    else if (!strcmp(token, "å°Šæ•¬")) {
 		CF_frame.voice |= CF_POLITE;
 	    }
-	    else if (!strcmp(token, "¼«È¯")) {
+	    else if (!strcmp(token, "è‡ªç™º")) {
 		CF_frame.voice |= CF_SPONTANE;
 	    }
-	    else if ((!strncmp(token, "³Ê¥Õ¥ì¡¼¥àÂĞ±ş:", strlen("³Ê¥Õ¥ì¡¼¥àÂĞ±ş:")))) {
+	    else if ((!strncmp(token, "æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¯¾å¿œ:", strlen("æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¯¾å¿œ:")))) {
 		if (cf_aligned_num < CF_ALIGNMENT_MAX - 1) {
-		    get_cf_alignment(token + strlen("³Ê¥Õ¥ì¡¼¥àÂĞ±ş:"), cf_aligned_num++);
+		    get_cf_alignment(token + strlen("æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å¯¾å¿œ:"), cf_aligned_num++);
 		}
 	    }
 	    /* merged cases */
-	    else if ((cp = strstr(token, "¡á")) != NULL && flag == CF_PRED) {
+	    else if ((cp = strstr(token, "ï¼")) != NULL && flag == CF_PRED) {
 		buf = strdup(token);
 		cp = buf+(cp-token);
 		*cp = '\0';
-		/* if (!strncmp(buf+strlen(buf)-2, "³Ê", 2)) *(buf+strlen(buf)-2) = '\0';
-		if (!strncmp(cp+strlen(cp+2), "³Ê", 2)) *(cp+strlen(cp+2)) = '\0'; */
+		/* if (!strncmp(buf+strlen(buf)-2, "æ ¼", 2)) *(buf+strlen(buf)-2) = '\0';
+		if (!strncmp(cp+strlen(cp+2), "æ ¼", 2)) *(cp+strlen(cp+2)) = '\0'; */
 		c1 = pp_kstr_to_code(buf);
-		c2 = pp_kstr_to_code(cp + strlen("¡á"));
+		c2 = pp_kstr_to_code(cp + strlen("ï¼"));
 		free(buf);
 
 		if (c1 == END_M || c2 == END_M) {
@@ -560,8 +560,8 @@ CF_FRAME *CFcache[TBLSIZE];
 			fprintf(stderr, ";; Can't understand <%s> as merged cases\n", token);
 		    }
 		}
-		else if (count < CF_ELEMENT_MAX - 1) { /* °î¤ì¥Á¥§¥Ã¥¯ */
-		    /* ¿ô¤¬¾®¤µ¤¤³Ê¤òÁ°¤ËÆş¤ì¤ë */
+		else if (count < CF_ELEMENT_MAX - 1) { /* æº¢ã‚Œãƒã‚§ãƒƒã‚¯ */
+		    /* æ•°ãŒå°ã•ã„æ ¼ã‚’å‰ã«å…¥ã‚Œã‚‹ */
 		    if (c1 > c2) {
 			CF_frame.samecase[count][0] = c2;
 			CF_frame.samecase[count][1] = c1;
@@ -585,14 +585,14 @@ CF_FRAME *CFcache[TBLSIZE];
     CF_frame.samecase[count][1] = END_M;
 
     if (cp = strchr(CF_frame.DATA, ':')) {
-	strncpy(CF_frame.pred_type, cp+1, 2);
-	CF_frame.pred_type[2] = '\0';
+	strncpy(CF_frame.pred_type, cp+1, BYTES4CHAR);
+	CF_frame.pred_type[BYTES4CHAR] = '\0';
     }
     else {
 	CF_frame.pred_type[0] = '\0';
     }
 
-    if (OptCaseFlag & OPT_CASE_CF_CACHE) { /* ³Ê¥Õ¥ì¡¼¥àcache¤ò»È¤¦¾ì¹ç¤ÏÅĞÏ¿ */
+    if (OptCaseFlag & OPT_CASE_CF_CACHE) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ cacheã‚’ä½¿ã†å ´åˆã¯ç™»éŒ² */
 	register_caseframe(address, &CF_frame);
     }
 
@@ -603,11 +603,11 @@ CF_FRAME *CFcache[TBLSIZE];
 unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag)
 /*==================================================================*/
 {
-    int freq;
+    int i, freq;
 
-    /* flag == TRUE: ÉÑÅÙÉÕ¤­¤ÇÊÖ¤¹ */
+    /* flag == TRUE: é »åº¦ä»˜ãã§è¿”ã™ */
 
-    if (*dat == '\0' || !strcmp(dat, "¡ö")) {
+    if (*dat == '\0' || !strcmp(dat, "ï¼Š")) {
 	return NULL;
     }
 
@@ -616,35 +616,36 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag
 	    *ret = '\0';
 	    return dat;
 	}
-	/* ÉÑÅÙ¤¬µ­½Ò¤·¤Æ¤¢¤ë¾ì¹ç */
+	/* é »åº¦ãŒè¨˜è¿°ã—ã¦ã‚ã‚‹å ´åˆ */
 	else if (*dat == ':') {
 	    if (flag) {
 		*ret++ = *dat;
 	    }
-	    /* flag == FALSE: ÉÑÅÙ¤òÊÖ¤µ¤Ê¤¤ */
+	    /* flag == FALSE: é »åº¦ã‚’è¿”ã•ãªã„ */
 	    else {
 		*ret++ = '\0';	/* ':' -> '\0' */
 	    }
 	    dat++;
 	}
-	/* ¶õÇò¤Ç¤âÀÚ¤ë */
+	/* ç©ºç™½ã§ã‚‚åˆ‡ã‚‹ */
 	else if (*dat == ' ') {
 	    *ret = '\0';
 	    return dat+1;
 	}
-	else if (*dat < 0x80) { /* OK? */
+	else if (*dat < 0x80) { /* OK? -> â˜…UTF-8: ä¸‹ã®BYTES4CHARã¨ä½µã›ã¦ä¿®æ­£â˜… */
 	    *ret++ = *dat++;
 	}
-	else if (!strncmp(dat, "¡¿", strlen("¡¿")) || 
-		 !strncmp(dat, "¡¤", strlen("¡¤")) ||
-		 !strncmp(dat, "¡¢", strlen("¡¢")) ||
-		 !strncmp(dat, "¡ö", strlen("¡ö"))) {
+	else if (!strncmp(dat, "ï¼", strlen("ï¼")) || 
+		 !strncmp(dat, "ï¼Œ", strlen("ï¼Œ")) ||
+		 !strncmp(dat, "ã€", strlen("ã€")) ||
+		 !strncmp(dat, "ï¼Š", strlen("ï¼Š"))) {
 	    *ret = '\0';
-	    return dat+strlen("¡¿"); /* OK? */
+	    return dat+strlen("ï¼"); /* OK? */
 	}
 	else {
-	    *ret++ = *dat++;
-	    *ret++ = *dat++;
+	    for (i = 0; i < BYTES4CHAR; i++) {
+		*ret++ = *dat++;
+	    }
 	}
     }
 }
@@ -653,23 +654,23 @@ unsigned char *extract_ipal_str(unsigned char *dat, unsigned char *ret, int flag
 int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag)
 /*==================================================================*/
 {
-    /* ½õ»ì¤ÎÆÉ¤ß¤À¤· */
+    /* åŠ©è©ã®èª­ã¿ã ã— */
 
     unsigned char *point;
     int pp_num = 0;
 
-    /* Ä¾Á°³Ê */
+    /* ç›´å‰æ ¼ */
     if (*(cp+strlen(cp)-1) == '*') {
 	c_ptr->adjacent[num] = TRUE;
 	*(cp+strlen(cp)-1) = '\0';
     }
-    else if (!strcmp(cp+strlen(cp)-strlen("¡÷"), "¡÷")) {
+    else if (!strcmp(cp+strlen(cp)-strlen("ï¼ "), "ï¼ ")) {
 	c_ptr->adjacent[num] = TRUE;
-	*(cp+strlen(cp)-strlen("¡÷")) = '\0';
+	*(cp+strlen(cp)-strlen("ï¼ ")) = '\0';
     }
 
-    /* Ç¤°Õ³Ê */
-    if (!strcmp(cp+strlen(cp)-strlen("¡ö"), "¡ö")) {
+    /* ä»»æ„æ ¼ */
+    if (!strcmp(cp+strlen(cp)-strlen("ï¼Š"), "ï¼Š")) {
 	c_ptr->oblig[num] = FALSE;
     }
     else {
@@ -726,7 +727,7 @@ int _make_ipal_cframe_pp(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag
 void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int flag)
 /*==================================================================*/
 {
-    /* °ÕÌ£¥Ş¡¼¥«¤ÎÆÉ¤ß¤À¤· */
+    /* æ„å‘³ãƒãƒ¼ã‚«ã®èª­ã¿ã ã— */
 
     unsigned char *point;
     int size, sm_num = 0, sm_print_num = 0, mlength, sm_delete_sm_max = 0, sm_specify_sm_max = 0;
@@ -751,7 +752,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
     point = cp;
     buf[0] = '\0';
     while ((point = extract_ipal_str(point, cf_str_buf, FALSE))) {
-	/* °ÕÌ£ÁÇÀ©¸Â */
+	/* æ„å‘³ç´ åˆ¶é™ */
         if (cf_str_buf[0] == '+') {
 	    if (c_ptr->sm_specify[num] == NULL) {
 		c_ptr->sm_specify_size[num] = SM_ELEMENT_MAX;
@@ -761,10 +762,10 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		if (flag & USE_NTT) {
 		    sm_specify_sm_max = sizeof(char) * ALLOCATION_STEP;
 		    sm_specify_sm = (char *)malloc_data(sm_specify_sm_max, "_make_ipal_cframe_sm");
-		    strcpy(sm_specify_sm, "°ÕÌ£ÁÇÀ©¸Â:");
+		    strcpy(sm_specify_sm, "æ„å‘³ç´ åˆ¶é™:");
 		}
 		else {
-		    sm_specify_sm = strdup("°ÕÌ£ÁÇÀ©¸Â");
+		    sm_specify_sm = strdup("æ„å‘³ç´ åˆ¶é™");
 		}
 	    }
 	    else if (c_ptr->sm_specify_num[num] >= c_ptr->sm_specify_size[num]) {
@@ -772,14 +773,14 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 							      sizeof(char)*(c_ptr->sm_specify_size[num] <<= 1) * size + 1, "_make_ipal_cframe_sm");
 	    }
 
-	    /* code¤¬½ñ¤¤¤Æ¤¢¤ë¤È¤­ */
+	    /* codeãŒæ›¸ã„ã¦ã‚ã‚‹ã¨ã */
 	    if (cf_str_buf[1] == '1') {
 		strcat(c_ptr->sm_specify[num], &cf_str_buf[1]);
 
-		if (flag & USE_NTT) { /* É½¼¨ÍÑ¤Î°ÕÌ£ÁÇÌ¾¤Ø¤ÎÊÑ´¹ (NTT¤Î¤ß) */
+		if (flag & USE_NTT) { /* è¡¨ç¤ºç”¨ã®æ„å‘³ç´ åã¸ã®å¤‰æ› (NTTã®ã¿) */
 		    temp = code2sm(&cf_str_buf[1]);
 		    if (temp[0]) {
-			/* -1 ¤Ç¤Ï¤Ê¤¤¤Î¤Ï '/' ¤ÎÊ¬ */
+			/* -1 ã§ã¯ãªã„ã®ã¯ '/' ã®åˆ† */
 			if (strlen(sm_specify_sm) + strlen(temp) > sm_specify_sm_max - 2) {
 			    sm_specify_sm = (char *)realloc_data(sm_specify_sm, sm_specify_sm_max <<= 1, "_make_ipal_cframe_sm");
 			}
@@ -788,12 +789,12 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		    }
 		}
 	    }
-	    else if (flag & USE_NTT) { /* °ÕÌ£ÁÇÌ¾¤Ç¤Î»ØÄê (NTT¤Î¤ß) */
+	    else if (flag & USE_NTT) { /* æ„å‘³ç´ åã§ã®æŒ‡å®š (NTTã®ã¿) */
 		strcat(c_ptr->sm_specify[num], sm2code(&cf_str_buf[1]));
 	    }
 	    c_ptr->sm_specify_num[num]++;
 	}
-	/* »È¤Ã¤Æ¤Ï¤¤¤±¤Ê¤¤°ÕÌ£ÁÇ */
+	/* ä½¿ã£ã¦ã¯ã„ã‘ãªã„æ„å‘³ç´  */
         else if (cf_str_buf[0] == '-') {
 	    if (c_ptr->sm_delete[num] == NULL) {
 		c_ptr->sm_delete_size[num] = SM_ELEMENT_MAX;
@@ -803,10 +804,10 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		if (PrintDeletedSM && (flag & USE_NTT)) {
 		    sm_delete_sm_max = sizeof(char) * ALLOCATION_STEP;
 		    sm_delete_sm = (char *)malloc_data(sm_delete_sm_max, "_make_ipal_cframe_sm");
-		    strcpy(sm_delete_sm, "°ÕÌ£ÁÇºï½ü:");
+		    strcpy(sm_delete_sm, "æ„å‘³ç´ å‰Šé™¤:");
 		}
 		else {
-		    sm_delete_sm = strdup("°ÕÌ£ÁÇºï½ü");
+		    sm_delete_sm = strdup("æ„å‘³ç´ å‰Šé™¤");
 		}
 	    }
 	    else if (c_ptr->sm_delete_num[num] >= c_ptr->sm_delete_size[num]) {
@@ -814,14 +815,14 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 							     "_make_ipal_cframe_sm");
 	    }
 
-	    /* code¤¬½ñ¤¤¤Æ¤¢¤ë¤È¤­ */
+	    /* codeãŒæ›¸ã„ã¦ã‚ã‚‹ã¨ã */
 	    if (cf_str_buf[1] == '1') {
 		strcat(c_ptr->sm_delete[num], &cf_str_buf[1]);
 
-		if (PrintDeletedSM && (flag & USE_NTT)) { /* É½¼¨ÍÑ¤Î°ÕÌ£ÁÇÌ¾¤Ø¤ÎÊÑ´¹ (NTT¤Î¤ß) */
+		if (PrintDeletedSM && (flag & USE_NTT)) { /* è¡¨ç¤ºç”¨ã®æ„å‘³ç´ åã¸ã®å¤‰æ› (NTTã®ã¿) */
 		    temp = code2sm(&cf_str_buf[1]);
 		    if (temp[0]) {
-			/* -1 ¤Ç¤Ï¤Ê¤¤¤Î¤Ï '/' ¤ÎÊ¬ */
+			/* -1 ã§ã¯ãªã„ã®ã¯ '/' ã®åˆ† */
 			if (strlen(sm_delete_sm)+strlen(temp) > sm_delete_sm_max-2) {
 			    sm_delete_sm = (char *)realloc_data(sm_delete_sm, sm_delete_sm_max <<= 1, "_make_ipal_cframe_sm");
 			}
@@ -830,12 +831,12 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		    }
 		}
 	    }
-	    else if (flag & USE_NTT) { /* °ÕÌ£ÁÇÌ¾¤Ç¤Î»ØÄê (NTT¤Î¤ß) */
+	    else if (flag & USE_NTT) { /* æ„å‘³ç´ åã§ã®æŒ‡å®š (NTTã®ã¿) */
 		strcat(c_ptr->sm_delete[num], sm2code(&cf_str_buf[1]));
 	    }
 	    c_ptr->sm_delete_num[num]++;
 	}
-	/* ÉáÄÌ¤Î°ÕÌ£ÁÇ */
+	/* æ™®é€šã®æ„å‘³ç´  */
 	else {
 	    sm_num++;
 	    sm_print_num++;
@@ -843,18 +844,18 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 		break;
 	    }
 
-	    if (!strncmp(cf_str_buf, "¿ôÎÌ", strlen("¿ôÎÌ"))) {
-		/* Á°²ó¤â<¿ôÎÌ>¤Î¤È¤­¤ÏÆş¤ì¤Ê¤¤ */
-		if (sm_num > 1 && !strncmp(&buf[size*(sm_num-2)], sm2code("¿ôÎÌ"), size)) {
+	    if (!strncmp(cf_str_buf, "æ•°é‡", strlen("æ•°é‡"))) {
+		/* å‰å›ã‚‚<æ•°é‡>ã®ã¨ãã¯å…¥ã‚Œãªã„ */
+		if (sm_num > 1 && !strncmp(&buf[size*(sm_num-2)], sm2code("æ•°é‡"), size)) {
 		    sm_num--;
 		}
 		else {
-		    strcat(buf, sm2code("¿ôÎÌ"));
+		    strcat(buf, sm2code("æ•°é‡"));
 		}
 	    }
-	    else if (!strncmp(cf_str_buf, "¼çÂÎ½à", strlen("¼çÂÎ½à"))) {
-		strcat(buf, sm2code("¼çÂÎ"));
-		if (MatchPP(c_ptr->pp[num][0], "¥¬")) { /* º£¤Ï¡¢¥¬³Ê°Ê³°¤Ë<¼çÂÎ½à>¤òÍ¿¤¨¤Æ¤â<¼çÂÎ>¤ÈÆ±¤¸¤Ë¤Ê¤ë */
+	    else if (!strncmp(cf_str_buf, "ä¸»ä½“æº–", strlen("ä¸»ä½“æº–"))) {
+		strcat(buf, sm2code("ä¸»ä½“"));
+		if (MatchPP(c_ptr->pp[num][0], "ã‚¬")) { /* ä»Šã¯ã€ã‚¬æ ¼ä»¥å¤–ã«<ä¸»ä½“æº–>ã‚’ä¸ãˆã¦ã‚‚<ä¸»ä½“>ã¨åŒã˜ã«ãªã‚‹ */
 		    c_ptr->etcflag |= CF_GA_SEMI_SUBJECT;
 		}
 	    }
@@ -913,11 +914,11 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 {   
     double freq;
 
-    cp += 4; /* ÀèÆ¬¤Î"<NE:"¡¢"<TH:", "<CT:", "<CL:"¤òÆÉ¤ßÈô¤Ğ¤¹ */
+    cp += 4; /* å…ˆé ­ã®"<NE:"ã€"<TH:", "<CT:", "<CL:"ã‚’èª­ã¿é£›ã°ã™ */
     while (1) {
 	if (*cp == ':') {
 	    sscanf(cp + 1, "%lf", &freq);
-	    *(cp - 1) = '\0'; /* ">"¤ò½ü¤¯ */
+	    *(cp - 1) = '\0'; /* ">"ã‚’é™¤ã */
 	    return freq;
 	}
 	else if (*cp == '\0') {
@@ -933,10 +934,10 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 			  int flag, int fflag)
 /*==================================================================*/
 {
-    /* Îã¤ÎÆÉ¤ß¤À¤· */
+    /* ä¾‹ã®èª­ã¿ã ã— */
 
-    /* fflag: ÉÑÅÙ1¤ò»È¤¦¤«¤É¤¦¤«
-              ³Ê¤¬³°¤Î´Ø·¸¤Î¤È¤­¤À¤±»È¤¦ */
+    /* fflag: é »åº¦1ã‚’ä½¿ã†ã‹ã©ã†ã‹
+              æ ¼ãŒå¤–ã®é–¢ä¿‚ã®ã¨ãã ã‘ä½¿ã† */
 
     unsigned char *point, *point2;
     int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
@@ -950,7 +951,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	return;
     }
 
-    /* °ú¤¯¥ê¥½¡¼¥¹¤Ë¤è¤Ã¤Æ´Ø¿ô¤Ê¤É¤ò¥»¥Ã¥È */
+    /* å¼•ããƒªã‚½ãƒ¼ã‚¹ã«ã‚ˆã£ã¦é–¢æ•°ãªã©ã‚’ã‚»ãƒƒãƒˆ */
     destination = &c_ptr->ex[num];
     if (flag & USE_BGH) {
 	thesaurus = USE_BGH;
@@ -961,7 +962,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	max = SM_ELEMENT_MAX*SM_CODE_SIZE;
     }
 
-    /* ºÇÂçÃÍ¤ä¤á¤Ê¤¤¤È¤¤¤±¤Ş¤»¤ó */
+    /* æœ€å¤§å€¤ã‚„ã‚ãªã„ã¨ã„ã‘ã¾ã›ã‚“ */
     buf = (char *)malloc_data(sizeof(char)*max, "_make_ipal_cframe_ex");
 
     point = cp;
@@ -969,21 +970,21 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     while ((point = extract_ipal_str(point, cf_str_buf, TRUE))) {
 	point2 = cf_str_buf;
 
-	/* ÍÑÎãÃæ¤Ëµ­¤µ¤ì¤¿ÈÆ²½ÁÇÀ­¤ÎÆÉ¤ß¹ş¤ß */
+	/* ç”¨ä¾‹ä¸­ã«è¨˜ã•ã‚ŒãŸæ±åŒ–ç´ æ€§ã®èª­ã¿è¾¼ã¿ */
 	if (!strncmp(point2, "<TH:", 4) || 
 	    !strncmp(point2, "<NE:", 4) || 
 	    !strncmp(point2, "<CT:", 4) ||
 	    !strncmp(point2, "<CL:", 4)) {
 
-	    /* ÉÑÅÙ¤ÎÃê½Ğ */
+	    /* é »åº¦ã®æŠ½å‡º */
 	    freq_gex = split_freq_for_gex(point2);
 
-	    if (!strcmp(point2, "<TH:¼çÂÎ")) { /* <¼çÂÎ>¤Î³ä¹ç¤ò²¼¤ÇÍøÍÑ */
+	    if (!strcmp(point2, "<TH:ä¸»ä½“")) { /* <ä¸»ä½“>ã®å‰²åˆã‚’ä¸‹ã§åˆ©ç”¨ */
 		agent_ratio = freq_gex;
 	    }
 
 	    if (c_ptr->gex_size[num] == 0) {
-		c_ptr->gex_size[num] = 10;	/* ½é´ü³ÎÊİ¿ô */
+		c_ptr->gex_size[num] = 10;	/* åˆæœŸç¢ºä¿æ•° */
 		c_ptr->gex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->gex_size[num], 
 							   "_make_ipal_cframe_ex");
 		c_ptr->gex_freq[num] = (double *)malloc_data(sizeof(double)*c_ptr->gex_size[num], 
@@ -1006,33 +1007,33 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	    continue;
 	}
 
-	/* ÉÑÅÙ¤ÎÃê½Ğ */
+	/* é »åº¦ã®æŠ½å‡º */
 	freq = split_freq(point2);
 
-	if (!strcmp(point2, "<¼çÂÎ½à>")) {
+	if (!strcmp(point2, "<ä¸»ä½“æº–>")) {
 	    sub_agent_flag = 1;
 	    continue;
 	}
 
-	/* fflag == TRUE: ÄãÉÑÅÙ¤òºï½ü */
+	/* fflag == TRUE: ä½é »åº¦ã‚’å‰Šé™¤ */
 	if (fflag && freq < SOTO_EX_CUT_THRESHOLD) {
 	    continue;
 	}
 
 	if (*point2 != '\0') {
-	    if (agent_ratio > 0) { /* <TH:¼çÂÎ>¤¬¤¢¤ë¤Ê¤é¤Ğ¡¢Æ°Åª<¼çÂÎ>¥Á¥§¥Ã¥¯¤Ï¤·¤Ê¤¤ */
+	    if (agent_ratio > 0) { /* <TH:ä¸»ä½“>ãŒã‚ã‚‹ãªã‚‰ã°ã€å‹•çš„<ä¸»ä½“>ãƒã‚§ãƒƒã‚¯ã¯ã—ãªã„ */
 		ex_agent_flag = 1;
 	    }
 	    else {
 		ex_agent_flag = 0;
 	    }
 	    token = strtok(point2, "?");
-	    while (token) { /* "?"¤Ç·ë¹ç¤µ¤ì¤¿¤â¤Î¤ÏÀÚ¤Ã¤Æ³ÊÇ¼ */
+	    while (token) { /* "?"ã§çµåˆã•ã‚ŒãŸã‚‚ã®ã¯åˆ‡ã£ã¦æ ¼ç´ */
 		code = get_str_code(token, thesaurus);
 		if (code) {
-		    /* <¼çÂÎ>¤Î¥Á¥§¥Ã¥¯ (for backward compatibility -> will be deleted) */
+		    /* <ä¸»ä½“>ã®ãƒã‚§ãƒƒã‚¯ (for backward compatibility -> will be deleted) */
 		    if (ex_agent_flag == 0 && 
-			cf_match_element(code, (flag & USE_BGH) ? sm2code("¼çÂÎ") : "¼çÂÎ", FALSE)) {
+			cf_match_element(code, (flag & USE_BGH) ? sm2code("ä¸»ä½“") : "ä¸»ä½“", FALSE)) {
 			agent_count += freq;
 			ex_agent_flag = 1;
 		    }
@@ -1050,7 +1051,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 		}
 
 		if (c_ptr->ex_size[num] == 0) {
-		    c_ptr->ex_size[num] = 10;	/* ½é´ü³ÎÊİ¿ô */
+		    c_ptr->ex_size[num] = 10;	/* åˆæœŸç¢ºä¿æ•° */
 		    c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
 							       "_make_ipal_cframe_ex");
 		    c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
@@ -1076,23 +1077,23 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
     }
 
-    /* <¼çÂÎ>¤Î³ä¹ç¤ò³Ê¥Õ¥ì¡¼¥à¤Î<TH:¼çÂÎ>¤«¤é¼èÆÀ¤¹¤ë
-       ³Ê¥Õ¥ì¡¼¥àµì¥Ğ¡¼¥¸¥ç¥ó(200706ÈÇ°ÊÁ°): <TH:¼çÂÎ>¤¬¤Ê¤¤¤Î¤Ç¡¢¾å¤ÇÆ°Åª¤Ë·×»»
-       ³Ê¥Õ¥ì¡¼¥à¿·¥Ğ¡¼¥¸¥ç¥ó: <TH:¼çÂÎ>¤«¤é¼èÆÀ¤¹¤ë¤¬¡¢¤Ê¤¤¾ì¹ç(0.01Ì¤Ëş)¤Ï¾å¤Ç·×»»¤·¤¿agent_count¤Ë¤Ê¤ë
-                               (¾å¤ÎÆ°Åª·×»»¤ÏËĞÌÇÍ½Äê) */
+    /* <ä¸»ä½“>ã®å‰²åˆã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®<TH:ä¸»ä½“>ã‹ã‚‰å–å¾—ã™ã‚‹
+       æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ—§ãƒãƒ¼ã‚¸ãƒ§ãƒ³(200706ç‰ˆä»¥å‰): <TH:ä¸»ä½“>ãŒãªã„ã®ã§ã€ä¸Šã§å‹•çš„ã«è¨ˆç®—
+       æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æ–°ãƒãƒ¼ã‚¸ãƒ§ãƒ³: <TH:ä¸»ä½“>ã‹ã‚‰å–å¾—ã™ã‚‹ãŒã€ãªã„å ´åˆ(0.01æœªæº€)ã¯ä¸Šã§è¨ˆç®—ã—ãŸagent_countã«ãªã‚‹
+                               (ä¸Šã®å‹•çš„è¨ˆç®—ã¯æ’²æ»…äºˆå®š) */
     if (agent_ratio > 0) {
 	agent_count = agent_ratio * c_ptr->freq[num];
 
-	/* <¼çÂÎ>¤ò°ÕÌ£ÁÇ¤ËÄÉ²Ã (-no-probcaseÍÑ) */
+	/* <ä¸»ä½“>ã‚’æ„å‘³ç´ ã«è¿½åŠ  (-no-probcaseç”¨) */
 	if (!sub_agent_flag && agent_ratio > SM_AGENT_THRESHOLD) {
-	    _make_ipal_cframe_sm(c_ptr, "¼çÂÎ", num, flag);
+	    _make_ipal_cframe_sm(c_ptr, "ä¸»ä½“", num, flag);
 	}
     }
 
-    /* <¼çÂÎ>¤ÎÄÉ²Ã */
+    /* <ä¸»ä½“>ã®è¿½åŠ  */
     if (agent_count || sub_agent_flag) {
 	if (c_ptr->ex_size[num] == 0) {
-	    c_ptr->ex_size[num] = 1;	/* ½é´ü³ÎÊİ¿ô */
+	    c_ptr->ex_size[num] = 1;	/* åˆæœŸç¢ºä¿æ•° */
 	    c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
 						       "_make_ipal_cframe_ex");
 	    c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
@@ -1106,7 +1107,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 						      sizeof(int)*c_ptr->ex_size[num], 
 						      "_make_ipal_cframe_ex");
 	}
-	c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup("<¼çÂÎ>");
+	c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup("<ä¸»ä½“>");
 	c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = agent_count ? agent_count : 1;
 	if (c_ptr->freq[num] == 0) {
 	    c_ptr->freq[num] = 1;
@@ -1144,7 +1145,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
     point = cp;
     while ((point = extract_ipal_str(point, cf_str_buf, FALSE)))
-	if (!strcmp(cf_str_buf, "£Á")) return TRUE;
+	if (!strcmp(cf_str_buf, "ï¼¡")) return TRUE;
     return FALSE;
 }
 
@@ -1162,7 +1163,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     strcpy(cf_ptr->cf_id, i_ptr->DATA); 
     cf_ptr->etcflag = i_ptr->etcflag;
     cf_ptr->entry = strdup(cf_ptr->cf_id);
-    sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* ³Ê¥Õ¥ì¡¼¥à¤ÎÍÑ¸ÀÉ½µ­ (ÂåÉ½É½µ­) */
+    sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç”¨è¨€è¡¨è¨˜ (ä»£è¡¨è¡¨è¨˜) */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
     for (i = 0; i_ptr->cf_align[i].cf_id != NULL; i++) {
 	cf_ptr->cf_align[i].cf_id = i_ptr->cf_align[i].cf_id;
@@ -1193,28 +1194,28 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     cf_ptr->cf_similarity = 0;
 
 
-    /* ³ÊÍ×ÁÇ¤ÎÄÉ²Ã */
+    /* æ ¼è¦ç´ ã®è¿½åŠ  */
 
     j = 0;
     if (cf_ptr->voice == FRAME_PASSIVE_I ||
 	cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||
 	cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	cf_ptr->voice == FRAME_CAUSATIVE_NI) {
-	_make_ipal_cframe_pp(cf_ptr, "¥¬", j, flag);
-	_make_ipal_cframe_sm(cf_ptr, "¼çÂÎ½à", j, 
+	_make_ipal_cframe_pp(cf_ptr, "ã‚¬", j, flag);
+	_make_ipal_cframe_sm(cf_ptr, "ä¸»ä½“æº–", j, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, "Èà", j, Thesaurus, FALSE);
+	_make_ipal_cframe_ex(cf_ptr, "å½¼", j, Thesaurus, FALSE);
 	j++;
     }
     else if (cf_ptr->voice == FRAME_CAUSATIVE_PASSIVE) {
-	_make_ipal_cframe_pp(cf_ptr, "¥Ë", j, flag);
-	_make_ipal_cframe_sm(cf_ptr, "¼çÂÎ½à", j, 
+	_make_ipal_cframe_pp(cf_ptr, "ãƒ‹", j, flag);
+	_make_ipal_cframe_sm(cf_ptr, "ä¸»ä½“æº–", j, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, "Èà", j, Thesaurus, FALSE);
+	_make_ipal_cframe_ex(cf_ptr, "å½¼", j, Thesaurus, FALSE);
 	j++;
     }
 
-    /* ³Æ³ÊÍ×ÁÇ¤Î½èÍı */
+    /* å„æ ¼è¦ç´ ã®å‡¦ç† */
 
     for (i = 0; i < i_ptr->casenum && j < CASE_MAX_NUM; i++, j++) { 
 	cf_ptr->adjacent[j] = FALSE;
@@ -1224,75 +1225,75 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "³°¤Î´Ø·¸"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "å¤–ã®é–¢ä¿‚"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "³°¤Î´Ø·¸"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "å¤–ã®é–¢ä¿‚"));
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
-	/* Ç½Æ° : Agentive ¥¬³Ê¤òÇ¤°ÕÅª¤È¤¹¤ë¾ì¹ç
+	/* èƒ½å‹• : Agentive ã‚¬æ ¼ã‚’ä»»æ„çš„ã¨ã™ã‚‹å ´åˆ
 	if (cf_ptr->voice == FRAME_ACTIVE &&
 	    i == 0 && 
-	    cf_ptr->pp[i][0] == pp_kstr_to_code("¥¬") &&
+	    cf_ptr->pp[i][0] == pp_kstr_to_code("ã‚¬") &&
 	    check_agentive(i_ptr->DATA+i_ptr->jyutugoso) == TRUE)
 	  cf_ptr->oblig[i] = FALSE;
 	*/
 
-	if (cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||	/* »ÈÌò */
+	if (cf_ptr->voice == FRAME_CAUSATIVE_WO_NI ||	/* ä½¿å½¹ */
 	    cf_ptr->voice == FRAME_CAUSATIVE_WO ||
 	    cf_ptr->voice == FRAME_CAUSATIVE_NI) {
-	    /* ¥¬ ¢ª ¥ò¡¤¥Ë */
-	    if (cf_ptr->pp[j][0] == pp_kstr_to_code("¥¬")) {
+	    /* ã‚¬ â†’ ãƒ²ï¼Œãƒ‹ */
+	    if (cf_ptr->pp[j][0] == pp_kstr_to_code("ã‚¬")) {
 		if (ga_p == FALSE) {
 		    ga_p = TRUE;
 		    if (cf_ptr->voice == FRAME_CAUSATIVE_WO_NI)
-		      _make_ipal_cframe_pp(cf_ptr, "¥ò¡¿¥Ë", j, flag);
+		      _make_ipal_cframe_pp(cf_ptr, "ãƒ²ï¼ãƒ‹", j, flag);
 		    else if (cf_ptr->voice == FRAME_CAUSATIVE_WO)
-		      _make_ipal_cframe_pp(cf_ptr, "¥ò", j, flag);
+		      _make_ipal_cframe_pp(cf_ptr, "ãƒ²", j, flag);
 		    else if (cf_ptr->voice == FRAME_CAUSATIVE_NI)
-		      _make_ipal_cframe_pp(cf_ptr, "¥Ë", j, flag);
+		      _make_ipal_cframe_pp(cf_ptr, "ãƒ‹", j, flag);
 		} else {
-		    _make_ipal_cframe_pp(cf_ptr, "¥ò", j, flag); /* ¥¬¡¦¥¬¹½Ê¸ */
+		    _make_ipal_cframe_pp(cf_ptr, "ãƒ²", j, flag); /* ã‚¬ãƒ»ã‚¬æ§‹æ–‡ */
 		}
 	    }
 	}
-	else if (cf_ptr->voice == FRAME_PASSIVE_I ||	/* ¼õ¿È */
+	else if (cf_ptr->voice == FRAME_PASSIVE_I ||	/* å—èº« */
 		 cf_ptr->voice == FRAME_PASSIVE_1 ||
 		 cf_ptr->voice == FRAME_PASSIVE_2) {
-	    /* ´ÖÀÜ ¥¬¢ª¥Ë¡¤Ä¾ÀÜ ¥¬¢ª¥Ë¡¿¥Ë¥è¥Ã¥Æ¡¿¡¥¡¥ */
-	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "¥¬")) {
+	    /* é–“æ¥ ã‚¬â†’ãƒ‹ï¼Œç›´æ¥ ã‚¬â†’ãƒ‹ï¼ãƒ‹ãƒ¨ãƒƒãƒ†ï¼ï¼ï¼ */
+	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "ã‚¬")) {
 		if (cf_ptr->voice == FRAME_PASSIVE_I)
-		  _make_ipal_cframe_pp(cf_ptr, "¥Ë", j, flag);
+		  _make_ipal_cframe_pp(cf_ptr, "ãƒ‹", j, flag);
 		else if (cf_ptr->voice == FRAME_PASSIVE_1)
 		  _make_ipal_cframe_pp(cf_ptr, 
-				       "¥Ë¡¿¥Ë¥è¥ë¡¿¥«¥é", j, flag);
+				       "ãƒ‹ï¼ãƒ‹ãƒ¨ãƒ«ï¼ã‚«ãƒ©", j, flag);
 		else if (cf_ptr->voice == FRAME_PASSIVE_2)
 		  _make_ipal_cframe_pp(cf_ptr, 
-				       "¥Ë¡¿¥Ë¥è¥ë¡¿¥«¥é", j, flag);
+				       "ãƒ‹ï¼ãƒ‹ãƒ¨ãƒ«ï¼ã‚«ãƒ©", j, flag);
 	    }
-	    /* Ä¾ÀÜ ¥Ë¡¿¥Ë¥è¥Ã¥Æ¡¿¡¥¡¥¢ª¥¬ */
+	    /* ç›´æ¥ ãƒ‹ï¼ãƒ‹ãƒ¨ãƒƒãƒ†ï¼ï¼ï¼â†’ã‚¬ */
 	    else if ((cf_ptr->voice == FRAME_PASSIVE_1 && 
-		      (!strcmp(i_ptr->cs[i].kaku_keishiki, "¥ò") ||
-		       (sprintf(ast_cap, "¥ò¡ö") &&
+		      (!strcmp(i_ptr->cs[i].kaku_keishiki, "ãƒ²") ||
+		       (sprintf(ast_cap, "ãƒ²ï¼Š") &&
 			!strcmp(i_ptr->cs[i].kaku_keishiki, ast_cap)))) ||
 		     (cf_ptr->voice == FRAME_PASSIVE_2 && 
-		      (!strcmp(i_ptr->cs[i].kaku_keishiki, "¥Ë") ||
-		       (sprintf(ast_cap, "¥Ë¡ö") &&
+		      (!strcmp(i_ptr->cs[i].kaku_keishiki, "ãƒ‹") ||
+		       (sprintf(ast_cap, "ãƒ‹ï¼Š") &&
 			!strcmp(i_ptr->cs[i].kaku_keishiki, ast_cap))))) {
-		_make_ipal_cframe_pp(cf_ptr, "¥¬", j, flag);
+		_make_ipal_cframe_pp(cf_ptr, "ã‚¬", j, flag);
 	    }
 	}
-	else if (cf_ptr->voice == FRAME_POSSIBLE) {	/* ²ÄÇ½ */
-	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "¥ò")) {
-		_make_ipal_cframe_pp(cf_ptr, "¥¬¡¿¥ò", j, flag);
+	else if (cf_ptr->voice == FRAME_POSSIBLE) {	/* å¯èƒ½ */
+	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "ãƒ²")) {
+		_make_ipal_cframe_pp(cf_ptr, "ã‚¬ï¼ãƒ²", j, flag);
 	     }
 	}
-	else if (cf_ptr->voice == FRAME_SPONTANE) {	/* ¼«È¯ */
-	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "¥ò")) {
-		_make_ipal_cframe_pp(cf_ptr, "¥¬", j, flag);
+	else if (cf_ptr->voice == FRAME_SPONTANE) {	/* è‡ªç™º */
+	    if (!strcmp(i_ptr->cs[i].kaku_keishiki, "ãƒ²")) {
+		_make_ipal_cframe_pp(cf_ptr, "ã‚¬", j, flag);
 	     }
 	}
     }
@@ -1308,7 +1309,7 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 	return NULL;
     }
 
-    if (check_feature(t_ptr->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë")) {
+    if (check_feature(t_ptr->f, "ID:ï¼ˆã€œã‚’ï¼‰ã€œã«")) {
 	return t_ptr;
     }
 
@@ -1316,25 +1317,25 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 	return NULL;
     }
 
-    if (!check_feature(pre_ptr->f, "ÂÎ¸À")) {
+    if (!check_feature(pre_ptr->f, "ä½“è¨€")) {
 	return NULL;
     }
 
-    if (check_feature(pre_ptr->f, "»Ø¼¨»ì") || 
+    if (check_feature(pre_ptr->f, "æŒ‡ç¤ºè©") || 
 	(pre_ptr->SM_code[0] == '\0' && 
-	 check_feature(pre_ptr->f, "·¸:¥¬³Ê"))) {
+	 check_feature(pre_ptr->f, "ä¿‚:ã‚¬æ ¼"))) {
 	return NULL;
     }
 
-    if (check_feature(pre_ptr->f, "·¸:¥ò³Ê") || 
-	check_feature(pre_ptr->f, "·¸:¥Ë³Ê") || 
-	(!cf_match_element(pre_ptr->SM_code, "¼çÂÎ", FALSE) && 
-	(check_feature(pre_ptr->f, "·¸:¥¬³Ê") || 
-	 check_feature(pre_ptr->f, "·¸:¥«¥é³Ê") || 
-	 check_feature(pre_ptr->f, "·¸:¥Ø³Ê") || 
-	 check_feature(pre_ptr->f, "·¸:¥è¥ê³Ê") || 
-	 check_feature(pre_ptr->f, "·¸:¥È³Ê") || 
-	 check_feature(pre_ptr->f, "·¸:¥Ş¥Ç³Ê")))) {
+    if (check_feature(pre_ptr->f, "ä¿‚:ãƒ²æ ¼") || 
+	check_feature(pre_ptr->f, "ä¿‚:ãƒ‹æ ¼") || 
+	(!cf_match_element(pre_ptr->SM_code, "ä¸»ä½“", FALSE) && 
+	(check_feature(pre_ptr->f, "ä¿‚:ã‚¬æ ¼") || 
+	 check_feature(pre_ptr->f, "ä¿‚:ã‚«ãƒ©æ ¼") || 
+	 check_feature(pre_ptr->f, "ä¿‚:ãƒ˜æ ¼") || 
+	 check_feature(pre_ptr->f, "ä¿‚:ãƒ¨ãƒªæ ¼") || 
+	 check_feature(pre_ptr->f, "ä¿‚:ãƒˆæ ¼") || 
+	 check_feature(pre_ptr->f, "ä¿‚:ãƒãƒ‡æ ¼")))) {
 	return pre_ptr;
     }
     return NULL;
@@ -1346,15 +1347,15 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 {
     char *cp, *buffer;
 
-    if (check_feature(tp->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë")) {
-	buffer = (char *)malloc_data(strlen("¥Ë")+1, "feature2case");
-	strcpy(buffer, "¥Ë");
+    if (check_feature(tp->f, "ID:ï¼ˆã€œã‚’ï¼‰ã€œã«")) {
+	buffer = (char *)malloc_data(strlen("ãƒ‹")+1, "feature2case");
+	strcpy(buffer, "ãƒ‹");
 	return buffer;
     }
-    else if ((cp = check_feature(tp->f, "·¸"))) {
-	buffer = strdup(cp+strlen("·¸:"));
-	if (!strncmp(buffer+strlen(buffer)-strlen("³Ê"), "³Ê", strlen("³Ê"))) {
-	    *(buffer+strlen(buffer)-strlen("³Ê")) = '\0';
+    else if ((cp = check_feature(tp->f, "ä¿‚"))) {
+	buffer = strdup(cp+strlen("ä¿‚:"));
+	if (!strncmp(buffer+strlen(buffer)-strlen("æ ¼"), "æ ¼", strlen("æ ¼"))) {
+	    *(buffer+strlen(buffer)-strlen("æ ¼")) = '\0';
 	    if (pp_kstr_to_code(buffer) != END_M) {
 		return buffer;
 	    }
@@ -1452,13 +1453,12 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 
     cf_ptr = Case_frame_array + start;
 
-    /* Ä¾Á°³ÊÍ×ÁÇ¤ò¤¯¤Ã¤Ä¤±¤Æ¸¡º÷ */
+    /* ç›´å‰æ ¼è¦ç´ ã‚’ãã£ã¤ã‘ã¦æ¤œç´¢ */
     if (use_closest_cc) {
-	/* ¤Ò¤é¤¬¤Ê¤ÇÛ£ËæÀ­¤Î¤¢¤ë¤È¤­¤Ï¡¢³Ê²òÀÏ¤ÇÛ£ËæÀ­²ò¾Ã¤¹¤ë¤¿¤á¤Ë
-	   ¤³¤³¤Ç¤Ï¤¹¤Ù¤Æ¤Î³Ê¥Õ¥ì¡¼¥à¤ò¸¡º÷¤·¤Æ¤ª¤¯ */
-	if (check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA && 
-
-	    check_feature(t_ptr->head_ptr->f, "ÉÊÛ£")) {
+	/* ã²ã‚‰ãŒãªã§æ›–æ˜§æ€§ã®ã‚ã‚‹ã¨ãã¯ã€æ ¼è§£æã§æ›–æ˜§æ€§è§£æ¶ˆã™ã‚‹ãŸã‚ã«
+	   ã“ã“ã§ã¯ã™ã¹ã¦ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ¤œç´¢ã—ã¦ãŠã */
+	if (check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA) && 
+	    check_feature(t_ptr->head_ptr->f, "å“æ›–")) {
 	    address_str = get_ipal_address(verb, flag);
 	}
 	else {
@@ -1470,12 +1470,12 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		pp = feature2case(cbp);
 		if (pp) {
 		    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-			if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+			if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 			    (cbp_str = get_bnst_head_canonical_rep(cbp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 			    ;
 			}
-			else if ((cbp_str = get_mrph_rep_from_f(cbp->head_ptr, FALSE)) == NULL) { /* featureÃæ¤ÎÂåÉ½É½µ­ */
-			    cbp_str = make_mrph_rn(cbp->head_ptr); /* ¤Ê¤±¤ì¤Ğºî¤ë */
+			else if ((cbp_str = get_mrph_rep_from_f(cbp->head_ptr, FALSE)) == NULL) { /* featureä¸­ã®ä»£è¡¨è¡¨è¨˜ */
+			    cbp_str = make_mrph_rn(cbp->head_ptr); /* ãªã‘ã‚Œã°ä½œã‚‹ */
 			    cbp_str_malloc_flag = 1;
 			}
 		    }
@@ -1505,18 +1505,18 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	address_str = get_ipal_address(verb, flag);
     }
 
-    /* ¤Ê¤±¤ì¤Ğ */
+    /* ãªã‘ã‚Œã° */
     if (!address_str)
 	return f_num;
 
-    if (flag == CF_NOUN && (vtype = check_feature(t_ptr->f, "ÂÎ¸À"))) {
-	vtype = "Ì¾";
+    if (flag == CF_NOUN && (vtype = check_feature(t_ptr->f, "ä½“è¨€"))) {
+	vtype = "å";
     }
-    else if ((vtype = check_feature(t_ptr->f, "ÍÑ¸À"))) {
-	vtype += strlen("ÍÑ¸À:");
+    else if ((vtype = check_feature(t_ptr->f, "ç”¨è¨€"))) {
+	vtype += strlen("ç”¨è¨€:");
     }
-    else if ((vtype = check_feature(t_ptr->f, "ÈóÍÑ¸À³Ê²òÀÏ"))) {
-	vtype += strlen("ÈóÍÑ¸À³Ê²òÀÏ:");
+    else if ((vtype = check_feature(t_ptr->f, "éç”¨è¨€æ ¼è§£æ"))) {
+	vtype += strlen("éç”¨è¨€æ ¼è§£æ:");
     }
 
     for (cp = pre_pos = address_str; ; cp++) {
@@ -1526,21 +1526,21 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	    else 
 		*cp = '\0';
 	    
-	    /* ³Ê¥Õ¥ì¡¼¥à¤ÎÆÉ¤ß¤À¤· */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®èª­ã¿ã ã— */
 	    match = sscanf(pre_pos, "%d:%d", &address, &size);
 	    if (match != 2) {
 		fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
 		exit(1);
 	    }
 
-	    if (!((OptCaseFlag & OPT_CASE_CF_CACHE) && (i_ptr = lookup_caseframe(address)))) { /* ³Ê¥Õ¥ì¡¼¥àcache¤ò»È¤¦¾ì¹ç¤Ï¡¢cache¤ò°ú¤¯ */
+	    if (!((OptCaseFlag & OPT_CASE_CF_CACHE) && (i_ptr = lookup_caseframe(address)))) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ cacheã‚’ä½¿ã†å ´åˆã¯ã€cacheã‚’å¼•ã */
 		i_ptr = get_ipal_frame(address, size, flag);
 	    }
 	    pre_pos = cp + 1;
 
-	    /* ÍÑ¸À¤Î¥¿¥¤¥×¤¬¥Ş¥Ã¥Á¤·¤Ê¤±¤ì¤Ğ (½àÍÑ¸À¤Ê¤éÄÌ²á) */
+	    /* ç”¨è¨€ã®ã‚¿ã‚¤ãƒ—ãŒãƒãƒƒãƒã—ãªã‘ã‚Œã° (æº–ç”¨è¨€ãªã‚‰é€šé) */
 	    if (vtype) {
-		if (strncmp(vtype, i_ptr->pred_type, strlen("Ì¾"))) {
+		if (strncmp(vtype, i_ptr->pred_type, strlen("å"))) {
 		    if (break_flag)
 			break;
 		    else
@@ -1548,45 +1548,45 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		}
 	    }
 
-	    /* Ç½Æ°ÂÖ or ³Ê¥Õ¥ì¡¼¥à¤ËÂÖ¤¬´Ş¤Ş¤ì¤ë¾ì¹ç */
+	    /* èƒ½å‹•æ…‹ or æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«æ…‹ãŒå«ã¾ã‚Œã‚‹å ´åˆ */
 	    if (voice == 0) {
-		/* CF_NOUN¤Î¾ì¹ç¡¢¤³¤³¤Ç¥Ş¥Ã¥Á */
+		/* CF_NOUNã®å ´åˆã€ã“ã“ã§ãƒãƒƒãƒ */
 		(cf_ptr + f_num)->voice = FRAME_ACTIVE;
 		_make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
 
-		/* ÍÑ¸À¤Î¤È¤­¤Ï¡¢°ìÈÌÅª³°¤Î´Ø·¸Ì¾»ì¤òÄÉ²Ã */
+		/* ç”¨è¨€ã®ã¨ãã¯ã€ä¸€èˆ¬çš„å¤–ã®é–¢ä¿‚åè©ã‚’è¿½åŠ  */
 		if ((OptCaseFlag & OPT_CASE_ADD_SOTO_WORDS) && flag == CF_PRED) {
-		    /* ³°¤Î´Ø·¸¤¬¤Ê¤¤¤È¤­ */
-		    if ((c = check_cf_case(cf_ptr + f_num, "³°¤Î´Ø·¸")) < 0) {
-			if ((cf_ptr + f_num)->element_num == CF_ELEMENT_MAX) { /* ³Ê¤Î¿ô¤¬¾å¸Â */
-			    (cf_ptr + f_num)->element_num--; /* ºÇ¸å¤Î³Ê¤òºï½ü */
+		    /* å¤–ã®é–¢ä¿‚ãŒãªã„ã¨ã */
+		    if ((c = check_cf_case(cf_ptr + f_num, "å¤–ã®é–¢ä¿‚")) < 0) {
+			if ((cf_ptr + f_num)->element_num == CF_ELEMENT_MAX) { /* æ ¼ã®æ•°ãŒä¸Šé™ */
+			    (cf_ptr + f_num)->element_num--; /* æœ€å¾Œã®æ ¼ã‚’å‰Šé™¤ */
 			    clear_cf_element((cf_ptr + f_num), (cf_ptr + f_num)->element_num);
 			}
-			_make_ipal_cframe_pp(cf_ptr + f_num, "³°¤Î´Ø·¸", (cf_ptr + f_num)->element_num, flag);
+			_make_ipal_cframe_pp(cf_ptr + f_num, "å¤–ã®é–¢ä¿‚", (cf_ptr + f_num)->element_num, flag);
 			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, (cf_ptr + f_num)->element_num, Thesaurus, FALSE);
 			(cf_ptr + f_num)->element_num++;
 		    }
-		    /* ³°¤Î´Ø·¸¤¬¤¹¤Ç¤Ë¤¢¤ë¤È¤­¤ÏÍÑÎã¤òÄÉ²Ã */
+		    /* å¤–ã®é–¢ä¿‚ãŒã™ã§ã«ã‚ã‚‹ã¨ãã¯ç”¨ä¾‹ã‚’è¿½åŠ  */
 		    else {
 			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, c, Thesaurus, FALSE);
 		    }
 		}
 
-		/* °Ê²¼ flag == CF_PRED ¤Î¤Ï¤º */
+		/* ä»¥ä¸‹ flag == CF_PRED ã®ã¯ãš */
 
-		/* ³Ê¥Õ¥ì¡¼¥à»ÈÌò/³Ê¥Õ¥ì¡¼¥à»ÈÌò&¼õ¿È*/
+		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ä½¿å½¹/æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ä½¿å½¹&å—èº«*/
 		if (t_ptr->voice & VOICE_SHIEKI || 
 		    t_ptr->voice & VOICE_SHIEKI_UKEMI) {
-		    /* ¥Ë³Ê¤¬¤Ê¤¤¤È¤­ */
-		    if ((c = check_cf_case(cf_ptr + f_num, "¥Ë")) < 0) {
-			_make_ipal_cframe_pp(cf_ptr + f_num, "¥Ë", (cf_ptr + f_num)->element_num, flag);
-			_make_ipal_cframe_sm(cf_ptr + f_num, "¼çÂÎ", (cf_ptr + f_num)->element_num, 
+		    /* ãƒ‹æ ¼ãŒãªã„ã¨ã */
+		    if ((c = check_cf_case(cf_ptr + f_num, "ãƒ‹")) < 0) {
+			_make_ipal_cframe_pp(cf_ptr + f_num, "ãƒ‹", (cf_ptr + f_num)->element_num, flag);
+			_make_ipal_cframe_sm(cf_ptr + f_num, "ä¸»ä½“", (cf_ptr + f_num)->element_num, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 			(cf_ptr+f_num)->element_num++;
 		    }
-		    /* ¥Ë³Ê¤Ï¤¢¤ë¤±¤É<¼çÂÎ>¤¬¤Ê¤¤¤È¤­ */
-		    else if (sms_match(sm2code("¼çÂÎ"), (cf_ptr + f_num)->sm[c], SM_NO_EXPAND_NE) == FALSE) {
-			_make_ipal_cframe_sm(cf_ptr + f_num, "¼çÂÎ", c, 
+		    /* ãƒ‹æ ¼ã¯ã‚ã‚‹ã‘ã©<ä¸»ä½“>ãŒãªã„ã¨ã */
+		    else if (sms_match(sm2code("ä¸»ä½“"), (cf_ptr + f_num)->sm[c], SM_NO_EXPAND_NE) == FALSE) {
+			_make_ipal_cframe_sm(cf_ptr + f_num, "ä¸»ä½“", c, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 		    }
 		    if (t_ptr->voice & VOICE_SHIEKI) {
@@ -1596,21 +1596,21 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 			(cf_ptr + f_num)->voice = FRAME_CAUSATIVE_PASSIVE;
 		    }
 		}
-		/* ³Ê¥Õ¥ì¡¼¥à¼õ¿È */
+		/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ å—èº« */
 		else if (t_ptr->voice & VOICE_UKEMI || 
 			 t_ptr->voice & VOICE_UNKNOWN) {
-		    /* ¥Ë/¥Ë¥è¥ë/¥«¥é³Ê¤¬¤Ê¤¤¤È¤­ */
-		    if ((c = check_cf_case(cf_ptr + f_num, "¥Ë")) < 0 && 
-			(c = check_cf_case(cf_ptr + f_num, "¥Ë¥è¥ë")) < 0 && 
-			(c = check_cf_case(cf_ptr + f_num, "¥«¥é")) < 0) {
-			_make_ipal_cframe_pp(cf_ptr + f_num, "¥Ë", (cf_ptr + f_num)->element_num, flag);
-			_make_ipal_cframe_sm(cf_ptr + f_num, "¼çÂÎ", (cf_ptr + f_num)->element_num, 
+		    /* ãƒ‹/ãƒ‹ãƒ¨ãƒ«/ã‚«ãƒ©æ ¼ãŒãªã„ã¨ã */
+		    if ((c = check_cf_case(cf_ptr + f_num, "ãƒ‹")) < 0 && 
+			(c = check_cf_case(cf_ptr + f_num, "ãƒ‹ãƒ¨ãƒ«")) < 0 && 
+			(c = check_cf_case(cf_ptr + f_num, "ã‚«ãƒ©")) < 0) {
+			_make_ipal_cframe_pp(cf_ptr + f_num, "ãƒ‹", (cf_ptr + f_num)->element_num, flag);
+			_make_ipal_cframe_sm(cf_ptr + f_num, "ä¸»ä½“", (cf_ptr + f_num)->element_num, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 			(cf_ptr+f_num)->element_num++;
 		    }
-		    /* ¥Ë/¥Ë¥è¥ë/¥«¥é³Ê¤Ï¤¢¤ë¤±¤É<¼çÂÎ>¤¬¤Ê¤¤¤È¤­ */
-		    else if (sms_match(sm2code("¼çÂÎ"), (cf_ptr + f_num)->sm[c], SM_NO_EXPAND_NE) == FALSE) {
-			_make_ipal_cframe_sm(cf_ptr + f_num, "¼çÂÎ", c, 
+		    /* ãƒ‹/ãƒ‹ãƒ¨ãƒ«/ã‚«ãƒ©æ ¼ã¯ã‚ã‚‹ã‘ã©<ä¸»ä½“>ãŒãªã„ã¨ã */
+		    else if (sms_match(sm2code("ä¸»ä½“"), (cf_ptr + f_num)->sm[c], SM_NO_EXPAND_NE) == FALSE) {
+			_make_ipal_cframe_sm(cf_ptr + f_num, "ä¸»ä½“", c, 
 					     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 		    }
 		    (cf_ptr + f_num)->voice = FRAME_PASSIVE_1;
@@ -1620,7 +1620,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		cf_ptr = Case_frame_array + start;
 	    }
 
-	    /* »ÈÌò */
+	    /* ä½¿å½¹ */
 	    if (voice & VOICE_SHIEKI) {
 		if (i_ptr->voice & CF_CAUSATIVE_WO && i_ptr->voice & CF_CAUSATIVE_NI)
 		  (cf_ptr + f_num)->voice = FRAME_CAUSATIVE_WO_NI;
@@ -1634,23 +1634,23 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		cf_ptr = Case_frame_array + start;
 	    }
 	    
-	    /* ¼õ¿È */
+	    /* å—èº« */
 	    if (voice & VOICE_UKEMI) {
-		/* Ä¾ÀÜ¼õ¿È£± */
+		/* ç›´æ¥å—èº«ï¼‘ */
 		if (i_ptr->voice & CF_PASSIVE_1) {
 		    (cf_ptr + f_num)->voice = FRAME_PASSIVE_1;
 		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
 		    f_num_inc(start, &f_num);
 		    cf_ptr = Case_frame_array + start;
 		}
-		/* Ä¾ÀÜ¼õ¿È£² */
+		/* ç›´æ¥å—èº«ï¼’ */
 		if (i_ptr->voice & CF_PASSIVE_2) {
 		    (cf_ptr + f_num)->voice = FRAME_PASSIVE_2;
 		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
 		    f_num_inc(start, &f_num);
 		    cf_ptr = Case_frame_array + start;
 		}
-		/* ´ÖÀÜ¼õ¿È */
+		/* é–“æ¥å—èº« */
 		if (i_ptr->voice & CF_PASSIVE_I) {
 		    (cf_ptr + f_num)->voice = FRAME_PASSIVE_I;
 		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
@@ -1659,10 +1659,10 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		}
 	    }
 
-	    /* ¤â¤é¤¦/¤Û¤·¤¤ */
+	    /* ã‚‚ã‚‰ã†/ã»ã—ã„ */
 	    if (voice & VOICE_MORAU || 
 		voice & VOICE_HOSHII) {
-		/* ¥Ë»ÈÌò (´ÖÀÜ¼õ¿È¤Ç¤âÆ±¤¸ */
+		/* ãƒ‹ä½¿å½¹ (é–“æ¥å—èº«ã§ã‚‚åŒã˜ */
 		if (i_ptr->voice & CF_CAUSATIVE_NI) {
 		    (cf_ptr + f_num)->voice = FRAME_CAUSATIVE_NI;
 		    _make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
@@ -1671,7 +1671,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		}
  	    }
 
-	    /* ¤»¤é¤ì¤ë/¤µ¤»¤é¤ì¤ë */
+	    /* ã›ã‚‰ã‚Œã‚‹/ã•ã›ã‚‰ã‚Œã‚‹ */
 	    if (voice & VOICE_SHIEKI_UKEMI) {
 		(cf_ptr + f_num)->voice = FRAME_CAUSATIVE_PASSIVE;
 		_make_ipal_cframe(i_ptr, cf_ptr + f_num, address, size, verb, flag);
@@ -1679,7 +1679,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		cf_ptr = Case_frame_array + start;
 	    } 
 
-	    /* ²ÄÇ½¡¤Âº·É¡¤¼«È¯ */
+	    /* å¯èƒ½ï¼Œå°Šæ•¬ï¼Œè‡ªç™º */
 	    if (voice & VOICE_UKEMI) {
 		if (i_ptr->voice & CF_POSSIBLE) {
 		    (cf_ptr + f_num)->voice = FRAME_POSSIBLE;
@@ -1728,14 +1728,14 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *
 	free(pred_string);
 	return f_num;
     }
-    else if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* ÍÑ¸ÀÂåÉ½É½µ­ÈÇ(¼õ¿È¤Ê¤É¹ş¤ß)³Ê¥Õ¥ì¡¼¥à */
-	/* CF_PRED: Ä¾Á°³ÊÍ×ÁÇ¤ò¤¯¤Ã¤Ä¤±¤Æ¸¡º÷ ¢ª ¤Ê¤¤¾ì¹ç¤Ï¤¯¤Ã¤Ä¤±¤Ê¤¤¤Ç¸¡º÷ */
+    else if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* ç”¨è¨€ä»£è¡¨è¡¨è¨˜ç‰ˆ(å—èº«ãªã©è¾¼ã¿)æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
+	/* CF_PRED: ç›´å‰æ ¼è¦ç´ ã‚’ãã£ã¤ã‘ã¦æ¤œç´¢ â†’ ãªã„å ´åˆã¯ãã£ã¤ã‘ãªã„ã§æ¤œç´¢ */
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, 0, flag, TRUE);
 	if (f_num == 0) {
 	    f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, 0, flag, FALSE);
 	    if (f_num == 0) {
 		free(pred_string);
-		/* ¼ç¼­¤À¤±¤ÇÍÑ¸ÀÉ½µ­¤òºî¤ê¡¢ÂÖÊÑ´¹¤ò¤¹¤ë */
+		/* ä¸»è¾ã ã‘ã§ç”¨è¨€è¡¨è¨˜ã‚’ä½œã‚Šã€æ…‹å¤‰æ›ã‚’ã™ã‚‹ */
 		pred_string = make_pred_string_from_mrph(t_ptr, m_ptr, orig_form, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, TRUE);
 		f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, pred_string, t_ptr->voice, flag, FALSE);
 	    }
@@ -1748,10 +1748,10 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *
     strcpy(verb, pred_string);
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
-	t_ptr->voice = 0; /* Ç½Æ°ÂÖ¤Çtry */
+	t_ptr->voice = 0; /* èƒ½å‹•æ…‹ã§try */
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, 0, flag, TRUE);
 
-	/* º£¤Î¤È¤³¤í¼õ¿È¤Î¾ì¹ç¤ò¹Í¤¨¤Ê¤¤ */
+	/* ä»Šã®ã¨ã“ã‚å—èº«ã®å ´åˆã‚’è€ƒãˆãªã„ */
 	free(verb);
 	free(pred_string);
 	return f_num;
@@ -1759,7 +1759,7 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *
 	t_ptr->voice = VOICE_UNKNOWN;
     }
 
-    /* ¼õ¿È, »ÈÌò¤Î³Ê¥Õ¥ì¡¼¥à */
+    /* å—èº«, ä½¿å½¹ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
     if (t_ptr->voice == VOICE_UNKNOWN || 
 	t_ptr->voice & VOICE_UKEMI ||
 	t_ptr->voice & VOICE_SHIEKI || 
@@ -1786,11 +1786,11 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *
 	    free(pred_string);
 	    return f_num + plus_num;
 	}
-	*(verb + strlen(verb) - suffix) = '\0'; /* ¤ß¤Ä¤«¤é¤Ê¤«¤Ã¤¿¤é¤â¤È¤Ë¤â¤É¤¹ */
+	*(verb + strlen(verb) - suffix) = '\0'; /* ã¿ã¤ã‹ã‚‰ãªã‹ã£ãŸã‚‰ã‚‚ã¨ã«ã‚‚ã©ã™ */
     }
 
     if (t_ptr->voice == VOICE_UNKNOWN) {
-	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI, flag, TRUE); /* ¼õ¿È */
+	f_num += _make_ipal_cframe_subcontract(sp, t_ptr, start + f_num, verb, VOICE_UKEMI, flag, TRUE); /* å—èº« */
     }
     else {
 	f_num = _make_ipal_cframe_subcontract(sp, t_ptr, start, verb, t_ptr->voice, flag, TRUE);
@@ -1804,9 +1804,9 @@ int make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, MRPH_DATA *
 		char *make_pred_type(TAG_DATA *t_ptr)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¥¿¥¤¥×¤ò¤«¤¨¤¹ */
+    /* ç”¨è¨€ã‚¿ã‚¤ãƒ—ã‚’ã‹ãˆã™ */
 
-    if (t_ptr->voice == VOICE_UNKNOWN) { /* Ê¸Ëö¤Î¥µÊÑÌ¾»ì¤Ê¤É */
+    if (t_ptr->voice == VOICE_UNKNOWN) { /* æ–‡æœ«ã®ã‚µå¤‰åè©ãªã© */
 	return ":?";
     }
     else if (t_ptr->voice & VOICE_SHIEKI) {
@@ -1831,18 +1831,18 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
     char *buffer, *main_pred = NULL, *cp, *rep_strt;
     int rep_length, main_pred_malloc_flag = 0, i;
 
-    /* orig_form == 1: ²ÄÇ½Æ°»ì¤Î¤â¤È¤Î·Á¤òÍÑ¤¤¤ë¤È¤­ */
+    /* orig_form == 1: å¯èƒ½å‹•è©ã®ã‚‚ã¨ã®å½¢ã‚’ç”¨ã„ã‚‹ã¨ã */
 
-    /* m_ptr == NULL: ËÜÆ°»ì¤Î·ÁÂÖÁÇ¤Ï t_ptr->head_ptr ¤òÍÑ¤¤¤ë
-       otherwise    : ËÜÆ°»ì¤Î·ÁÂÖÁÇ¤È¤·¤Æ m_ptr ¤òÍÑ¤¤¤ë (ALT¤Î¤â¤Î) */
+    /* m_ptr == NULL: æœ¬å‹•è©ã®å½¢æ…‹ç´ ã¯ t_ptr->head_ptr ã‚’ç”¨ã„ã‚‹
+       otherwise    : æœ¬å‹•è©ã®å½¢æ…‹ç´ ã¨ã—ã¦ m_ptr ã‚’ç”¨ã„ã‚‹ (ALTã®ã‚‚ã®) */
 
-    /* cpncf_flag: Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à (²¼¤ÇÀßÄê) or 
-                   ÍÑ¸ÀÉ½µ­ == ¼ç¼­¤Î¤ß (°ú¿ô)   ¤Ê¤éTRUE
-		   ¢¨ for future extension */
+    /* cpncf_flag: è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  (ä¸‹ã§è¨­å®š) or 
+                   ç”¨è¨€è¡¨è¨˜ == ä¸»è¾ã®ã¿ (å¼•æ•°)   ãªã‚‰TRUE
+		   â€» for future extension */
 
-    /* ÍÑ¸À¥¿¥¤¥×, voice¤ÎÊ¬(7)¤â³ÎÊİ¤·¤Æ¤ª¤¯ */
+    /* ç”¨è¨€ã‚¿ã‚¤ãƒ—, voiceã®åˆ†(7)ã‚‚ç¢ºä¿ã—ã¦ãŠã */
 
-    /* ÂåÉ½É½µ­¤ò»È¤¦¾ì¹ç¤ÇÂåÉ½É½µ­¤¬¤¢¤ë¤È¤­ */
+    /* ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ã†å ´åˆã§ä»£è¡¨è¡¨è¨˜ãŒã‚ã‚‹ã¨ã */
     if (use_rep_flag) {
 
 	if (m_ptr) {
@@ -1855,11 +1855,11 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
                 main_pred_malloc_flag = 1;
             }
         }
-	/* Ï¢ÁÛ¾È±ş²òÀÏ¤ò¤¹¤ë¾ì¹ç¤ÏÀµµ¬²½ÂåÉ½É½µ­¤ò»ÈÍÑ¤¹¤ë */
+	/* é€£æƒ³ç…§å¿œè§£æã‚’ã™ã‚‹å ´åˆã¯æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ç”¨ã™ã‚‹ */
 	else if (cf_type == CF_NOUN && OptAnaphora &&
-		 (cp = check_feature(t_ptr->b_ptr->f, "Àµµ¬²½ÂåÉ½É½µ­"))) {
+		 (cp = check_feature(t_ptr->b_ptr->f, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜"))) {
 	    cpncf_flag = TRUE;
-	    rep_strt = cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:");
+	    rep_strt = cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:");
 	    rep_length = strlen(rep_strt);		
 
 	    main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string");
@@ -1867,31 +1867,31 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    *(main_pred + rep_length) = '\0';
 	    main_pred_malloc_flag = 1;
 	}
-	/* Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à¤òÍÑ¤¤¤ë¾ì¹ç¤Ç¡¢Ê¬Îà¸ì×ÃÉ½¤¬°ú¤±¤Æ¤¤¤ë¾ì¹ç */
-	/* ¤¿¤À¤·¡¢BGHÃæ¤Ë"|"¤¬´Ş¤Ş¤ì¤Æ¤¤¤ë¾ì¹ç¤Ï½ü¤¯ */
+	/* è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç”¨ã„ã‚‹å ´åˆã§ã€åˆ†é¡èªå½™è¡¨ãŒå¼•ã‘ã¦ã„ã‚‹å ´åˆ */
+	/* ãŸã ã—ã€BGHä¸­ã«"|"ãŒå«ã¾ã‚Œã¦ã„ã‚‹å ´åˆã¯é™¤ã */
 	else if (cf_type == CF_NOUN && OptUseCPNCF &&  
-		 !check_feature(t_ptr->head_ptr->f, "ÆÃ¼ìÈó¸«½Ğ¸ì") &&		 
+		 !check_feature(t_ptr->head_ptr->f, "ç‰¹æ®Šéè¦‹å‡ºèª") &&		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
-	    /* ·ÁÍÆ»ì¸ì´´¤Î¾ì¹ç¤ÏÄÌ¾ï¤ÎÂåÉ½É½µ­¤ò»ÈÍÑ¤¹¤ë */
-	    if (check_feature(t_ptr->f, "Ì¾»ìÅª·ÁÍÆ»ì¸ì´´")) {
+	    /* å½¢å®¹è©èªå¹¹ã®å ´åˆã¯é€šå¸¸ã®ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ç”¨ã™ã‚‹ */
+	    if (check_feature(t_ptr->f, "åè©çš„å½¢å®¹è©èªå¹¹")) {
 		rep_strt = get_mrph_rep(t_ptr->head_ptr);
 		rep_length = get_mrph_rep_length(rep_strt);
 	    }
-	    /* Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à¤òÍÑ¤¤¤ë¾ì¹ç¤ÏÊ¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤òÍÑ¤¤¤ë */
+	    /* è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç”¨ã„ã‚‹å ´åˆã¯åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ã‚’ç”¨ã„ã‚‹ */
 	    else {
 		cpncf_flag = TRUE;
 		rep_strt = cp + strlen("BGH:");
 		rep_length = strlen(rep_strt);
 
-		/* ¸åÊı¤Î´ğËÜ¶ç¤ÎÊ¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤Ë´Ş¤Ş¤ì¤ë´ğËÜ¶ç¤Ï¾ÊÎ¬²òÀÏ¤ÎÂĞ¾İ¤È¤·¤Ê¤¤ */
-		/* Ê¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤¬½èÍıÂĞ¾İ¤Î´ğËÜ¶ç¤è¤êÄ¹¤¤¾ì¹ç¤Î¤ß¼Â¹Ô*/
+		/* å¾Œæ–¹ã®åŸºæœ¬å¥ã®åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ã«å«ã¾ã‚Œã‚‹åŸºæœ¬å¥ã¯çœç•¥è§£æã®å¯¾è±¡ã¨ã—ãªã„ */
+		/* åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ãŒå‡¦ç†å¯¾è±¡ã®åŸºæœ¬å¥ã‚ˆã‚Šé•·ã„å ´åˆã®ã¿å®Ÿè¡Œ*/
 		cp = get_mrph_rep(t_ptr->head_ptr);
 		if (0 && cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
 		    i = 1;
 		    while ((t_ptr - i) && (t_ptr - i)->head_ptr) {
-			assign_cfeature(&((t_ptr - i)->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
-			if (check_feature((t_ptr - i)->head_ptr->f, "Ê¸Àá»Ï")) break;
+			assign_cfeature(&((t_ptr - i)->f), "çœç•¥è§£æãªã—", FALSE);
+			if (check_feature((t_ptr - i)->head_ptr->f, "æ–‡ç¯€å§‹")) break;
 			cp = get_mrph_rep((t_ptr - i)->head_ptr);
 			if (!cp || !strncmp(cp, rep_strt, strlen(cp) - 1)) break;
 			i++;
@@ -1906,18 +1906,18 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    }
 	}
 	else {
-	    /* ÍÑ¸À¤Î¤È¤­¡¢ËöÈø¤ÎÌ¾»ìÀ­Ì¾»ìÀÜÈø¼­¤ÏÌµ»ë¤¹¤ë */
+	    /* ç”¨è¨€ã®ã¨ãã€æœ«å°¾ã®åè©æ€§åè©æ¥å°¾è¾ã¯ç„¡è¦–ã™ã‚‹ */
 	    if ((cf_type & CF_PRED) &&
-		!strcmp(Class[t_ptr->head_ptr->Hinshi][t_ptr->head_ptr->Bunrui].id, "Ì¾»ìÀ­Ì¾»ìÀÜÈø¼­")) {
+		!strcmp(Class[t_ptr->head_ptr->Hinshi][t_ptr->head_ptr->Bunrui].id, "åè©æ€§åè©æ¥å°¾è¾")) {
 		if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr - 1, (cf_type & CF_PRED) && 
-						     check_feature((t_ptr->head_ptr - 1)->f, "£ÔÂåÉ½É½µ­ÊÑ¹¹Á°ÍÑ¸À¸«½Ğ"))) == NULL) {
+						     check_feature((t_ptr->head_ptr - 1)->f, "ï¼´ä»£è¡¨è¡¨è¨˜å¤‰æ›´å‰ç”¨è¨€è¦‹å‡º"))) == NULL) {
 		    main_pred = make_mrph_rn(t_ptr->head_ptr - 1);
 		    main_pred_malloc_flag = 1;
 		}
 	    }
-	    /* ÍÑ¸À¤Î¤È¤­¡¢a²½¤·¤Æ¤¤¤ë·ÁÍÆ»ì¸ì´´¤Ï¡¢¸µ¤ÎÂåÉ½É½µ­¤Ç°ú¤¯(e.g., ¡ÖÊ¿ÏÂ/¾òÌó¡×¤Î¡ÖÊ¿ÏÂ¡×) */
+	    /* ç”¨è¨€ã®ã¨ãã€aåŒ–ã—ã¦ã„ã‚‹å½¢å®¹è©èªå¹¹ã¯ã€å…ƒã®ä»£è¡¨è¡¨è¨˜ã§å¼•ã(e.g., ã€Œå¹³å’Œ/æ¡ç´„ã€ã®ã€Œå¹³å’Œã€) */
 	    else if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (cf_type & CF_PRED) && 
-						 check_feature(t_ptr->head_ptr->f, "£ÔÂåÉ½É½µ­ÊÑ¹¹Á°ÍÑ¸À¸«½Ğ"))) == NULL) {
+						 check_feature(t_ptr->head_ptr->f, "ï¼´ä»£è¡¨è¡¨è¨˜å¤‰æ›´å‰ç”¨è¨€è¦‹å‡º"))) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
 	    }
@@ -1927,20 +1927,20 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	main_pred = m_ptr ? m_ptr->Goi : t_ptr->head_ptr->Goi;
     }
 
-    /* ¡Ö¡Ê¡Á¤ò¡Ë¡Á¤Ë¡× ¤Î¤È¤­¤Ï ¡Ö¤¹¤ë¡× ¤ÇÃµ¤¹ */
-    if (check_feature(t_ptr->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë") && !cpncf_flag) {
-	buffer = (char *)malloc_data(strlen("¤¹¤ë/¤¹¤ë") + 8, "make_pred_string"); /* 9(euc) + 8 */
+    /* ã€Œï¼ˆã€œã‚’ï¼‰ã€œã«ã€ ã®ã¨ãã¯ ã€Œã™ã‚‹ã€ ã§æ¢ã™ */
+    if (check_feature(t_ptr->f, "ID:ï¼ˆã€œã‚’ï¼‰ã€œã«") && !cpncf_flag) {
+	buffer = (char *)malloc_data(strlen("ã™ã‚‹/ã™ã‚‹") + 8, "make_pred_string"); /* 9(euc) + 8 */
 	if (use_rep_flag) {
-	    strcpy(buffer, "¤¹¤ë/¤¹¤ë");
+	    strcpy(buffer, "ã™ã‚‹/ã™ã‚‹");
 	}
 	else {
-	    strcpy(buffer, "¤¹¤ë");
+	    strcpy(buffer, "ã™ã‚‹");
 	}
     }
-    /* ¡Ö·ÁÍÆ»ì+¤Ê¤ë¡×¤Ê¤É */
-    else if (check_feature(t_ptr->f, "£ÔÍÑ¸À¸«½Ğ¢ª") && !cpncf_flag &&
-	     (!check_feature(t_ptr->head_ptr->f, "¥µÊÑ") ||
-	      ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, cf_type)) && strcmp(cp, "¤¹¤ë/¤¹¤ë")))) {
+    /* ã€Œå½¢å®¹è©+ãªã‚‹ã€ãªã© */
+    else if (check_feature(t_ptr->f, "ï¼´ç”¨è¨€è¦‹å‡ºâ†’") && !cpncf_flag &&
+	     (!check_feature(t_ptr->head_ptr->f, "ã‚µå¤‰") ||
+	      ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, cf_type)) && strcmp(cp, "ã™ã‚‹/ã™ã‚‹")))) {
 	if (use_rep_flag) {
 	    if ((cp = get_mrph_rep_from_f(t_ptr->head_ptr + 1, cf_type))) {
 		buffer = (char *)malloc_data(strlen(main_pred) + strlen(cp) + 9, 
@@ -1964,9 +1964,9 @@ char *make_pred_string(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_form, int u
 	    strcat(buffer, (t_ptr->head_ptr + 1)->Goi);
 	}
     }
-    /* ¡Ö·ÁÍÆ»ì¸ì´´+Åª¤À¡×¤Ê¤É */
-    else if (check_feature(t_ptr->f, "£ÔÍÑ¸À¸«½Ğ¢«") && !cpncf_flag && 
-	     !check_feature((t_ptr->head_ptr - 1)->f, "ÉÕÂ°")) {
+    /* ã€Œå½¢å®¹è©èªå¹¹+çš„ã ã€ãªã© */
+    else if (check_feature(t_ptr->f, "ï¼´ç”¨è¨€è¦‹å‡ºâ†") && !cpncf_flag && 
+	     !check_feature((t_ptr->head_ptr - 1)->f, "ä»˜å±")) {
 	if (use_rep_flag &&
 	    (cp = get_mrph_rep_from_f(t_ptr->head_ptr - 1, FALSE))) {
 	    buffer = (char *)malloc_data(strlen(cp) + strlen(main_pred) + 9, 
@@ -2007,17 +2007,17 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
     char *buffer, *main_pred = NULL, *cp, *rep_strt;
     int rep_length, main_pred_malloc_flag = 0, i;
 
-    /* orig_form == 1: ²ÄÇ½Æ°»ì¤Î¤â¤È¤Î·Á¤òÍÑ¤¤¤ë¤È¤­ */
+    /* orig_form == 1: å¯èƒ½å‹•è©ã®ã‚‚ã¨ã®å½¢ã‚’ç”¨ã„ã‚‹ã¨ã */
 
-    /* m_ptr == NULL: ËÜÆ°»ì¤Î·ÁÂÖÁÇ¤Ï t_ptr->head_ptr ¤òÍÑ¤¤¤ë
-       otherwise    : ËÜÆ°»ì¤Î·ÁÂÖÁÇ¤È¤·¤Æ m_ptr ¤òÍÑ¤¤¤ë (ALT¤Î¤â¤Î) */
+    /* m_ptr == NULL: æœ¬å‹•è©ã®å½¢æ…‹ç´ ã¯ t_ptr->head_ptr ã‚’ç”¨ã„ã‚‹
+       otherwise    : æœ¬å‹•è©ã®å½¢æ…‹ç´ ã¨ã—ã¦ m_ptr ã‚’ç”¨ã„ã‚‹ (ALTã®ã‚‚ã®) */
 
-    /* cpncf_flag: Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à (²¼¤ÇÀßÄê) or 
-                   ÍÑ¸ÀÉ½µ­ == ¼ç¼­¤Î¤ß (°ú¿ô)   ¤Ê¤éTRUE */
+    /* cpncf_flag: è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  (ä¸‹ã§è¨­å®š) or 
+                   ç”¨è¨€è¡¨è¨˜ == ä¸»è¾ã®ã¿ (å¼•æ•°)   ãªã‚‰TRUE */
 
-    /* ÍÑ¸À¥¿¥¤¥×, voice¤ÎÊ¬(7)¤â³ÎÊİ¤·¤Æ¤ª¤¯ */
+    /* ç”¨è¨€ã‚¿ã‚¤ãƒ—, voiceã®åˆ†(7)ã‚‚ç¢ºä¿ã—ã¦ãŠã */
 
-    /* ÂåÉ½É½µ­¤ò»È¤¦¾ì¹ç¤ÇÂåÉ½É½µ­¤¬¤¢¤ë¤È¤­ */
+    /* ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ã†å ´åˆã§ä»£è¡¨è¡¨è¨˜ãŒã‚ã‚‹ã¨ã */
     if (use_rep_flag) {
 
 	if (m_ptr) {
@@ -2030,11 +2030,11 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
                 main_pred_malloc_flag = 1;
             }
         }
-	/* Ï¢ÁÛ¾È±ş²òÀÏ¤ò¤¹¤ë¾ì¹ç¤ÏÀµµ¬²½ÂåÉ½É½µ­¤ò»ÈÍÑ¤¹¤ë */
+	/* é€£æƒ³ç…§å¿œè§£æã‚’ã™ã‚‹å ´åˆã¯æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ç”¨ã™ã‚‹ */
 	else if (cf_type == CF_NOUN && OptAnaphora &&
-		 (cp = check_feature(t_ptr->b_ptr->f, "Àµµ¬²½ÂåÉ½É½µ­"))) {
+		 (cp = check_feature(t_ptr->b_ptr->f, "æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜"))) {
 	    cpncf_flag = TRUE;
-	    rep_strt = cp + strlen("Àµµ¬²½ÂåÉ½É½µ­:");
+	    rep_strt = cp + strlen("æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜:");
 	    rep_length = strlen(rep_strt);		
 
 	    main_pred = (char *)malloc_data(rep_length + 1, "make_pred_string_from_mrph");
@@ -2042,31 +2042,31 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	    *(main_pred + rep_length) = '\0';
 	    main_pred_malloc_flag = 1;
 	}
-	/* Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à¤òÍÑ¤¤¤ë¾ì¹ç¤Ç¡¢Ê¬Îà¸ì×ÃÉ½¤¬°ú¤±¤Æ¤¤¤ë¾ì¹ç */
-	/* ¤¿¤À¤·¡¢BGHÃæ¤Ë"|"¤¬´Ş¤Ş¤ì¤Æ¤¤¤ë¾ì¹ç¤Ï½ü¤¯ */
+	/* è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç”¨ã„ã‚‹å ´åˆã§ã€åˆ†é¡èªå½™è¡¨ãŒå¼•ã‘ã¦ã„ã‚‹å ´åˆ */
+	/* ãŸã ã—ã€BGHä¸­ã«"|"ãŒå«ã¾ã‚Œã¦ã„ã‚‹å ´åˆã¯é™¤ã */
 	else if (cf_type == CF_NOUN && OptUseCPNCF &&  
-		 !check_feature(t_ptr->head_ptr->f, "ÆÃ¼ìÈó¸«½Ğ¸ì") &&		 
+		 !check_feature(t_ptr->head_ptr->f, "ç‰¹æ®Šéè¦‹å‡ºèª") &&		 
 		 (cp = check_feature(t_ptr->f, "BGH")) && !strstr(cp, "|")) {
 
-	    /* ·ÁÍÆ»ì¸ì´´¤Î¾ì¹ç¤ÏÄÌ¾ï¤ÎÂåÉ½É½µ­¤ò»ÈÍÑ¤¹¤ë */
-	    if (check_feature(t_ptr->f, "Ì¾»ìÅª·ÁÍÆ»ì¸ì´´")) {
+	    /* å½¢å®¹è©èªå¹¹ã®å ´åˆã¯é€šå¸¸ã®ä»£è¡¨è¡¨è¨˜ã‚’ä½¿ç”¨ã™ã‚‹ */
+	    if (check_feature(t_ptr->f, "åè©çš„å½¢å®¹è©èªå¹¹")) {
 		rep_strt = get_mrph_rep(t_ptr->head_ptr);
 		rep_length = get_mrph_rep_length(rep_strt);
 	    }
-	    /* Ê£¹çÌ¾»ì³Ê¥Õ¥ì¡¼¥à¤òÍÑ¤¤¤ë¾ì¹ç¤ÏÊ¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤òÍÑ¤¤¤ë */
+	    /* è¤‡åˆåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç”¨ã„ã‚‹å ´åˆã¯åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ã‚’ç”¨ã„ã‚‹ */
 	    else {
 		cpncf_flag = TRUE;
 		rep_strt = cp + strlen("BGH:");
 		rep_length = strlen(rep_strt);
 
-		/* ¸åÊı¤Î´ğËÜ¶ç¤ÎÊ¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤Ë´Ş¤Ş¤ì¤ë´ğËÜ¶ç¤Ï¾ÊÎ¬²òÀÏ¤ÎÂĞ¾İ¤È¤·¤Ê¤¤ */
-		/* Ê¬Îà¸ì×ÃÉ½¤Î¸«½Ğ¤·¤¬½èÍıÂĞ¾İ¤Î´ğËÜ¶ç¤è¤êÄ¹¤¤¾ì¹ç¤Î¤ß¼Â¹Ô*/
+		/* å¾Œæ–¹ã®åŸºæœ¬å¥ã®åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ã«å«ã¾ã‚Œã‚‹åŸºæœ¬å¥ã¯çœç•¥è§£æã®å¯¾è±¡ã¨ã—ãªã„ */
+		/* åˆ†é¡èªå½™è¡¨ã®è¦‹å‡ºã—ãŒå‡¦ç†å¯¾è±¡ã®åŸºæœ¬å¥ã‚ˆã‚Šé•·ã„å ´åˆã®ã¿å®Ÿè¡Œ*/
 		cp = get_mrph_rep(t_ptr->head_ptr);
 		if (0 && cp && strncmp(cp, rep_strt, strlen(cp) - 1)) {
 		    i = 1;
 		    while ((t_ptr - i) && (t_ptr - i)->head_ptr) {
-			assign_cfeature(&((t_ptr - i)->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
-			if (check_feature((t_ptr - i)->head_ptr->f, "Ê¸Àá»Ï")) break;
+			assign_cfeature(&((t_ptr - i)->f), "çœç•¥è§£æãªã—", FALSE);
+			if (check_feature((t_ptr - i)->head_ptr->f, "æ–‡ç¯€å§‹")) break;
 			cp = get_mrph_rep((t_ptr - i)->head_ptr);
 			if (!cp || !strncmp(cp, rep_strt, strlen(cp) - 1)) break;
 			i++;
@@ -2081,9 +2081,9 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	    }
 	}
 	else {
-	    /* ÍÑ¸À¤Î¤È¤­¡¢a²½¤·¤Æ¤¤¤ë·ÁÍÆ»ì¸ì´´¤Ï¡¢¸µ¤ÎÂåÉ½É½µ­¤Ç°ú¤¯(e.g., ¡ÖÊ¿ÏÂ/¾òÌó¡×¤Î¡ÖÊ¿ÏÂ¡×) */
+	    /* ç”¨è¨€ã®ã¨ãã€aåŒ–ã—ã¦ã„ã‚‹å½¢å®¹è©èªå¹¹ã¯ã€å…ƒã®ä»£è¡¨è¡¨è¨˜ã§å¼•ã(e.g., ã€Œå¹³å’Œ/æ¡ç´„ã€ã®ã€Œå¹³å’Œã€) */
 	    if ((main_pred = get_mrph_rep_from_f(t_ptr->head_ptr, (cf_type & CF_PRED) && 
-						 check_feature(t_ptr->head_ptr->f, "£ÔÂåÉ½É½µ­ÊÑ¹¹Á°ÍÑ¸À¸«½Ğ"))) == NULL) {
+						 check_feature(t_ptr->head_ptr->f, "ï¼´ä»£è¡¨è¡¨è¨˜å¤‰æ›´å‰ç”¨è¨€è¦‹å‡º"))) == NULL) {
 		main_pred = make_mrph_rn(t_ptr->head_ptr);
 		main_pred_malloc_flag = 1;
 	    }
@@ -2093,18 +2093,18 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	main_pred = m_ptr ? m_ptr->Goi : t_ptr->head_ptr->Goi;
     }
 
-    /* ¡Ö¡Ê¡Á¤ò¡Ë¡Á¤Ë¡× ¤Î¤È¤­¤Ï ¡Ö¤¹¤ë¡× ¤ÇÃµ¤¹ */
-    if (check_feature(t_ptr->f, "ID:¡Ê¡Á¤ò¡Ë¡Á¤Ë") && !cpncf_flag) {
-	buffer = (char *)malloc_data(strlen("¤¹¤ë/¤¹¤ë") + 8, "make_pred_string_from_mrph"); /* 9(euc) + 8 */
+    /* ã€Œï¼ˆã€œã‚’ï¼‰ã€œã«ã€ ã®ã¨ãã¯ ã€Œã™ã‚‹ã€ ã§æ¢ã™ */
+    if (check_feature(t_ptr->f, "ID:ï¼ˆã€œã‚’ï¼‰ã€œã«") && !cpncf_flag) {
+	buffer = (char *)malloc_data(strlen("ã™ã‚‹/ã™ã‚‹") + 8, "make_pred_string_from_mrph"); /* 9(euc) + 8 */
 	if (use_rep_flag) {
-	    strcpy(buffer, "¤¹¤ë/¤¹¤ë");
+	    strcpy(buffer, "ã™ã‚‹/ã™ã‚‹");
 	}
 	else {
-	    strcpy(buffer, "¤¹¤ë");
+	    strcpy(buffer, "ã™ã‚‹");
 	}
     }
     else {
-	/* ¥á¥â¥êÎÎ°è·×»» */
+	/* ãƒ¡ãƒ¢ãƒªé ˜åŸŸè¨ˆç®— */
 	MRPH_DATA *mrph_ptr = t_ptr->head_ptr;
 	int length = 0;
 	for (i = 0; i < t_ptr->mrph_num; i++) {
@@ -2112,7 +2112,7 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 		(cp = get_mrph_rep_from_f(t_ptr->mrph_ptr + i, FALSE))) {
 		;
 	    }
-	    else if (t_ptr->mrph_ptr + i < t_ptr->head_ptr) { /* ¼ç¼­¤è¤êÁ°Â¦ */
+	    else if (t_ptr->mrph_ptr + i < t_ptr->head_ptr) { /* ä¸»è¾ã‚ˆã‚Šå‰å´ */
 		cp = (t_ptr->mrph_ptr + i)->Goi2;
 	    }
 	    else {
@@ -2123,24 +2123,24 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	buffer = (char *)malloc_data(length + strlen(main_pred) + 8, "make_pred_string_from_mrph");
 	buffer[0] = '\0';
 
-	/* Á°Â¦¤Ë±ä¤Ğ¤¹¾ì¹ç: ¡Ö·ÁÍÆ»ì¸ì´´+Åª¤À¡×¤Ê¤É */
+	/* å‰å´ã«å»¶ã°ã™å ´åˆ: ã€Œå½¢å®¹è©èªå¹¹+çš„ã ã€ãªã© */
 	if (!cpncf_flag) {
 	    mrph_ptr = t_ptr->mrph_ptr;
 	    while (mrph_ptr < t_ptr->head_ptr && 
-		   check_feature((mrph_ptr + 1)->f, "£ÔÍÑ¸À¸«½Ğ¢«")) {
+		   check_feature((mrph_ptr + 1)->f, "ï¼´ç”¨è¨€è¦‹å‡ºâ†")) {
 		if (use_rep_flag && 
 		    (cp = get_mrph_rep_from_f(mrph_ptr, FALSE))) {
 		    strcat(buffer, cp);
 		}
 		else {
-		    strcat(buffer, mrph_ptr->Goi2); /* ½Ğ¸½·Á */
+		    strcat(buffer, mrph_ptr->Goi2); /* å‡ºç¾å½¢ */
 		}
 		strcat(buffer, "+");
 		mrph_ptr++;
 	    }
 	}
 
-	/* ¼ç¼­ */
+	/* ä¸»è¾ */
 	if (orig_form) {
 	    strcat(buffer, orig_form);
 	}
@@ -2148,11 +2148,11 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	    strcat(buffer, main_pred);
 	}
 
-	/* ¸åÂ¦¤Ë±ä¤Ğ¤¹¾ì¹ç: ¡Ö·ÁÍÆ»ì+¤Ê¤ë¡×¤Ê¤É */
+	/* å¾Œå´ã«å»¶ã°ã™å ´åˆ: ã€Œå½¢å®¹è©+ãªã‚‹ã€ãªã© */
 	if (!cpncf_flag) {
 	    mrph_ptr = t_ptr->head_ptr;
 	    while (mrph_ptr <= t_ptr->mrph_ptr + t_ptr->mrph_num - 1 && 
-		   check_feature(mrph_ptr->f, "£ÔÍÑ¸À¸«½Ğ¢ª")) {
+		   check_feature(mrph_ptr->f, "ï¼´ç”¨è¨€è¦‹å‡ºâ†’")) {
 		strcat(buffer, "+");
 		if (use_rep_flag && 
 		    (cp = get_mrph_rep_from_f(mrph_ptr + 1, (cf_type & CF_PRED)))) {
@@ -2180,7 +2180,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     int f_num = 0;
     char *cp;
 
-    /* ¼«Î©¸ìËöÈø¸ì¤òÍÑ¤¤¤Æ³Ê¥Õ¥ì¡¼¥à¼­½ñ¤ò°ú¤¯ */
+    /* è‡ªç«‹èªæœ«å°¾èªã‚’ç”¨ã„ã¦æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ è¾æ›¸ã‚’å¼•ã */
 
     if (!t_ptr->jiritu_ptr) {
 	return f_num;
@@ -2188,8 +2188,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     f_num += make_ipal_cframe_subcontract(sp, t_ptr, NULL, NULL, start, flag);
 
-    /* ÂåÉ½É½µ­¤¬Û£Ëæ¤ÊÍÑ¸À¤Î¾ì¹ç */
-    if (check_feature(t_ptr->head_ptr->f, "¸¶·ÁÛ£Ëæ") && flag == CF_PRED) {
+    /* ä»£è¡¨è¡¨è¨˜ãŒæ›–æ˜§ãªç”¨è¨€ã®å ´åˆ */
+    if (check_feature(t_ptr->head_ptr->f, "åŸå½¢æ›–æ˜§") && flag == CF_PRED) {
 	FEATURE *fp;
 	MRPH_DATA m;
 	char *str;
@@ -2207,10 +2207,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
     }
 
-    /* ¤Ê¤¤¤È¤­¤Ç¡¢²ÄÇ½Æ°»ì¤Î¤È¤­¤Ï¡¢¤â¤È¤Î·Á¤ò»È¤¦ */
+    /* ãªã„ã¨ãã§ã€å¯èƒ½å‹•è©ã®ã¨ãã¯ã€ã‚‚ã¨ã®å½¢ã‚’ä½¿ã† */
     if (!(OptCaseFlag & OPT_CASE_USE_CV_CF) && f_num == 0 && 
-	(cp = check_feature(t_ptr->head_ptr->f, "²ÄÇ½Æ°»ì"))) {
-	f_num += make_ipal_cframe_subcontract(sp, t_ptr, NULL, cp + strlen("²ÄÇ½Æ°»ì:"), start, flag);	
+	(cp = check_feature(t_ptr->head_ptr->f, "å¯èƒ½å‹•è©"))) {
+	f_num += make_ipal_cframe_subcontract(sp, t_ptr, NULL, cp + strlen("å¯èƒ½å‹•è©:"), start, flag);	
     }
 
     Case_frame_num += f_num;
@@ -2225,24 +2225,24 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     char *pred_string, *new_pred_string, *pred_merged_rep = NULL;
     TAG_DATA *t_ptr;
 
-    /* ¼«Î©¸ìËöÈø¸ì¤òÍÑ¤¤¤ÆÍÑ¸ÀÂåÉ½É½µ­¤òºîÀ® */
+    /* è‡ªç«‹èªæœ«å°¾èªã‚’ç”¨ã„ã¦ç”¨è¨€ä»£è¡¨è¡¨è¨˜ã‚’ä½œæˆ */
 
     pred_merged_rep = (char *)malloc_data(pred_merged_rep_size, "assign_pred_feature_to_bp");
 
     for (i = 0; i < sp->Tag_num; i++) {
 	t_ptr = sp->tag_data + i;
-	if (!check_feature(t_ptr->f, "ÍÑ¸À") || 
-	    check_feature(t_ptr->f, "³Ê²òÀÏ¤Ê¤·")) {
+	if (!check_feature(t_ptr->f, "ç”¨è¨€") || 
+	    check_feature(t_ptr->f, "æ ¼è§£æãªã—")) {
 	    continue;
 	}
 
 	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
 
-	strcpy(pred_merged_rep, "ÍÑ¸ÀÂåÉ½É½µ­:");
+	strcpy(pred_merged_rep, "ç”¨è¨€ä»£è¡¨è¡¨è¨˜:");
 	strcat(pred_merged_rep, pred_string);
 
-	/* ÂåÉ½É½µ­¤¬Û£Ëæ¤ÊÍÑ¸À¤Î¾ì¹ç */
-	if (check_feature(t_ptr->head_ptr->f, "¸¶·ÁÛ£Ëæ")) {
+	/* ä»£è¡¨è¡¨è¨˜ãŒæ›–æ˜§ãªç”¨è¨€ã®å ´åˆ */
+	if (check_feature(t_ptr->head_ptr->f, "åŸå½¢æ›–æ˜§")) {
 	    FEATURE *fp;
 	    MRPH_DATA m;
 	    char *str;
@@ -2255,7 +2255,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 			   &m.Hinshi, &m.Bunrui, 
 			   &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
-		    /* ÂåÉ½¤È°Û¤Ê¤ë¤â¤Î */
+		    /* ä»£è¡¨ã¨ç•°ãªã‚‹ã‚‚ã® */
 		    if (strcmp(pred_string, new_pred_string)) {
 			if (strlen(pred_merged_rep) + strlen(new_pred_string) + 2 > pred_merged_rep_size) {
 			    pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
@@ -2300,25 +2300,25 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     cf_ptr->pred_type[0] = '\0';
     cf_ptr->cf_address = -1;
-    if (cp = check_feature(t_ptr->f, "ÍÑ¸À")) {
-	_make_ipal_cframe_pp(cf_ptr, "¥¬¡ö", num, CF_PRED);
-	_make_ipal_cframe_sm(cf_ptr, "¼çÂÎ½à", num++, 
+    if (cp = check_feature(t_ptr->f, "ç”¨è¨€")) {
+	_make_ipal_cframe_pp(cf_ptr, "ã‚¬ï¼Š", num, CF_PRED);
+	_make_ipal_cframe_sm(cf_ptr, "ä¸»ä½“æº–", num++, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
 
-	if (!strcmp(cp, "ÍÑ¸À:È½")) {
-	    strcpy(cf_ptr->pred_type, "È½");
+	if (!strcmp(cp, "ç”¨è¨€:åˆ¤")) {
+	    strcpy(cf_ptr->pred_type, "åˆ¤");
 	}
-	else if (!strcmp(cp, "ÍÑ¸À:Æ°")) {
-	    strcpy(cf_ptr->pred_type, "Æ°");
-	    _make_ipal_cframe_pp(cf_ptr, "¥ò¡ö", num++, CF_PRED);
-	    _make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++, CF_PRED);
-	    _make_ipal_cframe_pp(cf_ptr, "¥Ø¡ö", num++, CF_PRED);
-	    _make_ipal_cframe_pp(cf_ptr, "¥è¥ê¡ö", num++, CF_PRED);
+	else if (!strcmp(cp, "ç”¨è¨€:å‹•")) {
+	    strcpy(cf_ptr->pred_type, "å‹•");
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ²ï¼Š", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ‹ï¼Š", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ˜ï¼Š", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ¨ãƒªï¼Š", num++, CF_PRED);
 	}
-	else if (!strcmp(cp, "ÍÑ¸À:·Á")) {
-	    strcpy(cf_ptr->pred_type, "·Á");
-	    _make_ipal_cframe_pp(cf_ptr, "¥Ë¡ö", num++, CF_PRED);
-	    _make_ipal_cframe_pp(cf_ptr, "¥è¥ê¡ö", num++, CF_PRED);
+	else if (!strcmp(cp, "ç”¨è¨€:å½¢")) {
+	    strcpy(cf_ptr->pred_type, "å½¢");
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ‹ï¼Š", num++, CF_PRED);
+	    _make_ipal_cframe_pp(cf_ptr, "ãƒ¨ãƒªï¼Š", num++, CF_PRED);
 	}
 	else {
 	    return FALSE;
@@ -2330,13 +2330,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     cf_ptr->element_num = num;
     cf_ptr->etcflag = CF_NORMAL;
-    /* ÂåÉ½É½µ­³Ê¥Õ¥ì¡¼¥à¤Î¤È¤­¤Ï¡¢ID¤Ê¤É¤òÂåÉ½É½µ­¤Ë¤¹¤ë */
+    /* ä»£è¡¨è¡¨è¨˜æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¨ãã¯ã€IDãªã©ã‚’ä»£è¡¨è¡¨è¨˜ã«ã™ã‚‹ */
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	if ((rep_name = get_mrph_rep_from_f(t_ptr->head_ptr, FALSE)) == NULL) {
 	    rep_name = make_mrph_rn(t_ptr->head_ptr);
 	    rep_name_malloc_flag = 1;
 	}
-	if (strlen(rep_name) >= REPNAME_LEN_MAX) { /* Ä¹¤¹¤®¤ë¤È¤­ */
+	if (strlen(rep_name) >= REPNAME_LEN_MAX) { /* é•·ã™ãã‚‹ã¨ã */
 	    *(rep_name + REPNAME_LEN_MAX - 1) = '\0';
 	}
 	sprintf(cf_ptr->cf_id, "%s:%s0", rep_name, cf_ptr->pred_type);
@@ -2371,7 +2371,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 {
     t_ptr->cf_num += make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
 
-    /* ¤Ê¤¤¤È¤­¤ÇÍÑ¸À¤Î¤È¤­¤Ï¡¢default¤Î³Ê¥Õ¥ì¡¼¥à¤ò¤Ä¤¯¤ë */
+    /* ãªã„ã¨ãã§ç”¨è¨€ã®ã¨ãã¯ã€defaultã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã¤ãã‚‹ */
     if (t_ptr->cf_num == 0 && flag == CF_PRED) {
 	if (OptDisplay == OPT_DEBUG) {
 	    int i;
@@ -2476,7 +2476,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     int i;
     CASE_FRAME *dst_ptr;
 
-    /* CASE_FRAME¹½Â¤ÂÎ¤ò¸Ä¿ôÊ¬³ÎÊİ¤·¡¢Case_frame_array¤«¤é¥İ¥¤¥ó¥¿¤ò¥³¥Ô¡¼ */
+    /* CASE_FRAMEæ§‹é€ ä½“ã‚’å€‹æ•°åˆ†ç¢ºä¿ã—ã€Case_frame_arrayã‹ã‚‰ãƒã‚¤ãƒ³ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ */
     dst_ptr = (CASE_FRAME *)malloc_data(sizeof(CASE_FRAME) * num, "copy_cf_array");
     init_cf_structure(dst_ptr, num);
 
@@ -2497,27 +2497,27 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     start = Case_frame_num;
 
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
-	/* Àµ²ò¥³¡¼¥Ñ¥¹¤òÆşÎÏ¤·¤¿¤È¤­¤Ë¼«Î©¸ì¤¬¤Ê¤¤¾ì¹ç¤¬¤¢¤ë */
+	/* æ­£è§£ã‚³ãƒ¼ãƒ‘ã‚¹ã‚’å…¥åŠ›ã—ãŸã¨ãã«è‡ªç«‹èªãŒãªã„å ´åˆãŒã‚ã‚‹ */
 	t_ptr->cf_num = 0;
 
 	if (t_ptr->jiritu_ptr != NULL && 
-	    !check_feature(t_ptr->f, "³Ê²òÀÏ¤Ê¤·")) {
-	    if (OptUseNCF && /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à */
-		/* ¡Ö£Á¤Î£Â£Ã¡×¤Î·¸¤ê¼õ¤±¤ò¥Á¥§¥Ã¥¯¤¹¤ëºİ¡¢
-		 ÀèÆ¬¤Î³Ê¥Õ¥ì¡¼¥à¤¬Ì¾»ì³Ê¥Õ¥ì¡¼¥à¤Ç¤¢¤ë¤³¤È¤ò²¾Äê¤·¤Æ¤¤¤ë¤¿¤á
-		ÍÑ¸À³Ê¥Õ¥ì¡¼¥à¤è¤êÀè¤ËÆÉ¤ß¹ş¤àÉ¬Í×¤¢¤ê(È½Äê»ìÂĞºö) */
-		check_feature(t_ptr->f, "ÂÎ¸À")) {
+	    !check_feature(t_ptr->f, "æ ¼è§£æãªã—")) {
+	    if (OptUseNCF && /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
+		/* ã€Œï¼¡ã®ï¼¢ï¼£ã€ã®ä¿‚ã‚Šå—ã‘ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹éš›ã€
+		 å…ˆé ­ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒåè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã§ã‚ã‚‹ã“ã¨ã‚’ä»®å®šã—ã¦ã„ã‚‹ãŸã‚
+		ç”¨è¨€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚ˆã‚Šå…ˆã«èª­ã¿è¾¼ã‚€å¿…è¦ã‚ã‚Š(åˆ¤å®šè©å¯¾ç­–) */
+		check_feature(t_ptr->f, "ä½“è¨€")) {
 		make_caseframes(sp, t_ptr, CF_NOUN);
 	    }
 	    if (OptUseCF &&
-		(check_feature(t_ptr->f, "ÍÑ¸À") || /* ½àÍÑ¸À¤Ï¤È¤ê¤¢¤¨¤ºÂĞ¾İ³° */
-		 (check_feature(t_ptr->f, "ÈóÍÑ¸À³Ê²òÀÏ") && /* ¥µÊÑÌ¾»ì, ·ÁÍÆ»ì¸ì´´ (³ÎÎ¨Åª°Ê³°) */
+		(check_feature(t_ptr->f, "ç”¨è¨€") || /* æº–ç”¨è¨€ã¯ã¨ã‚Šã‚ãˆãšå¯¾è±¡å¤– */
+		 (check_feature(t_ptr->f, "éç”¨è¨€æ ¼è§£æ") && /* ã‚µå¤‰åè©, å½¢å®¹è©èªå¹¹ (ç¢ºç‡çš„ä»¥å¤–) */
 		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ||
 		   (OptEllipsis & OPT_ELLIPSIS) || OptAnaphora ||
-		   (t_ptr->inum == 1 && /* ³ÎÎ¨Åª¤Î¾ì¹ç¤Ï¡¢¡Ö¸ø³«Í½Äê¤À¡×¤Î¤è¤¦¤Ê¤È¤­¤Î¤ß */
-		    check_feature(t_ptr->b_ptr->f, "¥¿¥°Ã±°Ì¼õ:-1")))))) { 
+		   (t_ptr->inum == 1 && /* ç¢ºç‡çš„ã®å ´åˆã¯ã€ã€Œå…¬é–‹äºˆå®šã ã€ã®ã‚ˆã†ãªã¨ãã®ã¿ */
+		    check_feature(t_ptr->b_ptr->f, "ã‚¿ã‚°å˜ä½å—:-1")))))) { 
 		
-		set_pred_voice((BNST_DATA *)t_ptr); /* ¥ô¥©¥¤¥¹ */
+		set_pred_voice((BNST_DATA *)t_ptr); /* ãƒ´ã‚©ã‚¤ã‚¹ */
 
 		make_caseframes(sp, t_ptr, CF_PRED);
 		t_ptr->e_cf_num = t_ptr->cf_num;
@@ -2528,30 +2528,30 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
     }
 
-    /* ³Æ¥¿¥°Ã±°Ì¤«¤é³Ê¥Õ¥ì¡¼¥à¤Ø¤Î¥ê¥ó¥¯ÉÕ¤± */
+    /* å„ã‚¿ã‚°å˜ä½ã‹ã‚‰æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã¸ã®ãƒªãƒ³ã‚¯ä»˜ã‘ */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->cf_num) {
-	    if (OptCaseFlag & OPT_CASE_CLEAR_CF) { /* ³Ê¥Õ¥ì¡¼¥à¤òÊ¸Ã±°Ì¤Ç¥¯¥ê¥¢¤¹¤ë¾ì¹ç (default) */
+	    if (OptCaseFlag & OPT_CASE_CLEAR_CF) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ–‡å˜ä½ã§ã‚¯ãƒªã‚¢ã™ã‚‹å ´åˆ (default) */
 		t_ptr->cf_ptr = Case_frame_array + start;
 	    }
-	    else { /* ³Ê¥Õ¥ì¡¼¥à¤ò¥¯¥ê¥¢¤·¤Ê¤¤¾ì¹ç: ³Ê¥Õ¥ì¡¼¥à¤ò¿·¤¿¤Ë³ÎÊİ¤·¥³¥Ô¡¼¤¹¤ë */
+	    else { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã‚¯ãƒªã‚¢ã—ãªã„å ´åˆ: æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ–°ãŸã«ç¢ºä¿ã—ã‚³ãƒ”ãƒ¼ã™ã‚‹ */
 		t_ptr->cf_ptr = copy_cf_array(Case_frame_array + start, t_ptr->cf_num);
 	    }
 	    t_ptr->pred_num = pred_num++;
 
-	    /* É½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç: 
-	       ³Ê¥Õ¥ì¡¼¥à¤ÎÉ½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê¤Î³Ê¥Õ¥ì¡¼¥à¤Î¤ß¤òÂĞ¾İ¤Ë¡¢
-	       ¤Ò¤é¤¬¤Ê°Ê³°¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê°Ê³°¤Î¤ß¤òÂĞ¾İ¤Ë¤¹¤ë¤¿¤á¤Îfeature¤òÉÕÍ¿ */
-	    if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ÂåÉ½É½µ­¤Ç¤Ï¤Ê¤¤¾ì¹ç¤Î¤ß */
-		check_str_type(t_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
+	    /* è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆ: 
+	       æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¿ã‚’å¯¾è±¡ã«ã€
+	       ã²ã‚‰ãŒãªä»¥å¤–ãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªä»¥å¤–ã®ã¿ã‚’å¯¾è±¡ã«ã™ã‚‹ãŸã‚ã®featureã‚’ä»˜ä¸ */
+	    if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ä»£è¡¨è¡¨è¨˜ã§ã¯ãªã„å ´åˆã®ã¿ */
+		check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
 		hiragana_count = 0;
 		for (j = 0; j < t_ptr->cf_num; j++) {
-		    if (check_str_type((t_ptr->cf_ptr + j)->entry) == TYPE_HIRAGANA) {
+		    if (check_str_type((t_ptr->cf_ptr + j)->entry, TYPE_HIRAGANA)) {
 			hiragana_count++;
 		    }
 		}
 		if (2 * hiragana_count > t_ptr->cf_num) {
-		    assign_cfeature(&(t_ptr->f), "ÂåÉ½¤Ò¤é¤¬¤Ê", FALSE);
+		    assign_cfeature(&(t_ptr->f), "ä»£è¡¨ã²ã‚‰ãŒãª", FALSE);
 		}
 	    }
 
@@ -2629,7 +2629,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return 0;
     }
 
-    /* Æ±¤¸¤È¤­ */
+    /* åŒã˜ã¨ã */
     if (!strcmp(cf1, cf2)) {
 	return 1.0;
     }
@@ -2642,7 +2642,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     key = (char *)malloc_data(sizeof(char) * (strlen(cf1) + strlen(cf2) + 2), 
 			      "get_cfs_similarity");
 
-    /* Á°Â¦¤Îid¤¬¾®¤µ¤¯¤Ê¤ë¤è¤¦¤Ëkey¤òÀ¸À® */
+    /* å‰å´ã®idãŒå°ã•ããªã‚‹ã‚ˆã†ã«keyã‚’ç”Ÿæˆ */
     if (id1 > id2) {
 	sprintf(key, "%s%d-%s%d", verb2, id2, verb1, id1);
     }
@@ -2693,8 +2693,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
  double get_cf_probability_for_pred(CASE_FRAME *cfd, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    /* ³Ê¥Õ¥ì¡¼¥àÁªÂò³ÎÎ¨ P(¿©¤Ù¤ë/¤¿¤Ù¤ë:Æ°2|¿©¤Ù¤ë/¤¿¤Ù¤ë:Æ°)
-       KNP³Ê²òÀÏ·ë²Ì (cfp.prob) */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é¸æŠç¢ºç‡ P(é£Ÿã¹ã‚‹/ãŸã¹ã‚‹:å‹•2|é£Ÿã¹ã‚‹/ãŸã¹ã‚‹:å‹•)
+       KNPæ ¼è§£æçµæœ (cfp.prob) */
 
     char *vtype, *key, voice[3];
     int num;
@@ -2704,20 +2704,20 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	return 0;
     }
 
-    if ((vtype = check_feature(tp->f, "ÍÑ¸À"))) {
-	vtype += strlen("ÍÑ¸À:");
+    if ((vtype = check_feature(tp->f, "ç”¨è¨€"))) {
+	vtype += strlen("ç”¨è¨€:");
     }
-    else if ((vtype = check_feature(tp->f, "ÈóÍÑ¸À³Ê²òÀÏ"))) {
-	vtype += strlen("ÈóÍÑ¸À³Ê²òÀÏ:");
+    else if ((vtype = check_feature(tp->f, "éç”¨è¨€æ ¼è§£æ"))) {
+	vtype += strlen("éç”¨è¨€æ ¼è§£æ:");
     }
     else {
 	return UNKNOWN_CF_SCORE;
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* ÍÑ¸ÀÂåÉ½É½µ­ÈÇ(¼õ¿È¤Ê¤É¹ş¤ß)³Ê¥Õ¥ì¡¼¥à */
+    if (OptCaseFlag & OPT_CASE_USE_CV_CF) { /* ç”¨è¨€ä»£è¡¨è¡¨è¨˜ç‰ˆ(å—èº«ãªã©è¾¼ã¿)æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	char *pred_string;
-	if ((pred_string = check_feature(tp->f, "ÍÑ¸ÀÂåÉ½É½µ­"))) {
-	    pred_string += strlen("ÍÑ¸ÀÂåÉ½É½µ­:");
+	if ((pred_string = check_feature(tp->f, "ç”¨è¨€ä»£è¡¨è¡¨è¨˜"))) {
+	    pred_string += strlen("ç”¨è¨€ä»£è¡¨è¡¨è¨˜:");
 	    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(pred_string) + 8);
 	    sprintf(key, "%s|%s:%s", cfp->cf_id, pred_string, vtype);
 	}
@@ -2726,7 +2726,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
     }
     else {
-	/* ÍÑ¸ÀÉ½µ­¤ò³Ê¥Õ¥ì¡¼¥àID¤«¤éÃê½Ğ¤·¤Ê¤¤¾ì¹ç */
+	/* ç”¨è¨€è¡¨è¨˜ã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ IDã‹ã‚‰æŠ½å‡ºã—ãªã„å ´åˆ */
 	key = malloc_db_buf(strlen(cfp->cf_id) + strlen(tp->head_ptr->Goi) + 8);
 	if ((num = sscanf(cfp->cf_id, "%*[^:]:%*[^:]:%[PC]%*d", voice)) == 1) {
 	    sprintf(key, "%s|%s:%s:%s", cfp->cf_id, tp->head_ptr->Goi, vtype, voice);
@@ -2743,8 +2743,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
  double get_cf_probability_for_noun(CASE_FRAME *cfd, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    /* ³Ê¥Õ¥ì¡¼¥àÁªÂò³ÎÎ¨ P(¥ì¥Ğ¡¼/¤ì¤Ğ¡¼:Ì¾1|¥ì¥Ğ¡¼/¤ì¤Ğ¡¼:Ì¾)
-       KNP³Ê²òÀÏ·ë²Ì (cfp.prob) */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ é¸æŠç¢ºç‡ P(ãƒ¬ãƒãƒ¼/ã‚Œã°ãƒ¼:å1|ãƒ¬ãƒãƒ¼/ã‚Œã°ãƒ¼:å)
+       KNPæ ¼è§£æçµæœ (cfp.prob) */
 
     int num;
     char *pred_id, *key;
@@ -2770,10 +2770,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
      double get_cf_probability(CASE_FRAME *cfd, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    if (cfp->type == CF_PRED) { /* ÍÑ¸À³Ê¥Õ¥ì¡¼¥à */
+    if (cfp->type == CF_PRED) { /* ç”¨è¨€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_cf_probability_for_pred(cfd, cfp);
     }
-    else { /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à */
+    else { /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_cf_probability_for_noun(cfd, cfp);
     }
 }
@@ -2782,8 +2782,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* ³Ê³ÎÎ¨ P(¥¬³Ê¡û|¿©¤Ù¤ë:Æ°2)
-       KNP³Ê²òÀÏ·ë²Ì¤«¤é·×»» (cfcases.prob) */
+    /* æ ¼ç¢ºç‡ P(ã‚¬æ ¼â—‹|é£Ÿã¹ã‚‹:å‹•2)
+       KNPæ ¼è§£æçµæœã‹ã‚‰è¨ˆç®— (cfcases.prob) */
 
     char *key, *value, *verb, *cp, *para_cond = NULL;
     double pred_ret = 0, cf_ret = 0;
@@ -2793,8 +2793,8 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	return 0;
     }
 
-    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* Æ±´üÊÂÎó¼êË¡ */
-	para_cpm_ptr && /* ½Ò¸ìÊÂÎó¤¬Â¸ºß */
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* åŒæœŸä¸¦åˆ—æ‰‹æ³• */
+	para_cpm_ptr && /* è¿°èªä¸¦åˆ—ãŒå­˜åœ¨ */
 	para_cpm_ptr->result_num != 0 && 
 	para_cpm_ptr->cmm[0].cf_ptr && 
 	para_cpm_ptr->cmm[0].cf_ptr->cf_address != -1 && 
@@ -2803,7 +2803,7 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	for (i = 0; i < para_cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 	    if (MatchPP(para_cpm_ptr->cmm[0].cf_ptr->pp[i][0], case_str)) {
 		num = para_cpm_ptr->cmm[0].result_lists_p[0].flag[i];
-		if (num == UNASSIGNED) { /* ÊÂÎó½Ò¸ì¤Î³Ê¥Õ¥ì¡¼¥à¤ËÂĞ¾İ³Ê¤¬¤¢¤ë¤¬¡¢³ä¤êÅö¤Æ¤Ê¤· */
+		if (num == UNASSIGNED) { /* ä¸¦åˆ—è¿°èªã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾è±¡æ ¼ãŒã‚ã‚‹ãŒã€å‰²ã‚Šå½“ã¦ãªã— */
 		    para_cond = "PX";
 		}
 		else {
@@ -2813,14 +2813,14 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	    }
 	}
 	if (!para_cond) {
-	    para_cond = "PX"; /* ÊÂÎó½Ò¸ì¤Î³Ê¥Õ¥ì¡¼¥à¤ËÂĞ¾İ³Ê¤¬¤Ê¤¤ */
+	    para_cond = "PX"; /* ä¸¦åˆ—è¿°èªã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾è±¡æ ¼ãŒãªã„ */
 	}
     }
     else {
-	para_cond = "-"; /* ½Ò¸ìÊÂÎó¤¬Â¸ºß¤·¤Ê¤¤ */
+	para_cond = "-"; /* è¿°èªä¸¦åˆ—ãŒå­˜åœ¨ã—ãªã„ */
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
     key = malloc_db_buf(strlen(case_str) * 2 + strlen(cfp->cf_id) + 6);
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
 	sprintf(key, "%s|%s,%s,%s", case_str, cfp->cf_id, case_str, para_cond);
@@ -2830,9 +2830,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
     }
     value = db_get(cf_case_db, key);
     if (value) {
-	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 	    cf_ret = atof(value);
-	    denominator = -1; /* ³Ê¥Õ¥ì¡¼¥à¤ËÃÍ¤¬Â¸ºß¤·¤¿°õ */
+	    denominator = -1; /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å€¤ãŒå­˜åœ¨ã—ãŸå° */
 	}
 	free(value);
     }
@@ -2846,15 +2846,15 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
-	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 		cf_ret = atof(value); /* 0 */
-		/* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+		/* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 	    }
 	    free(value);
 	}
     }
 
-    /* ÍÑ¸ÀÉ½µ­ */
+    /* ç”¨è¨€è¡¨è¨˜ */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
@@ -2883,13 +2883,13 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
         pred_ret *= 1 - lambda;
         pred_ret += lambda * cf_ret;
     }
-    else { /* ÍÑ¸À¤Î¤ß */
+    else { /* ç”¨è¨€ã®ã¿ */
 	if (pred_ret > 0) {
 	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (C) P(%s) = %lf\n", key, pred_ret);
 	    }
 	}
-	else if (denominator < 0) { /* ³Ê¥Õ¥ì¡¼¥à¤Î¤ßÃÍ¤¬Â¸ºß */
+	else if (denominator < 0) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¿å€¤ãŒå­˜åœ¨ */
 	    pred_ret = cf_ret;
 	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (C) P(%s|%s) = %lf\n", case_str, cfp->cf_id, pred_ret);
@@ -2920,13 +2920,13 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 double get_case_probability(int as2, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* ³Ê³ÎÎ¨ P(¥¬³Ê¡û|¿©¤Ù¤ë/¤¿¤Ù¤ë:Æ°2)
-       KNP³Ê²òÀÏ·ë²Ì¤«¤é·×»» (cfcase.prob) */
+    /* æ ¼ç¢ºç‡ P(ã‚¬æ ¼â—‹|é£Ÿã¹ã‚‹/ãŸã¹ã‚‹:å‹•2)
+       KNPæ ¼è§£æçµæœã‹ã‚‰è¨ˆç®— (cfcase.prob) */
 
-    if (cfp->type == CF_PRED) { /* ÍÑ¸À³Ê¥Õ¥ì¡¼¥à */
+    if (cfp->type == CF_PRED) { /* ç”¨è¨€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_case_probability_from_str(pp_code_to_kstr(cfp->pp[as2][0]), cfp, aflag, para_cpm_ptr);
     }
-    else { /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à */
+    else { /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_case_probability_from_str(cfp->pp_str[as2], cfp, aflag, para_cpm_ptr);
     }
 }
@@ -2935,36 +2935,36 @@ double get_case_probability(int as2, CASE_FRAME *cfp, int aflag, CF_PRED_MGR *pa
 double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_ptr)
 /*==================================================================*/
 {
-    /* ³Ê¤Î¸Ä¿ô³ÎÎ¨ P(2|¿©¤Ù¤ë/¤¿¤Ù¤ë:Æ°2)
-       KNP³Ê²òÀÏ·ë²Ì¤«¤é·×»» (cfcase.prob) */
+    /* æ ¼ã®å€‹æ•°ç¢ºç‡ P(2|é£Ÿã¹ã‚‹/ãŸã¹ã‚‹:å‹•2)
+       KNPæ ¼è§£æçµæœã‹ã‚‰è¨ˆç®— (cfcase.prob) */
 
     char *key, *value, *verb, *cp, *para_cond;
     double cf_ret = 0, pred_ret = 0;
     int denominator = 0;
 
-    /* Ì¾»ì¤Î¾ì¹ç¤Ï¸Ä¿ô¤òÀ¸À®¤·¤Ê¤¤ */
+    /* åè©ã®å ´åˆã¯å€‹æ•°ã‚’ç”Ÿæˆã—ãªã„ */
     if (CFCaseExist == FALSE || cfp->type == CF_NOUN) {
 	return 0;
     }
 
-    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* Æ±´üÊÂÎó¼êË¡ */
-	para_cpm_ptr && /* ½Ò¸ìÊÂÎó¤¬Â¸ºß */
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* åŒæœŸä¸¦åˆ—æ‰‹æ³• */
+	para_cpm_ptr && /* è¿°èªä¸¦åˆ—ãŒå­˜åœ¨ */
 	para_cpm_ptr->result_num != 0 && 
 	para_cpm_ptr->cmm[0].cf_ptr && 
 	para_cpm_ptr->cmm[0].cf_ptr->cf_address != -1 && 
 	para_cpm_ptr->cmm[0].score != CASE_MATCH_FAILURE_PROB) {
 	if (para_cpm_ptr->cmm[0].cf_ptr->element_num > 0) {
-	    para_cond = "PO"; /* ¹à¤¬1¤Ä°Ê¾å */
+	    para_cond = "PO"; /* é …ãŒ1ã¤ä»¥ä¸Š */
 	}
 	else {
 	    para_cond = "PX";
 	}
     }
     else {
-	para_cond = "-"; /* ½Ò¸ìÊÂÎó¤¬Â¸ºß¤·¤Ê¤¤ */
+	para_cond = "-"; /* è¿°èªä¸¦åˆ—ãŒå­˜åœ¨ã—ãªã„ */
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
     key = malloc_db_buf(strlen(cfp->cf_id) + 9);
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
 	sprintf(key, "%d|N:%s,%s", num, cfp->cf_id, para_cond);
@@ -2974,9 +2974,9 @@ double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_
     }
     value = db_get(cf_case_db, key);
     if (value) {
-	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+	if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 	    cf_ret = atof(value);
-	    denominator = -1; /* ³Ê¥Õ¥ì¡¼¥à¤ËÃÍ¤¬Â¸ºß¤·¤¿°õ */
+	    denominator = -1; /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å€¤ãŒå­˜åœ¨ã—ãŸå° */
 	}
 	free(value);
     }
@@ -2990,14 +2990,14 @@ double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_
 	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
-	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 		cf_ret = atof(value); /* 0 */
-		/* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+		/* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 	    }
 	}
     }
 
-    /* ÍÑ¸ÀÉ½µ­ */
+    /* ç”¨è¨€è¡¨è¨˜ */
     verb = strdup(cfp->cf_id);
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
@@ -3026,13 +3026,13 @@ double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_
         pred_ret *= 1 - lambda;
         pred_ret += lambda * cf_ret;
     }
-    else { /* ÍÑ¸À¤Î¤ß */
+    else { /* ç”¨è¨€ã®ã¿ */
 	if (pred_ret > 0) {
 	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (CN) P(%s) = %lf\n", key, pred_ret);
 	    }
 	}
-	else if (denominator < 0) { /* ³Ê¥Õ¥ì¡¼¥à¤Î¤ßÃÍ¤¬Â¸ºß */
+	else if (denominator < 0) { /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¿å€¤ãŒå­˜åœ¨ */
 	    pred_ret = cf_ret;
 	    if (VerboseLevel >= VERBOSE3) {
 		fprintf(Outfp, ";; (CN) P(%d|N:%s) = %lf\n", num, cfp->cf_id, pred_ret);
@@ -3060,8 +3060,8 @@ double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_
 double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE *fp)
 /*==================================================================*/
 {
-    /* ¥«¥Æ¥´¥ê-ÍÑÎã³ÎÎ¨ 
-       P(¥ê¥ó¥´/¤ê¤ó¤´|¿Í¹©Êª-¿©¤ÙÊª)*P(¿Í¹©Êª-¿©¤ÙÊª|¿©¤Ù¤ë:Æ°2:¥¬³Ê) */
+    /* ã‚«ãƒ†ã‚´ãƒª-ç”¨ä¾‹ç¢ºç‡ 
+       P(ãƒªãƒ³ã‚´/ã‚Šã‚“ã”|äººå·¥ç‰©-é£Ÿã¹ç‰©)*P(äººå·¥ç‰©-é£Ÿã¹ç‰©|é£Ÿã¹ã‚‹:å‹•2:ã‚¬æ ¼) */
 
     int i;
     double ret = 0, prob;
@@ -3069,12 +3069,12 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
     
     for (i = 0; i < cfp->gex_num[as2]; i++) {
 	
-	/* ³Ê¥Õ¥ì¡¼¥à¤Ë´Ş¤Ş¤ì¤Æ¤¤¤ë¥«¥Æ¥´¥ê¾ğÊó¤òÃê½Ğ */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å«ã¾ã‚Œã¦ã„ã‚‹ã‚«ãƒ†ã‚´ãƒªæƒ…å ±ã‚’æŠ½å‡º */
 	if (!strncmp(cfp->gex_list[as2][i], "CT", 2)) {
 	    strcpy(category, cfp->gex_list[as2][i] + 3);
 	    if (strchr(category, '>')) *strchr(category, '>') = '\0';
 	    
-	    /* ³ºÅö¤¹¤ë¥«¥Æ¥´¥ê¤¬ÂĞ¾İ¤Î¸ì¤Îfeature¤Ë´Ş¤Ş¤ì¤Æ¤¤¤¿¾ì¹ç */
+	    /* è©²å½“ã™ã‚‹ã‚«ãƒ†ã‚´ãƒªãŒå¯¾è±¡ã®èªã®featureã«å«ã¾ã‚Œã¦ã„ãŸå ´åˆ */
 	    if (check_category(fp, category)) {
 		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 5), 
 						  "get_ex_category_probability");
@@ -3099,16 +3099,16 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
 double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 /*==================================================================*/
 {
-    /* ¸ÇÍ­É½¸½-ÍÑÎã³ÎÎ¨ 
-       P(µşÂç|LOCATION)*P(LOCATION|¹Ô¤¯:Æ°2:¥Ë³Ê) */
-    /* ÆşÎÏkey=NE:LOCATION:µşÂç */
-    /* flag¤¬¤¿¤Ã¤Æ¤¤¤ë¾ì¹çP(LOCATION|¹Ô¤¯:Æ°2:¥Ë³Ê)¤òÊÖ¤¹ */
-    /* ¤Ş¤¿flag¤¬¤¿¤Ã¤Æ¤¤¤ë¾ì¹ç¤Ï¡¢¸ÇÍ­É½¸½°Ê³°¤Ç¤â»ÈÍÑ²Ä */
+    /* å›ºæœ‰è¡¨ç¾-ç”¨ä¾‹ç¢ºç‡ 
+       P(äº¬å¤§|LOCATION)*P(LOCATION|è¡Œã:å‹•2:ãƒ‹æ ¼) */
+    /* å…¥åŠ›key=NE:LOCATION:äº¬å¤§ */
+    /* flagãŒãŸã£ã¦ã„ã‚‹å ´åˆP(LOCATION|è¡Œã:å‹•2:ãƒ‹æ ¼)ã‚’è¿”ã™ */
+    /* ã¾ãŸflagãŒãŸã£ã¦ã„ã‚‹å ´åˆã¯ã€å›ºæœ‰è¡¨ç¾ä»¥å¤–ã§ã‚‚ä½¿ç”¨å¯ */
     int i;
     char *value, tag[SMALL_DATA_LEN], key[WORD_LEN_MAX*2];
     
     strcpy(tag, cp);
-    if (!flag) strcpy(key, strchr(tag + 3, ':') + 1); /* key = µşÂç */
+    if (!flag) strcpy(key, strchr(tag + 3, ':') + 1); /* key = äº¬å¤§ */
     *strchr(tag + 3, ':') = '\0'; /* tag = NE:LOCATION */
 
     for (i = 0; i < cfp->gex_num[as2]; i++) {
@@ -3195,7 +3195,7 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
     key = malloc_db_buf(SM_CODE_SIZE + 
 			strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
 
-    /* ³Æ°ÕÌ£ÁÇ¤´¤È¤ËÄ´¤Ù¤Æ¡¢max¤ò¤È¤ë */
+    /* å„æ„å‘³ç´ ã”ã¨ã«èª¿ã¹ã¦ã€maxã‚’ã¨ã‚‹ */
     for (i = 0; *(sm_code + i); i += SM_CODE_SIZE) {
 	strncpy(code, sm_code + i, SM_CODE_SIZE);
 	code[0] = '1';
@@ -3232,17 +3232,17 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	key = malloc_db_buf(SM_CODE_SIZE + 18);
     }
 
-    /* É½µ­¤Çsearch */
-    sprintf(key, "%s|DEFAULT,³°¤Î´Ø·¸", dp->head_ptr->Goi);
+    /* è¡¨è¨˜ã§search */
+    sprintf(key, "%s|DEFAULT,å¤–ã®é–¢ä¿‚", dp->head_ptr->Goi);
     if (ret = _get_ex_probability(key)) {
 	return ret;
     }
 
-    /* °ÕÌ£ÁÇ¤Çsearch: max¤ò¤È¤ë */
+    /* æ„å‘³ç´ ã§search: maxã‚’ã¨ã‚‹ */
     for (i = 0; *(sm_code + i); i += SM_CODE_SIZE) {
 	strncpy(code, sm_code + i, SM_CODE_SIZE);
 	code[0] = '1';
-	sprintf(key, "%s|DEFAULT,³°¤Î´Ø·¸", code);
+	sprintf(key, "%s|DEFAULT,å¤–ã®é–¢ä¿‚", code);
 	if (ret = _get_ex_probability(key) && ret > max) {
 	    max = ret;
 	}
@@ -3256,34 +3256,34 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 			    int as2, CASE_FRAME *cfp, int sm_flag)
 /*==================================================================*/
 {
-    /* ÍÑÎã³ÎÎ¨ P(ÊÛÅö|¿©¤Ù¤ë:Æ°2,¥ò³Ê)
-       ³Ê¥Õ¥ì¡¼¥à¤«¤é·×»» (cfex.prob) */
+    /* ç”¨ä¾‹ç¢ºç‡ P(å¼å½“|é£Ÿã¹ã‚‹:å‹•2,ãƒ²æ ¼)
+       æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰è¨ˆç®— (cfex.prob) */
 
     char *key = NULL, *mrph_str, *cp, ne_prob[WORD_LEN_MAX*2], *value;
     double ret = FREQ0_ASSINED_SCORE, prob;
     int rep_malloc_flag = 0;
     
-    /* dp¤Î»ØÄê¤¬¤Ê¤±¤ì¤Ğ¡¢as1¤Ècfd¤«¤éºî¤ë */
+    /* dpã®æŒ‡å®šãŒãªã‘ã‚Œã°ã€as1ã¨cfdã‹ã‚‰ä½œã‚‹ */
     if (dp == NULL) {
 	dp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     }
 
-    key = malloc_db_buf(strlen("<ÊäÊ¸>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
+    key = malloc_db_buf(strlen("<è£œæ–‡>") + strlen(cfp->cf_id) + strlen(pp_code_to_kstr(cfp->pp[as2][0])) + 3);
     *key = '\0';
     
-    if (check_feature(dp->f, "ÊäÊ¸")) {
-	sprintf(key, "<ÊäÊ¸>");
+    if (check_feature(dp->f, "è£œæ–‡")) {
+	sprintf(key, "<è£œæ–‡>");
     }
-    else if (sm_flag && /* FALSE¤Î¾ì¹ç¤Ï¼çÂÎ¤ò»È¤ï¤Ê¤¤ */
-	     (OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* ¼çÂÎ¤òÈÆ²½¤¹¤ë¾ì¹ç(default) */
-	     dat_match_sm(as1, cfd, dp, "¼çÂÎ")) {
-	sprintf(key, "<¼çÂÎ>");
+    else if (sm_flag && /* FALSEã®å ´åˆã¯ä¸»ä½“ã‚’ä½¿ã‚ãªã„ */
+	     (OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* ä¸»ä½“ã‚’æ±åŒ–ã™ã‚‹å ´åˆ(default) */
+	     dat_match_sm(as1, cfd, dp, "ä¸»ä½“")) {
+	sprintf(key, "<ä¸»ä½“>");
     }
-    else if (check_feature(dp->f, "»ş´Ö")) {
-	sprintf(key, "<»ş´Ö>");
+    else if (check_feature(dp->f, "æ™‚é–“")) {
+	sprintf(key, "<æ™‚é–“>");
     }
-    else if (check_feature(dp->f, "¿ôÎÌ")) {
-	sprintf(key, "<¿ôÎÌ>");
+    else if (check_feature(dp->f, "æ•°é‡")) {
+	sprintf(key, "<æ•°é‡>");
     }
     
     if (*key) {
@@ -3294,7 +3294,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
     	
     if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 	    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 	    mrph_str = strdup(cp);
 	    rep_malloc_flag = 1;
@@ -3326,7 +3326,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     if (prob = _get_ex_probability_internal(key, as2, cfp)) {
 	if (ret < log(prob)) ret = log(prob);
     }
-    /* ÂåÉ½É½µ­¤Î¾ì¹ç¤ÏALT¤âÄ´¤Ù¤ë */
+    /* ä»£è¡¨è¡¨è¨˜ã®å ´åˆã¯ALTã‚‚èª¿ã¹ã‚‹ */
     else if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	int rep_length;
 	FEATURE *fp = dp->head_ptr->f;
@@ -3338,9 +3338,9 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 		       m.Goi2, m.Yomi, m.Goi, 
 		       &m.Hinshi, &m.Bunrui, 
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		mrph_str = get_mrph_rep(&m); /* ÂåÉ½É½µ­ */
+		mrph_str = get_mrph_rep(&m); /* ä»£è¡¨è¡¨è¨˜ */
 		rep_length = get_mrph_rep_length(mrph_str);
-		if (rep_length == 0) { /* ¤Ê¤±¤ì¤Ğºî¤ë */
+		if (rep_length == 0) { /* ãªã‘ã‚Œã°ä½œã‚‹ */
 		    mrph_str = make_mrph_rn(&m);
 		    rep_length = strlen(mrph_str);
 		    rep_malloc_flag = 1;
@@ -3363,14 +3363,14 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
     if (!sm_flag) return ret;
 
-    /* ¸ÇÍ­É½¸½¤Î¾ì¹ç */       
+    /* å›ºæœ‰è¡¨ç¾ã®å ´åˆ */       
     if ((OptGeneralCF & OPT_CF_NE) && (cp = check_feature(dp->f, "NE"))) {
 	if (prob = get_ex_ne_probability(cp, as2, cfp, FALSE)) {
 	    if (ret < log(prob)) ret = log(prob);
 	}
     } 
 
-    /* ÂåÉ½É½µ­¤òÍÑ¤¤¤ë¾ì¹ç¤Ï¥«¥Æ¥´¥ê¤ò»²¾È¤¹¤ë */
+    /* ä»£è¡¨è¡¨è¨˜ã‚’ç”¨ã„ã‚‹å ´åˆã¯ã‚«ãƒ†ã‚´ãƒªã‚’å‚ç…§ã™ã‚‹ */
     if ((OptGeneralCF & OPT_CF_CATEGORY) && OptCaseFlag & OPT_CASE_USE_REP_CF) {
 	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
 	if (mrph_str == NULL) {
@@ -3390,10 +3390,10 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	}
     }
 
-    /* else if (ret = _get_sm_probability(dp, as2, cfp)) { * °ÕÌ£ÁÇ¤Ëback-off *
+    /* else if (ret = _get_sm_probability(dp, as2, cfp)) { * æ„å‘³ç´ ã«back-off *
 	ret = log(ret);
     } */
-    /* else if (MatchPP(cfp->pp[as2][0], "³°¤Î´Ø·¸") && 
+    /* else if (MatchPP(cfp->pp[as2][0], "å¤–ã®é–¢ä¿‚") && 
 	     (ret = _get_soto_default_probability(dp, as2, cfp))) {
 	ret = log(ret);
     } */
@@ -3409,30 +3409,30 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     TAG_DATA *tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     double score;
 
-    if (cfd->pred_b_ptr->num < tp->num) { /* Ï¢ÂÎ½¤¾ş */
+    if (cfd->pred_b_ptr->num < tp->num) { /* é€£ä½“ä¿®é£¾ */
 	np_modifying_flag = 1;
     }
     else {
 	np_modifying_flag = 0;
     }
 
-    /* ¼«Ê¬¼«¿È */
+    /* è‡ªåˆ†è‡ªèº« */
     score = get_ex_probability(as1, cfd, NULL, as2, cfp, TRUE);
 
-    if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) { /* Îà»÷ÅÙÀ¸À®¥â¥Ç¥ë¤Î¤È¤­¤Ï¡¢ÊÂÎóÍ×ÁÇ¤ò½Ò¸ì¤«¤éÀ¸À®¤·¤Ê¤¤ */
+    if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) { /* é¡ä¼¼åº¦ç”Ÿæˆãƒ¢ãƒ‡ãƒ«ã®ã¨ãã¯ã€ä¸¦åˆ—è¦ç´ ã‚’è¿°èªã‹ã‚‰ç”Ÿæˆã—ãªã„ */
 	return score;
     }
 
-    /* ÊÂÎó¤ÎÍ×ÁÇ */
+    /* ä¸¦åˆ—ã®è¦ç´  */
     while (tp->next) {
 	score += get_ex_probability(-1, cfd, tp->next, as2, cfp, TRUE);
 	count++;
 	tp = tp->next;
     }
 
-    /* ¼«Ê¬¤ÈÊÂÎó¤ÎÍ×ÁÇ *
+    /* è‡ªåˆ†ã¨ä¸¦åˆ—ã®è¦ç´  *
     if (tp->para_top_p) {
-	for (j = 1; tp->child[j]; j++) { * 0¤Ï¼«Ê¬¤ÈÆ±¤¸ *
+	for (j = 1; tp->child[j]; j++) { * 0ã¯è‡ªåˆ†ã¨åŒã˜ *
 	    if (tp->child[j]->para_type == PARA_NORMAL) {
 		score += get_ex_probability(-1, cfd, tp->child[j], as2, cfp);
 		count++;
@@ -3444,8 +3444,8 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, score / count);
     }
 
-    /* ÊÂÎó³ÎÎ¨Åª²òÀÏ»ş: ÊÂÎóÍ×ÁÇ´ÖÀ¸À®¤¹¤ë¾ì¹ç¤ÈÈïÏ¢ÂÎ½¤¾şÌ¾»ì¤ÏÀµµ¬²½
-       ÊÂÎó·èÄêÅª²òÀÏ»ş: ¾ï¤ËÀµµ¬²½ */
+    /* ä¸¦åˆ—ç¢ºç‡çš„è§£ææ™‚: ä¸¦åˆ—è¦ç´ é–“ç”Ÿæˆã™ã‚‹å ´åˆã¨è¢«é€£ä½“ä¿®é£¾åè©ã¯æ­£è¦åŒ–
+       ä¸¦åˆ—æ±ºå®šçš„è§£ææ™‚: å¸¸ã«æ­£è¦åŒ– */
     if (OptParaFix == TRUE || 
 	((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag)) {
 	return score / count;
@@ -3468,12 +3468,12 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
 
     /* tp -> hp */
-    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* Ï¢ÂÎ½¤¾ş */
-	if (type = check_feature(cfd->pred_b_ptr->f, "ÍÑ¸À")) {
-	    type += strlen("ÍÑ¸À:");
+    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* é€£ä½“ä¿®é£¾ */
+	if (type = check_feature(cfd->pred_b_ptr->f, "ç”¨è¨€")) {
+	    type += strlen("ç”¨è¨€:");
 	}
 
-	/* ¸õÊä¥Á¥§¥Ã¥¯ */
+	/* å€™è£œãƒã‚§ãƒƒã‚¯ */
 	dist = get_dist_from_work_mgr(cfd->pred_b_ptr->b_ptr, 
 				      cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->b_ptr);
 	if (dist <= 0) {
@@ -3516,8 +3516,8 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
 	return 0;
     }
 
-    /* ÄóÂê¥¹¥³¥¢ */
-    if (cp = check_feature(g_ptr->f, "ÄóÂê¼õ")) {
+    /* æé¡Œã‚¹ã‚³ã‚¢ */
+    if (cp = check_feature(g_ptr->f, "æé¡Œå—")) {
 	sscanf(cp, "%*[^:]:%d", &topic_score);
 	if (topic_score > 0 && topic_score < 30) {
 	    topic_score = 10;
@@ -3550,24 +3550,24 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     char *key = NULL, *mrph_str, *cp;
     int rep_malloc_flag = 0;
     
-    key = malloc_db_buf(strlen("<ÊäÊ¸>") + 3);
+    key = malloc_db_buf(strlen("<è£œæ–‡>") + 3);
     *key = '\0';
     
-    if (check_feature(tag_ptr->f, "ÊäÊ¸")) {
-	sprintf(key, "<ÊäÊ¸>");
+    if (check_feature(tag_ptr->f, "è£œæ–‡")) {
+	sprintf(key, "<è£œæ–‡>");
     }
-    else if (check_feature(tag_ptr->f, "»ş´Ö")) {
-	sprintf(key, "<»ş´Ö>");
+    else if (check_feature(tag_ptr->f, "æ™‚é–“")) {
+	sprintf(key, "<æ™‚é–“>");
     }
-    else if (check_feature(tag_ptr->f, "¿ôÎÌ")) {
-	sprintf(key, "<¿ôÎÌ>");
+    else if (check_feature(tag_ptr->f, "æ•°é‡")) {
+	sprintf(key, "<æ•°é‡>");
     }
 
     if (*key) {
 	return get_general_probability(key, "KEY");
     }
 
-    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 	(cp = get_bnst_head_canonical_rep(tag_ptr->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 	mrph_str = strdup(cp);
 	rep_malloc_flag = 1;
@@ -3612,7 +3612,7 @@ double get_topic_generating_probability(int have_topic, TAG_DATA *g_ptr)
     double key_class_prob[CLASS_NUM], prob, ret;
     char *cp, *cp2, *key2;
 
-    /* key¤Îclass¾ğÊó¤òÆÉ¤ß¹ş¤ß */
+    /* keyã®classæƒ…å ±ã‚’èª­ã¿è¾¼ã¿ */
     if ((cp = db_get(case_db, key))) {  
 	for (i = 0; i < CLASS_NUM; i++) {
 	    key_class_prob[i] = 0;
@@ -3695,7 +3695,7 @@ double get_punctuation_generating_probability(int np_modifying_flag, int touten_
 					      int genitive_flag)
 /*==================================================================*/
 {
-    /* ÆÉÅÀ¤ÎÀ¸À® */
+    /* èª­ç‚¹ã®ç”Ÿæˆ */
 
     char *value, *key;
     double ret;
@@ -3705,11 +3705,11 @@ double get_punctuation_generating_probability(int np_modifying_flag, int touten_
     }
 
     key = malloc_db_buf(20);
-    if (genitive_flag) { /* ¥Î³Ê¤Ê¤É */
-	sprintf(key, "%d|PÏ¢ÂÎ:%d,%d", touten_flag, dist, closest_pred_flag);
+    if (genitive_flag) { /* ãƒæ ¼ãªã© */
+	sprintf(key, "%d|Pé€£ä½“:%d,%d", touten_flag, dist, closest_pred_flag);
     }
     else if (np_modifying_flag) {
-	sprintf(key, "%d|PÏ¢³Ê:%d", touten_flag, dist);
+	sprintf(key, "%d|Pé€£æ ¼:%d", touten_flag, dist);
     }
     else {
 	sprintf(key, "%d|P:%d,%d,%d,%d", touten_flag, dist, closest_pred_flag, topic_score, wa_flag);
@@ -3741,7 +3741,7 @@ double get_case_function_probability_for_noun(int as1, CASE_FRAME *cfd,
     TAG_DATA *tp, *hp;
 
     /* tp -> hp */
-    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* Ï¢ÂÎ½¤¾ş */
+    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* é€£ä½“ä¿®é£¾ */
 	tp = cfd->pred_b_ptr;
 	hp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
 	np_modifying_flag = 1;
@@ -3752,7 +3752,7 @@ double get_case_function_probability_for_noun(int as1, CASE_FRAME *cfd,
 	np_modifying_flag = 0;
     }
 
-    touten_flag = check_feature(tp->b_ptr->f, "ÆÉÅÀ") ? 1 : 0;
+    touten_flag = check_feature(tp->b_ptr->f, "èª­ç‚¹") ? 1 : 0;
 
     if ((dist = get_dist_from_work_mgr(tp->b_ptr, hp->b_ptr)) < 0) {
 	ret = UNKNOWN_CASE_SCORE;
@@ -3780,7 +3780,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 				     int negation_flag, char *vtype)
 /*==================================================================*/
 {
-    /* ¡Ö¤Ï¡×¤ÎÀ¸À® */
+    /* ã€Œã¯ã€ã®ç”Ÿæˆ */
 
     char *value, *key;
     double ret;
@@ -3795,7 +3795,7 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
     else {
 	key = malloc_db_buf(22);
 
-	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "È½") == 0 ? 1 : 0); */
+	/* sprintf(key, "%d|T:%d,%d,%d,%d,%d,%d", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, strcmp(vtype, "åˆ¤") == 0 ? 1 : 0); */
 	sprintf(key, "%d|T:%d,%d,%d,%d,%d,%s", wa_flag, dist, closest_pred_flag, topic_score, touten_flag, negation_flag, vtype);
 	value = db_get(case_db, key);
     }
@@ -3820,17 +3820,17 @@ double get_wa_generating_probability(int np_modifying_flag, int touten_flag, int
 				   int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î³Ê¥¹¥í¥Ã¥ÈÉ½µ­¤ò¤«¤¨¤¹ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ ¼ã‚¹ãƒ­ãƒƒãƒˆè¡¨è¨˜ã‚’ã‹ãˆã™ */
 
     if (as2 != NIL_ASSIGNED) {
 	return pp_code_to_kstr(cfp->pp[as2][0]);
     }
     else {
-	/* ³Ê¥¹¥í¥Ã¥È¤¬¤¢¤ë¤Î¤ËNIL_ASSIGNED */
+	/* æ ¼ã‚¹ãƒ­ãƒƒãƒˆãŒã‚ã‚‹ã®ã«NIL_ASSIGNED */
 	if (CF_MatchPP(cfd->pp[as1][0], cfp)) {
 	    return "--";
 	}
-	/* ³Ê¥Õ¥ì¡¼¥à¤¬¤Ê¤¤¤È¤­¡¢²¾ÁÛÅª¤Ë³Ê¥¹¥í¥Ã¥È¤òºî¤ë¤È¹Í¤¨¤ë */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãªã„ã¨ãã€ä»®æƒ³çš„ã«æ ¼ã‚¹ãƒ­ãƒƒãƒˆã‚’ä½œã‚‹ã¨è€ƒãˆã‚‹ */
 	else {
 	    return pp_code_to_kstr(cfd->pp[as1][0]);
 	}
@@ -3853,7 +3853,7 @@ double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
     }
 
     /* tp -> hp */
-    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* Ï¢ÂÎ½¤¾ş */
+    if (cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1]->num > cfd->pred_b_ptr->num) { /* é€£ä½“ä¿®é£¾ */
 	tp = cfd->pred_b_ptr;
 	hp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
 	np_modifying_flag = 1;
@@ -3864,51 +3864,51 @@ double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
 	np_modifying_flag = 0;
     }
 
-    if (vtype = check_feature(hp->f, "ÍÑ¸À")) {
-	vtype += strlen("ÍÑ¸À:");
+    if (vtype = check_feature(hp->f, "ç”¨è¨€")) {
+	vtype += strlen("ç”¨è¨€:");
     }
 
-    /* Ê£¹ç¼­ */
+    /* è¤‡åˆè¾ */
     if (cfd->pp[as1][0] >= FUKUGOJI_START && cfd->pp[as1][0] <= FUKUGOJI_END) {
-	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* ÆşÎÏÂ¦¤ÎÉ½ÁØ³Ê */
-	tp2 = &(current_sentence_data.tag_data[tp->num + 1]); /* ÆÉÅÀ¤ä¡Ö¤Ï¡×¤Ê¤É¤ò¥Á¥§¥Ã¥¯¤¹¤ë¥¿¥°Ã±°Ì */
+	scase = pp_code_to_kstr(cfd->pp[as1][0]); /* å…¥åŠ›å´ã®è¡¨å±¤æ ¼ */
+	tp2 = &(current_sentence_data.tag_data[tp->num + 1]); /* èª­ç‚¹ã‚„ã€Œã¯ã€ãªã©ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã‚¿ã‚°å˜ä½ */
     }
     else {
 	if (np_modifying_flag) {
-	    scase = "Ï¢³Ê";
+	    scase = "é€£æ ¼";
 	}
-	else if ((scase = check_feature(tp->f, "·¸")) == NULL) {
+	else if ((scase = check_feature(tp->f, "ä¿‚")) == NULL) {
 	    return UNKNOWN_CASE_SCORE;
 	}
 	else {
-	    scase += strlen("·¸:"); /* ÆşÎÏÂ¦¤ÎÉ½ÁØ³Ê */
+	    scase += strlen("ä¿‚:"); /* å…¥åŠ›å´ã®è¡¨å±¤æ ¼ */
 	}
 	tp2 = tp;
     }
 
-    /* ÎÙ¤ËÍÑ¸À¤¬¤¢¤ë¤«¤É¤¦¤« */
+    /* éš£ã«ç”¨è¨€ãŒã‚ã‚‹ã‹ã©ã†ã‹ */
     if (np_modifying_flag == 0) {
 	if (get_dist_from_work_mgr(tp2->b_ptr, current_sentence_data.tag_data[tp2->num + 1].b_ptr) > 0) {
 	    closest_pred_flag = 1;
 	}
     }
 
-    /* ¡Ö¤Ï¡×, ÆÉÅÀ, ÈİÄê¤Î¥Á¥§¥Ã¥¯ */
-    wa_flag = check_feature(tp2->f, "¥Ï") ? 1 : 0;
-    touten_flag = check_feature(tp2->f, "ÆÉÅÀ") ? 1 : 0;
-    negation_flag = check_feature(hp->f, "ÈİÄêÉ½¸½")   ? 1 
-		  : check_feature(hp->f, "½àÈİÄêÉ½¸½") ? 1
+    /* ã€Œã¯ã€, èª­ç‚¹, å¦å®šã®ãƒã‚§ãƒƒã‚¯ */
+    wa_flag = check_feature(tp2->f, "ãƒ") ? 1 : 0;
+    touten_flag = check_feature(tp2->f, "èª­ç‚¹") ? 1 : 0;
+    negation_flag = check_feature(hp->f, "å¦å®šè¡¨ç¾")   ? 1 
+		  : check_feature(hp->f, "æº–å¦å®šè¡¨ç¾") ? 1
 		  : 0;
 
-    /* ÄóÂê¥¹¥³¥¢ */
-    if (cp = check_feature(hp->f, "ÄóÂê¼õ")) {
+    /* æé¡Œã‚¹ã‚³ã‚¢ */
+    if (cp = check_feature(hp->f, "æé¡Œå—")) {
 	sscanf(cp, "%*[^:]:%d", &topic_score);
 	if (topic_score > 0 && topic_score < 30) {
 	    topic_score = 10;
 	}
     }
 
-    /* ¸õÊä¥Á¥§¥Ã¥¯ */
+    /* å€™è£œãƒã‚§ãƒƒã‚¯ */
     dist = get_dist_from_work_mgr(tp2->b_ptr, hp->b_ptr);
     if (dist <= 0 && !ellipsis_flag) {
 	return UNKNOWN_CASE_SCORE;
@@ -3917,16 +3917,16 @@ double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
 	dist = 2;
     }
 
-    /* ³Ê¤Î²ò¼á */
+    /* æ ¼ã®è§£é‡ˆ */
     cfcase = make_cf_case_string(as1, cfd, as2, cfp);
     score1 = get_case_interpret_probability(scase, cfcase);
     if (ellipsis_flag) return score1;
 
-    /* ÆÉÅÀ¤ÎÀ¸À® */
+    /* èª­ç‚¹ã®ç”Ÿæˆ */
     score2 = get_punctuation_generating_probability(np_modifying_flag, touten_flag, dist, 
 						    closest_pred_flag, topic_score, wa_flag, 0);
 
-    /* ¡Ö¤Ï¡×¤ÎÀ¸À® */
+    /* ã€Œã¯ã€ã®ç”Ÿæˆ */
     score3 = get_wa_generating_probability(np_modifying_flag, touten_flag, dist, 
 					   closest_pred_flag, topic_score, wa_flag, negation_flag, vtype);
 
@@ -3946,10 +3946,10 @@ double get_case_function_probability_for_pred(int as1, CASE_FRAME *cfd,
 					 int ellipsis_flag)
 /*==================================================================*/
 {
-    if (cfp->type == CF_PRED) { /* ÍÑ¸À³Ê¥Õ¥ì¡¼¥à */
+    if (cfp->type == CF_PRED) { /* ç”¨è¨€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_case_function_probability_for_pred(as1, cfd, as2, cfp, FALSE);
     }
-    else { /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à */
+    else { /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	return get_case_function_probability_for_noun(as1, cfd, as2, cfp, FALSE);
     }
 }
@@ -3962,7 +3962,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     char *g_pred, *d_pred, *g_id, *d_id, *key, *value, *g_level;
     double ret1 = 0, ret2 = 0, ret3 = 0;
 
-    /* EOS -> Ê¸Ëö */
+    /* EOS -> æ–‡æœ« */
     if (gp == NULL) {
 	g_pred = strdup("EOS");
     }
@@ -3974,9 +3974,9 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	g_pred = NULL;
     }
 
-    /* ÍÑ¸À -> ÍÑ¸À */
+    /* ç”¨è¨€ -> ç”¨è¨€ */
     if (RenyouExist && g_pred && d_cf && 
-	(gp != NULL || OptCaseFlag & OPT_CASE_GENERATE_EOS)) { /* Ê¸Ëö¤«¤é¤ÎÀ¸À®¤Ï-generate-eos(¸À¸ì¥â¥Ç¥ëÍÑ)»ş¤Î¤ß */
+	(gp != NULL || OptCaseFlag & OPT_CASE_GENERATE_EOS)) { /* æ–‡æœ«ã‹ã‚‰ã®ç”Ÿæˆã¯-generate-eos(è¨€èªãƒ¢ãƒ‡ãƒ«ç”¨)æ™‚ã®ã¿ */
 	d_pred = strdup(d_cf->cf_id);
 	sscanf(d_cf->cf_id, "%[^0-9]:%*d", d_pred);
 
@@ -4017,7 +4017,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     }
 
 
-    touten_flag = check_feature(dp->b_ptr->f, "ÆÉÅÀ") ? 1 : 0;
+    touten_flag = check_feature(dp->b_ptr->f, "èª­ç‚¹") ? 1 : 0;
 
     if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
 	return UNKNOWN_RENYOU_SCORE;
@@ -4027,14 +4027,14 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	closest_pred_flag = 1;
     }
 
-    /* ÆÉÅÀ¤ÎÀ¸À® */
-    key = malloc_db_buf(strlen("Ï¢ÍÑ") + 8);
-    sprintf(key, "%d|PÏ¢ÍÑ:%d,%d", touten_flag, dist, closest_pred_flag);
+    /* èª­ç‚¹ã®ç”Ÿæˆ */
+    key = malloc_db_buf(strlen("é€£ç”¨") + 8);
+    sprintf(key, "%d|Pé€£ç”¨:%d,%d", touten_flag, dist, closest_pred_flag);
     value = db_get(case_db, key);
     if (value) {
 	ret1 = atof(value);
 	if (VerboseLevel >= VERBOSE2) {
-	    fprintf(Outfp, ";; (R_P) %s: P(%d|PÏ¢ÍÑ:%d,%d) = %lf\n", gp->head_ptr->Goi, touten_flag, dist, closest_pred_flag, ret1);
+	    fprintf(Outfp, ";; (R_P) %s: P(%d|Pé€£ç”¨:%d,%d) = %lf\n", gp->head_ptr->Goi, touten_flag, dist, closest_pred_flag, ret1);
 	}
 	free(value);
     }
@@ -4048,7 +4048,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	}
     }
 
-    /* ID -> ID (Ì¤»ÈÍÑ) */
+    /* ID -> ID (æœªä½¿ç”¨) */
     if (0 && (g_id = check_feature(gp->f, "ID")) && 
 	(d_id = check_feature(dp->f, "ID"))) {
 	g_id += 3;
@@ -4077,7 +4077,7 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	ret2 = 1;
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥àID => ³Ê¥Õ¥ì¡¼¥àID *
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ID => æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ID *
     if (0 && g_cf && d_cf) {
 	key = malloc_db_buf(strlen(g_cf->cf_id) + strlen(d_cf->cf_id) + 2);
 	sprintf(key, "%s|%s", d_cf->cf_id, g_cf->cf_id);
@@ -4095,20 +4095,20 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
     }
     */
 
-    /* ¥ì¥Ù¥ë => ¥ì¥Ù¥ë *
-    if ((g_level = check_feature(gp->f, "¥ì¥Ù¥ë")) == NULL) {
+    /* ãƒ¬ãƒ™ãƒ« => ãƒ¬ãƒ™ãƒ« *
+    if ((g_level = check_feature(gp->f, "ãƒ¬ãƒ™ãƒ«")) == NULL) {
 	return UNKNOWN_RENYOU_SCORE;
     }
     g_level += 7;
 
     key = malloc_db_buf(strlen(g_level) + 6);
-    sprintf(key, "%d|%d,%s", check_feature(dp->f, "ÆÉÅÀ") ? 1 : 0, dist, g_level);
+    sprintf(key, "%d|%d,%s", check_feature(dp->f, "èª­ç‚¹") ? 1 : 0, dist, g_level);
     value = db_get(renyou_func_db, key);
     if (value) {
 	ret3 = atof(value);
 	if (VerboseLevel >= VERBOSE3) {
 	    fprintf(Outfp, ";; (R) %s -> %s: P(,=%d|%d,%s) = %lf\n", dp->head_ptr->Goi, gp->head_ptr->Goi, 
-		    check_feature(dp->f, "ÆÉÅÀ") ? 1 : 0, dist, g_level, ret3);
+		    check_feature(dp->f, "èª­ç‚¹") ? 1 : 0, dist, g_level, ret3);
 	}
 	free(value);
     }
@@ -4143,7 +4143,7 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
     char *pred, *id, *key, *value;
     double ret1 = 0, ret2 = 0;
 
-    /* ¸Ä¿ô¤ÏÌ¤»ÈÍÑ */
+    /* å€‹æ•°ã¯æœªä½¿ç”¨ */
     if (1 || RenyouExist == FALSE) {
 	return 0;
     }
@@ -4166,7 +4166,7 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
 	ret1 = 1;
     }
 
-    /* ÍÑ¸À (Ì¤»ÈÍÑ) */
+    /* ç”¨è¨€ (æœªä½¿ç”¨) */
     if (cfp) {
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
@@ -4188,7 +4188,7 @@ double calc_vp_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int n
 	ret2 = 1;
     }
 
-    /* ³Ê¥Õ¥ì¡¼¥à *
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  *
     if (0 && cfp) {
 	key = malloc_db_buf(strlen(cfp->cf_id) + 6);
 	sprintf(key, "%d|N:%s", num, cfp->cf_id);
@@ -4223,12 +4223,12 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
     double pred_ret = 0, cf_ret = 0, punc_ret = 0;
     int denominator = 0, rep_malloc_flag = 0;
 
-    /* Éû»ì -> ³Ê¥Õ¥ì¡¼¥à or ÍÑ¸À */
+    /* å‰¯è© -> æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  or ç”¨è¨€ */
     if (cfp) {
 	if (AdverbExist == TRUE) {
-	    /* Éû»ìÉ½µ­¤Î¼èÆÀ */
+	    /* å‰¯è©è¡¨è¨˜ã®å–å¾— */
 	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) {
-		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 		    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 		    mrph_str = strdup(cp);
 		    rep_malloc_flag = 1;
@@ -4245,14 +4245,14 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 		mrph_str = dp->head_ptr->Goi;
 	    }
 
-	    /* ³Ê¥Õ¥ì¡¼¥à */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	    key = malloc_db_buf(strlen(cfp->cf_id) + strlen(mrph_str) + 3);
 	    sprintf(key, "%s|%s", mrph_str, cfp->cf_id);
 	    value = db_get(adverb_db, key);
 	    if (value) {
-		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 		    cf_ret = atof(value);
-		    /* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+		    /* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 		}
 		free(value);
 	    }
@@ -4261,15 +4261,15 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 		sprintf(key, "NIL|%s", cfp->cf_id);
 		value = db_get(adverb_db, key);
 		if (value) { /* cf_ret should be 0 */
-		    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+		    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 			cf_ret = atof(value); /* 0 */
-			/* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+			/* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 		    }
 		    free(value);
 		}
 	    }
 
-	    /* ÍÑ¸ÀÉ½µ­ */
+	    /* ç”¨è¨€è¡¨è¨˜ */
 	    pred = strdup(cfp->cf_id);
 	    sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
 	    sprintf(key, "%s|%s", mrph_str, pred);
@@ -4311,8 +4311,8 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 	    }
 	}
 
-	/* ÆÉÅÀ¤ÎÀ¸À® */
-	touten_flag = check_feature(dp->b_ptr->f, "ÆÉÅÀ") ? 1 : 0;
+	/* èª­ç‚¹ã®ç”Ÿæˆ */
+	touten_flag = check_feature(dp->b_ptr->f, "èª­ç‚¹") ? 1 : 0;
 
 	if ((dist = get_dist_from_work_mgr(dp->b_ptr, gp->b_ptr)) < 0) {
 	    punc_ret = UNKNOWN_RENYOU_SCORE;
@@ -4323,8 +4323,8 @@ double calc_adv_modifying_probability(TAG_DATA *gp, CASE_FRAME *cfp, TAG_DATA *d
 	    if (get_dist_from_work_mgr(dp->b_ptr, dp->b_ptr + 1) > 0) {
 		closest_pred_flag = 1;
 	    }
-	    key = malloc_db_buf(strlen("Éû»ì") + 8);
-	    sprintf(key, "%d|PÉû»ì:%d,%d", touten_flag, dist, closest_pred_flag);
+	    key = malloc_db_buf(strlen("å‰¯è©") + 8);
+	    sprintf(key, "%d|På‰¯è©:%d,%d", touten_flag, dist, closest_pred_flag);
 	    value = db_get(case_db, key);
 	    if (value) {
 		punc_ret = atof(value);
@@ -4361,14 +4361,14 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
     }
 
     if (cfp) {
-	/* ³Ê¥Õ¥ì¡¼¥à */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
 	key = malloc_db_buf(strlen(cfp->cf_id) + 6);
 	sprintf(key, "%d|N:%s", num, cfp->cf_id);
 	value = db_get(adverb_db, key);
 	if (value) {
-	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 		cf_ret = atof(value);
-		/* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+		/* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 	    }
 	    free(value);
 	}
@@ -4377,15 +4377,15 @@ double calc_adv_modifying_num_probability(TAG_DATA *t_ptr, CASE_FRAME *cfp, int 
 	    sprintf(key, "NIL|N:%s", cfp->cf_id);
 	    value = db_get(adverb_db, key);
 	    if (value) { /* cf_ret should be 0 */
-		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* Ê¬Êì¤Î¤Ê¤¤¥Õ¥©¡¼¥Ş¥Ã¥È */
+		if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* åˆ†æ¯ã®ãªã„ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ */
 		    cf_ret = atof(value); /* 0 */
-		    /* denominator = 0; -> ÍÑ¸À¤Î¤ß¤Ç */
+		    /* denominator = 0; -> ç”¨è¨€ã®ã¿ã§ */
 		}
 		free(value);
 	    }
 	}
 
-	/* ÍÑ¸ÀÉ½µ­ */
+	/* ç”¨è¨€è¡¨è¨˜ */
 	pred = strdup(cfp->cf_id);
 	sscanf(cfp->cf_id, "%[^0-9]:%*d", pred);
 	sprintf(key, "%d|N:%s", num, pred);
@@ -4504,10 +4504,10 @@ double get_para_exist_probability(char *para_key, double score, int flag, TAG_DA
     }
     */
 
-    /* Ì¾»ìÊÂÎó¤Î¤È¤­¤ÏÆÉÅÀ¤òÀ¸À® */
-    if (flag && !check_feature(dp->f, "ÍÑ¸À")) {
-	if (check_feature(dp->b_ptr->f, "ÆÉÅÀ") && 
-	    !check_feature(dp->b_ptr->f, "ÆÉÅÀÊÂ¥­")) {
+    /* åè©ä¸¦åˆ—ã®ã¨ãã¯èª­ç‚¹ã‚’ç”Ÿæˆ */
+    if (flag && !check_feature(dp->f, "ç”¨è¨€")) {
+	if (check_feature(dp->b_ptr->f, "èª­ç‚¹") && 
+	    !check_feature(dp->b_ptr->f, "èª­ç‚¹ä¸¦ã‚­")) {
 	    touten_flag = 1;
 	}
 	else {
@@ -4518,8 +4518,8 @@ double get_para_exist_probability(char *para_key, double score, int flag, TAG_DA
 	    ret2 = UNKNOWN_RENYOU_SCORE;
 	}
 	else {
-	    key = malloc_db_buf(strlen("ÊÂÎó") + 6);
-	    sprintf(key, "%d|PÊÂÎó:%d", touten_flag, dist);
+	    key = malloc_db_buf(strlen("ä¸¦åˆ—") + 6);
+	    sprintf(key, "%d|Pä¸¦åˆ—:%d", touten_flag, dist);
 	    value = db_get(case_db, key);
 	    if (value) {
 		ret2 = atof(value);
@@ -4615,8 +4615,8 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
     }
 
     while (tmp_gp) {
-	if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ÂåÉ½É½µ­ */
-	    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+	if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ä»£è¡¨è¡¨è¨˜ */
+	    if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 		(cp = get_bnst_head_canonical_rep(tmp_gp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 		gp_mrph_str = strdup(cp);
 		gp_rep_malloc_flag = 1;
@@ -4639,8 +4639,8 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 		continue;
 	    }
 
-	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ÂåÉ½É½µ­ */
-		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+	    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ä»£è¡¨è¡¨è¨˜ */
+		if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 		    (cp = get_bnst_head_canonical_rep(tmp_dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 		    dp_mrph_str = strdup(cp);
 		    dp_rep_malloc_flag = 1;
@@ -4694,18 +4694,18 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	}
 	tmp_gp = tmp_gp->next;
     }
-    ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* ÈóÏ¢ÂÎ½¤¾şÌ¾»ì¤ÎÊı¤Ï¾ï¤ËÀµµ¬²½ */
+    ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* éé€£ä½“ä¿®é£¾åè©ã®æ–¹ã¯å¸¸ã«æ­£è¦åŒ– */
     if (VerboseLevel >= VERBOSE2) {
 	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? elem_num : g_elem_num, ret1);
     }
 
-    /* ÆÉÅÀ¤ÎÀ¸À®
-       ·¸Â¦¤¬ÊÂÎó¤Î¾ì¹ç¤ÏÊ£¿ô¸Ä */
+    /* èª­ç‚¹ã®ç”Ÿæˆ
+       ä¿‚å´ãŒä¸¦åˆ—ã®å ´åˆã¯è¤‡æ•°å€‹ */
 
     elem_num = 0;
     tmp_dp = dp;
     while (tmp_dp) {
-	touten_flag = check_feature(tmp_dp->b_ptr->f, "ÆÉÅÀ") ? 1 : 0;
+	touten_flag = check_feature(tmp_dp->b_ptr->f, "èª­ç‚¹") ? 1 : 0;
 
 	if ((dist = get_dist_from_work_mgr(tmp_dp->b_ptr, gp->b_ptr)) < 0) {
 	    ret2 += FREQ0_ASSINED_SCORE;
@@ -4716,8 +4716,8 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    if (get_dist_from_work_mgr(tmp_dp->b_ptr, tmp_dp->b_ptr + 1) > 0) {
 		closest_ok_flag = 1;
 	    }
-	    key = malloc_db_buf(strlen("Ï¢ÂÎ") + 8);
-	    sprintf(key, "%d|PÏ¢ÂÎ:%d,%d", touten_flag, dist, closest_ok_flag);
+	    key = malloc_db_buf(strlen("é€£ä½“") + 8);
+	    sprintf(key, "%d|Pé€£ä½“:%d,%d", touten_flag, dist, closest_ok_flag);
 	    value = db_get(case_db, key);
 	    if (value) {
 		tmp_ret += atof(value);
@@ -4763,12 +4763,12 @@ double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
 	return 0;
     }
 
-    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* Æ±´üÊÂÎó¼êË¡ */
+    if ((OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) && /* åŒæœŸä¸¦åˆ—æ‰‹æ³• */
 	para_cky_ptr) {
 	while (para_cky_ptr) {
 	    if (para_cky_ptr->left && para_cky_ptr->para_flag == 0 && para_cky_ptr->left->b_ptr && 
-		(check_feature(para_cky_ptr->left->b_ptr->f, "·¸:¥Î³Ê") || 
-		 check_feature(para_cky_ptr->left->b_ptr->f, "·¸:Ï¢ÂÎ"))) {
+		(check_feature(para_cky_ptr->left->b_ptr->f, "ä¿‚:ãƒæ ¼") || 
+		 check_feature(para_cky_ptr->left->b_ptr->f, "ä¿‚:é€£ä½“"))) {
 		para_cond = "PO";
 		break;
 	    }
@@ -4782,8 +4782,8 @@ double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
 	para_cond = "-";
     }
 
-    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ÂåÉ½É½µ­ */
-	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* Àµµ¬²½(¼ç¼­)ÂåÉ½É½µ­ */
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* ä»£è¡¨è¡¨è¨˜ */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* æ­£è¦åŒ–(ä¸»è¾)ä»£è¡¨è¡¨è¨˜ */
 	    (cp = get_bnst_head_canonical_rep(gp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
 	    mrph_str = strdup(cp);
 	    rep_malloc_flag = 1;
@@ -4847,7 +4847,7 @@ double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
 			strlen(ptr1->head_ptr->Pos) + 
 			strlen(ptr2->head_ptr->Pos) + 11);
 
-    /* ÍÑ¸ÀÉ½µ­¤Ç¤ä¤Ã¤¿Êı¤¬¤è¤¤¤ß¤¿¤¤ */
+    /* ç”¨è¨€è¡¨è¨˜ã§ã‚„ã£ãŸæ–¹ãŒã‚ˆã„ã¿ãŸã„ */
     if (ptr1->num < ptr2->num) {
 	sprintf(key, "%s_%s_%s_%s_R_%d", ptr1->head_ptr->Pos, ptr1->head_ptr->Goi, ptr2->head_ptr->Pos, ptr2->head_ptr->Goi, dist);
     }

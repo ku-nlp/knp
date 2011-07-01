@@ -1,6 +1,6 @@
 /*====================================================================
 
-			      ¸Æ±ş¤Î½èÍı
+			      å‘¼å¿œã®å‡¦ç†
 
                                                S.Kurohashi 1995. 7. 4
                                                S.Ozaki     1995. 2. 8
@@ -72,12 +72,12 @@ int	koou_m_p[BNST_MAX];
 			if (OptDisplay == OPT_DEBUG) 
 			    fprintf(Outfp, "  End %d\n", k);
 		    }
-		    else if (r_ptr->uke_pattern && /* ¼õ¤±Â¦¤Î¥Ñ¥¿¡¼¥ó: ¥ë¡¼¥ë¤Ë¤ª¤±¤ë3¤ÄÌÜ¤Î¹à (start¤Èend¤Î´Ö) */
+		    else if (r_ptr->uke_pattern && /* å—ã‘å´ã®ãƒ‘ã‚¿ãƒ¼ãƒ³: ãƒ«ãƒ¼ãƒ«ã«ãŠã‘ã‚‹3ã¤ç›®ã®é … (startã¨endã®é–“) */
 			     _regexpbnst_match(r_ptr->uke_pattern, c_ptr) != -1 && 
 			     (Language != CHINESE || 
 			      (Language == CHINESE && !pu_flag && check_feature((sp->bnst_data+k)->f, "LC")))) {
 			Koou_matrix[i][k] = 2;
-			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type; /* º£¤Î¤È¤³¤íµ­½Ò¤Ç¤­¤Ê¤¤ */
+			Koou_dpnd_matrix[i][k] = (int)r_ptr->dpnd_type; /* ä»Šã®ã¨ã“ã‚è¨˜è¿°ã§ããªã„ */
 			if (OptDisplay == OPT_DEBUG) 
 			    fprintf(Outfp, "  Uke %d\n", k);
 		    }
@@ -176,16 +176,16 @@ int	koou_m_p[BNST_MAX];
     else {
 	for (i = 0; i < sp->Bnst_num; i++){
 	    if (koou_m_p[i] == TRUE) {
-		/* i -> f_start .. f_end ¤È¤¤¤¦¸Æ±ş */
+		/* i -> f_start .. f_end ã¨ã„ã†å‘¼å¿œ */
 		f_start = -1;
 		f_end = -1;
 		for (j = i; j < sp->Bnst_num; j++){
 		    if (Koou_matrix[i][j] > 0) {
 			Dpnd_matrix[i][j] = Koou_dpnd_matrix[i][j];
 			if (Koou_matrix[i][j] == 1) { /* end_pattern */
-			    f_end = j; /* (Ê£¿ô¤¢¤ë)¸Æ±şÆâ¤Ç·¸¤ê¤¦¤ëºÇ¸å¤ÎÊ¸Àá */
+			    f_end = j; /* (è¤‡æ•°ã‚ã‚‹)å‘¼å¿œå†…ã§ä¿‚ã‚Šã†ã‚‹æœ€å¾Œã®æ–‡ç¯€ */
 			    if (f_start < 0)
-				f_start = j; /* (Ê£¿ô¤¢¤ë)¸Æ±şÆâ¤Ç·¸¤ê¤¦¤ëºÇ½é¤ÎÊ¸Àá */
+				f_start = j; /* (è¤‡æ•°ã‚ã‚‹)å‘¼å¿œå†…ã§ä¿‚ã‚Šã†ã‚‹æœ€åˆã®æ–‡ç¯€ */
 			}
 		    }
 		    else {
@@ -193,8 +193,8 @@ int	koou_m_p[BNST_MAX];
 		    }
 		}
 
-		mask_for(sp, i, f_start, f_end); /* ÆâÉô(i,f_start)¤¬f_end°Ê¹ß¤Ë·¸¤ë¤Î¤ò¥Ş¥¹¥¯ */
-		mask_back(i, f_start);  /* Á°Éô[0,i)¤¬(i,f_start)¤Ë·¸¤ë¤Î¤ò¥Ş¥¹¥¯ */
+		mask_for(sp, i, f_start, f_end); /* å†…éƒ¨(i,f_start)ãŒf_endä»¥é™ã«ä¿‚ã‚‹ã®ã‚’ãƒã‚¹ã‚¯ */
+		mask_back(i, f_start);  /* å‰éƒ¨[0,i)ãŒ(i,f_start)ã«ä¿‚ã‚‹ã®ã‚’ãƒã‚¹ã‚¯ */
 	    }
 	}
     }
@@ -210,7 +210,7 @@ int	koou_m_p[BNST_MAX];
 
     flag = (check_koou(sp) == TRUE) ? TRUE: FALSE;
 
-    /* ¹ÔÎó¤Î½ñ¤­´¹¤¨ */
+    /* è¡Œåˆ—ã®æ›¸ãæ›ãˆ */
     change_matrix(sp); 
 
     return flag;

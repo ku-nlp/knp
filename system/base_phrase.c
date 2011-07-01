@@ -268,10 +268,10 @@ int     pp_matrix[BNST_MAX];
 	return FALSE;
     }
 
-    /* ¸Æ±ş¤Î¥Á¥§¥Ã¥¯ */
+    /* å‘¼å¿œã®ãƒã‚§ãƒƒã‚¯ */
     flag = (check_phrase(sp) == TRUE) ? TRUE: FALSE;
 
-    /* ¹ÔÎó¤Î½ñ¤­´¹¤¨ */
+    /* è¡Œåˆ—ã®æ›¸ãæ›ãˆ */
     change_matrix_for_phrase(sp); 
     assign_np_matrix(sp);
 

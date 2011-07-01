@@ -1,6 +1,6 @@
 /*====================================================================
 
-		       Ê¸Àá´Ö¤ÎÈæ³Ó¡¦Îà»÷ÅÙ·×»»
+		       æ–‡ç¯€é–“ã®æ¯”è¼ƒãƒ»é¡ä¼¼åº¦è¨ˆç®—
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -31,7 +31,7 @@
     
     match = pre > post ? pre : post;
     match -= match % BYTES4CHAR;
-    match = 2 * match / BYTES4CHAR; /* 5Ê¸»ú¤Ç10ÅÀ */
+    match = 2 * match / BYTES4CHAR; /* 5æ–‡å­—ã§10ç‚¹ */
     return match;
 }
 
@@ -41,18 +41,18 @@
 {
     int	i;
 
-    /* °ìÃ×¤¹¤ëÉÕÂ°¸ì¤¬¤¢¤ì¤Ğ¿¿ */
+    /* ä¸€è‡´ã™ã‚‹ä»˜å±èªãŒã‚ã‚Œã°çœŸ */
 
     if (ptr == NULL) return 0;
     for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	if (check_feature((ptr->mrph_ptr + i)->f, "ÉÕÂ°")) {
+	if (check_feature((ptr->mrph_ptr + i)->f, "ä»˜å±")) {
 	    if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr + i)->Hinshi) &&
 		(Bunrui == 0 || Bunrui == (ptr->mrph_ptr + i)->Bunrui) &&
 		(cp == NULL  || str_eq((ptr->mrph_ptr + i)->Goi, cp))) {
 		return 1;
 	    }
 	}
-	/* ¼«Î©¸ì¤Ê¤É */
+	/* è‡ªç«‹èªãªã© */
 	else {
 	    return 0;
 	}
@@ -68,14 +68,14 @@ int check_fuzoku_substr(BNST_DATA *ptr, int Hinshi, int Bunrui, char *cp)
 
     if (ptr == NULL) return 0;
     for (i = ptr->mrph_num - 1; i >= 0 ; i--) {
-	if (check_feature((ptr->mrph_ptr + i)->f, "ÉÕÂ°")) {
+	if (check_feature((ptr->mrph_ptr + i)->f, "ä»˜å±")) {
 	    if ((Hinshi == 0 || Hinshi == (ptr->mrph_ptr + i)->Hinshi) &&
 		(Bunrui == 0 || Bunrui == (ptr->mrph_ptr + i)->Bunrui) &&
 		(cp == NULL  || strstr((ptr->mrph_ptr + i)->Goi, cp))) {
 		return 1;
 	    }
 	}
-	/* ¼«Î©¸ì¤Ê¤É */
+	/* è‡ªç«‹èªãªã© */
 	else {
 	    return 0;
 	}
@@ -113,10 +113,10 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
           int bgh_match(BNST_DATA *ptr1, BNST_DATA *ptr2)
 /*==================================================================*/
 {
-    /* ÊÖ¤êÃÍ
-       	°ìÊı¤Ç¤âÊ¬Îà¸ì×ÃÉ½¥³¡¼¥É¤¬¤Ê¤¤¾ì¹ç 	: -1
-	3·åÌ¤Ëş¤Î°ìÃ×				: 0
-	3·å°Ê¾å°ìÃ×¤·¤Æ¤¤¤ë¾ì¹ç			: (°ìÃ×·å¿ô - 2)
+    /* è¿”ã‚Šå€¤
+       	ä¸€æ–¹ã§ã‚‚åˆ†é¡èªå½™è¡¨ã‚³ãƒ¼ãƒ‰ãŒãªã„å ´åˆ 	: -1
+	3æ¡æœªæº€ã®ä¸€è‡´				: 0
+	3æ¡ä»¥ä¸Šä¸€è‡´ã—ã¦ã„ã‚‹å ´åˆ			: (ä¸€è‡´æ¡æ•° - 2)
      */
 
     int i, j, point, max_point = 0;
@@ -137,9 +137,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    int sm_match(BNST_DATA *ptr1, BNST_DATA *ptr2)
 /*==================================================================*/
 {
-    /* ÊÖ¤êÃÍ
-       	°ìÊı¤Ç¤â NTT ¥³¡¼¥É¤¬¤Ê¤¤¾ì¹ç 	: -1
-	ËşÅÀ				: BGH_CODE_SIZE-2 == 8	
+    /* è¿”ã‚Šå€¤
+       	ä¸€æ–¹ã§ã‚‚ NTT ã‚³ãƒ¼ãƒ‰ãŒãªã„å ´åˆ 	: -1
+	æº€ç‚¹				: BGH_CODE_SIZE-2 == 8	
      */
 
     int i, j, code_size;
@@ -161,7 +161,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    if (max_point < point) max_point = point;
 	}
 
-    /* Îà»÷ÅÙ 0.4 °Ê²¼¤ÏÀÚ¤ë */
+    /* é¡ä¼¼åº¦ 0.4 ä»¥ä¸‹ã¯åˆ‡ã‚‹ */
     max_point = (max_point-0.4)*(BGH_CODE_SIZE-2)/(BGH_CODE_SIZE-4)*BGH_CODE_SIZE;
     if (max_point < 0)
 	return 0;
@@ -175,13 +175,13 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 {
     char *level1, *level2;
 
-    level1 = check_feature(ptr1->f, "¥ì¥Ù¥ë");
-    level2 = check_feature(ptr2->f, "¥ì¥Ù¥ë");
+    level1 = check_feature(ptr1->f, "ãƒ¬ãƒ™ãƒ«");
+    level2 = check_feature(ptr2->f, "ãƒ¬ãƒ™ãƒ«");
 
-    if (level1 == NULL) return TRUE;		/* ¤Ê¤·:²¿¤Ç¤â -> T */
-    else if (level2 == NULL) return FALSE;	/* ²¿¤Ç¤â:¤Ê¤· -> F */
-    else if (levelcmp(level1 + strlen("¥ì¥Ù¥ë:"), 
-		      level2 + strlen("¥ì¥Ù¥ë:")) <= 0)	/* ptr1 <= ptr2 -> T */
+    if (level1 == NULL) return TRUE;		/* ãªã—:ä½•ã§ã‚‚ -> T */
+    else if (level2 == NULL) return FALSE;	/* ä½•ã§ã‚‚:ãªã— -> F */
+    else if (levelcmp(level1 + strlen("ãƒ¬ãƒ™ãƒ«:"), 
+		      level2 + strlen("ãƒ¬ãƒ™ãƒ«:")) <= 0)	/* ptr1 <= ptr2 -> T */
 	return TRUE;
     else return FALSE;
 }
@@ -193,11 +193,11 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     char *level1, *level2;
 
     level1 = cp;
-    level2 = check_feature(f, "¥ì¥Ù¥ë");
+    level2 = check_feature(f, "ãƒ¬ãƒ™ãƒ«");
 
-    if (level1 == NULL) return TRUE;		/* ¤Ê¤·:²¿¤Ç¤â -> T */
-    else if (level2 == NULL) return FALSE;	/* ²¿¤Ç¤â:¤Ê¤· -> F */
-    else if (levelcmp(level1, level2 + strlen("¥ì¥Ù¥ë:")) <= 0)
+    if (level1 == NULL) return TRUE;		/* ãªã—:ä½•ã§ã‚‚ -> T */
+    else if (level2 == NULL) return FALSE;	/* ä½•ã§ã‚‚:ãªã— -> F */
+    else if (levelcmp(level1, level2 + strlen("ãƒ¬ãƒ™ãƒ«:")) <= 0)
 	return TRUE;				/* cp <= f -> T */
     else return FALSE;
 }
@@ -240,93 +240,93 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
     ptr1 = &(sp->bnst_data[pre]);
     ptr2 = &(sp->bnst_data[pos]);
 
-    /* ÍÑ¸À¡¤ÂÎ¸À */
+    /* ç”¨è¨€ï¼Œä½“è¨€ */
 
     if (Language != CHINESE) {
-	if (((cp1 = check_feature(ptr1->f, "ÍÑ¸À")) &&
-	     (cp2 = check_feature(ptr2->f, "ÍÑ¸À")) && 
-	     (!strcmp(cp1, "ÍÑ¸À:È½") || 
-	      strcmp(cp2, "ÍÑ¸À:È½") || 
-	      !check_feature(ptr2->f, "·ÁÉûÌ¾»ì"))) || /* Á°Â¦¤¬Æ°»ì¡¢·ÁÍÆ»ì¤Ê¤é¡¢¸åÂ¦¤ÏÈ½Äê»ì¤Î·ÁÉûÌ¾»ì¤Ç¤Ï¤Ê¤¤ */
+	if (((cp1 = check_feature(ptr1->f, "ç”¨è¨€")) &&
+	     (cp2 = check_feature(ptr2->f, "ç”¨è¨€")) && 
+	     (!strcmp(cp1, "ç”¨è¨€:åˆ¤") || 
+	      strcmp(cp2, "ç”¨è¨€:åˆ¤") || 
+	      !check_feature(ptr2->f, "å½¢å‰¯åè©"))) || /* å‰å´ãŒå‹•è©ã€å½¢å®¹è©ãªã‚‰ã€å¾Œå´ã¯åˆ¤å®šè©ã®å½¢å‰¯åè©ã§ã¯ãªã„ */
 
-	    (check_feature(ptr1->f, "Ì¾»ìÅª·ÁÍÆ»ì¸ì´´") && /* ¡Ö¸øÀµj¤«¤Ä¼«Í³¤Êj¶¥Áè¡× */
-	     check_feature(ptr2->f, "ÍÑ¸À:·Á")) || 
+	    (check_feature(ptr1->f, "åè©çš„å½¢å®¹è©èªå¹¹") && /* ã€Œå…¬æ­£jã‹ã¤è‡ªç”±ãªjç«¶äº‰ã€ */
+	     check_feature(ptr2->f, "ç”¨è¨€:å½¢")) || 
 
-	    (check_feature(ptr1->f, "ÂÎ¸À") &&
-	     check_feature(ptr2->f, "ÂÎ¸À")) || 
+	    (check_feature(ptr1->f, "ä½“è¨€") &&
+	     check_feature(ptr2->f, "ä½“è¨€")) || 
 
-	    (check_feature(ptr1->f, "¿ôÎÌ") && /* ¡Ö°ì¡¢ÆóÇñ¤¹¤ë¡×¤Ç¤ÏÂÎ¸À¡¢ÍÑ¸À¤È¤Ê¤ë¤¿¤á */
-	     check_feature(ptr2->f, "¿ôÎÌ")) || 
+	    (check_feature(ptr1->f, "æ•°é‡") && /* ã€Œä¸€ã€äºŒæ³Šã™ã‚‹ã€ã§ã¯ä½“è¨€ã€ç”¨è¨€ã¨ãªã‚‹ãŸã‚ */
+	     check_feature(ptr2->f, "æ•°é‡")) || 
 	
-	    /* ¡ÖÅª¡¤¡×¤È¡ÖÅª¤À¡× */
-	    (check_feature(ptr1->f, "ÊÂ¥­:Ì¾") && 
-	     check_feature(ptr1->f, "Îà»÷·×»»:Åª") && 
-	     check_feature(ptr2->f, "Îà»÷·×»»:Åª"))
-	    /* check_bnst_substr(ptr1, 0, 0, "Åª") && 
-	       check_bnst_substr(ptr2, 0, 0, "Åª¤À")) */
+	    /* ã€Œçš„ï¼Œã€ã¨ã€Œçš„ã ã€ */
+	    (check_feature(ptr1->f, "ä¸¦ã‚­:å") && 
+	     check_feature(ptr1->f, "é¡ä¼¼è¨ˆç®—:çš„") && 
+	     check_feature(ptr2->f, "é¡ä¼¼è¨ˆç®—:çš„"))
+	    /* check_bnst_substr(ptr1, 0, 0, "çš„") && 
+	       check_bnst_substr(ptr2, 0, 0, "çš„ã ")) */
 	    ) {
 
-	    /* ¤¿¤À¤·¡¤È½Äê»ì -- ÂÎ¸À ¤ÎÎà»÷ÅÙ¤Ï 0 */
-	    if (check_feature(ptr1->f, "ÍÑ¸À:È½") &&
-		!check_feature(ptr1->f, "ÊÂ¥­:¡©") && /* ¡Ö¡Á¤Ç¤Ï¤Ê¤¯¡×¡Ö¤Ç¤¹¤È¤«¡×¤ò½ü¤¯ */
-		check_feature(ptr2->f, "ÂÎ¸À") &&
-		!check_feature(ptr2->f, "ÍÑ¸À:È½")) return 0;
+	    /* ãŸã ã—ï¼Œåˆ¤å®šè© -- ä½“è¨€ ã®é¡ä¼¼åº¦ã¯ 0 */
+	    if (check_feature(ptr1->f, "ç”¨è¨€:åˆ¤") &&
+		!check_feature(ptr1->f, "ä¸¦ã‚­:ï¼Ÿ") && /* ã€Œã€œã§ã¯ãªãã€ã€Œã§ã™ã¨ã‹ã€ã‚’é™¤ã */
+		check_feature(ptr2->f, "ä½“è¨€") &&
+		!check_feature(ptr2->f, "ç”¨è¨€:åˆ¤")) return 0;
 	
-	    /* ¡Ö¤¿¤á¡×¡Ö¤»¤¤¡×¤ÈÂ¾¤ÎÂÎ¸À¤ËÎà»÷ÅÙ¤òÍ¿¤¨¤Ê¤¤¤è¤¦¤Ë */
+	    /* ã€ŒãŸã‚ã€ã€Œã›ã„ã€ã¨ä»–ã®ä½“è¨€ã«é¡ä¼¼åº¦ã‚’ä¸ãˆãªã„ã‚ˆã†ã« */
 
-	    if ((check_feature(ptr1->f, "¤¿¤á-¤»¤¤") &&
-		 !check_feature(ptr2->f, "¤¿¤á-¤»¤¤")) ||
-		(!check_feature(ptr1->f, "¤¿¤á-¤»¤¤") &&
-		 check_feature(ptr2->f, "¤¿¤á-¤»¤¤"))) return 0;
+	    if ((check_feature(ptr1->f, "ãŸã‚-ã›ã„") &&
+		 !check_feature(ptr2->f, "ãŸã‚-ã›ã„")) ||
+		(!check_feature(ptr1->f, "ãŸã‚-ã›ã„") &&
+		 check_feature(ptr2->f, "ãŸã‚-ã›ã„"))) return 0;
 
-	    /* Ê£¹ç¼­¤È¤½¤ì°Ê³°¤âÎà»÷ÅÙ 0 */
+	    /* è¤‡åˆè¾ã¨ãã‚Œä»¥å¤–ã‚‚é¡ä¼¼åº¦ 0 */
 
-	    if ((check_feature(ptr1->f, "Ê£¹ç¼­") &&
-		 !check_feature(ptr2->f, "Ê£¹ç¼­")) ||
-		(!check_feature(ptr1->f, "Ê£¹ç¼­") &&
-		 check_feature(ptr2->f, "Ê£¹ç¼­"))) return 0;
+	    if ((check_feature(ptr1->f, "è¤‡åˆè¾") &&
+		 !check_feature(ptr2->f, "è¤‡åˆè¾")) ||
+		(!check_feature(ptr1->f, "è¤‡åˆè¾") &&
+		 check_feature(ptr2->f, "è¤‡åˆè¾"))) return 0;
 
 	    point += 2;
 
-	    if (check_feature(ptr1->f, "ÂÎ¸À") &&
-		check_feature(ptr2->f, "ÂÎ¸À")) {
+	    if (check_feature(ptr1->f, "ä½“è¨€") &&
+		check_feature(ptr2->f, "ä½“è¨€")) {
 
 		/* 
-		   ÂÎ¸ÀÆ±»Î¤Î¾ì¹ç
-		   ¡¦¿ÍÌ¾Æ±»Î -- 5
-		   ¡¦ÃÏÌ¾Æ±»Î -- 5
-		   ¡¦ÁÈ¿¥Ì¾Æ±»Î -- 5
-		   ¡¦¿ÍÌ¾ÃÏÌ¾ÁÈ¿¥Ì¾ -- 2 (·ÁÂÖÁÇ²òÀÏ¤Î¥º¥ì¤ò¹ÍÎ¸)
-		   ¡¦¿ôÎÌÆ±»Î -- 2 (Â³¤¯Ì¾»ì(½õ¿ô¼­)¤ÇÉ¾²Á)
-		   ¢¨ ½õ¿ô¼­¤¬°ìÃ×¤·¤Ê¤¯¤Æ¤âÎà»÷¤¹¤ë¤³¤È¤â¤¢¤ë
-		   Îã)¡Ö¿Í¸ı¤ÏÈ¬Ëü¼·Àé¿Í¤À¤Ã¤¿¤¬¡¢¿Í¸ıÁı²ÃÎ¨¤Ï°ì°Ì¤Ç¡¢¡Ä¡×
-		   ¡¦»ş´ÖÆ±»Î -- 2			
-		   ¡¦¤½¤ÎÂ¾Æ±»Î -- ¼«Î©¸ì¤ÎÈæ³Ó
+		   ä½“è¨€åŒå£«ã®å ´åˆ
+		   ãƒ»äººååŒå£« -- 5
+		   ãƒ»åœ°ååŒå£« -- 5
+		   ãƒ»çµ„ç¹”ååŒå£« -- 5
+		   ãƒ»äººååœ°åçµ„ç¹”å -- 2 (å½¢æ…‹ç´ è§£æã®ã‚ºãƒ¬ã‚’è€ƒæ…®)
+		   ãƒ»æ•°é‡åŒå£« -- 2 (ç¶šãåè©(åŠ©æ•°è¾)ã§è©•ä¾¡)
+		   â€» åŠ©æ•°è¾ãŒä¸€è‡´ã—ãªãã¦ã‚‚é¡ä¼¼ã™ã‚‹ã“ã¨ã‚‚ã‚ã‚‹
+		   ä¾‹)ã€Œäººå£ã¯å…«ä¸‡ä¸ƒåƒäººã ã£ãŸãŒã€äººå£å¢—åŠ ç‡ã¯ä¸€ä½ã§ã€â€¦ã€
+		   ãƒ»æ™‚é–“åŒå£« -- 2			
+		   ãƒ»ãã®ä»–åŒå£« -- è‡ªç«‹èªã®æ¯”è¼ƒ
 		*/
 
-		if (check_feature(ptr1->f, "¿ÍÌ¾")) {
+		if (check_feature(ptr1->f, "äººå")) {
 		    flag1 = 0;
-		} else if (check_feature(ptr1->f, "ÃÏÌ¾")) {
+		} else if (check_feature(ptr1->f, "åœ°å")) {
 		    flag1 = 1;
-		} else if (check_feature(ptr1->f, "ÁÈ¿¥Ì¾")) {
+		} else if (check_feature(ptr1->f, "çµ„ç¹”å")) {
 		    flag1 = 2;
-		} else if (check_feature(ptr1->f, "¿ôÎÌ")) {
+		} else if (check_feature(ptr1->f, "æ•°é‡")) {
 		    flag1 = 3;
-		    /* } else if (check_feature(ptr1->f, "»ş´Ö")) {
+		    /* } else if (check_feature(ptr1->f, "æ™‚é–“")) {
 		       flag1 = 4; */
 		} else {
 		    flag1 = 5;
 		}
 
-		if (check_feature(ptr2->f, "¿ÍÌ¾")) {
+		if (check_feature(ptr2->f, "äººå")) {
 		    flag2 = 0;
-		} else if (check_feature(ptr2->f, "ÃÏÌ¾")) {
+		} else if (check_feature(ptr2->f, "åœ°å")) {
 		    flag2 = 1;
-		} else if (check_feature(ptr2->f, "ÁÈ¿¥Ì¾")) {
+		} else if (check_feature(ptr2->f, "çµ„ç¹”å")) {
 		    flag2 = 2;
-		} else if (check_feature(ptr2->f, "¿ôÎÌ")) {
+		} else if (check_feature(ptr2->f, "æ•°é‡")) {
 		    flag2 = 3;
-		    /* } else if (check_feature(ptr2->f, "»ş´Ö")) {
+		    /* } else if (check_feature(ptr2->f, "æ™‚é–“")) {
 		       flag2 = 4; */
 		} else {
 		    flag2 = 5;
@@ -346,14 +346,14 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		}
 		else if ((flag1 == 0 || flag1 == 1 || flag1 == 2) &&
 			 (flag2 == 0 || flag2 == 1 || flag2 == 2)) {
-		    point += 2;	/* ÁÈ¿¥¤È¿ÍÌ¾¤Ê¤É¤ÎÂĞ±ş¤ò¹ÍÎ¸ */
+		    point += 2;	/* çµ„ç¹”ã¨äººåãªã©ã®å¯¾å¿œã‚’è€ƒæ…® */
 		    content_word_match = 0;
 		}
 		else if (flag1 == 3 && flag2 == 3) {
 		    point += 2;
 
-		    counter1 = check_feature(ptr1->f, "¥«¥¦¥ó¥¿");
-		    counter2 = check_feature(ptr2->f, "¥«¥¦¥ó¥¿");
+		    counter1 = check_feature(ptr1->f, "ã‚«ã‚¦ãƒ³ã‚¿");
+		    counter2 = check_feature(ptr2->f, "ã‚«ã‚¦ãƒ³ã‚¿");
 		    if ((!counter1 && !counter2) ||
 			!counter1 ||
 			(counter1 && counter2 && !strcmp(counter1, counter2))) {
@@ -378,7 +378,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 	    if (content_word_match == 1) {
 
-		/* ¼«Î©¸ì¤Î°ìÃ× */
+		/* è‡ªç«‹èªã®ä¸€è‡´ */
 	
 		/* if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) { */
 		if (str_eq(ptr1->Jiritu_Go, ptr2->Jiritu_Go)) {
@@ -386,7 +386,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		
 		} else {
 
-		    /* ¥·¥½¡¼¥é¥¹¤Ë¤è¤ëÎà»÷ÅÙ */
+		    /* ã‚·ã‚½ãƒ¼ãƒ©ã‚¹ã«ã‚ˆã‚‹é¡ä¼¼åº¦ */
 
 		    if (ParaThesaurus == USE_NONE) {
 			mt_point = -1;
@@ -398,50 +398,50 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 			mt_point = sm_match(ptr1, ptr2) * 2;
 		    }
 
-		    if (check_feature(ptr1->f, "ÍÑ¸À") &&
-			check_feature(ptr2->f, "ÍÑ¸À")) {
+		    if (check_feature(ptr1->f, "ç”¨è¨€") &&
+			check_feature(ptr2->f, "ç”¨è¨€")) {
 		    
-			/* ¡úÍ×À°Íı¡ú ¡Ö¤¹¤ë¡×¤Î¥·¥½¡¼¥é¥¹Îà»÷ÅÙ¤ÏºÇÂç2 */
-			if (str_eq(ptr1->Jiritu_Go, "¤¹¤ë") ||
-			    str_eq(ptr2->Jiritu_Go, "¤¹¤ë")) {
+			/* â˜…è¦æ•´ç†â˜… ã€Œã™ã‚‹ã€ã®ã‚·ã‚½ãƒ¼ãƒ©ã‚¹é¡ä¼¼åº¦ã¯æœ€å¤§2 */
+			if (str_eq(ptr1->Jiritu_Go, "ã™ã‚‹") ||
+			    str_eq(ptr2->Jiritu_Go, "ã™ã‚‹")) {
 			    mt_point = Min(mt_point, 2);
 			}
 		
-			/* Á°¤¬·É¸ì¡¤¸å¤¬·É¸ì¤Ç¤Ê¤±¤ì¤ĞÎà»÷ÅÙ¤ò¤ª¤µ¤¨¤ë
-			   Îã)º£Æü·è¿´¤Ç¤­¤ë¤«¤É¤¦¤«[Ê¬¤«¤ê¤Ş¤»¤ó¤¬¡¢¹½¤ï¤Ê¤±¤ì¤Ğ]¸«¤»¤ÆÍß¤·¤¤¤ó¤Ç¤¹ */
-			if (check_feature(ptr1->f, "·É¸ì") &&
-			    !check_feature(ptr2->f, "·É¸ì")) {
+			/* å‰ãŒæ•¬èªï¼Œå¾ŒãŒæ•¬èªã§ãªã‘ã‚Œã°é¡ä¼¼åº¦ã‚’ãŠã•ãˆã‚‹
+			   ä¾‹)ä»Šæ—¥æ±ºå¿ƒã§ãã‚‹ã‹ã©ã†ã‹[åˆ†ã‹ã‚Šã¾ã›ã‚“ãŒã€æ§‹ã‚ãªã‘ã‚Œã°]è¦‹ã›ã¦æ¬²ã—ã„ã‚“ã§ã™ */
+			if (check_feature(ptr1->f, "æ•¬èª") &&
+			    !check_feature(ptr2->f, "æ•¬èª")) {
 			    mt_point = Min(mt_point, 2);
 			}
 		    }		    
 
-		    /* ¼«Î©¸ì¤ÎÉôÊ¬°ìÃ× (¾¯¤Ê¤¯¤È¤â°ìÊı¤Î°ÕÌ£Â°À­¥³¡¼¥É¤¬¤Ê¤¤¾ì¹ç) */
+		    /* è‡ªç«‹èªã®éƒ¨åˆ†ä¸€è‡´ (å°‘ãªãã¨ã‚‚ä¸€æ–¹ã®æ„å‘³å±æ€§ã‚³ãƒ¼ãƒ‰ãŒãªã„å ´åˆ) */
 	    
 		    part_mt_point = 0;
 		    if (mt_point < 0) {
 			mt_point = 0;
-			if (check_feature(ptr1->f, "ÂÎ¸À") &&
-			    check_feature(ptr2->f, "ÂÎ¸À"))
+			if (check_feature(ptr1->f, "ä½“è¨€") &&
+			    check_feature(ptr2->f, "ä½“è¨€"))
 			    part_mt_point = str_part_cmp(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi);
 		    }
 
-		    /* ¥·¥½¡¼¥é¥¹¤ÈÉôÊ¬°ìÃ×¤ÎÆÀÅÀ¤ÏºÇÂç10 */
+		    /* ã‚·ã‚½ãƒ¼ãƒ©ã‚¹ã¨éƒ¨åˆ†ä¸€è‡´ã®å¾—ç‚¹ã¯æœ€å¤§10 */
 		    point += Min(part_mt_point + mt_point, 10);
 		}
 	    }
 
-	    /* ¼ç¼­·ÁÂÖÁÇ¤è¤ê¸å, ÀÜÈø¼­°Ê³°¤ÎÉÕÂ°¸ì¤Î°ìÃ× */
+	    /* ä¸»è¾å½¢æ…‹ç´ ã‚ˆã‚Šå¾Œ, æ¥å°¾è¾ä»¥å¤–ã®ä»˜å±èªã®ä¸€è‡´ */
 
 	    for (i = ptr1->mrph_num - 1; i >= 0 ; i--) {
-		if (check_feature((ptr1->mrph_ptr + i)->f, "ÉÕÂ°") && 
+		if (check_feature((ptr1->mrph_ptr + i)->f, "ä»˜å±") && 
 		    ptr1->mrph_ptr + i > ptr1->head_ptr) {
-		    if (!strcmp(Class[(ptr1->mrph_ptr + i)->Hinshi][0].id, "ÀÜÈø¼­")) {
+		    if (!strcmp(Class[(ptr1->mrph_ptr + i)->Hinshi][0].id, "æ¥å°¾è¾")) {
 			continue;
 		    }
 		    for (j = ptr2->mrph_num - 1; j >= 0 ; j--) {
-			if (check_feature((ptr2->mrph_ptr + j)->f, "ÉÕÂ°") && 
+			if (check_feature((ptr2->mrph_ptr + j)->f, "ä»˜å±") && 
 			    ptr2->mrph_ptr + j > ptr2->head_ptr) {
-			    if (!strcmp(Class[(ptr2->mrph_ptr + j)->Hinshi][0].id, "ÀÜÈø¼­")) {
+			    if (!strcmp(Class[(ptr2->mrph_ptr + j)->Hinshi][0].id, "æ¥å°¾è¾")) {
 				continue;
 			    }
 			    if (str_eq((ptr1->mrph_ptr + i)->Goi, 
@@ -459,49 +459,49 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		}
 	    }
 
-	    if ((check_feature(ptr1->f, "¡Á¤ì¤ë") &&
-		 check_feature(ptr2->f, "¡Á¤é¤ì¤ë")) ||
-		(check_feature(ptr1->f, "¡Á¤é¤ì¤ë") &&
-		 check_feature(ptr2->f, "¡Á¤ì¤ë"))) { 
+	    if ((check_feature(ptr1->f, "ã€œã‚Œã‚‹") &&
+		 check_feature(ptr2->f, "ã€œã‚‰ã‚Œã‚‹")) ||
+		(check_feature(ptr1->f, "ã€œã‚‰ã‚Œã‚‹") &&
+		 check_feature(ptr2->f, "ã€œã‚Œã‚‹"))) { 
 		point += 2;
 	    }
-	    if ((check_feature(ptr1->f, "¡Á¤»¤ë") &&
-		 check_feature(ptr2->f, "¡Á¤µ¤»¤ë")) ||
-		(check_feature(ptr1->f, "¡Á¤µ¤»¤ë") &&
-		 check_feature(ptr2->f, "¡Á¤»¤ë"))) { 
+	    if ((check_feature(ptr1->f, "ã€œã›ã‚‹") &&
+		 check_feature(ptr2->f, "ã€œã•ã›ã‚‹")) ||
+		(check_feature(ptr1->f, "ã€œã•ã›ã‚‹") &&
+		 check_feature(ptr2->f, "ã€œã›ã‚‹"))) { 
 		point += 2;
 	    }
-	    if ((check_feature(ptr1->f, "¡Á¤Ê¤¤") &&
-		 check_feature(ptr2->f, "¡Á¤Ì")) ||
-		(check_feature(ptr1->f, "¡Á¤Ì") &&
-		 check_feature(ptr2->f, "¡Á¤Ê¤¤"))) { 
+	    if ((check_feature(ptr1->f, "ã€œãªã„") &&
+		 check_feature(ptr2->f, "ã€œã¬")) ||
+		(check_feature(ptr1->f, "ã€œã¬") &&
+		 check_feature(ptr2->f, "ã€œãªã„"))) { 
 		point += 2;
 	    }
-	    if (check_feature(ptr1->f, "¥¿¥ê") &&
-		check_feature(ptr2->f, "¥¿¥ê")) { 
+	    if (check_feature(ptr1->f, "ã‚¿ãƒª") &&
+		check_feature(ptr2->f, "ã‚¿ãƒª")) { 
 		point += 2;
 	    }
 
-	    /* ÄÉ²Ã */
+	    /* è¿½åŠ  */
 
-	    if (check_feature(ptr1->f, "ÄóÂê") &&
-		check_feature(ptr2->f, "ÄóÂê"))
+	    if (check_feature(ptr1->f, "æé¡Œ") &&
+		check_feature(ptr2->f, "æé¡Œ"))
 		point += 3;
 
-	    /* ¡Ö¤¹¤ë¡×,¡Ö¤Ç¤­¤ë¡×¤Ê¤É¤Î¼«Î©¸ìÉÕÂ°¸ì¤Î¤º¤ì */
+	    /* ã€Œã™ã‚‹ã€,ã€Œã§ãã‚‹ã€ãªã©ã®è‡ªç«‹èªä»˜å±èªã®ãšã‚Œ */
 
-	    if (jiritu_fuzoku_check(ptr1, ptr2, "¤¹¤ë"))
+	    if (jiritu_fuzoku_check(ptr1, ptr2, "ã™ã‚‹"))
 		point += 1;
 
-	    if (jiritu_fuzoku_check(ptr1, ptr2, "¤Ç¤­¤ë") ||
-		jiritu_fuzoku_check(ptr1, ptr2, "½ĞÍè¤ë"))
+	    if (jiritu_fuzoku_check(ptr1, ptr2, "ã§ãã‚‹") ||
+		jiritu_fuzoku_check(ptr1, ptr2, "å‡ºæ¥ã‚‹"))
 		point += 3;
 	}
     }
     else { /*for Chinese*/
 	/* if there is a PU between two words except for DunHao, similarity is 0 */
 	for (i = ptr1->num + 1; i < ptr2->num; i++) {
-	    if (check_feature((sp->bnst_data+i)->f, "PU") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¢") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "¡¨")) {
+	    if (check_feature((sp->bnst_data+i)->f, "PU") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "ã€") && strcmp((sp->bnst_data+i)->head_ptr->Goi, "ï¼›")) {
 		point = 0;
 		return point;
 	    }
@@ -586,9 +586,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 	    if (calc_flag) {
 		match_matrix[i][j] = calc_match(sp, i, j);
 
-		if (OptParaFix == FALSE && /* ³ÎÎ¨ÅªÊÂÎó¹½Â¤²òÀÏ¤Î¤È¤­ */
-		    !check_feature(sp->bnst_data[i].f, "ÍÑ¸À") && /* ¥µÊÑÆ°»ì¤Ï»ß¤á¤Ê¤¤¤è¤¦¤Ë¤¹¤ë¤¿¤á¡ÖÍÑ¸À¡×¤ÎÈİÄê */
-		    check_feature(sp->bnst_data[j].f, "Ì¾ÊÂ½ªÅÀ")) { /* Ì¾ÊÂ½ªÅÀ°Ê¹ß¤ÏÊÂÎó¤Ë¤·¤Ê¤¤ */
+		if (OptParaFix == FALSE && /* ç¢ºç‡çš„ä¸¦åˆ—æ§‹é€ è§£æã®ã¨ã */
+		    !check_feature(sp->bnst_data[i].f, "ç”¨è¨€") && /* ã‚µå¤‰å‹•è©ã¯æ­¢ã‚ãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚ã€Œç”¨è¨€ã€ã®å¦å®š */
+		    check_feature(sp->bnst_data[j].f, "åä¸¦çµ‚ç‚¹")) { /* åä¸¦çµ‚ç‚¹ä»¥é™ã¯ä¸¦åˆ—ã«ã—ãªã„ */
 		    calc_flag = 0;
 		}
 	    }
@@ -604,39 +604,39 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 /*==================================================================*/
 {
     int value = 0;
-    if (!strcmp(s, "£°") || 
-	!strcmp(s, "£±") || 
-	!strcmp(s, "£²") || 
-	!strcmp(s, "£³") || 
-	!strcmp(s, "£´") || 
-	!strcmp(s, "£µ") || 
-	!strcmp(s, "£¶") || 
-	!strcmp(s, "£·") || 
-	!strcmp(s, "£¸") || 
-	!strcmp(s, "£¹") || 
-	!strcmp(s, "¡¥") || 
-	!strcmp(s, "°ì") || 
-	!strcmp(s, "Æó") || 
-	!strcmp(s, "°¨") || 
-	!strcmp(s, "»°") || 
-	!strcmp(s, "»Í") || 
-	!strcmp(s, "¸Ş") || 
-	!strcmp(s, "Ï»") || 
-	!strcmp(s, "¼·") || 
-	!strcmp(s, "È¬") || 
-	!strcmp(s, "¶å") || 
-	!strcmp(s, "½½") || 
-	!strcmp(s, "Îí") || 
-	!strcmp(s, "É´") || 
-	!strcmp(s, "Àé") || 
-	!strcmp(s, "Ëü") || 
+    if (!strcmp(s, "ï¼") || 
+	!strcmp(s, "ï¼‘") || 
+	!strcmp(s, "ï¼’") || 
+	!strcmp(s, "ï¼“") || 
+	!strcmp(s, "ï¼”") || 
+	!strcmp(s, "ï¼•") || 
+	!strcmp(s, "ï¼–") || 
+	!strcmp(s, "ï¼—") || 
+	!strcmp(s, "ï¼˜") || 
+	!strcmp(s, "ï¼™") || 
+	!strcmp(s, "ï¼") || 
+	!strcmp(s, "ä¸€") || 
+	!strcmp(s, "äºŒ") || 
+	!strcmp(s, "ä¸¤") || 
+	!strcmp(s, "ä¸‰") || 
+	!strcmp(s, "å››") || 
+	!strcmp(s, "äº”") || 
+	!strcmp(s, "å…­") || 
+	!strcmp(s, "ä¸ƒ") || 
+	!strcmp(s, "å…«") || 
+	!strcmp(s, "ä¹") || 
+	!strcmp(s, "å") || 
+	!strcmp(s, "é›¶") || 
+	!strcmp(s, "ç™¾") || 
+	!strcmp(s, "åƒ") || 
+	!strcmp(s, "ä¸‡") || 
 	!strcmp(s, "$ARZ(B") || 
-	!strcmp(s, "ÅÀ") || 
-	!strcmp(s, "Ê¬") || 
-	!strcmp(s, "Ç·") ||
-	!strcmp(s, "Ç¯") || 
-	!strcmp(s, "·î") || 
-	!strcmp(s, "Æü")) {
+	!strcmp(s, "ç‚¹") || 
+	!strcmp(s, "åˆ†") || 
+	!strcmp(s, "ä¹‹") ||
+	!strcmp(s, "å¹´") || 
+	!strcmp(s, "æœˆ") || 
+	!strcmp(s, "æ—¥")) {
 	value = 1;
     }
     return value;

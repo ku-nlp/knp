@@ -1,6 +1,6 @@
 /*====================================================================
 
-			    ÍÑ¸À¤Î¶¦µ¯¾ðÊó
+			    ç”¨è¨€ã®å…±èµ·æƒ…å ±
 
                                          Daisuke Kawahara 2003. 6. 26
 
@@ -96,11 +96,11 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
     char *cp, *vtype, voice[3], *str, *ccstr;
     int closest;
 
-    if (cp = check_feature(ptr->f, "ÍÑ¸À")) {
-	vtype = strdup(cp + strlen("ÍÑ¸À"));
+    if (cp = check_feature(ptr->f, "ç”¨è¨€")) {
+	vtype = strdup(cp + strlen("ç”¨è¨€"));
     }
     else {
-	vtype = strdup(":Æ°");
+	vtype = strdup(":å‹•");
     }
 
     if (cp = make_voice_str(ptr)) {
@@ -110,14 +110,14 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
 	voice[0] = '\0';
     }
 
-    /* ÍÑ¸ÀÉôÊ¬ */
+    /* ç”¨è¨€éƒ¨åˆ† */
     str = make_pred_string(ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, flag, FALSE);
     strcat(str, vtype);
     if (voice[0]) strcat(str, voice);
     free(vtype);
 
     if (flag == TRUE) {
-	/* Ä¾Á°³ÊÍ×ÁÇ¤Î¼èÆÀ */
+	/* ç›´å‰æ ¼è¦ç´ ã®å–å¾— */
 	closest = get_closest_case_component(sp, ptr->cpm_ptr);
 
 	if (closest > -1) {

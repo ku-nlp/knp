@@ -22,22 +22,22 @@
 #define	LOC_S2_SC	0x024000	/* 147456 */
 #define	LOC_S2_OTHERS	0x020000	/* 131072 */
 #define	LOC_OTHERS	0x000000	/* 0 */
-/* LOC: 17ʸ�������� */
-/* ���֤ο����Ѥ������ const.h �� LOC_NUMBER �򹹿����뤳�� */
+/* LOC: 17文字が最大 */
+/* 位置の数を変えた場合 const.h の LOC_NUMBER を更新すること */
 
-/* ȯ�å����� */
-#define UTYPE_ACTION_LARGE	0x000001	// ���:��
-#define UTYPE_ACTION_MIDDLE	0x000002	// ���:��
-#define UTYPE_ACTION_SMALL	0x000003	// ���:��
-#define UTYPE_NOTES		0x000004	// α�ջ��ࡢα�ջ��ࡦ���ġ�α�ջ��ࡦ����
-#define UTYPE_FOOD_PRESENTATION	0x000005	// ���ʡ�ƻ����
-#define UTYPE_FOOD_STATE	0x000006	// ��������
-#define UTYPE_DEGREE		0x000007	// ����
-#define UTYPE_EFFECT		0x000008	// ����
-#define UTYPE_ADDITION		0x000009	// ��­
-#define UTYPE_SUBSTITUTION	0x000010	// ���ز�
-#define UTYPE_END		0x000011	// ��λ
-#define UTYPE_OTHERS		0x000000	// ��ʸ̵�롢��ʸ̵�롦���ǡ�̵�롢����¾
+/* 発話タイプ */
+#define UTYPE_ACTION_LARGE	0x000001	// 作業:大
+#define UTYPE_ACTION_MIDDLE	0x000002	// 作業:中
+#define UTYPE_ACTION_SMALL	0x000003	// 作業:小
+#define UTYPE_NOTES		0x000004	// 留意事項、留意事項・コツ、留意事項・注意
+#define UTYPE_FOOD_PRESENTATION	0x000005	// 食品・道具提示
+#define UTYPE_FOOD_STATE	0x000006	// 料理状態
+#define UTYPE_DEGREE		0x000007	// 程度
+#define UTYPE_EFFECT		0x000008	// 効果
+#define UTYPE_ADDITION		0x000009	// 補足
+#define UTYPE_SUBSTITUTION	0x000010	// 代替可
+#define UTYPE_END		0x000011	// 終了
+#define UTYPE_OTHERS		0x000000	// 全文無視、全文無視・中断、無視、その他
 
 
 char *LocationNames[] = {"PARENTV", "PARENTV_MC", "CHILDPV", "CHILDV", 

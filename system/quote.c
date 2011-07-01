@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     ³Ã³ç¸Ì¤Î½èÍı
+			     éˆæ‹¬å¼§ã®å‡¦ç†
 				   
                                                S.Kurohashi 1996. 4.18
                                                S.Ozaki     1994.12. 1
@@ -12,9 +12,9 @@
 
 QUOTE_DATA quote_data;
 
-#define PAREN_B "¡Ê"
-#define PAREN_E "¡Ë"
-#define PAREN_COMMENT_TEMPLATE "³ç¸Ì»Ï:¡Ê ³ç¸Ì½ª:¡Ë ³ç¸Ì°ÌÃÖ:"
+#define PAREN_B "ï¼ˆ"
+#define PAREN_E "ï¼‰"
+#define PAREN_COMMENT_TEMPLATE "æ‹¬å¼§å§‹:ï¼ˆ æ‹¬å¼§çµ‚:ï¼‰ æ‹¬å¼§ä½ç½®:"
 
 /*==================================================================*/
 		  void init_quote(SENTENCE_DATA *sp)
@@ -53,10 +53,10 @@ QUOTE_DATA quote_data;
 /*==================================================================*/
 {
     /*
-      "¡¥¡¥¡Ö¡û¡û¡×¡¥¡¥¡¥¡Ö¡ß¡ß¡×¡¥¡¥"  
-      "¡¥¡¥¡Ö¡û¡û¡Ö¡ß¡ß¡ß¡×¡û¡û¡×¡¥¡¥" 
-      "¡¥¡¥¡Ö¡û¡û¡û¡û¡û¡û¡û¡û¡û¡û¡û¡û"  
-      "¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡ß¡×¡¥¡¥"  ¤Ê¤É¤Î¥Ñ¥¿¡¼¥ó¤ËÂĞ½è
+      "ï¼ï¼ã€Œâ—‹â—‹ã€ï¼ï¼ï¼ã€ŒÃ—Ã—ã€ï¼ï¼"  
+      "ï¼ï¼ã€Œâ—‹â—‹ã€ŒÃ—Ã—Ã—ã€â—‹â—‹ã€ï¼ï¼" 
+      "ï¼ï¼ã€Œâ—‹â—‹â—‹â—‹â—‹â—‹â—‹â—‹â—‹â—‹â—‹â—‹"  
+      "Ã—Ã—Ã—Ã—Ã—Ã—Ã—Ã—Ã—Ã—Ã—Ã—ã€ï¼ï¼"  ãªã©ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ã«å¯¾å‡¦
     */
 
     int i, k, stack[QUOTE_MAX], s_num, quote_p = FALSE;
@@ -66,9 +66,9 @@ QUOTE_DATA quote_data;
 
     for (i = 0; i < sp->Bnst_num; i++) {
 
-	if (check_feature(sp->bnst_data[i].f, "³ç¸Ì»Ï")) {
-	    /* ºÇÂç¿ô¤ò±Û¤¨¤Ê¤¤¤«¥Á¥§¥Ã¥¯(ºÇ¸å¤ÎÍ×ÁÇ¤¬ÈÖ¿Í¤Ê¤Î¤Ç¡¢¤½¤ì¤òÊÑ¤¨¤Æ¤Ï
-	       ¤¤¤±¤Ê¤¤) */
+	if (check_feature(sp->bnst_data[i].f, "æ‹¬å¼§å§‹")) {
+	    /* æœ€å¤§æ•°ã‚’è¶Šãˆãªã„ã‹ãƒã‚§ãƒƒã‚¯(æœ€å¾Œã®è¦ç´ ãŒç•ªäººãªã®ã§ã€ãã‚Œã‚’å¤‰ãˆã¦ã¯
+	       ã„ã‘ãªã„) */
 	    if (k >= QUOTE_MAX-1) {
 		fprintf(stderr, ";; Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		return CONTINUE;
@@ -78,8 +78,8 @@ QUOTE_DATA quote_data;
 	    quote_data.in_num[k] = i;
 	    k++;
 
-	    /* ¡Ö¡Ø¡Å ¤ò°·¤¦¤¿¤á¾å¤Î¤³¤È¤ò·«¤êÊÖ¤¹ */
-	    if (check_feature(sp->bnst_data[i].f, "³ç¸Ì»Ï£²")) {
+	    /* ã€Œã€â€¥ ã‚’æ‰±ã†ãŸã‚ä¸Šã®ã“ã¨ã‚’ç¹°ã‚Šè¿”ã™ */
+	    if (check_feature(sp->bnst_data[i].f, "æ‹¬å¼§å§‹ï¼’")) {
 		if (k >= QUOTE_MAX-1) {
 		    fprintf(stderr, ";; Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		    return CONTINUE;
@@ -90,13 +90,13 @@ QUOTE_DATA quote_data;
 		k++;
 	    }
 	}
-	if (check_feature(sp->bnst_data[i].f, "³ç¸Ì½ª")) {
+	if (check_feature(sp->bnst_data[i].f, "æ‹¬å¼§çµ‚")) {
 	    if (s_num == -1) {
 		if (k >= QUOTE_MAX-1) {
 		    fprintf(stderr, ";; Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 		    return CONTINUE;
 		}
-		quote_data.out_num[k] = i; /* ³ç¸Ì½ª¤¬Â¿¤¤¾ì¹ç */
+		quote_data.out_num[k] = i; /* æ‹¬å¼§çµ‚ãŒå¤šã„å ´åˆ */
 		k++;
 	    } else {
 		quote_data.out_num[stack[s_num]] = i;
@@ -104,14 +104,14 @@ QUOTE_DATA quote_data;
 	    }
 
 
-	    /* ¡Å¡Ù¡× ¤ò°·¤¦¤¿¤á¾å¤Î¤³¤È¤ò·«¤êÊÖ¤¹ */
-	    if (check_feature(sp->bnst_data[i].f, "³ç¸Ì½ª£²")) {
+	    /* â€¥ã€ã€ ã‚’æ‰±ã†ãŸã‚ä¸Šã®ã“ã¨ã‚’ç¹°ã‚Šè¿”ã™ */
+	    if (check_feature(sp->bnst_data[i].f, "æ‹¬å¼§çµ‚ï¼’")) {
 		if (s_num == -1) {
 		    if (k >= QUOTE_MAX-1) {
 			fprintf(stderr, ";; Too many quote (%s) ...\n", sp->Comment ? sp->Comment : "");
 			return CONTINUE;
 		    }
-		    quote_data.out_num[k] = i; /* ³ç¸Ì½ª¤¬Â¿¤¤¾ì¹ç */
+		    quote_data.out_num[k] = i; /* æ‹¬å¼§çµ‚ãŒå¤šã„å ´åˆ */
 		    k++;
 		} else {
 		    quote_data.out_num[stack[s_num]] = i;
@@ -123,14 +123,14 @@ QUOTE_DATA quote_data;
 
     for (i = 0; i < k; i++) {
 
-	/* ³ç¸Ì¤¬ÊÄ¤¸¤Æ¤¤¤Ê¤¤¾ì¹ç¤Ï, Ê¸Æ¬¤Ş¤¿¤ÏÊ¸Ëö¤ò¶­³¦¤Ë */	
+	/* æ‹¬å¼§ãŒé–‰ã˜ã¦ã„ãªã„å ´åˆã¯, æ–‡é ­ã¾ãŸã¯æ–‡æœ«ã‚’å¢ƒç•Œã« */	
 
 	if (quote_data.in_num[i] == -1) 
 	    quote_data.in_num[i] = 0;
 	if (quote_data.out_num[i] == -1)
 	    quote_data.out_num[i] = sp->Bnst_num - 1;
 
-	/* °ìÊ¸Àá¤Î³ç¸Ì¤ò¹ÍÎ¸¤·¤Ê¤¤¾ì¹ç
+	/* ä¸€æ–‡ç¯€ã®æ‹¬å¼§ã‚’è€ƒæ…®ã—ãªã„å ´åˆ
 	if (quote_data.in_num[i] != quote_data.out_num[i])
 	quote_p = TRUE;
 	*/
@@ -152,46 +152,46 @@ QUOTE_DATA quote_data;
 	start = quote_data.in_num[k];
 	end = quote_data.out_num[k];
 
-	if (start == end) continue;	/* £±Ê¸Àá¤À¤±¤Î³ç¸Ì¤ÏÌµ»ë */
+	if (start == end) continue;	/* ï¼‘æ–‡ç¯€ã ã‘ã®æ‹¬å¼§ã¯ç„¡è¦– */
 
-	/* ³ç¸Ì¤Î¾å¤Î¥Ş¥¹¥¯ */
+	/* æ‹¬å¼§ã®ä¸Šã®ãƒã‚¹ã‚¯ */
 
 	for (i = 0; i < start; i++) {
 	    for (j = start; j < end; j++)
 		Quote_matrix[i][j] = 0;
 
 	    /* 
-	       ³ç¸ÌÆâËöÈø¤ÎÊ¸Àá¤Ë¤ÏÏ¢³Ê,Ï¢ÂÎ,¥Î³Ê,Æ±³ÊÏ¢ÂÎ,³ç¸ÌÊÂÎó¤Î¤ß
-	       ·¸¤ì¤ë¤È¤¹¤ë¡¥
-	       		Îã) ¡Ö»ä¤Î¡ÖËÜÅö¤Îµ¤»ı¤Á¡×¤Ï¡Ä¡×
+	       æ‹¬å¼§å†…æœ«å°¾ã®æ–‡ç¯€ã«ã¯é€£æ ¼,é€£ä½“,ãƒæ ¼,åŒæ ¼é€£ä½“,æ‹¬å¼§ä¸¦åˆ—ã®ã¿
+	       ä¿‚ã‚Œã‚‹ã¨ã™ã‚‹ï¼
+	       		ä¾‹) ã€Œç§ã®ã€Œæœ¬å½“ã®æ°—æŒã¡ã€ã¯â€¦ã€
 
-	       ÍÑ¸À¤ËÏ¢ÍÑ¤¬·¸¤ë¤³¤È¤âµ©¤Ë¤Ï¤¢¤ë¤¬¡¤¤½¤ì¤òµö¤¹¤ÈÄÌ¾ï¤Î¾ì¹ç¤Î
-	       ²òÀÏ¸í¤ê¤¬ÂçÎÌ¤ËÀ¸¤Ş¤ì¤ë¤Î¤ÇÌµ»ë¤¹¤ë¡¥
-	       		Îã) ¡ÖÈà¤¬¡ÖÅìµş¤Ë¤¤¤Ã¤¿¡×¤³¤È¤Ï¡Ä¡×
+	       ç”¨è¨€ã«é€£ç”¨ãŒä¿‚ã‚‹ã“ã¨ã‚‚ç¨€ã«ã¯ã‚ã‚‹ãŒï¼Œãã‚Œã‚’è¨±ã™ã¨é€šå¸¸ã®å ´åˆã®
+	       è§£æèª¤ã‚ŠãŒå¤§é‡ã«ç”Ÿã¾ã‚Œã‚‹ã®ã§ç„¡è¦–ã™ã‚‹ï¼
+	       		ä¾‹) ã€Œå½¼ãŒã€Œæ±äº¬ã«ã„ã£ãŸã€ã“ã¨ã¯â€¦ã€
 	    */
 
 	    if (Quote_matrix[i][end] &&
-		(check_feature(sp->bnst_data[i].f, "·¸:Ï¢³Ê") ||
-		 check_feature(sp->bnst_data[i].f, "·¸:Ï¢ÂÎ") ||
-		 check_feature(sp->bnst_data[i].f, "·¸:¥Î³Ê") ||
-		 check_feature(sp->bnst_data[i].f, "·¸:Æ±³ÊÏ¢ÂÎ") ||
-		 check_feature(sp->bnst_data[i].f, "·¸:³ç¸ÌÊÂÎó")))
+		(check_feature(sp->bnst_data[i].f, "ä¿‚:é€£æ ¼") ||
+		 check_feature(sp->bnst_data[i].f, "ä¿‚:é€£ä½“") ||
+		 check_feature(sp->bnst_data[i].f, "ä¿‚:ãƒæ ¼") ||
+		 check_feature(sp->bnst_data[i].f, "ä¿‚:åŒæ ¼é€£ä½“") ||
+		 check_feature(sp->bnst_data[i].f, "ä¿‚:æ‹¬å¼§ä¸¦åˆ—")))
 		;
 	    else 
 		Quote_matrix[i][end] = 0;
 	}
 
-	/* ³ç¸Ì¤Î±¦¤Î¥Ş¥¹¥¯ */
+	/* æ‹¬å¼§ã®å³ã®ãƒã‚¹ã‚¯ */
 
 	for (i = start; i < end; i++)
 	    for (j = end + 1; j < sp->Bnst_num; j++)
 		Quote_matrix[i][j] = 0;
 
-	/* ³ç¸ÌÆâ¤Î¶çÅÀ¤Î±¦¾å¤Î¥Ş¥¹¥¯ 
-	   (¶çÅÀ¤Î±¦¤Ï³«¤±¤Æ¤ª¤¯ --> ¼¡¤ÎÊ¸Ëö¤ÈP¤Ë¤Ê¤ë) */
+	/* æ‹¬å¼§å†…ã®å¥ç‚¹ã®å³ä¸Šã®ãƒã‚¹ã‚¯ 
+	   (å¥ç‚¹ã®å³ã¯é–‹ã‘ã¦ãŠã --> æ¬¡ã®æ–‡æœ«ã¨Pã«ãªã‚‹) */
 
 	for (l = start; l < end; l++)
-	    if (check_feature(sp->bnst_data[l].f, "·¸:Ê¸Ëö"))
+	    if (check_feature(sp->bnst_data[l].f, "ä¿‚:æ–‡æœ«"))
 		for (i = start; i < l; i++)
 		    for (j = l + 1; j <= end; j++)
 			Quote_matrix[i][j] = 0;
@@ -209,17 +209,17 @@ QUOTE_DATA quote_data;
 	start = quote_data.in_num[k];
 	end = quote_data.out_num[k];
 
-	if (start == end) continue;	/* £±Ê¸Àá¤À¤±¤Î³ç¸Ì¤ÏÌµ»ë */
+	if (start == end) continue;	/* ï¼‘æ–‡ç¯€ã ã‘ã®æ‹¬å¼§ã¯ç„¡è¦– */
 
 	if ((!OptChiPos && check_feature((sp->bnst_data+start)->f, "PU") && check_feature((sp->bnst_data+end)->f, "PU")) || OptChiPos) {
-	    /* ³ç¸Ì¤Î¾å¤Î¥Ş¥¹¥¯ */
+	    /* æ‹¬å¼§ã®ä¸Šã®ãƒã‚¹ã‚¯ */
 
 	    for (i = 0; i < start; i++) {
 		Quote_matrix[i][start] = 0;
 		Quote_matrix[i][end] = 0;
 	    }
 
-	    /* ³ç¸Ì¤Î±¦¤Î¥Ş¥¹¥¯ */
+	    /* æ‹¬å¼§ã®å³ã®ãƒã‚¹ã‚¯ */
 
 	    for (i = end + 1; i < sp->Bnst_num; i++) {
 		Quote_matrix[start][i] = 0;
@@ -250,13 +250,13 @@ QUOTE_DATA quote_data;
 
    if (Language != CHINESE ||
 	(Language == CHINESE && !OptChiGenerative)) {
-	if ((quote_p = check_quote(sp))) {	/* ³Ã³ç¸Ì¤Î¸¡½Ğ */
+	if ((quote_p = check_quote(sp))) {	/* éˆæ‹¬å¼§ã®æ¤œå‡º */
 	    if (quote_p == CONTINUE) return quote_p;
 
 	    if (OptDisplay == OPT_DEBUG && Language != CHINESE) print_quote();
 
 	    if (Language != CHINESE) {
-		mask_quote(sp);			/* ¹ÔÎó¤Î½ñ¤­´¹¤¨ */
+		mask_quote(sp);			/* è¡Œåˆ—ã®æ›¸ãæ›ãˆ */
 	    }
 	    else {
 		mask_quote_for_chi(sp); // mask quote for Chinese
@@ -271,13 +271,13 @@ QUOTE_DATA quote_data;
 	void add_comment(SENTENCE_DATA *sp, char *add_string)
 /*==================================================================*/
 {
-    if (sp->Comment) { /* ´ûÂ¸¤Î¥³¥á¥ó¥È¤È·ë¹ç */
+    if (sp->Comment) { /* æ—¢å­˜ã®ã‚³ãƒ¡ãƒ³ãƒˆã¨çµåˆ */
 	char *orig_comment = sp->Comment;
 	sp->Comment = (char *)malloc_data(strlen(sp->Comment) + strlen(add_string) + 2, "add_comment");
 	sprintf(sp->Comment, "%s %s", orig_comment, add_string);
 	free(orig_comment);
     }
-    else { /* ¿·¤¿¤Ê¥³¥á¥ó¥È */
+    else { /* æ–°ãŸãªã‚³ãƒ¡ãƒ³ãƒˆ */
 	sp->Comment = strdup(add_string);
     }
 }
@@ -293,7 +293,7 @@ QUOTE_DATA quote_data;
     paren_table = (int *)malloc_data(sizeof(int) * sp->Mrph_num, "process_input_paren");
     memset(paren_table, 0, sizeof(int) * sp->Mrph_num); /* initialization */
 
-    /* ³ç¸Ì¥Á¥§¥Ã¥¯ */
+    /* æ‹¬å¼§ãƒã‚§ãƒƒã‚¯ */
     for (i = 0; i < sp->Mrph_num; i++) {
 	if (!strcmp((m_ptr + i)->Goi, PAREN_B)) { /* beginning of parenthesis */
 	    if (paren_level == 0) {
@@ -303,22 +303,22 @@ QUOTE_DATA quote_data;
 	}
 	else if (!strcmp((m_ptr + i)->Goi, PAREN_E)) { /* end of parenthesis */
 	    paren_level--;
-	    if (paren_level == 0 && i != paren_start + 1) { /* ¡Ê¡Ë¤Î¤è¤¦¤ÊÃæ¿È¤¬¤Ê¤¤¾ì¹ç¤Ï½ü¤¯ */
-		/* ¿ô»ì¤ÏÂĞ¾İ³°¤Ë¤¹¤ë? */
+	    if (paren_level == 0 && i != paren_start + 1) { /* ï¼ˆï¼‰ã®ã‚ˆã†ãªä¸­èº«ãŒãªã„å ´åˆã¯é™¤ã */
+		/* æ•°è©ã¯å¯¾è±¡å¤–ã«ã™ã‚‹? */
 		*(paren_table + paren_start) = 'B'; /* beginning */
 		*(paren_table + i) = 'E'; /* end */
 		paren_mrph_num += 2;
 		for (j = paren_start + 1; j < i; j++) {
 		    *(paren_table + j) = 'I'; /* intermediate */
-		    paren_mrph_num++; /* ³ç¸ÌÉôÊ¬¤Î·ÁÂÖÁÇ¿ô */
+		    paren_mrph_num++; /* æ‹¬å¼§éƒ¨åˆ†ã®å½¢æ…‹ç´ æ•° */
 		}
-		paren_num++; /* ³ç¸Ì¿ô */
+		paren_num++; /* æ‹¬å¼§æ•° */
 	    }
 	}
     }
 
     if (paren_num == 0 || paren_num >= PAREN_MAX || 
-	(paren_start == 0 && *(paren_table + sp->Mrph_num - 1) == 'E')) { /* Á´ÂÎ¤¬³ç¸Ì¤Î»ş¤ÏÂĞ¾İ³° */
+	(paren_start == 0 && *(paren_table + sp->Mrph_num - 1) == 'E')) { /* å…¨ä½“ãŒæ‹¬å¼§ã®æ™‚ã¯å¯¾è±¡å¤– */
 	return 0;
     }
     else {
@@ -326,21 +326,21 @@ QUOTE_DATA quote_data;
 
 	*paren_spp = (SENTENCE_DATA *)malloc_data(sizeof(SENTENCE_DATA) * paren_num, "process_input_paren");
 
-	/* ³Æ³ç¸ÌÊ¸ */
+	/* å„æ‹¬å¼§æ–‡ */
 	for (i = 0; i < paren_num; i++) {
 	    (*paren_spp + i)->Mrph_num = 0;
 	    (*paren_spp + i)->mrph_data = (MRPH_DATA *)malloc_data(sizeof(MRPH_DATA) * paren_mrph_num, "process_input_paren");
 	    (*paren_spp + i)->KNPSID = (char *)malloc_data(strlen(sp->KNPSID) + 4, "process_input_paren");
-	    sprintf((*paren_spp + i)->KNPSID, "%s-%02d", sp->KNPSID, i + 2); /* ³ç¸ÌÊ¸¤ÎID¤Ï-02¤«¤é */
+	    sprintf((*paren_spp + i)->KNPSID, "%s-%02d", sp->KNPSID, i + 2); /* æ‹¬å¼§æ–‡ã®IDã¯-02ã‹ã‚‰ */
 	    (*paren_spp + i)->Comment = (char *)malloc_data(strlen(PAREN_COMMENT_TEMPLATE) + 4, "process_input_paren");
 	    sprintf((*paren_spp + i)->Comment, "%s", PAREN_COMMENT_TEMPLATE);
 	}
-	strcat(sp->KNPSID, "-01"); /* ËÜÊ¸¤ÎID¤Ë-01¤ò¤Ä¤±¤ë */
-	add_comment(sp, "³ç¸Ìºï½ü"); /* ËÜÊ¸¤Î¥³¥á¥ó¥È¹Ô¤Ë */
+	strcat(sp->KNPSID, "-01"); /* æœ¬æ–‡ã®IDã«-01ã‚’ã¤ã‘ã‚‹ */
+	add_comment(sp, "æ‹¬å¼§å‰Šé™¤"); /* æœ¬æ–‡ã®ã‚³ãƒ¡ãƒ³ãƒˆè¡Œã« */
 
-	/* ËÜÊ¸¤È³ç¸ÌÊ¸¤òÊ¬Î¥ */
+	/* æœ¬æ–‡ã¨æ‹¬å¼§æ–‡ã‚’åˆ†é›¢ */
 	for (i = j = 0; i < sp->Mrph_num; i++) {
-	    if (*(paren_table + i) == 0) { /* ³ç¸Ì¤Ç¤Ï¤Ê¤¤ÉôÊ¬ */
+	    if (*(paren_table + i) == 0) { /* æ‹¬å¼§ã§ã¯ãªã„éƒ¨åˆ† */
 		if (i != j) {
 		    *(m_ptr + j) = *(m_ptr + i);
 		    (m_ptr + j)->num = j;
@@ -348,12 +348,12 @@ QUOTE_DATA quote_data;
 		}
 		j++;
 	    }
-	    else { /* ³ç¸ÌÉôÊ¬ */
-		if (*(paren_table + i) == 'B') { /* ³ç¸Ì»Ï */
+	    else { /* æ‹¬å¼§éƒ¨åˆ† */
+		if (*(paren_table + i) == 'B') { /* æ‹¬å¼§å§‹ */
 		    paren_count++;
 		    sprintf((*paren_spp + paren_count)->Comment, "%s%d", (*paren_spp + paren_count)->Comment, char_pos);
 		}
-		if (*(paren_table + i) == 'I') { /* ³ç¸ÌÆâÉô */
+		if (*(paren_table + i) == 'I') { /* æ‹¬å¼§å†…éƒ¨ */
 		    *((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num) = *(m_ptr + i);
 		    ((*paren_spp + paren_count)->mrph_data + (*paren_spp + paren_count)->Mrph_num)->num = (*paren_spp + paren_count)->Mrph_num;
 		    (*paren_spp + paren_count)->Mrph_num++;

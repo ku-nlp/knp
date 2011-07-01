@@ -1,6 +1,6 @@
 /*====================================================================
 
-			       Ê¸Ì®²òÀÏ
+			       æ–‡è„ˆè§£æ
 
                                          Daisuke Kawahara 2001. 7. 13
 
@@ -21,14 +21,14 @@ int ExtraLC;
 int PrintFeatures = 0;
 int PrintEx = 0;
 
-char *ExtraTags[] = {"°ì¿Í¾Î", "ÉÔÆÃÄê-¿Í", "ÉÔÆÃÄê-¾õ¶·", ""};
+char *ExtraTags[] = {"ä¸€äººç§°", "ä¸ç‰¹å®š-äºº", "ä¸ç‰¹å®š-çŠ¶æ³", ""};
 
 char *ETAG_name[] = {
-    "", "", "ÉÔÆÃÄê:¿Í", "°ì¿Í¾Î", "ÉÔÆÃÄê:¾õ¶·", 
-    "Á°Ê¸", "¸åÊ¸"};
+    "", "", "ä¸ç‰¹å®š:äºº", "ä¸€äººç§°", "ä¸ç‰¹å®š:çŠ¶æ³", 
+    "å‰æ–‡", "å¾Œæ–‡"};
 
-/* Ãµ¤¹¤Î¤ò»ß¤á¤ëïçÃÍ */
-float	AntecedentDecideThresholdPredGeneral = 0.60; /* ³Ø½¬»ş¤Ï 0.01? */
+/* æ¢ã™ã®ã‚’æ­¢ã‚ã‚‹é–¾å€¤ */
+float	AntecedentDecideThresholdPredGeneral = 0.60; /* å­¦ç¿’æ™‚ã¯ 0.01? */
 float	AntecedentDecideThresholdForGa = 0.60;
 float	AntecedentDecideThresholdForNoun = 1.00;
 float	AntecedentDecideThresholdForNounBonus1 = 0.50;
@@ -44,10 +44,10 @@ float	SVM_FREQ_SD_NO = 504.70998;	/* for noun, np */
 float	SVM_R_NUM_S_SD = 1;
 float	SVM_R_NUM_E_SD = 1;
 
-/* »Ø¿ô´Ø¿ô¤ÎÄì */
+/* æŒ‡æ•°é–¢æ•°ã®åº• */
 float	BaseForExponentialFunction = 0.9;
 
-PALIST palist[TBLSIZE];		/* ÍÑ¸À¤È³ÊÍ×ÁÇ¤Î¥»¥Ã¥È¤Î¥ê¥¹¥È */
+PALIST palist[TBLSIZE];		/* ç”¨è¨€ã¨æ ¼è¦ç´ ã®ã‚»ãƒƒãƒˆã®ãƒªã‚¹ãƒˆ */
 CFLIST cflist[TBLSIZE];
 ENTITY_LIST elist[TBLSIZE];
 
@@ -59,9 +59,9 @@ extern int	EX_match_subject;
 
 #define CASE_ORDER_MAX	3
 char *CaseOrder[CASE_ORDER_MAX][4] = {
-    {"¥¬", "¥ò", "¥Ë", ""}, 
-    {"¥ò", "¥Ë", "¥¬", ""}, 
-    {"¥Ë", "¥ò", "¥¬", ""}, 
+    {"ã‚¬", "ãƒ²", "ãƒ‹", ""}, 
+    {"ãƒ²", "ãƒ‹", "ã‚¬", ""}, 
+    {"ãƒ‹", "ãƒ²", "ã‚¬", ""}, 
 };
 
 int DiscAddedCases[PP_NUMBER] = {END_M};
@@ -148,45 +148,45 @@ int OptUseSmfix;
 		   int get_utype(TAG_DATA *bp)
 /*==================================================================*/
 {
-    // ¿Æ¤ò¤¿¤É¤Ã¤Æ¡¢È¯ÏÃ¥¿¥¤¥×¤Îfeature¤¬¤Õ¤é¤ì¤Æ¤¤¤ëÊ¸Àá¤òÃµ¤¹
+    // è¦ªã‚’ãŸã©ã£ã¦ã€ç™ºè©±ã‚¿ã‚¤ãƒ—ã®featureãŒãµã‚‰ã‚Œã¦ã„ã‚‹æ–‡ç¯€ã‚’æ¢ã™
     BNST_DATA *bc;
     char *utype;
 
     bc = bp->b_ptr;
     while (bc != NULL) {
-	if (utype = check_feature(bc->f, "È¯ÏÃ¥¿¥¤¥×")) {
-	    utype += strlen("È¯ÏÃ¥¿¥¤¥×:");
-	    if (str_eq(utype, "ºî¶È:Âç")) {
+	if (utype = check_feature(bc->f, "ç™ºè©±ã‚¿ã‚¤ãƒ—")) {
+	    utype += strlen("ç™ºè©±ã‚¿ã‚¤ãƒ—:");
+	    if (str_eq(utype, "ä½œæ¥­:å¤§")) {
 		return UTYPE_ACTION_LARGE;
 	    }
-	    else if (str_eq(utype, "ºî¶È:Ãæ")) {
+	    else if (str_eq(utype, "ä½œæ¥­:ä¸­")) {
 		return UTYPE_ACTION_MIDDLE;
 	    }
-	    else if (str_eq(utype, "ºî¶È:¾®")) {
+	    else if (str_eq(utype, "ä½œæ¥­:å°")) {
 		return UTYPE_ACTION_SMALL;
 	    }
-	    else if (str_eq(utype, "Î±°Õ»ö¹à") || str_eq(utype, "Î±°Õ»ö¹à¡¦¥³¥Ä") || str_eq(utype, "Î±°Õ»ö¹à¡¦Ãí°Õ")) {
+	    else if (str_eq(utype, "ç•™æ„äº‹é …") || str_eq(utype, "ç•™æ„äº‹é …ãƒ»ã‚³ãƒ„") || str_eq(utype, "ç•™æ„äº‹é …ãƒ»æ³¨æ„")) {
 		return UTYPE_NOTES;
 	    }
-	    else if (str_eq(utype, "¿©ÉÊ¡¦Æ»¶ñÄó¼¨")) {
+	    else if (str_eq(utype, "é£Ÿå“ãƒ»é“å…·æç¤º")) {
 		return UTYPE_FOOD_PRESENTATION;
 	    }
-	    else if (str_eq(utype, "ÎÁÍı¾õÂÖ")) {
+	    else if (str_eq(utype, "æ–™ç†çŠ¶æ…‹")) {
 		return UTYPE_FOOD_STATE;
 	    }
-	    else if (str_eq(utype, "ÄøÅÙ")) {
+	    else if (str_eq(utype, "ç¨‹åº¦")) {
 		return UTYPE_DEGREE;
 	    }
-	    else if (str_eq(utype, "¸ú²Ì")) {
+	    else if (str_eq(utype, "åŠ¹æœ")) {
 		return UTYPE_EFFECT;
 	    }
-	    else if (str_eq(utype, "ÊäÂ­")) {
+	    else if (str_eq(utype, "è£œè¶³")) {
 		return UTYPE_ADDITION;
 	    }
-	    else if (str_eq(utype, "ÂåÂØ²Ä")) {
+	    else if (str_eq(utype, "ä»£æ›¿å¯")) {
 		return UTYPE_SUBSTITUTION;
 	    }
-	    else if (str_eq(utype, "½ªÎ»")) {
+	    else if (str_eq(utype, "çµ‚äº†")) {
 		return UTYPE_END;
 	    }
 	    else {
@@ -204,15 +204,15 @@ int OptUseSmfix;
 		   int get_discourse_depth(TAG_DATA *bp)
 /*==================================================================*/
 {
-    // ¿Æ¤ò¤¿¤É¤Ã¤Æ¡¢ÃÌÏÃ¹½Â¤¿¼¤µ¤Îfeature¤¬¤Õ¤é¤ì¤Æ¤¤¤ëÊ¸Àá¤òÃµ¤¹
+    // è¦ªã‚’ãŸã©ã£ã¦ã€è«‡è©±æ§‹é€ æ·±ã•ã®featureãŒãµã‚‰ã‚Œã¦ã„ã‚‹æ–‡ç¯€ã‚’æ¢ã™
     BNST_DATA *bc;
     char* depth_char;
     int depth = 0;
 
     bc = bp->b_ptr;
     while (bc != NULL) {
-	if (depth_char = check_feature(bc->f, "ÃÌÏÃ¹½Â¤¿¼¤µ")) {
-	    depth_char += strlen("ÃÌÏÃ¹½Â¤¿¼¤µ:");
+	if (depth_char = check_feature(bc->f, "è«‡è©±æ§‹é€ æ·±ã•")) {
+	    depth_char += strlen("è«‡è©±æ§‹é€ æ·±ã•:");
 	    depth = atoi(depth_char);
 	    return depth;
 	}
@@ -229,9 +229,9 @@ int OptUseSmfix;
     char objectrecognition[32];
     char *str = NULL;
 
-    // ¥³¥á¥ó¥ÈÊ¸¤«¤éÊªÂÎÇ§¼±·ë²Ì¤òÃê½Ğ	
-    if (str = strstr(s->Comment, "ÊªÂÎÇ§¼±·ë²Ì:")) {
-	str += strlen("ÊªÂÎÇ§¼±·ë²Ì:");
+    // ã‚³ãƒ¡ãƒ³ãƒˆæ–‡ã‹ã‚‰ç‰©ä½“èªè­˜çµæœã‚’æŠ½å‡º	
+    if (str = strstr(s->Comment, "ç‰©ä½“èªè­˜çµæœ:")) {
+	str += strlen("ç‰©ä½“èªè­˜çµæœ:");
 	sscanf(str, "%s", objectrecognition);
 
 	return str_eq(bp->head_ptr->Goi, objectrecognition);
@@ -437,12 +437,12 @@ void CopyEllipsisComponent(ELLIPSIS_COMPONENT *dst, ELLIPSIS_COMPONENT *src)
 		       int CheckBasicPP(int pp)
 /*==================================================================*/
 {
-    /* ¥Î³Ê ok */
+    /* ãƒæ ¼ ok */
     if (pp == 41) {
 	return 1;
     }
 
-    /* Ê£¹ç¼­¤Ê¤É¤Î³Ê¤Ï½ü¤¯ */
+    /* è¤‡åˆè¾ãªã©ã®æ ¼ã¯é™¤ã */
     if (pp == END_M || pp > 8 || pp < 0) {
 	return 0;
     }
@@ -454,10 +454,10 @@ void CopyEllipsisComponent(ELLIPSIS_COMPONENT *dst, ELLIPSIS_COMPONENT *src)
 			 int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
-    /* ³ÊÍ×ÁÇ¤òÅĞÏ¿¤¹¤ë */
+    /* æ ¼è¦ç´ ã‚’ç™»éŒ²ã™ã‚‹ */
 
     while (*ccpp) {
-	/* ¥Î³Ê³Ê»ØÄê¤¢¤ê: ¾å½ñ¤­ */
+	/* ãƒæ ¼æ ¼æŒ‡å®šã‚ã‚Š: ä¸Šæ›¸ã */
 	if (pp_str && (*ccpp)->pp_str && !strcmp((*ccpp)->pp_str, pp_str)) {
 	    free((*ccpp)->word);
 	    (*ccpp)->word = strdup(word);
@@ -467,9 +467,9 @@ void CopyEllipsisComponent(ELLIPSIS_COMPONENT *dst, ELLIPSIS_COMPONENT *src)
 	    (*ccpp)->flag = flag;
 	    return;
 	}
-	/* ¤¹¤Ç¤ËÅĞÏ¿¤µ¤ì¤Æ¤¤¤ë¤È¤­: Æ±¤¸Ã±¸ì¤¬¤¢¤ì¤Ğ */
+	/* ã™ã§ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã¨ã: åŒã˜å˜èªãŒã‚ã‚Œã° */
 	else if (!pp_str && !(*ccpp)->pp_str && !strcmp((*ccpp)->word, word)) {
-	    /* ¸µ¤¬¾ÊÎ¬´Ø·¸¤Çº£¤¬³Ê´Ø·¸¤Ê¤é¡¢¤¹¤Ù¤Æ³Ê´Ø·¸¤Ë¤¹¤ë */
+	    /* å…ƒãŒçœç•¥é–¢ä¿‚ã§ä»ŠãŒæ ¼é–¢ä¿‚ãªã‚‰ã€ã™ã¹ã¦æ ¼é–¢ä¿‚ã«ã™ã‚‹ */
 	    if ((*ccpp)->flag == EREL && flag == CREL) {
 		(*ccpp)->flag = CREL;
 	    }
@@ -511,7 +511,7 @@ void CopyEllipsisComponent(ELLIPSIS_COMPONENT *dst, ELLIPSIS_COMPONENT *src)
 	ELLIPSIS_COMPONENT **ccpp = &ccp;
 
 	while (*ccpp && (*ccpp)->s && (*ccpp)->bnst) {
-	    /* ¥Î³Ê³Ê»ØÄê¤¢¤ê: ¾å½ñ¤­ */
+	    /* ãƒæ ¼æ ¼æŒ‡å®šã‚ã‚Š: ä¸Šæ›¸ã */
 	    if ((*ccpp)->pp_str && !strcmp((*ccpp)->pp_str, pp_str)) {
 		(*ccpp)->s = sp;
 		(*ccpp)->pp_str = strdup(pp_str);
@@ -558,9 +558,9 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 	       void RegisterEntity(char *key, int flag)
 /*==================================================================*/
 {
-    /* Ã±¸ì¤ÎÈï»²¾È²ó¿ô¤òÅĞÏ¿¤¹¤ë */
+    /* å˜èªã®è¢«å‚ç…§å›æ•°ã‚’ç™»éŒ²ã™ã‚‹ */
 
-    /* flag: 1¤Ê¤ésurface, 0¤Ê¤éellipsis */
+    /* flag: 1ãªã‚‰surface, 0ãªã‚‰ellipsis */
 
     ENTITY_LIST *ep;
 
@@ -602,7 +602,7 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 	    ep->surface_num = 1;
 	    ep->ellipsis_num = 0;
 	}
-	else { /* ÉÔÆÃÄê¤Î¤È¤­¤Ë¤Ï¤³¤³¤ËÍè¤ë */
+	else { /* ä¸ç‰¹å®šã®ã¨ãã«ã¯ã“ã“ã«æ¥ã‚‹ */
 	    ep->surface_num = 0;
 	    ep->ellipsis_num = 1;
 	}
@@ -613,7 +613,7 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 			void DecayEntityList()
 /*==================================================================*/
 {
-    /* ½Ğ¸½²ó¿ô¡¢»²¾È²ó¿ô¤ò¸º¿ê¤µ¤»¤ë */
+    /* å‡ºç¾å›æ•°ã€å‚ç…§å›æ•°ã‚’æ¸›è¡°ã•ã›ã‚‹ */
 
     int i;
     ENTITY_LIST *ep, *next;
@@ -647,7 +647,7 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 		RegisterEntity(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, FALSE);
 	    }
 	    else {
-		RegisterEntity(ExtraTags[1], FALSE); /* ÉÔÆÃÄê-¿Í */
+		RegisterEntity(ExtraTags[1], FALSE); /* ä¸ç‰¹å®š-äºº */
 	    }
 	}
     }
@@ -660,7 +660,7 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
     int i;
 
     for (i = 0; i < sp->Tag_num; i++) {
-	if (check_feature((sp->tag_data + i)->f, "ÂÎ¸À")) {
+	if (check_feature((sp->tag_data + i)->f, "ä½“è¨€")) {
 	    RegisterEntity((sp->tag_data + i)->head_ptr->Goi, TRUE);
 	}
     }
@@ -690,7 +690,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 		       int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¤È³ÊÍ×ÁÇ¤ò¥»¥Ã¥È¤ÇÅĞÏ¿¤¹¤ë */
+    /* ç”¨è¨€ã¨æ ¼è¦ç´ ã‚’ã‚»ãƒƒãƒˆã§ç™»éŒ²ã™ã‚‹ */
 
     PALIST *pap;
 
@@ -752,7 +752,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	    pap->voice == voice && 
 	    pap->cf_addr == cf_addr) {
 	    ccp = pap->cc[pp];
-	    /* ¥Î³Ê¤Î³Ê»ØÄê¤¢¤ë¤È¤­ */
+	    /* ãƒæ ¼ã®æ ¼æŒ‡å®šã‚ã‚‹ã¨ã */
 	    if (pp_str) {
 		while (ccp) {
 		    if (!ccp->pp_str || !strcmp(ccp->pp_str, pp_str)) {
@@ -761,9 +761,9 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 		    ccp = ccp->next;
 		}
 	    }
-	    /* ¥Î³Ê¤Î³Ê»ØÄê¤Ê¤¤¤È¤­ */
+	    /* ãƒæ ¼ã®æ ¼æŒ‡å®šãªã„ã¨ã */
 	    else if (ccp) {
-		/* ºÇ¸å¤ÎÍ×ÁÇ¤òÊÖ¤¹ */
+		/* æœ€å¾Œã®è¦ç´ ã‚’è¿”ã™ */
 		while (ccp->next) {
 		    ccp = ccp->next;
 		}
@@ -958,12 +958,12 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	  SENTENCE_DATA *PreserveSentence(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* Ê¸²òÀÏ·ë²Ì¤ÎÊİ»ı */
+    /* æ–‡è§£æçµæœã®ä¿æŒ */
 
     int i, j;
     SENTENCE_DATA *sp_new;
 
-    /* °ì»şÅªÁ¼ÃÖ */
+    /* ä¸€æ™‚çš„æªç½® */
     if (sp->Sen_num > SENTENCE_MAX) {
 	fprintf(stderr, "Sentence buffer overflowed!\n");
 	ClearSentences(sp);
@@ -982,7 +982,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 						 "MRPH DATA");
     for (i = 0; i < sp->Mrph_num; i++) {
 	sp_new->mrph_data[i] = sp->mrph_data[i];
-	/* feature¥İ¥¤¥ó¥¿¤Ï¤½¤Î¤Ş¤Ş¥³¥Ô¡¼¤·¤Æ¡¢clear_all_features¤Îºİ¤Ësp¤«¤é¤Î¥ê¥ó¥¯¤òÀÚ¤ë */
+	/* featureãƒã‚¤ãƒ³ã‚¿ã¯ãã®ã¾ã¾ã‚³ãƒ”ãƒ¼ã—ã¦ã€clear_all_featuresã®éš›ã«spã‹ã‚‰ã®ãƒªãƒ³ã‚¯ã‚’åˆ‡ã‚‹ */
     }
 
     sp_new->Bnst_num = sp->Bnst_num;
@@ -992,15 +992,15 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 				 "BNST DATA");
     for (i = 0; i < sp->Bnst_num + sp->New_Bnst_num; i++) {
 
-	sp_new->bnst_data[i] = sp->bnst_data[i]; /* ¤³¤³¤Çbnst_data¤ò¥³¥Ô¡¼ */
-	/* feature¥İ¥¤¥ó¥¿¤Ï¤½¤Î¤Ş¤Ş¥³¥Ô¡¼¤·¤Æ¡¢clear_all_features¤Îºİ¤Ësp¤«¤é¤Î¥ê¥ó¥¯¤òÀÚ¤ë */
+	sp_new->bnst_data[i] = sp->bnst_data[i]; /* ã“ã“ã§bnst_dataã‚’ã‚³ãƒ”ãƒ¼ */
+	/* featureãƒã‚¤ãƒ³ã‚¿ã¯ãã®ã¾ã¾ã‚³ãƒ”ãƒ¼ã—ã¦ã€clear_all_featuresã®éš›ã«spã‹ã‚‰ã®ãƒªãƒ³ã‚¯ã‚’åˆ‡ã‚‹ */
 
-	/* SENTENCE_DATA ·¿ ¤Î sp ¤Ï, MRPH_DATA ¤ò¥á¥ó¥Ğ¤È¤·¤Æ»ı¤Ã¤Æ¤¤¤ë    */
-	/* Æ±¤¸¤¯ sp ¤Î¥á¥ó¥Ğ¤Ç¤¢¤ë BNST_DATA ¤Ï MRPH_DATA ¤ò¥á¥ó¥Ğ¤È¤·¤Æ   */
-        /* »ı¤Ã¤Æ¤¤¤ë¡£                                                     */
-	/* ¤Ç¡¢Ã±¤Ë BNST_DATA ¤ò¥³¥Ô¡¼¤·¤¿¤À¤±¤À¤È¡¢BNST_DATA Æâ¤Î MRPH_DATA */
-        /* ¤Ï, sp ¤Î¤Û¤¦¤Î MRPH_DATA ¤òº¹¤·¤¿¤Ş¤Ş¥³¥Ô¡¼¤µ¤ì¤ë */
-	/* ¤è¤Ã¤Æ¡¢°Ê²¼¤Ç¥İ¥¤¥ó¥¿¥¢¥É¥ì¥¹¤Î¤º¤ì¤òÊäÀµ        */
+	/* SENTENCE_DATA å‹ ã® sp ã¯, MRPH_DATA ã‚’ãƒ¡ãƒ³ãƒã¨ã—ã¦æŒã£ã¦ã„ã‚‹    */
+	/* åŒã˜ã sp ã®ãƒ¡ãƒ³ãƒã§ã‚ã‚‹ BNST_DATA ã¯ MRPH_DATA ã‚’ãƒ¡ãƒ³ãƒã¨ã—ã¦   */
+        /* æŒã£ã¦ã„ã‚‹ã€‚                                                     */
+	/* ã§ã€å˜ã« BNST_DATA ã‚’ã‚³ãƒ”ãƒ¼ã—ãŸã ã‘ã ã¨ã€BNST_DATA å†…ã® MRPH_DATA */
+        /* ã¯, sp ã®ã»ã†ã® MRPH_DATA ã‚’å·®ã—ãŸã¾ã¾ã‚³ãƒ”ãƒ¼ã•ã‚Œã‚‹ */
+	/* ã‚ˆã£ã¦ã€ä»¥ä¸‹ã§ãƒã‚¤ãƒ³ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹ã®ãšã‚Œã‚’è£œæ­£        */
 
 
         /*
@@ -1009,31 +1009,31 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
                   |             |				                   |             |
                   +-------------+				                   +-------------+
                   |             |				                   |             |
-       BNST_DATA  +=============+		   ¨£¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡    +=============+ BNST_DATA
-                0 |             |¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¡¨¤¨¢                            0 |             |
-                  +-------------+                ¢­¢­		                   +-------------+
+       BNST_DATA  +=============+		   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€    +=============+ BNST_DATA
+                0 |             |â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚                            0 |             |
+                  +-------------+                â†“â†“		                   +-------------+
                 1 |             |              BNST_DATA	                 1 |             |
                   +-------------+                  +-------------+                 +-------------+
-                  |   ¡¦¡¦¡¦    |	           |             |                 |   ¡¦¡¦¡¦    |
+                  |   ãƒ»ãƒ»ãƒ»    |	           |             |                 |   ãƒ»ãƒ»ãƒ»    |
                   +-------------+	           +-------------+                 +-------------+
-                n |             |  ¨£¨¡ MRPH_DATA  |* mrph_ptr   |- ¨¤           n |             |
-                  +=============+  ¨¢	           +-------------+  ¨¢             +=============+
-                  |             |  ¨¢	MRPH_DATA  |* settou_ptr |  ¨¢             |             |
-       MRPH_DATA  +=============+  ¨¢	           +-------------+  ¨¢             +=============+ MRPH_DATA
-                0 | * mrph_data |  ¨¢	MRPH_DATA  |* jiritu_ptr |  ¨¦ - - - - - 0 | * mrph_data |
-                  +-------------+  ¨¢              +-------------+    ¢¬           +-------------+
-                  |   ¡¦¡¦¡¦    |¢«¨¥	 			      ¨¢           |   ¡¦¡¦¡¦    |
-                  +-------------+      		                      ¨¢           +-------------+
-                n | * mrph_data |	 			      ¨¢         n | * mrph_data |
-                  +=============+	 			      ¨¢           +=============+
-                                                                      ¨¢
-		                                            Ã±¤Ë¥³¥Ô¡¼¤·¤¿¤Ş¤Ş¤À¤È,
-		                                            sp_new->bnst_data[i] ¤Î
-		                                      	    mrph_data ¤Ï, sp ¤Î¥Ç¡¼¥¿¤ò
-		                                            »Ø¤·¤Æ¤·¤Ş¤¦¡£
-		                                            ¸µ¤Î¥Ç¡¼¥¿¹½Â¤¤òÊİ¤Ä¤¿¤á¤Ë¤Ï¡¢
-		                                            ¼«Ê¬¼«¿È(sp_new)¤Î¥Ç¡¼¥¿(¥á¥ó¥Ğ)
-		                              		    ¤ò»Ø¤¹¤è¤¦¤Ë,½¤Àµ¤¹¤ëÉ¬Í×¤¬¤¢¤ë¡£
+                n |             |  â”Œâ”€ MRPH_DATA  |* mrph_ptr   |- â”           n |             |
+                  +=============+  â”‚	           +-------------+  â”‚             +=============+
+                  |             |  â”‚	MRPH_DATA  |* settou_ptr |  â”‚             |             |
+       MRPH_DATA  +=============+  â”‚	           +-------------+  â”‚             +=============+ MRPH_DATA
+                0 | * mrph_data |  â”‚	MRPH_DATA  |* jiritu_ptr |  â”” - - - - - 0 | * mrph_data |
+                  +-------------+  â”‚              +-------------+    â†‘           +-------------+
+                  |   ãƒ»ãƒ»ãƒ»    |â†â”˜	 			      â”‚           |   ãƒ»ãƒ»ãƒ»    |
+                  +-------------+      		                      â”‚           +-------------+
+                n | * mrph_data |	 			      â”‚         n | * mrph_data |
+                  +=============+	 			      â”‚           +=============+
+                                                                      â”‚
+		                                            å˜ã«ã‚³ãƒ”ãƒ¼ã—ãŸã¾ã¾ã ã¨,
+		                                            sp_new->bnst_data[i] ã®
+		                                      	    mrph_data ã¯, sp ã®ãƒ‡ãƒ¼ã‚¿ã‚’
+		                                            æŒ‡ã—ã¦ã—ã¾ã†ã€‚
+		                                            å…ƒã®ãƒ‡ãƒ¼ã‚¿æ§‹é€ ã‚’ä¿ã¤ãŸã‚ã«ã¯ã€
+		                                            è‡ªåˆ†è‡ªèº«(sp_new)ã®ãƒ‡ãƒ¼ã‚¿(ãƒ¡ãƒ³ãƒ)
+		                              		    ã‚’æŒ‡ã™ã‚ˆã†ã«,ä¿®æ­£ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã€‚
 	*/
 
 
@@ -1057,8 +1057,8 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 				 "TAG DATA");
     for (i = 0; i < sp->Tag_num + sp->New_Tag_num; i++) {
 
-	sp_new->tag_data[i] = sp->tag_data[i]; /* ¤³¤³¤Çtag_data¤ò¥³¥Ô¡¼ */
-	/* feature¥İ¥¤¥ó¥¿¤Ï¤½¤Î¤Ş¤Ş¥³¥Ô¡¼¤·¤Æ¡¢clear_all_features¤Îºİ¤Ësp¤«¤é¤Î¥ê¥ó¥¯¤òÀÚ¤ë */
+	sp_new->tag_data[i] = sp->tag_data[i]; /* ã“ã“ã§tag_dataã‚’ã‚³ãƒ”ãƒ¼ */
+	/* featureãƒã‚¤ãƒ³ã‚¿ã¯ãã®ã¾ã¾ã‚³ãƒ”ãƒ¼ã—ã¦ã€clear_all_featuresã®éš›ã«spã‹ã‚‰ã®ãƒªãƒ³ã‚¯ã‚’åˆ‡ã‚‹ */
 
 	sp_new->tag_data[i].mrph_ptr = sp_new->mrph_data + (sp->tag_data[i].mrph_ptr - sp->mrph_data);
 	if (sp->tag_data[i].settou_ptr)
@@ -1120,12 +1120,12 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 {
     int i, j, num, cfnum = 0;
 
-    /* ³Ê²òÀÏ·ë²Ì¤ÎÊİÂ¸ */
+    /* æ ¼è§£æçµæœã®ä¿å­˜ */
     sp_new->cpm = 
 	(CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR)*sp->Best_mgr->pred_num, 
 				   "CF PRED MGR");
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤Î¸Ä¿ôÊ¬¤À¤±³ÎÊİ */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®å€‹æ•°åˆ†ã ã‘ç¢ºä¿ */
     for (i = 0; i < sp->Best_mgr->pred_num; i++) {
 	cfnum += sp->Best_mgr->cpm[i].result_num;
     }
@@ -1135,14 +1135,14 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     cfnum = 0;
     for (i = 0; i < sp->Best_mgr->pred_num; i++) {
 	*(sp_new->cpm + i) = sp->Best_mgr->cpm[i];
-	num = sp->Best_mgr->cpm[i].pred_b_ptr->num;	/* ¤³¤ÎÍÑ¸À¤ÎÊ¸ÀáÈÖ¹æ */
+	num = sp->Best_mgr->cpm[i].pred_b_ptr->num;	/* ã“ã®ç”¨è¨€ã®æ–‡ç¯€ç•ªå· */
 	sp_new->tag_data[num].cpm_ptr = sp_new->cpm + i;
 	(sp_new->cpm + i)->pred_b_ptr = sp_new->tag_data + num;
 
 	for (j = 0; j < (sp_new->cpm + i)->cf.element_num; j++) {
-	    /* ¾ÊÎ¬¤¸¤ã¤Ê¤¤³ÊÍ×ÁÇ */
+	    /* çœç•¥ã˜ã‚ƒãªã„æ ¼è¦ç´  */
 	    if ((sp_new->cpm + i)->elem_b_num[j] > -2) {
-		/* ÆâÉôÊ¸Àá¤¸¤ã¤Ê¤¤ */
+		/* å†…éƒ¨æ–‡ç¯€ã˜ã‚ƒãªã„ */
 		/* if ((sp_new->cpm + i)->elem_b_ptr[j]->inum == 0) */
 		(sp_new->cpm + i)->elem_b_ptr[j] = 
 		    sp_new->tag_data + ((sp_new->cpm + i)->elem_b_ptr[j]-sp->tag_data);
@@ -1158,7 +1158,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	}
     }
 
-    /* NewÎÎ°è¤ÎÊ¸Àá¤Îcpm¥İ¥¤¥ó¥¿¤ò¤Ï¤ê¤Ê¤ª¤¹ */
+    /* Newé ˜åŸŸã®æ–‡ç¯€ã®cpmãƒã‚¤ãƒ³ã‚¿ã‚’ã¯ã‚ŠãªãŠã™ */
     for (i = sp->Tag_num; i < sp->Tag_num + sp->New_Tag_num; i++) {
 	if ((sp_new->tag_data + i)->cpm_ptr) {
 	    (sp_new->tag_data + i)->cpm_ptr = 
@@ -1166,7 +1166,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	}
     }
 
-    /* ¸½ºß cpm ¤òÊİÂ¸¤·¤Æ¤¤¤ë¤¬¡¢Best_mgr ¤òÊİÂ¸¤·¤¿Êı¤¬¤¤¤¤¤«¤â¤·¤ì¤Ê¤¤ */
+    /* ç¾åœ¨ cpm ã‚’ä¿å­˜ã—ã¦ã„ã‚‹ãŒã€Best_mgr ã‚’ä¿å­˜ã—ãŸæ–¹ãŒã„ã„ã‹ã‚‚ã—ã‚Œãªã„ */
     sp_new->Best_mgr = NULL;
 }
 
@@ -1174,7 +1174,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
       int CheckCaseComponent(CF_PRED_MGR *cpm_ptr, TAG_DATA *tp)
 /*==================================================================*/
 {
-    /* tp¤¬ÍÑ¸À¤Î³ÊÍ×ÁÇ¤Ç¤¢¤ë¤«¤É¤¦¤« */
+    /* tpãŒç”¨è¨€ã®æ ¼è¦ç´ ã§ã‚ã‚‹ã‹ã©ã†ã‹ */
 
     int i, j;
 
@@ -1183,7 +1183,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	    if (cpm_ptr->elem_b_ptr[i]->num == tp->num) {
 		return TRUE;
 	    }
-	    /* Ê¸ÀáÆâ */
+	    /* æ–‡ç¯€å†… */
 	    for (j = 0; cpm_ptr->elem_b_ptr[i]->child[j]; j++) {
 		if (cpm_ptr->elem_b_ptr[i]->child[j]->bnum == cpm_ptr->elem_b_ptr[i]->bnum && 
 		    cpm_ptr->elem_b_ptr[i]->child[j]->num == tp->num) {
@@ -1199,11 +1199,11 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 int CheckHaveEllipsisComponentPara(TAG_DATA *tp, char *word)
 /*==================================================================*/
 {
-    /* Í¿¤¨¤é¤ì¤¿³ÊÍ×ÁÇ¤ÎÊÂÎóÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ */
+    /* ä¸ãˆã‚‰ã‚ŒãŸæ ¼è¦ç´ ã®ä¸¦åˆ—è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
 
     int j;
 
-    /* ¾ÊÎ¬¤Î¤È¤­ */
+    /* çœç•¥ã®ã¨ã */
     if (tp->para_type == PARA_NORMAL && 
 	tp->parent && 
 	tp->parent->para_top_p) {
@@ -1215,9 +1215,9 @@ int CheckHaveEllipsisComponentPara(TAG_DATA *tp, char *word)
 	    }
 	}
     }
-    /* Ä¾ÀÜ¤Î¤È¤­ */
+    /* ç›´æ¥ã®ã¨ã */
     else if (tp->para_top_p) {
-	for (j = 1; tp->child[j]; j++) { /* 0¤Ï¼«Ê¬¤ÈÆ±¤¸¤Ç¥Á¥§¥Ã¥¯¤µ¤ì¤Æ¤¤¤ë */
+	for (j = 1; tp->child[j]; j++) { /* 0ã¯è‡ªåˆ†ã¨åŒã˜ã§ãƒã‚§ãƒƒã‚¯ã•ã‚Œã¦ã„ã‚‹ */
 	    if (tp->child[j]->para_type == PARA_NORMAL && 
 		str_eq(tp->child[j]->head_ptr->Goi, word)) {
 		return 1;
@@ -1234,8 +1234,8 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
 {
     int i, num;
 
-    /* ÍÑ¸À¤¬¸õÊä¤ÈÆ±¤¸É½µ­¤ò
-       Â¾¤Î³ÊÍ×ÁÇ¤È¤·¤Æ¤â¤Ã¤Æ¤¤¤ë¤«¤É¤¦¤« */
+    /* ç”¨è¨€ãŒå€™è£œã¨åŒã˜è¡¨è¨˜ã‚’
+       ä»–ã®æ ¼è¦ç´ ã¨ã—ã¦ã‚‚ã£ã¦ã„ã‚‹ã‹ã©ã†ã‹ */
 
     for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	num = cmm_ptr->result_lists_p[l].flag[i];
@@ -1244,11 +1244,11 @@ int CheckHaveEllipsisComponent(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int 
 		if (word && 
 		    (str_eq(cpm_ptr->elem_b_ptr[num]->head_ptr->Goi, word) || 
 		     (cpm_ptr->cf.type == CF_NOUN &&
-		     CheckHaveEllipsisComponentPara(cpm_ptr->elem_b_ptr[num], word)))) { /* ÊÂÎó¤Î¥Á¥§¥Ã¥¯ */
+		     CheckHaveEllipsisComponentPara(cpm_ptr->elem_b_ptr[num], word)))) { /* ä¸¦åˆ—ã®ãƒã‚§ãƒƒã‚¯ */
 		    return 1;
 		}
 	    }
-	    /* ÉÔÆÃÄê¤Î¾ì¹ç */
+	    /* ä¸ç‰¹å®šã®å ´åˆ */
 	    else {
 		if (word == NULL) {
 		    return 1;
@@ -1264,8 +1264,8 @@ int CheckObligatoryCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, TAG_
 /*==================================================================*/
 {
     /* 
-       bp: ÂĞ¾İÊ¸Àá
-       cpm_ptr: ÂĞ¾İÊ¸Àá¤Î·¸¤ëÍÑ¸À (bp->parent->cpm_ptr)
+       bp: å¯¾è±¡æ–‡ç¯€
+       cpm_ptr: å¯¾è±¡æ–‡ç¯€ã®ä¿‚ã‚‹ç”¨è¨€ (bp->parent->cpm_ptr)
     */
 
     int i, num;
@@ -1277,14 +1277,14 @@ int CheckObligatoryCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, TAG_
     if (cmm_ptr->score != -2) {
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	    num = cmm_ptr->result_lists_p[l].flag[i];
-	    /* ¤³¤ì¤¬Ä´¤Ù¤ë³ÊÍ×ÁÇ */
+	    /* ã“ã‚ŒãŒèª¿ã¹ã‚‹æ ¼è¦ç´  */
 	    if (num != UNASSIGNED && 
-		cpm_ptr->elem_b_num[num] > -2 && /* ¾ÊÎ¬¤Î³ÊÍ×ÁÇ¤¸¤ã¤Ê¤¤ */
+		cpm_ptr->elem_b_num[num] > -2 && /* çœç•¥ã®æ ¼è¦ç´ ã˜ã‚ƒãªã„ */
 		cpm_ptr->elem_b_ptr[num]->num == bp->num) {
-		if (MatchPP(cmm_ptr->cf_ptr->pp[i][0], "¥¬") || 
-		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "¥ò") || 
-		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "¥Ë") || 
-		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "¥¬£²")) {
+		if (MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ã‚¬") || 
+		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ãƒ²") || 
+		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ãƒ‹") || 
+		    MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ã‚¬ï¼’")) {
 		    return 1;
 		}
 		return 0;
@@ -1298,9 +1298,9 @@ int CheckObligatoryCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l, TAG_
 int GetCandCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, TAG_DATA *bp)
 /*==================================================================*/
 {
-    /* ¸õÊä¤Î³Ê¤òÆÀ¤ë
-       bp: ÂĞ¾İÊ¸Àá
-       cpm_ptr: ÂĞ¾İÊ¸Àá¤Î·¸¤ëÍÑ¸À (bp->parent->cpm_ptr)
+    /* å€™è£œã®æ ¼ã‚’å¾—ã‚‹
+       bp: å¯¾è±¡æ–‡ç¯€
+       cpm_ptr: å¯¾è±¡æ–‡ç¯€ã®ä¿‚ã‚‹ç”¨è¨€ (bp->parent->cpm_ptr)
     */
 
     int i, num;
@@ -1308,9 +1308,9 @@ int GetCandCase(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, TAG_DATA *bp)
     if (cpm_ptr && cpm_ptr->result_num > 0 && cmm_ptr->score != -2) {
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	    num = cmm_ptr->result_lists_p[0].flag[i];
-	    /* ¤³¤ì¤¬Ä´¤Ù¤ë³ÊÍ×ÁÇ */
+	    /* ã“ã‚ŒãŒèª¿ã¹ã‚‹æ ¼è¦ç´  */
 	    if (num != UNASSIGNED && 
-		cpm_ptr->elem_b_ptr[num] && /* ÉÔÆÃÄê¤Ç¤Ï¤Ê¤¤ */
+		cpm_ptr->elem_b_ptr[num] && /* ä¸ç‰¹å®šã§ã¯ãªã„ */
 		cpm_ptr->elem_b_ptr[num]->num == bp->num) {
 		return cmm_ptr->cf_ptr->pp[i][0];
 	    }
@@ -1324,9 +1324,9 @@ int CheckCaseCorrespond(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
 			TAG_DATA *bp, CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* ³Ê¤Î°ìÃ×¤òÄ´¤Ù¤ë
-       bp: ÂĞ¾İÊ¸Àá
-       cpm_ptr: ÂĞ¾İÊ¸Àá¤Î·¸¤ëÍÑ¸À (bp->parent->cpm_ptr)
+    /* æ ¼ã®ä¸€è‡´ã‚’èª¿ã¹ã‚‹
+       bp: å¯¾è±¡æ–‡ç¯€
+       cpm_ptr: å¯¾è±¡æ–‡ç¯€ã®ä¿‚ã‚‹ç”¨è¨€ (bp->parent->cpm_ptr)
     */
 
     int i, num;
@@ -1334,12 +1334,12 @@ int CheckCaseCorrespond(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     if (cpm_ptr->result_num > 0 && cmm_ptr->score != -2) {
 	for (i = 0; i < cmm_ptr->cf_ptr->element_num; i++) {
 	    num = cmm_ptr->result_lists_p[l].flag[i];
-	    /* ¤³¤ì¤¬Ä´¤Ù¤ë³ÊÍ×ÁÇ */
+	    /* ã“ã‚ŒãŒèª¿ã¹ã‚‹æ ¼è¦ç´  */
 	    if (num != UNASSIGNED && 
-		cpm_ptr->elem_b_num[num] > -2 && /* ¾ÊÎ¬¤Î³ÊÍ×ÁÇ¤¸¤ã¤Ê¤¤ */
+		cpm_ptr->elem_b_num[num] > -2 && /* çœç•¥ã®æ ¼è¦ç´ ã˜ã‚ƒãªã„ */
 		cpm_ptr->elem_b_ptr[num]->num == bp->num) {
 		if (cf_ptr->pp[n][0] == cmm_ptr->cf_ptr->pp[i][0] || 
-		    (MatchPP(cf_ptr->pp[n][0], "¥¬") && MatchPP(cmm_ptr->cf_ptr->pp[i][0], "¥¬£²"))) {
+		    (MatchPP(cf_ptr->pp[n][0], "ã‚¬") && MatchPP(cmm_ptr->cf_ptr->pp[i][0], "ã‚¬ï¼’"))) {
 		    return 1;
 		}
 		return 0;
@@ -1384,7 +1384,7 @@ int CountBnstDistance(SENTENCE_DATA *cs, int candn, SENTENCE_DATA *ps, int pn)
 int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 /*==================================================================*/
 {
-    /* pred_b_ptr ¤Î¥á¥â¥ê¤Ï¸Å¤¤? */
+    /* pred_b_ptr ã®ãƒ¡ãƒ¢ãƒªã¯å¤ã„? */
 
     if (child_ptr->parent) {
 	/* N -> V */
@@ -1404,7 +1404,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 	if (pred_b_ptr->parent->num == child_ptr->num) {
 	    return 1;
 	}
-	/* V -> <PARA>(N¤ò´Ş¤à) => ¡ú¤Ê¤· */
+	/* V -> <PARA>(Nã‚’å«ã‚€) => â˜…ãªã— */
 	else if (pred_b_ptr->parent->para_top_p && 
 		 child_ptr->para_type == PARA_NORMAL && 
 		 child_ptr->parent->num == pred_b_ptr->parent->num) {
@@ -1436,7 +1436,7 @@ int CheckPredicateChild(TAG_DATA *pred_b_ptr, TAG_DATA *child_ptr)
 #endif
 #endif
 
-    /* ·å¿ô¤Î·×»»¤Ï¾ïÍÑÂĞ¿ô¤ÎÂå¤ï¤ê¤Ë¼«Á³ÂĞ¿ô¤Ç¤ä¤ë (1000¤Ç¤â6.9) */
+    /* æ¡æ•°ã®è¨ˆç®—ã¯å¸¸ç”¨å¯¾æ•°ã®ä»£ã‚ã‚Šã«è‡ªç„¶å¯¾æ•°ã§ã‚„ã‚‹ (1000ã§ã‚‚6.9) */
     max = (sizeof(E_SVM_FEATURES) - prenum * sizeof(float)) / sizeof(int) + prenum;
     sbuf = (char *)malloc_data(sizeof(char) * (10 + log((double)max)), 
 			       "EllipsisSvmFeatures2String");
@@ -1535,7 +1535,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
 {
     char *buffer;
 
-    /* -learn »ş¤Î¤ß³Ø½¬ÍÑfeature¤òÉ½¼¨¤¹¤ë */
+    /* -learn æ™‚ã®ã¿å­¦ç¿’ç”¨featureã‚’è¡¨ç¤ºã™ã‚‹ */
     if (!PrintFeatures) {
 	return;
     }
@@ -1546,7 +1546,7 @@ void EllipsisSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_pt
 
     buffer = (char *)malloc_data(strlen(ecp) + 128 + strlen(word), 
 				 "EllipsisSvmFeaturesString2FeatureString");
-    sprintf(buffer, "SVM³Ø½¬FEATURE;%s;%s;%s;%s;%d:%d %s", 
+    sprintf(buffer, "SVMå­¦ç¿’FEATURE;%s;%s;%s;%s;%d:%d %s", 
 	    word, pp_code_to_kstr_in_context(cpm_ptr, pp), 
 	    loc >= 0 ? loc_code_to_str(loc) : "NONE", sid, num, ellipsis_class, ecp);
     assign_cfeature(&(em_ptr->f), buffer, FALSE);
@@ -1596,7 +1596,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 
     buffer = (char *)malloc_data(strlen(ecp) + 256 + strlen(w1) + strlen(w2), 
 				 "TwinCandSvmFeaturesString2FeatureString");
-    sprintf(buffer, "SVM³Ø½¬FEATURE;%s;%s;%s;%s;%d;%s;%s;%s;%d:%s", 
+    sprintf(buffer, "SVMå­¦ç¿’FEATURE;%s;%s;%s;%s;%d;%s;%s;%s;%d:%s", 
 	    pp_code_to_kstr(c1->ef->p_pp), w1, 
 	    c1->ef->c_location >= 0 ? loc_code_to_str(c1->ef->c_location) : "NONE", 
 	    sid1, n1, 
@@ -1627,8 +1627,8 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 	f->frequency = ef->frequency;
     }
     else {
-	/* É¸½àÊĞº¹¤Ç³ä¤ë */
-	if (ef->p_pp == pp_kstr_to_code("¥Î")) {
+	/* æ¨™æº–åå·®ã§å‰²ã‚‹ */
+	if (ef->p_pp == pp_kstr_to_code("ãƒ")) {
 	    f->frequency = (float)ef->frequency / SVM_FREQ_SD_NO;
 	}
 	else {
@@ -1642,7 +1642,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 	f->refered_num_ellipsis = ef->refered_num_ellipsis;
     }
     else {
-	/* É¸½àÊĞº¹¤Ç³ä¤ë */
+	/* æ¨™æº–åå·®ã§å‰²ã‚‹ */
 	f->refered_num_surface = ef->refered_num_surface / SVM_R_NUM_S_SD;
 	f->refered_num_ellipsis = ef->refered_num_ellipsis / SVM_R_NUM_E_SD;
     }
@@ -1699,7 +1699,7 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     f->c_extra_tag[1] = ef->c_extra_tag == 1 ? 1 : 0;
     f->c_extra_tag[2] = ef->c_extra_tag == 2 ? 1 : 0;
 
-    /* ¥¬,¥ò,¥Ë */
+    /* ã‚¬,ãƒ²,ãƒ‹ */
     for (i = 0; i < 3; i++) {
 	f->p_pp[i] = ef->p_pp == i+1 ? 1 : 0;
     }
@@ -1722,13 +1722,13 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
 
     /* f->c_ac = ef->c_ac; */
 
-    /* Àè¹Ô»ì¤Î³Ê¤È¾ÊÎ¬²òÀÏÂĞ¾İ³Ê¤¬°ìÃ×¤¹¤ë¤«¤É¤¦¤« */
+    /* å…ˆè¡Œè©ã®æ ¼ã¨çœç•¥è§£æå¯¾è±¡æ ¼ãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ */
     f->match_case = ef->match_case;
 
-    /* Àè¹Ô»ì¤¬·¸¤ëÍÑ¸À¤È¥¼¥íÂåÌ¾»ì¤ò¤â¤ÄÍÑ¸À¤¬°ìÃ×¤¹¤ë¤«¤É¤¦¤« */
+    /* å…ˆè¡Œè©ãŒä¿‚ã‚‹ç”¨è¨€ã¨ã‚¼ãƒ­ä»£åè©ã‚’ã‚‚ã¤ç”¨è¨€ãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ */
     f->match_verb = ef->match_verb;
 
-    /* È¯ÏÃ¥¿¥¤¥× */
+    /* ç™ºè©±ã‚¿ã‚¤ãƒ— */
     if (OptAddSvmFeatureUtype) {
 	f->utype[0] = ef->utype == UTYPE_ACTION_LARGE ? 1 : 0;
 	f->utype[1] = ef->utype == UTYPE_ACTION_MIDDLE ? 1 : 0;
@@ -1748,9 +1748,9 @@ void TwinCandSvmFeaturesString2Feature(ELLIPSIS_MGR *em_ptr, char *ecp,
     }
 
 
-    /* ÃÌÏÃ¹½Â¤¿¼¤µ */
+    /* è«‡è©±æ§‹é€ æ·±ã• */
     if (OptAddSvmFeatureDiscourseDepth) {
-	/* ÉÔÆÃÄê */
+	/* ä¸ç‰¹å®š */
 	if (ef->discourse_depth == 0) {
 	    f->discourse_depth_inverse = 0.0;
 	}
@@ -1879,7 +1879,7 @@ E_TWIN_CAND_SVM_FEATURES *MakeTwinCandSvmFeatures(E_FEATURES *ef1, E_FEATURES *e
     f->c2_extra_tag[1] = ef2->c_extra_tag == 1 ? 1 : 0;
     f->c2_extra_tag[2] = ef2->c_extra_tag == 2 ? 1 : 0;
 
-    /* ¥¬,¥ò,¥Ë */
+    /* ã‚¬,ãƒ²,ãƒ‹ */
     for (i = 0; i < 3; i++) {
 	f->p_pp[i] = ef1->p_pp == i+1 ? 1 : 0;
     }
@@ -1915,42 +1915,42 @@ void SetEllipsisFeaturesForPred(E_FEATURES *f, CF_PRED_MGR *cpm_ptr,
     if (cpm_ptr->cf.type == CF_PRED) {
 	f->p_pp = cf_ptr->pp[n][0];
 
-	/* Ç½Æ°(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
+	/* èƒ½å‹•(0), VOICE_SHIEKI(1), VOICE_UKEMI(2), VOICE_MORAU(3) */
 	f->p_voice = cpm_ptr->pred_b_ptr->voice;
 
-	if (check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:Æ°")) {
+	if (check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€:å‹•")) {
 	    f->p_type = 1;
 	}
-	else if (check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:·Á")) {
+	else if (check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€:å½¢")) {
 	    f->p_type = 2;
 	}
-	else if (check_feature(cpm_ptr->pred_b_ptr->f, "ÍÑ¸À:È½")) {
+	else if (check_feature(cpm_ptr->pred_b_ptr->f, "ç”¨è¨€:åˆ¤")) {
 	    f->p_type = 3;
 	}
 	else {
 	    f->p_type = 0;
 	}
     }
-    /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à¤Î¤È¤­ */
+    /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¨ã */
     else {
 	f->p_pp = -1;
 	f->p_voice = -1;
 	f->p_type = -1;
     }
 
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "¥µÊÑ") && 
-	check_feature(cpm_ptr->pred_b_ptr->f, "ÈóÍÑ¸À³Ê²òÀÏ")) {
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "ã‚µå¤‰") && 
+	check_feature(cpm_ptr->pred_b_ptr->f, "éç”¨è¨€æ ¼è§£æ")) {
 	f->p_sahen_flag = 1;
     }
     else {
 	f->p_sahen_flag = 0;
     }
 
-    f->p_cf_subject_flag = cf_match_element(cf_ptr->sm[n], "¼çÂÎ", FALSE) ? 1 : 0;
-    f->p_cf_sentence_flag = cf_match_element(cf_ptr->sm[n], "ÊäÊ¸", TRUE) ? 1 : 0;
-    f->p_n_modify_flag = check_feature(cpm_ptr->pred_b_ptr->f, "·¸:Ï¢³Ê") ? 1 : 0;
+    f->p_cf_subject_flag = cf_match_element(cf_ptr->sm[n], "ä¸»ä½“", FALSE) ? 1 : 0;
+    f->p_cf_sentence_flag = cf_match_element(cf_ptr->sm[n], "è£œæ–‡", TRUE) ? 1 : 0;
+    f->p_n_modify_flag = check_feature(cpm_ptr->pred_b_ptr->f, "ä¿‚:é€£æ ¼") ? 1 : 0;
 
-    if ((level = check_feature(cpm_ptr->pred_b_ptr->f, "¥ì¥Ù¥ë"))) {
+    if ((level = check_feature(cpm_ptr->pred_b_ptr->f, "ãƒ¬ãƒ™ãƒ«"))) {
 	strcpy(f->p_dep_p_level, level + 7);
     }
     else {
@@ -1965,21 +1965,21 @@ int get_example_class(CF_PRED_MGR *c_cpm_ptr, SENTENCE_DATA *s, TAG_DATA *bp,
 {
     int i;
 
-    /* Àµ²ò¤«¤É¤¦¤«¤òÈ½Äê¤¹¤ë */
+    /* æ­£è§£ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹ */
 
     for (i = 0; i < c_cpm_ptr->cf.element_num; i++) {
 	if ((cf_ptr->type == CF_PRED && c_cpm_ptr->cf.pp[i][0] == cf_ptr->pp[n][0]) || 
-	    cf_ptr->type == CF_NOUN && c_cpm_ptr->cf.pp[i][0] == pp_kstr_to_code("¥Î")) {
-	    /* ÉÔÆÃÄê°Ê³°¤ÎÉáÄÌ¤Î¥¿¥° */
+	    cf_ptr->type == CF_NOUN && c_cpm_ptr->cf.pp[i][0] == pp_kstr_to_code("ãƒ")) {
+	    /* ä¸ç‰¹å®šä»¥å¤–ã®æ™®é€šã®ã‚¿ã‚° */
 	    if (bp) {
 		if (c_cpm_ptr->elem_b_ptr[i] && 
 		    ((bp->num == c_cpm_ptr->elem_b_ptr[i]->num && 
-		      s->Sen_num == c_cpm_ptr->elem_s_ptr[i]->Sen_num) || /* ÈÖ¹æ¤Ë¤è¤ë¥Ş¥Ã¥Á */
-		     !strcmp(bp->head_ptr->Goi, c_cpm_ptr->elem_b_ptr[i]->head_ptr->Goi))) { /* É½µ­¤Ë¤è¤ë¥Ş¥Ã¥Á */
+		      s->Sen_num == c_cpm_ptr->elem_s_ptr[i]->Sen_num) || /* ç•ªå·ã«ã‚ˆã‚‹ãƒãƒƒãƒ */
+		     !strcmp(bp->head_ptr->Goi, c_cpm_ptr->elem_b_ptr[i]->head_ptr->Goi))) { /* è¡¨è¨˜ã«ã‚ˆã‚‹ãƒãƒƒãƒ */
 		    return 1;
 		}
 	    }
-	    /* ÉÔÆÃÄê */
+	    /* ä¸ç‰¹å®š */
 	    else {
 		if (c_cpm_ptr->elem_b_ptr[i] == NULL) {
 		    return 1;
@@ -2004,7 +2004,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
     f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeatures");
 
-    /* Àµ²ò¤«¤É¤¦¤« */
+    /* æ­£è§£ã‹ã©ã†ã‹ */
     if (cpm_ptr->pred_b_ptr->c_cpm_ptr) {
 	f->ellipsis_class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, s, bp, cf_ptr, n);
     }
@@ -2012,7 +2012,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->ellipsis_class = 0;
     }
 
-    /* Îà»÷ÅÙ·×»» */
+    /* é¡ä¼¼åº¦è¨ˆç®— */
     f->pos = MATCH_NONE;
     if (cpm_ptr->cf.type == CF_PRED) {
 	f->similarity = calc_similarity_word_cf_with_sm(bp, cf_ptr, n, &f->pos);
@@ -2020,12 +2020,12 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     else {
 	f->similarity = calc_similarity_word_cf(bp, cf_ptr, n, &f->pos);
 
-	/* °ÕÌ£ÁÇ¥Ş¥Ã¥Á (SVM¤Ë¤ÏÆş¤Ã¤Æ¤¤¤Ê¤¤) */
+	/* æ„å‘³ç´ ãƒãƒƒãƒ (SVMã«ã¯å…¥ã£ã¦ã„ãªã„) */
 	f->match_sm_flag = cf_match_sm_thesaurus(bp, cf_ptr, n);
     }
-    f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* ÍÑÎã¤ÎÉÑÅÙ */
+    f->frequency = f->similarity > 1.0 ? cf_ptr->ex_freq[n][f->pos] : 0; /* ç”¨ä¾‹ã®é »åº¦ */
 
-    /* Èï»²¾È²ó¿ô */
+    /* è¢«å‚ç…§å›æ•° */
     if (en = CheckEntity(bp->head_ptr->Goi)) {
 	f->refered_num_surface = en->surface_num;
 	f->refered_num_ellipsis = en->ellipsis_num;
@@ -2041,14 +2041,14 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 
 	f->c_pp = GetCandCase(vp->cpm_ptr, &(vp->cpm_ptr->cmm[0]), bp);
 
-	if ((level = check_feature(vp->f, "¥ì¥Ù¥ë"))) {
+	if ((level = check_feature(vp->f, "ãƒ¬ãƒ™ãƒ«"))) {
 	    strcpy(f->c_dep_p_level, level + 7);
 	}
 	else {
 	    f->c_dep_p_level[0] = '\0';
 	}
-	f->c_dep_mc_flag = check_feature(vp->f, "¼çÀá") ? 1 : 0;
-	f->c_n_modify_flag = check_feature(vp->f, "·¸:Ï¢³Ê") ? 1 : 0;
+	f->c_dep_mc_flag = check_feature(vp->f, "ä¸»ç¯€") ? 1 : 0;
+	f->c_n_modify_flag = check_feature(vp->f, "ä¿‚:é€£æ ¼") ? 1 : 0;
     }
     else {
 	f->event1 = -1;
@@ -2082,7 +2082,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	}
     }
     else {
-	/* | n | v | tv |  or  | n | v tv | : v¤Ë»Ø¼¨ÂĞ¾İ¤¬¤¢¤ë¤È»×¤¦ */
+	/* | n | v | tv |  or  | n | v tv | : vã«æŒ‡ç¤ºå¯¾è±¡ãŒã‚ã‚‹ã¨æ€ã† */
 	f->c_dist_bnst = CountBnstDistance(vs, vp->num, cs, cpm_ptr->pred_b_ptr->num);
 	f->c_fs_flag = vs->Sen_num == 1 ? 1 : 0; /* always 0 */
 	if (f->c_distance > 0 || 
@@ -2102,15 +2102,15 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	}
     }
     f->c_location = loc;
-    f->c_topic_flag = check_feature(bp->f, "¼çÂêÉ½¸½") ? 1 : 0;
-    f->c_no_topic_flag = check_feature(bp->f, "½à¼çÂêÉ½¸½") ? 1 : 0;
+    f->c_topic_flag = check_feature(bp->f, "ä¸»é¡Œè¡¨ç¾") ? 1 : 0;
+    f->c_no_topic_flag = check_feature(bp->f, "æº–ä¸»é¡Œè¡¨ç¾") ? 1 : 0;
     f->c_in_cnoun_flag = bp->inum != 0 ? 1 : 0;
-    f->c_subject_flag = sms_match(sm2code("¼çÂÎ"), bp->SM_code, 
-				  check_feature(bp->f, "£Ô¸ÇÍ­°ìÈÌÅ¸³«¶Ø»ß") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
+    f->c_subject_flag = sms_match(sm2code("ä¸»ä½“"), bp->SM_code, 
+				  check_feature(bp->f, "ï¼´å›ºæœ‰ä¸€èˆ¬å±•é–‹ç¦æ­¢") ? SM_NO_EXPAND_NE : SM_EXPAND_NE) ? 1 : 0;
     f->c_sm_none_flag = f->similarity < 0 ? 1 : 0;
     f->c_extra_tag = -1;
 
-    /* Àè¹Ô»ì¤¬·¸¤ëÍÑ¸À¤È¥¼¥íÂåÌ¾»ì¤ò¤â¤ÄÍÑ¸À¤¬°ìÃ×¤¹¤ë¤«¤É¤¦¤« */
+    /* å…ˆè¡Œè©ãŒä¿‚ã‚‹ç”¨è¨€ã¨ã‚¼ãƒ­ä»£åè©ã‚’ã‚‚ã¤ç”¨è¨€ãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ */
     if (vp && str_eq(cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, vp->jiritu_ptr->Goi)) {
 	f->match_verb = 1;
     }
@@ -2118,7 +2118,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->match_verb = 0;
     }
 
-    /* È¯ÏÃ¥¿¥¤¥×¤Ë´Ø¤¹¤ëfeature */
+    /* ç™ºè©±ã‚¿ã‚¤ãƒ—ã«é–¢ã™ã‚‹feature */
     if (OptAddSvmFeatureUtype) {
 	f->utype = get_utype(bp);
     }
@@ -2126,7 +2126,7 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->utype = 0;
     }
 
-    /* ÃÌÏÃ¹½Â¤¤Î¿¼¤µ */
+    /* è«‡è©±æ§‹é€ ã®æ·±ã• */
     if (OptAddSvmFeatureDiscourseDepth) {
 	f->discourse_depth = get_discourse_depth(bp);
     }
@@ -2134,17 +2134,17 @@ E_FEATURES *SetEllipsisFeatures(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	f->discourse_depth = 0;
     }
 
-    /* ÊªÂÎÇ§¼±·ë²Ì */
+    /* ç‰©ä½“èªè­˜çµæœ */
     if (OptAddSvmFeatureObjectRecognition) {
 	f->objectrecognition = objectrecognition_match(bp, s);
     }
     else {
 	f->objectrecognition = 0;
     }
-    /* ÍÑ¸À¤Ë´Ø¤¹¤ëfeature¤òÀßÄê */
+    /* ç”¨è¨€ã«é–¢ã™ã‚‹featureã‚’è¨­å®š */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
 
-    /* Àè¹Ô»ì¤Î³Ê¤È¾ÊÎ¬²òÀÏÂĞ¾İ³Ê¤¬°ìÃ×¤¹¤ë¤«¤É¤¦¤« */
+    /* å…ˆè¡Œè©ã®æ ¼ã¨çœç•¥è§£æå¯¾è±¡æ ¼ãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ */
     if (f->c_pp == f->p_pp) {
 	f->match_case = 1;
     }
@@ -2166,7 +2166,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     f = (E_FEATURES *)malloc_data(sizeof(E_FEATURES), "SetEllipsisFeaturesExtraTags");
     memset(f, 0, sizeof(E_FEATURES));
 
-    /* Àµ²ò¤«¤É¤¦¤« */
+    /* æ­£è§£ã‹ã©ã†ã‹ */
     if (cpm_ptr->pred_b_ptr->c_cpm_ptr) {
 	f->ellipsis_class = get_example_class(cpm_ptr->pred_b_ptr->c_cpm_ptr, NULL, NULL, cf_ptr, n);
     }
@@ -2174,8 +2174,8 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	f->ellipsis_class = 0;
     }
 
-    if (!strcmp(ExtraTags[tag], "ÉÔÆÃÄê-¿Í") && 
-	cf_match_element(cf_ptr->sm[n], "¼çÂÎ", FALSE)) {
+    if (!strcmp(ExtraTags[tag], "ä¸ç‰¹å®š-äºº") && 
+	cf_match_element(cf_ptr->sm[n], "ä¸»ä½“", FALSE)) {
 	f->similarity = (float)EX_match_subject / 11;
 	f->pos = MATCH_SUBJECT;
     }
@@ -2184,7 +2184,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	f->pos = MATCH_NONE;
     }
 
-    /* Èï»²¾È²ó¿ô */
+    /* è¢«å‚ç…§å›æ•° */
     if (en = CheckEntity(ExtraTags[tag])) {
 	f->refered_num_surface = en->surface_num;
 	f->refered_num_ellipsis = en->ellipsis_num;
@@ -2200,7 +2200,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     f->c_location = loc;
     f->c_extra_tag = tag;
 
-    /* È¯ÏÃ¥¿¥¤¥× */
+    /* ç™ºè©±ã‚¿ã‚¤ãƒ— */
     if (OptAddSvmFeatureUtype) {
 	f->utype = UTYPE_OTHERS;
     }
@@ -2208,7 +2208,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	f->utype = 0;
     }
 
-    /* ÃÌÏÃ¹½Â¤¿¼¤µ */
+    /* è«‡è©±æ§‹é€ æ·±ã• */
     if (OptAddSvmFeatureDiscourseDepth) {
 	f->discourse_depth = 0;
     }
@@ -2218,10 +2218,10 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 
     f->objectrecognition = 0;
 
-    /* ÍÑ¸À¤Ë´Ø¤¹¤ëfeature¤òÀßÄê */
+    /* ç”¨è¨€ã«é–¢ã™ã‚‹featureã‚’è¨­å®š */
     SetEllipsisFeaturesForPred(f, cpm_ptr, cf_ptr, n);
 
-    /* Àè¹Ô»ì¤Î³Ê¤È¾ÊÎ¬²òÀÏÂĞ¾İ³Ê¤¬°ìÃ×¤¹¤ë¤«¤É¤¦¤« */
+    /* å…ˆè¡Œè©ã®æ ¼ã¨çœç•¥è§£æå¯¾è±¡æ ¼ãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ */
     if (f->c_pp == f->p_pp) {
 	f->match_case = 1;
     }
@@ -2251,7 +2251,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
  int ScoreCheckCore(CASE_FRAME *cf_ptr, int n, float score, int pos)
 /*==================================================================*/
 {
-    if (MatchPP(cf_ptr->pp[n][0], "¥Ë")) {
+    if (MatchPP(cf_ptr->pp[n][0], "ãƒ‹")) {
 	if (score > AntecedentDecideThresholdForNi) {
 	    return 1;
 	}
@@ -2259,7 +2259,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	    return 1;
 	}
     }
-    else if (MatchPP(cf_ptr->pp[n][0], "¥¬")) {
+    else if (MatchPP(cf_ptr->pp[n][0], "ã‚¬")) {
 	if (score > AntecedentDecideThresholdForGa) {
 	    return 1;
 	}
@@ -2282,7 +2282,7 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
     if (cf_ptr->type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 	return 0;
     }
-    /* ³Ø½¬´ï¤Î½ĞÎÏ¤¬positive¤Ê¤é 1 */
+    /* å­¦ç¿’å™¨ã®å‡ºåŠ›ãŒpositiveãªã‚‰ 1 */
     else if (OptDiscFlag & OPT_DISC_CLASS_ONLY) {
 	if (maxs) {
 	    value = 1;
@@ -2292,9 +2292,9 @@ E_FEATURES *SetEllipsisFeaturesExtraTags(int tag, CF_PRED_MGR *cpm_ptr,
 	value = ScoreCheckCore(cf_ptr, n, maxscore, maxpos);
     }
 
-    /* ³Ø½¬ÍÑfeature¤ò½ĞÎÏ¤¹¤ë¤È¤­¤Ï¸õÊä¤ò¤¹¤Ù¤Æ½Ğ¤¹ */
+    /* å­¦ç¿’ç”¨featureã‚’å‡ºåŠ›ã™ã‚‹ã¨ãã¯å€™è£œã‚’ã™ã¹ã¦å‡ºã™ */
     if (OptLearn == TRUE) {
-	/* ¤³¤³¤Ç·èÄê¤À¤¬¡¢¤Ş¤Àfeature¤ò½ĞÎÏ¤¹¤ë¤¿¤á¤Ë¤³¤Î¥Õ¥é¥°¤ò¤¿¤Æ¤ë */
+	/* ã“ã“ã§æ±ºå®šã ãŒã€ã¾ã featureã‚’å‡ºåŠ›ã™ã‚‹ãŸã‚ã«ã“ã®ãƒ•ãƒ©ã‚°ã‚’ãŸã¦ã‚‹ */
 	if (value && !AlreadyDecidedFlag) {
 	    AlreadyDecidedFlag = 1;
 	}
@@ -2309,8 +2309,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 	       CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* ²òÀÏ»ş¤Ë¤ÏïçÃÍ°Ê²¼¤Ê¤é¸õÊä¤Ë¤·¤Ê¤¤ */
-    /* ³Ø½¬»ş¤âïçÃÍ°Ê²¼¤Ê¤é¸õÊä¤Ë¤·¤Ê¤¤¤è¤¦¤ËÊÑ¹¹ (Í×¸¡Æ¤) */
+    /* è§£ææ™‚ã«ã¯é–¾å€¤ä»¥ä¸‹ãªã‚‰å€™è£œã«ã—ãªã„ */
+    /* å­¦ç¿’æ™‚ã‚‚é–¾å€¤ä»¥ä¸‹ãªã‚‰å€™è£œã«ã—ãªã„ã‚ˆã†ã«å¤‰æ›´ (è¦æ¤œè¨) */
 //    if (OptLearn == FALSE && 
     if (!ScoreCheckCore(cf_ptr, n, ef->similarity, 0)) {
 	return;
@@ -2348,39 +2348,39 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     cp = EllipsisSvmFeatures2String(ecf);
 
     if (PrintEx || OptDisplay == OPT_DEBUG) {
-	/* Îà»÷ÅÙ¡¢ÉÑÅÙ¡¢°ÌÃÖ¥«¥Æ¥´¥ê¡¢ÃÌÏÃ¹½Â¤¿¼¤µ¡¢È¯ÏÃ¥¿¥¤¥×¡¢½Ğ¸½²ó¿ô¡¢¾ÊÎ¬»²¾È²ó¿ô¡¢Àè¹Ô»ì³Ê¡¢Àè¹Ô»ìÀá¤Î¶¯¤µ¡¢¼çÀá¡¢Ï¢³Ê¡¢¼çÂêÉ½¸½¡¢½à¼çÂêÉ½¸½¡¢Ê£¹çÌ¾»ì¡¢Îã³°¡¢ÍÑ¸À¥¿¥¤¥×¡¢ÍÑ¸ÀÂÖ¡¢ÍÑ¸ÀÀá¤Î¶¯¤µ¡¢ÍÑ¸À¼çÂÎ¡¢ÍÑ¸ÀÊäÊ¸¡¢ÍÑ¸ÀÏ¢³Ê¡¢³Ê°ìÃ×¡¢ÍÑ¸À°ìÃ× */
-	fprintf(stderr, ";; ¡ú SVM³Ø½¬Feature(for %s %s) %s %d: Îà»÷ÅÙ=%f, ÉÑÅÙ=%d, °ÌÃÖC=%s, ¿¼¤µ=%d, È¯ÏÃ¥¿¥¤¥×=%d, ½Ğ¸½²ó¿ô=%.3f, ¾ÊÎ¬»²¾È²ó¿ô=%.3f, Àè¹Ô»ì³Ê=%s, Àè¹Ô»ìÀá=%s, ¼çÀá=%d, Ï¢³Ê=%d, ¼çÂê=%d, ½à¼çÂê=%d, Ê£¹çÌ¾»ì=%d, Îã³°=%d, ÍÑ¸À¥¿¥¤¥×=%d, ÍÑ¸ÀÂÖ=%d, ÍÑ¸ÀÀá=%s, ÍÑ¸À¼çÂÎ=%d, ÍÑ¸ÀÊäÊ¸=%d, ÍÑ¸ÀÏ¢³Ê=%d, ³Ê°ìÃ×=%d, ÍÑ¸À°ìÃ×=%d\n", 
+	/* é¡ä¼¼åº¦ã€é »åº¦ã€ä½ç½®ã‚«ãƒ†ã‚´ãƒªã€è«‡è©±æ§‹é€ æ·±ã•ã€ç™ºè©±ã‚¿ã‚¤ãƒ—ã€å‡ºç¾å›æ•°ã€çœç•¥å‚ç…§å›æ•°ã€å…ˆè¡Œè©æ ¼ã€å…ˆè¡Œè©ç¯€ã®å¼·ã•ã€ä¸»ç¯€ã€é€£æ ¼ã€ä¸»é¡Œè¡¨ç¾ã€æº–ä¸»é¡Œè¡¨ç¾ã€è¤‡åˆåè©ã€ä¾‹å¤–ã€ç”¨è¨€ã‚¿ã‚¤ãƒ—ã€ç”¨è¨€æ…‹ã€ç”¨è¨€ç¯€ã®å¼·ã•ã€ç”¨è¨€ä¸»ä½“ã€ç”¨è¨€è£œæ–‡ã€ç”¨è¨€é€£æ ¼ã€æ ¼ä¸€è‡´ã€ç”¨è¨€ä¸€è‡´ */
+	fprintf(stderr, ";; â˜… SVMå­¦ç¿’Feature(for %s %s) %s %d: é¡ä¼¼åº¦=%f, é »åº¦=%d, ä½ç½®C=%s, æ·±ã•=%d, ç™ºè©±ã‚¿ã‚¤ãƒ—=%d, å‡ºç¾å›æ•°=%.3f, çœç•¥å‚ç…§å›æ•°=%.3f, å…ˆè¡Œè©æ ¼=%s, å…ˆè¡Œè©ç¯€=%s, ä¸»ç¯€=%d, é€£æ ¼=%d, ä¸»é¡Œ=%d, æº–ä¸»é¡Œ=%d, è¤‡åˆåè©=%d, ä¾‹å¤–=%d, ç”¨è¨€ã‚¿ã‚¤ãƒ—=%d, ç”¨è¨€æ…‹=%d, ç”¨è¨€ç¯€=%s, ç”¨è¨€ä¸»ä½“=%d, ç”¨è¨€è£œæ–‡=%d, ç”¨è¨€é€£æ ¼=%d, æ ¼ä¸€è‡´=%d, ç”¨è¨€ä¸€è‡´=%d\n", 
 		pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
 		cpm_ptr->pred_b_ptr->jiritu_ptr->Goi, 
 		(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
-		(ante_cands + i)->ef->ellipsis_class, /* Àµ²ò¤«¤É¤¦¤« */
-		(ante_cands + i)->ef->similarity, /* Îà»÷ÅÙ */
-		(ante_cands + i)->ef->frequency, /* ÉÑÅÙ */
-		loc_code_to_str((ante_cands + i)->ef->c_location), /* °ÌÃÖ¥«¥Æ¥´¥ê */
-		(ante_cands + i)->ef->discourse_depth, /* ÃÌÏÃ¹½Â¤¿¼¤µ */
-		(ante_cands + i)->ef->utype, /* È¯ÏÃ¥¿¥¤¥× */
-		(ante_cands + i)->ef->refered_num_surface, /* ½Ğ¸½²ó¿ô */
-		(ante_cands + i)->ef->refered_num_ellipsis, /* ¾ÊÎ¬»²¾È²ó¿ô */
-		(ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", /* Àè¹Ô»ì³Ê */
-		(ante_cands + i)->ef->c_dep_p_level, /* Àè¹Ô»ì¤Î¶¯¤µ */
-		(ante_cands + i)->ef->c_dep_mc_flag, /* ¼çÀá */
-		(ante_cands + i)->ef->c_n_modify_flag, /* Ï¢³Ê */
-		(ante_cands + i)->ef->c_topic_flag, /* ¼çÂêÉ½¸½ */
-		(ante_cands + i)->ef->c_no_topic_flag, /* ½à¼çÂêÉ½¸½ */
-		(ante_cands + i)->ef->c_in_cnoun_flag, /* Ê£¹çÌ¾»ì */
-		(ante_cands + i)->ef->c_extra_tag, /* Îã³° */
-		(ante_cands + i)->ef->p_type, /* ÍÑ¸À¥¿¥¤¥× */
-		(ante_cands + i)->ef->p_voice, /* ÍÑ¸ÀÂÖ */
-		(ante_cands + i)->ef->p_dep_p_level, /* ÍÑ¸ÀÀá¤Î¶¯¤µ */
-		(ante_cands + i)->ef->p_cf_subject_flag, /* ÍÑ¸À¼çÂÎ */
-		(ante_cands + i)->ef->p_cf_sentence_flag, /* ÍÑ¸ÀÊäÊ¸ */
-		(ante_cands + i)->ef->p_n_modify_flag, /* ÍÑ¸ÀÏ¢³Ê */
-		(ante_cands + i)->ef->match_case, /* ³Ê°ìÃ× */
-		(ante_cands + i)->ef->match_verb /* ÍÑ¸À°ìÃ× */
+		(ante_cands + i)->ef->ellipsis_class, /* æ­£è§£ã‹ã©ã†ã‹ */
+		(ante_cands + i)->ef->similarity, /* é¡ä¼¼åº¦ */
+		(ante_cands + i)->ef->frequency, /* é »åº¦ */
+		loc_code_to_str((ante_cands + i)->ef->c_location), /* ä½ç½®ã‚«ãƒ†ã‚´ãƒª */
+		(ante_cands + i)->ef->discourse_depth, /* è«‡è©±æ§‹é€ æ·±ã• */
+		(ante_cands + i)->ef->utype, /* ç™ºè©±ã‚¿ã‚¤ãƒ— */
+		(ante_cands + i)->ef->refered_num_surface, /* å‡ºç¾å›æ•° */
+		(ante_cands + i)->ef->refered_num_ellipsis, /* çœç•¥å‚ç…§å›æ•° */
+		(ante_cands + i)->ef->c_pp > 0 ? pp_code_to_kstr((ante_cands + i)->ef->c_pp) : "", /* å…ˆè¡Œè©æ ¼ */
+		(ante_cands + i)->ef->c_dep_p_level, /* å…ˆè¡Œè©ã®å¼·ã• */
+		(ante_cands + i)->ef->c_dep_mc_flag, /* ä¸»ç¯€ */
+		(ante_cands + i)->ef->c_n_modify_flag, /* é€£æ ¼ */
+		(ante_cands + i)->ef->c_topic_flag, /* ä¸»é¡Œè¡¨ç¾ */
+		(ante_cands + i)->ef->c_no_topic_flag, /* æº–ä¸»é¡Œè¡¨ç¾ */
+		(ante_cands + i)->ef->c_in_cnoun_flag, /* è¤‡åˆåè© */
+		(ante_cands + i)->ef->c_extra_tag, /* ä¾‹å¤– */
+		(ante_cands + i)->ef->p_type, /* ç”¨è¨€ã‚¿ã‚¤ãƒ— */
+		(ante_cands + i)->ef->p_voice, /* ç”¨è¨€æ…‹ */
+		(ante_cands + i)->ef->p_dep_p_level, /* ç”¨è¨€ç¯€ã®å¼·ã• */
+		(ante_cands + i)->ef->p_cf_subject_flag, /* ç”¨è¨€ä¸»ä½“ */
+		(ante_cands + i)->ef->p_cf_sentence_flag, /* ç”¨è¨€è£œæ–‡ */
+		(ante_cands + i)->ef->p_n_modify_flag, /* ç”¨è¨€é€£æ ¼ */
+		(ante_cands + i)->ef->match_case, /* æ ¼ä¸€è‡´ */
+		(ante_cands + i)->ef->match_verb /* ç”¨è¨€ä¸€è‡´ */
 	    );
     }
     
-    /* ³Ø½¬FEATURE */
+    /* å­¦ç¿’FEATURE */
     EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, (ante_cands + i)->ef->ellipsis_class, cp, 
 				      (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
 				      (ante_cands + i)->ef->p_pp, 
@@ -2419,8 +2419,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
     }
     else if (cand_num > 1) {
 	if (OptDiscFlag & OPT_DISC_RANKING) {
-	    /* ¥Ù¡¼¥¹¥é¥¤¥ó */
-	    /* °ìÈÖ¶á¤¤¤â¤Î¤ò¤È¤ë */
+	    /* ãƒ™ãƒ¼ã‚¹ãƒ©ã‚¤ãƒ³ */
+	    /* ä¸€ç•ªè¿‘ã„ã‚‚ã®ã‚’ã¨ã‚‹ */
 	    if (OptAnaphoraBaseline) {
 		closest_i = -1;
 		closest_s = -1;
@@ -2433,9 +2433,9 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		    }
 		    score = 0;
 
-		    /* ¾ÊÎ¬¸õÊä */
-		    /* ¸õÊä¤ò½ĞÎÏ¤¹¤ë¤¿¤á (ËÜÅö¤Ï¤¤¤é¤Ê¤¤) */
-		    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
+		    /* çœç•¥å€™è£œ */
+		    /* å€™è£œã‚’å‡ºåŠ›ã™ã‚‹ãŸã‚ (æœ¬å½“ã¯ã„ã‚‰ãªã„) */
+		    sprintf(feature_buffer, "Cç”¨;%s;%s;%s;%d;%d;%.3f|%.3f", 
 			    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
 			    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
 			    loc_code_to_str((ante_cands + i)->ef->c_location), 
@@ -2443,14 +2443,14 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			    (ante_cands + i)->ef->similarity, score);
 		    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 		    
-		    /* Îã³°¥¿¥°°Ê³° */
+		    /* ä¾‹å¤–ã‚¿ã‚°ä»¥å¤– */
 		    if ((ante_cands + i)->s) {
 			if ((ante_cands + i)->s->Sen_num > closest_s) {
 			    closest_s = (ante_cands + i)->s->Sen_num;
 			    closest_tnum = (ante_cands + i)->tp->num;
 			    closest_i = i;
 			}
-			/* Æ±¤¸Ê¸ */
+			/* åŒã˜æ–‡ */
 			else if ((ante_cands + i)->s->Sen_num == closest_s) {
 			    if ((ante_cands + i)->tp->num >= closest_tnum) {
 				closest_s = (ante_cands + i)->s->Sen_num;
@@ -2459,14 +2459,14 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 			    }
 			}
 		    }
-		    /* Îã³°¥¿¥°¤òÍ¥Àè¤¹¤ë¾ì¹ç */
+		    /* ä¾‹å¤–ã‚¿ã‚°ã‚’å„ªå…ˆã™ã‚‹å ´åˆ */
 		    else if (OptAnaphoraBaseline == OPT_BASELINE_COOK) {
 			closest_i = i;
 			break;
 		    }
 		}
 
-		if (closest_i >= 0) { /* OPT_BASELINE_NORMAL¤Ç¡¢¤¹¤Ù¤Æ¤Î¸õÊä¤¬Îã³°¥¿¥°¤Î¤È¤­(¸½»şÅÀ¤Ç¤Ï¤¢¤ê¤¨¤Ê¤¤)¤ÏËş¤¿¤µ¤ì¤Ê¤¤ */
+		if (closest_i >= 0) { /* OPT_BASELINE_NORMALã§ã€ã™ã¹ã¦ã®å€™è£œãŒä¾‹å¤–ã‚¿ã‚°ã®ã¨ã(ç¾æ™‚ç‚¹ã§ã¯ã‚ã‚Šãˆãªã„)ã¯æº€ãŸã•ã‚Œãªã„ */
 		    max_num = closest_i;
 		}
 	    }
@@ -2482,15 +2482,15 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		    ecf = EllipsisFeatures2EllipsisSvmFeatures((ante_cands + i)->ef, FALSE);
 		    cp = EllipsisSvmFeatures2String(ecf);
 
-		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("¥Î"), cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
+		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("ãƒ"), cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
 
 		    if (max < score) {
 			max = score;
 			max_num = i;
 		    }
 
-		    /* ¾ÊÎ¬¸õÊä */
-		    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
+		    /* çœç•¥å€™è£œ */
+		    sprintf(feature_buffer, "Cç”¨;%s;%s;%s;%d;%d;%.3f|%.3f", 
 			    (ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
 			    pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
 			    loc_code_to_str((ante_cands + i)->ef->c_location), 
@@ -2518,11 +2518,11 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		    cp = TwinCandSvmFeatures2String(f);
 
 		    if (OptLearn == TRUE) {
-			/* ³Ø½¬FEATURE */
+			/* å­¦ç¿’FEATURE */
 			TwinCandSvmFeaturesString2Feature(em_ptr, cp, ante_cands + i, ante_cands + j);
 		    }
 
-		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("¥Î"), cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
+		    score = classify_by_learning(cp, cpm_ptr->cf.type == CF_PRED ? (ante_cands + i)->ef->p_pp : pp_kstr_to_code("ãƒ"), cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
 
 		    if (score > 0) {
 			vote[i]++;
@@ -2542,8 +2542,8 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 		    max_num = i;
 		}
 
-		/* ¾ÊÎ¬¸õÊä */
-		sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", 
+		/* çœç•¥å€™è£œ */
+		sprintf(feature_buffer, "Cç”¨;%s;%s;%s;%d;%d;%.3f|%.3f", 
 			(ante_cands + i)->tp ? (ante_cands + i)->tp->head_ptr->Goi : (ante_cands + i)->tag, 
 			pp_code_to_kstr_in_context(cpm_ptr, (ante_cands + i)->ef->p_pp), 
 			loc_code_to_str((ante_cands + i)->ef->c_location), 
@@ -2559,7 +2559,7 @@ void push_cand(E_FEATURES *ef, SENTENCE_DATA *s, TAG_DATA *tp, char *tag,
 	max = 1;
     }
 
-    /* ·èÄê */
+    /* æ±ºå®š */
     maxrawscore = (ante_cands + max_num)->ef->similarity;
     maxscore = maxrawscore;
     maxs = (ante_cands + max_num)->s;
@@ -2584,12 +2584,12 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
     ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
     if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
-	/* ²òÀÏ»ş¤Ë¡¢¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
-	/* Ì¾»ì+È½Äê»ì¤ÎÌ¾»ì¤¬¼çÂÎ¤¸¤ã¤Ê¤¤¾ì¹ç¤Ï¥¬³Ê¤ËÉÔÆÃÄê-¿Í¤òÆş¤ì¤Ê¤¤ */
+	/* è§£ææ™‚ã«ã€ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
+	/* åè©+åˆ¤å®šè©ã®åè©ãŒä¸»ä½“ã˜ã‚ƒãªã„å ´åˆã¯ã‚¬æ ¼ã«ä¸ç‰¹å®š-äººã‚’å…¥ã‚Œãªã„ */
 	if (OptLearn == TRUE || 
 	    (!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) && 
-//	     !(str_eq(cf_ptr->pred_type, "È½") && !sms_match(sm2code("¼çÂÎ"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "¥¬")))) {
-	     !(str_eq(cf_ptr->pred_type, "È½") && !sms_match(sm2code("¼çÂÎ"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "¥¬") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT))) {
+//	     !(str_eq(cf_ptr->pred_type, "åˆ¤") && !sms_match(sm2code("ä¸»ä½“"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ã‚¬")))) {
+	     !(str_eq(cf_ptr->pred_type, "åˆ¤") && !sms_match(sm2code("ä¸»ä½“"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ã‚¬") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT))) {
 	    push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	}
 	return;
@@ -2599,7 +2599,7 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
 	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
 	ecp = EllipsisSvmFeatures2String(esf);
 
-	/* ³Ø½¬FEATURE */
+	/* å­¦ç¿’FEATURE */
 	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, ExtraTags[tag], cf_ptr->pp[n][0], 
 					  "?", -1, -1);
@@ -2608,7 +2608,7 @@ void EllipsisDetectSubcontractExtraTagsWithLearning(SENTENCE_DATA *cs, ELLIPSIS_
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
     ecp = EllipsisSvmFeatures2String(esf);
 
-    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("¥Î"), 
+    score = classify_by_learning(ecp, cpm_ptr->cf.type == CF_PRED ? cf_ptr->pp[n][0] : pp_kstr_to_code("ãƒ"), 
 				 cpm_ptr->cf.type == CF_PRED ? OptDiscPredMethod : OptDiscNounMethod);
 
     if (score > maxscore) {
@@ -2637,7 +2637,7 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	/* ²òÀÏ»ş¤Ë¡¢¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
+	/* è§£ææ™‚ã«ã€ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
 	if (OptLearn == TRUE || 
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
@@ -2649,7 +2649,7 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
 	ecp = EllipsisSvmFeatures2String(esf);
 
-	/* ³Ø½¬FEATURE */
+	/* å­¦ç¿’FEATURE */
 	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
@@ -2661,7 +2661,7 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     esf = EllipsisFeatures2EllipsisSvmFeatures(ef, FALSE);
     ecp = EllipsisSvmFeatures2String(esf);
 
-    /* ¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
+    /* ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
     if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	free(esf);
@@ -2670,14 +2670,14 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
     }
 
     if (cpm_ptr->cf.type == CF_NOUN) {
-	/* Ì¾»ì¤Î¾ì¹ç: exact match or (<sm> match and sim > 0.6) */
+	/* åè©ã®å ´åˆ: exact match or (<sm> match and sim > 0.6) */
 	if (ef->similarity >= AntecedentDecideThresholdForNoun) {
-	    score = classify_by_learning(ecp, pp_kstr_to_code("¥Î"), OptDiscNounMethod);
+	    score = classify_by_learning(ecp, pp_kstr_to_code("ãƒ"), OptDiscNounMethod);
 	    similarity = ef->similarity;
 	}
 	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
-	    score = classify_by_learning(ecp, pp_kstr_to_code("¥Î"), OptDiscNounMethod);
-	    similarity = (float)EX_match_subject / 11; /* Æ±ÅÀ¤Î¸õÊäÈæ³Ó¤Î¤¿¤á°ìÄê¤ÎÅÀ¤òÍ¿¤¨¤ë */
+	    score = classify_by_learning(ecp, pp_kstr_to_code("ãƒ"), OptDiscNounMethod);
+	    similarity = (float)EX_match_subject / 11; /* åŒç‚¹ã®å€™è£œæ¯”è¼ƒã®ãŸã‚ä¸€å®šã®ç‚¹ã‚’ä¸ãˆã‚‹ */
 	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
@@ -2690,21 +2690,21 @@ void _EllipsisDetectSubcontractWithLearning(SENTENCE_DATA *s, SENTENCE_DATA *cs,
 	similarity = ef->similarity;
     }
 
-    /* ¾ÊÎ¬¸õÊä */
-    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
+    /* çœç•¥å€™è£œ */
+    sprintf(feature_buffer, "Cç”¨;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
 	    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
 	    ef->similarity, score);
     assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 
-    /* classifier¤¬positive¤ÈÊ¬Îà */
+    /* classifierãŒpositiveã¨åˆ†é¡ */
     if (score > 0) {
 	if (!(OptDiscFlag & OPT_DISC_CLASS_ONLY)) {
 	    score = similarity;
 	}
 
-	/* Îà»÷ÅÙ0¤òÆş¤ì¤ë¤Ë¤Ï¤³¤³¤ò >= ¤Ë¤¹¤ë */
+	/* é¡ä¼¼åº¦0ã‚’å…¥ã‚Œã‚‹ã«ã¯ã“ã“ã‚’ >= ã«ã™ã‚‹ */
 	if (!AlreadyDecidedFlag && score > maxscore) {
 	    maxscore = score;
 	    maxrawscore = ef->similarity;
@@ -2740,11 +2740,11 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	ef = SetEllipsisFeaturesExtraTags(tag, cpm_ptr, cf_ptr, n, loc);
 
 	if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
-	    /* ²òÀÏ»ş¤Ë¡¢¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
-	    /* Ì¾»ì+È½Äê»ì¤ÎÌ¾»ì¤¬¼çÂÎ¤¸¤ã¤Ê¤¤¾ì¹ç¤Ï¥¬³Ê¤ËÉÔÆÃÄê-¿Í¤òÆş¤ì¤Ê¤¤ */
+	    /* è§£ææ™‚ã«ã€ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
+	    /* åè©+åˆ¤å®šè©ã®åè©ãŒä¸»ä½“ã˜ã‚ƒãªã„å ´åˆã¯ã‚¬æ ¼ã«ä¸ç‰¹å®š-äººã‚’å…¥ã‚Œãªã„ */
 	    if (OptLearn == TRUE || 
 		!CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, NULL) &&
-		!(str_eq(cf_ptr->pred_type, "È½") && !sms_match(sm2code("¼çÂÎ"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "¥¬") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
+		!(str_eq(cf_ptr->pred_type, "åˆ¤") && !sms_match(sm2code("ä¸»ä½“"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ã‚¬") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
 		push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	    }
 	    return;
@@ -2784,7 +2784,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
     ef = SetEllipsisFeatures(s, cs, cpm_ptr, cmm_ptr, bp, cf_ptr, n, loc, vs, vp);
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	/* ²òÀÏ»ş¤Ë¡¢¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
+	/* è§£ææ™‚ã«ã€ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
 	if (OptLearn == TRUE || 
 	    !CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	    push_cand(ef, s, bp, NULL, cf_ptr, n);
@@ -2796,7 +2796,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	esf = EllipsisFeatures2EllipsisSvmFeatures(ef, TRUE);
 	ecp = EllipsisSvmFeatures2String(esf);
 
-	/* ³Ø½¬FEATURE */
+	/* å­¦ç¿’FEATURE */
 	EllipsisSvmFeaturesString2Feature(em_ptr, cpm_ptr, ef->ellipsis_class, 
 					  ecp, bp->head_ptr->Goi, cf_ptr->pp[n][0], 
 					  s->KNPSID ? s->KNPSID + 5 : "?", bp->num, loc);
@@ -2805,7 +2805,7 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	free(ecp);
     }
 
-    /* ¤¹¤Ç¤ËÂ¾¤Î³Ê¤Î»Ø¼¨ÂĞ¾İ¤Ë¤Ê¤Ã¤Æ¤¤¤ë¤È¤­¤Ï¤À¤á */
+    /* ã™ã§ã«ä»–ã®æ ¼ã®æŒ‡ç¤ºå¯¾è±¡ã«ãªã£ã¦ã„ã‚‹ã¨ãã¯ã ã‚ */
     if (CheckHaveEllipsisComponent(cpm_ptr, cmm_ptr, l, bp->head_ptr->Goi)) {
 	free(ef);
 	return;
@@ -2813,50 +2813,50 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 
     if (cpm_ptr->cf.type == CF_NOUN) {
 
-	/* ·¸¤ê¼õ¤±´Ø·¸¤Ë¤¢¤ë¾ì¹ç */
+	/* ä¿‚ã‚Šå—ã‘é–¢ä¿‚ã«ã‚ã‚‹å ´åˆ */
 	if (cpm_ptr->pred_b_ptr->num == bp->dpnd_head &&
 	    ef->similarity >= AntecedentDecideThresholdForNounBonus1) {
 	    score = ef->similarity + 
 		AntecedentDecideThresholdForNoun -
 		AntecedentDecideThresholdForNounBonus1;
 	}
-	/* Ä¾Á°¤¬¥Î³Ê¤Î¾ì¹ç¡¢·¸¤ê¼õ¤±¤ËÛ£ËæÀ­¤¬¤¢¤ë¤¿¤á */
+	/* ç›´å‰ãŒãƒæ ¼ã®å ´åˆã€ä¿‚ã‚Šå—ã‘ã«æ›–æ˜§æ€§ãŒã‚ã‚‹ãŸã‚ */
 	if (ef->c_dist_bnst == 1 &&
-	    check_feature(bp->f, "·¸:¥Î³Ê") &&
+	    check_feature(bp->f, "ä¿‚:ãƒæ ¼") &&
 	    ef->similarity >= AntecedentDecideThresholdForNounBonus1) {
 	    score = ef->similarity + 
 		AntecedentDecideThresholdForNoun -
 		AntecedentDecideThresholdForNounBonus1;
 	}
-	/* Ä¾Á°¤¬¡Ö¥Ï¡×¡Ö¥Ç¡×¤Î¤È¤­¤â¾¯¤·¤æ¤ë¤á¤Ë */
+	/* ç›´å‰ãŒã€Œãƒã€ã€Œãƒ‡ã€ã®ã¨ãã‚‚å°‘ã—ã‚†ã‚‹ã‚ã« */
 	else if (ef->c_dist_bnst == 1 && 
-		 (check_feature(bp->f, "¥Ï") || check_feature(bp->f, "¥Ç")) &&
- 		 !check_feature(cpm_ptr->pred_b_ptr->f, "³ç¸Ì»Ï") &&
+		 (check_feature(bp->f, "ãƒ") || check_feature(bp->f, "ãƒ‡")) &&
+ 		 !check_feature(cpm_ptr->pred_b_ptr->f, "æ‹¬å¼§å§‹") &&
 		 ef->similarity >= AntecedentDecideThresholdForNounBonus2) {
 	    score = ef->similarity + 
 		AntecedentDecideThresholdForNoun -
 		AntecedentDecideThresholdForNounBonus2;
 	}
-	/* Ì¾»ì¤Î¾ì¹ç: exact match or (<sm> match and sim > 0.6) */
+	/* åè©ã®å ´åˆ: exact match or (<sm> match and sim > 0.6) */
 	else if (ef->similarity >= AntecedentDecideThresholdForNoun) {
-	    /* ÉÑÅÙ¤ò¹ÍÎ¸¤ä¼çÂêÉ½¸½¤Ê¤É¤ò¹ÍÎ¸(»ÃÄêÅª) */
+	    /* é »åº¦ã‚’è€ƒæ…®ã‚„ä¸»é¡Œè¡¨ç¾ãªã©ã‚’è€ƒæ…®(æš«å®šçš„) */
  	    score = ef->similarity + 
-		/* ÉÑÅÙ¤ÎÂ¿¤¤ÍÑÎã¤Ë¥Ş¥Ã¥Á¤·¤¿¤â¤Î¤òÍ¥Àè) */
+		/* é »åº¦ã®å¤šã„ç”¨ä¾‹ã«ãƒãƒƒãƒã—ãŸã‚‚ã®ã‚’å„ªå…ˆ) */
 		(ef->similarity > 1 ? 0.05 * ef->frequency / (ef->frequency + 100) : 0) +
-		(vs - cs) * 0.01 + /* ¶á¤¤Ê¸¤òÍ¥Àè */
-		(check_feature(bp->f, "¥Ï") ? 0.05 : 0) + /* ¡Ö¥Ï¡×¡Ö¥Ç¥Ï¡×¤òÍ¥Àè */
+		(vs - cs) * 0.01 + /* è¿‘ã„æ–‡ã‚’å„ªå…ˆ */
+		(check_feature(bp->f, "ãƒ") ? 0.05 : 0) + /* ã€Œãƒã€ã€Œãƒ‡ãƒã€ã‚’å„ªå…ˆ */
 		0.02 * ef->c_no_topic_flag;
-	    /* Ï¢ÂÎ½¤¾şÀè¤ËÉ¬¿ÜÍ×ÁÇ¤¬½Ğ¸½¤¹¤ë¾ì¹ç¤¬Â¿¤¤ */
+	    /* é€£ä½“ä¿®é£¾å…ˆã«å¿…é ˆè¦ç´ ãŒå‡ºç¾ã™ã‚‹å ´åˆãŒå¤šã„ */
 	    if (ef->c_dist_bnst < 0 && ef->c_dist_bnst > -5) score += 0.12;
-	    /* Ï¢ÂÎ»ì·ÁÂÖ»Ø¼¨»ì¤¬¤¢¤ë¾ì¹ç¤ÏÁ°Êı¤Ë½Ğ¸½¤¹¤ë²ÄÇ½À­¤¬¹â¤¤ */
+	    /* é€£ä½“è©å½¢æ…‹æŒ‡ç¤ºè©ãŒã‚ã‚‹å ´åˆã¯å‰æ–¹ã«å‡ºç¾ã™ã‚‹å¯èƒ½æ€§ãŒé«˜ã„ */
 	    if (cpm_ptr->pred_b_ptr->child &&
 		cpm_ptr->pred_b_ptr->child[0] &&
-		check_feature(cpm_ptr->pred_b_ptr->child[0]->f, "Ï¢ÂÎ»ì·ÁÂÖ»Ø¼¨»ì") &&
+		check_feature(cpm_ptr->pred_b_ptr->child[0]->f, "é€£ä½“è©å½¢æ…‹æŒ‡ç¤ºè©") &&
 		ef->c_dist_bnst < 0)
 		score -= 0.1;
 	}
 	else if (ef->match_sm_flag && ef->similarity >= AntecedentDecideThresholdForNounSM) {
-	    score = (float)EX_match_subject / 11; /* Æ±ÅÀ¤Î¸õÊäÈæ³Ó¤Î¤¿¤á°ìÄê¤ÎÅÀ¤òÍ¿¤¨¤ë */
+	    score = (float)EX_match_subject / 11; /* åŒç‚¹ã®å€™è£œæ¯”è¼ƒã®ãŸã‚ä¸€å®šã®ç‚¹ã‚’ä¸ãˆã‚‹ */
 	    ef->pos = MATCH_SUBJECT;
 	}
 	else {
@@ -2867,8 +2867,8 @@ void _EllipsisDetectSubcontract(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MG
 	score = ef->similarity;
     }
 
-    /* ¾ÊÎ¬¸õÊä */
-    sprintf(feature_buffer, "CÍÑ;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
+    /* çœç•¥å€™è£œ */
+    sprintf(feature_buffer, "Cç”¨;%s;%s;%s;%d;%d;%.3f|%.3f", bp->head_ptr->Goi, 
 	    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 	    loc_code_to_str(loc), 
 	    ef->c_distance, bp->num, 
@@ -2915,7 +2915,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
 	       CASE_FRAME *cf_ptr, int n, float maxscore, int maxpos, SENTENCE_DATA *maxs)
 /*==================================================================*/
 {
-    /* ¾ÊÎ¬¤Î»Ø¼¨ÂĞ¾İ¤òÆşÎÏÂ¦¤Î³Ê¥Õ¥ì¡¼¥à¤ËÆş¤ì¤ë */
+    /* çœç•¥ã®æŒ‡ç¤ºå¯¾è±¡ã‚’å…¥åŠ›å´ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å…¥ã‚Œã‚‹ */
 
     CASE_FRAME *c_ptr = &(cpm_ptr->cf);
     int d, demonstrative, old_score;
@@ -2924,7 +2924,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
 	return 0;
     }
 
-    /* »Ø¼¨»ì¤Î¾ì¹ç */
+    /* æŒ‡ç¤ºè©ã®å ´åˆ */
     if (cmm_ptr->result_lists_p[l].flag[n] != UNASSIGNED) {
 	d = cmm_ptr->result_lists_p[l].flag[n];
 	old_score = cmm_ptr->result_lists_p[l].score[n];
@@ -2935,7 +2935,7 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
 	demonstrative = 0;
     }
 
-    /* ÂĞ±ş¾ğÊó¤òÄÉ²Ã */
+    /* å¯¾å¿œæƒ…å ±ã‚’è¿½åŠ  */
     cmm_ptr->result_lists_p[l].flag[n] = d;
     cmm_ptr->result_lists_d[l].flag[d] = n;
     cmm_ptr->result_lists_p[l].pos[n] = maxpos;
@@ -2961,17 +2961,17 @@ int AppendToCF(CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_ptr, int l,
     c_ptr->weight[d] = 0;
     c_ptr->adjacent[d] = FALSE;
     if (!demonstrative) {
-	cpm_ptr->elem_b_num[d] = -2;	/* ¾ÊÎ¬¤òÉ½¤¹ */
+	cpm_ptr->elem_b_num[d] = -2;	/* çœç•¥ã‚’è¡¨ã™ */
 	if (b_ptr) {
-	    _make_data_cframe_sm(cpm_ptr, b_ptr);	/* ÌäÂê: ³ÊÇ¼¾ì½ê¤¬ c_ptr->element_num ¸ÇÄê */
+	    _make_data_cframe_sm(cpm_ptr, b_ptr);	/* å•é¡Œ: æ ¼ç´å ´æ‰€ãŒ c_ptr->element_num å›ºå®š */
 	    _make_data_cframe_ex(cpm_ptr, b_ptr);
 	}
 	c_ptr->element_num++;
     }
     else {
-	cpm_ptr->elem_b_num[d] = -3;	/* ¾È±ş¤òÉ½¤¹ */
+	cpm_ptr->elem_b_num[d] = -3;	/* ç…§å¿œã‚’è¡¨ã™ */
 
-	/* »Ø¼¨»ì¤Î¾ì¹ç¡¢¤â¤È¤Î»Ø¼¨»ì¤ÎÊ¬¤Î¥¹¥³¥¢¤ò°ú¤¤¤Æ¤ª¤¯ */
+	/* æŒ‡ç¤ºè©ã®å ´åˆã€ã‚‚ã¨ã®æŒ‡ç¤ºè©ã®åˆ†ã®ã‚¹ã‚³ã‚¢ã‚’å¼•ã„ã¦ãŠã */
 	cmm_ptr->pure_score[l] -= old_score;
     }
     return 1;
@@ -2983,7 +2983,7 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
 {
     int i, count = 0;
 
-    /* ¾ÊÎ¬¤Î»Ø¼¨ÂĞ¾İ¤òÆşÎÏÂ¦¤Î³Ê¥Õ¥ì¡¼¥à¤«¤éºï½ü¤¹¤ë */
+    /* çœç•¥ã®æŒ‡ç¤ºå¯¾è±¡ã‚’å…¥åŠ›å´ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰å‰Šé™¤ã™ã‚‹ */
 
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (cpm_ptr->elem_b_num[i] <= -2) {
@@ -3006,39 +3006,39 @@ int DeleteFromCF(ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr, CF_MATCH_MGR *cmm_p
     /* bp: candidate antecedent
        cpm_ptr->pred_b_ptr: target predicate */
 
-    /* flag == 1 (Ì¾»ì¤Î¤È¤­): ÍÑ¸À¤è¤ê¸å¤Ç¤âOK¤Ë¤¹¤ë */
+    /* flag == 1 (åè©ã®ã¨ã): ç”¨è¨€ã‚ˆã‚Šå¾Œã§ã‚‚OKã«ã™ã‚‹ */
 
     if (OptNoCandidateBehind) {
 	flag = 0;
     }
 
-    if (Bcheck[cs - s][bp->num] || /* ¤¹¤Ç¤Ë¥Á¥§¥Ã¥¯¤·¤¿ */
-	!check_feature(bp->f, "Àè¹Ô»ì¸õÊä") && cpm_ptr->cf.type == CF_PRED || 
-	!check_feature(bp->f, "Ì¾»ì¹à") && !check_feature(bp->f, "Àè¹Ô»ì¸õÊä") && 
+    if (Bcheck[cs - s][bp->num] || /* ã™ã§ã«ãƒã‚§ãƒƒã‚¯ã—ãŸ */
+	!check_feature(bp->f, "å…ˆè¡Œè©å€™è£œ") && cpm_ptr->cf.type == CF_PRED || 
+	!check_feature(bp->f, "åè©é …") && !check_feature(bp->f, "å…ˆè¡Œè©å€™è£œ") && 
 	cpm_ptr->cf.type == CF_NOUN || 
 	(s == cs && bp->num == cpm_ptr->pred_b_ptr->num)) {
 	return FALSE;
     }
 
-    /* ³Ø½¬»ş¤Ï¡¢´ğËÜÅª¾ò·ï¤Î¥Á¥§¥Ã¥¯¤Î¤ß */
+    /* å­¦ç¿’æ™‚ã¯ã€åŸºæœ¬çš„æ¡ä»¶ã®ãƒã‚§ãƒƒã‚¯ã®ã¿ */
     if (OptLearn == TRUE) {
 	return TRUE;
     }
 
-    /* ÍÑ¸À¤ÈÆ±¤¸É½µ­¤Ï¤À¤á */
+    /* ç”¨è¨€ã¨åŒã˜è¡¨è¨˜ã¯ã ã‚ */
     if (!strcmp(bp->head_ptr->Goi, cpm_ptr->pred_b_ptr->head_ptr->Goi)) {
 	return FALSE;
     }
 
-    if (s == cs && /* ÂĞ¾İÊ¸ */
-	((bp->num >= cpm_ptr->pred_b_ptr->num && /* ÍÑ¸À¤è¤ê¸å¤Ïµö¤µ¤Ê¤¤ */
+    if (s == cs && /* å¯¾è±¡æ–‡ */
+	((bp->num >= cpm_ptr->pred_b_ptr->num && /* ç”¨è¨€ã‚ˆã‚Šå¾Œã¯è¨±ã•ãªã„ */
 	  (cpm_ptr->cf.type == CF_PRED || 
-	   bp->num == cpm_ptr->pred_b_ptr->num || /* ¼«Ê¬¼«¿È¤Ï¥À¥á */
-	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* Ì¾»ì: ¿Æ¤¬Æ±¤¸¤È¤­°Ê³°¤Ï¤À¤á */
-	 (!flag && !check_feature(bp->f, "·¸:Ï¢ÍÑ") && 
-	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* ÍÑ¸À¤ËÄ¾ÀÜ·¸¤é¤Ê¤¤ (Ï¢ÍÑ¤Ï²Ä¡¢Ì¾»ì¤â²Ä) */
-	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* ÍÑ¸À¤¬ÂĞ¾İ¤Ë·¸¤é¤Ê¤¤ */
-	 !flag && CheckCaseComponent(cpm_ptr, bp))) { /* ¸µÍÑ¸À¤¬¤½¤ÎÊ¸Àá¤ò³ÊÍ×ÁÇ¤È¤·¤Æ¤â¤¿¤Ê¤¤ */
+	   bp->num == cpm_ptr->pred_b_ptr->num || /* è‡ªåˆ†è‡ªèº«ã¯ãƒ€ãƒ¡ */
+	   (!flag && bp->dpnd_head != cpm_ptr->pred_b_ptr->dpnd_head))) || /* åè©: è¦ªãŒåŒã˜ã¨ãä»¥å¤–ã¯ã ã‚ */
+	 (!flag && !check_feature(bp->f, "ä¿‚:é€£ç”¨") && 
+	  bp->dpnd_head == cpm_ptr->pred_b_ptr->num) || /* ç”¨è¨€ã«ç›´æ¥ä¿‚ã‚‰ãªã„ (é€£ç”¨ã¯å¯ã€åè©ã‚‚å¯) */
+	 (cpm_ptr->pred_b_ptr->dpnd_head == bp->num) || /* ç”¨è¨€ãŒå¯¾è±¡ã«ä¿‚ã‚‰ãªã„ */
+	 !flag && CheckCaseComponent(cpm_ptr, bp))) { /* å…ƒç”¨è¨€ãŒãã®æ–‡ç¯€ã‚’æ ¼è¦ç´ ã¨ã—ã¦ã‚‚ãŸãªã„ */
 	return FALSE;
     }
 
@@ -3053,7 +3053,7 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 {
     int i;
 
-    /* ¾ÊÎ¬Í×ÁÇ¤È¤Ê¤ë¤¿¤á¤Î¾ò·ï */
+    /* çœç•¥è¦ç´ ã¨ãªã‚‹ãŸã‚ã®æ¡ä»¶ */
     if (tp->para_top_p == TRUE || 
 	!CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
 	if (!Bcheck[cs - s][tp->num]) {
@@ -3069,7 +3069,7 @@ int EllipsisDetectRecursive(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *e
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
 	    Bcheck[cs - s][tp->num] = 1;
-	    /* BEST²ò¤òµá¤á¤ë¤È¤­°Ê³°¤Ï¡¢¥¹¥³¥¢¤ò¥Á¥§¥Ã¥¯¤·¤Æreturn */
+	    /* BESTè§£ã‚’æ±‚ã‚ã‚‹ã¨ãä»¥å¤–ã¯ã€ã‚¹ã‚³ã‚¢ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦return */
 	    if (!(OptDiscFlag & OPT_DISC_BEST) && 
 		ScoreCheck(cf_ptr, n)) {
 		return 1;
@@ -3126,9 +3126,9 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
     int i;
     TAG_DATA *tp2;
 
-    /* ¼«Ê¬¡¢ÍÑ¸À¤Î³ÊÍ×ÁÇ(¾ÊÎ¬¹ş¤ß)¡¢»Ò¶¡(ºÆµ¢)¤Î½çÈÖ¤Ë¥Á¥§¥Ã¥¯¤¹¤ë */
+    /* è‡ªåˆ†ã€ç”¨è¨€ã®æ ¼è¦ç´ (çœç•¥è¾¼ã¿)ã€å­ä¾›(å†å¸°)ã®é †ç•ªã«ãƒã‚§ãƒƒã‚¯ã™ã‚‹ */
 
-    /* ¾ÊÎ¬Í×ÁÇ¤È¤Ê¤ë¤¿¤á¤Î¾ò·ï */
+    /* çœç•¥è¦ç´ ã¨ãªã‚‹ãŸã‚ã®æ¡ä»¶ */
     if (tp->para_top_p == TRUE || 
 	(!cpm_ptr->cf.type == CF_NOUN &&
 	 !CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) ||
@@ -3147,7 +3147,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 	    (loc == LOC_POST_OTHERS && s == cs && tp->num > cpm_ptr->pred_b_ptr->num)) {
 	    EllipsisDetectSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, loc, s, tp->pred_b_ptr);
 	    Bcheck[cs - s][tp->num] = 1;
-	    /* BEST²ò¤òµá¤á¤ë¤È¤­°Ê³°¤Ï¡¢¥¹¥³¥¢¤ò¥Á¥§¥Ã¥¯¤·¤Æreturn */
+	    /* BESTè§£ã‚’æ±‚ã‚ã‚‹ã¨ãä»¥å¤–ã¯ã€ã‚¹ã‚³ã‚¢ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦return */
 	    if (!(OptDiscFlag & OPT_DISC_BEST) && 
 		ScoreCheck(cf_ptr, n)) {
 		return 1;
@@ -3155,7 +3155,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 	}
     }
 
-    /* ÍÑ¸À¤Î³ÊÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ (¾ÊÎ¬¤ò´Ş¤à) */
+    /* ç”¨è¨€ã®æ ¼è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ (çœç•¥ã‚’å«ã‚€) */
     tp2 = tp;
     while (tp2->para_top_p) {
 	tp2 = tp2->child[0];
@@ -3168,7 +3168,7 @@ int EllipsisDetectRecursive2(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *
 	return 1;
     }
 
-    /* »Ò¶¡¤ò¤¿¤É¤ë */
+    /* å­ä¾›ã‚’ãŸã©ã‚‹ */
     if (rec_flag == TRUE) {
 	for (i = 0; tp->child[i]; i++) {
 	    if (EllipsisDetectRecursive2(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp->child[i], cf_ptr, n, loc, TRUE) == 1) {
@@ -3192,7 +3192,7 @@ int EllipsisDetectOne(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 	tp = tp->child[0];
     }
 
-    /* ¾ÊÎ¬Í×ÁÇ¤È¤Ê¤ë¤¿¤á¤Î¾ò·ï */
+    /* çœç•¥è¦ç´ ã¨ãªã‚‹ãŸã‚ã®æ¡ä»¶ */
     if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -1, cf_ptr, n, 0, FALSE)) {
 	EllipsisDetectSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, LOC_OTHERS, s, tp->pred_b_ptr);
 	if (ScoreCheck(cf_ptr, n)) {
@@ -3210,20 +3210,20 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 {
     int i;
 
-    /* ÊÂÎó¤òµÛ¼ı */
+    /* ä¸¦åˆ—ã‚’å¸å */
     while (tp->para_top_p) {
 	tp = tp->child[0];
     }
 
     for (i = 0; tp->child[i]; i++) {
-	/* ¥Î³Ê, Ï¢ÂÎ¤Î(Ä¾ÀÜ¤Î)»Ò¶¡¤ò¥Á¥§¥Ã¥¯ (Ê£¹çÌ¾»ì¤Î2¤Ä°Ê¾åÁ°¤Ï¤ß¤Æ¤¤¤Ê¤¤) */
-	if ((check_feature(tp->child[i]->f, "·¸:¥Î³Ê") || 
-	     check_feature(tp->child[i]->f, "·¸:Ï¢ÂÎ") || 
-	     check_feature(tp->child[i]->f, "·¸:ÎÙ")) && 
+	/* ãƒæ ¼, é€£ä½“ã®(ç›´æ¥ã®)å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ (è¤‡åˆåè©ã®2ã¤ä»¥ä¸Šå‰ã¯ã¿ã¦ã„ãªã„) */
+	if ((check_feature(tp->child[i]->f, "ä¿‚:ãƒæ ¼") || 
+	     check_feature(tp->child[i]->f, "ä¿‚:é€£ä½“") || 
+	     check_feature(tp->child[i]->f, "ä¿‚:éš£")) && 
 	    CheckAppropriateCandidate(s, cs, cpm_ptr, tp->child[i], -2, cf_ptr, n, loc, FALSE)) {
 	    EllipsisDetectSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				      tp->child[i], cf_ptr, n, loc, s, tp->child[i]->pred_b_ptr);
-	    /* ¾ÊÎ¬¤òÊä¤Ã¤¿¤â¤Î¤Ç¤Ê¤±¤ì¤Ğ */
+	    /* çœç•¥ã‚’è£œã£ãŸã‚‚ã®ã§ãªã‘ã‚Œã° */
 	    if (!eflag) {
 		Bcheck[cs - s][tp->child[i]->num] = 1;
 	    }
@@ -3238,16 +3238,16 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 {
     int i;
 
-    /* ÊÂÎó¤òµÛ¼ı */
+    /* ä¸¦åˆ—ã‚’å¸å */
     while (tp->para_top_p) {
 	tp = tp->child[0];
     }
 
     for (i = 0; tp->child[i]; i++) {
-	/* ¥Î³Ê, Ï¢ÂÎ¤Î(Ä¾ÀÜ¤Î)»Ò¶¡¤ò¥Á¥§¥Ã¥¯ (Ê£¹çÌ¾»ì¤Î2¤Ä°Ê¾åÁ°¤Ï¤ß¤Æ¤¤¤Ê¤¤) */
-	if (check_feature(tp->child[i]->f, "·¸:¥Î³Ê") || 
-	    check_feature(tp->child[i]->f, "·¸:Ï¢ÂÎ") || 
-	    check_feature(tp->child[i]->f, "·¸:ÎÙ")) {
+	/* ãƒæ ¼, é€£ä½“ã®(ç›´æ¥ã®)å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ (è¤‡åˆåè©ã®2ã¤ä»¥ä¸Šå‰ã¯ã¿ã¦ã„ãªã„) */
+	if (check_feature(tp->child[i]->f, "ä¿‚:ãƒæ ¼") || 
+	    check_feature(tp->child[i]->f, "ä¿‚:é€£ä½“") || 
+	    check_feature(tp->child[i]->f, "ä¿‚:éš£")) {
 	    if (!lc[tp->child[i]->num]) {
 		lc[tp->child[i]->num] = lc_num;
 	    }
@@ -3266,7 +3266,7 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
     ret = (TAG_DATA **)malloc_data(sizeof(TAG_DATA *) * size, "ListPredChildren");
 
     for (i = 0; tp->child[i]; i++) {
-	if (check_feature(tp->child[i]->f, "³ÊÍ×ÁÇ")) { /* Ï¢ÍÑÍ×ÁÇ¤Ï½ü¤¯ */
+	if (check_feature(tp->child[i]->f, "æ ¼è¦ç´ ")) { /* é€£ç”¨è¦ç´ ã¯é™¤ã */
 	    ret[count++] = tp->child[i];
 	}
     }
@@ -3275,13 +3275,13 @@ int SearchCompoundChild(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	TAG_DATA *tmp = tp->parent;
 	while (tmp && tmp->para_top_p) {
 	    for (i = 0; tmp->child[i]; i++) {
-		/* ÊÂÎó¤ÎÍÑ¸À(¼«Ê¬¤ò´Ş¤à)¤ò½ü¤¯ */
+		/* ä¸¦åˆ—ã®ç”¨è¨€(è‡ªåˆ†ã‚’å«ã‚€)ã‚’é™¤ã */
 		if (tmp->child[i]->para_type != PARA_NORMAL) {
 		    if (count >= size - 1) {
 			ret = (TAG_DATA **)realloc_data(ret, sizeof(TAG_DATA *) * (size <<= 1), 
 							"ListPredChildren");
 		    }
-		    if (check_feature(tmp->child[i]->f, "³ÊÍ×ÁÇ")) {
+		    if (check_feature(tmp->child[i]->f, "æ ¼è¦ç´ ")) {
 			ret[count++] = tmp->child[i];
 		    }
 		}
@@ -3300,29 +3300,29 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 			TAG_DATA *bp, CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
-    /* cpm_ptr: ¾ÊÎ¬³ÊÍ×ÁÇ¤ò¤â¤ÄÍÑ¸À
-       bp:      ³ÊÍ×ÁÇ¤ÎÃµº÷ÂĞ¾İ¤È¤Ê¤Ã¤Æ¤¤¤ëÍÑ¸ÀÊ¸Àá
+    /* cpm_ptr: çœç•¥æ ¼è¦ç´ ã‚’ã‚‚ã¤ç”¨è¨€
+       bp:      æ ¼è¦ç´ ã®æ¢ç´¢å¯¾è±¡ã¨ãªã£ã¦ã„ã‚‹ç”¨è¨€æ–‡ç¯€
     */
 
-    /* ¡úÊÂÎó¤ÎN¤Ï? */
+    /* â˜…ä¸¦åˆ—ã®Nã¯? */
 
     int i, num, flag;
     TAG_DATA **children;
 
-    /* ÍÑ¸À¤Î³ÊÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ */
+    /* ç”¨è¨€ã®æ ¼è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
     if (bp->cpm_ptr) {
 	if (bp->cpm_ptr->cmm[0].score != -2) {
-	    /* Ì¾»ì: ¿ÆÍÑ¸À¤Î³ÊÍ×ÁÇ¤Ï°ÌÃÖ¤¬¸å¤Ç¤âµö¤¹flag */
+	    /* åè©: è¦ªç”¨è¨€ã®æ ¼è¦ç´ ã¯ä½ç½®ãŒå¾Œã§ã‚‚è¨±ã™flag */
 	    flag = cpm_ptr->pred_b_ptr->dpnd_head == bp->cpm_ptr->pred_b_ptr->num ? TRUE : FALSE;
 
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
 		    if (bp->cpm_ptr->elem_b_num[num] <= -2 && 
-			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* ÉÔÆÃÄê */
+			bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* ä¸ç‰¹å®š */
 			if (cpm_ptr->cf.type == CF_PRED && (OptDiscFlag & OPT_DISC_TWIN_CAND)) {
 			    EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-							       1, cf_ptr, n, loc); /* "1"¤ÏÉÔÆÃÄê-¿Í */
+							       1, cf_ptr, n, loc); /* "1"ã¯ä¸ç‰¹å®š-äºº */
 			}
 		    }
 		    else if (CheckLocation(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], cs, 
@@ -3334,12 +3334,12 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 						  cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 						  bp->cpm_ptr->elem_b_ptr[num], 
 						  cf_ptr, n, loc, s, bp);
-			/* ¾ÊÎ¬¤òÊä¤Ã¤¿¤â¤Î¤Ç¤Ê¤±¤ì¤Ğ */
+			/* çœç•¥ã‚’è£œã£ãŸã‚‚ã®ã§ãªã‘ã‚Œã° */
 			if (bp->cpm_ptr->elem_b_num[num] > -2) {
 			    Bcheck[cs - s][bp->cpm_ptr->elem_b_ptr[num]->num] = 1;
 			}
 
-			/* ¥Î³Ê¤Î»Ò¶¡¤ò¥Á¥§¥Ã¥¯ */
+			/* ãƒæ ¼ã®å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ */
 			SearchCompoundChild(bp->cpm_ptr->elem_b_num[num] > -2 ? s : bp->cpm_ptr->elem_s_ptr[num], 
 					    cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					    bp->cpm_ptr->elem_b_ptr[num], 
@@ -3349,7 +3349,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 	    }
 	}
 
-	/* ³ÊÍ×ÁÇ¤Ë¤Ê¤Ã¤Æ¤¤¤Ê¤¤»Ò¶¡¤â¥Á¥§¥Ã¥¯ */
+	/* æ ¼è¦ç´ ã«ãªã£ã¦ã„ãªã„å­ä¾›ã‚‚ãƒã‚§ãƒƒã‚¯ */
 	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
 	for (i = 0; children[i]; i++) {
 	    if (CheckAppropriateCandidate(s, cs, cpm_ptr, children[i], -2, cf_ptr, n, loc, FALSE)) {
@@ -3358,7 +3358,7 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 					  cf_ptr, n, loc, s, bp);
 		Bcheck[cs - s][children[i]->num] = 1;
 		
-		/* ¥Î³Ê¤Î»Ò¶¡¤ò¥Á¥§¥Ã¥¯ */
+		/* ãƒæ ¼ã®å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ */
 		SearchCompoundChild(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				    children[i], 
 				    cf_ptr, n, loc, 0);
@@ -3374,20 +3374,20 @@ int SearchCaseComponent(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_pt
 int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, int dist)
 /*==================================================================*/
 {
-    /* cpm_ptr: ¾ÊÎ¬³ÊÍ×ÁÇ¤ò¤â¤ÄÍÑ¸À
-       bp:      ³ÊÍ×ÁÇ¤ÎÃµº÷ÂĞ¾İ¤È¤Ê¤Ã¤Æ¤¤¤ëÍÑ¸ÀÊ¸Àá
+    /* cpm_ptr: çœç•¥æ ¼è¦ç´ ã‚’ã‚‚ã¤ç”¨è¨€
+       bp:      æ ¼è¦ç´ ã®æ¢ç´¢å¯¾è±¡ã¨ãªã£ã¦ã„ã‚‹ç”¨è¨€æ–‡ç¯€
     */
 
     int i, num, sent;
     TAG_DATA **children;
 
-    /* ÍÑ¸À¤Î³ÊÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ */
+    /* ç”¨è¨€ã®æ ¼è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
     if (bp->cpm_ptr) {
 	if (bp->cpm_ptr->cmm[0].score != -2) {
 	    for (i = 0; i < bp->cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
 		num = bp->cpm_ptr->cmm[0].result_lists_p[0].flag[i];
 		if (num != UNASSIGNED) {
-		    if (bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* ÉÔÆÃÄê */
+		    if (bp->cpm_ptr->elem_b_ptr[num] == NULL) { /* ä¸ç‰¹å®š */
 			if (!ExtraLC) {
 			    ExtraLC = lc_num;
 			}
@@ -3396,7 +3396,7 @@ int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, 
 			if (bp->cpm_ptr->elem_b_num[num] > -2) {
 			    sent = dist;
 			}
-			/* ¾ÊÎ¬ */
+			/* çœç•¥ */
 			else {
 			    sent = dist + (cs - bp->cpm_ptr->elem_s_ptr[num]);
 			}
@@ -3405,20 +3405,20 @@ int _SearchCaseComponent(SENTENCE_DATA *cs, TAG_DATA *bp, int **lc, int lc_num, 
 			    lc[sent][bp->cpm_ptr->elem_b_ptr[num]->num] = lc_num;
 			}
 
-			/* ¥Î³Ê¤Î»Ò¶¡¤ò¥Á¥§¥Ã¥¯ */
+			/* ãƒæ ¼ã®å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ */
 			_SearchCompoundChild(bp->cpm_ptr->elem_b_ptr[num], lc[sent], lc_num);
 		    }
 		}
 	    }
 	}
 
-	/* ³ÊÍ×ÁÇ¤Ë¤Ê¤Ã¤Æ¤¤¤Ê¤¤»Ò¶¡¤â¥Á¥§¥Ã¥¯ */
+	/* æ ¼è¦ç´ ã«ãªã£ã¦ã„ãªã„å­ä¾›ã‚‚ãƒã‚§ãƒƒã‚¯ */
 	children = ListPredChildren(bp->cpm_ptr->pred_b_ptr);
 	for (i = 0; children[i]; i++) {
 	    if (!lc[dist][children[i]->num]) {
 		lc[dist][children[i]->num] = lc_num;
 	    }
-	    /* ¥Î³Ê¤Î»Ò¶¡¤ò¥Á¥§¥Ã¥¯ */
+	    /* ãƒæ ¼ã®å­ä¾›ã‚’ãƒã‚§ãƒƒã‚¯ */
 	    _SearchCompoundChild(children[i], lc[dist], lc_num);
 	}
 	free(children);
@@ -3433,15 +3433,15 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 			   TAG_DATA *bp, CASE_FRAME *cf_ptr, int n, int loc)
 /*==================================================================*/
 {
-    /* cpm_ptr: ¾ÊÎ¬³ÊÍ×ÁÇ¤ò¤â¤ÄÍÑ¸À
-       bp:      Í×ÁÇ¤ÎÃµº÷ÂĞ¾İ¤È¤Ê¤Ã¤Æ¤¤¤ëÂÎ¸ÀÊ¸Àá
+    /* cpm_ptr: çœç•¥æ ¼è¦ç´ ã‚’ã‚‚ã¤ç”¨è¨€
+       bp:      è¦ç´ ã®æ¢ç´¢å¯¾è±¡ã¨ãªã£ã¦ã„ã‚‹ä½“è¨€æ–‡ç¯€
     */
 
     int i, j;
 
     /* <PARA> */
     if (bp->para_top_p) {
-	/* bp¤ÈÊÂÎó¤Ë¤Ê¤Ã¤Æ¤¤¤ëÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯
+	/* bpã¨ä¸¦åˆ—ã«ãªã£ã¦ã„ã‚‹è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯
 	for (i = 0; bp->child[i]; i++) {
 	    if (bp->child[i]->para_type == PARA_NORMAL && 
 		bp->child[i]->num != bp->num && 
@@ -3454,7 +3454,7 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 	;
     }
     else {
-	/* bp¤Ë·¸¤ëÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ */
+	/* bpã«ä¿‚ã‚‹è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
 	for (i = 0; bp->child[i]; i++) {
 	    if (bp->child[i] == cpm_ptr->pred_b_ptr) continue;
 	    if (bp->child[i]->para_top_p) {
@@ -3485,8 +3485,8 @@ int SearchRelatedComponent(SENTENCE_DATA *s, ELLIPSIS_MGR *em_ptr,
 		      int check_mc(TAG_DATA *tp)
 /*==================================================================*/
 {
-    if (check_feature(tp->f, "¼çÀá")) {
-	/* check_feature(tp->f, "Ê¸Ëö")) { */
+    if (check_feature(tp->f, "ä¸»ç¯€")) {
+	/* check_feature(tp->f, "æ–‡æœ«")) { */
 	return 1;
     }
     return 0;
@@ -3525,7 +3525,7 @@ int SearchMC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
     SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 			tp, cf_ptr, n, dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC);
 
-    /* Ê¸Ëö¤Ë¤¢¤ëÂÎ¸À(Àè¹Ô»ì¸õÊä)¤Ï OK */
+    /* æ–‡æœ«ã«ã‚ã‚‹ä½“è¨€(å…ˆè¡Œè©å€™è£œ)ã¯ OK */
     if (CheckAppropriateCandidate(s, cs, cpm_ptr, tp, -2, cf_ptr, n, LOC_MC, FALSE)) {
 	EllipsisDetectSubcontract(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, tp, cf_ptr, n, 
 				  dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC, s, tp->pred_b_ptr);
@@ -3551,16 +3551,16 @@ int mark_all_children(SENTENCE_DATA *cs, TAG_DATA *tp, int **lc, int lc_num, int
 	if (tp->child[i]->para_top_p) {
 	    for (j = 0; tp->child[i]->child[j]; j++) {
 		if (tp->child[i]->child[j]->para_type == PARA_NORMAL) {
-		    if (check_feature(tp->child[i]->child[j]->f, "³ÊÍ×ÁÇ")) {
+		    if (check_feature(tp->child[i]->child[j]->f, "æ ¼è¦ç´ ")) {
 			if (!lc[tp->child[i]->child[j]->num]) {
 			    lc[tp->child[i]->child[j]->num] = lc_num;
 			}
 		    }
 		}
-		* ¡ú <PARA> ¤Î¤È¤­ ¡ú *
+		* â˜… <PARA> ã®ã¨ã â˜… *
 	    }
 	}
-	else if (check_feature(tp->child[i]->f, "³ÊÍ×ÁÇ")) {
+	else if (check_feature(tp->child[i]->f, "æ ¼è¦ç´ ")) {
 	    if (!lc[tp->child[i]->num]) {
 		lc[tp->child[i]->num] = lc_num;
 	    }
@@ -3595,7 +3595,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 	}
     }
 
-    /* ÂĞ¾İ¤Ç¤Ï¤Ê¤¤ */
+    /* å¯¾è±¡ã§ã¯ãªã„ */
     if (ctp == NULL || tp->num != ctp->num) {
 	mark_all_children(s, tp, lc, dist == 2 ? LOC_S2_MC : dist == 1 ? LOC_S1_MC : LOC_MC, dist);
     }
@@ -3618,7 +3618,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 	tp = s->tag_data + i; 
 	if (check_mc(tp)) {
 	    if (tp->para_top_p) {
-		/* ¼çÀá¤ò¥Á¥§¥Ã¥¯¤·¤Ê¤¤¤è¤¦¤Ë */
+		/* ä¸»ç¯€ã‚’ãƒã‚§ãƒƒã‚¯ã—ãªã„ã‚ˆã†ã« */
 		start = 1;
 	    }
 	    else {
@@ -3629,8 +3629,8 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 		while (tp2->para_top_p) {
 		    tp2 = tp2->child[0];
 		}
-		/* ¥ì¥Ù¥ë¤¬B¤è¤ê¶¯¤¤½¾Â°Àá */
-		if (check_feature(tp2->f, "·¸:Ï¢ÍÑ") && 
+		/* ãƒ¬ãƒ™ãƒ«ãŒBã‚ˆã‚Šå¼·ã„å¾“å±ç¯€ */
+		if (check_feature(tp2->f, "ä¿‚:é€£ç”¨") && 
 		    subordinate_level_check("B", ((BNST_DATA *)tp2)->f)) {
 		    SearchCaseComponent(s, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					tp2, cf_ptr, n, 
@@ -3654,7 +3654,7 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 	tp = s->tag_data + i;
 	if (check_mc(tp)) {
 	    if (tp->para_top_p) {
-		/* ¼çÀá¤ò¥Á¥§¥Ã¥¯¤·¤Ê¤¤¤è¤¦¤Ë */
+		/* ä¸»ç¯€ã‚’ãƒã‚§ãƒƒã‚¯ã—ãªã„ã‚ˆã†ã« */
 		start = 1;
 	    }
 	    else {
@@ -3665,9 +3665,9 @@ int _SearchMC(SENTENCE_DATA *s, TAG_DATA *ctp, int **lc, int dist)
 		while (tp2->para_top_p) {
 		    tp2 = tp2->child[0];
 		}
-		/* ¥ì¥Ù¥ë¤¬B¤è¤ê¶¯¤¤½¾Â°Àá */
-		if ((ctp == NULL || tp2->num != ctp->num) && /* ÂĞ¾İ¤Ç¤Ï¤Ê¤¤ */
-		    check_feature(tp2->f, "·¸:Ï¢ÍÑ") && 
+		/* ãƒ¬ãƒ™ãƒ«ãŒBã‚ˆã‚Šå¼·ã„å¾“å±ç¯€ */
+		if ((ctp == NULL || tp2->num != ctp->num) && /* å¯¾è±¡ã§ã¯ãªã„ */
+		    check_feature(tp2->f, "ä¿‚:é€£ç”¨") && 
 		    subordinate_level_check("B", ((BNST_DATA *)tp2)->f)) {
 		    mark_all_children(s, tp2, lc, dist == 2 ? LOC_S2_SC : dist == 1 ? LOC_S1_SC : LOC_SC, dist);
 		}
@@ -3687,10 +3687,10 @@ int CheckMatchedLC(SENTENCE_DATA *s, SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF
     int sent, i, dist;
     SENTENCE_DATA *ts;
 
-    /* ÉÔÆÃÄê */
+    /* ä¸ç‰¹å®š */
     if ((OptDiscFlag & OPT_DISC_TWIN_CAND) && ExtraLC == loc && !ExtraCheck) {
 	EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
-					   1, cf_ptr, n, loc); /* "1"¤ÏÉÔÆÃÄê-¿Í */
+					   1, cf_ptr, n, loc); /* "1"ã¯ä¸ç‰¹å®š-äºº */
 	ExtraCheck = 1;
     }
 
@@ -3716,7 +3716,7 @@ int SearchParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     if (tp->parent && 
-	check_feature(tp->parent->f, "ÍÑ¸À")) {
+	check_feature(tp->parent->f, "ç”¨è¨€")) {
 	int i, mcflag;
 	TAG_DATA *tp2;
 
@@ -3728,13 +3728,13 @@ int SearchParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 	    return 0;
 	}
 
-	/* ¿Æ¤¬<PARA>¤Ê¤é<P>¤Î»Ò¶¡¤òÁ´Éô¥Á¥§¥Ã¥¯ */
+	/* è¦ªãŒ<PARA>ãªã‚‰<P>ã®å­ä¾›ã‚’å…¨éƒ¨ãƒã‚§ãƒƒã‚¯ */
 	if (tp->parent->para_top_p) {
 	    for (i = 0; tp->parent->child[i]; i++) {
 		if (tp->parent->child[i]->para_type == PARA_NORMAL && 
 		    tp->parent->child[i]->num > tp->num) {
 
-		    /* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+		    /* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 		    tp2 = tp->parent->child[i];
 		    while (tp2->para_top_p) {
 			tp2 = tp2->child[0];
@@ -3758,17 +3758,17 @@ int SearchParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     if (tp->parent && 
-	check_feature(tp->parent->f, "ÍÑ¸À")) {
+	check_feature(tp->parent->f, "ç”¨è¨€")) {
 	int i;
 	TAG_DATA *tp2;
 
-	/* ¿Æ¤¬<PARA>¤Ê¤é<P>¤Î»Ò¶¡¤òÁ´Éô¥Á¥§¥Ã¥¯ */
+	/* è¦ªãŒ<PARA>ãªã‚‰<P>ã®å­ä¾›ã‚’å…¨éƒ¨ãƒã‚§ãƒƒã‚¯ */
 	if (tp->parent->para_top_p) {
 	    for (i = 0; tp->parent->child[i]; i++) {
 		if (tp->parent->child[i]->para_type == PARA_NORMAL && 
 		    tp->parent->child[i]->num > tp->num) {
 
-		    /* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+		    /* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 		    tp2 = tp->parent->child[i];
 		    while (tp2->para_top_p) {
 			tp2 = tp2->child[0];
@@ -3797,12 +3797,12 @@ int GoUpParaChild(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
     /* tp : <PARA> */
 
     if (tp && tp->para_top_p) {
-	/* ¡ú¤³¤Î»Ò¶¡¤Î½çÈÖ¤Ï? */
+	/* â˜…ã“ã®å­ä¾›ã®é †ç•ªã¯? */
 	for (i = 0; tp->child[i]; i++) {
-	    if (tp->child[i]->num < orig_tp->num && /* »Ò¶¡Â¦ */
+	    if (tp->child[i]->num < orig_tp->num && /* å­ä¾›å´ */
 		tp->child[i]->para_type == PARA_NORMAL) {
 
-		/* <PARA>¤Ç¤Ê¤¯¤Ê¤ë¤Ş¤Ç¤µ¤«¤Î¤Ü¤ëÉ¬Í×¤¬¤¢¤ë */
+		/* <PARA>ã§ãªããªã‚‹ã¾ã§ã•ã‹ã®ã¼ã‚‹å¿…è¦ãŒã‚ã‚‹ */
 		tp2 = tp->child[i];
 		while (tp2->para_top_p) {
 		    tp2 = tp2->child[0];
@@ -3811,7 +3811,7 @@ int GoUpParaChild(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				    tp2, cf_ptr, n, LOC_CHILDPV);
 
-		/* ÊÂÎó¤Î»Ò¤ÏÁ´Éô<PARA>¤Ë·¸¤ë¤Î¤ÇºÆµ¢¤Ë¸Æ¤Ö¤Î¤Ï´Ö°ã¤¤
+		/* ä¸¦åˆ—ã®å­ã¯å…¨éƒ¨<PARA>ã«ä¿‚ã‚‹ã®ã§å†å¸°ã«å‘¼ã¶ã®ã¯é–“é•ã„
 		   GoUpParaChild(cs, em_ptr, cpm_ptr, cmm_ptr, 
 		   tp->child[i], tp->child[i]->child[0], cf_ptr, n); */
 	    }
@@ -3830,10 +3830,10 @@ int _GoUpParaChild(SENTENCE_DATA *s, TAG_DATA *tp, TAG_DATA *orig_tp, int **lc)
 
     if (tp && tp->para_top_p) {
 	for (i = 0; tp->child[i]; i++) {
-	    if (tp->child[i]->num < orig_tp->num && /* »Ò¶¡Â¦ */
+	    if (tp->child[i]->num < orig_tp->num && /* å­ä¾›å´ */
 		tp->child[i]->para_type == PARA_NORMAL) {
 
-		/* <PARA>¤Ç¤Ê¤¯¤Ê¤ë¤Ş¤Ç¤µ¤«¤Î¤Ü¤ëÉ¬Í×¤¬¤¢¤ë */
+		/* <PARA>ã§ãªããªã‚‹ã¾ã§ã•ã‹ã®ã¼ã‚‹å¿…è¦ãŒã‚ã‚‹ */
 		tp2 = tp->child[i];
 		while (tp2->para_top_p) {
 		    tp2 = tp2->child[0];
@@ -3878,12 +3878,12 @@ int SearchChildV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
 		 CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* ¼«Ê¬¤Ï<PARA>¤Ç¤Ê¤¤¤Î¤ÇÊÂÎó¤Ç¤Ï¤Ê¤¤ */
+    /* è‡ªåˆ†ã¯<PARA>ã§ãªã„ã®ã§ä¸¦åˆ—ã§ã¯ãªã„ */
     if (tp->para_type == PARA_NIL) {
 	int i;
 
 	for (i = 0; tp->child[i]; i++) {
-	    if (check_feature(tp->child[i]->f, "ÍÑ¸À")) {
+	    if (check_feature(tp->child[i]->f, "ç”¨è¨€")) {
 		SearchCaseComponent(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				    tp->child[i], cf_ptr, n, LOC_CHILDV);
 	    }
@@ -3896,12 +3896,12 @@ int SearchChildV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *cpm_ptr,
      int _SearchChildV(SENTENCE_DATA *s, TAG_DATA *tp, int **lc)
 /*==================================================================*/
 {
-    /* ¼«Ê¬¤Ï<PARA>¤Ç¤Ê¤¤¤Î¤ÇÊÂÎó¤Ç¤Ï¤Ê¤¤ */
+    /* è‡ªåˆ†ã¯<PARA>ã§ãªã„ã®ã§ä¸¦åˆ—ã§ã¯ãªã„ */
     if (tp->para_type == PARA_NIL) {
 	int i;
 
 	for (i = 0; tp->child[i]; i++) {
-	    if (check_feature(tp->child[i]->f, "ÍÑ¸À")) {
+	    if (check_feature(tp->child[i]->f, "ç”¨è¨€")) {
 		mark_all_children(s, tp->child[i], lc, LOC_CHILDV, 0);
 	    }
 	}
@@ -3918,7 +3918,7 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
     if (tp->parent && 
 	!tp->para_type && 
 	tp->parent->parent && 
-	!check_feature(tp->parent->f, "ÍÑ¸À")) {
+	!check_feature(tp->parent->f, "ç”¨è¨€")) {
 	int mcflag;
 	TAG_DATA *tp2;
 
@@ -3930,7 +3930,7 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 	    return 0;
 	}
 
-	if (check_feature(tp->parent->parent->f, "ÍÑ¸À")) {
+	if (check_feature(tp->parent->parent->f, "ç”¨è¨€")) {
 	    if (tp->parent->parent->para_top_p) {
 		int i;
 
@@ -3938,7 +3938,7 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
 			tp->parent->parent->child[i]->num > tp->parent->num) {
 
-			/* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+			/* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 			tp2 = tp->parent->parent->child[i];
 			while (tp2->para_top_p) {
 			    tp2 = tp2->child[0];
@@ -3965,10 +3965,10 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
     if (tp->parent && 
 	!tp->para_type && 
 	tp->parent->parent && 
-	!check_feature(tp->parent->f, "ÍÑ¸À")) {
+	!check_feature(tp->parent->f, "ç”¨è¨€")) {
 	TAG_DATA *tp2;
 
-	if (check_feature(tp->parent->parent->f, "ÍÑ¸À")) {
+	if (check_feature(tp->parent->parent->f, "ç”¨è¨€")) {
 	    if (tp->parent->parent->para_top_p) {
 		int i;
 
@@ -3976,7 +3976,7 @@ int SearchParentNParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
 			tp->parent->parent->child[i]->num > tp->parent->num) {
 
-			/* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+			/* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 			tp2 = tp->parent->parent->child[i];
 			while (tp2->para_top_p) {
 			    tp2 = tp2->child[0];
@@ -4004,7 +4004,7 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
     if (tp->parent && 
 	!tp->para_type && 
 	tp->parent->parent && 
-	check_feature(tp->parent->f, "ÍÑ¸À")) {
+	check_feature(tp->parent->f, "ç”¨è¨€")) {
 	int mcflag;
 	TAG_DATA *tp2;
 
@@ -4016,7 +4016,7 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 	    return 0;
 	}
 
-	if (check_feature(tp->parent->parent->f, "ÍÑ¸À")) {
+	if (check_feature(tp->parent->parent->f, "ç”¨è¨€")) {
 	    if (tp->parent->parent->para_top_p) {
 		int i;
 
@@ -4024,7 +4024,7 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
 			tp->parent->parent->child[i]->num > tp->parent->num) {
 
-			/* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+			/* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 			tp2 = tp->parent->parent->child[i];
 			while (tp2->para_top_p) {
 			    tp2 = tp2->child[0];
@@ -4051,10 +4051,10 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
     if (tp->parent && 
 	!tp->para_type && 
 	tp->parent->parent && 
-	check_feature(tp->parent->f, "ÍÑ¸À")) {
+	check_feature(tp->parent->f, "ç”¨è¨€")) {
 	TAG_DATA *tp2;
 
-	if (check_feature(tp->parent->parent->f, "ÍÑ¸À")) {
+	if (check_feature(tp->parent->parent->f, "ç”¨è¨€")) {
 	    if (tp->parent->parent->para_top_p) {
 		int i;
 
@@ -4062,7 +4062,7 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
 		    if (tp->parent->parent->child[i]->para_type == PARA_NORMAL && 
 			tp->parent->parent->child[i]->num > tp->parent->num) {
 
-			/* <PARA>¤Ê¤é child[0]¤ò¤ß¤Æ¤¤¤¯É¬Í×¤¬¤¢¤ë */
+			/* <PARA>ãªã‚‰ child[0]ã‚’ã¿ã¦ã„ãå¿…è¦ãŒã‚ã‚‹ */
 			tp2 = tp->parent->parent->child[i];
 			while (tp2->para_top_p) {
 			    tp2 = tp2->child[0];
@@ -4088,10 +4088,10 @@ int SearchParentVParentV(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr, CF_PRED_MGR *c
     int i;
 
     if (tp->para_type == PARA_NORMAL) {
-	/* <PARA>¤Ë·¸¤ëÍ×ÁÇ */
+	/* <PARA>ã«ä¿‚ã‚‹è¦ç´  */
 	/* mark_all_children(tp->parent, lc, check_mc(tp->parent) ? LOC_PV_MC : LOC_PV); */
 	for (i = 0; tp->parent->child[i]; i++) {
-	    if (tp->parent->child[i]->num > tp->num && /* ¿ÆÂ¦ */
+	    if (tp->parent->child[i]->num > tp->num && /* è¦ªå´ */
 		tp->parent->child[i]->para_type == PARA_NORMAL) {
 		mark_all_children(s, tp->parent->child[i], lc, check_mc(tp->parent->child[i]) ? LOC_PV_MC : LOC_PV, 0);
 	    }
@@ -4105,11 +4105,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 			  CASE_FRAME *cf_ptr, int n)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¤È¤½¤Î¾ÊÎ¬³Ê¤¬Í¿¤¨¤é¤ì¤ë */
+    /* ç”¨è¨€ã¨ãã®çœç•¥æ ¼ãŒä¸ãˆã‚‰ã‚Œã‚‹ */
 
-    /* cf_ptr = cpm_ptr->cmm[0].cf_ptr ¤Ç¤¢¤ë */
-    /* ÍÑ¸À cpm_ptr ¤Î cf_ptr->pp[n][0] ³Ê¤¬¾ÊÎ¬¤µ¤ì¤Æ¤¤¤ë
-       cf_ptr->ex[n] ¤Ë»÷¤Æ¤¤¤ëÊ¸Àá¤òÃµ¤¹ */
+    /* cf_ptr = cpm_ptr->cmm[0].cf_ptr ã§ã‚ã‚‹ */
+    /* ç”¨è¨€ cpm_ptr ã® cf_ptr->pp[n][0] æ ¼ãŒçœç•¥ã•ã‚Œã¦ã„ã‚‹
+       cf_ptr->ex[n] ã«ä¼¼ã¦ã„ã‚‹æ–‡ç¯€ã‚’æ¢ã™ */
 
     int i, j, mc = 0;
     char feature_buffer[DATA_LEN], etc_buffer[DATA_LEN], *cp;
@@ -4128,7 +4128,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
     ExtraCheck = 0;
 
-    /* best²ò¤òÃµ¤¹¾ì¹ç */
+    /* bestè§£ã‚’æ¢ã™å ´åˆ */
     if (OptDiscFlag & OPT_DISC_BEST) {
 	for (i = 0; i <= PrevSentenceLimit; i++) {
 	    if (cs - sentence_data < i) {
@@ -4139,11 +4139,11 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 				    cf_ptr, n, LOC_OTHERS);
 	}
 
-	/* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¸«¤Ä¤«¤é¤Ê¤«¤Ã¤¿ */
+	/* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ */
 	if (!ScoreCheck(cf_ptr, n)) {
-	    /* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¤Ê¤¯¡¢³Ê¥Õ¥ì¡¼¥à¤Ë<¼çÂÎ>¤¬¤¢¤ë¤È¤­ */
-	    if (cf_match_element(cf_ptr->sm[n], "¼çÂÎ", FALSE)) {
-		maxtag = ExtraTags[1]; /* ÉÔÆÃÄê-¿Í */
+	    /* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒãªãã€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«<ä¸»ä½“>ãŒã‚ã‚‹ã¨ã */
+	    if (cf_match_element(cf_ptr->sm[n], "ä¸»ä½“", FALSE)) {
+		maxtag = ExtraTags[1]; /* ä¸ç‰¹å®š-äºº */
 	    }
 	    else {
 		return 0;
@@ -4160,7 +4160,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	max_n = post_n > pre_n ? post_n : pre_n;
 
-	/* ÂĞ¾İÊ¸ */
+	/* å¯¾è±¡æ–‡ */
 	for (i = 1; i < max_n; i++) {
 	    if (cpm_ptr->pred_b_ptr->num - i >= 0) {
 		EllipsisDetectOne(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
@@ -4175,7 +4175,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	    }
 	}
 
-	/* Á°Ê¸°ÊÁ° */
+	/* å‰æ–‡ä»¥å‰ */
 	for (j = 1; j <= PrevSentenceLimit; j++) {
 	    if (cs - sentence_data < j) {
 		break;
@@ -4190,20 +4190,20 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* °ÌÃÖ¥«¥Æ¥´¥ê¤Î½çÈÖ¤ÇÃµ¤¹ */
+    /* ä½ç½®ã‚«ãƒ†ã‚´ãƒªã®é †ç•ªã§æ¢ã™ */
 
-    /* (ÍÑ¸À¤Î)ÊÂÎó¤òµÛ¼ı */
+    /* (ç”¨è¨€ã®)ä¸¦åˆ—ã‚’å¸å */
     tp = cpm_ptr->pred_b_ptr;
     while (tp->para_type == PARA_NORMAL && 
 	   tp->parent && tp->parent->para_top_p) {
 	tp = tp->parent;
     }
-    /* ÊÂÎó¤Ê¤é tp ¤Ï <PARA> ¤Ë¤Ê¤ë */
+    /* ä¸¦åˆ—ãªã‚‰ tp ã¯ <PARA> ã«ãªã‚‹ */
     ptp = tp;
 
-    if (!(MatchPP(cf_ptr->pp[n][0], "¥¬") || 
-	  MatchPP(cf_ptr->pp[n][0], "¥ò") || 
-	  MatchPP(cf_ptr->pp[n][0], "¥Ë"))) {
+    if (!(MatchPP(cf_ptr->pp[n][0], "ã‚¬") || 
+	  MatchPP(cf_ptr->pp[n][0], "ãƒ²") || 
+	  MatchPP(cf_ptr->pp[n][0], "ãƒ‹"))) {
 	fprintf(stderr, ";; Cannot handle <%s> of zero pronoun\n", pp_code_to_kstr(cf_ptr->pp[n][0]));
 	return 0;
     }
@@ -4235,7 +4235,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* 2Ê¸¤è¤ê°ÊÁ° */
+    /* 2æ–‡ã‚ˆã‚Šä»¥å‰ */
     for (i = 3; i <= PrevSentenceLimit; i++) {
 	if (cs - sentence_data < i) {
 	    break;
@@ -4251,9 +4251,9 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
 
     if (OptDiscFlag & OPT_DISC_TWIN_CAND) {
-	/* Îã³°¥¿¥° */
+	/* ä¾‹å¤–ã‚¿ã‚° */
 	/* for (i = 0; ExtraTags[i][0]; i++) */
-	i = 1; /* ¤È¤ê¤¢¤¨¤º ÉÔÆÃÄê-¿Í */
+	i = 1; /* ã¨ã‚Šã‚ãˆãš ä¸ç‰¹å®š-äºº */
 	if (!ExtraCheck) {
 	    EllipsisDetectSubcontractExtraTags(cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 					       i, cf_ptr, n, LOC_OTHERS);
@@ -4268,12 +4268,12 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	clear_cands();
     }
     else {
-	/* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¸«¤Ä¤«¤é¤Ê¤«¤Ã¤¿ */
+	/* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ */
 	if (!ScoreCheck(cf_ptr, n)) {
-	    /* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¤Ê¤¯¡¢¥¬³Ê¤Ş¤¿¤Ï³Ê¥Õ¥ì¡¼¥à¤Ë<¼çÂÎ>¤¬¤¢¤ë¤È¤­ */
-	    if (MatchPP(cf_ptr->pp[n][0], "¥¬") || 
-		cf_match_element(cf_ptr->sm[n], "¼çÂÎ", FALSE)) {
-		maxtag = ExtraTags[1]; /* ÉÔÆÃÄê-¿Í */
+	    /* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒãªãã€ã‚¬æ ¼ã¾ãŸã¯æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«<ä¸»ä½“>ãŒã‚ã‚‹ã¨ã */
+	    if (MatchPP(cf_ptr->pp[n][0], "ã‚¬") || 
+		cf_match_element(cf_ptr->sm[n], "ä¸»ä½“", FALSE)) {
+		maxtag = ExtraTags[1]; /* ä¸ç‰¹å®š-äºº */
 		maxpos = MATCH_SUBJECT;
 		maxscore = (float)EX_match_subject / 11;
 	    }
@@ -4285,27 +4285,27 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
   EvalAntecedent:
     if (maxtag) {
-	if (str_eq(maxtag, "ÉÔÆÃÄê-¿Í")) {
-	    sprintf(feature_buffer, "CÍÑ;¡ÚÉÔÆÃÄê-¿Í¡Û;%s;-1;-1;1", 
+	if (str_eq(maxtag, "ä¸ç‰¹å®š-äºº")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸ç‰¹å®š-äººã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
 
-	    /* »Ø¼¨ÂĞ¾İ¤ò³Ê¥Õ¥ì¡¼¥à¤ËÊİÂ¸ */
+	    /* æŒ‡ç¤ºå¯¾è±¡ã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ä¿å­˜ */
 	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
 	    return 1;
 	}
-	else if (str_eq(maxtag, "°ì¿Í¾Î")) {
-	    sprintf(feature_buffer, "CÍÑ;¡Ú°ì¿Í¾Î¡Û;%s;-1;-1;1", 
+	else if (str_eq(maxtag, "ä¸€äººç§°")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸€äººç§°ã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
 	}
-	else if (str_eq(maxtag, "ÉÔÆÃÄê-¾õ¶·")) {
-	    sprintf(feature_buffer, "CÍÑ;¡ÚÉÔÆÃÄê-¾õ¶·¡Û;%s;-1;-1;1", 
+	else if (str_eq(maxtag, "ä¸ç‰¹å®š-çŠ¶æ³")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸ç‰¹å®š-çŠ¶æ³ã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
@@ -4321,15 +4321,15 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	distance = cs - maxs;
 	if (distance == 0) {
-	    strcpy(etc_buffer, "Æ±°ìÊ¸");
+	    strcpy(etc_buffer, "åŒä¸€æ–‡");
 	}
 	else if (distance > 0) {
-	    sprintf(etc_buffer, "%dÊ¸Á°", distance);
+	    sprintf(etc_buffer, "%dæ–‡å‰", distance);
 	}
 
-	/* ·èÄê¤·¤¿¾È±ş´Ø·¸ */
+	/* æ±ºå®šã—ãŸç…§å¿œé–¢ä¿‚ */
 	if (cmm_ptr->result_lists_p[l].flag[n] != UNASSIGNED) {
-	    sprintf(feature_buffer, "¾È±ş²¾·èÄê;%d;CÍÑ;¡Ú%s¡Û;%s;%d;%d;%.3f:%s(%s):%dÊ¸Àá", 
+	    sprintf(feature_buffer, "ç…§å¿œä»®æ±ºå®š;%d;Cç”¨;ã€%sã€‘;%s;%d;%d;%.3f:%s(%s):%dæ–‡ç¯€", 
 		    cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[n]]->num, 
 		    word ? word : "?", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
@@ -4338,8 +4338,8 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 		    etc_buffer, maxi);
 	}
 	else {
-	    /* ·èÄê¤·¤¿¾ÊÎ¬´Ø·¸ */
-	    sprintf(feature_buffer, "CÍÑ;¡Ú%s¡Û;%s;%d;%d;%.3f:%s(%s):%dÊ¸Àá", 
+	    /* æ±ºå®šã—ãŸçœç•¥é–¢ä¿‚ */
+	    sprintf(feature_buffer, "Cç”¨;ã€%sã€‘;%s;%d;%d;%.3f:%s(%s):%dæ–‡ç¯€", 
 		    word ? word : "?", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 		    distance, maxi, 
@@ -4352,7 +4352,7 @@ int EllipsisDetectForVerb(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), NULL, 
 			       maxs, maxi, maxscore, distance);
 
-	/* »Ø¼¨ÂĞ¾İ¤ò³Ê¥Õ¥ì¡¼¥à¤ËÊİÂ¸ */
+	/* æŒ‡ç¤ºå¯¾è±¡ã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ä¿å­˜ */
 	AppendToCF(cpm_ptr, cmm_ptr, l, maxs->tag_data + maxi, cf_ptr, n, maxscore, maxpos, maxs);
 	return 1;
     }
@@ -4382,10 +4382,10 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
     }
     ExtraCheck = 0;
 
-    /* ¶¦»²¾È¥ê¥ó¥¯¤òÃ©¤Ã¤Æ¥¿¥°¤Ä¤±
-       ¤¿¤À¤·Ì¾»ì¤Ë¸ÂÄê¤·(ÀÜÈø¼­½ü¤¯)¤³¤³¤Ç¤ÏÆ±¤¸É½µ­¤Î¸ì¤òÃ©¤ë¤À¤±
-       ³Ê²òÀÏ¤Î·ë²ÌÅ¬Åö¤Ê³Ê¤¬Ëä¤Ş¤é¤Ê¤«¤Ã¤¿¾ì¹ç¤È
-       ¶¦»²¾È²òÀÏ·ë²Ì¤¬¤Ê¤¤¾ì¹ç¤Î¤ß¼Â¹Ô¤µ¤ì¤ë */
+    /* å…±å‚ç…§ãƒªãƒ³ã‚¯ã‚’è¾¿ã£ã¦ã‚¿ã‚°ã¤ã‘
+       ãŸã ã—åè©ã«é™å®šã—(æ¥å°¾è¾é™¤ã)ã“ã“ã§ã¯åŒã˜è¡¨è¨˜ã®èªã‚’è¾¿ã‚‹ã ã‘
+       æ ¼è§£æã®çµæœé©å½“ãªæ ¼ãŒåŸ‹ã¾ã‚‰ãªã‹ã£ãŸå ´åˆã¨
+       å…±å‚ç…§è§£æçµæœãŒãªã„å ´åˆã®ã¿å®Ÿè¡Œã•ã‚Œã‚‹ */
     if (0 && cpm_ptr->pred_b_ptr->head_ptr->Hinshi == 6 &&
 	(ccp = CheckTagTarget(cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 			      cpm_ptr->pred_b_ptr->voice, 
@@ -4401,7 +4401,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
     }
 
-    /* best²ò¤òÃµ¤¹¾ì¹ç */
+    /* bestè§£ã‚’æ¢ã™å ´åˆ */
     if (OptDiscFlag & OPT_DISC_BEST) {
 	for (i = 0; i <= PrevSentenceLimit; i++) {
 	    if (cs - sentence_data < i) {
@@ -4411,27 +4411,27 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 				     (cs - i)->tag_data + (cs - i)->Tag_num - 1, 
 				     cf_ptr, n, LOC_OTHERS, TRUE);
 	}
-	/* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¸«¤Ä¤«¤é¤Ê¤«¤Ã¤¿ */
+	/* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ */
 	if (!ScoreCheck(cf_ptr, n)) {
 	    return 0;
 	}
 	goto EvalAntecedentNoun;
     }
 
-    /* ¿Æ */
+    /* è¦ª */
     if (cpm_ptr->pred_b_ptr->parent &&
 	EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cpm_ptr->pred_b_ptr->parent, 
 				 cf_ptr, n, LOC_OTHERS, FALSE)) {
 	goto EvalAntecedentNoun;
     }
-    /* ¼çÀá */
+    /* ä¸»ç¯€ */
     else if (EllipsisDetectRecursive2(cs, cs, em_ptr, cpm_ptr, cmm_ptr, l, 
 				 cs->tag_data + cs->Tag_num - 1, 
 				 cf_ptr, n, LOC_OTHERS, TRUE)) {
 	goto EvalAntecedentNoun;
     }
-    /* Á°Ê¸¤è¤êÁ° */
+    /* å‰æ–‡ã‚ˆã‚Šå‰ */
     else {
 	for (i = 1; i <= PrevSentenceLimit; i++) {
 	    if (cs - sentence_data < i) {
@@ -4458,35 +4458,35 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	}
 	clear_cands();
     }
-    /* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¤Ê¤¤¤È¤­ */
+    /* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒãªã„ã¨ã */
     else {
 	return 0;
     }
 
   EvalAntecedentNoun:
-    /* ïçÃÍ¤ò±Û¤¨¤ë¤â¤Î¤¬¸«¤Ä¤«¤Ã¤¿ */
+    /* é–¾å€¤ã‚’è¶Šãˆã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã£ãŸ */
     if (maxtag) {
-	if (str_eq(maxtag, "ÉÔÆÃÄê-¿Í")) {
-	    sprintf(feature_buffer, "CÍÑ;¡ÚÉÔÆÃÄê-¿Í¡Û;%s;-1;-1;1", 
+	if (str_eq(maxtag, "ä¸ç‰¹å®š-äºº")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸ç‰¹å®š-äººã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 				   NULL, ELLIPSIS_TAG_UNSPECIFIED_PEOPLE, 0, 0);
 
-	    /* »Ø¼¨ÂĞ¾İ¤ò³Ê¥Õ¥ì¡¼¥à¤ËÊİÂ¸ */
+	    /* æŒ‡ç¤ºå¯¾è±¡ã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ä¿å­˜ */
 	    AppendToCF(cpm_ptr, cmm_ptr, l, NULL, cf_ptr, n, maxscore, maxpos, NULL);
 	    return 1;
 	}
-	else if (str_eq(maxtag, "°ì¿Í¾Î")) {
-	    sprintf(feature_buffer, "CÍÑ;¡Ú°ì¿Í¾Î¡Û;%s;-1;-1;1", 
+	else if (str_eq(maxtag, "ä¸€äººç§°")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸€äººç§°ã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 				   NULL, ELLIPSIS_TAG_I_WE, 0, 0);
 	    return 1;
 	}
-	else if (str_eq(maxtag, "ÉÔÆÃÄê-¾õ¶·")) {
-	    sprintf(feature_buffer, "CÍÑ;¡ÚÉÔÆÃÄê-¾õ¶·¡Û;%s;-1;-1;1", 
+	else if (str_eq(maxtag, "ä¸ç‰¹å®š-çŠ¶æ³")) {
+	    sprintf(feature_buffer, "Cç”¨;ã€ä¸ç‰¹å®š-çŠ¶æ³ã€‘;%s;-1;-1;1", 
 		    pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	    assign_cfeature(&(em_ptr->f), feature_buffer, FALSE);
 	    StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
@@ -4502,14 +4502,14 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 
 	distance = cs - maxs;
 	if (distance == 0) {
-	    strcpy(etc_buffer, "Æ±°ìÊ¸");
+	    strcpy(etc_buffer, "åŒä¸€æ–‡");
 	}
 	else if (distance > 0) {
-	    sprintf(etc_buffer, "%dÊ¸Á°", distance);
+	    sprintf(etc_buffer, "%dæ–‡å‰", distance);
 	}
 
-	/* ·èÄê¤·¤¿¾ÊÎ¬´Ø·¸ */
-	sprintf(feature_buffer, "CÍÑ;¡Ú%s¡Û;%s;%d;%d;%.3f:%s(%s):%dÊ¸Àá", 
+	/* æ±ºå®šã—ãŸçœç•¥é–¢ä¿‚ */
+	sprintf(feature_buffer, "Cç”¨;ã€%sã€‘;%s;%d;%d;%.3f:%s(%s):%dæ–‡ç¯€", 
 		word ? word : "?", 
 		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]), 
 		distance, maxi, 
@@ -4521,7 +4521,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	StoreEllipsisComponent(&(em_ptr->cc[cf_ptr->pp[n][0]]), cf_ptr->pp_str[n], 
 			       maxs, maxi, maxscore, distance);
 
-	/* »Ø¼¨ÂĞ¾İ¤ò³Ê¥Õ¥ì¡¼¥à¤ËÊİÂ¸ */
+	/* æŒ‡ç¤ºå¯¾è±¡ã‚’æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ä¿å­˜ */
 	AppendToCF(cpm_ptr, cmm_ptr, l, maxs->tag_data + maxi, cf_ptr, n, maxscore, maxpos, maxs);
 	return 1;
     }
@@ -4532,7 +4532,7 @@ int EllipsisDetectForNoun(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr,
 	       int GetElementID(CASE_FRAME *cfp, int c)
 /*==================================================================*/
 {
-    /* ³Ê¤ÎÈÖ¹æ¤«¤é¡¢³Ê¥Õ¥ì¡¼¥à¤ÎÍ×ÁÇÈÖ¹æ¤ËÊÑ´¹¤¹¤ë */
+    /* æ ¼ã®ç•ªå·ã‹ã‚‰ã€æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¦ç´ ç•ªå·ã«å¤‰æ›ã™ã‚‹ */
 
     int i;
 
@@ -4550,10 +4550,10 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 {
     char feature_buffer[DATA_LEN];
 
-    /* <ÉÔÆÃÄê:¾õ¶·> ¤ò¥¬³Ê¤È¤·¤Æ¤È¤ëÈ½Äê»ì */
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "»ş´Ö¥¬¾ÊÎ¬") && 
-	MatchPP(cf_ptr->pp[n][0], "¥¬")) {
-	sprintf(feature_buffer, "CÍÑ;¡ÚÉÔÆÃÄê-¾õ¶·¡Û;%s;-1;-1;1", 
+    /* <ä¸ç‰¹å®š:çŠ¶æ³> ã‚’ã‚¬æ ¼ã¨ã—ã¦ã¨ã‚‹åˆ¤å®šè© */
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "æ™‚é–“ã‚¬çœç•¥") && 
+	MatchPP(cf_ptr->pp[n][0], "ã‚¬")) {
+	sprintf(feature_buffer, "Cç”¨;ã€ä¸ç‰¹å®š-çŠ¶æ³ã€‘;%s;-1;-1;1", 
 		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(&(cpm_ptr->pred_b_ptr->f), feature_buffer, FALSE);
 	return 0;
@@ -4567,21 +4567,21 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
 {
     int i, num;
 
-    /* ³Ê¥Õ¥ì¡¼¥à¤ËÊäÊ¸¥È³Ê¤Ë³ä¤êÅö¤Æ¤¬¤¢¤ë¤«¤É¤¦¤«Ä´¤Ù¤ë */
+    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«è£œæ–‡ãƒˆæ ¼ã«å‰²ã‚Šå½“ã¦ãŒã‚ã‚‹ã‹ã©ã†ã‹èª¿ã¹ã‚‹ */
     for (i = 0; i < cf_ptr->element_num; i++) {
 	num = cmm_ptr->result_lists_p[l].flag[i];
 	if (num != UNASSIGNED && 
-	    MatchPP(cf_ptr->pp[i][0], "¥È")) {
-	    /* check_feature(cpm_ptr->elem_b_ptr[num]->f, "ÊäÊ¸")) { */
+	    MatchPP(cf_ptr->pp[i][0], "ãƒˆ")) {
+	    /* check_feature(cpm_ptr->elem_b_ptr[num]->f, "è£œæ–‡")) { */
 	    return TRUE;
 	}
     }
 
-    /* ÆşÎÏÊ¸¤ËÊäÊ¸¥È³Ê¤¬¤¢¤ë¤«Ä´¤Ù¤ë */
+    /* å…¥åŠ›æ–‡ã«è£œæ–‡ãƒˆæ ¼ãŒã‚ã‚‹ã‹èª¿ã¹ã‚‹ */
     for (i = 0; i < cpm_ptr->cf.element_num; i++) {
 	if (cpm_ptr->elem_b_num[i] > -2 && 
-	    MatchPP(cpm_ptr->cf.pp[i][0], "¥È")) {
-	    /* check_feature(cpm_ptr->elem_b_ptr[i]->f, "ÊäÊ¸")) { */
+	    MatchPP(cpm_ptr->cf.pp[i][0], "ãƒˆ")) {
+	    /* check_feature(cpm_ptr->elem_b_ptr[i]->f, "è£œæ–‡")) { */
 	    return TRUE;
 	}
     }
@@ -4601,7 +4601,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     if (OptDiscFlag & OPT_DISC_NO_WO_TO) {
 	toflag = 0;
     }
-    else { /* ¥È³Ê<ÊäÊ¸>¤¬¤¢¤ì¤Ğ¥ò³Ê¤ò¾ÊÎ¬²òÀÏ¤·¤Ê¤¤¾ì¹ç */
+    else { /* ãƒˆæ ¼<è£œæ–‡>ãŒã‚ã‚Œã°ãƒ²æ ¼ã‚’çœç•¥è§£æã—ãªã„å ´åˆ */
 	toflag = CheckToCase(cpm_ptr, cmm_ptr, l, cf_ptr);
     }
 
@@ -4613,15 +4613,15 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     }
     cases[count] = END_M;
 
-    /* ³Ê¤òÍ¿¤¨¤é¤ì¤¿½çÈÖ¤Ë */
+    /* æ ¼ã‚’ä¸ãˆã‚‰ã‚ŒãŸé †ç•ªã« */
     for (j = 0; cases[j] != END_M; j++) {
 	for (i = 0; i < cf_ptr->element_num; i++) {
-	    /* »Ø¼¨»ì¤Î²òÀÏ (³ä¤êÅö¤Æ¤¢¤ê) */
+	    /* æŒ‡ç¤ºè©ã®è§£æ (å‰²ã‚Šå½“ã¦ã‚ã‚Š) */
 	    if ((OptEllipsis & OPT_DEMO) && 
 		cmm_ptr->result_lists_p[l].flag[i] != UNASSIGNED && 
 		cf_ptr->pp[i][0] == cases[j] && 
 		cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[i]] && 
-		check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[i]]->f, "¾ÊÎ¬²òÀÏÂĞ¾İ»Ø¼¨»ì")) {
+		check_feature(cpm_ptr->elem_b_ptr[cmm_ptr->result_lists_p[l].flag[i]]->f, "çœç•¥è§£æå¯¾è±¡æŒ‡ç¤ºè©")) {
 		demoflag = 1;
 	    }
 	    else {
@@ -4629,11 +4629,11 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 	    }
 
 	    if (demoflag == 1 || 
-		/* ³ä¤êÅö¤Æ¤Ê¤· => ¾ÊÎ¬ */
+		/* å‰²ã‚Šå½“ã¦ãªã— => çœç•¥ */
 		((OptEllipsis & OPT_ELLIPSIS) && 
 		 cf_ptr->pp[i][0] == cases[j] && 
 		 cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED && 
-		 !(toflag && MatchPP(cf_ptr->pp[i][0], "¥ò")))) {
+		 !(toflag && MatchPP(cf_ptr->pp[i][0], "ãƒ²")))) {
 		result = EllipsisDetectForVerb(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i);
 		/* append_cf_feature(&(em_ptr->f), cpm_ptr, cf_ptr, i); */
 		if (result) {
@@ -4652,7 +4652,7 @@ float EllipsisDetectForVerbMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 		    }
 		}
 		else if (demoflag == 1) {
-		    ; /* ³ä¤êÅö¤Æ¤Ê¤·¤Ë¤¹¤ë */
+		    ; /* å‰²ã‚Šå½“ã¦ãªã—ã«ã™ã‚‹ */
 		}
 	    }
 	}
@@ -4669,7 +4669,7 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
     int count = 0;
 
     for (i = 0; i < cf_ptr->element_num; i++) {
-	/* ³ä¤êÅö¤Æ¤Ê¤· => ¾ÊÎ¬ */
+	/* å‰²ã‚Šå½“ã¦ãªã— => çœç•¥ */
 	if ((OptEllipsis & OPT_REL_NOUN) && 
 	    cmm_ptr->result_lists_p[l].flag[i] == UNASSIGNED) {
 	    result = EllipsisDetectForNoun(sp, em_ptr, cpm_ptr, cmm_ptr, l, cf_ptr, i);
@@ -4677,7 +4677,7 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 	    if (result) {
 		em_ptr->cc[cf_ptr->pp[i][0]].score = maxscore;
 
-		/* ¸½ºß¤Ï¡¢rule base */
+		/* ç¾åœ¨ã¯ã€rule base */
 		if (0 && 
 		    (OptDiscNounMethod == OPT_SVM || OptDiscNounMethod == OPT_DT)) {
 		    em_ptr->score += maxscore > 1.0 ? EX_match_exact : maxscore < 0 ? 0 : 11*maxscore;
@@ -4703,13 +4703,13 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 {
     int i, j, flag;
 
-    /* °Û¤Ê¤ë¾ì¹ç¤Ï 1 ¤òÊÖ¤¹ */
+    /* ç•°ãªã‚‹å ´åˆã¯ 1 ã‚’è¿”ã™ */
 
     if (a->cf.element_num != b->cf.element_num) {
 	return 1;
     }
 
-    /* ½çÈÖ¤¬°ã¤¦¤³¤È¤¬¤¢¤ë¤Î¤ÇÃ±½ãÈæ³Ó¤Ç¤Ï¤À¤á */
+    /* é †ç•ªãŒé•ã†ã“ã¨ãŒã‚ã‚‹ã®ã§å˜ç´”æ¯”è¼ƒã§ã¯ã ã‚ */
 
     for (i = 0; i < a->cf.element_num; i++) {
 	flag = 0;
@@ -4732,7 +4732,7 @@ float EllipsisDetectForNounMain(SENTENCE_DATA *sp, ELLIPSIS_MGR *em_ptr, CF_PRED
 {
     int i;
 
-    /* °Û¤Ê¤ë¾ì¹ç¤Ï 1 ¤òÊÖ¤¹ */
+    /* ç•°ãªã‚‹å ´åˆã¯ 1 ã‚’è¿”ã™ */
 
     for (i = 0; i < a->cf_ptr->element_num; i++) {
 	if (a->result_lists_p[0].flag[i] != UNASSIGNED && 
@@ -4750,7 +4750,7 @@ int CompareAssignList(ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm, CF_MATCH_MGR *cmm, 
     int i;
 
     for (i = 0; i < maxem->result_num; i++) {
-	/* Æ±¤¸¤â¤Î¤¬¤¹¤Ç¤Ë¤¢¤ë¾ì¹ç */
+	/* åŒã˜ã‚‚ã®ãŒã™ã§ã«ã‚ã‚‹å ´åˆ */
 	if (maxem->ecmm[i].cmm.cf_ptr == cmm->cf_ptr && 
 	    maxem->ecmm[i].element_num == cpm->cf.element_num && 
 	    !CompareCPM(&(maxem->ecmm[i].cpm), cpm) && 
@@ -4796,7 +4796,7 @@ int CompareAssignList(ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm, CF_MATCH_MGR *cmm, 
       int CompareClosestExFrequency(CF_MATCH_MGR *a, CF_MATCH_MGR *b)
 /*==================================================================*/
 {
-    /* ¥Ş¥Ã¥Á¤·¤¿Ä¾Á°³Ê¤ÎÍÑÎã¤ÎÉÑÅÙ¤òÈæ³Ó¤¹¤ë´Ø¿ô */
+    /* ãƒãƒƒãƒã—ãŸç›´å‰æ ¼ã®ç”¨ä¾‹ã®é »åº¦ã‚’æ¯”è¼ƒã™ã‚‹é–¢æ•° */
 
     int i;
     int afreq = 0, bfreq = 0;
@@ -4805,7 +4805,7 @@ int CompareAssignList(ELLIPSIS_MGR *maxem, CF_PRED_MGR *cpm, CF_MATCH_MGR *cmm, 
 	if (a->result_lists_p[0].flag[i] != UNASSIGNED && 
 	    a->cf_ptr->adjacent[i] == TRUE && 
 	    a->result_lists_p[0].pos[i] >= 0) {
-	    afreq += a->cf_ptr->ex_freq[i][a->result_lists_p[0].pos[i]]; /* Ä¾Á°³Ê¤¬Ê£¿ô¤¢¤ì¤ĞÂ­¤¹ */
+	    afreq += a->cf_ptr->ex_freq[i][a->result_lists_p[0].pos[i]]; /* ç›´å‰æ ¼ãŒè¤‡æ•°ã‚ã‚Œã°è¶³ã™ */
 	}
     }
 
@@ -4882,7 +4882,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    cf_array = (CASE_FRAME **)malloc_data(sizeof(CASE_FRAME *)*cpm_ptr->pred_b_ptr->cf_num, 
 						  "FindBestCFforContext");
 
-	    /* ³Ê¥Õ¥ì¡¼¥àcache */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ cache */
 	    if (OptUseSmfix == TRUE && CFSimExist == TRUE) {
 		CFLIST *cfp;
 		char *key;
@@ -4907,7 +4907,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 			cpm_ptr->pred_b_ptr->e_cf_num = frame_num;
 
 			if (VerboseLevel >= VERBOSE2) {
-			    fprintf(stderr, ";; ¡ú %s [%s] CF -> %d/%d\n", sp->KNPSID, 
+			    fprintf(stderr, ";; â˜… %s [%s] CF -> %d/%d\n", sp->KNPSID, 
 				    cpm_ptr->pred_b_ptr->head_ptr->Goi, 
 				    frame_num, cpm_ptr->pred_b_ptr->cf_num);
 			}
@@ -4918,12 +4918,12 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	    if (frame_num == 0) {
 		int hiragana_prefer_flag = 0;
 
-		/* É½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç: 
-		   ³Ê¥Õ¥ì¡¼¥à¤ÎÉ½µ­¤¬¤Ò¤é¤¬¤Ê¤Î¾ì¹ç¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê¤Î³Ê¥Õ¥ì¡¼¥à¤Î¤ß¤òÂĞ¾İ¤Ë¡¢
-		   ¤Ò¤é¤¬¤Ê°Ê³°¤¬Â¿¤±¤ì¤Ğ¤Ò¤é¤¬¤Ê°Ê³°¤Î¤ß¤òÂĞ¾İ¤Ë¤¹¤ë */
-		if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ÂåÉ½É½µ­¤Ç¤Ï¤Ê¤¤¾ì¹ç¤Î¤ß */
-		    check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi) == TYPE_HIRAGANA) {
-		    if (check_feature(cpm_ptr->pred_b_ptr->f, "ÂåÉ½¤Ò¤é¤¬¤Ê")) {
+		/* è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆ: 
+		   æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¡¨è¨˜ãŒã²ã‚‰ãŒãªã®å ´åˆãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã¿ã‚’å¯¾è±¡ã«ã€
+		   ã²ã‚‰ãŒãªä»¥å¤–ãŒå¤šã‘ã‚Œã°ã²ã‚‰ãŒãªä»¥å¤–ã®ã¿ã‚’å¯¾è±¡ã«ã™ã‚‹ */
+		if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* ä»£è¡¨è¡¨è¨˜ã§ã¯ãªã„å ´åˆã®ã¿ */
+		    check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
+		    if (check_feature(cpm_ptr->pred_b_ptr->f, "ä»£è¡¨ã²ã‚‰ãŒãª")) {
 			hiragana_prefer_flag = 1;
 		    }
 		    else {
@@ -4935,9 +4935,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type && 
 			(hiragana_prefer_flag == 0 || 
 			 (hiragana_prefer_flag > 0 && 
-			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry) == TYPE_HIRAGANA) || 
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA)) || 
 			 (hiragana_prefer_flag < 0 && 
-			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry) != TYPE_HIRAGANA))) {
+			  !check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA)))) {
 			*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
 		    }
 		}
@@ -4945,26 +4945,26 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
     }
 
-    /* ¸õÊä¤Î³Ê¥Õ¥ì¡¼¥à¤Ë¤Ä¤¤¤Æ¾ÊÎ¬²òÀÏ¤ò¼Â¹Ô */
+    /* å€™è£œã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã¤ã„ã¦çœç•¥è§£æã‚’å®Ÿè¡Œ */
 
     for (l = 0; l < frame_num; l++) {
-	/* OR ¤Î³Ê¥Õ¥ì¡¼¥à¤ò½ü¤¯ */
+	/* OR ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é™¤ã */
 	if (((*(cf_array+l))->etcflag & CF_SUM) && frame_num != 1) {
 	    continue;
 	}
 
-	/* ³Ê¥Õ¥ì¡¼¥à¤ò²¾»ØÄê */
+	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ä»®æŒ‡å®š */
 	cmm.cf_ptr = *(cf_array+l);
 	cpm_ptr->result_num = 1;
 
-	/* ÆşÎÏÂ¦³ÊÍ×ÁÇ¤òÀßÄê
-	   ¾È±ş²òÀÏ»ş¤Ï¤¹¤Ç¤Ë¤¢¤ë³ÊÍ×ÁÇ¤ò¾å½ñ¤­¤·¤Æ¤·¤Ş¤¦¤Î¤Ç¤³¤³¤ÇºÆÀßÄê
-	   ¤½¤ì°Ê³°¤Î¤È¤­¤Ï²¼¤Î DeleteFromCF() ¤Ç¾ÊÎ¬Í×ÁÇ¤ò¥¯¥ê¥¢ */
+	/* å…¥åŠ›å´æ ¼è¦ç´ ã‚’è¨­å®š
+	   ç…§å¿œè§£ææ™‚ã¯ã™ã§ã«ã‚ã‚‹æ ¼è¦ç´ ã‚’ä¸Šæ›¸ãã—ã¦ã—ã¾ã†ã®ã§ã“ã“ã§å†è¨­å®š
+	   ãã‚Œä»¥å¤–ã®ã¨ãã¯ä¸‹ã® DeleteFromCF() ã§çœç•¥è¦ç´ ã‚’ã‚¯ãƒªã‚¢ */
 	if (OptEllipsis & OPT_DEMO || cpm_ptr->cf.type_flag) {
 	    make_data_cframe(sp, cpm_ptr);
 	}
 
-	/* º£¤¢¤ë³ÊÍ×ÁÇ¤òÂĞ±ş¤Å¤± */
+	/* ä»Šã‚ã‚‹æ ¼è¦ç´ ã‚’å¯¾å¿œã¥ã‘ */
 	case_frame_match(cpm_ptr, &cmm, OptCFMode, -1, NULL);
 	cpm_ptr->score = cmm.score;
 
@@ -4985,25 +4985,25 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		workem.score = -1;
 	    }
 	    else if (cmm.score >= 0) {
-		/* Ä¾ÀÜ¤Î³ÊÍ×ÁÇ¤ÎÀµµ¬²½¤·¤Æ¤¤¤Ê¤¤¥¹¥³¥¢¤òÂ­¤¹ */
+		/* ç›´æ¥ã®æ ¼è¦ç´ ã®æ­£è¦åŒ–ã—ã¦ã„ãªã„ã‚¹ã‚³ã‚¢ã‚’è¶³ã™ */
 		workem.score += cmm.pure_score[i];
 		workem.pure_score = workem.score;
-		/* Àµµ¬²½ */
+		/* æ­£è¦åŒ– */
 		if (cpm_ptr->cf.type == CF_PRED) {
 		    workem.score /= sqrt((double)(count_pat_element(cmm.cf_ptr, 
 								    &(cmm.result_lists_p[i]))));
 		}
 		cmm.score = workem.score;
 	    }
-	/* ³Ê²òÀÏ¼ºÇÔ¤Î¤È¤­ -- ²òÀÏ¤ò¤Ò¤È¤Ä¤À¤±·ë²Ì¤ËÆş¤ì¤ë¤¿¤á¤Ë
-	       ºÇÂç¥¹¥³¥¢¤Î¥Ç¥Õ¥©¥ë¥È¤ò -2 ¤Ë¤·¤Æ¤¤¤ë */
+	/* æ ¼è§£æå¤±æ•—ã®ã¨ã -- è§£æã‚’ã²ã¨ã¤ã ã‘çµæœã«å…¥ã‚Œã‚‹ãŸã‚ã«
+	       æœ€å¤§ã‚¹ã‚³ã‚¢ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚’ -2 ã«ã—ã¦ã„ã‚‹ */
 	    else {
 		workem.score = cmm.score;
 	    }
 
-	    /* DEBUG É½¼¨ */
+	    /* DEBUG è¡¨ç¤º */
 	    if (VerboseLevel >= VERBOSE3) {
-		fprintf(stdout, "¡ú ³Ê¥Õ¥ì¡¼¥à %d\n", l);
+		fprintf(stdout, "â˜… æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  %d\n", l);
 		print_data_cframe(cpm_ptr, &cmm);
 		print_good_crrspnds(cpm_ptr, &cmm, 1);
 		fprintf(stdout, "   FEATURES: ");
@@ -5011,10 +5011,10 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		fputc('\n', Outfp);
 	    }
 
-	    if (workem.score > maxem->score || /* ¥¹¥³¥¢¤¬ºÇÂç */
-		(workem.score == maxem->score && /* ¥¹¥³¥¢¤Ï¤³¤ì¤Ş¤Ç¤ÎºÇÂç¤ÈÆ±¤¸¤À¤¬¡¢¢­ */
-		 (CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i) || /* Ä¾Á°³Ê¤Î¥¹¥³¥¢¤¬¹â¤¤¤È¤­ */
-		  CompareClosestExFrequency(&(maxem->ecmm[0].cmm), &cmm)))) { /* ÉÑÅÙ¤¬¹â¤¤¤È¤­ */
+	    if (workem.score > maxem->score || /* ã‚¹ã‚³ã‚¢ãŒæœ€å¤§ */
+		(workem.score == maxem->score && /* ã‚¹ã‚³ã‚¢ã¯ã“ã‚Œã¾ã§ã®æœ€å¤§ã¨åŒã˜ã ãŒã€â†“ */
+		 (CompareClosestScore(&(maxem->ecmm[0].cmm), &cmm, i) || /* ç›´å‰æ ¼ã®ã‚¹ã‚³ã‚¢ãŒé«˜ã„ã¨ã */
+		  CompareClosestExFrequency(&(maxem->ecmm[0].cmm), &cmm)))) { /* é »åº¦ãŒé«˜ã„ã¨ã */
 		for (k = 0; k < CASE_TYPE_NUM; k++) {
 		    ClearEllipsisComponent(&(maxem->cc[k]));
 		    CopyEllipsisComponent(&(maxem->cc[k]), &(workem.cc[k]));
@@ -5024,12 +5024,12 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		maxem->f = workem.f;
 		workem.f = NULL;
 
-		/* ¤Ò¤È¤Ä¤º¤Ä¤º¤é¤¹ */
+		/* ã²ã¨ã¤ãšã¤ãšã‚‰ã™ */
 		for (k = maxem->result_num >= CMM_MAX - 1 ? maxem->result_num - 1 : maxem->result_num; k >= 0; k--) {
 		    maxem->ecmm[k + 1] = maxem->ecmm[k];
 		}
 
-		/* º£²ó¤¬ºÇÂç¥Ş¥Ã¥Á */
+		/* ä»Šå›ãŒæœ€å¤§ãƒãƒƒãƒ */
 		maxem->ecmm[0].cmm = cmm;
 		maxem->ecmm[0].cpm = *cpm_ptr;
 		maxem->ecmm[0].element_num = cpm_ptr->cf.element_num;
@@ -5043,7 +5043,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    maxem->result_num++;
 		}
 	    }
-	    /* ¿·¤·¤¤¼ïÎà¤Î³Ê¥Õ¥ì¡¼¥à(³ä¤êÅö¤Æ)¤òÊİÂ¸ */
+	    /* æ–°ã—ã„ç¨®é¡ã®æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ (å‰²ã‚Šå½“ã¦)ã‚’ä¿å­˜ */
 	    else if (CompareAssignList(maxem, cpm_ptr, &cmm, i)) {
 		maxem->ecmm[maxem->result_num].cmm = cmm;
 		maxem->ecmm[maxem->result_num].cpm = *cpm_ptr;
@@ -5070,7 +5070,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		}
 	    }
 
-	    /* ³Ê¥Õ¥ì¡¼¥à¤ÎÄÉ²Ã¥¨¥ó¥È¥ê¤Îºï½ü */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¿½åŠ ã‚¨ãƒ³ãƒˆãƒªã®å‰Šé™¤ */
 	    if (!(OptEllipsis & OPT_DEMO)) {
 		DeleteFromCF(&workem, cpm_ptr, &cmm, i);
 	    }
@@ -5083,17 +5083,17 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	   void AssignFeaturesByProgram(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ËĞÌÇÍ½Äê */
+    /* æ’²æ»…äºˆå®š */
 
     int i;
 
     for (i = 0; i < sp->Tag_num; i++) {
-	/* ÎÙ°Ê³°¤Î A¤ÎB ¤Ï¥ë¡¼¥ë¤ÇÍ¿¤¨¤é¤ì¤Æ¤¤¤Ê¤¤ */
-	if (!check_feature((sp->tag_data + i)->f, "½à¼çÂêÉ½¸½") && 
-	    check_feature((sp->tag_data + i)->f, "·¸:¥Î³Ê") && 
+	/* éš£ä»¥å¤–ã® Aã®B ã¯ãƒ«ãƒ¼ãƒ«ã§ä¸ãˆã‚‰ã‚Œã¦ã„ãªã„ */
+	if (!check_feature((sp->tag_data + i)->f, "æº–ä¸»é¡Œè¡¨ç¾") && 
+	    check_feature((sp->tag_data + i)->f, "ä¿‚:ãƒæ ¼") && 
 	    (sp->tag_data + i)->parent && 
-	    check_feature((sp->tag_data + i)->parent->f, "¼çÂêÉ½¸½")) {
-	    assign_cfeature(&((sp->tag_data + i)->f), "½à¼çÂêÉ½¸½", FALSE);
+	    check_feature((sp->tag_data + i)->parent->f, "ä¸»é¡Œè¡¨ç¾")) {
+	    assign_cfeature(&((sp->tag_data + i)->f), "æº–ä¸»é¡Œè¡¨ç¾", FALSE);
 	}
     }
 }
@@ -5114,8 +5114,8 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
     }
     ExtraLC = 0;
 
-    LC[0][tp->num] = END_M; /* ¼«Ê¬¤ÏÂĞ¾İ³° */
-    _SearchCaseComponent(cs, tp, LC, END_M, 0); /* ¼«Ê¬¤Î»Ò¶¡¤ÏÂĞ¾İ³° */
+    LC[0][tp->num] = END_M; /* è‡ªåˆ†ã¯å¯¾è±¡å¤– */
+    _SearchCaseComponent(cs, tp, LC, END_M, 0); /* è‡ªåˆ†ã®å­ä¾›ã¯å¯¾è±¡å¤– */
     _SearchPV(cs, tp, LC);
     _SearchParentV(cs, tp, LC);
     _SearchParentNParentV(cs, tp, LC);
@@ -5163,7 +5163,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
     }
 
-    /* 2Ê¸°ÊÁ° */
+    /* 2æ–‡ä»¥å‰ */
     for (j = 3; j <= PrevSentenceLimit; j++) {
 	if (cs - sentence_data < j) {
 	    break;
@@ -5240,18 +5240,18 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 {
     int i, j, k;
 
-    /* em2->cc[41].score¤ËÃÍ¤¬Æş¤Ã¤Æ¤¤¤ë¾ì¹ç¤Ï¥Ş¡¼¥¸¤·¤Ê¤¤(ËÜÍè¡¢¶õ¤Ç¤¢¤ë¤Ï¤º¡¢Í×¸¡Æ¤) */
+    /* em2->cc[41].scoreã«å€¤ãŒå…¥ã£ã¦ã„ã‚‹å ´åˆã¯ãƒãƒ¼ã‚¸ã—ãªã„(æœ¬æ¥ã€ç©ºã§ã‚ã‚‹ã¯ãšã€è¦æ¤œè¨) */
     if (em2->cc[41].score > 0) {
 	return;
     }   
     
-    /* CF_ELEMENT_MAX¤ò¾å²ó¤Ã¤Æ¤·¤Ş¤¦¾ì¹ç¤Ï°ìÀÚ¥Ş¡¼¥¸¤ò¹Ô¤ï¤Ê¤¤ */
+    /* CF_ELEMENT_MAXã‚’ä¸Šå›ã£ã¦ã—ã¾ã†å ´åˆã¯ä¸€åˆ‡ãƒãƒ¼ã‚¸ã‚’è¡Œã‚ãªã„ */
     if (em1->ecmm[0].element_num + em2->ecmm[0].element_num >= CF_ELEMENT_MAX ||
 	em1->ecmm[0].cmm.cf_ptr->element_num + em2->ecmm[0].cmm.cf_ptr->element_num >= CF_ELEMENT_MAX) {
 	return;   
     }
 
-    /* °ìÈÖÎÉ¤¤·ë²Ì(ecmm[0])¤Î¤ß¤ò¥Ş¡¼¥¸¤¹¤ë */
+    /* ä¸€ç•ªè‰¯ã„çµæœ(ecmm[0])ã®ã¿ã‚’ãƒãƒ¼ã‚¸ã™ã‚‹ */
     em1->score += em2->score;
     em1->pure_score += em2->pure_score;
 
@@ -5269,7 +5269,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 
     em1->ecmm[0].cpm.score += em2->ecmm[0].cpm.score;
 
-    /* Ì¾»ì²òÀÏ¤ÎÆşÎÏ³ÊÍ×ÁÇ */
+    /* åè©è§£æã®å…¥åŠ›æ ¼è¦ç´  */
     for (i = 0; i < em2->ecmm[0].element_num; i++) {
 	j = em1->ecmm[0].element_num + i;
 	if (j >= CF_ELEMENT_MAX) {
@@ -5284,7 +5284,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	em1->ecmm[0].cpm.elem_s_ptr[j] = em2->ecmm[0].cpm.elem_s_ptr[i];
 	em1->ecmm[0].cpm.elem_b_num[j] = em2->ecmm[0].cpm.elem_b_num[i];
 	
-	/* CF_MATCH (·ë²Ì¤Ï¥Ù¥¹¥È¤À¤±¤Ê¤Î¤Ç0¤À¤±¸«¤ë) */
+	/* CF_MATCH (çµæœã¯ãƒ™ã‚¹ãƒˆã ã‘ãªã®ã§0ã ã‘è¦‹ã‚‹) */
 	if (em2->ecmm[0].cmm.result_lists_d[0].flag[i] == NIL_ASSIGNED) {
 	    em1->ecmm[0].cmm.result_lists_d[0].flag[j] = NIL_ASSIGNED;
 	}
@@ -5299,7 +5299,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 	}
     }
 
-    /* Ì¾»ì³Ê¥Õ¥ì¡¼¥à */
+    /* åè©æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ  */
     if (em2->ecmm[0].cmm.cf_ptr) {
 	for (i = 0; i < em2->ecmm[0].cmm.cf_ptr->element_num; i++) {
 	    j = em1->ecmm[0].cmm.cf_ptr->element_num + i;
@@ -5328,17 +5328,17 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 /*==================================================================*/
 {
-    /* ÍÑ¸À¤Ë¤Ä¤¤¤Æ¤¤¤ë<¾È±ş²¾·èÄê...>¤ò»Ø¼¨»ì¤Î¥¿¥°¤Ë°ÜÆ°¤¹¤ë */
+    /* ç”¨è¨€ã«ã¤ã„ã¦ã„ã‚‹<ç…§å¿œä»®æ±ºå®š...>ã‚’æŒ‡ç¤ºè©ã®ã‚¿ã‚°ã«ç§»å‹•ã™ã‚‹ */
 
     int num;
     char feature_buffer[DATA_LEN], target[DATA_LEN], rel[DATA_LEN], rest_buffer[DATA_LEN];
     FEATURE **fpp = &(cpm_ptr->pred_b_ptr->f), *pre_fp = NULL, *next;
 
     while (*fpp) {
-	if (!strncmp((*fpp)->cp, "¾È±ş²¾·èÄê", strlen("¾È±ş²¾·èÄê"))) {
-	    sscanf((*fpp)->cp + 11, "%d;CÍÑ;%[^;];%[^;];%s", &num, 
+	if (!strncmp((*fpp)->cp, "ç…§å¿œä»®æ±ºå®š", strlen("ç…§å¿œä»®æ±ºå®š"))) {
+	    sscanf((*fpp)->cp + 11, "%d;Cç”¨;%[^;];%[^;];%s", &num, 
 		   target, rel, rest_buffer);
-	    sprintf(feature_buffer, "CÍÑ;%s;=;%s", target, rest_buffer);
+	    sprintf(feature_buffer, "Cç”¨;%s;=;%s", target, rest_buffer);
 	    assign_cfeature(&((sp->tag_data + num)->f), feature_buffer, FALSE);
 	    free((*fpp)->cp);
 	    if (pre_fp == NULL) {
@@ -5378,7 +5378,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
     InitEllipsisMGR(&maxem_noun);
 
     AssignFeaturesByProgram(sp);
-    RegisterAllSurfaceEntity(sp); /* É½ÁØ¤Ë½Ğ¸½¤·¤Æ¤¤¤ëÍ×ÁÇ¤ò»²¾È²ó¿ôDB¤ËÅĞÏ¿ */
+    RegisterAllSurfaceEntity(sp); /* è¡¨å±¤ã«å‡ºç¾ã—ã¦ã„ã‚‹è¦ç´ ã‚’å‚ç…§å›æ•°DBã«ç™»éŒ² */
 
     if (sp->available) {
 	Bcheck = (int **)malloc_data(sizeof(int *) * sp->Sen_num, "DiscourseAnalysis");
@@ -5386,53 +5386,53 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    Bcheck[i] = (int *)malloc_data(sizeof(int) * TAG_MAX, "DiscourseAnalysis");
 	}
 
-	/* ³ÆÍÑ¸À¤ò¥Á¥§¥Ã¥¯ (Ê¸Æ¬¤«¤é) */
+	/* å„ç”¨è¨€ã‚’ãƒã‚§ãƒƒã‚¯ (æ–‡é ­ã‹ã‚‰) */
 	for (j = sp->Best_mgr->pred_num - 1; j >= 0; j--) {
 	    cpm_ptr = &(sp->Best_mgr->cpm[j]);
 
-	    /* ³Ê¥Õ¥ì¡¼¥à¤¬¤Ê¤¤¾ì¹ç (¥¬³Ê¤°¤é¤¤Ãµ¤·¤Æ¤â¤¤¤¤¤«¤â¤·¤ì¤Ê¤¤) 
-	       ³Ê²òÀÏ¤¬¼ºÇÔ¤·¤¿¾ì¹ç */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãªã„å ´åˆ (ã‚¬æ ¼ãã‚‰ã„æ¢ã—ã¦ã‚‚ã„ã„ã‹ã‚‚ã—ã‚Œãªã„) 
+	       æ ¼è§£æãŒå¤±æ•—ã—ãŸå ´åˆ */
 	    if (cpm_ptr->result_num == 0 || 
 		cpm_ptr->cmm[0].cf_ptr->cf_address == -1 || 
 		cpm_ptr->cmm[0].score < 0) {
 		continue;
 	    }
 
-	    /* ¾ÊÎ¬²òÀÏ¤·¤Ê¤¤ÍÑ¸À */
-	    if (check_feature(cpm_ptr->pred_b_ptr->f, "¾ÊÎ¬²òÀÏ¤Ê¤·")) {
+	    /* çœç•¥è§£æã—ãªã„ç”¨è¨€ */
+	    if (check_feature(cpm_ptr->pred_b_ptr->f, "çœç•¥è§£æãªã—")) {
 		continue;
 	    }
 	    
-	    /* ¸ÇÍ­Ì¾»ì¤Ï¾ÊÎ¬²òÀÏ¤·¤Ê¤¤ (ÍÑ¸À¤ËÂĞ¤·¤Æ) */
+	    /* å›ºæœ‰åè©ã¯çœç•¥è§£æã—ãªã„ (ç”¨è¨€ã«å¯¾ã—ã¦) */
 	    if (cpm_ptr->cf.type == CF_PRED && 
-		     (check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "¿ÍÌ¾") || 
-		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "ÃÏÌ¾") || 
-		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "ÁÈ¿¥Ì¾"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
+		     (check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "äººå") || 
+		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "åœ°å") || 
+		      check_feature(cpm_ptr->pred_b_ptr->b_ptr->f, "çµ„ç¹”å"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "çœç•¥è§£æãªã—", FALSE);
 		continue;
 	    }
 	    if (cpm_ptr->cf.type == CF_PRED && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
-		      check_feature(cpm_ptr->pred_b_ptr->f, "NEÆâ"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
+		      check_feature(cpm_ptr->pred_b_ptr->f, "NEå†…"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "çœç•¥è§£æãªã—", FALSE);
 		continue;
 	    }
 
-	    /* ¸ÇÍ­Ì¾»ì¤Ï´ÖÀÜ¾È±ş²òÀÏ¤·¤Ê¤¤ */
+	    /* å›ºæœ‰åè©ã¯é–“æ¥ç…§å¿œè§£æã—ãªã„ */
 	    if (cpm_ptr->cf.type == CF_NOUN && 
 		     (check_feature(cpm_ptr->pred_b_ptr->f, "NE") ||
-		      check_feature(cpm_ptr->pred_b_ptr->f, "NEÆâ"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
+		      check_feature(cpm_ptr->pred_b_ptr->f, "NEå†…"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "çœç•¥è§£æãªã—", FALSE);
 		continue;
 	    }
 
-	    /* ¶¦»²¾È²òÀÏ·ë²Ì¤Î¤¢¤ë¸ì¡¢¾È±ş»ì¸õÊä¤Ç¤Ê¤¤¸ì¤Ï²òÀÏ¤·¤Ê¤¤ */
+	    /* å…±å‚ç…§è§£æçµæœã®ã‚ã‚‹èªã€ç…§å¿œè©å€™è£œã§ãªã„èªã¯è§£æã—ãªã„ */
 	    if (cpm_ptr->cf.type == CF_NOUN &&
-		(check_feature(cpm_ptr->pred_b_ptr->f, "¶¦»²¾È") ||
-		 check_feature(cpm_ptr->pred_b_ptr->f, "¶¦»²¾ÈÆâ") ||
-		 !check_feature(cpm_ptr->pred_b_ptr->f, "¾È±ş»ì¸õÊä")||
-		 check_feature(cpm_ptr->pred_b_ptr->f, "°ì¿Í¾Î"))) {
-		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "¾ÊÎ¬²òÀÏ¤Ê¤·", FALSE);
+		(check_feature(cpm_ptr->pred_b_ptr->f, "å…±å‚ç…§") ||
+		 check_feature(cpm_ptr->pred_b_ptr->f, "å…±å‚ç…§å†…") ||
+		 !check_feature(cpm_ptr->pred_b_ptr->f, "ç…§å¿œè©å€™è£œ")||
+		 check_feature(cpm_ptr->pred_b_ptr->f, "ä¸€äººç§°"))) {
+		assign_cfeature(&(cpm_ptr->pred_b_ptr->f), "çœç•¥è§£æãªã—", FALSE);
 		continue;
 	    }
 
@@ -5441,7 +5441,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	    cmm_ptr = &(cpm_ptr->cmm[0]);
 	    cf_ptr = cmm_ptr->cf_ptr;
 
-	    /* ¤â¤Ã¤È¤â¥¹¥³¥¢¤¬¤è¤¯¤Ê¤ë½çÈÖ¤Ç¾ÊÎ¬¤Î»Ø¼¨ÂĞ¾İ¤ò·èÄê¤¹¤ë */
+	    /* ã‚‚ã£ã¨ã‚‚ã‚¹ã‚³ã‚¢ãŒã‚ˆããªã‚‹é †ç•ªã§çœç•¥ã®æŒ‡ç¤ºå¯¾è±¡ã‚’æ±ºå®šã™ã‚‹ */
 
 	    maxem.score = -2;
 
@@ -5452,9 +5452,9 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		for (i = 0; i < CASE_ORDER_MAX; i++) {
 		    if (cpm_ptr->decided == CF_DECIDED) {
 
-			/* ÆşÎÏÂ¦³ÊÍ×ÁÇ¤òÀßÄê
-			   ¾È±ş²òÀÏ»ş¤Ï¤¹¤Ç¤Ë¤¢¤ë³ÊÍ×ÁÇ¤ò¾å½ñ¤­¤·¤Æ¤·¤Ş¤¦¤Î¤Ç¤³¤³¤ÇºÆÀßÄê
-			   ¤½¤ì°Ê³°¤Î¤È¤­¤Ï²¼¤Î DeleteFromCF() ¤Ç¾ÊÎ¬Í×ÁÇ¤ò¥¯¥ê¥¢ */
+			/* å…¥åŠ›å´æ ¼è¦ç´ ã‚’è¨­å®š
+			   ç…§å¿œè§£ææ™‚ã¯ã™ã§ã«ã‚ã‚‹æ ¼è¦ç´ ã‚’ä¸Šæ›¸ãã—ã¦ã—ã¾ã†ã®ã§ã“ã“ã§å†è¨­å®š
+			   ãã‚Œä»¥å¤–ã®ã¨ãã¯ä¸‹ã® DeleteFromCF() ã§çœç•¥è¦ç´ ã‚’ã‚¯ãƒªã‚¢ */
 			if (OptEllipsis & OPT_DEMO) {
 			    make_data_cframe(sp, cpm_ptr);
 			}
@@ -5462,7 +5462,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 			ClearEllipsisMGR(&workem);
 			score = EllipsisDetectForVerbMain(sp, &workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0, 
 							  cpm_ptr->cmm[0].cf_ptr, CaseOrder[i]);
-			/* Ä¾ÀÜ¤Î³ÊÍ×ÁÇ¤ÎÀµµ¬²½¤·¤Æ¤¤¤Ê¤¤¥¹¥³¥¢¤òÂ­¤¹ */
+			/* ç›´æ¥ã®æ ¼è¦ç´ ã®æ­£è¦åŒ–ã—ã¦ã„ãªã„ã‚¹ã‚³ã‚¢ã‚’è¶³ã™ */
 			workem.score += cpm_ptr->cmm[0].pure_score[0];
 			workem.pure_score += workem.score;
 			workem.score /= sqrt((double)(count_pat_element(cpm_ptr->cmm[0].cf_ptr, 
@@ -5478,13 +5478,13 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 			    workem.f = NULL;
 			}
 
-			/* ³Ê¥Õ¥ì¡¼¥à¤ÎÄÉ²Ã¥¨¥ó¥È¥ê¤Îºï½ü */
+			/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¿½åŠ ã‚¨ãƒ³ãƒˆãƒªã®å‰Šé™¤ */
 			if (!(OptEllipsis & OPT_DEMO)) {
 			    DeleteFromCF(&workem, cpm_ptr, &(cpm_ptr->cmm[0]), 0);
 			}
 			
 		    }
-		    /* ³Ê¥Õ¥ì¡¼¥àÌ¤·èÄê¤Î¤È¤­ */
+		    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ æœªæ±ºå®šã®ã¨ã */
 		    else {
 			FindBestCFforContext(sp, &maxem, cpm_ptr, CaseOrder[i]);
 		    }
@@ -5500,12 +5500,12 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		} 
 	    }
 	    
-	    /* ¤â¤Ã¤È¤â score ¤Î¤è¤«¤Ã¤¿ÁÈ¤ß¹ç¤ï¤»¤òÅĞÏ¿ */
+	    /* ã‚‚ã£ã¨ã‚‚ score ã®ã‚ˆã‹ã£ãŸçµ„ã¿åˆã‚ã›ã‚’ç™»éŒ² */
 	    if (maxem.score > -2) {
 		cpm_ptr->score = maxem.score;
 		maxem.ecmm[0].cmm.score = maxem.score;
 		maxem.ecmm[0].cmm.pure_score[0] = maxem.pure_score;
-		/* cmm ¤òÉü¸µ */
+		/* cmm ã‚’å¾©å…ƒ */
 		cpm_ptr->result_num = maxem.result_num;
 		for (k = 0; k < cpm_ptr->result_num; k++) {
 		    cpm_ptr->cmm[k] = maxem.ecmm[k].cmm;
@@ -5523,46 +5523,46 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 		    }
 		    strcpy(cpm_ptr->cf.sm[k], maxem.ecmm[0].cpm.cf.sm[k]);
 		}
-		/* feature ¤ÎÅÁÈÂ */
+		/* feature ã®ä¼æ¬ */
 		append_feature(&(cpm_ptr->pred_b_ptr->f), maxem.f);
 		maxem.f = NULL;
 
-		/* Ê¸Ì®²òÀÏ¤Ë¤ª¤¤¤Æ³Ê¥Õ¥ì¡¼¥à¤ò·èÄê¤·¤¿¾ì¹ç */
+		/* æ–‡è„ˆè§£æã«ãŠã„ã¦æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ±ºå®šã—ãŸå ´åˆ */
 		if (cpm_ptr->decided != CF_DECIDED) {
 		    assign_nil_assigned_components(sp, cpm_ptr);
 		    if (OptCaseFlag & OPT_CASE_ASSIGN_GA_SUBJ) {
-			assign_ga_subject(sp_new, cpm_ptr); /* CF_CAND_DECIDED ¤Î¾ì¹ç¤Ï¹Ô¤Ã¤Æ¤¤¤ë¤¬ */
+			assign_ga_subject(sp_new, cpm_ptr); /* CF_CAND_DECIDED ã®å ´åˆã¯è¡Œã£ã¦ã„ã‚‹ãŒ */
 		    }
 		    if (OptUseSmfix == TRUE) {
 			specify_sm_from_cf(sp_new, cpm_ptr);
 		    }
 		}
 
-		/* ¥Ş¥Ã¥Á¤·¤¿ÍÑÎã¤òfeature¤Ë½ĞÎÏ * 
+		/* ãƒãƒƒãƒã—ãŸç”¨ä¾‹ã‚’featureã«å‡ºåŠ› * 
 		record_match_ex(sp, cpm_ptr); */
 
-		/* Ä¾Á°³Ê¤Î¥Ş¥Ã¥Á¥¹¥³¥¢¤òfeature¤Ë½ĞÎÏ *
+		/* ç›´å‰æ ¼ã®ãƒãƒƒãƒã‚¹ã‚³ã‚¢ã‚’featureã«å‡ºåŠ› *
 		   record_closest_cc_match(sp, cpm_ptr); */
 
-		/* ¾ÊÎ¬²òÀÏ¤Î·ë²Ì¤ò»²¾È²ó¿ôDB¤ËÅĞÏ¿ */
+		/* çœç•¥è§£æã®çµæœã‚’å‚ç…§å›æ•°DBã«ç™»éŒ² */
 		RegisterEllipsisEntity(sp, cpm_ptr, &maxem);
 
-		/* »Ø¼¨»ì¤Î²òÀÏ·ë²Ì¤ò=¤Î¥¿¥°¤ËÊÑ´¹¤¹¤ë */
+		/* æŒ‡ç¤ºè©ã®è§£æçµæœã‚’=ã®ã‚¿ã‚°ã«å¤‰æ›ã™ã‚‹ */
 		if ((OptEllipsis & OPT_DEMO) && (OptEllipsis & OPT_COREFER)) {
 		    demonstrative2coreference(sp, cpm_ptr);
 		}
 
-		/* ³Ê¡¦¾ÊÎ¬²òÀÏ¤Î·ë²Ì¤òfeature¤Ø */
+		/* æ ¼ãƒ»çœç•¥è§£æã®çµæœã‚’featureã¸ */
 		record_case_analysis(sp, cpm_ptr, &maxem, FALSE);
 
-		/* ³Ê¡¦¾ÊÎ¬²òÀÏ¤Î·ë²Ì¤òÍÑ¤¤¤Æ·ÁÂÖÁÇÛ£ËæÀ­¤ò²ò¾Ã */
+		/* æ ¼ãƒ»çœç•¥è§£æã®çµæœã‚’ç”¨ã„ã¦å½¢æ…‹ç´ æ›–æ˜§æ€§ã‚’è§£æ¶ˆ */
 		verb_lexical_disambiguation_by_case_analysis(cpm_ptr);
 		noun_lexical_disambiguation_by_case_analysis(cpm_ptr);
 	    }
 	    ClearEllipsisMGR(&maxem);
 	    ClearEllipsisMGR(&maxem_noun);
 
-	    /* ³Ê¥Õ¥ì¡¼¥à¤ÎÊİÂ¸ */
+	    /* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®ä¿å­˜ */
 	    if (cpm_ptr->cmm[0].score > 0) {
 		RegisterCF(cpm_ptr->cmm[0].cf_ptr->cf_id);
 	    }
@@ -5575,7 +5575,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 
 	PreserveCPM(sp_new, sp);
 
-	/* ½Ğ¸½²ó¿ô¡¢»²¾È²ó¿ô¤ò¸º¿ê¤µ¤»¤ë */
+	/* å‡ºç¾å›æ•°ã€å‚ç…§å›æ•°ã‚’æ¸›è¡°ã•ã›ã‚‹ */
 	DecayEntityList();
 
 	for (i = 0; i < sp->Sen_num; i++) {
@@ -5584,7 +5584,7 @@ void demonstrative2coreference(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr)
 	free(Bcheck);
     }
 
-    /* ¶¦»²¾È²òÀÏ(¶¶ÅÏ¤·»Ø¼¨²òÀÏ¤Î·ë²Ì¤ò»ÈÍÑ) */
+    /* å…±å‚ç…§è§£æ(æ©‹æ¸¡ã—æŒ‡ç¤ºè§£æã®çµæœã‚’ä½¿ç”¨) */
     if (OptEllipsis & OPT_COREFER) corefer_analysis_after_br(sp);
 
     clear_cf(0);

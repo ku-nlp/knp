@@ -1,6 +1,6 @@
 /*====================================================================
 
-			   ¿ﬂƒÍ•’•°•§•Î¥ÿœ¢
+			   Ë®≠ÂÆö„Éï„Ç°„Ç§„É´Èñ¢ÈÄ£
 
                                                S.Kurohashi 1999.11.13
 
@@ -27,7 +27,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    void check_duplicated(int value, char *string)
 /*==================================================================*/
 {
-    /* √Õ§¨ 0 §«§ §§§»§≠§œ•®•È°º */
+    /* ÂÄ§„Åå 0 „Åß„Å™„ÅÑ„Å®„Åç„ÅØ„Ç®„É©„Éº */
     if (value) {
 	fprintf(stderr, "%s is duplicately specified in .knprc\n", string);
 	exit(0);	
@@ -149,7 +149,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 {
 #ifdef  _WIN32
     char buf[FILENAME_MAX];
-    /* MS Windows §ŒæÏπÁ§œ°¢juman.ini, knp.ini §Ú∏´§Àπ‘§Ø
+    /* MS Windows „ÅÆÂ†¥Âêà„ÅØ„ÄÅjuman.ini, knp.ini „ÇíË¶ã„Å´Ë°å„Åè
        dicfile == gramfile */
     GetPrivateProfileString("juman", "dicfile", "", Jumangram_Dirname, FILENAME_MAX, "juman.ini");
     GetPrivateProfileString("knp", "ruledir", "", buf, FILENAME_MAX, "knp.ini");
@@ -178,7 +178,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    } else 
 		strcpy(Jumangram_Dirname, _Atom(cell2));
 	}
-	/* KNP •Î°º•Î•«•£•Ï•Ø•»•Í */
+	/* KNP „É´„Éº„É´„Éá„Ç£„É¨„ÇØ„Éà„É™ */
 	else if (!strcmp(DEF_KNP_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -187,7 +187,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    else
 		Knprule_Dirname = check_tilde(_Atom(cell2));
 	}
-	/* KNP •Î°º•Î•’•°•§•Î */
+	/* KNP „É´„Éº„É´„Éï„Ç°„Ç§„É´ */
 	else if (!strcmp(DEF_KNP_FILE, _Atom(car(cell1)))) {
 	    cell1 = cdr(cell1);
 
@@ -197,7 +197,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		    RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 		}
 
-		/* •«•’•©•Î•»√Õ¿ﬂƒÍ */
+		/* „Éá„Éï„Ç©„É´„ÉàÂÄ§Ë®≠ÂÆö */
 		(RULE+CurrentRuleNum)->file = (char *)strdup(_Atom(car(car(cell1))));
 		(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 		(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -207,84 +207,84 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell2 = cdr(car(cell1));
 
 		while (!Null(car(cell2))) {
-		    if (!strcmp(_Atom(car(cell2)), "∆±∑¡∞€µ¡∏Ï")) {
+		    if (!strcmp(_Atom(car(cell2)), "ÂêåÂΩ¢Áï∞Áæ©Ë™û")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = HomoRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∑¡¬÷¡«")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÂΩ¢ÊÖãÁ¥†")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = MorphRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∑¡¬÷¡«-¡∞ΩËÕ˝")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÂΩ¢ÊÖãÁ¥†-ÂâçÂá¶ÁêÜ")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = PreProcessMorphRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "¥À‹∂Á")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âü∫Êú¨Âè•")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = TagRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "¥À‹∂Á-πΩ¬§∑ËƒÍ∏Â")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âü∫Êú¨Âè•-ÊßãÈÄ†Ê±∫ÂÆöÂæå")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = AfterDpndTagRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "¥À‹∂Á-∏ÂΩËÕ˝")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âü∫Êú¨Âè•-ÂæåÂá¶ÁêÜ")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = PostProcessTagRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), " ∏¿·")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÊñáÁØÄ")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = BnstRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), " ∏¿·-πΩ¬§∑ËƒÍ∏Â")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÊñáÁØÄ-ÊßãÈÄ†Ê±∫ÂÆöÂæå")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = AfterDpndBnstRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∑∏§Íºı§±")) {
+		    else if (!strcmp(_Atom(car(cell2)), "‰øÇ„ÇäÂèó„Åë")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = DpndRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∏∆±˛")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÂëºÂøú")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = KoouRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∏«Õ≠…Ω∏Ω∑¡¬÷¡«")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âõ∫ÊúâË°®ÁèæÂΩ¢ÊÖãÁ¥†")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NeMorphRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∏«Õ≠…Ω∏Ω∂Á-PRE")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âõ∫ÊúâË°®ÁèæÂè•-PRE")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhrasePreRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∏«Õ≠…Ω∏Ω∂Á")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âõ∫ÊúâË°®ÁèæÂè•")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhraseRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "∏«Õ≠…Ω∏Ω∂Á-AUX")) {
+		    else if (!strcmp(_Atom(car(cell2)), "Âõ∫ÊúâË°®ÁèæÂè•-AUX")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = NePhraseAuxRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), " ∏ÃÆ")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÊñáËÑà")) {
 			check_duplicated((RULE+CurrentRuleNum)->type, "Rule type");
 			(RULE+CurrentRuleNum)->type = ContextRuleType;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "•Î°º•Î•Î°º•◊¿Ëπ‘")) {
+		    else if (!strcmp(_Atom(car(cell2)), "„É´„Éº„É´„É´„Éº„ÉóÂÖàË°å")) {
 			(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "BREAK")) {
-			/* RLOOP_BREAK_NONE §œ 0 § §Œ§«§“§√§´§´§È§ §§ */
+			/* RLOOP_BREAK_NONE „ÅØ 0 „Å™„ÅÆ„Åß„Å≤„Å£„Åã„Åã„Çâ„Å™„ÅÑ */
 			check_duplicated((RULE+CurrentRuleNum)->breakmode, "Break mode");
 			(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NORMAL;
 		    }
 		    else if (!strcmp(_Atom(car(cell2)), "BREAKJUMP")) {
-			/* RLOOP_BREAK_NONE §œ 0 § §Œ§«§“§√§´§´§È§ §§ */
+			/* RLOOP_BREAK_NONE „ÅØ 0 „Å™„ÅÆ„Åß„Å≤„Å£„Åã„Åã„Çâ„Å™„ÅÑ */
 			check_duplicated((RULE+CurrentRuleNum)->breakmode, "Break mode");
 			(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_JUMP;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "ΩÁ ˝∏˛")) {
+		    else if (!strcmp(_Atom(car(cell2)), "È†ÜÊñπÂêë")) {
 			check_duplicated((RULE+CurrentRuleNum)->direction, "Direction");
 			(RULE+CurrentRuleNum)->direction = LtoR;
 		    }
-		    else if (!strcmp(_Atom(car(cell2)), "µ’ ˝∏˛")) {
+		    else if (!strcmp(_Atom(car(cell2)), "ÈÄÜÊñπÂêë")) {
 			check_duplicated((RULE+CurrentRuleNum)->direction, "Direction");
 			(RULE+CurrentRuleNum)->direction = RtoL;
 		    }
@@ -295,14 +295,14 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		    cell2 = cdr(cell2);
 		}
 
-		/* •Î°º•Î§Œ•ø•§•◊§¨ªÿƒÍ§µ§Ï§∆§§§ §§§»§≠ */
+		/* „É´„Éº„É´„ÅÆ„Çø„Ç§„Éó„ÅåÊåáÂÆö„Åï„Çå„Å¶„ÅÑ„Å™„ÅÑ„Å®„Åç */
 		if (!(RULE+CurrentRuleNum)->type) {
 		    fprintf(stderr, "Rule type for \'%s\' is not specified in .knprc\n", 
 			    (RULE+CurrentRuleNum)->file);
 		    exit(0);
 		}
 
-		/* •«•’•©•Î•»§Œ ˝∏˛ */
+		/* „Éá„Éï„Ç©„É´„Éà„ÅÆÊñπÂêë */
 		if (!(RULE+CurrentRuleNum)->direction)
 		    (RULE+CurrentRuleNum)->direction = LtoR;
 
@@ -310,7 +310,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* KNP º≠ΩÒ•«•£•Ï•Ø•»•Í */
+	/* KNP ËæûÊõ∏„Éá„Ç£„É¨„ÇØ„Éà„É™ */
 	else if (!strcmp(DEF_KNP_DICT_DIR, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -319,7 +319,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    else
 		Knpdict_Dirname = check_tilde(_Atom(cell2));
 	}
-	/* KNP º≠ΩÒ•’•°•§•Î */
+	/* KNP ËæûÊõ∏„Éï„Ç°„Ç§„É´ */
 	else if (!strcmp(DEF_KNP_DICT_FILE, _Atom(car(cell1))) && 
 		 !knp_dict_file_already_defined) {
 	    cell1 = cdr(cell1);
@@ -327,49 +327,49 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 
 	    while (!Null(car(cell1))) {
 		dicttype = _Atom(car(cdr(car(cell1))));
-		if (!strcmp(dicttype, "≥ •’•Ï°º•‡INDEXDB")) {
+		if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†INDEXDB")) {
 		    DICT[CF_INDEX_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡DATA")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†DATA")) {
 		    DICT[CF_DATA] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡SIMDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†SIMDB")) {
 		    DICT[CF_SIM_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡CFPDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†CFPDB")) {
 		    DICT[CFP_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡CFCASEDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†CFCASEDB")) {
 		    DICT[CF_CASE_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡CASEDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†CASEDB")) {
 		    DICT[CASE_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡RENYOUDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†RENYOUDB")) {
 		    DICT[RENYOU_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "≥ •’•Ï°º•‡ADVERBDB")) {
+		else if (!strcmp(dicttype, "Ê†º„Éï„É¨„Éº„É†ADVERBDB")) {
 		    DICT[ADVERB_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "ÃæªÏ≥ •’•Ï°º•‡INDEXDB")) {
+		else if (!strcmp(dicttype, "ÂêçË©ûÊ†º„Éï„É¨„Éº„É†INDEXDB")) {
 		    DICT[CF_NOUN_INDEX_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "ÃæªÏ≥ •’•Ï°º•‡DATA")) {
+		else if (!strcmp(dicttype, "ÂêçË©ûÊ†º„Éï„É¨„Éº„É†DATA")) {
 		    DICT[CF_NOUN_DATA] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, " ¨Œ‡∏Ï◊√…ΩDB")) {
+		else if (!strcmp(dicttype, "ÂàÜÈ°ûË™ûÂΩôË°®DB")) {
 		    DICT[BGH_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "…Ω¡ÿ≥ DB")) {
+		else if (!strcmp(dicttype, "Ë°®Â±§Ê†ºDB")) {
 		    DICT[SCASE_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "NTT√±∏ÏDB")) {
+		else if (!strcmp(dicttype, "NTTÂçòË™ûDB")) {
 		    DICT[SM_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "NTT∞’Ã£¡«DB")) {
+		else if (!strcmp(dicttype, "NTTÊÑèÂë≥Á¥†DB")) {
 		    DICT[SM2CODE_DB] = strdup(_Atom(car(car(cell1))));
 		}
-		else if (!strcmp(dicttype, "NTT∏«Õ≠ÃæªÏ —¥π•∆°º•÷•ÎDB")) {
+		else if (!strcmp(dicttype, "NTTÂõ∫ÊúâÂêçË©ûÂ§âÊèõ„ÉÜ„Éº„Éñ„É´DB")) {
 		    DICT[SMP2SMG_DB] = strdup(_Atom(car(car(cell1))));
 		}
 		else {
@@ -379,7 +379,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* ø∑§ø§ •∑•Ω°º•È•π */
+	/* Êñ∞„Åü„Å™„Ç∑„ÇΩ„Éº„É©„Çπ */
 	else if (!strcmp(DEF_THESAURUS, _Atom(car(cell1)))) {
 	    int i;
 	    cell1 = cdr(cell1);
@@ -393,7 +393,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* ≥ ≤Ú¿œÕ—•∑•Ω°º•È•π */
+	/* Ê†ºËß£ÊûêÁî®„Ç∑„ÇΩ„Éº„É©„Çπ */
 	else if (!strcmp(DEF_CASE_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -403,7 +403,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		int i;
 
 		Thesaurus = USE_NONE;
-		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONE§«§œ§ §§§»§≠ */
+		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONE„Åß„ÅØ„Å™„ÅÑ„Å®„Åç */
 		    for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
 			if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
 			    Thesaurus = i;
@@ -420,7 +420,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
-	/*  ¬ŒÛ≤Ú¿œÕ—•∑•Ω°º•È•π */
+	/* ‰∏¶ÂàóËß£ÊûêÁî®„Ç∑„ÇΩ„Éº„É©„Çπ */
 	else if (!strcmp(DEF_PARA_THESAURUS, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -430,7 +430,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		int i;
 
 		ParaThesaurus = USE_NONE;
-		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONE§«§œ§ §§§»§≠ */
+		if (strcasecmp(_Atom(cell2), "NONE")) { /* NONE„Åß„ÅØ„Å™„ÅÑ„Å®„Åç */
 		    for (i = 0; THESAURUS[i].name && i < THESAURUS_MAX; i++) {
 			if (!strcasecmp(_Atom(cell2), THESAURUS[i].name)) {
 			    ParaThesaurus = i;
@@ -447,7 +447,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
-	/* º´∆∞≥Õ∆¿º≠ΩÒ≈¨Õ—¬∞¿≠ */
+	/* Ëá™ÂãïÁç≤ÂæóËæûÊõ∏ÈÅ©Áî®Â±ûÊÄß */
 	else if (!strcmp(DEF_AUTO_DIC_FEATURES, _Atom(car(cell1)))) {
 	    cell1 = cdr(cell1);
 	    while (!Null(car(cell1))) {
@@ -463,7 +463,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* æ Œ¨≤Ú¿œ≥  */
+	/* ÁúÅÁï•Ëß£ÊûêÊ†º */
 	else if (!strcmp(DEF_DISC_CASES, _Atom(car(cell1)))) {
 	    int n = 0, cn;
 
@@ -484,7 +484,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    }
 	    DiscAddedCases[n] = END_M;
 	}
-	/* æ Œ¨≤Ú¿œ√µ∫˜»œ∞œ */
+	/* ÁúÅÁï•Ëß£ÊûêÊé¢Á¥¢ÁØÑÂõ≤ */
 	else if (!strcmp(DEF_DISC_ORDER, _Atom(car(cell1)))) {
 	    int pp;
 
@@ -508,7 +508,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* æ Œ¨≤Ú¿œ√µ∫˜ÔÁ√Õ */
+	/* ÁúÅÁï•Ëß£ÊûêÊé¢Á¥¢ÈñæÂÄ§ */
 	else if (!strcmp(DEF_ANTECEDENT_DECIDE_TH, _Atom(car(cell1)))) {
 	    int pp;
 
@@ -537,7 +537,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
 	    }
 	}
-	/* æ Œ¨≤Ú¿œ√µ∫˜ ∏øÙ */
+	/* ÁúÅÁï•Ëß£ÊûêÊé¢Á¥¢ÊñáÊï∞ */
 	else if (!strcmp(DEF_DISC_SEN_NUM, _Atom(car(cell1)))) {
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
@@ -554,7 +554,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
-	/* æ Œ¨≤Ú¿œ√µ∫˜ΩÁΩ¯ */
+	/* ÁúÅÁï•Ëß£ÊûêÊé¢Á¥¢È†ÜÂ∫è */
 	else if (!strcmp(DEF_DISC_LOC_ORDER, _Atom(car(cell1)))) {
 	    int pp, count;
 
@@ -765,7 +765,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
     }
 #endif
 
-    /* knprc §À•Î°º•Î§¨ªÿƒÍ§µ§Ï§∆§§§ §§æÏπÁ§Œ•«•’•©•Î•»•Î°º•Î */
+    /* knprc „Å´„É´„Éº„É´„ÅåÊåáÂÆö„Åï„Çå„Å¶„ÅÑ„Å™„ÅÑÂ†¥Âêà„ÅÆ„Éá„Éï„Ç©„É´„Éà„É´„Éº„É´ */
     if (CurrentRuleNum == 0) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fprintf(Outfp, "Setting default rules ... ");
@@ -774,7 +774,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	RuleNumMax = 12;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
-	/* mrph_homo ∆±∑¡∞€µ¡∏Ï */
+	/* mrph_homo ÂêåÂΩ¢Áï∞Áæ©Ë™û */
 	(RULE+CurrentRuleNum)->file = strdup("mrph_homo");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -782,7 +782,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* mrph_filter ∑¡¬÷¡«-¡∞ΩËÕ˝ •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* mrph_filter ÂΩ¢ÊÖãÁ¥†-ÂâçÂá¶ÁêÜ „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("mrph_filter");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -790,7 +790,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* mrph_auto_dic ∑¡¬÷¡« •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* mrph_auto_dic ÂΩ¢ÊÖãÁ¥† „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("mrph_auto_dic");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -798,7 +798,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* mrph_basic ∑¡¬÷¡« •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* mrph_basic ÂΩ¢ÊÖãÁ¥† „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("mrph_basic");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -806,7 +806,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* bnst_basic  ∏¿· µ’ ˝∏˛ •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* bnst_basic ÊñáÁØÄ ÈÄÜÊñπÂêë „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -814,7 +814,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* bnst_type  ∏¿· µ’ ˝∏˛ BREAK */
+	/* bnst_type ÊñáÁØÄ ÈÄÜÊñπÂêë BREAK */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_type");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NORMAL;
@@ -822,7 +822,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* bnst_etc  ∏¿· µ’ ˝∏˛ •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* bnst_etc ÊñáÁØÄ ÈÄÜÊñπÂêë „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_etc");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -830,7 +830,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* kakari_uke ∑∏§Íºı§± */
+	/* kakari_uke ‰øÇ„ÇäÂèó„Åë */
 	(RULE+CurrentRuleNum)->file = strdup("kakari_uke");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -838,7 +838,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* koou ∏∆±˛ */
+	/* koou ÂëºÂøú */
 	(RULE+CurrentRuleNum)->file = strdup("koou");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -846,7 +846,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = LtoR;
 	CurrentRuleNum++;
 
-	/* bnst_basic ¥À‹∂Á µ’ ˝∏˛ •Î°º•Î•Î°º•◊¿Ëπ‘ */
+	/* bnst_basic Âü∫Êú¨Âè• ÈÄÜÊñπÂêë „É´„Éº„É´„É´„Éº„ÉóÂÖàË°å */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -854,7 +854,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* case_analysis ¥À‹∂Á µ’ ˝∏˛ */
+	/* case_analysis Âü∫Êú¨Âè• ÈÄÜÊñπÂêë */
 	(RULE+CurrentRuleNum)->file = strdup("case_analysis");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -862,7 +862,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
-	/* tag_postprocess ¥À‹∂Á-∏ÂΩËÕ˝ µ’ ˝∏˛ */
+	/* tag_postprocess Âü∫Êú¨Âè•-ÂæåÂá¶ÁêÜ ÈÄÜÊñπÂêë */
 	(RULE+CurrentRuleNum)->file = strdup("tag_postprocess");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
@@ -890,7 +890,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
      void check_data_newer_than_rule(time_t data, char *datapath)
 /*==================================================================*/
 {
-    /* •Î°º•Î•’•°•§•Î§»§Œª˛¥÷•¡•ß•√•Ø */
+    /* „É´„Éº„É´„Éï„Ç°„Ç§„É´„Å®„ÅÆÊôÇÈñì„ÉÅ„Çß„ÉÉ„ÇØ */
 
     char *rulename;
     int status;
@@ -912,7 +912,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		char *check_rule_filename(char *file)
 /*==================================================================*/
 {
-    /* •Î°º•Î•’•°•§•Î (*.data) §Œ fullpath §Ú ÷§π¥ÿøÙ */
+    /* „É´„Éº„É´„Éï„Ç°„Ç§„É´ (*.data) „ÅÆ fullpath „ÇíËøî„ÅôÈñ¢Êï∞ */
 
     char *fullname, *home;
     int status;
@@ -959,7 +959,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	}
     }
 
-    /* •Î°º•Î•’•°•§•Î§»§Œª˛¥÷•¡•ß•√•Ø */
+    /* „É´„Éº„É´„Éï„Ç°„Ç§„É´„Å®„ÅÆÊôÇÈñì„ÉÅ„Çß„ÉÉ„ÇØ */
     check_data_newer_than_rule(sb.st_mtime, fullname);
 
     return fullname;
@@ -999,7 +999,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	}
 	status = stat(fullname, &sb);
 	if (status < 0) {
-	    /* flag §¨ FALSE §Œ§»§≠§œ•’•°•§•Î§¨¬∏∫ﬂ§π§Î§´§…§¶§´•¡•ß•√•Ø§∑§ §§ */
+	    /* flag „Åå FALSE „ÅÆ„Å®„Åç„ÅØ„Éï„Ç°„Ç§„É´„ÅåÂ≠òÂú®„Åô„Çã„Åã„Å©„ÅÜ„Åã„ÉÅ„Çß„ÉÉ„ÇØ„Åó„Å™„ÅÑ */
 	    if (flag == FALSE) {
 		return fullname;
 	    }

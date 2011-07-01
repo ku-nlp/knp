@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     ½ĞÎÏ¥ë¡¼¥Á¥ó
+			     å‡ºåŠ›ãƒ«ãƒ¼ãƒãƒ³
 
                                                S.Kurohashi 91. 6.25
                                                S.Kurohashi 93. 5.31
@@ -10,8 +10,8 @@
 #include "knp.h"
 
 char mrph_buffer[SMALL_DATA_LEN];
-int Sen_Num = 1; /* -table ¤Î¤È¤­¤Î¤ß»ÈÍÑ¤¹¤ë */
-int Tag_Num = 1; /* -table ¤Î¤È¤­¤Î¤ß»ÈÍÑ¤¹¤ë */
+int Sen_Num = 1; /* -table ã®ã¨ãã®ã¿ä½¿ç”¨ã™ã‚‹ */
+int Tag_Num = 1; /* -table ã®ã¨ãã®ã¿ä½¿ç”¨ã™ã‚‹ */
 
 /* for printing Chinese parse tree */
 int         bnst_dpnd[BNST_MAX];
@@ -28,17 +28,17 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     char *hira_pp;
     int hinsi_id;
 
-    if (pp_len == strlen("¥¬£²") && !strncmp(pp, "¥¬£²", pp_len)) {
-	pp_len -= strlen("£²"); /* ¥¬£² -> ¥¬ */
+    if (pp_len == strlen("ã‚¬ï¼’") && !strncmp(pp, "ã‚¬ï¼’", pp_len)) {
+	pp_len -= strlen("ï¼’"); /* ã‚¬ï¼’ -> ã‚¬ */
     }
     sprintf(mrph_buffer, "%.*s", pp_len, pp);
     hira_pp = katakana2hiragana(mrph_buffer);
-    hinsi_id = get_hinsi_id("½õ»ì");
+    hinsi_id = get_hinsi_id("åŠ©è©");
 
-    sprintf(mrph_buffer, "%s %s %s ½õ»ì %d ³Ê½õ»ì %d * 0 * 0 NIL", 
+    sprintf(mrph_buffer, "%s %s %s åŠ©è© %d æ ¼åŠ©è© %d * 0 * 0 NIL", 
 	    hira_pp, hira_pp, hira_pp, 
 	    hinsi_id, 
-	    get_bunrui_id("³Ê½õ»ì", hinsi_id));
+	    get_bunrui_id("æ ¼åŠ©è©", hinsi_id));
 
     free(hira_pp);
     return mrph_buffer;
@@ -48,26 +48,26 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	     char pos2symbol(char *hinshi, char *bunrui)
 /*==================================================================*/
 {
-    if (!strcmp(hinshi, "ÆÃ¼ì")) return ' ';
-    else if (!strcmp(hinshi, "Æ°»ì")) return 'v';
-    else if (!strcmp(hinshi, "·ÁÍÆ»ì")) return 'j';
-    else if (!strcmp(hinshi, "È½Äê»ì")) return 'c';
-    else if (!strcmp(hinshi, "½õÆ°»ì")) return 'x';
-    else if (!strcmp(hinshi, "Ì¾»ì") &&
-	     !strcmp(bunrui, "¸ÇÍ­Ì¾»ì")) return 'N';
-    else if (!strcmp(hinshi, "Ì¾»ì") &&
-	     !strcmp(bunrui, "¿ÍÌ¾")) return 'J';
-    else if (!strcmp(hinshi, "Ì¾»ì") &&
-	     !strcmp(bunrui, "ÃÏÌ¾")) return 'C';
-    else if (!strcmp(hinshi, "Ì¾»ì")) return 'n';
-    else if (!strcmp(hinshi, "»Ø¼¨»ì")) return 'd';
-    else if (!strcmp(hinshi, "Éû»ì")) return 'a';
-    else if (!strcmp(hinshi, "½õ»ì")) return 'p';
-    else if (!strcmp(hinshi, "ÀÜÂ³»ì")) return 'c';
-    else if (!strcmp(hinshi, "Ï¢ÂÎ»ì")) return 'm';
-    else if (!strcmp(hinshi, "´¶Æ°»ì")) return '!';
-    else if (!strcmp(hinshi, "ÀÜÆ¬¼­")) return 'p';
-    else if (!strcmp(hinshi, "ÀÜÈø¼­")) return 's';
+    if (!strcmp(hinshi, "ç‰¹æ®Š")) return ' ';
+    else if (!strcmp(hinshi, "å‹•è©")) return 'v';
+    else if (!strcmp(hinshi, "å½¢å®¹è©")) return 'j';
+    else if (!strcmp(hinshi, "åˆ¤å®šè©")) return 'c';
+    else if (!strcmp(hinshi, "åŠ©å‹•è©")) return 'x';
+    else if (!strcmp(hinshi, "åè©") &&
+	     !strcmp(bunrui, "å›ºæœ‰åè©")) return 'N';
+    else if (!strcmp(hinshi, "åè©") &&
+	     !strcmp(bunrui, "äººå")) return 'J';
+    else if (!strcmp(hinshi, "åè©") &&
+	     !strcmp(bunrui, "åœ°å")) return 'C';
+    else if (!strcmp(hinshi, "åè©")) return 'n';
+    else if (!strcmp(hinshi, "æŒ‡ç¤ºè©")) return 'd';
+    else if (!strcmp(hinshi, "å‰¯è©")) return 'a';
+    else if (!strcmp(hinshi, "åŠ©è©")) return 'p';
+    else if (!strcmp(hinshi, "æ¥ç¶šè©")) return 'c';
+    else if (!strcmp(hinshi, "é€£ä½“è©")) return 'm';
+    else if (!strcmp(hinshi, "æ„Ÿå‹•è©")) return '!';
+    else if (!strcmp(hinshi, "æ¥é ­è¾")) return 'p';
+    else if (!strcmp(hinshi, "æ¥å°¾è¾")) return 's';
 
     return '?';
 }
@@ -135,9 +135,9 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 {
     int i;
 
-    /* ÊÂÎó¤Î¤È¤­¤Ë¡¢ºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤ò¤«¤¨¤¹ */
+    /* ä¸¦åˆ—ã®ã¨ãã«ã€æœ€å¾Œã‹ã‚‰2ç•ªç›®ã®è¦ç´ ã‚’ã‹ãˆã™ */
     if (bp->para_top_p) {
-	for (i = 1; bp->child[i]; i++) { /* 0¤ÏºÇ¸å¤ÎÍ×ÁÇ */
+	for (i = 1; bp->child[i]; i++) { /* 0ã¯æœ€å¾Œã®è¦ç´  */
 	    if (bp->child[i]->para_type != PARA_NIL) {
 		return bp->child[i];
 	    }
@@ -162,7 +162,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
       void print_tags(SENTENCE_DATA *sp, int flag, int eos_flag)
 /*==================================================================*/
 {
-    /* ¸½ºß¤Ï¾ï¤Ë flag == 1 (0¤Ïµì·Á¼°½ĞÎÏ) */
+    /* ç¾åœ¨ã¯å¸¸ã« flag == 1 (0ã¯æ—§å½¢å¼å‡ºåŠ›) */
 
     int		i, j, count = 0, b_count = 0, case_len, bp_independent_offset = 0, dpnd_head;
     int		t_table[TAG_MAX], b_table[BNST_MAX], t_proj_table[TAG_MAX], t_copula_table[TAG_MAX];
@@ -172,18 +172,18 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     MRPH_DATA	*m_ptr;
     TAG_DATA	*t_ptr, *bp;
 
-    /* ¥Î¡¼¥É¤ÎÁŞÆş¤ò¹ÍÎ¸¤·¤Ê¤¬¤é¡¢´ğËÜ¶ç¡¢Ê¸Àá¤ÎÊÑ´¹¥Æ¡¼¥Ö¥ë¤òºîÀ® */
+    /* ãƒãƒ¼ãƒ‰ã®æŒ¿å…¥ã‚’è€ƒæ…®ã—ãªãŒã‚‰ã€åŸºæœ¬å¥ã€æ–‡ç¯€ã®å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ä½œæˆ */
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->num == -1) {
-	    continue; /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿¥¿¥° */
+	    continue; /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸã‚¿ã‚° */
 	}
 
-	/* ÄÉ²Ã¥Î¡¼¥É */
-	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* Ê¸Àá¤ÎÀÚ¤ìÌÜ¤´¤È¤Ë¥Á¥§¥Ã¥¯ */
-	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* head¤Î´ğËÜ¶ç */
-	    while (fp) { /* feature¤Îloop: feature¤ò¥Á¥§¥Ã¥¯ */
-		if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", strlen("³ÊÍ×ÁÇ-")) && 
-		    strstr(fp->cp, ":¡ô")) { /* tag_after_dpnd_and_case.rule¤Ç»È¤ï¤ì¤Æ¤¤¤ë */
+	/* è¿½åŠ ãƒãƒ¼ãƒ‰ */
+	if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) { /* æ–‡ç¯€ã®åˆ‡ã‚Œç›®ã”ã¨ã«ãƒã‚§ãƒƒã‚¯ */
+	    fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headã®åŸºæœ¬å¥ */
+	    while (fp) { /* featureã®loop: featureã‚’ãƒã‚§ãƒƒã‚¯ */
+		if (!strncmp(fp->cp, "æ ¼è¦ç´ -", strlen("æ ¼è¦ç´ -")) && 
+		    strstr(fp->cp, ":ï¼ƒ")) { /* tag_after_dpnd_and_case.ruleã§ä½¿ã‚ã‚Œã¦ã„ã‚‹ */
 		    t_copula_table[count] = 0;
 		    count++;
 		    b_count++;
@@ -192,24 +192,24 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    }
 	    pre_bp = t_ptr->b_ptr;
 	}
-	/* È½Äê»ì(-copula)¤Î´ğËÜ¶ç¤òÊ¬²ò¤¹¤ë¤È¤­ */
-	if (check_feature(t_ptr->f, "£Ô´ğËÜ¶çÊ¬²ò")) { 
+	/* åˆ¤å®šè©(-copula)ã®åŸºæœ¬å¥ã‚’åˆ†è§£ã™ã‚‹ã¨ã */
+	if (check_feature(t_ptr->f, "ï¼´åŸºæœ¬å¥åˆ†è§£")) { 
 	    t_copula_table[count] = 0;
 	    count++;
-	    t_copula_table[count] = 1; /* ¿·¤·¤¤¥Æ¡¼¥Ö¥ë¤Ë¤ª¤±¤ë´ğËÜ¶çÊ¬²ò¤Î°ÌÃÖ¤òµ­Ï¿ */
+	    t_copula_table[count] = 1; /* æ–°ã—ã„ãƒ†ãƒ¼ãƒ–ãƒ«ã«ãŠã‘ã‚‹åŸºæœ¬å¥åˆ†è§£ã®ä½ç½®ã‚’è¨˜éŒ² */
 	}
 	else {
 	    t_copula_table[count] = 0;
 	}
 
-	t_table[t_ptr->num] = count++; /* num¤ò¹¹¿·¤·¤Æ¤¤¤ë¤Î¤Ç»È¤¨¤ë */
+	t_table[t_ptr->num] = count++; /* numã‚’æ›´æ–°ã—ã¦ã„ã‚‹ã®ã§ä½¿ãˆã‚‹ */
 
-	if (t_ptr->bnum >= 0) { /* Ê¸Àá¹Ô (bnum¤ò¹¹¿·¤·¤Æ¤¤¤ë¤Î¤Ç»È¤¨¤ë) */
+	if (t_ptr->bnum >= 0) { /* æ–‡ç¯€è¡Œ (bnumã‚’æ›´æ–°ã—ã¦ã„ã‚‹ã®ã§ä½¿ãˆã‚‹) */
 	    b_table[t_ptr->bnum] = b_count++;
 	}
     }
 
-    for (i = 0; i < count; i++) { /* Èó¸òº¹¾ò·ï¥Á¥§¥Ã¥¯ÍÑ */
+    for (i = 0; i < count; i++) { /* éäº¤å·®æ¡ä»¶ãƒã‚§ãƒƒã‚¯ç”¨ */
 	t_proj_table[i] = 0;
     }
 
@@ -217,7 +217,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     pre_bp = NULL;
     for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
 	if (t_ptr->num == -1) {
-	    continue; /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿¥¿¥° */
+	    continue; /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸã‚¿ã‚° */
 	}
 	if (flag == 1) {
 	    bp_independent_offset = 0;
@@ -225,31 +225,31 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    if (OptExpress == OPT_TABLE)
 		fprintf(Outfp, "%%%% LABEL=%d_%db\n", Sen_Num - 1, i + 1);
 
-	    /* ÄÉ²Ã¥Î¡¼¥É */
+	    /* è¿½åŠ ãƒãƒ¼ãƒ‰ */
 	    if (OptRecoverPerson && pre_bp != t_ptr->b_ptr) {
-		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* head¤Î´ğËÜ¶ç */
-		while (fp) { /* feature¤Îloop: feature¤ò¥Á¥§¥Ã¥¯ */
-		    if (!strncmp(fp->cp, "³ÊÍ×ÁÇ-", strlen("³ÊÍ×ÁÇ-")) && 
-			(cp = strstr(fp->cp, ":¡ô"))) {
-			case_len = cp - fp->cp - strlen("³ÊÍ×ÁÇ-"); /* ³Ê¤ÎÉôÊ¬¤ÎÄ¹¤µ */
-			cp++; /* ¡ô¤ÎÆ¬ */
+		fp = (t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->f; /* headã®åŸºæœ¬å¥ */
+		while (fp) { /* featureã®loop: featureã‚’ãƒã‚§ãƒƒã‚¯ */
+		    if (!strncmp(fp->cp, "æ ¼è¦ç´ -", strlen("æ ¼è¦ç´ -")) && 
+			(cp = strstr(fp->cp, ":ï¼ƒ"))) {
+			case_len = cp - fp->cp - strlen("æ ¼è¦ç´ -"); /* æ ¼ã®éƒ¨åˆ†ã®é•·ã• */
+			cp++; /* ï¼ƒã®é ­ */
 
-			dpnd_head = t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]; /* ·¸¤êÀè¤Ïhead */
-			if (t_proj_table[count] && dpnd_head > t_proj_table[count]) { /* Èó¸òº¹¾ò·ï */
+			dpnd_head = t_table[(t_ptr->b_ptr->tag_ptr + t_ptr->b_ptr->tag_num - 1)->num]; /* ä¿‚ã‚Šå…ˆã¯head */
+			if (t_proj_table[count] && dpnd_head > t_proj_table[count]) { /* éäº¤å·®æ¡ä»¶ */
 			    dpnd_head = t_proj_table[count];
 			}
 
-			if (!strncmp(fp->cp + strlen("³ÊÍ×ÁÇ-"), "¡ô", case_len)) {
-			    fprintf(Outfp, "* %dD <¥Î¡¼¥ÉÁŞÆş>\n", b_table[t_ptr->b_ptr->num]);
-			    fprintf(Outfp, "+ %dD <¥Î¡¼¥ÉÁŞÆş>\n", dpnd_head);
-			    fprintf(Outfp, "%s %s %s Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL\n", cp, cp, cp);
+			if (!strncmp(fp->cp + strlen("æ ¼è¦ç´ -"), "ï¼ƒ", case_len)) {
+			    fprintf(Outfp, "* %dD <ãƒãƒ¼ãƒ‰æŒ¿å…¥>\n", b_table[t_ptr->b_ptr->num]);
+			    fprintf(Outfp, "+ %dD <ãƒãƒ¼ãƒ‰æŒ¿å…¥>\n", dpnd_head);
+			    fprintf(Outfp, "%s %s %s åè© 6 æ™®é€šåè© 1 * 0 * 0 NIL\n", cp, cp, cp);
 			}
 			else {
-			    fprintf(Outfp, "* %dD <¥Î¡¼¥ÉÁŞÆş><·¸:%.*s³Ê>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"));
-			    fprintf(Outfp, "+ %dD <¥Î¡¼¥ÉÁŞÆş><·¸:%.*s³Ê><²òÀÏ³Ê:%.*s>\n", dpnd_head, 
-				    case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"), case_len, fp->cp + strlen("³ÊÍ×ÁÇ-"));
-			    fprintf(Outfp, "%s %s %s Ì¾»ì 6 ÉáÄÌÌ¾»ì 1 * 0 * 0 NIL\n", cp, cp, cp);
-			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + strlen("³ÊÍ×ÁÇ-"), case_len));
+			    fprintf(Outfp, "* %dD <ãƒãƒ¼ãƒ‰æŒ¿å…¥><ä¿‚:%.*sæ ¼>\n", b_table[t_ptr->b_ptr->num], case_len, fp->cp + strlen("æ ¼è¦ç´ -"));
+			    fprintf(Outfp, "+ %dD <ãƒãƒ¼ãƒ‰æŒ¿å…¥><ä¿‚:%.*sæ ¼><è§£ææ ¼:%.*s>\n", dpnd_head, 
+				    case_len, fp->cp + strlen("æ ¼è¦ç´ -"), case_len, fp->cp + strlen("æ ¼è¦ç´ -"));
+			    fprintf(Outfp, "%s %s %s åè© 6 æ™®é€šåè© 1 * 0 * 0 NIL\n", cp, cp, cp);
+			    fprintf(Outfp, "%s\n", pp2mrph(fp->cp + strlen("æ ¼è¦ç´ -"), case_len));
 			}
 			count++;
 		    }
@@ -258,9 +258,9 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		pre_bp = t_ptr->b_ptr;
 	    }
 
-	    /* È½Äê»ì(-copula)¤Î´ğËÜ¶ç¤òÊ¬²ò¤¹¤ë¤È¤­ */
-	    if (check_feature(t_ptr->f, "£Ô´ğËÜ¶çÊ¬²ò")) {
-		if (t_ptr->bnum >= 0) { /* Ê¸Àá¹Ô */
+	    /* åˆ¤å®šè©(-copula)ã®åŸºæœ¬å¥ã‚’åˆ†è§£ã™ã‚‹ã¨ã */
+	    if (check_feature(t_ptr->f, "ï¼´åŸºæœ¬å¥åˆ†è§£")) {
+		if (t_ptr->bnum >= 0) { /* æ–‡ç¯€è¡Œ */
 		    fprintf(Outfp, "* %d%c", 
 			    t_ptr->b_ptr->dpnd_head == -1 ? -1 : b_table[t_ptr->b_ptr->dpnd_head], 
 			    t_ptr->b_ptr->dpnd_type);
@@ -270,10 +270,10 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		    }
 		    fputc('\n', Outfp);
 		}
-		fprintf(Outfp, "+ %dD <È½Äê»ì´ğËÜ¶çÊ¬²ò><·¸:ÎÙ>\n", t_table[t_ptr->num]);
+		fprintf(Outfp, "+ %dD <åˆ¤å®šè©åŸºæœ¬å¥åˆ†è§£><ä¿‚:éš£>\n", t_table[t_ptr->num]);
 
 		for (j = 0, m_ptr = t_ptr->mrph_ptr; j < t_ptr->mrph_num; j++, m_ptr++) {
-		    if (check_feature(m_ptr->f, "¸å½èÍı-´ğËÜ¶ç»Ï")) {
+		    if (check_feature(m_ptr->f, "å¾Œå‡¦ç†-åŸºæœ¬å¥å§‹")) {
 			break;
 		    }
 		    print_mrph(m_ptr);
@@ -287,7 +287,7 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		count++;
 	    }
 
-	    /* Ê¸Àá¹Ô */
+	    /* æ–‡ç¯€è¡Œ */
 	    if (bp_independent_offset == 0 && t_ptr->bnum >= 0) {
 		if (PrintNum) {
 		    fprintf(Outfp, "* %d %d%c", 
@@ -310,18 +310,18 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 		fputc('\n', Outfp);
 	    }
 
-	    /* È½Äê»ìÊ¬²ò»ş: Ï¢ÂÎ½¤¾ş¤ÏÈ½Äê»ì¤ÎÁ°¤ÎÌ¾»ì¤Ë·¸¤ë¤è¤¦¤Ë½¤Àµ */
+	    /* åˆ¤å®šè©åˆ†è§£æ™‚: é€£ä½“ä¿®é£¾ã¯åˆ¤å®šè©ã®å‰ã®åè©ã«ä¿‚ã‚‹ã‚ˆã†ã«ä¿®æ­£ */
 	    dpnd_head = t_ptr->dpnd_head == -1 ? -1 : t_table[t_ptr->dpnd_head];
 	    if (OptCopula && 
 		dpnd_head != -1 && 
-		t_copula_table[dpnd_head]) { /* ·¸¤êÀè¤¬È½Äê»ìÊ¬²ò */
+		t_copula_table[dpnd_head]) { /* ä¿‚ã‚Šå…ˆãŒåˆ¤å®šè©åˆ†è§£ */
 		if (t_table[t_ptr->num] < dpnd_head - 1 && 
-		    (((check_feature(t_ptr->f, "Ï¢ÂÎ½¤¾ş") || 
-		       check_feature(t_ptr->f, "·¸:ÎÙ") || 
-		       check_feature(t_ptr->f, "·¸:Ê¸ÀáÆâ")) && 
-		      (t_ptr->para_type == PARA_NIL || /* ÊÂÎó¤Î¤È¤­¤ÏºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤Î¤ß½¤Àµ */
+		    (((check_feature(t_ptr->f, "é€£ä½“ä¿®é£¾") || 
+		       check_feature(t_ptr->f, "ä¿‚:éš£") || 
+		       check_feature(t_ptr->f, "ä¿‚:æ–‡ç¯€å†…")) && 
+		      (t_ptr->para_type == PARA_NIL || /* ä¸¦åˆ—ã®ã¨ãã¯æœ€å¾Œã‹ã‚‰2ç•ªç›®ã®è¦ç´ ã®ã¿ä¿®æ­£ */
 		       ((bp = search_nearest_para_child(t_ptr->parent)) && t_ptr->num == bp->num))) || 
-		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]]))) { /* Èó¸òº¹¾ò·ï */
+		     (t_proj_table[t_table[t_ptr->num]] && dpnd_head > t_proj_table[t_table[t_ptr->num]]))) { /* éäº¤å·®æ¡ä»¶ */
 		    dpnd_head--;
 		}
 	    }
@@ -374,10 +374,10 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
     FEATURE *bp_f = NULL, *bp_copied_f;
 
     for (i = 0, m_ptr = sp->mrph_data; i < sp->Mrph_num; i++, m_ptr++) {
-	/* ´ğËÜ¶ç¹Ô */
+	/* åŸºæœ¬å¥è¡Œ */
 	if (m_ptr->tnum >= 0) {
 	    t_ptr = sp->tag_data + m_ptr->tnum;
-	    /* Ê¸Àá¹Ô */
+	    /* æ–‡ç¯€è¡Œ */
 	    if (t_ptr->bnum >= 0) {
 		if (PrintNum) {
 		    fprintf(Outfp, "* %d %d%c", 
@@ -415,26 +415,26 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    fputc('\n', Outfp);
 	}
 
-	/* ·ÁÂÖÁÇ·¸¤ê¼õ¤±¹Ô */
+	/* å½¢æ…‹ç´ ä¿‚ã‚Šå—ã‘è¡Œ */
 	if (PrintNum) {
 	    fprintf(Outfp, "- %d %d%c", m_ptr->num, m_ptr->dpnd_head, m_ptr->dpnd_type);
 	} 
 	else {
 	    fprintf(Outfp, "- %d%c", m_ptr->dpnd_head, m_ptr->dpnd_type);
 	}
-	/* ·ÁÂÖÁÇfeature¤Ï°Ê²¼¤Î·ÁÂÖÁÇ¹Ô¤Ë½ĞÎÏ¤¹¤ë¤Î¤Ç¾ÊÎ¬ */
+	/* å½¢æ…‹ç´ featureã¯ä»¥ä¸‹ã®å½¢æ…‹ç´ è¡Œã«å‡ºåŠ›ã™ã‚‹ã®ã§çœç•¥ */
 	fputc('\n', Outfp);
 
-	/* ·ÁÂÖÁÇ¾ğÊó */
+	/* å½¢æ…‹ç´ æƒ…å ± */
 	print_mrph(m_ptr);
-	/* ´ğËÜ¶çËö¤Î·ÁÂÖÁÇ¤Ë´ğËÜ¶ç¤Îfeature¤òÉÕÍ¿ */
+	/* åŸºæœ¬å¥æœ«ã®å½¢æ…‹ç´ ã«åŸºæœ¬å¥ã®featureã‚’ä»˜ä¸ */
 	if (m_ptr->inum == 0) {
 	    if (bp_f) {
 		fputc(' ', Outfp);
-		if (m_ptr->f) { /* ·ÁÂÖÁÇ¼«¿È¤Îfeature -> bp_f¤È¥Ş¡¼¥¸ */
+		if (m_ptr->f) { /* å½¢æ…‹ç´ è‡ªèº«ã®feature -> bp_fã¨ãƒãƒ¼ã‚¸ */
 		    bp_copied_f = NULL;
 		    copy_feature(&bp_copied_f, bp_f);
-		    copy_feature(&bp_copied_f, m_ptr->f); /* bp_fÃæ¤ÎÀµµ¬²½ÂåÉ½É½µ­¤Ê¤É¤ò¾å½ñ¤­ */
+		    copy_feature(&bp_copied_f, m_ptr->f); /* bp_fä¸­ã®æ­£è¦åŒ–ä»£è¡¨è¡¨è¨˜ãªã©ã‚’ä¸Šæ›¸ã */
 		    print_feature(bp_copied_f, Outfp);
 		    clear_feature(&bp_copied_f);
 		}
@@ -445,8 +445,8 @@ char*       bnst_inverse_tree[TREE_WIDTH_MAX][BNST_MAX];
 	    }
 	}
 	else {
-	    fputs(" <·¸:´ğËÜ¶çÆâ>", Outfp);
-	    if (m_ptr->f) { /* ·ÁÂÖÁÇ¼«¿È¤Îfeature */
+	    fputs(" <ä¿‚:åŸºæœ¬å¥å†…>", Outfp);
+	    if (m_ptr->f) { /* å½¢æ…‹ç´ è‡ªèº«ã®feature */
 		print_feature(m_ptr->f, Outfp);
 	    }
 	}
@@ -483,7 +483,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
 	if (b_ptr->num == -1) {
-	    continue; /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿Ê¸Àá */
+	    continue; /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸæ–‡ç¯€ */
 	}
 	if (have_dpnd_flag == 1) {
 	    if (Language == CHINESE && (b_ptr->is_para == 1 || b_ptr->is_para ==2)) {
@@ -545,7 +545,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	    fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
     }
     else {
-	fprintf(Outfp, "ÉÔÆÃÄê:¿Í");
+	fprintf(Outfp, "ä¸ç‰¹å®š:äºº");
     }
 }
 
@@ -557,7 +557,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 
     if (cp && ptr) {
 	if (OptExpress == OPT_TABLE) {
-	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "¡ãP¡ä");
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "ï¼œPï¼");
 	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "&lt;I&gt;");
 	    else			     cp[0] = '\0';
 	}
@@ -587,7 +587,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	}
 
 	if (OptExpress == OPT_TABLE) {
-	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "¡ãP¡ä");
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "ï¼œPï¼");
 	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "&lt;I&gt;");
 	}
 	else {
@@ -606,7 +606,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 
     if (cp && ptr) {
 	if (OptExpress == OPT_TABLE) {
-	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "¡ãP¡ä");
+	    if ( ptr->para_type == PARA_NORMAL ) strcpy(cp, "ï¼œPï¼");
 	    else if ( ptr->para_type == PARA_INCOMP ) strcpy(cp, "&lt;I&gt;");
 	    else			     cp[0] = '\0';
 	}
@@ -642,7 +642,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	}
 
 	if (OptExpress == OPT_TABLE) {
-	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "¡ãP¡ä");
+	    if ( ptr->para_type == PARA_NORMAL ) fprintf(Outfp, "ï¼œPï¼");
 	    else if ( ptr->para_type == PARA_INCOMP ) fprintf(Outfp, "&lt;I&gt;");
 	}
 	else {
@@ -717,7 +717,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
     int i;
     MRPH_DATA *m_ptr;
      
-    fputc('(', Outfp);	/* Ê¸Àá»Ï¤ê */
+    fputc('(', Outfp);	/* æ–‡ç¯€å§‹ã‚Š */
 
     if ( ptr->para_top_p == TRUE ) {
 	if (ptr->child[1] && 
@@ -729,7 +729,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
     else {
 	fprintf(Outfp, "%d ", ptr->num);
 
-	/* ·¸¤ê¼õ¤±¾ğÊó¤ÎÉ½¼¨ (ÄÉ²Ã:97/10/29) */
+	/* ä¿‚ã‚Šå—ã‘æƒ…å ±ã®è¡¨ç¤º (è¿½åŠ :97/10/29) */
 
 	fprintf(Outfp, "(type:%c) ", ptr->dpnd_type);
 
@@ -747,43 +747,43 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	print_feature2(ptr->f, Outfp);
 
 	if (OptAnalysis == OPT_DPND ||
-	    !check_feature(ptr->f, "ÍÑ¸À") ||	/* ÍÑ¸À¤Ç¤Ê¤¤¾ì¹ç */
-	    ptr->cpm_ptr == NULL) { 		/* ²òÀÏÁ° */
+	    !check_feature(ptr->f, "ç”¨è¨€") ||	/* ç”¨è¨€ã§ãªã„å ´åˆ */
+	    ptr->cpm_ptr == NULL) { 		/* è§£æå‰ */
 	    fprintf(Outfp, " NIL");
 	}
 	else {
 	    fprintf(Outfp, " (");
 	    
 	    if (ptr->cpm_ptr->cmm[0].cf_ptr == NULL)
-		fprintf(Outfp, "-2");	/* ³Ê¥Õ¥ì¡¼¥à¤ËENTRY¤Ê¤· */
+		fprintf(Outfp, "-2");	/* æ ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ENTRYãªã— */
 	    else if ((ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address == -1)
-		fprintf(Outfp, "-1");	/* ³ÊÍ×ÁÇ¤Ê¤· */
+		fprintf(Outfp, "-1");	/* æ ¼è¦ç´ ãªã— */
 	    else {
 		fprintf(Outfp, "%s", 
 			(ptr->cpm_ptr->cmm[0].cf_ptr)->cf_id);
 		switch (ptr->cpm_ptr->cmm[0].cf_ptr->voice) {
 		case FRAME_ACTIVE:
-		    fprintf(Outfp, " Ç½Æ°"); break;
+		    fprintf(Outfp, " èƒ½å‹•"); break;
 		case FRAME_PASSIVE_I:
-		    fprintf(Outfp, " ´Ö¼õ"); break;
+		    fprintf(Outfp, " é–“å—"); break;
 		case FRAME_PASSIVE_1:
-		    fprintf(Outfp, " Ä¾¼õ£±"); break;
+		    fprintf(Outfp, " ç›´å—ï¼‘"); break;
 		case FRAME_PASSIVE_2:
-		    fprintf(Outfp, " Ä¾¼õ£²"); break;
+		    fprintf(Outfp, " ç›´å—ï¼’"); break;
 		case FRAME_CAUSATIVE_WO_NI:
-		    fprintf(Outfp, " »ÈÌò¥ò¥Ë"); break;
+		    fprintf(Outfp, " ä½¿å½¹ãƒ²ãƒ‹"); break;
 		case FRAME_CAUSATIVE_WO:
-		    fprintf(Outfp, " »ÈÌò¥ò"); break;
+		    fprintf(Outfp, " ä½¿å½¹ãƒ²"); break;
 		case FRAME_CAUSATIVE_NI:
-		    fprintf(Outfp, " »ÈÌò¥Ë"); break;
+		    fprintf(Outfp, " ä½¿å½¹ãƒ‹"); break;
 		case FRAME_CAUSATIVE_PASSIVE:
-		    fprintf(Outfp, " »ÈÌò&¼õ¿È"); break;
+		    fprintf(Outfp, " ä½¿å½¹&å—èº«"); break;
 		case FRAME_POSSIBLE:
-		    fprintf(Outfp, " ²ÄÇ½"); break;
+		    fprintf(Outfp, " å¯èƒ½"); break;
 		case FRAME_POLITE:
-		    fprintf(Outfp, " Âº·É"); break;
+		    fprintf(Outfp, " å°Šæ•¬"); break;
 		case FRAME_SPONTANE:
-		    fprintf(Outfp, " ¼«È¯"); break;
+		    fprintf(Outfp, " è‡ªç™º"); break;
 		default: break;
 		}
 		fprintf(Outfp, " (");
@@ -792,19 +792,19 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	    }
 	    fprintf(Outfp, ")");
 
-	    /* ------------ÊÑ¹¹:½Ò¸ìÁÇ, ³Ê·Á¼°¤ò½ĞÎÏ-----------------
+	    /* ------------å¤‰æ›´:è¿°èªç´ , æ ¼å½¢å¼ã‚’å‡ºåŠ›-----------------
 	    if (ptr->cpm_ptr != NULL &&
 		ptr->cpm_ptr->cmm[0].cf_ptr != NULL &&
 		(ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address != -1) {
 		get_ipal_frame(i_ptr, 
 			       (ptr->cpm_ptr->cmm[0].cf_ptr)->cf_address);
 		if (i_ptr->DATA[i_ptr->jyutugoso]) {
-		    fprintf(Outfp, " ½Ò¸ìÁÇ %s", 
+		    fprintf(Outfp, " è¿°èªç´  %s", 
 			    i_ptr->DATA+i_ptr->jyutugoso);
 		} else {
-		    fprintf(Outfp, " ½Ò¸ìÁÇ nil");
+		    fprintf(Outfp, " è¿°èªç´  nil");
 		}
-		fprintf(Outfp, " ³Ê·Á¼° (");
+		fprintf(Outfp, " æ ¼å½¢å¼ (");
 		for (j=0; *((i_ptr->DATA)+(i_ptr->kaku_keishiki[j])) 
 			       != NULL; j++){
 		    fprintf(Outfp, " %s", 
@@ -815,7 +815,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 	    ------------------------------------------------------- */
 	}
     }
-    fputc(')', Outfp);	/* Ê¸Àá½ª¤ï¤ê */
+    fputc(')', Outfp);	/* æ–‡ç¯€çµ‚ã‚ã‚Š */
 }
 
 /*==================================================================*/
@@ -834,7 +834,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 }
 
 /*====================================================================
-			       ¹ÔÎóÉ½¼¨
+			       è¡Œåˆ—è¡¨ç¤º
 ====================================================================*/
 
 /*==================================================================*/
@@ -854,10 +854,10 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	  strcat(tmp, (ptr->mrph_ptr + i)->Goi2);
 
 	if (!strcmp(Class[(ptr->mrph_ptr + ptr->mrph_num - 1)->Hinshi][0].id,
-		    "ÆÃ¼ì") &&
+		    "ç‰¹æ®Š") &&
 	    !strcmp(Class[(ptr->mrph_ptr + ptr->mrph_num - 1)->Hinshi]
 		    [(ptr->mrph_ptr + ptr->mrph_num - 1)->Bunrui].id, 
-		    "ÆÉÅÀ")) {
+		    "èª­ç‚¹")) {
 	    strcat(tmp, ",");
 	    comma_p = TRUE;
 	} else {
@@ -904,21 +904,21 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
     int i, j, length;
     int over_flag = 0;
     int max_length = 0;
-    int para_char = 0;     /* para_key ¤ÎÉ½¼¨ÍÑ */
+    int para_char = 0;     /* para_key ã®è¡¨ç¤ºç”¨ */
     PARA_DATA *ptr;
 
     for ( i=0; i<sp->Bnst_num; i++ )
 	for ( j=0; j<sp->Bnst_num; j++ )
 	    path_matrix[i][j] = 0;
     
-    /* ¥Ñ¥¹¤Î¥Ş¡¼¥¯ÉÕ¤±(PARA) */
+    /* ãƒ‘ã‚¹ã®ãƒãƒ¼ã‚¯ä»˜ã‘(PARA) */
 
     if (type == PRINT_PARA) {
 	for ( i=0; i<sp->Para_num; i++ ) {
 	    ptr = &sp->para_data[i];
 
 	    if (ptr->max_score < 0.0) continue;
-	    /* status¤¬x¤Ç¤â¥¹¥³¥¢¤¬¤¢¤ì¤Ğ»²¹Í¤Î¤¿¤áÉ½¼¨ */
+	    /* statusãŒxã§ã‚‚ã‚¹ã‚³ã‚¢ãŒã‚ã‚Œã°å‚è€ƒã®ãŸã‚è¡¨ç¤º */
 
 	    for ( j=ptr->key_pos+1; j<=ptr->jend_pos; j++ ) {
 		if (Language != CHINESE) {
@@ -942,7 +942,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	}
     }
 
-    /* Ä¹¤µ¤Î·×»» */
+    /* é•·ã•ã®è¨ˆç®— */
 
     for ( i=0; i<sp->Bnst_num; i++ ) {
 	length = sp->bnst_data[i].length + (sp->Bnst_num-i-1)*3;
@@ -950,7 +950,7 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
 	if ( max_length < length )    max_length = length;
     }
     
-    /* °õºşÍÑ¤Î½èÍı */
+    /* å°åˆ·ç”¨ã®å‡¦ç† */
 
     if ( 0 ) {
 	if ( PRINT_WIDTH < sp->Bnst_num*3 ) {
@@ -1043,13 +1043,13 @@ void print_M_bnst(SENTENCE_DATA *sp, int b_num, int max_length, int *para_char)
     char buffer[DATA_LEN];
 
     for (i = 0; i < sp->Para_num; i++) {
-	sprintf(buffer, "ÊÂÎóÎà»÷ÅÙ:%.3f", sp->para_data[i].max_score);
+	sprintf(buffer, "ä¸¦åˆ—é¡ä¼¼åº¦:%.3f", sp->para_data[i].max_score);
 	assign_cfeature(&(sp->bnst_data[sp->para_data[i].key_pos].f), buffer, FALSE);
     }
 }
 
 /*====================================================================
-	                ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸É½¼¨
+	                ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚è¡¨ç¤º
 ====================================================================*/
 
 /*==================================================================*/
@@ -1096,9 +1096,9 @@ void print_para_manager(SENTENCE_DATA *sp, PARA_MANAGER *m_ptr, int level)
 }
 
 /*====================================================================
-	                ÌÚ¹½Â¤É½¼¨(from JK)
+	                æœ¨æ§‹é€ è¡¨ç¤º(from JK)
 ====================================================================*/
-static int max_width;			/* ÌÚ¤ÎºÇÂçÉı */
+static int max_width;			/* æœ¨ã®æœ€å¤§å¹… */
 
 /*==================================================================*/
 			   int mylog(int n)
@@ -1154,48 +1154,48 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     
     if (depth != 1) {
 
-	/* ¿Æ¤Ø¤Î»Ş (·»Äï¤ò¹ÍÎ¸) */
+	/* è¦ªã¸ã®æ (å…„å¼Ÿã‚’è€ƒæ…®) */
 
 	if (para_type == PARA_NORMAL || 
 	    para_type == PARA_INCOMP ||
 	    to_para_p == TRUE) {
 	    if (OptExpress != OPT_TABLE)
-		fprintf(Outfp, "¨¡");
+		fprintf(Outfp, "â”€");
 	}
 	else {
 	    if (OptExpress == OPT_TABLE)
-		fprintf(Outfp, "¨¡");
+		fprintf(Outfp, "â”€");
 	    else
-		fprintf(Outfp, "¨¡¨¡");
+		fprintf(Outfp, "â”€â”€");
 	}
 
 	if (ans_flag[depth-1] == '1') 
-	    fprintf(Outfp, "¨©");
+	    fprintf(Outfp, "â”¤");
 	else 
-	    fprintf(Outfp, "¨¤");
+	    fprintf(Outfp, "â”");
 
 	if (OptExpress == OPT_TABLE)
 	    fprintf(Outfp, "&nbsp;&nbsp;");
 	else
-	    fprintf(Outfp, "¡¡");
+	    fprintf(Outfp, "ã€€");
 
-	/* ÁÄÀè¤Î·»Äï¤Î»Ş */
+	/* ç¥–å…ˆã®å…„å¼Ÿã®æ */
 
 	for (i = depth - 1; i > 1; i--) {
 	    if (OptExpress == OPT_TABLE)
 		fprintf(Outfp, "&nbsp;&nbsp;&nbsp;&nbsp;");
 	    else
-		fprintf(Outfp, "¡¡¡¡");
+		fprintf(Outfp, "ã€€ã€€");
 	    if (ans_flag[i-1] == '1') 
-		fprintf(Outfp, "¨¢");
+		fprintf(Outfp, "â”‚");
 	    else if (OptExpress == OPT_TABLE)
 		fprintf(Outfp, "&nbsp;&nbsp;");
 	    else
-		fprintf(Outfp, "¡¡");
+		fprintf(Outfp, "ã€€");
 	    if (OptExpress == OPT_TABLE)
 		fprintf(Outfp, "&nbsp;&nbsp;");
 	    else
-		fprintf(Outfp, "¡¡");
+		fprintf(Outfp, "ã€€");
 	}
     }
 }
@@ -1205,11 +1205,11 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 /*==================================================================*/
 {
     /* 
-       depth ¤Ï¼«Ê¬¤Î¿¼¤µ(º¬¤¬1)
+       depth ã¯è‡ªåˆ†ã®æ·±ã•(æ ¹ãŒ1)
 
-       ans_flag ¤Ï¼«Ê¬¤ÈÁÄÀè¤¬ºÇ¸å¤Î»Ò¤«¤É¤¦¤«¤ÎÍúÎò
-       ¿¼¤µn¤ÎÁÄÀè(¤Ş¤¿¤Ï¼«Ê¬)¤¬ºÇ¸å¤Î»Ò¤Ç¤¢¤ì¤Ğ ans_flag[n-1] ¤¬ '0'
-       ¤½¤¦¤Ç¤Ê¤±¤ì¤Ğ '1'(¤³¤Î¾ì¹ç»Ş¤ÎÉÁ²è¤¬É¬Í×)
+       ans_flag ã¯è‡ªåˆ†ã¨ç¥–å…ˆãŒæœ€å¾Œã®å­ã‹ã©ã†ã‹ã®å±¥æ­´
+       æ·±ã•nã®ç¥–å…ˆ(ã¾ãŸã¯è‡ªåˆ†)ãŒæœ€å¾Œã®å­ã§ã‚ã‚Œã° ans_flag[n-1] ãŒ '0'
+       ãã†ã§ãªã‘ã‚Œã° '1'(ã“ã®å ´åˆæã®æç”»ãŒå¿…è¦)
     */
 
     int i, j;
@@ -1218,24 +1218,24 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     if (ans_flag_p) {
 	strncpy(ans_flag, ans_flag_p, BNST_MAX);
     } else {
-	ans_flag[0] = '0';	/* ºÇ½é¤Ë¸Æ¤Ğ¤ì¤ë¤È¤­ */
+	ans_flag[0] = '0';	/* æœ€åˆã«å‘¼ã°ã‚Œã‚‹ã¨ã */
     }
 
     if (ptr->child[0]) {
 	for (i = 0; ptr->child[i]; i++);
 
-	/* ºÇ¸å¤Î»Ò¤Ï ans_flag ¤ò 0 ¤Ë */ 
+	/* æœ€å¾Œã®å­ã¯ ans_flag ã‚’ 0 ã« */ 
 	ans_flag[depth] = '0';
 	show_self(ptr->child[i-1], depth+1, ans_flag, 0);
 
 	if (i > 1) {
-	    /* Â¾¤Î»Ò¤Ï ans_flag ¤ò 1 ¤Ë */ 
+	    /* ä»–ã®å­ã¯ ans_flag ã‚’ 1 ã« */ 
 	    ans_flag[depth] = '1';
 	    for (j = i - 2; j > 0; j--) {
 		show_self(ptr->child[j], depth+1, ans_flag, 0);
 	    }
 
-	    /* flag: 1: ¨¡PARA 2: -<P>PARA */
+	    /* flag: 1: â”€PARA 2: -<P>PARA */
 	    if (ptr->para_top_p == TRUE && 
 		ptr->para_type == PARA_NIL &&
 		ptr->to_para_p == FALSE) {
@@ -1271,7 +1271,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	fputc('\n', Outfp);	
     } else if ( flag == 1 ) {
 	if (OptExpress != OPT_TABLE)
-	    fprintf(Outfp, "¨¡");
+	    fprintf(Outfp, "â”€");
     } else if ( flag == 2 ) {
 	if (OptExpress != OPT_TABLE)
 	    fprintf(Outfp, "-");
@@ -1298,25 +1298,25 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	    fputc('\n', Outfp);
 	    i = 0;
 	    while (ptr->child[i+1] && ptr->child[i+1]->para_type != PARA_NIL) {
-		/* <P>¤ÎºÇ¸å°Ê³° */
+		/* <P>ã®æœ€å¾Œä»¥å¤– */
 		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, 0);	i ++;
 	    }
-	    if (ptr->child[i+1]) { /* ¤½¤ÎÂ¾¤¬¤¢¤ë¾ì¹ç */
-		/* <P>¤ÎºÇ¸å */
+	    if (ptr->child[i+1]) { /* ãã®ä»–ãŒã‚ã‚‹å ´åˆ */
+		/* <P>ã®æœ€å¾Œ */
 		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, 1);	i ++;
-		/* ¤½¤ÎÂ¾¤ÎºÇ¸å°Ê³° */
+		/* ãã®ä»–ã®æœ€å¾Œä»¥å¤– */
 		while (ptr->child[i+1]) {
 		    /* UCHI fputc(',', Outfp); */
 		    show_sexp(ptr->child[i], depth + 3, 0); i ++;
 		}
-		/* ¤½¤ÎÂ¾¤ÎºÇ¸å */
+		/* ãã®ä»–ã®æœ€å¾Œ */
 		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, pars + 1);
 	    }
 	    else {
-		/* <P>¤ÎºÇ¸å */
+		/* <P>ã®æœ€å¾Œ */
 		/* UCHI fputc(',', Outfp); */
 		show_sexp(ptr->child[i], depth + 3, pars + 1 + 1);
 	    }
@@ -1347,8 +1347,8 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 {
     int i, last_b_offset = 1, last_t_offset = 1;
 
-    /* ºÇ¸å¤ÎÊ¸Àá¡¢´ğËÜ¶ç¤¬¥Ş¡¼¥¸¤µ¤ì¤Æ¤¤¤ë¾ì¹ç¤¬¤¢¤ë¤Î¤Ç¡¢
-       ËÜÅö¤ÎºÇ¸å¤ÎÊ¸Àá¡¢´ğËÜ¶ç¤òÃµ¤¹ */
+    /* æœ€å¾Œã®æ–‡ç¯€ã€åŸºæœ¬å¥ãŒãƒãƒ¼ã‚¸ã•ã‚Œã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹ã®ã§ã€
+       æœ¬å½“ã®æœ€å¾Œã®æ–‡ç¯€ã€åŸºæœ¬å¥ã‚’æ¢ã™ */
     if (OptPostProcess) {
 	for (i = sp->Bnst_num - 1; i >= 0; i--) {
 	    if ((sp->bnst_data + i)->num != -1) {
@@ -1364,26 +1364,26 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 	}
     }
 
-    /* °ÍÂ¸¹½Â¤ÌÚ¤ÎÉ½¼¨ */
+    /* ä¾å­˜æ§‹é€ æœ¨ã®è¡¨ç¤º */
 
     if (type == OPT_SEXP) {
 	show_sexp((sp->bnst_data + sp->Bnst_num - last_b_offset), 0, 0);
     }
-    /* Ê¸Àá¤Îtree¤òÉÁ¤¯¤È¤­ */
+    /* æ–‡ç¯€ã®treeã‚’æãã¨ã */
     else if (type & OPT_NOTAG) {
 	max_width = 0;
 
 	calc_tree_width((sp->bnst_data + sp->Bnst_num - last_b_offset), 1);
 	show_self((sp->bnst_data + sp->Bnst_num - last_b_offset), 1, NULL, 0);
     }
-    /* ·ÁÂÖÁÇ¤Îtree¤òÉÁ¤¯¤È¤­ */
+    /* å½¢æ…‹ç´ ã®treeã‚’æãã¨ã */
     else if (type & OPT_MRPH) {
 	max_width = 0;
 
 	calc_tree_width((BNST_DATA *)(sp->mrph_data + sp->Mrph_num - 1), 1);
 	show_self((BNST_DATA *)(sp->mrph_data + sp->Mrph_num - 1), 1, NULL, 0);
     }
-    /* tagÃ±°Ì¤Îtree¤òÉÁ¤¯¤È¤­ */
+    /* tagå˜ä½ã®treeã‚’æãã¨ã */
     else {
 	max_width = 0;
 
@@ -1401,7 +1401,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 }
 
 /*====================================================================
-			      ¥Á¥§¥Ã¥¯ÍÑ
+			      ãƒã‚§ãƒƒã‚¯ç”¨
 ====================================================================*/
 
 /*==================================================================*/
@@ -1437,32 +1437,32 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 
 	print_feature(ptr->f, Outfp);
 
-	if (check_feature(ptr->f, "ÍÑ¸À") ||
-	    check_feature(ptr->f, "½àÍÑ¸À")) {
+	if (check_feature(ptr->f, "ç”¨è¨€") ||
+	    check_feature(ptr->f, "æº–ç”¨è¨€")) {
 
-	    fprintf(Outfp, " <É½ÁØ³Ê:");
-	    if (ptr->SCASE_code[case2num("¥¬³Ê")])
-	      fprintf(Outfp, "¥¬,");
-	    if (ptr->SCASE_code[case2num("¥ò³Ê")])
-	      fprintf(Outfp, "¥ò,");
-	    if (ptr->SCASE_code[case2num("¥Ë³Ê")])
-	      fprintf(Outfp, "¥Ë,");
-	    if (ptr->SCASE_code[case2num("¥Ç³Ê")])
-	      fprintf(Outfp, "¥Ç,");
-	    if (ptr->SCASE_code[case2num("¥«¥é³Ê")])
-	      fprintf(Outfp, "¥«¥é,");
-	    if (ptr->SCASE_code[case2num("¥È³Ê")])
-	      fprintf(Outfp, "¥È,");
-	    if (ptr->SCASE_code[case2num("¥è¥ê³Ê")])
-	      fprintf(Outfp, "¥è¥ê,");
-	    if (ptr->SCASE_code[case2num("¥Ø³Ê")])
-	      fprintf(Outfp, "¥Ø,");
-	    if (ptr->SCASE_code[case2num("¥Ş¥Ç³Ê")])
-	      fprintf(Outfp, "¥Ş¥Ç,");
-	    if (ptr->SCASE_code[case2num("¥Î³Ê")])
-	      fprintf(Outfp, "¥Î,");
-	    if (ptr->SCASE_code[case2num("¥¬£²")])
-	      fprintf(Outfp, "¥¬£²,");
+	    fprintf(Outfp, " <è¡¨å±¤æ ¼:");
+	    if (ptr->SCASE_code[case2num("ã‚¬æ ¼")])
+	      fprintf(Outfp, "ã‚¬,");
+	    if (ptr->SCASE_code[case2num("ãƒ²æ ¼")])
+	      fprintf(Outfp, "ãƒ²,");
+	    if (ptr->SCASE_code[case2num("ãƒ‹æ ¼")])
+	      fprintf(Outfp, "ãƒ‹,");
+	    if (ptr->SCASE_code[case2num("ãƒ‡æ ¼")])
+	      fprintf(Outfp, "ãƒ‡,");
+	    if (ptr->SCASE_code[case2num("ã‚«ãƒ©æ ¼")])
+	      fprintf(Outfp, "ã‚«ãƒ©,");
+	    if (ptr->SCASE_code[case2num("ãƒˆæ ¼")])
+	      fprintf(Outfp, "ãƒˆ,");
+	    if (ptr->SCASE_code[case2num("ãƒ¨ãƒªæ ¼")])
+	      fprintf(Outfp, "ãƒ¨ãƒª,");
+	    if (ptr->SCASE_code[case2num("ãƒ˜æ ¼")])
+	      fprintf(Outfp, "ãƒ˜,");
+	    if (ptr->SCASE_code[case2num("ãƒãƒ‡æ ¼")])
+	      fprintf(Outfp, "ãƒãƒ‡,");
+	    if (ptr->SCASE_code[case2num("ãƒæ ¼")])
+	      fprintf(Outfp, "ãƒ,");
+	    if (ptr->SCASE_code[case2num("ã‚¬ï¼’")])
+	      fprintf(Outfp, "ã‚¬ï¼’,");
 	    fprintf(Outfp, ">");
 	}
 
@@ -1478,7 +1478,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
     char *cp, *next, buf1[SMALL_DATA_LEN2], buf2[SMALL_DATA_LEN2], buf3[SMALL_DATA_LEN2];
 
     for (i = 0; i < sp->Tag_num; i++) {
-	if ((cp = check_feature((sp->tag_data + i)->f, "³Ê²òÀÏ·ë²Ì"))) {
+	if ((cp = check_feature((sp->tag_data + i)->f, "æ ¼è§£æçµæœ"))) {
 
 	    /* OPT_TABLE */
 	    if (OptExpress == OPT_TABLE) {
@@ -1487,7 +1487,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		fprintf(Outfp, "*\n");
 	    }
 	    /* O */
-	    cp = check_feature((sp->tag_data + i)->f, "³Ê²òÀÏ·ë²Ì");
+	    cp = check_feature((sp->tag_data + i)->f, "æ ¼è§£æçµæœ");
 	    while (next = strstr(cp, "/O/")) {
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
@@ -1498,7 +1498,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		}
 	    }
 	    /* C */
-	    cp = check_feature((sp->tag_data + i)->f, "³Ê²òÀÏ·ë²Ì");
+	    cp = check_feature((sp->tag_data + i)->f, "æ ¼è§£æçµæœ");
 	    while (next = strstr(cp, "/C/")) {
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
@@ -1509,7 +1509,7 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 		}
 	    }
 	    /* N */
-	    cp = check_feature((sp->tag_data + i)->f, "³Ê²òÀÏ·ë²Ì");
+	    cp = check_feature((sp->tag_data + i)->f, "æ ¼è§£æçµæœ");
 	    while (next = strstr(cp, "/N/")) {
 		cp = next;
 		while (cp[0] != ';' && cp[0] != ':') cp--;
@@ -1566,35 +1566,35 @@ void show_link(int depth, char *ans_flag, char para_type, char to_para_p)
 void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 /*==================================================================*/
 {
-    /* case_print_flag: ³Ê²òÀÏ·ë²Ì¤ò½ĞÎÏ */
+    /* case_print_flag: æ ¼è§£æçµæœã‚’å‡ºåŠ› */
 
     char *date_p, time_string[64];
     time_t t;
     struct tm *tms;
     TOTAL_MGR *tm = sp->Best_mgr;
 
-    /* »ş´Ö¤Î¼èÆÀ */
+    /* æ™‚é–“ã®å–å¾— */
     t = time(NULL);
     tms = localtime(&t);
     if (!strftime(time_string, 64, "%Y/%m/%d", tms))
 	time_string[0] = '\0';
     
-    /* PS½ĞÎÏ¤Î¾ì¹ç
+    /* PSå‡ºåŠ›ã®å ´åˆ
        dpnd_info_to_bnst(&(tm->dpnd));
        make_dpnd_tree();
        print_kakari2ps();
        return;
     */ 
 
-    /* ´û²òÀÏ¤Ø¤Î¥Ñ¥¿¡¼¥ó¥Ş¥Ã¥Á¤Ç, ¥Ş¥Ã¥Á¤¬¤Ê¤±¤ì¤Ğ½ĞÎÏ¤·¤Ê¤¤
+    /* æ—¢è§£æã¸ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ãƒãƒƒãƒã§, ãƒãƒƒãƒãŒãªã‘ã‚Œã°å‡ºåŠ›ã—ãªã„
        if (OptAnalysis == OPT_AssignF && !PM_Memo[0]) return;
     */
 
-    /* ¥Ø¥Ã¥À¤Î½ĞÎÏ */   
+    /* ãƒ˜ãƒƒãƒ€ã®å‡ºåŠ› */   
     if (OptExpress == OPT_TABLE) {
 	if (OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2 || OptNE) {
 	    fprintf(Outfp, "%%%% %d %d 2\n", Sen_Num, Tag_Num);
-	    fprintf(Outfp, "²òÀÏ·ë²Ì\n");
+	    fprintf(Outfp, "è§£æçµæœ\n");
 	}
 	fprintf(Outfp, "%%%% %d %d 1 style=white-space:nowrap\n", Sen_Num, Tag_Num++);
     }
@@ -1607,7 +1607,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	fprintf(Outfp, "# S-ID:%d", sp->Sen_num);
     }
 
-    /* ¥³¥á¥ó¥È */
+    /* ã‚³ãƒ¡ãƒ³ãƒˆ */
     if (sp->Comment) {
 	fprintf(Outfp, " %s", sp->Comment);
     }
@@ -1621,12 +1621,12 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	    fprintf(Outfp, " DATE:%s", time_string);
     }
 
-    /* ¥¹¥³¥¢¤ò½ĞÎÏ (CKY»ş¡¢ÄÌ¾ïÆşÎÏ»ş) */
+    /* ã‚¹ã‚³ã‚¢ã‚’å‡ºåŠ› (CKYæ™‚ã€é€šå¸¸å…¥åŠ›æ™‚) */
     if (OptCKY && !(OptInput & OPT_PARSED)) {
 	fprintf(Outfp, " SCORE:%.5f", sp->score);
     }
 
-    /* ¥¨¥é¡¼¤¬¤¢¤ì¤Ğ¡¢¥¨¥é¡¼¤ÎÆâÍÆ */
+    /* ã‚¨ãƒ©ãƒ¼ãŒã‚ã‚Œã°ã€ã‚¨ãƒ©ãƒ¼ã®å†…å®¹ */
     if (ErrorComment) {
 	fprintf(Outfp, " ERROR:%s", ErrorComment);
 	free(ErrorComment);
@@ -1643,7 +1643,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 
     fprintf(Outfp, "\n");
 
-    /* ²òÀÏ·ë²Ì¤Î¥á¥¤¥ó¤Î½ĞÎÏ */
+    /* è§£æçµæœã®ãƒ¡ã‚¤ãƒ³ã®å‡ºåŠ› */
 
     if (OptExpress == OPT_MRPH) {
 	print_mrphs(sp, eos_flag);
@@ -1655,11 +1655,11 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	print_bnst_with_mrphs(sp, 1, eos_flag);
     }
     else if (OptExpress == OPT_PA) {
-	/* FIXME: ³Ê²òÀÏ·ë²Ì¤ÎÀ°¹çÀ­¤ò¤È¤ëÉ¬Í×¤¬¤¢¤ë */
+	/* FIXME: æ ¼è§£æçµæœã®æ•´åˆæ€§ã‚’ã¨ã‚‹å¿…è¦ãŒã‚ã‚‹ */
 	print_pa_structure(sp, eos_flag);
     }
     else if (OptExpress == OPT_BNSTTREE) {
-	/* Ê¸Àá¤Îtree½ĞÎÏ */
+	/* æ–‡ç¯€ã®treeå‡ºåŠ› */
 	if (make_dpnd_tree(sp)) {
 	    print_kakari(sp, OptExpress, eos_flag);
 	}
@@ -1668,9 +1668,9 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	}
     }
     else if (OptExpress == OPT_MRPHTREE) {
-	/* ·ÁÂÖÁÇ¤Îtree½ĞÎÏ */
+	/* å½¢æ…‹ç´ ã®treeå‡ºåŠ› */
 	if (make_dpnd_tree(sp)) {
-	    bnst_to_mrph_tree(sp); /* ·ÁÂÖÁÇ¤ÎÌÚ¤Ø */
+	    bnst_to_mrph_tree(sp); /* å½¢æ…‹ç´ ã®æœ¨ã¸ */
 	    print_kakari(sp, OptExpress, eos_flag);
 	}
 	else {
@@ -1678,9 +1678,9 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	}
     }
     else {
-	/* ¥¿¥°Ã±°Ì¤Îtree½ĞÎÏ */
+	/* ã‚¿ã‚°å˜ä½ã®treeå‡ºåŠ› */
 	if (make_dpnd_tree(sp)) {
-	    bnst_to_tag_tree(sp); /* ¥¿¥°Ã±°Ì¤ÎÌÚ¤Ø */
+	    bnst_to_tag_tree(sp); /* ã‚¿ã‚°å˜ä½ã®æœ¨ã¸ */
 	    print_kakari(sp, OptExpress, eos_flag); /* OPT_TREE */
 	}
 	else {
@@ -1698,14 +1698,14 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	    print_corefer_for_table(sp);
     }
 
-    /* nbest¥ª¥×¥·¥ç¥ó¤Ê¤É¤Ç¤Ï¤³¤Î´Ø¿ô¤¬Ê£¿ô²ó¸Æ¤Ğ¤ì¤ë¤Î¤Ç¸å½èÍı¤ò¸µ¤ËÌá¤·¤Æ¤ª¤¯ */
+    /* nbestã‚ªãƒ—ã‚·ãƒ§ãƒ³ãªã©ã§ã¯ã“ã®é–¢æ•°ãŒè¤‡æ•°å›å‘¼ã°ã‚Œã‚‹ã®ã§å¾Œå‡¦ç†ã‚’å…ƒã«æˆ»ã—ã¦ãŠã */
     if (OptPostProcess) {
 	undo_tag_bnst_postprocess(sp);
     }
 
-    /* ³Ê²òÀÏ¤ò¹Ô¤Ê¤Ã¤¿¾ì¹ç¤Î½ĞÎÏ */
+    /* æ ¼è§£æã‚’è¡Œãªã£ãŸå ´åˆã®å‡ºåŠ› */
     if (case_print_flag && 
-	!OptArticle && /* ²áµî¤Îµ­»ö¤ÎBest_mgr¤òÊİÂ¸¤·¤Æ¤¤¤Ê¤¤¤Î¤Ç¥»¥°¥Õ¥©¤¹¤ë */
+	!OptArticle && /* éå»ã®è¨˜äº‹ã®Best_mgrã‚’ä¿å­˜ã—ã¦ã„ãªã„ã®ã§ã‚»ã‚°ãƒ•ã‚©ã™ã‚‹ */
 	(((OptAnalysis == OPT_CASE || 
 	   OptAnalysis == OPT_CASE2) && 
 	  (OptDisplay == OPT_DETAIL || 
@@ -1716,7 +1716,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 
 	print_case_result(sp, Sen_Num);
 
-	/* ¼¡¤Î²òÀÏ¤Î¤¿¤á¤Ë½é´ü²½¤·¤Æ¤ª¤¯ */
+	/* æ¬¡ã®è§£æã®ãŸã‚ã«åˆæœŸåŒ–ã—ã¦ãŠã */
 	tm->pred_num = 0;
     }
 }
@@ -1725,15 +1725,15 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 		void do_postprocess(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    /* ¸å½èÍı */
+    /* å¾Œå‡¦ç† */
     if (make_dpnd_tree(sp)) {
-	bnst_to_tag_tree(sp); /* ¥¿¥°Ã±°Ì¤ÎÌÚ¤Ø */
+	bnst_to_tag_tree(sp); /* ã‚¿ã‚°å˜ä½ã®æœ¨ã¸ */
 	if (OptExpress == OPT_TAB || 
 	    OptExpress == OPT_NOTAG) {
 	    tag_bnst_postprocess(sp, 1);
 	}
 	else {
-	    tag_bnst_postprocess(sp, 0); /* ÌÚ¹½Â¤½ĞÎÏ¤Î¤¿¤á¡¢num, dpnd_head ¤ÎÈÖ¹æ¤ÎÉÕ¤±ÂØ¤¨¤Ï¤·¤Ê¤¤ */
+	    tag_bnst_postprocess(sp, 0); /* æœ¨æ§‹é€ å‡ºåŠ›ã®ãŸã‚ã€num, dpnd_head ã®ç•ªå·ã®ä»˜ã‘æ›¿ãˆã¯ã—ãªã„ */
 	}
     }
 }
@@ -1760,76 +1760,76 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
     int count = 0, max = 0, i, flag = 0;
     char *cp, **list, *str;
 
-    /* ¥â¥À¥ê¥Æ¥£ */
+    /* ãƒ¢ãƒ€ãƒªãƒ†ã‚£ */
     flag = 0;
     for (i = 0; i < bp->mrph_num; i++) {
-	if (!(flag & 0x0001) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-°ÍÍê"))) {
+	if (!(flag & 0x0001) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-ä¾é ¼"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0001;
 	}
-	if (!(flag & 0x0002) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-°Õ»Ö"))) {
+	if (!(flag & 0x0002) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-æ„å¿—"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0002;
 	}
-	if (!(flag & 0x0004) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-´«Í¶"))) {
+	if (!(flag & 0x0004) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-å‹§èª˜"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0004;
 	}
-	if (!(flag & 0x0008) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-´êË¾"))) {
+	if (!(flag & 0x0008) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-é¡˜æœ›"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0008;
 	}
-	if (!(flag & 0x0010) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-¶Ø»ß"))) {
+	if (!(flag & 0x0010) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-ç¦æ­¢"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0010;
 	}
-	if (!(flag & 0x0020) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-»°¿Í¾Î°Õ»Ö"))) {
+	if (!(flag & 0x0020) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-ä¸‰äººç§°æ„å¿—"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0020;
 	}
-	if (!(flag & 0x0040) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-¿½¤·½Ğ"))) {
+	if (!(flag & 0x0040) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-ç”³ã—å‡º"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0040;
 	}
-	if (!(flag & 0x0080) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-¿äÎÌ"))) {
+	if (!(flag & 0x0080) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-æ¨é‡"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0080;
 	}
-	if (!(flag & 0x0100) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-°Õ»×-Ì¿Îá"))) {
+	if (!(flag & 0x0100) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-æ„æ€-å‘½ä»¤"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0100;
 	}
-	if (!(flag & 0x0200) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-Åö°Ù"))) {
+	if (!(flag & 0x0200) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-å½“ç‚º"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0200;
 	}
-	if (!(flag & 0x0400) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-Åö°Ù-µö²Ä"))) {
+	if (!(flag & 0x0400) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-å½“ç‚º-è¨±å¯"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0400;
 	}
-	if (!(flag & 0x0800) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-È½ÃÇ-²ÄÇ½À­"))) {
+	if (!(flag & 0x0800) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-åˆ¤æ–­-å¯èƒ½æ€§"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x0800;
 	}
-	if (!(flag & 0x1000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-È½ÃÇ-²ÄÇ½À­-ÉÔ²ÄÇ½"))) {
+	if (!(flag & 0x1000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-åˆ¤æ–­-å¯èƒ½æ€§-ä¸å¯èƒ½"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x1000;
 	}
-	if (!(flag & 0x2000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-È½ÃÇ-¿äÎÌ"))) {
+	if (!(flag & 0x2000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-åˆ¤æ–­-æ¨é‡"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x2000;
 	}
-	if (!(flag & 0x4000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-È½ÃÇ-ÅÁÊ¹"))) {
+	if (!(flag & 0x4000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-åˆ¤æ–­-ä¼è"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x4000;
 	}
-	if (!(flag & 0x8000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-È½ÃÇ-ÍÍÂÖ"))) {
+	if (!(flag & 0x8000) && (cp = check_feature((bp->mrph_ptr+i)->f, "Modality-åˆ¤æ–­-æ§˜æ…‹"))) {
 	    push_entity(&list, cp, count++, &max);
 	    flag |= 0x8000;
 	}
     }
 
-    /* ½ĞÎÏ¤¹¤ëfeature¤¬¤¢¤ì¤Ğ½ĞÎÏ */
+    /* å‡ºåŠ›ã™ã‚‹featureãŒã‚ã‚Œã°å‡ºåŠ› */
     if (count) {
 	int i, len = 0;
 	for (i = 0; i < count; i++) {
@@ -1863,10 +1863,10 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 /*==================================================================*/
 {
     int		i, j, k, max_len, len, max_inverse_len;
-    char*       up_corner = "¨£¨¡";
-    char*       down_corner = "¨¦¨¡";
-    char*       middle_corner = "¨§¨¡";
-    char*       link = "¨¢";
+    char*       up_corner = "â”Œâ”€";
+    char*       down_corner = "â””â”€";
+    char*       middle_corner = "â”œâ”€";
+    char*       link = "â”‚";
     char*       para = "<P>";
     char*       para_head = "<PARA><P>";
 

@@ -1,6 +1,6 @@
 /*====================================================================
 
-			   ·èÄêÌÚ¥é¥¤¥Ö¥é¥ê
+			   æ±ºå®šæœ¨ãƒ©ã‚¤ãƒ–ãƒ©ãƒª
 
                                          Daisuke Kawahara 2002. 7. 31
 
@@ -15,7 +15,7 @@
 #define DT_LT		5
 #define DT_LE		6
 
-char *DTFile[PP_NUMBER];	/* ·èÄêÌÚ¥Õ¥¡¥¤¥ë */
+char *DTFile[PP_NUMBER];	/* æ±ºå®šæœ¨ãƒ•ã‚¡ã‚¤ãƒ« */
 
 typedef struct _dtcond {
     int   num;
@@ -152,7 +152,7 @@ DT *DTrule[PP_NUMBER];
 	 int dt_comp_elem(float r, float d, int eq, int flag)
 /*==================================================================*/
 {
-    /* flag¤¬¤¿¤Ã¤Æ¤¤¤ì¤Ğ¡¢float¤Î¤Ş¤ŞÉ¾²Á¤¹¤ë */
+    /* flagãŒãŸã£ã¦ã„ã‚Œã°ã€floatã®ã¾ã¾è©•ä¾¡ã™ã‚‹ */
     if (flag) {
 	if (eq == DT_EQ) {
 	    return d == r ? 1 : 0;
@@ -200,11 +200,11 @@ DT *DTrule[PP_NUMBER];
 /*==================================================================*/
 {
     DT *dt;
-    DTRULE d; /* ¥Æ¥¹¥ÈÍÑfeature */
+    DTRULE d; /* ãƒ†ã‚¹ãƒˆç”¨feature */
     DTCOND *rc, *dc;
     int i, flag;
 
-    /* 0¤Ï¤¹¤Ù¤Æ¤Î³ÊÍÑ */
+    /* 0ã¯ã™ã¹ã¦ã®æ ¼ç”¨ */
     if (DTrule[0]) {
 	dt = DTrule[0];
     }
@@ -217,10 +217,10 @@ DT *DTrule[PP_NUMBER];
     for (i = 0; i < dt->ContextRuleNum; i++) {
 	rc = dt->ContextRules[i].cond;
 	flag = 1;
-	/* rule¾ò·ï¤Î¥ë¡¼¥× */
+	/* ruleæ¡ä»¶ã®ãƒ«ãƒ¼ãƒ— */
 	while (rc) {
 	    dc = d.cond;
-	    /* ruleÂ¦¤ÈÆ±¤¸feature¤ò¥Ç¡¼¥¿¤«¤éÃµ¤¹ */
+	    /* ruleå´ã¨åŒã˜featureã‚’ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰æ¢ã™ */
 	    while (rc->num != dc->num) {
 		dc = dc->next;
 		if (dc == NULL) {
@@ -229,19 +229,19 @@ DT *DTrule[PP_NUMBER];
 		}
 	    }
 
-	    /* featureÈÖ¹æ¤¬1¤Î¤È¤­Îà»÷ÅÙ¤Ê¤Î¤Ç¡¢float¤ÇÈæ³Ó */
+	    /* featureç•ªå·ãŒ1ã®ã¨ãé¡ä¼¼åº¦ãªã®ã§ã€floatã§æ¯”è¼ƒ */
 	    if (!dt_comp_elem(rc->value, dc->value, rc->eq, rc->num == 1 ? 1 : 0)) {
 		flag = 0;
 		break;
 	    }
 	    rc = rc->next;
 	}
-	/* ¤¹¤Ù¤Æ¤Î¾ò·ï¤òËş¤¿¤·¤¿¤È¤­ */
+	/* ã™ã¹ã¦ã®æ¡ä»¶ã‚’æº€ãŸã—ãŸã¨ã */
 	if (flag) {
 	    return dt->ContextRules[i].cf;
 	    /* dc = d.cond;
 	    while (dc) {
-		* Îà»÷ÅÙ¤òÊÖ¤¹ *
+		* é¡ä¼¼åº¦ã‚’è¿”ã™ *
 		if (dc->num == 1) {
 		    return dc->value;
 		}
@@ -263,7 +263,7 @@ DT *DTrule[PP_NUMBER];
 	if (DTFile[i]) {
 	    DTrule[i] = (DT *)malloc_data(sizeof(DT), "init_dt");
 	    read_dt_file(DTrule[i], DTFile[i]);
-	    if (i == 0) { /* ¤¹¤Ù¤Æ¤Î³ÊÍÑ */
+	    if (i == 0) { /* ã™ã¹ã¦ã®æ ¼ç”¨ */
 		break;
 	    }
 	}

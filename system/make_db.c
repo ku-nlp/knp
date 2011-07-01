@@ -1,14 +1,14 @@
 /*====================================================================
 
- 	¥Ç¡¼¥¿¥Ù¡¼¥¹ºîÀ®¡¤ÅĞÏ¿
+ 	ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ä½œæˆï¼Œç™»éŒ²
 						S.Kurohashi 92/11/05
 
 	Usage: make_db database_name [-append string|-and|-or]
 
-	-append  Æ±°ì¥­¡¼¤¬¤¢¤Ã¤¿¾ì¹ç append (default)
-		 (string¤Ï¶èÀÚ¤êÊ¸»úÎó default¤Ï¤Ê¤·)
-	-and     Æ±°ì¥­¡¼¤¬¤¢¤Ã¤¿¾ì¹ç merge  (¥Ç¡¼¥¿¤Ï0-1¥Ù¥¯¥È¥ë)
-	-or      Æ±°ì¥­¡¼¤¬¤¢¤Ã¤¿¾ì¹ç merge  (¥Ç¡¼¥¿¤Ï0-1¥Ù¥¯¥È¥ë)
+	-append  åŒä¸€ã‚­ãƒ¼ãŒã‚ã£ãŸå ´åˆ append (default)
+		 (stringã¯åŒºåˆ‡ã‚Šæ–‡å­—åˆ— defaultã¯ãªã—)
+	-and     åŒä¸€ã‚­ãƒ¼ãŒã‚ã£ãŸå ´åˆ merge  (ãƒ‡ãƒ¼ã‚¿ã¯0-1ãƒ™ã‚¯ãƒˆãƒ«)
+	-or      åŒä¸€ã‚­ãƒ¼ãŒã‚ã£ãŸå ´åˆ merge  (ãƒ‡ãƒ¼ã‚¿ã¯0-1ãƒ™ã‚¯ãƒˆãƒ«)
 
 ====================================================================*/
 #include <stdio.h>
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 	exit(1);
     }
 
-    /* ¥Ç¡¼¥¿¥Ù¡¼¥¹ºîÀ® */
+    /* ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ä½œæˆ */
     db = db_write_open(argv[1]);
     fprintf(stderr, "Create Database <%s>.\n", argv[1]);
 
@@ -112,14 +112,14 @@ int main(int argc, char *argv[])
     buffer[DBM_CON_MAX - 1] = '\n';
     num = 0;
     while (fgets(buffer, DBM_CON_MAX, stdin) != NULL) {
-	/* ¹Ô¤ÎÄ¹¤µ¥Á¥§¥Ã¥¯ */
+	/* è¡Œã®é•·ã•ãƒã‚§ãƒƒã‚¯ */
 	if (buffer[DBM_CON_MAX - 1] != '\n') {
 	    fprintf(stderr, "Line %d is larger than %d bytes.\n", num, DBM_CON_MAX);
 	    free(buffer);
 	    exit(1);
 	}
 
-	/* ¥­¡¼¤ÎÄ¹¤µ¥Á¥§¥Ã¥¯ */
+	/* ã‚­ãƒ¼ã®é•·ã•ãƒã‚§ãƒƒã‚¯ */
 	if (cp = strchr(buffer, ' ')) {
 	    if (cp - buffer >= DBM_KEY_MAX) {
 		fprintf(stderr, "Key is too long (in %s).\n", buffer);
@@ -128,22 +128,22 @@ int main(int argc, char *argv[])
 	    }
 	}
 	else {
-	    /* ¥¹¥Ú¡¼¥¹¤¬¤Ê¤¤¤È¤­ (¥¹¥Ú¡¼¥¹¤ÎÁ°¤Ë\0¤ò´Ş¤à¾ì¹ç¤â¤Ò¤Ã¤«¤«¤ë) */
+	    /* ã‚¹ãƒšãƒ¼ã‚¹ãŒãªã„ã¨ã (ã‚¹ãƒšãƒ¼ã‚¹ã®å‰ã«\0ã‚’å«ã‚€å ´åˆã‚‚ã²ã£ã‹ã‹ã‚‹) */
 	    fprintf(stderr, "Line %d is strange.\n", num);
 	    if ((num++ % 1000) == 0) fputc('*', stderr);
 	    continue;
 	}
 
-	/* key¤Ècontent¤ËÊ¬Î¥ */
+	/* keyã¨contentã«åˆ†é›¢ */
 	sscanf(buffer, "%s %[^\n]", key, content);
 	if ((num++ % 1000) == 0) fputc('*', stderr);
 
-	/* Ä¾Á°¤Îkey¤ÈÆ±¤¸¤Ê¤éÏ¢·ë¤·¤ÆÊİÂ¸ */
+	/* ç›´å‰ã®keyã¨åŒã˜ãªã‚‰é€£çµã—ã¦ä¿å­˜ */
 	if (!strcmp(pre_key, key)) {
 	    content_process(content, &pre_content, &pre_content_size, Type, Separator);
 	}
 	else {
-	    /* ½ñ¤­¹ş¤ß */
+	    /* æ›¸ãè¾¼ã¿ */
 	    if (pre_key[0]) {
 		db_put(db, pre_key, pre_content, Separator, Type);
 	    }

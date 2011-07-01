@@ -1,6 +1,6 @@
 /*====================================================================
 
-			 Ì¾»ì¡¦Æ°»ìÁê¸ß¾ğÊóÎÌ
+			 åè©ãƒ»å‹•è©ç›¸äº’æƒ…å ±é‡
 
                                         Daisuke Kawahara 2008. 10. 13
 
@@ -77,14 +77,14 @@ int NV_MI_Exist;
 	return INT_MAX;
     }
 
-    /* ¥Á¥§¥Ã¥¯¤¹¤ëÌ¾»ì¤«¤éDB¤ò°ú¤¯ */
+    /* ãƒã‚§ãƒƒã‚¯ã™ã‚‹åè©ã‹ã‚‰DBã‚’å¼•ã */
     if ((given_noun = get_mrph_rep_from_f(n_ptr->head_ptr, FALSE)) == NULL) {
 	return INT_MAX;
     }
     dic_str = lookup_nv_mi(given_noun);
 
     if (dic_str) {
-	if ((given_verb = get_mrph_rep_from_f(v_ptr->head_ptr, FALSE)) == NULL) { /* ¥Á¥§¥Ã¥¯¤¹¤ëÆ°»ì */
+	if ((given_verb = get_mrph_rep_from_f(v_ptr->head_ptr, FALSE)) == NULL) { /* ãƒã‚§ãƒƒã‚¯ã™ã‚‹å‹•è© */
 	    free(dic_str);
 	    return INT_MAX;
 	}
@@ -92,7 +92,7 @@ int NV_MI_Exist;
 
 	token = strtok(dic_str, "|");
 	while (token) {
-	    if (!strncmp(token, given_verb, given_verb_length)) { /* Í¿¤¨¤é¤ì¤¿Æ°»ì¤ÈDB¤¬¥Ş¥Ã¥Á */
+	    if (!strncmp(token, given_verb, given_verb_length)) { /* ä¸ãˆã‚‰ã‚ŒãŸå‹•è©ã¨DBãŒãƒãƒƒãƒ */
 		num = sscanf(token, "%*[^,],%d,%f", &rank, &score);
 		if (num != 2) {
 		    fprintf(stderr, ";;; Invalid string in NV MI db <%s>.\n", token);
@@ -117,9 +117,9 @@ int check_nv_mi_parent_and_children(TAG_DATA *v_ptr, int rank_threshold)
 {
     int i, rank = INT_MAX;
 
-    /* »Ò¶¡¤Î³ÊÍ×ÁÇ¤ò¥Á¥§¥Ã¥¯ */
+    /* å­ä¾›ã®æ ¼è¦ç´ ã‚’ãƒã‚§ãƒƒã‚¯ */
     for (i = 0; v_ptr->child[i]; i++) {
-	if (check_feature(v_ptr->child[i]->f, "³ÊÍ×ÁÇ")) {
+	if (check_feature(v_ptr->child[i]->f, "æ ¼è¦ç´ ")) {
 	    rank = check_nv_mi(v_ptr->child[i], v_ptr);
 	    if (rank < rank_threshold) {
 		return TRUE;
@@ -127,8 +127,8 @@ int check_nv_mi_parent_and_children(TAG_DATA *v_ptr, int rank_threshold)
 	}
     }
 
-    /* Ï¢ÂÎ½¤¾ş¤Î¿Æ¤ò¥Á¥§¥Ã¥¯ */
-    if (v_ptr->parent && check_feature(v_ptr->f, "·¸:Ï¢³Ê")) {
+    /* é€£ä½“ä¿®é£¾ã®è¦ªã‚’ãƒã‚§ãƒƒã‚¯ */
+    if (v_ptr->parent && check_feature(v_ptr->f, "ä¿‚:é€£æ ¼")) {
 	rank = check_nv_mi(v_ptr->parent, v_ptr);
 	if (rank < rank_threshold) {
 	    return TRUE;

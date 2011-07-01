@@ -1,6 +1,6 @@
 /*
   Filename : dbm.h 
-  Purpose  : ndbm ¤«¤é gdbm ¤Ø¤Î°Ü¿¢¤ò´ÊÃ±¤Ë¤¹¤ë¤¿¤á¤Î¥Ø¥Ã¥À
+  Purpose  : ndbm ã‹ã‚‰ gdbm ã¸ã®ç§»æ¤ã‚’ç°¡å˜ã«ã™ã‚‹ãŸã‚ã®ãƒ˜ãƒƒãƒ€
   Author   : Mitsunobu SHIMADA<shimada@pine.kuee.kyoto-u.ac.jp>
   Date     : Jan 31 1997
 */

@@ -1,6 +1,6 @@
 /*====================================================================
 
-			      ÌÚ¹½Â¤½èÍı
+			      æœ¨æ§‹é€ å‡¦ç†
 
                                                S.Kurohashi 92.10.17
                                                S.Kurohashi 93. 5.31
@@ -111,9 +111,9 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
     int buffer[BNST_MAX];
     BNST_DATA *tmp_b_ptr;
 
-    /* dpnd.head[i]¤òbuffer[i]¤Ë¥³¥Ô¡¼¤·¡¤3¤Ä°Ê¾å¤«¤é¤Ê¤ëÊÂÎó¹½Â¤¤Ç¤Ï
-       ·¸Àè¤òÎÙ¤Îhead¤«¤éËöÈø¤Îhead¤ËÊÑ¹¹¤¹¤ë¡¥
-       ¤Ş¤¿ÉôÊ¬ÊÂÎó¤Î·¸¤êÀè¤òËöÈø¤Îhead¤ËÊÑ¹¹¤¹¤ë¡¥*/
+    /* dpnd.head[i]ã‚’buffer[i]ã«ã‚³ãƒ”ãƒ¼ã—ï¼Œ3ã¤ä»¥ä¸Šã‹ã‚‰ãªã‚‹ä¸¦åˆ—æ§‹é€ ã§ã¯
+       ä¿‚å…ˆã‚’éš£ã®headã‹ã‚‰æœ«å°¾ã®headã«å¤‰æ›´ã™ã‚‹ï¼
+       ã¾ãŸéƒ¨åˆ†ä¸¦åˆ—ã®ä¿‚ã‚Šå…ˆã‚’æœ«å°¾ã®headã«å¤‰æ›´ã™ã‚‹ï¼*/
 
     for (i = 0; i < sp->Bnst_num - 1; i++)
 	buffer[i] = sp->bnst_data[i].dpnd_head;
@@ -136,10 +136,10 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	}
     }
 
-    /* °ÍÂ¸¹½Â¤ÌÚ¹½Â¤¥ê¥ó¥¯ÉÕ¤± */
+    /* ä¾å­˜æ§‹é€ æœ¨æ§‹é€ ãƒªãƒ³ã‚¯ä»˜ã‘ */
 
     pre_node_child_num = 0;
-    for (j = sp->Bnst_num - 1; j >= 0; j--) { /* ¼õ¤±Â¦ */
+    for (j = sp->Bnst_num - 1; j >= 0; j--) { /* å—ã‘å´ */
 	if (pre_node_child_num != 0) {
 	    child_num = pre_node_child_num;
 	    pre_node_child_num = 0;
@@ -147,16 +147,16 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 	else {
 	    child_num = 0;
 	}
-	for (i = j - 1; i >= 0; i--) { /* ·¸¤êÂ¦ */
+	for (i = j - 1; i >= 0; i--) { /* ä¿‚ã‚Šå´ */
 	    if (sp->bnst_data[i].num == -1) {
-		continue; /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿¥Î¡¼¥É */
+		continue; /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸãƒãƒ¼ãƒ‰ */
 	    }
 	    if (buffer[i] == j) { /* i -> j */
-		if (sp->bnst_data[j].num == -1) { /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿¥Î¡¼¥É */
-		    if (j - i == 1) { /* ¥Ş¡¼¥¸Â¦ -> ¥Ş¡¼¥¸¤µ¤ì¤¿Â¦: ¥¹¥­¥Ã¥× */
+		if (sp->bnst_data[j].num == -1) { /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸãƒãƒ¼ãƒ‰ */
+		    if (j - i == 1) { /* ãƒãƒ¼ã‚¸å´ -> ãƒãƒ¼ã‚¸ã•ã‚ŒãŸå´: ã‚¹ã‚­ãƒƒãƒ— */
 			continue;
 		    }
-		    else { /* ¥Ş¡¼¥¸¤µ¤ì¤¿¥Î¡¼¥É¤Ë·¸¤ë¥Î¡¼¥É (Ä¾Á°°Ê³°) */
+		    else { /* ãƒãƒ¼ã‚¸ã•ã‚ŒãŸãƒãƒ¼ãƒ‰ã«ä¿‚ã‚‹ãƒãƒ¼ãƒ‰ (ç›´å‰ä»¥å¤–) */
 			sp->bnst_data[j - 1].child[pre_node_child_num++] = sp->bnst_data + i;
 		    }
 		}
@@ -167,22 +167,22 @@ BNST_DATA *t_attach_node(BNST_DATA *parent, BNST_DATA *child, int pos)
 		    child_num = PARA_PART_MAX-1;
 		    break;
 		}
-		sp->bnst_data[i].parent = sp->bnst_data[j].num == -1 ? sp->bnst_data + j - 1 : sp->bnst_data + j; /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿¥Î¡¼¥É¤Ê¤é¤Ğ -1 */
+		sp->bnst_data[i].parent = sp->bnst_data[j].num == -1 ? sp->bnst_data + j - 1 : sp->bnst_data + j; /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸãƒãƒ¼ãƒ‰ãªã‚‰ã° -1 */
 		if (Mask_matrix[i][j] == 3) {
 		    sp->bnst_data[i].para_type = PARA_INCOMP;
 		}
-		/* PARA_NORMAL¤ÏÅ¸³«»ş¤Ë¥»¥Ã¥È */
+		/* PARA_NORMALã¯å±•é–‹æ™‚ã«ã‚»ãƒƒãƒˆ */
 	    }
 	}
 	sp->bnst_data[j].child[child_num] = NULL;
     }
 
-    /* »Ò¶¡¤òsort */
+    /* å­ä¾›ã‚’sort */
     for (j = sp->Bnst_num - 1; j >= 0; j--) {
 	for (child_num = 0; sp->bnst_data[j].child[child_num]; child_num++) {
 	    ;
 	}
-	if (child_num < 2) { /* 2¸Ä°Ê¾å¤Î¤ß */
+	if (child_num < 2) { /* 2å€‹ä»¥ä¸Šã®ã¿ */
 	    continue;
 	}
 	for (i = 0; i < child_num - 1; i++) {
@@ -220,7 +220,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     PARA_DATA *p_ptr, *pp_ptr;
     BNST_DATA *start_b_ptr, *b_ptr, *bb_ptr;
 
-    /* ¶¯ÊÂÎóÆâ¤Ë·¸¤ëÊ¸Àá¤òÅ¸³« : ¥³¥Ô¡¼Ìµ */
+    /* å¼·ä¸¦åˆ—å†…ã«ä¿‚ã‚‹æ–‡ç¯€ã‚’å±•é–‹ : ã‚³ãƒ”ãƒ¼ç„¡ */
 
     for (i = 0; i < m_ptr->child_num; i++)
       strong_para_expand(sp, m_ptr->child[i]);
@@ -263,13 +263,13 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     int i;
     BNST_DATA *new_ptr, *end_ptr, *pre_end_ptr;
 
-    /* ÊÂÎó¤ò¤Ş¤È¤á¤ë¥Î¡¼¥É¤ÎÁŞÆş
+    /* ä¸¦åˆ—ã‚’ã¾ã¨ã‚ã‚‹ãƒãƒ¼ãƒ‰ã®æŒ¿å…¥
 
-       B  B<P> B  B<P>(end_ptr) B  B ¡Ã .... B(new_ptr)
-                ¢¬                  (¢¬¤³¤³¤Ş¤Ç¤¬ÄÌ¾ï¤ÎÊ¸Àá)
-                ¡Ã
-                B(new_ptr) ¤ò¤³¤³¤ËÁŞÆş¤· B<P>(end_ptr)¤ÎÆâÍÆ¤ò¥³¥Ô¡¼
-		B<P>(end_ptr) ¤Ï PARA(ÊÂÎó¤ò¤Ş¤È¤á¤ë¥Î¡¼¥É)¤È¤Ê¤ë
+       B  B<P> B  B<P>(end_ptr) B  B ï½œ .... B(new_ptr)
+                â†‘                  (â†‘ã“ã“ã¾ã§ãŒé€šå¸¸ã®æ–‡ç¯€)
+                ï½œ
+                B(new_ptr) ã‚’ã“ã“ã«æŒ¿å…¥ã— B<P>(end_ptr)ã®å†…å®¹ã‚’ã‚³ãƒ”ãƒ¼
+		B<P>(end_ptr) ã¯ PARA(ä¸¦åˆ—ã‚’ã¾ã¨ã‚ã‚‹ãƒãƒ¼ãƒ‰)ã¨ãªã‚‹
     */
 
     for (i = 0; i < m_ptr->child_num; i++) {
@@ -290,21 +290,21 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     if (sp->Max_New_Bnst_num < sp->New_Bnst_num) {
 	sp->Max_New_Bnst_num = sp->New_Bnst_num;
     }
-    *new_ptr = *end_ptr;	/* ¥³¥Ô¡¼ */
+    *new_ptr = *end_ptr;	/* ã‚³ãƒ”ãƒ¼ */
 
     /*
-      new_ptr ¤Ë end_ptr ¤ò¥³¥Ô¡¼¤¹¤ë¤ÈÁĞÊı¤Îf(feature¤Ø¤Î¥İ¥¤¥ó¥¿)¤«¤é
-      f¤Î¼ÂÂÎ¤¬¥İ¥¤¥ó¥È¤µ¤ì¡¤free¤¹¤ëºİ¤ËÌäÂê¤È¤Ê¤ë¡¥Åö½é¤Ï,
+      new_ptr ã« end_ptr ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ã¨åŒæ–¹ã®f(featureã¸ã®ãƒã‚¤ãƒ³ã‚¿)ã‹ã‚‰
+      fã®å®Ÿä½“ãŒãƒã‚¤ãƒ³ãƒˆã•ã‚Œï¼Œfreeã™ã‚‹éš›ã«å•é¡Œã¨ãªã‚‹ï¼å½“åˆã¯,
 
       	end_ptr->f = NULL;
 	
-      ¤È¤·¤ÆÂĞ½è¤·¤Æ¤¤¤¿¤¬¤³¤ì¤Ç¤ÏÊÂÎóËöÈø¤ÎÊ¸Àá¤¬¤½¤Î¸å¤ÎÍÑ¸À¤Î³Ê²òÀÏ¤Ç
-      ³ÊÍ×ÁÇ¤È¤ß¤Ê¤µ¤ì¤Ê¤¤¡¤¤Ş¤¿²¿ÅÙ¤«make_tree¤ò¹Ô¤¦f¤¬¤Ê¤¯¤Ê¤Ã¤Æ¤·¤Ş¤¦
-      ¤Ê¤É¤ÎÌäÂê¤¬¤¢¤Ã¤¿¤Î¤Ç¡¤clear_feature¤òÊ¸¤´¤È¤Î²òÀÏ¤Î¥ë¡¼¥×¤Î
-      ÀèÆ¬¤Ç¹Ô¤¦¤è¤¦¤Ë½¤Àµ¤·¤¿ (98/02/07)
+      ã¨ã—ã¦å¯¾å‡¦ã—ã¦ã„ãŸãŒã“ã‚Œã§ã¯ä¸¦åˆ—æœ«å°¾ã®æ–‡ç¯€ãŒãã®å¾Œã®ç”¨è¨€ã®æ ¼è§£æã§
+      æ ¼è¦ç´ ã¨ã¿ãªã•ã‚Œãªã„ï¼Œã¾ãŸä½•åº¦ã‹make_treeã‚’è¡Œã†fãŒãªããªã£ã¦ã—ã¾ã†
+      ãªã©ã®å•é¡ŒãŒã‚ã£ãŸã®ã§ï¼Œclear_featureã‚’æ–‡ã”ã¨ã®è§£æã®ãƒ«ãƒ¼ãƒ—ã®
+      å…ˆé ­ã§è¡Œã†ã‚ˆã†ã«ä¿®æ­£ã—ãŸ (98/02/07)
     */
 
-    /* »Ò¥Î¡¼¥É¤ÎÀ°Íı */
+    /* å­ãƒãƒ¼ãƒ‰ã®æ•´ç† */
 
     new_ptr->child[0] = NULL;
     t_attach_node(end_ptr, new_ptr, 0);
@@ -312,7 +312,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 	   end_ptr->child[1]->para_type != PARA_INCOMP)
 	t_attach_node(new_ptr, t_del_node(end_ptr, end_ptr->child[1]), -1);
 
-    /* ¥Õ¥é¥°(PARA,<P>)¤ÎÀ°Íı */
+    /* ãƒ•ãƒ©ã‚°(PARA,<P>)ã®æ•´ç† */
 
     end_ptr->para_type = PARA_NIL;
     end_ptr->para_top_p = TRUE;
@@ -329,21 +329,21 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 {
     int i, j, k;
     
-    /* PARA ¤Ë·¸¤Ã¤Æ¤¤¤ë¥Î¡¼¥É¤ò <P> ¤Ë·¸¤±¤ë : ¥³¥Ô¡¼Ìµ */
+    /* PARA ã«ä¿‚ã£ã¦ã„ã‚‹ãƒãƒ¼ãƒ‰ã‚’ <P> ã«ä¿‚ã‘ã‚‹ : ã‚³ãƒ”ãƒ¼ç„¡ */
 
     if (b_ptr->para_top_p == TRUE) {
 	for ( i=0; b_ptr->child[i]; i++ ) {
 	    if (b_ptr->child[i]->para_type == PARA_NIL && 
-		!check_feature(b_ptr->child[i]->f, "·¸:Ï¢ÍÑ")) {
+		!check_feature(b_ptr->child[i]->f, "ä¿‚:é€£ç”¨")) {
 
-		/* b_ptr->child[i] ½¤¾şÊ¸Àá */
+		/* b_ptr->child[i] ä¿®é£¾æ–‡ç¯€ */
 
 		b_ptr->child[i]->to_para_p = TRUE;
 
 		for ( j=0; b_ptr->child[j]; j++ ) {
 		    if (b_ptr->child[j]->para_type == PARA_NORMAL) {
 
-			/* b_ptr->child[j] <P>Ê¸Àá */
+			/* b_ptr->child[j] <P>æ–‡ç¯€ */
 			
 			for ( k=0; b_ptr->child[j]->child[k]; k++ );
 			b_ptr->child[j]->child[k] = b_ptr->child[i];
@@ -368,7 +368,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     BNST_DATA *para_ptr, *new_ptr;
     BNST_DATA *pre_childs[10], *pos_childs[10];
 
-    /* ÉôÊ¬ÊÂÎó¤ÎÅ¸³« : ¥³¥Ô¡¼Í­(½Ò¸ì¤¬¿·¥Ç¡¼¥¿¡¤¤â¤È¤Î½Ò¸ì¤ÏPARA¤Ë) */
+    /* éƒ¨åˆ†ä¸¦åˆ—ã®å±•é–‹ : ã‚³ãƒ”ãƒ¼æœ‰(è¿°èªãŒæ–°ãƒ‡ãƒ¼ã‚¿ï¼Œã‚‚ã¨ã®è¿°èªã¯PARAã«) */
 
     para_pos = -1;
 
@@ -382,7 +382,7 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 
     if (para_pos != -1) {
 
-	/* ¤â¤È¤Î½¤¾şÍ×ÁÇ¤ò¥¹¥È¥Ã¥¯ */
+	/* ã‚‚ã¨ã®ä¿®é£¾è¦ç´ ã‚’ã‚¹ãƒˆãƒƒã‚¯ */
 
 	for ( i=0; b_ptr->child[i] && i < para_pos; i++ )
 	    pre_childs[i] = b_ptr->child[i];
@@ -404,15 +404,15 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 			    ";; Too many nodes in expanding incomplete para .\n");
 		    exit(1);
 		}
-		*new_ptr = *b_ptr;		/* ¥³¥Ô¡¼ */
-		new_ptr->f = NULL;		/* Ãí°Õ¡ª¡ª ¤³¤¦¤·¤Ê¤¤¤È¸å¤ÇSF */
+		*new_ptr = *b_ptr;		/* ã‚³ãƒ”ãƒ¼ */
+		new_ptr->f = NULL;		/* æ³¨æ„ï¼ï¼ ã“ã†ã—ãªã„ã¨å¾Œã§SF */
 
-		new_ptr->parent = b_ptr;		/* ¿·¥Î¡¼¥É¤Î¿Æ(¼«Ê¬¼«¿È) */
+		new_ptr->parent = b_ptr;		/* æ–°ãƒãƒ¼ãƒ‰ã®è¦ª(è‡ªåˆ†è‡ªèº«) */
 
-		b_ptr->child[new_num] = new_ptr; 	/* ¸µ¥Î¡¼¥É¤Ï PARA */
+		b_ptr->child[new_num] = new_ptr; 	/* å…ƒãƒãƒ¼ãƒ‰ã¯ PARA */
 
-		/* ¿·¤·¤¤¥Î¡¼¥É¤Î»Ò¤òÀßÄê
-		   (¸å¤í¤Î½¤¾ş¥Î¡¼¥É¡¤<P>¡¤<I>, Á°¤Î½¤¾ş¥Î¡¼¥É) */
+		/* æ–°ã—ã„ãƒãƒ¼ãƒ‰ã®å­ã‚’è¨­å®š
+		   (å¾Œã‚ã®ä¿®é£¾ãƒãƒ¼ãƒ‰ï¼Œ<P>ï¼Œ<I>, å‰ã®ä¿®é£¾ãƒãƒ¼ãƒ‰) */
 
 		child_num = 0;
 		for (j=0; pre_childs[j]; j++)
@@ -446,21 +446,21 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
 
     init_bnst_tree_property(sp);
 
-    sp->New_Bnst_num = 0;    				/* ½é´ü²½ */
+    sp->New_Bnst_num = 0;    				/* åˆæœŸåŒ– */
 
-    if (make_simple_tree(sp) == FALSE) {		/* ¥ê¥ó¥¯ÉÕ¤± */
+    if (make_simple_tree(sp) == FALSE) {		/* ãƒªãƒ³ã‚¯ä»˜ã‘ */
 	return FALSE;
     }
 	
     if (OptExpandP == TRUE) {
-	for (i = 0; i < sp->Para_M_num; i++) {		/* ¶¯ÊÂÎó¤ÎÅ¸³« */
+	for (i = 0; i < sp->Para_M_num; i++) {		/* å¼·ä¸¦åˆ—ã®å±•é–‹ */
 	    if (sp->para_manager[i].parent == NULL) {
 		strong_para_expand(sp, sp->para_manager + i);
 	    }
 	}
     }
 
-    for (i = 0; i < sp->Para_M_num; i++) {		/* PARA¤ÎÅ¸³« */
+    for (i = 0; i < sp->Para_M_num; i++) {		/* PARAã®å±•é–‹ */
 	if (sp->para_manager[i].parent == NULL) {
 	    if (para_top_expand(sp, sp->para_manager + i) == FALSE) {
 		return FALSE;
@@ -469,11 +469,11 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     }
 
     if (OptExpandP == TRUE) {
-	para_modifier_expand(sp->bnst_data + sp->Bnst_num - 1);	/* PARA½¤¾ş¤ÎÅ¸³« */
+	para_modifier_expand(sp->bnst_data + sp->Bnst_num - 1);	/* PARAä¿®é£¾ã®å±•é–‹ */
     }
 
     /*
-    incomplete_para_expand(sp->bnst_data + sp->Bnst_num - 1);*/	/* ÉôÊ¬ÊÂÎó¤ÎÅ¸³« */
+    incomplete_para_expand(sp->bnst_data + sp->Bnst_num - 1);*/	/* éƒ¨åˆ†ä¸¦åˆ—ã®å±•é–‹ */
 
     return TRUE;
 }
@@ -507,8 +507,8 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     int offset = 0, gov;
     char *cp, *cp2;
 
-    if ((cp = check_feature(bp->f, "¥¿¥°Ã±°Ì¼õ")) ||
-	(cp = check_feature(bp->f, "Ä¾Á°¥¿¥°¼õ"))) {
+    if ((cp = check_feature(bp->f, "ã‚¿ã‚°å˜ä½å—")) ||
+	(cp = check_feature(bp->f, "ç›´å‰ã‚¿ã‚°å—"))) {
 	if ((cp2 = strchr(cp, ':'))) {
 	    offset = atoi(cp2 + 1);
 	    if (offset > 0 || bp->tag_num <= -1 * offset) {
@@ -537,10 +537,10 @@ BNST_DATA *strong_corr_node(SENTENCE_DATA *sp, PARA_DATA *p_ptr, BNST_DATA *b_pt
     int offset = 0, gov;
     char *cp, *cp2;
 
-    /* ¡Ö¥¿¥°Ã±°Ì¼õÌµ»ë¡×¤Î¤È¤­¤Ï·¸¤êÀè¤òºÇ¸å¤Î¥¿¥°Ã±°Ì¤È¤¹¤ë */
-    if (!check_feature(bp->f, "¥¿¥°Ã±°Ì¼õÌµ»ë") && 
-	((cp = check_feature(bp->parent->f, "¥¿¥°Ã±°Ì¼õ")) ||
-	 (cp = check_feature(bp->parent->f, "Ä¾Á°¥¿¥°¼õ")))) {
+    /* ã€Œã‚¿ã‚°å˜ä½å—ç„¡è¦–ã€ã®ã¨ãã¯ä¿‚ã‚Šå…ˆã‚’æœ€å¾Œã®ã‚¿ã‚°å˜ä½ã¨ã™ã‚‹ */
+    if (!check_feature(bp->f, "ã‚¿ã‚°å˜ä½å—ç„¡è¦–") && 
+	((cp = check_feature(bp->parent->f, "ã‚¿ã‚°å˜ä½å—")) ||
+	 (cp = check_feature(bp->parent->f, "ç›´å‰ã‚¿ã‚°å—")))) {
 	if ((cp2 = strchr(cp, ':'))) {
 	    offset = atoi(cp2 + 1);
 	    if (offset > 0 || bp->parent->tag_num <= -1 * offset) {
@@ -563,15 +563,15 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 {
     BNST_DATA *bp;
 
-    /* ·¸¤êÀè¤ËÈ½Äê»ì¤¬¤¢¤ê¡¢·¸¤ê¸µ¤¬Ï¢ÍÑ¤Ê¤é¡¢·¸¤êÀè·ÁÂÖÁÇ¤ò¼ç¼­Ì¾»ì¤Ç¤Ï¤Ê¤¯È½Äê»ì¤Ë¤¹¤ë */
+    /* ä¿‚ã‚Šå…ˆã«åˆ¤å®šè©ãŒã‚ã‚Šã€ä¿‚ã‚Šå…ƒãŒé€£ç”¨ãªã‚‰ã€ä¿‚ã‚Šå…ˆå½¢æ…‹ç´ ã‚’ä¸»è¾åè©ã§ã¯ãªãåˆ¤å®šè©ã«ã™ã‚‹ */
     if (dep_ptr && 
-	gov_ptr->head_ptr + 1 <= gov_ptr->mrph_ptr + gov_ptr->mrph_num - 1 && /* ¼ç¼­·ÁÂÖÁÇ¤Î¼¡¤Î·ÁÂÖÁÇ¤¬Â¸ºß */
-	!strcmp(Class[(gov_ptr->head_ptr + 1)->Hinshi][0].id, "È½Äê»ì") && /* ¼¡¤Î·ÁÂÖÁÇ¤¬È½Äê»ì */
-	!(check_feature(dep_ptr->f, "Ï¢ÂÎ½¤¾ş") || 
-	  check_feature(dep_ptr->f, "·¸:ÎÙ") || 
-	  check_feature(dep_ptr->f, "·¸:Ê¸ÀáÆâ") || 
-	  (dep_ptr->dpnd_type == 'P' && check_feature(dep_ptr->f, "ÊÂ¥­:Ì¾")))) {
-//	!(dep_ptr->para_type == PARA_NIL || /* ÊÂÎó¤Î¤È¤­¤ÏºÇ¸å¤«¤é2ÈÖÌÜ¤ÎÍ×ÁÇ¤Î¤ß½¤Àµ */
+	gov_ptr->head_ptr + 1 <= gov_ptr->mrph_ptr + gov_ptr->mrph_num - 1 && /* ä¸»è¾å½¢æ…‹ç´ ã®æ¬¡ã®å½¢æ…‹ç´ ãŒå­˜åœ¨ */
+	!strcmp(Class[(gov_ptr->head_ptr + 1)->Hinshi][0].id, "åˆ¤å®šè©") && /* æ¬¡ã®å½¢æ…‹ç´ ãŒåˆ¤å®šè© */
+	!(check_feature(dep_ptr->f, "é€£ä½“ä¿®é£¾") || 
+	  check_feature(dep_ptr->f, "ä¿‚:éš£") || 
+	  check_feature(dep_ptr->f, "ä¿‚:æ–‡ç¯€å†…") || 
+	  (dep_ptr->dpnd_type == 'P' && check_feature(dep_ptr->f, "ä¸¦ã‚­:å")))) {
+//	!(dep_ptr->para_type == PARA_NIL || /* ä¸¦åˆ—ã®ã¨ãã¯æœ€å¾Œã‹ã‚‰2ç•ªç›®ã®è¦ç´ ã®ã¿ä¿®æ­£ */
 //	  ((bp = (BNST_DATA *)search_nearest_para_child((TAG_DATA *)dep_ptr->parent)) && dep_ptr->num == bp->num))) {
 	return gov_ptr->head_ptr + 1;
     }
@@ -589,64 +589,64 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
     BNST_DATA *bp;
     TAG_DATA *tp;
 
-    /* Ê¸Àá¤ÎÌÚ¹½Â¤¤«¤é¥¿¥°Ã±°Ì¤ÎÌÚ¹½Â¤¤ØÊÑ´¹ */
+    /* æ–‡ç¯€ã®æœ¨æ§‹é€ ã‹ã‚‰ã‚¿ã‚°å˜ä½ã®æœ¨æ§‹é€ ã¸å¤‰æ› */
 
     init_tag_tree_property(sp);
     sp->New_Tag_num = 0;
 
     /* new bnst -> tag */
-    for (i = sp->New_Bnst_num - 1; i >= 0; i--) { /* <PARA>(1)-<PARA>(2) ¤Î¤È¤­¤Î¤¿¤á¤Ë¸å¤«¤é¤¹¤ë */
+    for (i = sp->New_Bnst_num - 1; i >= 0; i--) { /* <PARA>(1)-<PARA>(2) ã®ã¨ãã®ãŸã‚ã«å¾Œã‹ã‚‰ã™ã‚‹ */
 	bp = sp->bnst_data + sp->Bnst_num + i;
 
-	/* newÎÎ°è¤Ëcopy */
+	/* newé ˜åŸŸã«copy */
 
-	if ((head = find_head_tag_from_bnst(bp, 0)) < 0) { /* ¼ç¼­´ğËÜ¶ç */
+	if ((head = find_head_tag_from_bnst(bp, 0)) < 0) { /* ä¸»è¾åŸºæœ¬å¥ */
 	    head = bp->tag_num - 1;
 	}
 	*(sp->tag_data + sp->Tag_num + sp->New_Tag_num) = *(bp->tag_ptr + head);
 	sp->New_Tag_num++;
 
-	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1; /* NewÎÎ°è¤Ë¥³¥Ô¡¼¤·¤¿¼ç¼­´ğËÜ¶ç¤Ø¤Î¥İ¥¤¥ó¥¿ */
+	tp = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1; /* Newé ˜åŸŸã«ã‚³ãƒ”ãƒ¼ã—ãŸä¸»è¾åŸºæœ¬å¥ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
 
 	para_info_to_tag(bp, tp);
 	tp->child[0] = NULL;
 
-	/* <PARA>¤Î¤È¤­¤Ïhead¤Î¤ß */
+	/* <PARA>ã®ã¨ãã¯headã®ã¿ */
 	if (bp->para_top_p == FALSE) {
-	    /* Ê¸ÀáÆâ¤Î¼ç¼­´ğËÜ¶ç¤è¤êÁ°Â¦ */
+	    /* æ–‡ç¯€å†…ã®ä¸»è¾åŸºæœ¬å¥ã‚ˆã‚Šå‰å´ */
 	    if (head > 0 && (pre_bp_num = find_head_tag_from_bnst(bp, 1)) >= 0) {
-		/* Ê¸ÀáÆâ¥¿¥°Ã±°Ì¤Î¿Æ¤¬ <P>(-<PARA>) ¤Î¤È¤­ */
-		(bp->tag_ptr + pre_bp_num)->parent = tp; /* ¼ç¼­¤Î¤Ò¤È¤ÄÁ° -> ¼ç¼­ */
+		/* æ–‡ç¯€å†…ã‚¿ã‚°å˜ä½ã®è¦ªãŒ <P>(-<PARA>) ã®ã¨ã */
+		(bp->tag_ptr + pre_bp_num)->parent = tp; /* ä¸»è¾ã®ã²ã¨ã¤å‰ -> ä¸»è¾ */
 		t_add_node((BNST_DATA *)tp, 
 			   (BNST_DATA *)(bp->tag_ptr + pre_bp_num), -1);
 
-		/* Ê¸ÀáÆâ */
+		/* æ–‡ç¯€å†… */
 		for (j = 0; j < pre_bp_num; j++) {
 		    for (gov = j + 1; gov <= pre_bp_num; gov++) {
 			if ((bp->tag_ptr + gov)->num != -1) {
 			    break;
 			}
 		    }
-		    if (gov > pre_bp_num || /* ¸å½èÍı¤Ç·¸¤êÀè¤¬¤Ê¤¯¤Ê¤Ã¤¿´ğËÜ¶ç */
-			(bp->tag_ptr + j)->num == -1) { /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿´ğËÜ¶ç */
+		    if (gov > pre_bp_num || /* å¾Œå‡¦ç†ã§ä¿‚ã‚Šå…ˆãŒãªããªã£ãŸåŸºæœ¬å¥ */
+			(bp->tag_ptr + j)->num == -1) { /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸåŸºæœ¬å¥ */
 			continue;
 		    }
 		    (bp->tag_ptr + j)->parent = bp->tag_ptr + gov;
 		    t_add_node((BNST_DATA *)(bp->tag_ptr + gov), 
 			       (BNST_DATA *)(bp->tag_ptr + j), -1);
 		}
-		/* ¼ç¼­´ğËÜ¶ç¤Ï bp->tag_ptr ¤«¤é¤Ï¤¿¤É¤ì¤Ê¤¤ (New¤ÎÊı) */
+		/* ä¸»è¾åŸºæœ¬å¥ã¯ bp->tag_ptr ã‹ã‚‰ã¯ãŸã©ã‚Œãªã„ (Newã®æ–¹) */
 	    }
 	}
 
-	/* ¿Æ¤È»Ò¤Î¥ê¥ó¥¯¤Ä¤± (new) */
-	gov_head = find_head_tag_from_dpnd_bnst(bp); /* ·¸¤êÀè¤Î¼ç¼­´ğËÜ¶ç */
-	tp->parent = bp->parent->tag_ptr + gov_head; /* PARA¤Ø */
+	/* è¦ªã¨å­ã®ãƒªãƒ³ã‚¯ã¤ã‘ (new) */
+	gov_head = find_head_tag_from_dpnd_bnst(bp); /* ä¿‚ã‚Šå…ˆã®ä¸»è¾åŸºæœ¬å¥ */
+	tp->parent = bp->parent->tag_ptr + gov_head; /* PARAã¸ */
 	t_add_node((BNST_DATA *)(bp->parent->tag_ptr + gov_head), 
 		   (BNST_DATA *)tp, -1);
 
-	/* Ê¸ÀáÆâ¤Î¼ç¼­´ğËÜ¶ç¤è¤ê¸å (PARA¤«¤é»Ä¤ê¤Î´ğËÜ¶ç¤Ø) */
-	if (bp->parent < sp->bnst_data + sp->Bnst_num) { /* ¿Æ¤¬New¤Î¤È¤­¤Ï¤¹¤Ç¤ËÀßÄê¤·¤Æ¤¤¤ë */
+	/* æ–‡ç¯€å†…ã®ä¸»è¾åŸºæœ¬å¥ã‚ˆã‚Šå¾Œ (PARAã‹ã‚‰æ®‹ã‚Šã®åŸºæœ¬å¥ã¸) */
+	if (bp->parent < sp->bnst_data + sp->Bnst_num) { /* è¦ªãŒNewã®ã¨ãã¯ã™ã§ã«è¨­å®šã—ã¦ã„ã‚‹ */
 	    tp = bp->parent->tag_ptr + gov_head;
 	    for (j = head + 1; j < bp->tag_num; j++) {
 		if ((bp->tag_ptr + j)->num == -1) {
@@ -657,10 +657,10 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 			   (BNST_DATA *)tp, -1);
 		tp = bp->tag_ptr + j;
 	    }
-	    tp->parent = NULL; /* ·¸¤êÀèÌ¤Äê¤Î¥Ş¡¼¥¯ */
+	    tp->parent = NULL; /* ä¿‚ã‚Šå…ˆæœªå®šã®ãƒãƒ¼ã‚¯ */
 	}
 
-	/* PARA¤Ş¤¿¤Ï´ğËÜ¶ç1¤Ä¤Î¤È¤­¤Ï¡¢tag_ptr¤òNewÂ¦¤Ë¤·¤Æ¤ª¤¯ */
+	/* PARAã¾ãŸã¯åŸºæœ¬å¥1ã¤ã®ã¨ãã¯ã€tag_ptrã‚’Newå´ã«ã—ã¦ãŠã */
 	if (1 || bp->para_top_p == TRUE || bp->tag_num == 1) {
 	    bp->tag_ptr = sp->tag_data + sp->Tag_num + sp->New_Tag_num - 1;
 	    bp->tag_num = 1;
@@ -670,26 +670,26 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
     /* orig */
     for (i = sp->Bnst_num - 1; i >= 0; i--) {
 	bp = sp->bnst_data + i;
-	if (bp->num == -1) { /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿Ê¸Àá */
+	if (bp->num == -1) { /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸæ–‡ç¯€ */
 	    continue;
 	}
 
-	if ((head = find_head_tag_from_bnst(bp, 0)) < 0) { /* ¼ç¼­´ğËÜ¶ç */
+	if ((head = find_head_tag_from_bnst(bp, 0)) < 0) { /* ä¸»è¾åŸºæœ¬å¥ */
 	    head = bp->tag_num - 1;
 	}
 	para_info_to_tag(bp, bp->tag_ptr + head);
 
-	/* <PARA>¤Î¤È¤­¤Ïhead¤Î¤ß¤À¤¬¡¢tag_ptr, tag_num¤ÎÊÑ¹¹¤Ï¤·¤Ê¤¤ */
+	/* <PARA>ã®ã¨ãã¯headã®ã¿ã ãŒã€tag_ptr, tag_numã®å¤‰æ›´ã¯ã—ãªã„ */
 	if (bp->para_top_p == FALSE) {
-	    /* Ê¸ÀáÆâ */
+	    /* æ–‡ç¯€å†… */
 	    for (j = 0; j < bp->tag_num - 1; j++) {
 		for (gov = j + 1; gov < bp->tag_num; gov++) {
 		    if ((bp->tag_ptr + gov)->num != -1) {
 			break;
 		    }
 		}
-		if (gov >= bp->tag_num || /* ¸å½èÍı¤Ç·¸¤êÀè¤¬¤Ê¤¯¤Ê¤Ã¤¿´ğËÜ¶ç */
-		    (bp->tag_ptr + j)->num == -1) { /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿´ğËÜ¶ç */
+		if (gov >= bp->tag_num || /* å¾Œå‡¦ç†ã§ä¿‚ã‚Šå…ˆãŒãªããªã£ãŸåŸºæœ¬å¥ */
+		    (bp->tag_ptr + j)->num == -1) { /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸåŸºæœ¬å¥ */
 		    continue;
 		}
 		(bp->tag_ptr + j)->parent = bp->tag_ptr + gov;
@@ -698,26 +698,26 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 	    }
 	}
 
-	if (last_b_flag) { /* ºÇ¸å¤ÎÊ¸Àá (¸å½èÍı¤¬¤¢¤ë¤Î¤Ç i == Bnst_num - 1 ¤È¤Ï¸Â¤é¤Ê¤¤) */
+	if (last_b_flag) { /* æœ€å¾Œã®æ–‡ç¯€ (å¾Œå‡¦ç†ãŒã‚ã‚‹ã®ã§ i == Bnst_num - 1 ã¨ã¯é™ã‚‰ãªã„) */
 	    last_b_flag = 0;
 	    continue;
 	}
 
-	/* ¿Æ¤È»Ò */
+	/* è¦ªã¨å­ */
 	if (bp->parent) {
-	    for (head = bp->tag_num - 1; head >= 0; head--) { /* ºÇ¸å¤Î´ğËÜ¶ç¤ò¤µ¤¬¤¹ */
+	    for (head = bp->tag_num - 1; head >= 0; head--) { /* æœ€å¾Œã®åŸºæœ¬å¥ã‚’ã•ãŒã™ */
 		if ((bp->tag_ptr + head)->num != -1) {
 		    break;
 		}
 	    }
 	    tp = bp->tag_ptr + head;
-	    if (bp->para_top_p == TRUE) { /* PARA¤Î¾ì¹ç¤Ïnew¤ÎÊı¤Ç¾¯¤·½èÍı¤·¤Æ¤¤¤ë¾ì¹ç¤¬¤¢¤ë */
+	    if (bp->para_top_p == TRUE) { /* PARAã®å ´åˆã¯newã®æ–¹ã§å°‘ã—å‡¦ç†ã—ã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹ */
 		while (tp->parent) {
 		    tp = tp->parent;
 		}
 	    }
 
-	    offset = find_head_tag_from_dpnd_bnst(bp); /* ¥¿¥°Ã±°ÌÆâ¤Î·¸¤êÀè¤ò¥ë¡¼¥ë¤«¤éÆÀ¤ë */
+	    offset = find_head_tag_from_dpnd_bnst(bp); /* ã‚¿ã‚°å˜ä½å†…ã®ä¿‚ã‚Šå…ˆã‚’ãƒ«ãƒ¼ãƒ«ã‹ã‚‰å¾—ã‚‹ */
 	    tp->parent = bp->parent->tag_ptr + offset;
 	    t_add_node((BNST_DATA *)(bp->parent->tag_ptr + offset), 
 		       (BNST_DATA *)tp, -1);
@@ -739,36 +739,36 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
     BNST_DATA *bp;
     MRPH_DATA *mp, *tmp_mp, *head_ptr;
 
-    /* Ê¸Àá¤ÎÌÚ¹½Â¤¤«¤é·ÁÂÖÁÇ¤ÎÌÚ¹½Â¤¤ØÊÑ´¹ */
+    /* æ–‡ç¯€ã®æœ¨æ§‹é€ ã‹ã‚‰å½¢æ…‹ç´ ã®æœ¨æ§‹é€ ã¸å¤‰æ› */
 
     init_mrph_tree_property(sp);
     sp->New_Mrph_num = 0;
 
     /* new bnst -> tag */
-    for (i = sp->New_Bnst_num - 1; i >= 0; i--) { /* <PARA>(1)-<PARA>(2) ¤Î¤È¤­¤Î¤¿¤á¤Ë¸å¤«¤é¤¹¤ë */
+    for (i = sp->New_Bnst_num - 1; i >= 0; i--) { /* <PARA>(1)-<PARA>(2) ã®ã¨ãã®ãŸã‚ã«å¾Œã‹ã‚‰ã™ã‚‹ */
 	bp = sp->bnst_data + sp->Bnst_num + i;
-	// head_ptr = bp->mrph_ptr + bp->mrph_num - 1; // bp->head_ptr; /* ¡ú¼ç¼­·ÁÂÖÁÇ¡ú */
-	head_ptr = find_head_mrph_from_dpnd_bnst(NULL, bp); /* ¼ç¼­·ÁÂÖÁÇ */
+	// head_ptr = bp->mrph_ptr + bp->mrph_num - 1; // bp->head_ptr; /* â˜…ä¸»è¾å½¢æ…‹ç´ â˜… */
+	head_ptr = find_head_mrph_from_dpnd_bnst(NULL, bp); /* ä¸»è¾å½¢æ…‹ç´  */
 
-	/* newÎÎ°è¤Ëcopy */
+	/* newé ˜åŸŸã«copy */
 
-	*(sp->mrph_data + sp->Mrph_num + sp->New_Mrph_num) = *head_ptr; /* ¼ç¼­·ÁÂÖÁÇ */
+	*(sp->mrph_data + sp->Mrph_num + sp->New_Mrph_num) = *head_ptr; /* ä¸»è¾å½¢æ…‹ç´  */
 	sp->New_Mrph_num++;
-	mp = sp->mrph_data + sp->Mrph_num + sp->New_Mrph_num - 1; /* NewÎÎ°è¤Ë¥³¥Ô¡¼¤·¤¿¼ç¼­·ÁÂÖÁÇ¤Ø¤Î¥İ¥¤¥ó¥¿ */
+	mp = sp->mrph_data + sp->Mrph_num + sp->New_Mrph_num - 1; /* Newé ˜åŸŸã«ã‚³ãƒ”ãƒ¼ã—ãŸä¸»è¾å½¢æ…‹ç´ ã¸ã®ãƒã‚¤ãƒ³ã‚¿ */
 
 	para_info_to_mrph(bp, mp);
 	mp->child[0] = NULL;
 
-	/* <PARA>¤Î¤È¤­¤Ïhead¤Î¤ß */
+	/* <PARA>ã®ã¨ãã¯headã®ã¿ */
 	if (bp->para_top_p == FALSE) {
-	    /* Ê¸ÀáÆâ¤Î¼ç¼­·ÁÂÖÁÇ¤è¤êÁ°Â¦ */
+	    /* æ–‡ç¯€å†…ã®ä¸»è¾å½¢æ…‹ç´ ã‚ˆã‚Šå‰å´ */
 	    if (head_ptr > bp->mrph_ptr) {
-		/* Ê¸ÀáÆâ·ÁÂÖÁÇ¤Î¿Æ¤¬ <P>(-<PARA>) ¤Î¤È¤­ */
-		(head_ptr - 1)->parent = (BNST_DATA *)mp; /* ¼ç¼­¤Î¤Ò¤È¤ÄÁ° -> ¼ç¼­ */
+		/* æ–‡ç¯€å†…å½¢æ…‹ç´ ã®è¦ªãŒ <P>(-<PARA>) ã®ã¨ã */
+		(head_ptr - 1)->parent = (BNST_DATA *)mp; /* ä¸»è¾ã®ã²ã¨ã¤å‰ -> ä¸»è¾ */
 		t_add_node((BNST_DATA *)mp, 
 			   (BNST_DATA *)(head_ptr - 1), -1);
 
-		/* Ê¸ÀáÆâ */
+		/* æ–‡ç¯€å†… */
 		for (tmp_mp = head_ptr - 2; tmp_mp >= bp->mrph_ptr; tmp_mp--) {
 		    tmp_mp->parent = (BNST_DATA *)(tmp_mp + 1);
 		    t_add_node((BNST_DATA *)(tmp_mp + 1), 
@@ -777,13 +777,13 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 	    }
 	}
 
-	/* ¿Æ¤È»Ò¤Î¥ê¥ó¥¯¤Ä¤± (new) */
-	mp->parent = (BNST_DATA *)find_head_mrph_from_dpnd_bnst(bp, bp->parent);  /* ·¸¤êÀè¤Î¼ç¼­·ÁÂÖÁÇ (PARA¤Ø) */
+	/* è¦ªã¨å­ã®ãƒªãƒ³ã‚¯ã¤ã‘ (new) */
+	mp->parent = (BNST_DATA *)find_head_mrph_from_dpnd_bnst(bp, bp->parent);  /* ä¿‚ã‚Šå…ˆã®ä¸»è¾å½¢æ…‹ç´  (PARAã¸) */
 	t_add_node((BNST_DATA *)(mp->parent), 
 		   (BNST_DATA *)mp, -1);
 
-	/* Ê¸ÀáÆâ¤Î¼ç¼­·ÁÂÖÁÇ¤è¤ê¸å (PARA¤«¤é»Ä¤ê¤Î´ğËÜ¶ç¤Ø) */
-	if (bp->parent < sp->bnst_data + sp->Bnst_num) { /* ¿Æ¤¬New¤Î¤È¤­¤Ï¤¹¤Ç¤ËÀßÄê¤·¤Æ¤¤¤ë */
+	/* æ–‡ç¯€å†…ã®ä¸»è¾å½¢æ…‹ç´ ã‚ˆã‚Šå¾Œ (PARAã‹ã‚‰æ®‹ã‚Šã®åŸºæœ¬å¥ã¸) */
+	if (bp->parent < sp->bnst_data + sp->Bnst_num) { /* è¦ªãŒNewã®ã¨ãã¯ã™ã§ã«è¨­å®šã—ã¦ã„ã‚‹ */
 	    mp = (MRPH_DATA *)mp->parent; /* PARA */
 	    for (tmp_mp = head_ptr + 1; tmp_mp < bp->mrph_ptr + bp->mrph_num; tmp_mp++) {
 		mp->parent = (BNST_DATA *)tmp_mp;
@@ -791,10 +791,10 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 			   (BNST_DATA *)mp, -1);
 		mp = tmp_mp;
 	    }
-	    mp->parent = NULL; /* ·¸¤êÀèÌ¤Äê¤Î¥Ş¡¼¥¯ */
+	    mp->parent = NULL; /* ä¿‚ã‚Šå…ˆæœªå®šã®ãƒãƒ¼ã‚¯ */
 	}
 
-	/* mrph_ptr¤òNewÂ¦¤Ë¤·¤Æ¤ª¤¯ */
+	/* mrph_ptrã‚’Newå´ã«ã—ã¦ãŠã */
 	bp->mrph_ptr = sp->mrph_data + sp->Mrph_num + sp->New_Mrph_num - 1;
 	bp->head_ptr = bp->mrph_ptr;
 	bp->mrph_num = 1;
@@ -803,7 +803,7 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
     /* orig */
     for (i = sp->Bnst_num - 1; i >= 0; i--) {
 	bp = sp->bnst_data + i;
-	if (bp->num == -1) { /* ¸å½èÍı¤Ç¥Ş¡¼¥¸¤µ¤ì¤¿Ê¸Àá */
+	if (bp->num == -1) { /* å¾Œå‡¦ç†ã§ãƒãƒ¼ã‚¸ã•ã‚ŒãŸæ–‡ç¯€ */
 	    continue;
 	}
 
@@ -811,35 +811,35 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 	    head_ptr = bp->mrph_ptr + bp->mrph_num - 1;
 	}
 	else {
-	    head_ptr = find_head_mrph_from_dpnd_bnst(NULL, bp); /* ¼ç¼­·ÁÂÖÁÇ */
+	    head_ptr = find_head_mrph_from_dpnd_bnst(NULL, bp); /* ä¸»è¾å½¢æ…‹ç´  */
 	}
 	para_info_to_mrph(bp, head_ptr);
 
-	/* <PARA>¤Î¤È¤­¤Ïhead¤Î¤ß¤À¤¬¡¢tag_ptr, tag_num¤ÎÊÑ¹¹¤Ï¤·¤Ê¤¤ */
+	/* <PARA>ã®ã¨ãã¯headã®ã¿ã ãŒã€tag_ptr, tag_numã®å¤‰æ›´ã¯ã—ãªã„ */
 	if (bp->para_top_p == FALSE) {
-	    /* Ê¸ÀáÆâ */
-	    for (tmp_mp = bp->mrph_ptr + bp->mrph_num - 2; tmp_mp >= bp->mrph_ptr; tmp_mp--) { /* ºÇ½ª·ÁÂÖÁÇ¤Î1¤ÄÁ°°ÊÁ° */
+	    /* æ–‡ç¯€å†… */
+	    for (tmp_mp = bp->mrph_ptr + bp->mrph_num - 2; tmp_mp >= bp->mrph_ptr; tmp_mp--) { /* æœ€çµ‚å½¢æ…‹ç´ ã®1ã¤å‰ä»¥å‰ */
 		tmp_mp->parent = (BNST_DATA *)(tmp_mp + 1);
 		t_add_node((BNST_DATA *)(tmp_mp + 1), 
 			   (BNST_DATA *)tmp_mp, -1);
 	    }
 	}
 
-	if (last_b_flag) { /* ºÇ¸å¤ÎÊ¸Àá (¸å½èÍı¤¬¤¢¤ë¤Î¤Ç i == Bnst_num - 1 ¤È¤Ï¸Â¤é¤Ê¤¤) */
+	if (last_b_flag) { /* æœ€å¾Œã®æ–‡ç¯€ (å¾Œå‡¦ç†ãŒã‚ã‚‹ã®ã§ i == Bnst_num - 1 ã¨ã¯é™ã‚‰ãªã„) */
 	    last_b_flag = 0;
 	    continue;
 	}
 
-	/* ¿Æ¤È»Ò */
+	/* è¦ªã¨å­ */
 	if (bp->parent) {
-	    mp = bp->mrph_ptr + bp->mrph_num - 1; /* ·¸¤ê¸µ: ºÇ½ª·ÁÂÖÁÇ */
-	    if (bp->para_top_p == TRUE) { /* PARA¤Î¾ì¹ç¤Ïnew¤ÎÊı¤Ç¾¯¤·½èÍı¤·¤Æ¤¤¤ë¾ì¹ç¤¬¤¢¤ë */
+	    mp = bp->mrph_ptr + bp->mrph_num - 1; /* ä¿‚ã‚Šå…ƒ: æœ€çµ‚å½¢æ…‹ç´  */
+	    if (bp->para_top_p == TRUE) { /* PARAã®å ´åˆã¯newã®æ–¹ã§å°‘ã—å‡¦ç†ã—ã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹ */
 		while (mp->parent) {
 		    mp = (MRPH_DATA*)(mp->parent);
 		}
 	    }
 
-	    mp->parent = (BNST_DATA *)find_head_mrph_from_dpnd_bnst(bp, bp->parent); /* ¥¿¥°Ã±°ÌÆâ¤Î·¸¤êÀè¤ò¥ë¡¼¥ë¤«¤éÆÀ¤ë */
+	    mp->parent = (BNST_DATA *)find_head_mrph_from_dpnd_bnst(bp, bp->parent); /* ã‚¿ã‚°å˜ä½å†…ã®ä¿‚ã‚Šå…ˆã‚’ãƒ«ãƒ¼ãƒ«ã‹ã‚‰å¾—ã‚‹ */
 	    t_add_node((BNST_DATA *)(mp->parent), 
 		       (BNST_DATA *)mp, -1);
 	}

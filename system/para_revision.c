@@ -1,6 +1,6 @@
 /*====================================================================
 
-		      ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸¤Ë¤è¤ë½¤Àµ
+		      ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚ã«ã‚ˆã‚‹ä¿®æ­£
 
                                                S.Kurohashi 91.10.17
                                                S.Kurohashi 93. 5.31
@@ -23,13 +23,13 @@ static int judge_matrix[4][4] = {
     {1, 1, 0, 0},
     {1, 1, 0, 0}
 };
-static int judge_matrix_pos_str[4][4] = { /* ¸å¤¬¶¯ÊÂÎó */
+static int judge_matrix_pos_str[4][4] = { /* å¾ŒãŒå¼·ä¸¦åˆ— */
     {0, 0, 0, 1},
     {1, 1, 0, 1},
     {1, 1, 0, 0},
     {1, 1, 0, 0}
 };
-static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
+static int judge_matrix_pre_str[4][4] = { /* å‰ãŒå¼·ä¸¦åˆ— */
     {0, 1, 0, 1},
     {0, 1, 0, 1},
     {0, 0, 0, 0},
@@ -57,7 +57,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
 				 int flag)
 /*==================================================================*/
 {
-    /* À©¸Â¹ÔÎó¤Î½èÍı */
+    /* åˆ¶é™è¡Œåˆ—ã®å‡¦ç† */
 
     int rel_pre, rel_pos;
     
@@ -69,7 +69,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
 	    else if ( a1 < b1 )  rel_pre = 2;
 	    else                 rel_pre = 3;	
 	    for ( a3=a2+1; a3<sp->Bnst_num; a3++ ) {
-		if ( a3 < b1 ) {	/* ½ÅÊ£¤·¤Ê¤¤ */
+		if ( a3 < b1 ) {	/* é‡è¤‡ã—ãªã„ */
 		    restrict_matrix[a1][a3] = 1;
 		} else {
 		    if ( a3 < b2 )       rel_pos = 0;
@@ -88,7 +88,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
 	break;
       case REVISE_SPOS: case REVISE_POS:
 	for ( b1=0; b1<=b2; b1++ ) {
-	    if ( a3 < b1 ) {		/* ½ÅÊ£¤·¤Ê¤¤ */
+	    if ( a3 < b1 ) {		/* é‡è¤‡ã—ãªã„ */
 		for ( b3=b2+1; b3<sp->Bnst_num; b3++ ) {
 		    restrict_matrix[b1][b3] = 1;
 		}
@@ -115,7 +115,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
       default: break;
     }
 
-    /* ½ĞÎÏ */
+    /* å‡ºåŠ› */
     
     if (OptDisplay == OPT_DEBUG) {
 	if ( flag == REVISE_SPRE || flag == REVISE_PRE )
@@ -129,7 +129,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
       void revise_para_rel(SENTENCE_DATA *sp, int pre, int pos)
 /*==================================================================*/
 {
-    /* ÊÂÎó¹½Â¤´Ö¤Î´Ø·¸¤Ë¤è¤ë½¤Àµ */
+    /* ä¸¦åˆ—æ§‹é€ é–“ã®é–¢ä¿‚ã«ã‚ˆã‚‹ä¿®æ­£ */
 
     int a1, a2, a3, b1, b2, b3;
     PARA_DATA *ptr1, *ptr2;
@@ -144,22 +144,22 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
     b2 = ptr2->key_pos;
     b3 = ptr2->jend_pos;
 
-    /* ¸å¤À¤±¶¯ÊÂÎó -> Á°¤ò½¤Àµ */
+    /* å¾Œã ã‘å¼·ä¸¦åˆ— -> å‰ã‚’ä¿®æ­£ */
     if ( ptr1->status != 's' && ptr2->status == 's' ) {
 	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_SPRE);
 	Revised_para_num = pre;
     }
-    /* Á°¤À¤±¶¯ÊÂÎó -> ¸å¤ò½¤Àµ */
+    /* å‰ã ã‘å¼·ä¸¦åˆ— -> å¾Œã‚’ä¿®æ­£ */
     else if ( ptr1->status == 's' && ptr2->status != 's' ) {
 	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_SPOS);
 	Revised_para_num = pos;
     }
-    /* ¥¹¥³¥¢Èæ³Ó -> Á°¤ò½¤Àµ */
+    /* ã‚¹ã‚³ã‚¢æ¯”è¼ƒ -> å‰ã‚’ä¿®æ­£ */
     else if ( ptr1->max_score <= ptr2->max_score ) {
 	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_PRE);
 	Revised_para_num = pre;
     }
-    /* ¥¹¥³¥¢Èæ³Ó -> ¸å¤ò½¤Àµ */
+    /* ã‚¹ã‚³ã‚¢æ¯”è¼ƒ -> å¾Œã‚’ä¿®æ­£ */
     else {
 	set_restrict_matrix(sp, a1, a2, a3, b1, b2, b3, REVISE_POS);
 	Revised_para_num = pos;
@@ -170,7 +170,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
    void revise_para_kakari(SENTENCE_DATA *sp, int num, int *array)
 /*==================================================================*/
 {
-    /* ·¸¤ê¼õ¤±¸í¤ê¤Ë¤è¤ë½¤Àµ */
+    /* ä¿‚ã‚Šå—ã‘èª¤ã‚Šã«ã‚ˆã‚‹ä¿®æ­£ */
 
     int i, j, k;
     PARA_DATA *ptr = sp->para_data + num;
@@ -179,18 +179,18 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
       for (j = i + 1; j < sp->Bnst_num; j++)
 	restrict_matrix[i][j] = 1;
 
-    /* ÊÂÎó¤Î¥­¡¼¤ÏÌµ»ë
+    /* ä¸¦åˆ—ã®ã‚­ãƒ¼ã¯ç„¡è¦–
 
-       ¢§ÊÂÎó¤Î¥­¡¼¤¬Â¿¤¯¤Ê¤ê¡¤¤Ş¤¿ÊÂÎó¤È¤·¤Æ°·¤ï¤Ê¤¤¾ì¹ç¤Î·¸¤êÀè¤â»Ø
-       Äê¤¹¤ë¤è¤¦¤Ë¤Ê¤Ã¤¿¤Î¤Ç¡¤¤³¤ÎÉôÊ¬¤Ïºï½ü
+       â–¼ä¸¦åˆ—ã®ã‚­ãƒ¼ãŒå¤šããªã‚Šï¼Œã¾ãŸä¸¦åˆ—ã¨ã—ã¦æ‰±ã‚ãªã„å ´åˆã®ä¿‚ã‚Šå…ˆã‚‚æŒ‡
+       å®šã™ã‚‹ã‚ˆã†ã«ãªã£ãŸã®ã§ï¼Œã“ã®éƒ¨åˆ†ã¯å‰Šé™¤
 
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (D_check_array[i] == FALSE && check_feature(sp->bnst_data[i].f, "ÊÂ¥­"))
+	if (D_check_array[i] == FALSE && check_feature(sp->bnst_data[i].f, "ä¸¦ã‚­"))
 	    D_check_array[i] = TRUE;
     }
     */
 
-    /* Á°Éô¤ÎÀ©¸Â */
+    /* å‰éƒ¨ã®åˆ¶é™ */
 
     if (_check_para_d_struct(sp, 0, ptr->key_pos, FALSE, 0, NULL) == FALSE) {
 	for (k = ptr->key_pos; D_found_array[k] == TRUE; k--)
@@ -200,7 +200,7 @@ static int judge_matrix_pre_str[4][4] = { /* Á°¤¬¶¯ÊÂÎó */
 	    restrict_matrix[i][j] = 0;
     }
 
-    /* ¸åÉô¤ÎÀ©¸Â */	
+    /* å¾Œéƒ¨ã®åˆ¶é™ */	
 
     for (j = ptr->key_pos + 2; j < sp->Bnst_num; j++)
 	if (_check_para_d_struct(sp, ptr->key_pos + 1, j, FALSE, 0, NULL) == FALSE)
