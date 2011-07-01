@@ -341,7 +341,7 @@ sub _real_parse {
     if (utf8::is_utf8($str)) {
 	require Encode;
 	foreach my $str (@{$array}) {
-	    $str = Encode::encode($KNP::ENCODING, $str);
+	    $str = Encode::encode($ENCODING, $str);
 	}
 	$this->{input_is_utf8} = 1;
     }
@@ -368,7 +368,7 @@ sub _real_parse {
     my $skip = ( $this->{OPTION}->{option} =~ /\-detail/ ) ? 1 : 0;
     while( defined( $str = $sock->getline ) ){
 	if ($this->{input_is_utf8}) {
-	    $str = Encode::decode($KNP::ENCODING, $str);
+	    $str = Encode::decode($ENCODING, $str);
 	}
 	# 「;; Too many para ()!」「;; Invalid input」などのエラーメッセージ
 	if( $str =~ /^;; (?:Too|Invalid) /) {
