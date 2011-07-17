@@ -858,26 +858,26 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 
     /* ヲ-Oヲ-C8 */
     /* ニ-Oガ-B1 */
-    if (strlen(loc_name) != 9) return -1;
+    if (strlen(loc_name) != BYTES4CHAR * 2 + 5) return -1;
 
     /* [SCO] */
-    if (loc_name[3] == 'C') id += 12;
-    else if (loc_name[3] == 'O') id += 48;
-    else if (loc_name[3] != 'S') return -1;
+    if (loc_name[BYTES4CHAR + 1] == 'C') id += 12;
+    else if (loc_name[BYTES4CHAR + 1] == 'O') id += 48;
+    else if (loc_name[BYTES4CHAR + 1] != 'S') return -1;
 
     /* [ガヲニ] */
-    if (loc_name[3] != 'S') {
-	if (!strncmp(loc_name + 4, "ヲ", 2)) id += 12;
-	else if (!strncmp(loc_name + 4, "ニ", 2)) id += 24;
-	else if (strncmp(loc_name + 4, "ガ", 2)) return -1;
+    if (loc_name[BYTES4CHAR + 1] != 'S') {
+	if (!strncmp(loc_name + BYTES4CHAR + 2, "ヲ", BYTES4CHAR)) id += 12;
+	else if (!strncmp(loc_name + BYTES4CHAR + 2, "ニ", BYTES4CHAR)) id += 24;
+	else if (strncmp(loc_name + BYTES4CHAR + 2, "ガ", BYTES4CHAR)) return -1;
     }
 
     /* [CB] */
-    if (loc_name[7] == 'B') id += 9;
-    else if (loc_name[7] != 'C') return -1;
+    if (loc_name[BYTES4CHAR * 2 + 3] == 'B') id += 9;
+    else if (loc_name[BYTES4CHAR * 2 + 3] != 'C') return -1;
 
     /* [1-9] */
-    if (atoi(loc_name + 8) > 0) id += atoi(loc_name + 8) - 1;
+    if (atoi(loc_name + BYTES4CHAR * 2 + 4) > 0) id += atoi(loc_name + BYTES4CHAR + 2 + 4) - 1;
     else return -1;
 
     return id;

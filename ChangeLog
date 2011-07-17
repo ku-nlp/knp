@@ -1,9 +1,14 @@
+2011-07-17  Ryohei Sasano  <sasano@pi.titech.ac.jp>
+
+	* system/anaphora.c:
+	Modifications for multi-encoding.
+
 2011-06-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* rule/bnst_type.phrase:
 	Added a rule to mark unreliable dependencies.
 
-2011-06-24  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+2011-06-24  Ryohei Sasano  <sasano@pi.titech.ac.jp>
 
 	* knprc.in:
 	Added synonym.db to knprc.
