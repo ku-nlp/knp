@@ -190,14 +190,14 @@ int calc_dynamic_level_penalty(SENTENCE_DATA *sp, int key_pos, int pos1, int pos
     } 
     else if (p_ptr->type == PARA_KEY_N) {
         if (check_feature(sp->bnst_data[p_ptr->key_pos].f, "係:ト格") &&
-	    check_feature(b_ptr->f, "名並終点〜と〜と")) 
+	    check_feature(b_ptr->f, "Ｔ名並終点〜と〜と")) 
 	    return BONUS;
-	if (check_feature(b_ptr->f, "名並終点"))
+	if (check_feature(b_ptr->f, "Ｔ名並終点"))
 	    return BONUS;
 	else return 0;
     }
     else if (p_ptr->type == PARA_KEY_P) {
-	if (check_feature(b_ptr->f, "述並終点"))
+	if (check_feature(b_ptr->f, "Ｔ述並終点"))
 	    return BONUS;
 	else return 0;
     }

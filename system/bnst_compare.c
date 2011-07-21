@@ -588,7 +588,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 		if (OptParaFix == FALSE && /* 確率的並列構造解析のとき */
 		    !check_feature(sp->bnst_data[i].f, "用言") && /* サ変動詞は止めないようにするため「用言」の否定 */
-		    check_feature(sp->bnst_data[j].f, "名並終点")) { /* 名並終点以降は並列にしない */
+		    check_feature(sp->bnst_data[j].f, "Ｔ名並終点")) { /* 名並終点以降は並列にしない */
 		    calc_flag = 0;
 		}
 	    }

@@ -1542,18 +1542,18 @@ void append_cf_feature(FEATURE **fpp, CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, 
     /* 格フレームのガ格が<主体準>をもつかどうか */
     if ((cf_ptr->etcflag & CF_GA_SEMI_SUBJECT) && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
-	sprintf(feature_buffer, "格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "Ｔ格フレーム-%s-主体準", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
     /* 格フレームが<主体>をもつかどうか */
     else if (cf_match_element(cf_ptr->sm[n], "主体", FALSE)) {
-	sprintf(feature_buffer, "格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "Ｔ格フレーム-%s-主体", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
 
     /* 格フレームが<補文>をもつかどうか *
     if (cf_match_element(cf_ptr->sm[n], "補文", TRUE)) {
-	sprintf(feature_buffer, "格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
+	sprintf(feature_buffer, "Ｔ格フレーム-%s-補文", pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));
 	assign_cfeature(fpp, feature_buffer, FALSE);
     }
     */

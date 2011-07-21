@@ -4551,7 +4551,7 @@ int RuleRecognition(CF_PRED_MGR *cpm_ptr, CASE_FRAME *cf_ptr, int n)
     char feature_buffer[DATA_LEN];
 
     /* <不特定:状況> をガ格としてとる判定詞 */
-    if (check_feature(cpm_ptr->pred_b_ptr->f, "時間ガ省略") && 
+    if (check_feature(cpm_ptr->pred_b_ptr->f, "Ｔ時間ガ省略") && 
 	MatchPP(cf_ptr->pp[n][0], "ガ")) {
 	sprintf(feature_buffer, "C用;【不特定-状況】;%s;-1;-1;1", 
 		pp_code_to_kstr_in_context(cpm_ptr, cf_ptr->pp[n][0]));

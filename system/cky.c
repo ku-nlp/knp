@@ -1764,7 +1764,7 @@ int after_cky(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr, int return_f
 		}
 		assign_nil_assigned_components(sp, &(sp->Best_mgr->cpm[i])); /* 未対応格要素の処理 */
 
-		assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE);
+		/* assign_case_component_feature(sp, &(sp->Best_mgr->cpm[i]), FALSE); <格要素-??>feature */
 
 		/* 格フレームの意味情報を用言基本句featureへ */
 		for (j = 0; j < sp->Best_mgr->cpm[i].cmm[0].cf_ptr->element_num; j++) {
