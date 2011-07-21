@@ -227,7 +227,7 @@ while ( <STDIN> ) {
 	}
     }
     print " )\n\t$feature";
-    print " RID:$num" if $opt{rid};
+    print " ＴRID:$num" if $opt{rid};
     print "\n)\n";
     print "$comment\n" if $comment;
     print "\n";

@@ -43,8 +43,8 @@ trans: diff
 
 diff:
 	if [ -r bnst_type.rule.old -a -r bnst_type.rule ]; then \
-	    perl -pe 's/RID:\d+//' bnst_type.rule > bnst_type.rule-tmp; \
-	    perl -pe 's/RID:\d+//' bnst_type.rule.old > bnst_type.rule.old-tmp; \
+	    perl -pe 's/ＴRID:\d+//' bnst_type.rule > bnst_type.rule-tmp; \
+	    perl -pe 's/ＴRID:\d+//' bnst_type.rule.old > bnst_type.rule.old-tmp; \
 	    diff bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	    rm -f bnst_type.rule.old-tmp bnst_type.rule-tmp; \
 	fi
