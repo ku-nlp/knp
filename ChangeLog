@@ -1,7 +1,37 @@
+2011-08-09  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/main.c:
+	The use of the compound-verb version of case frames -> default.
+
+2011-07-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_basic.data, rule/mrph_basic.rule:
+	Improved a rule for recognizing nominalization of verbs.
+
+2011-07-21  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/Makefile.am, rule/phrase2rule.pl:
+	Modified scripts for feature deletion.
+
+	* rule/bnst_type.rule, rule/context.rule, rule/kakari_uke.rule, rule/tag_after_dpnd_and_case.rule, rule/bnst_basic.rule, rule/bnst_etc.rule, rule/bnst_type.phrase, system/bnst_compare.c, system/case_analysis.c, system/cky.c, system/context.c, system/dpnd_analysis.c, system/para_analysis.c:
+	Deleted redundant features.
+
+2011-07-20  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule: Modified a time rule.
+
+	* rule/mrph_basic.rule:
+	Added a modification phrase.
+
 2011-07-17  Ryohei Sasano  <sasano@pi.titech.ac.jp>
 
 	* system/anaphora.c:
 	Modifications for multi-encoding.
+
+2011-07-11  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule:
+	Bug fix of voice recognition.
 
 2011-06-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
