@@ -1097,6 +1097,7 @@ int check_adjacent_assigned(CASE_FRAME *cfd, CASE_FRAME *cfp, LIST *list1)
 	    /* 対応する格スロットがない場合 => 仮想的に格スロットを作成して割り当て */
 	    else {
 		score += get_case_probability_from_str(pp_code_to_kstr(cfd->pp[i][0]), cfp, TRUE, para_cpm_ptr);
+		score += NIL_ASSINED_SCORE;
 	    }
 	}
     }
