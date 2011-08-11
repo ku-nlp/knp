@@ -1,3 +1,8 @@
+2011-08-11  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_analysis.c, system/case_data.c, system/case_ipal.c, system/cky.c, system/const.h, system/main.c:
+	Modified synchronized coordination analysis to consider the generation of coordinated nouns.
+
 2011-08-09  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/main.c:
