@@ -470,6 +470,7 @@ int make_data_cframe_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *ch
 	}
 
 	cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num]->next = NULL; /* 並列要素格納用 */
+	cpm_ptr->para_b_ptr[cpm_ptr->cf.element_num] = NULL;
 
 	/* 格が明示されていないことをマーク */
 	if (check_feature(cel_b_ptr->f, "係:未格") || 

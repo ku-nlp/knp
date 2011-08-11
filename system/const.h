@@ -194,6 +194,7 @@
 #define	OPT_CASE_CLEAR_CF	32768
 #define	OPT_CASE_FALLBACK_TO_DPND	65536
 #define	OPT_CASE_USE_CV_CF	131072
+#define	OPT_CASE_CFCASE_FORMAT_DENOMINATOR	262144
 
 #define	OPT_DISC_OR_CF	1
 #define	OPT_DISC_BEST	2
@@ -209,6 +210,7 @@
 #define OPT_PARA_MULTIPLY_ALL_EX	1
 #define OPT_PARA_GENERATE_SIMILARITY	2
 #define OPT_PARA_SYNCHRONIZE		4
+#define OPT_PARA_MULTIPLY_AVE_EX	8
 
 #define	IS_BNST_DATA	1
 #define	IS_TAG_DATA	2
@@ -1061,6 +1063,7 @@ typedef struct cpm_def {
     CASE_FRAME 	cf;				/* 入力文の格構造 */
     TAG_DATA	*pred_b_ptr;			/* 入力文の用言文節 */
     TAG_DATA	*elem_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節 */
+    TAG_DATA	*para_b_ptr[CF_ELEMENT_MAX];	/* 入力文の格要素文節の並列要素 */
     struct sentence	*elem_s_ptr[CF_ELEMENT_MAX];	/* どの文の要素であるか (省略用) */
     int 	elem_b_num[CF_ELEMENT_MAX];	/* 入力文の格要素文節(連格の係り先は-1,他は子の順番,省略は-2,照応は-3) */
     double 	score;				/* スコア最大値(=cmm[0].score) */

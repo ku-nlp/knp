@@ -45,6 +45,20 @@ void make_data_cframe_rentai_simple(CF_PRED_MGR *pre_cpm_ptr, TAG_DATA *d_ptr, T
     pre_cpm_ptr->cf.element_num++;
 }
 
+/* recover the para information of CPM from para_b_ptr */
+void recover_para_ptr_to_cpm(CF_PRED_MGR *cpm_ptr) {
+    int i;
+
+    for (i = 0; i < cpm_ptr->cf.element_num; i++) {
+	if (cpm_ptr->para_b_ptr[i]) {
+	    cpm_ptr->elem_b_ptr[i]->next = cpm_ptr->para_b_ptr[i];
+	}
+	else {
+	    cpm_ptr->elem_b_ptr[i]->next = NULL;
+	}
+    }
+}
+
 /* add coordinated case components to CPM */
 TAG_DATA **add_coordinated_phrases(CKY *cky_ptr, TAG_DATA **next) {
     while (cky_ptr) { /* 修飾部分のスキップ */
@@ -167,6 +181,7 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    }
 
 	    make_work_mgr_dpnd_check(sp, cky_ptr->left, cky_ptr->right->b_ptr);
+	    recover_para_ptr_to_cpm(cpm_ptr); /* 並列要素を復元 */
 	    make_data_cframe_rentai_simple(cpm_ptr, cpm_ptr->pred_b_ptr, 
 					   cky_ptr->right->b_ptr->tag_ptr + cky_ptr->right->b_ptr->tag_num - 1);
 	    find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), TRUE, NULL);
@@ -1227,6 +1242,9 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 			if ((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || check_feature(d_ptr->f, "係:連用")) {
 			    one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr);
 			}
+			else if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_AVE_EX) {
+			    one_score += get_para_ex_probability(para_key, cky_ptr->para_score, d_ptr->tag_ptr + d_ptr->tag_num - 1, t_ptr) / 2;
+			}
 			flag++;
 		    }
 		    else {
@@ -1240,6 +1258,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
 		if (make_data_cframe_child(sp, cpm_ptr, d_ptr->tag_ptr + d_ptr->tag_num - 1, child_num, t_ptr->num == d_ptr->num + 1 ? TRUE : FALSE)) {
 		    add_coordinated_phrases(cky_ptr->left, &(cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num - 1]->next));
+		    cpm_ptr->para_b_ptr[cpm_ptr->cf.element_num - 1] = cpm_ptr->elem_b_ptr[cpm_ptr->cf.element_num - 1]->next;
 		    child_num++;
 		    flag++;
 		}
@@ -1260,6 +1279,7 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 		pre_cpm_ptr = cky_ptr->left->cpm_ptr;
 		pre_cpm_ptr->pred_b_ptr->cpm_ptr = pre_cpm_ptr;
 		make_work_mgr_dpnd_check(sp, cky_ptr, d_ptr);
+		recover_para_ptr_to_cpm(pre_cpm_ptr); /* 並列要素を復元 */
 		make_data_cframe_rentai_simple(pre_cpm_ptr, pre_cpm_ptr->pred_b_ptr, t_ptr);
 		add_coordinated_phrases(cky_ptr->right, &(pre_cpm_ptr->elem_b_ptr[pre_cpm_ptr->cf.element_num - 1]->next));
 

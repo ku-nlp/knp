@@ -1028,6 +1028,7 @@ int all_case_analysis(SENTENCE_DATA *sp, TAG_DATA *t_ptr, TOTAL_MGR *t_mgr)
     dst->pred_b_ptr = src->pred_b_ptr;
     for (i = 0; i < CF_ELEMENT_MAX; i++) {
 	dst->elem_b_ptr[i] = src->elem_b_ptr[i];
+	dst->para_b_ptr[i] = src->para_b_ptr[i];
 	dst->elem_b_num[i] = src->elem_b_num[i];
 	dst->elem_s_ptr[i] = src->elem_s_ptr[i];
     }

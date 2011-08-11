@@ -2825,6 +2825,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
 	sprintf(key, "%s|%s,%s,%s", case_str, cfp->cf_id, case_str, para_cond);
     }
+    else if (OptCaseFlag & OPT_CASE_CFCASE_FORMAT_DENOMINATOR) {
+	sprintf(key, "%s|%s,%s", case_str, cfp->cf_id, case_str);
+    }
     else {
 	sprintf(key, "%s|%s", case_str, cfp->cf_id);
     }
@@ -2840,6 +2843,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	/* obtain the denominator */
 	if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
 	    sprintf(key, "NIL|%s,%s,%s", cfp->cf_id, case_str, para_cond);
+	}
+	else if (OptCaseFlag & OPT_CASE_CFCASE_FORMAT_DENOMINATOR) {
+	    sprintf(key, "NIL|%s,%s", cfp->cf_id, case_str);
 	}
 	else {
 	    sprintf(key, "NIL|%s", cfp->cf_id);
@@ -2859,6 +2865,9 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
     sscanf(cfp->cf_id, "%[^0-9]%*d", verb);
     if (OptParaNoFixFlag & OPT_PARA_SYNCHRONIZE) {
 	sprintf(key, "%s|%s,%s,%s", case_str, verb, case_str, para_cond);
+    }
+    else if (OptCaseFlag & OPT_CASE_CFCASE_FORMAT_DENOMINATOR) {
+	sprintf(key, "%s|%s,%s", case_str, verb, case_str);
     }
     else {
 	sprintf(key, "%s|%s", case_str, verb);
@@ -3407,7 +3416,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 {
     int j, count = 1, np_modifying_flag;
     TAG_DATA *tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
-    double score;
+    double score, sub_score = 0;
 
     if (cfd->pred_b_ptr->num < tp->num) { /* 連体修飾 */
 	np_modifying_flag = 1;
@@ -3425,7 +3434,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 並列の要素 */
     while (tp->next) {
-	score += get_ex_probability(-1, cfd, tp->next, as2, cfp, TRUE);
+        sub_score += get_ex_probability(-1, cfd, tp->next, as2, cfp, TRUE);
 	count++;
 	tp = tp->next;
     }
@@ -3441,17 +3450,20 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     } */
 
     if (VerboseLevel >= VERBOSE3) {
-	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, score / count);
+	fprintf(Outfp, ";; (EX) is divided by %d => %.5f\n", count, (score + sub_score) / count);
     }
 
     /* 並列確率的解析時: 並列要素間生成する場合と被連体修飾名詞は正規化
        並列決定的解析時: 常に正規化 */
     if (OptParaFix == TRUE || 
 	((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag)) {
-	return score / count;
+	return (score + sub_score) / count;
+    }
+    else if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_AVE_EX) {
+	return score + sub_score / 2;
     }
     else {
-	return score;
+        return score + sub_score;
     }
 }
 
@@ -4558,24 +4570,70 @@ double get_para_exist_probability(char *para_key, double score, int flag, TAG_DA
 double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp, TAG_DATA *gp)
 /*==================================================================*/
 {
-    char *key, *value;
+    char *key, *value, *cp, *gp_mrph_str, *dp_mrph_str;
+    int gp_rep_malloc_flag = 0, dp_rep_malloc_flag = 0;
     double ret;
 
     if (ParaExist == FALSE) {
 	return 0;
     }
 
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(gp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    gp_mrph_str = strdup(cp);
+	    gp_rep_malloc_flag = 1;
+	}
+	else {
+	    gp_mrph_str = get_mrph_rep_from_f(gp->head_ptr, FALSE);
+	    if (gp_mrph_str == NULL) {
+		gp_mrph_str = make_mrph_rn(gp->head_ptr);
+		gp_rep_malloc_flag = 1;
+	    }
+	}
+    }
+    else {
+	gp_mrph_str = gp->head_ptr->Goi;
+    }
+
+    if (OptCaseFlag & OPT_CASE_USE_REP_CF) { /* 代表表記 */
+	if ((OptCaseFlag & OPT_CASE_USE_CREP_CF) && /* 正規化(主辞)代表表記 */
+	    (cp = get_bnst_head_canonical_rep(dp->b_ptr, OptCaseFlag & OPT_CASE_USE_CN_CF))) {
+	    dp_mrph_str = strdup(cp);
+	    dp_rep_malloc_flag = 1;
+	}
+	else {
+	    dp_mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
+	    if (dp_mrph_str == NULL) {
+		dp_mrph_str = make_mrph_rn(dp->head_ptr);
+		dp_rep_malloc_flag = 1;
+	    }
+	}
+    }
+    else {
+	dp_mrph_str = dp->head_ptr->Goi;
+    }
+
+    /* 同じものが並列されている -> 確率1 */
+    /* if (!strcmp(dp_mrph_str, gp_mrph_str) || */
     if (!strcmp(dp->head_ptr->Goi, gp->head_ptr->Goi)) {
 	return 0;
     }
 
-    key = malloc_db_buf(strlen(dp->head_ptr->Goi) + strlen(para_key) + strlen(gp->head_ptr->Goi) + 5);
+    key = malloc_db_buf(strlen(dp_mrph_str) + strlen(para_key) + strlen(gp_mrph_str) + 5);
 
     if (OptParaNoFixFlag & OPT_PARA_GENERATE_SIMILARITY) {
-	sprintf(key, "%s|%d,%s,%s", dp->head_ptr->Goi, bin_sim_score(score), para_key, gp->head_ptr->Goi);
+	sprintf(key, "%s|%d,%s,%s", dp_mrph_str, bin_sim_score(score), para_key, gp_mrph_str);
     }
     else {
-	sprintf(key, "%s|%s,%s", dp->head_ptr->Goi, para_key, gp->head_ptr->Goi);
+	sprintf(key, "%s|%s,%s", dp_mrph_str, para_key, gp_mrph_str);
+    }
+
+    if (gp_rep_malloc_flag) {
+	free(gp_mrph_str);
+    }
+    if (dp_rep_malloc_flag) {
+	free(dp_mrph_str);
     }
 
     value = db_get(para_db, key);
@@ -4607,7 +4665,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 {
     char *key, *value, *cp, *gp_mrph_str, *dp_mrph_str;
     int touten_flag, dist, elem_num = 0, g_elem_num = 0, gp_rep_malloc_flag = 0, dp_rep_malloc_flag = 0;
-    double ret1 = 0, ret2 = 0, tmp_ret;
+    double ret1 = 0, sub_ret1 = 0, ret2 = 0, tmp_ret;
     TAG_DATA *tmp_dp, *tmp_gp = gp;
 
     if (NounCoExist == FALSE) {
@@ -4670,13 +4728,23 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = %lf\n", key, tmp_ret);
 		}
 		free(value);
-		ret1 += log(tmp_ret);
+		if (tmp_dp == dp) { /* 一番後の係り元(loopの最初) */
+		    ret1 += log(tmp_ret);
+		}
+		else {
+		    sub_ret1 += log(tmp_ret);
+		}
 	    }
 	    else {
 		if (VerboseLevel >= VERBOSE2) {
 		    fprintf(Outfp, ";; (NOUN_EX) : P(%s) = 0\n", key);
 		}
-		ret1 += FREQ0_ASSINED_SCORE;
+		if (tmp_dp == dp) { /* 一番後の係り元(loopの最初) */
+		    ret1 += FREQ0_ASSINED_SCORE;
+		}
+		else {
+		    sub_ret1 += FREQ0_ASSINED_SCORE;
+		}
 	    }
 
 	    elem_num++;
@@ -4694,7 +4762,15 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	}
 	tmp_gp = tmp_gp->next;
     }
-    ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* 非連体修飾名詞の方は常に正規化 */
+    if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_AVE_EX) {
+	sub_ret1 /= (double)2;
+	ret1 += sub_ret1;
+	ret1 /= (double)g_elem_num; /* 非連体修飾名詞の方は常に正規化 */
+    }
+    else {
+	ret1 += sub_ret1;
+	ret1 /= (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? (double)elem_num : (double)g_elem_num; /* 非連体修飾名詞の方は常に正規化 */
+    }
     if (VerboseLevel >= VERBOSE2) {
 	fprintf(Outfp, ";; (NOUN_EX) is divided by %d => %.5f\n", (OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) ? elem_num : g_elem_num, ret1);
     }

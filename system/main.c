@@ -355,6 +355,10 @@ extern int	EX_match_subject;
 	    OptParaFix = FALSE;
 	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_ALL_EX;
 	}
+	else if (str_eq(argv[0], "-no-parafix-generate-both")) {
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_AVE_EX;
+	}
 	else if (str_eq(argv[0], "-no-parafix-generate-sim")) {
 	    OptParaFix = FALSE;
 	    OptParaNoFixFlag |= OPT_PARA_GENERATE_SIMILARITY;
@@ -363,6 +367,14 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-parafix-synchronize")) {
 	    OptParaFix = FALSE;
 	    OptParaNoFixFlag |= OPT_PARA_SYNCHRONIZE;
+	}
+	else if (str_eq(argv[0], "-no-parafix-synchronize-generate-both")) {
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_SYNCHRONIZE;
+	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_AVE_EX;
+	}
+	else if (str_eq(argv[0], "-cfcase-format-denominator")) {
+	    OptCaseFlag |= OPT_CASE_CFCASE_FORMAT_DENOMINATOR;
 	}
 	else if (str_eq(argv[0], "-no-generalize-agent")) {
 	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
