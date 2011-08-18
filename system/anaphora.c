@@ -877,7 +877,7 @@ double calc_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
     else if (loc_name[BYTES4CHAR * 2 + 3] != 'C') return -1;
 
     /* [1-9] */
-    if (atoi(loc_name + BYTES4CHAR * 2 + 4) > 0) id += atoi(loc_name + BYTES4CHAR + 2 + 4) - 1;
+    if (atoi(loc_name + BYTES4CHAR * 2 + 4) > 0) id += atoi(loc_name + BYTES4CHAR * 2 + 4) - 1;
     else return -1;
 
     return id;
