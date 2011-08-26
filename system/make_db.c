@@ -17,7 +17,7 @@
 #include "dbm.h"
 
 #ifndef DBM_KEY_MAX
-#define DBM_KEY_MAX 	1024
+#define DBM_KEY_MAX 	2048
 #endif
 #ifndef DBM_CON_MAX
 #define DBM_CON_MAX	1638400
