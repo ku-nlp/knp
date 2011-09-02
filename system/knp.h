@@ -131,8 +131,12 @@
 #endif
 
 #ifdef _WIN32
+#ifndef strcasecmp
 #define strcasecmp stricmp
+#endif
+#ifndef strncasecmp
 #define strncasecmp strnicmp
+#endif
 
 #ifndef PACKAGE_NAME
 #define PACKAGE_NAME "KNP"
