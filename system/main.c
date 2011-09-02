@@ -376,6 +376,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-cfcase-format-denominator")) {
 	    OptCaseFlag |= OPT_CASE_CFCASE_FORMAT_DENOMINATOR;
 	}
+	else if (str_eq(argv[0], "-analyze-deverbative-noun")) {
+	    OptCaseFlag |= OPT_CASE_ANALYZE_DEVERBATIVE_NOUN;
+	}
 	else if (str_eq(argv[0], "-no-generalize-agent")) {
 	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
 	}
@@ -800,10 +803,12 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-cf-cache")) {
 	    OptCaseFlag |= OPT_CASE_CF_CACHE;
 	}
+#ifdef CDB
 	else if (str_eq(argv[0], "-cf-on-memory")) {
 	    OptCaseFlag |= OPT_CASE_CF_ON_MEMORY;
 	    OptCaseFlag |= OPT_CASE_CF_CACHE;
 	}
+#endif
 	else if (str_eq(argv[0], "-no-scase")) {
 	    OptUseScase = FALSE;
 	}

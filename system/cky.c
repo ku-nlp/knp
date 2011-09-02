@@ -1149,6 +1149,17 @@ int count_distance(SENTENCE_DATA *sp, CKY *cky_ptr, BNST_DATA *g_ptr, int *pos) 
     return count;
 }
 
+/* add a basic phrase inside the bunsetsu before the deverbative noun */
+int add_internal_bunsetsu_child(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, TAG_DATA *t_ptr, BNST_DATA *g_ptr, int child_num) {
+    if (cpm_ptr->pred_b_ptr && t_ptr - 1 > g_ptr->tag_ptr && 
+        make_data_cframe_child(sp, cpm_ptr, t_ptr - 1, child_num, FALSE)) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 /* scoring function based on case structure probabilities */
 double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mgr) {
     CKY *right_ptr = cky_ptr->right, *orig_cky_ptr = cky_ptr, *para_cky_ptr = NULL;
@@ -1316,6 +1327,10 @@ double calc_case_probability(SENTENCE_DATA *sp, CKY *cky_ptr, TOTAL_MGR *Best_mg
 
     if (pred_p) {
 	t_ptr->cpm_ptr = cpm_ptr;
+
+        if (OptCaseFlag & OPT_CASE_ANALYZE_DEVERBATIVE_NOUN) { /* 非用言格解析するオプション時に、文節内の一つ前の基本句を見る */
+            child_num += add_internal_bunsetsu_child(sp, cpm_ptr, t_ptr, g_ptr, child_num);
+        }
 
 	/* 用言文節が「（〜を）〜に」のとき 
 	   「する」の格フレームに対してニ格(同文節)を設定

@@ -273,10 +273,12 @@ CF_FRAME *CFcache[TBLSIZE];
 	/* 格フレームcacheのHASHの初期化 */
 	memset(CFcache, 0, sizeof(CASE_FRAME_CACHE_MGR *)*TBLSIZE);
 
+#ifdef CDB
 	/* 格フレームすべてをメモリに読み込む場合 */
 	if (OptCaseFlag & OPT_CASE_CF_ON_MEMORY) {
 	    list_db_and_register_caseframe(cf_db, CF_PRED);
 	}
+#endif
     }
 }
 
@@ -2511,8 +2513,9 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	    }
 	    if (OptUseCF &&
 		(check_feature(t_ptr->f, "用言") || /* 準用言はとりあえず対象外 */
-		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 (確率的以外) */
+		 (check_feature(t_ptr->f, "非用言格解析") && /* サ変名詞, 形容詞語幹 */
 		  (!(OptCaseFlag & OPT_CASE_USE_PROBABILITY) ||
+                   (OptCaseFlag & OPT_CASE_ANALYZE_DEVERBATIVE_NOUN) || /* 非用言格解析するオプション時 */
 		   (OptEllipsis & OPT_ELLIPSIS) || OptAnaphora ||
 		   (t_ptr->inum == 1 && /* 確率的の場合は、「公開予定だ」のようなときのみ */
 		    check_feature(t_ptr->b_ptr->f, "タグ単位受:-1")))))) { 
@@ -4944,6 +4947,7 @@ double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr)
     return ret;
 }
 
+#ifdef CDB
 static unsigned char *cdb_buf;
 static unsigned cdb_blen;
 
@@ -5023,6 +5027,7 @@ void list_db_and_register_caseframe(DBM_FILE db, int flag)
     if (pos != eod)
 	fprintf(stderr, "invalid cdb file format\n");
 }
+#endif
 
 /*====================================================================
                                END
