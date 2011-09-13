@@ -318,7 +318,7 @@ QUOTE_DATA quote_data;
     }
 
     if (paren_num == 0 || paren_num >= PAREN_MAX || 
-	(paren_start == 0 && *(paren_table + sp->Mrph_num - 1) == 'E')) { /* 全体が括弧の時は対象外 */
+	(*paren_table == 'B' && *(paren_table + sp->Mrph_num - 1) == 'E')) { /* 全体が括弧の時は対象外 */
 	return 0;
     }
     else {
