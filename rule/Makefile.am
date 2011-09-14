@@ -9,7 +9,7 @@ orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule modality.rule t
 generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data modality.data tag_after_dpnd_and_case.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data mrph_filter.data case_analysis.data tag_postprocess.data mrph_auto_dic.data clause_function.rule clause_function.data bnst_after_dpnd_and_case.data search_query.data
 dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRASE2RULE)
 
-bnst_type.rule: bnst_type.phrase
+bnst_type.rule: bnst_type.phrase $(PHRASE2RULE)
 	if [ -f $@ ]; then \
 	    cp -pf $@ $@.old; \
 	fi; \
@@ -21,7 +21,7 @@ bnst_type.rule: bnst_type.phrase
 	    rm -f $@.old-tmp $@-tmp; \
 	fi
 
-.phrase.rule:
+.phrase.rule: $(PHRASE2RULE)
 	if [ -f $@ ]; then \
 	    cp -pf $@ $@.old; \
 	fi; \
