@@ -13,7 +13,7 @@ nodist_dic_DATA += noun.db noun.dat
 endif
 
 PROBCASE_DBS = case.db cfcase.db cfp.db
-ADDITIONAL_PROBCASE_DBS = adverb.db noun_co.db renyou.db
+ADDITIONAL_PROBCASE_DBS = adverb.db noun_co.db renyou.db para.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
@@ -107,6 +107,14 @@ renyou.prob:
 	true
 
 renyou.db: renyou.prob
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+para.prob:
+	true
+
+para.db: para.prob
 	if [ -f $< ]; then \
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
