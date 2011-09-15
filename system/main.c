@@ -170,11 +170,11 @@ extern int	EX_match_subject;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|ellipsis|demonstrative|anaphora]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|anaphora]\n" 
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
-	    "           [-tree|bnsttree|sexp|tab|bnsttab]\n" 
+	    "           [-tree|bnsttree|sexp|tab|bnsttab|simple]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand]\n"
 #ifdef _WIN32
@@ -323,6 +323,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-check")) {
 	    OptCheck = TRUE;
 	}
+	else if (str_eq(argv[0], "-simple") || str_eq(argv[0], "-simpletab")) {
+            OptDisplay = OPT_SIMPLE;
+            OptExpress = OPT_TAB;
+        }
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
 	    OptCaseFlag |= OPT_CASE_USE_PROBABILITY;
@@ -911,11 +915,6 @@ extern int	EX_match_subject;
 	    argv++; argc--;
 	    if (argc < 1) usage();
 	    EX_match_tim = atoi(argv[0]);
-	}
-	else if (str_eq(argv[0], "-sotocost")) {
-	    argv++; argc--;
-	    if (argc < 1) usage();
-	    SOTO_SCORE = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-score-agent")) {
 	    argv++; argc--;

@@ -64,6 +64,29 @@ char feature_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
+               int check_important_feature(FEATURE *fp)
+/*==================================================================*/
+{
+    /* -simpletab でも出力する重要なfeature */
+
+    if (comp_feature(fp->cp, "用言") || 
+        comp_feature(fp->cp, "体言") || 
+        comp_feature(fp->cp, "可能表現") || 
+        comp_feature(fp->cp, "否定表現") || 
+        comp_feature(fp->cp, "時制") || 
+        comp_feature(fp->cp, "連用節") || 
+        comp_feature(fp->cp, "連体節") || 
+        comp_feature(fp->cp, "ID") || 
+        comp_feature(fp->cp, "レベル") || 
+        comp_feature(fp->cp, "係")) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
+/*==================================================================*/
 	      void print_feature(FEATURE *fp, FILE *filep)
 /*==================================================================*/
 {
@@ -72,7 +95,8 @@ char feature_buffer[DATA_LEN];
 
     while (fp) {
 	if (fp->cp && 
-	    (strncmp(fp->cp, "Ｔ", strlen("Ｔ")) ||
+	    ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || 
+	     (OptDisplay != OPT_SIMPLE && strncmp(fp->cp, "Ｔ", strlen("Ｔ"))) || 
 	     OptDisplay == OPT_DEBUG))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;

@@ -9,8 +9,6 @@
 #include "knp.h"
 #include "case_data.h"
 
-int SOTO_SCORE = 7;
-
 char fukugoji_string[SMALL_DATA_LEN];
 
 /*==================================================================*/

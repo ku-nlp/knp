@@ -166,7 +166,6 @@ extern int	LocationOrder[][LOC_NUMBER];
 extern SMLIST	smlist[];
 
 /* 各種スコア, コスト */
-extern int	SOTO_SCORE;
 extern int	EX_PRINT_NUM;
 extern int	PrintFrequency;
 extern int	PrintDeletedSM;
