@@ -4799,7 +4799,7 @@ double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp)
 	    sprintf(key, "%d|P連体:%d,%d", touten_flag, dist, closest_ok_flag);
 	    value = db_get(case_db, key);
 	    if (value) {
-		tmp_ret += atof(value);
+		tmp_ret = atof(value);
 		if (VerboseLevel >= VERBOSE2) {
 		    fprintf(Outfp, ";; (NOUN_N) [%s -> %s] : P(%s) = %lf\n", tmp_dp->head_ptr->Goi, gp->head_ptr->Goi, key, tmp_ret);
 		}
