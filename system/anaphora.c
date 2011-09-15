@@ -1025,10 +1025,6 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 	    if (entity_ptr->mention[j]->sent_num == sent_num &&
 		!loc_category[(entity_ptr->mention[j]->tag_ptr)->b_ptr->num]) continue;
 
-	    /* 解析対象格以外の関係は除外 */
-	    if (strcmp(entity_ptr->mention[j]->cpp_string, "＊") &&
-		!match_ellipsis_case(entity_ptr->mention[j]->cpp_string, NULL)) continue;	
-	    
 	    /* 位置カテゴリ */
 	    /* 省略格、type(S,=,O,N,C)ごとに位置カテゴリごとに先行詞となる確率を考慮
 	       位置カテゴリは、以前の文であれば B + 何文前か(4文前以上は0)
@@ -1219,7 +1215,7 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
        iにはELLIPSIS_CASE_LIST[]のうちチェックした数が入る
        r_numには格フレームと関連付けられた要素の数が入る
        (格解析の結果関連付けられたものも含む) */
-    int j, k, e_num, exist_flag;
+    int j, k, e_num;
     TAG_DATA *para_ptr;
     int pre_filled_element[CF_ELEMENT_MAX], pre_filled_entity[ENTITY_MAX];
 
@@ -1307,31 +1303,36 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 
     /* まだチェックしていない省略解析対象格がある場合 */
     if (*ELLIPSIS_CASE_LIST[i]) {
-	exist_flag = 0;
-	/* すべての格スロットを調べ、格がELLIPSIS_CASE_LIST[i]と一致していれば対応付けを生成する */
-	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
-	    /* 名詞の場合は対象の格をノ格として扱う */
-	    if (tag_ptr->tcf_ptr->cf.type == CF_NOUN)
-		ctm_ptr->cf_ptr->pp[e_num][0] = pp_kstr_to_code("ノ");			    
-	    /* 格の一致をチェック */
-	    if (ctm_ptr->cf_ptr->pp[e_num][0] != pp_kstr_to_code(ELLIPSIS_CASE_LIST[i])) continue;
-	    exist_flag = 1;	    
 
-	    /* すでに埋まっていた場合は次の格をチェックする */
+	/* 格がELLIPSIS_CASE_LIST[i]と一致する格スロットを探す(e_numがelement_numより小さい場合は一致する格スロットあり) */
+	for (e_num = 0; e_num < ctm_ptr->cf_ptr->element_num; e_num++) {
+	    /* 名詞の場合は格スロットの番号とiを一致させる */
+            if (tag_ptr->tcf_ptr->cf.type == CF_NOUN) {
+                ctm_ptr->cf_ptr->pp[e_num][0] = pp_kstr_to_code("ノ");
+                if (e_num == i && !strcmp("ノ", ELLIPSIS_CASE_LIST[i])) break;
+	    }
+            /* 用言の場合は格をチェック */
+            else if (ctm_ptr->cf_ptr->pp[e_num][0] == pp_kstr_to_code(ELLIPSIS_CASE_LIST[i])) break;
+	}
+
+	/* 対象の格が格フレームに存在しない場合は次の格へ */
+	if (e_num == ctm_ptr->cf_ptr->element_num) {	    
+	    ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
+	}
+	else { /* 対象の格が格フレームに存在する場合 */
+	    /* すでに埋まっている場合は次の格をチェックする */
 	    if (ctm_ptr->filled_element[e_num] == TRUE) {
 		ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
 	    }
-	    else {
+	    else { /* 埋まっていない場合は候補を埋める */
  		for (k = 0; k < entity_manager.num; k++) {
 		    /* salience_scoreがSALIENCE_THRESHOLD以下なら候補としない
 		       ただし解析対象が係っている表現、
 		       ノ格の場合で、同一文中でノ格で出現している要素は除く */
 		    if ((entity_manager.entity[k].salience_score <= SALIENCE_THRESHOLD) &&
-			!(tag_ptr->tcf_ptr->cf.type == CF_NOUN && 
-			  entity_manager.entity[k].tmp_salience_flag) &&
-			!(tag_ptr->parent &&
-			  substance_tag_ptr(tag_ptr->parent)->mention_mgr.mention->entity->num == 
-			  entity_manager.entity[k].num)) continue;
+			!(entity_manager.entity[k].salience_score && tag_ptr->parent &&
+			  substance_tag_ptr(tag_ptr->parent)->mention_mgr.mention->entity->num == entity_manager.entity[k].num) &&
+			!(tag_ptr->tcf_ptr->cf.type == CF_NOUN && entity_manager.entity[k].tmp_salience_flag)) continue;
 
 		    /* 対象のENTITYがすでに対応付けられている場合は不可 */
 		    if (ctm_ptr->filled_entity[k]) continue;
@@ -1339,20 +1340,17 @@ int ellipsis_analysis(TAG_DATA *tag_ptr, CF_TAG_MGR *ctm_ptr, int i, int r_num)
 		    /* 疑問詞は先行詞候補から除外(暫定的) */
 		    if (check_feature(entity_manager.entity[k].mention[0]->tag_ptr->f, "疑問詞")) continue;
 
-		    /* 対応付け結果を記録
-		       (基本句との対応付けは取っていないためelem_b_ptrは使用しない) */
+		    /* 対応付け結果を記録(基本句との対応付けは取っていないためelem_b_ptrは使用しない) */
 		    ctm_ptr->cf_element_num[r_num] = e_num;
 		    ctm_ptr->entity_num[r_num] = k;
 		    
-		    /* 次の格のチェックへ */
+		    /* 候補を埋めて次の格のチェックへ */
 		    ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num + 1);
 		}
 		/* 埋めないで次の格へ(不特定) */
-		ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
-	    }
+                ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
+ 	    }
 	}
-	/* 対象の格が格フレームに存在しない場合は次の格へ */
-	if (!exist_flag) ellipsis_analysis(tag_ptr, ctm_ptr, i + 1, r_num);
     }
     
     /* すべてのチェックが終了した場合 */
