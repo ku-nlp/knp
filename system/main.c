@@ -352,6 +352,13 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-cf-category")) {
 	    OptGeneralCF &= ~OPT_CF_CATEGORY;
 	}
+	else if (str_eq(argv[0], "-para")) { /* -no-parafix-synchronize-generate-both -generate-from-eos -beam 5 */
+	    OptParaFix = FALSE;
+	    OptParaNoFixFlag |= OPT_PARA_SYNCHRONIZE;
+	    OptParaNoFixFlag |= OPT_PARA_MULTIPLY_AVE_EX;
+	    OptCaseFlag |= OPT_CASE_GENERATE_EOS;
+	    OptBeam = 5;
+	}
 	else if (str_eq(argv[0], "-no-parafix")) {
 	    OptParaFix = FALSE;
 	}
