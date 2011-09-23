@@ -78,7 +78,9 @@ char feature_buffer[DATA_LEN];
         comp_feature(fp->cp, "連体節") || 
         comp_feature(fp->cp, "ID") || 
         comp_feature(fp->cp, "レベル") || 
-        comp_feature(fp->cp, "係")) {
+        comp_feature(fp->cp, "係") || 
+        comp_feature(fp->cp, "格解析結果") || 
+        comp_feature(fp->cp, "格構造")) {
         return TRUE;
     }
     else {
