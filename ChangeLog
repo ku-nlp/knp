@@ -1,7 +1,48 @@
+2011-09-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/phrase2rule.pl:
+	Added a juman option to suppress macron handling.
+
+	* dict/auto/Makefile.am:
+	Modified dependency for multiple data.
+
+2011-09-23  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/feature.c:
+	Modified to output case/anaphora features for simple output.
+
+2011-09-15  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/main.c: Added -para option.
+
+	* dict/ebcf/Makefile.am: Added a target of para.db.
+
+	* system/case_ipal.c: bug fix.
+
+	* system/case_data.c, system/const.h, system/extern.h, system/feature.c, system/main.c:
+	Added -simple option, which outputs only important features.
+
 2011-09-15  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
 
 	* system/anaphora.c:
 	Bug fix for associative anaphora resolution.
+
+2011-09-15  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/modality.rule, rule/mrph_basic.rule:
+	Modified to chunk "ざる得ない."
+
+2011-09-14  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_type.rule, rule/phrase2rule.pl:
+	Adapted the change of JUMAN.
+
+	* rule/Makefile.am: Modified dependencies.
+
+2011-09-13  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/quote.c:
+	Modified for sentences embraced by multiple parentheses.
 
 2011-09-02  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
