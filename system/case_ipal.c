@@ -3291,7 +3291,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	     dat_match_sm(as1, cfd, dp, "主体")) {
 	sprintf(key, "<主体>");
     }
-    else if (check_feature(dp->f, "時間")) {
+    else if (!strcmp(pp_code_to_kstr(cfp->pp[as2][0]), "時間") && check_feature(dp->f, "時間")) { /* 時間格のみ<時間>を考慮 */
 	sprintf(key, "<時間>");
     }
     else if (check_feature(dp->f, "数量")) {
