@@ -2363,7 +2363,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 
     f_num_inc(start, &f_num);
     Case_frame_num++;
-    t_ptr->cf_num = 1;
+    t_ptr->cf_num++;
     return TRUE;
 }
 
@@ -2371,10 +2371,13 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
   void make_caseframes(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int flag)
 /*==================================================================*/
 {
-    t_ptr->cf_num += make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
+    int current_cf_num;
+
+    current_cf_num = make_ipal_cframe(sp, t_ptr, Case_frame_num, flag);
+    t_ptr->cf_num += current_cf_num;
 
     /* ないときで用言のときは、defaultの格フレームをつくる */
-    if (t_ptr->cf_num == 0 && flag == CF_PRED) {
+    if (current_cf_num == 0 && flag == CF_PRED) {
 	if (OptDisplay == OPT_DEBUG) {
 	    int i;
 	    fprintf(stderr, ";; %s: Cannot find case frame for: ", sp->KNPSID ? sp->KNPSID + 5 : "?");
