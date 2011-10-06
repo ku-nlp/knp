@@ -1,3 +1,21 @@
+2011-10-06  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c, system/extern.h, system/main.c:
+	Added an option of considering semantic heads for morpheme dependency (-semantic-head).
+
+2011-10-05  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	Modified to prefer a default case frame rather than nominal case frames.
+
+	* rule/mrph_basic.rule, rule/bnst_type.phrase:
+	Improved appositive recognition.
+
+2011-09-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	Restricted the use of time marker to time case slot.
+
 2011-09-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* rule/phrase2rule.pl:
