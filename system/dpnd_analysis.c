@@ -2055,7 +2055,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
   /* 係り受けに関する種々の情報を DPND から TAG_DATA にコピー */
 
   int		i, j, last_b, offset, check_ac, rep_length;
-  char	*cp, *strp, buf[16];
+  char	*cp, *strp, buf[SMALL_DATA_LEN];
   TAG_DATA	*t_ptr, *ht_ptr;
 
   for (i = 0, t_ptr = sp->tag_data; i < sp->Tag_num; i++, t_ptr++) {
