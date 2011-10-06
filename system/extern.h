@@ -116,6 +116,7 @@ extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
 extern int		OptEncoding;
+extern int		OptSemanticHead;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db

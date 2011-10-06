@@ -2187,10 +2187,33 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
+      int check_semantic_head(MRPH_DATA *m_ptr, TAG_DATA *t_ptr)
+/*==================================================================*/
+{
+    char *cp;
+
+    if ((cp = check_feature(t_ptr->f, "用言"))) { /* 用言の場合のみ対象 */
+	if (!strcmp(cp, "用言:判") && !check_feature(t_ptr->f, "体言止")) { /* 判定詞がある場合はその判定詞 */
+	    if (!strcmp(Class[m_ptr->Hinshi][0].id, "判定詞")) {
+		return TRUE;
+	    }
+	}
+	else { /* 判定詞以外は内容語 */
+	    if (check_feature(m_ptr->f, "内容語")) {
+		return TRUE;
+	    }
+	}
+    }
+
+    return FALSE;
+}
+
+/*==================================================================*/
 	    void dpnd_info_to_mrph_raw(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, last_t, offset, head, proj_table[MRPH_MAX];
+    int appear_content_word_flag = FALSE, last_content_m;
     MRPH_DATA *m_ptr, *head_ptr;
 
     /* initialize proj_table */
@@ -2200,16 +2223,27 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	/* もっとも近い基本句行を記憶 */
 	if (m_ptr->tnum >= 0) {
 	    last_t = m_ptr->tnum;
+	    appear_content_word_flag = FALSE;
+	}
+	/* semantic headモードのときに、この形態素がsemantic headかどうかをチェック */
+	if (OptSemanticHead && appear_content_word_flag == FALSE && check_semantic_head(m_ptr, sp->tag_data + last_t)) {
+	    appear_content_word_flag = TRUE;
+	    last_content_m = m_ptr->num;
 	}
 
-	/* 文末 */
-	if (i == sp->Mrph_num - 1) {
-	    m_ptr->dpnd_head = -1;
+	/* 隣にかける */
+	if (m_ptr->inum != 0 && appear_content_word_flag == FALSE) {
+	    m_ptr->dpnd_head = m_ptr->num + 1;
 	    m_ptr->dpnd_type = 'D';
 	}
-	/* 隣にかける */
-	else if (m_ptr->inum != 0) {
-	    m_ptr->dpnd_head = m_ptr->num + 1;
+        /* 基本句内の内容語(前側にある)にかける */
+	else if (appear_content_word_flag == TRUE && m_ptr->num != last_content_m) {
+	    m_ptr->dpnd_head = last_content_m;
+	    m_ptr->dpnd_type = 'D';
+	}
+	/* 文末 */
+	else if (i == sp->Mrph_num - 1) {
+	    m_ptr->dpnd_head = -1;
 	    m_ptr->dpnd_type = 'D';
 	}
 	/* 基本句内最後の形態素 (inum == 0) */

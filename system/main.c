@@ -102,6 +102,7 @@ int		OptParaFix;
 int		OptParaNoFixFlag;
 int		OptNbest;
 int		OptBeam;
+int		OptSemanticHead;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
@@ -174,9 +175,9 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
-	    "           [-tree|bnsttree|sexp|tab|bnsttab|simple]\n" 
+	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab|simple]\n" 
 	    "           [-normal|detail|debug]\n" 
-	    "           [-expand]\n"
+	    "           [-expand] [-semantic-head]\n"
 #ifdef _WIN32
 	    "           [-C host:port] [-S] [-N port]\n"
 #else
@@ -249,6 +250,7 @@ extern int	EX_match_subject;
     OptParaNoFixFlag = 0;
     OptNbest = 0;
     OptBeam = 0;
+    OptSemanticHead = 0;
     OptChiGenerative = 0;
     OptChiPos = 0;
 
@@ -278,7 +280,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-bnsttab")) OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_BNSTTREE;
 	else if (str_eq(argv[0], "-mrphtab")) OptExpress  = OPT_MRPH;
-	else if (str_eq(argv[0], "-mrphtree")) OptExpress = OPT_MRPHTREE;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
@@ -293,6 +294,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-use-ncf")) OptUseNCF   = FALSE;
 	else if (str_eq(argv[0], "-process-paren")) OptProcessParen = TRUE;
 	else if (str_eq(argv[0], "-suppress-katakana-normalization")) OptKatakanaNormalize = FALSE;
+	else if (str_eq(argv[0], "-mrphtree")) {
+	    if (OptSemanticHead) usage();
+	    OptExpress = OPT_MRPHTREE;
+	}
 	else if (str_eq(argv[0], "-dpnd")) {
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
@@ -966,6 +971,10 @@ extern int	EX_match_subject;
 	}
 	else if (str_eq(argv[0], "-recover-person")) {
 	    OptRecoverPerson = 1;
+	}
+	else if (str_eq(argv[0], "-semantic-head")) {
+	    OptSemanticHead = 1;
+	    OptExpress = OPT_MRPH;
 	}
 	else if (str_eq(argv[0], "-def-sentence")) { /* used in rules */
 	    ;
