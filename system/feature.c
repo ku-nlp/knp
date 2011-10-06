@@ -447,7 +447,7 @@ void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
     /* 上書きできなければ末尾に追加 */
 
     if (!((*fpp) = (FEATURE *)(malloc(sizeof(FEATURE)))) ||
-	!((*fpp)->cp = (char *)(malloc(strlen(fname) + 8)))) {
+	!((*fpp)->cp = (char *)(malloc(strlen(fname) + strlen("仮付与:") + 1)))) {
 	fprintf(stderr, "Can't allocate memory for FEATURE\n");
 	exit(-1);
     }
