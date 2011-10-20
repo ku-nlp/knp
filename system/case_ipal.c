@@ -933,7 +933,7 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 
 /*==================================================================*/
 void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, 
-			  int flag, int fflag)
+			  int flag, int fflag, int init_flag)
 /*==================================================================*/
 {
     /* 例の読みだし */
@@ -947,7 +947,9 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     double freq_gex, agent_ratio = -1;
     char *code, **destination, *buf, *token;
 
-    c_ptr->freq[num] = 0;
+    /* 用例合計数の初期化 (外の関係を追加するとき以外は初期化する) */
+    if (init_flag)
+        c_ptr->freq[num] = 0;
 
     if (*cp == '\0') {
 	return;
@@ -1206,14 +1208,14 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	_make_ipal_cframe_pp(cf_ptr, "ガ", j, flag);
 	_make_ipal_cframe_sm(cf_ptr, "主体準", j, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE, TRUE);
 	j++;
     }
     else if (cf_ptr->voice == FRAME_CAUSATIVE_PASSIVE) {
 	_make_ipal_cframe_pp(cf_ptr, "ニ", j, flag);
 	_make_ipal_cframe_sm(cf_ptr, "主体準", j, 
 			     Thesaurus == USE_NTT ? USE_NTT_WITH_STORE : USE_BGH_WITH_STORE);
-	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE);
+	_make_ipal_cframe_ex(cf_ptr, "彼", j, Thesaurus, FALSE, TRUE);
 	j++;
     }
 
@@ -1227,12 +1229,12 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 	if (Thesaurus == USE_BGH) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_BGH_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"), TRUE);
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_BGH_WITH_STORE);
 	}
 	else if (Thesaurus == USE_NTT) {
 	    _make_ipal_cframe_ex(cf_ptr, i_ptr->cs[i].meishiku, j, USE_NTT_WITH_STORE, 
-				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"));
+				 (OptCaseFlag & OPT_CASE_USE_EX_ALL) ? 0 : MatchPP(cf_ptr->pp[j][0], "外の関係"), TRUE);
 	    _make_ipal_cframe_sm(cf_ptr, i_ptr->cs[i].imisosei, j, USE_NTT_WITH_STORE);
 	}
 
@@ -1420,6 +1422,7 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 	cf_ptr->ex_size[num] = 0;
 	cf_ptr->ex_num[num] = 0;
     }
+    cf_ptr->freq[num] = 0;
     if (cf_ptr->gex_list[num]) {
 	for (k = 0; k < cf_ptr->gex_num[num]; k++) {
 	    if (cf_ptr->gex_list[num][k]) {
@@ -1565,12 +1568,12 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 			    clear_cf_element((cf_ptr + f_num), (cf_ptr + f_num)->element_num);
 			}
 			_make_ipal_cframe_pp(cf_ptr + f_num, "外の関係", (cf_ptr + f_num)->element_num, flag);
-			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, (cf_ptr + f_num)->element_num, Thesaurus, FALSE);
+			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, (cf_ptr + f_num)->element_num, Thesaurus, FALSE, TRUE);
 			(cf_ptr + f_num)->element_num++;
 		    }
 		    /* 外の関係がすでにあるときは用例を追加 */
 		    else {
-			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, c, Thesaurus, FALSE);
+			_make_ipal_cframe_ex(cf_ptr + f_num, GENERAL_SOTO_WORDS, c, Thesaurus, FALSE, FALSE);
 		    }
 		}
 
