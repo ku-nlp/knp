@@ -2198,8 +2198,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 		return TRUE;
 	    }
 	}
-	else { /* 判定詞以外は内容語 */
-	    if (check_feature(m_ptr->f, "内容語")) {
+	else { /* 判定詞以外は(準)?内容語 */
+	    if (m_ptr->num == t_ptr->head_ptr->num) {
 		return TRUE;
 	    }
 	}
