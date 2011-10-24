@@ -575,6 +575,17 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
 //	  ((bp = (BNST_DATA *)search_nearest_para_child((TAG_DATA *)dep_ptr->parent)) && dep_ptr->num == bp->num))) {
 	return gov_ptr->head_ptr + 1;
     }
+    /* 係り元が裸の数量で、係り先にカウンタがあるなら、係り先形態素を主辞名詞ではなくその前の数詞にする 
+     「１〜３個」など */
+    else if (dep_ptr && 
+             gov_ptr->head_ptr - 1 >= gov_ptr->mrph_ptr && /* 主辞形態素の一つ前の形態素が存在 */
+             check_feature(dep_ptr->f, "係:文節内") && 
+             check_feature(dep_ptr->f, "数量") && 
+             !check_feature(dep_ptr->f, "カウンタ") && 
+             check_feature(gov_ptr->f, "カウンタ") && 
+             check_feature((gov_ptr->head_ptr - 1)->f, "数字")) {
+        return gov_ptr->head_ptr - 1;
+    }
     else {
 	return gov_ptr->head_ptr;
     }
