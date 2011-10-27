@@ -1,7 +1,26 @@
+2011-10-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* perl/merge-parenthesis-parses.perl: Adapted to UTF-8.
+
+2011-10-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/tree_conv.c: Changed the mrph head of numerals.
+
+2011-10-21  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/dpnd_analysis.c: Bug fix of semantic heads.
+
+2011-10-20  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c:
+	Bug fix of adding default examples of non-gapping relations.
+
 2011-10-06  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* system/dpnd_analysis.c, system/extern.h, system/main.c:
 	Added an option of considering semantic heads for morpheme dependency (-semantic-head).
+
+	* system/feature.c, system/dpnd_analysis.c: Fixed buffer overrun.
 
 2011-10-05  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
