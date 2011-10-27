@@ -5,7 +5,7 @@
 
 以下のものが必要ですので、インストールしておいてください。
 
-- JUMAN 6.0以上 (http://nlp.kuee.kyoto-u.ac.jp/nl-resource/juman.html)
+- JUMAN 7.0以上 (http://nlp.ist.i.kyoto-u.ac.jp/index.php?日本語形態素解析システムJUMAN)
 - TinyCDBライブラリ (http://www.corpit.ru/mjt/tinycdb.html)
 
 
@@ -28,9 +28,9 @@ configure オプション
 ====================
 
 デフォルトでは、ハッシュデータベースとして、TinyCDBを使用しますが、
-`./configure'にオプションを与えることにより他のハッシュデータベースを
-用いることもできます。GDBMの場合は "--with-gdbm"、Berkeley DB(Version
-3.X以上)の場合は、"--with-berkeley-db" を指定してください。
+`./configure'にオプションを与えることにより他のハッシュデータベースを用
+いることもできます。Berkeley DB(Version 3.X以上)の場合は、
+"--with-berkeley-db" を指定してください。
 
 
 コンパイルオプション
