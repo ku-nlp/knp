@@ -29,7 +29,7 @@ our %PAREN_MORPHEME = ('（' => '（ （ （ 特殊 1 括弧始 3 * 0 * 0 <記�
 		      '）' => '） ） ） 特殊 1 括弧終 4 * 0 * 0 <記英数カ><英記号><記号><括弧終><括弧><述語区切><付属>');
 
 
-my $knp = new KNP::File(file => $ARGV[0]); # , encoding => 'utf8');
+my $knp = new KNP::File(file => $ARGV[0], encoding => 'utf8');
 my (@main_sentences, @paren_sentences, $pre_paren_id);
 my $paren_num = -1;
 while (my $result = $knp->each()) {
