@@ -535,7 +535,8 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		strcat(PM_Memo, (*fpp2)->cp + strlen("&MEMO:"));
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&品詞変更:", strlen("&品詞変更:"))) {
-		change_mrph((MRPH_DATA *)ptr + offset, *fpp2);
+                if (!(OptInput & OPT_PARSED)) /* 解析済みではない場合に品詞変更を実行 */
+                    change_mrph((MRPH_DATA *)ptr + offset, *fpp2);
 	    }
 	    else if (!strncmp((*fpp2)->cp, "&代表表記変更:", strlen("&代表表記変更:"))) {
 		change_one_mrph_rep((MRPH_DATA *)ptr + offset, 1, *((*fpp2)->cp + strlen("&代表表記変更:")));
