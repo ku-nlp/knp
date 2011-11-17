@@ -1,50 +1,59 @@
 -*- Text -*-
 
-ɬ�פʤ��
+必要なもの
 ==========
 
-�ʲ��Τ�Τ�ɬ�פǤ��Τǡ����󥹥ȡ��뤷�Ƥ����Ƥ���������
+以下のものが必要ですので、インストールしておいてください。
 
-- JUMAN 7.0�ʾ� (http://nlp.ist.i.kyoto-u.ac.jp/index.php?���ܸ�����ǲ��ϥ����ƥ�JUMAN)
-- TinyCDB�饤�֥�� (http://www.corpit.ru/mjt/tinycdb.html)
+- JUMAN 7.0以上 (http://nlp.ist.i.kyoto-u.ac.jp/index.php?日本語形態素解析システムJUMAN)
+- TinyCDBライブラリ (http://www.corpit.ru/mjt/tinycdb.html)
+
+固有表現解析を行う場合は、次のものが必要ですので、インストールしておい
+てください。
+
+- CRF++ (http://crfpp.sourceforge.net/)
 
 
-����Ū�ʥ��󥹥ȡ�����ˡ
+基本的なインストール方法
 ========================
 
-1) `./configure '��¹Ԥ��Ƥ���������JUMAN�Υ饤�֥��Υ����ƥ�ɸ��ǥ�
-   �쥯�ȥ�(/usr/lib �ʤ�)�ʳ��ˤ������`./configure'�˥��ץ�����
-   Ϳ����ɬ�פ�����ޤ����㤨�С�JUMAN�� /usr/local/juman �ʲ��˥���
-   �ȡ��뤵��Ƥ�����ϡ����Τ褦�˻��ꤷ�Ƥ���������
+1) `./configure 'を実行してください。JUMANのライブラリのシステム標準ディ
+   レクトリ(/usr/lib など)以外にある場合は`./configure'にオプションを
+   与える必要があります。例えば、JUMANが /usr/local/juman 以下にインス
+   トールされている場合は、次のように指定してください。
 
      ./configure --with-juman-prefix=/usr/local/juman
 
-2) `make'��¹Ԥ��Ƥ���������
+2) `make'を実行してください。
 
-3) (root��)`make install'��¹Ԥ��Ƥ���������
+3) (rootで)`make install'を実行してください。
 
 
-configure ���ץ����
+configure オプション
 ====================
 
-�ǥե���ȤǤϡ��ϥå���ǡ����١����Ȥ��ơ�TinyCDB����Ѥ��ޤ�����
-`./configure'�˥��ץ�����Ϳ���뤳�Ȥˤ��¾�Υϥå���ǡ����١�������
-���뤳�Ȥ�Ǥ��ޤ���Berkeley DB(Version 3.X�ʾ�)�ξ��ϡ�
-"--with-berkeley-db" ����ꤷ�Ƥ���������
+- ハッシュデータベースについて
+  デフォルトでは、ハッシュデータベースとして、TinyCDBを使用しますが、
+  `./configure'にオプションを与えることにより他のハッシュデータベースを
+  用いることもできます。Berkeley DB(Version 3.X以上)の場合は、
+  "--with-berkeley-db" を指定してください。
+
+- 固有表現解析について
+  固有表現解析を行う場合は、"--with-crf" を指定してください。
 
 
-����ѥ��륪�ץ����
+コンパイルオプション
 ====================
 
-`./configure'�¹Ի��˴Ķ��ѿ������ꤷ�Ƥ������Ȥˤ�ꡢ����ѥ�����
-�󥯤˴ؤ��륪�ץ��������ꤹ�뤳�Ȥ��Ǥ��ޤ���
+`./configure'実行時に環境変数を設定しておくことにより、コンパイルやリ
+ンクに関するオプションを設定することができます。
 
-csh�Ϥ��Ѥ��Ƥ���ʤ�
+csh系を用いているなら
 
-    env CFLAGS=-g ./configure
+    env CFLAGS=-O3 ./configure
 
-Bourne sh�Ϥ��Ѥ��Ƥ���ʤ�
+Bourne sh系を用いているなら
 
-    CFLAGS=-g ./configure
+    CFLAGS=-O3 ./configure
 
-�Τ褦�ˤ���`./configure'��¹Ԥ��Ƥ���������
+のようにして`./configure'を実行してください。
