@@ -2156,7 +2156,7 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	/* 後側に延ばす場合: 「形容詞+なる」など */
 	if (!cpncf_flag) {
 	    mrph_ptr = t_ptr->head_ptr;
-	    while (mrph_ptr <= t_ptr->mrph_ptr + t_ptr->mrph_num - 1 && 
+	    while (mrph_ptr < t_ptr->mrph_ptr + t_ptr->mrph_num - 1 && 
 		   check_feature(mrph_ptr->f, "Ｔ用言見出→")) {
 		strcat(buffer, "+");
 		if (use_rep_flag && 
