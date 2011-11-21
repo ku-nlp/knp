@@ -133,6 +133,9 @@ int _make_data_from_feature_to_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr,
     /* 用言の項となるもの */
     if (cpm_ptr->cf.type == CF_PRED) {
 	if (!strncmp(fcp, "Ｔ解析格-", strlen("Ｔ解析格-"))) {
+            if (!OptAnaphora && !strcmp(fcp, "Ｔ解析格-＊")) { /* 省略解析用: 割り当てなしを考える印 (格解析では無視) */
+                return TRUE;
+            }
 	    cc = pp_kstr_to_code(fcp+strlen("Ｔ解析格-"));
 	    if (cc == END_M) {
 		fprintf(stderr, ";; case <%s> in a rule is unknown!\n", fcp + strlen("Ｔ解析格-"));
