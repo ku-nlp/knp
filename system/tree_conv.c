@@ -566,6 +566,7 @@ MRPH_DATA *find_head_mrph_from_dpnd_bnst(BNST_DATA *dep_ptr, BNST_DATA *gov_ptr)
     /* 係り先に判定詞があり、係り元が連用なら、係り先形態素を主辞名詞ではなく判定詞にする */
     if (dep_ptr && 
 	gov_ptr->head_ptr + 1 <= gov_ptr->mrph_ptr + gov_ptr->mrph_num - 1 && /* 主辞形態素の次の形態素が存在 */
+	check_feature(gov_ptr->f, "用言:判") && /* 判定詞文節 */
 	!strcmp(Class[(gov_ptr->head_ptr + 1)->Hinshi][0].id, "判定詞") && /* 次の形態素が判定詞 */
 	!(check_feature(dep_ptr->f, "連体修飾") || 
 	  check_feature(dep_ptr->f, "係:隣") || 
