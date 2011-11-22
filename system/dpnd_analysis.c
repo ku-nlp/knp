@@ -2194,7 +2194,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
     if ((cp = check_feature(t_ptr->f, "用言"))) { /* 用言の場合のみ対象 */
 	if (!strcmp(cp, "用言:判") && !check_feature(t_ptr->f, "体言止")) { /* 判定詞がある場合はその判定詞 */
-	    if (!strcmp(Class[m_ptr->Hinshi][0].id, "判定詞")) {
+	    if (m_ptr->num > t_ptr->head_ptr->num && /* 判定詞はheadより後 (括弧文で例外があるためチェック) */
+		!strcmp(Class[m_ptr->Hinshi][0].id, "判定詞")) {
 		return TRUE;
 	    }
 	}
