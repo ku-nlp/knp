@@ -270,9 +270,12 @@ sub insert_paren_mrph {
 	}
     }
 
+    # 括弧文中におけるROOTの形態素
+    my $outgoing_mrph_in_paren = &find_outgoing_mrph_in_paren(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1], 1);
+
     if ($m_pos == 0) { # 括弧が先頭のとき
-	(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]->parent((($bnsts_ar->[0]->tag)[0]->mrph)[0]);
-	(($bnsts_ar->[0]->tag)[0]->mrph)[0]->child((($bnsts_ar->[0]->tag)[0]->mrph)[0]->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]);
+	$outgoing_mrph_in_paren->parent((($bnsts_ar->[0]->tag)[0]->mrph)[0]);
+	(($bnsts_ar->[0]->tag)[0]->mrph)[0]->child((($bnsts_ar->[0]->tag)[0]->mrph)[0]->child, $outgoing_mrph_in_paren);
     }
     else {
 	# 括弧文のIDを更新
@@ -284,8 +287,8 @@ sub insert_paren_mrph {
 	    }
 	}
 
-	(($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]->parent($target_mrph);
-	$target_mrph->child($target_mrph->child, (($paren_bnsts_ar->[$#{$paren_bnsts_ar}]->tag)[-1]->mrph)[-2]);
+	$outgoing_mrph_in_paren->parent($target_mrph);
+	$target_mrph->child($target_mrph->child, $outgoing_mrph_in_paren);
     }
 
     # 括弧文を挿入
@@ -302,6 +305,9 @@ sub insert_paren_mrph {
 sub insert_paren_to_tag {
     my ($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num) = @_;
 
+    # 括弧文中におけるROOTの形態素
+    my $outgoing_mrph_in_paren = &find_outgoing_mrph_in_paren(($paren_bnsts_ar->[-1]->tag)[-1]);
+
     if (defined($PAREN_MORPHEME{$paren_b})) {
 	my $new_mrph = new KNP::Morpheme($PAREN_MORPHEME{$paren_b}, 0, $paren_m_num, 'D');
 	for my $bnst (@{$paren_bnsts_ar}) { # 形態素IDを+1
@@ -311,8 +317,8 @@ sub insert_paren_to_tag {
 		}
 	    }
 	}
-	$new_mrph->parent((($paren_bnsts_ar->[-1]->tag)[-1]->mrph)[-1]);
-	(($paren_bnsts_ar->[-1]->tag)[-1]->mrph)[-1]->child($new_mrph);
+	$new_mrph->parent($outgoing_mrph_in_paren);
+	$outgoing_mrph_in_paren->child($new_mrph);
  	unshift(@{($paren_bnsts_ar->[0]->tag)[0]->{mrph}}, $new_mrph);
     }
     else {
@@ -322,8 +328,8 @@ sub insert_paren_to_tag {
 
     if (defined($PAREN_MORPHEME{$paren_e})) {
 	my $new_mrph = new KNP::Morpheme($PAREN_MORPHEME{$paren_e}, $paren_m_num + 1, $paren_m_num, 'D');
-	$new_mrph->parent((($paren_bnsts_ar->[-1]->tag)[-1]->mrph)[-1]);
-	(($paren_bnsts_ar->[-1]->tag)[-1]->mrph)[-1]->child($new_mrph);
+	$new_mrph->parent($outgoing_mrph_in_paren);
+	$outgoing_mrph_in_paren->child($new_mrph);
 	push(@{($paren_bnsts_ar->[-1]->tag)[-1]->{mrph}}, $new_mrph);
     }
     else {
@@ -374,6 +380,23 @@ sub find_head_mrph {
     }
 
     return ($tag_r->mrph)[-1];
+}
+
+# 括弧文中でROOTの形態素を探す
+sub find_outgoing_mrph_in_paren {
+    my ($tag_r, $paren_included_flag) = @_;
+
+    for my $mrph (reverse($tag_r->mrph)) {
+	unless ($mrph->parent) { # ROOT
+	    return $mrph;
+	}
+    }
+
+    # 括弧自身が含まれていたら -1
+    my $offset = $paren_included_flag ? -1 : 0;
+
+    # 括弧自身が含まれていたら、最後から2番目 (最後から1番目は括弧終)
+    return ($tag_r->mrph)[$offset - 1];
 }
 
 # 文節とその文節中の形態素位置から基本句とその基本句の形態素位置を返す
