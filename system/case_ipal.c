@@ -271,7 +271,7 @@ CF_FRAME *CFcache[TBLSIZE];
 	memset(smlist, 0, sizeof(SMLIST)*TBLSIZE);
 
 	/* 格フレームcacheのHASHの初期化 */
-	memset(CFcache, 0, sizeof(CASE_FRAME_CACHE_MGR *)*TBLSIZE);
+	memset(CFcache, 0, sizeof(CF_FRAME *)*TBLSIZE);
 
 #ifdef CDB
 	/* 格フレームすべてをメモリに読み込む場合 */
@@ -385,6 +385,7 @@ CF_FRAME *CFcache[TBLSIZE];
     }
     for (i = 0; i < CF_ALIGNMENT_MAX; i++) {
 	if (src->cf_align[i].cf_id == NULL) {
+	    dst->cf_align[i].cf_id = NULL;
 	    break;
 	}
 	dst->cf_align[i].cf_id = strdup(src->cf_align[i].cf_id);
@@ -1170,8 +1171,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     sscanf(cf_ptr->cf_id, "%[^:]", cf_ptr->entry); /* 格フレームの用言表記 (代表表記) */
     strcpy(cf_ptr->pred_type, i_ptr->pred_type);
     for (i = 0; i_ptr->cf_align[i].cf_id != NULL; i++) {
-	cf_ptr->cf_align[i].cf_id = i_ptr->cf_align[i].cf_id;
-	i_ptr->cf_align[i].cf_id = NULL;
+	cf_ptr->cf_align[i].cf_id = strdup(i_ptr->cf_align[i].cf_id);
 	for (j = 0; i_ptr->cf_align[i].aligned_case[j][0] != END_M; j++) {
 	    cf_ptr->cf_align[i].aligned_case[j][0] = i_ptr->cf_align[i].aligned_case[j][0];
 	    cf_ptr->cf_align[i].aligned_case[j][1] = i_ptr->cf_align[i].aligned_case[j][1];
