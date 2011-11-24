@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = sm2code.dat bgh.orig
+EXTRA_DIST = sm2code.dat
 
 if BGH_EXIST
 dicdir = $(pkgdatadir)/dict/scode/bgh
