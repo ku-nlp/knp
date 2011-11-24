@@ -158,6 +158,7 @@ extern char		*CRFFileNE;
 extern char             *DBforNE;
 extern char		*DTFile[];
 extern char             *SynonymFile;
+extern char		*DistSimFile;
 
 extern int	DiscAddedCases[];
 extern int	LocationLimit[];
@@ -564,6 +565,7 @@ extern float calc_sm_words_similarity(char *smd, char **exp, int num, int *pos, 
 extern void overflowed_function(char *str, int max, char *function);
 extern char *get_most_similar_code(char *exd, char *exp);
 extern char *get_str_code_with_len(char *cp, int len, int flag);
+extern int calc_distsim_from_bnst(BNST_DATA *ptr1, BNST_DATA *ptr2);
 
 /* tools.c */
 extern int knp_fprintf(FILE *output, const char *fmt, ...);

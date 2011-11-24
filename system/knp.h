@@ -122,6 +122,8 @@
 #include "const.h"
 #include "extern.h"
 
+#include "distsim_for_knp.h"
+
 #ifdef USE_BOEHM_GC
 #include <gc.h>
 #define	malloc	GC_malloc

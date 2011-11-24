@@ -9,7 +9,7 @@
 #include "knp.h"
 
 int 	Thesaurus = USE_BGH;
-int	ParaThesaurus = USE_BGH;
+int	ParaThesaurus = USE_DISTSIM;
 
 /*==================================================================*/
 			void init_thesaurus()
@@ -713,6 +713,38 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
     }
 
     return maxscore;
+}
+
+/*==================================================================*/
+    int calc_distsim_from_bnst(BNST_DATA *ptr1, BNST_DATA *ptr2)
+/*==================================================================*/
+{
+    /* 分布類似度:
+       返り値
+       	一方でもDBにない場合 	: -1
+	満点			: BGH_CODE_SIZE - 3 == 8
+     */
+
+    char *rep1, *rep2;
+
+    rep1 = get_bnst_head_canonical_rep(ptr1, TRUE);
+    rep2 = get_bnst_head_canonical_rep(ptr2, TRUE);
+
+    if (rep1 && rep2) {
+        double score = calc_distsim(rep1, rep2);
+        if (!check_feature(ptr1->f, "用言") && !check_feature(ptr2->f, "用言")) /* 体言同士 */
+            score = (score / 0.60) * (BGH_CODE_SIZE - 3);
+        else
+            score = (score / 0.75) * (BGH_CODE_SIZE - 3);
+        /* fprintf(stderr, ";; DistSim <%s> <%s>:%.5f\n", rep1, rep2, score); */
+        if (score >= (BGH_CODE_SIZE - 3))
+            return BGH_CODE_SIZE - 3;
+        else 
+            return (int)(score);
+    }
+    else {
+        return -1;
+    }
 }
 
 /*====================================================================

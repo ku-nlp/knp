@@ -391,6 +391,9 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 		    if (ParaThesaurus == USE_NONE) {
 			mt_point = -1;
 		    }
+                    else if (ParaThesaurus == USE_DISTSIM) {
+                        mt_point = calc_distsim_from_bnst(ptr1, ptr2) * 2;
+                    }
 		    else if (ParaThesaurus == USE_BGH) {
 			mt_point = bgh_match(ptr1, ptr2) * 2;
 		    }

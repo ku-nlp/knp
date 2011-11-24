@@ -736,6 +736,20 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
+	else if (!strcmp(DEF_DISTSIM_FILE, _Atom(car(cell1)))) {
+	    int i;
+
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+                DistSimFile = check_tilde(_Atom(cell2));
+		if (OptDisplay == OPT_DEBUG) {
+		    fprintf(Outfp, "Distsim midb file ... %s\n", DistSimFile);
+		}
+	    }
+	}
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 

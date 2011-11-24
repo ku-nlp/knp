@@ -535,6 +535,7 @@ typedef struct {
 #define         DEF_NE_MODEL_DIR        "NEモデルファイルディレクトリ" /* SVM */
 #define         DEF_NE_MODEL_FILE       "NEモデルファイル" /* CRF */
 #define         DEF_SYNONYM_FILE        "同義表現ファイル"
+#define         DEF_DISTSIM_FILE        "分布類似度MIDBファイル"
 
 typedef struct _RuleVector {
     char	*file;
@@ -941,6 +942,7 @@ typedef struct tnode_t {
 #define USE_RN	32
 #define USE_BGH_WITH_RN	33
 #define USE_NTT_WITH_RN	34
+#define USE_DISTSIM	64
 
 #define	CF_PRED 1
 #define	CF_NOUN	2
