@@ -39,3 +39,7 @@
 (NEモデルファイル
 	@pkgdatadir@/dict/crf.model
 )
+
+(分布類似度MIDBファイル
+	@pkgdatadir@/dict/distsim/all-compound-1-201101-mi
+)
