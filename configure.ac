@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, 3.1, nl-resource@nlp.kuee.kyoto-u.ac.jp)
+AC_INIT(knp, 4.0, nl-resource@nlp.ist.i.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
@@ -157,7 +157,7 @@ AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
 AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
 
-
+ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la"
 KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $JUMAN_LIBS $DB_LIBS"
 
@@ -230,6 +230,7 @@ AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
 AC_SUBST(BGH_FILE)
 
+ETC_CFLAGS="$ETC_CFLAGS -I$packagesrcdir/distsim"
 KNP_CFLAGS="$SVM_CFLAGS $CRF_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
@@ -272,6 +273,7 @@ system/Makefile
 svm/Makefile
 svm_light/Makefile
 crf/Makefile
+distsim/Makefile
 rule/Makefile
 chinese_rule/Makefile
 doc/Makefile
