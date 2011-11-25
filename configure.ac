@@ -217,12 +217,30 @@ else
 fi
 AC_MSG_RESULT([$nv_mi_exist])
 
+AC_MSG_CHECKING([distributional similarity MI DB])
+if test -f "$packagesrcdir/dict/distsim/all-compound-1-201101-mi"; then
+    distsim_mi_exist=yes
+else
+    distsim_mi_exist=no
+fi
+AC_MSG_RESULT([$distsim_mi_exist])
+
+AC_MSG_CHECKING([NE CRF model])
+if test -f "$packagesrcdir/dict/crf.model"; then
+    ne_crf_model_exist=yes
+else
+    ne_crf_model_exist=no
+fi
+AC_MSG_RESULT([$ne_crf_model_exist])
+
 AM_CONDITIONAL(BGH_EXIST, test "$bgh_exist" = yes)
 AM_CONDITIONAL(CF_EXIST, test "$cf_exist" = yes)
 AM_CONDITIONAL(CF_NOUN_EXIST, test "$cf_noun_exist" = yes)
 AM_CONDITIONAL(PROB_EXIST, test "$prob_exist" = yes)
 AM_CONDITIONAL(ADDITIONAL_PROB_EXIST, test "$additional_prob_exist" = yes)
 AM_CONDITIONAL(NV_MI_EXIST, test "$nv_mi_exist" = yes)
+AM_CONDITIONAL(DISTSIM_MI_EXIST, test "$distsim_mi_exist" = yes)
+AM_CONDITIONAL(NE_CRF_MODEL_EXIST, test "$ne_crf_model_exist" = yes)
 
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
@@ -285,5 +303,6 @@ dict/ebcf/Makefile
 dict/gcf/Makefile
 dict/auto/Makefile
 dict/synonym/Makefile
+dict/distsim/Makefile
 ])
 AC_OUTPUT
