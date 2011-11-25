@@ -80,7 +80,9 @@ char feature_buffer[DATA_LEN];
         comp_feature(fp->cp, "レベル") || 
         comp_feature(fp->cp, "係") || 
         comp_feature(fp->cp, "格解析結果") || 
-        comp_feature(fp->cp, "格構造")) {
+        comp_feature(fp->cp, "格構造") || 
+        comp_feature(fp->cp, "Wikipediaエントリ") || 
+        comp_feature(fp->cp, "Wikipedia上位語")) {
         return TRUE;
     }
     else {
