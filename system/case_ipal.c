@@ -25,6 +25,7 @@ DBM_FILE adverb_db;
 DBM_FILE para_db;
 DBM_FILE noun_co_db;
 DBM_FILE chi_pa_db;
+DBM_FILE mrph2id_db;
 
 CASE_FRAME 	*Case_frame_array = NULL; 	/* 格フレーム */
 int 	   	Case_frame_num;			/* 格フレーム数 */
@@ -53,12 +54,14 @@ int	ParaExist;
 int	NounCoExist;
 int     CHISpecPAExist;
 int     CHIPAExist;
+int	Mrph2idExist;
 
 int	PrintDeletedSM = 0;
 int	SM_AGENT_THRESHOLD = 0.40;
 
 double  ClassProb[CLASS_NUM];
 CF_FRAME *CFcache[TBLSIZE];
+char	static_buffer[DATA_LEN];
 
 /*==================================================================*/
 	   void init_cf_structure(CASE_FRAME *p, int size)
@@ -159,6 +162,9 @@ CF_FRAME *CFcache[TBLSIZE];
 
     /* 名詞共起確率DB (noun_co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
+
+    /* 形態素IDマップDB (mrph2id.db) */
+    mrph2id_db = open_dict(MRPH2ID_DB, MRPH2ID_DB_NAME, &Mrph2idExist);
 
     if (Language == CHINESE) {
 	/* Chinese CHI_PA DB (chi_pa.db) */
@@ -3149,11 +3155,46 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 }
 
 /*==================================================================*/
+                       char *rep2id(char *rep)
+/*==================================================================*/
+{
+    /* MRPH_MAX * 9(max8桁+"+"の分)以上あるので溢れない */
+    static_buffer[0] = '\0';
+
+    if (Mrph2idExist == TRUE) {
+        char *token = strtok(rep, "+");
+        char *value;
+        while (token) {
+            value = db_get(mrph2id_db, token);
+            if (value) {
+                if (static_buffer[0]) /* 2つ目以降 */
+                    strcat(static_buffer, "+");
+                strcat(static_buffer, value);
+            }
+            token = strtok(NULL, "+");
+        }
+    }
+
+    return &(static_buffer[0]);
+}
+
+/*==================================================================*/
 double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
     int i;
     double ret = 0;
+
+    if (OptCaseFlag & OPT_CASE_CF_USE_ID) {
+        char *rep = rep2id(key);
+        if (rep[0]) {
+            key = rep;
+        }
+        else {
+            /* fprintf(stderr, ";; Cannot convert mrph to id:", key); */
+            return 0;
+        }
+    }
 
     for (i = 0; i < cfp->ex_num[as2]; i++) {
 	if (!strcmp(key, cfp->ex_list[as2][i])) {

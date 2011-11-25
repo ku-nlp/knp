@@ -196,6 +196,7 @@
 #define	OPT_CASE_USE_CV_CF	131072
 #define	OPT_CASE_CFCASE_FORMAT_DENOMINATOR	262144
 #define	OPT_CASE_ANALYZE_DEVERBATIVE_NOUN	524288
+#define	OPT_CASE_CF_USE_ID	1048576
 
 #define	OPT_DISC_OR_CF	1
 #define	OPT_DISC_BEST	2
@@ -566,7 +567,7 @@ typedef struct _RuleVector {
 #define PreProcessMorphRuleType 16
 
 /* 辞書の最大数 */
-#define DICT_MAX	37
+#define DICT_MAX	38
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -605,6 +606,7 @@ typedef struct _RuleVector {
 #define CHI_CASE_DB           35
 #define CHI_POS_DB           36
 #define NV_MI_DB	37
+#define MRPH2ID_DB	38
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

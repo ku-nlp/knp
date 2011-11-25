@@ -357,6 +357,9 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		else if (!strcmp(dicttype, "名詞格フレームDATA")) {
 		    DICT[CF_NOUN_DATA] = strdup(_Atom(car(car(cell1))));
 		}
+		else if (!strcmp(dicttype, "形態素IDマップDB")) {
+		    DICT[MRPH2ID_DB] = strdup(_Atom(car(car(cell1))));
+		}
 		else if (!strcmp(dicttype, "分類語彙表DB")) {
 		    DICT[BGH_DB] = strdup(_Atom(car(car(cell1))));
 		}

@@ -27,6 +27,7 @@
 #define NOUN_CO_DB_NAME		"ebcf/noun_co.db"
 #define CF_NOUN_DB_NAME		"ebcf/noun.db"
 #define CF_NOUN_DAT_NAME	"ebcf/noun.dat"
+#define MRPH2ID_DB_NAME		"ebcf/mrph2id.db"
 #define SM_ADD_DB_NAME		"scode/ntt/word2code_add.db"
 #define SM_DEL_DB_NAME		"scode/ntt/word2code_del.db"
 #define EVENT_DB_NAME		"event/event.db"
