@@ -3,13 +3,16 @@ SUBDIRS = .
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
-nodist_dic_DATA = cf.db cf.dat
+nodist_dic_DATA = cf.db cf.dat mrph2id.db
+EXTRA_DIST = cf.knpdict mrph2id.dat
 else
 nodist_dic_DATA = 
+EXTRA_DIST = 
 endif
 
 if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
+EXTRA_DIST += noun.knpdict
 endif
 
 PROBCASE_DBS = case.db cfcase.db cfp.db
@@ -17,6 +20,7 @@ ADDITIONAL_PROBCASE_DBS = adverb.db noun_co.db renyou.db para.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
+EXTRA_DIST += case.prob cfcase.prob cfp.prob
 endif
 
 if ADDITIONAL_PROB_EXIST
@@ -129,4 +133,9 @@ noun_co.db: noun_co.prob
 
 prob: $(PROBCASE_DBS)
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+mrph2id.db: mrph2id.dat
+	if [ -f $< ]; then \
+		@MAKE_DB_COMMAND@ $@ < $<; \
+	fi
+
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
