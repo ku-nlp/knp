@@ -295,6 +295,7 @@ extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr);
 extern char *malloc_db_buf(int size);
 extern CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag);
+extern char *rep2id(char *rep, char *buffer);
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

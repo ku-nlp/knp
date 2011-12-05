@@ -3155,11 +3155,11 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 }
 
 /*==================================================================*/
-                       char *rep2id(char *rep)
+                char *rep2id(char *rep, char *buffer)
 /*==================================================================*/
 {
     /* MRPH_MAX * 9(max8桁+"+"の分)以上あるので溢れない */
-    static_buffer[0] = '\0';
+    buffer[0] = '\0';
 
     if (Mrph2idExist == TRUE) {
         char *token = strtok(rep, "+");
@@ -3167,15 +3167,15 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
         while (token) {
             value = db_get(mrph2id_db, token);
             if (value) {
-                if (static_buffer[0]) /* 2つ目以降 */
-                    strcat(static_buffer, "+");
-                strcat(static_buffer, value);
+                if (buffer[0]) /* 2つ目以降 */
+                    strcat(buffer, "+");
+                strcat(buffer, value);
             }
             token = strtok(NULL, "+");
         }
     }
 
-    return &(static_buffer[0]);
+    return buffer;
 }
 
 /*==================================================================*/
@@ -3186,7 +3186,7 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
     double ret = 0;
 
     if (OptCaseFlag & OPT_CASE_CF_USE_ID) { /* 代表表記をIDに変換 */
-        char *rep = rep2id(key);
+        char *rep = rep2id(key, &(static_buffer[0]));
         if (rep[0]) {
             key = rep;
         }

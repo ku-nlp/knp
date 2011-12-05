@@ -11,6 +11,9 @@
 int 	Thesaurus = USE_BGH;
 int	ParaThesaurus = USE_DISTSIM;
 
+char	static_buffer1[DATA_LEN];
+char	static_buffer2[DATA_LEN];
+
 /*==================================================================*/
 			void init_thesaurus()
 /*==================================================================*/
@@ -726,12 +729,23 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
      */
 
     char *rep1, *rep2;
+    double score = -1;
 
     rep1 = get_bnst_head_canonical_rep(ptr1, TRUE);
     rep2 = get_bnst_head_canonical_rep(ptr2, TRUE);
 
     if (rep1 && rep2) {
-        double score = calc_distsim(rep1, rep2);
+        if (OptCaseFlag & OPT_CASE_CF_USE_ID) { /* 代表表記をIDに変換 */
+            char *id1 = rep2id(rep1, &(static_buffer1[0]));
+            char *id2 = rep2id(rep2, &(static_buffer2[0]));
+            if (id1[0] && id2[0])
+                score = calc_distsim(id1, id2);
+            else
+                return (int)score;
+        }
+        else {
+            score = calc_distsim(rep1, rep2);
+        }
         if (!check_feature(ptr1->f, "用言") && !check_feature(ptr2->f, "用言")) /* 体言同士 */
             score = (score / 0.60) * (BGH_CODE_SIZE - 3);
         else
@@ -740,10 +754,10 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
         if (score >= (BGH_CODE_SIZE - 3))
             return BGH_CODE_SIZE - 3;
         else 
-            return (int)(score);
+            return (int)score;
     }
     else {
-        return -1;
+        return (int)score;
     }
 }
 
