@@ -20,7 +20,7 @@
 #define DBM_KEY_MAX 	2048
 #endif
 #ifndef DBM_CON_MAX
-#define DBM_CON_MAX	1638400
+#define DBM_CON_MAX	6553600
 #endif
 
 extern DBM_FILE db_write_open(char *filename);
@@ -82,10 +82,11 @@ int main(int argc, char *argv[])
     DBM_FILE db;
     int Type, num, pre_content_size = 0;
     char *Separator = NULL, *cp;
-    char key[DBM_KEY_MAX], content[DBM_CON_MAX];
+    char key[DBM_KEY_MAX];
     char pre_key[DBM_KEY_MAX], *pre_content;
 
     char *buffer = (char *)malloc(DBM_CON_MAX);
+    char *content = (char *)malloc(DBM_CON_MAX);
 
     if (argc == 2) {
 	Type = DBM_APPEND;
@@ -168,5 +169,6 @@ int main(int argc, char *argv[])
 
     DB_close(db);
     free(buffer);
+    free(content);
     return 0;
 }
