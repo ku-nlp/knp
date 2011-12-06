@@ -939,6 +939,30 @@ void _make_ipal_cframe_sm(CASE_FRAME *c_ptr, unsigned char *cp, int num, int fla
 }
 
 /*==================================================================*/
+void _register_ex_to_cframe(CASE_FRAME *c_ptr, int num, char *token, int freq)
+/*==================================================================*/
+{
+    if (c_ptr->ex_size[num] == 0) {
+        c_ptr->ex_size[num] = 10;	/* 初期確保数 */
+        c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
+                                                   "_make_ipal_cframe_ex");
+        c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
+                                                 "_make_ipal_cframe_ex");
+    }
+    else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
+        c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
+                                                    sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
+                                                    "_make_ipal_cframe_ex");
+        c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
+                                                  sizeof(int)*c_ptr->ex_size[num], 
+                                                  "_make_ipal_cframe_ex");
+    }
+
+    c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(token);
+    c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
+}
+
+/*==================================================================*/
 void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num, 
 			  int flag, int fflag, int init_flag)
 /*==================================================================*/
@@ -949,7 +973,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
               格が外の関係のときだけ使う */
 
     unsigned char *point, *point2;
-    int max, count = 0, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
+    int max, thesaurus = USE_NTT, freq, over_flag = 0, agent_count = 0;
     int sub_agent_flag = 0, ex_agent_flag;
     double freq_gex, agent_ratio = -1;
     char *code, **destination, *buf, *token;
@@ -1032,59 +1056,43 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	}
 
 	if (*point2 != '\0') {
-	    if (agent_ratio > 0) { /* <TH:主体>があるならば、動的<主体>チェックはしない */
-		ex_agent_flag = 1;
-	    }
-	    else {
-		ex_agent_flag = 0;
-	    }
-	    token = strtok(point2, "?");
-	    while (token) { /* "?"で結合されたものは切って格納 */
-		code = get_str_code(token, thesaurus);
-		if (code) {
-		    /* <主体>のチェック (for backward compatibility -> will be deleted) */
-		    if (ex_agent_flag == 0 && 
-			cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
-			agent_count += freq;
-			ex_agent_flag = 1;
-		    }
+            _register_ex_to_cframe(c_ptr, num, point2, freq); /* 全体を格納 */
 
-		    if (!over_flag) {
-			if (strlen(buf) + strlen(code) >= max) {
-			    /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
-			    over_flag = 1;
-			}
-			else {
-			    strcat(buf, code);
-			}
-		    }
-		    free(code);
-		}
+            if (agent_ratio > 0) { /* <TH:主体>があるならば、動的<主体>チェックはしない */
+                ex_agent_flag = 1;
+            }
+            else {
+                ex_agent_flag = 0;
+            }
 
-		if (c_ptr->ex_size[num] == 0) {
-		    c_ptr->ex_size[num] = 10;	/* 初期確保数 */
-		    c_ptr->ex_list[num] = (char **)malloc_data(sizeof(char *)*c_ptr->ex_size[num], 
-							       "_make_ipal_cframe_ex");
-		    c_ptr->ex_freq[num] = (int *)malloc_data(sizeof(int)*c_ptr->ex_size[num], 
-							     "_make_ipal_cframe_ex");
-		}
-		else if (c_ptr->ex_num[num] >= c_ptr->ex_size[num]) {
-		    c_ptr->ex_list[num] = (char **)realloc_data(c_ptr->ex_list[num], 
-								sizeof(char *)*(c_ptr->ex_size[num] <<= 1), 
-								"_make_ipal_cframe_ex");
-		    c_ptr->ex_freq[num] = (int *)realloc_data(c_ptr->ex_freq[num], 
-							      sizeof(int)*c_ptr->ex_size[num], 
-							      "_make_ipal_cframe_ex");
-		}
+            token = strtok(point2, "?");
+            while (token) { /* "?"で結合されたものは切って格納 */
+                code = get_str_code(token, thesaurus);
+                if (code) {
+                    /* <主体>のチェック (for backward compatibility -> will be deleted) */
+                    if (ex_agent_flag == 0 && 
+                        cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
+                        agent_count += freq;
+                        ex_agent_flag = 1;
+                    }
 
-		c_ptr->ex_list[num][c_ptr->ex_num[num]] = strdup(token);
-		c_ptr->ex_freq[num][c_ptr->ex_num[num]++] = freq;
+                    if (!over_flag) {
+                        if (strlen(buf) + strlen(code) >= max) {
+                            /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
+                            over_flag = 1;
+                        }
+                        else {
+                            strcat(buf, code);
+                        }
+                    }
+                    free(code);
+                }
 
-		token = strtok(NULL, "?");
-	    }
+                _register_ex_to_cframe(c_ptr, num, token, freq);
+                token = strtok(NULL, "?");
+            }
 
 	    c_ptr->freq[num] += freq;
-	    count++;
 	}
     }
 
@@ -3163,18 +3171,20 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 
     if (rep && Mrph2idExist == TRUE) {
         char *copied_rep = strdup(rep);
-        char *token = strtok(copied_rep, "+");
+        char *token_start = strtok(copied_rep, "+?");
+        char *token = token_start;
         char *value;
         while (token) {
             value = db_get(mrph2id_db, token);
             if (value) {
                 if (buffer[0]) /* 2つ目以降 */
-                    strcat(buffer, "+");
+                    strncat(buffer, rep + (token - 1 - token_start), 1);
                 strcat(buffer, value);
             }
-            token = strtok(NULL, "+");
+            token = strtok(NULL, "+?");
         }
         free(copied_rep);
+        /* fprintf(stderr, ";; %s -> %s\n", rep, buffer); */
     }
 
     return buffer;
