@@ -3161,8 +3161,9 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
     /* MRPH_MAX * 9(max8桁+"+"の分)以上あるので溢れない */
     buffer[0] = '\0';
 
-    if (Mrph2idExist == TRUE) {
-        char *token = strtok(rep, "+");
+    if (rep && Mrph2idExist == TRUE) {
+        char *copied_rep = strdup(rep);
+        char *token = strtok(copied_rep, "+");
         char *value;
         while (token) {
             value = db_get(mrph2id_db, token);
@@ -3173,6 +3174,7 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
             }
             token = strtok(NULL, "+");
         }
+        free(copied_rep);
     }
 
     return buffer;
