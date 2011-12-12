@@ -156,6 +156,7 @@ fi
 AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
 AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
+AC_CHECK_LIB(z, deflate, DB_LIBS="-lz $DB_LIBS")
 
 ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la -lstdc++"
 KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
@@ -261,7 +262,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(stdio.h stdlib.h string.h fcntl.h signal.h setjmp.h math.h \
     sys/types.h sys/file.h sys/stat.h unistd.h errno.h time.h ctype.h \
-    sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h winsock2.h limits.h)
+    sys/socket.h netinet/in.h netdb.h pwd.h grp.h windows.h winsock2.h limits.h zlib.h)
 # link ws2_32 on Windows
 AC_CHECK_HEADER(winsock2.h, KNP_LIBS="-lws2_32 $KNP_LIBS")
 
