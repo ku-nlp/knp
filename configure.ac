@@ -219,7 +219,7 @@ fi
 AC_MSG_RESULT([$nv_mi_exist])
 
 AC_MSG_CHECKING([distributional similarity MI DB])
-if test -f "$packagesrcdir/dict/distsim/all-compound-1-201101-mi.dat"; then
+if test -f "$packagesrcdir/dict/distsim/mi.dat"; then
     distsim_mi_exist=yes
 else
     distsim_mi_exist=no
