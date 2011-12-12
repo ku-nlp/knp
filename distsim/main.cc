@@ -4,6 +4,7 @@
 
 void option_proc(cmdline::parser &option, int argc, char **argv) {
     option.add<std::string>("midb", 'm', "MIDB name (keymap or basename)", false, "all.mi");
+    option.add("compressed", 'z', "database is compressed");
     option.parse_check(argc, argv);
 }
 
@@ -11,7 +12,7 @@ int main(int argc, char** argv) {
     cmdline::parser option;
     option_proc(option, argc, argv);
 
-    Dist::Distsim distsim(option.get<std::string>("midb"));
+    Dist::Distsim distsim(option.get<std::string>("midb"), option.exist("compressed") ? true : false);
 
     std::ifstream is(argv[1]); // input stream
 

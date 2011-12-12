@@ -4,20 +4,37 @@
 namespace Dist {
 
 Distsim::Distsim(const std::string &in_mi_dbname) {
-    init(in_mi_dbname);
+    init(in_mi_dbname, false);
+}
+
+Distsim::Distsim(const std::string &in_mi_dbname, bool compressed) {
+    init(in_mi_dbname, compressed);
 }
 
 Distsim::Distsim(const char *in_mi_dbname_char) {
-    init(in_mi_dbname_char);
+    init(in_mi_dbname_char, false);
+}
+
+Distsim::Distsim(const char *in_mi_dbname_char, bool compressed) {
+    init(in_mi_dbname_char, compressed);
 }
 
 void Distsim::init(const std::string &in_mi_dbname) {
-    midb = new Dbm(in_mi_dbname); // keymap file or basename
+    midb = new Dbm(in_mi_dbname, false); // keymap file or basename
+}
+
+void Distsim::init(const std::string &in_mi_dbname, bool compressed) {
+    midb = new Dbm(in_mi_dbname, compressed); // keymap file or basename
 }
 
 void Distsim::init(const char *in_mi_dbname_char) {
     std::string in_mi_dbname = in_mi_dbname_char;
-    midb = new Dbm(in_mi_dbname); // keymap file or basename
+    midb = new Dbm(in_mi_dbname, false); // keymap file or basename
+}
+
+void Distsim::init(const char *in_mi_dbname_char, bool compressed) {
+    std::string in_mi_dbname = in_mi_dbname_char;
+    midb = new Dbm(in_mi_dbname, compressed); // keymap file or basename
 }
 
 Distsim::~Distsim() {
@@ -30,14 +47,10 @@ void Distsim::make_vector(std::string &word, std::vector<std::string> &vector) {
     split_string(mi_str, "|", vector);
 
     // delete MI value
-    for (std::vector<std::string>::iterator it = vector.begin(); it != vector.end(); it++) {
-        string::size_type pos = (*it).find_last_of(";");
-        (*it).erase(pos);
-    }
-
-//     for (std::vector<std::string>::iterator it = vector.begin(); it != vector.end(); it++) {
-//         cout << *it << endl;
-//     }
+    // for (std::vector<std::string>::iterator it = vector.begin(); it != vector.end(); it++) {
+    //     string::size_type pos = (*it).find_last_of(";");
+    //     (*it).erase(pos);
+    // }
 }
 
 double Distsim::calc_sim(const char *word1_char, const char *word2_char) {

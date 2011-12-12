@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cdb.h>
+#include <zlib.h>
 
 using std::string;
 using std::cout;
@@ -17,6 +18,7 @@ using std::cerr;
 using std::endl;
 
 class Dbm {
+    bool compressed;
     bool available;
     bool defined_keymap;
     std::vector<std::pair<string, cdb*> > k2db;
@@ -24,7 +26,10 @@ class Dbm {
 
   public:
     Dbm(const string &in_dbname) {
-	init(in_dbname);
+	init(in_dbname, false);
+    }
+    Dbm(const string &in_dbname, bool compressed) {
+	init(in_dbname, compressed);
     }
 
     ~Dbm() {
@@ -38,7 +43,8 @@ class Dbm {
         }
     }
 
-    bool init(const string &in_dbname) {
+    bool init(const string &in_dbname, bool _compressed) {
+	compressed = _compressed;
 	available = true;
 	if (in_dbname.find("keymap") != string::npos) {
 	    defined_keymap = true;
@@ -180,18 +186,57 @@ class Dbm {
 	    vpos = cdb_datapos(db);
 	    vlen = cdb_datalen(db);
 
-	    // for \0
-	    char *val = (char*)malloc(vlen + 1);
-	    cdb_read(db, val, vlen, vpos);
-	    *(val + vlen) = '\0';
+	    if (compressed) {
+		unsigned char *val = (unsigned char*)malloc(vlen);
+		cdb_read(db, val, vlen, vpos);
+		ret_value = decompress_string(val, vlen);
+		free(val);
+	    } else {
+		// for \0
+		char *val = (char*)malloc(vlen + 1);
+		cdb_read(db, val, vlen, vpos);
+		*(val + vlen) = '\0';
+		ret_value = val;
+		free(val);
+	    }
 	    // cout << key << " is found. val = " << val << endl;
-	    ret_value = val;
-	    free(val);
 	} else {
 	    // cout << key << " is not found." << endl;
 	}
 	return ret_value;
     }
+
+    string decompress_string(unsigned char *compressed, int len) {
+	std::string out;
+	int ret;
+	char buffer[32768];
+	z_stream zs;
+
+	memset(&zs, 0, sizeof(zs));
+	if (inflateInit(&zs) != Z_OK)
+	    return out;
+
+	zs.next_in = (Bytef*)compressed;
+	zs.avail_in = len;
+
+	do {
+	    zs.next_out = reinterpret_cast<Bytef*>(buffer);
+	    zs.avail_out = sizeof(buffer);
+
+	    ret = inflate(&zs, Z_NO_FLUSH);
+	    if (out.size() < zs.total_out) {
+		out.append(buffer, zs.total_out - out.size());
+	    }
+	} while (ret == Z_OK);
+	inflateEnd(&zs);
+
+	if (ret != Z_STREAM_END) {
+	    cerr << "Exception during zlib decompression: (" << ret << ") " << zs.msg << endl;
+	    return "";
+	}
+	return out;
+    }
+
 };
 
 #endif
