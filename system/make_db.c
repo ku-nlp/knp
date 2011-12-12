@@ -99,8 +99,10 @@ int main(int argc, char *argv[])
 	Type = DBM_AND;
     } else if (argc == 3 && !strcmp(argv[2], "-or")) {
 	Type = DBM_OR;
+    } else if (argc == 3 && !strcmp(argv[2], "-z")) {
+	Type = DBM_Z;
     } else {
-	fprintf(stderr,"usage: %s database_name [-append string|-and|-or]\n",argv[0]);
+	fprintf(stderr,"usage: %s database_name [-append string|-and|-or|-z]\n",argv[0]);
 	exit(1);
     }
 
@@ -131,13 +133,13 @@ int main(int argc, char *argv[])
 	else {
 	    /* スペースがないとき (スペースの前に\0を含む場合もひっかかる) */
 	    fprintf(stderr, "Line %d is strange.\n", num);
-	    if ((num++ % 1000) == 0) fputc('*', stderr);
+	    if ((num++ % 100000) == 0) fputc('*', stderr);
 	    continue;
 	}
 
 	/* keyとcontentに分離 */
 	sscanf(buffer, "%s %[^\n]", key, content);
-	if ((num++ % 1000) == 0) fputc('*', stderr);
+	if ((num++ % 100000) == 0) fputc('*', stderr);
 
 	/* 直前のkeyと同じなら連結して保存 */
 	if (!strcmp(pre_key, key)) {

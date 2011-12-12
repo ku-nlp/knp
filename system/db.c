@@ -8,6 +8,60 @@
 ====================================================================*/
 #include "knp.h"
 
+#ifdef HAVE_ZLIB_H
+char *compress_string(char *str, int *compressed_size, int compressionlevel) {
+    int ret, out_capacity = 0, cur_out_size = 0;
+    char buffer[32768], *out;
+    z_stream zs;
+
+    if ((out = (char *)malloc(out_capacity = 100000)) == NULL) {
+        fprintf(stderr, "malloc error\n");
+        return NULL;
+    }
+    out[0] = '\0';
+
+    memset(&zs, 0, sizeof(zs));
+    if (deflateInit(&zs, compressionlevel) != Z_OK)
+        return NULL;
+
+    zs.next_in = (Bytef*)str;
+    zs.avail_in = strlen(str);
+
+    do {
+        zs.next_out = (Bytef*)buffer;
+        zs.avail_out = sizeof(buffer);
+
+        ret = deflate(&zs, Z_FINISH);
+        if (cur_out_size < zs.total_out) {
+            if (out_capacity < zs.total_out - 1) {
+                char *tmp_out;
+                if ((tmp_out = (char *)realloc(out, out_capacity += 100000)) == NULL) {
+                    fprintf(stderr, "realloc error\n");
+                    free(out);
+                    return NULL;
+                }
+                else {
+                    out = tmp_out;
+                }
+            }
+            memcpy(out + cur_out_size, buffer, zs.total_out - cur_out_size);
+            // strncat(out, buffer, zs.total_out - strlen(out));
+            cur_out_size = zs.total_out;
+            out[cur_out_size] = '\0';
+        }
+    } while (ret == Z_OK);
+    deflateEnd(&zs);
+    *compressed_size = zs.total_out;
+
+    if (ret != Z_STREAM_END) {
+        fprintf(stderr, "Exception during zlib compression: (%d) %s\n", ret, zs.msg);
+        return NULL;
+    }
+    return out;
+}
+#endif
+
+
 #ifdef GDBM
 
 /* DB open for reading */
@@ -527,7 +581,17 @@ char *db_get(DBM_FILE db, char *buf)
 int db_put(DBM_FILE db, char *buf, char *value, char *Separator, int mode)
 {
     /* overwrite anytime ignoring the mode (CDB doesn't support rewriting) */
-    cdb_make_add(&(db->cdbm), buf, strlen(buf), value, strlen(value));
+
+#ifdef HAVE_ZLIB_H
+    if (mode == DBM_Z) { /* compress value */
+        int compressed_size; /* the size of resuting compressed data */
+        char *compressed_value = compress_string(value, &compressed_size, Z_DEFAULT_COMPRESSION); /* Z_BEST_SPEED */
+        cdb_make_add(&(db->cdbm), buf, strlen(buf), compressed_value, compressed_size);
+        free(compressed_value);
+    }
+    else
+#endif
+        cdb_make_add(&(db->cdbm), buf, strlen(buf), value, strlen(value));
     return 0;
 }
 

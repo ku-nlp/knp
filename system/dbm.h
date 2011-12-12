@@ -10,6 +10,7 @@
 #define DBM_OVERRIDE	2
 #define DBM_AND		3
 #define DBM_OR		4
+#define DBM_Z		5
 
 #ifdef GDBM
 
