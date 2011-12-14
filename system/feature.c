@@ -467,14 +467,19 @@ void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag)
 	       char *str_delete_last_column(char *str)
 /*==================================================================*/
 {
-    /* ':'区切りとみなし、最後のカラムを削除 */
-
-    char *cp;
+    /* ':'区切りとみなし、2つ目以降のカラムを削除
+       例: Wikipedia上位語:企業/きぎょう:0-3 → Wikipedia上位語:企業/きぎょう */
 
     if (str) {
-	char *ret = strdup(str);
-	if (cp = strrchr(ret, ':')) { /* 後から':'を探す */
-	    *cp = '\0'; /* あれば、その前で終端 */
+        int count = 0;
+	char *ret = strdup(str), *cp = ret;
+	while (cp = strchr(cp, ':')) { /* 前から2つ目の':'を探す */
+            if (count == 1) { /* 2つ目の':' */
+                *cp = '\0'; /* あれば終端 */
+                return ret;
+            }
+            cp++; /* 次のstrchrのために一つ進める */
+            count++;
 	}
 	return ret;
     }
