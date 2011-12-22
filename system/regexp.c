@@ -408,7 +408,9 @@ const REGEXPBNST RegexpBnstInitValue = {
 
     if (r_string[0] == NULL || str_eq(r_string[0], AST_STR))
 	return TRUE;
-    else if (kata == 0 || kei == 0) 
+    else if (kata == 0 || kei == 0 || 
+             kata >= TYPE_NO || kei >= FORM_NO || 
+             !Form[kata][kei].name) 
 	return FALSE;
     else {
 	for (i = 0; r_string[i]; i++)
