@@ -1,6 +1,150 @@
+2011-12-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/modality.rule:
+	Improved modality recognition (thanks to Hironori Nakamura <nakamura@nlp.ist.i.kyoto-u.ac.jp>).
+
+2011-12-22  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/read_data.c, system/regexp.c:
+	Check the range of codes of POS and inflection.
+
+2011-12-14  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/feature.c: Modification for Wikipedia features from morphemes.
+
+2011-12-12  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* knprc.in, configure.ac, dict/distsim/Makefile.am: Renamed the DB.
+
+	* dict/distsim/Makefile.am: Changed to compress values of MIDB.
+
+	* configure.ac: Added a check of zlib.
+
+	* system/db.c, system/dbm.h, system/knp.h, system/make_db.c:
+	Added a mode of compressing values of DB.
+
+	* distsim/dbm.h, distsim/distsim.cc, distsim/distsim.h, distsim/distsim_for_knp.cc, distsim/main.cc:
+	Added a method of handling compressed MIDB (thanks to MURAWAKI Yugo <murawaki@nlp.ist.i.kyoto-u.ac.jp>).
+
+2011-12-06  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c: Improved consistency of repname handling.
+
+	* system/case_ipal.c: Bug fix of ID generation from rep.
+
+2011-12-05  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* dict/distsim/Makefile.am:
+	Modified to make the DB of distributional similarity from text.
+
+	* configure.ac: Modified the target file for distributional similarity.
+
+	* system/extern.h, system/thesaurus.c, system/case_ipal.c:
+	Modified to look up distributional similarity with ID.
+
+	* system/make_db.c: Modified to malloc memory.
+
+	* system/case_ipal.c:
+	Fix of non-gapping relation words and unknown ID words.
+
+2011-11-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.rule:
+	Modified option checking.
+
+	* configure.ac: Added a library for linking.
+
+	* system/main.c:
+	Changed -wikipedia, -fallback-to-dpnd, -cf-cache to be default.
+
+	* system/feature.c:
+	Modified to leave wikipedia information for -simple option.
+
+2011-11-25  Tomohide Shibata  <shibata@i.kyoto-u.ac.jp>
+
+	* rule/mrph_auto_dic.rule, rule/tag_after_dpnd_and_case.rule:
+	Changed the labels for Wikipedia.
+
+2011-11-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c, system/configfile.c, system/const.h, system/main.c, system/path.h:
+	Modified to use id in case frames.
+
+	* dict/ebcf/Makefile.am: Added a target of making mrph2id.db.
+
+	* dict/Makefile.am: Added existence check of a model.
+
+	* dict/distsim/Makefile.am: Added existence check of dbs.
+
+	* configure.ac: Added existence checking of models and dbs.
+
+2011-11-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* dict/distsim/Makefile.am: Added.
+
+	* dict/Makefile.am: Added distsim directory.
+
+	* INSTALL: Deleted obsolete txt.
+
+	* dict/scode/bgh/Makefile.am: Not to distribute bgh.orig.
+
+	* knprc.in: Added an entry of distsim.
+
+	* system/bnst_compare.c, system/configfile.c, system/const.h, system/extern.h, system/knp.h, system/main.c, system/thesaurus.c:
+	Modified to use distributional similarity.
+
+	* Makefile.am, configure.ac: Added distsim directory.
+
+	* distsim/Makefile.am, distsim/cmdline.h, distsim/common.h, distsim/dbm.h, distsim/distsim.cc, distsim/distsim.h, distsim/distsim_for_knp.cc, distsim/distsim_for_knp.h, distsim/main.cc:
+	Added.
+
+2011-11-22  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c: Fix of -cf-on-memory and -cf-cache.
+
+	* perl/merge-parenthesis-parses.perl: Update for semantic heads.
+
+	* system/dpnd_analysis.c:
+	Added an additional check for semantic heads of parenthesis sentences.
+
+2011-11-21  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/tree_conv.c:
+	Bug fix of the decision of morpheme head (for -mrphtab).
+
+	* rule/case_analysis.rule:
+	Modified some assignments and added rules of possibilities of non-correspondence in case assignment.
+
+	* system/case_data.c:
+	Added handling of possibilities of non-correspondence in case assignment.
+
+2011-11-18  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c: Bug fix of makeing a predicate expression.
+
+2011-11-17  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* INSTALL: Added a description of CRF++.
+
+2011-11-16  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/feature.c: Modified not to change POS for gold-standard input.
+
+	* rule/case_analysis.rule:
+	Added NE condition to the case possibilities of DEWA.
+
+2011-11-01  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule:
+	Modified the assignment of predicate type for "²ÄÇ½" in a compound noun
+
 2011-10-27  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
 	* perl/merge-parenthesis-parses.perl: Adapted to UTF-8.
+
+	* AUTHORS, COPYING, INSTALL: Update for 4.0.
+
+	* doc/manual.pdf, doc/manual.tex: Preparation for 4.0.
 
 2011-10-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
 
