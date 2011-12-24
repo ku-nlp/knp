@@ -722,14 +722,14 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	}
     }
     else if ((cp = check_feature(fp, "カテゴリ"))) {
-	while ((cp = strchr(cp, ':'))) {
-	    cp++;
-	    if (!strcmp(cp, fname) ||
+        cp += strlen("カテゴリ"); /* ":"の分はdoの中で足す */
+        do {
+            cp++; /* ":"もしくは";"の分 */
+            if (!strcmp(cp, fname) ||
 		!strncmp(cp, fname, strlen(fname)) && 
-		*(cp + strlen(fname)) == ':') {
+		*(cp + strlen(fname)) == ';')
 		return TRUE;
-	    }
-	}
+        } while ((cp = strchr(cp, ';'))); /* 複数ある場合は";"で区切られている */
     }
 
     return FALSE;
@@ -1065,6 +1065,13 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    return TRUE;
 	else 
 	    return FALSE;
+    }
+
+    /* &カテゴリ : カテゴリ チェック (形態素レベル) */
+    
+    else if (!strncmp(rule, "&カテゴリ:", strlen("&カテゴリ:"))) {
+	cp = rule + strlen("&カテゴリ:");
+	return check_category(((MRPH_DATA *)ptr2)->f, cp);
     }
 
     /* &意味素: 意味素チェック (形態素) */

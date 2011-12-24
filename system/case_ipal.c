@@ -3323,6 +3323,24 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 }
 
 /*==================================================================*/
+     int dat_match_agent(int as1, CASE_FRAME *cfd, TAG_DATA *tp)
+/*==================================================================*/
+{
+    if (tp == NULL) {
+	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
+    }
+
+    if (check_feature(tp->f, "非主体")) {
+        return 0;
+    }
+    else if (check_feature(tp->f, "SM-主体")) {
+        return 1;
+    }
+
+    return 0;
+}
+
+/*==================================================================*/
   double get_ex_probability(int as1, CASE_FRAME *cfd, TAG_DATA *dp,
 			    int as2, CASE_FRAME *cfp, int sm_flag)
 /*==================================================================*/
@@ -3347,7 +3365,7 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
     }
     else if (sm_flag && /* FALSEの場合は主体を使わない */
 	     (OptCaseFlag & OPT_CASE_GENERALIZE_AGENT) && /* 主体を汎化する場合(default) */
-	     dat_match_sm(as1, cfd, dp, "主体")) {
+	     dat_match_agent(as1, cfd, dp)) {
 	sprintf(key, "<主体>");
     }
     else if (!strcmp(pp_code_to_kstr(cfp->pp[as2][0]), "時間") && check_feature(dp->f, "時間")) { /* 時間格のみ<時間>を考慮 */

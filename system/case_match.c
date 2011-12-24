@@ -439,55 +439,6 @@ int	CASE_ASSIGN_THRESHOLD = 0;
 }
 
 /*==================================================================*/
-  int dat_match_sm(int as1, CASE_FRAME *cfd, TAG_DATA *tp, char *sm)
-/*==================================================================*/
-{
-    int expand;
-    char *code;
-
-    if (tp == NULL) {
-	tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
-    }
-
-    if (!strcmp(sm, "主体")) {
-	if (check_feature(tp->f, "非主体")) {
-	    return 0;
-	}
-
-	if (Thesaurus == USE_BGH) {
-	    code = tp->BGH_code;
-	}
-	else {
-	    code = tp->SM_code;
-	}
-    }
-    else if (!cfd || as1 < 0) {
-	if (Thesaurus == USE_BGH) {
-	    code = tp->BGH_code;
-	}
-	else {
-	    code = tp->SM_code;
-	}
-    }
-    else {
-	code = cfd->sm[as1];
-    }
-
-    if (check_feature(tp->f, "Ｔ固有一般展開禁止")) {
-	expand = SM_NO_EXPAND_NE;
-    }
-    else {
-	expand = SM_EXPAND_NE;
-    }
-
-    if (sms_match(sm2code(sm), code, expand)) {
-	return 1;
-    }
-
-    return 0;
-}
-
-/*==================================================================*/
 int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos)
 /*==================================================================*/
 {
