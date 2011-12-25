@@ -1065,31 +1065,33 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
                 ex_agent_flag = 0;
             }
 
-            token = strtok(point2, "?");
-            while (token) { /* "?"で結合されたものは切って格納 */
-                code = get_str_code(token, thesaurus);
-                if (code) {
-                    /* <主体>のチェック (for backward compatibility -> will be deleted) */
-                    if (ex_agent_flag == 0 && 
-                        cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
-                        agent_count += freq;
-                        ex_agent_flag = 1;
+            if (strchr(point2, '?')) { /* "?"で結合されたものは切って格納 */
+                token = strtok(point2, "?");
+                while (token) {
+                    code = get_str_code(token, thesaurus);
+                    if (code) {
+                        /* <主体>のチェック (for backward compatibility -> will be deleted) */
+                        if (ex_agent_flag == 0 && 
+                            cf_match_element(code, (flag & USE_BGH) ? sm2code("主体") : "主体", FALSE)) {
+                            agent_count += freq;
+                            ex_agent_flag = 1;
+                        }
+
+                        if (!over_flag) {
+                            if (strlen(buf) + strlen(code) >= max) {
+                                /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
+                                over_flag = 1;
+                            }
+                            else {
+                                strcat(buf, code);
+                            }
+                        }
+                        free(code);
                     }
 
-                    if (!over_flag) {
-                        if (strlen(buf) + strlen(code) >= max) {
-                            /* fprintf(stderr, "Too many EX <%s> (%2dth).\n", cf_str_buf, count); */
-                            over_flag = 1;
-                        }
-                        else {
-                            strcat(buf, code);
-                        }
-                    }
-                    free(code);
+                    _register_ex_to_cframe(c_ptr, num, token, freq);
+                    token = strtok(NULL, "?");
                 }
-
-                _register_ex_to_cframe(c_ptr, num, token, freq);
-                token = strtok(NULL, "?");
             }
 
 	    c_ptr->freq[num] += freq;
