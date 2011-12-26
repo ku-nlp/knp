@@ -119,32 +119,6 @@ int	PrintFrequency = 0;
 	/* 係タイプの出力 */
 	print_depend_type(cpm_ptr, i, TRUE);
 
-	/* 意味マーカ */
-
-	fputc('[', Outfp);
-
-	if (Thesaurus == USE_NTT) {
-	    if (cpm_ptr->cf.sm[i][0]) {
-		fprintf(Outfp, "SM:○");
-	    }
-	    else {
-		fprintf(Outfp, "SM:×");
-	    }
-	}
-
-	/* 分類語彙表コード */
-
-	else if (Thesaurus == USE_BGH) {
-	    if (cpm_ptr->cf.ex[i][0]) {
-		fprintf(Outfp, "BGH:○");
-	    }
-	    else {
-		fprintf(Outfp, "BGH:×");
-	    }
-	}
-
-	fputc(']', Outfp);	
-
 	/* 任意格の要素をマーク */
 	if (cpm_ptr->cf.oblig[i] == FALSE) {
 	    fputc('*', Outfp);
