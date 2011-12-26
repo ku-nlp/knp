@@ -1140,6 +1140,36 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 }
 
 /*==================================================================*/
+          char *rep2id(char *rep, int rep_len, char *buffer)
+/*==================================================================*/
+{
+    /* MRPH_MAX * 9(max8桁+"+"の分)以上あるので溢れない */
+    buffer[0] = '\0';
+
+    if (rep && rep_len > 0 && Mrph2idExist == TRUE) {
+        char *copied_rep = (char *)malloc_data(sizeof(char) * rep_len + 1, "rep2id");
+        strncpy(copied_rep, rep, rep_len);
+        copied_rep[rep_len] = '\0';
+        char *token_start = strtok(copied_rep, "+?");
+        char *token = token_start;
+        char *value;
+        while (token) {
+            value = db_get(mrph2id_db, token);
+            if (value) {
+                if (buffer[0]) /* 2つ目以降 */
+                    strncat(buffer, rep + (token - 1 - token_start), 1);
+                strcat(buffer, value);
+            }
+            token = strtok(NULL, "+?");
+        }
+        free(copied_rep);
+        /* fprintf(stderr, ";; %s -> %s\n", rep, buffer); */
+    }
+
+    return buffer;
+}
+
+/*==================================================================*/
  int check_examples(char *cp, int cp_len, char **ex_list, int ex_num)
 /*==================================================================*/
 {
@@ -1149,12 +1179,15 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 	return -1;
     }
 
-    for (i = 0; i < ex_num; i++) {
-	if (strlen(*(ex_list + i)) == cp_len && 
-	    !strncmp(cp, *(ex_list + i), cp_len)) {
-	    return i;
-	}
+    char *rep_id = rep2id(cp, cp_len, &(static_buffer[0]));
+    if (rep_id[0]) {
+        for (i = 0; i < ex_num; i++) {
+            if (!strcmp(rep_id, *(ex_list + i))) {
+                return i;
+            }
+        }
     }
+
     return -1;
 }
 
@@ -3165,34 +3198,6 @@ double get_ex_ne_probability(char *cp, int as2, CASE_FRAME *cfp, int flag)
 }
 
 /*==================================================================*/
-                char *rep2id(char *rep, char *buffer)
-/*==================================================================*/
-{
-    /* MRPH_MAX * 9(max8桁+"+"の分)以上あるので溢れない */
-    buffer[0] = '\0';
-
-    if (rep && Mrph2idExist == TRUE) {
-        char *copied_rep = strdup(rep);
-        char *token_start = strtok(copied_rep, "+?");
-        char *token = token_start;
-        char *value;
-        while (token) {
-            value = db_get(mrph2id_db, token);
-            if (value) {
-                if (buffer[0]) /* 2つ目以降 */
-                    strncat(buffer, rep + (token - 1 - token_start), 1);
-                strcat(buffer, value);
-            }
-            token = strtok(NULL, "+?");
-        }
-        free(copied_rep);
-        /* fprintf(stderr, ";; %s -> %s\n", rep, buffer); */
-    }
-
-    return buffer;
-}
-
-/*==================================================================*/
 double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
@@ -3200,9 +3205,9 @@ double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp)
     double ret = 0;
 
     if (OptCaseFlag & OPT_CASE_CF_USE_ID) { /* 代表表記をIDに変換 */
-        char *rep = rep2id(key, &(static_buffer[0]));
-        if (rep[0]) {
-            key = rep;
+        char *rep_id = rep2id(key, key ? strlen(key) : 0, &(static_buffer[0]));
+        if (rep_id[0]) {
+            key = rep_id;
         }
         else {
             /* fprintf(stderr, ";; Cannot convert mrph to id: %s\n", key); */
