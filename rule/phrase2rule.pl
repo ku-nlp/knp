@@ -111,7 +111,7 @@ my (%opt);
 
 ######################################################################
 use KNP;
-$knp = new KNP(-Option => "-bnst -tab", -JumanOption => "-M");
+$knp = new KNP(-Option => "-bnst -tab", -JumanOption => "-u");
 ######################################################################
 $bnstrule_flag = 1;
 $num = 0;
