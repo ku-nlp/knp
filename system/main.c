@@ -1170,6 +1170,7 @@ extern int	EX_match_subject;
     if (OptUseCF) {
 	init_cf();	/* 格フレームオープン */
     }
+    init_mrph2id();	/* 形態素IDマップオープン */
     if (OptUseNCF) {
 	init_noun_cf();	/* 名詞格フレームオープン */
     }

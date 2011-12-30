@@ -163,13 +163,18 @@ char	static_buffer[DATA_LEN];
     /* 名詞共起確率DB (noun_co.db) */
     noun_co_db = open_dict(NOUN_CO_DB, NOUN_CO_DB_NAME, &NounCoExist);
 
-    /* 形態素IDマップDB (mrph2id.db) */
-    mrph2id_db = open_dict(MRPH2ID_DB, MRPH2ID_DB_NAME, &Mrph2idExist);
-
     if (Language == CHINESE) {
 	/* Chinese CHI_PA DB (chi_pa.db) */
 	chi_pa_db = open_dict(CHI_PA_DB, CHI_PA_DB_NAME, &CHIPAExist);
     }
+}
+
+/*==================================================================*/
+                         void init_mrph2id()
+/*==================================================================*/
+{
+    /* 形態素IDマップDB (mrph2id.db) */
+    mrph2id_db = open_dict(MRPH2ID_DB, MRPH2ID_DB_NAME, &Mrph2idExist);
 }
 
 /*==================================================================*/
