@@ -735,22 +735,24 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
     rep2 = get_bnst_head_canonical_rep(ptr2, TRUE);
 
     if (rep1 && rep2) {
-        if (OptCaseFlag & OPT_CASE_CF_USE_ID) { /* 代表表記をIDに変換 */
-            char *id1 = rep2id(rep1, strlen(rep1), &(static_buffer1[0]));
-            char *id2 = rep2id(rep2, strlen(rep2), &(static_buffer2[0]));
-            if (id1[0] && id2[0])
-                score = calc_distsim(id1, id2);
-            else
-                return (int)score;
+        if (!check_feature(ptr1->f, "用言") && !check_feature(ptr2->f, "用言")) { /* 体言同士 */
+            if (OptCaseFlag & OPT_CASE_CF_USE_ID) { /* 代表表記をIDに変換 */
+                char *id1 = rep2id(rep1, strlen(rep1), &(static_buffer1[0]));
+                char *id2 = rep2id(rep2, strlen(rep2), &(static_buffer2[0]));
+                if (id1[0] && id2[0])
+                    score = calc_distsim(id1, id2);
+                else
+                    return (int)score;
+            }
+            else {
+                score = calc_distsim(rep1, rep2);
+            }
+
+            score = (score / 1.00) * (BGH_CODE_SIZE - 3);
         }
-        else {
-            score = calc_distsim(rep1, rep2);
-        }
-        if (!check_feature(ptr1->f, "用言") && !check_feature(ptr2->f, "用言")) /* 体言同士 */
-            score = (score / 0.60) * (BGH_CODE_SIZE - 3);
-        else
-	    /* score = (score / 1.00) * (BGH_CODE_SIZE - 3); */
+        else /* 用言同士 */
             score = 0;
+
         /* fprintf(stderr, ";; DistSim <%s> <%s>:%.5f\n", rep1, rep2, score); */
         if (score >= (BGH_CODE_SIZE - 3))
             return BGH_CODE_SIZE - 3;
