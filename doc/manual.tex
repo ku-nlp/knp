@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%                                   %%%%%%%%%%
-%%%%%%%%%%  ��ʸ���ϥ����ƥ� KNP �ޥ˥奢��  %%%%%%%%%%
+%%%%%%%%%%  構文解析システム KNP マニュアル  %%%%%%%%%%
 %%%%%%%%%%                                   %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -11,13 +11,13 @@
 \def\fl{$\langle$}
 \def\fr{$\rangle$}
 
-\title{\bf ���ܸ칽ʸ���ϥ����ƥ� \\
-        KNP version 4.0b \\
-        ����������}
-\author{�������ϸ����漼}
-\date{ʿ��23ǯ10��\\
+\title{\bf 日本語構文解析システム \\
+        KNP version 4.0 \\
+        使用説明書}
+\author{黒橋・河原研究室}
+\date{平成23年12月\\
 \rule{0mm}{110mm}Copyright \copyright\ 2011\begin{tabular}[t]{l}
-                                ���������ر�����ظ���� \\
+                                京都大学大学院情報学研究科 \\
                                 \end{tabular}
 }
 
@@ -31,7 +31,7 @@
 
 \begin{small}
 \noindent
-KN parser (Kurohashi-Nagao parser) 4.0b Users Manual
+KN parser (Kurohashi-Nagao parser) 4.0 Users Manual
 
 \noindent
 Copyright (c) 2011 Kyoto University \\
@@ -79,7 +79,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  Version 2.0b6 & 9 June 1998 \\
  Version 2.0 & 7 September 2005 \\
  Version 3.0 & 30 September 2009 \\
- Version 4.0b & 31 October 2011 \\
+ Version 4.0 & 31 December 2011 \\
 \end{tabular}
 \end{small}
 
@@ -92,631 +92,688 @@ THE POSSIBILITY OF SUCH DAMAGE.
 \pagenumbering{arabic}
 
 %%%%%%%%%%%%%%%%%
-\section{KNP�Ȥ�}
+\section{KNPとは}
 %%%%%%%%%%%%%%%%%
 
-KNP�����ܸ�ʸ�ι�ʸ���Ϥ�Ԥ������ƥ�Ǥ��������ǲ��ϥ����ƥ�β��Ϸ��
-(��������)�����ϤȤ�����������ܶ�(���)�����ʸ��ñ�̤ˤޤȤᡤ�����
-�δ֤η�������ط�����ꤷ�ޤ����ޤ�����ư���������ʥե졼��˴�Ť�����
-�ط��β��Ϥ�Ԥ��ޤ���
+KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解析結果
+(形態素列)を入力とし，それらを基本句(後述)および文節単位にまとめ，それら
+の間の係り受け関係を決定します．また，自動獲得した格フレームに基づき、格
+関係の解析も行います．
 
-�ʲ���ŵ��Ū�ʻ�����򼨤��ޤ���
+以下に典型的な使用例を示します．
 
 \begin{quote}
 \texttt{\% cat test} \\
-��ʸˡ���ܼ�Ū�����쵬§�Ȱ�̣��§��¸������ʸˡ�Ǥ��ꡤ���ܸ� \\
-�β��Ϥ˹����Ѥ����Ƥ��롥\\
+格文法は本質的に統語規則と意味規則を共存させた文法であり，日本語 \\
+の解析に広く用いられている．\\
  \\
 \texttt{\% juman < test | knp} \\
 \begin{tabular}[t]{r}
-������������������������������ʸˡ�Ϩ�������\ \\[-4pt]
-�������������ܼ�Ū�˨�����������������������\ \\[-4pt]
-���쵬§�� \fl P\fr ������������������������������\ \\[-4pt]
-��̣��§�� \fl P\fr ��PARA������������������������\ \\[-4pt]
-��������������������¸����������������������\ \\[-4pt]
-������������������������ʸˡ�Ǥ��ꡤ��������\ \\[-4pt]
-�����������������������ܸ�Ψ���������������\ \\[-4pt]
-���������������������������������Ϥ˨�������\ \\[-4pt]
-��������������������������������������������\ \\[-4pt]
-�����������������������������Ѥ����Ƥ��롥\ \\
+　　　　　　　　　　　　　　格文法は──┐　\ \\[-4pt]
+　　　　　　本質的に──┐　　　　　　　│　\ \\[-4pt]
+統語規則と \fl P\fr ─┐　　　│　　　　　　　│　\ \\[-4pt]
+意味規則を \fl P\fr ─PARA──┤　　　　　　　│　\ \\[-4pt]
+　　　　　　　　　共存させた──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　文法であり，──┤　\ \\[-4pt]
+　　　　　　　　　　日本語の──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　　　　解析に──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　　　広く──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　用いられている．\ \\
 \end{tabular}
 \end{quote}
 
-���Υ����ƥ����ħ�ϼ��Τ褦�����ˤ���ޤ���
+このシステムの特徴は次のような点にあります．
 
 \begin{itemize}
-\item �������(�֡��ȡ���)���������(�֡������������)�ʤɤ�ʸ������
-  ����Ĵ�٤Ƽ��Ф���ǽ���㳰Ū��ʸ��ο����񤤤���̤˵��ҤǤ��뵡ǽ
-  �ʤɤ��äƤ��롥
-\item �����ε�ǽ���Ѥ��ơ���դβ��Ϸ�̤�(�Ǥ������������)�����
-  ����Ω���ȤäƤ��롥���ߤΤȤ���ʣ�������Ϥ��륪�ץ����Ϥʤ�
-  (���ɤ�ͽ��)��
-\item ����Ū�ˤϡ����Υ����ƥ�ξ�ǥ桼�����ȼ���ʸˡ���ۤ��뤳�Ȥ�
-  ���ꤷ�Ƥ��ʤ������������桼���ˤ�뤢�����٤�ʸˡ�����ϲ�ǽ�Ǥ��롥
+\item 句の並列(「〜と〜」)，節の並列(「〜し，〜する」)などを文節の類似
+  性を調べて取り出す機能，例外的な文節の振る舞いを個別に記述できる機能
+  などをもっている．
+\item 大規模Webテキストから自動構築した格フレームに基づき，構文・格構造
+      のもっともらしさを確率的に評価する機能をもっている．
+\item これらの機能を用いて，一意の解析結果を(できるだけ正しく)求めると
+  いう立場をとっている．現在のところ複数解を出力するオプションはない
+  (改良の予定)．
+\item 基本的には，このシステムの上でユーザが独自の文法を構築することは
+  想定していない．しかし，ユーザによるある程度の文法修正は可能である．
 \end{itemize}
 
-������ع������ϸ����漼�Ǥϸ��ߤ⥷���ƥ�β��ɤ��³Ū�˹ԤäƤ��ꡤ�桼����
-���ͤ�����������λ�Ŧ�򴿷��פ��ޤ�(Ϣ���� : {\sf
-nl-resource@nlp.ist.i.kyoto-u.ac.jp})��
+京都大学黒橋・河原研究室では現在もシステムの改良を継続的に行っており，ユーザの
+皆様からの問題点の指摘を歓迎いたします(連絡先 : {\sf
+nl-resource@nlp.ist.i.kyoto-u.ac.jp})．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{���󥹥ȡ�����ˡ}
+\section{インストール方法}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-KNP�ϰʲ��Υġ��롦������Ѥ��ޤ��Τǡ����餫���ᤴ�Ѱդ���������
+KNPは以下のツール・辞書を用いますので，あらかじめご用意ください．
 
 \begin{enumerate}
- \item JUMAN 7.0�ʾ� \\ (http://nlp.ist.i.kyoto-u.ac.jp/index.php?���ܸ�����ǲ��ϥ����ƥ�JUMAN)
- \item ʬ�����ɽ ��������� \\
-(http://www.kokken.go.jp/katsudo/kanko/data/index.html) \\
- \item Perl \\ (http://www.perl.com/)
+ \item JUMAN 7.0以上 \\ (http://nlp.ist.i.kyoto-u.ac.jp/index.php?日本語
+       形態素解析システムJUMAN)
+ \item TinyCDBライブラリ \\ (http://www.corpit.ru/mjt/tinycdb.html)
+ \item zlibライブラリ \\ (http://zlib.net/) \\
+       ※多くのOSに標準でインストールされています
+ \item CRF++ \\ (http://crfpp.sourceforge.net/)
+ \item Perl \\ (http://www.perl.com/) \\
+       ※多くのOSに標準でインストールされています
 \end{enumerate}
-1�ϡ��ƥ����Ȥ����������Ѵ�����ץ������ǡ�KNP�Ϥ��Υץ������ν���
-�����ϤȤ��ޤ���2������¤���Ϥ����Ѥ��ޤ������ʤ��Ƥ�ư��ޤ�(������
-�٤ϼ㴳�㲼���ޤ�)��3��ʬ�����ɽ�򥤥󥹥ȡ��뤹����ȥ롼��ե�����
-�򹹿��������ɬ�פȤʤ�ޤ���
+1は，テキストを形態素列に変換するプログラムで，KNPはこのプログラムの出力
+を入力とします．2と3は，辞書データベースを構築するために必要です．4は，固
+有表現解析を行う場合に必要となります．5は，ルールファイルを修正，更新する
+場合に必要となります．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Unix��OS�ˤ����륤�󥹥ȡ�����ˡ}
+\subsection{Unix系OSにおけるインストール方法}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-KNP�Υ��󥹥ȡ���ϰʲ��μ��ǹԤ��ޤ���
+KNPのインストールは以下の手順で行います．
 
 \begin{enumerate}
- \item \texttt{knp-4.0b.tar.gz}��Ÿ������\texttt{knp-4.0b}�ǥ��쥯�ȥ�˰�
-       ư���롥
- \item `\texttt{./configure}'��¹Ԥ��롥\\
-       `\texttt{./configure}'�˥��ץ�����Ϳ���뤳�Ȥˤ�ꡤ���󥹥ȡ�
-       ����䥳��ѥ��륪�ץ����ʤɤ��ѹ����뤳�Ȥ��Ǥ��롥ʬ�����ɽ
-       ���Ѥ�����ˤϡ�
-
-       \begin{quote}
-	\texttt{--with-bgh-file=/somewhere/bunruidb.txt}
-       \end{quote}
-
-       �Τ褦�ʥ��ץ����ˤ�äơ�ʬ�����ɽ�ե�����
-       (\texttt{bunruidb.txt})�ξ�����ꤹ�롥�ܺ٤ϡ�Ʊ����
-       \texttt{INSTALL}�ޤ���`\texttt{./configure --help}' �ν��Ϥ򻲾�
-       �Τ��ȡ�
- \item `make'��¹Ԥ��롥\\
-       KNP�����ƥ�Υ���ѥ���ȼ���ι��ۤ��Ԥ��롥
- \item (root��)`make install'��¹Ԥ��롥\\
-       KNP�����ƥ�ȼ��񤬥��󥹥ȡ��뤵��롥���󥹥ȡ��뤵������
-       �ʲ��ΤȤ���Ǥ��롥\texttt{\$PREFIX}�ϡ��ǥե���ȤǤ�
-       \texttt{/usr/local}�Ǥ��뤬��`\texttt{./configure --prefix}'����
-       ��Ǥ��롥
+ \item \texttt{knp-4.0.tar.gz}を展開し，\texttt{knp-4.0}ディレクトリに移
+       動する．
+ \item `\texttt{./configure}'を実行する．\\
+       `\texttt{./configure}'にオプションを与えることにより，インストー
+       ル先やコンパイルオプションなどを変更することができる．詳細は，同梱の
+       \texttt{INSTALL}または`\texttt{./configure --help}' の出力を参照
+       のこと．
+ \item `make'を実行する．\\
+       KNPシステムのコンパイルと辞書の構築が行われる．
+ \item (rootで)`make install'を実行する．\\
+       KNPシステムと辞書がインストールされる．インストールされる場所は
+       以下のとおりである．\texttt{\$PREFIX}は，デフォルトでは
+       \texttt{/usr/local}であるが，`\texttt{./configure --prefix}'で設
+       定できる．
 
        \begin{tabular}{ll}
-	\texttt{\$PREFIX/bin/knp} & �¹ԥե����� \\
-	\texttt{\$PREFIX/share/knp/dic/} & ���� \\
-	\texttt{\$PREFIX/share/knp/rule/} & �롼�� \\
-	\texttt{\$PREFIX/etc/knprc} & ����ե����� \\
-	\texttt{\$PREFIX/share/knp/doc/manual.pdf} & �ޥ˥奢�� \\
-	\texttt{\$PREFIX/libexec/knp/} & ��������ץ������ \\
+	\texttt{\$PREFIX/bin/knp} & 実行ファイル \\
+	\texttt{\$PREFIX/share/knp/dic/} & 辞書 \\
+	\texttt{\$PREFIX/share/knp/rule/} & ルール \\
+	\texttt{\$PREFIX/etc/knprc} & 設定ファイル \\
+	\texttt{\$PREFIX/share/knp/doc/manual.pdf} & マニュアル \\
+	\texttt{\$PREFIX/libexec/knp/} & 辞書作成プログラム \\
        \end{tabular}
 \end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Windows�ˤ����륤�󥹥ȡ�����ˡ}
+\subsection{Windowsにおけるインストール方法}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\texttt{knp-4.0b.exe}��¹Ԥ���ɽ�������ؼ��˽��äƥ��󥹥ȡ����Ԥ���
-�����ʲ��Υե����뤬���󥹥ȡ��뤵��ޤ���\texttt{\$PREFIX}�ϡ��ǥե���
-�ȤǤ�\texttt{C:\yen Program Files\yen knp}�Ǥ��������󥹥ȡ����������
-��Ǥ��ޤ���
+\texttt{knp-4.0.exe}を実行し，表示される指示に従ってインストールを行いま
+す．以下のファイルがインストールされます．\texttt{\$PREFIX}は，デフォル
+トでは\texttt{C:\yen Program Files\yen knp}ですが，インストール途中で設
+定できます．
 
 \begin{tabular}{ll}
- \texttt{\$PREFIX\yen knp.exe} & �¹ԥե����� \\
- \texttt{\$PREFIX\yen dic} & ���� \\
- \texttt{\$PREFIX\yen rule} & �롼�� \\
- \texttt{\$PREFIX\yen manual.pdf} & �ޥ˥奢�� \\
+ \texttt{\$PREFIX\yen knp.exe} & 実行ファイル \\
+ \texttt{\$PREFIX\yen dic} & 辞書 \\
+ \texttt{\$PREFIX\yen rule} & ルール \\
+ \texttt{\$PREFIX\yen manual.pdf} & マニュアル \\
 \end{tabular}
-
-\vspace*{4ex}
-
-ʬ�����ɽ�����Ѥ���ˤϡ�KNP�򥤥󥹥ȡ��뤷����ˡ��ʲ��μ���¹Ԥ���
-ɬ�פ�����ޤ���
-\begin{enumerate}
- \item ʬ�����ɽCD-ROM�˴ޤޤ�Ƥ���\texttt{bunruidb.txt}��
-       \texttt{\$PREFIX\yen dic\yen scode\yen bgh}�˥��ԡ����롥
- \item \texttt{\$PREFIX\yen dic\yen scode\yen bgh\yen make\_bgh\_db.bat}��¹Ԥ��롥
-\end{enumerate}
 
 \vspace*{3ex}
 
-Windows�Ǥ�UNIX�ǤȰʲ��������ۤʤ�ޤ���
+Windows版はUNIX版と以下の点が異なります．
 \begin{itemize}
- \item �����Ϥ� SJIS �ǹԤ���
- \item �����С����饤����ȵ�ǽ�������Ƥ��ʤ���
+ \item 入出力は，UNIX版はUTF-8であるが，Windows版はSJISで行う．
+ \item サーバ・クライアント機能は備えていない．
 \end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%
-\section{������ˡ}
+\section{利用方法}
 %%%%%%%%%%%%%%%%%%
 
-\subsection{���ޥ�ɥ饤�󤫤��������ˡ}
+\subsection{コマンドラインからの利用方法}
 
-KNP�����Ϥϡ������ǲ��ϥ����ƥ�JUMAN�β��Ϸ�̤Ǥ����ʲ���ŵ��Ū��������
-ˡ�򼨤��ޤ���
+KNPの入力は，形態素解析システムJUMANの解析結果です．以下に典型的な利用方
+法を示します．
 
 \begin{quote}
 \texttt{\% cat test} \\
-��ʸˡ���ܼ�Ū�����쵬§�Ȱ�̣��§��¸������ʸˡ�Ǥ��ꡤ���ܸ� \\
-�β��Ϥ˹����Ѥ����Ƥ��롥\\
+格文法は本質的に統語規則と意味規則を共存させた文法であり，日本語 \\
+の解析に広く用いられている．\\
  \\
 \texttt{\% juman < test | knp} \\
 \begin{tabular}[t]{r}
-������������������������������ʸˡ�Ϩ�������\ \\[-4pt]
-�������������ܼ�Ū�˨�����������������������\ \\[-4pt]
-���쵬§�� \fl P\fr ������������������������������\ \\[-4pt]
-��̣��§�� \fl P\fr ��PARA������������������������\ \\[-4pt]
-��������������������¸����������������������\ \\[-4pt]
-������������������������ʸˡ�Ǥ��ꡤ��������\ \\[-4pt]
-�����������������������ܸ�Ψ���������������\ \\[-4pt]
-���������������������������������Ϥ˨�������\ \\[-4pt]
-��������������������������������������������\ \\[-4pt]
-�����������������������������Ѥ����Ƥ��롥\ \\
+　　　　　　　　　　　　　　格文法は──┐　\ \\[-4pt]
+　　　　　　本質的に──┐　　　　　　　│　\ \\[-4pt]
+統語規則と \fl P\fr ─┐　　　│　　　　　　　│　\ \\[-4pt]
+意味規則を \fl P\fr ─PARA──┤　　　　　　　│　\ \\[-4pt]
+　　　　　　　　　共存させた──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　文法であり，──┤　\ \\[-4pt]
+　　　　　　　　　　日本語の──┐　　　│　\ \\[-4pt]
+　　　　　　　　　　　　　　　解析に──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　　　広く──┤　\ \\[-4pt]
+　　　　　　　　　　　　　　用いられている．\ \\
 \end{tabular}
 \end{quote}
 
-KNP�Ǥϡ��ִ��ܶ�פ�ñ�̤ˤ��Ʋ��Ϥ��Ƥ��ޤ������ܶ�Ȥϡ�������إƥ���
-�ȥ����ѥ��˴ޤޤ��ʴط����ȱ�����ά�ط��������ȥ����դ������ѥ��ˤ���
-�ƳƼ�ط�����Ϳ���Ƥ���ñ�̤Ǥ������ܶ�ϡ�����Ū�˼�Ω�����ˤȤ��ơ�
-���������¸�ߤ�����Ƭ���������������졤��ư��ʤɤ���°���ޤȤ᤿���
-�ǡ�ʸ���Ʊ�������ΰ����Ǥ������ߤ�KNP�Ǥϡ�ʸ����δ��ܶ�֤η������
-�ϰ��äƤ��餺�٤˷���褦�˲��Ϥ���ޤ���
+KNPでは，「基本句」を単位にして解析しています。基本句とは，京都大学テキス
+トコーパスに含まれる格関係，照応・省略関係，共参照タグ付きコーパスにおい
+て各種関係を付与している単位です．基本句は，基本的に自立語一語を核として，
+その前後に存在する接頭辞，接尾辞，助詞，助動詞などの付属語をまとめたもの
+で，文節と同じかその一部です．現在のKNPでは，文節内の基本句間の係り受け
+は扱っておらず隣に係るように解析されます．
 
-KNP�ˤϰʲ��Υ��ץ���󤬤���ޤ���
+KNPには以下のオプションがあります．
 \begin{itemize}
-\item ���ϤΥ�٥�λ���
+\item 解析のレベルの指定
 
 \begin{tabular}{ll}
--bnst           & ���������ʸ������Ѵ����� \\
--dpnd           & ����ˡ�ʸ��֤η���������Ϥ�Ԥ� \\
--case (default) & ����ˡ��ʴط��β��Ϥ�Ԥ� \\
+-bnst           & 形態素列を文節列に変換する \\
+-dpnd           & さらに，文節間の係り受け解析を行う \\
+-case (default) & さらに，格関係の解析を行う \\
+-ne             & さらに，固有表現の解析を行う \\
 \end{tabular}
-\item ���Ϸ�̤�ɽ���λ���
+\item 解析結果の表示の指定
 
 \begin{tabular}{ll}
--tab            & ɽ�����ˤ��ɽ�� \\
--tree (default) & �ڹ�¤�ˤ��ɽ�� \\
--bnsttab        & ʸ���ɽ�����ˤ��ɽ�� \\
--bnsttree       & ʸ����ڹ�¤�ˤ��ɽ�� \\
--sexp           & �ꥹ�ȷ����ˤ��ɽ�� \\
+-tab            & 表形式による表示 \\
+-tree (default) & 木構造による表示 \\
+-bnsttab        & 文節の表形式による表示 \\
+-bnsttree       & 文節の木構造による表示 \\
+-sexp           & リスト形式による表示 \\
 \end{tabular}
-\item ���Ϸ�̤ν��Ͼ���λ���
+\item 解析結果の出力情報の指定
 
 \begin{tabular}{ll}
--normal (default) & �ǽ�Ū���Ϸ�̤�����ɽ�� \\
--detail           & ��������β�ǽ�����㡤ʸ��֤�����ٹ���ʤɤ�ɽ�� \\
--debug            & ����˾ܤ������������ʳ��ξ����ɽ�� \\
+-normal (default) & 最終的解析結果だけを表示 \\
+-detail           & 係り受けの可能性行例，文節間の類似度行列なども表示 \\
+-debug            & さらに詳しい解析途中段階の情報の表示 \\
+\end{tabular}
+\item その他
+
+\begin{tabular}{ll}
+-cf-cache         & 格フレームをキャッシュする (10\%程度解析が速くなりますが，\\
+                  & 大量(10GB程度)のメモリが必要になります) \\
 \end{tabular}
 \end{itemize}
 
 
-\subsection{Perl�����������ˡ}
+\subsection{Perlからの利用方法}
 
-Perl�⥸�塼��``KNP''���Ѥ��뤳�Ȥˤ�ꡤPerl����KNP�����Ѥ��뤳�Ȥ�
-�Ǥ��ޤ���
+Perlモジュール``KNP''を用いることにより，PerlからKNPを利用することが
+できます．
 
 \begin{itemize}
- \item ���󥹥ȡ�����ˡ
+ \item インストール方法
 
-       KNP��Ÿ�������ǥ��쥯�ȥ�ˤ���\texttt{perl}�ǥ��쥯�ȥ�˰�ư
-       �������μ���¹Ԥ��ޤ���
+       KNPを展開したディレクトリにある\texttt{perl}ディレクトリに移動
+       し，次の手順を実行します．
        \begin{enumerate}
 	\item perl Makefile.PL
 	\item make
-	\item (root��) make install
+	\item (rootで) make install
        \end{enumerate}
- \item ������
+ \item 使用例
 
-       �ץ����������ʲ��˼����ޤ������Υץ�������¹Ԥ���ȡ��֤���ʸ
-       ������ǲ��Ϥ��Ƥ����������פȤ���ʸ�β��Ϸ�̤�ɽ������ޤ���
+       プログラムの例を以下に示します．このプログラムを実行すると，「この文
+       を形態素解析してください．」という文の解析結果が表示されます．
 
        \begin{verbatim}
 	use KNP;
 	$knp = new KNP;
-	$result = $knp->parse( "����ʸ��ʸ���Ϥ��Ƥ���������" );
+	$result = $knp->parse( "この文を構文解析してください．" );
 	print $result->all();
        \end{verbatim}
 
-       �ܺ٤�`\texttt{perldoc KNP}'�μ¹Է�̤򻲾Ȥ��Ƥ���������
+       詳細は`\texttt{perldoc KNP}'の実行結果を参照してください．
 \end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-\section{���ϲ����γ���}
+\section{解析過程の概要}
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-KNP�ϡ�JUMAN�ν��Ϸ�������(Ʊ���۵����ޤ�)�����ϤȤ����ʲ��Τ褦�ʽ���
-��Ԥ��ޤ���
+KNPは，JUMANの出力形態素列(同形異義語を含む)を入力とし，以下のような処理
+を行います．
 
 \begin{enumerate}
-\item Ʊ���۵�������������դη���������Ѵ����ޤ�
-  (���Ỳ��:mrph\_homo.rule)��
-\item �Ʒ����Ǥ��Ф��ơ�����Ư���򼨤���Υޡ���(feature)��Ϳ���ޤ���
-  ����Ū����ʸ��ˤޤȤ�뤿��μ�Ω�졦��°����㳰Ū����ʤɤǤ�
-  (mrph\_basic.rule)��
-\item �����Ǥ�Ϳ����줿feature�ˤ������äơ����������ʸ������Ѵ�
-  ���ޤ���
-\item ��ʸ����Ф��ơ�����Ư���򼨤�feature��Ϳ���ޤ����Ѹ����θ�����
-  �ʡ���ʡ�����¤�β�ǽ���ʤɤ�feature�Ǥ�(bnst\_basic.rule, 
-  bnst\_type.phrase, bnst\_etc.rule)��
-\item ʸ�������¤�β�ǽ���򼨤�ɽ��������С�����������������ʸ��
-  ��򸡽Ф������������¤���ϰϤȤ��ޤ���
-\item (����¤��������ϡ����θ��Ф��줿�ϰϤ�̷�⤷�ʤ��褦��) ʸ
-  ���Τη��������¤�θ����Ĥ���Ф��ޤ�(kakari\_uke.rule)��
-\item �Ĥ���Ф��줿�Ƹ����ɾ��������äȤ�
-  ͥ��Ū�ʤ�Τ��Ȥ��ƽ��Ϥ��ޤ���ɾ���ϡ���ư�������줿�ʥե졼��˴�
-  �Ť����Ҹ�๽¤��ɾ�����뤳�Ȥˤ�äƹԤ��ޤ���
+\item 同形異義語を処理し，一意の形態素列に変換します
+  (次節参照:mrph\_homo.rule)．
+\item 各形態素に対して，その働きを示す種々のマーク(feature)を与えます．
+  辞書的情報，文節にまとめるための自立語・付属語の例外的情報などです
+  (mrph\_basic.rule)．
+\item 形態素に与えられたfeatureにしたがって，形態素列を文節列に変換
+  します．
+\item 各文節に対して，その働きを示すfeatureを与えます．用言，体言，ガ
+  格，ヲ格，並列構造の可能性などのfeatureです(bnst\_basic.rule, 
+  bnst\_type.phrase, bnst\_etc.rule)．
+\item 文中に並列構造の可能性を示す表現があれば，その前後で類似する文節
+  列を検出し，それを並列構造の範囲とします．
+\item (並列構造がある場合は，その検出された範囲と矛盾しないように) 文
+  全体の係り受け構造の候補をつくり出します(kakari\_uke.rule)．
+\item つくり出された各候補を評価し，もっとも
+  優先的なものを解として出力します．評価は，自動獲得された格フレームに基
+  づき，述語項構造を評価することによって行います．
 \end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%
-\section{ʸˡ�ε���}
+\section{文法の記述}
 %%%%%%%%%%%%%%%%%%%%
 
-ʸˡ�򵭽Ҥ���ե�����η����ˤϡ�phrase, rule, data��3���ढ��ޤ�����
-�����Ҥ���Τ�phrase�ޤ���rule�����ǡ�KNP��data�������ɤ߹��ߤޤ���
-phrase�����Υե������phrase2rule.pl�ץ��������Ѥ���rule�������Ѵ�����
-rule������rule2data.pl�ץ��������Ѥ���data�������Ѵ����ޤ�
+文法を記述するファイルの形式には，phrase, rule, dataの3種類あります．人
+が記述するのはphraseまたはrule形式で，KNPはdata形式を読み込みます．
+phrase形式のファイルはphrase2rule.plプログラムを用いてrule形式に変換し，
+rule形式はrule2data.plプログラムを用いてdata形式に変換します
 \footnote{
-�������Ѵ���rule �ǥ��쥯�ȥ��`make'��¹Ԥ��뤳�Ȥˤ�äƹԤ��ޤ���
-�ʤ����ۥѥå������ˤ�data�����ե������ޤޤ�Ƥ���Τǡ�ʸˡ���ѹ����
-�ʤ�ʤ����ϲ��⤹��ɬ�פϤ���ޤ���}��
+これらの変換はrule ディレクトリで`make'を実行することによって行われます．
+なお配布パッケージにはdata形式ファイルも含まれているので，文法の変更を行
+わない場合は何もする必要はありません．}．
 
-phrase������rule�����ΰ㤤�ϥ롼��ν񤭤䤹���ǡ�phrase�����������ͤˤȤ�
-�ƽ񤭤䤹���񼰤ȤʤäƤ��ޤ���rule�����Υե�����ϥꥹ�ȷ����ǵ��Ҥ���
-���������Υ롼��λ�����Ū�ˤ�äƽ񼰤��ۤʤꡤƱ���۵��졤�����ǡ�ʸ�ᡤ
-���������4���ब����ޤ���ʸ��롼��ϡ����ܶ���Ф��Ƥ�Ŭ�Ѥ���ޤ���
-KNP���Ѥ��Ƥ���롼��ե�����ϰʲ��ΤȤ���Ǥ���
+phrase形式とrule形式の違いはルールの書きやすさで，phrase形式の方が人にとっ
+て書きやすい書式となっています．rule形式のファイルはリスト形式で記述しま
+すが，そのルールの使用目的によって書式が異なり，同形異義語，形態素，文節・
+基本句，係り受けの4種類があります．文節・基本句ルールは，文節と基本句の両
+方に対して適用することができます．KNPが用いているルールファイルは以下のと
+おりです．
 
 \begin{center}
  \begin{tabular}{l|l|l} \hline
-  & �ե�������� & �롼��� \\ \hline
-  mrph\_homo.rule   & rule & Ʊ���۵��� \\
-  mrph\_filter.rule & rule & ������ \\
-  mrph\_auto\_dic.rule & rule & ������ \\
-  mrph\_basic.rule  & rule & ������ \\
-  mrph\_ne.rule     & rule & ������ \\
-  bnst\_basic.rule  & rule & ʸ�� \\
-  bnst\_type.phrase & phrase & (ʸ��) \\
-  bnst\_etc.rule    & rule & ʸ�� \\
-  case\_analysis.rule & rule & ʸ�� \\
-  kakari\_uke.rule  & rule & ������� \\ \hline
+  & ファイル形式 & ルール書式 \\ \hline
+  mrph\_homo.rule   & rule & 同形異義語 \\
+  mrph\_filter.rule & rule & 形態素 \\
+  mrph\_auto\_dic.rule & rule & 形態素 \\
+  mrph\_basic.rule  & rule & 形態素 \\
+  mrph\_ne.rule     & rule & 形態素 \\
+  bnst\_basic.rule  & rule & 文節・基本句 \\
+  bnst\_type.phrase & phrase & (文節・基本句) \\
+  bnst\_etc.rule    & rule & 文節・基本句 \\
+  modality.rule     & rule & 文節・基本句 \\
+  clause\_function  & phrase & (文節・基本句) \\
+  case\_analysis.rule & rule & 文節・基本句 \\
+  tag\_after\_dpnd\_and\_case & rule & 文節・基本句 \\
+  tag\_postprocess & rule & 文節・基本句 \\
+  kakari\_uke.rule  & rule & 係り受け \\ \hline
  \end{tabular}
 \end{center}
 
-�ޤ���rule�����Υ롼�뵭�Ҥ��Ѥ�����feature�ѥ����󡤷����ǥѥ�����
-ʸ��ѥ�����ˤĤ����������ޤ������ˡ�Ʊ���۵��졤�����ǡ�ʸ�ᡤ�������
-��4�ĤΥ롼��񼰤ˤĤ����������ޤ����Ǹ��phrase�����Υ롼�뵭�ҤˤĤ�
-���������ޤ���
+まず，rule形式のルール記述に用いられるfeatureパターン，形態素パターン，文
+節・基本句パターンについて説明します．次に，同形異義語，形態素，文節・基
+本句，係り受けの4つのルール書式について説明します．最後にphrase形式のルー
+ル記述について説明します．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{feature�ѥ�����}
+\subsection{featureパターン}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-�����ǡ�ʸ��ˤ�feature�ν��礬Ϳ�����ޤ������Ȥ��С���ϡפȤ���ʸ��
-�ˤ�
+形態素，基本句，文節にはfeatureの集合が与えられます．たとえば「彼は」とい
+う文節には
 \begin{verbatim}
-        {<�θ�> <����> <��:̤��>}  
+        {<体言> <提題> <係:未格>}  
 \end{verbatim}
-�Ȥ����褦��feature���礬Ϳ�����ޤ�
+というようなfeature集合が与えられます
 \footnote{
-feature�����T�ǻϤޤ��Τ�����ޤ���������ϥ롼�뵭�Ҥ򥳥�ѥ��Ȥ�
-���뤿��˰��Ū��Ϳ����feature�ǡ����Ϸ�̤ν��Ϥˤ�ɽ������ޤ���}��
+featureの中にTで始まるものがありますが，これはルール記述をコンパクトに
+するために一時的に与えるfeatureで，解析結果の出力には表示されません．}．
 
-feature�ѥ�����Ϥ��Τ褦��feature������Ф���ѥ�����ǡ�feature������
-ɸ�����Ϳ���ޤ����ޤ�feature̾��ľ���� $\hat{ }$ ��Ĥ����feature����
-�ꡤ���ʤ������feature��feature����˴ޤޤ�ʤ��Ȥ������Ȥ����Ǥ��ޤ���
-���Ȥ���
+featureパターンはこのようなfeature集合に対するパターンで，featureの積和
+標準形で与えます．またfeature名の直前に $\hat{ }$ をつければfeatureの否
+定，すなわちそのfeatureがfeature集合に含まれないということを指定できます．
+たとえば
 \begin{verbatim}
-        ((�θ� ����)(�θ� ^����))
+        ((体言 提題)(体言 ^時間))
 \end{verbatim}
-�ϡ�\fl �θ�\fr ��\fl ����\fr �Ȥ���feature��Ȥ�˴ޤफ�����뤤��
-\fl �θ�\fr �Ȥ���feature��ޤ�\fl ����\fr �Ȥ���feature��ޤޤʤ�
-feature����ȥޥå����ޤ���
+は，\fl 体言\fr ，\fl 提題\fr というfeatureをともに含むか，あるいは
+\fl 体言\fr というfeatureを含み\fl 時間\fr というfeatureを含まない
+feature集合とマッチします．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{�����ǥѥ�����}
+\subsection{形態素パターン}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 \vspace{5mm}
 
-�����ǥѥ�����ϡ�Ǥ�դη����Ǥȥޥå����뤳�Ȥ򼨤�
+形態素パターンは，任意の形態素とマッチすることを示す
 \begin{verbatim}
         ?
 \end{verbatim}
-���뤤�ϡ�����Ū��
+あるいは，具体的に
 \begin{verbatim}
-        [ �ʻ� �ʻ��ʬ�� ���ѷ� ���ѷ� ���� feature�ѥ����� ]
+        [ 品詞 品詞細分類 活用型 活用形 語彙 featureパターン ]
 \end{verbatim}
-�Ȥ������ǻ��ꤷ�ޤ���[$\cdots$]��ľ���� $\hat{ }$ ����Ϳ���뤳�Ȥǡ�
-����Ū�˻��ꤷ�������ǰʳ��Τ�Ρ��Ȥ����ѥ������ɽ�����뤳�Ȥ�Ǥ��ޤ���
-�ʻ졤��ʬ�ࡤ���ѷ������ѷ������äϤ��줾��
+という形で指定します．[$\cdots$]の直前に $\hat{ }$ を付与することで，
+具体的に指定した形態素以外のもの，というパターンを表現することもできます．
+品詞，細分類，活用型，活用形，語彙はそれぞれ
 \begin{quote}
-  ����Ū���� --- ̾�졤�ʤ� \\
-  ����Ū����Υꥹ�� --- (̾�� ư��) �ʤ� \\
-  $*$ (Ǥ�դǤ��뤳�Ȥ򼨤�)
+  具体的指定 --- 名詞，など \\
+  具体的指定のリスト --- (名詞 動詞) など \\
+  $*$ (任意であることを示す)
 \end{quote}
-�Τ����줫��(�ʻ��ηϤʤɤ�JUMAN�˽���)�����ξ��ˤ�ľ���� $\hat{ }$ ��
-�ղä��뤳�ȤǶ���Ū�˻��ꤷ����ΰʳ��ȥޥå����뤳�Ȥ����Ǥ���
-����feature�ѥ�����Ͼ����������feature������ɸ����ǡ������Ǥ�
-Ϳ�����Ƥ���feature������Ф�����Ȥʤ�ޤ���
-�����ǥѥ�����ˤ����ơ�������ʬ��������
-���٤� $*$ �ǡ�feature�ѥ�����ξ���ʤ����ϡ��������ά��
-�뤳�Ȥ��Ǥ��ޤ���
+のいずれかで(品詞体系などはJUMANに従う)，この場合にも直前に $\hat{ }$ を
+付加することで具体的に指定したもの以外とマッチすることを指定できま
+す．featureパターンは上で説明したfeatureの積和標準形で，形態素に
+与えられているfeature集合に対する条件となります．
+形態素パターンにおいて，ある部分から後ろが
+すべて $*$ で，featureパターンの条件もない場合は，それらを省略す
+ることができます．
 
-�㤨�аʲ��Τ褦�ʻ��꤬��ǽ�Ǥ���
+例えば以下のような指定が可能です．
 \begin{verbatim}
-  [ ư�� * * * ( ���� �Ǥ��� ) ] ; ư��֤���פޤ���ư��֤Ǥ����
-  ^[ ư�� * * * ( ���� �Ǥ��� ) ] ; ư��֤���ס�ư��֤Ǥ���װʳ� 
-  [ ư�� * * * ^( ���� �Ǥ��� ) ] ; �֤���ס��֤Ǥ���װʳ���ư��
-  [ (̾�� ����) * * * * ((����)) ] ; <����>�Ȥ���feature����̾��ޤ�������
-  [ ư�� * (����ư�� ����ư��) ] ; ư��ǡ����ѷ�������ư��ޤ��ϥ���ư��Τ��
+  [ 動詞 * * * ( する できる ) ] ; 動詞「する」または動詞「できる」
+  ^[ 動詞 * * * ( する できる ) ] ; 動詞「する」，動詞「できる」以外 
+  [ 動詞 * * * ^( する できる ) ] ; 「する」，「できる」以外の動詞
+  [ (名詞 副詞) * * * * ((漢字)) ] ; <漢字>というfeatureをもつ名詞または副詞
+  [ 動詞 * (サ変動詞 カ変動詞) ] ; 動詞で，活用型がサ変動詞またはカ変動詞のもの
 \end{verbatim}
 
-����ˡ�����Ū�ʷ����ǻ���ޤ��� ? ��ľ��� $*$ ���ղä���ȡ�������
-0��ʾ�η����֤��ȥޥå���ǽ�Ǥ��뤳�Ȥ򼨤��ޤ����㤨�С�
+さらに，具体的な形態素指定または ? の直後に $*$ を付加すると，それらの
+0回以上の繰り返しとマッチ可能であることを示します．例えば，
 \begin{verbatim}
         ?*
 \end{verbatim}
-��Ǥ�դη�������ȡ�
+は任意の形態素列と，
 \begin{verbatim}
-        [ ���� ]*  
+        [ 助詞 ]*  
 \end{verbatim}
-��Ǥ�դν�����ȥޥå����ޤ���(��: $*$�Ϸ����������λ���Ǥ�Ǥ�դΤ��
-�ȤΥޥå��򡤳����ǤϾ��η����֤�����ꤷ��Ư�����ۤʤ롥)
+は任意の助詞列とマッチします．(注: $*$は形態素内部の指定では任意のもの
+とのマッチを，外部では条件の繰り返しを指定し，働きが異なる．)
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ʸ��ѥ�����}
-%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{文節・基本句パターン}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ʸ��ѥ�����ϡ�Ǥ�դ�ʸ��ȥޥå����뤳�Ȥ򼨤�
+文節・基本句パターンは，任意の文節もしくは基本句(以下では，単に文節と記述
+しますが，基本句も同様です)とマッチすることを示す
 \begin{verbatim}
         ?
 \end{verbatim}
-���뤤�ϡ�����Ū��
+あるいは，具体的に
 
 \begin{verbatim}
-        < (�����ǥѥ�������) feature�ѥ����� >
+        < (形態素パターン列) featureパターン >
 \end{verbatim}
 
-�Ȥ������ǻ��ꤷ�ޤ��������ǥѥ��������ʸ������������������Ф����
-������ǡ�feature�ѥ������ʸ�᤬���feature������Ф���ѥ�����Ǥ�����
-��ˡ�����Ū��ʸ�����ޤ��� ? ��ľ��� $*$ ���ղä���ȡ�������0���
-��η����֤��ȥޥå���ǽ�Ǥ��뤳�Ȥ򼨤��ޤ���
+という形で指定します．形態素パターン列は文節を構成する形態素列に対するパ
+ターンで，featureパターンは文節がもつfeature集合に対するパターンです．さ
+らに，具体的な文節指定または ? の直後に $*$ を付加すると，それらの0回以
+上の繰り返しとマッチ可能であることを示します．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
-        < (?* [���� * * * ��] [���� * * * ��]* [�ü� ����]* ) ((�Ѹ�)) >
+        < (?* [助詞 * * * と] [助詞 * * * も]* [特殊 読点]* ) ((用言)) >
 \end{verbatim}
-�Ȥ����ѥ�����ϡ��֡��ȡס��֡��Ȥ⡤�פʤɤη�������ǡ�\fl �Ѹ�\fr 
-�Ȥ���feature�����ʸ��˥ޥå����ޤ���
+というパターンは，「〜と」，「〜とも，」などの形態素列で，\fl 用言\fr 
+というfeatureを持つ文節にマッチします．
 
-�ʤ��������ǥѥ������Ϥ��̤�\texttt{[ ]}��ʸ��ѥ������Ϥ��̤�
-\texttt{< >}�Ȥ��Ƥ��ޤ���������ϥ롼����ɤߤ䤹���Τ���Τ�Τǡ�KNP
-�Ϥ�����\texttt{( )}���Ѵ�����data�����Υե�����򻲾Ȥ��ޤ���
+なお，形態素パターンを囲む括弧は\texttt{[ ]}，文節パターンを囲む括弧は
+\texttt{< >}としていますが，これはルールの読みやすさのためのもので，KNP
+はこれらを\texttt{( )}に変換したdata形式のファイルを参照します．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ʊ���۵���롼��}
+\subsection{同形異義語ルール}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Ʊ���۵���ϡ�mrph\_homo.rule��Ϳ����줿���η����Υ롼��ˤ�äƽ�������ޤ���
+同形異義語は，mrph\_homo.ruleに与えられた次の形式のルールによって処理されます．
 \begin{quote}
-  ( ( �����ǥѥ������� ) ( �����ǥѥ�����$_1$ �����ǥѥ�����$_2$ $\cdots$ �����ǥѥ�����$_n$ ) 
-  ( �����ǥѥ������� ) feature�� )
+  ( ( 形態素パターン列 ) ( 形態素パターン$_1$ 形態素パターン$_2$ $\cdots$ 形態素パターン$_n$ ) 
+  ( 形態素パターン列 ) feature列 )
 \end{quote}
-�ǽ�����ǤϽ����оݤȤ��Ƥ�������Ǥκ�¦�η���������Ф���ѥ�����2 
-���ܤ����Ǥϡ������оݤȤ��Ƥ�������Ǥ��Ф���Ʊ���۵���ѥ�����ǡ�����
-���1��1�б��Υޥå��󥰤��Ȥ�����Ŭ�Ѥ���ޤ���3���ܤ����ǤϽ�����
-�ݤȤ��Ƥ�������Ǥα�¦�η���������Ф���ѥ�����Ǥ������ε�§��Ŭ�Ѥ�
-���ȡ�Ʊ���۵�����椫����Ƭ�η����ǥѥ�����$_1$�˥ޥå����������Ǥ���
-�򤵤졤����ˡ����η����Ǥ�feature��Ϳ�����ޤ���
+最初の要素は処理対象としている形態素の左側の形態素列に対するパターン，2 
+番目の要素は，処理対象としている形態素に対する同形異義語パターンで，それ
+らと1対1対応のマッチングがとれる場合に適用されます．3番目の要素は処理対
+象としている形態素の右側の形態素列に対するパターンです．この規則が適用さ
+れると，同形異義語の中から先頭の形態素パターン$_1$にマッチした形態素が選
+択され，さらに，その形態素にfeature列が与えられます．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
-        ( ( ?* ) ( [ư��] [Ϣ�λ�] ) ��ư�� )  
+        ( ( ?* ) ( [動詞] [連体詞] ) 弱動詞 )  
 \end{verbatim}
-�Ȥ����롼��ϡ֤���פʤɤ�ư���Ϣ�λ��Ʊ���۵����Ŭ�Ѥ��졤ư���
-����ͥ�褷�������\fl ��ư��\fr �Ȥ���feature��Ϳ����Ȥ���Ư���������
-����
+というルールは「ある」などの動詞と連体詞の同形異義語に適用され，動詞の
+解釈を優先し，それに\fl 弱動詞\fr というfeatureを与えるという働きを持ちま
+す．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{�����ǥ롼��}
+\subsection{形態素ルール}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-�����Ǥ��Ф���feature�ϼ��Τ褦�ʷ��Υ롼��ˤ�ä���Ϳ����ޤ���
+形態素に対するfeatureは次のような形のルールによって付与されます．
 \begin{verbatim}
-        ( ( �����ǥѥ������� ) ( �����ǥѥ����� ) ( �����ǥѥ������� ) feature�� )
+        ( ( 形態素パターン列 ) ( 形態素パターン ) ( 形態素パターン列 ) feature列 )
 \end{verbatim}
-�ǽ�����ǤϽ����оݤȤ��Ƥ�������Ǥκ�¦�η���������Ф���ѥ�����
-2���ܤ����ǤϽ����оݤȤ��Ƥ�������Ǽ��Ȥ��Ф���ѥ�����3���ܤ�����
-�Ͻ����оݤȤ��Ƥ�������Ǥα�¦�η���������Ф���ѥ�����Ǥ��������
-���Ƥξ��˥ޥå�������硤���η����Ǥ�feature��Ϳ�����ޤ���
+最初の要素は処理対象としている形態素の左側の形態素列に対するパターン，
+2番目の要素は処理対象としている形態素自身に対するパターン，3番目の要素
+は処理対象としている形態素の右側の形態素列に対するパターンです．これら
+全ての条件にマッチした場合，その形態素にfeature列が与えられます．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
-        ( ( [* * * �ջַ�] [���� * * * ��] ) ( [ư�� * * * ����] ) ( ) ��° )
+        ( ( [* * * 意志形] [助詞 * * * と] ) ( [動詞 * * * する] ) ( ) 付属 )
 \end{verbatim}
-�Ȥ����롼��ϡ���¦�ˡ֤��褦�ܤȡפʤɤη������󤬤������ư��֤���פ�
-\fl ��°\fr �Ȥ���feature��Ϳ���뤿��Τ�Ǥ���
+というルールは，左側に「しよう＋と」などの形態素列がある場合の動詞「する」に
+\fl 付属\fr というfeatureを与えるためのもです．
 
-���Τ褦�ʥ롼���mrph\_basic.rule�Ȥ����ե�����ˤޤȤ���Ƥ��ꡤ���Ϥ���
-�����Ǥ��Ф��ơ��ե�����������롼���Ŭ�Ѥ��ߤޤ���
+このようなルールはmrph\_basic.ruleというファイルにまとめられており，入力の全
+形態素に対して，ファイル中の全ルールの適用を試みます．
 
 
-%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ʸ��롼��}
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{文節・基本句ルール}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ʸ����Ф���feature�ϼ��Τ褦�ʷ��Υ롼��ˤ�ä���Ϳ����ޤ���
+文節および基本句に対するfeatureは次のような形のルールによって付与されま
+す．以下において単に文節と記述しますが，基本句にも適用可能です．
 \begin{verbatim}
-        ( ( ʸ��ѥ������� ) ( ʸ��ѥ����� ) ( ʸ��ѥ������� ) feature�� )
+        ( ( 文節パターン列 ) ( 文節パターン ) ( 文節パターン列 ) feature列 )
 \end{verbatim}
-�ǽ�����ǤϽ����оݤȤ��Ƥ���ʸ��κ�¦��ʸ������Ф���ѥ�����2��
-�ܤ����ǤϽ����оݤȤ��Ƥ���ʸ�Ἣ�Ȥ��Ф���ѥ�����3���ܤ����ǤϽ�
-���оݤȤ��Ƥ���ʸ��α�¦��ʸ������Ф���ѥ�����Ǥ�����������Ƥξ�
-��˥ޥå�������硤����ʸ���feature��Ϳ�����ޤ���
+最初の要素は処理対象としている文節の左側の文節列に対するパターン，2番
+目の要素は処理対象としている文節自身に対するパターン，3番目の要素は処
+理対象としている文節の右側の文節列に対するパターンです．これら全ての条
+件にマッチした場合，その文節にfeature列が与えられます．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
         ( ( )
-          ( < ([ư�� * �첻ư�� ���ܷ� �Ǥ���] [���� * * * ����]) > )
-          ( < (?*) ((�Ѹ�)) > )
-          ���� )
+          ( < ([動詞 * 母音動詞 基本形 できる] [助詞 * * * だけ]) > )
+          ( < (?*) ((用言)) > )
+          弱用 )
 \end{verbatim}
-�Ȥ����롼��ϡ���¦��\fl �Ѹ�\fr �Ȥ���feature����ʸ�᤬���ꡤ���켫��
-���֤Ǥ���ܤ����פȤ�����������Ǥ���ʸ���\fl ����\fr �Ȥ���feature��Ϳ
-���ޤ���
+というルールは，右側に\fl 用言\fr というfeatureをもつ文節があり，それ自身
+が「できる＋だけ」という形態素列である文節に\fl 弱用\fr というfeatureを与
+えます．
 
-%ʸ���Ϳ����٤�feature����Ǥ�äȤ���פʤ�Τϡַ�����(����)�פȤ�
-%�Ƥ������˴ؤ���feature�ȡַ��äƤ�����ʸ��Ȥ��Ƥ�feature�ǡ�������
-%bnst\_uke.rule, bnst\_uke\_ex.rule, bnst\_kakari.rule�Υ롼���Ϳ����
-%��ޤ���
-ʸ��η�������˴ؤ��ƽ��פ�feature��
-bnst\_type.phrase(\ref{rule::phrase}�Ỳ��)��Ϳ�����Ƥ��ޤ���������
-����ʸ��δ���Ū��feature���㳰Ū��feature��bnst\_basic.rule,
-bnst\_etc.rule �Ȥ����ե������Ϳ�����ޤ��������ϡ�bnst\_basic.rule,
-bnst\_type.phrase, bnst\_etc.rule�Ȥ������Ŭ�Ѥ���ޤ����ʤ���
-bnst\_type.phrase�Ǥϳ�ʸ����Ф��ƥե��������Ƭ�����˥롼���Ŭ�Ѥ�
-��ߡ������줫�Υ롼�뤬Ŭ�Ѥ����Ф���ʸ����Ф��������λ���ޤ�����
-���ʳ��Υ롼��ե�����Ǥϡ���ʸ����Ф��ơ��ե�����������롼���Ŭ��
-����ߤ��ޤ���
+%文節に与えるべきfeatureの中でもっとも重要なものは「係り先(受け)」とし
+%ての性質に関するfeatureと「係っていく」文節としてのfeatureで，これらは
+%bnst\_uke.rule, bnst\_uke\_ex.rule, bnst\_kakari.ruleのルールで与えら
+%れます．
+文節の係り受けに関して重要なfeatureは
+bnst\_type.phrase(\ref{rule::phrase}節参照)で与えられています．これら以
+外に文節の基本的なfeatureと例外的なfeatureはbnst\_basic.rule,
+bnst\_etc.rule というファイルで与えられます．これらは，bnst\_basic.rule,
+bnst\_type.phrase, bnst\_etc.ruleという順に適用されます．なお，
+bnst\_type.phraseでは各文節に対してファイルの先頭から順にルールの適用を
+試み，いずれかのルールが適用されればその文節に対する処理を終了します．こ
+れら以外のルールファイルでは，全文節に対して，ファイル中の全ルールの適用
+が試みられます．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{��������롼��}
+\subsection{係り受けルール}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-��������ε�§��ʸ�Ἣ�ȤΥѥ��������ꤹ��ΤǤϤʤ�������ޤǤε�§
-�ˤ�ä�Ϳ�����Ƥ���ʸ���feature������Ф��Ƶ��Ҥ��ޤ������������
-��§�ϼ��η���Ϳ���ޤ���
+係り受けの規則は文節自身のパターンを指定するのではなく，これまでの規則
+によって与えられている文節のfeature集合に対して記述します．係り受けの
+規則は次の形で与えます．
 \begin{quote}
-\hspace*{1cm} ( ����¦feature�ѥ����� \\
-\hspace*{2cm}    ( [ ����¦feature�ѥ�����$_1$ �������������$_1$ ] \\
-\hspace*{2.3cm}      [ ����¦feature�ѥ�����$_2$ �������������$_2$ ] \\
+\hspace*{1cm} ( 係り側featureパターン \\
+\hspace*{2cm}    ( [ 受け側featureパターン$_1$ 係り受けタイプ$_1$ ] \\
+\hspace*{2.3cm}      [ 受け側featureパターン$_2$ 係り受けタイプ$_2$ ] \\
 \hspace*{4cm}          $\cdots$ \\
-\hspace*{2.3cm}      [ ����¦feature�ѥ�����$_n$ �������������$_n$ ] ) \\
-\hspace*{2cm}    ����������feature�ѥ�����  \\
-\hspace*{2cm}    ͥ�跸��������� ) 
+\hspace*{2.3cm}      [ 受け側featureパターン$_n$ 係り受けタイプ$_n$ ] ) \\
+\hspace*{2cm}    係り受け停止featureパターン  \\
+\hspace*{2cm}    優先係り受け位置 ) 
 \end{quote}
 
-{\bf ����¦feature�ѥ�����}�Ϸ����ʸ����Ф���feature�ѥ�����
-{\bf ����¦feature�ѥ�����$_i$}�ϼ�����ʸ����Ф���feature�ѥ�����
-{\bf �������������$_i$}�ϡ�
-�����˥ޥå���������ʸ��ȼ�����ʸ��֤�Ϳ���뷸������ط���
-ɽ���ޤ�����������ط��Ȥ��Ƥ�����(P)��Ʊ��(A)������ʳ�(D)��3���ब��
-��ޤ���
+{\bf 係り側featureパターン}は係りの文節に対するfeatureパターン，
+{\bf 受け側featureパターン$_i$}は受けの文節に対するfeatureパターン，
+{\bf 係り受けタイプ$_i$}は，
+それらにマッチした係り文節と受けの文節間に与える係り受け関係を
+表します．係り受け関係としては並列(P)，同格(A)，それ以外(D)の3種類があ
+ります．
 
-����ʸ����Ф��Ʒ������ʸ���õ�����ϡ�����ʸ��ȷ���¦feature�ѥ���
-�󤬥ޥå����뷸�������§��õ�������ε�§�Τ����줫�μ���¦feature��
-������˥ޥå�����ʸ�᤬�ʤ����ɤ����򡤽���ʸ���ľ���ʸ�ᤫ����Ĵ
-�٤ޤ������λ���{\bf ����������feature�ѥ�����}��֤��Ǥ�(�᤯��)��
-������ʸ�᤬�����硤���Υѥ�����˥ޥå�����ʸ��(���ʸ��)�����ӱۤ�
-��褦�ʷ�������ط��Ϲ�θ���ʤ��פȤ������������Ѥ��ޤ�������������
-feature�ѥ��������ꤷ�ʤ����Ϥ��٤Ƥ�ʸ�᤬���ʸ��ˤʤꤨ�롤��
-�ʤ����������ʸ�᤬1�ĤߤĤ���С�����ʾ�¾��(�󤯤�ʸ��˷���)��ǽ
-�����θ���ʤ����Ȥ������Ȥ��̣���ޤ���
+ある文節に対して係り先の文節を探す場合は，その文節と係り側featureパター
+ンがマッチする係り受け規則を探し，その規則のいずれかの受け側featureパ
+ターンにマッチする文節がないかどうかを，処理文節の直後の文節から順に調
+べます．この時，{\bf 係り受け停止featureパターン}を「すでに(近くに)係
+り得る文節がある場合，そのパターンにマッチする文節(停止文節)を飛び越え
+るような係り受け関係は考慮しない」というかたちで用います．係り受け停止
+featureパターンを指定しない場合はすべての文節が停止文節になりえる，す
+なわち係り得る文節が1つみつかれば，それ以上他の(遠くの文節に係る)可能
+性を考慮しない，ということを意味します．
 
-{\bf ͥ�跸���������}����������ꤷ��1�ʤ鷸������Ǥ�ᤤʸ�ᡤ2�ʤ鷸����
-��2���ܤ˶ᤤʸ�ᡤ$-1$�ʤ鷸������Ǥ��ʸ���ͥ��Ū�ʷ�����Ȥ��ޤ���
+{\bf 優先係り受け位置}は整数を指定し，1なら係り得る最も近い文節，2なら係り得
+る2番目に近い文節，$-1$なら係り得る最も遠い文節を優先的な係り先とします．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
-        ( ( (��:�ǳ� ����) (��:����� ����) (��:�ޥǳ� ����) )
-          ( [ ( (�Ѹ�:��) ) D ] )
-          ( (��٥�:C) (��٥�:B') )
+        ( ( (係:デ格 読点) (係:カラ格 読点) (係:マデ格 読点) )
+          ( [ ( (用言:強) ) D ] )
+          ( (レベル:C) (レベル:B') )
           2 )
 \end{verbatim}
-�Ȥ�����§�ϡ�\fl ��:�ǳ�\fr ��\fl ����\fr ��\fl ��:�����\fr ��\fl ��
-��\fr �ʤɤ�feature�����ʸ�᤬\fl �Ѹ�:��\fr �Ȥ���feature�����ʸ��
-��D(�̾�η�������ط�)�Ƿ��ꡤ\fl ��٥�:C \fr �ޤ���\fl ��٥�:B' \fr 
-�Ȥ���feature�����ʸ�᤬����Ф���ʾ�󤯤�ʸ��˷����ǽ���Ϲ�θ��
-������ͥ�褵���ΤϷ�������2���ܤ˶ᤤʸ��Ǥ��롤�Ȥ������Ȥ��̣��
-�ޤ���
+という規則は，\fl 係:デ格\fr と\fl 読点\fr ，\fl 係:カラ格\fr と\fl 読
+点\fr などのfeatureを持つ文節が\fl 用言:強\fr というfeatureを持つ文節
+にD(通常の係り受け関係)で係り，\fl レベル:C \fr または\fl レベル:B' \fr 
+というfeatureを持つ文節があればそれ以上遠くの文節に係る可能性は考慮せ
+ず，最優先されるのは係り得る2番目に近い文節である，ということを意味し
+ます．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
-\subsection{phrase����}
+\subsection{phrase形式}
 %%%%%%%%%%%%%%%%%%%%%%%
 \label{rule::phrase}
 
-phrase�����ϡ�ʸ��롼���ͤˤȤä��ɤ߽񤭤䤹�����ǵ��Ҥ��뤿��Τ��
-�ǡ�1��1�롼��ǡ����Τ褦�ʽ񼰤ˤʤäƤ��ޤ���
+phrase形式は，文節ルールを人にとって読み書きやすい形で記述するためのもの
+で，1行1ルールで，次のような書式になっています．
 \begin{verbatim}
-        [����ʸ̮]��ʬ����[���ʸ̮]    FEATURE��
+        [前の文脈]自分自身[後の文脈]    FEATURE列
 \end{verbatim}
-������ʸ̮�פϽ����оݤȤ��Ƥ���ʸ��κ�¦��ʸ������Ф���ѥ����󡤡ּ�
-ʬ���ȡפϽ����оݤȤ��Ƥ���ʸ�Ἣ�Ȥ��Ф���ѥ����󡤡ָ��ʸ̮�פϽ���
-�оݤȤ��Ƥ���ʸ��α�¦��ʸ������Ф���ѥ�����Ǥ�����������Ƥξ���
-�ޥå�������硤�о�ʸ���FEATURE��Ϳ�����ޤ����ѥ������FEATURE���
-�֤ˤ�1�İʾ�Υ��֤������ɬ�פ�����ޤ���
+「前の文脈」は処理対象としている文節の左側の文節列に対するパターン，「自
+分自身」は処理対象としている文節自身に対するパターン，「後の文脈」は処理
+対象としている文節の右側の文節列に対するパターンです．これら全ての条件に
+マッチした場合，対象文節にFEATURE列が与えられます．パターンとFEATURE列の
+間には1つ以上のタブを入れる必要があります．
 
-���Ȥ��С�
+たとえば，
 \begin{verbatim}
-        ��[^�����]    ID:���ʼ����
+        書き[^次第‥]    ID:〜（次第）
 \end{verbatim}
-�Ȥ����롼��ϡ����٤ˡּ���פȤ���ʸ�᤬���ꡤ���켫�Ȥ�Ϣ�ѷ��Ǥ���ʸ
-���\fl ID:���ʼ����\fr �Ȥ���feature��Ϳ���ޤ����ֽ񤯡פ�ͽ����ư��
-���Ʋ�����ޤ���$\hat{ }$ ��ʸ�����Ƭ�ˡ��� ��Ǥ�դη�������˥ޥå���
-�ޤ������Ҥξܺ٤�phrase2rule.pl����Ƭ��ʬ�Υ����Ȥ򻲾Ȥ��Ƥ���������
+というルールは，右隣に「次第」という文節があり，それ自身が連用形である文
+節に\fl ID:〜（次第）\fr というfeatureを与えます．「書く」は予約語で動詞
+に汎化されます．$\hat{ }$ は文節の先頭に，‥ は任意の形態素列にマッチし
+ます．記述の詳細はphrase2rule.plの冒頭部分のコメントを参照してください．
 
-phrase�����Υե������phrase2rule.pl�ˤ�ä�rule�������Ѵ�����ޤ�������
-�Ѵ��ϡ�Perl�⥸�塼��KNP.pm���̤���juman/knp���Ѥ��ƹԤ��ޤ��Τǡ�
-phrase2rule.pl��¹Ԥ��뤿��ˤϡ�juman��knp��KNP.pm�򤢤餫���ᥤ�󥹥ȡ�
-�뤷�Ƥ���ɬ�פ�����ޤ�
+phrase形式のファイルはphrase2rule.plによってrule形式に変換されます．この
+変換は，PerlモジュールKNP.pmを通してjuman/knpを用いて行いますので，
+phrase2rule.plを実行するためには，juman，knp，KNP.pmをあらかじめインストー
+ルしておく必要があります
 \footnote{
-�����Ǥ�knp��Ʊ���۵���롼�롤�����ǥ롼��򻲾Ȥ���ʸ����ؤ��Ѵ����
-�������Ǥ���phrase2rule.pl�ˤ��ʸ��롼����Ѵ��Ȥδ֤���ߺ��ѡ�������
-�Ϥ���ޤ���}��
+ここではknpは同音異義語ルール，形態素ルールを参照して文節列への変換を行
+うだけです．phrase2rule.plによる文節ルールの変換との間に相互作用／副作用
+はありません．}．
 
 \begin{thebibliography}{}
 
 \bibitem{kuro1992}
-��������, Ĺ����.
-\newblock Ĺ�����ܸ�ʸ�ˤ���������¤�ο���.
-\newblock ��������ز���ʸ��, Vol.33, No.8, pages 1022-1031 (1992.8).
+黒橋禎夫, 長尾眞.
+\newblock 長い日本語文における並列構造の推定.
+\newblock 情報処理学会論文誌, Vol.33, No.8, pages 1022-1031 (1992.8).
 
 \bibitem{kuro1994}
-��������, Ĺ����.
-\newblock ����¤�θ��Ф˴�Ť�Ĺ�����ܸ�ʸ�ι�ʸ����.
-\newblock �����������, Vol.1, No.1, pages 35-57 (1994.10).
+黒橋禎夫, 長尾眞.
+\newblock 並列構造の検出に基づく長い日本語文の構文解析.
+\newblock 自然言語処理, Vol.1, No.1, pages 35-57 (1994.10).
 
 \bibitem{kuro1997}
-��������, Ĺ����.
-\newblock ������إƥ����ȥ����ѥ����ץ���������.
-\newblock ��������ز� ��3��ǯ�����, pages 115-118 (1997.3).
+黒橋禎夫, 長尾眞.
+\newblock 京都大学テキストコーパス・プロジェクト.
+\newblock 言語処理学会 第3回年次大会, pages 115-118 (1997.3).
 
 \bibitem{kuro1998}
-��������.
-\newblock ��ȯ�����٤������ƥ�Ȥ��Ƥθ���.
-\newblock ��ָ����, Vol.27, No.6, pages 66-73 (1998.6).
+黒橋禎夫.
+\newblock 開発されるべきシステムとしての言語.
+\newblock 月刊「言語」, Vol.27, No.6, pages 66-73 (1998.6).
 
 \bibitem{kuro2000a}
-��������.
-\newblock �����ѥ����褫���ѡ��������褫.
-\newblock �������, Vol.41, No.7, pages 769-773 (2000.7).
+黒橋禎夫.
+\newblock コーパスが先か，パーサーが先か.
+\newblock 情報処理, Vol.41, No.7, pages 769-773 (2000.7).
 
 \bibitem{kuro2000b}
-��������.
-\newblock �빽���ʡ�KNP.
-\newblock �������, Vol.41, No.11, pages 1215-1220 (2000.11).
+黒橋禎夫.
+\newblock 結構やるな，KNP.
+\newblock 情報処理, Vol.41, No.11, pages 1215-1220 (2000.11).
 
 \bibitem{kawahara2007}
-�ϸ�����, ��������.
-\newblock ��ư���ۤ����絬�ϳʥե졼��˴�Ť���ʸ���ʲ��Ϥ�����Ū��Ψ��ǥ�.
-\newblock �����������, Vol.14, No.4, pages 67-81 (2007.7).
+河原大輔, 黒橋禎夫.
+\newblock 自動構築した大規模格フレームに基づく構文・格解析の統合的確率モデル.
+\newblock 自然言語処理, Vol.14, No.4, pages 67-81 (2007.7).
 
 \end{thebibliography}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 付録 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\noindent
+{\LARGE\bf 付録}
+\addcontentsline{toc}{section}{付録}
+
+\appendix
+
+\section{KNPの更新履歴}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{KNP 2.0からKNP 3.0への拡張点}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Webテキストから自動構築した大規模格フレームを利用するようにしました．この
+格フレームに基づき構文・格構造を確率的に評価し，もっとも確率値が高い構文・
+格構造を出力します．格フレームは，Webテキスト16億文から構築したものを用い
+ています．
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{KNP 3.0からKNP 4.0への拡張点}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+大きな変更点は以下のとおりです．
+\begin{itemize}
+ \item 格フレーム辞書の大規模化
+
+       Webテキスト70億文から自動構築した格フレームを使うようにした．
+
+ \item 固有表現解析機能の追加
+
+       CRFを用いた系列ラベリングに基づく固有表現解析機能を追加した．
+
+ \item 分布類似度の利用
+
+       並列構造解析における類似度計算に，従来利用していた分類語彙表に代わっ
+       て，Webテキスト70億文から計算した分布類似度を使うようにした．
+
+ \item UTF-8化
+
+       入出力の文字コードは，従来はEUC-JPであったが，UTF-8に変更した．そ
+       れに伴い，辞書，ルールファイル，knprcおよびソースコードの文字コー
+       ドをUTF-8にした．
+       これまでホームディレクトリに\texttt{.knprc}を置いていた場合は，こ
+       のファイルの文字コードをEUC-JPからUTF-8に変換する必要がある．
+\end{itemize}
+
+
+
 
 \end{document}
