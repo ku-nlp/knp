@@ -1679,6 +1679,24 @@ void assign_feature_samecase(CF_PRED_MGR *cpm_ptr, int temp_assign_flag)
 }
 
 /*==================================================================*/
+ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str)
+/*==================================================================*/
+{
+    if (!pp_str) {
+	return ccp;
+    }
+    else {
+	while (ccp) {
+	    if (ccp->pp_str && !strcmp(ccp->pp_str, pp_str)) {
+		return ccp;
+	    }
+	    ccp = ccp->next;
+	}
+    }
+    return NULL;
+}
+
+/*==================================================================*/
 void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 				 ELLIPSIS_MGR *em_ptr, int temp_assign_flag, 
 				 char *feature_head, CF_ALIGNMENT *cf_align)
