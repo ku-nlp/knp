@@ -1,4 +1,50 @@
+2011-12-30  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/thesaurus.c:
+	Avoid needless calculation of distributional similarity.
+
+	* system/context.c, system/case_analysis.c, system/extern.h:
+	Code arrangement.
+
+	* INSTALL: Added a description of zlib.
+
+	* rule/bnst_type.phrase, rule/bnst_type.rule, rule/kakari_uke.rule:
+	Modified to allow some dependence to "toshite."
+
+	* rule/phrase2rule.pl: Adapted to the change of JUMAN option.
+
+	* system/case_ipal.c, system/extern.h, system/main.c:
+	Fixed -dpnd option to use distsim.
+
+	* doc/manual.pdf, doc/manual.tex: updated.
+
+2011-12-26  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_print.c: Suppressed a meaningless message.
+
+	* system/extern.h, system/thesaurus.c, system/case_ipal.c:
+	Modified look-up of nominal case frames and adjusted a threshold of distributional similarity.
+
+	* rule/bnst_basic.rule:
+	Deleted the numeral feature from meaningless numeric suffixes.
+
+	* rule/mrph_basic.rule:
+	Modified bunsetsu chunking rules of numerals (for patent-specific expressions).
+
+2011-12-25  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* system/case_ipal.c: Fixed duplicated store of examples.
+
+	* rule/case_analysis.rule:
+	Modified a rule of "nite."
+
 2011-12-24  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* rule/bnst_basic.rule, rule/case_analysis.rule, rule/context.rule, rule/mrph_basic.rule:
+	Modified agent recognition using category and deleted thesaurus-based rules.
+
+	* system/case_match.c, system/extern.h, system/feature.c, system/case_ipal.c:
+	Modified agent recognition using category.
 
 	* rule/modality.rule:
 	Improved modality recognition (thanks to Hironori Nakamura <nakamura@nlp.ist.i.kyoto-u.ac.jp>).
