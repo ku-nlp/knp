@@ -1152,18 +1152,19 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
     buffer[0] = '\0';
 
     if (rep && rep_len > 0 && Mrph2idExist == TRUE) {
+        char *token_start, *token, *value;
         char *copied_rep = (char *)malloc_data(sizeof(char) * rep_len + 1, "rep2id");
         strncpy(copied_rep, rep, rep_len);
         copied_rep[rep_len] = '\0';
-        char *token_start = strtok(copied_rep, "+?");
-        char *token = token_start;
-        char *value;
+        token_start = strtok(copied_rep, "+?");
+        token = token_start;
         while (token) {
             value = db_get(mrph2id_db, token);
             if (value) {
                 if (buffer[0]) /* 2つ目以降 */
                     strncat(buffer, rep + (token - 1 - token_start), 1);
                 strcat(buffer, value);
+                free(value);
             }
             token = strtok(NULL, "+?");
         }
@@ -1179,12 +1180,13 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 /*==================================================================*/
 {
     int i;
+    char *rep_id;
 
     if (!ex_list) {
 	return -1;
     }
 
-    char *rep_id = rep2id(cp, cp_len, &(static_buffer[0]));
+    rep_id = rep2id(cp, cp_len, &(static_buffer[0]));
     if (rep_id[0]) {
         for (i = 0; i < ex_num; i++) {
             if (!strcmp(rep_id, *(ex_list + i))) {
@@ -4104,12 +4106,14 @@ double calc_vp_modifying_probability(TAG_DATA *gp, CASE_FRAME *g_cf, TAG_DATA *d
 	    fprintf(Outfp, ";; (R) %s: P(%s|%s) = %lf\n", gp ? gp->head_ptr->Goi : "EOS", d_pred, g_pred, ret3);
 	}
 
-	free(g_pred);
 	free(d_pred);
     }
     else {
 	ret3 = 1;
     }
+
+    if (g_pred)
+	free(g_pred);
 
     if (gp == NULL) {
 	if (ret3) {
