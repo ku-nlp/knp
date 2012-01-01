@@ -145,11 +145,11 @@
 #endif
 
 #ifndef PACKAGE_NAME
-#define PACKAGE_NAME "KNP"
+#define PACKAGE_NAME "knp"
 #endif
 
 #ifndef VERSION
-#define VERSION "3.1"
+#define VERSION "4.0"
 #endif
 #endif
 
