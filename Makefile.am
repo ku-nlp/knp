@@ -10,7 +10,7 @@ dist_noinst_DATA = knprc.in
 CLEANFILES = knprc
 EXTRA_DIST = autogen.sh perl
 
-knprc: knprc.in
+knprc: knprc.in config.status
 	rm -f $@ $@.tmp
 	sed 's,@pkgdatadir\@,$(pkgdatadir),g; s,@datadir\@,$(datadir),g; s,@juman_prefix\@,$(juman_prefix),g' $< > $@.tmp
 	mv $@.tmp $@
