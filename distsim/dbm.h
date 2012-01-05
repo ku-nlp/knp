@@ -12,6 +12,10 @@
 #include <cdb.h>
 #include <zlib.h>
 
+#ifdef _WIN32
+#include <io.h>
+#endif
+
 using std::string;
 using std::cout;
 using std::cerr;
