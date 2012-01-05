@@ -160,6 +160,13 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
     if (buf[0]) {
 	Knpdict_Dirname = strdup(buf);
     }
+
+#ifdef USE_CRF
+    CRFFileNE = (char *)malloc_data(strlen(Knpdict_Dirname) + strlen(NE_CRF_MODEL_NAME) + 2, "read_rc");
+    sprintf(CRFFileNE, "%s/%s", Knpdict_Dirname, NE_CRF_MODEL_NAME);
+#endif
+    DistSimFile = (char *)malloc_data(strlen(Knpdict_Dirname) + strlen(DISTSIM_DB_NAME) + 2, "read_rc");
+    sprintf(DistSimFile, "%s/%s", Knpdict_Dirname, DISTSIM_DB_NAME);
 #else
     CELL *cell1,*cell2;
     char *dicttype;
@@ -713,8 +720,6 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 #endif
 #ifdef USE_CRF
 	else if (!strcmp(DEF_NE_MODEL_FILE, _Atom(car(cell1)))) {
-	    int i;
-
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
 		exit(0);
@@ -740,8 +745,6 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    }
 	}
 	else if (!strcmp(DEF_DISTSIM_FILE, _Atom(car(cell1)))) {
-	    int i;
-
 	    if (!Atomp(cell2 = car(cdr(cell1)))) {
 		fprintf(stderr, "error in .knprc\n");
 		exit(0);
