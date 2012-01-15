@@ -15,8 +15,8 @@
         KNP version 4.0 \\
         使用説明書}
 \author{黒橋・河原研究室}
-\date{平成23年12月\\
-\rule{0mm}{110mm}Copyright \copyright\ 2011\begin{tabular}[t]{l}
+\date{平成24年1月\\
+\rule{0mm}{110mm}Copyright \copyright\ 2012\begin{tabular}[t]{l}
                                 京都大学大学院情報学研究科 \\
                                 \end{tabular}
 }
@@ -34,7 +34,7 @@
 KN parser (Kurohashi-Nagao parser) 4.0 Users Manual
 
 \noindent
-Copyright (c) 2011 Kyoto University \\
+Copyright (c) 2012 Kyoto University \\
 All rights reserved.
 
 \noindent
@@ -79,7 +79,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  Version 2.0b6 & 9 June 1998 \\
  Version 2.0 & 7 September 2005 \\
  Version 3.0 & 30 September 2009 \\
- Version 4.0 & 31 December 2011 \\
+ Version 4.0 & 12 January 2012 \\
 \end{tabular}
 \end{small}
 
@@ -97,7 +97,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解析結果
 (形態素列)を入力とし，それらを基本句(後述)および文節単位にまとめ，それら
-の間の係り受け関係を決定します．また，自動獲得した格フレームに基づき、格
+の間の係り受け関係を決定します．また，自動獲得した格フレームに基づき，格
 関係の解析も行います．
 
 以下に典型的な使用例を示します．
@@ -215,11 +215,8 @@ KNPのインストールは以下の手順で行います．
 
 \vspace*{3ex}
 
-Windows版はUNIX版と以下の点が異なります．
-\begin{itemize}
- \item 入出力は，UNIX版はUTF-8であるが，Windows版はSJISで行う．
- \item サーバ・クライアント機能は備えていない．
-\end{itemize}
+Windows版は，UNIX版とは異なり，入出力，辞書およびルールファイルの文字コー
+ドはSJISとなっています．
 
 
 %%%%%%%%%%%%%%%%%%
@@ -251,7 +248,7 @@ KNPの入力は，形態素解析システムJUMANの解析結果です．以下
 \end{tabular}
 \end{quote}
 
-KNPでは，「基本句」を単位にして解析しています。基本句とは，京都大学テキス
+KNPでは，「基本句」を単位にして解析しています．基本句とは，京都大学テキス
 トコーパスに含まれる格関係，照応・省略関係，共参照タグ付きコーパスにおい
 て各種関係を付与している単位です．基本句は，基本的に自立語一語を核として，
 その前後に存在する接頭辞，接尾辞，助詞，助動詞などの付属語をまとめたもの
@@ -272,6 +269,7 @@ KNPには以下のオプションがあります．
 
 \begin{tabular}{ll}
 -tab            & 表形式による表示 \\
+-simple         & 出力を少なくした表形式による表示 \\
 -tree (default) & 木構造による表示 \\
 -bnsttab        & 文節の表形式による表示 \\
 -bnsttree       & 文節の木構造による表示 \\
@@ -771,9 +769,9 @@ Webテキストから自動構築した大規模格フレームを利用する�
        ドをUTF-8にした．
        これまでホームディレクトリに\texttt{.knprc}を置いていた場合は，こ
        のファイルの文字コードをEUC-JPからUTF-8に変換する必要がある．
+
+       ただし，Windows版は従来と同じく，入出力，辞書およびルールファイル
+       の文字コードはSJISである．
 \end{itemize}
-
-
-
 
 \end{document}
