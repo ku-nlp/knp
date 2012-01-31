@@ -54,13 +54,16 @@ char *CRFFileNE;
 CRFPP::Tagger *tagger;
 
 int init_crf_for_NE() {
-    int i;
-    char cp[128];
+    char argc = 5, *argv[5];
 
-    /* -v 2: access marginal probablilities */
-    sprintf(cp, "-m %s -v 2", CRFFileNE);
-
-    tagger = CRFPP::createTagger(cp);
+    /* make an argument of CRFPP::createTagger */
+    argv[0] = const_cast<char*>("knp");
+    argv[1] = const_cast<char*>("-m");
+    argv[2] = CRFFileNE;
+    argv[3] = const_cast<char*>("-v"); /* -v 2: access marginal probablilities */
+    argv[4] = const_cast<char*>("2");
+    
+    tagger = CRFPP::createTagger(argc, argv);
     if (!tagger) {
 	fprintf(stderr, ";; CRF initialization error (%s is corrupted?).\n", CRFFileNE);
 	exit(1);
