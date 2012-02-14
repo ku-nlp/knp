@@ -1024,7 +1024,7 @@ typedef struct cf_def {
     unsigned int	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
     char 	cf_id[CF_ID_LEN_MAX];			/* 格フレームのID (代表表記+タイプ+番号) */
-    char	pred_type[3];				/* 用言タイプ (動, 形, 判) */
+    char	pred_type[BYTES4CHAR + 1];		/* 用言タイプ (動, 形, 判) */
     char 	*entry;					/* 用言の表記 */
     char 	imi[SMALL_DATA_LEN];
     int		etcflag;				/* 格フレームが OR かどうか */
