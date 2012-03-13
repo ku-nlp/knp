@@ -1178,7 +1178,8 @@ extern int	EX_match_subject;
     init_scase();	/* 表層格辞書オープン */
     init_auto_dic();	/* 自動獲得辞書オープン */
     init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
-    init_distsim();	/* 分布類似度オープン */
+    if (ParaThesaurus == USE_DISTSIM || Thesaurus == USE_DISTSIM)
+        init_distsim();	/* 分布類似度オープン */
 
     if (OptEllipsis) {
 #ifdef USE_SVM
