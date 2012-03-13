@@ -2243,6 +2243,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
 
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
+	clear_feature(&((sp->mrph_data + start_num + i)->f)); /* feature削除 */
     }
 
     delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* 旧ALT情報を削除 */
