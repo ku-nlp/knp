@@ -2214,8 +2214,8 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 /*==================================================================*/
 {
     int i, j, last_t, offset, head, proj_table[MRPH_MAX];
-    int appear_content_word_flag = FALSE, last_content_m;
-    MRPH_DATA *m_ptr, *head_ptr;
+    int appear_content_word_flag = FALSE, last_content_m, this_is_content_m_flag;
+    MRPH_DATA *m_ptr, *head_ptr, *last_content_m_ptr = NULL;
 
     /* initialize proj_table */
     memset(proj_table, 0, sizeof(int) * MRPH_MAX);
@@ -2225,60 +2225,80 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	if (m_ptr->tnum >= 0) {
 	    last_t = m_ptr->tnum;
 	    appear_content_word_flag = FALSE;
+            last_content_m_ptr = NULL;
 	}
-	/* semantic headモードのときに、この形態素がsemantic headかどうかをチェック */
-	if (OptSemanticHead && appear_content_word_flag == FALSE && check_semantic_head(m_ptr, sp->tag_data + last_t)) {
+	/* この形態素がsemantic headかどうかをチェック */
+	if (appear_content_word_flag == FALSE && check_semantic_head(m_ptr, sp->tag_data + last_t)) {
 	    appear_content_word_flag = TRUE;
 	    last_content_m = m_ptr->num;
+            last_content_m_ptr = m_ptr;
+            this_is_content_m_flag = TRUE;
 	}
+        else
+            this_is_content_m_flag = FALSE;
 
 	/* 隣にかける */
-	if (m_ptr->inum != 0 && appear_content_word_flag == FALSE) {
+	if (m_ptr->inum != 0 && ((OptSemanticHead && appear_content_word_flag == FALSE) || /* semantic head時 */
+                                 (!OptSemanticHead && !this_is_content_m_flag && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
 	    m_ptr->dpnd_head = m_ptr->num + 1;
 	    m_ptr->dpnd_type = 'D';
+            if (last_content_m_ptr) { /* semantic headからこの形態素にかける */
+                last_content_m_ptr->dpnd_head = m_ptr->num;
+                last_content_m_ptr->dpnd_type = 'D';
+                last_content_m_ptr = NULL;
+            }
 	}
         /* 基本句内の内容語(前側にある)にかける */
-	else if (appear_content_word_flag == TRUE && m_ptr->num != last_content_m) {
+	else if (appear_content_word_flag == TRUE && !this_is_content_m_flag && 
+                 (OptSemanticHead || check_feature(m_ptr->f, "Ｔ句内要素"))) { /* semantic head時もしくは句内要素 */
 	    m_ptr->dpnd_head = last_content_m;
 	    m_ptr->dpnd_type = 'D';
 	}
-	/* 文末 */
-	else if (i == sp->Mrph_num - 1) {
-	    m_ptr->dpnd_head = -1;
-	    m_ptr->dpnd_type = 'D';
-	}
-	/* 基本句内最後の形態素 (inum == 0) */
+	/* 基本句内最後の形態素(inum == 0) もしくは semantic head */
 	else {
-	    offset = 0;
-	    head = (sp->tag_data + last_t)->dpnd_head;
-	    m_ptr->dpnd_type = (sp->tag_data + last_t)->dpnd_type;
+            if (last_content_m_ptr && !this_is_content_m_flag) { /* semantic headからこの形態素にかける */
+                last_content_m_ptr->dpnd_head = m_ptr->num;
+                last_content_m_ptr->dpnd_type = 'D';
+                last_content_m_ptr = NULL;
+            }
 
-	    if (head == -1) {
-		m_ptr->dpnd_head = -1;
-	    }
-	    else {
-		/* m_ptr->dpnd_head = (sp->tag_data + head)->head_ptr->num; */
-		head_ptr = find_head_mrph_from_dpnd_bnst((BNST_DATA *)(sp->tag_data + last_t), 
-							 (BNST_DATA *)(sp->tag_data + head));
-		/* check projectivity */
-		if (proj_table[i] && proj_table[i] < head_ptr->num) {
-		    if (OptDisplay == OPT_DEBUG) {
-			fprintf(stderr, ";; violation of projectivity in mrph tree (%s: modified %dth mrph: %d -> %d)\n", 
-				sp->KNPSID ? sp->KNPSID + 5: "?", i, head_ptr->num, proj_table[i]);
-		    }
-		    m_ptr->dpnd_head = proj_table[i];
-		}
-		else {
-		    m_ptr->dpnd_head = head_ptr->num;
+            /* 文末 */
+            if (i == sp->Mrph_num - 1) {
+                m_ptr->dpnd_head = -1;
+                m_ptr->dpnd_type = 'D';
+            }
+            else {
+                offset = 0;
+                head = (sp->tag_data + last_t)->dpnd_head;
+                m_ptr->dpnd_type = (sp->tag_data + last_t)->dpnd_type;
 
-		    /* update proj_table */
-		    for (j = i + 1; j < m_ptr->dpnd_head; j++) {
-			if (!proj_table[j] || proj_table[j] > m_ptr->dpnd_head) {
-			    proj_table[j] = m_ptr->dpnd_head;
-			}
-		    }
-		}
-	    }
+                if (head == -1) {
+                    m_ptr->dpnd_head = -1;
+                }
+                else {
+                    /* m_ptr->dpnd_head = (sp->tag_data + head)->head_ptr->num; */
+                    head_ptr = find_head_mrph_from_dpnd_bnst((BNST_DATA *)(sp->tag_data + last_t), 
+                                                             (BNST_DATA *)(sp->tag_data + head));
+                    /* check projectivity */
+                    if (proj_table[i] && proj_table[i] < head_ptr->num) {
+                        if (OptDisplay == OPT_DEBUG) {
+                            fprintf(stderr, ";; violation of projectivity in mrph tree (%s: modified %dth mrph: %d -> %d)\n", 
+                                    sp->KNPSID ? sp->KNPSID + 5: "?", i, head_ptr->num, proj_table[i]);
+                        }
+                        m_ptr->dpnd_head = proj_table[i];
+                    }
+                    else {
+                        m_ptr->dpnd_head = head_ptr->num;
+
+                        /* update proj_table */
+                        for (j = i + 1; j < m_ptr->dpnd_head; j++) {
+                            if (!proj_table[j] || proj_table[j] > m_ptr->dpnd_head) {
+                                proj_table[j] = m_ptr->dpnd_head;
+                            }
+                        }
+                    }
+                }
+            }
 	}
     }
 }
