@@ -2214,7 +2214,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 /*==================================================================*/
 {
     int i, j, last_t, offset, head, proj_table[MRPH_MAX];
-    int appear_content_word_flag = FALSE, last_content_m, this_is_content_m_flag;
+    int appear_content_word_flag = FALSE, appear_outer_word_flag = FALSE, last_content_m, this_is_content_m_flag;
     MRPH_DATA *m_ptr, *head_ptr, *last_content_m_ptr = NULL;
 
     /* initialize proj_table */
@@ -2225,6 +2225,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	if (m_ptr->tnum >= 0) {
 	    last_t = m_ptr->tnum;
 	    appear_content_word_flag = FALSE;
+            appear_outer_word_flag = FALSE;
             last_content_m_ptr = NULL;
 	}
 	/* この形態素がsemantic headかどうかをチェック */
@@ -2237,9 +2238,14 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
         else
             this_is_content_m_flag = FALSE;
 
+        /* この形態素が句間要素なら、これ以降は常に親にする (for OptSemanticHead) */
+        if (appear_outer_word_flag == FALSE && check_feature(m_ptr->f, "Ｔ句間要素"))
+            appear_outer_word_flag = TRUE;
+
 	/* 隣にかける */
-	if (m_ptr->inum != 0 && ((OptSemanticHead && appear_content_word_flag == FALSE) || /* semantic head時 */
-                                 (!OptSemanticHead && !this_is_content_m_flag && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
+	if (m_ptr->inum != 0 && 
+            ((OptSemanticHead && (appear_content_word_flag == FALSE || appear_outer_word_flag == TRUE)) || /* semantic head時 */
+             (!OptSemanticHead && !this_is_content_m_flag && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
 	    m_ptr->dpnd_head = m_ptr->num + 1;
 	    m_ptr->dpnd_type = 'D';
             if (last_content_m_ptr) { /* semantic headからこの形態素にかける */
@@ -2249,7 +2255,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
             }
 	}
         /* 基本句内の内容語(前側にある)にかける */
-	else if (appear_content_word_flag == TRUE && !this_is_content_m_flag && 
+	else if (appear_content_word_flag == TRUE && appear_outer_word_flag == FALSE && !this_is_content_m_flag && 
                  (OptSemanticHead || check_feature(m_ptr->f, "Ｔ句内要素"))) { /* semantic head時もしくは句内要素 */
 	    m_ptr->dpnd_head = last_content_m;
 	    m_ptr->dpnd_type = 'D';
