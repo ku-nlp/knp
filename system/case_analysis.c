@@ -1886,16 +1886,14 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* feature を用言文節に与える */
 	word = make_print_string(elem_b_ptr, 0);
 	if (word) {
-	    if (elem_b_ptr->num >= 0) {
+            if (OptCaseFlag & OPT_CASE_PRINT_SCORE) /* 格ごとのスコアを出す場合 */
+		sprintf(feature_buffer, "格関係%d:%s:%s:%.3f", 
+			elem_b_ptr->num >= 0 ? elem_b_ptr->num : elem_b_ptr->parent->num, 
+			relation, word, cpm_ptr->cmm[0].result_lists_d[0].score[i]);
+            else
 		sprintf(feature_buffer, "格関係%d:%s:%s", 
-			elem_b_ptr->num, 
+			elem_b_ptr->num >= 0 ? elem_b_ptr->num : elem_b_ptr->parent->num, 
 			relation, word);
-	    }
-	    else {
-		sprintf(feature_buffer, "格関係%d:%s:%s", 
-			elem_b_ptr->parent->num, 
-			relation, word);
-	    }
 	    assign_cfeature(&(pred_b_ptr->f), feature_buffer, temp_assign_flag);
 	    free(word);
 	}
