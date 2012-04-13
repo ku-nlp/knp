@@ -2243,9 +2243,9 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
             appear_outer_word_flag = TRUE;
 
 	/* 隣にかける */
-	if (m_ptr->inum != 0 && 
+	if (m_ptr->inum != 0 && !this_is_content_m_flag && 
             ((OptSemanticHead && (appear_content_word_flag == FALSE || appear_outer_word_flag == TRUE)) || /* semantic head時 */
-             (!OptSemanticHead && !this_is_content_m_flag && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
+             (!OptSemanticHead && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
 	    m_ptr->dpnd_head = m_ptr->num + 1;
 	    m_ptr->dpnd_type = 'D';
             if (last_content_m_ptr) { /* semantic headからこの形態素にかける */
