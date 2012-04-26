@@ -3435,34 +3435,49 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 	FEATURE *fp = dp->head_ptr->f;
 	MRPH_DATA m;
 
-	while (fp) {
-	    if (!strncmp(fp->cp, "ALT-", 4)) {
-		sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
-		       m.Goi2, m.Yomi, m.Goi, 
-		       &m.Hinshi, &m.Bunrui, 
-		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
-		mrph_str = get_mrph_rep(&m); /* 代表表記 */
-		rep_length = get_mrph_rep_length(mrph_str);
-		if (rep_length == 0) { /* なければ作る */
-		    mrph_str = make_mrph_rn(&m);
-		    rep_length = strlen(mrph_str);
-		    rep_malloc_flag = 1;
-		}
-
-		key = malloc_db_buf(rep_length + 1);
-		strncpy(key, mrph_str, rep_length);
-		*(key + rep_length) = '\0';
-		if (rep_malloc_flag) {
-		    free(mrph_str);
-		    rep_malloc_flag = 0;
-		}
-
-		if (prob = _get_ex_probability_internal(key, as2, cfp)) {
-		    if (ret < log(prob)) ret = log(prob);
-		}
-	    }
-	    fp = fp->next;
+	mrph_str = get_mrph_rep_from_f(dp->head_ptr, FALSE);
+	if (mrph_str == NULL) { /* なければ作る */
+	    mrph_str = make_mrph_rn(dp->head_ptr);
+	    rep_malloc_flag = 1;
 	}
+        strcpy(key, mrph_str);
+        if (rep_malloc_flag) {
+            free(mrph_str);
+            rep_malloc_flag = 0;
+        }
+        if (prob = _get_ex_probability_internal(key, as2, cfp)) {
+            if (ret < log(prob)) ret = log(prob);
+        }
+        else {
+            while (fp) {
+                if (!strncmp(fp->cp, "ALT-", 4)) {
+                    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", 
+                           m.Goi2, m.Yomi, m.Goi, 
+                           &m.Hinshi, &m.Bunrui, 
+                           &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+                    mrph_str = get_mrph_rep(&m); /* 代表表記 */
+                    rep_length = get_mrph_rep_length(mrph_str);
+                    if (rep_length == 0) { /* なければ作る */
+                        mrph_str = make_mrph_rn(&m);
+                        rep_length = strlen(mrph_str);
+                        rep_malloc_flag = 1;
+                    }
+
+                    key = malloc_db_buf(rep_length + 1);
+                    strncpy(key, mrph_str, rep_length);
+                    *(key + rep_length) = '\0';
+                    if (rep_malloc_flag) {
+                        free(mrph_str);
+                        rep_malloc_flag = 0;
+                    }
+
+                    if (prob = _get_ex_probability_internal(key, as2, cfp)) {
+                        if (ret < log(prob)) ret = log(prob);
+                    }
+                }
+                fp = fp->next;
+            }
+        }
     }
     if (!sm_flag) return ret;
 
