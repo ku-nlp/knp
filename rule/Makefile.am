@@ -5,8 +5,8 @@ RULE2DATA = ./rule2data.pl
 
 ruledir = $(pkgdatadir)/rule
 
-orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule modality.rule tag_after_dpnd_and_case.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule mrph_filter.rule case_analysis.rule tag_postprocess.rule mrph_auto_dic.rule clause_function.phrase bnst_after_dpnd_and_case.rule search_query.rule
-generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data modality.data tag_after_dpnd_and_case.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data mrph_filter.data case_analysis.data tag_postprocess.data mrph_auto_dic.data clause_function.rule clause_function.data bnst_after_dpnd_and_case.data search_query.data
+orig_rule_files = bnst_type.phrase bnst_basic.rule bnst_etc.rule modality.rule tag_after_dpnd_and_case.rule context.rule kakari_uke.rule koou.rule mrph_basic.rule mrph_ne.rule mrph_homo.rule mrph_filter.rule mrph_semantic_head.rule case_analysis.rule tag_postprocess.rule mrph_auto_dic.rule clause_function.phrase bnst_after_dpnd_and_case.rule search_query.rule
+generated_rule_files = bnst_type.rule bnst_basic.data bnst_etc.data modality.data tag_after_dpnd_and_case.data bnst_type.data context.data kakari_uke.data koou.data mrph_basic.data mrph_ne.data mrph_homo.data mrph_filter.data mrph_semantic_head.data case_analysis.data tag_postprocess.data mrph_auto_dic.data clause_function.rule clause_function.data bnst_after_dpnd_and_case.data search_query.data
 dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRASE2RULE)
 
 bnst_type.rule: bnst_type.phrase $(PHRASE2RULE)
