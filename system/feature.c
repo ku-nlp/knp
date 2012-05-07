@@ -71,18 +71,9 @@ char feature_buffer[DATA_LEN];
 
     if (comp_feature(fp->cp, "用言") || 
         comp_feature(fp->cp, "体言") || 
-        comp_feature(fp->cp, "可能表現") || 
-        comp_feature(fp->cp, "否定表現") || 
-        comp_feature(fp->cp, "時制") || 
-        comp_feature(fp->cp, "連用節") || 
-        comp_feature(fp->cp, "連体節") || 
-        comp_feature(fp->cp, "ID") || 
-        comp_feature(fp->cp, "レベル") || 
-        comp_feature(fp->cp, "係") || 
         comp_feature(fp->cp, "格解析結果") || 
         comp_feature(fp->cp, "格構造") || 
-        comp_feature(fp->cp, "Wikipediaエントリ") || 
-        comp_feature(fp->cp, "Wikipedia上位語")) {
+        comp_feature(fp->cp, "Wikipediaエントリ")) {
         return TRUE;
     }
     else {
@@ -115,7 +106,9 @@ char feature_buffer[DATA_LEN];
        指定したものだけを表示 */
 
     while (fp) {
-	if (fp->cp && strncmp(fp->cp, "Ｃ", strlen("Ｃ")) && !strncmp(fp->cp, "C", 1))
+	if (fp->cp && 
+            ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || 
+             (OptDisplay != OPT_SIMPLE && strncmp(fp->cp, "Ｃ", strlen("Ｃ")) && !strncmp(fp->cp, "C", 1))))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }

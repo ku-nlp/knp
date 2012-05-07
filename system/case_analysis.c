@@ -1517,18 +1517,28 @@ char *make_cc_string(char *word, int tag_n, char *pp_str, int cc_type,
 			      "make_cc_string");
 
     if (tag_n < 0) { /* 後処理により併合された基本句 */
-	sprintf(buf, "%s/U/-/-/-/-", pp_str);
+        if (OptDisplay == OPT_SIMPLE)
+            sprintf(buf, "%s/-", pp_str);
+        else
+            sprintf(buf, "%s/U/-/-/-/-", pp_str);
     }
     else {
-	sprintf(buf, "%s/%c/%s/%d/%d/%s", 
-		pp_str, 
-		cc_type == -2 ? 'O' : 	/* 省略 */
-		cc_type == -3 ? 'D' : 	/* 照応 */
-		cc_type == -1 ? 'N' : 'C', 
-		word, 
-		tag_n, 
-		dist, 
-		sid);
+        if (OptDisplay == OPT_SIMPLE)
+            sprintf(buf, "%s/%s/%d/%d", 
+                    pp_str, 
+                    word, 
+                    dist, 
+                    tag_n);
+        else
+            sprintf(buf, "%s/%c/%s/%d/%d/%s", 
+                    pp_str, 
+                    cc_type == -2 ? 'O' : 	/* 省略 */
+                    cc_type == -3 ? 'D' : 	/* 照応 */
+                    cc_type == -1 ? 'N' : 'C', 
+                    word, 
+                    tag_n, 
+                    dist, 
+                    sid);
     }
 
     return buf;
@@ -1716,7 +1726,11 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格フレームID */
-    sprintf(feature_buffer, "%s%s:", feature_head, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
+    sprintf(feature_buffer, "%s", feature_head);
+    if (OptDisplay != OPT_SIMPLE) {
+        strcat(feature_buffer, ":");
+        strcat(feature_buffer, cf_align ? cf_align->cf_id : cpm_ptr->cmm[0].cf_ptr->cf_id);
+    }
 
     /* それぞれの格要素 */
     for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
@@ -1730,25 +1744,34 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	case_str = pp_code_to_kstr_in_context(cpm_ptr, case_num);
 
 	/* 割り当てなし */
-	if (num == UNASSIGNED) {
-	    if (!cf_align) { /* 正規化時は割り当てなしを表示しない */
-		if (first_arg_flag == 0) { /* 2つ目以降の格要素なら区切りを出力 */
-		    strcat(feature_buffer, ";");
-		}
+	if (num == UNASSIGNED) { /* 正規化時は割り当てなしを表示しない, -simple時は必須格のみ */
+	    if (!cf_align && (OptDisplay != OPT_SIMPLE || 
+                              (cpm_ptr->cmm[0].cf_ptr->oblig[i] == TRUE && !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "修飾")))) {
+		if (first_arg_flag) /* 格フレームIDの後の":" */
+		    strcat(feature_buffer, ":");
+                else /* 2つ目以降の格要素なら区切り";"を出力 */
+                    strcat(feature_buffer, ";");
 		first_arg_flag = 0;
-		sprintf(buffer, "%s/U/-/-/-/-", case_str);
+                if (OptDisplay == OPT_SIMPLE)
+                    sprintf(buffer, "%s/-", case_str);
+                else
+                    sprintf(buffer, "%s/U/-/-/-/-", case_str);
 		strcat(feature_buffer, buffer);
 	    }
 	}
 	/* 割り当てあり */
 	else {
-	    if (first_arg_flag == 0) { /* 2つ目以降の格要素なら区切りを出力 */
-		strcat(feature_buffer, ";");
-	    }
+	    if (first_arg_flag) /* 格フレームIDの後の":" */
+		strcat(feature_buffer, ":");
+            else /* 2つ目以降の格要素なら区切り";"を出力 */
+                strcat(feature_buffer, ";");
 	    first_arg_flag = 0;
 	    /* 例外タグ */
 	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
-		sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* 不特定-人 */
+                if (OptDisplay == OPT_SIMPLE)
+                    sprintf(buffer, "%s/E/%s/-", case_str, ETAG_name[2]); /* 不特定-人 */
+                else
+                    sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* 不特定-人 */
 		strcat(feature_buffer, buffer);
 	    }
 	    else {
@@ -1900,11 +1923,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     }
 
     /* 格フレーム側からの格解析結果の記述 */
-    record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "格解析結果:", NULL);
+    record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "格解析結果", NULL);
 
     /* 正規化格解析結果 */
     for (i = 0; cpm_ptr->cmm[0].cf_ptr->cf_align[i].cf_id != NULL; i++) {
-	sprintf(feature_buffer, "正規化格解析結果-%d:", i);
+	sprintf(feature_buffer, "正規化格解析結果-%d", i);
 	record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, feature_buffer, &(cpm_ptr->cmm[0].cf_ptr->cf_align[i]));
     }
 }

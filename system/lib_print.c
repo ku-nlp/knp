@@ -579,7 +579,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 		fprintf(Outfp, "%%%% %d %d 1 LABEL=%d_%db align=right style=white-space:nowrap\n", 
 			Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
 	    fprintf(Outfp, "%s", ptr->Goi2);
-	    if (Language == JAPANESE && OptDisplay != OPT_NORMAL) {
+	    if (Language == JAPANESE && OptDisplay != OPT_NORMAL && OptDisplay != OPT_SIMPLE) {
 		fprintf(Outfp, "%c", 
 			pos2symbol(Class[ptr->Hinshi][0].id,
 				   Class[ptr->Hinshi][ptr->Bunrui].id));
@@ -631,7 +631,7 @@ void print_bnst_with_mrphs(SENTENCE_DATA *sp, int have_dpnd_flag, int eos_flag)
 			Sen_Num, Tag_Num++, Sen_Num, Tag_Num - 1);
 	    for (i = 0; i < ptr->mrph_num; i++) {
 		fprintf(Outfp, "%s", (ptr->mrph_ptr + i)->Goi2);
-		if (Language == JAPANESE && OptDisplay != OPT_NORMAL) {
+		if (Language == JAPANESE && OptDisplay != OPT_NORMAL && OptDisplay != OPT_SIMPLE) {
 		    fprintf(Outfp, "%c", 
 			    pos2symbol(Class[(ptr->mrph_ptr + i)->Hinshi]
 				       [0].id,
@@ -1116,7 +1116,7 @@ static int max_width;			/* 木の最大幅 */
 {
     if (ptr->para_top_p == TRUE) 
 	ptr->space = 4;
-    else if (OptDisplay == OPT_NORMAL)
+    else if (OptDisplay == OPT_NORMAL || OptDisplay == OPT_SIMPLE)
 	ptr->space = ptr->length;
     else if (ptr->type == IS_MRPH_DATA)
 	ptr->space = ptr->length + 1;

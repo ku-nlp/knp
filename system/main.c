@@ -202,8 +202,8 @@ extern int	EX_match_subject;
     OptGeneralCF = 0;
     OptCorefer = 4;
     OptInput = OPT_RAW;
-    OptExpress = OPT_TREE;
-    OptDisplay = OPT_NORMAL;
+    OptExpress = OPT_TREEF;
+    OptDisplay = OPT_SIMPLE;
     OptDisplayNE = OPT_NORMAL;
     OptArticle = FALSE;
     OptExpandP = FALSE;
@@ -271,7 +271,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-bptree"))  OptExpress  = OPT_TREE;
 	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
-	else if (str_eq(argv[0], "-tab"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-bptab"))   OptExpress  = OPT_TAB;
@@ -294,6 +293,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-no-use-ncf")) OptUseNCF   = FALSE;
 	else if (str_eq(argv[0], "-process-paren")) OptProcessParen = TRUE;
 	else if (str_eq(argv[0], "-suppress-katakana-normalization")) OptKatakanaNormalize = FALSE;
+	else if (str_eq(argv[0], "-tab")) {
+            OptDisplay = OPT_NORMAL;
+            OptExpress = OPT_TAB;
+        }
 	else if (str_eq(argv[0], "-mrphtree")) {
 	    if (OptSemanticHead) usage();
 	    OptExpress = OPT_MRPHTREE;
@@ -328,9 +331,13 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-check")) {
 	    OptCheck = TRUE;
 	}
-	else if (str_eq(argv[0], "-simple") || str_eq(argv[0], "-simpletab")) {
+	else if (str_eq(argv[0], "-simpletab")) {
             OptDisplay = OPT_SIMPLE;
             OptExpress = OPT_TAB;
+        }
+	else if (str_eq(argv[0], "-simple") || str_eq(argv[0], "-simpletree")) {
+            OptDisplay = OPT_SIMPLE;
+            OptExpress = OPT_TREEF;
         }
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
