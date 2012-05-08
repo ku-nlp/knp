@@ -175,7 +175,7 @@ extern int	EX_match_subject;
 #ifdef USE_SVM
 	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
 #endif
-	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab|simple]\n" 
+	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand] [-semantic-head]\n"
 #ifdef _WIN32
@@ -267,9 +267,6 @@ extern int	EX_match_subject;
 	if (str_eq(argv[0], "-case"))         OptAnalysis = OPT_CASE;
 	else if (str_eq(argv[0], "-case2"))   OptAnalysis = OPT_CASE2;
 	else if (str_eq(argv[0], "-cfsm"))    OptCFMode   = SEMANTIC_MARKER;
-	else if (str_eq(argv[0], "-tree"))    OptExpress  = OPT_TREE;
-	else if (str_eq(argv[0], "-bptree"))  OptExpress  = OPT_TREE;
-	else if (str_eq(argv[0], "-treef"))   OptExpress  = OPT_TREEF;
 	else if (str_eq(argv[0], "-sexp"))    OptExpress  = OPT_SEXP;
 	else if (str_eq(argv[0], "-tag"))     OptExpress  = OPT_TAB;
 	else if (str_eq(argv[0], "-tagtab"))  OptExpress  = OPT_TAB;
@@ -296,6 +293,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-tab")) {
             OptDisplay = OPT_NORMAL;
             OptExpress = OPT_TAB;
+        }
+	else if (str_eq(argv[0], "-tree")) {
+            OptDisplay = OPT_SIMPLE;
+            OptExpress  = OPT_TREEF;
         }
 	else if (str_eq(argv[0], "-mrphtree")) {
 	    if (OptSemanticHead) usage();
@@ -334,10 +335,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-simpletab")) {
             OptDisplay = OPT_SIMPLE;
             OptExpress = OPT_TAB;
-        }
-	else if (str_eq(argv[0], "-simple") || str_eq(argv[0], "-simpletree")) {
-            OptDisplay = OPT_SIMPLE;
-            OptExpress = OPT_TREEF;
         }
 	else if (str_eq(argv[0], "-probcase")) {
 	    OptAnalysis = OPT_CASE;
