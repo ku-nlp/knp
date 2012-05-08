@@ -4,6 +4,7 @@ require 5.000;
 use Carp;
 use bytes ();
 use strict;
+use vars qw/ $ENCODING /;
 
 =head1 NAME
 
@@ -37,6 +38,9 @@ C<KNP::DrawTree> クラスは，解析単位(文節，タグ)間の依存関係�
 構文木を文字列で返す．
 
 =cut
+
+$ENCODING = $KNP::ENCODING ? $KNP::ENCODING : 'utf8';
+
 my %POS_MARK = 
     ( '特殊'     => '*',
       '動詞'     => 'v',
@@ -67,9 +71,9 @@ sub _leaf_string {
 	my ($midasi, $bunrui, $hinsi) = ($mrph->midasi(), $mrph->bunrui(), $mrph->hinsi());
 	if ($utf8_flag or utf8::is_utf8($midasi)) { # utf8_flagをはずして処理し、最後にutf8_flagを再びたてる
 	    $utf8_flag = 1 unless $utf8_flag;
-	    $midasi = Encode::encode($KNP::ENCODING, $midasi);
-	    $bunrui = Encode::encode($KNP::ENCODING, $bunrui);
-	    $hinsi = Encode::encode($KNP::ENCODING, $hinsi);
+	    $midasi = Encode::encode($ENCODING, $midasi);
+	    $bunrui = Encode::encode($ENCODING, $bunrui);
+	    $hinsi = Encode::encode($ENCODING, $hinsi);
 	}
 	$string .= $midasi;
 	if ( $bunrui =~ /^(?:固有名詞|人名|地名)$/ ) {
@@ -78,7 +82,7 @@ sub _leaf_string {
 	    $string .= $POS_MARK{$hinsi};
 	}
     }
-    $utf8_flag ? Encode::decode($KNP::ENCODING, $string) : $string;
+    $utf8_flag ? Encode::decode($ENCODING, $string) : $string;
 }
 
 sub _str_real_length {
@@ -166,7 +170,7 @@ sub sprint_tree {
     my $utf8_flag = utf8::is_utf8($line[0]) ? 1 : 0 if @line;
     for $i ( 0 .. $limit ){
 	for $j ( ( $i + 1 ) .. $limit ){
-	    $line[$i] .= $utf8_flag ? Encode::decode($KNP::ENCODING, $item[$i][$j]) : $item[$i][$j];
+	    $line[$i] .= $utf8_flag ? Encode::decode($ENCODING, $item[$i][$j]) : $item[$i][$j];
 	}
     }
     my $max_length = ( sort { $b <=> $a; } map( &_str_real_length($_, $utf8_flag), @line ) )[0];
