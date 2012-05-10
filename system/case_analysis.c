@@ -1746,7 +1746,9 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	/* 割り当てなし */
 	if (num == UNASSIGNED) { /* 正規化時は割り当てなしを表示しない, -simple時は必須格のみ */
 	    if (!cf_align && (OptDisplay != OPT_SIMPLE || 
-                              (cpm_ptr->cmm[0].cf_ptr->oblig[i] == TRUE && !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "修飾")))) {
+                              (cpm_ptr->cmm[0].cf_ptr->oblig[i] == TRUE && 
+                               !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "修飾") && 
+                               !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "外の関係")))) {
 		if (first_arg_flag) /* 格フレームIDの後の":" */
 		    strcat(feature_buffer, ":");
                 else /* 2つ目以降の格要素なら区切り";"を出力 */
