@@ -275,7 +275,6 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-notagtab")) OptExpress = OPT_NOTAG;
 	else if (str_eq(argv[0], "-bnsttab")) OptExpress  = OPT_NOTAG;
 	else if (str_eq(argv[0], "-bnsttree")) OptExpress = OPT_BNSTTREE;
-	else if (str_eq(argv[0], "-mrphtab")) OptExpress  = OPT_MRPH;
 	else if (str_eq(argv[0], "-pa"))      OptExpress  = OPT_PA;
 	else if (str_eq(argv[0], "-table"))   OptExpress  = OPT_TABLE;
 	else if (str_eq(argv[0], "-entity"))  OptDisplay  = OPT_ENTITY;
@@ -293,6 +292,10 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-tab")) {
             OptDisplay = OPT_NORMAL;
             OptExpress = OPT_TAB;
+        }
+	else if (str_eq(argv[0], "-mrphtab")) {
+            OptDisplay = OPT_NORMAL;
+            OptExpress  = OPT_MRPH;
         }
 	else if (str_eq(argv[0], "-tree")) {
             OptDisplay = OPT_SIMPLE;
