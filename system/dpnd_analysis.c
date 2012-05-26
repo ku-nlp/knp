@@ -2215,7 +2215,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 {
     /* 基本句末尾の形態素が句読点の場合は一つ前、それ以外は基本句末尾の形態素 */
 
-    if (m_ptr->inum == 1 && 
+    if (m_ptr->inum != 0 && 
         !strcmp(Class[(m_ptr + 1)->Hinshi][0].id, "特殊") && 
         (!strcmp(Class[(m_ptr + 1)->Hinshi][(m_ptr + 1)->Bunrui].id, "読点") || 
          !strcmp(Class[(m_ptr + 1)->Hinshi][(m_ptr + 1)->Bunrui].id, "句点"))) {
@@ -2287,14 +2287,16 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	}
         /* 基本句内の内容語(前側にある)にかける */
 	else if (appear_outer_word_flag == FALSE && !this_is_semantic_head_flag && 
-                 ((OptSemanticHead && appear_semantic_head_flag == TRUE) || check_feature(m_ptr->f, "Ｔ句内要素") || 
+                 ((OptSemanticHead && appear_semantic_head_flag == TRUE && !(appear_syntactic_head_flag && !this_is_syntactic_head_flag)) || 
+                  check_feature(m_ptr->f, "Ｔ句内要素") || 
                   ((sp->tag_data + last_t)->dpnd_head == -1 && appear_syntactic_head_flag && !this_is_syntactic_head_flag))) { /* semantic head時もしくは句内要素もしくは文末の句点 */
 	    m_ptr->dpnd_head = last_content_m;
 	    m_ptr->dpnd_type = 'D';
 	}
 	/* 基本句内最後の形態素(inum == 0) もしくは semantic head */
 	else {
-            if (last_content_m_ptr && !this_is_semantic_head_flag) { /* semantic headからこの形態素にかける */
+            if (last_content_m_ptr && !this_is_semantic_head_flag && /* semantic headからこの形態素にかける */
+                !(appear_syntactic_head_flag && !this_is_syntactic_head_flag)) {
                 last_content_m_ptr->dpnd_head = m_ptr->num;
                 last_content_m_ptr->dpnd_type = 'D';
                 last_content_m_ptr = NULL;
