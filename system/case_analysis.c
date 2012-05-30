@@ -1841,7 +1841,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* temp_assign_flag: TRUEのときfeatureを「仮付与」する */
 
     int i, num;
-    char feature_buffer[DATA_LEN], relation[DATA_LEN], *word, *sid, *cp;
+    char feature_buffer[DATA_LEN], *relation, *case_str, *word, *sid, *cp;
     TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
     /* 述語が後処理により併合された場合: 併合された先の基本句を探す */
@@ -1895,7 +1895,11 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	}
 	/* 割り当てられている格 */
 	else if (num >= 0) {
-	    strcpy(relation, pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]));
+	    case_str = pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[num][0]);
+            relation = (char *)malloc_data(strlen(case_str) + 2, "record_case_analysis");
+            strcpy(relation, case_str);
+            if ((OptCaseFlag & OPT_CASE_PRINT_OBLIG) && cpm_ptr->cmm[0].cf_ptr->oblig[num] == FALSE) /* 任意格情報を表示する場合 */
+                strcat(relation, "*");
 	}
 	/* else: UNASSIGNED はないはず */
 
@@ -1922,6 +1926,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    assign_cfeature(&(pred_b_ptr->f), feature_buffer, temp_assign_flag);
 	    free(word);
 	}
+        free(relation);
     }
 
     /* 格フレーム側からの格解析結果の記述 */

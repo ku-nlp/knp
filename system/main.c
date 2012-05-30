@@ -733,6 +733,9 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-print-case-score")) {
 	    OptCaseFlag |= OPT_CASE_PRINT_SCORE;
 	}
+	else if (str_eq(argv[0], "-print-case-oblig")) {
+	    OptCaseFlag |= OPT_CASE_PRINT_OBLIG;
+	}
 	else if (str_eq(argv[0], "-print-ex-all")) {
 	    EX_PRINT_NUM = -1;
 	}
