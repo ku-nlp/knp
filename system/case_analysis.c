@@ -1744,8 +1744,8 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	case_str = pp_code_to_kstr_in_context(cpm_ptr, case_num);
 
 	/* 割り当てなし */
-	if (num == UNASSIGNED) { /* 正規化時は割り当てなしを表示しない, -simple時は必須格のみ */
-	    if (!cf_align && (OptDisplay != OPT_SIMPLE || 
+	if (num == UNASSIGNED) { /* 正規化時は割り当てなしを表示しない, 通常は必須格のみ(-print-case-all-slot時はすべて) */
+	    if (!cf_align && ((OptCaseFlag & OPT_CASE_PRINT_ALL_SLOT) || 
                               (cpm_ptr->cmm[0].cf_ptr->oblig[i] == TRUE && 
                                !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "修飾") && 
                                !MatchPP(cpm_ptr->cmm[0].cf_ptr->pp[i][0], "外の関係")))) {
