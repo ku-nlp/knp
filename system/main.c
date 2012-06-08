@@ -167,6 +167,15 @@ extern int	EX_match_sentence;
 extern int	EX_match_tim;
 extern int	EX_match_subject;
 
+
+double author_score =0;
+double reader_score =0;
+int  author_sen = -1;
+int  author_tag = -1;
+int  reader_sen = -1;
+int  reader_tag = -1;
+
+
 /*==================================================================*/
 			     void usage()
 /*==================================================================*/
@@ -253,6 +262,7 @@ extern int	EX_match_subject;
     OptSemanticHead = 0;
     OptChiGenerative = 0;
     OptChiPos = 0;
+	OptSemanticHead = 0;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -446,22 +456,107 @@ extern int	EX_match_subject;
 	else if (str_eq(argv[0], "-demonstrative")) {
 	    OptEllipsis |= OPT_DEMO;
 	}
+	else if (str_eq(argv[0], "-iterative")) {
+		OptAnaphora |= OPT_ITERATIVE;
+	}
 	else if (str_eq(argv[0], "-anaphora-detail")) {
-	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY);
+		OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_UNNAMED_ENTITY);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
+	}
+	else if (str_eq(argv[0], "-anaphora-each-sentence") || str_eq(argv[0], "-anaphora")) {
+		OptAnaphora |= (OPT_ANAPHORA | OPT_EACH_SENTENCE | OPT_UNNAMED_ENTITY);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
 	}
 	else if (str_eq(argv[0], "-anaphora-train")) {
-	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_TRAIN);
+		OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_TRAIN | OPT_UNNAMED_ENTITY);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
+	}
+	else if (str_eq(argv[0], "-anaphora-gs")) {
+		OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_TRAIN | OPT_GS |OPT_UNNAMED_ENTITY );
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
+	}
+	else if (str_eq(argv[0], "-print-entity")) {
+		OptAnaphora |= (OPT_PRINT_ENTITY);
+	}
+	else if (str_eq(argv[0], "-entity-mention"))
+	{
+		OptAnaphora |= (OPT_ONLY_ENTITY);
+	}
+	else if (str_eq(argv[0], "-no-psude-entity")) {
+		OptAnaphora |= (OPT_NO_PSUDE);
+	}
+	else if (str_eq(argv[0], "-no-author")) {
+		OptAnaphora |= OPT_NO_AUTHOR_ENTITY;
+	}
+	else if (str_eq(argv[0], "-no-reader")) {
+		OptAnaphora |= OPT_NO_READER_ENTITY;
+	}
+	else if (str_eq(argv[0], "-author-score")) {
+	    argv++; argc--;
+	    if (argc < 1) 
+		{
+			usage();
+		}
+		OptAnaphora |= OPT_AUTHOR_SCORE;
+	    author_score = atof(argv[0]);
+	}
+	else if (str_eq(argv[0], "-reader-score")) {
+	    argv++; argc--;
+	    if (argc < 1) 
+		{
+			usage();
+		}
+		else
+		{
+			OptAnaphora |= OPT_READER_SCORE;
+			reader_score = atof(argv[0]);
+		}
+	}
+	else if (str_eq(argv[0], "-author-mention")) {
+		argv++; argc--;
+	    if (argc < 1) 
+		{
+			usage();
+		}
+		else
+		{
+			OptAnaphora |= OPT_AUTHOR_ESTIMATE;
+			sscanf(argv[0],"%d-%d",&author_sen,&author_tag);
+		}
+	}
+	else if (str_eq(argv[0], "-reader-mention")) {
+		argv++; argc--;
+	    if (argc < 1) 
+		{
+			usage();
+		}
+		else
+		{
+			if(argv[0][0] != '-')
+			{
+				OptAnaphora |= OPT_READER_ESTIMATE;
+				sscanf(argv[0],"%d-%d",&reader_sen,&reader_tag);
+			}
+		}
+	}
+	else if (str_eq(argv[0], "-link-author-after")) {
+		OptAnaphora |= OPT_AUTHOR_AFTER;
 	}
 	else if (str_eq(argv[0], "-anaphora-prob")) {
 	    OptAnaphora |= (OPT_ANAPHORA | OPT_PRINT_ENTITY | OPT_ANAPHORA_PROB);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY);
 	}
-	else if (str_eq(argv[0], "-anaphora-normal") || str_eq(argv[0], "-anaphora")) {
+	//else if (str_eq(argv[0], "-anaphora-normal") || str_eq(argv[0], "-anaphora")) {
+	else if (str_eq(argv[0], "-anaphora-normal") ) {
 	    OptAnaphora |= OPT_ANAPHORA;
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
@@ -956,11 +1051,23 @@ extern int	EX_match_subject;
 	    OptReadFeature |= OPT_ELLIPSIS;
 	    OptReadFeature |= OPT_REL_NOUN;
 	    OptReadFeature |= OPT_COREFER;
+		//OptReadFeature |= OPT_CASE_ANALYSIS;
+	    OptReadFeature |= OPT_AUTHOR;
 	    OptEllipsis &= ~OPT_COREFER;
 	}
 	else if (str_eq(argv[0], "-read-feature-corefer")) {
 	    OptReadFeature |= OPT_COREFER;
+		//OptReadFeature |= OPT_CASE_ANALYSIS;
+	    OptReadFeature |= OPT_AUTHOR;
 	    OptEllipsis &= ~OPT_COREFER;
+	}
+	else if (str_eq(argv[0], "-read-feature-corefer-auto")) {
+		OptReadFeature |= OPT_COREFER_AUTO;
+	    OptEllipsis &= ~OPT_COREFER;
+	}
+	else if(str_eq(argv[0], "-read-feature-author-auto"))
+	{
+		OptReadFeature |= OPT_AUTHOR_AUTO;
 	}
 	else if (str_eq(argv[0], "-read-feature-ellipsis")) {
 	    OptReadFeature |= OPT_ELLIPSIS;
@@ -970,6 +1077,12 @@ extern int	EX_match_subject;
 	    OptReadFeature |= OPT_REL_NOUN;
 	    OptEllipsis &= ~OPT_COREFER;
 	}
+	else if(str_eq(argv[0], "-read-feature-all-case"))
+	{
+		OptReadFeature |= OPT_ALL_CASE;
+		//解析対象以外のタグ、格も読み込む
+	}
+
 	else if (str_eq(argv[0], "-add-svmfeature-utype")) {
 	    OptAddSvmFeatureUtype = 1;
 	}
@@ -1787,7 +1900,8 @@ PARSED:
 	}
 	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
 	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	if (OptAnaphora) anaphora_analysis(sp);
+	//if (OptAnaphora) anaphora_analysis(sp->Sen_num);
+	if (OptAnaphora & OPT_EACH_SENTENCE) each_sentence_anaphora_analysis(sp);
 	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
 
 	if (!OptArticle && OptPostProcess) { /* 後処理 (構文解析のときは、one_sentence_analysis()で行う) */
@@ -1817,7 +1931,10 @@ PARSED:
     /************/
     /* 結果表示 */
     /************/
-    print_all_result(sp, paren_num ? 0 : 1); /* 括弧含む文: EOP(0); 通常文: EOS(1) */
+	if(!(OptAnaphora) || (OptAnaphora & OPT_EACH_SENTENCE)|| (OptExpress == OPT_TABLE))
+	{
+		print_all_result(sp, paren_num ? 0 : 1); /* 括弧含む文: EOP(0); 通常文: EOS(1) */
+	}
 
     /* 括弧文の解析 */
     if (paren_num) {
@@ -1902,7 +2019,10 @@ PARSED:
 		if (OptPostProcess) { /* 後処理 */
 		    do_postprocess(sp);
 		}
-		print_result(sp, 1, 1);
+		if((!OptAnaphora)|| (OptExpress != OPT_TAB) )
+		{
+			print_result(sp, 1, 1);
+		}
 	    }
 	    else if (OptEllipsis != OPT_COREFER && !OptAnaphora) {
 		PreserveCPM(PreserveSentence(sp), sp);
@@ -1932,6 +2052,18 @@ PARSED:
 
 	success = 1;	/* OK 成功 */
     }
+	if (OptAnaphora && !(OptAnaphora & OPT_EACH_SENTENCE))
+	{
+		
+		all_sentence_anaphora_analysis(sp);
+		if(OptExpress == OPT_TAB)
+		{
+			for (i = 0; i < sp->Sen_num - 1; i++) {
+				print_result(sentence_data+i, 0, 1);
+			}
+		}
+		
+	}
 
     if (OptArticle && OptEllipsis) {
 	for (i = 0; i < sp->Sen_num - 1; i++) {

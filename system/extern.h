@@ -116,7 +116,15 @@ extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
 extern int		OptEncoding;
+extern double author_score;
+extern double reader_score;
+extern int  author_sen;
+extern int  author_tag;
+extern int  reader_sen;
+extern int  reader_tag;
+
 extern int		OptSemanticHead;
+
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
@@ -196,7 +204,9 @@ extern int sen_num;
 
 /* anaphora.c */
 extern void assign_mrph_num(SENTENCE_DATA *sp);
-extern void anaphora_analysis(SENTENCE_DATA *sp);
+//extern void anaphora_analysis(SENTENCE_DATA *sp);
+extern void anaphora_analysis(int sen_num);
+extern void all_sentence_anaphora_analysis(SENTENCE_DATA *sp);
 extern void clear_context(SENTENCE_DATA *sp, int init_flag);
 
 /* bnst_compare.c */
@@ -296,7 +306,11 @@ extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr);
 extern char *malloc_db_buf(int size);
 extern CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag);
+extern double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp);
+
 extern char *rep2id(char *rep, int rep_len, char *buffer);
+
+
 
 /* case_match.c */
 extern int comp_sm(char *cpp, char *cpd, int start);

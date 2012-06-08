@@ -147,6 +147,11 @@
 #define OPT_DEMO	2
 #define OPT_REL_NOUN	4
 #define OPT_COREFER	8
+#define OPT_CASE_ANALYSIS 16
+#define OPT_AUTHOR 32
+#define OPT_COREFER_AUTO 64
+#define OPT_AUTHOR_AUTO 128
+#define OPT_ALL_CASE 256
 #define OPT_RAW		0
 #define OPT_PARSED	1
 #define OPT_INPUT_BNST	2
@@ -176,6 +181,19 @@
 #define OPT_ANAPHORA_COPULA 4
 #define OPT_ANAPHORA_PROB   8
 #define OPT_TRAIN           16
+#define OPT_UNNAMED_ENTITY  32
+#define OPT_GS              64
+#define OPT_NO_AUTHOR_ENTITY         128
+#define OPT_NO_READER_ENTITY         256
+#define OPT_AUTHOR_SCORE   512
+#define OPT_READER_SCORE   1024
+#define OPT_AUTHOR_ESTIMATE 2048
+#define OPT_READER_ESTIMATE 4096
+#define OPT_AUTHOR_AFTER    8192
+#define OPT_ONLY_ENTITY    16384
+#define OPT_NO_PSUDE    	32768
+#define OPT_EACH_SENTENCE   65536 	
+#define OPT_ITERATIVE   131072 	
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
@@ -193,7 +211,7 @@
 #define	OPT_CASE_CF_ON_MEMORY	16384
 #define	OPT_CASE_CLEAR_CF	32768
 #define	OPT_CASE_FALLBACK_TO_DPND	65536
-#define	OPT_CASE_USE_CV_CF	131072
+#define	OPT_CASE_USE_CV_CF	131072 	
 #define	OPT_CASE_CFCASE_FORMAT_DENOMINATOR	262144
 #define	OPT_CASE_ANALYZE_DEVERBATIVE_NOUN	524288
 #define	OPT_CASE_CF_USE_ID	1048576
@@ -830,6 +848,8 @@ typedef struct mention {
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
     char                type; /* 'S', '=', 'N', 'C', 'O', 'D' */
     double              salience_score; /* どのくらい先行詞になりやすいか */    
+	double              static_salience_score;/* salience_scoreの元になる値。*/
+	/*各mentionのstatic_salience_score*(SALIENCE_DACAY_RATE**sentece_distance)の和をとると salience_scoreになる */
     struct tnode_t      *tag_ptr;
     struct entity       *entity;
     struct mention      *explicit_mention; /* 直接の格要素へのポインタ(flag=Cの場合のみ) */
@@ -850,11 +870,22 @@ typedef struct entity {
     int                 num;
     int                 output_num; /* {A,B}=CとなっているときにAとBの出力numを統一する */
     int                 mentioned_num;  /* 言及されている回数 */
+	int                 link_entity;
+	int                 first_appearance;
     double              salience_score; /* どのくらい先行詞になりやすいか */
     double              salience_mem; /* 正解を読み込んだ場合のsalienceの変化の記録 */
     int                 tmp_salience_flag; /* 同一文中に出現したノ格 */
+	int                 hypothetical_flag;
+	int                 real_entity;//hypothetical entityに実体がある場合(一人称->私Entity)
+	int                 hypothetical_entity;//対応するhypothetical_entity(私Entity->一人称)
+	int                 skip_flag;/*1ならそのentityは格に割り当てない*/
+	char                hypothetical_name[WORD_LEN_MAX+1];
     MENTION             *mention[MENTIONED_MAX];
+	char                named_entity[WORD_LEN_MAX];
     char                name[WORD_LEN_MAX+1]; /* ENTITY名 */
+	int                 corefer_id; //自動解析結果を読み込むため
+	int                 rep_sen_num;
+	int                 rep_tag_num;
 } ENTITY;
 
 /* 文章全体に出現したENTITYを管理する構造体 */
@@ -931,6 +962,8 @@ typedef struct tnode_t {
     /* 照応解析 */
     struct tcf_def *tcf_ptr; /* 入力基本句の表層的な格構造 */
     struct ctm_def *ctm_ptr; /* 基本句の格・省略解析結果の記録 */
+	double score_diff; /*省略解析結果の信頼度*/
+	double ga_score_diff; /*ガ格の省略解析結果の信頼度*/
 } TAG_DATA;
 
 #define CASE_MAX_NUM	20
@@ -1391,24 +1424,87 @@ typedef struct tcf_def {
 } TAG_CASE_FRAME;
 
 /* CF_TAG_MGR中のomit_feature用の定数 */
-#define ELLIPSIS_CASE_NUM 3
-#define O_FEATURE_NUM    94 /* 10 + 84 */
+#define ELLIPSIS_CASE_NUM 4
+
 #define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
 #define EX_PMI            1 /* 語PMI */	       
 #define CEX_PMI           2 /* カテゴリPMI */	       
 #define NEX_PMI           3 /* 固有表現PMI */	       
 #define CLS_PMI           4 /* クラスPMI */
 #define WA_IN_THE_SENT    5 /* 先行詞候補が同一文に出現かつ格助詞「は」を伴う */
-#define SALIENCE_CHECK    6 /* SALIENCEが一定以上あるかどうか */
+#define MAX_PMI           6 /*PMIで最大のもの*/
+//#define SALIENCE_CHECK    6 /* SALIENCEが一定以上あるかどうか */
 #define NE_PERSON         7 /* 先行詞候補が人名 */
-#define LOCATION_PROB     8 /* 位置カテゴリPMI */
+#define NE_CHECK     8 /* 先行詞候補がNE*/
 #define ASSIGNED          9 /* 埋まったかどうか */
-#define LOCATION_S       10 /* 位置カテゴリ素性の開始位置 */
-#define LOCATION_NUM     84 /* 位置カテゴリ素性の種類 */
+#define OVERT_APPEARANCE  10 /* 文章全体の出現回数 */
+#define BEFORE_OVERT_APPEARANCE  11 /* 前の文での出現回数 */
+#define AFTER_OVERT_APPEARANCE  12 /* 後の文での出現回数 */
+#define SAME_PRED         13 /*同じ動詞+格での出現*/
+#define ASSIGNMENT       14 /*ある格スロットが対応付けられる確率*/
+#define AUTHOR_SCORE 15
+#define READER_SCORE 16
+#define EX_CASE_PROB            17 /* 語が格スロットに入る確率 */	       
+#define EX_PROB            18 /* 語が出現する確率 */	       
+#define CEX_CASE_PROB           19 /* カテゴリPMI */	       
+#define CEX_PROB           20 /* カテゴリPMI */	       
+#define NEX_CASE_PROB           21 /* 固有表現PMI */	       
+#define NEX_PROB           22 /* 固有表現PMI */	       
+#define CLS_CASE_PROB           23 /* クラスPMI */
+#define CLS_PROB           24 /* クラスPMI */
+#define ALT_CT_PMI 25
+#define ALT_CT_CASE_PROB 26
+#define ALT_CT_PROB 27
+#define CF_GA_FILLED_RATIO 28
+#define EX_ASSIGNMENT 29 /*用例の割合からの埋まりやすさ*/
+#define OLD_TOPIC 30 /*「は」で出現したが以降で別の「は」が出現*/
+#define ABILITY 31
+#define UNNAMED_CASE_PROB 32
+#define VOICE_S 33
+#define CLOSEST_APPEARANCE_S (VOICE_S+VOICE_NUM)
+#define CLOSEST_APPEARANCE_NUM 4 
+#define PRED_DPND_TYPE_S (CLOSEST_APPEARANCE_NUM+CLOSEST_APPEARANCE_S)
+#define PRED_DPND_TYPE_NUM 3
+#define VERB_SITUATION_S (PRED_DPND_TYPE_S+PRED_DPND_TYPE_NUM)
+#define VERB_SITUATION_NUM 2
+#define NE_FEATURE_S (VERB_SITUATION_S+VERB_SITUATION_NUM)
+#define NE_FEATURE_NUM NE_NUM
+#define LOCATION_S       (NE_FEATURE_S+NE_FEATURE_NUM)  /* 位置カテゴリ素性の開始位置 */
+#define LOCATION_NUM    (135) /* 位置カテゴリ素性の種類 + simple_loc_num */
+#define SIMPLE_LOCATION_S (LOCATION_S+LOCATION_NUM*3) 
+#define SIMPLE_LOCATION_NUM 15
+#define UNNAMED_NUM_S  (SIMPLE_LOCATION_S+SIMPLE_LOCATION_NUM*3)
+#define YOBIKAKE_S (UNNAMED_NUM_S+UNNAMED_ENTITY_NUM*ELLIPSIS_CASE_NUM)
+#define MODALITY_S (YOBIKAKE_S+UNNAMED_ENTITY_NUM)
+#define MODALITY_F_NUM (MODALITY_NUM*2)
+#define KEIGO_S (MODALITY_S+MODALITY_F_NUM)
+#define KEIGO_F_NUM  (KEIGO_NUM*2)
+
+#define CONTEXT_S (KEIGO_S+KEIGO_F_NUM)
+#define CONTEXT_FEATURE_NUM 10
+#define EACH_FEARUTE_NUM        (CONTEXT_S+CONTEXT_FEATURE_NUM)
+
+#define NE_NUM 8
+
+#define REAL_S        (EACH_FEARUTE_NUM) /*普通の素性*/
+#define FILLED_S        (EACH_FEARUTE_NUM*2) /*省略でない部分*/
+#define UNNAMED_S        (EACH_FEARUTE_NUM*3) /*UNNAMED_ENTITYの素性*/
+#define ADJ_FEATURE_S (EACH_FEARUTE_NUM*(3+UNNAMED_ENTITY_NUM))
+#define O_FEATURE_NUM (2*(EACH_FEARUTE_NUM*(3+UNNAMED_ENTITY_NUM)))
+
+
+
+#define UNNAMED_ENTITY_NUM 5
+#define MODALITY_NUM 11
+#define VOICE_NUM 5
+#define KEIGO_NUM 3
+#define SENTENCE_CATEGORY_NUM 4 //共通、1文目、2、3文目、それ以降
 
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
+	double      score_def;/*トレーニング時の重みでのスコア*/           
+	double      case_analysis_score; /*擬似的な格解析スコア*/
     CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
 
     /* 格フレームの要素のうち対応付けがついたもの
@@ -1426,15 +1522,19 @@ typedef struct ctm_def {
     /* 以下は基本句の格構造の情報 */
     int         result_num;                      /* 対応付けられた要素数 */
     int         case_result_num;                 /* 格解析で対応付けられた要素数 */
+	int         annotated_result_num;            /* 正解コーパスにあって対応付けられた要素数 */
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
     char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
-
+	int         ga_entity;                       /*省略の場合のガ格が何で埋まったか*/
+	int         case_analysis_ga_entity;         /*格解析の場合のガ格が何で埋まったか*/
     /* 機械学習用のfeature */
     double overt_arguments_score;                          /* 格解析スコア */
+    double all_arguments_score;                          /* 省略解析後の格解析スコア */
     double omit_feature[ELLIPSIS_CASE_NUM][O_FEATURE_NUM]; /* 省略対応付け評価のための素性 */
+
 } CF_TAG_MGR;
 
 /*====================================================================
