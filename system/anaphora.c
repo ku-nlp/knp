@@ -6324,6 +6324,11 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 
 						if (OptDisplay == OPT_SIMPLE)
 						{
+							char ellipsis_flag[SMALL_DATA_LEN] ="";
+							if(mention_ptr->type == 'O' || mention_ptr->type == 'E')
+							{
+								strcpy(ellipsis_flag,"*");
+							}
 							if (!buf[0]) 
 							{
 								sprintf(buf,"格解析結果:");
@@ -6332,7 +6337,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 							{
 								strcat(buf,";");
 							}
-							sprintf(tmp,"%s/%s",mention_ptr->cpp_string,mention_ptr->entity->name);
+							sprintf(tmp,"%s%s/%s",mention_ptr->cpp_string,ellipsis_flag,mention_ptr->entity->name);
 							strcat(buf,tmp);
 						}
 						else
