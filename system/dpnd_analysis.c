@@ -2206,7 +2206,10 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	}
     }
 
-    return FALSE;
+    if (m_ptr->inum == 0) /* バックアップ: 基本句末尾の形態素 (上記の判定詞ルールにマッチしない場合用) */
+        return TRUE;
+    else
+        return FALSE;
 }
 
 /*==================================================================*/
