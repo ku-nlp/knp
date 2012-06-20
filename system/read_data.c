@@ -1788,7 +1788,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     }
 
     /* 付属語しかない場合 */
-    ptr->head_ptr = ptr->mrph_ptr + ptr->mrph_num - 1;
+    ptr->head_ptr = ptr->mrph_ptr;
 }
 
 /*==================================================================*/
