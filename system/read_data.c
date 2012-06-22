@@ -1834,6 +1834,10 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     }
 
     for (i = 0, b_ptr = sp->bnst_data; i < sp->Bnst_num; i++, b_ptr++) {
+        /* initialization for -assignf option */
+        b_ptr->dpnd_head = 0;
+        b_ptr->dpnd_type = 'D';
+
 	if (calc_bnst_length(sp, b_ptr) == FALSE) {
 	    return FALSE;
 	}
@@ -1921,6 +1925,10 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	tp->type = IS_TAG_DATA;
 
 	decide_head_ptr((BNST_DATA *)tp);
+
+        /* initialization for -assignf option */
+        tp->dpnd_head = 0;
+        tp->dpnd_type = 'D';
 
 	if (OptReadFeature) {
 	    tp->f = Input_tag_feature[i];
