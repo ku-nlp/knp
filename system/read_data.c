@@ -2098,6 +2098,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    memset(tp, 0, sizeof(TAG_DATA));
 	    tp->num = tp - sp->tag_data;
 	    tp->mrph_ptr = mp;
+            mp->tnum = tp->num;
+            make_mrph_set_inum(sp, i);
 
 	    /* 文節区切りと一致するとき */
 	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
@@ -2124,12 +2126,16 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 		pre_bp->tag_num++;
 	    }
 	}
+        else {
+	    mp->tnum = -1;
+        }
 	push_tag_units(tp, mp);
     }
 
     if ((sp->tag_data + sp->Tag_num - 1)->bnum < 0) {
 	make_tag_unit_set_inum(sp, sp->Tag_num);
     }
+    make_mrph_set_inum(sp, sp->Mrph_num);
 
     after_make_tag_units(sp);
 }

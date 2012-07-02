@@ -2233,7 +2233,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 }
 
 /*==================================================================*/
-	    void dpnd_info_to_mrph_raw(SENTENCE_DATA *sp)
+              void dpnd_info_to_mrph(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
     int i, j, last_t, offset, head, proj_table[MRPH_MAX];
@@ -2343,20 +2343,6 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
                 }
             }
 	}
-    }
-}
-
-/*==================================================================*/
-	      void dpnd_info_to_mrph(SENTENCE_DATA *sp)
-/*==================================================================*/
-{
-    if (OptInput == OPT_RAW || 
-	(OptInput & OPT_INPUT_BNST) ||
-	OptUseNCF) {
-	dpnd_info_to_mrph_raw(sp);
-    }
-    else {
-	/* dpnd_info_to_mrph_pm(sp); */
     }
 }
 
