@@ -194,6 +194,7 @@
 #define OPT_NO_PSUDE    	32768
 #define OPT_EACH_SENTENCE   65536 	
 #define OPT_ITERATIVE   131072 	
+#define OPT_PRUNING   262144 	
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4

@@ -16,8 +16,8 @@
 #define CASE_CANDIDATE_MAX  5 /* 照応解析用格解析結果を保持する数 */
 
 #define CASE_CAND_DIF_MAX   4.6 /* 格解析の候補として考慮するスコアの差の最大値(log(20)) */
-#define ELLIPSIS_RESULT_MAX 100  /* 省略解析結果を保持する */
-//#define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する */
+//#define ELLIPSIS_RESULT_MAX 100  /* 省略解析結果を保持する */
+#define ELLIPSIS_RESULT_MAX 10  /* 省略解析結果を保持する */
 #define ELLIPSIS_CORRECT_MAX 3  /* 省略解析結果のうち正解のものを保持する */
 #define SALIENCE_DECAY_RATE 0.5 /* salience_scoreの減衰率 */
 #define SALIENCE_THRESHOLD 0 /* 解析対象とするsalience_scoreの閾値(=は含まない) */
@@ -363,7 +363,7 @@ void set_candidate_entities(int sent_num)
 	
 	for(i = 0; i<ENTITY_MAX;i++)
 	{
-		if(OptReadFeature & OPT_COREFER_AUTO)
+		if(OptReadFeature & OPT_COREFER_AUTO || OptAnaphora & OPT_PRUNING)
 		{
 			candidate_entities[i] =0;
 		}
@@ -4116,7 +4116,7 @@ double calc_ellipsis_score_of_ctm(CF_TAG_MGR *ctm_ptr, TAG_CASE_FRAME *tcf_ptr)
 				{
 					if(hypo_entity_fill_case[j] == k)
 					{
-						of_ptr[feature_base+UNNAMED_S+j*UNNAMED_ENTITY_NUM+k] =1;
+						of_ptr[feature_base+UNNAMED_NUM_S+j*UNNAMED_ENTITY_NUM+k] =1;
 					}
 				}
 			}
@@ -5468,7 +5468,7 @@ int ellipsis_analysis_main(TAG_DATA *tag_ptr)
 
 	if (OptDisplay == OPT_DEBUG || OptExpress == OPT_TABLE) {
 		for (i = 0; i < CASE_CANDIDATE_MAX; i++) {
-			if(OptReadFeature & OPT_COREFER_AUTO)
+			if(OptReadFeature & OPT_COREFER_AUTO || OptAnaphora & OPT_PRUNING)
 			{
 
 				if (case_candidate_ctm[i].score == INITIAL_SCORE ||
@@ -5510,7 +5510,7 @@ int ellipsis_analysis_main(TAG_DATA *tag_ptr)
 		int e_num;
 
 		/*足切りしない*/
-		if(OptReadFeature & OPT_COREFER_AUTO)
+		if(OptReadFeature & OPT_COREFER_AUTO|| OptAnaphora & OPT_PRUNING)
 		{
 			if (case_candidate_ctm[i].score == INITIAL_SCORE ||
 				(i > 0 && case_candidate_ctm[i].score < case_candidate_ctm[i-1].score - CASE_CAND_DIF_MAX/2)) break;

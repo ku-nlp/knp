@@ -465,7 +465,15 @@ int  reader_tag = -1;
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
 	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
 	}
-	else if (str_eq(argv[0], "-anaphora-each-sentence") || str_eq(argv[0], "-anaphora")) {
+	else if( str_eq(argv[0], "-anaphora")) {
+		OptAnaphora |= (OPT_ANAPHORA | OPT_EACH_SENTENCE | OPT_UNNAMED_ENTITY | OPT_PRUNING);
+	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
+	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
+	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
+
+	}
+	else if (str_eq(argv[0], "-anaphora-each-sentence")) 
+	{
 		OptAnaphora |= (OPT_ANAPHORA | OPT_EACH_SENTENCE | OPT_UNNAMED_ENTITY);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
 	    OptGeneralCF |= (OPT_CF_NE | OPT_CF_CATEGORY | OPT_CF_CLASS);
