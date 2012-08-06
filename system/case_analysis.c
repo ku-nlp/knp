@@ -361,7 +361,7 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 	   ひらがな以外が多ければひらがな以外のみを対象にする */
 	if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
-	    check_str_type(b_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
+	    check_str_type(b_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0)) {
 	    if (check_feature(b_ptr->f, "代表ひらがな")) {
 		hiragana_prefer_flag = 1;
 	    }
@@ -376,8 +376,8 @@ double find_best_cf(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, int closest, int de
 	    if ((b_ptr->cf_ptr+i)->etcflag & CF_SUM) {
 		continue;
 	    }
-	    else if ((hiragana_prefer_flag > 0 && !check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA)) || 
-		     (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA))) {
+	    else if ((hiragana_prefer_flag > 0 && !check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA, 0)) || 
+		     (hiragana_prefer_flag < 0 && check_str_type((b_ptr->cf_ptr + i)->entry, TYPE_HIRAGANA, 0))) {
 		continue;
 	    }
 	    (Cf_match_mgr + frame_num++)->cf_ptr = b_ptr->cf_ptr + i;
@@ -2174,7 +2174,7 @@ void verb_lexical_disambiguation_by_case_analysis(CF_PRED_MGR *cpm_ptr)
     /* 直前格が1つ以上割り当てられていることを条件とする */
     if (count_assigned_adjacent_element(cpm_ptr->cmm[0].cf_ptr, &(cpm_ptr->cmm[0].result_lists_p[0])) && 
 	(check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "原形曖昧") || /* 原形が曖昧な用言 */
-	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA) && 
+	 (check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0) && 
 	  check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "品曖"))) && /* 品曖なひらがな */
 	!check_feature(cpm_ptr->pred_b_ptr->head_ptr->f, "音訓解消")) { /*音訓解消はされていない */
 	/* 現在の形態素でよいとき */

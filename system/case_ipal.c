@@ -1518,7 +1518,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     if (use_closest_cc) {
 	/* ひらがなで曖昧性のあるときは、格解析で曖昧性解消するために
 	   ここではすべての格フレームを検索しておく */
-	if (check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA) && 
+	if (check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0) && 
 	    check_feature(t_ptr->head_ptr->f, "品曖")) {
 	    address_str = get_ipal_address(verb, flag);
 	}
@@ -2608,10 +2608,10 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	       格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 	       ひらがな以外が多ければひらがな以外のみを対象にするためのfeatureを付与 */
 	    if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
-		check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
+		check_str_type(t_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0)) {
 		hiragana_count = 0;
 		for (j = 0; j < t_ptr->cf_num; j++) {
-		    if (check_str_type((t_ptr->cf_ptr + j)->entry, TYPE_HIRAGANA)) {
+		    if (check_str_type((t_ptr->cf_ptr + j)->entry, TYPE_HIRAGANA, 0)) {
 			hiragana_count++;
 		    }
 		}

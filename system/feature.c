@@ -872,10 +872,14 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 }
 
 /*==================================================================*/
-       int check_str_type(unsigned char *ucp, int allowed_type)
+ int check_str_type(unsigned char *ucp, int allowed_type, int length)
 /*==================================================================*/
 {
     int code = 0, precode = 0;
+    int i = 0, unicode;
+    if (length == 0)
+        length = strlen(ucp);
+
 #if defined(IO_ENCODING_EUC) || defined(IO_ENCODING_SJIS)
     while (*ucp) {
 	code = (*ucp << 8) + *(ucp + 1);
@@ -890,11 +894,11 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	}
 	precode = code;
 	ucp += BYTES4CHAR;
+        i += BYTES4CHAR;
+        if (i >= length)
+            break;
     }
 #else
-    int length = strlen(ucp);
-    int i = 0, count = 0, unicode;
-
     while (i < length) {
 	unsigned char c = *(ucp + i);
 	if (c > 0xfb) { // 6 bytes
@@ -939,7 +943,6 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    return FALSE; /* code is mixed */
 	}
 	precode = code;
-	count++;
     }
 #endif
     return TRUE;
@@ -962,7 +965,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     /* &記英数カ : 記英数カ チェック (句読点以外) (形態素レベル) */
 
     if (!strcmp(rule, "&記英数カ")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KIGOU | TYPE_EIGO | TYPE_SUUJI | TYPE_KATAKANA);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KIGOU | TYPE_EIGO | TYPE_SUUJI | TYPE_KATAKANA, 0);
     }
 
     /* &漢字 : 漢字 チェック (形態素レベル) */
@@ -975,23 +978,23 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    if (strlen(((MRPH_DATA *)ptr2)->Goi2) == BYTES4CHAR)
 		return TRUE;
 	    else
-		return check_str_type(((MRPH_DATA *)ptr2)->Goi2 + BYTES4CHAR, TYPE_KANJI);
+		return check_str_type(((MRPH_DATA *)ptr2)->Goi2 + BYTES4CHAR, TYPE_KANJI, 0);
 	}
 	else {
-	    return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KANJI);
+	    return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KANJI, 0);
 	}
     }
 
     /* &かな漢字 : かな漢字チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&かな漢字")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KANJI | TYPE_HIRAGANA);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KANJI | TYPE_HIRAGANA, 0);
     }
 
     /* &ひらがな : ひらがな チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&ひらがな")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_HIRAGANA);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_HIRAGANA, 0);
     }
 
     /* &末尾ひらがな : 末尾の一文字がひらがなか チェック (形態素レベル) */
@@ -999,7 +1002,7 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     else if (!strcmp(rule, "&末尾ひらがな")) {
 	ucp = ((MRPH_DATA *)ptr2)->Goi2;	/* 表記をチェック */
 	ucp += strlen(ucp) - BYTES4CHAR;
-	return check_str_type(ucp, TYPE_HIRAGANA);
+	return check_str_type(ucp, TYPE_HIRAGANA, 0);
     }
 
     /* &末尾文字列 : 末尾の文字列を チェック (形態素レベル) */
@@ -1021,31 +1024,31 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     /* &カタカナ : カタカナ チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&カタカナ")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KATAKANA);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KATAKANA, 0);
     }
 
     /* &数字 : 数字 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&数字")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_SUUJI);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_SUUJI, 0);
     }
 
     /* &英記号 : 英記号 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&英記号")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_EIGO | TYPE_KIGOU | TYPE_PUNC);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_EIGO | TYPE_KIGOU | TYPE_PUNC, 0);
     }
 
     /* &記号 : 記号 チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&記号")) {
-	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KIGOU | TYPE_PUNC);
+	return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_KIGOU | TYPE_PUNC, 0);
     }
 
     /* &混合 : 混合 (漢字+...) チェック (形態素レベル) */
 
     else if (!strcmp(rule, "&混合")) {
-	if (check_str_type(((MRPH_DATA *)ptr2)->Goi2, 0) == 0) /* mixed */
+	if (check_str_type(((MRPH_DATA *)ptr2)->Goi2, 0, 0) == 0) /* mixed */
 	    return TRUE;
 	else
 	    return FALSE;
@@ -1179,6 +1182,18 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	    return TRUE;
 	}
 	return FALSE;
+    }
+
+    /* &数字長 : 先頭の数字の長さ チェック (形態素レベル) */
+
+    else if (!strncmp(rule, "&数字長:", strlen("&数字長:"))) {
+        cp = rule + strlen("&数字長:");
+        code = atoi(cp) * BYTES4CHAR;
+	length = strlen(((MRPH_DATA *)ptr2)->Goi2);
+        if (length < code) /* 形態素が指定長より短いとき */
+            return FALSE;
+        else
+            return check_str_type(((MRPH_DATA *)ptr2)->Goi2, TYPE_SUUJI, code);
     }
 
     else if (!strncmp(rule, "&形態素末尾:", strlen("&形態素末尾:"))) {

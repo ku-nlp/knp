@@ -4904,7 +4904,7 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 		   ひらがな以外が多ければひらがな以外のみを対象にする */
 		if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
-		    check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA)) {
+		    check_str_type(cpm_ptr->pred_b_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0)) {
 		    if (check_feature(cpm_ptr->pred_b_ptr->f, "代表ひらがな")) {
 			hiragana_prefer_flag = 1;
 		    }
@@ -4917,9 +4917,9 @@ void FindBestCFforContext(SENTENCE_DATA *sp, ELLIPSIS_MGR *maxem,
 		    if ((cpm_ptr->pred_b_ptr->cf_ptr + l)->type == cpm_ptr->cf.type && 
 			(hiragana_prefer_flag == 0 || 
 			 (hiragana_prefer_flag > 0 && 
-			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA)) || 
+			  check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA, 0)) || 
 			 (hiragana_prefer_flag < 0 && 
-			  !check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA)))) {
+			  !check_str_type((cpm_ptr->pred_b_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA, 0)))) {
 			*(cf_array + frame_num++) = cpm_ptr->pred_b_ptr->cf_ptr + l;
 		    }
 		}

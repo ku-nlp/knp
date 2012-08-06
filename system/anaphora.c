@@ -3210,7 +3210,7 @@ int set_cf_candidate(TAG_DATA *tag_ptr, CASE_FRAME **cf_array)
 		   格フレームの表記がひらがなの場合が多ければひらがなの格フレームのみを対象に、
 		   ひらがな以外が多ければひらがな以外のみを対象にする */
 		if (!(OptCaseFlag & OPT_CASE_USE_REP_CF) && /* 代表表記ではない場合のみ */
-			check_str_type(tag_ptr->head_ptr->Goi,TYPE_HIRAGANA)) {
+                    check_str_type(tag_ptr->head_ptr->Goi, TYPE_HIRAGANA, 0)) {
 			if (check_feature(tag_ptr->f, "代表ひらがな")) {
 				hiragana_prefer_type = 1;
 			}
@@ -3223,9 +3223,9 @@ int set_cf_candidate(TAG_DATA *tag_ptr, CASE_FRAME **cf_array)
 			if ((tag_ptr->cf_ptr + l)->type == tag_ptr->tcf_ptr->cf.type && 
 				(hiragana_prefer_type == 0 || 
 				 (hiragana_prefer_type > 0 && 
-				  check_str_type((tag_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA)) || 
+				  check_str_type((tag_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA, 0)) || 
 				 (hiragana_prefer_type < 0 && 
-				  (!check_str_type((tag_ptr->cf_ptr + l)->entry,TYPE_HIRAGANA))))) {
+				  (!check_str_type((tag_ptr->cf_ptr + l)->entry, TYPE_HIRAGANA, 0))))) {
 				*(cf_array + frame_num++) = tag_ptr->cf_ptr + l;
 			}
 		}
