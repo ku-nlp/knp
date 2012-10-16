@@ -90,8 +90,9 @@ char feature_buffer[DATA_LEN];
 
     while (fp) {
 	if (fp->cp && 
-	    ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || 
-	     (OptDisplay != OPT_SIMPLE && strncmp(fp->cp, "Ｔ", strlen("Ｔ"))) || 
+	    ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || /* simple */
+	     (OptDisplay != OPT_SIMPLE && !OptPrintLD && strncmp(fp->cp, "Ｔ", strlen("Ｔ") && strncmp(fp->cp, "LD-", 3))) || /* normal */
+             (OptPrintLD && strncmp(fp->cp, "Ｔ", strlen("Ｔ"))) || /* LD: Ｔ以外(LDは出す) */
 	     OptDisplay == OPT_DEBUG))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
@@ -600,22 +601,6 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "内容語");
 		    delete_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "準内容語");
 		    assign_cfeature(&((((TAG_DATA *)ptr + offset)->mrph_ptr + i)->f), "付属", temp_assign_flag);
-		}
-	    }
-	    /* 自動辞書 : 自動獲得した辞書をチェック (マッチ部分全体) */
-	    else if (!strncmp((*fpp2)->cp, "&自動辞書:", strlen("&自動辞書:"))) {
-		if (offset == 0) {
-		    if (!strncmp((*fpp2)->cp + strlen("&自動辞書:"), "先頭:", strlen("先頭:"))) {
-			assign_pos = 0;
-		    }
-		    else if (!strncmp((*fpp2)->cp + strlen("&自動辞書:"), "末尾:", strlen("末尾:"))) {
-			assign_pos = length - 1;
-		    }
-		    else {
-			fprintf(stderr, ";; Invalid feature: %s\n", (*fpp2)->cp);
-			exit(-1);
-		    }
-		    check_auto_dic((MRPH_DATA *)ptr, assign_pos, length, (*fpp2)->cp + strlen("&自動辞書:先頭:"), temp_assign_flag);
 		}
 	    }
 	} else {			/* 追加の場合 */

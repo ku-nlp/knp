@@ -76,6 +76,7 @@ extern int 		OptDisplayNE;
 extern int 		OptExpandP;
 extern int		OptProcessParen;
 extern int		OptCheck;
+extern int		OptPrintLD;
 extern int		OptUseCF;
 extern int		OptUseNCF;
 extern int		OptUseCPNCF;

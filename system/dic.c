@@ -1,6 +1,6 @@
 /*====================================================================
 
-			     自動獲得辞書
+                           語彙データベース
 
                                          Daisuke Kawahara 2007. 3. 13
 
@@ -8,134 +8,233 @@
 ====================================================================*/
 #include "knp.h"
 
-DBM_FILE auto_dic_db;
-int AutoDicExist;
-
-char *used_auto_dic_features[AUTO_DIC_FEATURES_MAX];
-int used_auto_dic_features_num = 0;
+DBM_FILE id2lex_db;
+int Id2LexDbExist;
 
 /*==================================================================*/
-			 void init_auto_dic()
+                            void init_ld()
 /*==================================================================*/
 {
     char *filename;
 
-    if (DICT[AUTO_DIC_DB]) {
-	filename = check_dict_filename(DICT[AUTO_DIC_DB], TRUE);
+    if (DICT[REP2ID_DA]) {
+	filename = check_dict_filename(DICT[REP2ID_DA], TRUE);
     }
     else {
-	filename = check_dict_filename(AUTO_DIC_DB_NAME, FALSE);
+	filename = check_dict_filename(REP2ID_DA_NAME, FALSE);
     }
 
     if (OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Opening %s ... ", filename);
     }
 
-    if ((auto_dic_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+    if (!(init_darts(filename))) {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("failed.\n", Outfp);
 	}
-	AutoDicExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, ";; Cannot open AUTO dictionary <%s>.\n", filename);
+	fprintf(stderr, ";; Cannot open REP2ID Trie <%s>.\n", filename);
 #endif
     }
     else {
 	if (OptDisplay == OPT_DEBUG) {
 	    fputs("done.\n", Outfp);
 	}
-	AutoDicExist = TRUE;
+    }
+    free(filename);
+
+    if (DICT[ID2LEX_DB]) {
+	filename = check_dict_filename(DICT[ID2LEX_DB], TRUE);
+    }
+    else {
+	filename = check_dict_filename(ID2LEX_DB_NAME, FALSE);
+    }
+
+    if (OptDisplay == OPT_DEBUG) {
+	fprintf(Outfp, "Opening %s ... ", filename);
+    }
+
+    if ((id2lex_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("failed.\n", Outfp);
+	}
+	Id2LexDbExist = FALSE;
+#ifdef DEBUG
+	fprintf(stderr, ";; Cannot open ID2LEX DB <%s>.\n", filename);
+#endif
+    }
+    else {
+	if (OptDisplay == OPT_DEBUG) {
+	    fputs("done.\n", Outfp);
+	}
+	Id2LexDbExist = TRUE;
     }
     free(filename);
 }
 
 /*==================================================================*/
-			void close_auto_dic()
+                           void close_ld()
 /*==================================================================*/
 {
-    if (AutoDicExist == TRUE) {
-	DB_close(auto_dic_db);
+    /* close the trie of rep2id */
+    close_darts();
+
+    /* close the db of id2lex */
+    if (Id2LexDbExist == TRUE) {
+	DB_close(id2lex_db);
     }
 }
 
 /*==================================================================*/
-		   char *lookup_auto_dic(char *str)
+int assign_features_of_ld_from_id (SENTENCE_DATA *sp, unsigned int id, unsigned int start_mrph_num, unsigned int end_mrph_num)
 /*==================================================================*/
 {
-    return db_get(auto_dic_db, str);
+    char *ret;
+    char *buf;
+    char small_buf[SMALL_DATA_LEN];
+    int match_num;
+    int offset;
+    char fname[DATA_LEN];
+  
+    sprintf(small_buf, "%u", id);
+    ret = db_get(id2lex_db, small_buf);
+    if (ret) {
+        char *token = strtok(ret, "|");
+        while (token) {
+            buf = (char *)malloc_data(strlen(token) + 9, "assign_features_of_ld_from_id");
+            match_num = sscanf(token, "f:%d:%s", &offset, buf);
+            if (match_num == 2) {
+                sprintf(small_buf, ":%d-%d", start_mrph_num, end_mrph_num);
+                strcat(buf, small_buf);
+                assign_cfeature(&((sp->mrph_data + end_mrph_num + offset)->f), buf, FALSE);
+            }
+            free(buf);
+            token = strtok(NULL, "|");
+        }
+        free(ret);
+    }
 }
 
 /*==================================================================*/
-int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *rule_value, int temp_assign_flag)
+            int count_plus(char *str, unsigned int length)
 /*==================================================================*/
 {
-    int i, flag, length;
-    char *ret, *dic_str, *rep_str, key[DATA_LEN];
-
-    if (AutoDicExist == FALSE) {
-	return FALSE;
+    int count = 0;
+    int i;
+    for (i = 0; i < length; i++) {
+        if (str[i] == '+') {
+            count++;
+        }
     }
+    return count;
+}
 
-    if (used_auto_dic_features_num > 0) { /* 使用する自動獲得属性が指定されているとき */
-	flag = FALSE;
-	for (i = 0; i < used_auto_dic_features_num; i++) {
-	    if (!strcmp(used_auto_dic_features[i], rule_value)) {
-		flag = TRUE;
-		break;
-	    }
-	}
-	if (flag == FALSE) { /* マッチしなかった */
-	    return FALSE;
-	}
-    }
+/*==================================================================*/
+             int assign_feature_by_ld (SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, j, k, l;
+    int match_num, status, node_pos_num, new_node_pos_num;
+    int entry_num, start_id, rep_num, rep_malloc_flag;
+    size_t result_lengths[LD_ENTRY_MAX_NUM], result_values[LD_ENTRY_MAX_NUM], tmp_result_length, tmp_result_value;
+    size_t node_pos, node_pos_list[LD_NODE_MAX_NUM], new_node_pos_list[LD_NODE_MAX_NUM], key_pos, key_length;
+    unsigned int rep_length, reps_length[LD_REP_MAX_NUM];
+    char *rep_start, *reps_start[LD_REP_MAX_NUM];
+    MRPH_DATA m;
+    FEATURE *fp;
 
-    /* 後側をひとつずつ短くしていく */
-    for (; m_length > 0; m_length--) {
-	key[0] = '\0';
-	for (i = 0; i < m_length; i++) { /* 形態素列からキーを作る */
-	    if (i) strcat(key, "+");
-	    if (rep_str = get_mrph_rep_from_f(m_ptr + i, FALSE)) {
-		if (strlen(key) + strlen(rep_str) + 2 > DATA_LEN) {
-		    return FALSE;
+    for (i = 0; i < sp->Mrph_num; i++) { /* 開始位置: 先頭から順番に */
+        node_pos_num = 1;
+        node_pos_list[0] = 0; /* root node */
+        match_num = 0;
+        for (j = i; j < sp->Mrph_num; j++) { /* その位置からTrieを検索 */
+            /* この位置の(曖昧性込みの)代表表記を生成 */
+            rep_num = 0;
+            rep_start = get_mrph_rep(sp->mrph_data + j);
+            rep_length = get_mrph_rep_length(rep_start);
+            if (rep_length == 0) { /* 代表表記: なければ作る */
+                rep_start = make_mrph_rn(sp->mrph_data + j);
+                rep_length = strlen(rep_start);
+                rep_malloc_flag = 1;
+            }
+            else
+                rep_malloc_flag = 0;
+            reps_start[rep_num] = (char *)malloc_data(rep_length + 2, "assign_feature_by_ld");
+            reps_start[rep_num][0] = '\0';
+            if (j != i) /* 初回は "+" なし */
+                strcat(reps_start[rep_num], "+");
+            strncat(reps_start[rep_num], rep_start, rep_length);
+            reps_length[rep_num] = strlen(reps_start[rep_num]);
+            rep_num++;
+
+            fp = (sp->mrph_data + j)->f;
+            while (fp) { /* ALT- から代表表記を抽出 */
+                if (!strncmp(fp->cp, "ALT-", 4)) {
+                    sscanf(fp->cp + 4, "%[^-]-%[^-]-%[^-]-%d-%d-%d-%d-%[^\n]", m.Goi2, m.Yomi, m.Goi, &m.Hinshi, &m.Bunrui, &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
+                    rep_start = get_mrph_rep(&m);
+                    rep_length = get_mrph_rep_length(rep_start);
+                    if (rep_length > 0) {
+                        reps_start[rep_num] = (char *)malloc_data(rep_length + 2, "assign_feature_by_ld");
+                        reps_start[rep_num][0] = '\0';
+                        if (j != i) /* 初回は "+" なし */
+                            strcat(reps_start[rep_num], "+");
+                        strncat(reps_start[rep_num], rep_start, rep_length);
+                        reps_length[rep_num] = strlen(reps_start[rep_num]);
+                        rep_num++;
+                        if (rep_num >= LD_REP_MAX_NUM) /* 代表表記の保持最大数 */
+                            break;
+                    }
 		}
-		strcat(key, rep_str);
-	    }
-	    else { /* 助詞、助動詞などは代表表記がない */
-		strcat(key, (m_ptr + i)->Goi2); /* 表記 */
-	    }
-	}
+                fp = fp->next;
+            }
 
-	dic_str = lookup_auto_dic(key);
+            new_node_pos_num = 0;
+            for (k = 0; k < node_pos_num; k++) { /* 前回のノード位置からtraverse */
+                for (l = 0; l < rep_num; l++) { /* この位置の各代表表記について */
+                    node_pos = node_pos_list[k];
+                    /* printf(";; T <%s>(%d) from %d ", reps_start[l], reps_length[l], node_pos); */
+                    status = traverse_ld(reps_start[l], &node_pos, 0, reps_length[l], &tmp_result_length, &tmp_result_value);
+                    if (status > 0) { /* マッチしたら結果に登録するとともに、次回のノード開始位置とする */
+                        result_values[match_num] = tmp_result_value;
+                        result_lengths[match_num] = j - i;
+                        match_num++;
+                        if (match_num >= LD_ENTRY_MAX_NUM)
+                            goto NODE_POS_LOOP_END;
+                        if (new_node_pos_num < LD_NODE_MAX_NUM) /* node_pos保持最大数 */
+                            new_node_pos_list[new_node_pos_num++] = node_pos;
+                        /* printf("OK (pos=%d, value=%d)", node_pos, tmp_result_value); */
+                    }
+                    else if (status == -1) { /* ここではマッチしていないが、続きがある場合 */
+                        if (new_node_pos_num < LD_NODE_MAX_NUM)
+                            new_node_pos_list[new_node_pos_num++] = node_pos;
+                        /* printf("OK (pos=%d)", node_pos); */
+                    }
+                    /* printf("\n"); */
+                }
+            }
+          NODE_POS_LOOP_END:
+            for (l = 0; l < rep_num; l++) /* 代表表記をfree */
+                if (l > 0 || rep_malloc_flag)
+                    free(reps_start[l]);
 
-	if (dic_str) {
-	    int cmp_length = strlen(rule_value); /* strncmpの長さ */
-	    char *token = strtok(dic_str, "|"); /* 辞書項目を区切る (dict/auto/Makefile.amで指定) */
-	    ret = NULL;
-	    while (token) {
-		if (!strncmp(token, rule_value, cmp_length)) { /* 辞書項目とルールから与えられた文字列がマッチ */
-		    ret = (char *)malloc_data(strlen(token) + 9, "check_auto_dic");
-		    sprintf(ret, "%s:%d-%d", token, m_ptr->num, (m_ptr + m_length - 1)->num);
-		    break;
-		}
-		token = strtok(NULL, "|");
-	    }
+            node_pos_num = new_node_pos_num;
+            for (k = 0; k < new_node_pos_num; k++)
+                node_pos_list[k] = new_node_pos_list[k];
+        }
 
-	    free(dic_str);
-	    if (ret) { /* マッチすれば、featureをassign_posの形態素に付与して終了 */
-		assign_cfeature(&((m_ptr + assign_pos)->f), ret, temp_assign_flag);
-		free(ret);
-		return TRUE;
-	    }
-	}
-	if (assign_pos) { /* 末尾にfeatureを付与する場合は、一つ前にずらす */
-	    assign_pos--;
-	}
-	/* 辞書になければ、次のループに入り、後側を短くする */
+        /* feature付与 */
+        for (j = 0; j < match_num; j++) {
+            entry_num = result_values[j] & 0xff;
+            start_id = result_values[j] >> 8;
+            if (start_id == 20554) /* modification for する/する */
+                entry_num = 3872;
+            for (k = 0; k < entry_num; k++) {
+                assign_features_of_ld_from_id(sp, start_id + k, i, i + result_lengths[j]);
+            }
+        }
     }
-
-    return FALSE;
 }
 
 /*====================================================================
-                               END
-====================================================================*/
+                                 END
+  ====================================================================*/
