@@ -1,4 +1,4 @@
-SUBDIRS = src scode ebcf gcf auto synonym distsim
+SUBDIRS = src scode ebcf gcf ld synonym distsim
 
 dicdir = $(pkgdatadir)/dict
 
