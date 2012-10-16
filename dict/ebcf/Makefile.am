@@ -3,7 +3,7 @@ SUBDIRS = .
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
-nodist_dic_DATA = cf.db cf.dat mrph2id.db
+nodist_dic_DATA = cf.dat mrph2id.db
 EXTRA_DIST = cf.knpdict mrph2id.dat
 else
 nodist_dic_DATA = 
@@ -55,11 +55,6 @@ cf.knpdict:
 cf.dat: cf.knpdict
 	if [ -f cf.knpdict ]; then \
 		ulimit -Ss unlimited && @CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
-	fi
-
-cf.db: cf.dat
-	if [ -f cf.idx ]; then \
-		LANG=C sort cf.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
 noun.knpdict:
@@ -138,4 +133,4 @@ mrph2id.db: mrph2id.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+CLEANFILES = cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
