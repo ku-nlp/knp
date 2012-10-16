@@ -158,12 +158,13 @@ AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
 AC_CHECK_LIB(z, deflate, DB_LIBS="-lz $DB_LIBS")
 
-ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la -lstdc++"
+ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la $packagesrcdir/darts/libdarts.la -lstdc++"
 KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $JUMAN_LIBS $DB_LIBS"
 
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
 CF_COMMAND="$packagesrcdir/system/ipal"
+MKDARTS_COMMAND="$packagesrcdir/darts/mkdarts"
 
 AC_MSG_CHECKING([Bunrui Goi Hyou (BGH)])
 if test x"$BGH_FILE" != x; then
@@ -247,9 +248,10 @@ AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)
 AC_SUBST(MAKE_DB_COMMAND)
 AC_SUBST(CF_COMMAND)
+AC_SUBST(MKDARTS_COMMAND)
 AC_SUBST(BGH_FILE)
 
-ETC_CFLAGS="$ETC_CFLAGS -I$packagesrcdir/distsim"
+ETC_CFLAGS="$ETC_CFLAGS -I$packagesrcdir/distsim -I$packagesrcdir/darts"
 KNP_CFLAGS="$SVM_CFLAGS $CRF_CFLAGS -DKNP_DICT=\"\\\"$KNP_DICT\"\\\" -DKNP_RULE=\"\\\"$KNP_RULE\"\\\" -DKNP_RC_DEFAULT=\"\\\"$RC_DEFAULT\"\\\" $ETC_CFLAGS $KNP_CFLAGS"
 
 AC_SUBST(KNP_CFLAGS)
@@ -293,6 +295,7 @@ svm/Makefile
 svm_light/Makefile
 crf/Makefile
 distsim/Makefile
+darts/Makefile
 rule/Makefile
 chinese_rule/Makefile
 doc/Makefile
@@ -302,7 +305,7 @@ dict/scode/Makefile
 dict/scode/bgh/Makefile
 dict/ebcf/Makefile
 dict/gcf/Makefile
-dict/auto/Makefile
+dict/ld/Makefile
 dict/synonym/Makefile
 dict/distsim/Makefile
 ])
