@@ -11,6 +11,8 @@
 DBM_FILE id2lex_db;
 int Id2LexDbExist;
 
+#define LD_SURU_ENTRY_NUM 3872
+
 /*==================================================================*/
                             void init_ld()
 /*==================================================================*/
@@ -226,8 +228,10 @@ int assign_features_of_ld_from_id (SENTENCE_DATA *sp, unsigned int id, unsigned 
         for (j = 0; j < match_num; j++) {
             entry_num = result_values[j] & 0xff;
             start_id = result_values[j] >> 8;
-            if (start_id == 20554) /* modification for する/する */
-                entry_num = 3872;
+            if (result_lengths[j] == 0 && entry_num == 255 && 
+                !strcmp((sp->mrph_data + i)->Goi, "する")) { /* modification for する/する */
+                entry_num = LD_SURU_ENTRY_NUM;
+            }
             for (k = 0; k < entry_num; k++) {
                 assign_features_of_ld_from_id(sp, start_id + k, i, i + result_lengths[j]);
             }
