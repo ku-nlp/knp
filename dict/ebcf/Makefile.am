@@ -54,7 +54,7 @@ cf.knpdict:
 
 cf.dat: cf.knpdict
 	if [ -f cf.knpdict ]; then \
-		ulimit -Ss unlimited && @CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
+		ulimit -Ss unlimited && @CF_COMMAND@ cf.txt cf.dat < cf.knpdict; \
 	fi
 
 noun.knpdict:
@@ -133,4 +133,4 @@ mrph2id.db: mrph2id.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-CLEANFILES = cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+CLEANFILES = cf.dat cf.txt noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
