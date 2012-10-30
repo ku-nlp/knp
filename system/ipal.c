@@ -46,12 +46,12 @@ int utf8_length(unsigned char c)
 }
 
 void fprint_ipal_idx(FILE *fp, unsigned char *entry, 
-		     unsigned char *hyouki, unsigned char *pp, 
+		     unsigned char *hyouki, unsigned char *pp, unsigned char *cf_id, 
 		     unsigned long address, int size, int flag)
 {
-    unsigned char output_buf[IPAL_DATA_SIZE];
+    unsigned char output_buf[IPAL_DATA_SIZE], pred_type[4];
     unsigned char *point;
-    int i, length = 0, char_bytes = 2;
+    int i, length = 0, char_bytes = 2, sense_id;
 
     if (pp) {
 	for (point = hyouki; *point; point++) {
@@ -59,7 +59,7 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	    if (*point == ' ') {
 		output_buf[length] = '\0';
 		if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT など以外 */
-		    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+		    /* fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size); */
 		}
 		length = 0;
 	    } else {
@@ -84,11 +84,22 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 	}
 	output_buf[length] = '\0';
 	if (length > 0 && (output_buf[0] != '<' || output_buf[strlen(output_buf) - 1] == '>')) { /* <CT など以外 */
-	    fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size);
+	    /* fprintf(fp, "%s-%s-%s %lu:%d\n", output_buf, pp, entry, address, size); */
 	}
     }
     else {
-	fprintf(fp, "%s %lu:%d\n", hyouki, address, size);
+        point = strchr(cf_id, ':');
+        if (point == NULL)
+            return;
+        sscanf(point, ":%[^:0-9]%d", pred_type, &sense_id);
+
+	// fprintf(fp, "%s %lu:%d %s\n", hyouki, address, size, cf_id);
+        fprintf(fp, "<LDEntry type=\"CF\">\n");
+        fprintf(fp, "<SenseID>%d\n", sense_id);
+        fprintf(fp, "<Address>%lu:%d\n", address, size);
+        fprintf(fp, "<CFID>%s\n", cf_id);
+        fprintf(fp, "<RepForm>%s\n", hyouki);
+        fprintf(fp, "<POS>%s\n", pred_type);
     }
 }
 
@@ -101,6 +112,7 @@ void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest,
 		    ipal_frame->DATA+point[1], 
 		    ipal_frame->DATA+point[2], 
 		    NULL, 
+		    ipal_frame->DATA, 
 		    *address, writesize, flag);
 
     /* 「直前格要素-直前格-用言」で登録」 */
@@ -114,6 +126,7 @@ void write_data(IPAL_TRANS_FRAME *ipal_frame, int *point, int *closest,
 				ipal_frame->DATA+point[2], /* 用言表記 */
 				ipal_frame->DATA+point[closest[i]], /* 直前格要素群 */
 				pp, 
+                                ipal_frame->DATA, /* 格フレームID */
 				*address, writesize, 0);
 		free(pp);
 	    }
