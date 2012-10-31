@@ -1481,6 +1481,21 @@ TAG_DATA *get_quasi_closest_case_component(TAG_DATA *t_ptr, TAG_DATA *pre_ptr)
 }
 
 /*==================================================================*/
+             char *read_to_last_chr(char *str, char chr)
+/*==================================================================*/
+{
+    /* 最後のchrまで読み進める */
+
+    char *cp = str, *last_cp = NULL;
+
+    while ((cp = strchr(cp, chr))) {
+        cp++;
+        last_cp = cp;
+    }
+    return last_cp;
+}
+
+/*==================================================================*/
 int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, 
 				  char *verb, int voice, int flag, int use_closest_cc)
 /*==================================================================*/
@@ -1511,7 +1526,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     for (i = t_ptr->mrph_num - 1; i >= 0; i--) {
         fp = (t_ptr->mrph_ptr + i)->f;
         while (fp) {
-            if (!strncmp(fp->cp, "LD-type=CF", 7) && (cp = strstr(fp->cp, "Address="))) {
+            if (!strncmp(fp->cp, "LD-type=CF", 10) && (cp = strstr(fp->cp, "Address="))) {
                 /* 格フレームの読みだし */
                 match = sscanf(cp, "Address=%d:%d", &address, &size);
                 if (match != 2) {
@@ -1533,9 +1548,9 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
                 }
 
                 /* 内容語の形態素を含むかチェック */
-                cp += strlen("名") + 1;
-                sscanf(cp, "%d-%d", &mrph_begin_num, &mrph_end_num);
-                if (mrph_begin_num > t_ptr->head_ptr->num) {
+                if ((cp = read_to_last_chr(cp, ':')))
+                    sscanf(cp, "%d-%d", &mrph_begin_num, &mrph_end_num);
+                if (cp == NULL || mrph_begin_num > t_ptr->head_ptr->num) {
                     fp = fp->next;
                     continue;                    
                 }
