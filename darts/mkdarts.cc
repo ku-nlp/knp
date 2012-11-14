@@ -6,6 +6,7 @@
   Copyright(C) 2001-2007 Taku Kudo <taku@chasen.org>
   All rights reserved.
 */
+#include <stdlib.h>
 #include <darts.h>
 #include <cstdio>
 #include <fstream>
