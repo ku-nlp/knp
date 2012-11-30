@@ -1524,11 +1524,9 @@ char *make_cc_string(char *word, int tag_n, char *pp_str, int cc_type,
     }
     else {
         if (OptDisplay == OPT_SIMPLE)
-            sprintf(buf, "%s/%s/%d/%d", 
+            sprintf(buf, "%s/%s", 
                     pp_str, 
-                    word, 
-                    dist, 
-                    tag_n);
+                    word);
         else
             sprintf(buf, "%s/%c/%s/%d/%d/%s", 
                     pp_str, 
