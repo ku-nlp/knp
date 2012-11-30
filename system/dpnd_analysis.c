@@ -2280,6 +2280,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 	if (!appear_syntactic_head_flag && !this_is_semantic_head_flag && 
             ((OptSemanticHead && (appear_semantic_head_flag == FALSE || appear_outer_word_flag == TRUE)) || /* semantic head時 */
              (!OptSemanticHead && !check_feature(m_ptr->f, "Ｔ句内要素")))) { /* syntactic headかつ句内要素ではない */
+            m_ptr->out_head_flag = 0;
 	    m_ptr->dpnd_head = m_ptr->num + 1;
 	    m_ptr->dpnd_type = 'D';
             if (last_content_m_ptr) { /* semantic headからこの形態素にかける */
@@ -2293,11 +2294,13 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
                  ((OptSemanticHead && appear_semantic_head_flag == TRUE && !(appear_syntactic_head_flag && !this_is_syntactic_head_flag)) || 
                   check_feature(m_ptr->f, "Ｔ句内要素") || 
                   ((sp->tag_data + last_t)->dpnd_head == -1 && appear_syntactic_head_flag && !this_is_syntactic_head_flag))) { /* semantic head時もしくは句内要素もしくは文末の句点 */
+            m_ptr->out_head_flag = 0;
 	    m_ptr->dpnd_head = last_content_m;
 	    m_ptr->dpnd_type = 'D';
 	}
 	/* 基本句内最後の形態素(inum == 0) もしくは semantic head */
 	else {
+            m_ptr->out_head_flag = 1; /* 基本句外に出る形態素であることを示す */
             if (last_content_m_ptr && !this_is_semantic_head_flag && /* semantic headからこの形態素にかける */
                 !(appear_syntactic_head_flag && !this_is_syntactic_head_flag)) {
                 last_content_m_ptr->dpnd_head = m_ptr->num;

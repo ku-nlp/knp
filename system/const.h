@@ -671,6 +671,7 @@ typedef struct mnode {
     /* 基本句との関係 */
     int 	tnum;	/* 基本句区切りと一致するときの番号 */
     int		inum;	/* 基本句末の形態素:0, その1つ前の形態素: 1, ... */
+    int		out_head_flag; /* 基本句内において、基本句の外に出る形態素かどうか */
     /* 形態素情報 */
     char 	Goi[WORD_LEN_MAX+1];	/* 原型 */
     char 	Yomi[WORD_LEN_MAX+1];
