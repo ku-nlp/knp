@@ -498,8 +498,8 @@ int  reader_tag = -1;
 	{
 		OptAnaphora |= (OPT_ONLY_ENTITY);
 	}
-	else if (str_eq(argv[0], "-no-psude-entity")) {
-		OptAnaphora |= (OPT_NO_PSUDE);
+	else if (str_eq(argv[0], "-no-pseudo-entity")) {
+		OptAnaphora |= (OPT_NO_PSEUDO);
 	}
 	else if (str_eq(argv[0], "-no-author")) {
 		OptAnaphora |= OPT_NO_AUTHOR_ENTITY;
