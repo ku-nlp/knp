@@ -135,8 +135,12 @@ char *unnamed_entity_rep[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_REP_NUM]={{"私/わ�
 
 
 char *category_list[CATEGORY_NUM] = {"人","組織・団体","動物","動物-部位","植物","植物-部位","人工物-乗り物","人工物-金銭","人工物-衣類","人工物-食べ物","人工物-その他","場所-機能","場所-自然","場所-施設","場所-施設部位","場所-その他","自然物","抽象物","色","時間","数量"};
+
+
 char *alternate_category[CATEGORY_NUM][CATEGORY_NUM] = {{"組織・団体",""},
 														{"人",""},
+														{""},
+														{""},
 														{""},
 														{""},
 														{""},
