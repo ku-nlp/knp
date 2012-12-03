@@ -97,6 +97,10 @@
 #define ALLOCATION_STEP	1024
 #define DEFAULT_PARSETIMEOUT	180
 
+#define LD_ENTRY_MAX_NUM	200
+#define LD_NODE_MAX_NUM	1024
+#define LD_REP_MAX_NUM	128
+
 #define	TBLSIZE	1024
 #define	NSEED	32	/* 乱数表の種類。2 の羃乗でなければならない。 */
 #define NSIZE	256
@@ -536,8 +540,6 @@ typedef struct {
 #define		DEF_CASE_THESAURUS	"KNP格解析シソーラス"
 #define		DEF_PARA_THESAURUS	"KNP並列解析シソーラス"
 
-#define		DEF_AUTO_DIC_FEATURES	"KNP自動獲得辞書適用属性"
-
 #define		DEF_DISC_CASES		"KNP省略解析格"
 #define		DEF_DISC_ORDER		"KNP省略解析探索範囲"
 
@@ -589,7 +591,7 @@ typedef struct _RuleVector {
 #define PreProcessMorphRuleType 16
 
 /* 辞書の最大数 */
-#define DICT_MAX	38
+#define DICT_MAX	39
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -616,7 +618,7 @@ typedef struct _RuleVector {
 #define PARA_DB		23
 #define NOUN_CO_DB	24
 #define CHI_DPND_DB     25
-#define AUTO_DIC_DB	26
+#define REP2ID_DA	26
 #define HOWNET_DEF_DB   27
 #define HOWNET_TRAN_DB  28
 #define HOWNET_ANTONYM_DB       29
@@ -629,6 +631,7 @@ typedef struct _RuleVector {
 #define CHI_POS_DB           36
 #define NV_MI_DB	37
 #define MRPH2ID_DB	38
+#define ID2LEX_DB	39
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -644,7 +647,7 @@ typedef struct _RuleVector {
 typedef struct tnode_b *Treeptr_B;
 
 /* 形態素データ */
-typedef struct {
+typedef struct mnode {
     int		type;	/* タイプ (形態素, 基本句, 文節) */
     int		num;	/* 番号 (0〜) */
     /* 木構造ポインタ */

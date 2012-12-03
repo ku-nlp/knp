@@ -63,6 +63,7 @@ int             OptArticle;
 int		OptExpandP;
 int		OptProcessParen;
 int		OptCheck;
+int		OptPrintLD;
 int             OptUseCF;
 int             OptUseNCF;
 int             OptUseCPNCF;
@@ -219,6 +220,7 @@ int  reader_tag = -1;
     OptCFMode = EXAMPLE;
     OptProcessParen = FALSE;
     OptCheck = FALSE;
+    OptPrintLD = FALSE;
     OptUseCF = TRUE;
     OptUseNCF = TRUE;
     OptUseCPNCF = TRUE;
@@ -344,6 +346,9 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-check")) {
 	    OptCheck = TRUE;
+	}
+	else if (str_eq(argv[0], "-ld")) {
+	    OptPrintLD = TRUE;
 	}
 	else if (str_eq(argv[0], "-simpletab")) {
             OptDisplay = OPT_SIMPLE;
@@ -1125,9 +1130,6 @@ int  reader_tag = -1;
 	else if (str_eq(argv[0], "-disable-emoticon-recognition")) { /* used in rules */
 	    ;
 	}
-	else if (str_eq(argv[0], "-no-wikipedia")) { /* used in rules */
-	    ;
-	}
 	else {
 	    usage();
 	}
@@ -1216,7 +1218,7 @@ int  reader_tag = -1;
     close_noun_cf();
     close_thesaurus();
     close_scase();
-    close_auto_dic();
+    close_ld();
     close_nv_mi();
 
     if (Language == CHINESE) {
@@ -1313,7 +1315,7 @@ int  reader_tag = -1;
     }
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
-    init_auto_dic();	/* 自動獲得辞書オープン */
+    init_ld();		/* 語彙データベースオープン */
     init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
     if (ParaThesaurus == USE_DISTSIM || Thesaurus == USE_DISTSIM)
         init_distsim();	/* 分布類似度オープン */
@@ -1460,6 +1462,9 @@ int  reader_tag = -1;
     if (OptAnalysis == OPT_FILTER) return TRUE;
 
     /* 形態素へのFEATURE付与 */
+
+    /* 語彙データベースを引いて形態素列にfeature付与 */
+    assign_feature_by_ld(sp);
 
     assign_cfeature(&(sp->mrph_data[0].f), "文頭", FALSE);
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
