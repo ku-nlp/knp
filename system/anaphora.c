@@ -100,10 +100,10 @@ int OptZeroPronoun = 0;
 
 #define UNNAMED_ENTITY_NUM 5
 #define UNNAMED_ENTITY_NAME_NUM 2
-#define UNNAMED_ENTITY_CATEGORY_NUM 17
+#define UNNAMED_ENTITY_CATEGORY_NUM 21
 #define UNNAMED_ENTITY_NE_NUM 7
 #define UNNAMED_ENTITY_REP_NUM 6
-#define CATEGORY_NUM 19
+#define CATEGORY_NUM 21
 
 char *unnamed_entity[UNNAMED_ENTITY_NUM]={"一人称","二人称","不特定-人","不特定-その他","補文"}; //不特定:その他とかにすると":"が後の処理で問題になる
 char *unnamed_entity_name[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_NAME_NUM]={{"一人称",""},
@@ -116,7 +116,7 @@ char *unnamed_entity_name[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_NAME_NUM]={{"一人
 char *unnamed_entity_category[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_CATEGORY_NUM]={{"人","組織・団体",""},
 																				{"人",""},
 																				{"人",""},
-																				{"動物","動物-部位","植物","植物-部位","人工物-乗り物","人工物-衣類","人工物-食べ物","人工物-その他","場所-機能","場所-自然","場所-施設","場所-施設部位","場所-その他","自然物","抽象物","色","時間"},
+																				{"動物","動物-部位","植物","植物-部位","人工物-乗り物","人工物-衣類","人工物-食べ物","人工物-その他","場所-機能","場所-自然","場所-施設","場所-施設部位","場所-その他","自然物","抽象物","色","時間",""},
 																				{"時間",""}
 };
 
@@ -134,9 +134,13 @@ char *unnamed_entity_rep[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_REP_NUM]={{"私/わ�
 																	  {"<補文>","<時間>","<数量>","","",""}};
 
 
-char *category_list[CATEGORY_NUM] = {"人","組織・団体","動物","動物-部位","植物","植物-部位","人工物-乗り物","人工物-衣類","人工物-食べ物","人工物-その他","場所-機能","場所-自然","場所-施設","場所-施設部位","場所-その他","自然物","抽象物","色","時間"};
+char *category_list[CATEGORY_NUM] = {"人","組織・団体","動物","動物-部位","植物","植物-部位","人工物-乗り物","人工物-金銭","人工物-衣類","人工物-食べ物","人工物-その他","場所-機能","場所-自然","場所-施設","場所-施設部位","場所-その他","自然物","抽象物","色","時間","数量"};
+
+
 char *alternate_category[CATEGORY_NUM][CATEGORY_NUM] = {{"組織・団体",""},
 														{"人",""},
+														{""},
+														{""},
 														{""},
 														{""},
 														{""},
@@ -191,6 +195,72 @@ void make_aresult_string(CF_TAG_MGR *ctm_ptr,char *aresult);
 /*==================================================================*/
 
 
+int get_eid(int tag_num,int sent_num)
+{
+	int entity_id,mention_id;
+
+	for(entity_id=0;entity_id< entity_manager.num; entity_id++)
+	{
+		ENTITY *entity_ptr;
+		entity_ptr = entity_manager.entity +entity_id;
+		for(mention_id=0;mention_id< entity_ptr->mentioned_num;mention_id++)
+		{
+			MENTION *mention_ptr;
+			mention_ptr = entity_ptr->mention[mention_id];
+
+			if (mention_ptr->type == 'S' || mention_ptr->type == '=')
+			{
+				if(mention_ptr->sent_num == sent_num && mention_ptr->tag_num == tag_num)
+				{
+					return entity_ptr->num;
+				}
+			}
+			
+		}
+	}
+}
+
+void convert_case_result(char *buf, char *feature, int sen_num)
+{
+	char pred_name[CF_ID_LEN_MAX],id[CF_ID_LEN_MAX],*cp;
+	int i;
+	char temp[SMALL_DATA_LEN];
+	char type, rel[SMALL_DATA_LEN],entity_name[REPNAME_LEN_MAX];
+	char tag_num_str[SMALL_DATA_LEN],sent_num_str[SMALL_DATA_LEN];
+	int tag_num,sent_num;
+	sscanf(feature,"格解析結果:%[^:]:%[^:]:",pred_name,id);
+	for (i =0; i<3;i++)
+	{
+		feature = strchr(feature, ':') + 1;
+	}
+	feature--;
+	sprintf(buf,"格解析結果:%s:%s",pred_name,id);
+	for(cp=feature;*cp;cp++)
+	{
+		if(*cp == ';' || *cp == ':')
+		{
+			if(sscanf(cp+1, "%[^/]/%c/%[^/]/%[^/]/%[^/]", rel, &type,entity_name, tag_num_str, sent_num_str))
+			{
+				if(strcmp(tag_num_str,"-") && strcmp(tag_num_str,"-"))
+				{
+					int eid;
+					eid = get_eid(atoi(tag_num_str),sen_num-atoi(sent_num_str));
+				
+					sprintf(temp,"%c%s/%c/%s/%s/%s/%d",*cp,rel, type,entity_name, tag_num_str, sent_num_str,eid);
+					strcat(buf,temp);
+				}
+				else
+				{
+					sprintf(temp,"%c%s/%c/%s/%s/%s/%c",*cp,rel, type,entity_name, tag_num_str, sent_num_str,'-'
+);
+					strcat(buf,temp);
+				}
+			}
+		}
+	}
+}
+
+
 void abbreviate_NE(char *cp)
 {
 	char buf[DATA_LEN];
@@ -219,7 +289,7 @@ void abbreviate_NE(char *cp)
 void set_mention_from_coreference(TAG_DATA *tag_ptr,MENTION *mention_ptr)
 {
 
-	char hypo_name[REPNAME_LEN_MAX],*cp;
+	char hypo_name[REPNAME_LEN_MAX],*cp,temp[DATA_LEN];
 	int hypo_flag,name_change_flag;
 	TAG_DATA *parent_ptr;
 				
@@ -267,8 +337,9 @@ void set_mention_from_coreference(TAG_DATA *tag_ptr,MENTION *mention_ptr)
 	if (!strcmp(mention_ptr->entity->name, "の") ||
 		mention_ptr->salience_score == 0 && mention_ptr->entity->salience_score > 0) {
 		if (cp = check_feature(tag_ptr->f, "NE")) {
-			abbreviate_NE(cp);
-			strcpy(mention_ptr->entity->name, cp + strlen("NE:"));
+			strcpy(temp,cp);
+			abbreviate_NE(temp);
+			strcpy(mention_ptr->entity->name, temp + strlen("NE:"));
 		}
 		else if (cp = check_feature(tag_ptr->f, "照応詞候補")) {
 			strcpy(mention_ptr->entity->name, cp + strlen("照応詞候補:"));
@@ -282,8 +353,9 @@ void set_mention_from_coreference(TAG_DATA *tag_ptr,MENTION *mention_ptr)
 	/* entityのnameがNEでなく、tag_ptrがNEならばnameを上書き */
 	if (!strchr(mention_ptr->entity->name, ':') &&
 		(cp = check_feature(tag_ptr->f, "NE"))) {
-		abbreviate_NE(cp);
-		strcpy(mention_ptr->entity->name, cp + strlen("NE:"));
+		strcpy(temp,cp);
+		abbreviate_NE(temp);
+		strcpy(mention_ptr->entity->name, temp + strlen("NE:"));
 		name_change_flag = 1;
 	}
 	/* entityのnameがNEでなく、tag_ptrが同格ならばnameを上書き */
@@ -742,19 +814,46 @@ void author_detect()
 		
 		if(!(OptAnaphora & OPT_NO_AUTHOR_ENTITY) &&author_entity)
 		{
+			MENTION *mention_ptr;			
+			int mention_id;
 			author_entity->hypothetical_entity = 0;
 			entity_manager.entity[0].real_entity = author_entity->num;
 			entity_manager.entity[0].skip_flag =1;
 			strcat(author_entity->name,"|一人称");
 			
+			for(mention_id=0;mention_id< author_entity->mentioned_num;mention_id++)
+			{
+				
+				mention_ptr = entity_ptr->mention[mention_id];
+				
+				if (mention_ptr->type == 'S' || mention_ptr->type == '=')
+				{
+					assign_cfeature(&(mention_ptr->tag_ptr->f),"著者表現",FALSE);
+				}
+			}
+
+			
 		}
 		if(!(OptAnaphora & OPT_NO_READER_ENTITY)&&reader_entity)
 		{
-			
+			MENTION *mention_ptr;			
+			int mention_id;
+	
 			reader_entity->hypothetical_entity = 1;
 			entity_manager.entity[1].real_entity = reader_entity->num;
 			entity_manager.entity[1].skip_flag =1;
 			strcat(reader_entity->name,"|二人称");
+			for(mention_id=0;mention_id< reader_entity->mentioned_num;mention_id++)
+			{
+				
+				mention_ptr = entity_ptr->mention[mention_id];
+				
+				if (mention_ptr->type == 'S' || mention_ptr->type == '=')
+				{
+					assign_cfeature(&(mention_ptr->tag_ptr->f),"読者表現",FALSE);
+				}
+			}
+
 		}
 	}
 	
@@ -926,7 +1025,7 @@ void make_tag_pa_string(char *tag_pa_string,const char *ga_elem,const  char *wo_
 	strcat(tag_pa_string,pred);
 }
 
-int bnst_to_psude_pp(BNST_DATA *child)
+int bnst_to_pseudo_pp(BNST_DATA *child)
 {
 	if(check_feature(child->f,"係:ガ格"))
 	{
@@ -1168,8 +1267,8 @@ double check_relational_event(TAG_DATA *analysing_tag,CF_TAG_MGR *ctm_ptr,int fo
 		{
 			return 0;
 		}
-
-		target_pp = bnst_to_psude_pp(target_mention_ptr->tag_ptr->b_ptr);
+		
+		target_pp = bnst_to_pseudo_pp(target_mention_ptr->tag_ptr->b_ptr);
 		if(target_pp < 0)
 		{
 			return 0;
@@ -3337,20 +3436,20 @@ int convert_locname_id(char *loc_name,int *loc_num_ptr, int *simple_loc_num_ptr)
     /* [ガヲニノ] */
     if (loc_name[BYTES4CHAR + 1] != 'S') {
 		int case_type = 4;
-		if (!strncmp(loc_name + BYTES4CHAR + 2, "ヲ", 2))
+		if (!strncmp(loc_name + BYTES4CHAR + 2, "ヲ", BYTES4CHAR))
 		{
 			case_id = (case_id-1)*case_type+1+1;
 		}
-		else if (!strncmp(loc_name + BYTES4CHAR + 2, "ニ", 2))
+		else if (!strncmp(loc_name + BYTES4CHAR + 2, "ニ", BYTES4CHAR))
 		{
 			case_id = (case_id-1)*case_type+2+1;
 		}
-		else if (!strncmp(loc_name + BYTES4CHAR + 2, "ガ", 2))
+		else if (!strncmp(loc_name + BYTES4CHAR + 2, "ガ", BYTES4CHAR))
 		{
 			case_id = (case_id-1)*case_type+1	;
 
 		}
-		else if(!strncmp(loc_name + BYTES4CHAR + 2, "ノ", 2))
+		else if(!strncmp(loc_name + BYTES4CHAR + 2, "ノ", BYTES4CHAR))
 		{
 			//精度が下がったのでなし
 			*loc_num_ptr = -1;
@@ -5786,7 +5885,7 @@ void make_unnamed_entity()
 int make_new_entity(TAG_DATA *tag_ptr, MENTION_MGR *mention_mgr)
 /*==================================================================*/
 {    
-	char *cp,*rep;
+	char *cp,*rep,temp[DATA_LEN];
 	ENTITY *entity_ptr;
 	int i,j;
 	int corefer_id = -1;
@@ -5828,8 +5927,10 @@ int make_new_entity(TAG_DATA *tag_ptr, MENTION_MGR *mention_mgr)
 	/* ENTITYの名前 */
 	if (cp = check_feature(tag_ptr->f, "NE")) {
 		strcpy(entity_ptr->named_entity, cp + strlen("NE:"));
-		abbreviate_NE(cp);
-		strcpy(entity_ptr->name, cp + strlen("NE:"));
+		strcpy(temp,cp);
+		abbreviate_NE(temp);
+		strcpy(entity_ptr->name, temp + strlen("NE:"));
+
 	}
 	else if (cp = check_feature(tag_ptr->f, "照応詞候補")) {
 		strcpy(entity_ptr->name, cp + strlen("照応詞候補:"));
@@ -6278,9 +6379,23 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 		
 		sprintf(buf, "EID:%d", tag_ptr->mention_mgr.mention->entity->num + base_entity_num);
 		assign_cfeature(&(tag_ptr->f), buf, FALSE);
-		if (!check_feature(tag_ptr->f, "Ｔ省略解析")) continue;
-		if(!(tag_ptr->mention_mgr.cf_ptr)) continue;
+
 		buf[0] = '\0';
+		if (!check_feature(tag_ptr->f, "Ｔ省略解析"))
+		{
+			if(OptDisplay != OPT_SIMPLE) 
+			{
+				
+				if(check_feature(tag_ptr->f, "格解析結果"))
+				{
+					convert_case_result(buf,check_feature(tag_ptr->f, "格解析結果"),sp->Sen_num);
+					assign_cfeature(&(tag_ptr->f), buf, FALSE);
+				}
+			}
+			
+			continue;
+		}
+		if(!(tag_ptr->mention_mgr.cf_ptr)) continue;		
 		int ga2_write_flag = 0;
 		for (j=0;j < tag_ptr->mention_mgr.cf_ptr->element_num;j++)
 		{
@@ -6664,7 +6779,7 @@ void set_author_reader(void)
 		}
 
 	}
-	else if (OptAnaphora & OPT_NO_PSUDE)
+	else if (OptAnaphora & OPT_NO_PSEUDO)
 	{
 		for( i=0;i<UNNAMED_ENTITY_NUM;i++)
 		{
