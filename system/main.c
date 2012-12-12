@@ -1876,7 +1876,7 @@ PARSED:
     }
     else { /* 形態素読み込み成功 */
 	/* 形態素列の前処理 */
-	if (!(OptInput & OPT_PARSED)) preprocess_mrph(sp);
+	preprocess_mrph(sp);
 
 	/* 括弧を処理して文として分割する場合 */
 	if (OptProcessParen) {
