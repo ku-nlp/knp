@@ -111,7 +111,7 @@ if test x"$juman_prefix" = x; then
 fi
 AC_SUBST(juman_prefix)
 JUMAN_CFLAGS="-I$juman_prefix/include"
-JUMAN_LIBS="-L$juman_prefix/lib -ljuman"
+JUMAN_LIBS="-L$juman_prefix/lib -ljuman -lstdc++"
 
 old_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$JUMAN_CFLAGS $CPPFLAGS"
@@ -160,7 +160,7 @@ AC_CHECK_LIB(z, deflate, DB_LIBS="-lz $DB_LIBS")
 
 ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la -lstdc++"
 KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
-MAKE_DB_LIBS="$MAKE_DB_LIBS $JUMAN_LIBS $DB_LIBS"
+MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
 CF_COMMAND="$packagesrcdir/system/ipal"
