@@ -417,6 +417,9 @@ int  reader_tag = -1;
 	else if (str_eq(argv[0], "-analyze-deverbative-noun")) {
 	    OptCaseFlag |= OPT_CASE_ANALYZE_DEVERBATIVE_NOUN;
 	}
+	else if (str_eq(argv[0], "-postprocess-pa")) {
+	    OptCaseFlag |= OPT_CASE_POSTPROCESS_PA;
+	}
 	else if (str_eq(argv[0], "-no-generalize-agent")) {
 	    OptCaseFlag &= ~OPT_CASE_GENERALIZE_AGENT;
 	}

@@ -1512,6 +1512,12 @@ char *make_cc_string(char *word, int tag_n, char *pp_str, int cc_type,
 /*==================================================================*/
 {
     char *buf;
+    int word_allocated_flag = 1;
+
+    if (word == NULL) { /* 文字列がないとき */
+        word = "(null)";
+        word_allocated_flag = 0;
+    }
 
     buf = (char *)malloc_data(strlen(pp_str) + strlen(word) + strlen(sid) + (dist ? log(dist) : 0) + 11, 
 			      "make_cc_string");
@@ -1538,6 +1544,9 @@ char *make_cc_string(char *word, int tag_n, char *pp_str, int cc_type,
                     dist, 
                     sid);
     }
+
+    if (word_allocated_flag)
+        free(word);
 
     return buf;
 }
@@ -1605,7 +1614,7 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
 /*==================================================================*/
 {
     int j;
-    char *word, *cp;
+    char *cp;
     int num = cpm_ptr->cmm[0].result_lists_p[0].flag[cf_i];
 
     /* 並列の子供を取得して、bufferにcat */
@@ -1623,14 +1632,12 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
 		  cpm_ptr->elem_b_ptr[num]->num < cpm_ptr->elem_b_ptr[num]->parent->child[j]->num))) { /* 新たな並列の子が元の子より後はいけない */
 		continue;
 	    }
-	    word = make_print_string(cpm_ptr->elem_b_ptr[num]->parent->child[j], 0);
-	    cp = make_cc_string(word ? word : "(null)", cpm_ptr->elem_b_ptr[num]->parent->child[j]->num, 
+	    cp = make_cc_string(make_print_string(cpm_ptr->elem_b_ptr[num]->parent->child[j], 0), cpm_ptr->elem_b_ptr[num]->parent->child[j]->num, 
 				pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[cf_i][0]), 
 				cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
 	    strcat(buffer, cp);
 	    strcat(buffer, ";");
 	    free(cp);
-	    if (word) free(word);
 	}
     }
 
@@ -1640,14 +1647,12 @@ void cat_case_analysis_result_parallel_child(char *buffer, CF_PRED_MGR *cpm_ptr,
 	    if (cpm_ptr->elem_b_ptr[num]->child[j]->para_type == PARA_NORMAL && 
 		(cpm_ptr->pred_b_ptr->num > cpm_ptr->elem_b_ptr[num]->num || 
 		 cpm_ptr->elem_b_ptr[num]->child[j]->num > cpm_ptr->pred_b_ptr->num)) { /* 連体修飾の場合は用言より後のみ */
-		word = make_print_string(cpm_ptr->elem_b_ptr[num]->child[j], 0);
-		cp = make_cc_string(word ? word : "(null)", cpm_ptr->elem_b_ptr[num]->child[j]->num, 
+		cp = make_cc_string(make_print_string(cpm_ptr->elem_b_ptr[num]->child[j], 0), cpm_ptr->elem_b_ptr[num]->child[j]->num, 
 				    pp_code_to_kstr_in_context(cpm_ptr, cpm_ptr->cmm[0].cf_ptr->pp[cf_i][0]), 
 				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
 		strcat(buffer, cp);
 		strcat(buffer, ";");
 		free(cp);
-		if (word) free(word);	    
 	    }
 	}
     }
@@ -1705,13 +1710,58 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 }
 
 /*==================================================================*/
+char *_retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr, 
+                                      int target_case_num, char *case_str)
+/*==================================================================*/
+{
+    int i, num, case_num;
+    CF_PRED_MGR *cpm_ptr;
+    TAG_DATA *elem_b_ptr;
+
+    while (parent_ptr && check_feature(parent_ptr->f, "機能的基本句")) {
+        if (parent_ptr->cpm_ptr) {
+            cpm_ptr = parent_ptr->cpm_ptr;
+            /* それぞれの格要素 */
+            for (i = 0; i < cpm_ptr->cmm[0].cf_ptr->element_num; i++) {
+                num = cpm_ptr->cmm[0].result_lists_p[0].flag[i];
+                if (num != UNASSIGNED) { /* 割り当てあり */
+                    case_num = cpm_ptr->cmm[0].cf_ptr->pp[i][0];
+                    if (case_num == target_case_num) { /* 元の格と同じ格 */
+                        elem_b_ptr = cpm_ptr->elem_b_ptr[num];
+                        return make_cc_string(make_print_string(elem_b_ptr, 0), elem_b_ptr->num, case_str,  
+                                              cpm_ptr->elem_b_num[num], 0, sp->KNPSID ? sp->KNPSID + 5 : "?");
+                    }
+                }
+            }
+        }
+        parent_ptr = parent_ptr->parent;
+    }
+    return NULL;
+}
+
+/*==================================================================*/
+char *retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr, 
+                                     int target_case_num, char *case_str)
+/*==================================================================*/
+{
+    char *cp;
+
+    /* 「ガ」のときはまず「ガ２」を探しにいく */
+    if (MatchPP(target_case_num, "ガ") && 
+        (cp = _retrieve_parent_case_component(sp, parent_ptr, pp_kstr_to_code("ガ２"), case_str)))
+        return cp;
+    else
+        return _retrieve_parent_case_component(sp, parent_ptr, target_case_num, case_str);
+}
+
+/*==================================================================*/
 void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr, 
 				 ELLIPSIS_MGR *em_ptr, int temp_assign_flag, 
 				 char *feature_head, CF_ALIGNMENT *cf_align)
 /*==================================================================*/
 {
     int i, num, dist_n, sent_n, tag_n, first_arg_flag = 1, case_num;
-    char feature_buffer[DATA_LEN], buffer[DATA_LEN], *word, *sid, *cp, *case_str;
+    char feature_buffer[DATA_LEN], buffer[DATA_LEN], *sid, *cp, *case_str;
     ELLIPSIS_COMPONENT *ccp;
     TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
@@ -1756,7 +1806,15 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
                     sprintf(buffer, "%s/-", case_str);
                 else
                     sprintf(buffer, "%s/U/-/-/-/-", case_str);
-		strcat(feature_buffer, buffer);
+                /* 割り当てない場合に親(機能的基本句)から項を取得する */
+                if ((OptCaseFlag & OPT_CASE_POSTPROCESS_PA) && 
+                    !check_feature(pred_b_ptr->f, "機能的基本句") && /* 自分は機能的基本句ではない */
+                    (cp = retrieve_parent_case_component(sp, pred_b_ptr->parent, case_num, case_str))) {
+                    strcat(feature_buffer, cp);
+                    free(cp);
+                }
+                else
+                    strcat(feature_buffer, buffer);
 	    }
 	}
 	/* 割り当てあり */
@@ -1808,8 +1866,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 		    elem_b_ptr = cpm_ptr->elem_b_ptr[num];
 		    tag_n = elem_b_ptr->num;
 		}
-		word = make_print_string(elem_b_ptr, 0);
-		cp = make_cc_string(word ? word : "(null)", tag_n, case_str, 
+		cp = make_cc_string(make_print_string(elem_b_ptr, 0), tag_n, case_str, 
 				    cpm_ptr->elem_b_num[num], dist_n, sid ? sid : "?");
 		strcat(feature_buffer, cp);
 		free(cp);
@@ -1821,9 +1878,8 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 				      cpm_ptr->cmm[0].cf_ptr->cf_address, 
 				      cpm_ptr->cmm[0].cf_ptr->pp[i][0], 
 				      cpm_ptr->cmm[0].cf_ptr->type == CF_NOUN ? cpm_ptr->cmm[0].cf_ptr->pp_str[i] : NULL, 
-				      word, sent_n, tag_n, CREL);
+				      make_print_string(elem_b_ptr, 0), sent_n, tag_n, CREL);
 		}
-		if (word) free(word);
 	    }
 	}
     }

@@ -681,6 +681,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
     }
 
     if (CheckBasicPP(pp) == 0) {
+        free(word);
 	return;
     }
 
@@ -693,6 +694,7 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 		(*papp)->voice == voice && 
 		(*papp)->cf_addr == (*papp)->cf_addr) {
 		StoreCaseComponent(&((*papp)->cc[pp]), word, pp_str, sent_n, tag_n, flag);
+                free(word);
 		return;
 	    }
 	    papp = &((*papp)->next);
@@ -711,6 +713,8 @@ void RegisterTagTarget(char *key, int voice, int cf_addr,
 	pap->cf_addr = cf_addr;
 	StoreCaseComponent(&(pap->cc[pp]), word, pp_str, sent_n, tag_n, flag);
     }
+
+    free(word);
 }
 
 /*==================================================================*/
