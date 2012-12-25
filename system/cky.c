@@ -157,6 +157,43 @@ void make_work_mgr_dpnd_check_for_noun(SENTENCE_DATA *sp, BNST_DATA *d_ptr) {
     Work_mgr.dpnd.check[d_ptr->num].num = count;
 }
 
+void analyze_deverbative_noun_in_bunsetsu(SENTENCE_DATA *sp, BNST_DATA *bp) {
+    TAG_DATA *tp;
+    CF_PRED_MGR *cpm_ptr;
+    int i, child_num;
+    double score;
+
+    for (i = 0; i < bp->tag_num - 1; i++) { /* find a phrase which is not the last one */
+        tp = bp->tag_ptr + i;
+        if (check_feature(tp->f, "非用言格解析") && tp->cf_num > 0) {
+            cpm_ptr = (CF_PRED_MGR *)malloc_data(sizeof(CF_PRED_MGR), "analyze_deverbative_noun_in_bunsetsu");
+            init_case_frame(&(cpm_ptr->cf));
+            tp->cpm_ptr = cpm_ptr;
+            cpm_ptr->pred_b_ptr = tp;
+            cpm_ptr->score = -1;
+            cpm_ptr->result_num = 0;
+	    cpm_ptr->tie_num = 0;
+            cpm_ptr->cmm[0].cf_ptr = NULL;
+	    cpm_ptr->decided = CF_UNDECIDED;
+	    cpm_ptr->cf.pred_b_ptr = tp;
+            cpm_ptr->cf.element_num = 0;
+            set_data_cf_type(cpm_ptr); /* set predicate type */
+
+            /* make arguments */
+            child_num = 0;
+            if (i > 0 && make_data_cframe_child(sp, cpm_ptr, tp - 1, child_num, FALSE)) /* preceding phrase as an argument */
+                child_num++;
+            make_data_cframe_rentai_simple(cpm_ptr, tp, tp + 1); /* following phrase as an argument */
+            child_num++;
+
+            /* call case structure analysis */
+            score = find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), FALSE, NULL);
+            record_case_analysis(sp, cpm_ptr, NULL, FALSE); /* record the result, but discard the score */
+            free(cpm_ptr);
+        }
+    }
+}
+
 int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
     int i;
     char *cp;
@@ -186,6 +223,11 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 					   cky_ptr->right->b_ptr->tag_ptr + cky_ptr->right->b_ptr->tag_num - 1);
 	    find_best_cf(sp, cpm_ptr, get_closest_case_component(sp, cpm_ptr), TRUE, NULL);
 	}
+
+        /* analyze deverbative nouns in bunsetsu */
+        if ((OptCaseFlag & OPT_CASE_ANALYZE_DEVERBATIVE_NOUN) && 
+            cky_ptr->left && cky_ptr->left->cpm_ptr->pred_b_ptr == NULL)
+            analyze_deverbative_noun_in_bunsetsu(sp, cky_ptr->left->b_ptr);
     }
 
     if (cky_ptr->left && cky_ptr->right) {
