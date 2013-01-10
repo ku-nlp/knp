@@ -2869,10 +2869,8 @@ double get_case_probability_from_str(char *case_str, CASE_FRAME *cfp, int aflag,
 	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
-	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
-		cf_ret = atof(value); /* 0 */
-		/* denominator = 0; -> 用言のみで */
-	    }
+	    sscanf(value, "%lf/%d", &cf_ret, &denominator);
+            cf_ret = 0;
 	    free(value);
 	}
     }
@@ -3016,10 +3014,9 @@ double get_case_num_probability(CASE_FRAME *cfp, int num, CF_PRED_MGR *para_cpm_
 	}
 	value = db_get(cf_case_db, key);
 	if (value) { /* cf_ret should be 0 */
-	    if (sscanf(value, "%lf/%d", &cf_ret, &denominator) != 2) { /* 分母のないフォーマット */
-		cf_ret = atof(value); /* 0 */
-		/* denominator = 0; -> 用言のみで */
-	    }
+	    sscanf(value, "%lf/%d", &cf_ret, &denominator);
+            cf_ret = 0;
+            free(value);
 	}
     }
 
