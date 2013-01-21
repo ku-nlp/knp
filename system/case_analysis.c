@@ -1710,13 +1710,13 @@ ELLIPSIS_COMPONENT *CheckEllipsisComponent(ELLIPSIS_COMPONENT *ccp, char *pp_str
 }
 
 /*==================================================================*/
-char *_retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr, 
+char *_retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *pred_ptr, 
                                       int target_case_num, char *case_str)
 /*==================================================================*/
 {
     int i, num, case_num;
     CF_PRED_MGR *cpm_ptr;
-    TAG_DATA *elem_b_ptr;
+    TAG_DATA *parent_ptr = pred_ptr->parent, *elem_b_ptr;
 
     while (parent_ptr && check_feature(parent_ptr->f, "機能的基本句")) {
         if (parent_ptr->cpm_ptr) {
@@ -1728,8 +1728,9 @@ char *_retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr,
                     case_num = cpm_ptr->cmm[0].cf_ptr->pp[i][0];
                     if (case_num == target_case_num) { /* 元の格と同じ格 */
                         elem_b_ptr = cpm_ptr->elem_b_ptr[num];
-                        return make_cc_string(make_print_string(elem_b_ptr, 0), elem_b_ptr->num, case_str,  
-                                              cpm_ptr->elem_b_num[num], 0, sp->KNPSID ? sp->KNPSID + 5 : "?");
+                        if (elem_b_ptr->num != pred_ptr->num) /* 述語と同じならダメ */
+                            return make_cc_string(make_print_string(elem_b_ptr, 0), elem_b_ptr->num, case_str,  
+                                                  cpm_ptr->elem_b_num[num], 0, sp->KNPSID ? sp->KNPSID + 5 : "?");
                     }
                 }
             }
@@ -1740,7 +1741,7 @@ char *_retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr,
 }
 
 /*==================================================================*/
-char *retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr, 
+char *retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *pred_ptr, 
                                      int target_case_num, char *case_str)
 /*==================================================================*/
 {
@@ -1748,10 +1749,10 @@ char *retrieve_parent_case_component(SENTENCE_DATA *sp, TAG_DATA *parent_ptr,
 
     /* 「ガ」のときはまず「ガ２」を探しにいく */
     if (MatchPP(target_case_num, "ガ") && 
-        (cp = _retrieve_parent_case_component(sp, parent_ptr, pp_kstr_to_code("ガ２"), case_str)))
+        (cp = _retrieve_parent_case_component(sp, pred_ptr, pp_kstr_to_code("ガ２"), case_str)))
         return cp;
     else
-        return _retrieve_parent_case_component(sp, parent_ptr, target_case_num, case_str);
+        return _retrieve_parent_case_component(sp, pred_ptr, target_case_num, case_str);
 }
 
 /*==================================================================*/
@@ -1809,7 +1810,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
                 /* 割り当てない場合に親(機能的基本句)から項を取得する */
                 if ((OptCaseFlag & OPT_CASE_POSTPROCESS_PA) && 
                     !check_feature(pred_b_ptr->f, "機能的基本句") && /* 自分は機能的基本句ではない */
-                    (cp = retrieve_parent_case_component(sp, pred_b_ptr->parent, case_num, case_str))) {
+                    (cp = retrieve_parent_case_component(sp, pred_b_ptr, case_num, case_str))) {
                     strcat(feature_buffer, cp);
                     free(cp);
                 }
