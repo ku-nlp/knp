@@ -119,6 +119,22 @@ sub push_feature {
     scalar( $this->set_feature( $this->feature(), @feature ) );
 }
 
+=item del_feature ( FEATURES )
+
+指定された特徴を削除する．削除後の特徴の数を返す．
+
+=cut
+sub del_feature {
+    my( $this, @feature ) = @_;
+    
+    my %del;
+    for my $feature (@feature) {
+	$del{$feature} = 1;
+    }
+    
+    scalar( $this->set_feature( grep { !$del{$_} } $this->feature() ) );
+}
+
 =back
 
 =head1 AUTHOR
