@@ -2,14 +2,16 @@
 #include "distsim_for_knp.h"
 #include "distsim.h"
 
-char *DistSimFile = "all.mi";
+char *DistSimFile = "mi.db";
+char *DistSimDB = "sim.db";
+char *DistSimWordList = "wordlist.txt";
 Dist::Distsim distsim;
 
 void init_distsim() {
 #ifdef HAVE_ZLIB_H
-    distsim.init(DistSimFile, true); // value is compressed
+    distsim.init(DistSimFile, DistSimDB, DistSimWordList, true); // value is compressed
 #else
-    distsim.init(DistSimFile, false);
+    distsim.init(DistSimFile, DistSimDB, DistSimWordList, false);
 #endif
 }
 

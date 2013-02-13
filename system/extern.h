@@ -167,6 +167,8 @@ extern char             *DBforNE;
 extern char		*DTFile[];
 extern char             *SynonymFile;
 extern char		*DistSimFile;
+extern char		*DistSimDB;
+extern char		*DistSimWordList;
 
 extern int	DiscAddedCases[];
 extern int	LocationLimit[];
