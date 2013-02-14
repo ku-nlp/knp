@@ -41,6 +41,8 @@
 	@pkgdatadir@/dict/crf.model
 )
 
-(分布類似度MIDBファイル
-	@pkgdatadir@/dict/distsim/mi.db
+(分布類似度ファイル
+	(@pkgdatadir@/dict/distsim/mi.db 分布類似度MIDB)
+	(@pkgdatadir@/dict/distsim/sim.db 分布類似度SIMDB)
+	(@pkgdatadir@/dict/distsim/wordlist.txt 分布類似度WORDLIST)
 )

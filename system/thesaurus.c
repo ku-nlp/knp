@@ -8,6 +8,8 @@
 ====================================================================*/
 #include "knp.h"
 
+#define DISTSIM_PARAMETER 1.00
+
 int 	Thesaurus = USE_BGH;
 int	ParaThesaurus = USE_DISTSIM;
 
@@ -748,7 +750,7 @@ float calc_words_similarity(char *exd, char **exp, int num, int *pos)
                 score = calc_distsim(rep1, rep2);
             }
 
-            score = (score / 1.00) * (BGH_CODE_SIZE - 3);
+            score = (score / DISTSIM_PARAMETER) * (BGH_CODE_SIZE - 3);
         }
         else /* 用言同士 */
             score = 0;

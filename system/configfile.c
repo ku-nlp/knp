@@ -728,17 +728,32 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		}
 	    }
 	}
+        /* 分布類似度ファイル */
 	else if (!strcmp(DEF_DISTSIM_FILE, _Atom(car(cell1)))) {
-	    if (!Atomp(cell2 = car(cdr(cell1)))) {
-		fprintf(stderr, "error in .knprc\n");
-		exit(0);
-	    }
-	    else {
-                DistSimFile = check_tilde(_Atom(cell2));
-		if (OptDisplay == OPT_DEBUG) {
-		    fprintf(Outfp, "Distsim midb file ... %s\n", DistSimFile);
+	    cell1 = cdr(cell1);
+            while (!Null(car(cell1))) {
+                dicttype = _Atom(car(cdr(car(cell1))));
+                if (!strcmp(dicttype, "分布類似度MIDB")) {
+                    DistSimFile = check_tilde(_Atom(car(car(cell1))));
+                    if (OptDisplay == OPT_DEBUG)
+                        fprintf(Outfp, "Distsim midb file ... %s\n", DistSimFile);
 		}
-	    }
+                else if (!strcmp(dicttype, "分布類似度SIMDB")) {
+                    DistSimDB = check_tilde(_Atom(car(car(cell1))));
+                    if (OptDisplay == OPT_DEBUG)
+                        fprintf(Outfp, "Distsim simdb file ... %s\n", DistSimDB);
+                }
+                else if (!strcmp(dicttype, "分布類似度WORDLIST")) {
+                    DistSimWordList = check_tilde(_Atom(car(car(cell1))));
+                    if (OptDisplay == OPT_DEBUG)
+                        fprintf(Outfp, "Distsim wordlist file ... %s\n", DistSimWordList);
+                }
+		else {
+		    fprintf(stderr, "%s is invalid in .knprc\n", _Atom(car(cdr(car(cell1)))));
+		    exit(0);
+		}
+		cell1 = cdr(cell1);
+            }
 	}
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
