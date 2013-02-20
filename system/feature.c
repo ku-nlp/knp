@@ -73,7 +73,9 @@ char feature_buffer[DATA_LEN];
         comp_feature(fp->cp, "体言") || 
         comp_feature(fp->cp, "格解析結果") || 
         comp_feature(fp->cp, "格構造") || 
-        comp_feature(fp->cp, "Wikipediaエントリ")) {
+        comp_feature(fp->cp, "Wikipediaエントリ") || 
+        comp_feature(fp->cp, "NE内") || 
+        comp_feature(fp->cp, "NE")) {
         return TRUE;
     }
     else {
@@ -93,7 +95,7 @@ char feature_buffer[DATA_LEN];
 	    ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || /* simple */
 	     (OptDisplay != OPT_SIMPLE && !OptPrintLD && strncmp(fp->cp, "Ｔ", strlen("Ｔ") && strncmp(fp->cp, "LD-", 3))) || /* normal */
              (OptPrintLD && strncmp(fp->cp, "LD-type=CF", 10) && strncmp(fp->cp, "Ｔ", strlen("Ｔ"))) || /* LD: Ｔ以外(LDは出す) */
-	     OptDisplay == OPT_DEBUG))
+	     (OptDisplay == OPT_DEBUG && strncmp(fp->cp, "LD-type=CF", 10))))
 	    print_one_feature(fp->cp, filep);
 	fp = fp->next;
     }
