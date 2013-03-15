@@ -41,7 +41,8 @@ sub new {
 	$new->dpndtype( $dpndtype );
 	$new->fstring( $fstring );
     } else {
-	die "KNP::Bunsetsu::new(): Illegal spec = $spec\n";
+	carp "KNP::Bunsetsu::new(): Illegal spec = $spec\n";
+	return undef;
     }
     $new;
 }

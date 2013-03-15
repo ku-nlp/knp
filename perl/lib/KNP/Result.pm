@@ -121,7 +121,9 @@ sub new {
 	} elsif( $str =~ m!^;;! ){
 	    $error .= $str;
 	} elsif( $str =~ m!^\*! ){
-	    $this->push_bnst( $bclass->new( $str, scalar($this->bnst) ) );
+	    my $bnst = $bclass->new( $str, scalar($this->bnst) );
+	    return undef if !defined $bnst;
+	    $this->push_bnst( $bnst );
 	} elsif( $str =~ m!^\+! ){
 	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
 	} elsif( $str =~ m!^\- (-?\d+)(.+)$! ){
