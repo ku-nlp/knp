@@ -2181,6 +2181,18 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
+	 void merge_ld_feature(MRPH_DATA *dst, MRPH_DATA *src)
+/*==================================================================*/
+{
+    FEATURE *fp = src->f;
+    while (fp) {
+        if (!strncmp(fp->cp, "LD-", 3)) /* LD featureをdstにコピー */
+            assign_cfeature(&(dst->f), fp->cp, FALSE);
+        fp = fp->next;
+    }
+}
+
+/*==================================================================*/
 	 void merge_mrph_rep(MRPH_DATA *dst, MRPH_DATA *src)
 /*==================================================================*/
 {
@@ -2255,6 +2267,8 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	strcat((sp->mrph_data + start_num)->Yomi, (sp->mrph_data + start_num + i)->Yomi);
 	strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
 	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
+        if (i == length - 1) /* 最後の形態素からLD featureを移行 */
+            merge_ld_feature(sp->mrph_data + start_num, sp->mrph_data + start_num + i);
 
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
 	clear_feature(&((sp->mrph_data + start_num + i)->f)); /* feature削除 */

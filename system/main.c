@@ -1466,9 +1466,6 @@ int  reader_tag = -1;
 
     /* 形態素へのFEATURE付与 */
 
-    /* 語彙データベースを引いて形態素列にfeature付与 */
-    assign_feature_by_ld(sp);
-
     assign_cfeature(&(sp->mrph_data[0].f), "文頭", FALSE);
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
@@ -1883,6 +1880,9 @@ PARSED:
 	ErrorComment = strdup("Cannot make mrph");
     }
     else { /* 形態素読み込み成功 */
+        /* 語彙データベースを引いて形態素列にfeature付与 */
+        assign_feature_by_ld(sp);
+
 	/* 形態素列の前処理 */
 	preprocess_mrph(sp);
 
