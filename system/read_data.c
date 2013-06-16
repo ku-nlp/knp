@@ -2181,13 +2181,24 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
-	 void merge_ld_feature(MRPH_DATA *dst, MRPH_DATA *src)
+  void merge_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int offset)
 /*==================================================================*/
 {
     FEATURE *fp = src->f;
+    char buffer[SMALL_DATA_LEN], *cp;
+    int end_mrph_num;
+
     while (fp) {
-        if (!strncmp(fp->cp, "LD-", 3)) /* LD featureをdstにコピー */
-            assign_cfeature(&(dst->f), fp->cp, FALSE);
+        if (!strncmp(fp->cp, "LD-", 3)) { /* LD featureをdstにコピー */
+            if ((cp = strrchr(fp->cp, '-'))) { /* 最後の -%d の部分 */
+                end_mrph_num = atoi(cp + 1);
+                *(cp + 1) = '\0';
+                end_mrph_num -= offset; /* 末尾形態素の番号を書き換える */
+                sprintf(buffer, "%d", end_mrph_num);
+                strcat(fp->cp, buffer);
+                assign_cfeature(&(dst->f), fp->cp, FALSE);
+            }
+        }
         fp = fp->next;
     }
 }
@@ -2268,7 +2279,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
 	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
         if (i == length - 1) /* 最後の形態素からLD featureを移行 */
-            merge_ld_feature(sp->mrph_data + start_num, sp->mrph_data + start_num + i);
+            merge_ld_feature(sp->mrph_data + start_num, sp->mrph_data + start_num + i, length - 1);
 
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
 	clear_feature(&((sp->mrph_data + start_num + i)->f)); /* feature削除 */
