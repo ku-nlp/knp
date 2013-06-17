@@ -2181,26 +2181,86 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
-  void merge_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int offset)
+      void delete_ld_feature(FEATURE **fpp, char *feature_type)
+/*==================================================================*/
+{
+    FEATURE *prep = NULL;
+    int feature_type_length = strlen(feature_type);
+
+    while (*fpp) {
+        if (!strncmp((*fpp)->cp, feature_type, feature_type_length)) {
+	    FEATURE *next;
+	    free((*fpp)->cp);
+	    if (prep == NULL) {
+		next = (*fpp)->next;
+		free(*fpp);
+		*fpp = next;
+	    }
+	    else {
+		next = (*fpp)->next;
+		free(*fpp);
+		prep->next = next;
+	    }
+	    return;
+	}
+	prep = *fpp;
+	fpp = &(prep->next);
+    }
+}
+
+/*==================================================================*/
+                void delete_ld_features(FEATURE **fpp)
+/*==================================================================*/
+{
+    delete_ld_feature(fpp, "LD-");
+    delete_ld_feature(fpp, "RelWord-");
+    delete_ld_feature(fpp, "Wikipediaエントリ-");
+    delete_ld_feature(fpp, "連用形名詞化");
+}
+
+/*==================================================================*/
+void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_so_far, char *feature_type)
 /*==================================================================*/
 {
     FEATURE *fp = src->f;
     char buffer[SMALL_DATA_LEN], *cp;
-    int end_mrph_num;
+    int start_mrph_num, end_mrph_num;
+    int feature_type_length = strlen(feature_type);
+
+    /* dstがNULLならば、src側のLD featureの形態素番号の書き換えを行う
+       dstがあれば、src側のLD featureの形態素番号の書き換えを行い、それをdstに付加する */
 
     while (fp) {
-        if (!strncmp(fp->cp, "LD-", 3)) { /* LD featureをdstにコピー */
+        if (!strncmp(fp->cp, feature_type, feature_type_length)) { /* LD featureをdstにコピー */
             if ((cp = strrchr(fp->cp, '-'))) { /* 最後の -%d の部分 */
                 end_mrph_num = atoi(cp + 1);
-                *(cp + 1) = '\0';
-                end_mrph_num -= offset; /* 末尾形態素の番号を書き換える */
-                sprintf(buffer, "%d", end_mrph_num);
-                strcat(fp->cp, buffer);
-                assign_cfeature(&(dst->f), fp->cp, FALSE);
+                *cp = '\0'; /* - を \0 に */
+                if ((cp = strrchr(fp->cp, ':'))) { /* 最後の :%d-%d の部分 */
+                    start_mrph_num = atoi(cp + 1);
+                    if (!dst || end_mrph_num - start_mrph_num >= end_offset) { /* マージ後の形態素より小さい範囲のLD情報は対象外 */
+                        *(cp + 1) = '\0'; /* :の次を \0 に */
+                        start_mrph_num -= offset_so_far; /* 開始形態素の番号を書き換える */
+                        end_mrph_num -= offset_so_far + end_offset; /* 末尾形態素の番号を書き換える */
+                        sprintf(buffer, "%d-%d", start_mrph_num, end_mrph_num);
+                        strcat(fp->cp, buffer);
+                        if (dst)
+                            assign_cfeature(&(dst->f), fp->cp, FALSE);
+                    }
+                }
             }
         }
         fp = fp->next;
     }
+}
+
+/*==================================================================*/
+void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_so_far)
+/*==================================================================*/
+{
+    fix_ld_feature(dst, src, end_offset, offset_so_far, "LD-");
+    fix_ld_feature(dst, src, end_offset, offset_so_far, "RelWord-");
+    fix_ld_feature(dst, src, end_offset, offset_so_far, "Wikipediaエントリ-");
+    fix_ld_feature(dst, src, end_offset, offset_so_far, "連用形名詞化");
 }
 
 /*==================================================================*/
@@ -2254,7 +2314,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
-     int merge_mrph(SENTENCE_DATA *sp, int start_num, int length)
+int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_far)
 /*==================================================================*/
 {
     int i, goi_length = 0, yomi_length = 0, goi2_length = 0;
@@ -2273,13 +2333,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	return FALSE; /* 長すぎるなら、そのようなマージは不適当なので、棄却する */
     }
 
+    delete_ld_features(&((sp->mrph_data + start_num)->f)); /* 先頭(残す形態素)についているLD featureを削除 */
     for (i = 1; i < length; i++) {
 	strcat((sp->mrph_data + start_num)->Goi,  (sp->mrph_data + start_num + i)->Goi);
 	strcat((sp->mrph_data + start_num)->Yomi, (sp->mrph_data + start_num + i)->Yomi);
 	strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
 	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
         if (i == length - 1) /* 最後の形態素からLD featureを移行 */
-            merge_ld_feature(sp->mrph_data + start_num, sp->mrph_data + start_num + i, length - 1);
+            fix_ld_features(sp->mrph_data + start_num, sp->mrph_data + start_num + i, length - 1, *merged_num_so_far);
 
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
 	clear_feature(&((sp->mrph_data + start_num + i)->f)); /* feature削除 */
@@ -2287,6 +2348,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* 旧ALT情報を削除 */
     assign_rep_f_from_imi(sp->mrph_data + start_num); /* Imi領域の代表表記をfeatureへ */
+    *merged_num_so_far += length - 1;
     return TRUE;
 }
 
@@ -2294,7 +2356,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	       void preprocess_mrph(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, start_num;
+    int i, start_num, merged_num = 0;
     char *cp, merge_type[SMALL_DATA_LEN];
     FEATURE *fp;
 
@@ -2322,7 +2384,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 		strcpy(merge_type, cp);
 	    }
 	    else if (strcmp(merge_type, cp)) { /* 直前までとタイプが異なる場合 */
-		if (merge_mrph(sp, start_num, i - start_num) == FALSE) {
+		if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}
 		start_num = i;
@@ -2331,16 +2393,19 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	}
 	else {
 	    if (merge_type[0]) { /* 直前までの形態素連結を処理 */
-		if (merge_mrph(sp, start_num, i - start_num) == FALSE) {
+		if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}
 		merge_type[0] = '\0';
 	    }
+
+            /* 形態素連結以外の形態素のLD featureについて、これまでにマージした形態素数分を修正 */
+            fix_ld_features(NULL, sp->mrph_data + i, 0, merged_num);
 	}
     }
 
     if (merge_type[0]) {
-	if (merge_mrph(sp, start_num, i - start_num) == FALSE) {
+	if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
 	    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 	}
     }
