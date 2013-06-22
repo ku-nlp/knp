@@ -2195,27 +2195,18 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 		next = (*fpp)->next;
 		free(*fpp);
 		*fpp = next;
-	    }
+            }
 	    else {
 		next = (*fpp)->next;
 		free(*fpp);
 		prep->next = next;
+                fpp = &(prep->next);
 	    }
-	    return;
+            continue;
 	}
 	prep = *fpp;
 	fpp = &(prep->next);
     }
-}
-
-/*==================================================================*/
-                void delete_ld_features(FEATURE **fpp)
-/*==================================================================*/
-{
-    delete_ld_feature(fpp, "LD-");
-    delete_ld_feature(fpp, "RelWord-");
-    delete_ld_feature(fpp, "Wikipediaエントリ-");
-    delete_ld_feature(fpp, "連用形名詞化");
 }
 
 /*==================================================================*/
@@ -2254,6 +2245,17 @@ void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_s
 }
 
 /*==================================================================*/
+                void delete_ld_features(FEATURE **fpp)
+/*==================================================================*/
+{
+    delete_ld_feature(fpp, "LD-");
+    delete_ld_feature(fpp, "RelWord-");
+    delete_ld_feature(fpp, "Wikipediaエントリ-");
+    delete_ld_feature(fpp, "連用形名詞化");
+    delete_ld_feature(fpp, "複合名詞構成");
+}
+
+/*==================================================================*/
 void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_so_far)
 /*==================================================================*/
 {
@@ -2261,6 +2263,7 @@ void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_
     fix_ld_feature(dst, src, end_offset, offset_so_far, "RelWord-");
     fix_ld_feature(dst, src, end_offset, offset_so_far, "Wikipediaエントリ-");
     fix_ld_feature(dst, src, end_offset, offset_so_far, "連用形名詞化");
+    fix_ld_feature(dst, src, end_offset, offset_so_far, "複合名詞構成");
 }
 
 /*==================================================================*/
