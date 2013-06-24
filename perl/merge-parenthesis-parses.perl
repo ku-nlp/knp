@@ -21,7 +21,7 @@ use FileHandle;
 STDOUT->autoflush(1);
 
 our (%opt);
-&GetOptions(\%opt, 'mrph', 'bnst', 'nbest-max-n=i');
+&GetOptions(\%opt, 'mrph', 'bnst', 'nbest-max-n=i', 'semantic-head');
 $opt{mrph} = 1 if !$opt{mrph} and !$opt{bnst};
 $opt{'nbest-max-n'} = 10 if !$opt{'nbest-max-n'};
 
@@ -238,20 +238,43 @@ sub insert_paren_bnst {
     splice(@{$bnsts_ar}, $b_pos, 0, @{$paren_bnsts_ar});
 }
 
+# 括弧を挿入する形態素位置と、括弧をくっつける親形態素をみつける
+sub find_insert_mrph_position {
+    my ($bnsts_ar, $b_pos, $m_pos_in_bnst) = @_;
+
+    my ($m_pos, $target_mrph, $head_default_pos);
+    if ($m_pos_in_bnst == -1) { # 文節末のとき
+	$m_pos = $bnsts_ar->[$b_pos]->mrph(-1)->id + 1; # 挿入位置形態素
+	$head_default_pos = scalar($bnsts_ar->[$b_pos]->mrph) - 1;
+    }
+    else {
+	$m_pos = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst)->id; # 挿入位置形態素
+	$head_default_pos = $m_pos_in_bnst - 1;
+    }
+
+    $target_mrph = $bnsts_ar->[$b_pos]->mrph($head_default_pos); # 括弧をくっつける親形態素(default; ひとつ前の形態素)
+
+    if ($opt{'semantic-head'}) {
+	# 直前の内容語を親形態素とする
+	for (my $i = $head_default_pos; $i >= 0; $i--) {
+	    if ($bnsts_ar->[$b_pos]->mrph($i)->fstring =~ /<(?:準)?内容語>/) {
+		$target_mrph = $bnsts_ar->[$b_pos]->mrph($i); # 括弧をくっつける親形態素
+		return ($m_pos, $target_mrph);
+	    }
+	}
+    }
+
+    return ($m_pos, $target_mrph);
+}
+
 sub insert_paren_mrph {
     my ($bnsts_ar, $b_pos, $paren_bnsts_ar, $paren_b, $paren_e, $m_pos_in_bnst) = @_;
 
     # $b_pos: 挿入位置文節
     my $paren_m_num = &count_mrph($paren_bnsts_ar); # 括弧内の形態素数
-    my ($m_pos, $target_mrph);
-    if ($m_pos_in_bnst == -1) { # 文節末のとき
-	$m_pos = $bnsts_ar->[$b_pos]->mrph(-1)->id + 1; # 挿入位置形態素
-	$target_mrph = $bnsts_ar->[$b_pos]->mrph(-1); # 括弧をくっつける親形態素
-    }
-    else {
-	$m_pos = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst)->id; # 挿入位置形態素
-	$target_mrph = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst - 1); # 括弧をくっつける親形態素
-    }
+
+    # 括弧を挿入する形態素位置と、括弧をくっつける親形態素をみつける
+    my ($m_pos, $target_mrph) = &find_insert_mrph_position($bnsts_ar, $b_pos, $m_pos_in_bnst);
 
     # 括弧始と括弧終を括弧文に追加
     if (&insert_paren_to_tag($paren_bnsts_ar, $paren_b, $paren_e, $paren_m_num)) { # 成功
