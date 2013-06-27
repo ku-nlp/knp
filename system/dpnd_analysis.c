@@ -2305,6 +2305,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
                 !(appear_syntactic_head_flag && !this_is_syntactic_head_flag)) {
                 last_content_m_ptr->dpnd_head = m_ptr->num;
                 last_content_m_ptr->dpnd_type = 'D';
+                last_content_m_ptr->out_head_flag = 0;
                 last_content_m_ptr = NULL;
             }
 
