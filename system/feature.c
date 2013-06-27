@@ -182,33 +182,34 @@ char feature_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
-		void delete_alt_feature(FEATURE **fpp)
+  void delete_hyphenated_feature(FEATURE **fpp, char *feature_type)
 /*==================================================================*/
 {
-    /* <ALT-...>を削除 */
+    /* <ALT-...> <LD-...>のようなfeatureを削除 */
 
     FEATURE *prep = NULL;
+    int feature_type_length = strlen(feature_type);
 
     while (*fpp) {
-	if (!strncmp((*fpp)->cp, "ALT-", 4)) {
+        if (!strncmp((*fpp)->cp, feature_type, feature_type_length)) {
 	    FEATURE *next;
 	    free((*fpp)->cp);
 	    if (prep == NULL) {
 		next = (*fpp)->next;
 		free(*fpp);
 		*fpp = next; /* prepはNULLのまま */
-	    }
-	    else { /* prepがあるとき */
+            }
+	    else {
 		next = (*fpp)->next;
 		free(*fpp);
 		prep->next = next; /* prepは現状維持 */
-		fpp = &(prep->next);
+                fpp = &(prep->next);
 	    }
 	}
-	else {
-	    prep = *fpp;
-	    fpp = &(prep->next);
-	}
+        else {
+            prep = *fpp;
+            fpp = &(prep->next);
+        }
     }
 }
 

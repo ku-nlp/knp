@@ -2181,36 +2181,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 }
 
 /*==================================================================*/
-      void delete_ld_feature(FEATURE **fpp, char *feature_type)
-/*==================================================================*/
-{
-    FEATURE *prep = NULL;
-    int feature_type_length = strlen(feature_type);
-
-    while (*fpp) {
-        if (!strncmp((*fpp)->cp, feature_type, feature_type_length)) {
-	    FEATURE *next;
-	    free((*fpp)->cp);
-	    if (prep == NULL) {
-		next = (*fpp)->next;
-		free(*fpp);
-		*fpp = next;
-            }
-	    else {
-		next = (*fpp)->next;
-		free(*fpp);
-		prep->next = next;
-                fpp = &(prep->next);
-	    }
-            continue;
-	}
-	prep = *fpp;
-	fpp = &(prep->next);
-    }
-}
-
-/*==================================================================*/
-void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_so_far, char *feature_type)
+void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int *merged_num_table, char *feature_type)
 /*==================================================================*/
 {
     FEATURE *fp = src->f;
@@ -2230,8 +2201,8 @@ void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_s
                     start_mrph_num = atoi(cp + 1);
                     if (!dst || end_mrph_num - start_mrph_num >= end_offset) { /* マージ後の形態素より小さい範囲のLD情報は対象外 */
                         *(cp + 1) = '\0'; /* :の次を \0 に */
-                        start_mrph_num -= offset_so_far; /* 開始形態素の番号を書き換える */
-                        end_mrph_num -= offset_so_far + end_offset; /* 末尾形態素の番号を書き換える */
+                        start_mrph_num -= merged_num_table[start_mrph_num]; /* 開始形態素の番号を書き換える */
+                        end_mrph_num -= merged_num_table[end_mrph_num]; /* 末尾形態素の番号を書き換える */
                         sprintf(buffer, "%d-%d", start_mrph_num, end_mrph_num);
                         strcat(fp->cp, buffer);
                         if (dst)
@@ -2248,22 +2219,22 @@ void fix_ld_feature(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_s
                 void delete_ld_features(FEATURE **fpp)
 /*==================================================================*/
 {
-    delete_ld_feature(fpp, "LD-");
-    delete_ld_feature(fpp, "RelWord-");
-    delete_ld_feature(fpp, "Wikipediaエントリ-");
-    delete_ld_feature(fpp, "連用形名詞化");
-    delete_ld_feature(fpp, "複合名詞構成");
+    delete_hyphenated_feature(fpp, "LD-");
+    delete_hyphenated_feature(fpp, "RelWord-");
+    delete_hyphenated_feature(fpp, "Wikipediaエントリ-");
+    delete_cfeature(fpp, "連用形名詞化");
+    delete_cfeature(fpp, "複合名詞構成");
 }
 
 /*==================================================================*/
-void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_so_far)
+void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int *merged_num_table)
 /*==================================================================*/
 {
-    fix_ld_feature(dst, src, end_offset, offset_so_far, "LD-");
-    fix_ld_feature(dst, src, end_offset, offset_so_far, "RelWord-");
-    fix_ld_feature(dst, src, end_offset, offset_so_far, "Wikipediaエントリ-");
-    fix_ld_feature(dst, src, end_offset, offset_so_far, "連用形名詞化");
-    fix_ld_feature(dst, src, end_offset, offset_so_far, "複合名詞構成");
+    fix_ld_feature(dst, src, end_offset, merged_num_table, "LD-");
+    fix_ld_feature(dst, src, end_offset, merged_num_table, "RelWord-");
+    fix_ld_feature(dst, src, end_offset, merged_num_table, "Wikipediaエントリ-");
+    fix_ld_feature(dst, src, end_offset, merged_num_table, "連用形名詞化");
+    fix_ld_feature(dst, src, end_offset, merged_num_table, "複合名詞構成");
 }
 
 /*==================================================================*/
@@ -2317,7 +2288,7 @@ void fix_ld_features(MRPH_DATA *dst, MRPH_DATA *src, int end_offset, int offset_
 }
 
 /*==================================================================*/
-int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_far)
+int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_table)
 /*==================================================================*/
 {
     int i, goi_length = 0, yomi_length = 0, goi2_length = 0;
@@ -2343,15 +2314,14 @@ int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_
 	strcat((sp->mrph_data + start_num)->Goi2, (sp->mrph_data + start_num + i)->Goi2);
 	merge_mrph_rep(sp->mrph_data + start_num, sp->mrph_data + start_num + i); /* Imi領域の代表表記をマージ */
         if (i == length - 1) /* 最後の形態素からLD featureを移行 */
-            fix_ld_features(sp->mrph_data + start_num, sp->mrph_data + start_num + i, length - 1, *merged_num_so_far);
+            fix_ld_features(sp->mrph_data + start_num, sp->mrph_data + start_num + i, length - 1, merged_num_table);
 
 	(sp->mrph_data + start_num + i)->Goi[0] = '\0'; /* マージ済みの印 */
 	clear_feature(&((sp->mrph_data + start_num + i)->f)); /* feature削除 */
     }
 
-    delete_alt_feature(&((sp->mrph_data + start_num)->f)); /* 旧ALT情報を削除 */
+    delete_hyphenated_feature(&((sp->mrph_data + start_num)->f), "ALT-"); /* 旧ALT情報を削除 */
     assign_rep_f_from_imi(sp->mrph_data + start_num); /* Imi領域の代表表記をfeatureへ */
-    *merged_num_so_far += length - 1;
     return TRUE;
 }
 
@@ -2359,11 +2329,37 @@ int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_
 	       void preprocess_mrph(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, start_num, merged_num = 0;
+    int i, start_num, merged_num = 0, merged_num_table[MRPH_MAX];
     char *cp, merge_type[SMALL_DATA_LEN];
     FEATURE *fp;
 
     assign_general_feature(sp->mrph_data, sp->Mrph_num, PreProcessMorphRuleType, FALSE, FALSE);
+
+    /* merged_num_table の作成 */
+    merge_type[0] = '\0';
+    for (i = 0; i < sp->Mrph_num; i++) {
+	cp = NULL;
+	fp = (sp->mrph_data + i)->f;
+	while (fp) {
+	    if (!strncmp(fp->cp, "形態素連結-", strlen("形態素連結-"))) {
+                cp = fp->cp;
+                break;
+	    }
+	    fp = fp->next;
+	}
+	if (cp) { /* 形態素連結があった場合 */
+	    if (!merge_type[0] || strcmp(merge_type, cp)) { /* 開始 */
+		strcpy(merge_type, cp);
+                merged_num_table[i] = merged_num;
+	    }
+            else /* 形態素連結の2つ目以降 */
+                merged_num_table[i] = ++merged_num;
+	}
+	else {
+            merge_type[0] = '\0';
+            merged_num_table[i] = merged_num;
+        }
+    }
 
     merge_type[0] = '\0';
     for (i = 0; i < sp->Mrph_num; i++) {
@@ -2371,12 +2367,10 @@ int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_
 	fp = (sp->mrph_data + i)->f;
 	while (fp) {
 	    if (!strncmp(fp->cp, "形態素連結-", strlen("形態素連結-"))) {
-		if (cp) {
+		if (cp)
 		    fprintf(stderr, ";; Both %s and %s are assigned to %s\n", cp, fp->cp, (sp->mrph_data + i)->Goi);
-		}
-		else {
+		else
 		    cp = fp->cp;
-		}
 	    }
 	    fp = fp->next;
 	}
@@ -2387,28 +2381,28 @@ int merge_mrph(SENTENCE_DATA *sp, int start_num, int length, int *merged_num_so_
 		strcpy(merge_type, cp);
 	    }
 	    else if (strcmp(merge_type, cp)) { /* 直前までとタイプが異なる場合 */
-		if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
+		if (merge_mrph(sp, start_num, i - start_num, merged_num_table) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}
-		start_num = i;
+		start_num = i; /* 次の形態素連結の開始 */
 		strcpy(merge_type, cp);
 	    }
 	}
 	else {
 	    if (merge_type[0]) { /* 直前までの形態素連結を処理 */
-		if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
+		if (merge_mrph(sp, start_num, i - start_num, merged_num_table) == FALSE) {
 		    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 		}
 		merge_type[0] = '\0';
 	    }
 
             /* 形態素連結以外の形態素のLD featureについて、これまでにマージした形態素数分を修正 */
-            fix_ld_features(NULL, sp->mrph_data + i, 0, merged_num);
+            fix_ld_features(NULL, sp->mrph_data + i, 0, merged_num_table);
 	}
     }
 
     if (merge_type[0]) {
-	if (merge_mrph(sp, start_num, i - start_num, &merged_num) == FALSE) {
+	if (merge_mrph(sp, start_num, i - start_num, merged_num_table) == FALSE) {
 	    delete_cfeature_from_mrphs(sp->mrph_data + start_num, i - start_num, merge_type);
 	}
     }

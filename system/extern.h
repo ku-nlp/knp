@@ -410,7 +410,7 @@ extern void list2feature(CELL *cp, FEATURE **fpp);
 extern void clear_feature(FEATURE **fpp);
 extern void append_feature(FEATURE **fpp, FEATURE *afp);
 extern void delete_cfeature(FEATURE **fpp, char *type);
-extern void delete_alt_feature(FEATURE **fpp);
+extern void delete_hyphenated_feature(FEATURE **fpp, char *feature_type);
 extern void delete_cfeature_from_mrphs(MRPH_DATA *m_ptr, int length, char *type);
 extern void copy_feature(FEATURE **dst_fpp, FEATURE *src_fp);
 extern int check_str_type(unsigned char *ucp, int allowed_type, int length);
