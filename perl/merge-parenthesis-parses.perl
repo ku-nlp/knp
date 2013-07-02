@@ -255,12 +255,20 @@ sub find_insert_mrph_position {
     $target_mrph = $bnsts_ar->[$b_pos]->mrph($head_default_pos); # 括弧をくっつける親形態素(default; ひとつ前の形態素)
 
     if ($opt{'semantic-head'}) {
-	# 直前の内容語を親形態素とする
+	# 直前の句間要素を親形態素とする
 	for (my $i = $head_default_pos; $i >= 0; $i--) {
-	    if ($bnsts_ar->[$b_pos]->mrph($i)->fstring =~ /<(?:準)?内容語>/) {
+	    if (!defined($bnsts_ar->[$b_pos]->mrph($i)->parent) || # rootでもよい
+		$bnsts_ar->[$b_pos]->mrph($i)->parent->id >= $m_pos) { # 挿入位置より後に係る
 		$target_mrph = $bnsts_ar->[$b_pos]->mrph($i); # 括弧をくっつける親形態素
-		return ($m_pos, $target_mrph);
+		last;
 	    }
+	}
+    }
+
+    # 前側を探したときにくっつける親形態素が句読点ならば、後側を探す
+    if ($target_mrph->bunrui eq '句点' || $target_mrph->bunrui eq '読点') {
+	if (defined($bnsts_ar->[$b_pos + 1])) { # 後に基本句がある
+	    $target_mrph = $bnsts_ar->[$b_pos + 1]->mrph(0); # 直後の基本句の先頭の形態素
 	}
     }
 
