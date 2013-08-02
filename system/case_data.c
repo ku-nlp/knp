@@ -270,14 +270,6 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    }
 	    fp = fp->next;
 	}
-
-	if (pp_num) {
-	    c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
-	    return b_ptr;
-	}
-	else {
-	    return NULL;
-	}
     }
     /* 被連体修飾詞 (とりあえず用言のときのみ) */
     else if (cpm_ptr->cf.type == CF_PRED) {
@@ -299,10 +291,15 @@ TAG_DATA *_make_data_cframe_pp(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr, int flag)
 	    }
 	    fp = fp->next;
 	}
-	c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
-	return b_ptr;
     }
-    return NULL;
+
+    if (pp_num) {
+        c_ptr->pp[c_ptr->element_num][pp_num] = END_M;
+        return b_ptr;
+    }
+    else {
+        return NULL;
+    }
 }
 
 /*==================================================================*/
