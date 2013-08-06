@@ -3472,15 +3472,21 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 					int as2, CASE_FRAME *cfp)
 /*==================================================================*/
 {
-    int j, count = 1, np_modifying_flag;
+    int j, count = 1, np_modifying_flag, clause_modified_flag = 0;
     TAG_DATA *tp = cfd->pred_b_ptr->cpm_ptr->elem_b_ptr[as1];
     double score, sub_score = 0;
 
-    if (cfd->pred_b_ptr->num < tp->num) { /* 連体修飾 */
+    if (cfd->pred_b_ptr->num < tp->num) { /* 述語が連体修飾 */
 	np_modifying_flag = 1;
     }
     else {
 	np_modifying_flag = 0;
+	for (j = 0; tp->child[j]; j++) { /* 項が連体修飾されているかどうかをチェック */
+	    if (check_feature(tp->child[j]->f, "係:連格")) {
+                clause_modified_flag = 1;
+                break;
+            }
+        }
     }
 
     /* 自分自身 */
@@ -3513,9 +3519,14 @@ double _get_soto_default_probability(TAG_DATA *dp, int as2, CASE_FRAME *cfp)
 
     /* 並列確率的解析時: 並列要素間生成する場合と被連体修飾名詞は正規化
        並列決定的解析時: 常に正規化 */
-    if (OptParaFix == TRUE || 
-	((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag)) {
-	return (score + sub_score) / count;
+    if (OptParaFix == TRUE) {
+        if (np_modifying_flag || clause_modified_flag) /* 被連体修飾詞を生成するときは平均をとる */
+            return (score + sub_score) / ( count * 2);
+        else
+            return (score + sub_score) / count;
+    }
+    else if ((OptParaNoFixFlag & OPT_PARA_MULTIPLY_ALL_EX) || np_modifying_flag) {
+        return (score + sub_score) / count;
     }
     else if (OptParaNoFixFlag & OPT_PARA_MULTIPLY_AVE_EX) {
 	return score + sub_score / 2;
