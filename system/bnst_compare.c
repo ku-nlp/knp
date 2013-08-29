@@ -380,8 +380,7 @@ int jiritu_fuzoku_check(BNST_DATA *ptr1, BNST_DATA *ptr2, char *cp)
 
 		/* 自立語の一致 */
 	
-		/* if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) { */
-		if (str_eq(ptr1->Jiritu_Go, ptr2->Jiritu_Go)) {
+		if (str_eq(ptr1->head_ptr->Goi, ptr2->head_ptr->Goi)) {
 		    point += 10;
 		
 		} else {
