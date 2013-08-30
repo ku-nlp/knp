@@ -11,7 +11,7 @@ EXTRA_DIST =
 endif
 
 if CF_NOUN_EXIST
-nodist_dic_DATA += noun.db noun.dat
+nodist_dic_DATA += noun.dat
 EXTRA_DIST += noun.knpdict
 endif
 
@@ -62,12 +62,7 @@ noun.knpdict:
 
 noun.dat: noun.knpdict
 	if [ -f noun.knpdict ]; then \
-		ulimit -Ss unlimited && @CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
-	fi
-
-noun.db: noun.dat
-	if [ -f noun.idx ]; then \
-		LANG=C sort noun.idx | @MAKE_DB_COMMAND@ $@ -append /; \
+		ulimit -Ss unlimited && @CF_COMMAND@ noun.txt noun.dat < noun.knpdict; \
 	fi
 
 adverb.prob:
@@ -133,4 +128,4 @@ mrph2id.db: mrph2id.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-CLEANFILES = cf.dat cf.txt noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+CLEANFILES = cf.dat cf.txt noun.dat noun.txt mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
