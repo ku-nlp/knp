@@ -1633,6 +1633,13 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	ErrorComment = NULL;
     }
 
+    /* 警告があれば、警告の内容 */
+    if (WarningComment) {
+	fprintf(Outfp, " WARNING:%s", WarningComment);
+	free(WarningComment);
+	WarningComment = NULL;
+    }
+
     if (PM_Memo[0]) {
 	if (sp->Comment && strstr(sp->Comment, "MEMO")) {
 	    fprintf(Outfp, "%s", PM_Memo);

@@ -15,6 +15,7 @@ extern THESAURUS_FILE	THESAURUS[];
 extern int		Revised_para_num;
 
 extern char		*ErrorComment;
+extern char		*WarningComment;
 extern char 		PM_Memo[];
 
 extern int		CFExist;
