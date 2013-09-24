@@ -1750,8 +1750,10 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     for (mp = ptr->mrph_ptr; mp <= ptr->head_ptr; mp++) {
 	if (!check_feature(mp->f, "接頭")) {
 	    if (strlen(ptr->Jiritu_Go) + strlen(mp->Goi) + 2 > BNST_LENGTH_MAX) {
-		fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
-			sp->Comment ? sp->Comment : "", ptr->Jiritu_Go);
+                if (OptDisplay == OPT_DEBUG) { /* warning */
+                    fprintf(stderr, ";; Too big bunsetsu (%s %s...)!\n", 
+                            sp->Comment ? sp->Comment : "", ptr->Jiritu_Go);
+                }
 		return;
 	    }
 	    strcat(ptr->Jiritu_Go, mp->Goi);
@@ -1803,7 +1805,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	current_length = strlen(m_ptr->Goi2) * 2 / BYTES4CHAR;
 
 	if (b_ptr->length + current_length >= BNST_LENGTH_MAX) {
-	    if (OptDisplay == OPT_DEBUG) {
+	    if (OptDisplay == OPT_DEBUG) { /* warning */
 		fprintf(stderr, ";; Too big bunsetsu (%s ...%s...)!\n", 
 			sp->Comment ? sp->Comment : "", m_ptr->Goi2);
 	    }
