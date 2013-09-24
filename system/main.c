@@ -22,6 +22,7 @@ ENTITY_MGR      entity_manager;                 /* ENTITY管理データ */
 int 		Revised_para_num;			
 
 char		*ErrorComment = NULL;		/* エラーコメント */
+char		*WarningComment = NULL;		/* 警告コメント */
 char		PM_Memo[DATA_LEN];		/* パターンマッチ結果 */
 
 int		match_matrix[BNST_MAX][BNST_MAX];
@@ -1714,7 +1715,7 @@ int  reader_tag = -1;
 	} while (relation_error <= 3 &&
 		 d_struct_error <= 3 &&
 		 detect_para_scope(sp, Revised_para_num, TRUE) == TRUE);
-	ErrorComment = strdup("Cannot detect consistent CS scopes");
+	WarningComment = strdup("Cannot detect consistent CS scopes");
 	init_mask_matrix(sp);
     }
     else if (flag == CONTINUE) /* 並列キーが多すぎる場合 → 並列構造解析しない */
@@ -1741,7 +1742,7 @@ int  reader_tag = -1;
 		    when_no_dpnd_struct(sp);
 		}
 		else {
-		    ErrorComment = strdup("Fell back to dependency analysis");
+		    WarningComment = strdup("Fell back to dependency analysis");
 		}
 		OptAnalysis = OPT_CASE;
 	    }
