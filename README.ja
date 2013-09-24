@@ -20,7 +20,6 @@ doc/manual.pdf をご覧ください。
 以下のものが必要ですので、インストールしておいてください。
 
 - JUMAN 7.0以上 (http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN)
-- TinyCDBライブラリ (http://www.corpit.ru/mjt/tinycdb.html)
 - zlibライブラリ (http://zlib.net/) (※ 多くのOSに標準でインストールされています)
 
 固有表現解析を行う場合は、次のものが必要ですので、インストールしておい

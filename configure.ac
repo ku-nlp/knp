@@ -149,8 +149,8 @@ elif ( test "x$with_tokyo_cabinet" = xyes ); then
     AC_CHECK_LIB(tokyocabinet, tchdbnew, DB_LIBS="-ltokyocabinet $DB_LIBS" ETC_CFLAGS="-DTOKYO_CABINET $ETC_CFLAGS", 
 	         AC_MSG_ERROR(not found.))
 else
-    AC_CHECK_LIB(cdb, cdb_make_start, DB_LIBS="-lcdb $DB_LIBS" ETC_CFLAGS="-DCDB $ETC_CFLAGS", 
-	         AC_MSG_ERROR([Constant DB library is not found. Please install TinyCDB (http://www.corpit.ru/mjt/tinycdb.html).]))
+    DB_LIBS="-L$packagesrcdir/cdb -lcdb $DB_LIBS"
+    ETC_CFLAGS="-DCDB -I$packagesrcdir/cdb $ETC_CFLAGS"
 fi
 
 AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
