@@ -663,7 +663,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				left_arg[left_arg_num] = ptr_num;
 				left_arg_num++;
 				if (left_arg_num > CHI_ARG_NUM_MAX) {
-				  fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				  fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				  return DOUBLE_MINUS;
 				}
 			      }
@@ -688,7 +688,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				      left_arg[left_arg_num] = ptr_num;
 				      left_arg_num++;
 				      if (left_arg_num > CHI_ARG_NUM_MAX) {
-					fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+					fprintf(stderr, ";; number of arguments exceeded maximum\n");
 					return DOUBLE_MINUS;
 				      }
 				    }
@@ -708,7 +708,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				  right_arg[right_arg_num] = ptr_num;
 				  right_arg_num++;
 				  if (right_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				    return DOUBLE_MINUS;
 				  }
 				}
@@ -753,7 +753,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			      right_arg[right_arg_num] = ptr_num;
 			      right_arg_num++;
 			      if (right_arg_num > CHI_ARG_NUM_MAX) {
-				fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				return DOUBLE_MINUS;
 			      }
 			    }
@@ -771,7 +771,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				  right_arg[right_arg_num] = ptr_num;
 				  right_arg_num++;
 				  if (right_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				    return DOUBLE_MINUS;
 				  }
 				}
@@ -795,7 +795,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    left_arg[left_arg_num] = ptr_num;
 				    left_arg_num++;
 				    if (left_arg_num > CHI_ARG_NUM_MAX) {
-				      fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				      fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				      return DOUBLE_MINUS;
 				    }
 				  }
@@ -860,7 +860,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				pre_pos_index = cky_ptr->left_pos_index;
 				left_arg_num++;
 				if (left_arg_num > CHI_ARG_NUM_MAX) {
-				  fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				  fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				  return DOUBLE_MINUS;
 				}
 			      }
@@ -886,7 +886,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				      pre_pos_index = cky_ptr->left_pos_index;
 				      left_arg_num++;
 				      if (left_arg_num > CHI_ARG_NUM_MAX) {
-					fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+					fprintf(stderr, ";; number of arguments exceeded maximum\n");
 					return DOUBLE_MINUS;
 				      }
 				    }
@@ -906,7 +906,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				  right_arg[right_arg_num] = ptr_num;
 				  right_arg_num++;
 				  if (right_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				    return DOUBLE_MINUS;
 				  }
 				}
@@ -964,7 +964,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 			      right_arg[right_arg_num] = ptr_num;
 			      right_arg_num++;
 			      if (right_arg_num > CHI_ARG_NUM_MAX) {
-				fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				return DOUBLE_MINUS;
 			      }
 			    }
@@ -982,7 +982,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				  right_arg[right_arg_num] = ptr_num;
 				  right_arg_num++;
 				  if (right_arg_num > CHI_ARG_NUM_MAX) {
-				    fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				    fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				    return DOUBLE_MINUS;
 				  }
 				}
@@ -1007,7 +1007,7 @@ double calc_score(SENTENCE_DATA *sp, CKY *cky_ptr) {
 				    pre_pos_index = tmp_cky_ptr->left_pos_index;
 				    left_arg_num++;
 				    if (left_arg_num > CHI_ARG_NUM_MAX) {
-				      fprintf(stderr, ";;; number of arguments exceeded maximum\n");
+				      fprintf(stderr, ";; number of arguments exceeded maximum\n");
 				      return DOUBLE_MINUS;
 				    }
 				  }
@@ -1702,7 +1702,8 @@ CKY *new_cky_data(int *cky_table_num) {
     (*cky_table_num)++;
     if (((OptCaseFlag & OPT_CASE_FALLBACK_TO_DPND) && OptAnalysis == OPT_CASE && *cky_table_num >= CKY_TABLE_MAX_FOR_CASE) || 
 	*cky_table_num >= CKY_TABLE_MAX) {
-	fprintf(stderr, ";;; cky_table_num exceeded maximum (%d)\n", *cky_table_num);
+        if (OptDisplay == OPT_DEBUG) /* warning */
+            fprintf(stderr, ";; cky_table_num exceeded maximum (%d)\n", *cky_table_num);
 	return NULL;
     }
 
