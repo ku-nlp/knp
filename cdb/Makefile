@@ -159,7 +159,7 @@ install-sharedlib: sharedlib
 install-piclib: piclib
 	@set -- $(PICLIB) 644 $(libdir) - ; \
 	$(do_install)
-install: install-all
+install:
 
 DNAME = tinycdb-$(VERSION)
 dist: $(DNAME).tar.gz
