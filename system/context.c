@@ -2733,7 +2733,7 @@ int EllipsisDetectSubcontractExtraTags(SENTENCE_DATA *cs, ELLIPSIS_MGR *em_ptr,
 		!(str_eq(cf_ptr->pred_type, "判") && !sms_match(sm2code("主体"), cpm_ptr->pred_b_ptr->SM_code, SM_NO_EXPAND_NE) && MatchPP(cf_ptr->pp[n][0], "ガ") && cf_ptr->etcflag & CF_GA_SEMI_SUBJECT)) {
 		push_cand(ef, NULL, NULL, ExtraTags[tag], cf_ptr, n);
 	    }
-	    return;
+	    return 0;
 	}
 
 	if (OptLearn == TRUE) {
