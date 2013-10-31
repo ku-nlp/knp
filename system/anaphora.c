@@ -2712,7 +2712,7 @@ int search_hypo_entity(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token )
 	{
 		int make_mention_flag = 0;
 
-		if (mention_mgr->num >= MENTION_MAX - 1) return;
+		if (mention_mgr->num >= MENTION_MAX - 1) return FALSE;
 
 
 		for(i = 0;i<UNNAMED_ENTITY_NUM;i++)
@@ -2922,7 +2922,7 @@ int read_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tag_ptr, char *token, int c
 		}
 		
 		
-		if (mention_mgr->num >= MENTION_MAX - 1) return;
+		if (mention_mgr->num >= MENTION_MAX - 1) return FALSE;
 
 
 		for(i = 0;i<entity_manager.num;i++)
