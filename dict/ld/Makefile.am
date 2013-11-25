@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = id2lex.txt rep2id_da.txt
+EXTRA_DIST = id2lex.txt rep2id.txt
 
 dicdir = $(pkgdatadir)/dict/ld
 
@@ -14,10 +14,10 @@ id2lex.db: id2lex.txt
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-rep2id_da.txt:
+rep2id.txt:
 	true
 
-rep2id.da: rep2id_da.txt
+rep2id.da: rep2id.txt
 	if [ -f $< ]; then \
 		@MKDARTS_COMMAND@ $< $@; \
 	fi
