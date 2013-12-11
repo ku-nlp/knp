@@ -593,6 +593,7 @@ extern int hash(unsigned char *key, int keylen);
 extern unsigned char *katakana2hiragana(unsigned char *cp);
 extern unsigned char *hiragana2katakana(unsigned char *cp);
 extern char *strdup_with_check(const char *s);
+extern int string_length(char *cp);
 
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);
