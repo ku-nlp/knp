@@ -360,7 +360,7 @@ QUOTE_DATA quote_data;
 		    (m_ptr + i)->f = NULL;
 		}
 	    }
-	    char_pos += strlen((m_ptr + i)->Goi2) / BYTES4CHAR;
+            char_pos += string_length((m_ptr + i)->Goi2);
 	}
 	sp->Mrph_num -= paren_mrph_num;
 	free(paren_table);

@@ -1802,7 +1802,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     b_ptr->length = 0;
     for (j = 0, m_ptr = b_ptr->mrph_ptr; j < b_ptr->mrph_num; j++, m_ptr++) {
-	current_length = strlen(m_ptr->Goi2) * 2 / BYTES4CHAR;
+        current_length = string_length(m_ptr->Goi2) * 2;
 
 	if (b_ptr->length + current_length >= BNST_LENGTH_MAX) {
 	    if (OptDisplay == OPT_DEBUG) { /* warning */
