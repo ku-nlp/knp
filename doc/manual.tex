@@ -12,11 +12,11 @@
 \def\fr{$\rangle$}
 
 \title{\bf 日本語構文解析システム \\
-        KNP version 4.0 \\
+        KNP version 4.1 \\
         使用説明書}
 \author{黒橋・河原研究室}
-\date{平成24年1月\\
-\rule{0mm}{110mm}Copyright \copyright\ 2012\begin{tabular}[t]{l}
+\date{平成25年12月\\
+\rule{0mm}{110mm}Copyright \copyright\ 2013\begin{tabular}[t]{l}
                                 京都大学大学院情報学研究科 \\
                                 \end{tabular}
 }
@@ -31,10 +31,10 @@
 
 \begin{small}
 \noindent
-KN parser (Kurohashi-Nagao parser) 4.0 Users Manual
+KN parser (Kurohashi-Nagao parser) 4.1 Users Manual
 
 \noindent
-Copyright (c) 2012 Kyoto University \\
+Copyright (c) 2013 Kyoto University \\
 All rights reserved.
 
 \noindent
@@ -80,6 +80,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
  Version 2.0 & 7 September 2005 \\
  Version 3.0 & 30 September 2009 \\
  Version 4.0 & 12 January 2012 \\
+ Version 4.1 & 20 December 2013 \\
 \end{tabular}
 \end{small}
 
@@ -98,7 +99,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 KNPは日本語文の構文解析を行うシステムです．形態素解析システムの解析結果
 (形態素列)を入力とし，それらを基本句(後述)および文節単位にまとめ，それら
 の間の係り受け関係を決定します．また，自動獲得した格フレームに基づき，格
-関係の解析も行います．
+関係および照応関係の解析も行います．
 
 以下に典型的な使用例を示します．
 
@@ -151,7 +152,6 @@ KNPは以下のツール・辞書を用いますので，あらかじめご用�
 \begin{enumerate}
  \item JUMAN 7.0以上 \\ (http://nlp.ist.i.kyoto-u.ac.jp/index.php?日本語
        形態素解析システムJUMAN)
- \item TinyCDBライブラリ \\ (http://www.corpit.ru/mjt/tinycdb.html)
  \item zlibライブラリ \\ (http://zlib.net/) \\
        ※多くのOSに標準でインストールされています
  \item CRF++ \\ (http://crfpp.sourceforge.net/)
@@ -159,9 +159,9 @@ KNPは以下のツール・辞書を用いますので，あらかじめご用�
        ※多くのOSに標準でインストールされています
 \end{enumerate}
 1は，テキストを形態素列に変換するプログラムで，KNPはこのプログラムの出力
-を入力とします．2と3は，辞書データベースを構築するために必要です．4は，固
-有表現解析を行う場合に必要となります．5は，ルールファイルを修正，更新する
-場合に必要となります．
+を入力とします．2は，辞書データベースを構築するために必要です．3は，固有
+表現解析を行う場合に必要となります．4は，ルールファイルを修正，更新する場
+合に必要となります．
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,7 +171,7 @@ KNPは以下のツール・辞書を用いますので，あらかじめご用�
 KNPのインストールは以下の手順で行います．
 
 \begin{enumerate}
- \item \texttt{knp-4.0.tar.gz}を展開し，\texttt{knp-4.0}ディレクトリに移
+ \item \texttt{knp-4.1.tar.gz}を展開し，\texttt{knp-4.1}ディレクトリに移
        動する．
  \item `\texttt{./configure}'を実行する．\\
        `\texttt{./configure}'にオプションを与えることにより，インストー
@@ -201,7 +201,7 @@ KNPのインストールは以下の手順で行います．
 \subsection{Windowsにおけるインストール方法}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\texttt{knp-4.0.exe}を実行し，表示される指示に従ってインストールを行いま
+\texttt{knp-4.1.exe}を実行し，表示される指示に従ってインストールを行いま
 す．以下のファイルがインストールされます．\texttt{\$PREFIX}は，デフォル
 トでは\texttt{C:\yen Program Files\yen knp}ですが，インストール途中で設
 定できます．
@@ -263,6 +263,7 @@ KNPには以下のオプションがあります．
 -bnst           & 形態素列を文節列に変換する \\
 -dpnd           & さらに，文節間の係り受け解析を行う \\
 -case (default) & さらに，格関係の解析を行う \\
+-anaphora       & さらに，照応関係の解析を行う \\
 -ne             & さらに，固有表現の解析を行う \\
 \end{tabular}
 \item 解析結果の表示の指定
@@ -270,11 +271,14 @@ KNPには以下のオプションがあります．
 \begin{tabular}{ll}
 -tab            & 表形式による表示 \\
 -simple         & 出力を少なくした表形式による表示 \\
+-td             & 「解析結果汎用表示ツール」\footnotemark に対応した表示 \\
 -tree (default) & 木構造による表示 \\
 -bnsttab        & 文節の表形式による表示 \\
 -bnsttree       & 文節の木構造による表示 \\
 -sexp           & リスト形式による表示 \\
 \end{tabular}
+\footnotetext{http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/tabledisplay/index.cgi}
+
 \item 解析結果の出力情報の指定
 
 \begin{tabular}{ll}
@@ -717,6 +721,11 @@ phrase2rule.plを実行するためには，juman，knp，KNP.pmをあらかじ�
 \newblock 自動構築した大規模格フレームに基づく構文・格解析の統合的確率モデル.
 \newblock 自然言語処理, Vol.14, No.4, pages 67-81 (2007.7).
 
+\bibitem{sasano2011}
+笹野遼平, 黒橋禎夫. 
+\newblock 大規模格フレームを用いた識別モデルに基づく日本語ゼロ照応解析.
+\newblock 情報処理学会論文誌, Vol.52, No.12, pages 3328-3337 (2011.12).
+
 \end{thebibliography}
 
 \clearpage
@@ -773,5 +782,30 @@ Webテキストから自動構築した大規模格フレームを利用する�
        ただし，Windows版は従来と同じく，入出力，辞書およびルールファイル
        の文字コードはSJISである．
 \end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{KNP 4.0からKNP 4.1への拡張点}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+大きな変更点は以下のとおりです．
+\begin{itemize}
+
+ \item 照応解析機能の追加
+
+       ルールに基づく共参照解析機能，格フレーム辞書に基づくゼロ照応解析機
+       能，70億文から構築した名詞格フレームに基づく連想照応解析機能を追加
+       した．
+
+ \item 固有表現解析の精度向上
+
+ \item 「解析結果汎用表示ツール」への対応
+
+       http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/tabledisplay/index.cgi
+       で公開している「解析結果汎用表示ツール」に対応した出力オプショ
+       ン''-td''を追加した．
+
+\end{itemize}
+
 
 \end{document}
