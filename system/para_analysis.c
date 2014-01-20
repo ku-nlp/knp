@@ -614,6 +614,10 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
     BNST_DATA	*b_ptr;
     char	*cp;
 
+    /* 並列構造がfixならば再現する必要がない */
+    if (OptParaFix)
+        return TRUE;
+
     sp->Para_num = 0;
     sp->Para_M_num = 0;
 
