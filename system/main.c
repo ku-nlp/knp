@@ -182,10 +182,7 @@ int  reader_tag = -1;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|bnst|anaphora]\n" 
-#ifdef USE_SVM
-	    "           [-ellipsis-svm|demonstrative-svm|anaphora-svm]\n" 
-#endif
+    fprintf(stderr, "Usage: knp [-case|dpnd|dpnd-fast|bnst|anaphora] [-ne-crf]\n" 
 	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab]\n" 
 	    "           [-normal|detail|debug]\n" 
 	    "           [-expand] [-semantic-head]\n"
@@ -322,6 +319,12 @@ int  reader_tag = -1;
 	    OptAnalysis = OPT_DPND;
 	    OptUseCF = FALSE;
 	    OptUseNCF = FALSE;
+	}
+	else if (str_eq(argv[0], "-dpnd-fast")) {
+	    OptAnalysis = OPT_DPND;
+	    OptUseCF = FALSE;
+	    OptUseNCF = FALSE;
+            ParaThesaurus = USE_BGH;
 	}
 	else if (str_eq(argv[0], "-dpnd-use-ncf")) {
 	    OptAnalysis = OPT_DPND;
@@ -914,6 +917,9 @@ int  reader_tag = -1;
 	    else if (!strcasecmp(argv[0], "bgh")) {
 		ParaThesaurus = USE_BGH;
 	    }
+	    else if (!strcasecmp(argv[0], "distsim")) {
+		ParaThesaurus = USE_DISTSIM;
+	    }
 	    else if (!strcasecmp(argv[0], "none")) {
 		ParaThesaurus = USE_NONE;
 	    }
@@ -1297,7 +1303,7 @@ int  reader_tag = -1;
 	if (!OptNECRF) init_db_for_NE(); /* NE用 */
     }
 
-    if (OptEllipsis & OPT_COREFER) {
+    if (OptEllipsis & OPT_COREFER) { /* 共参照用同義語辞書オープン */
 	init_Synonym_db();
 	/* init_entity_cache(); */
     }
