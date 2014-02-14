@@ -149,9 +149,13 @@
 #endif
 
 #ifndef VERSION
-#define VERSION "4.0"
+#define VERSION "5.0"
 #endif
+
+#ifndef CF_VERSION
+#define CF_VERSION "CF1.1"
 #endif
+#endif /* _WIN32 */
 
 /*====================================================================
 				 END
