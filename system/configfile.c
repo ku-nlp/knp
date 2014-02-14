@@ -163,10 +163,10 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 
 #ifdef USE_CRF
     CRFFileNE = (char *)malloc_data(strlen(Knpdict_Dirname) + strlen(NE_CRF_MODEL_NAME) + 2, "read_rc");
-    sprintf(CRFFileNE, "%s/%s", Knpdict_Dirname, NE_CRF_MODEL_NAME);
+    sprintf(CRFFileNE, "%s\\%s", Knpdict_Dirname, NE_CRF_MODEL_NAME);
 #endif
     DistSimFile = (char *)malloc_data(strlen(Knpdict_Dirname) + strlen(DISTSIM_DB_NAME) + 2, "read_rc");
-    sprintf(DistSimFile, "%s/%s", Knpdict_Dirname, DISTSIM_DB_NAME);
+    sprintf(DistSimFile, "%s\\%s", Knpdict_Dirname, DISTSIM_DB_NAME);
 #else
     CELL *cell1,*cell2;
     char *dicttype;
