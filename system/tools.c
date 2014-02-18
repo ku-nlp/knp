@@ -149,6 +149,30 @@ unsigned int seed[NSEED][256];
     return length;
 }
 
+#ifdef _WIN32
+/*==================================================================*/
+                   char *SJIStoStringUTF8(char *str)
+/*==================================================================*/
+{
+    wchar_t *str_unicode;
+    char *str_utf8;
+    int str_unicode_length, str_utf8_length;
+
+    /* SJIS -> Unicode */
+    str_unicode_length = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
+    str_unicode = (wchar_t *)malloc_data(sizeof(wchar_t) * str_unicode_length, "SJIStoStringUTF8");
+    MultiByteToWideChar(CP_ACP, 0, str, -1, str_unicode, str_unicode_length);
+
+    /* Uniocde -> UTF8 */
+    str_utf8_length = WideCharToMultiByte(CP_UTF8, 0, str_unicode, str_unicode_length, NULL, 0, NULL, NULL);
+    str_utf8 = (char *)malloc_data(str_utf8_length, "SJIStoStringUTF8");    
+    WideCharToMultiByte(CP_UTF8, 0, str_unicode, str_unicode_length, str_utf8, str_utf8_length, NULL, NULL);
+    free(str_unicode);
+
+    return str_utf8;
+}
+#endif
+
 /*====================================================================
                                END
 ====================================================================*/

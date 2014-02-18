@@ -649,7 +649,7 @@ char *ne_code_to_tagposition(int num)
 /*==================================================================*/
 {
     int i, j;
-    char *EUCbuffer;
+    char *UTF8buffer;
 
 #ifdef USE_CRF
     if (OptNECRF) {   
@@ -657,11 +657,10 @@ char *ne_code_to_tagposition(int num)
 	for (i = 0; i < sp->Mrph_num; i++) {
 	    if (OptDisplayNE == OPT_DEBUG)
 		fprintf(stderr, "%d %s\t%s\n", i, sp->mrph_data[i].Goi2, NE_mgr[i].feature);
-#ifdef IO_ENCODING_SJIS
-            /* SJIS版はEUCのモデルファイルを用いる */
-            EUCbuffer = toStringEUC(NE_mgr[i].feature);
-	    crf_add(EUCbuffer);
-            free(EUCbuffer);
+#if defined(_WIN32) && defined(IO_ENCODING_SJIS)
+            UTF8buffer = SJIStoStringUTF8(NE_mgr[i].feature);
+	    crf_add(UTF8buffer);
+            free(UTF8buffer);
 #else
 	    crf_add(NE_mgr[i].feature);
 #endif
