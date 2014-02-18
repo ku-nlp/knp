@@ -594,6 +594,9 @@ extern unsigned char *katakana2hiragana(unsigned char *cp);
 extern unsigned char *hiragana2katakana(unsigned char *cp);
 extern char *strdup_with_check(const char *s);
 extern int string_length(char *cp);
+#ifdef _WIN32
+extern char *SJIStoStringUTF8(char *str);
+#endif
 
 /* tree_conv.c */
 extern int make_dpnd_tree(SENTENCE_DATA *sp);
