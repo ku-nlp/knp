@@ -827,8 +827,7 @@ void author_detect()
 			for(mention_id=0;mention_id< author_entity->mentioned_num;mention_id++)
 			{
 				
-				mention_ptr = entity_ptr->mention[mention_id];
-				
+				mention_ptr = author_entity->mention[mention_id];
 				if (mention_ptr->type == 'S' || mention_ptr->type == '=')
 				{
 					assign_cfeature(&(mention_ptr->tag_ptr->f),"著者表現",FALSE);
@@ -849,7 +848,7 @@ void author_detect()
 			for(mention_id=0;mention_id< reader_entity->mentioned_num;mention_id++)
 			{
 				
-				mention_ptr = entity_ptr->mention[mention_id];
+				mention_ptr = reader_entity->mention[mention_id];
 				
 				if (mention_ptr->type == 'S' || mention_ptr->type == '=')
 				{
