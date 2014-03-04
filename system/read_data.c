@@ -802,11 +802,14 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		/* 対象文の場合に、異常なタグ単位が指定されているかチェック */
 		if (sp == tp->c_cpm_ptr->elem_s_ptr[j] && 
 		    (tp->c_cpm_ptr->elem_b_ptr[j] - sp->tag_data) >= sp->Tag_num) {
-		    fprintf(stderr, ";; discarded inappropriate annotation: %s/?/%s/%d/0\n", 
-			    pp_code_to_kstr(tp->c_cpm_ptr->cf.pp[j][0]), 
-			    tp->c_cpm_ptr->elem_b_ptr[j]->head_ptr->Goi, 
-			    tp->c_cpm_ptr->elem_b_ptr[j]->num);
-		    check[j] = FALSE;
+			if(tp->c_cpm_ptr->elem_b_ptr[j]->head_ptr)
+			{
+				fprintf(stderr, ";; discarded inappropriate annotation: %s/?/%s/%d/0\n", 
+						pp_code_to_kstr(tp->c_cpm_ptr->cf.pp[j][0]), 
+						tp->c_cpm_ptr->elem_b_ptr[j]->head_ptr->Goi, 
+						tp->c_cpm_ptr->elem_b_ptr[j]->num);
+				check[j] = FALSE;
+			}
 		}
 		else {
 		    check[j] = TRUE;

@@ -1418,11 +1418,16 @@ typedef struct entity_list {
 			 ENTITY BASE 文脈処理
 ====================================================================*/
 
+#define FUNCTIONAL_TAG_MAX 5
 /* 入力基本句の格構造 */
 typedef struct tcf_def {
     CASE_FRAME 	    cf;				 /* 入力文の格構造 */
+	CASE_FRAME 	    cf_with_functional_tag[FUNCTIONAL_TAG_MAX]; /* 入力文の格構造(1以降には機能的基本句の格構造が入る) */
+	int             cf_num; 
     TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
     TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
+	int         map_tcf_elem_to_cf[CF_ELEMENT_MAX];/*何番目のcfと対応するか(0は本動詞)*/
+	int         map_tcf_elem_to_cf_elem[CF_ELEMENT_MAX];/*各格構造では何番目の格要素と対応するか*/
     int 	    elem_b_num[CF_ELEMENT_MAX];	 /* 入力文の格要素文節(連格の係り先は-1,他は子の順番) */
 } TAG_CASE_FRAME;
 
@@ -1482,8 +1487,9 @@ typedef struct tcf_def {
 #define MODALITY_F_NUM (MODALITY_NUM*2)
 #define KEIGO_S (MODALITY_S+MODALITY_F_NUM)
 #define KEIGO_F_NUM  (KEIGO_NUM*2)
-
-#define CONTEXT_S (KEIGO_S+KEIGO_F_NUM)
+#define TENSE_S (KEIGO_S+KEIGO_F_NUM)
+#define TENSE_NUM 4 
+#define CONTEXT_S (TENSE_S+TENSE_NUM)
 #define CONTEXT_FEATURE_NUM 10
 #define EACH_FEARUTE_NUM        (CONTEXT_S+CONTEXT_FEATURE_NUM)
 
@@ -1528,6 +1534,7 @@ typedef struct ctm_def {
 	int         annotated_result_num;            /* 正解コーパスにあって対応付けられた要素数 */
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
+    int         tcf_element_num_functional[CF_ELEMENT_MAX]; /* 入力文の格要素への対応(機能的基本句) */
     TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
     char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
