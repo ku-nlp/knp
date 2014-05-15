@@ -11,10 +11,12 @@ dist_rule_DATA = $(orig_rule_files) $(generated_rule_files) $(RULE2DATA) $(PHRAS
 
 bnst_type.rule: bnst_type.phrase $(PHRASE2RULE)
 	if [ -f $@ ]; then \
-	    cp -pf $@ $@.old; \
+	    mv -f $@ $@.old; \
 	fi; \
 	$(PHRASE2RULE) --rid < $< > $@
-	if [ -r $@.old ]; then \
+	if [ $(shell sh -c "if [ `cat $@ | wc -c` -lt 1000 ]; then echo 1; else echo 0; fi") ]; then \
+	    mv -f $@.old $@; \
+	elif [ -r $@.old ]; then \
 	    perl -pe 's/RID:\d+//' $@ > $@-tmp; \
 	    perl -pe 's/RID:\d+//' $@.old > $@.old-tmp; \
 	    diff $(DIFF_ENV) $@.old-tmp $@-tmp; \
