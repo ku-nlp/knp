@@ -110,7 +110,10 @@ my (%opt);
 # --rid: RIDを付与
 
 ######################################################################
-use KNP;
+unless (eval 'require KNP') {
+    warn "*** Cannot find KNP.pm to update a rule file! ***\n";
+    exit 0;
+}
 $knp = new KNP(-Option => "-bnst -tab", -JumanOption => "-u");
 unless ($knp->{OPTION}{command}) {
     warn "*** Cannot call KNP to update a rule file! ***\n";
