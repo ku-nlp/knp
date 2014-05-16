@@ -14,7 +14,7 @@ bnst_type.rule: bnst_type.phrase $(PHRASE2RULE)
 	    mv -f $@ $@.old; \
 	fi; \
 	$(PHRASE2RULE) --rid < $< > $@
-	if [ $(shell sh -c "if [ `cat $@ | wc -c` -lt 1000 ]; then echo 1; else echo 0; fi") ]; then \
+	if [ `cat $@ | wc -c` -lt 1000 ]; then \
 	    mv -f $@.old $@; \
 	elif [ -r $@.old ]; then \
 	    perl -pe 's/RID:\d+//' $@ > $@-tmp; \
