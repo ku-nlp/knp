@@ -36,6 +36,7 @@ INSTALL
 knprc
 
 # generated binaries
+compile
 system/ipal
 system/knp
 system/make_db
