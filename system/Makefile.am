@@ -3,9 +3,13 @@ SUBDIRS = .
 INCLUDES = @KNP_CFLAGS@
 
 bin_PROGRAMS = knp
+prog_SOURCES = version.h
+EXTRA_DIST = version.h
 
 pkglibexecdir= $(libexecdir)/knp
 pkglibexec_PROGRAMS = ipal make_db
+
+CLEANFILES = version.h
 
 knp_SOURCES = \
 	anaphora.c \
@@ -67,3 +71,11 @@ make_db_SOURCES = \
 	hash.h
 
 make_db_LDADD = @MAKE_DB_LIBS@
+
+lib_print.c: version.h
+version.h:  $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index
+	$(AM_V_GEN)( \
+	echo "#define REVISION_ID \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h' --date=short)\"" > $@-new; \
+	echo "#define REVISION_INFO \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h on %cd' --date=short)\"" >> $@-new; \
+	cmp -s $@ $@-new || cp $@-new $@; \
+	rm $@-new)

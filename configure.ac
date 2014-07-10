@@ -3,9 +3,7 @@ AC_INIT(knp, m4_esyscmd([tr -d '\n' < VERSION]), nl-resource@nlp.ist.i.kyoto-u.a
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
-DATE=`git log -1 --format=" (Revision.%h on %cd)" --date=short`
-# DATE=`LANG=C date +%Y%m%d`
-AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION}${DATE})
+AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION})
 AM_CONFIG_HEADER([config.h])
 
 
