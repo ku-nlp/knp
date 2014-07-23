@@ -95,11 +95,12 @@ void fprint_ipal_idx(FILE *fp, unsigned char *entry,
 
 	// fprintf(fp, "%s %lu:%d %s\n", hyouki, address, size, cf_id);
         fprintf(fp, "<LDEntry type=\"CF\">\n");
-        fprintf(fp, "<SenseID>%d\n", sense_id);
-        fprintf(fp, "<Address>%lu:%d\n", address, size);
-        fprintf(fp, "<CFID>%s\n", cf_id);
-        fprintf(fp, "<RepForm>%s\n", hyouki);
-        fprintf(fp, "<POS>%s\n", pred_type);
+        fprintf(fp, "<SenseID>%d</SenseID>\n", sense_id);
+        fprintf(fp, "<Address>%lu:%d</Address>\n", address, size);
+        fprintf(fp, "<CFID>%s</CFID>\n", cf_id);
+        fprintf(fp, "<RepForm>%s</RepForm>\n", hyouki);
+        fprintf(fp, "<POS>%s</POS>\n", pred_type);
+        fprintf(fp, "</LDEntry>\n");
     }
 }
 
