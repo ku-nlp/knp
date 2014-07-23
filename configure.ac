@@ -3,6 +3,7 @@ AC_INIT(knp, m4_esyscmd([tr -d '\n' < VERSION]), nl-resource@nlp.ist.i.kyoto-u.a
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
+AC_CONFIG_SUBDIRS([CRF++-0.58])
 AM_INIT_AUTOMAKE(${PACKAGE_NAME}, ${PACKAGE_VERSION})
 AM_CONFIG_HEADER([config.h])
 
@@ -19,10 +20,8 @@ AC_SYS_LARGEFILE
 AC_ARG_WITH(gdbm, AC_HELP_STRING([--with-gdbm], [use GDBM library (optional)]))
 AC_ARG_WITH(berkeley-db2, AC_HELP_STRING([--with-berkeley-db2], [use Berkeley DB library (2.X) (optional)]))
 AC_ARG_WITH(berkeley-db, AC_HELP_STRING([--with-berkeley-db], [use Berkeley DB library (3.X, 4.X) (optional)]))
-AC_ARG_WITH(cdb, AC_HELP_STRING([--with-cdb], [use Constant DB library (default)]))
 AC_ARG_WITH(tokyo-cabinet, AC_HELP_STRING([--with-tokyo-cabinet], [use Tokyo Cabinet library]))
 AC_ARG_WITH(svm, AC_HELP_STRING([--with-svm], [use TinySVM library (optional)]))
-AC_ARG_WITH(crf, AC_HELP_STRING([--with-crf], [use CRFPP library (optional)]))
 AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library (optional)]))
 AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
@@ -60,15 +59,12 @@ AM_CONDITIONAL(HAVE_TINYSVM, test "x$with_svm" = xyes)
 AM_CONDITIONAL(HAVE_SVMLIGHT, test "x$with_svm_light" = xyes)
 AM_CONDITIONAL(SVM_MODEL_EXIST, test "x$svm_model_exist" = xyes)
 
-if test "$with_crf" = yes; then
-    SUBDIRS="crf $SUBDIRS"
-    CRF_CFLAGS="-I$packagesrcdir/crf -DUSE_CRF"
-    KNP_LIBS="$KNP_LIBS $packagesrcdir/crf/libcrf.la -lcrfpp"
-    LIBCRF_VERSION_INFO="0:0:1"
-    AC_SUBST(LIBCRF_VERSION_INFO)
-    crf_model_exist=yes	
-fi
-AM_CONDITIONAL(HAVE_CRFPP, test "x$with_crf" = xyes)
+SUBDIRS="crf $SUBDIRS"
+CRF_CFLAGS="-I$packagesrcdir/CRF++-0.58 -I$packagesrcdir/crf -DUSE_CRF"
+KNP_LIBS="$KNP_LIBS $packagesrcdir/crf/libcrf.la $packagesrcdir/CRF++-0.58/.libs/libcrfpp.a"
+LIBCRF_VERSION_INFO="0:0:1"
+AC_SUBST(LIBCRF_VERSION_INFO)
+crf_model_exist=yes
 AM_CONDITIONAL(CRF_MODEL_EXIST, test "x$crf_model_exist" = xyes)
 
 if test "$with_boehm_gc" = yes; then
