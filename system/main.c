@@ -975,7 +975,7 @@ int  reader_tag = -1;
 	    VerboseLevel = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-v")) {
-	    fprintf(stderr, "%s %s (Revision.%s)\n", PACKAGE_NAME, VERSION, REVISION_INFO);
+	    fprintf(stderr, "%s %s (Revision.%s)\n", PACKAGE_NAME, REVISION_VERSION, REVISION_INFO);
 	    exit(0);
 	}
 	/* 格解析用オプション */

@@ -1614,7 +1614,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
     }
     
     if (OptInput == OPT_RAW) {
-	fprintf(Outfp, " KNP:%s-%s", VERSION, REVISION_ID);
+	fprintf(Outfp, " KNP:%s-%s", REVISION_VERSION, REVISION_ID);
 
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " DATE:%s", date_p);
