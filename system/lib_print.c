@@ -8,6 +8,7 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
+#include "version.h"
 
 char mrph_buffer[SMALL_DATA_LEN];
 int Sen_Num = 1; /* -table のときのみ使用する */
@@ -1613,7 +1614,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
     }
     
     if (OptInput == OPT_RAW) {
-	fprintf(Outfp, " KNP:%s", VERSION);
+	fprintf(Outfp, " KNP:%s-%s", VERSION, REVISION_ID);
 
 	if ((date_p = (char *)getenv("DATE")))
 	    fprintf(Outfp, " DATE:%s", date_p);

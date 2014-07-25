@@ -110,8 +110,15 @@ my (%opt);
 # --rid: RIDを付与
 
 ######################################################################
-use KNP;
+unless (eval 'require KNP') {
+    warn "*** Cannot find KNP.pm to update a rule file! ***\n";
+    exit 0;
+}
 $knp = new KNP(-Option => "-bnst -tab", -JumanOption => "-u");
+unless ($knp->{OPTION}{command}) {
+    warn "*** Cannot call KNP to update a rule file! ***\n";
+    exit 0;
+}
 ######################################################################
 $bnstrule_flag = 1;
 $num = 0;
@@ -448,7 +455,11 @@ sub bnst_cond2
 		}
 	    }
 
-	    $knp->parse($knp_input); 
+	    $knp->parse($knp_input);
+	    unless ($knp->{ALL}) {
+		warn "*** Cannot get the result of KNP to update a rule file! ***\n";
+		exit 0;
+	    }
 	    @knp_result = split(/\n/, $knp->{ALL});
 
 	    # print "\n\n>>>>>$knp_input\n>>>@knp_result\n";

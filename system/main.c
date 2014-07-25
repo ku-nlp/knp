@@ -5,6 +5,7 @@
     $Id$
 ====================================================================*/
 #include "knp.h"
+#include "version.h"
 
 SENTENCE_DATA	current_sentence_data;
 SENTENCE_DATA	sentence_data[SENTENCE_MAX];
@@ -979,7 +980,7 @@ int  reader_tag = -1;
 	    VerboseLevel = atoi(argv[0]);
 	}
 	else if (str_eq(argv[0], "-v")) {
-	    fprintf(stderr, "%s %s\n", PACKAGE_NAME, VERSION);
+	    fprintf(stderr, "%s %s (Revision.%s)\n", PACKAGE_NAME, VERSION, REVISION_INFO);
 	    exit(0);
 	}
 	/* 格解析用オプション */
