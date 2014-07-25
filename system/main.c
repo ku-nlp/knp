@@ -98,6 +98,8 @@ int		OptNEdelete;
 int		OptNEcase;
 int		OptNEparent;
 int		OptNElearn;
+int		OptWSD;
+int		OptWSDlearn;
 int		OptAnaphora;
 int		OptAnaphoraBaseline;
 int		OptTimeoutExit;
@@ -253,6 +255,8 @@ int  reader_tag = -1;
     OptNEcase = 0;
     OptNElearn = 0;
     OptNEparent = 0;
+    OptWSD = 0;
+    OptWSDlearn = 0;
     OptAnaphora = 0;
     OptAnaphoraBaseline = 0;
     OptTimeoutExit = 0;
@@ -743,6 +747,10 @@ int  reader_tag = -1;
 	    OptNECRF = 1;
 	}
 #endif
+ 	else if (str_eq(argv[0], "-wsd-learn")) { /* WSDの学習用featureを出力する */
+	    OptWSD = 1;
+	    OptWSDlearn = 1;
+	}
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
 	    OptEllipsis |= OPT_ELLIPSIS;
 	    OptDiscPredMethod = OPT_DT;

@@ -1653,7 +1653,10 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 
     /* 解析結果のメインの出力 */
 
-    if (OptExpress == OPT_MRPH) {
+    if (OptWSDlearn) { /* WSD学習用feature出力 */
+        print_features_for_wsd(sp);
+    }
+    else if (OptExpress == OPT_MRPH) {
 	print_mrphs(sp, eos_flag);
     }
     else if (OptExpress == OPT_TAB) {

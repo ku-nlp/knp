@@ -59,6 +59,7 @@ knp_SOURCES = \
 	lib_event.c \
 	cky.c \
 	dic.c \
+	wsd.c \
 	nv_mi.c
 
 knp_LDADD = @KNP_LIBS@

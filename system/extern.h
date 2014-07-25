@@ -111,6 +111,8 @@ extern int		OptNEdelete;
 extern int		OptNEcase;
 extern int		OptNEparent;
 extern int		OptNElearn;
+extern int		OptWSD;
+extern int		OptWSDlearn;
 extern int		OptAnaphora;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
