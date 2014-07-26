@@ -627,6 +627,12 @@ extern int check_auto_dic(MRPH_DATA *m_ptr, int assign_pos, int m_length, char *
 /* nv_mi.c */
 extern int check_nv_mi_parent_and_children(TAG_DATA *v_ptr, int rank_threshold);
 
+/* wsd.c */
+extern void init_wsd();
+extern void close_wsd();
+extern void print_features_for_wsd(SENTENCE_DATA *sp);
+extern void wsd(SENTENCE_DATA *sp);
+
 /* KNP 初期化 */
 extern char *Knprule_Dirname;
 extern char *Knpdict_Dirname;

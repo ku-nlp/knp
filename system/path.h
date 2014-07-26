@@ -35,6 +35,7 @@
 #define CHI_DIS_COMMA_DB_NAME	"ebcf/chi_dis_comma.db"
 #define ID2LEX_DB_NAME		"ld/id2lex.db"
 #define REP2ID_DA_NAME		"ld/rep2id.da"
+#define WSD_MODEL_DIR_NAME	"wsd"
 #define SYONONYM_DIC_DB_NAME	"synonym/synonym.db"
 #define HOWNET_DEF_DB_NAME      "ebcf/hownet_def.db"
 #define HOWNET_TRAN_DB_NAME     "ebcf/hownet_tran.db"

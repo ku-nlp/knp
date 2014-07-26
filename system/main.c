@@ -747,6 +747,9 @@ int  reader_tag = -1;
 	    OptNECRF = 1;
 	}
 #endif
+ 	else if (str_eq(argv[0], "-wsd")) {
+	    OptWSD = 1;
+	}
  	else if (str_eq(argv[0], "-wsd-learn")) { /* WSDの学習用featureを出力する */
 	    OptWSD = 1;
 	    OptWSDlearn = 1;
@@ -1238,6 +1241,7 @@ int  reader_tag = -1;
     close_thesaurus();
     close_scase();
     close_ld();
+    close_wsd();
     close_nv_mi();
 
     if (Language == CHINESE) {
@@ -1335,6 +1339,7 @@ int  reader_tag = -1;
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
     init_ld();		/* 語彙データベースオープン */
+    init_wsd();
     init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
     if (ParaThesaurus == USE_DISTSIM || Thesaurus == USE_DISTSIM)
         init_distsim();	/* 分布類似度オープン */
@@ -1898,6 +1903,8 @@ PARSED:
     else { /* 形態素読み込み成功 */
         /* 語彙データベースを引いて形態素列にfeature付与 */
         assign_feature_by_ld(sp);
+        if (OptWSD) /* WSD */
+            wsd(sp);
 
 	/* 形態素列の前処理 */
 	preprocess_mrph(sp);

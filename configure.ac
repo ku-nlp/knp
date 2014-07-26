@@ -156,7 +156,7 @@ AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
 AC_CHECK_LIB(z, deflate, DB_LIBS="-lz $DB_LIBS")
 
-ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la $packagesrcdir/darts/libdarts.la -lstdc++"
+ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la $packagesrcdir/darts/libdarts.la $packagesrcdir/opal/libopal.la -lstdc++"
 KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 
@@ -291,6 +291,7 @@ Makefile
 system/Makefile
 svm/Makefile
 svm_light/Makefile
+opal/Makefile
 crf/Makefile
 distsim/Makefile
 darts/Makefile
