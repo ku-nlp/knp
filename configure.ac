@@ -176,6 +176,7 @@ AC_MSG_CHECKING([Case Frame])
 if test -f "$packagesrcdir/dict/ebcf/cf.knpdict"; then
     cf_exist=yes
 else
+    AC_MSG_ERROR("$packagesrcdir/dict/ebcf/cf.knpdict: not found")
     cf_exist=no
 fi
 AC_MSG_RESULT([$cf_exist])
@@ -184,6 +185,7 @@ AC_MSG_CHECKING([Case Frame (noun)])
 if test -f "$packagesrcdir/dict/ebcf/noun.knpdict"; then
     cf_noun_exist=yes
 else
+    AC_MSG_ERROR("$packagesrcdir/dict/ebcf/noun.knpdict: not found")
     cf_noun_exist=no
 fi
 AC_MSG_RESULT([$cf_noun_exist])
@@ -192,6 +194,7 @@ AC_MSG_CHECKING([Probabilities for case analysis])
 if test -f "$packagesrcdir/dict/ebcf/case.prob"; then
     prob_exist=yes
 else
+    AC_MSG_ERROR("$packagesrcdir/dict/ebcf/case.prob: not found")
     prob_exist=no
 fi
 AC_MSG_RESULT([$prob_exist])
@@ -200,6 +203,7 @@ AC_MSG_CHECKING([Additional probabilities for case analysis])
 if test -f "$packagesrcdir/dict/ebcf/renyou.prob"; then
     additional_prob_exist=yes
 else
+#    AC_MSG_ERROR("$packagesrcdir/dict/ebcf/renyou.prob: not found")
     additional_prob_exist=no
 fi
 AC_MSG_RESULT([$additional_prob_exist])
@@ -208,6 +212,7 @@ AC_MSG_CHECKING([noun-verb MI DB])
 if test -f "$packagesrcdir/dict/auto/nv_mi.dat"; then
     nv_mi_exist=yes
 else
+#    AC_MSG_ERROR("$packagesrcdir/dict/auto/nv_mi.dat: not found")
     nv_mi_exist=no
 fi
 AC_MSG_RESULT([$nv_mi_exist])
@@ -216,6 +221,7 @@ AC_MSG_CHECKING([distributional similarity MI DB])
 if test -f "$packagesrcdir/dict/distsim/mi.dat"; then
     distsim_mi_exist=yes
 else
+    AC_MSG_ERROR("$packagesrcdir/dict/distsim/mi.dat: not found")
     distsim_mi_exist=no
 fi
 AC_MSG_RESULT([$distsim_mi_exist])
@@ -224,6 +230,7 @@ AC_MSG_CHECKING([NE CRF model])
 if test -f "$packagesrcdir/dict/crf.model"; then
     ne_crf_model_exist=yes
 else
+    AC_MSG_ERROR("$packagesrcdir/dict/crf.model: not found")
     ne_crf_model_exist=no
 fi
 AC_MSG_RESULT([$ne_crf_model_exist])
