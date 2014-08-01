@@ -98,7 +98,9 @@ int		OptNEdelete;
 int		OptNEcase;
 int		OptNEparent;
 int		OptNElearn;
-int		OptWSD;
+int		OptWSD; //将来的にHybrid
+int		OptWSDUnsupervised;
+int		OptWSDSupervised;
 int		OptWSDlearn;
 int		OptAnaphora;
 int		OptAnaphoraBaseline;
@@ -256,6 +258,8 @@ int  reader_tag = -1;
     OptNElearn = 0;
     OptNEparent = 0;
     OptWSD = 0;
+    OptWSDUnsupervised = 0;
+    OptWSDSupervised = 0;
     OptWSDlearn = 0;
     OptAnaphora = 0;
     OptAnaphoraBaseline = 0;
@@ -749,9 +753,17 @@ int  reader_tag = -1;
 #endif
  	else if (str_eq(argv[0], "-wsd")) {
 	    OptWSD = 1;
+	    OptWSDSupervised = 1;
+	    OptWSDUnsupervised = 1;
+	}
+ 	else if (str_eq(argv[0], "-wsd-supervised")) {
+	    OptWSDSupervised = 1;
+	}
+ 	else if (str_eq(argv[0], "-wsd-unsupervised")) {
+	    OptWSDUnsupervised = 1;
 	}
  	else if (str_eq(argv[0], "-wsd-learn")) { /* WSDの学習用featureを出力する */
-	    OptWSD = 1;
+	    OptWSDSupervised = 1;
 	    OptWSDlearn = 1;
 	}
 	else if (str_eq(argv[0], "-ellipsis-dt")) {
@@ -1339,7 +1351,13 @@ int  reader_tag = -1;
     init_thesaurus();	/* シソーラスオープン */
     init_scase();	/* 表層格辞書オープン */
     init_ld();		/* 語彙データベースオープン */
-    init_wsd();
+    if (OptWSD||OptWSDSupervised||OptWSDUnsupervised){
+        init_wsd();
+    }
+    if (OptWSDUnsupervised){
+        printf("init relword");
+        init_relword_db();
+    }
     init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
     if (ParaThesaurus == USE_DISTSIM || Thesaurus == USE_DISTSIM)
         init_distsim();	/* 分布類似度オープン */
@@ -1903,22 +1921,27 @@ PARSED:
     else { /* 形態素読み込み成功 */
         /* 語彙データベースを引いて形態素列にfeature付与 */
         assign_feature_by_ld(sp);
-        if (OptWSD) /* WSD */
+        if (OptWSD){  /* Hybrid WSD */ 
             wsd(sp);
+        }else if (OptWSDSupervised ){ /* Supervised WSD */
+            wsd_supervised(sp);
+        }else if (OptWSDUnsupervised){ /* Unsupervised WSD */
+            wsd_unsupervised(sp);
+        }
 
-	/* 形態素列の前処理 */
-	preprocess_mrph(sp);
+        /* 形態素列の前処理 */
+        preprocess_mrph(sp);
 
-	/* 括弧を処理して文として分割する場合 */
-	if (OptProcessParen) {
-	    paren_num = process_input_paren(sp, &paren_sentence_data);
-	}
+        /* 括弧を処理して文として分割する場合 */
+        if (OptProcessParen) {
+            paren_num = process_input_paren(sp, &paren_sentence_data);
+        }
 
-	/* 一文構文・格解析 */
-	if ((flag = one_sentence_analysis(sp, paren_num ? 0 : 1)) == FALSE) {
-	    sp->Sen_num--; /* 解析失敗時には文の数を増やさない */
-	    return FALSE;
-	}
+        /* 一文構文・格解析 */
+        if ((flag = one_sentence_analysis(sp, paren_num ? 0 : 1)) == FALSE) {
+            sp->Sen_num--; /* 解析失敗時には文の数を増やさない */
+            return FALSE;
+        }
     }
 
     /************/
@@ -1926,40 +1949,46 @@ PARSED:
     /************/
 	       
     if (OptEllipsis) {
-	assign_mrph_num(sp);
-	make_dpnd_tree(sp);
-	if (OptAnaphora && (sp->Sen_num > SENTENCE_MAX)) {
-	    fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
-	    clear_context(sp, FALSE);
-	}
-	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
-	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
-	    fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
-	    clear_context(sp, FALSE);
-	}
-	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
-	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	//if (OptAnaphora) anaphora_analysis(sp->Sen_num);
-	if (OptAnaphora & OPT_EACH_SENTENCE) each_sentence_anaphora_analysis(sp);
-	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
+        assign_mrph_num(sp);
+        make_dpnd_tree(sp);
+        if (OptAnaphora && (sp->Sen_num > SENTENCE_MAX)) {
+            fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
+            clear_context(sp, FALSE);
+        }
+        else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
+            /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
+            fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
+            clear_context(sp, FALSE);
+        }
+    }
 
-	if (!OptArticle && OptPostProcess) { /* 後処理 (構文解析のときは、one_sentence_analysis()で行う) */
-	    do_postprocess(sp);
-	}
+    if ( OptEllipsis || OptWSD ){ 
+        PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
+    }
+
+    if (OptEllipsis) {
+        if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
+        //if (OptAnaphora) anaphora_analysis(sp->Sen_num);
+        if (OptAnaphora & OPT_EACH_SENTENCE) each_sentence_anaphora_analysis(sp);
+        if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
+
+        if (!OptArticle && OptPostProcess) { /* 後処理 (構文解析のときは、one_sentence_analysis()で行う) */
+            do_postprocess(sp);
+        }
     }
 
     /* entity 情報の feature の作成 */
     if (OptDisplay == OPT_ENTITY) {
-	prepare_all_entity(sp);
+        prepare_all_entity(sp);
     }
 
     /* 入力した正解情報をクリア */
     if (OptReadFeature) {
-	for (i = 0; i < sp->Tag_num; i++) {
-	    if ((sp->tag_data + i)->c_cpm_ptr) {
-		free((sp->tag_data + i)->c_cpm_ptr);
-	    }
-	}
+        for (i = 0; i < sp->Tag_num; i++) {
+            if ((sp->tag_data + i)->c_cpm_ptr) {
+                free((sp->tag_data + i)->c_cpm_ptr);
+            }
+        }
     }
 	
     /* 固有表現認識のためのキャッシュ作成 */
