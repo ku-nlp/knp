@@ -54,7 +54,7 @@ cf.knpdict:
 
 cf.dat: cf.knpdict
 	if [ -f cf.knpdict ]; then \
-		ulimit -Ss unlimited && @CF_COMMAND@ cf.txt cf.dat < cf.knpdict; \
+		ulimit -Ss unlimited && @CF_COMMAND@ cf-pred.xml cf.dat < cf.knpdict; \
 	fi
 
 noun.knpdict:
@@ -62,7 +62,7 @@ noun.knpdict:
 
 noun.dat: noun.knpdict
 	if [ -f noun.knpdict ]; then \
-		ulimit -Ss unlimited && @CF_COMMAND@ noun.txt noun.dat < noun.knpdict; \
+		ulimit -Ss unlimited && @CF_COMMAND@ cf-noun.xml noun.dat < noun.knpdict; \
 	fi
 
 adverb.prob:
@@ -128,4 +128,4 @@ mrph2id.db: mrph2id.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-CLEANFILES = cf.dat cf.txt noun.dat noun.txt mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+CLEANFILES = cf.dat cf-pred.xml noun.dat cf-noun.xml mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
