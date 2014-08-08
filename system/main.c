@@ -1355,8 +1355,7 @@ int  reader_tag = -1;
         init_wsd();
     }
     if (OptWSDUnsupervised){
-        printf("init relword");
-        init_relword_db();
+        init_relword_db(); /* 関連語データベースオープン */
     }
     init_nv_mi();	/* 名詞動詞相互情報量DBオープン */
     if (ParaThesaurus == USE_DISTSIM || Thesaurus == USE_DISTSIM)

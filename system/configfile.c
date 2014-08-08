@@ -755,6 +755,19 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 		cell1 = cdr(cell1);
             }
 	}
+	else if (!strcmp(DEF_RELWORD_FILE, _Atom(car(cell1)))) {
+	    if (!Atomp(cell2 = car(cdr(cell1)))) {
+		fprintf(stderr, "error in .knprc\n");
+		exit(0);
+	    }
+	    else {
+		RelWordDB = check_tilde(_Atom(cell2));
+		if (OptWSDUnsupervised  == OPT_DEBUG) {
+		    fprintf(Outfp, "RelWord DB file ... %s\n", RelWordDB);
+		}
+	    }
+
+	}
 	else if (!strcmp(DEF_DT_MODEL_FILE, _Atom(car(cell1)))) {
 	    int pp;
 

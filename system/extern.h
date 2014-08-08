@@ -113,6 +113,8 @@ extern int		OptNEparent;
 extern int		OptNElearn;
 extern int		OptWSD;
 extern int		OptWSDlearn;
+extern int		OptWSDSupervised;
+extern int		OptWSDUnsupervised;
 extern int		OptAnaphora;
 extern int		OptAnaphoraBaseline;
 extern int		OptParaFix;
@@ -173,6 +175,7 @@ extern char             *SynonymFile;
 extern char		*DistSimFile;
 extern char		*DistSimDB;
 extern char		*DistSimWordList;
+extern char		*RelWordDB;
 
 extern int	DiscAddedCases[];
 extern int	LocationLimit[];

@@ -562,6 +562,7 @@ typedef struct {
 #define         DEF_NE_MODEL_FILE       "NEモデルファイル" /* CRF */
 #define         DEF_SYNONYM_FILE        "同義表現ファイル"
 #define         DEF_DISTSIM_FILE        "分布類似度ファイル"
+#define         DEF_RELWORD_FILE        "関連語ファイル" 
 
 typedef struct _RuleVector {
     char	*file;

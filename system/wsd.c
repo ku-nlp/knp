@@ -4,23 +4,29 @@
 
                                          Daisuke Kawahara 2014. 7. 25
 
+										 Hajime Morita 2014. 8.8
     $Id$
 ====================================================================*/
 
 #include "knp.h"
 
-const int MAX_RELWORD = 1000;
-const int MAX_SEM_NUM = 60;
+#define MAX_RELWORD 1000
+#define MAX_SEM_NUM 200
 
 char	static_buffer1[DATA_LEN];
 char	static_buffer2[DATA_LEN];
 DBM_FILE relword_db;
+char*  RelWordDB;
+
 int RelWordDbExist;
 
 typedef struct relword {
 	char repids[SMALL_DATA_LEN];
 	double relatedness;
 } RELWORD;
+
+RELWORD current_word[MAX_SEM_NUM][MAX_RELWORD]; //現在の文の語義ごとの関連語
+RELWORD context_word[MAX_RELWORD];//周辺文の関連語
 
 /*==================================================================*/
                 void repnames2id(char* cp, char* buf)
@@ -50,18 +56,17 @@ typedef struct relword {
 
 
 /*==================================================================*/
- double context_sim( RELWORD* current, RELWORD* context )
+ double context_sim( RELWORD current[], RELWORD context[])
 /*==================================================================*/
 {
 	double similarity = -1.0;
 	int cur_index, con_index;
 
-	for(cur_index=0; (current+cur_index)->repids[0] ; cur_index++){
-		for(con_index=0; (context+con_index)->repids[0] ; con_index++){
-			//printf("%s eq? %s\n", (current+cur_index)->repids, (context+con_index)->repids);
-			if(!strcmp((current+cur_index)->repids,(context+con_index)->repids) ){
-				similarity += 1; //(current+cur_index)->relatedness;
-				// relatedness の値がおかしかったので1に固定
+	//repids がソートされている保証があれば, もう少し賢く
+	for(cur_index=0; (current[cur_index]).repids[0] && cur_index < MAX_RELWORD; cur_index++){
+		for(con_index=0; (context[con_index]).repids[0] && con_index < MAX_RELWORD; con_index++){
+			if(!strcmp((current[cur_index]).repids,(context[con_index]).repids) ){
+				similarity += (current[cur_index]).relatedness;
 				break;
 			}
 		}
@@ -73,11 +78,11 @@ typedef struct relword {
 int unsupervised_classify( RELWORD (*current)[MAX_RELWORD], RELWORD context[], unsigned int current_max )
 /*==================================================================*/
 {
-	double best_sim=-1, current_sim=0;
-	int best_index=-1, sem_index ;
+	double best_sim=-1.0, current_sim=0.0;
+	int    best_index=-1, sem_index ;
 
 	for(sem_index = 0; sem_index< current_max; sem_index++){
-		current_sim = context_sim( current[sem_index], context) ;
+		current_sim = context_sim( current[sem_index], context);
 		//printf("index%d, sim= %f bestsim=%f\n",sem_index, current_sim, best_sim);
 		if(current_sim > best_sim){
 			best_index = sem_index;
@@ -89,10 +94,11 @@ int unsupervised_classify( RELWORD (*current)[MAX_RELWORD], RELWORD context[], u
 }
 
 /*==================================================================*/
- void setrelword( RELWORD* rw, char * rel_repids, double rel_value )
+ void set_relword( RELWORD* rw, char * rel_repids, double rel_value ) 
 /*==================================================================*/
 {
-	strcpy(rw->repids, rel_repids );
+	// 関連語のid とvalue をrw に代入するだけ. 
+	strcpy(rw->repids, rel_repids);
     rw->relatedness = rel_value;		
 
 	// オーバーフローのチェック
@@ -111,28 +117,27 @@ int unsupervised_classify( RELWORD (*current)[MAX_RELWORD], RELWORD context[], u
                            void init_relword_db()
 /*==================================================================*/
 {
-	// フルパス
-	char* filename = "/durian/shin/association/rel/140122-2/all-rel"; //check_dict_filename(DICT[ID2LEX_DB], TRUE);
+	char* filename = RelWordDB; 
 
-    if (OptDisplay == OPT_DEBUG) {
+	if (OptDisplay == OPT_DEBUG) {
 		fprintf(Outfp, "Opening %s ... ", filename);
-    }
+	}
 
-    if ((relword_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("failed.\n", Outfp);
-	}
-	RelWordDbExist = FALSE;
+	if ((relword_db = DB_open(filename, O_RDONLY, 0)) == NULL) {
+		if (OptDisplay == OPT_DEBUG) {
+			fputs("failed.\n", Outfp);
+		}
+		RelWordDbExist = FALSE;
 #ifdef DEBUG
-	fprintf(stderr, ";; Cannot open RelWord DB <%s>.\n", filename);
+		fprintf(stderr, ";; Cannot open RelWord DB <%s>.\n", filename);
 #endif
-    }
-    else {
-	if (OptDisplay == OPT_DEBUG) {
-	    fputs("done.\n", Outfp);
 	}
-	RelWordDbExist = TRUE;
-    }
+	else {
+		if (OptDisplay == OPT_DEBUG) {
+			fputs("done.\n", Outfp);
+		}
+		RelWordDbExist = TRUE;
+	}
 }
 /*==================================================================*/
                            void close_relword_db()
@@ -189,7 +194,14 @@ void get_context_word(SENTENCE_DATA *sp, RELWORD* rw, unsigned int * index)
         if ((rep_str = get_mrph_rep_from_f(m_ptr, FALSE))) {
             rep_id = rep2id(rep_str, strlen(rep_str), &(static_buffer1[0]));
             if (rep_id[0]) {
-				setrelword( rw+(*index)++ , rep_id, 1 );
+				set_relword( rw+((*index)++) , rep_id, 1 );// 関連語ではないので，関連度は1.0 固定
+				// TODO:関連語の取得
+				
+				// オーバーフローチェック
+				if(*index >= MAX_RELWORD){
+					fprintf(stderr, ";; Cannot read all RelWords. The number of RelWords exceeds buffer limit (MAX_RELWORD).\n");
+					break;
+				}
             }
         }
     }
@@ -269,10 +281,10 @@ void get_context_word(SENTENCE_DATA *sp, RELWORD* rw, unsigned int * index)
     MRPH_DATA *m_ptr;
     FEATURE *fp;
     char *cp, *repcp, *start_cp, *orig_start_cp, *rep_id, *ret; 
-    char buf[DATA_LEN], repbuf[DATA_LEN], relword_buf[DATA_LEN],pre_repbuf[DATA_LEN], feature_buf[DATA_LEN];
-	RELWORD current_word[MAX_SEM_NUM][MAX_RELWORD];
-	RELWORD context_word[MAX_RELWORD];
+    char buf[DATA_LEN], repbuf[DATA_LEN], relid_buf[DATA_LEN], relword_buf[DATA_LEN], relwordid_buf[DATA_LEN],pre_repbuf[DATA_LEN], feature_buf[DATA_LEN];
 	int sem_index, relword_index;
+
+	if(!RelWordDbExist) return;
 
 	// 本当は前の文も見る必要がある
     get_context_word(sp, context_word, &context_word_index);
@@ -283,31 +295,46 @@ void get_context_word(SENTENCE_DATA *sp, RELWORD* rw, unsigned int * index)
 		sem_index = 0;
         while (fp) {
             if (!strncmp(fp->cp, "LD-type=Wikipedia", strlen("LD-type=Wikipedia")) && (repcp = strstr(fp->cp, "RepForm=")) && (cp = strstr(fp->cp, "RelWord="))) {
-                buf[0] = '\0';//todo: 変数名を適切に
+				relid_buf[0] = '\0';
+				relwordid_buf[0] = '\0';
+				relword_buf[0] = '\0';
+				//buf[0]='\0';
+				if(sem_index >= MAX_SEM_NUM ){
+					fprintf(stderr, ";; Cannot read all Semantics. The number of Semantics exceeds buffer limit.\n");
+				}
+
+				// 代表表記を取得
 				sscanf(repcp,"RepForm=%[^_>]", repbuf);
-
-				sscanf(cp,"RelWord=%[0-9]", buf);
-
-				ret = db_get(relword_db, buf);
-
-				if(ret){
-					double rel_value;
+				// 関連語のid を取得
+				sscanf(cp,"RelWord=%[0-9]", relid_buf);
+				// LD から関連語をひく
+				ret = db_get(relword_db, relid_buf);
+				
+				if(sem_index < MAX_SEM_NUM && ret){
+					double rel_value=1; 
 					char *token_start, *token;
 					char *relword_start, *relword, *value;
 					relword_index=0;
-					while ((token = strsep(&ret, ";")) != NULL) {
-						sscanf(token,"%[^:]:%f", buf, &rel_value);
-						repnames2id(buf, relword_buf);
-						if(relword_buf[0] != '\0'){
-							setrelword( &(current_word[sem_index][relword_index]), relword_buf, rel_value );
-							//printf("buf %s setrelword %s ,%d \n", buf , relword_buf, rel_value);
-							relword_index++;
+					// 関連語を登録
+					while ((token = strsep(&ret, ";")) != NULL ) {
+						if(relword_index >= MAX_RELWORD ){
+							fprintf(stderr, ";; Cannot read all RelWords. The number of RelWords exceeds buffer limit.\n");
+							break;
+						}else{
+							sscanf(token, "%[^:]:%lf", &relword_buf, &rel_value);
+							repnames2id(relword_buf, relwordid_buf);
+							if( relwordid_buf[0] != '\0'){
+								set_relword( &(current_word[sem_index][relword_index]), relwordid_buf, rel_value );
+								//fprintf(Outfp, "setrelword %s ,%f \n", relword_buf, rel_value);
+								relword_index++;
+							}
 						}
 					}
+					sem_index++;
 				}
-				sem_index++;
 					
-                if (pre_repbuf[0] && strcmp(pre_repbuf, repbuf)) {
+				// sem_index == MAX_SEM_NUM なら MAX_SEM_NUM-1まで値が入る
+                if ( pre_repbuf[0] && strcmp(pre_repbuf, repbuf) &&  sem_index <= MAX_SEM_NUM) {
 					label = unsupervised_classify(current_word, context_word, sem_index);
                     fprintf(Outfp, "TARGET %s -> LABEL %d\n", pre_repbuf, label);
                     sprintf(feature_buf, "語義曖昧性解消結果:%d", label);
@@ -320,7 +347,7 @@ void get_context_word(SENTENCE_DATA *sp, RELWORD* rw, unsigned int * index)
             }
             fp = fp->next;
         }
-        if (pre_repbuf[0] ){
+        if (pre_repbuf[0] && sem_index <= MAX_SEM_NUM ){
 			label = unsupervised_classify(current_word, context_word, sem_index);
 			fprintf(Outfp, "TARGET %s -> LABEL %d\n", pre_repbuf, label);
 			sprintf(feature_buf, "語義曖昧性解消結果:%d", label);
