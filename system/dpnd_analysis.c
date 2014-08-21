@@ -2218,7 +2218,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 {
     /* 基本句末尾の形態素が句読点の場合は一つ前、それ以外は基本句末尾の形態素 */
 
-    if (m_ptr->inum != 0 && 
+    if (m_ptr->inum == 1 && 
         !strcmp(Class[(m_ptr + 1)->Hinshi][0].id, "特殊") && 
         (!strcmp(Class[(m_ptr + 1)->Hinshi][(m_ptr + 1)->Bunrui].id, "読点") || 
          !strcmp(Class[(m_ptr + 1)->Hinshi][(m_ptr + 1)->Bunrui].id, "句点"))) {
