@@ -150,10 +150,10 @@ fi
 AC_CHECK_LIB(m, sqrt, ETC_LIBS="$ETC_LIBS -lm")
 AC_CHECK_LIB(nsl, gethostbyname, KNP_LIBS="-lnsl $KNP_LIBS")
 AC_CHECK_LIB(socket, socket, KNP_LIBS="-lsocket $KNP_LIBS")
-AC_CHECK_LIB(z, deflate, DB_LIBS="-lz $DB_LIBS")
+AC_CHECK_LIB(z, deflate, DB_LIBS="$DB_LIBS -lz")
 
 ETC_LIBS="$ETC_LIBS $packagesrcdir/distsim/libdistsim.la -lstdc++"
-KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $DB_LIBS $ETC_LIBS"
+KNP_LIBS="$KNP_LIBS $JUMAN_LIBS $ETC_LIBS $DB_LIBS"
 MAKE_DB_LIBS="$MAKE_DB_LIBS $DB_LIBS"
 
 MAKE_DB_COMMAND="$packagesrcdir/system/make_db"
