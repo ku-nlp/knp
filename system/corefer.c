@@ -111,7 +111,7 @@ char *SynonymFile;
     /* ex. 「立てこもり事件」 → 「立てこもり事件」、「立て籠る/たてこもる+事件」 */
 
     int i, j, k, l, tag_num, mrph_num, rep_flag;
-    char word[WORD_LEN_MAX * 2], word_rep[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2], *cp;
+    char word[WORD_LEN_MAX * 2], word_rep[WORD_LEN_MAX * 2], buf[WORD_LEN_MAX * 2 + 19], *cp;
     TAG_DATA *tag_ptr;      
 
     /* 文節単位で文の前から処理 */
@@ -156,8 +156,7 @@ char *SynonymFile;
 		    /* cp + 1 は対象の固有表現文字列へのポインタ */
 		    for (k = 0; 
 			 strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
-				 strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2));
-			 k++);
+				 strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2)); k++);
 		    strncpy(word, cp + 1, k);
 		    word[k] = '\0';
 		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
@@ -179,8 +178,7 @@ char *SynonymFile;
 		}
 
 		word[0] = word_rep[0] = '\0';
-		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; 
-		     k >= 0; k--) {
+		for (k = (tag_ptr + j)->head_ptr - (sp->bnst_data + i)->mrph_ptr; k >= 0; k--) {
 		    
 		    /* 先頭の特殊、照応接頭辞は含めない */
 		    if (!word[0] &&
@@ -201,11 +199,13 @@ char *SynonymFile;
 				((cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記変更")) ||
 				 (cp = check_feature(((tag_ptr + j)->head_ptr - k)->f, "代表表記")))) {
 				strcat(word_rep, strchr(cp, ':') + 1);
-				strcat(word_rep, "+");
 			    }
 			}
 			else {
-			    strcat(word_rep, ((tag_ptr + j)->head_ptr - k)->Goi2);
+                            if (strlen(word_rep) + strlen(((tag_ptr + j)->head_ptr - k)->Goi2) + 1 < WORD_LEN_MAX * 2) {
+                                strcat(word_rep, "+");
+                                strcat(word_rep, ((tag_ptr + j)->head_ptr - k)->Goi2);
+                            }
 			}
 		    }
 		}
@@ -220,36 +220,6 @@ char *SynonymFile;
 		}
 	    }
 	}
-    }
-
-    /* 括弧内のふりがなへの対応 */
-    for (j = 0; j < sp->Tag_num; j++) {
-	
-	for (i = 0; i < (sp->tag_data + j)->mrph_num; i++) {
-
-	    if (j + 1 < sp->Tag_num &&
-		(check_feature(((sp->tag_data + j)->mrph_ptr + i + 1)->f, 
-			      "ひらがな") ||
-		!strcmp(((sp->tag_data + j)->mrph_ptr + i + 1)->Goi2, "・"))) break;
-	    
-	    word[0] = '\0';
-	    for (k = 0; (sp->tag_data + j)->mrph_ptr + i - k > sp->mrph_data; k++) {
-		if (!check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, 
-				   "ひらがな") &&
-		    strcmp(((sp->tag_data + j)->mrph_ptr + i - k)->Goi2, "・")) break;
-	    }
-	    if (k > 0 && 
-		check_feature(((sp->tag_data + j)->mrph_ptr + i - k)->f, "括弧始")) {
-		for (k = k - 1; k >= 0; k--) 
-		    strcat(word, ((sp->tag_data + j)->mrph_ptr + i - k)->Goi2);
-	    }
-	    
-	    if (word[0]) {
-		sprintf(buf, "照応詞候補:%s", word);
-		assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
-		assign_cfeature(&((sp->tag_data + j)->f), "読み方", FALSE);
-	    }
-	}		
     }
 }
 
@@ -348,8 +318,7 @@ int compare_strings(char *antecedent, char *anaphor, char *ana_ne,
 	}
     }  
     for (j = 0; j < strlen(anaphor); j += BYTES4CHAR) {
-	if (strncmp(antecedent + strlen(antecedent) - j - BYTES4CHAR, 
-		    anaphor + strlen(anaphor) - j - BYTES4CHAR, BYTES4CHAR)) {
+	if (strncmp(antecedent + strlen(antecedent) - j - BYTES4CHAR, anaphor + strlen(anaphor) - j - BYTES4CHAR, BYTES4CHAR)) {
 	    break;
 	} 
     }
@@ -384,9 +353,9 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
        word2:「・」などより前を含める先行詞候補(先行詞候補2)
        yomi2:先行詞候補2の読み方 
        anaphor_rep:照応詞候補の先頭形態素を代表表記化したもの */
-    char word1[WORD_LEN_MAX], word2[WORD_LEN_MAX], yomi2[WORD_LEN_MAX], buf[WORD_LEN_MAX], 
+    char word1[WORD_LEN_MAX+1], word2[WORD_LEN_MAX+1], yomi2[WORD_LEN_MAX+1], buf[SMALL_DATA_LEN2], 
 	*anaphor_rep;
-    char *cp, CO[WORD_LEN_MAX];
+    char *cp, CO[WORD_LEN_MAX+1];
     SENTENCE_DATA *sdp;
     TAG_DATA *tag_ptr;
  
@@ -440,12 +409,12 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			word1[0] = '\0';
 		    }
 		    else {
-			if (strlen(word1) + strlen((tag_ptr->head_ptr - m)->Goi2) >= WORD_LEN_MAX) break;
+			if (strlen(word1) + strlen((tag_ptr->head_ptr - m)->Goi2) > WORD_LEN_MAX) break;
 			strcat(word1, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補1 */
 		    }
-		    if (strlen(word2) + strlen((tag_ptr->head_ptr - m)->Goi2) >= WORD_LEN_MAX)	break;
+		    if (strlen(word2) + strlen((tag_ptr->head_ptr - m)->Goi2) > WORD_LEN_MAX)	break;
 		    strcat(word2, (tag_ptr->head_ptr - m)->Goi2); /* 先行詞候補2 */
-		    if (strlen(yomi2) + strlen((tag_ptr->head_ptr - m)->Yomi) >= WORD_LEN_MAX) break;
+		    if (strlen(yomi2) + strlen((tag_ptr->head_ptr - m)->Yomi) > WORD_LEN_MAX) break;
 		    strcat(yomi2, (tag_ptr->head_ptr - m)->Yomi); /* 先行詞候補2の読み方 */
 		}
 		if (setubi_flag) {
@@ -495,13 +464,11 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 		    /* 同義表現であれば */
 		    if (j == 0) {
 			sprintf(buf, "C用;【%s%s】;=;0;%d;9.99:%s(同一文):%d文節",
-				word1, setubi ? setubi : "", k, 
-				sp->KNPSID ? sp->KNPSID + 5 : "?", k);
+				word1, setubi ? setubi : "", k, sp->KNPSID ? sp->KNPSID + 5 : "?", k);
 		    }
 		    else {
 			sprintf(buf, "C用;【%s%s】;=;%d;%d;9.99:%s(%d文前):%d文節",
-				word1, setubi ? setubi : "", j, k, 
-				(sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
+				word1, setubi ? setubi : "", j, k, (sdp - j)->KNPSID ? (sdp - j)->KNPSID + 5 : "?", j, k);
 		    }
 		    assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);
 		    assign_cfeature(&((sp->tag_data + i)->f), "共参照", FALSE); 
@@ -535,8 +502,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 			    cp += 3; /* "NE:"を読み飛ばす */
 			    while (*cp != ':') cp++;
 			    if (!strcmp(cp + 1, word1)) {
-				ne_corefer(sp, i, anaphor,
-					   check_feature(tag_ptr->f, "NE"), yomi_flag);
+				ne_corefer(sp, i, anaphor, check_feature(tag_ptr->f, "NE"), yomi_flag);
 			    }
 			} 
 		    }
@@ -555,7 +521,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     /* PERSON + 役職 に"="タグを付与 */
 
     int j, flag;
-    char buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
+    char buf[SMALL_DATA_LEN2], CO[WORD_LEN_MAX];
     MRPH_DATA *mrph_ptr;
     TAG_DATA *tag_ptr;
 
@@ -574,11 +540,8 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	    flag = 1;
 	    continue;
 	}
-	else if (check_feature((mrph_ptr + j)->f, "NE") ||
-		 check_feature((mrph_ptr + j)->f, "固有修飾")) {
-	    /* 基本的には、ブッシュ・アメリカ大統領 */
-	    /* 武部自民党幹事長などを想定している */
-	    /* ギングリッチ新下院議長 */
+	/* 基本的には、ブッシュ・アメリカ大統領、武部自民党幹事長などを想定 */
+	else if (check_feature((mrph_ptr + j)->f, "NE") || check_feature((mrph_ptr + j)->f, "固有修飾")) {
 	    continue;
 	}
 	else break;
@@ -622,7 +585,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
     /* 「カテゴリ:人 + "、" + PERSON」などの処理(同格) */
 
     int j, k;
-    char *cp, buf[WORD_LEN_MAX], CO[WORD_LEN_MAX];
+    char *cp, buf[SMALL_DATA_LEN2], CO[WORD_LEN_MAX];
     MRPH_DATA *head_ptr, *mrph_ptr, *tail_ptr;
 
     /* この段階でi-1番目の基本句は読点、または"・"を伴っている */
@@ -712,7 +675,7 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);
 	assign_cfeature(&((sp->tag_data + j)->f), "同格", FALSE);
 	sprintf(buf, "Ｔ共参照:=/O/null/%d/%d/-", i - 1, 0);
-	assign_cfeature(&((sp->tag_data + i)->f), buf, FALSE);	
+	assign_cfeature(&((sp->tag_data + j)->f), buf, FALSE);	
 
 	/* COREFER_IDを付与 */
 	if (cp = check_feature((sp->tag_data + j)->f, "COREFER_ID")) {
