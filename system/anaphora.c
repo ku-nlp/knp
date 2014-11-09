@@ -105,9 +105,9 @@ int OptZeroPronoun = 0;
 #define UNNAMED_ENTITY_REP_NUM 6
 #define CATEGORY_NUM 21
 
-char *unnamed_entity[UNNAMED_ENTITY_NUM]={"一人称","二人称","不特定-人","不特定-その他","補文"}; //不特定:その他とかにすると":"が後の処理で問題になる
-char *unnamed_entity_name[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_NAME_NUM]={{"一人称",""},
-																		{"二人称",""},
+char *unnamed_entity[UNNAMED_ENTITY_NUM]={"著者","読者","不特定-人","不特定-その他","補文"}; //不特定:その他とかにすると":"が後の処理で問題になる
+char *unnamed_entity_name[UNNAMED_ENTITY_NUM][UNNAMED_ENTITY_NAME_NUM]={{"著者",""},
+																		{"読者",""},
 																		{"不特定:人",""},
 																		{"不特定:物","不特定:状況"},
 																		{""}};
@@ -874,7 +874,7 @@ void author_detect()
 			author_entity->hypothetical_entity = 0;
 			entity_manager.entity[0].real_entity = author_entity->num;
 			entity_manager.entity[0].skip_flag =1;
-			strcat(author_entity->name,"|一人称");
+			strcat(author_entity->name,"|著者");
 			
 			for(mention_id=0;mention_id< author_entity->mentioned_num;mention_id++)
 			{
@@ -896,7 +896,7 @@ void author_detect()
 			reader_entity->hypothetical_entity = 1;
 			entity_manager.entity[1].real_entity = reader_entity->num;
 			entity_manager.entity[1].skip_flag =1;
-			strcat(reader_entity->name,"|二人称");
+			strcat(reader_entity->name,"|読者");
 			for(mention_id=0;mention_id< reader_entity->mentioned_num;mention_id++)
 			{
 				
@@ -2296,7 +2296,7 @@ void set_param(void)
 }
 
 
-/*省略解析の後で一人称とひっつける*/
+/*省略解析の後で著者とひっつける*/
 void link_hypo_enity_after_analysis(SENTENCE_DATA *sp)
 {
 	int i;
@@ -2378,7 +2378,7 @@ void make_entity_from_coreference(SENTENCE_DATA *sp)
 			make_new_entity(tag_ptr, mention_mgr);
 		}
 		
-		/*一人称等が"="の関係の時に仮想entityと関連付け*/
+		/*著者等が"="の関係の時に仮想entityと関連付け*/
 		
 		if (((OptAnaphora & OPT_UNNAMED_ENTITY) && (OptReadFeature & OPT_COREFER) &&  !(OptAnaphora & OPT_AUTHOR_AFTER) ) || (OptAnaphora & OPT_TRAIN) ||(OptAnaphora & OPT_GS) ) {
 			if(cp = check_feature(tag_ptr->f, "格解析結果"))
