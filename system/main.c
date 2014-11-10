@@ -1827,6 +1827,52 @@ PARSED:
 	record_all_case_analisys(sp, FALSE);
     }
 
+    /************/
+    /* 文脈解析 */
+    /************/
+	       
+    if (OptEllipsis) {
+	assign_mrph_num(sp);
+	make_dpnd_tree(sp);
+	if (OptAnaphora && (sp->Sen_num > SENTENCE_MAX)) {
+	    fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
+	    clear_context(sp, FALSE);
+	}
+	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
+	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
+	    fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
+	    clear_context(sp, FALSE);
+	}
+	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
+	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
+	//if (OptAnaphora) anaphora_analysis(sp->Sen_num);
+	if (OptAnaphora & OPT_EACH_SENTENCE) each_sentence_anaphora_analysis(sp);
+	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
+
+	if (!OptArticle && OptPostProcess) { /* 後処理 */
+	    do_postprocess(sp);
+	}
+    }
+
+    /* entity 情報の feature の作成 */
+    if (OptDisplay == OPT_ENTITY) {
+	prepare_all_entity(sp);
+    }
+
+    /* 入力した正解情報をクリア */
+    if (OptReadFeature) {
+	for (i = 0; i < sp->Tag_num; i++) {
+	    if ((sp->tag_data + i)->c_cpm_ptr) {
+		free((sp->tag_data + i)->c_cpm_ptr);
+	    }
+	}
+    }
+	
+    /* 固有表現認識のためのキャッシュ作成 */
+    if (OptNE) {
+	make_ne_cache(sp);
+    }
+
     return TRUE;
 }
 
@@ -1902,58 +1948,11 @@ PARSED:
     }
 
     /************/
-    /* 文脈解析 */
-    /************/
-	       
-    if (OptEllipsis) {
-	assign_mrph_num(sp);
-	make_dpnd_tree(sp);
-	if (OptAnaphora && (sp->Sen_num > SENTENCE_MAX)) {
-	    fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
-	    clear_context(sp, FALSE);
-	}
-	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
-	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
-	    fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
-	    clear_context(sp, FALSE);
-	}
-	PreserveSentence(sp); /* 文情報を"sentence_data + sp->Sen_num - 1"に保存 */
-	if (OptEllipsis & OPT_COREFER) corefer_analysis(sp); /* 共参照解析 */
-	//if (OptAnaphora) anaphora_analysis(sp->Sen_num);
-	if (OptAnaphora & OPT_EACH_SENTENCE) each_sentence_anaphora_analysis(sp);
-	if (OptEllipsis != OPT_COREFER && !OptAnaphora) DiscourseAnalysis(sp);
-
-	if (!OptArticle && OptPostProcess) { /* 後処理 (構文解析のときは、one_sentence_analysis()で行う) */
-	    do_postprocess(sp);
-	}
-    }
-
-    /* entity 情報の feature の作成 */
-    if (OptDisplay == OPT_ENTITY) {
-	prepare_all_entity(sp);
-    }
-
-    /* 入力した正解情報をクリア */
-    if (OptReadFeature) {
-	for (i = 0; i < sp->Tag_num; i++) {
-	    if ((sp->tag_data + i)->c_cpm_ptr) {
-		free((sp->tag_data + i)->c_cpm_ptr);
-	    }
-	}
-    }
-	
-    /* 固有表現認識のためのキャッシュ作成 */
-    if (OptNE) {
-	make_ne_cache(sp);
-    }
-
-    /************/
     /* 結果表示 */
     /************/
-	if(!(OptAnaphora) || (OptAnaphora & OPT_EACH_SENTENCE)|| (OptExpress == OPT_TABLE))
-	{
-		print_all_result(sp, paren_num ? 0 : 1); /* 括弧含む文: EOP(0); 通常文: EOS(1) */
-	}
+    if(!(OptAnaphora) || (OptAnaphora & OPT_EACH_SENTENCE)|| (OptExpress == OPT_TABLE)) {
+        print_all_result(sp, paren_num ? 0 : 1); /* 括弧含む文: EOP(0); 通常文: EOS(1) */
+    }
 
     /* 括弧文の解析 */
     if (paren_num) {
