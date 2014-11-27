@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'knp-perl',
     'VERSION_FROM'	=> 'lib/KNP.pm',
-    'PREREQ_PM'		=> { Juman => 0.5, }, # e.g., Module::Name => 1.1
+    'PREREQ_PM'		=> { Juman => 0.5.7, }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT		=> 'analyze dependency/case structure of Japanese sentences',
        AUTHOR		=> 'TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>') : ()),

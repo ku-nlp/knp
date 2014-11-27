@@ -5,7 +5,7 @@ version:      0.4.9
 version_from: lib/KNP.pm
 installdirs:  site
 requires:
-    Juman:                         0.5
+    Juman:                         0.5.7
 
 distribution_type: module
 generated_by: ExtUtils::MakeMaker version 6.30
