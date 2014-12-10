@@ -2,7 +2,7 @@
 snapshot:
 	$(MAKE) dist distdir=$(PACKAGE)-`date +"%Y%m%d"`
 
-SUBDIRS = svm svm_light cdb crf distsim system rule dict doc chinese_rule
+SUBDIRS = svm svm_light cdb crf CRF++-0.58 distsim system rule dict doc chinese_rule
 
 knprcdir=$(sysconfdir)
 nodist_knprc_DATA = knprc
