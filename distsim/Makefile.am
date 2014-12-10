@@ -1,5 +1,7 @@
 SUBDIRS = .
 
+INCLUDES = @KNP_CFLAGS@
+
 EXTRA_DIST = distsim_for_knp.cc distsim_for_knp.h distsim.cc distsim.h common.h dbm.h
 
 noinst_LTLIBRARIES = libdistsim.la
