@@ -347,13 +347,13 @@ char *ne_code_to_tagposition(int num)
 
     if ((pcp = check_feature(mrph_data->f, "Ｔ係り先の主辞"))) {
 	if (OptNECRF) strcpy(ret, "CS");	
-	if ((ccp = check_feature(mrph_data->f, "係"))) {
+	if ((ccp = check_feature(mrph_data->f, "Ｔ係"))) {
 	    if (OptNECRF) {
-		sprintf(buf, "%s:%s", ret, ccp + strlen("係") + 1);
+		sprintf(buf, "%s:%s", ret, ccp + strlen("Ｔ係") + 1);
 	    }
 	    else {
-		c = case2num(ccp + strlen("係") + 1) + 3;
-		if (!strcmp("係:未格", ccp)) c = 1;
+		c = case2num(ccp + strlen("Ｔ係") + 1) + 3;
+		if (!strcmp("Ｔ係:未格", ccp)) c = 1;
 		sprintf(buf, "%s%d60:1 ", ret, c);	
 	    }
 	    strcpy(ret, buf);	    	    
@@ -375,13 +375,13 @@ char *ne_code_to_tagposition(int num)
 		check_feature((mrph_data + j)->f, "括弧")) break;
 	    if ((pcp = check_feature((mrph_data + j)->f, "Ｔ係り先の主辞"))) {
 		if (OptNECRF) strcpy(ret, "CS");	
-		if ((ccp = check_feature((mrph_data + j)->f, "係"))) {
+		if ((ccp = check_feature((mrph_data + j)->f, "Ｔ係"))) {
 		    if (OptNECRF) {
-			sprintf(buf, "%s:%s", ret, ccp + strlen("係") + 1);
+			sprintf(buf, "%s:%s", ret, ccp + strlen("Ｔ係") + 1);
 		    }
 		    else {
-			c = case2num(ccp + strlen("係") + 1) + 3;
-			if (!strcmp("係:未格", ccp)) c = 1;
+			c = case2num(ccp + strlen("Ｔ係") + 1) + 3;
+			if (!strcmp("Ｔ係:未格", ccp)) c = 1;
 			sprintf(buf, "%s%d70:1 ", ret, c);	
 		    }
 		    strcpy(ret, buf);	    	    
@@ -932,13 +932,11 @@ char *ne_code_to_tagposition(int num)
 	/* 文節を前からチェック */
 	for (j = 0; j < sp->Bnst_num - 1; j++) {	    
 	    (strlen((sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) < WORD_LEN_MAX / BYTES4CHAR) ? 
-		sprintf(cp, "Ｔ係り先の主辞:%s",
-			 (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) :
-		sprintf(cp, "Ｔ係り先の主辞:LONG_WORD");
-			 
+		sprintf(cp, "Ｔ係り先の主辞:%s", (sp->bnst_data[sp->bnst_data[j].dpnd_head].head_ptr)->Goi) :
+		sprintf(cp, "Ｔ係り先の主辞:LONG_WORD");		 
 	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
-	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), 
-			    check_feature(sp->bnst_data[j].f, "係"), FALSE);    
+	    sprintf(cp, "Ｔ%s", check_feature(sp->bnst_data[j].f, "係"));
+	    assign_cfeature(&((sp->bnst_data[j].head_ptr)->f), cp, FALSE);
 	}
     }
 

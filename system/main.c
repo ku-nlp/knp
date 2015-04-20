@@ -725,7 +725,7 @@ int  reader_tag = -1;
 	    OptNECRF = 1;
 	    OptNEcache = 1;
 	}
- 	else if (str_eq(argv[0], "-ne-learn")) { /* NEの学習用featureを出力する */
+ 	else if (str_eq(argv[0], "-ne-learn") || str_eq(argv[0], "-ne-train")) { /* NEの学習用featureを出力する */
 	    OptNE = 1;
 	    OptNECRF = 1;
 	    OptNElearn = 1;
