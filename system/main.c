@@ -1639,8 +1639,7 @@ int  reader_tag = -1;
 
     if ((flag = quote(sp)) == TRUE && OptDisplay == OPT_DEBUG)
 	print_matrix(sp, PRINT_QUOTE, 0);
-
-    if (flag == CONTINUE) return FALSE;
+    /* 返り値がCONTINUEとなりquote()が失敗したときは、QUOTE MATRIXがすべて1となり制約なしとなる */
 
     /* base phrase for Chinese */
     if (Language == CHINESE && !OptChiPos) {
