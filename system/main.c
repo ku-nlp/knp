@@ -290,6 +290,7 @@ int  reader_tag = -1;
 	else if (str_eq(argv[0], "-article")) OptArticle  = TRUE;
 	else if (str_eq(argv[0], "-normal"))  OptDisplay  = OPT_NORMAL;
 	else if (str_eq(argv[0], "-detail"))  OptDisplay  = OPT_DETAIL;
+	else if (str_eq(argv[0], "-para-detail")) OptDisplay = OPT_PARA_DETAIL;
 	else if (str_eq(argv[0], "-debug"))   OptDisplay  = OPT_DEBUG;
 	else if (str_eq(argv[0], "-nbest"))   OptNbest    = TRUE;
 	else if (str_eq(argv[0], "-expand"))  OptExpandP  = TRUE;
@@ -299,15 +300,16 @@ int  reader_tag = -1;
 	else if (str_eq(argv[0], "-process-paren")) OptProcessParen = TRUE;
 	else if (str_eq(argv[0], "-suppress-katakana-normalization")) OptKatakanaNormalize = FALSE;
 	else if (str_eq(argv[0], "-tab")) {
-            OptDisplay = OPT_NORMAL;
+            if (OptDisplay == OPT_SIMPLE) /* if it's still default */
+                OptDisplay = OPT_NORMAL;
             OptExpress = OPT_TAB;
         }
 	else if (str_eq(argv[0], "-mrphtab")) {
-            OptDisplay = OPT_NORMAL;
+            if (OptDisplay == OPT_SIMPLE) /* if it's still default */
+                OptDisplay = OPT_NORMAL;
             OptExpress  = OPT_MRPH;
         }
 	else if (str_eq(argv[0], "-tree")) {
-            OptDisplay = OPT_SIMPLE;
             OptExpress  = OPT_TREEF;
         }
 	else if (str_eq(argv[0], "-mrphtree")) {
@@ -1666,7 +1668,7 @@ int  reader_tag = -1;
 	    calc_match_matrix(sp);		/* 文節間類似度計算 */
 	    detect_all_para_scope(sp);    	/* 並列構造推定 */
 	    assign_para_similarity_feature(sp);
-	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG || OptDisplay == OPT_PARA_DETAIL) {
 		print_matrix(sp, PRINT_PARA, 0);
 	    }
 	}
@@ -1698,7 +1700,7 @@ int  reader_tag = -1;
 	detect_all_para_scope(sp);    	/* 並列構造推定 */
 	do {
 	    assign_para_similarity_feature(sp);
-	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG) {
+	    if (OptDisplay == OPT_DETAIL || OptDisplay == OPT_DEBUG || OptDisplay == OPT_PARA_DETAIL) {
 		print_matrix(sp, PRINT_PARA, 0);
 		/*
 		  print_matrix2ps(sp, PRINT_PARA, 0);

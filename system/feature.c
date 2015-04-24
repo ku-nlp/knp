@@ -108,10 +108,9 @@ char feature_buffer[DATA_LEN];
        指定したものだけを表示 */
 
     while (fp) {
-	if (fp->cp && 
-            ((OptDisplay == OPT_SIMPLE && check_important_feature(fp)) || 
-             (OptDisplay != OPT_SIMPLE && strncmp(fp->cp, "Ｃ", strlen("Ｃ")) && !strncmp(fp->cp, "C", 1))))
-	    print_one_feature(fp->cp, filep);
+        if (fp->cp && check_important_feature(fp)) {
+            print_one_feature(fp->cp, filep);
+        }
 	fp = fp->next;
     }
 }
