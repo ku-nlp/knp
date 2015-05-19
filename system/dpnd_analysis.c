@@ -2808,8 +2808,8 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
     if (Quote_matrix[pos][i] &&
 	dpnd->mask[i]) {
 
-      if (d_possibility && Dpnd_matrix[pos][i] == 'd') {
-	if (check_uncertain_d_condition(sp, dpnd, i)) {
+    if ((OptCKY || d_possibility) && Dpnd_matrix[pos][i] == 'd') {
+	if (OptCKY || check_uncertain_d_condition(sp, dpnd, i)) {
 	  dpnd->check[pos].pos[count] = i;
 	  count++;
 	}
