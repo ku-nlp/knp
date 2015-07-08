@@ -1235,8 +1235,8 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 
     /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
-    /* 活用する品詞ではない場合 */
-    if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
+    /* 活用する品詞ではない場合、または、すでに一度代表表記が変更されている場合 */
+    if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0 || check_feature(m_ptr->f, "代表表記変更")) {
 	return;
     }
 

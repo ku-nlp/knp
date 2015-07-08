@@ -132,8 +132,10 @@ char *SynonymFile;
 		if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
 		    cp += 3; /* "NE:"を読み飛ばす */
 		    while (*cp != ':') cp++;
-		    sprintf(buf, "照応詞候補:%s", cp + 1);
-		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    if (strlen(cp + 1) < WORD_LEN_MAX * 2) {
+			sprintf(buf, "照応詞候補:%s", cp + 1);
+			assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    }
 		    continue;
 		} 
 		
@@ -157,11 +159,13 @@ char *SynonymFile;
 		    for (k = 0; 
 			 strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
 				 strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2)); k++);
-		    strncpy(word, cp + 1, k);
-		    word[k] = '\0';
-		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
-		    sprintf(buf, "照応詞候補:%s", word);
-		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    if (k < WORD_LEN_MAX * 2) {
+			strncpy(word, cp + 1, k);
+			word[k] = '\0';
+			strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
+			sprintf(buf, "照応詞候補:%s", word);
+			assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    }
 		}
 	    }
 	    
