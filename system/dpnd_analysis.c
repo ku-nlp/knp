@@ -2273,7 +2273,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
             this_is_syntactic_head_flag = FALSE;
 
         /* この形態素が句間要素なら、これ以降は常に親にする (for OptSemanticHead) */
-        if (appear_outer_word_flag == FALSE && check_feature(m_ptr->f, "Ｔ句間要素"))
+        if (appear_outer_word_flag == FALSE && (sp->tag_data + last_t)->dpnd_head != -1 && check_feature(m_ptr->f, "Ｔ句間要素"))
             appear_outer_word_flag = TRUE;
 
 	/* 隣にかける */
