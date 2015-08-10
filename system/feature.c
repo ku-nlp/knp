@@ -702,9 +702,11 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 }
 
 /*==================================================================*/
-	     int check_category(FEATURE *fp, char *fname)
+    int check_category(FEATURE *fp, char *fname, int strict_flag)
 /*==================================================================*/
 {
+    /* strict_flag == TRUE: カテゴリが複数ある(曖昧な)ときはFALSEを返す */
+
     char *cp;
 
     if (0 && strlen(fname) == 1) {
@@ -716,6 +718,9 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
 	}
     }
     else if ((cp = check_feature(fp, "カテゴリ"))) {
+        if (strict_flag && strchr(cp, ';')) { /* strict_flag時: カテゴリが複数あるときはFALSE */
+            return FALSE;
+        }
         cp += strlen("カテゴリ"); /* ":"の分はdoの中で足す */
         do {
             cp++; /* ":"もしくは";"の分 */
@@ -1068,7 +1073,12 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     
     else if (!strncmp(rule, "&カテゴリ:", strlen("&カテゴリ:"))) {
 	cp = rule + strlen("&カテゴリ:");
-	return check_category(((MRPH_DATA *)ptr2)->f, cp);
+        if (!strcmp(cp, "時間")) { /* 「時間」のときは、strict_flag == TRUE (曖昧なときはFALSEを返す) */
+            return check_category(((MRPH_DATA *)ptr2)->f, cp, TRUE);
+        }
+        else {
+            return check_category(((MRPH_DATA *)ptr2)->f, cp, FALSE);
+        }
     }
 
     /* &意味素: 意味素チェック (形態素) */

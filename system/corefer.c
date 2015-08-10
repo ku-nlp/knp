@@ -611,28 +611,28 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・")) return 0;
 
     if (/* NE:PERSON */
-	check_category(head_ptr->f, "人") &&
+	check_category(head_ptr->f, "人", FALSE) &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:PERSON") &&
 	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
 	 check_feature(mrph_ptr->f, "NE:PERSON:single")) ||
 	
 	/* NE:ORGANIZATION */
-	check_category(head_ptr->f, "組織・団体") &&
+	check_category(head_ptr->f, "組織・団体", FALSE) &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:ORGANIZATION") &&
 	(check_feature(mrph_ptr->f, "NE:ORGANIZATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:ORGANIZATION:single")) ||
 	
 	/* NE:LOCATION */
-	(check_category(head_ptr->f, "場所-施設") ||
-	 check_category(head_ptr->f, "場所-自然") ||
-	 check_category(head_ptr->f, "場所-その他")) &&
+	(check_category(head_ptr->f, "場所-施設", FALSE) ||
+	 check_category(head_ptr->f, "場所-自然", FALSE) ||
+	 check_category(head_ptr->f, "場所-その他", FALSE)) &&
 	strcmp(head_ptr->Goi2, "あと") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:LOCATION") &&
 	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:LOCATION:single")) ||
 
 	/* NE:ARTIFACT */
-	check_category(head_ptr->f, "人工物-乗り物") &&
+	check_category(head_ptr->f, "人工物-乗り物", FALSE) &&
 	(check_feature(mrph_ptr->f, "NE:ARTIFACT:head") || 
 	 check_feature(mrph_ptr->f, "NE:ARTIFACT:single") ||
 	 !check_feature(mrph_ptr->f, "NE") && check_feature(mrph_ptr->f, "未知語"))) {	
