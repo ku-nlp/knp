@@ -120,7 +120,7 @@ sub feature {
 =over 4
 
 =item
-柴田 知秀 <shibata@nlp.kuee.kyoto-u.ac.jp>
+柴田 知秀 <shibata@i.kyoto-u.ac.jp>
 
 =cut
 

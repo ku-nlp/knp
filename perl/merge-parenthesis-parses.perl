@@ -242,14 +242,18 @@ sub insert_paren_bnst {
 sub find_insert_mrph_position {
     my ($bnsts_ar, $b_pos, $m_pos_in_bnst) = @_;
 
-    my ($m_pos, $target_mrph, $head_default_pos);
+    my ($m_pos, $target_mrph, $head_default_pos, $next_mrph);
     if ($m_pos_in_bnst == -1) { # 文節末のとき
 	$m_pos = $bnsts_ar->[$b_pos]->mrph(-1)->id + 1; # 挿入位置形態素
 	$head_default_pos = scalar($bnsts_ar->[$b_pos]->mrph) - 1;
+	if (defined($bnsts_ar->[$b_pos + 1])) { # 後に基本句がある
+	    $next_mrph = $bnsts_ar->[$b_pos + 1]->mrph(0); # 直後の基本句の先頭の形態素
+	}
     }
     else {
 	$m_pos = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst)->id; # 挿入位置形態素
 	$head_default_pos = $m_pos_in_bnst - 1;
+	$next_mrph = $bnsts_ar->[$b_pos]->mrph($m_pos_in_bnst);
     }
 
     $target_mrph = $bnsts_ar->[$b_pos]->mrph($head_default_pos); # 括弧をくっつける親形態素(default; ひとつ前の形態素)
@@ -267,8 +271,8 @@ sub find_insert_mrph_position {
 
     # 前側を探したときにくっつける親形態素が句読点ならば、後側を探す
     if ($target_mrph->bunrui eq '句点' || $target_mrph->bunrui eq '読点') {
-	if (defined($bnsts_ar->[$b_pos + 1])) { # 後に基本句がある
-	    $target_mrph = $bnsts_ar->[$b_pos + 1]->mrph(0); # 直後の基本句の先頭の形態素
+	if ($next_mrph) { # 後に形態素がある
+	    $target_mrph = $next_mrph; # 直後の形態素
 	}
     }
 

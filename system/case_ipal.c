@@ -3146,7 +3146,7 @@ double _get_ex_category_probability(char *key, int as2, CASE_FRAME *cfp, FEATURE
 	    if (strchr(category, '>')) *strchr(category, '>') = '\0';
 	    
 	    /* 該当するカテゴリが対象の語のfeatureに含まれていた場合 */
-	    if (check_category(fp, category)) {
+	    if (check_category(fp, category, FALSE)) {
 		ex_category = (char *)malloc_data(sizeof(char) * (strlen(key) + strlen(category) + 5), 
 						  "get_ex_category_probability");
 		sprintf(ex_category, "%s|CT:%s", key, category);

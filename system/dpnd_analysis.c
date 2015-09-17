@@ -2193,7 +2193,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     char *cp;
 
     if ((cp = check_feature(t_ptr->f, "用言"))) { /* 用言の場合のみ対象 */
-	if (!strcmp(cp, "用言:判") && !check_feature(t_ptr->f, "体言止")) { /* 判定詞がある場合はその判定詞 */
+        if (!strcmp(cp, "用言:判") && check_feature(t_ptr->f, "判定詞")) { /* 判定詞がある場合はその判定詞 */
 	    if (m_ptr->num > t_ptr->head_ptr->num && /* 判定詞はheadより後 (括弧文で例外があるためチェック) */
 		!strcmp(Class[m_ptr->Hinshi][0].id, "判定詞")) {
 		return TRUE;
@@ -2239,6 +2239,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
     int i, j, last_t, offset, head, proj_table[MRPH_MAX];
     int appear_semantic_head_flag = FALSE, appear_outer_word_flag = FALSE, last_content_m, this_is_semantic_head_flag;
     int appear_syntactic_head_flag = FALSE, this_is_syntactic_head_flag;
+    int root_m = -1; /* root形態素 */
     MRPH_DATA *m_ptr, *head_ptr, *last_content_m_ptr = NULL;
 
     /* initialize proj_table */
@@ -2273,7 +2274,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
             this_is_syntactic_head_flag = FALSE;
 
         /* この形態素が句間要素なら、これ以降は常に親にする (for OptSemanticHead) */
-        if (appear_outer_word_flag == FALSE && check_feature(m_ptr->f, "Ｔ句間要素"))
+        if (appear_outer_word_flag == FALSE && (sp->tag_data + last_t)->dpnd_head != -1 && check_feature(m_ptr->f, "Ｔ句間要素"))
             appear_outer_word_flag = TRUE;
 
 	/* 隣にかける */
@@ -2311,7 +2312,13 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 
             /* 文末 */
             if (i == sp->Mrph_num - 1) {
-                m_ptr->dpnd_head = -1;
+                if (root_m >= 0) { /* avoid multiple root */
+                    m_ptr->dpnd_head = root_m;
+                }
+                else {
+                    m_ptr->dpnd_head = -1;
+                    root_m = m_ptr->num;
+                }
                 m_ptr->dpnd_type = 'D';
             }
             else {
@@ -2320,7 +2327,13 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
                 m_ptr->dpnd_type = (sp->tag_data + last_t)->dpnd_type;
 
                 if (head == -1) {
-                    m_ptr->dpnd_head = -1;
+                    if (root_m >= 0) { /* avoid multiple root */
+                        m_ptr->dpnd_head = root_m;
+                    }
+                    else {
+                        m_ptr->dpnd_head = -1;
+                        root_m = m_ptr->num;
+                    }
                 }
                 else {
                     /* m_ptr->dpnd_head = (sp->tag_data + head)->head_ptr->num; */
@@ -2808,8 +2821,8 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
     if (Quote_matrix[pos][i] &&
 	dpnd->mask[i]) {
 
-      if (d_possibility && Dpnd_matrix[pos][i] == 'd') {
-	if (check_uncertain_d_condition(sp, dpnd, i)) {
+    if ((OptCKY || d_possibility) && Dpnd_matrix[pos][i] == 'd') {
+	if (OptCKY || check_uncertain_d_condition(sp, dpnd, i)) {
 	  dpnd->check[pos].pos[count] = i;
 	  count++;
 	}

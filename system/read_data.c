@@ -845,10 +845,10 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN], Bunrui_str[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN], Bunrui_str[DATA_LEN], ne_buffer[DATA_LEN];
     U_CHAR Katuyou_Kata_str[DATA_LEN], Katuyou_Kei_str[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
-    int homo_num, offset, mrph_item, bnst_item, tag_item, i, j, homo_flag;
+    int homo_num, offset, mrph_item, bnst_item, tag_item, ne_flag, i, j, homo_flag;
 
     sp->Mrph_num = 0;
     homo_num = 0;
@@ -1102,6 +1102,24 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	    if (mrph_item == 12) {
 		char *imip, *cp, *rep_buf;
+
+		/* "<NE:...>"形式で与えられた固有表現タグを意味情報に追加 */
+		ne_flag = 0;
+		if (OptNElearn && (cp = strstr(rest_buffer, "<NE:"))) { 
+		    ne_flag = sscanf(cp, "<NE:%[^>]>", ne_buffer);
+		    if (ne_flag && !strncmp(rest_buffer, "NIL", 3)) {
+		    	sprintf(rest_buffer, "\"NE:%s\"", ne_buffer);
+		    }
+		    else if (ne_flag && rest_buffer[0] == '\"' &&
+		    	     strlen(rest_buffer) + strlen(ne_buffer) +  4 < DATA_LEN &&
+		    	     (imip = strchr(rest_buffer + 1, '\"'))) {
+		    		 *imip = '\0';
+		    		 strcat(imip, " NE:");
+		    		 strcat(imip, ne_buffer);
+		    		 strcat(imip, "\"");
+		    }
+		}						
+ 
 		/* 意味情報をfeatureへ */
 		if (strncmp(rest_buffer, "NIL", 3)) {
 
@@ -1217,8 +1235,8 @@ void change_one_mrph_rep(MRPH_DATA *m_ptr, int modify_feature_flag, char suffix_
 
     /* 「代表表記:動く/うごく」->「代表表記:動き/うごきv」 */
 
-    /* 活用する品詞ではない場合 */
-    if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0) {
+    /* 活用する品詞ではない場合、または、すでに一度代表表記が変更されている場合 */
+    if (m_ptr->Katuyou_Kata == 0 || m_ptr->Katuyou_Kei == 0 || check_feature(m_ptr->f, "代表表記変更")) {
 	return;
     }
 

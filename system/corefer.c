@@ -132,8 +132,10 @@ char *SynonymFile;
 		if ((cp = check_feature((tag_ptr + j)->f, "NE"))) {
 		    cp += 3; /* "NE:"を読み飛ばす */
 		    while (*cp != ':') cp++;
-		    sprintf(buf, "照応詞候補:%s", cp + 1);
-		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    if (strlen(cp + 1) < WORD_LEN_MAX * 2) {
+			sprintf(buf, "照応詞候補:%s", cp + 1);
+			assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    }
 		    continue;
 		} 
 		
@@ -157,11 +159,13 @@ char *SynonymFile;
 		    for (k = 0; 
 			 strncmp(cp + k + 1, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2, 
 				 strlen(((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2)); k++);
-		    strncpy(word, cp + 1, k);
-		    word[k] = '\0';
-		    strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
-		    sprintf(buf, "照応詞候補:%s", word);
-		    assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    if (k < WORD_LEN_MAX * 2) {
+			strncpy(word, cp + 1, k);
+			word[k] = '\0';
+			strcat(word, ((tag_ptr + j)->mrph_ptr + mrph_num)->Goi2);
+			sprintf(buf, "照応詞候補:%s", word);
+			assign_cfeature(&((tag_ptr + j)->f), buf, FALSE);
+		    }
 		}
 	    }
 	    
@@ -607,28 +611,28 @@ int search_antecedent(SENTENCE_DATA *sp, int i, char *anaphor, char *setubi, cha
 	strcmp(((sp->tag_data + i)->mrph_ptr - 1)->Goi2, "・")) return 0;
 
     if (/* NE:PERSON */
-	check_category(head_ptr->f, "人") &&
+	check_category(head_ptr->f, "人", FALSE) &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:PERSON") &&
 	(check_feature(mrph_ptr->f, "NE:PERSON:head") || 
 	 check_feature(mrph_ptr->f, "NE:PERSON:single")) ||
 	
 	/* NE:ORGANIZATION */
-	check_category(head_ptr->f, "組織・団体") &&
+	check_category(head_ptr->f, "組織・団体", FALSE) &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:ORGANIZATION") &&
 	(check_feature(mrph_ptr->f, "NE:ORGANIZATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:ORGANIZATION:single")) ||
 	
 	/* NE:LOCATION */
-	(check_category(head_ptr->f, "場所-施設") ||
-	 check_category(head_ptr->f, "場所-自然") ||
-	 check_category(head_ptr->f, "場所-その他")) &&
+	(check_category(head_ptr->f, "場所-施設", FALSE) ||
+	 check_category(head_ptr->f, "場所-自然", FALSE) ||
+	 check_category(head_ptr->f, "場所-その他", FALSE)) &&
 	strcmp(head_ptr->Goi2, "あと") &&
 	!check_feature((sp->tag_data + i - 1)->b_ptr->mrph_ptr->f, "NE:LOCATION") &&
 	(check_feature(mrph_ptr->f, "NE:LOCATION:head") || 
 	 check_feature(mrph_ptr->f, "NE:LOCATION:single")) ||
 
 	/* NE:ARTIFACT */
-	check_category(head_ptr->f, "人工物-乗り物") &&
+	check_category(head_ptr->f, "人工物-乗り物", FALSE) &&
 	(check_feature(mrph_ptr->f, "NE:ARTIFACT:head") || 
 	 check_feature(mrph_ptr->f, "NE:ARTIFACT:single") ||
 	 !check_feature(mrph_ptr->f, "NE") && check_feature(mrph_ptr->f, "未知語"))) {	

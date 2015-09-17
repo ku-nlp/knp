@@ -394,7 +394,7 @@ extern double get_lex_case_prob_wpos(SENTENCE_DATA *sp, int head, int left_arg_n
 
 /* feature.c */
 extern char *check_feature(FEATURE *fp, char *fname);
-extern int check_category(FEATURE *fp, char *fname);
+int check_category(FEATURE *fp, char *fname, int strict_flag);
 extern void assign_cfeature(FEATURE **fpp, char *fname, int temp_assign_flag);
 extern int feature_pattern_match(FEATURE_PATTERN *fr, FEATURE *fd, void *p1, void *p2);
 extern void print_one_feature(char *cp, FILE *filep);

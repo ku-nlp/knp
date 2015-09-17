@@ -22,12 +22,6 @@ doc/manual.pdf をご覧ください。
 - JUMAN 7.0以上 (http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN)
 - zlibライブラリ (http://zlib.net/) (※ 多くのOSに標準でインストールされています)
 
-固有表現解析を行う場合は、次のものが必要ですので、インストールしておい
-てください。固有表現解析は、構文・格解析には必要ありませんが、人名、地
-名、組織名などの認識を行う場合に必要です。
-
-- CRF++ (http://crfpp.sourceforge.net/)
-
 
 インストール方法
 ----------------
@@ -41,9 +35,6 @@ doc/manual.pdf をご覧ください。
      ./configure --with-juman-prefix=/opt/juman
      (JUMANが /opt/juman 以下にインストールされている場合)
      
-   - 固有表現解析を行う場合:
-     ./configure --with-crf
-
 2) `make'を実行してください。
 
 3) (rootで)`make install'を実行してください。

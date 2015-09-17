@@ -170,6 +170,7 @@
 #define OPT_DEBUG	3
 #define OPT_ENTITY	4
 #define OPT_SIMPLE	5
+#define OPT_PARA_DETAIL	6
 #define OPT_SVM		2
 #define OPT_DT		3
 #define	OPT_SERV_FORE	1
