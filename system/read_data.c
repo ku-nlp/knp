@@ -2298,6 +2298,11 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 
     assign_general_feature(sp->mrph_data, sp->Mrph_num, PreProcessMorphRuleType, FALSE, FALSE);
 
+    /* 正解入力のときは形態素連結をしない */
+    if (OptInput & OPT_PARSED)
+        return;
+
+    /* 形態素連結の処理 */
     merge_type[0] = '\0';
     for (i = 0; i < sp->Mrph_num; i++) {
 	cp = NULL;
