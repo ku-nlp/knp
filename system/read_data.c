@@ -195,8 +195,14 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
     if (m_ptr->Katuyou_Kata > 0 && m_ptr->Katuyou_Kei > 0) { /* 活用語 */
         if (m_ptr->Katuyou_Kata < TYPE_NO && m_ptr->Katuyou_Kei < FORM_NO && 
             Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi) {
-            buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* 語幹にする */
-            strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* 基本形をつける */
+            if (Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi[0] == '-') { /* エ基本形: 語幹が得られない */
+                /* 原型の読みが不明なので、両方とも原型にしておく */
+                sprintf(buf, "%s/%s", m_ptr->Goi, m_ptr->Goi);
+            }
+            else {
+                buf[strlen(buf) - strlen(Form[m_ptr->Katuyou_Kata][m_ptr->Katuyou_Kei].gobi)] = '\0'; /* 読みを語幹にする */
+                strcat(buf, Form[m_ptr->Katuyou_Kata][get_form_id(BASIC_FORM, m_ptr->Katuyou_Kata)].gobi); /* 基本形をつける */
+            }
         }
         else {
             fprintf(stderr, ";; Invalid morpheme ID: kata(%d) kei(%d)\n", m_ptr->Katuyou_Kata, m_ptr->Katuyou_Kei);
