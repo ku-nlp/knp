@@ -2238,6 +2238,14 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 		else {
 		    strcat(buffer, (mrph_ptr + 1)->Goi);
 		}
+
+                /* 用言見出接辞(テ形)の区別: ~テ形 */
+                if ((cp = check_feature((mrph_ptr + 1)->f, "用言見出接辞"))) {
+                    cp += strlen("用言見出接辞:");
+                    strcat(buffer, "~");
+                    strcat(buffer, cp);
+                }
+
 		mrph_ptr++;
 	    }
 	}
