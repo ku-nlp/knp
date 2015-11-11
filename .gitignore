@@ -66,3 +66,9 @@ CRF++-0.58/Makefile.msvc
 .libs/
 *.l[ao]
 *~
+
+# perl module middle files
+perl/MYMETA.json
+perl/MYMETA.yml
+perl/blib/
+perl/pm_to_blib
