@@ -264,6 +264,7 @@ extern void _make_data_cframe_ex(CF_PRED_MGR *cpm_ptr, TAG_DATA *b_ptr);
 /* case_ipal.c */
 extern void init_cf();
 extern void init_mrph2id();
+extern void init_soto_txt();
 extern void init_case_analysis_cpm(SENTENCE_DATA *sp);
 extern void close_cf();
 extern void set_caseframes(SENTENCE_DATA *sp);

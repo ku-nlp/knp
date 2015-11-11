@@ -35,6 +35,7 @@ wordlist.txt
 INSTALL
 knprc
 system/version.h
+dict/ebcf/case_soto.txt
 
 # generated binaries
 compile

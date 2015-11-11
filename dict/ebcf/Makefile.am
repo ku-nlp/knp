@@ -3,7 +3,7 @@ SUBDIRS = .
 dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
-nodist_dic_DATA = cf.db cf.dat mrph2id.db
+nodist_dic_DATA = cf.db cf.dat mrph2id.db case_soto.txt
 EXTRA_DIST = cf.knpdict mrph2id.dat
 else
 nodist_dic_DATA = 
@@ -138,4 +138,9 @@ mrph2id.db: mrph2id.dat
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
+case_soto.txt: mrph2id.dat case_soto_words.txt
+	python case_soto_conv.py -s case_soto_words.txt -m mrph2id.dat -o $@.tmp &&\
+	    mv $@.tmp $@
+
+
+CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db case_soto.txt $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
