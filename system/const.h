@@ -591,7 +591,7 @@ typedef struct _RuleVector {
 #define PreProcessMorphRuleType 16
 
 /* 辞書の最大数 */
-#define DICT_MAX	38
+#define DICT_MAX	39
 
 /* 辞書の定義 */
 #define	BGH_DB		1
@@ -631,6 +631,7 @@ typedef struct _RuleVector {
 #define CHI_POS_DB           36
 #define NV_MI_DB	37
 #define MRPH2ID_DB	38
+#define SOTO_TXT	39
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3

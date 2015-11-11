@@ -1321,6 +1321,7 @@ int  reader_tag = -1;
 	init_cf();	/* 格フレームオープン */
     }
     init_mrph2id();	/* 形態素IDマップオープン */
+    init_soto_txt();	/* 外の関係ファイルオープン */
     if (OptUseNCF) {
 	init_noun_cf();	/* 名詞格フレームオープン */
     }
