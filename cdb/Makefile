@@ -169,6 +169,7 @@ $(DNAME).tar.gz: $(DISTFILES) $(DEBIANFILES)
 	ln $(DEBIANFILES) $(DNAME)/debian/
 	tar cfz $@ $(DNAME)
 	rm -fr $(DNAME)
+distdir: $(DISTFILES) $(DEBIANFILES)
 
 .PHONY: all clean realclean dist spec
 .PHONY: test tests check test-shared tests-shared check-shared
