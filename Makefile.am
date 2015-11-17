@@ -6,7 +6,7 @@ SUBDIRS = svm svm_light cdb crf CRF++-0.58 distsim system rule dict doc chinese_
 
 knprcdir=$(sysconfdir)
 nodist_knprc_DATA = knprc
-dist_noinst_DATA = knprc.in
+dist_noinst_DATA = knprc.in .git/HEAD .git/index VERSION
 CLEANFILES = knprc
 EXTRA_DIST = autogen.sh perl cdb
 
