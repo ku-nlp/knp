@@ -70,6 +70,8 @@
 #else
 #define ALL_CASE_FRAME_MAX 	0
 #endif
+#define FRAME_NUM_MAX_NORMAL    4096
+#define FRAME_NUM_MAX_SMALL     128
 #define CF_ELEMENT_MAX 		24    /* 基本的には20までだがmerge_emで必要 */
 #define PP_ELEMENT_MAX		10
 #define SM_ELEMENT_MAX		256
@@ -1180,6 +1182,7 @@ typedef struct sentence {
     int			New_Tag_num;
     int			Para_M_num;	/* 並列管理マネージャ数 */
     int			Para_num;	/* 並列構造数 */
+    int                 frame_num_max;
     MRPH_DATA		*mrph_data;
     BNST_DATA	 	*bnst_data;
     TAG_DATA	 	*tag_data;
