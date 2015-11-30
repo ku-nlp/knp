@@ -4,7 +4,7 @@ dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
 nodist_dic_DATA = cf.db cf.dat mrph2id.db case_soto.txt
-EXTRA_DIST = cf.knpdict mrph2id.dat
+EXTRA_DIST = cf.knpdict* mrph2id.dat*
 else
 nodist_dic_DATA = 
 EXTRA_DIST = 
@@ -12,7 +12,7 @@ endif
 
 if CF_NOUN_EXIST
 nodist_dic_DATA += noun.db noun.dat
-EXTRA_DIST += noun.knpdict
+EXTRA_DIST += noun.knpdict*
 endif
 
 PROBCASE_DBS = case.db cfcase.db cfp.db
@@ -20,7 +20,7 @@ ADDITIONAL_PROBCASE_DBS = adverb.db noun_co.db renyou.db para.db
 
 if PROB_EXIST
 nodist_dic_DATA += $(PROBCASE_DBS)
-EXTRA_DIST += case.prob cfcase.prob cfp.prob
+EXTRA_DIST += case.prob* cfcase.prob* cfp.prob*
 endif
 
 if ADDITIONAL_PROB_EXIST

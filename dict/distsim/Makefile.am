@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = mi.dat sim.dat
+EXTRA_DIST = mi.dat* sim.dat*
 
 dicdir = $(pkgdatadir)/dict/distsim
 

@@ -1,6 +1,6 @@
 SUBDIRS = .
 
-EXTRA_DIST = auto.dat
+EXTRA_DIST = auto.dat wikipedia.dat*
 
 dicdir = $(pkgdatadir)/dict/auto
 
