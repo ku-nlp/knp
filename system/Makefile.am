@@ -37,6 +37,7 @@ knp_SOURCES = \
 	lib_scase.c \
 	lib_sm.c \
 	main.c \
+	model.h \
 	para_analysis.c \
 	para_dpnd.c \
 	para_relation.c \

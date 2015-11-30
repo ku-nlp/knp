@@ -4,7 +4,7 @@ dicdir = $(pkgdatadir)/dict/ebcf
 
 if CF_EXIST
 nodist_dic_DATA = cf.db cf.dat mrph2id.db case_soto.txt
-EXTRA_DIST = cf.knpdict* mrph2id.dat*
+EXTRA_DIST = cf.knpdict* mrph2id.dat* case_soto_words.txt case_soto_conv.py
 else
 nodist_dic_DATA = 
 EXTRA_DIST = 
@@ -153,7 +153,7 @@ mrph2id.db: mrph2id.dat*
 		exit 2;\
 	fi
 
-case_soto.txt: mrph2id.dat* case_soto_words.txt
+case_soto.txt: mrph2id.dat* case_soto_words.txt case_soto_conv.py
 	if [ -f mrph2id.dat.xz ];then \
 	    bash -c 'python case_soto_conv.py -s case_soto_words.txt -m <(xzcat mrph2id.dat.xz) -o $@.tmp && mv $@.tmp $@ '; \
 	else \
