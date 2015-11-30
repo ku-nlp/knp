@@ -49,12 +49,14 @@ IPALN_DIR   = /share/dict/ipal_noun_31/3.1/data
 # 	fi
 
 
-cf.knpdict:
-	true
 
-cf.dat: cf.knpdict
-	if [ -f cf.knpdict ]; then \
+cf.dat: cf.knpdict*
+	if [ -f cf.knpdict.xz ]; then \
+		ulimit -Ss unlimited && xzcat cf.knpdict.xz |  @CF_COMMAND@ cf.idx cf.dat; \
+	elif [ -f cf.knpdict ]; then \
 		ulimit -Ss unlimited && @CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
+	else \
+		exit 2;\
 	fi
 
 cf.db: cf.dat
@@ -62,12 +64,14 @@ cf.db: cf.dat
 		LANG=C sort cf.idx | @MAKE_DB_COMMAND@ $@ -append /; \
 	fi
 
-noun.knpdict:
-	true
 
-noun.dat: noun.knpdict
-	if [ -f noun.knpdict ]; then \
+noun.dat: noun.knpdict*
+	if [ -f noun.knpdict.xz ]; then \
+		ulimit -Ss unlimited && xzcat noun.knpdict.xz | @CF_COMMAND@ noun.idx noun.dat; \
+	elif [ -f noun.knpdict ]; then \
 		ulimit -Ss unlimited && @CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
+	else \
+		exit 2;\
 	fi
 
 noun.db: noun.dat
@@ -83,29 +87,35 @@ adverb.db: adverb.prob
 		@MAKE_DB_COMMAND@ $@ < $<; \
 	fi
 
-case.prob:
-	true
 
-case.db: case.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
+case.db: case.prob*
+	if [ -f case.prob.xz ]; then \
+		xzcat case.prob.xz | @MAKE_DB_COMMAND@ $@; \
+	elif [ -f case.prob ]; then \
+		@MAKE_DB_COMMAND@ $@ < case.prob; \
+	else \
+		exit 2;\
 	fi
 
-cfcase.prob:
-	true
 
-cfcase.db: cfcase.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
+cfcase.db: cfcase.prob*
+	if [ -f cfcase.prob.xz ]; then \
+		xzcat cfcase.prob.xz | @MAKE_DB_COMMAND@ $@; \
+	elif [ -f cfcase.prob ]; then \
+		@MAKE_DB_COMMAND@ $@ < cfcase.prob; \
+	else \
+		exit 2;\
 	fi
 
-cfp.prob:
-	true
 
-cfp.db: cfp.prob
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
-	fi
+cfp.db: cfp.prob*
+	if [ -f cfp.prob.xz ]; then \
+		xzcat cfp.prob.xz | @MAKE_DB_COMMAND@ $@; \
+	elif [ -f cfp.prob ]; then \
+		@MAKE_DB_COMMAND@ $@ < cfp.prob; \
+	else \
+		exit 2;\
+	fi;
 
 renyou.prob:
 	true
@@ -133,14 +143,22 @@ noun_co.db: noun_co.prob
 
 prob: $(PROBCASE_DBS)
 
-mrph2id.db: mrph2id.dat
-	if [ -f $< ]; then \
-		@MAKE_DB_COMMAND@ $@ < $<; \
+
+mrph2id.db: mrph2id.dat*
+	if [ -f mrph2id.dat.xz ]; then \
+		xzcat mrph2id.dat.xz | @MAKE_DB_COMMAND@ $@; \
+	elif [ -f mrph2id.dat ]; then \
+		@MAKE_DB_COMMAND@ $@ < mrph2id.dat; \
+	else \
+		exit 2;\
 	fi
 
-case_soto.txt: mrph2id.dat case_soto_words.txt
-	python case_soto_conv.py -s case_soto_words.txt -m mrph2id.dat -o $@.tmp &&\
-	    mv $@.tmp $@
+case_soto.txt: mrph2id.dat* case_soto_words.txt
+	if [ -f mrph2id.dat.xz ];then \
+	    bash -c 'python case_soto_conv.py -s case_soto_words.txt -m <(xzcat mrph2id.dat.xz) -o $@.tmp && mv $@.tmp $@ '; \
+	else \
+	    python case_soto_conv.py -s case_soto_words.txt -m mrph2id.dat -o $@.tmp && mv $@.tmp $@; \
+	fi
 
 
 CLEANFILES = cf.db cf.dat cf.idx noun.db noun.dat noun.idx mrph2id.db case_soto.txt $(PROBCASE_DBS) $(ADDITIONAL_PROBCASE_DBS)
