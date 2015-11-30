@@ -16,6 +16,8 @@ mi.db: mi.dat*
 		xzcat mi.dat.xz | @MAKE_DB_COMMAND@ $@ -z; \
 	elif [ -f mi.dat ]; then \
 		@MAKE_DB_COMMAND@ $@ -z < mi.dat; \
+	elif [ -f mi.dat.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi;
@@ -25,6 +27,8 @@ sim.db: sim.dat*
 		xzcat sim.dat.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f sim.dat ]; then \
 		@MAKE_DB_COMMAND@ $@ < sim.dat; \
+	elif [ -f sim.dat.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi;

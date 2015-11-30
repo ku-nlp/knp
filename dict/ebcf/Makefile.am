@@ -55,6 +55,8 @@ cf.dat: cf.knpdict*
 		ulimit -Ss unlimited && xzcat cf.knpdict.xz |  @CF_COMMAND@ cf.idx cf.dat; \
 	elif [ -f cf.knpdict ]; then \
 		ulimit -Ss unlimited && @CF_COMMAND@ cf.idx cf.dat < cf.knpdict; \
+	elif [ -f cf.knpdict.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi
@@ -70,6 +72,8 @@ noun.dat: noun.knpdict*
 		ulimit -Ss unlimited && xzcat noun.knpdict.xz | @CF_COMMAND@ noun.idx noun.dat; \
 	elif [ -f noun.knpdict ]; then \
 		ulimit -Ss unlimited && @CF_COMMAND@ noun.idx noun.dat < noun.knpdict; \
+	elif [ -f noun.knpdict.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi
@@ -93,6 +97,8 @@ case.db: case.prob*
 		xzcat case.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f case.prob ]; then \
 		@MAKE_DB_COMMAND@ $@ < case.prob; \
+	elif [ -f case.prob.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi
@@ -103,6 +109,8 @@ cfcase.db: cfcase.prob*
 		xzcat cfcase.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f cfcase.prob ]; then \
 		@MAKE_DB_COMMAND@ $@ < cfcase.prob; \
+	elif [ -f cfcase.prob.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi
@@ -113,6 +121,8 @@ cfp.db: cfp.prob*
 		xzcat cfp.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f cfp.prob ]; then \
 		@MAKE_DB_COMMAND@ $@ < cfp.prob; \
+	elif [ -f cfp.prob.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi;
@@ -149,6 +159,8 @@ mrph2id.db: mrph2id.dat*
 		xzcat mrph2id.dat.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f mrph2id.dat ]; then \
 		@MAKE_DB_COMMAND@ $@ < mrph2id.dat; \
+	elif [ -f mrph2id.dat.skip ]; then \
+		:;\
 	else \
 		exit 2;\
 	fi
@@ -156,6 +168,8 @@ mrph2id.db: mrph2id.dat*
 case_soto.txt: mrph2id.dat* case_soto_words.txt case_soto_conv.py
 	if [ -f mrph2id.dat.xz ];then \
 	    bash -c 'python case_soto_conv.py -s case_soto_words.txt -m <(xzcat mrph2id.dat.xz) -o $@.tmp && mv $@.tmp $@ '; \
+	elif [ -f mrph2id.dat.skip ];then \
+		:;\
 	else \
 	    python case_soto_conv.py -s case_soto_words.txt -m mrph2id.dat -o $@.tmp && mv $@.tmp $@; \
 	fi

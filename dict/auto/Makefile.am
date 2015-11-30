@@ -20,6 +20,8 @@ auto.db: auto.dat wikipedia.dat*
 		bash -c 'LANG=C sort auto.dat <(xzcat wikipedia.dat.xz) | @MAKE_DB_COMMAND@ $@ -append \|;' ; \
 	elif [ -f wikipedia.dat ]; then \
 		LANG=C sort auto.dat wikipedia.dat | @MAKE_DB_COMMAND@ $@ -append \|; \
+	elif [ -f wikipedia.dat.skip ]; then \
+		:;\
 	else \
 		exit 2; \
 	fi

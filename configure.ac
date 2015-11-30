@@ -177,6 +177,8 @@ if test -f "$packagesrcdir/dict/ebcf/cf.knpdict"; then
     cf_exist=yes
 elif test -f "$packagesrcdir/dict/ebcf/cf.knpdict.xz"; then
     cf_exist=yes
+elif test -f "$packagesrcdir/dict/ebcf/cf.dat" -a -f "$packagesrcdir/dict/ebcf/cf.db" ; then
+    cf_exist=yes
 else
     AC_MSG_ERROR("$packagesrcdir/dict/ebcf/cf.knpdict{.xz}: not found")
     cf_exist=no
@@ -188,6 +190,8 @@ if test -f "$packagesrcdir/dict/ebcf/noun.knpdict"; then
     cf_noun_exist=yes
 elif test -f "$packagesrcdir/dict/ebcf/noun.knpdict.xz"; then
     cf_noun_exist=yes
+elif test -f "$packagesrcdir/dict/ebcf/noun.dat" -a -f "$packagesrcdir/dict/ebcf/noun.db" ; then
+    cf_noun_exist=yes
 else
     AC_MSG_ERROR("$packagesrcdir/dict/ebcf/noun.knpdict{.xz}: not found")
     cf_noun_exist=no
@@ -198,6 +202,8 @@ AC_MSG_CHECKING([Probabilities for case analysis])
 if test -f "$packagesrcdir/dict/ebcf/case.prob"; then
     prob_exist=yes
 elif test -f "$packagesrcdir/dict/ebcf/case.prob.xz"; then
+    prob_exist=yes
+elif test -f "$packagesrcdir/dict/ebcf/case.db"; then
     prob_exist=yes
 else
     AC_MSG_ERROR("$packagesrcdir/dict/ebcf/case.prob{.xz}: not found")
@@ -227,6 +233,8 @@ AC_MSG_CHECKING([distributional similarity MI DB])
 if test -f "$packagesrcdir/dict/distsim/mi.dat"; then
     distsim_mi_exist=yes
 elif test -f "$packagesrcdir/dict/distsim/mi.dat.xz"; then
+    distsim_mi_exist=yes
+elif test -f "$packagesrcdir/dict/distsim/mi.db"; then
     distsim_mi_exist=yes
 else
     AC_MSG_ERROR("$packagesrcdir/dict/distsim/mi.dat{.xz}: not found")
