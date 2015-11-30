@@ -36,6 +36,7 @@ INSTALL
 knprc
 system/version.h
 dict/ebcf/case_soto.txt
+*.xz
 
 # generated binaries
 compile
