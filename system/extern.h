@@ -267,6 +267,7 @@ extern void init_mrph2id();
 extern void init_soto_txt();
 extern void init_case_analysis_cpm(SENTENCE_DATA *sp);
 extern void close_cf();
+extern void set_frame_num_max(SENTENCE_DATA *sp);
 extern void set_caseframes(SENTENCE_DATA *sp);
 extern void clear_cf(int flag);
 extern void init_mgr_cf(TOTAL_MGR *tmp);

@@ -1599,7 +1599,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 	vtype += strlen("非用言格解析:");
     }
 
-    for (cp = pre_pos = address_str; ; cp++) {
+    for (cp = pre_pos = address_str; f_num < sp->frame_num_max; cp++) {
 	if (*cp == '/' || *cp == '\0') {
 	    if (*cp == '\0')
 		break_flag = 1;
@@ -2567,6 +2567,26 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	copy_cf_pointer(dst_ptr + i, start_ptr + i);
     }
     return dst_ptr;
+}
+
+/*==================================================================*/
+		void set_frame_num_max(SENTENCE_DATA *sp)
+/*==================================================================*/
+{
+    int i, suru_num;
+
+    suru_num = 0;
+    for (i = 0; i < sp->Tag_num; i++) {
+	if (check_feature((sp->tag_data+i)->f, "用言代表表記:する/する")) {
+	    suru_num++;
+	}
+    }
+
+    /* suru_num > 2 の場合と、suru_num = 1 で sp->Tag_num > 10 の場合は  */
+    /* 格フレーム数を制限(実際には"する/する"の格フレームのみ制限される) */
+    if (suru_num > 1 || suru_num == 1 && sp->Tag_num > 10) {
+	sp->frame_num_max = FRAME_NUM_MAX_SMALL;
+    }
 }
 
 /*==================================================================*/

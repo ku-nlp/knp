@@ -1587,6 +1587,7 @@ int  reader_tag = -1;
     assign_pred_feature_to_bp(sp); /* 用言代表表記を基本句に付与 */
 
     /* 格フレーム取得 */
+    set_frame_num_max(sp);
     if ((OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2 || OptUseNCF) &&
 	/* 訓練時以外ですべての関係タグを読み込む場合は格フレームは読み込まない */
 	(!OptAnaphora || (OptAnaphora & OPT_TRAIN) ||
@@ -1904,6 +1905,7 @@ PARSED:
     clear_all_features(sp);
 
     sp->available = 1;
+    sp->frame_num_max = FRAME_NUM_MAX_NORMAL;
 }
 
 /*==================================================================*/
