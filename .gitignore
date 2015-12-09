@@ -73,3 +73,6 @@ perl/MYMETA.json
 perl/MYMETA.yml
 perl/blib/
 perl/pm_to_blib
+
+# flag file to skip make
+*.skip
