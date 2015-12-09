@@ -52,7 +52,7 @@ IPALN_DIR   = /share/dict/ipal_noun_31/3.1/data
 
 cf.dat: cf.knpdict*
 	if [ -f cf.knpdict.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f cf.knpdict.xz ]; then \
 		ulimit -Ss unlimited && xzcat cf.knpdict.xz |  @CF_COMMAND@ cf.idx cf.dat; \
 	elif [ -f cf.knpdict ]; then \
@@ -69,7 +69,7 @@ cf.db: cf.dat
 
 noun.dat: noun.knpdict*
 	if [ -f noun.knpdict.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f noun.knpdict.xz ]; then \
 		ulimit -Ss unlimited && xzcat noun.knpdict.xz | @CF_COMMAND@ noun.idx noun.dat; \
 	elif [ -f noun.knpdict ]; then \
@@ -94,7 +94,7 @@ adverb.db: adverb.prob
 
 case.db: case.prob*
 	if [ -f case.prob.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f case.prob.xz ]; then \
 		xzcat case.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f case.prob ]; then \
@@ -106,7 +106,7 @@ case.db: case.prob*
 
 cfcase.db: cfcase.prob*
 	if [ -f cfcase.prob.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f cfcase.prob.xz ]; then \
 		xzcat cfcase.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f cfcase.prob ]; then \
@@ -118,7 +118,7 @@ cfcase.db: cfcase.prob*
 
 cfp.db: cfp.prob*
 	if [ -f cfp.prob.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f cfp.prob.xz ]; then \
 		xzcat cfp.prob.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f cfp.prob ]; then \
@@ -156,7 +156,7 @@ prob: $(PROBCASE_DBS)
 
 mrph2id.db: mrph2id.dat*
 	if [ -f mrph2id.dat.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f mrph2id.dat.xz ]; then \
 		xzcat mrph2id.dat.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f mrph2id.dat ]; then \
@@ -167,7 +167,7 @@ mrph2id.db: mrph2id.dat*
 
 case_soto.txt: mrph2id.dat* case_soto_words.txt case_soto_conv.py
 	if [ -f mrph2id.dat.skip ];then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f mrph2id.dat.xz ];then \
 	    bash -c 'python case_soto_conv.py -s case_soto_words.txt -m <(xzcat mrph2id.dat.xz) -o $@.tmp && mv $@.tmp $@ '; \
 	else \

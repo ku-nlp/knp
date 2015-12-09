@@ -13,7 +13,7 @@ endif
 
 mi.db: mi.dat*
 	if [ -f mi.dat.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f mi.dat.xz ]; then \
 		xzcat mi.dat.xz | @MAKE_DB_COMMAND@ $@ -z; \
 	elif [ -f mi.dat ]; then \
@@ -24,7 +24,7 @@ mi.db: mi.dat*
 
 sim.db: sim.dat*
 	if [ -f sim.dat.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f sim.dat.xz ]; then \
 		xzcat sim.dat.xz | @MAKE_DB_COMMAND@ $@; \
 	elif [ -f sim.dat ]; then \

@@ -17,7 +17,7 @@ auto.dat:
 
 auto.db: auto.dat wikipedia.dat*
 	if [ -f wikipedia.dat.skip ]; then \
-		:;\
+		echo -e '\e[1;31mSkip build of $@ \e[m' 1>&2 :;\
 	elif [ -f wikipedia.dat.xz ]; then \
 		bash -c 'LANG=C sort auto.dat <(xzcat wikipedia.dat.xz) | @MAKE_DB_COMMAND@ $@ -append \|;' ; \
 	elif [ -f wikipedia.dat ]; then \
