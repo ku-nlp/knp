@@ -2199,6 +2199,11 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 		cp = (t_ptr->mrph_ptr + i)->Goi;
 	    }
 	    length += strlen(cp) + 1;
+
+            if ((cp = check_feature((t_ptr->mrph_ptr + i)->f, "用言見出接辞"))) {
+                cp += strlen("用言見出接辞:");
+                length += strlen(cp) + 1;
+            }
 	}
 	buffer = (char *)malloc_data(length + strlen(main_pred) + 8, "make_pred_string_from_mrph");
 	buffer[0] = '\0';
@@ -2228,11 +2233,22 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	    strcat(buffer, main_pred);
 	}
 
+        /* 用言見出接辞(テ形)の区別: ~テ形 */
+        if ((cp = check_feature(mrph_ptr->f, "用言見出接辞"))) {
+            cp += strlen("用言見出接辞:");
+            strcat(buffer, "~");
+            strcat(buffer, cp);
+        }
+
 	/* 後側に延ばす場合: 「形容詞+なる」など */
 	if (!cpncf_flag) {
 	    mrph_ptr = t_ptr->head_ptr;
 	    while (mrph_ptr < t_ptr->mrph_ptr + t_ptr->mrph_num - 1 && 
 		   check_feature(mrph_ptr->f, "Ｔ用言見出→")) {
+                if (!strcmp(Class[(mrph_ptr + 1)->Hinshi][0].id, "助詞")) { /* 助詞はスキップ (「売ってはない」など) */
+                    mrph_ptr++;
+                    continue;
+                }
 		strcat(buffer, "+");
 		if (use_rep_flag && 
 		    (cp = get_mrph_rep_from_f(mrph_ptr + 1, (cf_type & CF_PRED)))) {
@@ -2241,6 +2257,14 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 		else {
 		    strcat(buffer, (mrph_ptr + 1)->Goi);
 		}
+
+                /* 用言見出接辞(テ形)の区別: ~テ形 */
+                if ((cp = check_feature((mrph_ptr + 1)->f, "用言見出接辞"))) {
+                    cp += strlen("用言見出接辞:");
+                    strcat(buffer, "~");
+                    strcat(buffer, cp);
+                }
+
 		mrph_ptr++;
 	    }
 	}
