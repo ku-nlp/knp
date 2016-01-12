@@ -2466,6 +2466,7 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
     f_num_inc(start, &f_num);
     Case_frame_num++;
     t_ptr->cf_num++;
+    assign_cfeature(&(t_ptr->f), "CF_NOT_FOUND", FALSE);
     return TRUE;
 }
 
