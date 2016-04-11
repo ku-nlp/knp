@@ -780,10 +780,10 @@ float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos)
 {
     int i, count = 0;
 
-    /* 割り当てがある直前格の数を数える (格フレーム側) */
+    /* 割り当てがある必須格の数を数える (格フレーム側) */
 
     for (i = 0; i < cfp->element_num; i++) {
-	if (cfp->adjacent[i] == TRUE && list2->flag[i] != UNASSIGNED) {
+	if (cfp->oblig[i] == TRUE && list2->flag[i] != UNASSIGNED) {
 	    count++;
 	}
     }
