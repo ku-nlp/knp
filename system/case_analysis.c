@@ -1896,7 +1896,7 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
     /* temp_assign_flag: TRUEのときfeatureを「仮付与」する */
 
     int i, num;
-    char feature_buffer[DATA_LEN], *relation, *case_str, *word, *sid, *cp;
+    char feature_buffer[DATA_LEN], *relation, *case_str, *word, *cp;
     TAG_DATA *elem_b_ptr, *pred_b_ptr = cpm_ptr->pred_b_ptr;
 
     /* 述語が後処理により併合された場合: 併合された先の基本句を探す */
@@ -1986,6 +1986,12 @@ void record_case_analysis(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 
     /* 格フレーム側からの格解析結果の記述 */
     record_case_analysis_result(sp, cpm_ptr, em_ptr, temp_assign_flag, "格解析結果", NULL);
+
+    /* 格解析の結果、決定した格フレームIDから標準用言代表表記を生成 */
+    sprintf(feature_buffer, "標準用言代表表記:%s", cpm_ptr->cmm[0].cf_ptr->cf_id);
+    if ((cp = strrchr(feature_buffer, ':'))) /* 格フレーム番号を削除 */
+        *cp = '\0';
+    assign_cfeature(&(pred_b_ptr->f), feature_buffer, temp_assign_flag);
 
     /* 正規化格解析結果 */
     for (i = 0; cpm_ptr->cmm[0].cf_ptr->cf_align[i].cf_id != NULL; i++) {
