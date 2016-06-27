@@ -1828,7 +1828,7 @@ void record_case_analysis_result(SENTENCE_DATA *sp, CF_PRED_MGR *cpm_ptr,
 	    /* 例外タグ */
 	    if (cpm_ptr->elem_b_num[num] <= -2 && cpm_ptr->elem_s_ptr[num] == NULL) {
                 if (OptDisplay == OPT_SIMPLE)
-                    sprintf(buffer, "%s/E/%s/-", case_str, ETAG_name[2]); /* 不特定-人 */
+                    sprintf(buffer, "%s/%s", case_str, ETAG_name[2]); /* 不特定-人 */
                 else
                     sprintf(buffer, "%s/E/%s/-/-/-", case_str, ETAG_name[2]); /* 不特定-人 */
 		strcat(feature_buffer, buffer);
