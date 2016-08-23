@@ -82,3 +82,5 @@ script-clean:
 export-package:
 	python googlecode_upload.py -p crfpp -s crfpp      -u taku@chasen.org -w `cat ~/.googlecode_upload_password` CRF++-@VERSION@.tar.gz
 	python googlecode_upload.py -p crfpp -s crfpp-win  -u taku@chasen.org -w `cat ~/.googlecode_upload_password` CRF++-@VERSION@.zip
+
+install:
