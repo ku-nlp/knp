@@ -105,6 +105,7 @@ int		OptParaNoFixFlag;
 int		OptNbest;
 int		OptBeam;
 int		OptSemanticHead;
+int		OptPosModification;
 
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
@@ -261,7 +262,8 @@ int  reader_tag = -1;
     OptSemanticHead = 0;
     OptChiGenerative = 0;
     OptChiPos = 0;
-	OptSemanticHead = 0;
+    OptSemanticHead = 0;
+    OptPosModification = TRUE;
 
     /* オプションの保存 */
     Options = (char **)malloc_data(sizeof(char *) * argc, "option_proc");
@@ -1126,6 +1128,9 @@ int  reader_tag = -1;
 	    OptSemanticHead = 1;
 	    OptExpress = OPT_MRPH;
 	}
+        else if (str_eq(argv[0], "-disable-pos-modification")) {
+            OptPosModification = FALSE;
+        }
 	else if (str_eq(argv[0], "-def-sentence")) { /* used in rules */
 	    ;
 	}

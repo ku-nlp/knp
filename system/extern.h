@@ -117,6 +117,7 @@ extern int		OptParaNoFixFlag;
 extern int		OptNbest;
 extern int		OptBeam;
 extern int		OptEncoding;
+extern int		OptPosModification;
 extern double author_score;
 extern double reader_score;
 extern int  author_sen;
