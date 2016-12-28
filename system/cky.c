@@ -240,8 +240,7 @@ int convert_to_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *Best_mgr, CKY *cky_ptr) {
 	    if (cky_ptr->dpnd_type != 'P' && 
 		(cp = check_feature(cky_ptr->left->b_ptr->f, "係:無格従属")) != NULL) {
 		sscanf(cp, "%*[^:]:%*[^:]:%d", &(Best_mgr->dpnd.head[cky_ptr->left->b_ptr->num]));
-		Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 
-		    Dpnd_matrix[cky_ptr->left->b_ptr->num][cky_ptr->right->b_ptr->num];
+		Best_mgr->dpnd.type[cky_ptr->left->b_ptr->num] = 'D'; /* Pでないので、D */
 	    }
 	    else {
 		if (cky_ptr->direction == RtoL) { /* <- */
