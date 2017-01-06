@@ -1143,6 +1143,9 @@ int  reader_tag = -1;
         else if (str_eq(argv[0], "-disable-segmentation-modification")) { /* used in rules */
 	    ;
 	}
+        else if (str_eq(argv[0], "-disable-levelA-clause-segmentation")) { /* used in rules */
+	    ;
+	}
 	else if (str_eq(argv[0], "-no-wikipedia")) { /* used in rules */
 	    ;
 	}
