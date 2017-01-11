@@ -304,6 +304,7 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	if (last_rep) {
 	    strncpy(last_rep + strlen("正"), "主辞", strlen("主辞"));
 	    assign_cfeature(&((sp->bnst_data + i)->f), last_rep + strlen("正"), FALSE); /* 主辞代表表記 */
+            assign_cfeature(&(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f), last_rep + strlen("正"), FALSE); /* 末尾の基本句にも付与 */
 	    strncpy(last_rep + strlen("正"), "規化", strlen("規化"));
 	}
 
@@ -330,7 +331,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 
 	    if (!error_flag) {
 		strncpy(merged_rep, "主辞’", strlen("主辞’"));
-		assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 主辞＋代表表記 */
+		assign_cfeature(&((sp->bnst_data + i)->f), merged_rep, FALSE); /* 主辞’代表表記 */
+                assign_cfeature(&(((sp->bnst_data + i)->tag_ptr + (sp->bnst_data + i)->tag_num - 1)->f), merged_rep, FALSE); /* 末尾の基本句にも付与 */
 		strncpy(merged_rep, "正規化", strlen("正規化"));
 	    }
 	}
