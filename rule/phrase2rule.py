@@ -142,7 +142,7 @@ def bnst_cond(input, flag, l_context, r_context):
     # (....) -> ....とast_flagに分離
     search1 = re.search(r"^\((.+)\)$", input)
     if bnstrule_flag and search1:
-        input = search.group(1)
+        input = search1.group(1)
         ast_flag = 1
     else:
         ast_flag = 0
