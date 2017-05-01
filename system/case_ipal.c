@@ -431,14 +431,14 @@ char	static_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
-    void register_caseframe(unsigned int address, CF_FRAME *i_ptr)
+ void register_caseframe(unsigned long long address, CF_FRAME *i_ptr)
 /*==================================================================*/
 {
     int num;
     CF_FRAME **cfcmpp;
     char key[SMALL_DATA_LEN];
 
-    sprintf(key, "%u", address);
+    sprintf(key, "%llu", address);
     num = hash(key, strlen(key));
 
     cfcmpp = &(CFcache[num]);
@@ -452,14 +452,14 @@ char	static_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
-	   CF_FRAME *lookup_caseframe(unsigned int address)
+        CF_FRAME *lookup_caseframe(unsigned long long address)
 /*==================================================================*/
 {
     int num;
     CF_FRAME *cfcmp;
     char key[SMALL_DATA_LEN];
 
-    sprintf(key, "%u", address);
+    sprintf(key, "%llu", address);
     num = hash(key, strlen(key));
 
     cfcmp = CFcache[num];
@@ -473,7 +473,7 @@ char	static_buffer[DATA_LEN];
 }
 
 /*==================================================================*/
-  CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag)
+CF_FRAME *get_ipal_frame(unsigned long long address, int size, int flag)
 /*==================================================================*/
 {
     int i, c1, c2, count = 0, cf_aligned_num = 0;
@@ -499,7 +499,7 @@ char	static_buffer[DATA_LEN];
 					  "get_ipal_frame");
     }
 
-    fseek(fp, (unsigned long)address, 0);
+    fseeko(fp, (off_t)address, 0);
     if (fread(CF_frame.DATA, size, 1, fp) < 1) {
 	fprintf(stderr, ";; Error in fread.\n");
 	exit(1);
@@ -520,10 +520,11 @@ char	static_buffer[DATA_LEN];
 	    else {
 		if (count%3 == 0) {
 		    CF_frame.cs[count/3-1].kaku_keishiki = CF_frame.DATA+i+1;
-		    CF_frame.casenum++;
-		    if (CF_frame.casenum > CASE_MAX_NUM) {
-			fprintf(stderr, ";; # of cases is more than MAX (%d).\n", CASE_MAX_NUM);
+		    if (CF_frame.casenum + 1 > CASE_MAX_NUM) {
+			fprintf(stderr, ";; # of cases is more than MAX (%d) for %llu.\n", CASE_MAX_NUM, address);
+                        break;
 		    }
+                    CF_frame.casenum++;
 		}
 		else if (count%3 == 1)
 		    CF_frame.cs[count/3-1].meishiku = CF_frame.DATA+i+1;
@@ -1231,7 +1232,7 @@ void _make_ipal_cframe_ex(CASE_FRAME *c_ptr, unsigned char *cp, int num,
 
 /*==================================================================*/
      void _make_ipal_cframe(CF_FRAME *i_ptr, CASE_FRAME *cf_ptr,
-			    unsigned int address, int size, char *verb, int flag)
+			    unsigned long long address, int size, char *verb, int flag)
 /*==================================================================*/
 {
     int i, j, ga_p = FALSE, c1, c2, count = 0;
@@ -1525,7 +1526,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
     CASE_FRAME *cf_ptr;
     TAG_DATA *cbp;
     int f_num = 0, break_flag = 0, size, match, c;
-    unsigned int address;
+    unsigned long long address;
     char *pre_pos, *cp, *address_str, *vtype = NULL;
 
     if (!verb)
@@ -1607,7 +1608,7 @@ int _make_ipal_cframe_subcontract(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start,
 		*cp = '\0';
 	    
 	    /* 格フレームの読みだし */
-	    match = sscanf(pre_pos, "%d:%d", &address, &size);
+	    match = sscanf(pre_pos, "%llu:%d", &address, &size);
 	    if (match != 2) {
 		fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
 		exit(1);
@@ -5161,7 +5162,8 @@ static unsigned char *fcpy(int fi, unsigned len, unsigned *posp, unsigned limit)
 
 void list_db_and_register_caseframe(DBM_FILE db, int flag)
 {
-    unsigned int eod, klen, vlen, address;
+    unsigned int eod, klen, vlen;
+    unsigned long long address;
     unsigned int pos = 0;
     unsigned char *key, *val, *cp, *pre_pos;
     int match, size, break_flag;
@@ -5185,7 +5187,7 @@ void list_db_and_register_caseframe(DBM_FILE db, int flag)
 		else 
 		    *cp = '\0';
 
-		match = sscanf((char *)pre_pos, "%u:%d", &address, &size);
+		match = sscanf((char *)pre_pos, "%llu:%d", &address, &size);
 		if (match != 2) {
 		    fprintf(stderr, ";; CaseFrame Dictionary Index error (it seems version 1.).\n");
 		    exit(1);
@@ -5193,7 +5195,7 @@ void list_db_and_register_caseframe(DBM_FILE db, int flag)
 
 		if (!lookup_caseframe(address)) { /* if not registered yet */
 		    get_ipal_frame(address, size, flag);
-		    fprintf(stderr, " %u", address);
+		    fprintf(stderr, " %llu", address);
 		}
 		pre_pos = cp + 1;
 		if (break_flag)

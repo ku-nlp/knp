@@ -311,7 +311,7 @@ extern double get_para_ex_probability(char *para_key, double score, TAG_DATA *dp
 extern double get_noun_co_ex_probability(TAG_DATA *dp, TAG_DATA *gp);
 extern double get_noun_co_num_probability(TAG_DATA *gp, int num, CKY *para_cky_ptr);
 extern char *malloc_db_buf(int size);
-extern CF_FRAME *get_ipal_frame(unsigned int address, int size, int flag);
+extern CF_FRAME *get_ipal_frame(unsigned long long address, int size, int flag);
 extern double _get_ex_probability_internal(char *key, int as2, CASE_FRAME *cfp);
 
 extern char *rep2id(char *rep, int rep_len, char *buffer);

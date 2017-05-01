@@ -1016,7 +1016,7 @@ typedef struct {
 } CF_ALIGNMENT;
 
 typedef struct cf_frame_def {
-    unsigned int address;
+    unsigned long long address;
     char *yomi;
     char *hyoki;
     char *feature;
@@ -1064,7 +1064,7 @@ typedef struct cf_def {
     int		gex_size[CF_ELEMENT_MAX];
     int		gex_num[CF_ELEMENT_MAX];
     int 	voice;					/* ヴォイス */
-    unsigned int	cf_address;				/* 格フレームのアドレス */
+    unsigned long long	cf_address;				/* 格フレームのアドレス */
     int 	cf_size;				/* 格フレームのサイズ */
     char 	cf_id[CF_ID_LEN_MAX];			/* 格フレームのID (代表表記+タイプ+番号) */
     char	pred_type[BYTES4CHAR + 1];		/* 用言タイプ (動, 形, 判) */
