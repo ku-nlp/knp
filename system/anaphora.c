@@ -278,12 +278,12 @@ void convert_case_result(char *buf, char *feature, int sen_num)
 						int eid;
 						eid = get_eid(atoi(tag_num_str),sen_num-atoi(sent_num_str));
 						
-						sprintf(temp,"%c%s/%c/%s/%s/%s/%d",*cp,rel, type,entity_name, tag_num_str, sent_num_str,eid);
+						sprintf(temp,"%c%s/%c/%s/%s/%s/%d", *cp, rel, type,entity_name, sent_num_str, tag_num_str, eid);
 						strcat(buf,temp);
 					}
 					else
 					{
-						sprintf(temp,"%c%s/%c/%s/%s/%s/%c",*cp,rel, type,entity_name, tag_num_str, sent_num_str,'-'
+                                                sprintf(temp,"%c%s/%c/%s/%s/%s/%c", *cp, rel, type,entity_name, sent_num_str, tag_num_str, '-'
 							);
 						strcat(buf,temp);
 					}
