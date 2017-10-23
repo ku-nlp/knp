@@ -6818,7 +6818,16 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 							{
 								strcat(buf,";");								
 							}
-							sprintf(tmp,"%s/%c/%s/%d/%d/%d",mention_ptr->cpp_string,mention_ptr->type,mention_ptr->entity->name,sp->Sen_num-mention_ptr->entity->rep_sen_num,mention_ptr->entity->rep_tag_num,mention_ptr->entity->num);
+                                                        /* 直接係り受けをもっている場合 */
+                                                        if (mention_ptr->explicit_mention) {
+                                                            char *name = make_print_string(mention_ptr->explicit_mention->tag_ptr->b_ptr, 1);
+                                                            if (name) {
+                                                                sprintf(tmp,"%s/%c/%s/%d/%d/%d", mention_ptr->cpp_string, mention_ptr->type, name, sp->Sen_num - mention_ptr->explicit_mention->sent_num, mention_ptr->explicit_mention->tag_num, mention_ptr->entity->num);
+                                                                free(name);
+                                                            }
+                                                        }
+                                                        else
+                                                            sprintf(tmp,"%s/%c/%s/%d/%d/%d", mention_ptr->cpp_string, mention_ptr->type, mention_ptr->entity->name, sp->Sen_num - mention_ptr->entity->rep_sen_num, mention_ptr->entity->rep_tag_num, mention_ptr->entity->num);
 							strcat(buf,tmp);
 						}
 					}
