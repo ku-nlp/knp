@@ -18,6 +18,7 @@ FEATURE *Input_bnst_feature[BNST_MAX];
 FEATURE *Input_tag_feature[TAG_MAX];
 char ArticleID[SMALL_DATA_LEN2];
 char preArticleID[SMALL_DATA_LEN2];
+int total_sen_num = 0; /* 読み込んだ文の総数 (sp->Sen_numはresetされる可能性がある) */
 
 extern char CorpusComment[BNST_MAX][DATA_LEN];
 
@@ -864,6 +865,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
     PM_Memo[0] = '\0';
     input_buffer[DATA_LEN-1] = '\n';
 
+    /* 文カウント (S-IDがないときの出力用; 形態素が一つもなくても数える) */
+    total_sen_num++;
+
     while (1) {
 	if (read_mrph_file(fp, input_buffer) == EOF) return EOF;
 
@@ -1018,8 +1022,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    /* KNPSIDがないとき(# S-ID行がないとき)は付与 */
 	    if (!sp->KNPSID) {
 		/* "S-ID:"(5バイト), log(文数)/log(10) + 1バイト, 括弧ID(3バイト), +1バイト */
-		sp->KNPSID = (char *)malloc_data(log(sp->Sen_num) / log(10) + 10, "read_mrph");
-		sprintf(sp->KNPSID, "S-ID:%d", sp->Sen_num);
+		sp->KNPSID = (char *)malloc_data(log(total_sen_num) / log(10) + 10, "read_mrph");
+		sprintf(sp->KNPSID, "S-ID:%d", total_sen_num);
 	    }
 
 	    return TRUE;
