@@ -264,7 +264,7 @@ void convert_case_result(char *buf, char *feature, int sen_num)
 		feature = strchr(feature, ':') + 1;
 	}
 	feature--;
-	sprintf(buf,"格解析結果:%s:%s",pred_name,id);
+	sprintf(buf,"述語項構造:%s:%s",pred_name,id);
 	if(feature)
 	{
 		for(cp=feature;*cp;cp++)
@@ -6743,6 +6743,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 				{
 					convert_case_result(buf,check_feature(tag_ptr->f, "格解析結果"),sp->Sen_num);
 					assign_cfeature(&(tag_ptr->f), buf, FALSE);
+                                        delete_cfeature(&(tag_ptr->f), "格解析結果");
 				}
 			}
 			
@@ -6799,7 +6800,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 							}
 							if (!buf[0]) 
 							{
-								sprintf(buf,"格解析結果:");
+								sprintf(buf,"述語項構造:");
 							}
 							else
 							{
@@ -6812,7 +6813,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 						{
 							if (!buf[0]) 
 							{
-								sprintf(buf,"格解析結果:%s:",(OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);
+								sprintf(buf,"述語項構造:%s:",(OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);
 							}
 							else
 							{
@@ -6841,7 +6842,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 					{
 						if (!buf[0]) 
 						{
-							sprintf(buf,"格解析結果:");
+							sprintf(buf,"述語項構造:");
 						}
 						else
 						{
@@ -6856,7 +6857,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 				{
 					if (!buf[0]) 
 					{
-						sprintf(buf,"格解析結果:%s:",(OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);
+						sprintf(buf,"述語項構造:%s:",(OptReadFeature & OPT_ELLIPSIS) ? "?" : tag_ptr->mention_mgr.cf_id);
 					}
 					else
 					{
@@ -6876,6 +6877,7 @@ void assign_anaphora_result(SENTENCE_DATA *sp)
 		if (buf[0])
 		{
 			assign_cfeature(&(tag_ptr->f), buf, FALSE);
+                        delete_cfeature(&(tag_ptr->f), "格解析結果");
 			
 			sprintf(buf,"省略解析信頼度:%.3f",tag_ptr->score_diff);
 			assign_cfeature(&(tag_ptr->f), buf, FALSE);

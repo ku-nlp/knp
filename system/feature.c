@@ -72,7 +72,7 @@ char feature_buffer[DATA_LEN];
     if (comp_feature(fp->cp, "用言") || 
         comp_feature(fp->cp, "体言") || 
         comp_feature(fp->cp, "格解析結果") || 
-        comp_feature(fp->cp, "格構造") || 
+        comp_feature(fp->cp, "述語項構造") || 
         comp_feature(fp->cp, "Wikipediaエントリ") || 
         comp_feature(fp->cp, "NE内") || 
         comp_feature(fp->cp, "NE")) {
