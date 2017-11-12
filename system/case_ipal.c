@@ -2323,11 +2323,21 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
+       static int str_compare(const void *a, const void *b)
+/*==================================================================*/
+{
+    /* sort function */
+    const char* str_a = *(const char**)a;
+    const char* str_b = *(const char**)b;
+    return strcmp(str_a, str_b);
+}
+
+/*==================================================================*/
 	  void assign_pred_feature_to_bp(SENTENCE_DATA *sp)
 /*==================================================================*/
 {
-    int i, pred_merged_rep_size = DATA_LEN;
-    char *pred_string, *new_pred_string, *pred_merged_rep = NULL;
+    int i, j, pred_merged_rep_size = DATA_LEN, rep_count;
+    char *pred_string, *new_pred_string, *pred_merged_rep = NULL, *rep_list[HOMO_MAX];
     TAG_DATA *t_ptr;
 
     /* 自立語末尾語を用いて用言代表表記を作成 */
@@ -2342,9 +2352,8 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 	}
 
 	pred_string = make_pred_string_from_mrph(t_ptr, NULL, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
-
-	strcpy(pred_merged_rep, "用言代表表記:");
-	strcat(pred_merged_rep, pred_string);
+        rep_count = 0;
+        rep_list[rep_count++] = pred_string;
 
 	/* 代表表記が曖昧な用言の場合 */
 	if (check_feature(t_ptr->head_ptr->f, "原形曖昧")) {
@@ -2362,20 +2371,32 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 		    new_pred_string = make_pred_string_from_mrph(t_ptr, &m, NULL, OptCaseFlag & OPT_CASE_USE_REP_CF, CF_PRED, FALSE);
 		    /* 代表と異なるもの */
 		    if (strcmp(pred_string, new_pred_string)) {
-			if (strlen(pred_merged_rep) + strlen(new_pred_string) + 2 > pred_merged_rep_size) {
-			    pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
-								   pred_merged_rep_size *= 2, "assign_pred_feature_to_bp");
-			}
-			strcat(pred_merged_rep, "?");
-			strcat(pred_merged_rep, new_pred_string);
+                        rep_list[rep_count++] = new_pred_string;
+                        if (rep_count >= HOMO_MAX)
+                            break;
 		    }
-		    free(new_pred_string);
+                    else {
+                        free(new_pred_string);
+                    }
 		}
 		fp = fp->next;
 	    }
 	}
 
-	free(pred_string);
+        /* 代表表記をsort */
+        qsort(rep_list, rep_count, sizeof(char *), str_compare);
+
+        strcpy(pred_merged_rep, "用言代表表記:");
+        for (j = 0; j < rep_count; j++) {
+            if (strlen(pred_merged_rep) + strlen(rep_list[j]) + 2 > pred_merged_rep_size) {
+                pred_merged_rep = (char *)realloc_data(pred_merged_rep, 
+                                                       pred_merged_rep_size *= 2, "assign_pred_feature_to_bp");
+            }
+            if (j > 0)
+                strcat(pred_merged_rep, "?");
+            strcat(pred_merged_rep, rep_list[j]);
+            free(rep_list[j]);
+        }
 	assign_cfeature(&(t_ptr->f), pred_merged_rep, FALSE);
     }
 
