@@ -2323,16 +2323,6 @@ int make_ipal_cframe(SENTENCE_DATA *sp, TAG_DATA *t_ptr, int start, int flag)
 }
 
 /*==================================================================*/
-       static int str_compare(const void *a, const void *b)
-/*==================================================================*/
-{
-    /* sort function */
-    const char* str_a = *(const char**)a;
-    const char* str_b = *(const char**)b;
-    return strcmp(str_a, str_b);
-}
-
-/*==================================================================*/
 	  void assign_pred_feature_to_bp(SENTENCE_DATA *sp)
 /*==================================================================*/
 {

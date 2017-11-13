@@ -149,6 +149,16 @@ unsigned int seed[NSEED][256];
     return length;
 }
 
+/*==================================================================*/
+            int str_compare(const void *a, const void *b)
+/*==================================================================*/
+{
+    /* sort function */
+    const char* str_a = *(const char**)a;
+    const char* str_b = *(const char**)b;
+    return strcmp(str_a, str_b);
+}
+
 #ifdef _WIN32
 /*==================================================================*/
                    char *SJIStoStringUTF8(char *str)

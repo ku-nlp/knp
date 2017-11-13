@@ -348,8 +348,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 {
     FEATURE *fp;
     MRPH_DATA m, *m_ptr = sp->mrph_data;
-    char *rep_strt, *rep_strt2, *merged_rep;
-    int i, rep_length, rep_length2, merged_rep_size = DATA_LEN;
+    char *rep_strt, *rep_strt2, *merged_rep, *rep_list[HOMO_MAX];
+    int i, j, rep_length, rep_length2, merged_rep_size = DATA_LEN, rep_count;
 
     merged_rep = (char *)malloc_data(merged_rep_size, "assign_canonical_rep_to_mrph");
 
@@ -362,8 +362,8 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 	    continue;
 	}
 
-	strcpy(merged_rep, "正規化代表表記:");
-	strncat(merged_rep, rep_strt, rep_length);
+        rep_count = 0;
+        rep_list[rep_count++] = strndup(rep_strt, rep_length);
 
 	fp = m_ptr->f;
 	while (fp) {
@@ -374,19 +374,30 @@ extern char CorpusComment[BNST_MAX][DATA_LEN];
 		       &m.Katuyou_Kata, &m.Katuyou_Kei, m.Imi);
 		rep_strt2 = get_mrph_rep(&m);
 		rep_length2 = get_mrph_rep_length(rep_strt2);
+                /* 採用されているものと異なるもの */
 		if (rep_length2 > 0 && 
 		    (rep_length != rep_length2 || strncmp(rep_strt, rep_strt2, rep_length))) {
-		    /* 正規化代表表記に"?"で連結 */
-		    if (strlen(merged_rep) + rep_length2 + 2 > merged_rep_size) {
-			merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_canonical_rep_to_mrph");
-		    }
-		    strcat(merged_rep, "?");
-		    strncat(merged_rep, rep_strt2, rep_length2);
+                    rep_list[rep_count++] = strndup(rep_strt2, rep_length2);
+                    if (rep_count >= HOMO_MAX)
+                        break;
 		}
 	    }
 	    fp = fp->next;
 	}
 
+        /* 代表表記をsort */
+        qsort(rep_list, rep_count, sizeof(char *), str_compare);
+
+        strcpy(merged_rep, "正規化代表表記:");
+        for (j = 0; j < rep_count; j++) {
+            if (strlen(merged_rep) + strlen(rep_list[j]) + 2 > merged_rep_size) {
+                merged_rep = (char *)realloc_data(merged_rep, merged_rep_size *= 2, "assign_canonical_rep_to_mrph");
+            }
+            if (j > 0)
+                strcat(merged_rep, "?");
+            strcat(merged_rep, rep_list[j]);
+            free(rep_list[j]);
+        }
 	/* 正規化代表表記を付与 */
 	assign_cfeature(&(m_ptr->f), merged_rep, FALSE);
     }
