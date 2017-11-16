@@ -2268,6 +2268,10 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 
 		mrph_ptr++;
 	    }
+            /* 用言代表表記の末尾形態素にマーク */
+            if (!check_feature(mrph_ptr->f, "用言表記末尾")) {
+                assign_cfeature(&(mrph_ptr->f), "用言表記末尾", FALSE);
+            }
 	}
     }
 
