@@ -891,10 +891,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	/* # による正規のコメント行 */
 
 	if (input_buffer[0] == '#') {
+            int match_num;
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    sp->Comment = (char *)malloc_data(strlen(input_buffer), "read_mrph");
 	    sp->KNPSID = (char *)malloc_data(strlen(input_buffer) + 3, "read_mrph");
-	    sscanf(input_buffer, "# %s %[^\n]", sp->KNPSID, sp->Comment);
+	    match_num = sscanf(input_buffer, "# %s %[^\n]", sp->KNPSID, sp->Comment);
+            if (match_num < 2) /* コメント行にスペースが含まれない場合 */
+                sp->Comment[0] = '\0';
 
 	    /* 文章が変わったら固有名詞スタック, 前文データをクリア */
 	    if (!strncmp(sp->KNPSID, "S-ID:", 5) && strchr(sp->KNPSID + 5, '-') &&
