@@ -115,42 +115,45 @@ sub new {
     my $input_mrphtab = 0;
     my ($mrph_parent_id, $mrph_dpndtype);
     while( defined( $str = shift @$result ) ){
-	if( $str =~ m!$pattern! and @$result == 0 ){
-	    $this->{_eos} = $str;
-	    last;
-	} elsif( $str =~ m!^;;! ){
-	    $error .= $str;
-	} elsif( $str =~ m!^\*! ){
-	    my $bnst = $bclass->new( $str, scalar($this->bnst) );
-	    return undef if !defined $bnst;
-	    $this->push_bnst( $bnst );
-	} elsif( $str =~ m!^\+! ){
-	    $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
-	} elsif( $str =~ m!^\- (-?\d+)(.+)$! ){
-	    $input_mrphtab = 1;
-	    $mrph_parent_id = $1;
-	    $mrph_dpndtype = $2;
-	} elsif( $str =~ m/^!!/ ){
-	    my $synnodes = KNP::SynNodes->new($str);
-	    push @{ ( $this->tag ) [-1]->{synnodes} }, $synnodes;
-	} elsif( $str =~ m/^!/ ){
-	    my $synnode = KNP::SynNode->new($str);
-	    my $last_tag = ( $this->tag ) [-1];
-	    # synnodesがある場合
-	    if ( defined $last_tag->{synnodes} ){
-		$last_tag->{synnodes}[-1]->push_synnode( $synnode );
-	    }
-	    # synnodesがない場合 (tagにpushする)
-	    else {
-		$last_tag->push_synnode( $synnode );
-	    }
-	} else {
-	    $this->push_mrph( $mclass->new( $str, scalar($this->mrph), $mrph_parent_id, $mrph_dpndtype ) );
-	    my $fstring = ( $this->mrph )[-1]->fstring;
-	    while ( $fstring =~ /<(ALT-[^>]+)>/g ){ # ALT
-		( $this->mrph )[-1]->push_doukei( $mclass->new( $1, scalar($this->mrph) ) );
-	    }
-	}
+        if( $str =~ m!$pattern! and @$result == 0 ){
+            $this->{_eos} = $str;
+            last;
+        } elsif( $str =~ m!^;;! ){
+            $error .= $str;
+        } elsif( $str =~ m!^\*! ){
+            my $bnst = $bclass->new( $str, scalar($this->bnst) );
+            return undef if !defined $bnst;
+            $this->push_bnst( $bnst );
+        } elsif( $str =~ m!^\+! ){
+            $this->push_tag( $tclass->new( $str, scalar($this->tag) ) );
+        } elsif( $str =~ m!^\- (-?\d+)(.+)$! ){
+            $input_mrphtab = 1;
+            $mrph_parent_id = $1;
+            $mrph_dpndtype = $2;
+        } elsif( $str =~ m/^!!/ ){
+            my $synnodes = KNP::SynNodes->new($str);
+            push @{ ( $this->tag ) [-1]->{synnodes} }, $synnodes;
+        } elsif( $str =~ m/^!/ ){
+            my $synnode = KNP::SynNode->new($str);
+            my $last_tag = ( $this->tag ) [-1];
+            # synnodesがある場合
+            if ( defined $last_tag->{synnodes} ){
+            $last_tag->{synnodes}[-1]->push_synnode( $synnode );
+            }
+            # synnodesがない場合 (tagにpushする)
+            else {
+            $last_tag->push_synnode( $synnode );
+            }
+        } else {
+            $this->push_mrph( $mclass->new( $str, scalar($this->mrph), $mrph_parent_id, $mrph_dpndtype ) );
+            if (scalar($this->mrph) > 0) {
+                my $fstring = ( $this->mrph )[-1]->fstring;
+                while ( $fstring =~ /<(ALT-[^>]+)>/g ){ # ALT
+                ( $this->mrph )[-1]->push_doukei( $mclass->new( $1, scalar($this->mrph) ) );
+                }
+            }
+        }
+    }
     }
 
     # 係り受け情報を取り出す
