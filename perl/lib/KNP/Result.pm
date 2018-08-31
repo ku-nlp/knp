@@ -154,7 +154,6 @@ sub new {
             }
         }
     }
-    }
 
     # 係り受け情報を取り出す
     my( @bnst ) = $this->bnst;
