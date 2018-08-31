@@ -1282,6 +1282,8 @@ void assign_feature(FEATURE **fpp1, FEATURE **fpp2, void *ptr, int offset, int l
     
     else if (!strncmp(rule, "&係側チェック:", strlen("&係側チェック:"))) {
 	cp = rule + strlen("&係側チェック:");
+        /* <PARA>ならばその子どもをみる */
+        while (ptr2 && ((BNST_DATA *)ptr2)->para_top_p) ptr2 = ((BNST_DATA *)ptr2)->child[0];
 	for (i = 0; ((BNST_DATA *)ptr2)->child[i]; i++) {
 	    if (check_feature(((BNST_DATA *)ptr2)->child[i]->f, cp)) {
 		return TRUE;
