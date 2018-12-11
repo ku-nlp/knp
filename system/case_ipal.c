@@ -2208,12 +2208,17 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	}
 	buffer = (char *)malloc_data(length + strlen(main_pred) + 8, "make_pred_string_from_mrph");
 	buffer[0] = '\0';
-
+        int is_assigned_pred_begin_feature = 0;
+        
 	/* 前側に延ばす場合: 「形容詞語幹+的だ」など */
 	if (!cpncf_flag) {
 	    mrph_ptr = t_ptr->mrph_ptr;
 	    while (mrph_ptr < t_ptr->head_ptr && 
 		   check_feature((mrph_ptr + 1)->f, "Ｔ用言見出←")) {
+                if (!is_assigned_pred_begin_feature) { /* 用言代表表記の先頭形態素にマーク */
+                    assign_cfeature(&(mrph_ptr->f), "用言表記先頭", FALSE);
+                    is_assigned_pred_begin_feature = 1;
+                }
 		if (use_rep_flag && 
 		    (cp = get_mrph_rep_from_f(mrph_ptr, FALSE))) {
 		    strcat(buffer, cp);
@@ -2227,6 +2232,10 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	}
 
 	/* 主辞 */
+        if (!is_assigned_pred_begin_feature) { /* 用言代表表記の先頭形態素にマーク */
+            assign_cfeature(&(t_ptr->head_ptr->f), "用言表記先頭", FALSE);
+            is_assigned_pred_begin_feature = 1;
+        }
 	if (orig_form) {
 	    strcat(buffer, orig_form);
 	}
