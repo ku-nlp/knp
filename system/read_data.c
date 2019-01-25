@@ -890,7 +890,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	/* # による正規のコメント行 */
 
-	if (input_buffer[0] == '#') {
+	if (input_buffer[0] == '#' && strncmp(input_buffer, "# # # ", 6)) {
             int match_num;
 	    input_buffer[strlen(input_buffer)-1] = '\0';
 	    sp->Comment = (char *)malloc_data(strlen(input_buffer), "read_mrph");
@@ -925,7 +925,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
 	/* 解析済みの場合 */
 	/* 文節行 */
-	else if (input_buffer[0] == '*') {
+	else if (input_buffer[0] == '*' && strncmp(input_buffer, "* * * ", 6)) {
 	    if (sp->Mrph_num == 0) {
 		OptInput |= OPT_PARSED;
 		if (OptEllipsis) {
@@ -968,7 +968,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    sp->Bnst_num++;
 	}
 	/* タグ単位行 */
-	else if (input_buffer[0] == '+') {
+	else if (input_buffer[0] == '+' && strncmp(input_buffer, "+ + + ", 6)) {
 	    if (OptInput == OPT_RAW) {
 		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
 		return readtoeos(fp);
