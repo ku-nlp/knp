@@ -26,10 +26,10 @@ doc/manual.pdf をご覧ください。
 インストール方法
 ----------------
 
-1) KNP辞書をダウンロードしてください。
+1) 次のコマンドを実行して、KNP辞書をダウンロード、展開、配置してください。
 
    - wget http://lotus.kuee.kyoto-u.ac.jp/nl-resource/knp/dict/latest/knp-dict-latest-bin.zip (ビルド済み辞書; 2.6GB)
-   - unzip -f knp-dict-latest-bin.zip
+   - unzip knp-dict-latest-bin.zip
    - cp -ars `pwd`/dict-bin/* ./dict
      "cannot create symbolic link: File exists"とのエラーが出たら、`find dict -type l|xargs rm'でシンボリックリンクを削除してから再実行してください。
 
