@@ -2232,7 +2232,7 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
 	}
 
 	/* 主辞 */
-        if (!is_assigned_pred_begin_feature) { /* 用言代表表記の先頭形態素にマーク */
+        if (!cpncf_flag && !is_assigned_pred_begin_feature) { /* 用言代表表記の先頭形態素にマーク */
             assign_cfeature(&(t_ptr->head_ptr->f), "用言表記先頭", FALSE);
             is_assigned_pred_begin_feature = 1;
         }
