@@ -2281,6 +2281,16 @@ char *make_pred_string_from_mrph(TAG_DATA *t_ptr, MRPH_DATA *m_ptr, char *orig_f
             if (!check_feature(mrph_ptr->f, "用言表記末尾")) {
                 assign_cfeature(&(mrph_ptr->f), "用言表記末尾", FALSE);
             }
+
+            /* 用言意味表記末尾を与える (現状は<否定>をもつ最後の形態素) */
+            MRPH_DATA *semantic_mrph_ptr = mrph_ptr;
+            for (i = t_ptr->mrph_num - 1; t_ptr->mrph_ptr + i > mrph_ptr; i--) {
+                if (check_feature((t_ptr->mrph_ptr + i)->f, "否定")) {
+                    semantic_mrph_ptr = t_ptr->mrph_ptr + i;
+                    break;
+                }
+            }
+            assign_cfeature(&(semantic_mrph_ptr->f), "用言意味表記末尾", FALSE);
 	}
     }
 
