@@ -851,11 +851,85 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 }
 
 /*==================================================================*/
+void store_mrph_info(U_CHAR *start_cp, size_t length, MRPH_DATA *m_ptr, int mrph_index)
+/*==================================================================*/
+{
+    /* mrph_indexで指定された情報(文字列)をMRPH_DATAに登録 */
+    U_CHAR tmp_buffer[DATA_LEN];
+
+    strncpy(tmp_buffer, start_cp, length);
+    tmp_buffer[length] = '\0';
+
+    switch(mrph_index) {
+    case 0:
+        strcpy(m_ptr->Goi2, tmp_buffer);
+    case 1:
+        strcpy(m_ptr->Yomi, tmp_buffer);
+    case 2:
+        strcpy(m_ptr->Goi, tmp_buffer);
+    case 3:
+        if (OptInput & OPT_PARSED)
+            m_ptr->Hinshi = get_hinsi_id(tmp_buffer);
+    case 4:
+        m_ptr->Hinshi = atoi(tmp_buffer);
+    case 5:
+        if (OptInput & OPT_PARSED)
+            m_ptr->Bunrui = get_bunrui_id(tmp_buffer, m_ptr->Hinshi);
+    case 6:
+        m_ptr->Bunrui = atoi(tmp_buffer);
+    case 7:
+        if (OptInput & OPT_PARSED)
+            m_ptr->Katuyou_Kata = get_type_id(tmp_buffer);
+    case 8:
+        m_ptr->Katuyou_Kata = atoi(tmp_buffer);
+    case 9:
+        if (OptInput & OPT_PARSED)
+            m_ptr->Katuyou_Kei = get_form_id(tmp_buffer, m_ptr->Katuyou_Kata);
+    case 10:
+        m_ptr->Katuyou_Kei = atoi(tmp_buffer);
+    }
+}
+
+/*==================================================================*/
+int read_one_line_to_mrph(U_CHAR *buffer, MRPH_DATA *m_ptr, U_CHAR *rest_buffer)
+/*==================================================================*/
+{
+    /* 1行を読み込み、MRPH_DATAに意味情報以外を登録
+       意味情報はとりあえずrest_bufferに入れる */
+    U_CHAR *start_cp = buffer, *cp = buffer;
+    int mrph_item_num = 0, always_read_flag = FALSE;
+
+    /* 活用型、活用形まで読む (意味情報の手前) */
+    while (mrph_item_num < 11) {
+        /* \でescapeされた次の文字は常に読む */
+        if (always_read_flag) {
+            always_read_flag = FALSE;
+        }
+        /* スペースによる区切り -> 形態素の1つのカラムを登録 */
+        else if (*cp == ' ') {
+            store_mrph_info(start_cp, cp - start_cp, m_ptr, mrph_item_num);
+            mrph_item_num++;
+            start_cp = cp + 1;
+        }
+        /* \によるescape */
+        else if (*cp == '\\') {
+            always_read_flag = TRUE;
+        }
+        cp++;
+    }
+    /* 意味情報 */
+    if (mrph_item_num == 11) {
+        strcpy(rest_buffer, start_cp);
+        mrph_item_num++;
+    }
+    return mrph_item_num;
+}
+
+/*==================================================================*/
 	      int read_mrph(SENTENCE_DATA *sp, FILE *fp)
 /*==================================================================*/
 {
-    U_CHAR input_buffer[DATA_LEN], rev_ibuffer[DATA_LEN], rest_buffer[DATA_LEN], Hinshi_str[DATA_LEN], Bunrui_str[DATA_LEN], ne_buffer[DATA_LEN];
-    U_CHAR Katuyou_Kata_str[DATA_LEN], Katuyou_Kei_str[DATA_LEN];
+    U_CHAR input_buffer[DATA_LEN], rest_buffer[DATA_LEN], ne_buffer[DATA_LEN];
     MRPH_DATA  *m_ptr = sp->mrph_data;
     int homo_num, offset, mrph_item, bnst_item, tag_item, ne_flag, i, j, homo_flag;
 
@@ -1075,18 +1149,13 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    */
 
 	    offset = homo_flag ? 2 : 0;
-	    mrph_item = sscanf(input_buffer + offset,
-			       "%s %s %s %s %d %s %d %s %d %s %d %[^\n]", 
-			       m_ptr->Goi2, m_ptr->Yomi, m_ptr->Goi, 
-			       Hinshi_str, &(m_ptr->Hinshi), Bunrui_str, &(m_ptr->Bunrui), 
-			       Katuyou_Kata_str, &(m_ptr->Katuyou_Kata), 
-			       Katuyou_Kei_str, &(m_ptr->Katuyou_Kei), 
-			       rest_buffer);
+            mrph_item = read_one_line_to_mrph(input_buffer + offset, m_ptr, rest_buffer);
 	    m_ptr->type = IS_MRPH_DATA;
 	    m_ptr->num = sp->Mrph_num;
 	    m_ptr->length = strlen(m_ptr->Goi2);
 
 	    if (Language == CHINESE) { /* transfer POS to word features for Chinese */
+                U_CHAR Hinshi_str[DATA_LEN];
 		assign_cfeature(&(m_ptr->f), Hinshi_str, FALSE);
 		if (!OptChiPos) {
 		  strcpy(m_ptr->Pos, Hinshi_str);
@@ -1145,8 +1214,8 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 			    *cp = '\0';
 			}
 			/* 疑似代表表記を追加する */
-			if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
-			    strcmp(Hinshi_str, "助動詞") && strcmp(Hinshi_str, "助詞") && 
+			if (strcmp(Class[m_ptr->Hinshi][0].id, "特殊") && strcmp(Class[m_ptr->Hinshi][0].id, "判定詞") &&
+                            strcmp(Class[m_ptr->Hinshi][0].id, "助動詞") && strcmp(Class[m_ptr->Hinshi][0].id, "助詞") &&
 			    !strstr(imip, "代表表記")) {
 			    sprintf(m_ptr->Imi, "\"%s\"", imip); /* make_mrph_rn()における参照用 */
 			    rep_buf = make_mrph_rn(m_ptr);
@@ -1171,9 +1240,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 		else { /* 意味情報がNILのとき */
 		    /* 疑似代表表記を追加する */
-		    rep_buf = make_mrph_rn(m_ptr);			
-		    if (strcmp(Hinshi_str, "特殊") && strcmp(Hinshi_str, "判定詞") && 
-			strcmp(Hinshi_str, "助動詞") &&	strcmp(Hinshi_str, "助詞") && 
+		    rep_buf = make_mrph_rn(m_ptr);
+		    if (strcmp(Class[m_ptr->Hinshi][0].id, "特殊") && strcmp(Class[m_ptr->Hinshi][0].id, "判定詞") &&
+                        strcmp(Class[m_ptr->Hinshi][0].id, "助動詞") && strcmp(Class[m_ptr->Hinshi][0].id, "助詞") &&
 			strlen(" 疑似代表表記 代表表記:") + strlen(rep_buf) + 1 < DATA_LEN) {
 			imip = rest_buffer;		    
 			*imip = '\0';
@@ -1197,13 +1266,6 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
-
-	    if (OptInput & OPT_PARSED) {
-		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
-		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
-		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
-		m_ptr->Katuyou_Kei = get_form_id(Katuyou_Kei_str, m_ptr->Katuyou_Kata);
-	    }
 
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */
