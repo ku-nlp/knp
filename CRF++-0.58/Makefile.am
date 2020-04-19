@@ -1,6 +1,6 @@
 EXTRA_DIST = README Makefile.msvc.in merge-models.pl
 EXTRA_DIRS = doc example sdk perl python ruby java swig
-bin_PROGRAMS = crf_learn crf_test
+noinst_PROGRAMS = crf_learn crf_test
 ACLOCAL_AMFLAGS = -I m4
 
 AUTOMAKE_OPTIONS = no-dependencies
