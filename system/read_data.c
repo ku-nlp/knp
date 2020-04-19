@@ -863,30 +863,41 @@ void store_mrph_info(U_CHAR *start_cp, size_t length, MRPH_DATA *m_ptr, int mrph
     switch(mrph_index) {
     case 0:
         strcpy(m_ptr->Goi2, tmp_buffer);
+        break;
     case 1:
         strcpy(m_ptr->Yomi, tmp_buffer);
+        break;
     case 2:
         strcpy(m_ptr->Goi, tmp_buffer);
+        break;
     case 3:
         if (OptInput & OPT_PARSED)
             m_ptr->Hinshi = get_hinsi_id(tmp_buffer);
+        break;
     case 4:
         m_ptr->Hinshi = atoi(tmp_buffer);
+        break;
     case 5:
         if (OptInput & OPT_PARSED)
             m_ptr->Bunrui = get_bunrui_id(tmp_buffer, m_ptr->Hinshi);
+        break;
     case 6:
         m_ptr->Bunrui = atoi(tmp_buffer);
+        break;
     case 7:
         if (OptInput & OPT_PARSED)
             m_ptr->Katuyou_Kata = get_type_id(tmp_buffer);
+        break;
     case 8:
         m_ptr->Katuyou_Kata = atoi(tmp_buffer);
+        break;
     case 9:
         if (OptInput & OPT_PARSED)
             m_ptr->Katuyou_Kei = get_form_id(tmp_buffer, m_ptr->Katuyou_Kata);
+        break;
     case 10:
         m_ptr->Katuyou_Kei = atoi(tmp_buffer);
+        break;
     }
 }
 
