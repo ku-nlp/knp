@@ -1,0 +1,186 @@
+#!/usr/local/bin/perl -w
+
+=head1 NAME
+
+mkgrammarpm - 品詞分類辞書と活用分類辞書をモジュールに変換する
+
+=head1 SYNOPSIS
+
+mkkhash [OPTIONS] DIRECTORY
+
+=head1 DESCRIPTION
+
+Juman に付属している品詞分類辞書と活用分類辞書を，L<Juman::Katuyou> モ
+ジュールと L<Juman::Hinsi> モジュールから参照できる形式に変換するスク
+リプト．
+
+=head1 OPTIONS
+
+=over 4
+
+=item -o [DBFILE]
+
+=item --output [DBFILE]
+
+出力するモジュールのファイル名を指定する．指定が省略された場合は，
+C<Grammar.pm> に出力する．
+
+=back
+
+出力されるモジュールについての説明は，以下を参照．
+
+=cut
+
+use lib "./lib";
+use strict;
+use Data::Dumper;
+use IO::File;
+use Getopt::Long;
+use Juman::Sexp qw/ parse /;
+use POSIX qw/ O_CREAT /;
+
+my $TARGET = "Grammar.pm";
+&GetOptions( 'output|o=s' => \$TARGET );
+&main( @ARGV );
+
+sub main {
+    my( $dir ) = @_;
+    $dir ||= ".";
+    die "Already exists $TARGET.\n" if -f $TARGET;
+    my $grammar_file = &catfile( $dir, "JUMAN.grammar" );
+    my $katuyou_file = &catfile( $dir, "JUMAN.katuyou" );
+    my( @hinsi, %bunrui, @type, %form );
+    &make_grammar_table( \@hinsi, \%bunrui, $grammar_file );
+    &make_katuyou_table( \@type, \%form, $katuyou_file );
+    my $fh = IO::File->new( $TARGET, "w" ) or die "Cannot open $TARGET: $!\n";
+    print STDERR "Writing $TARGET ... ";
+    $fh->print( <DATA> );
+    $fh->print( Data::Dumper->Dump( [ \@hinsi, \%bunrui, \@type, \%form ],
+				    [ "HINSI", "BUNRUI", "TYPE", "FORM" ] ) );
+    $fh->print( "\n1;\n\n" );
+    $fh->printf( <<'__memo__', $grammar_file, $katuyou_file, $0, scalar(localtime) );
+=head1 MEMO
+
+This module is generated
+from F<%s>
+and F<%s>
+with F<%s>
+at %s.
+
+=cut
+__memo__
+    $fh->close;
+    print STDERR "Done.\n";
+}
+
+sub catfile {
+    my( $dir, $base ) = @_;
+    if( eval { require File::Spec::Functions; } ){
+	File::Spec::Functions::catfile( $dir, $base );
+    } else {
+	$dir =~ s!/+\Z!!;
+	$dir . "/" . $base;
+    }
+}
+
+sub make_grammar_table {
+    my( $array, $hash, $file ) = @_;
+    die "No such file or directory: $file\n" unless -f $file;
+    print STDERR "Reading $file ...\n";
+    my $hid = 0;
+    for my $sexp ( &parse( file => $file ) ){
+	my $hinsi = $sexp->[0]->[0];
+	$array->[0]->{$hinsi} = ++$hid;
+	$array->[$hid] = $hinsi;
+	print STDERR "  $hid: $hinsi ";
+	my $bid = 0;
+	for my $bunrui ( map( $_->[0], @{$sexp->[1]} ) ){
+	    $hash->{$hinsi}->[0]->{$bunrui} = ++$bid;
+	    $hash->{$hinsi}->[$bid] = $bunrui;
+	    print STDERR ".";
+	}
+	if( $bid ){
+	    print STDERR " $bid細分類\n";
+	} else {
+	    print STDERR "=> 細分類なし\n";
+	}
+    }
+}
+
+sub make_katuyou_table {
+    my( $array, $hash, $file ) = @_;
+    die "No such file or directory: $file\n" unless -f $file;
+    print STDERR "Reading $file ...\n";
+    my $id = 0;
+    for my $sexp ( &parse( file => $file ) ){
+	$id++;
+	my $type = $sexp->[0];
+	my @form;
+	print STDERR "  $id: $type ";
+	for( @{$sexp->[1]} ){
+	    my( $form, @gobi ) = @{$_};
+	    push( @form, $form );
+	    $hash->{$type}->[0]->{$form} = scalar(@form);
+	    $hash->{$type}->[scalar(@form)] = [ $form, @gobi ];
+	    print STDERR ".";
+	}
+	$array->[0]->{$type} = $id;
+	$array->[$id] = [ $type, @form ];
+	print STDERR " ",scalar(@form),"活用形\n";
+    }
+}
+
+__DATA__
+package Juman::Grammar;
+require 5.004_04; # For base pragma.
+use strict;
+use base qw/ Exporter /;
+use vars qw/ @EXPORT_OK $HINSI $BUNRUI $TYPE $FORM /;
+@EXPORT_OK = qw/ $HINSI $BUNRUI $TYPE $FORM /;
+
+=head1 NAME
+
+Juman::Grammar - 品詞分類辞書および活用分類辞書
+
+=head1 DESCRIPTION
+
+Juman 品詞分類辞書および活用分類辞書の Perl スクリプト版．
+
+=head1 VARIABLES
+
+=over 4
+
+=item C<$HINSI>
+
+品詞と品詞番号の対応表(ハッシュ)に対するリファレンスが格納されている．
+
+    $HINSI->[0]->{品詞} => 品詞番号
+    $HINSI->[品詞番号]  => 品詞
+
+=item C<$BUNRUI>
+
+細分類と細分類番号の対応表(ハッシュ)に対するリファレンスが格納されてい
+る．
+
+    $BUNRUI->{品詞}->[0]->{細分類} => 細分類番号
+    $BUNRUI->{品詞}->[細分類番号]  => 細分類
+
+=item C<$TYPE>
+
+活用型と活用型番号の対応表(ハッシュ)に対するリファレンスが格納されてい
+る．
+
+    $TYPE->[0]->{活用型} => 活用型番号
+    $TYPE->[活用型番号]  => [ 活用型, 活用形, 活用形, ... ]
+
+=item C<$FORM>
+
+活用形と活用形番号の対応表(ハッシュ)に対するリファレンスが格納されてい
+る．
+
+    $FORM->{活用型}->[0]->{活用形} => 活用形番号
+    $FORM->{活用型}->[活用形番号]  => [ 活用形, 語尾, [読み語尾] ]
+
+=back
+
+=cut

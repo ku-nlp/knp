@@ -26,6 +26,7 @@ AC_ARG_WITH(svm-light, AC_HELP_STRING([--with-svm-light], [use SVM_light library
 AC_ARG_WITH(boehm-gc, AC_HELP_STRING([--with-boehm-gc], [use Boehm GC library (optional)]))
 AC_ARG_WITH(juman-prefix, AC_HELP_STRING([--with-juman-prefix=PREFIX], [prefix where JUMAN is installed (optional)]), 
 			  juman_prefix="$withval")
+AC_ARG_WITH(included-juman, AC_HELP_STRING([--with-included-juman], [use included JUMAN (optional)]))
 AC_ARG_WITH(bgh-file, AC_HELP_STRING([--with-bgh-file=FILE], [path where Bunrui Goi Hyou (bunruidb.txt) is located (optional)]), 
 			  BGH_FILE="$withval")
 
@@ -100,19 +101,28 @@ eval KNP_DICT=`eval echo "$KNP_DICT"`
 eval KNP_RULE=`eval echo "$KNP_RULE"`
 eval RC_DEFAULT=`eval echo "$RC_DEFAULT"`
 
+use_included_juman=no
 if test x"$juman_prefix" = x; then
-    eval juman_prefix=`eval echo "$prefix"`
+   eval juman_prefix=`eval echo "$prefix"`
+   if test ! -f "$prefix/include/juman.h" -o "$with_included_juman" = yes; then
+      AC_CONFIG_SUBDIRS([juman])
+      JUMAN_CFLAGS="$JUMAN_CFLAGS -I$packagesrcdir/juman/lib"
+      JUMAN_LIBS="$JUMAN_LIBS $packagesrcdir/juman/lib/.libs/libjuman.a"
+      use_included_juman=yes
+   fi
 fi
 AC_SUBST(juman_prefix)
-JUMAN_CFLAGS="-I$juman_prefix/include"
-JUMAN_LIBS="-L$juman_prefix/lib -ljuman -lstdc++"
+if test x"$use_included_juman" = xno; then
+   JUMAN_CFLAGS="$JUMAN_CFLAGS -I$juman_prefix/include"
+   JUMAN_LIBS="$JUMAN_LIBS -L$juman_prefix/lib -ljuman"
+fi
 
 old_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$JUMAN_CFLAGS $CPPFLAGS"
 old_LIBS=$LIBS
 LIBS="$JUMAN_LIBS $LIBS"
 AC_CHECK_HEADER(juman.h, , AC_MSG_ERROR(juman.h: not found.))
-AC_CHECK_LIB(juman, grammar, , AC_MSG_ERROR(libjuman: not found.))
+# AC_CHECK_LIB(juman, grammar, , AC_MSG_ERROR(libjuman: not found.))
 CPPFLAGS=$old_CPPFLAGS
 LIBS=$old_LIBS
 ETC_CFLAGS="$JUMAN_CFLAGS $ETC_CFLAGS"
@@ -259,6 +269,7 @@ AM_CONDITIONAL(ADDITIONAL_PROB_EXIST, test "$additional_prob_exist" = yes)
 AM_CONDITIONAL(NV_MI_EXIST, test "$nv_mi_exist" = yes)
 AM_CONDITIONAL(DISTSIM_MI_EXIST, test "$distsim_mi_exist" = yes)
 AM_CONDITIONAL(NE_CRF_MODEL_EXIST, test "$ne_crf_model_exist" = yes)
+AM_CONDITIONAL(USE_INCLUDED_JUMAN, test "$use_included_juman" = yes)
 
 AC_SUBST(KNP_LIBS)
 AC_SUBST(MAKE_DB_LIBS)

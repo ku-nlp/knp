@@ -1,0 +1,37 @@
+
+
+	   Japanese Morphological Analysis System JUMAN 6.0
+
+
+Files and directories
+---------------------
+	README		This file
+	INSTALL		How to install 
+	COPYING		Copying of JUMAN
+	lib/		JUMAN library
+	juman/		Source files of JUMAN
+	makeint/	Source files for dictionary conversion
+	makemat/	Source files handling connectivity rules 
+	makepat/	Source files for Patricia database
+	perl/		Perl module
+	dic/		Dictionaries
+	doc/		Manual
+
+
+Installation
+------------
+	% ./configure
+	% make
+	% make install (by root)
+
+	See INSTALL in detail.
+
+
+How to use JUMAN system
+-----------------------
+	See doc/manual.pdf.
+
+
+Contact
+-------
+	nl-resource@nlp.kuee.kyoto-u.ac.jp

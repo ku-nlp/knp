@@ -1,0 +1,20 @@
+juman-perl
+==========
+
+juman-perl is the Perl module to analyse sentences morphologically
+with Juman.
+
+INSTALLATION
+
+To install this module, type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+COPYRIGHT AND LICENCE
+
+GPL2 or Artistic License.
+
+Copyright (C) 2001 TSUCHIYA Masatoshi <tsuchiya@pine.kuee.kyoto-u.ac.jp>.

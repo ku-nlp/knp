@@ -1,0 +1,10 @@
+# http://module-build.sourceforge.net/META-spec.html
+#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
+name:         juman-perl
+version:      0.5.7
+version_from: lib/Juman.pm
+installdirs:  site
+requires:
+    Time::HiRes:    1.9726
+distribution_type: module
+generated_by: ExtUtils::MakeMaker version 6.17

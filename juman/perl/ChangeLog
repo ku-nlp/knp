@@ -1,0 +1,419 @@
+2011-02-01  Daisuke Kawahara  <dk@i.kyoto-u.ac.jp>
+
+	* lib/Juman/Fork.pm:
+	Shorten the delay of kill from two seconds to 0.01.
+
+2010-09-17  Yugo Murawaki  <murawaki@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Result.pm:
+	spec が EOS も吐くように変更 (KNP::Result 準拠)
+
+2010-05-24  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/Juman.pm:
+	Modified to check the existence of $ENV{HOME}.
+
+2008-08-06  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/Juman.pm:
+	Transform 3-byte codes of JISX0212 to GETA (this is a treatment for garbled copyright characters).
+
+2008-07-22  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/Juman.pm:
+	Transform undefined characters to GETA.
+
+2008-03-05  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/Juman/MList.pm:
+	Modified repname() to extract repnames from KNP results.
+
+2008-01-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Morpheme.pm:
+	意味情報を追加するメソッドpush_imisを追加
+
+2007-11-13  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* lib/Juman/Hinsi.pm:
+	Adapted get_hinsi_id, get_bunrui_id, get_type_id and get_form_id to utf8_flag.
+
+2007-08-22  Ryohei Sasano  <ryohei@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Morpheme.pm:
+	メソッドrepnamesに引数(≠0)を与えると
+	音訓解消した場合の曖昧性は無視するように変更
+
+2007-08-22  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/MList.pm:
+	コードを整理
+	
+	* lib/Juman/Morpheme.pm:
+	メソッドrepnamesを追加
+
+2007-08-13  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/MList.pm:
+	関数repnameで、「?」で連結する際にsortするように変更
+
+2007-07-18  MURAWAKI Yugo  <murawaki@nlp.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Process.pm: close 時にまだ生きている子プロセスを殺す
+
+2006-11-01  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* Katuyou.pm, MList.pm, Morpheme.pm:
+	代表表記がない活用語の代表表記を正しく生成できるように修正
+
+2006-10-31  Tomohide Shibata  <shibata@nlp.kuee.kyoto-u.ac.jp>
+
+	* t/60-hinsi.t, t/70-katuyou.t:
+	deleted the tests about 'katuyou2' and 'katuyou2_id'
+
+2006-10-26  Daisuke Kawahara  <dk@nict.go.jp>
+
+	* Morpheme.pm, MList.pm: 代表表記(列)を返すメソッドrepnameを追加
+
+2006-06-16  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Encode.pm: set_encodingを修正
+
+2006-05-02  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Morpheme.pm: メソッドidにおいて、mrphのidが0の時にundefを返すバグを修正
+
+2006-04-19  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* 60-hinsi.t: get_form, get_form_idのテストを削除
+
+2005-04-19  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Juman.pm: change the default option from '-e -B' to '-e2 -B'
+
+2005-04-19  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Juman.pm: New file.
+
+2004-11-15  Tomohide Shibata  <shibata@kc.t.u-tokyo.ac.jp>
+
+	* Makefile.PL: Remove 'Check Assert.dic'.
+
+2004-06-24  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.9.
+
+2004-04-15  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Sexp.pm (parse): Accept `comment' argument.
+
+2004-04-08  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Fork.pm (close): Send Ctrl-D before closeing the pipe.
+	(kill): Call `close' method instead of closing the pipe directly.
+
+	* lib/Juman/Process.pm (close): Call `close' method of a local
+	process instead of its `kill' method, in order to reduce the time
+	to wait for the process to die.
+
+2004-02-03  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.8.
+
+	* t/90-db_file.t, t/90-gdbm_file.t: Import target modules only
+	when base database modules are availabe.
+
+	* Makefile.PL (postamble): Check Assert.dic instead of Noun.dic
+	for Juman-4.0.
+
+2004-02-01  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.7.
+
+	* lib/Juman/Encode.pm: New file.
+
+	* lib/Juman/DB_File.pm, lib/Juman/GDBM_File.pm: Change to keep
+	compatibility with Jperl.
+	(_encode, _decode): Abolished.
+	(BEGIN): When Perl-5.8 is used, import `encode' and `decode' from
+	Juman::Encode.  Otherwise, define dummy functions.
+	(FETCH, STORE, DELETE, EXISTS, FIRSTKEY, NEXTKEY): Use `encode'
+	and `decode' instead of `_encode' and `_decode'.
+
+	* lib/Juman/Fork.pm: Change to keep compatibility with Jperl.
+	(BEGIN): When Perl-5.8 is used, import `set_encoding' from
+	Juman::Encode.  Otherwise, define a dummy function.
+	(new): Call `set_encoding' instead of calling `binmode'.
+
+	* lib/Juman/Process.pm: Change to keep compatibility with Jperl.
+	(BEGIN): When Perl-5.8 is used, import `set_encoding' from
+	Juman::Encode.  Otherwise, define a dummy function.
+	(open_remote_socket): Call `set_encoding' instead of calling
+	`binmode'.
+
+2004-01-30  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/DB_File.pm, lib/Juman/GDBM_File.pm (BEGIN): Abolished.
+	(_encode, _decode): Simplified.
+
+2004-01-28  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/DB_File.pm, lib/Juman/GDBM_File.pm (CLEAR): Abolished.
+
+2004-01-28  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.6.
+
+	* mkdicdb: Use Juman::DB_File instead of DB_File;
+
+	* lib/Juman/DB_File.pm, lib/Juman/GDBM_File.pm: New files.
+
+	* t/90-db_file.t, t/90-gdbm_file.t: New testsets for the above
+	files.
+
+2004-01-27  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.5.
+
+	* lib/Juman/Process.pm: Import $PERL_VERSION vie `English' module.
+	(open_remote_socket): Set encoding of the created socket when
+	`encoding' pragma has been loaded.
+
+	* lib/Juman/Fork.pm: Import $PERL_VERSION vie `English' module.
+	(new): Set encoding of pipes when `encoding' pragma has been
+	loaded.
+
+2003-10-30  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Morpheme.pm (midasi, yomi, genkei, hinsi, hinsi_id,
+	bunrui, bunrui_id, katuyou1, katuyou1_id, katuyou2, katuyou2_id,
+	imis): Simplified.
+
+2003-10-27  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/KULM/Morpheme.pm (gets): Insert brackets that specify
+	method calls, in order to keep compatibility with Jperl.
+
+	* mkgrammarpm (main): Use the below function instead of the
+	function provided by File::Spec::Functions.
+	(catfile): New function to keep compatibility with Jperl.
+
+	* Makefile.PL ($grmfile, $dicfile): Use $(PERL) macro instead of
+	literal, in order to build package with Jperl.
+
+2003-09-22  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Sexp.pm (_parse): For much gentle error messages, take
+	one more argument.  Process strings including newlines.
+	(parse): Follow the above change.
+
+	* lib/Juman/Hinsi.pm, lib/Juman/Katuyou.pm: Reconstruct to follow
+	the change of Juman::Grammar.
+
+	* t/60-hinsi.t: Stricten test sets.
+
+	* t/70-katuyou.t: Disable an expected warning.
+
+	* mkgrammarpm: Changed the format of Juman::Grammar.
+
+2003-09-21  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Makefile.PL (constants): Ignore lib/Juman/Grammar.pm.
+	(postamble): Generate blib/lib/Juman/Grammar.pm with mkgrammarpm,
+	and install it.  Generate blib/lib/Juman/JUMAN.dic.db with mkdicdb
+	and install it.
+
+	* mkkhash: Removed.
+
+	* mkgrammarpm: New script to generate Juman::Grammar.
+
+	* lib/Juman/Hinsi.pm: Use Juman::Grammar instead of hard-coded
+	literals.
+
+	* lib/Juman/Katuyou.pm: Use Juman::Grammar instead of a database
+	created by mkkhash.
+
+	* t/70-katuyou.t: Follow the above change.
+
+2003-09-20  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/Sexp.pm: New module.
+
+	* mkdicdb: New file.
+
+2003-09-19  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.4.
+
+	* lib/Juman.pm (%DEFAULT): Add `mclass' option.
+	(juman): Call constructor of Juman::Result with `mclass' option.
+
+	* lib/Juman/KULM/Morpheme.pm (get): Ignore long names of
+	attributes.
+	(gets): Follow the above change.
+
+	* lib/Juman/KULM/MList.pm: New file.
+
+	* lib/Juman/MList.pm: Inherit Juman::KULM::MList.
+	(mrph): Export to Juman::KULM::MList.
+	(mrph_list): Redefined.
+	(spec): Use `mrph_list' instead of `mrph'.
+
+	* t/30-mlist.t: Follow the above change.
+
+2003-09-18  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman.pm (juman): Follow the change of Juman::Result.
+
+	* lib/Juman/Result.pm (%DEFAULT): New variable.
+	(new): Accept options to specify object names for morpheme.
+
+	* t/03-result.t: New testset.
+
+2003-09-14  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.3.
+
+	* lib/Juman.pm: Use `base' pragma.
+	* lib/Juman/Fork.pm: Ditto.
+	* lib/Juman/Hinsi.pm: Ditto.
+	* lib/Juman/Morpheme.pm: Ditto.
+	* lib/Juman/Result.pm: Ditto.
+	* lib/Juman/Simple.pm: Ditto.
+
+2003-09-12  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman.pm: Remove unnecessary dependency to Exporter.
+	* lib/Juman/Result.pm: Ditto.
+	* lib/Juman/Process.pm: Ditto.
+	* lib/Juman/MList.pm: Ditto.
+	* lib/Juman/Katuyou.pm: Ditto.
+
+	* lib/Juman/Morpheme.pm: Remove unnecessary dependency to
+	Exporter.  Inherit Juman::KULM::Morpheme.
+	(get): Export to lib/Juman/KULM/Morpheme.pm.
+
+	* lib/Juman/Simple.pm, lib/Juman/KULM/Morpheme.pm: New modules.
+
+	* t/10-simple.t, t/20-kulm-morpheme.t: New testsets.
+
+2003-09-11  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman.pm (new): Print warning when unsafe rcfile option is
+	used.
+
+	* lib/Juman/Morpheme.pm (get): New method that provides same API
+	defined in KULM::Juman::M.
+
+	* lib/Juman/Process.pm (open_local_socket): Unset JUMANSERVER and
+	KNPSERVER.
+
+	* t/04-juman.t: Relax test conditions for Juman-4.0.
+
+	* Makefile.PL (MY::constants): Ignore unrelated files under lib/.
+
+2003-06-23  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.2.
+
+	* lib/Juman/Fork.pm (kill): Call `waitpid' to avoid zombie
+	processes.
+
+	* lib/Juman/Process.pm (close): Fix.
+
+2003-06-23  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.1.
+
+	* lib/Juman/Result.pm (new): Handle a word includes only `@'
+	properly.
+
+	* lib/Juman/Morpheme.pm (new): Do not remove `@' at the top of the
+	given spec; this change is installed to follow the above change.
+
+	* t/02-morpheme.t, t/04-juman.t: Add tests to check above changes.
+
+2003-02-17  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.4.
+
+	* lib/Juman/Result.pm (new): Call `set_readonly' instead of
+	`set_mlist_readonly'.
+
+	* lib/Juman/MList.pm (set_readonly): Renamed from
+	`set_mlist_readonly'.
+
+2003-02-17  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/MList.pm (mrph_list): Not call `mrph' as a function,
+	but as a method.
+
+2003-02-16  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/MList.pm (new): Simplified.
+
+2002-12-13  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.3.
+
+	* lib/Juman/Katuyou.pm: Load DB_File only when it is required.
+
+	* t/06-katuyou.t: Skip all tests when DB_File is not found.
+
+	* Makefile.PL: Check existence of DB_File.
+
+2002-12-10  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.2.
+
+	* Makefile.PL (postamble): Improve automatic detection of Juman
+	dictionary path.
+
+2002-12-07  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.1.
+
+	* Makefile.PL: Automatically detect where Juman dictionary is
+	placed.
+
+	* lib/Juman/Process.pm (setup): When `command' option is
+	specified, `server' option is ignored.
+
+	* lib/Juman/Morpheme.pm (@ATTRS): Add "imis".
+	(imis): New method.
+	(spec): Protect against undefined value.
+
+	* lib/Juman/Result.pm (all): New method, which is introduced to
+	keep backward compatibility.
+
+	* t/02-morpheme.t: Follow the change described in the below.
+
+2002-12-02  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman/MList.pm (mrph_list): New synonym of mrph, introduced
+	to keep backward compatibility.
+
+2002-05-29  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.3.
+
+	* mkkhash: Clean up.
+
+	* lib/Juman/MList.pm (new): Change its argument spec.
+
+	* lib/Juman/Morpheme.pm: Inherit Juman/Katuyou.pm.  Update
+	documents.
+	(new): Clean up.
+
+	* lib/Juman/Katuyou.pm, t/06-katuyou.t: New file.
+
+2002-02-06  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* lib/Juman.pm, lib/Juman/MList.pm, lib/Juman/Morpheme.pm,
+	lib/Juman/Result.pm: Reconstructed, and removed obsolute methods.
+
+	* t/03-mlist.t, t/04-juman.t: Follow the changes.
+
+2001-12-22  TSUCHIYA Masatoshi  <tsuchiya@pine.kuee.kyoto-u.ac.jp>
+
+	* Release 0.2.4.

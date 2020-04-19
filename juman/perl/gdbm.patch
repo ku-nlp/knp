@@ -1,0 +1,54 @@
+Index: Makefile.PL
+===================================================================
+RCS file: /home/tsuchiya/CVS/juman-perl/Makefile.PL,v
+retrieving revision 1.23
+diff -u -r1.23 Makefile.PL
+--- Makefile.PL	28 Jan 2004 01:43:30 -0000	1.23
++++ Makefile.PL	28 Jan 2004 01:43:41 -0000
+@@ -65,7 +65,7 @@
+     }
+     my( $libdir ) = ( "@ARGV" =~ m/\bINSTALLDIRS=vendor\b/ ? "INSTALLVENDORLIB" : "INSTALLSITELIB" );
+     my $grmfile = q!$(INST_LIB)/Juman/Grammar.pm!;
+-    my $dicfile = q!$(INST_LIB)/Juman/JUMAN.dic.db!;
++    my $dicfile = q!$(INST_LIB)/Juman/JUMAN.dic.gdb!;
+     my( @targets ) = ( $grmfile );
+     # push( @targets, $dicfile ) if( eval { require DB_File; } );
+     sprintf( <<'__targets__', $dicdir, join(" ",@targets), $libdir, $grmfile, $dicfile );
+Index: mkdicdb
+===================================================================
+RCS file: /home/tsuchiya/CVS/juman-perl/mkdicdb,v
+retrieving revision 1.4
+diff -u -r1.4 mkdicdb
+--- mkdicdb	1 Feb 2004 07:00:37 -0000	1.4
++++ mkdicdb	1 Feb 2004 07:01:48 -0000
+@@ -22,7 +22,7 @@
+ =item --output [DBFILE]
+ 
+ 出力する database のファイル名を指定する．指定が省略された場合は，
+-C<JUMAN.dic.db> に出力する．
++C<JUMAN.dic.gdb> に出力する．
+ 
+ =item -d
+ 
+@@ -50,10 +50,10 @@
+ use strict;
+ use Getopt::Long;
+ use IO::File;
+-use Juman::DB_File;
++use Juman::GDBM_File;
+ use Juman::Sexp qw/ parse /;
+ 
+-my $DBFILE = "JUMAN.dic.db";
++my $DBFILE = "JUMAN.dic.gdb";
+ my $DEBUG;
+ 
+ &GetOptions( 'debug|d+'   => \$DEBUG,
+@@ -61,7 +61,7 @@
+ 
+ my %HASH;
+ die "$DBFILE already exists" if -f $DBFILE;
+-tie( %HASH, 'Juman::DB_File', $DBFILE, &O_CREAT ) or die "Can't create $DBFILE: $!\n";
++tie( %HASH, 'Juman::GDBM_File', $DBFILE, &O_CREAT ) or die "Can't create $DBFILE: $!\n";
+ 
+ for my $file ( @ARGV ){
+     print STDERR "Reading $file...\n";

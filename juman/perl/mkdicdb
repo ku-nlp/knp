@@ -1,0 +1,118 @@
+#!/usr/local/bin/perl -w
+
+=head1 NAME
+
+mkdicdb - Juman 辞書ファイルを Berkeley DB 形式に変換する
+
+=head1 SYNOPSIS
+
+mkdicdb [OPTIONS] FILE...
+
+=head1 DESCRIPTION
+
+Juman に付属している辞書を，L<Juman::Dictionary> から参照できる形式に
+変換するスクリプト．
+
+=head1 OPTIONS
+
+=over 4
+
+=item -o [DBFILE]
+
+=item --output [DBFILE]
+
+出力する database のファイル名を指定する．指定が省略された場合は，
+C<JUMAN.dic.db> に出力する．
+
+=item -d
+
+=item --debug
+
+デバッグ情報を出力する．
+
+=head1 DB FORMAT
+
+生成されるデータベースの形式は，以下の通り．
+
+個々の形態素の情報は，TAB で区切られている．
+
+    形態素 ::= 原形\t読み\t品詞\t細分類\t活用型\t意味情報
+
+形態素は改行で区切られ，見出しまたは読みを key としてハッシュに格納さ
+れている．
+
+    読み => 形態素1\n形態素2\n...\n形態素n
+    原形 => 形態素1\n形態素2\n...\n形態素n
+
+=cut
+
+use lib "./lib";
+use strict;
+use Getopt::Long;
+use IO::File;
+use Juman::DB_File;
+use Juman::Sexp qw/ parse /;
+
+my $DBFILE = "JUMAN.dic.db";
+my $DEBUG;
+
+&GetOptions( 'debug|d+'   => \$DEBUG,
+	     'output|o=s' => \$DBFILE );
+
+my %HASH;
+die "$DBFILE already exists" if -f $DBFILE;
+tie( %HASH, 'Juman::DB_File', $DBFILE, &O_CREAT ) or die "Can't create $DBFILE: $!\n";
+
+for my $file ( @ARGV ){
+    print STDERR "Reading $file...\n";
+    for my $sexp ( &parse( file => $file, debug => $DEBUG ) ){
+	&add( $sexp );
+    }
+}
+
+sub add {
+    my( $sexp ) = @_;
+    my $hinsi = shift @{$sexp};
+    return if $hinsi eq "連語";
+    for( @{$sexp} ){
+	my( $bunrui, @mrph ) = @{$_};
+	if( ref $bunrui eq "ARRAY" ){ # 細分類の指定がない場合
+	    $bunrui = "";
+	    @mrph = ( $_ );
+	}
+	for my $mrph ( @mrph ){
+	    my $yomi;
+	    my @midasi;
+	    my $katuyou = "";
+	    my $imi = "";
+	    for( @{$mrph} ){
+		my( $key, @parameter ) = @{$_};
+		if( $key eq "見出し語" ){
+		    push( @midasi, map( { ref $_ ? $_->[0] : $_ } @parameter ) );
+		}
+		elsif( $key eq "読み" ){
+		    $yomi = $parameter[0];
+		}
+		elsif( $key eq "活用型" ){
+		    $katuyou = $parameter[0];
+		}
+		elsif( $key eq "意味情報" ){
+		    $imi = $parameter[0];
+		}
+	    }
+	    for my $midasi ( @midasi ){
+		my $desc = join( "\t", $midasi, $yomi, $hinsi, $bunrui, $katuyou, $imi );
+		for my $key ( ( $midasi eq $yomi ) ? $midasi : ( $midasi, $yomi ) ){
+		    print STDERR "ADD: $key => $midasi:$yomi:$hinsi:$bunrui\n" if $DEBUG;
+		    if( my $val = $HASH{$key} ){
+			if( index( $val, $desc ) < 0 ){
+			    $HASH{$key} = $val."\n".$desc;
+			}
+		    } else {
+			$HASH{$key} = $desc;
+		    }
+		}
+	    }
+	}
+    }
+}
