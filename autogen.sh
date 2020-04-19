@@ -14,4 +14,10 @@ autoheader
 automake -a
 autoconf
 
+cd ../juman
 
+aclocal
+libtoolize
+autoheader
+automake -a
+autoconf
