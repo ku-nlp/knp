@@ -16,16 +16,16 @@ KNPは日本語文の構文・格解析を行うシステムです。形態素�
 
 1. (gitからビルドする場合) `./autogen.sh`を実行してください。
 1. 次のコマンドを実行して、KNP辞書をダウンロード、展開、配置してください。
-```bash
-$ wget http://lotus.kuee.kyoto-u.ac.jp/nl-resource/knp/dict/latest/knp-dict-latest-bin.zip # ビルド済み辞書(2.6GB)
-$ unzip knp-dict-latest-bin.zip
-$ cp -ars `pwd`/dict-bin/* ./dict
-```
-    - macOSなどで"cp: illegal option -- s"というエラーが出たら、`cp -ars`の代わりに`mv`を使うなどしてください。
+    ```bash
+    $ wget http://lotus.kuee.kyoto-u.ac.jp/nl-resource/knp/dict/latest/knp-dict-latest-bin.zip # ビルド済み辞書(2.6GB)
+    $ unzip knp-dict-latest-bin.zip
+    $ cp -ars `pwd`/dict-bin/* ./dict
+    ```
 1. `./configure`を実行してください。
 1. `make`を実行してください。
 1. `sudo make install`を実行してください。
 
+`cp -ars`実行時にmacOSなどで"cp: illegal option -- s"というエラーが出たら、`cp -ars`の代わりに`mv`を使うなどしてください。
 
 ## Pythonからの利用
 
