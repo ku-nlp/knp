@@ -58,6 +58,7 @@ class CommandLine {
 };
 }  // namespace
 
+#ifndef __CYGWIN__
 #define main(argc, argv) wmain_to_main_wrapper(argc, argv)
 
 int wmain_to_main_wrapper(int argc, char **argv);
@@ -66,4 +67,5 @@ int wmain(int argc, wchar_t **argv) {
   CommandLine cmd(argc, argv);
   return wmain_to_main_wrapper(cmd.argc(), cmd.argv());
 }
+#endif
 #endif
