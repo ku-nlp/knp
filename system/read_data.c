@@ -2065,6 +2065,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    if (flag == NULL) {
 		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
 			sp->KNPSID ? sp->KNPSID : "?");
+                assign_cfeature(&(mp->f), "タグ単位始", FALSE);
 	    }
 
 	    memset(tp, 0, sizeof(TAG_DATA));
@@ -2131,6 +2132,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    if (check_feature(mp->f, "タグ単位始") == NULL) {
 		fprintf(stderr, ";; morpheme %d must be <タグ単位始>! (%s)\n", i, 
 			sp->KNPSID ? sp->KNPSID : "?");
+                assign_cfeature(&(mp->f), "タグ単位始", FALSE);
 	    }
 
 	    memset(tp, 0, sizeof(TAG_DATA));
