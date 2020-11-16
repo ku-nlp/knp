@@ -11,19 +11,20 @@ KNPは日本語文の構文・格・照応解析を行うシステムです。�
 
 - [zlibライブラリ](http://zlib.net/) (※ 多くのOSに標準でインストールされています)
 - gitからビルドする場合: [libtool](https://www.gnu.org/software/libtool/), [automake](https://www.gnu.org/software/automake/), [autoconf](https://www.gnu.org/software/autoconf/)
+  - Mac の場合、`libtoolize` が `glibtoolize` の形でインストールされていることがあります。その場合、 `ln -s /usr/local/bin/glibtoolize /usr/local/bin/libtoolize` などを実行し、`libtoolize` にパスを通しておいてください。
 
 次の手順でKNPをビルドし、インストールしてください。
 
 1. (gitからビルドする場合) `./autogen.sh`を実行してください。
-1. 次のコマンドを実行して、KNP辞書をダウンロード、展開、配置してください。
+2. 次のコマンドを実行して、KNP辞書をダウンロード、展開、配置してください。
     ```bash
     $ wget http://lotus.kuee.kyoto-u.ac.jp/nl-resource/knp/dict/latest/knp-dict-latest-bin.zip # ビルド済み辞書(2.6GB)
     $ unzip knp-dict-latest-bin.zip
     $ cp -ars `pwd`/dict-bin/* ./dict
     ```
-1. `./configure`を実行してください。
-1. `make`を実行してください。
-1. `sudo make install`を実行してください。
+3. `./configure`を実行してください。
+4. `make`を実行してください。
+5. `sudo make install`を実行してください。
 
 `cp -ars`実行時にmacOSなどで"cp: illegal option -- s"というエラーが出たら、`cp -ars`の代わりに`mv`を使うなどしてください。
 
