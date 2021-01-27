@@ -2177,12 +2177,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 /*==================================================================*/
 {
   if (OptInput == OPT_RAW || 
-      (OptInput & OPT_INPUT_BNST) ||
-      OptUseNCF) {
-    dpnd_info_to_tag_raw(sp, dp);
+      (OptInput & OPT_INPUT_BNST)) {
+      dpnd_info_to_tag_raw(sp, dp);
   }
-  else {
-    dpnd_info_to_tag_pm(sp);
+  else { /* 解析済み (OPT_PARSED) */
+      dpnd_info_to_tag_pm(sp);
   }
 }
 
