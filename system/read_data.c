@@ -989,7 +989,9 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 
         /* 基本句行を読む
          *
-         * "+ " -> 0
+         * "+" -> -1
+         * "+ " -> -1
+         * "+ hoge" -> 0
          * "+ 1" -> 1
          * "+ 1D" -> 2
          * "+ 1D <...>" -> 3
