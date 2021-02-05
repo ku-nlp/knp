@@ -1666,7 +1666,7 @@ int  reader_tag = -1;
 	print_matrix(sp, PRINT_DPND, 0);
     }
 
-    if (OptInput & OPT_PARSED) {
+    if (OptInput & OPT_INPUT_PARSED) {
 	if (OptCheck == TRUE) {
 	    call_count_dpnd_candidates(sp, &(sp->Best_mgr->dpnd));
 	}

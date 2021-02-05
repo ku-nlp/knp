@@ -941,7 +941,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
         switch(bnst_item) {
         case 2:
         case 3:
-            OptInput |= OPT_PARSED;  /* 係り受け付与済み */
+            OptInput |= OPT_INPUT_PARSED;  /* 係り受け付与済み */
         case EOF:
             OptInput |= OPT_INPUT_CHUNKED;  /* 文節分割済み */
             break;
@@ -999,7 +999,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
         switch(tag_item) {
         case 2:
         case 3:
-            OptInput |= OPT_PARSED;  /* 係り受け付与済み */
+            OptInput |= OPT_INPUT_PARSED;  /* 係り受け付与済み */
         case EOF:
             OptInput |= OPT_INPUT_CHUNKED;  /* タグ分割済み */
             break;
@@ -1028,7 +1028,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	    }
 
 	    /* タグ単位のない解析済の場合 */
-	    if ((OptInput & OPT_PARSED) && sp->Tag_num == 0) {
+	    if ((OptInput & OPT_INPUT_PARSED) && sp->Tag_num == 0) {
 	    	OptInput |= OPT_INPUT_BNST;
 	    }
 
@@ -1221,7 +1221,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }   
 
-	    if (OptInput & OPT_PARSED) {
+	    if (OptInput & OPT_INPUT_PARSED) {
 		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
 		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
 		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
@@ -2335,7 +2335,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
     assign_general_feature(sp->mrph_data, sp->Mrph_num, PreProcessMorphRuleType, FALSE, FALSE);
 
     /* 正解入力のときは形態素連結をしない */
-    if (OptInput & OPT_PARSED)
+    if (OptInput & OPT_INPUT_PARSED)
         return;
 
     /* 形態素連結の処理 */

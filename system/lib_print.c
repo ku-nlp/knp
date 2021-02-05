@@ -1623,7 +1623,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
     }
 
     /* スコアを出力 (CKY時、通常入力時) */
-    if (OptCKY && !(OptInput & OPT_PARSED)) {
+    if (OptCKY && !(OptInput & OPT_INPUT_PARSED)) {
 	fprintf(Outfp, " SCORE:%.5f", sp->score);
     }
 
