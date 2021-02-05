@@ -1562,7 +1562,7 @@ int  reader_tag = -1;
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
     if (OptInput == OPT_RAW || 
 	(OptInput & OPT_INPUT_BNST)) {
-	make_tag_units(sp);
+	make_tag_units_pm(sp);
     }
     else {
 	make_tag_units_pm(sp);

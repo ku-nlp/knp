@@ -946,23 +946,36 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		return readtoeos(fp);
 	    }
 
+        /* 文節行を読む
+         *
+         * "*" -> -1
+         * "* " -> -1
+         * "* hoge" -> 0
+         * "* 1" -> 1
+         * "* 1D" -> 2
+         * "* 1D <...>" -> 3
+         */
 	    bnst_item = sscanf(input_buffer, "* %d%c %[^\n]", 
 			       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
 			       &(sp->Best_mgr->dpnd.type[sp->Bnst_num]),
 			       rest_buffer);
-
-	    /* 文節の入力されたfeatureを使う */
-	    if (bnst_item == 3) {
-		if (OptReadFeature) { 
-		    /* featureを<>でsplitしてfに変換 */
-		    feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
-		}
-	    }
-	    else if (bnst_item != 2) {
-		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-		OptInput = OPT_RAW;
-		return readtoeos(fp);
-	    }
+        
+        switch(bnst_item) {
+        case EOF:
+        case 2:
+            break;
+        case 3:
+    	    /* 文節の入力されたfeatureを使う */
+            if (OptReadFeature) { 
+                /* featureを<>でsplitしてfに変換 */
+                feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
+            }
+            break;
+        default:
+            fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+            OptInput = OPT_RAW;
+            return readtoeos(fp);
+        }
 
 	    Bnst_start[sp->Mrph_num - homo_num] = 1;
 	    sp->Bnst_num++;
@@ -970,27 +983,38 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	/* タグ単位行 */
 	else if (input_buffer[0] == '+') {
 	    if (OptInput == OPT_RAW) {
-		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-		return readtoeos(fp);
+            fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+            return readtoeos(fp);
 	    }
 
+        /* 基本句行を読む
+         *
+         * "+ " -> 0
+         * "+ 1" -> 1
+         * "+ 1D" -> 2
+         * "+ 1D <...>" -> 3
+         */
 	    tag_item = sscanf(input_buffer, "+ %d%c %[^\n]", 
 			      &Tag_dpnd[sp->Tag_num],
 			      &Tag_type[sp->Tag_num],
 			      rest_buffer);
 
-	    /* タグ単位の入力されたfeatureを使う */
-	    if (tag_item == 3) {
-		if (OptReadFeature) { 
-		    /* featureを<>でsplitしてfに変換 */
-		    feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
-		}
-	    }
-	    else if (tag_item != 2) {
-		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-		OptInput = OPT_RAW;
-		return readtoeos(fp);
-	    }
+        switch(tag_item) {
+        case EOF:
+        case 2:
+            break;
+        case 3:
+    	    /* タグ単位の入力されたfeatureを使う */
+            if (OptReadFeature) { 
+                /* featureを<>でsplitしてfに変換 */
+                feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
+            }
+            break;
+        default:
+            fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
+            OptInput = OPT_RAW;
+            return readtoeos(fp);
+        }
 
 	    Tag_start[sp->Mrph_num - homo_num] = 1;
 	    sp->Tag_num++;
