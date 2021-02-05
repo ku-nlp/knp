@@ -926,55 +926,51 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	/* 解析済みの場合 */
 	/* 文節行 */
 	else if (input_buffer[0] == '*') {
-	    if (sp->Mrph_num == 0) {
-		OptInput |= OPT_PARSED;
-		if (OptEllipsis) {
-		    OptAnalysis = OPT_CASE2;
-		}
-		sp->Bnst_num = 0;
-		sp->Tag_num = 0;
-		memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);
-		memset(Tag_start, 0, sizeof(int)*MRPH_MAX);
-		if (OptReadFeature) {
-		    memset(Input_bnst_feature, 0, sizeof(FEATURE *) *BNST_MAX);
-		    memset(Input_tag_feature, 0, sizeof(FEATURE *) *TAG_MAX);
-		}
-	    }
-
-	    if (OptInput == OPT_RAW) {
-		fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-		return readtoeos(fp);
-	    }
-
+        int dpnd_head;
+        char dpnd_type;
         /* 文節行を読む
-         *
-         * "*" -> -1
-         * "* " -> -1
+         * input_buffer -> bnst_item
+         * "*" -> EOF
+         * "* " -> EOF
          * "* hoge" -> 0
          * "* 1" -> 1
          * "* 1D" -> 2
          * "* 1D <...>" -> 3
          */
-	    bnst_item = sscanf(input_buffer, "* %d%c %[^\n]", 
-			       &(sp->Best_mgr->dpnd.head[sp->Bnst_num]),
-			       &(sp->Best_mgr->dpnd.type[sp->Bnst_num]),
-			       rest_buffer);
-        
+	    bnst_item = sscanf(input_buffer, "* %d%c %[^\n]",  &dpnd_head, &dpnd_type, rest_buffer);
         switch(bnst_item) {
-        case EOF:
         case 2:
-            break;
         case 3:
-    	    /* 文節の入力されたfeatureを使う */
-            if (OptReadFeature) { 
-                /* featureを<>でsplitしてfに変換 */
-                feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
-            }
+            OptInput |= OPT_PARSED;  /* 係り受け付与済み */
+        case EOF:
+            OptInput |= OPT_INPUT_CHUNKED;  /* 文節分割済み */
             break;
         default:
             fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
             OptInput = OPT_RAW;
             return readtoeos(fp);
+        }
+	    if (sp->Mrph_num == 0) {
+            if (OptEllipsis) {
+                OptAnalysis = OPT_CASE2;
+            }
+            sp->Bnst_num = 0;
+            sp->Tag_num = 0;
+            memset(Bnst_start, 0, sizeof(int)*MRPH_MAX);
+            memset(Tag_start, 0, sizeof(int)*MRPH_MAX);
+            if (OptReadFeature) {
+                memset(Input_bnst_feature, 0, sizeof(FEATURE *) *BNST_MAX);
+                memset(Input_tag_feature, 0, sizeof(FEATURE *) *TAG_MAX);
+            }
+	    }
+
+        sp->Best_mgr->dpnd.head[sp->Bnst_num] = dpnd_head;
+        sp->Best_mgr->dpnd.type[sp->Bnst_num] = dpnd_type;
+
+	    /* 文節の入力されたfeatureを使う */
+        if (bnst_item == 3 && OptReadFeature) {
+            /* featureを<>でsplitしてfに変換 */
+            feature_string2f(rest_buffer, &Input_bnst_feature[sp->Bnst_num]);
         }
 
 	    Bnst_start[sp->Mrph_num - homo_num] = 1;
@@ -987,35 +983,36 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
             return readtoeos(fp);
 	    }
 
-        /* 基本句行を読む
-         *
-         * "+" -> -1
-         * "+ " -> -1
+        /* タグ単位行を読む
+         * input_buffer -> tag_item
+         * "+" -> EOF
+         * "+ " -> EOF
          * "+ hoge" -> 0
          * "+ 1" -> 1
          * "+ 1D" -> 2
          * "+ 1D <...>" -> 3
          */
-	    tag_item = sscanf(input_buffer, "+ %d%c %[^\n]", 
+	    tag_item = sscanf(input_buffer, "+ %d%c %[^\n]",
 			      &Tag_dpnd[sp->Tag_num],
 			      &Tag_type[sp->Tag_num],
 			      rest_buffer);
-
         switch(tag_item) {
-        case EOF:
         case 2:
-            break;
         case 3:
-    	    /* タグ単位の入力されたfeatureを使う */
-            if (OptReadFeature) { 
-                /* featureを<>でsplitしてfに変換 */
-                feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
-            }
+            OptInput |= OPT_PARSED;  /* 係り受け付与済み */
+        case EOF:
+            OptInput |= OPT_INPUT_CHUNKED;  /* タグ分割済み */
             break;
         default:
             fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
             OptInput = OPT_RAW;
             return readtoeos(fp);
+        }
+
+        /* タグ単位の入力されたfeatureを使う */
+        if (tag_item == 3 && OptReadFeature) { 
+            /* featureを<>でsplitしてfに変換 */
+            feature_string2f(rest_buffer, &Input_tag_feature[sp->Tag_num]);
         }
 
 	    Tag_start[sp->Mrph_num - homo_num] = 1;
@@ -1027,32 +1024,32 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	else if (str_eq(input_buffer, "EOS\n")) {
 	    /* 形態素が一つもないとき */
 	    if (sp->Mrph_num == 0) {
-		return FALSE;
+    		return FALSE;
 	    }
 
 	    /* タグ単位のない解析済の場合 */
 	    if ((OptInput & OPT_PARSED) && sp->Tag_num == 0) {
-		OptInput |= OPT_INPUT_BNST;
+	    	OptInput |= OPT_INPUT_BNST;
 	    }
 
 	    if (homo_num) {	/* 前に同形異義語セットがあれば処理する */
-		lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
-		sp->Mrph_num -= homo_num;
-		m_ptr -= homo_num;
-		for (i = 0; i < homo_num; i++) {
-		    clear_feature(&((m_ptr+i)->f));
-		}
-		homo_num = 0;
+            lexical_disambiguation(sp, m_ptr - homo_num - 1, homo_num + 1);
+            sp->Mrph_num -= homo_num;
+            m_ptr -= homo_num;
+            for (i = 0; i < homo_num; i++) {
+                clear_feature(&((m_ptr+i)->f));
+            }
+            homo_num = 0;
 	    }
 	    else if (sp->Mrph_num > 0) { /* 同形異義語がないときに正規化代表表記を付与 */
-		rn2canonical_rn(m_ptr - 1);
+    		rn2canonical_rn(m_ptr - 1);
 	    }
 
 	    /* KNPSIDがないとき(# S-ID行がないとき)は付与 */
 	    if (!sp->KNPSID) {
-		/* "S-ID:"(5バイト), log(文数)/log(10) + 1バイト, 括弧ID(3バイト), +1バイト */
-		sp->KNPSID = (char *)malloc_data(log(total_sen_num) / log(10) + 10, "read_mrph");
-		sprintf(sp->KNPSID, "S-ID:%d", total_sen_num);
+            /* "S-ID:"(5バイト), log(文数)/log(10) + 1バイト, 括弧ID(3バイト), +1バイト */
+            sp->KNPSID = (char *)malloc_data(log(total_sen_num) / log(10) + 10, "read_mrph");
+            sprintf(sp->KNPSID, "S-ID:%d", total_sen_num);
 	    }
 
 	    return TRUE;
@@ -2089,7 +2086,7 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    tp = sp->tag_data + sp->Tag_num;
 
 	    if (flag == NULL) {
-                assign_cfeature(&(mp->f), "タグ単位始", FALSE);
+            assign_cfeature(&(mp->f), "タグ単位始", FALSE);
 	    }
 
 	    memset(tp, 0, sizeof(TAG_DATA));
@@ -2154,14 +2151,14 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 	    if (i != 0) tp++;
 
 	    if (check_feature(mp->f, "タグ単位始") == NULL) {
-                assign_cfeature(&(mp->f), "タグ単位始", FALSE);
+            assign_cfeature(&(mp->f), "タグ単位始", FALSE);
 	    }
 
 	    memset(tp, 0, sizeof(TAG_DATA));
 	    tp->num = tp - sp->tag_data;
 	    tp->mrph_ptr = mp;
-            mp->tnum = tp->num;
-            make_mrph_set_inum(sp, i);
+        mp->tnum = tp->num;
+        make_mrph_set_inum(sp, i);
 
 	    /* 文節区切りと一致するとき */
 	    if (bp != NULL && bp->mrph_ptr == tp->mrph_ptr) {
@@ -2188,9 +2185,9 @@ void assign_general_feature(void *data, int size, int flag, int also_assign_flag
 		pre_bp->tag_num++;
 	    }
 	}
-        else {
+    else {
 	    mp->tnum = -1;
-        }
+    }
 	push_tag_units(tp, mp);
     }
 
