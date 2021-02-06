@@ -2177,10 +2177,11 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
 /*==================================================================*/
 {
   if (OptInput == OPT_RAW || 
-      (OptInput & OPT_INPUT_BNST)) {
+      (OptInput & OPT_INPUT_BNST) ||
+      (OptInput & OPT_INPUT_CHUNKED)) {
       dpnd_info_to_tag_raw(sp, dp);
   }
-  else { /* 解析済み (OPT_PARSED) */
+  else { /* 解析済み (OPT_INPUT_PARSED) */
       dpnd_info_to_tag_pm(sp);
   }
 }
@@ -3084,7 +3085,7 @@ void copy_para_info(SENTENCE_DATA *sp, BNST_DATA *dst, BNST_DATA *src)
   TAG_DATA *check_b_ptr;
     
   /* 解析済: 構造は与えられたもの1つのみ */
-  if (OptInput & OPT_PARSED) {
+  if (OptInput & OPT_INPUT_PARSED) {
     Possibility = 1;
   }
 

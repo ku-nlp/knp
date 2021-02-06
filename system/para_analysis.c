@@ -480,7 +480,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	  0 : calc_static_level_penalty(sp, key_pos, k);
     }
 
-    if (OptInput & OPT_PARSED) {
+    if (OptInput & OPT_INPUT_PARSED) {
 	_detect_para_scope(sp, para_num, para_ptr, sp->bnst_data[key_pos].dpnd_head);
     }
     else {
@@ -644,7 +644,7 @@ int detect_para_scope(SENTENCE_DATA *sp, int para_num, int restrict_p)
 	    sp->para_data[sp->Para_num].status = 'n';
 
 	    /* 正解入力のときはスコア計算 */
-	    if (OptInput & OPT_PARSED) {
+	    if (OptInput & OPT_INPUT_PARSED) {
 		if ((cp = check_feature(b_ptr->f, "並キ"))) {
 		    cp += strlen("並キ:");
 		    if (!strncmp(cp, "名", strlen("名"))) {

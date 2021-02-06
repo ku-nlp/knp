@@ -155,8 +155,9 @@
 #define OPT_AUTHOR_AUTO 128
 #define OPT_ALL_CASE 256
 #define OPT_RAW		0
-#define OPT_PARSED	1
+#define OPT_INPUT_PARSED	1
 #define OPT_INPUT_BNST	2
+#define OPT_INPUT_CHUNKED	4
 #define OPT_TREE	1
 #define OPT_TREEF      65
 #define OPT_SEXP	8

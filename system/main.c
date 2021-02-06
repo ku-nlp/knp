@@ -1562,10 +1562,10 @@ int  reader_tag = -1;
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
     if (OptInput == OPT_RAW || 
 	(OptInput & OPT_INPUT_BNST)) {
-	make_tag_units(sp);
+    	make_tag_units(sp);
     }
     else {
-	make_tag_units_pm(sp);
+	    make_tag_units_pm(sp);
     }
 
     assign_cc_feature_to_bp(sp);   /* 正規化代表表記を基本句に付与 */
@@ -1666,7 +1666,7 @@ int  reader_tag = -1;
 	print_matrix(sp, PRINT_DPND, 0);
     }
 
-    if (OptInput & OPT_PARSED) {
+    if (OptInput & OPT_INPUT_PARSED) {
 	if (OptCheck == TRUE) {
 	    call_count_dpnd_candidates(sp, &(sp->Best_mgr->dpnd));
 	}
