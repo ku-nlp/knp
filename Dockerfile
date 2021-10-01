@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM ubuntu:latest
 WORKDIR /app
 ENV DEBIAN_FRONTEND noninteractive
 ARG JPP_VERSION=2.0.0-rc3
