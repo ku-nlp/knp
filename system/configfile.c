@@ -809,7 +809,7 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	    fprintf(Outfp, "Setting default rules ... ");
 	}
 
-	RuleNumMax = 12;
+	RuleNumMax = 15;
 	RULE = (RuleVector *)realloc_data(RULE, sizeof(RuleVector)*RuleNumMax, "read_rc");
 
 	/* mrph_homo 同形異義語 */
@@ -868,6 +868,14 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 	(RULE+CurrentRuleNum)->direction = RtoL;
 	CurrentRuleNum++;
 
+        /* modality 文節 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("modality");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = BnstRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
 	/* kakari_uke 係り受け */
 	(RULE+CurrentRuleNum)->file = strdup("kakari_uke");
 	(RULE+CurrentRuleNum)->mode = RLOOP_MRM;
@@ -886,6 +894,22 @@ THESAURUS_FILE THESAURUS[THESAURUS_MAX];
 
 	/* bnst_basic 基本句 逆方向 ルールループ先行 */
 	(RULE+CurrentRuleNum)->file = strdup("bnst_basic");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = TagRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+        /* modality 基本句 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("modality");
+	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
+	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
+	(RULE+CurrentRuleNum)->type = TagRuleType;
+	(RULE+CurrentRuleNum)->direction = RtoL;
+	CurrentRuleNum++;
+
+        /* clause_function 基本句 逆方向 ルールループ先行 */
+	(RULE+CurrentRuleNum)->file = strdup("clause_function");
 	(RULE+CurrentRuleNum)->mode = RLOOP_RMM;
 	(RULE+CurrentRuleNum)->breakmode = RLOOP_BREAK_NONE;
 	(RULE+CurrentRuleNum)->type = TagRuleType;
