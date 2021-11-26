@@ -75,7 +75,7 @@ make_db_LDADD = @MAKE_DB_LIBS@
 
 main.c: version.h
 lib_print.c: version.h
-version.h:  $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index $(top_srcdir)/VERSION
+version.h:  $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index $(top_srcdir)/VERSION.txt
 	$(AM_V_GEN)( \
 	echo "#define REVISION_ID \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h' --date=short)\"" > $@-new; \
 	echo "#define REVISION_INFO \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h on %cd' --date=short)\"" >> $@-new; \

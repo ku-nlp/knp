@@ -12,7 +12,7 @@ SUBDIRS += system rule dict doc chinese_rule
 
 knprcdir=$(sysconfdir)
 nodist_knprc_DATA = knprc
-dist_noinst_DATA = knprc.in .git/HEAD .git/index VERSION
+dist_noinst_DATA = knprc.in .git/HEAD .git/index VERSION.txt
 CLEANFILES = knprc
 EXTRA_DIST = autogen.sh perl cdb
 
