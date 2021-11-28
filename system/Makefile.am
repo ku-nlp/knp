@@ -79,6 +79,6 @@ version.h:  $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index $(top_srcdir)/VERSI
 	$(AM_V_GEN)( \
 	echo "#define REVISION_ID \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h' --date=short)\"" > $@-new; \
 	echo "#define REVISION_INFO \"$(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%h on %cd' --date=short)\"" >> $@-new; \
-	echo "#define REVISION_VERSION \"$(shell cat $(top_srcdir)/VERSION)\"" >> $@-new; \
+	echo "#define REVISION_VERSION \"$(shell cat $(top_srcdir)/VERSION.txt)\"" >> $@-new; \
 	cmp -s $@ $@-new || cp $@-new $@; \
 	rm $@-new)
