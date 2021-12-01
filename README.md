@@ -29,6 +29,14 @@ KNPは日本語文の構文・格・照応解析を行うシステムです。�
 `cp -ars`実行時にmacOSなどで"cp: illegal option -- s"というエラーが出たら、`cp -ars`の代わりに`mv`を使うなどしてください。
 
 
+## Docker経由での利用
+KNPのインストールに失敗する場合、Dockerを利用してコンテナ内のビルド済みKNPを使用することができます。
+Dockerがインストールされた環境で以下のようにエイリアスを設定してください。
+
+```
+alias knp='docker run -i --rm --platform linux/amd64 kunlp/jumanpp-knp knp'
+```
+
 ## Pythonからの利用
 
 [pyknp](https://github.com/ku-nlp/pyknp)を使ってください。
