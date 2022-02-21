@@ -942,6 +942,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
         case 2:
         case 3:
             OptInput |= OPT_INPUT_PARSED;  /* 係り受け付与済み */
+            break;
         case EOF:
             OptInput |= OPT_INPUT_CHUNKED;  /* 文節分割済み */
             break;
@@ -1000,6 +1001,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
         case 2:
         case 3:
             OptInput |= OPT_INPUT_PARSED;  /* 係り受け付与済み */
+            break;
         case EOF:
             OptInput |= OPT_INPUT_CHUNKED;  /* タグ分割済み */
             break;
