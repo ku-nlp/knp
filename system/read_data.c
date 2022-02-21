@@ -948,7 +948,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
             break;
         default:
             fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-            OptInput = OPT_RAW;
+            OptInput = OPT_INPUT_RAW;
             return readtoeos(fp);
         }
 	    if (sp->Mrph_num == 0) {
@@ -979,7 +979,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 	}
 	/* タグ単位行 */
 	else if (input_buffer[0] == '+') {
-	    if (OptInput == OPT_RAW) {
+	    if (OptInput == OPT_INPUT_RAW) {
             fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
             return readtoeos(fp);
 	    }
@@ -1007,7 +1007,7 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
             break;
         default:
             fprintf(stderr, ";; Invalid input <%s> !\n", input_buffer);
-            OptInput = OPT_RAW;
+            OptInput = OPT_INPUT_RAW;
             return readtoeos(fp);
         }
 

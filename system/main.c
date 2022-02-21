@@ -210,7 +210,7 @@ int  reader_tag = -1;
     OptEllipsis = 0;
     OptGeneralCF = 0;
     OptCorefer = 4;
-    OptInput = OPT_RAW;
+    OptInput = OPT_INPUT_RAW;
     OptExpress = OPT_TREEF;
     OptDisplay = OPT_SIMPLE;
     OptDisplayNE = OPT_NORMAL;
@@ -1500,7 +1500,7 @@ int  reader_tag = -1;
     }
     
     /* 形態素を文節にまとめる */
-    if (OptInput == OPT_RAW) {
+    if (OptInput == OPT_INPUT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) {
 	    clear_bnst_features(sp);
 	    clear_bp_features(sp);
@@ -1560,7 +1560,7 @@ int  reader_tag = -1;
     }
 
     /* タグ単位作成 (-notag時もscaseを引くために行う) */
-    if (OptInput == OPT_RAW || 
+    if (OptInput == OPT_INPUT_RAW ||
 	(OptInput & OPT_INPUT_BNST)) {
     	make_tag_units(sp);
     }

@@ -2176,7 +2176,7 @@ int compare_dpnd(SENTENCE_DATA *sp, TOTAL_MGR *new_mgr, TOTAL_MGR *best_mgr)
          void dpnd_info_to_tag(SENTENCE_DATA *sp, DPND *dp)
 /*==================================================================*/
 {
-  if (OptInput == OPT_RAW || 
+  if (OptInput == OPT_INPUT_RAW ||
       (OptInput & OPT_INPUT_BNST) ||
       (OptInput & OPT_INPUT_CHUNKED)) {
       dpnd_info_to_tag_raw(sp, dp);

@@ -154,7 +154,7 @@
 #define OPT_COREFER_AUTO 64
 #define OPT_AUTHOR_AUTO 128
 #define OPT_ALL_CASE 256
-#define OPT_RAW		0
+#define OPT_INPUT_RAW		0
 #define OPT_INPUT_PARSED	1
 #define OPT_INPUT_BNST	2
 #define OPT_INPUT_CHUNKED	4

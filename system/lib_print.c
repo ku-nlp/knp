@@ -1613,7 +1613,7 @@ void print_result(SENTENCE_DATA *sp, int case_print_flag, int eos_flag)
 	fprintf(Outfp, " %s", sp->Comment);
     }
     
-    if (OptInput == OPT_RAW) {
+    if (OptInput == OPT_INPUT_RAW) {
 	fprintf(Outfp, " KNP:%s-%s", REVISION_VERSION, REVISION_ID);
 
 	if ((date_p = (char *)getenv("DATE")))
