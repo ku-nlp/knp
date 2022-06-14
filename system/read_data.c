@@ -1140,6 +1140,14 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		}
 	    }
 
+            /* Update Hinshi/Bunrui/Katuyou_{Kata, Kei} IDs from string for INPUT_PARSED */
+            if (OptInput & OPT_INPUT_PARSED) {
+		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
+		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
+		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
+		m_ptr->Katuyou_Kei = get_form_id(Katuyou_Kei_str, m_ptr->Katuyou_Kata);
+	    }
+
 	    if (mrph_item == 12) {
 		char *imip, *cp, *rep_buf;
 
@@ -1222,13 +1230,6 @@ int store_one_annotation(SENTENCE_DATA *sp, TAG_DATA *tp, char *token)
 		if (sp->Comment) fprintf(stderr, "(%s)\n", sp->Comment);
 		return readtoeos(fp);
 	    }   
-
-	    if (OptInput & OPT_INPUT_PARSED) {
-		m_ptr->Hinshi = get_hinsi_id(Hinshi_str);
-		m_ptr->Bunrui = get_bunrui_id(Bunrui_str, m_ptr->Hinshi);
-		m_ptr->Katuyou_Kata = get_type_id(Katuyou_Kata_str);
-		m_ptr->Katuyou_Kei = get_form_id(Katuyou_Kei_str, m_ptr->Katuyou_Kata);
-	    }
 
 	    /* clear_feature(&(m_ptr->f)); 
 	       mainの文ごとのループの先頭で処理に移動 */

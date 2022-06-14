@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(knp, m4_esyscmd([tr -d '\n' < VERSION]), nl-resource@nlp.ist.i.kyoto-u.ac.jp)
+AC_INIT(knp, m4_esyscmd([tr -d '\n' < VERSION.txt]), nl-resource@nlp.ist.i.kyoto-u.ac.jp)
 AC_PREREQ(2.53)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([system/main.c])
