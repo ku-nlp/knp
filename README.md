@@ -41,7 +41,7 @@ $ knp -v
 
 ## Pythonからの利用
 
-[pyknp](https://github.com/ku-nlp/pyknp)を使ってください。
+[pyknp](https://github.com/ku-nlp/pyknp) または [rhoknp](https://github.com/ku-nlp/rhoknp) を使ってください。
 
 
 ## Perlからの利用
