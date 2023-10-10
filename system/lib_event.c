@@ -9,7 +9,7 @@
 
 #include "knp.h"
 
-DBM_FILE	event_db;
+extern DBM_FILE	event_db;
 int		EventDicExist;
 
 /*==================================================================*/
@@ -64,7 +64,7 @@ int		EventDicExist;
     float retval;
 
     value = db_get(event_db, cp);
-    
+
     if (value) {
 	retval = atof(value);
 	free(value);
@@ -122,11 +122,11 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
 
 	if (closest > -1) {
 	    cp = pp_code_to_kstr(ptr->cpm_ptr->cf.pp[closest][0]);
-	    ccstr = (char *)malloc_data(strlen(cp) + 
-					strlen(ptr->cpm_ptr->elem_b_ptr[closest]->head_ptr->Goi) + 
-					strlen(str) + 3, 
+	    ccstr = (char *)malloc_data(strlen(cp) +
+					strlen(ptr->cpm_ptr->elem_b_ptr[closest]->head_ptr->Goi) +
+					strlen(str) + 3,
 					"make_pred_str_with_cc");
-	    sprintf(ccstr, "%s-%s-%s", ptr->cpm_ptr->elem_b_ptr[closest]->head_ptr->Goi, 
+	    sprintf(ccstr, "%s-%s-%s", ptr->cpm_ptr->elem_b_ptr[closest]->head_ptr->Goi,
 		    cp, str);
 	    free(str);
 	    return ccstr;
@@ -136,7 +136,7 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
 }
 
 /*==================================================================*/
-	  float get_event_value(SENTENCE_DATA *sp1, TAG_DATA *p1, 
+	  float get_event_value(SENTENCE_DATA *sp1, TAG_DATA *p1,
 				SENTENCE_DATA *sp2, TAG_DATA *p2)
 /*==================================================================*/
 {
@@ -202,7 +202,7 @@ char *make_pred_str_with_cc(SENTENCE_DATA *sp, TAG_DATA *ptr, int flag)
     float val;
 
     if (EventDicExist == TRUE) {
-	buf = (char *)malloc_data(strlen(cf1->cf_id) + strlen(cf2->cf_id) + 2, 
+	buf = (char *)malloc_data(strlen(cf1->cf_id) + strlen(cf2->cf_id) + 2,
 				  "get_cf_event_value");
 	sprintf(buf, "%s-%s", cf1->cf_id, cf2->cf_id);
 	val = get_event(buf);

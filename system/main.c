@@ -20,7 +20,7 @@ TOTAL_MGR	Best_mgr;			/* 依存・格解析管理データ */
 TOTAL_MGR	Op_Best_mgr;
 ENTITY_MGR      entity_manager;                 /* ENTITY管理データ */
 
-int 		Revised_para_num;			
+int 		Revised_para_num;
 
 char		*ErrorComment = NULL;		/* エラーコメント */
 char		*WarningComment = NULL;		/* 警告コメント */
@@ -37,7 +37,7 @@ int 		Mask_matrix[BNST_MAX][BNST_MAX]; /* 並列マスク
 						    2:並列のhead間,
 						    3:並列のgapとhead間 */
 double 		Para_matrix[PARA_MAX][BNST_MAX][BNST_MAX];
-double          Chi_pa_matrix[BNST_MAX][BNST_MAX];  
+double          Chi_pa_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_start_matrix[BNST_MAX][BNST_MAX];
 int             Chi_np_end_matrix[BNST_MAX][BNST_MAX];
 int             Chi_quote_start_matrix[BNST_MAX][BNST_MAX];
@@ -110,12 +110,12 @@ int		OptPosModification;
 // option for Chinese
 // 1 means use generative model, use chidpnd_prob.db chi_dis_comma_*.cb chidpnd_stru.db
 // 0 means use collins model, use chidpnd.db chi_pa.db
-int             OptChiGenerative; 
+int             OptChiGenerative;
 
 // option for Chinese
 // 1 means do pos-tagging with parsing together
 // 0 means only do parsing
-int             OptChiPos; 
+int             OptChiPos;
 
 int             PrintNum;
 VerboseType	VerboseLevel = VERBOSE0;
@@ -127,8 +127,8 @@ int             sen_num;
 int             is_frag;
 
 /* DB file for Chinese dpnd rule */
-DBM_FILE chi_dpnd_db;
-int     CHIDpndExist;
+extern DBM_FILE chi_dpnd_db;
+extern int     CHIDpndExist;
 
 /* Server Client Extention */
 static int	sfd, fd;
@@ -142,11 +142,11 @@ FILE		*Infp;
 FILE		*Outfp;
 
 char *Case_name[] = {
-    		"ガ格", "ヲ格", "ニ格", "デ格", "カラ格", 
+    		"ガ格", "ヲ格", "ニ格", "デ格", "カラ格",
 		"ト格", "ヨリ格", "ヘ格", "マデ格", "ノ格",
 		"ガ２", ""};
 
-char 		*ProgName;
+extern char 		*ProgName;
 extern FILE	*Jumanrc_Fileptr;
 extern CLASS    Class[CLASSIFY_NO + 1][CLASSIFY_NO + 1];
 extern TYPE     Type[TYPE_NO];
@@ -183,9 +183,9 @@ int  reader_tag = -1;
 			     void usage()
 /*==================================================================*/
 {
-    fprintf(stderr, "Usage: knp [-case|dpnd|dpnd-fast|bnst|anaphora] [-ne-crf]\n" 
-	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab]\n" 
-	    "           [-normal|detail|debug]\n" 
+    fprintf(stderr, "Usage: knp [-case|dpnd|dpnd-fast|bnst|anaphora] [-ne-crf]\n"
+	    "           [-tree|bnsttree|sexp|tab|bnsttab|mrphtab]\n"
+	    "           [-normal|detail|debug]\n"
 	    "           [-expand] [-semantic-head]\n"
 #ifdef _WIN32
 	    "           [-C host:port] [-S] [-N port]\n"
@@ -193,7 +193,7 @@ int  reader_tag = -1;
 	    "           [-C host:port] [-S|F] [-N port]\n"
 #endif
 	    "           [-timeout second] [-r rcfile]\n");
-    exit(1);    
+    exit(1);
 }
 
 /*==================================================================*/
@@ -481,7 +481,7 @@ int  reader_tag = -1;
 	    OptCaseFlag &= ~OPT_CASE_CLEAR_CF;
 
 	}
-	else if (str_eq(argv[0], "-anaphora-each-sentence")) 
+	else if (str_eq(argv[0], "-anaphora-each-sentence"))
 	{
 		OptAnaphora |= (OPT_ANAPHORA | OPT_EACH_SENTENCE | OPT_UNNAMED_ENTITY);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
@@ -518,7 +518,7 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-author-score")) {
 	    argv++; argc--;
-	    if (argc < 1) 
+	    if (argc < 1)
 		{
 			usage();
 		}
@@ -527,7 +527,7 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-reader-score")) {
 	    argv++; argc--;
-	    if (argc < 1) 
+	    if (argc < 1)
 		{
 			usage();
 		}
@@ -539,7 +539,7 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-author-mention")) {
 		argv++; argc--;
-	    if (argc < 1) 
+	    if (argc < 1)
 		{
 			usage();
 		}
@@ -551,7 +551,7 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-reader-mention")) {
 		argv++; argc--;
-	    if (argc < 1) 
+	    if (argc < 1)
 		{
 			usage();
 		}
@@ -581,9 +581,9 @@ int  reader_tag = -1;
 	else if (str_eq(argv[0], "-anaphora-copula")) {
 	    OptAnaphora |= (OPT_ANAPHORA | OPT_ANAPHORA_COPULA);
 	    OptEllipsis |= (OPT_ELLIPSIS | OPT_COREFER);
-	}	
+	}
 	else if (str_eq(argv[0], "-read-ne")) {
-	    OptReadNE = 1;    
+	    OptReadNE = 1;
 	}
 #ifdef USE_SVM
 	else if (str_eq(argv[0], "-ellipsis-svm")) {
@@ -762,8 +762,8 @@ int  reader_tag = -1;
 	}
 	else if (str_eq(argv[0], "-relation-noun-only")) {
 	    OptEllipsis |= OPT_REL_NOUN;
-	    OptEllipsis &= ~OPT_ELLIPSIS; 
-	}	
+	    OptEllipsis &= ~OPT_ELLIPSIS;
+	}
 	else if (str_eq(argv[0], "-relation-comp-noun")) {
 	    OptEllipsis |= OPT_REL_NOUN;
 	    OptUseCPNCF = TRUE;
@@ -1199,13 +1199,13 @@ int  reader_tag = -1;
 	    read_homo_rule((RULE+i)->file);
 	}
 	/* 形態素ルール or 文節ルール */
-	else if ((RULE+i)->type == MorphRuleType || 
-		 (RULE+i)->type == PreProcessMorphRuleType || 
-		 (RULE+i)->type == NeMorphRuleType || 
-		 (RULE+i)->type == TagRuleType || 
-		 (RULE+i)->type == BnstRuleType || 
-		 (RULE+i)->type == AfterDpndBnstRuleType || 
-		 (RULE+i)->type == AfterDpndTagRuleType || 
+	else if ((RULE+i)->type == MorphRuleType ||
+		 (RULE+i)->type == PreProcessMorphRuleType ||
+		 (RULE+i)->type == NeMorphRuleType ||
+		 (RULE+i)->type == TagRuleType ||
+		 (RULE+i)->type == BnstRuleType ||
+		 (RULE+i)->type == AfterDpndBnstRuleType ||
+		 (RULE+i)->type == AfterDpndTagRuleType ||
 		 (RULE+i)->type == PostProcessTagRuleType) {
 	    read_general_rule(RULE+i);
 	}
@@ -1277,11 +1277,11 @@ int  reader_tag = -1;
 #ifndef _WIN32
     sigset_t set;
     if (-1 == sigfillset(&set)) {
-	perror("sigfullset:"); 
+	perror("sigfullset:");
 	exit(1);
     }
     if (-1 == sigprocmask(SIG_UNBLOCK, &set, 0)) {
-	perror("sigprocmask:"); 
+	perror("sigprocmask:");
 	exit(1);
     }
 
@@ -1487,7 +1487,7 @@ int  reader_tag = -1;
     assign_cfeature(&(sp->mrph_data[sp->Mrph_num-1].f), "文末", FALSE);
     assign_general_feature(sp->mrph_data, sp->Mrph_num, MorphRuleType, FALSE, FALSE);
 
-    /* 正規化代表表記を形態素に付与 
+    /* 正規化代表表記を形態素に付与
        ※代表表記変更後に行う */
     assign_canonical_rep_to_mrph(sp);
 
@@ -1498,7 +1498,7 @@ int  reader_tag = -1;
     else if (OptNE && !OptNEcase && OptNEparent) {
 	ne_analysis(sp);
     }
-    
+
     /* 形態素を文節にまとめる */
     if (OptInput == OPT_INPUT_RAW) {
 	if (make_bunsetsu(sp) == FALSE) {
@@ -1549,7 +1549,7 @@ int  reader_tag = -1;
        ※ ルール適用後に意味素を引かないのは:
            => 意味素はルールで使うかもしれないので、ルール適用前に与えておく */
     for (i = 0; i < sp->Bnst_num; i++) {
-	if (!check_feature((sp->bnst_data+i)->f, "体言") && 
+	if (!check_feature((sp->bnst_data+i)->f, "体言") &&
 	    !check_feature((sp->bnst_data+i)->f, "サ変")) {
 	    (sp->bnst_data+i)->SM_code[0] = '\0';
 	    delete_cfeature(&((sp->bnst_data+i)->f), "SM");
@@ -1660,7 +1660,7 @@ int  reader_tag = -1;
     }
 
     /* 係り受け関係がない場合の弛緩 */
-	
+
     if (Language != CHINESE && relax_dpnd_matrix(sp) == TRUE && OptDisplay == OPT_DEBUG) {
 	fprintf(Outfp, "Relaxation ... \n");
 	print_matrix(sp, PRINT_DPND, 0);
@@ -1808,7 +1808,7 @@ PARSED:
 
     if (OptNE && (!OptNEparent || OptNEcase)) {
 	/* 固有表現認識に必要なfeatureを与える */
-	for_ne_analysis(sp);   
+	for_ne_analysis(sp);
 	/* 格解析後に固有表現認識を行う */
 	ne_analysis(sp);
 	if (!OptNElearn) assign_ne_feature_tag(sp);
@@ -1841,7 +1841,7 @@ PARSED:
     /************/
     /* 文脈解析 */
     /************/
-	       
+
     if (OptEllipsis) {
 	assign_mrph_num(sp);
 	make_dpnd_tree(sp);
@@ -1849,7 +1849,7 @@ PARSED:
 	    fprintf(stderr, ";; Sentence buffer (%d) overflowed! ... Initialized context!\n", SENTENCE_MAX);
 	    clear_context(sp, FALSE);
 	}
-	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) { 
+	else if (OptAnaphora && entity_manager.num + TAG_MAX >= ENTITY_MAX - 1) {
 	    /* 1文で生成されるENITYT数はTAG_MAX以下なのでここ以外でEntity bufferが溢れることはない */
 	    fprintf(stderr, ";; Entity buffer (%d) overflowed! ... Initialized context!\n", ENTITY_MAX);
 	    clear_context(sp, FALSE);
@@ -1878,7 +1878,7 @@ PARSED:
 	    }
 	}
     }
-	
+
     /* 固有表現認識のためのキャッシュ作成 */
     if (OptNE) {
 	make_ne_cache(sp);
@@ -1892,8 +1892,8 @@ PARSED:
 /*==================================================================*/
 {
     /* 格フレームの初期化 */
-    if ((OptCaseFlag & OPT_CASE_CLEAR_CF) && 
-	(OptAnalysis == OPT_CASE || 
+    if ((OptCaseFlag & OPT_CASE_CLEAR_CF) &&
+	(OptAnalysis == OPT_CASE ||
 	 OptAnalysis == OPT_CASE2 ||
 	 OptUseNCF)) {
 	clear_cf(0);
@@ -1994,7 +1994,7 @@ PARSED:
     init_case_analysis_cpm(&current_sentence_data);
     init_case_analysis_cmm();
 
-    /* 意味クラスを用いた照応解析を行う場合クラスごとの出現確率を読み込む */    
+    /* 意味クラスを用いた照応解析を行う場合クラスごとの出現確率を読み込む */
     if (OptAnaphora && (OptGeneralCF & OPT_CF_CLASS)) init_class_prob();
 
     /* ルール読み込み
@@ -2015,7 +2015,7 @@ PARSED:
 
     while ( 1 ) {
 
-	/* Server Mode の場合 前回の出力が成功してない場合は 
+	/* Server Mode の場合 前回の出力が成功してない場合は
 	   ERROR とはく Server/Client モードの場合は,出力の同期をこれで行う */
 	if (!success && OptMode == SERVER_MODE) {
 	    fprintf(Outfp, "EOS ERROR\n");
@@ -2040,7 +2040,7 @@ PARSED:
 	    when_no_dpnd_struct(sp);
 	    dpnd_info_to_bnst(sp, &(sp->Best_mgr->dpnd));
 	    if (!(OptExpress & OPT_NOTAG)) {
-		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd)); 
+		dpnd_info_to_tag(sp, &(sp->Best_mgr->dpnd));
 		if (OptExpress & OPT_MRPH) {
 		    dpnd_info_to_mrph(sp);
 		}
@@ -2060,7 +2060,7 @@ PARSED:
 	    fflush(Outfp);
 
 	    /* OptTimeoutExit == 1 または格・省略解析のときは終わる */
-	    if (OptTimeoutExit || 
+	    if (OptTimeoutExit ||
 		(OptAnalysis == OPT_CASE || OptAnalysis == OPT_CASE2)) {
 		exit(100);
 	    }
@@ -2084,7 +2084,7 @@ PARSED:
     }
 	if (OptAnaphora && !(OptAnaphora & OPT_EACH_SENTENCE))
 	{
-		
+
 		all_sentence_anaphora_analysis(sp);
 		if(OptExpress == OPT_TAB)
 		{
@@ -2092,7 +2092,7 @@ PARSED:
 				print_result(sentence_data+i, 0, 1);
 			}
 		}
-		
+
 	}
 
     if (OptArticle && OptEllipsis) {
@@ -2110,8 +2110,8 @@ PARSED:
 static void sig_child()
 {
     int status;
-    while(waitpid(-1, &status, WNOHANG) > 0) {}; 
-    signal(SIGCHLD, sig_child); 
+    while(waitpid(-1, &status, WNOHANG) > 0) {};
+    signal(SIGCHLD, sig_child);
 }
 
 static void sig_term()
@@ -2178,20 +2178,20 @@ static void clean_and_exit(int status)
         fprintf(stderr,";; socket error: %s\n", (char *)strerror(errno));
 	clean_and_exit(1);
     }
-  
+
     memset(&sin, 0, sizeof(sin));
     sin.sin_port        = htons(OptPort);
     sin.sin_family      = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
-  
-    /* bind */  
+
+    /* bind */
     if (bind(sfd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 	fprintf(stderr, ";; bind error\n");
 	closesocket(sfd);
 	clean_and_exit(1);
     }
-  
-    /* listen */  
+
+    /* listen */
     if (listen(sfd, SOMAXCONN) < 0) {
 	fprintf(stderr, ";; listen error\n");
 	closesocket(sfd);
@@ -2221,7 +2221,7 @@ static void clean_and_exit(int status)
 	/* remove all supplementary groups */
 	setgroups(0, &dummy);
 	if ((gp = getgrgid(ent_pw->pw_gid)))
-	    setgid(gp->gr_gid); 
+	    setgid(gp->gr_gid);
 	/* finally drop root */
 	setuid(ent_pw->pw_uid);
     }
@@ -2237,7 +2237,7 @@ static void clean_and_exit(int status)
 	    fprintf(stderr, ";; accepting ... ");
 	}
 	if ((fd = accept(sfd, (struct sockaddr *)&from, &from_len)) < 0) {
-	    if (errno == EINTR) 
+	    if (errno == EINTR)
 		continue;
 	    fprintf(stderr, ";; accept error\n");
 	    closesocket(sfd);
@@ -2300,7 +2300,7 @@ static void clean_and_exit(int status)
 		}
 
 		/* RUN */
-		/* Option 解析は strstr なんかでかなりいいかげん 
+		/* Option 解析は strstr なんかでかなりいいかげん
 		   つまり間違ったオプションはエラーにならない */
 		if (strncasecmp(buf, "RUN", 3) == 0) {
 		    char *p;
@@ -2321,7 +2321,7 @@ static void clean_and_exit(int status)
 			p += 3;
 			while(*p != '\0' && (*p == ' ' || *p == '\t')) p++;
 			if (*p != '\0') OptIgnoreChar = *p;
-		    } 
+		    }
 		    fprintf(Outfp, "200 OK option=[Analysis=%d Express=%d"
 			    " Display=%d]\n",
 			    OptAnalysis, OptExpress, OptDisplay);
@@ -2360,12 +2360,12 @@ static void clean_and_exit(int status)
     }
 }
 
-/* 文字列を送って、ステータスコードを返す */  
+/* 文字列を送って、ステータスコードを返す */
 static int send_string(FILE *fi, FILE *fo, char *str)
 {
     int len, result = 0;
     char buf[1024];
-    
+
     if (str != NULL){
 	fwrite(str, sizeof(char), strlen(str), fo);
 	fflush(fo);
@@ -2381,7 +2381,7 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     }
 
     return result;
-} 
+}
 
 /*==================================================================*/
 			  void client_mode()
@@ -2425,7 +2425,7 @@ static int send_string(FILE *fi, FILE *fo, char *str)
 	fprintf(stderr, ";; socket error\n");
 	clean_and_exit(1);
     }
-  
+
     sin.sin_family = AF_INET;
     sin.sin_port   = htons(port);
     sin.sin_addr = *((struct in_addr * )hp->h_addr);
@@ -2476,7 +2476,7 @@ static int send_string(FILE *fi, FILE *fo, char *str)
     case OPT_DETAIL: strcat(option, " -detail"); break;
     case OPT_DEBUG:  strcat(option, " -debug");  break;
     }
-    
+
     if (OptExpandP) strcat(option, " -expand");
     if (!OptIgnoreChar) {
 	sprintf(buf, " -i %c", OptIgnoreChar);

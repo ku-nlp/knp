@@ -24,9 +24,9 @@ extern int		BGHExist;
 extern int		SMExist;
 extern int		SM2CODEExist;
 extern int		SMP2SMGExist;
-DBM_FILE		sm_db;
-DBM_FILE		sm2code_db;
-DBM_FILE		smp2smg_db;
+extern DBM_FILE		sm_db;
+extern DBM_FILE		sm2code_db;
+extern DBM_FILE		smp2smg_db;
 
 extern SENTENCE_DATA	sentence_data[];
 extern SENTENCE_DATA	current_sentence_data;
@@ -53,8 +53,8 @@ extern int right_arg[];
 
 /* store count for gigaword pa pair */
 /* for cell (i,j), i is the position of argument, j is the position of predicate */
-extern double           Chi_pa_matrix[][BNST_MAX];  
- 
+extern double           Chi_pa_matrix[][BNST_MAX];
+
 extern int              Chi_np_start_matrix[][BNST_MAX];
 extern int              Chi_np_end_matrix[][BNST_MAX];
 
@@ -136,7 +136,7 @@ extern int              OptChiGenerative;
 // option for Chinese
 // 1 means do pos-tagging with parsing together
 // 0 means only do parsing
-extern int             OptChiPos; 
+extern int             OptChiPos;
 
 extern VerboseType	VerboseLevel;
 
@@ -156,8 +156,8 @@ extern int		CurDpndRuleSize;
 extern BnstRule		ContRuleArray[];
 extern int 		ContRuleSize;
 
-void			*EtcRuleArray;
-int			CurEtcRuleSize;
+extern void			*EtcRuleArray;
+extern int			CurEtcRuleSize;
 
 extern char 		*Case_name[];
 extern char		*ETAG_name[];
@@ -330,7 +330,7 @@ extern int cf_match_sm_thesaurus(TAG_DATA *tp, CASE_FRAME *cfp, int n);
 extern float calc_similarity_word_cf(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern float calc_similarity_word_cf_with_sm(TAG_DATA *tp, CASE_FRAME *cfp, int n, int *pos);
 extern int cf_match_exactly(char *word, int word_len, char **ex_list, int ex_num, int *pos);
-extern float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word, 
+extern float _calc_similarity_sm_cf(char *exd, int expand, char *unmatch_word,
 				    CASE_FRAME *cfp, int n, int *pos);
 extern int sms_match(char *cpp, char *cpd, int expand);
 
@@ -349,7 +349,7 @@ extern void server_read_rc(FILE *fp);
 
 /* context.c */
 extern void InitAnaphoraList();
-extern void RegisterPredicate(char *key, int voice, int cf_addr, 
+extern void RegisterPredicate(char *key, int voice, int cf_addr,
 			      int pp, char *pp_str, char *word, int sent_n, int tag_n, int flag);
 extern void ClearSentences(SENTENCE_DATA *sp);
 extern void ClearSMList();
@@ -434,7 +434,7 @@ extern void close_bgh();
 extern float dt_classify(char *data, int pp);
 
 /* lib_event.c */
-extern float get_event_value(SENTENCE_DATA *sp1, TAG_DATA *p1, 
+extern float get_event_value(SENTENCE_DATA *sp1, TAG_DATA *p1,
 			     SENTENCE_DATA *sp2, TAG_DATA *p2);
 extern float get_cf_event_value(CASE_FRAME *cf1, CASE_FRAME *cf2);
 
@@ -567,7 +567,7 @@ extern int regexpmrphrule_match(MrphRule *r_ptr, MRPH_DATA *d_ptr,
 				int bw_length, int fw_length);
 extern int regexpbnstrule_match(BnstRule *r_ptr, BNST_DATA *d_ptr,
 				int bw_length, int fw_length);
-extern int regexptagrule_match(BnstRule *r_ptr, TAG_DATA *d_ptr, 
+extern int regexptagrule_match(BnstRule *r_ptr, TAG_DATA *d_ptr,
 			       int bw_length, int fw_length);
 extern int _regexpbnst_match(REGEXPMRPHS *r_ptr, BNST_DATA *b_ptr);
 
