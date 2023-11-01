@@ -90,7 +90,7 @@
 #define MENTIONED_MAX           256   /* 1つのENTITYが言及される回数 */
 
 #ifndef IMI_MAX
-	#define IMI_MAX	1024	/* defined in "juman.h" */	
+	#define IMI_MAX	1024	/* defined in "juman.h" */
 #endif
 
 #define DATA_LEN	5120
@@ -196,9 +196,9 @@
 #define OPT_AUTHOR_AFTER    8192
 #define OPT_ONLY_ENTITY    16384
 #define OPT_NO_PSEUDO    	32768
-#define OPT_EACH_SENTENCE   65536 	
-#define OPT_ITERATIVE   131072 	
-#define OPT_PRUNING   262144 	
+#define OPT_EACH_SENTENCE   65536
+#define OPT_ITERATIVE   131072
+#define OPT_PRUNING   262144
 
 #define	OPT_CASE_ASSIGN_GA_SUBJ	2
 #define	OPT_CASE_NO	4
@@ -216,7 +216,7 @@
 #define	OPT_CASE_CF_ON_MEMORY	16384
 #define	OPT_CASE_CLEAR_CF	32768
 #define	OPT_CASE_FALLBACK_TO_DPND	65536
-#define	OPT_CASE_USE_CV_CF	131072 	
+#define	OPT_CASE_USE_CV_CF	131072
 #define	OPT_CASE_CFCASE_FORMAT_DENOMINATOR	262144
 #define	OPT_CASE_ANALYZE_DEVERBATIVE_NOUN	524288
 #define	OPT_CASE_CF_USE_ID	1048576
@@ -250,7 +250,7 @@
 #define UTYPE_NUMBER	12
 #define NE_MODEL_NUMBER	33
 
-typedef enum {VERBOSE0, VERBOSE1, VERBOSE2, 
+typedef enum {VERBOSE0, VERBOSE1, VERBOSE2,
 	      VERBOSE3, VERBOSE4, VERBOSE5} VerboseType;
 
 #define PARA_KEY_O          0
@@ -594,47 +594,47 @@ typedef struct _RuleVector {
 #define PreProcessMorphRuleType 16
 
 /* 辞書の最大数 */
-#define DICT_MAX	39
+#define DICT_MAX	38
 
 /* 辞書の定義 */
-#define	BGH_DB		1
-#define	SM_DB		2
-#define	SM2CODE_DB	3
-#define	SMP2SMG_DB	4
-#define	SCASE_DB	5
-#define CF_INDEX_DB	6
-#define CF_DATA		7
-#define	PROPER_DB	8
-#define	PROPERC_DB	9
-#define	PROPERCASE_DB	10
-#define	CODE2SM_DB	12
-#define	EVENT_DB	13
-#define CF_NOUN_INDEX_DB	14
-#define CF_NOUN_DATA		15
-#define CF_SIM_DB	16
-#define CF_CASE_DB	17
-#define CF_EX_DB	18
-#define CASE_DB		19
-#define CFP_DB		20
-#define RENYOU_DB	21
-#define ADVERB_DB	22
-#define PARA_DB		23
-#define NOUN_CO_DB	24
-#define CHI_DPND_DB     25
-#define AUTO_DIC_DB	26
-#define HOWNET_DEF_DB   27
-#define HOWNET_TRAN_DB  28
-#define HOWNET_ANTONYM_DB       29
-#define HOWNET_CATEGORY_DB      30
-#define HOWNET_SEM_DEF_DB       31
-#define CHI_PA_DB       32
-#define CHI_DPND_PROB_DB        33
-#define CHI_DIS_COMMA_DB        34
-#define CHI_CASE_DB           35
-#define CHI_POS_DB           36
-#define NV_MI_DB	37
-#define MRPH2ID_DB	38
-#define SOTO_TXT	39
+#define	BGH_DB		0
+#define	SM_DB		1
+#define	SM2CODE_DB	2
+#define	SMP2SMG_DB	3
+#define	SCASE_DB	4
+#define CF_INDEX_DB	5
+#define CF_DATA		6
+#define	PROPER_DB	7
+#define	PROPERC_DB	8
+#define	PROPERCASE_DB	9
+#define	CODE2SM_DB	10
+#define	EVENT_DB	11
+#define CF_NOUN_INDEX_DB	12
+#define CF_NOUN_DATA		13
+#define CF_SIM_DB	14
+#define CF_CASE_DB	15
+#define CF_EX_DB	16
+#define CASE_DB		17
+#define CFP_DB		18
+#define RENYOU_DB	19
+#define ADVERB_DB	20
+#define PARA_DB		21
+#define NOUN_CO_DB	22
+#define CHI_DPND_DB     23
+#define AUTO_DIC_DB	24
+#define HOWNET_DEF_DB   25
+#define HOWNET_TRAN_DB  26
+#define HOWNET_ANTONYM_DB       27
+#define HOWNET_CATEGORY_DB      28
+#define HOWNET_SEM_DEF_DB       29
+#define CHI_PA_DB       30
+#define CHI_DPND_PROB_DB        31
+#define CHI_DIS_COMMA_DB        32
+#define CHI_CASE_DB           33
+#define CHI_POS_DB           34
+#define NV_MI_DB	35
+#define MRPH2ID_DB	36
+#define SOTO_TXT	37
 
 /* シソーラスの最大数 */
 #define THESAURUS_MAX	3
@@ -852,10 +852,10 @@ typedef struct {
 typedef struct mention {
     int 		sent_num;
     int                 tag_num;
-    char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */   
+    char                cpp_string[PP_STRING_MAX]; /* 用言の格要素としての格 */
     char                spp_string[PP_STRING_MAX]; /* 格構造における表層格 */
     char                type; /* 'S', '=', 'N', 'C', 'O', 'D' */
-    double              salience_score; /* どのくらい先行詞になりやすいか */    
+    double              salience_score; /* どのくらい先行詞になりやすいか */
 	double              static_salience_score;/* salience_scoreの元になる値。*/
 	/*各mentionのstatic_salience_score*(SALIENCE_DACAY_RATE**sentece_distance)の和をとると salience_scoreになる */
     struct tnode_t      *tag_ptr;
@@ -870,7 +870,7 @@ typedef struct mention_manager {
     int                 num;
     char 	        cf_id[CF_ID_LEN_MAX]; /* 格構造出力用 */
     CF_ptr 	        cf_ptr;
-    MENTION             mention[MENTION_MAX];        
+    MENTION             mention[MENTION_MAX];
 } MENTION_MGR;
 
 /* ENTITY */
@@ -899,7 +899,7 @@ typedef struct entity {
 /* 文章全体に出現したENTITYを管理する構造体 */
 typedef struct entity_manager {
     int                 num;
-    ENTITY              entity[ENTITY_MAX];        
+    ENTITY              entity[ENTITY_MAX];
 } ENTITY_MGR;
 
 /*====================================================================
@@ -1429,7 +1429,7 @@ typedef struct entity_list {
 typedef struct tcf_def {
     CASE_FRAME 	    cf;				 /* 入力文の格構造 */
 	CASE_FRAME 	    cf_with_functional_tag[FUNCTIONAL_TAG_MAX]; /* 入力文の格構造(1以降には機能的基本句の格構造が入る) */
-	int             cf_num; 
+	int             cf_num;
     TAG_DATA	    *pred_b_ptr;		 /* 入力文の用言文節 */
     TAG_DATA	    *elem_b_ptr[CF_ELEMENT_MAX]; /* 入力文の格要素文節 */
 	int         map_tcf_elem_to_cf[CF_ELEMENT_MAX];/*何番目のcfと対応するか(0は本動詞)*/
@@ -1441,9 +1441,9 @@ typedef struct tcf_def {
 #define ELLIPSIS_CASE_NUM 4
 
 #define NO_ASSIGNMENT     0 /* ある格スロットが対応付けられない確率 */
-#define EX_PMI            1 /* 語PMI */	       
-#define CEX_PMI           2 /* カテゴリPMI */	       
-#define NEX_PMI           3 /* 固有表現PMI */	       
+#define EX_PMI            1 /* 語PMI */
+#define CEX_PMI           2 /* カテゴリPMI */
+#define NEX_PMI           3 /* 固有表現PMI */
 #define CLS_PMI           4 /* クラスPMI */
 #define WA_IN_THE_SENT    5 /* 先行詞候補が同一文に出現かつ格助詞「は」を伴う */
 #define MAX_PMI           6 /*PMIで最大のもの*/
@@ -1458,12 +1458,12 @@ typedef struct tcf_def {
 #define ASSIGNMENT       14 /*ある格スロットが対応付けられる確率*/
 #define AUTHOR_SCORE 15
 #define READER_SCORE 16
-#define EX_CASE_PROB            17 /* 語が格スロットに入る確率 */	       
-#define EX_PROB            18 /* 語が出現する確率 */	       
-#define CEX_CASE_PROB           19 /* カテゴリPMI */	       
-#define CEX_PROB           20 /* カテゴリPMI */	       
-#define NEX_CASE_PROB           21 /* 固有表現PMI */	       
-#define NEX_PROB           22 /* 固有表現PMI */	       
+#define EX_CASE_PROB            17 /* 語が格スロットに入る確率 */
+#define EX_PROB            18 /* 語が出現する確率 */
+#define CEX_CASE_PROB           19 /* カテゴリPMI */
+#define CEX_PROB           20 /* カテゴリPMI */
+#define NEX_CASE_PROB           21 /* 固有表現PMI */
+#define NEX_PROB           22 /* 固有表現PMI */
 #define CLS_CASE_PROB           23 /* クラスPMI */
 #define CLS_PROB           24 /* クラスPMI */
 #define ALT_CT_PMI 25
@@ -1476,7 +1476,7 @@ typedef struct tcf_def {
 #define UNNAMED_CASE_PROB 32
 #define VOICE_S 33
 #define CLOSEST_APPEARANCE_S (VOICE_S+VOICE_NUM)
-#define CLOSEST_APPEARANCE_NUM 4 
+#define CLOSEST_APPEARANCE_NUM 4
 #define PRED_DPND_TYPE_S (CLOSEST_APPEARANCE_NUM+CLOSEST_APPEARANCE_S)
 #define PRED_DPND_TYPE_NUM 3
 #define VERB_SITUATION_S (PRED_DPND_TYPE_S+PRED_DPND_TYPE_NUM)
@@ -1485,7 +1485,7 @@ typedef struct tcf_def {
 #define NE_FEATURE_NUM NE_NUM
 #define LOCATION_S       (NE_FEATURE_S+NE_FEATURE_NUM)  /* 位置カテゴリ素性の開始位置 */
 #define LOCATION_NUM    (135) /* 位置カテゴリ素性の種類 + simple_loc_num */
-#define SIMPLE_LOCATION_S (LOCATION_S+LOCATION_NUM*3) 
+#define SIMPLE_LOCATION_S (LOCATION_S+LOCATION_NUM*3)
 #define SIMPLE_LOCATION_NUM 15
 #define UNNAMED_NUM_S  (SIMPLE_LOCATION_S+SIMPLE_LOCATION_NUM*3)
 #define YOBIKAKE_S (UNNAMED_NUM_S+UNNAMED_ENTITY_NUM*ELLIPSIS_CASE_NUM)
@@ -1494,7 +1494,7 @@ typedef struct tcf_def {
 #define KEIGO_S (MODALITY_S+MODALITY_F_NUM)
 #define KEIGO_F_NUM  (KEIGO_NUM*2)
 #define TENSE_S (KEIGO_S+KEIGO_F_NUM)
-#define TENSE_NUM 4 
+#define TENSE_NUM 4
 #define CONTEXT_S (TENSE_S+TENSE_NUM)
 #define CONTEXT_FEATURE_NUM 10
 #define EACH_FEARUTE_NUM        (CONTEXT_S+CONTEXT_FEATURE_NUM)
@@ -1518,13 +1518,13 @@ typedef struct tcf_def {
 /* 基本句の格・省略解析結果の記録 */
 typedef struct ctm_def {
     double      score;                           /* 対応付けのスコア */
-	double      score_def;/*トレーニング時の重みでのスコア*/           
+	double      score_def;/*トレーニング時の重みでのスコア*/
 	double      case_analysis_score; /*擬似的な格解析スコア*/
     CASE_FRAME 	*cf_ptr;			 /* 格フレームへのポインタ */
 
     /* 格フレームの要素のうち対応付けがついたもの
        (=cf_element_numに含まれる)のみTRUEとなる */
-    int         filled_element[CF_ELEMENT_MAX];  
+    int         filled_element[CF_ELEMENT_MAX];
 
     /* ENTITYのうち対応付けがついたもの
        (=entity_numに含まれる)のみTRUEとなる */
@@ -1532,7 +1532,7 @@ typedef struct ctm_def {
 
     /* 対応付けられなかった入力文格要素
        入力文格要素のうち対応が付いていないものの番号を保存 */
-    int         non_match_element[CF_ELEMENT_MAX]; 
+    int         non_match_element[CF_ELEMENT_MAX];
 
     /* 以下は基本句の格構造の情報 */
     int         result_num;                      /* 対応付けられた要素数 */
@@ -1541,7 +1541,7 @@ typedef struct ctm_def {
     int         cf_element_num[CF_ELEMENT_MAX];  /* 格フレームの格要素への対応 */
     int         tcf_element_num[CF_ELEMENT_MAX]; /* 入力文の格要素への対応 */
     int         tcf_element_num_functional[CF_ELEMENT_MAX]; /* 入力文の格要素への対応(機能的基本句) */
-    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */       
+    TAG_DATA    *elem_b_ptr[CF_ELEMENT_MAX];     /* 関連付けられた基本句 */
     int         entity_num[CF_ELEMENT_MAX];      /* 関連付けられたENTITY */
     char        type[CF_ELEMENT_MAX];            /* 'S', 'N', 'C', 'O', 'D' */
 	int         ga_entity;                       /*省略の場合のガ格が何で埋まったか*/
